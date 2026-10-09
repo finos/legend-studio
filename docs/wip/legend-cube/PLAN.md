@@ -1291,15 +1291,15 @@ The tooltip shows deduplicated errors first, then `describe()` (§17.3).
 
 All gestures from §17.4 are kept:
 
-| Gesture                             | Effect                                                                                   |
-| ----------------------------------- | ---------------------------------------------------------------------------------------- |
-| click a node                        | open its editor                                                                          |
-| Ctrl/Cmd-click                      | make it the capture node                                                                 |
-| drag a palette item onto the canvas | add the node, unconnected                                                                |
-| drag a palette item onto a node     | add it and splice it in after that node                                                  |
-| drag node A onto node B             | `connect`, else `move`                                                                   |
-| right-click                         | legend-art `ContextMenu`: palette, then Select / Remove / Swap Inputs (show-but-disable) |
-| Ctrl+Z, F9                          | undo, execute                                                                            |
+| Gesture                             | Effect                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| click a node                        | open its editor                                                                                           |
+| Ctrl/Cmd-click                      | make it the capture node                                                                                  |
+| drag a palette item onto the canvas | a transform goes after the selected node (U3; spec §17.4 says unconnected); a source opens its dialog tab |
+| drag a palette item onto a node     | add it and splice it in after that node                                                                   |
+| drag node A onto node B             | `connect`, else `move`                                                                                    |
+| right-click                         | legend-art `ContextMenu`: palette, then Select / Remove / Swap Inputs (show-but-disable)                  |
+| Ctrl+Z, F9                          | undo, execute                                                                                             |
 
 - **New:** dragging from an output handle to a specific input handle calls `connect(source, target, port)`.
 - **Live drop targets:** a node highlights only when `canConnect || canMove`.
@@ -2505,6 +2505,7 @@ Record the deployment, the products and access points used, and any console erro
 | M2.0 | legend-graph types (D12)                   | Fix legend-graph's precise primitives as their own PR to master: resolve by full path as well as short name, fix the `Timestamp` path (now a relational class), deprecate the phantom `Decimal`/`Date`/`Time` precise constants, keep parameters through `getLambdaRelationType`, fix its batch variant. Then rebase `CubeType` on legend-graph's `GenericType`; the core may depend on legend-graph's metamodel (never `V1_*`); update §3.3 and Appendix A (§2.2). Needed when Cube types tables locally; no longer gates M3's sources (user, 2026-10-08, §6.8) |
 | M2   | Simple unary transforms + Join autofix     | Rename (§7.5 + collision fix; regex replaced, see Appendix A), the **Join rename autofix** (collision-free names), Restrict (input order), Sort (+ "Sort only affects output at the sink" warning), Distinct, Limit, Drop, Slice (`[start, stop)`); the database workarounds of §11.4 (row numbers for Drop and Slice on SQL Server, Sybase and Sybase IQ, for Drop on DB2, MemSQL and ClickHouse and for every Limit on Sybase IQ; a padded Distinct on SQL Server and Sybase IQ); grid quick actions (Sort by / Filter by X)                                   |
 | M3   | Entry points, sources modal, depot catalog | The direct connection first, then data products (§6.8, moved up from M9). D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                      |
+| M3b  | Canvas and layout                          | The node editor floats below its node (§12.2 item 1, moved here); finishing an edit; where an added step lands; palette click and 'Add Items ▾'; the source dialog's entry points; the node tooltip; entry links for data product access points (§11.6)                                                                                                                                                                                                                                                                                                          |
 | M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family), `aggregate()` for global groups; Concat with precise-strict schema equality + widen autofix; a conformance suite comparing local inference with `lambdaRelationType` for every node type                                                                                                                                                                                                                                                                                            |
 | M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas)                                                                                                                                                                                                                                                                                                                                                                                      |
 | M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
@@ -2963,6 +2964,222 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
   Join's Left and Right); §17.6 (keys in input order, 'Add aggregation' never disabled, a Concat editor where the spec
   says "Nothing"); §17.9 (Concat's help text).
 
+### 11.6 M3b: canvas and layout
+
+M3b is built on the branch `cube-canvas`, from finos master `d847e6721` after M4 merged as #5649. Its first commit,
+`220f02218`, copies the user's answers to [QUESTIONS.md](QUESTIONS.md) from #5655. Its status is in
+[PROGRESS-M3b.md](PROGRESS-M3b.md).
+
+Requirements came from `m3b-requirements` (run `wf_b6df1aad-dfc`):
+
+- **Readers:** four, covering the answers and spec §17, the canvas and palette code, the editor shell and every editor,
+  and how to build a floating host.
+- **Synthesizer:** one, which checked the readers' claims.
+- **Output:** 69 checklist items (C-01 to C-69), a 19-step build order, a per-editor fit table and 3 questions. The
+  full result is `m3b-requirements-result.json` in the local evidence folder, with the reports under
+  `m3b-requirements/`.
+
+The grid is M7 and not part of M3b.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end). It takes
+over §12.2 item 1, which asked where the node editor opens:
+
+- The original app opens a small floating editor anchored just below the node (spec §17.5's popover), where Cube has a
+  side panel (§7.1).
+- Going back means a floating host for the same editors. §7.4 keeps the editors independent of where they are shown.
+- The host must follow the spec's rule that clicking outside never closes the editor while a dropdown, picker or dialog
+  opened from it is open.
+- It must stay on screen near the canvas edges and scroll a tall editor.
+
+**Settled by the answers** (user, 2026-10-09, QUESTIONS.md U1–U4 and U9; the Plan effects decide what Cube changes):
+
+- **Adding (U3).**
+  - A transform added without a node target goes after the selected node, spliced in. This covers a palette drop that
+    misses a node, a right-click on empty canvas and 'Add Items'. It stands alone only in an empty query.
+  - Dropped onto a node, or added from that node's menu, it goes after that node.
+  - An empty query has no right-click menu.
+  - The new node becomes the capture node only when it was added after the selected node (`Query.add`, unchanged).
+  - No add opens the editor, and the defaults on creation are unchanged.
+  - §7.3's drop row is corrected (it said "unconnected", following spec §17.4).
+- **Sources (U4).**
+  - Every way of adding a source opens the source dialog on that source's tab. That includes a source dropped onto a
+    node (the node ignores it) and a node's right-click menu, where source items become enabled.
+  - The node appears, unconnected, after the dialog's confirm.
+  - The empty canvas's link opens the dialog with **no tab selected** and the prompt "Select source type above".
+  - Per U4's Plan effect, the rest is what Cube already does: opening on click or drop, closing after each Add, and the
+    Relational item's fallback to the table tab used last.
+- **Finishing an edit (U2).**
+  - Clicking another node applies this editor and opens that one in the same click.
+  - Ctrl/Cmd+click on a node applies and closes the editor, then makes that node the capture node without opening it.
+  - Execute and F9 apply the open editor first, then run the edited query.
+  - While a dropdown, picker or dialog opened from the editor is open, outside clicks change nothing.
+- **The node's messages (U1(c)).**
+  - The node's tooltip shows after 500 ms, above the node, with its messages deduplicated and joined by newlines.
+  - The red (invalid) and amber (incomplete) borders stay.
+  - When an input is broken, the editor body is replaced by the upstream message.
+- **Links from other screens (U9).**
+  - Arriving never opens an editor or a dialog.
+  - With `?sourceType=…&sourceId=…`, the source lands alone as the capture node, and the parameters are stripped
+    whether it resolves or not. A source that can't be resolved shows "Error resolving source!" with the engine's
+    message.
+  - `?queryId=` wins when both are given. It stays in the address bar, which corrects spec §17.15. It needs M8.
+
+**Settled at the start of M3b** (user, 2026-10-09, the requirements' questions):
+
+1. **A floating editor** (Q1, recommended), replacing the side panel:
+   - **Placement and size.**
+     - Below its node, centred, 8px under it.
+     - One fixed width for every node type: **432px**. U1's 27rem is read at a 16px root. Legend's root is 62.5%
+       (`legend-art/style/normalize.scss`), so it is written in px, never `w-[27rem]` (which would be 270px).
+     - A fixed title bar over a body of 80px to 33vh that scrolls.
+   - **Over the grid.** It floats over the results grid, since the 60% cap is the canvas's, not the editor's.
+   - **Edges.** It flips above the node when there is no room below and more above, and shifts to stay inside the
+     window. Whether the original flips is unknown; this is Cube's choice.
+   - **Following the node.** It follows its node through pan, zoom, fitView and resizes. Dialogs and menus opened from
+     it sit above it.
+   - **Built as** a non-modal MUI Popper (legend-art `BasePopper`) portalled to the body, anchored to the node's screen
+     rectangle computed from the dagre layout and xyflow's viewport, at z-index 1250 (MUI modals are 1300). No new
+     dependencies. xyflow's `NodeToolbar` is clipped by the canvas, and Data Cube's react-rnd windows have no
+     click-away, so neither fits.
+2. **Apply and Cancel stay** (Q2):
+   - The footer keeps Apply and Cancel, and Cancel discards the edits.
+   - Every other way of closing applies them: the ×, an outside click, another node, Ctrl+click, Execute or F9, the
+     Undo button, hiding the graph, and emptying the query.
+   - **Escape closes and applies**, as the original's does (decided without asking, since Q2's "Escape discards" option
+     was not chosen). A field that uses Escape itself, such as a value being typed, takes the first press.
+3. **The palette keeps its click** (Q3, recommended). It follows U3's rule: a transform goes after the selected node,
+   and a source opens its tab. An **'Add Items ▾'** drop-down in the graph toolbar, listing the same items, replaces
+   'Add table'.
+4. **Entry links for data product access points only** (Q4, recommended), as the last step, which can be cut:
+   - Legend Query reads and strips `?sourceType=dataProductAccessPoint&sourceId=…`.
+   - The access point lands alone as the capture node.
+   - The other source kinds wait, since a model table needs a model context and a direct connection needs settings
+     that don't belong in a URL.
+   - Which screens link in still needs the team (U9).
+
+**Decided without asking** (from the requirements, for review):
+
+- **One finish path.** Every close that applies goes through `nodeEditor.finish()`, in this order:
+
+  1. blur the focused field inside the editor, so a value typed but not yet committed is kept;
+  2. apply the data product warehouse text typed but not applied;
+  3. apply the edits as one undo step.
+
+  A draft the query can't take shows a notice instead of vanishing silently.
+
+- **Outside actions apply first.** A node drag (connect or move), a handle connect and every canvas context-menu item
+  apply the open editor first. Today they replace the node under the edits, which drops them with a notice.
+- **The click-away runs on pointerdown,** so Execute, Undo and the grid's actions see the applied query. These don't
+  close the editor:
+
+  - a pointerdown on a node: the node's click handles it;
+  - on the pane, the controls or the minimap: a pan or zoom keeps the editor; a plain click on the empty pane closes it;
+  - inside a MUI modal or popper;
+  - while a Cube dialog is open, or while `nodeEditor.holdOpen()` is held (the spec's rule 2, for later editors'
+    pickers);
+  - a right-click.
+
+  Native selects and date pickers are checked in a browser.
+
+- **Shortcuts.**
+  - F9 with changes runs even while the committed query is invalid: it applies first, then runs only if the result can
+    run. The Execute button keeps its gating.
+  - Ctrl+Z, like the Undo button, applies and then undoes, which drops the edits.
+  - In a text field, Ctrl+Z stays the field's own.
+  - Shortcuts do nothing while the editor is held open.
+- **Kept from Cube:**
+  - the problems list under the body (U1's Plan effect calls it better than the original), pinned between the body
+    and the footer;
+  - the node id in the title;
+  - the net-change rule (an edit put back by hand adds no undo step);
+  - the rule that the editor follows the cube on a re-check or Import.
+- **Title.** The editor's title shows the label with each word capitalised (U1(a)), for display only.
+- **Accessibility and test hooks.** The editor is `role=dialog`, non-modal. Focus moves into it when it is opened from
+  the keyboard and returns to the node when it closes. Its test id stays `NODE_EDITOR`.
+- **One scroller.** The body is the editor's only scroller. Sort, Rename, Restrict and Group drop their inner caps, and
+  Join's autofix list wraps long names.
+- **Wording and the last tab.**
+  - The empty canvas reads "[Connect to a source] to start a new one." This is the spec's wording, without "Load an
+    existing query" until M8.
+  - The Relational item keeps opening the cube's fixed tab, else the table tab used last.
+
+**Editors in the floating host** (432px; body 80px to 33vh, about 297px tall in a 900px window):
+
+| Editor                 | Fits                                                 | Work in M3b                                                    |
+| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
+| Join                   | yes, tight: column selects clip names over ~12 chars | autofix list wraps; re-anchor after Swap Inputs and the fix    |
+| Filter                 | yes, to about 4 nesting levels                       | blur before finish; native date pickers checked in the browser |
+| Source (model, direct) | yes; the column table scrolls in the body            | none                                                           |
+| Data product source    | yes                                                  | warehouse text applied on finish                               |
+| Sort, Rename, Restrict | yes (Rename tight)                                   | inner `max-h-80` removed                                       |
+| Distinct               | yes (text only)                                      | none                                                           |
+| Limit, Drop, Slice     | yes                                                  | blur before finish                                             |
+| Group                  | in width; ~650px tall, so it scrolls                 | inner `max-h-60`/`max-h-80` removed; problems pinned           |
+| Concat                 | yes (`table-fixed`)                                  | fix buttons re-anchor after the re-layout                      |
+
+**Steps:**
+
+| Step   | Deliverable                                                                                                                                               | Done when                                                                                 |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| M3b.1  | This subsection, PROGRESS-M3b.md, §7.3's drop row and §12.2 item 1 (docs only)                                                                            | Committed; the draft PR open                                                              |
+| M3b.2  | One finish path (`finish()`, `holdOpen()`), Ctrl+click and F9 and Ctrl+Z applying first, outside actions applying first; in today's side panel            | The finish, shortcut and outside-action tests pass                                        |
+| M3b.3  | The floating host behind a constant: `CubeNodeEditorPopper`, the anchor function, the float layout of the panel                                           | Anchor tests pass; in the browser every node type opens below its node                    |
+| M3b.4  | The click-away and Escape: pointerdown rules, pane click, hold, hiding the graph and emptying the query                                                   | Ordering and hold tests pass; in the browser B opens in one click, Execute runs the edits |
+| M3b.5  | Switch over: the side panel removed                                                                                                                       | Every editor test green in the floating host                                              |
+| M3b.6  | The editor's frame: title case, problems and footer pinned under the scrolling body, focus and `role=dialog`                                              | Frame tests pass                                                                          |
+| M3b.7  | Each editor's sizing and edges (table above)                                                                                                              | In the browser every editor fits 432px with one scroller at 900px and 768px               |
+| M3b.8  | One placement rule (`CubeAddPlacement.ts`) for palette click and drop and both context menus; sources on a node open their tab; no menu on an empty query | Placement and menu tests pass                                                             |
+| M3b.9  | 'Add Items ▾' in place of 'Add table', from one shared item list                                                                                          | Add Items tests pass                                                                      |
+| M3b.10 | The source dialog's no-tab state for the empty canvas's link; the empty-canvas wording                                                                    | Picker and canvas tests pass                                                              |
+| M3b.11 | The node tooltip: legend-art Tooltip, 500 ms, above, one line per message                                                                                 | Tooltip tests pass; checked in the browser                                                |
+| M3b.12 | Entry links for data product access points (Q4; can be cut)                                                                                               | Query page tests: stripped on success and failure, the banner, queryId wins               |
+| M3b.13 | Docs and guides (hosting, editor contract), docstrings, one patch changeset                                                                               | `yarn check:ci` passes                                                                    |
+| M3b.14 | The PR's description; marked ready for review                                                                                                             | Ready, every gate green                                                                   |
+| M3b.15 | Verification (reviewers and a skeptic per finding), on the open PR                                                                                        | Every finding fixed or recorded                                                           |
+| M3b.16 | A browser rehearsal of every gesture at window heights of 900px and 768px                                                                                 | Every item passes, with a screenshot                                                      |
+| M3b.17 | A demo video (§11.3)                                                                                                                                      | Every caption true on screen; sent to the user                                            |
+| M3b.18 | Rebase on the latest master; fold the supersessions below                                                                                                 | The plan consistent                                                                       |
+
+Each step's tests run in jsdom where they can. Placement, flipping, 33vh and following pan and zoom are checked in the
+browser on the dev server at :9003, since jsdom measures nothing.
+
+**Coordination.** The sources session edits the same files: `CubeEditor.tsx`, `CubeEditorState.ts`,
+`components/canvas/*`, `CubeNodeEditorPanel.tsx` and `CubeSourcePickerState.ts`. To keep conflicts small:
+
+- new behaviour goes in new files (`CubeNodeEditorPopper.tsx`, `CubeNodeEditorAnchor.ts`, `CubeAddPlacement.ts`,
+  `CubeAddItems.tsx`), and the shared files get call-site hunks;
+- M3b.7's warehouse text, M3b.10's no-tab state and M3b.12's headless access point resolve touch that session's state;
+  each is a small, separate hunk;
+- the ingest source editor (branch `cube-ingest`) must follow the 432px width, the one-scroller rule and the finish path
+  when it lands.
+
+**Risks and open gaps:**
+
+- **Untested in a browser.** The click-away order is untested there. pointerdown should run before Execute's click,
+  and M3b.4 proves it.
+- **Native popups.** Whether a native select's or a date picker's dismissing click reaches the page varies by browser.
+- **Height.** At 33vh, Group, a long Filter, Concat and the source column tables scroll.
+- **Unverified width.** 432px can't be checked against the original, whose answers come from its specs.
+- **Side branches.** Every untargeted transform add now moves the capture node. A side branch is built by dropping onto
+  a node or by connecting handles.
+- **Later editors.** M5's Window editor, M6's expression editor and the type-aheads must use `holdOpen()` and fit 432px.
+
+**Supersessions** (applied in M3b.18; kept as the record of what M3b changed):
+
+- **§7.1:** the node editor floats below its node, in place of the side panel. The toolbar has 'Add Items ▾' in place
+  of 'Add table'.
+- **§7.2:** the node tooltip is legend-art's, after 500 ms.
+- **§7.3:** palette click and drop and the context menus follow U3 (sources open their tab, even from a node); an empty
+  query has no menu; Ctrl/Cmd-click applies first.
+- **§7.4:** the floating host, the finish path, Escape, the click-away and the hold. Every close but Cancel applies.
+  "Following the cube" is kept for re-checks and Import, while user actions outside the editor apply first.
+- **§7.8:** `nodeEditor` gains `finish()` and `holdOpen()`; panel sizes no longer apply.
+- **Settled at the start of M1.8b (§7.8):** the palette source item now also opens its tab when dropped onto a node.
+- **Appendix A:**
+  - §17.4: a transform drop is after the selected node (U3);
+  - §17.5: the floating editor, with Cube's Apply/Cancel footer and problems list;
+  - §17.15: queryId stays in the address bar (U9).
+
 ---
 
 ## 12. G. Risks and open questions
@@ -2987,14 +3204,10 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
 
 ### 12.2 Open questions (none block M1)
 
-1. **Entry points, sources modal and final look** (D7 follow-up, M3): which Legend Query surfaces link to `/cube`;
-   source-modal UX (tabs per kind vs search-first catalog); whether to adopt Data Cube's floating-window style.
-   **Where the node editor opens** (user, 2026-10-08, to decide in M3): the original app opens a small floating
-   editor anchored just below the node (spec §17.5's popover), where Cube has a side panel (§7.1). Going back means a
-   floating host for the same editors (§7.4 keeps them independent of where they are shown), with the spec's rule
-   that clicking outside never closes the editor while a dropdown, picker or dialog opened from it is open, staying on
-   screen near the canvas edges, and scrolling a tall editor. Meanwhile, new editors must work in either host: they
-   don't rely on the side panel's full height.
+1. **Entry points, sources modal and final look** (D7 follow-up): the sources modal and the data product and direct
+   connection tabs were built in M3 (§6.8). **Where the node editor opens, the canvas gestures and the entry links moved
+   to M3b** (§11.6, user, 2026-10-09): settled there as a floating editor below the node. Still open: which Legend Query
+   surfaces link to `/cube` (U9 needs the team), and the rest of the final look.
 2. **Sort not at the sink:** answered in M2 (§11.4). Cube writes the order where it is used: just before a Limit, Drop
    or Slice that takes rows by it, and before the capture's limit. It warns only when the order is lost (a Join, a
    Restrict that drops sort keys, a later Sort on all the same columns); the warning is derived, never a validation

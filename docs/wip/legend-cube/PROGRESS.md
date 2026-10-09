@@ -38,6 +38,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
   - The direct connection (H2 and DuckDB) and a thin end-to-end data product slice (beta) go in one PR, #5641, so data
     products can be tested inside an internal deployment (user, 2026-10-09). Part B2 (PLAN §11.2) is the manual check
     of both. The data product follow-ups (PLAN §6.8) come in the next PR, then Depot databases.
+- [ ] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.6, [PROGRESS-M3b.md](PROGRESS-M3b.md))
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
 

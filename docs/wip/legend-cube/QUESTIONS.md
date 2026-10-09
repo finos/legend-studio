@@ -53,6 +53,10 @@ editors (Sort, Rename, Slice).
 wide, body scrolling at 33vh, and dialogs opened from it stacked above it. Cube's side panel listing the node's
 problems is already better than the original here.
 
+**Settled in M3b** (user, 2026-10-09, PLAN §11.6): Cube moves to a floating editor below the node, replacing the side
+panel. It is 432px wide (27rem read at a 16px root), with a body of 80px to 33vh that scrolls, and it floats over the
+grid. Cube keeps its problems list, pinned under the body.
+
 ### U2. Finishing or abandoning an edit
 
 How does a user finish with a node's editor?
@@ -98,6 +102,10 @@ open. Cube's side panel has Apply and Cancel, and closing it or clicking another
 Cube's Apply/Cancel is a deliberate departure, and "closing applies" does match the original. Whether to keep Cancel
 is a decision, not a parity question.
 
+**Settled in M3b** (user, 2026-10-09, PLAN §11.6): Cube keeps **Apply and Cancel**; Cancel discards. Every other way
+of closing applies: the ×, an outside click, another node, Ctrl+click, Execute or F9, Undo, and Escape (Escape decided
+without asking, as the original's).
+
 ### U3. Where an added step lands
 
 When the user adds a transform without dragging it, where does it go, and can they fill it in at once?
@@ -134,6 +142,9 @@ an add.
 **Plan effect:** PLAN §7.3's row "drag a palette item onto the canvas → add the node, unconnected" repeats the spec's
 mistake; for transforms it should read "after the selected node". For M2: since nothing opens the editor, a new Limit,
 Drop or Slice works immediately because it starts at 10.
+
+**Settled in M3b** (user, 2026-10-09, PLAN §11.6): §7.3's row now reads "after the selected node" for transforms.
+Cube's palette click stays and follows the same rule; an 'Add Items ▾' drop-down replaces 'Add table'.
 
 ### U4. Opening the source dialog
 
@@ -172,6 +183,9 @@ button's name, or adding several. Cube opens its picker on click or drop and clo
 
 **Plan effect:** none against the plan as written. This is what Cube already does (open on click or drop, close after
 each Add), apart from the link opening with no tab.
+
+**Settled in M3b** (user, 2026-10-09, PLAN §11.6): Cube builds the link's no-tab state and opens a source's tab when
+it is dropped onto a node or picked from a node's menu. The palette click stays.
 
 ### U5. Rows in the searchable source lists
 
@@ -370,6 +384,9 @@ Which neighbouring apps use them has to be asked of the people who own those app
   The source parameters are removed from the address bar either way.
 
 **Plan effect:** PLAN §12.2 item 1 (entry points). The "which screens" part needs input from the team, not the app's specs.
+
+**Settled in M3b** (user, 2026-10-09, PLAN §11.6): only `?sourceType=…&sourceId=…` for data product access points is
+built now, as the milestone's last step, which can be cut. `?queryId=` waits for M8.
 
 ### U10. Sort, Rename and Restrict editors
 
