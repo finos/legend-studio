@@ -19,19 +19,16 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
 import {
-  CUBE_DIRECT_DATASOURCE_LABELS,
   CUBE_DIRECT_HELP_TEXT,
   CUBE_DIRECT_PENDING_LABEL,
+  getCubeConnectionSummaryLabel,
   getHiddenColumnsLabel,
 } from '../../__lib__/LegendCubeDirectConnectionLabels.js';
 import {
   CUBE_PENDING_LABEL,
   CUBE_TABLE_FLAG_LABELS,
 } from '../../__lib__/LegendCubeLabels.js';
-import {
-  type CubeConnectionSummary,
-  CubeDirectDatabaseType,
-} from '../../graph-manager/CubeConnectionExplorer.js';
+import { CubeDirectDatabaseType } from '../../graph-manager/CubeConnectionExplorer.js';
 import {
   type CubeDirectConnectionTabState,
   isExploredTableSelectable,
@@ -47,14 +44,6 @@ const DATABASE_TYPE_OPTIONS = [
   { value: CubeDirectDatabaseType.H2, label: 'H2' },
   { value: CubeDirectDatabaseType.DUCKDB, label: 'DuckDB' },
 ];
-
-/** What the page shows of a saved connection: never its setup SQL */
-const describeSummary = (summary: CubeConnectionSummary): string =>
-  [
-    `${summary.databaseType}: ${CUBE_DIRECT_DATASOURCE_LABELS[summary.datasourceKind]}${summary.path ? ` (${summary.path})` : ''}`,
-    `${summary.setupSqlCount} setup ${summary.setupSqlCount === 1 ? 'statement' : 'statements'}`,
-    `authentication ${summary.authenticationKind}`,
-  ].join(', ');
 
 /** The form of a connection the cube doesn't have yet */
 const CubeConnectionForm = observer(
@@ -134,7 +123,7 @@ export const CubeDirectConnectionTab = observer(
           <div className="flex flex-col gap-1">
             <div className="text-base" aria-label="Connection">
               {description?.supported
-                ? describeSummary(description.summary)
+                ? getCubeConnectionSummaryLabel(description.summary)
                 : "Cube can't use the cube's connection:"}
             </div>
             {description && !description.supported && (

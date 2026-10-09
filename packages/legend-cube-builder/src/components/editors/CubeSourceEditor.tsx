@@ -23,9 +23,14 @@ import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
+  CUBE_DIRECT_CONNECTION_FALLBACK_LABEL,
+  getCubeConnectionSummaryLabel,
+} from '../../__lib__/LegendCubeDirectConnectionLabels.js';
+import {
   CUBE_PENDING_LABEL,
   getColumnTypeLabel,
 } from '../../__lib__/LegendCubeLabels.js';
+import { getCubeDirectConnection } from '../../graph-manager/CubeDirectConnection.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -40,11 +45,31 @@ export const CubeSourceEditor = observer((props: CubeNodeEditorProps) => {
   const source = guaranteeType(props.draft.original, RelationalTableSource);
   const refreshing = editorState.isPendingSource(source);
   const { resolution } = source;
+  // a direct cube's tables all belong to a Database Cube builds: its
+  // connection says where they come from (PLAN §6.8)
+  const model = editorState.document.context?.model;
+  const connection = model ? getCubeDirectConnection(model) : undefined;
+  const description =
+    connection &&
+    editorState.host.connectionExplorer?.describeConnection(connection);
   return (
     <div className="relative flex flex-col gap-2">
       <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-base">
-        <dt className="text-[var(--color-text-secondary)]">Database</dt>
-        <dd className="min-w-0 break-all">{source.database}</dd>
+        {connection ? (
+          <>
+            <dt className="text-[var(--color-text-secondary)]">Connection</dt>
+            <dd className="min-w-0 break-words">
+              {description?.supported
+                ? getCubeConnectionSummaryLabel(description.summary)
+                : CUBE_DIRECT_CONNECTION_FALLBACK_LABEL}
+            </dd>
+          </>
+        ) : (
+          <>
+            <dt className="text-[var(--color-text-secondary)]">Database</dt>
+            <dd className="min-w-0 break-all">{source.database}</dd>
+          </>
+        )}
         <dt className="text-[var(--color-text-secondary)]">Schema</dt>
         <dd>{getRelationalDisplayName(source.schema)}</dd>
         <dt className="text-[var(--color-text-secondary)]">Table</dt>

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { CubeConnectionDatasourceKind } from '../graph-manager/CubeConnectionExplorer.js';
+import {
+  CubeConnectionDatasourceKind,
+  type CubeConnectionSummary,
+} from '../graph-manager/CubeConnectionExplorer.js';
 
 // The text of the source picker's database connection tab (PLAN §6.8)
 
@@ -70,3 +73,17 @@ export const getHiddenColumnsLabel = (count: number): string | undefined =>
   count === 0
     ? undefined
     : `${count} ${count === 1 ? 'column' : 'columns'} hidden`;
+
+/** What the page shows of a saved connection: never its setup SQL */
+export const getCubeConnectionSummaryLabel = (
+  summary: CubeConnectionSummary,
+): string =>
+  [
+    `${summary.databaseType}: ${CUBE_DIRECT_DATASOURCE_LABELS[summary.datasourceKind]}${summary.path ? ` (${summary.path})` : ''}`,
+    `${summary.setupSqlCount} setup ${summary.setupSqlCount === 1 ? 'statement' : 'statements'}`,
+    `authentication ${summary.authenticationKind}`,
+  ].join(', ');
+
+/** A direct connection shown where Cube can't describe it, e.g. on a host without an explorer */
+export const CUBE_DIRECT_CONNECTION_FALLBACK_LABEL =
+  'A direct database connection';
