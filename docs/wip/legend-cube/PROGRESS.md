@@ -79,12 +79,13 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 
 **In parallel:** M1.9 merged on 2026-10-08 as #5634 (`3260216a6`). M2, the simple unary operations, merged on
 2026-10-09 as #5644 (`0335b3f5f`), with its record in [PROGRESS-M2.md](PROGRESS-M2.md) and its decisions in PLAN §11.4.
-M4, Group and Concat, follows on `cube-m4`, a branch from master; each operation follows the editor contract in PLAN
-§7.4. Direct connections and data products' access points merged on 2026-10-09 as #5641 (`e01552380`). Also planned:
-test setup and a DuckDB WASM study (low priority, research first: PLAN §12.2 item 9). The next sources (databases from
-Depot and direct connections, deployed data products) and their local test setup are being designed with the user:
-settled parts in PLAN §6.8, open ones in §12.2 item 10, UI questions for the original app in
-[QUESTIONS.md](QUESTIONS.md). Decimal precision stays for a later PR (user, 2026-10-07).
+M4, Group and Concat, follows on `cube-m4`, a branch from master, with its status in [PROGRESS-M4.md](PROGRESS-M4.md)
+and its decisions in PLAN §11.5; each operation follows the editor contract in PLAN §7.4. Direct connections and data
+products' access points merged on 2026-10-09 as #5641 (`e01552380`). Also planned: test setup and a DuckDB WASM study
+(low priority, research first: PLAN §12.2 item 9). The next sources (databases from Depot and direct connections,
+deployed data products) and their local test setup are being designed with the user: settled parts in PLAN §6.8, open
+ones in §12.2 item 10, UI questions for the original app in [QUESTIONS.md](QUESTIONS.md). Decimal precision stays for a
+later PR (user, 2026-10-07).
 
 ## Milestone notes
 
