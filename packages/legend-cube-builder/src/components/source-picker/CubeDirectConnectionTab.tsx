@@ -19,6 +19,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
 import {
+  CUBE_CSV_HELP_TEXT,
   CUBE_DIRECT_HELP_TEXT,
   CUBE_DIRECT_PENDING_LABEL,
   getCubeConnectionSummaryLabel,
@@ -44,6 +45,90 @@ const DATABASE_TYPE_OPTIONS = [
   { value: CubeDirectDatabaseType.H2, label: 'H2' },
   { value: CubeDirectDatabaseType.DUCKDB, label: 'DuckDB' },
 ];
+
+/**
+ * Loads a CSV, pasted or from a file, into the in-memory DuckDB database:
+ * Add writes it into the setup SQL as a table, which the viewer can edit
+ */
+const CubeCsvLoader = observer(
+  (props: { tab: CubeDirectConnectionTabState }) => {
+    const { tab } = props;
+    const { applicationStore } = tab.editorState.host;
+    const tableNameId = useId();
+    const fileId = useId();
+    return (
+      <details className="flex flex-col gap-1" aria-label="Load a CSV">
+        <summary className="cursor-pointer text-base">Load a CSV</summary>
+        <div className="mt-1 flex flex-col gap-2">
+          <span className="text-sm text-[var(--color-text-muted)]">
+            {CUBE_CSV_HELP_TEXT}
+          </span>
+          <div className="flex items-center gap-2">
+            <label className="w-20 shrink-0 text-base" htmlFor={fileId}>
+              CSV file
+            </label>
+            <input
+              id={fileId}
+              type="file"
+              accept=".csv,text/csv,text/plain"
+              className="min-w-0 flex-1 text-base"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                // choosing the same file again reads it again
+                event.target.value = '';
+                if (file) {
+                  flowResult(tab.loadCsvFile(file)).catch(
+                    applicationStore.alertUnhandledError,
+                  );
+                }
+              }}
+            />
+          </div>
+          <textarea
+            aria-label="CSV"
+            className={clsx(
+              INPUT_CLASS,
+              'h-24 w-full resize-y p-1 font-mono text-sm',
+            )}
+            placeholder="Or paste a CSV here, its first row naming the columns"
+            spellCheck={false}
+            value={tab.csvText}
+            onChange={(event) => tab.setCsvText(event.target.value)}
+          />
+          <div className="flex items-center gap-2">
+            <label className="w-20 shrink-0 text-base" htmlFor={tableNameId}>
+              Table
+            </label>
+            <input
+              id={tableNameId}
+              className={clsx(INPUT_CLASS, 'h-7 min-w-0 flex-1')}
+              placeholder="csv_data"
+              spellCheck={false}
+              value={tab.csvTableName}
+              onChange={(event) => tab.setCsvTableName(event.target.value)}
+            />
+            <CubeButton disabled={!tab.canAddCsv} onClick={() => tab.addCsv()}>
+              Add to setup SQL
+            </CubeButton>
+          </div>
+          {tab.csvNote !== undefined && (
+            <span
+              role="status"
+              className={clsx(
+                'text-sm',
+                tab.csvNote.isError
+                  ? 'text-[var(--color-status-error)]'
+                  : 'text-[var(--color-text-secondary)]',
+              )}
+            >
+              {tab.csvNote.message}
+            </span>
+          )}
+        </div>
+      </details>
+    );
+  },
+);
 
 /** The form of a connection the cube doesn't have yet */
 const CubeConnectionForm = observer(
@@ -78,6 +163,9 @@ const CubeConnectionForm = observer(
               onChange={(event) => tab.setDuckDbPath(event.target.value)}
             />
           </div>
+        )}
+        {tab.databaseType === CubeDirectDatabaseType.DUCKDB && (
+          <CubeCsvLoader tab={tab} />
         )}
         <div className="flex flex-col gap-1">
           <label className="text-base" htmlFor={setupSqlId}>

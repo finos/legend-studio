@@ -1191,6 +1191,11 @@ internals (user, 2026-10-08): questions for the original app's team are about it
   allows: the engine accepts them from any client (hosting.md notes the exposure; revisit with Postgres). Once a table
   is added the connection is fixed until every table is removed (no "Edit connection" until QUESTIONS.md U8 is
   answered); reopening the dialog lists the connection's schemas at once.
+- **A CSV as a table (user, 2026-10-09):** on DuckDB, the tab takes a pasted CSV or a chosen file and writes it into the
+  setup SQL as a table of the `csv` schema (create, then the rows as inserts), which the viewer can edit before
+  testing the connection. Each column's type is guessed from its values; names are made safe for DuckDB. Up to 10,000
+  rows: the cube saves them with its connection, and every connection inserts them again (about 120 ms for 10,000 rows
+  on the local engine). No file reaches the engine's host.
 - **Columns the engine can't type** (it reports them as `Other`: on H2 REAL, TIME, BINARY, CLOB, UUID and arrays; on
   DuckDB HUGEINT, TIME, BLOB, UUID and arrays) are hidden, and the picker shows "N columns hidden".
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
@@ -2472,6 +2477,10 @@ Direct connection:
    `drop schema if exists s cascade; create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
    with `;`), **Test connection**, add `t` and press **F9**: 1 row.
 5. **Export (dev)** and **Import (dev)** the H2 cube: the same graph comes back, and **F9** gives the same rows.
+6. On a new cube, choose **DuckDB**, open **Load a CSV**, paste `id,city` / `1,Paris` / `2,Lima` (three lines), name
+   the table `cities` and click **Add to setup SQL**: the setup SQL now creates `csv.cities`, and the tab says "Added
+   table csv.cities: 2 rows, 2 columns". **Test connection**, pick schema `csv`, add `cities` and press **F9**: 2 rows.
+   Choosing a `.csv` file fills the box and the table name the same way.
 
 Data products:
 
