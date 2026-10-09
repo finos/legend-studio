@@ -145,10 +145,11 @@ The open-source engine rejects every data product construct (`#P`, a LakehouseRu
 warehouse), so data product runs are tested with fakes and, on the engine, with stand-in functions only. The first
 real run is in an internal deployment (Part B2).
 
-### Saved data product sources aren't checked again
+### Re-checking saved data product sources
 
-A data product cube opens on its saved column snapshots; Refresh and the re-check on import don't read the artifact
-again yet (a planned follow-up). A redeployed product doesn't change a cube, which stays on its saved version.
+An import and Refresh read a data product cube's access points again from the deployed artifact at the cube's saved
+version. The artifact is read once per page visit, so a SNAPSHOT version redeployed meanwhile shows only after a
+reload, and a redeployed product never moves a cube to another version.
 
 ### Listing data products
 

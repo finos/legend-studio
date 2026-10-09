@@ -1225,9 +1225,10 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
     Query's runtime dialog can remember an environment with a realm already on it, so Cube drops that realm first
     and lets the cube's class decide: a production deployment never runs in the production-parallel realm.
   - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
-    inside an internal deployment. Follow-ups, each with its tests: marketplace search with paging guards and stale
-    answers, sample rows, access badges, marketplace links, re-checking saved sources, warehouse edits and staleness,
-    error polish, the stand-in engine checks against the test-setup mocks, and their verify workflow.
+    inside an internal deployment. Follow-ups, each with its tests (#5652): marketplace search with paging guards and
+    stale answers (done), warehouse edits and staleness (done), re-checking saved sources (done), sample rows, access
+    badges, marketplace links, error polish, the stand-in engine checks against the test-setup mocks, and their verify
+    workflow.
 - **Compute elements:** deferred.
 - **M2.0 no longer gates the sources:** depot Databases are typed by the engine through the pointer and data products by
   their deployed artifact, so neither needs legend-graph's precise types. M2.0 stays a separate legend-graph PR, needed
@@ -1447,7 +1448,9 @@ start of M1.8b.
   ("could not re-check this table: …"). Schema drift shows as a non-blocking warning listing the changed columns. The
   answer applies, by node identity, to the cube shown and to the undo snapshots taken while it was pending, so Undo
   never brings back an unchecked table; "resolving source" shows while the cube shown holds a table being typed
-  (`m18a-verify` fix, 2026-10-07).
+  (`m18a-verify` fix, 2026-10-07). A data product cube's access points are re-checked the same way, through the
+  catalog against the deployed artifact at the cube's saved version, with no engine call; their warnings name the
+  access point (DP14, 2026-10-09).
 - **Newer-version spec:** opens read-only with a banner. View, Execute and Show Pure work; edits, the picker, Undo
   and Export are disabled. Select (choosing the node to run) still works, and Import replaces the cube (S7, 2026-10-07).
 - **Spec without a model or runtime:** opens editable with Execute disabled and a tooltip naming what is missing; no

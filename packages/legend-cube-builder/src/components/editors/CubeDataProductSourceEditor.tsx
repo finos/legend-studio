@@ -18,7 +18,9 @@ import {
   type CubeContext,
   DataProductAccessPointSource,
 } from '@finos/legend-cube';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
@@ -27,6 +29,7 @@ import {
   CUBE_WAREHOUSE_APPLY_TITLE,
 } from '../../__lib__/LegendCubeDataProductLabels.js';
 import {
+  CUBE_PENDING_LABEL,
   getColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -89,8 +92,8 @@ const CubeWarehouseControl = observer(
 
 /**
  * A data product's access point (PLAN §6.8): where it reads from, the
- * cube's project, class and warehouse, which can be edited, and its columns
- * as the deployed artifact types them
+ * cube's project, class and warehouse, which can be edited, its columns as
+ * the deployed artifact types them, and Refresh, which reads them again
  */
 export const CubeDataProductSourceEditor = observer(
   (props: CubeNodeEditorProps) => {
@@ -100,6 +103,7 @@ export const CubeDataProductSourceEditor = observer(
       DataProductAccessPointSource,
     );
     const { resolution } = source;
+    const refreshing = editorState.isPendingSource(source);
     const runtime = editorState.dataProductRuntime;
     const { project } = runtime;
     return (
@@ -139,6 +143,25 @@ export const CubeDataProductSourceEditor = observer(
             </>
           )}
         </dl>
+        <div className="flex items-center gap-2">
+          <CubeButton
+            title="Read the access point's columns again from the deployed data product"
+            disabled={refreshing}
+            onClick={() => {
+              flowResult(editorState.refreshSource(source.id)).catch(
+                editorState.host.applicationStore.alertUnhandledError,
+              );
+            }}
+          >
+            Refresh
+          </CubeButton>
+          {refreshing && (
+            <span className="text-base text-[var(--color-text-secondary)]">
+              {CUBE_PENDING_LABEL.REFRESHING_SOURCE}
+            </span>
+          )}
+        </div>
+        <PanelLoadingIndicator isLoading={refreshing} />
         {resolution.kind === 'resolved' ? (
           <table className="w-full text-base" aria-label="Columns">
             <thead>

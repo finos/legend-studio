@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import type { SchemaDiff } from '@finos/legend-cube';
 import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
+import { getSchemaChangeList } from './LegendCubeLabels.js';
 
 // The text of data product sources (PLAN §6.8): the source dialog's Data
 // product tab and a data product source's panel
@@ -33,3 +35,16 @@ export const CUBE_SNAPSHOT_VERSION_LABEL =
 
 export const CUBE_WAREHOUSE_APPLY_TITLE =
   "Run the cube on this warehouse; it's remembered for your next cubes";
+
+/** The warning on an access point that changed since the cube was saved; its new columns are used */
+export const getAccessPointDriftWarning = (diff: SchemaDiff): string =>
+  `This access point changed since the cube was saved: ${getSchemaChangeList(diff)}`;
+
+/** The warning on an access point Cube couldn't re-check, which keeps its saved columns */
+export const getAccessPointRecheckWarning = (firstLine: string): string =>
+  `Could not re-check this access point, so it keeps its saved columns: ${firstLine}`;
+
+export const CUBE_DATA_PRODUCT_RECHECK_MESSAGE = {
+  NO_ANSWER: 'The data product catalog gave no columns for this access point',
+  NO_CATALOG: "This Legend deployment doesn't serve data products",
+} as const;

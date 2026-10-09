@@ -304,6 +304,57 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
     });
   });
 
+  test('Re-checks from the description already read this visit, and reads the depot again after a failed read', async () => {
+    const { catalog, generations, entity } = setUp();
+    const project = {
+      groupId: 'com.example.sales',
+      artifactId: 'orders-products',
+      versionId: '1.4.0',
+      environmentType: PRODUCTION,
+    };
+    const sources = new Map([
+      [
+        'dataProductAccessPoint101',
+        {
+          dataProduct: 'sales::products::OrdersProduct',
+          accessPointGroup: 'core',
+          accessPoint: 'daily_orders',
+        },
+      ],
+      [
+        'dataProductAccessPoint102',
+        {
+          dataProduct: 'sales::products::OrdersProduct',
+          accessPointGroup: 'reference',
+          accessPoint: 'daily_orders',
+        },
+      ],
+    ]);
+    // a failed read answers each source with its error
+    generations.mockImplementationOnce(async () => {
+      throw new Error('Depot unavailable');
+    });
+    const failed = await catalog.resolveSchemas(project, sources);
+    expect([...failed.values()].map((answer) => answer.constructor)).toEqual([
+      CubeEngineError,
+      CubeEngineError,
+    ]);
+    expect(failed.get('dataProductAccessPoint102')).toMatchObject({
+      nodeId: 'dataProductAccessPoint102',
+    });
+    // read again, then from what this visit read
+    const read = await catalog.resolveSchemas(project, sources);
+    expect(read.get('dataProductAccessPoint101')).toBeInstanceOf(Schema);
+    const [orders] = await catalog.search({
+      text: 'orders',
+      environmentType: PRODUCTION,
+    });
+    await catalog.describe(orders as NonNullable<typeof orders>);
+    await catalog.resolveSchemas(project, sources);
+    expect(generations).toHaveBeenCalledTimes(2);
+    expect(entity).toHaveBeenCalledTimes(2);
+  });
+
   test('Says when a product has no deployed artifact', async () => {
     const { catalog, generations } = setUp();
     generations.mockImplementationOnce(async () => []);

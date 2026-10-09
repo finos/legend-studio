@@ -18,6 +18,7 @@ import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   Connection,
   CubeDocument,
+  DataProductAccessPointSource,
   Distinct,
   Drop,
   Limit,
@@ -32,6 +33,7 @@ import {
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
+import { FAKE_DAILY_ORDERS_SCHEMA } from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
   NORTHWIND_DATABASE,
   NORTHWIND_RUNTIME,
@@ -46,6 +48,11 @@ import type {
   CubeModelOutline,
   CubeResult,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  createCubeDataProductModel,
+  CUBE_DATA_PRODUCT_RUNTIME_PATH,
+  CubeDataProductEnvironmentType,
+} from '../../graph-manager/CubeDataProduct.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 
@@ -171,6 +178,78 @@ describe('Cube execution: the database type', () => {
       '->distinct()->extend(~cube_d: x | 1)->select(',
     );
   });
+
+  test.each([
+    [
+      'whatever connections its outline names',
+      [{ storePath: 'any::Store', databaseType: 'SqlServer' }],
+    ],
+    ['with the outline the engine gives it', undefined],
+  ])(
+    'Writes a Drop the native way on a data product cube, %s: it reads no database',
+    async (_case, connections) => {
+      const daily = new DataProductAccessPointSource(
+        'dataProductAccessPoint101',
+        {
+          dataProduct: 'sales::products::OrdersProduct',
+          accessPointGroup: 'core',
+          accessPoint: 'daily_orders',
+          dataProductId: 'ORDERS_PRODUCT',
+          deploymentId: '1234',
+        },
+        { kind: 'resolved', schema: FAKE_DAILY_ORDERS_SCHEMA },
+      );
+      const sort = new Sort('sort101', [
+        { column: 'ORDER_ID', direction: SortDirection.DESC },
+      ]);
+      const drop = new Drop('drop101', 10);
+      const { host, fake } = TEST__createCubeHost({
+        result: {
+          columns: FAKE_DAILY_ORDERS_SCHEMA.columns.map(({ name }) => name),
+          rows: [],
+          sql: [],
+          durationMs: 1,
+        },
+        outline: {
+          databases: [],
+          runtimes: [
+            {
+              path: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+              storePaths: [],
+              ...(connections ? { connections } : {}),
+            },
+          ],
+        },
+      });
+      const state = new CubeEditorState(
+        host,
+        new CubeDocument({
+          context: {
+            model: createCubeDataProductModel({
+              groupId: 'com.example.sales',
+              artifactId: 'orders-products',
+              versionId: '1.4.0',
+              environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+            }),
+            runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+          },
+          query: new Query(
+            [daily, sort, drop],
+            [
+              new Connection(daily.id, sort.id, 'tds'),
+              new Connection(sort.id, drop.id, 'tds'),
+            ],
+            drop.id,
+          ),
+        }),
+      );
+      await flowResult(state.execution.execute());
+      expect(fake.loadModel).toHaveBeenCalled();
+      const ran = ranLambda(fake);
+      expect(ran).toContain('->drop(10)');
+      expect(ran).not.toContain('rowNumber');
+    },
+  );
 
   test('Writes the native forms on an H2 runtime', async () => {
     const { state, fake } = setUp(sortedDrop());

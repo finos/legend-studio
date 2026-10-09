@@ -20,7 +20,13 @@ import {
   DataProductAccessPointSource,
   Query,
 } from '@finos/legend-cube';
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { runInAction } from 'mobx';
 import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProductLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
@@ -71,8 +77,11 @@ const dataProductCube = (versionId: string): CubeDocument =>
 
 const renderPanel = async (
   options: { versionId?: string; readOnly?: boolean } = {},
-): Promise<CubeEditorState> => {
-  const { host } = TEST__createCubeHost();
+): Promise<
+  ReturnType<typeof TEST__createCubeHost> & { editorState: CubeEditorState }
+> => {
+  const created = TEST__createCubeHost();
+  const { host } = created;
   const editorState = new CubeEditorState(
     host,
     dataProductCube(options.versionId ?? '1.4.0'),
@@ -92,7 +101,7 @@ const renderPanel = async (
   );
   fireEvent.click(await TEST__findCanvasNode('dataProductAccessPoint101'));
   await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-  return editorState;
+  return { ...created, editorState };
 };
 
 const panel = (): HTMLElement =>
@@ -110,7 +119,7 @@ beforeEach(() => {
 
 describe('Source panel of a data product cube', () => {
   test('Shows the deployment class, and runs the cube on a warehouse typed and applied', async () => {
-    const editorState = await renderPanel();
+    const { editorState } = await renderPanel();
     expect(within(panel()).getByText('Production (parallel)')).not.toBeNull();
     expect(warehouseInput().value).toBe('CUBE_WH');
     expect(applyButton().disabled).toBe(true);
@@ -140,5 +149,33 @@ describe('Source panel of a data product cube', () => {
     expect(
       within(panel()).getByText(CUBE_SNAPSHOT_VERSION_LABEL),
     ).not.toBeNull();
+  });
+
+  test("Reads the access point's columns again on Refresh, through the catalog, and warns once when that fails", async () => {
+    const { fake, dataProducts } = await renderPanel();
+    fireEvent.click(within(panel()).getByText('Refresh'));
+    await waitFor(() =>
+      expect(
+        within(panel()).getByText<HTMLButtonElement>('Refresh').disabled,
+      ).toBe(false),
+    );
+    expect(dataProducts.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect([
+      ...(dataProducts.resolveSchemas.mock.calls[0]?.[1] ?? new Map()).keys(),
+    ]).toEqual(['dataProductAccessPoint101']);
+    expect(within(panel()).queryAllByRole('status')).toHaveLength(0);
+
+    dataProducts.resolveSchemas.mockRejectedValueOnce(
+      new Error('Depot unavailable'),
+    );
+    fireEvent.click(within(panel()).getByText('Refresh'));
+    await waitFor(() =>
+      expect(within(panel()).getAllByRole('status')).toHaveLength(1),
+    );
+    // the access point keeps its columns
+    expect(
+      within(panel()).getByRole('table', { name: 'Columns' }),
+    ).not.toBeNull();
+    expect(fake.resolveSchemas).not.toHaveBeenCalled();
   });
 });
