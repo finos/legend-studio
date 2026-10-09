@@ -13,7 +13,7 @@
 | Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644                     |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                      |
 | Step   | M4.1–M4.13 done (Group and Concat complete, Convert types included); the PR is marked ready; M4.14's guides, M4.15, M4.16 and M4.17's folding follow on the open PR (user, 2026-10-09) |
-| Tests  | 2485 core, 1061 builder (core group), 241 Query, 415 builder engine-roundtrip (after M4.13)                                                                                            |
+| Tests  | 2486 core, 1162 builder (core group), 245 Query, 415 builder engine-roundtrip (after the dates warning, on finos master `4f5aab13d`)                                                   |
 
 ## Steps
 
@@ -59,7 +59,9 @@ Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the 
 | Rebase     | `8ae0cadff` | docs: record Legend Cube M4's rebase on master                              |
 | M4.11      | `a997a5cc1` | test: run Legend Cube's Concat on the engine and plan it on each database   |
 | M4.12      | `f277ee542` | feat: add Concat's Rename and Restrict autofixes to Legend Cube             |
-| M4.13      | (this one)  | feat: add Concat's Convert types setting to Legend Cube                     |
+| M4.13      | `6c1bc9ba1` | feat: add Concat's Convert types setting to Legend Cube                     |
+| Rebase     | (none)      | rebased on finos master `4f5aab13d` (#5652, #5651): 17 commits unchanged    |
+| Dates      | (this one)  | feat: warn about Legend Cube's converted dates in Join and Filter           |
 
 ## Step notes
 
@@ -284,6 +286,13 @@ Browser (:9002): Varchar(15) and Varchar(30) to String, applied, 120 rows. Tests
 `wf_0ffa5a38-3f1`, 5 agents). Review: the untyped offer (fixed and pinned), PLAN's bullet (updated), and a converted
 Date comparing as timestamps downstream (open, for the user). Mutants: 78, 74 killed; 3 equivalent, E02e (converted
 types shown where names differ) killed by a new test, as is the untyped offer's guard.
+
+**Dates warning and second rebase (2026-10-09).** The branch was rebased on finos master `4f5aab13d` (#5652, the
+data product sources, and #5651), with no conflict and every commit's patch unchanged, and force-pushed after every
+gate passed. The user chose a warning for a converted Date (review of M4.13): `isDateOrTimestampType` (core) is true
+for the abstract Date only, which only Convert types gives; the Join editor warns on a key pair with such a column on
+either side, and the Filter editor on a condition that compares one with a value. Tests: the helper, both editors
+(the Join's on either input), each warning's mutants killed in the isolated copy.
 
 **After M4.13 (user, 2026-10-09):** the PR is marked ready for review once the changeset and description are updated
 and every gate is green; M4.15's verification, M4.16's video and later checks follow as fixes on the open PR.

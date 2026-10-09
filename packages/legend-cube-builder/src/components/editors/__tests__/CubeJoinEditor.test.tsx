@@ -16,6 +16,7 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  Concat,
   Connection,
   CubeDocument,
   Join,
@@ -31,6 +32,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import { DATE_OR_TIMESTAMP_WARNING } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -444,6 +446,53 @@ describe('Join editor', () => {
     expect(problems()).toEqual([]);
     pick('Right join column 2', 'CITY');
     expect(within(panel()).queryByText(/^type unknown: /u)).toBeNull();
+  });
+
+  test('Warns that a key Convert types made a Date matches timestamps only at midnight', async () => {
+    const P = 'meta::pure::precisePrimitives::';
+    const dates = (id: string, path: string) =>
+      northwindTable(id, 'ORDERS', [
+        new SchemaColumn('WHEN', PrimitiveType.get(path), true),
+      ]);
+    // StrictDate and Timestamp converted to Date, joined to a StrictDate
+    const editorState = await render(
+      new Query(
+        [
+          dates('relational101', 'StrictDate'),
+          dates('relational102', `${P}Timestamp`),
+          new Concat('concat101', true),
+          dates('relational103', 'StrictDate'),
+          new Join('join101', {
+            leftColumns: ['WHEN'],
+            rightColumns: ['WHEN'],
+          }),
+        ],
+        [
+          new Connection('relational101', 'concat101', 'tds1'),
+          new Connection('relational102', 'concat101', 'tds2'),
+          new Connection('concat101', 'join101', 'leftTds'),
+          new Connection('relational103', 'join101', 'rightTds'),
+        ],
+        'join101',
+      ),
+    );
+    await openJoin();
+    expect(within(panel()).getByText(DATE_OR_TIMESTAMP_WARNING)).toBeDefined();
+    expect(problems()).toEqual([]);
+    // the Date on the Right input
+    act(() => editorState.nodeEditor.swapInputs());
+    expect(editorState.document.query.getInputIds('join101')).toEqual([
+      'relational103',
+      'concat101',
+    ]);
+    expect(within(panel()).getByText(DATE_OR_TIMESTAMP_WARNING)).toBeDefined();
+  });
+
+  test('Gives no date warning on keys of precise date types', async () => {
+    await render(ordersJoinCustomers(['ORDER_DATE'], ['CUSTOMER_ID']));
+    await openJoin();
+    pick('Right join column 1', 'CUSTOMER_ID');
+    expect(within(panel()).queryByText(DATE_OR_TIMESTAMP_WARNING)).toBeNull();
   });
 
   test("Shows the picked column's type with its family's icon and its full type in the tooltip", async () => {

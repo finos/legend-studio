@@ -23,6 +23,7 @@ import {
   type FilterRule,
   getAvailableOperators,
   getFilterValueShape,
+  isDateOrTimestampType,
   isExactFloatComparison,
   isFilterOperator,
   MESSAGE_FILTER_UNSUPPORTED,
@@ -33,6 +34,7 @@ import {
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
+  DATE_OR_TIMESTAMP_WARNING,
   FILTER_FLOAT_COMPARISON_HINT,
   FILTER_NULL_NOTE,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -147,6 +149,11 @@ const CubeFilterCondition = observer(
         {type && isExactFloatComparison(rule.operator, type) && (
           <div className="text-sm text-[var(--color-text-secondary)]">
             {FILTER_FLOAT_COMPARISON_HINT}
+          </div>
+        )}
+        {type && shape !== 'none' && isDateOrTimestampType(type) && (
+          <div className="text-sm text-[var(--color-status-warn)]">
+            {DATE_OR_TIMESTAMP_WARNING}
           </div>
         )}
       </li>

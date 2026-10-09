@@ -2830,7 +2830,8 @@ nodes may turn invalid (visible, undoable).
   `@Float`, `@Decimal`, `@Date` and `@DateTime` type and run on H2 ✅); never a relation-level cast, which the engine
   doesn't check 💭. H2 shows a StrictDate unioned with a Timestamp as midnight timestamps ✅ (Join refuses that pair
   as keys), and the converted Date then compares with a StrictDate or a Timestamp downstream (the older rule for an
-  abstract Date), so a Join or Filter on it matches only midnight ✅: open, a warning or a PLAN rule (user). The
+  abstract Date), so a Join or Filter on it matches only midnight ✅: the Join and Filter editors warn (user,
+  2026-10-09; `isDateOrTimestampType`, `DATE_OR_TIMESTAMP_WARNING`). The
   editor never offers Convert types for a column whose real type Cube doesn't know (the database may fail to
   convert it ✅).
 - Autofixes in a core `ConcatAutofix.ts` (as `JoinAutofix.ts`): one query change and one undo step each, the selection

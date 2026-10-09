@@ -145,6 +145,10 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
 export const FILTER_FLOAT_COMPARISON_HINT =
   'exact comparison on floating-point columns may not match';
 
+/** The Filter and Join editors' warning on a column that can hold both dates and timestamps (PLAN §11.5) */
+export const DATE_OR_TIMESTAMP_WARNING =
+  'this column can hold both dates and timestamps, as Convert types made it a Date: a date reads as midnight, so it matches a timestamp only at midnight';
+
 /** The Filter editor's note on NULLs (D4): negated conditions keep them */
 export const FILTER_NULL_NOTE =
   'A negated condition (is not, does not contain, is not in list of, Not) also keeps the rows where its column is empty (NULL).';

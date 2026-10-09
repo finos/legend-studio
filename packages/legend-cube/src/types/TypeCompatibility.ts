@@ -105,6 +105,15 @@ export const areCompatibleTypes = (a: CubeType, b: CubeType): boolean => {
   return classA === classB;
 };
 
+/**
+ * Whether a column of the type can hold both dates and timestamps: the
+ * abstract `Date`, which a Concat that converts a StrictDate and a Timestamp
+ * gives (PLAN §11.5). Its dates read as midnight, so compared with a value or
+ * joined, a date matches a timestamp only at midnight.
+ */
+export const isDateOrTimestampType = (type: CubeType): boolean =>
+  type.family === TypeFamily.DATE;
+
 // the type, then its parents up the registry's hierarchy
 const getAncestors = (type: CubeType): CubeType[] => {
   const ancestors = [type];

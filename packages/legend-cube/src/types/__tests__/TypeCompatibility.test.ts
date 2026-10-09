@@ -26,6 +26,7 @@ import { PRIMITIVE_TYPE_INFOS } from '../PrimitiveTypeRegistry.js';
 import { TypeFamily } from '../TypeFamily.js';
 import {
   areCompatibleTypes,
+  isDateOrTimestampType,
   ComparisonClass,
   getComparisonClass,
   getLeastCommonAncestor,
@@ -227,5 +228,19 @@ describe(unitTest('Least common ancestor'), () => {
       expect(ancestor?.equals(expected)).toBe(true);
       expect(reverse?.equals(expected)).toBe(true);
     }
+  });
+});
+
+describe(unitTest('Dates and timestamps in one column'), () => {
+  test('Is the abstract Date only, which Convert types gives a StrictDate and a Timestamp', () => {
+    const P = 'meta::pure::precisePrimitives::';
+    expect(isDateOrTimestampType(PrimitiveType.get('Date'))).toBe(true);
+    ['StrictDate', 'DateTime', `${P}Timestamp`, 'String', 'Integer'].forEach(
+      (path) =>
+        expect([path, isDateOrTimestampType(PrimitiveType.get(path))]).toEqual([
+          path,
+          false,
+        ]),
+    );
   });
 });
