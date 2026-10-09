@@ -50,6 +50,13 @@ export const LegendMarketplaceTerminalCard = observer(
     const [recommendedItems, setRecommendedItems] = useState<TerminalResult[]>(
       [],
     );
+    // Tracks which item the modal is currently showing add-ons/terminals for.
+    // Defaults to the card's own item, but is updated to the newly selected
+    // terminal when the user picks one from the "Available Terminals" list,
+    // so the modal's title/section correctly switch to the terminal-added
+    // variant instead of remaining on the original add-on's type.
+    const [modalTerminal, setModalTerminal] =
+      useState<TerminalResult>(terminalResult);
 
     const [modalMessage, setModalMessage] = useState<string>('');
     const [modalTotalCount, setModalTotalCount] = useState<
@@ -90,6 +97,7 @@ export const LegendMarketplaceTerminalCard = observer(
           );
         }
         if (result.recommendations && result.recommendations.length > 0) {
+          setModalTerminal(terminalResult);
           setRecommendedItems(result.recommendations);
           setModalMessage(result.message);
           setModalTotalCount(result.totalCount);
@@ -126,6 +134,7 @@ export const LegendMarketplaceTerminalCard = observer(
         responseMessage: string,
         totalCount?: number | null,
       ) => {
+        setModalTerminal(_selectedTerminal);
         setRecommendedItems(recommendations);
         setModalMessage(responseMessage);
         setModalTotalCount(totalCount);
@@ -240,7 +249,7 @@ export const LegendMarketplaceTerminalCard = observer(
         </CardActions>
 
         <RecommendedAddOnsModal
-          terminal={terminalResult}
+          terminal={modalTerminal}
           recommendedItems={recommendedItems}
           message={modalMessage}
           showModal={showRecommendationsModal}

@@ -21,7 +21,6 @@ import {
   type KeyboardEvent,
   useCallback,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import {
@@ -41,7 +40,6 @@ import {
   InputLabel,
   Pagination,
   Divider,
-  CircularProgress,
   type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -57,15 +55,13 @@ import {
   TerminalItemType,
   RecommendationSource,
   SortOrder,
-  TerminalResult,
-  type VendorAddonsSearchResponse,
+  type TerminalResult,
 } from '@finos/legend-server-marketplace';
 import { RecommendedItemsCard } from './RecommendedItemsCard.js';
 import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { CartStore } from '../../stores/cart/CartStore.js';
-import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
-import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { assertErrorThrown } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
@@ -89,7 +85,6 @@ interface RecommendedAddOnsModalProps {
 
 const MAX_DISPLAY_ITEMS_COUNT = 10;
 const ITEMS_PER_PAGE_LIST = [10, 15, 25, 50];
-const SERVER_SEARCH_PAGE_SIZE = 300;
 
 const ACTION_STATUS_OWNED = 'Subscribed';
 const ACTION_STATUS_IN_CART = 'In Cart';
@@ -198,27 +193,20 @@ const ListHeader = (props: ListHeaderProps): JSX.Element => {
 
 const getFilteredAndSortedItems = (
   recommendedItems: TerminalResult[],
-  isTerminalAdded: boolean,
-  terminalSearchResults: TerminalResult[] | undefined,
   searchTerm: string,
   sortOrder: SortOrder | undefined,
 ): TerminalResult[] => {
-  let items: TerminalResult[];
-  if (isTerminalAdded && terminalSearchResults) {
-    items = [...terminalSearchResults];
-  } else {
-    items = [...recommendedItems];
-    if (!isTerminalAdded && searchTerm) {
-      const search = searchTerm.toLowerCase();
-      items = items.filter(
-        (item) =>
-          item.productName.toLowerCase().includes(search) ||
-          item.providerName.toLowerCase().includes(search) ||
-          item.category.toLowerCase().includes(search),
-      );
-    }
+  let items = [...recommendedItems];
+  if (searchTerm) {
+    const search = searchTerm.toLowerCase();
+    items = items.filter(
+      (item) =>
+        item.productName.toLowerCase().includes(search) ||
+        item.providerName.toLowerCase().includes(search) ||
+        item.category.toLowerCase().includes(search),
+    );
   }
-  if (sortOrder && !(isTerminalAdded && terminalSearchResults)) {
+  if (sortOrder) {
     items.sort((a, b) =>
       sortOrder === SortOrder.ASC ? a.price - b.price : b.price - a.price,
     );
@@ -258,120 +246,6 @@ const getEmptyStateMessage = (isTerminalAdded: boolean): string =>
   isTerminalAdded
     ? 'No add-ons available for this terminal.'
     : 'No available terminals for this add-on.';
-
-const useVendorAddonSearch = (
-  terminal: TerminalResult | null,
-  isTerminalAdded: boolean,
-): {
-  terminalSearchResults: TerminalResult[] | undefined;
-  searchTotalCount: number | undefined;
-  isSearching: boolean;
-  triggerSearch: (query: string, sort?: SortOrder) => void;
-  resetSearch: () => void;
-} => {
-  const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
-  const cartUser = legendMarketplaceBaseStore.cartStore.cartUser;
-  const applicationStore = legendMarketplaceBaseStore.applicationStore;
-  const marketplaceServerClient =
-    legendMarketplaceBaseStore.marketplaceServerClient;
-  const [terminalSearchResults, setTerminalSearchResults] = useState<
-    TerminalResult[] | undefined
-  >(undefined);
-  const [searchTotalCount, setSearchTotalCount] = useState<number | undefined>(
-    undefined,
-  );
-  const [isSearching, setIsSearching] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const fetchVendorAddons = useCallback(
-    async (query: string, sort?: SortOrder, signal?: AbortSignal) => {
-      if (!terminal || !isTerminalAdded) {
-        return;
-      }
-      setIsSearching(true);
-      try {
-        const response = (await marketplaceServerClient.searchVendorAddons(
-          cartUser,
-          terminal.providerName,
-          {
-            // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
-            page: 1,
-            page_size: SERVER_SEARCH_PAGE_SIZE,
-            search: query,
-            ...(sort ? { sort_by_price: sort } : {}),
-          },
-          signal,
-        )) as unknown as VendorAddonsSearchResponse;
-        if (!signal?.aborted) {
-          setTerminalSearchResults(
-            response.marketplace_addons.map((item) =>
-              TerminalResult.serialization.fromJson(item),
-            ),
-          );
-          setSearchTotalCount(response.total_count);
-        }
-      } catch (error) {
-        assertErrorThrown(error);
-        if (error.name === 'AbortError') {
-          return;
-        }
-        applicationStore.logService.error(
-          LogEvent.create(
-            LEGEND_MARKETPLACE_APP_EVENT.SEARCH_VENDOR_ADDONS_FAILURE,
-          ),
-          error,
-        );
-        setTerminalSearchResults(undefined);
-      } finally {
-        if (!signal?.aborted) {
-          setIsSearching(false);
-        }
-      }
-    },
-    [
-      terminal,
-      isTerminalAdded,
-      cartUser,
-      marketplaceServerClient,
-      applicationStore.logService,
-    ],
-  );
-
-  const triggerSearch = useCallback(
-    (query: string, sort?: SortOrder) => {
-      abortControllerRef.current?.abort();
-
-      if (!isTerminalAdded || !query.trim()) {
-        setTerminalSearchResults(undefined);
-        setSearchTotalCount(undefined);
-        setIsSearching(false);
-        return;
-      }
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      fetchVendorAddons(query.trim(), sort, controller.signal).catch(
-        applicationStore.alertUnhandledError,
-      );
-    },
-    [isTerminalAdded, fetchVendorAddons, applicationStore.alertUnhandledError],
-  );
-
-  const resetSearch = useCallback(() => {
-    setTerminalSearchResults(undefined);
-    setSearchTotalCount(undefined);
-    setIsSearching(false);
-    abortControllerRef.current?.abort();
-  }, []);
-
-  return {
-    terminalSearchResults,
-    searchTotalCount,
-    isSearching,
-    triggerSearch,
-    resetSearch,
-  };
-};
 
 const isMandatoryItem = (item: TerminalResult): boolean =>
   Boolean(item.isMandatory) && Boolean(item.productName);
@@ -773,14 +647,6 @@ export const RecommendedAddOnsModal = observer(
       [isPermissionOverride],
     );
 
-    const {
-      terminalSearchResults,
-      searchTotalCount,
-      isSearching,
-      triggerSearch,
-      resetSearch,
-    } = useVendorAddonSearch(terminal, isTerminalAdded);
-
     const hasMultipleSources = useMemo(() => {
       const hasCartItems = recommendedItems.some(
         (item) => item.source === RecommendationSource.CART,
@@ -820,25 +686,11 @@ export const RecommendedAddOnsModal = observer(
         searchTerm,
         terminal?.productName ?? '',
       );
-      triggerSearch(searchTerm, sortOrder);
-    }, [searchTerm, sortOrder, triggerSearch, applicationStore, terminal]);
+    }, [searchTerm, applicationStore, terminal]);
 
     const filteredAndSortedItems = useMemo(
-      () =>
-        getFilteredAndSortedItems(
-          recommendedItems,
-          isTerminalAdded,
-          terminalSearchResults,
-          searchTerm,
-          sortOrder,
-        ),
-      [
-        recommendedItems,
-        isTerminalAdded,
-        terminalSearchResults,
-        searchTerm,
-        sortOrder,
-      ],
+      () => getFilteredAndSortedItems(recommendedItems, searchTerm, sortOrder),
+      [recommendedItems, searchTerm, sortOrder],
     );
 
     const categoryOptions = useMemo(
@@ -940,8 +792,7 @@ export const RecommendedAddOnsModal = observer(
       setCategoryFilter(new Set());
       setActionFilter(new Set());
       setLocallyAddedItemIds(new Set());
-      resetSearch();
-    }, [setShowModal, resetSearch]);
+    }, [setShowModal]);
 
     const handleAssociateTerminal = useCallback(
       async (selectedTerminal: TerminalResult): Promise<boolean> => {
@@ -996,11 +847,8 @@ export const RecommendedAddOnsModal = observer(
       (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setSearchTerm(e.target.value);
         setCurrentPage(1);
-        if (!e.target.value.trim()) {
-          resetSearch();
-        }
       },
-      [resetSearch],
+      [],
     );
 
     const handleSearchKeyDown = useCallback(
@@ -1027,9 +875,6 @@ export const RecommendedAddOnsModal = observer(
       );
       setSortOrder(newSortOrder);
       setCurrentPage(1);
-      if (isTerminalAdded && searchTerm.trim() && terminalSearchResults) {
-        triggerSearch(searchTerm, newSortOrder);
-      }
     };
 
     const handlePageChange = (_event: ChangeEvent<unknown>, page: number) => {
@@ -1078,9 +923,7 @@ export const RecommendedAddOnsModal = observer(
     // Pre-compute JSX branches to avoid nested ternary expressions (S3358).
     const hasActiveColumnFilters =
       categoryFilter.size > 0 || actionFilter.size > 0;
-    const baseTotalCount =
-      (terminalSearchResults ? searchTotalCount : initialTotalCount) ??
-      filteredAndSortedItems.length;
+    const baseTotalCount = initialTotalCount ?? filteredAndSortedItems.length;
     const displayTotalCount = hasActiveColumnFilters
       ? columnFilteredItems.length
       : baseTotalCount;
@@ -1154,18 +997,6 @@ export const RecommendedAddOnsModal = observer(
       </>
     );
 
-    const searchContent: JSX.Element = isSearching ? (
-      <Box className="recommended-addons-modal__empty-state recommended-addons-modal__empty-state--searching">
-        <CircularProgress
-          size={24}
-          className="recommended-addons-modal__search-spinner"
-        />
-        <Typography variant="body1">Searching...</Typography>
-      </Box>
-    ) : (
-      itemsOrEmpty
-    );
-
     const nonEmptyContent: JSX.Element =
       isAddOnAssociation && hasMultipleSources ? (
         <MultiSourceContent
@@ -1199,7 +1030,7 @@ export const RecommendedAddOnsModal = observer(
             onSortChange={handleSortChange}
             onItemsPerPageChange={handleItemsPerPageChange}
           />
-          {searchContent}
+          {itemsOrEmpty}
         </>
       );
 
