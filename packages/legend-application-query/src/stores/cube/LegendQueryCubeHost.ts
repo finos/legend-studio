@@ -18,19 +18,25 @@ import {
   buildCubeConnectionExplorer,
   buildCubeDataProductCatalog,
   buildCubeEngine,
+  buildCubeIngestCatalog,
   buildCubeLakehouseEnvironment,
   CubeDataProductEnvironmentType,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
   type CubeDataProductCatalog,
   type CubeEngine,
+  type CubeIngestCatalog,
   type CubeLakehouseServices,
   type CubeEngineConfig,
   type CubeHost,
   LocalModelCatalog,
 } from '@finos/legend-cube-builder';
 import { DepotServerClient } from '@finos/legend-server-depot';
-import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import {
+  LakehouseContractServerClient,
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+} from '@finos/legend-server-lakehouse';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl } from '../../__lib__/LegendQueryNavigation.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
@@ -78,7 +84,21 @@ export const buildLegendQueryCubeLakehouseServices = (
     });
     marketplaceServerClient.setTracerService(tracerService);
   }
+  // ingest data sets need the platform, which names the ingest servers; the
+  // ingest client has no server of its own: each call names one
+  let platformServerClient: LakehousePlatformServerClient | undefined;
+  let ingestServerClient: LakehouseIngestServerClient | undefined;
+  if (config.lakehousePlatformUrl) {
+    platformServerClient = new LakehousePlatformServerClient(
+      config.lakehousePlatformUrl,
+    );
+    platformServerClient.setTracerService(tracerService);
+    ingestServerClient = new LakehouseIngestServerClient(undefined);
+    ingestServerClient.setTracerService(tracerService);
+  }
   return {
+    platformServerClient,
+    ingestServerClient,
     contractServerClient,
     depotServerClient,
     marketplaceServerClient,
@@ -128,6 +148,7 @@ export class LegendQueryCubeHost implements CubeHost {
   readonly modelCatalog: LocalModelCatalog;
   readonly connectionExplorer: CubeConnectionExplorer;
   readonly dataProductCatalog: CubeDataProductCatalog | undefined;
+  readonly ingestCatalog: CubeIngestCatalog | undefined;
 
   /** Tests give an engine and an explorer; otherwise each is built from Query's config */
   constructor(
@@ -138,9 +159,17 @@ export class LegendQueryCubeHost implements CubeHost {
     this.applicationStore = applicationStore;
     const config = buildLegendQueryCubeEngineConfig(applicationStore.config);
     const lakehouse = buildLegendQueryCubeLakehouseServices(applicationStore);
+    this.ingestCatalog = lakehouse
+      ? buildCubeIngestCatalog(
+          config,
+          applicationStore.tracerService,
+          lakehouse,
+        )
+      : undefined;
     this.engine =
       engine ??
       buildCubeEngine(config, applicationStore.tracerService, {
+        ingestCatalog: this.ingestCatalog,
         lakehouseEnvironment: lakehouse
           ? buildCubeLakehouseEnvironment(lakehouse)
           : undefined,

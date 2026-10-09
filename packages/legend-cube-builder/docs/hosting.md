@@ -43,14 +43,26 @@ interface CubeHost {
   point group from their contracts, and the optional `enterpriseStereotype` names the stereotype marking groups open to
   everyone (Legend Query reads `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do).
 
-In Legend Query's config file, data products need `lakehouse.url` and `depot.url`. Two keys are optional:
+- **Ingest data sets (optional, beta):** `buildCubeIngestCatalog(config, tracerService, services)` reads the deployed
+  ingest definitions as Data Cube's producer source does: the lakehouse platform's ingest environment named by the
+  viewer's environment in the class, its producer deployments, a deployment's definitions deployed from SDLC, and a
+  definition's grammar, which the engine Cube uses parses. It needs `services.platformServerClient` and
+  `services.ingestServerClient` (an ingest client with no server of its own: each call names one), and gives none
+  without them. Pass it to `buildCubeEngine` as `ingestCatalog` too, so ingest cubes type and run. Legend Query builds
+  both clients only when `lakehouse.platformUrl` is set.
+
+In Legend Query's config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
+`lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Two keys are optional:
 `marketplace.serverUrl`, for search on the marketplace server, takes the value Legend Marketplace's own config gives
 `marketplace.url`; `extensions.core.dataProductConfig.publicStereotype`, for the "Enterprise access" badge, is the
 stereotype Studio and Marketplace use for groups open to everyone.
 
 ```json
 {
-  "lakehouse": { "url": "<the lakehouse contract server>" },
+  "lakehouse": {
+    "url": "<the lakehouse contract server>",
+    "platformUrl": "<the lakehouse platform>"
+  },
   "marketplace": {
     "url": "<Legend Marketplace, for links>",
     "productionParallelUrl": "<its production-parallel deployment>",
