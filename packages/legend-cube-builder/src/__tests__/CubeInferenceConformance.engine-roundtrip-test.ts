@@ -331,6 +331,41 @@ const ORDERS_AGGREGATIONS = [
   aggregation(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'region'),
 ];
 
+/**
+ * ALLTYPES' columns concatenated with others of its own, converting types,
+ * then grouped with every function each column offers: an Integer (TinyInt
+ * with SmallInt), a Number (BigInt with Float4), a Float (Float4 with Double),
+ * a Decimal, a Date (StrictDate with Timestamp), and K, a Varchar(20) in both
+ */
+const CONVERTED_NAMES = ['I', 'N', 'FL', 'DE', 'W', 'K'];
+const groupOfConverted =
+  (keys: string[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const arms = (): [QueryNode[], QueryNode[]] => [
+      keptAs('101', ['TI', 'BI', 'F', 'DEC', 'DT', 'VC'], CONVERTED_NAMES),
+      keptAs('102', ['SI', 'F', 'D', 'NUM', 'TS', 'VC'], CONVERTED_NAMES),
+    ];
+    const concat = buildSchemasAndValidity(
+      converting(...arms())(sources),
+      createNodeRegistry().queryRules,
+    ).schemas.get('concat101');
+    return converting(
+      ...arms(),
+      new Group('group101', keys, [
+        aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+        ...(concat?.columns ?? []).flatMap((column) =>
+          getAvailableAggregations(column.type).map((fn) =>
+            aggregation(fn, column.name, `${column.name}_${fn}`),
+          ),
+        ),
+      ]),
+    )(sources);
+  };
+const CONVERTED_SUMS_AND_AVERAGES = ['N', 'DE', 'I', 'FL'].flatMap((name) => [
+  `${name}_Sum`,
+  `${name}_Average`,
+]);
+
 const CASES: readonly ConformanceCase[] = [
   { name: 'orders', tables: [ORDERS], build: chain() },
   { name: 'alltypes', tables: [ALLTYPES], build: chain() },
@@ -977,6 +1012,51 @@ const CASES: readonly ConformanceCase[] = [
           ),
         )(sources),
       ),
+  },
+  {
+    // a Group of converted columns (M4.13): Number, Decimal, Date, Integer and
+    // Float, every function each offers, by a key and over all the rows
+    name: 'group-of-converted-types',
+    converted:
+      'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: groupOfConverted(['K']),
+    widerNullable: { group101: CONVERTED_SUMS_AND_AVERAGES },
+  },
+  {
+    name: 'group-by-converted-types',
+    converted:
+      'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: groupOfConverted(['N', 'W']),
+    widerNullable: { group101: CONVERTED_SUMS_AND_AVERAGES },
+  },
+  {
+    // and a String (two Varchar lengths): every function it offers
+    name: 'group-of-a-converted-string',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      keptAs('102', ['COMPANY_NAME', 'CONTACT_NAME'], ['COMPANY_NAME', 'CITY']),
+      new Group(
+        'group101',
+        ['COMPANY_NAME'],
+        [
+          aggregation(AggregationFunction.COUNT, 'CITY', 'CITY_Count'),
+          aggregation(
+            AggregationFunction.DISTINCT_COUNT,
+            'CITY',
+            'CITY_DistinctCount',
+          ),
+          aggregation(
+            AggregationFunction.DISTINCT_VALUE,
+            'CITY',
+            'CITY_DistinctValue',
+          ),
+        ],
+      ),
+    ),
   },
 ];
 

@@ -278,4 +278,10 @@ None hides a known bug.
 - **Long column names on Postgres (💭, not probed).** A Rename (M2.9) accepts new names of up to 128 code points
   (PLAN §11.4), but Postgres cuts identifiers at 63 bytes, so two long names could collide or be cut once a Postgres
   runtime is in use. Suggested check: plan a rename to a name of 64 bytes or more on Postgres, and lower the cap per
-  database if needed.
+  database if needed. Group's auto-names, `<column> <function>`, reach the limit with no name typed (M4.15, plans
+  only): from a 53-byte column, Distinct Count and Distinct Value share their first 63 bytes; from 61 bytes, Min and
+  Max do too; from 62 bytes, every aggregation of the column. Cube accepts both names and the engine passes them on,
+  so Postgres would reject a Sort on either after the Group ("ORDER BY … is ambiguous") and a Concat's outer select
+  ("column reference is ambiguous"); a Filter, Limit or select after the Group is unaffected. A per-database cap on
+  Rename's names wouldn't cover this: a guard has to check every derived output name, a Group's included, and only
+  when the runtime's database is Postgres (the names run on H2).

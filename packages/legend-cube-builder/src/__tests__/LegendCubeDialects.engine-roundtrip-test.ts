@@ -157,6 +157,10 @@ const byCustomerThenOrder = (): Sort =>
 const numberingOrder = (sql: string): string | undefined =>
   /row_number\(\) over \((?<order>[^)]*)\)/u.exec(sql)?.groups?.order;
 
+/** An ORDER BY by the two keys, in order: a sort's, or the over clause of row numbers */
+const SORTED_BY_BOTH_KEYS =
+  /order by [^,)]*customer_id[^,]*,[^,)]*order_id[^,)]* desc/u;
+
 /** Numbered by the two keys, in order */
 const BY_CUSTOMER_THEN_ORDER = /customer_id[^,]*,[^,]*order_id[^,]* desc/u;
 
@@ -499,6 +503,15 @@ const SHAPES: [string, () => Query][] = [
         ],
       ),
   ],
+  [
+    'a Sort after a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+        byCustomerThenOrder(),
+      ),
+  ],
 ];
 
 beforeAll(async () => {
@@ -560,6 +573,11 @@ describe('Database workarounds, as each database plans them', () => {
         const sql = await planSql(shape(), databaseType);
         // the engine's numbering, or Cube's: either way by both keys
         if (name.includes('sorted')) {
+          // the sort is there, by both keys: an ORDER BY, or the over
+          // clause of Cube's row numbers
+          if (!SORTED_BY_BOTH_KEYS.test(sql)) {
+            problems.push(`${name}: no ORDER BY by both keys`);
+          }
           for (const match of sql.matchAll(
             /row_number\(\) over \((?<order>[^)]*)\)/gu,
           )) {
@@ -786,6 +804,23 @@ describe('Database workarounds, as each database plans them', () => {
         }
       });
       expect(unionOf(sql)).not.toContain('order by');
+      // each input still sorted by its keys
+      expect(
+        sql.match(new RegExp(SORTED_BY_BOTH_KEYS.source, 'gu')),
+      ).toHaveLength(2);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Orders the rows of a Sort after a Concat outside the union, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Sort after a Concat'),
+        databaseType,
+      );
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(unionOf(sql)).not.toContain('order by');
+      expect(sql).toMatch(SORTED_BY_BOTH_KEYS);
     },
   );
 

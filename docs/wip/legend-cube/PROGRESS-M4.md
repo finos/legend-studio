@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Branch | `cube-m4` merged on 2026-10-09 as #5649 (`d847e6721`, squashed); the follow-ups are on `cube-m4-followup`, from that merge           |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                    |
-| Step   | M4.1–M4.14 and M4.16 done (M4.1–M4.13 and M4.16 merged in #5649); M4.15 and M4.17 next, on the follow-up PR                          |
+| Step   | M4.1–M4.16 done (M4.1–M4.13 and M4.16 merged in #5649; M4.14 and M4.15 on the follow-up PR); M4.17, PLAN's folding, next             |
 | Tests  | 2486 core, 1162 builder (core group), 245 Query, 415 builder engine-roundtrip (after the dates warning, on finos master `4f5aab13d`) |
 
 ## Steps
@@ -33,7 +33,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.12** Concat's Rename and Restrict autofixes
 - [x] **M4.13** Concat's Convert types setting
 - [x] **M4.14** Docs and changeset
-- [ ] **M4.15** Verification and the browser rehearsal
+- [x] **M4.15** Verification and the browser rehearsal
 - [x] **M4.16** A demo video of M4's features, as for M1 and M2 (PLAN §11.3)
 - [ ] **M4.17** Rebase on the latest master, fold PLAN §11.5's supersessions in, PR when the user asks
 
@@ -65,7 +65,8 @@ the squash merge; the follow-up PR's are its own.
 | Dates      | `c81223a4f` | feat: warn about Legend Cube's converted dates in Join and Filter           |
 | Merge      | `d847e6721` | feat: add Legend Cube's Group and Concat (M4) (#5649), the above squashed   |
 | Merge docs | `04e2054c2` | docs: record Legend Cube M4's merge                                         |
-| M4.14      | (this one)  | docs: cover Legend Cube's Group and Concat in its guides                    |
+| M4.14      | `b10539a23` | docs: cover Legend Cube's Group and Concat in its guides                    |
+| M4.15      | (this one)  | test: close the gaps M4's verification found in Legend Cube                 |
 
 ## Step notes
 
@@ -129,7 +130,7 @@ the unmeasured cells (Min and Max over `Date` give `Date` ✅; evidence `m4-veri
 default branch, now carrying the Count-only types, and a blank-name guard), and 4 had tests added: names that meet
 only when folded (fullwidth, `ß` and `SS`) and the order of the name rules. Also added: Count rows' name rules. Left
 for later steps, in PLAN §11.5's open gaps: M5's functions per use, M4.5's column on a switch to Count rows, and
-auto-names over 128 code points.
+auto-names over 128 code points (settled in M4.5: shown invalid, never cut; recorded in PLAN §11.5 by M4.15).
 
 **M4.4, Group in the core (2026-10-09).** `Group.ts` (keys in stored order, validation in PLAN §11.5's order with
 `validateGroupColumn` exported, the schema of keys then aggregations, `describe()`, no row order), `GroupEmitter.ts`
@@ -317,6 +318,20 @@ fixes as node-editor actions on the query with the draft applied, warnings that 
 Concat's columns in `findColumnOrigins`, and dialect shapes. `testing.md` covers the conformance exemption and
 `converted`, the data a test may rely on, and the Group and Concat plan facts. Both READMEs list Group and Concat. A
 patch changeset for both packages.
+
+**M4.15, verification and the rehearsal (2026-10-09).** Workflow `m415-verify` (run `wf_7615b47a-011`, 16 agents:
+reviewers of the core, the builder, and the engine and tests, then a skeptic per finding; the rehearsal agent re-run
+once after a network error) over the merged code (`d847e6721`). 12 findings: 5 refuted as intended and documented
+(a Group row with no column left out, the editor's Count Rows auto-name, a function its new column doesn't offer kept
+and shown invalid, the column picker's title, the cast pins), 7 confirmed, all fixed: the database test now requires
+each sorted shape's ORDER BY by both keys and two in a Concat of sorted Limits (before, a lost sort passed on 18 of
+19 types); a 'Sort after a Concat' shape, ordered outside the union on every type; conformance cases for a Group of
+the types Convert types gives (Number, Date, abstract Integer, Float, Decimal, String); a grid Group by on a Group
+named 'Count Rows 2'; a hint when a Rename or Restrict needs Convert types ticked (`CONCAT_FIX_NEEDS_CONVERT_TEXT`);
+PLAN records the long auto-name decision (shown invalid, never cut) and the suite's families, and ISSUES' Postgres
+draft covers Group's auto-names. The new tests fail without what they cover (isolated copies). Rehearsal:
+`demo/rehearsal-m4.mjs`, M2's with only the grid menu's order changed and 3 palette and menu checks added, 57/57; the
+demo's 19 checks pass again.
 
 ## Open items
 

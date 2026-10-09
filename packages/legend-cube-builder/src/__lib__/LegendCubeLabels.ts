@@ -194,6 +194,10 @@ export const CONCAT_EDITOR_TEXT =
 export const CONCAT_CONVERT_TYPES_HINT =
   'Converts types that differ within numbers, strings or dates to the type they share, e.g. Varchar(15) and Varchar(40) to String.';
 
+/** What the Concat editor says when a fix would make its inputs match only with Convert types ticked (PLAN §11.5) */
+export const CONCAT_FIX_NEEDS_CONVERT_TEXT =
+  'With Convert types ticked, Cube can rename or drop columns to make the inputs match.';
+
 /** What the Concat editor says when Convert types would make its inputs match (PLAN §11.5, Q5) */
 export const CONCAT_CONVERT_FIX_TEXT =
   'The types differ, but converting them to the type they share makes the inputs match:';
