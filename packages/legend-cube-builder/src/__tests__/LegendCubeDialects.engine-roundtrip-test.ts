@@ -16,18 +16,25 @@
 
 import { beforeAll, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  type ColumnAggregation,
+  ColumnComparisonFilter,
   Connection,
   Distinct,
   Drop,
+  Filter,
+  FilterOperator,
+  Group,
   Limit,
+  printIR,
   Query,
-  type QueryNode,
   QueryEmitter,
+  type QueryNode,
+  Rename,
   Restrict,
   Slice,
   Sort,
   SortDirection,
-  printIR,
 } from '@finos/legend-cube';
 import { stringifyLosslessJSON } from '@finos/legend-shared';
 import {
@@ -202,6 +209,37 @@ const subqueries = (sql: string): string[] => {
   return found;
 };
 
+const aggregation = (
+  fn: AggregationFunction,
+  column: string | undefined,
+  name: string,
+): ColumnAggregation => ({ column, function: fn, name });
+
+/** A Group by SHIP_COUNTRY counting its rows */
+const countriesGroup = (): Group =>
+  new Group(
+    'group101',
+    ['SHIP_COUNTRY'],
+    [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+  );
+
+/** A Group by SHIP_COUNTRY with a reduce of each kind */
+const everyReduceGroup = (): Group =>
+  new Group(
+    'group101',
+    ['SHIP_COUNTRY'],
+    [
+      aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n'),
+      aggregation(
+        AggregationFunction.DISTINCT_COUNT,
+        'CUSTOMER_ID',
+        'customers',
+      ),
+      aggregation(AggregationFunction.AVERAGE, 'ORDER_ID', 'average'),
+      aggregation(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'region'),
+    ],
+  );
+
 const SHAPES: [string, () => Query][] = [
   [
     'a sorted Drop',
@@ -271,6 +309,54 @@ const SHAPES: [string, () => Query][] = [
         new Distinct('distinct101'),
         byCustomerThenOrder(),
         new Limit('limit101', 5),
+      ),
+  ],
+  ['a Group with every reduce', () => ordersThen(everyReduceGroup())],
+  [
+    'a Group of all the rows',
+    () =>
+      ordersThen(
+        new Group(
+          'group101',
+          [],
+          [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+        ),
+      ),
+  ],
+  [
+    'a Group after a sorted Limit',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        new Limit('limit101', 50),
+        countriesGroup(),
+      ),
+  ],
+  [
+    'a Limit after a Group',
+    () => ordersThen(countriesGroup(), new Limit('limit101', 5)),
+  ],
+  [
+    'a Distinct before a Group',
+    () =>
+      ordersThen(
+        new Restrict('restrict101', ['SHIP_CITY', 'SHIP_COUNTRY']),
+        new Distinct('distinct101'),
+        countriesGroup(),
+      ),
+  ],
+  [
+    'a Filter after a Group',
+    () =>
+      ordersThen(
+        countriesGroup(),
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('n', FilterOperator.GREATER_THAN, {
+            kind: 'integer',
+            value: '5',
+          }),
+        ),
       ),
   ],
 ];
@@ -378,6 +464,150 @@ describe('Database workarounds, as each database plans them', () => {
           expect(subquery).toMatch(/\btop\b|\boffset\b/u);
         }
       });
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    "Writes a Group's reduces as count(distinct …), avg(1.0 * …), count(1) and a case for Distinct Value, on %s",
+    async (databaseType) => {
+      const sql = await planSql(
+        (
+          SHAPES.find(
+            ([label]) => label === 'a Group with every reduce',
+          )?.[1] as () => Query
+        )(),
+        databaseType,
+      );
+      expect(sql).toContain('count(distinct');
+      expect(sql).toContain('avg(1.0 *');
+      expect(sql).toContain('count(1)');
+      expect(sql).toMatch(/case when count\(distinct/u);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Turns a Filter after a Group into HAVING, its aggregate inlined, on %s',
+    async (databaseType) => {
+      expect(
+        await planSql(
+          (
+            SHAPES.find(
+              ([label]) => label === 'a Filter after a Group',
+            )?.[1] as () => Query
+          )(),
+          databaseType,
+        ),
+      ).toMatch(/having count\(1\) > 5/u);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Keeps a Distinct before a Group as a select distinct subquery, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        (
+          SHAPES.find(
+            ([label]) => label === 'a Distinct before a Group',
+          )?.[1] as () => Query
+        )(),
+        databaseType,
+      );
+      expect(
+        subqueries(sql).some((subquery) =>
+          subquery.includes('select distinct'),
+        ),
+      ).toBe(true);
+    },
+  );
+
+  test.each(['SqlServer', 'Sybase'])(
+    'Writes no ORDER BY in a subquery under a GROUP BY without its own TOP, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        (
+          SHAPES.find(
+            ([label]) => label === 'a Group after a sorted Limit',
+          )?.[1] as () => Query
+        )(),
+        databaseType,
+      );
+      subqueries(sql).forEach((subquery) => {
+        if (subquery.includes('order by')) {
+          expect(subquery).toMatch(/\btop\b|\boffset\b/u);
+        }
+      });
+    },
+  );
+
+  test("Takes a Limit after a Group by Cube's row numbers on Sybase IQ, never its own", async () => {
+    const sql = await planSql(
+      (
+        SHAPES.find(
+          ([label]) => label === 'a Limit after a Group',
+        )?.[1] as () => Query
+      )(),
+      'SybaseIQ',
+    );
+    expect(sql).toContain('row_number()');
+    expect(sql).not.toContain('limitoffset_via_window_subquery');
+  });
+
+  // After SHIP_COUNTRY is renamed away and SHIP_CITY renamed to SHIP_COUNTRY, a
+  // Group by SHIP_COUNTRY must group by the cities. Some databases are written
+  // GROUP BY the alias while the subquery still has the table's SHIP_COUNTRY
+  // column (ISSUES: the alias shadow); which read it as the column is
+  // inferred, never run. Pinned so a change in the engine shows.
+  const GROUP_BY_AFTER_TWO_RENAMES: Readonly<Record<string, string>> = {
+    H2: 'alias',
+    Postgres: 'position',
+    SqlServer: 'expression',
+    Sybase: 'expression',
+    SybaseIQ: 'alias',
+    DB2: 'expression',
+    MemSQL: 'alias',
+    Spanner: 'alias',
+    Snowflake: 'position',
+    Databricks: 'expression',
+    Oracle: 'expression',
+    Trino: 'expression',
+    Presto: 'expression',
+    Redshift: 'alias',
+    Hive: 'alias',
+    BigQuery: 'alias',
+    Athena: 'expression',
+    ClickHouse: 'alias',
+    Composite: 'alias',
+  };
+
+  test.each(DATABASE_TYPES)(
+    'Groups after two Renames as the engine writes it for %s: by the expression, the position or the alias',
+    async (databaseType) => {
+      const sql = await planSql(
+        ordersThen(
+          new Rename('rename101', [{ from: 'SHIP_COUNTRY', to: 'X' }]),
+          new Rename('rename102', [{ from: 'SHIP_CITY', to: 'SHIP_COUNTRY' }]),
+          new Group(
+            'group101',
+            ['SHIP_COUNTRY'],
+            [aggregation(AggregationFunction.COUNT, 'ORDER_ID', 'n')],
+          ),
+        ),
+        databaseType,
+      );
+      const target =
+        /group by (?<target>[^ ]+)/u.exec(sql)?.groups?.target ?? '';
+      const kind =
+        target === '1'
+          ? 'position'
+          : /ship_city/u.test(target)
+            ? 'expression'
+            : /ship_country/u.test(target)
+              ? 'alias'
+              : target;
+      expect([databaseType, kind]).toEqual([
+        databaseType,
+        GROUP_BY_AFTER_TWO_RENAMES[databaseType],
+      ]);
     },
   );
 });

@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                       |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge                         |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                           |
-| Step   | M4.1–M4.7 done (decisions; conformance; aggregations; Group in the core, the builder, on the engine and in the browser; the grid's Group by); **M4.8 next** |
-| Tests  | 2070 core, 805 builder (core group), 236 Query, 177 builder engine-roundtrip (after M4.7)                                                                   |
+| Item   | State                                                                                                                               |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
+| Step   | M4.1–M4.8 done (Group complete: core, builder, engine, browser, grid's Group by, databases); **M4.9 next** (Concat)                 |
+| Tests  | 2070 core, 805 builder (core group), 236 Query, 262 builder engine-roundtrip (after M4.8)                                           |
 
 ## Steps
 
@@ -26,7 +26,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.5** Group in the builder, and registered
 - [x] **M4.6** Group on the engine and in the browser
 - [x] **M4.7** The grid's 'Group by "X"'
-- [ ] **M4.8** Group around the databases
+- [x] **M4.8** Group around the databases
 - [ ] **M4.9** Concat in the core
 - [ ] **M4.10** Concat in the builder, and registered
 - [ ] **M4.11** Concat on the engine and around the databases
@@ -51,7 +51,8 @@ Filled in as steps land.
 | Video rule | `1f7c21c13` | docs: end every Legend Cube milestone that changes the UI with a demo video |
 | M4.5       | `8165c6598` | feat: add Group by Column to Legend Cube's builder                          |
 | M4.6       | `84c9f999c` | test: run Legend Cube's Group on the engine and in the browser              |
-| M4.7       | (this one)  | feat: add Group by to Legend Cube's grid quick actions                      |
+| M4.7       | `d2e700fa7` | feat: add Group by to Legend Cube's grid quick actions                      |
+| M4.8       | (this one)  | test: pin how each database plans Legend Cube's Group                       |
 
 ## Step notes
 
@@ -175,11 +176,26 @@ Variant, the splice and its undo, the free name), the context menu's order, and 
 to the 830 orders. The existing tests that picked Filter by second now pick it third; the M2 rehearsal script's menu
 check (evidence `demo/rehearsal-m2.mjs`, check j) expects Filter by second and needs the same change before reuse.
 
+**M4.8, Group around the databases (2026-10-09).** No `CUBE_DIALECT_WORKAROUNDS` entry: every plan below came out
+right or is an engine issue Cube can't route around. `LegendCubeDialects.engine-roundtrip-test.ts` gains six Group
+shapes (in `SHAPES`, so the existing checks cover them: numbering by every key, no ClickHouse offset run into a word,
+no Sybase IQ rewrite, no row numbers inside a `select distinct`, no TOP before DISTINCT) and pins on all 19 database
+types: `count(distinct …)`, `avg(1.0 * …)`, `count(1)` for Count rows and a `case` for Distinct Value; a Filter after a
+Group as HAVING with `count(1)` inlined; a Distinct before a Group kept as a `select distinct` subquery; on SQL Server
+and Sybase no ORDER BY in a subquery under a GROUP BY without its TOP; Sybase IQ's Limit after a Group by Cube's row
+numbers. And the alias shadow: after SHIP_COUNTRY is renamed away and SHIP_CITY renamed to SHIP_COUNTRY, ten types
+group by the expression or the position, nine by the alias while the subquery still has the table's SHIP_COUNTRY
+(H2 reads the alias and is right ✅; MemSQL, Redshift and Hive are inferred to group by, or fail on, the other column).
+A `select` before the group doesn't help (the engine folds it in); grouping by a temporary key would, so it is the
+user's call whether Cube works around it. ISSUES drafts: the alias shadow, `max()` over a Boolean for Distinct Value
+(SQL Server, Sybase, Postgres), and SQL Server's `int` sum overflow; all plan-only.
+
 ## Open items
 
 | Item                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Gaps to probe         | ALLTYPES' expected values (M4.6); a Cube-emitted `groupBy` and a widened Concat through the serializer; whether engine errors land on the Group's `aggregation` role or the Concat; how PLAN §7.4's editor without settings carries Concat's autofix buttons before M4.13 gives it a draft; VARIANT or OPAQUE keys, two enumerations, enum rows; Group and Concat SQL on DuckDB; whether `CubeColumnPicker` keeps a stored key order; the PCT manifests (PLAN §11.5, "Risks and open gaps")                                                                                                                                             |
+| Alias shadow          | After renames that reuse a column's old name, nine database types GROUP BY the alias that a subquery column shadows (ISSUES); a workaround (group by a temporary key, then rename) is the user's call                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Grid numbers          | A Sum of a 32-bit REAL column such as FREIGHT shows float noise (`587.9800033569336`); number formatting is M7's (§13)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | cube-direct           | Agree with the cube-direct session which branch lands first; the second rebases. Both touch PLAN.md, PROGRESS.md, the builder's `testing.md` (cube-direct appends "Direct connections"; M4 adds a conformance section beside it) and `hosting.md`, and possibly the builder's `index.ts` and `V1_CubeEngineTestUtils.ts`. M4 leaves `V1_LegendCubeEngine.ts` alone (cube-direct routes `typeLambdas` there for direct models). cube-direct predates M2 and already conflicts with it in PLAN.md, PROGRESS.md, `hosting.md` and `CubeSourceEditor.tsx`. Its samples sit in `fixtures/direct/`, which the corpus engine test doesn't read |
 | QUESTIONS.md U12      | The Group editor question exists only on `cubeV1` and `cube-direct`; copy Q2 and Q3's answers there after those merge                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
