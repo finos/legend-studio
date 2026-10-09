@@ -33,6 +33,10 @@ import {
   createFakeCubeConnectionExplorer,
   type FakeCubeConnectionExplorer,
 } from './FakeCubeConnectionExplorer.js';
+import {
+  createFakeCubeDataProductCatalog,
+  type FakeCubeDataProductCatalog,
+} from './FakeCubeDataProductCatalog.js';
 
 // A bare Legend application for Cube's jsdom tests, as the data-space viewer's
 // tests build theirs: the builder may not use the query builder's test helpers
@@ -69,7 +73,7 @@ export const TEST__createCubeApplicationStore = (
   );
 };
 
-/** A host over a fake engine and a fake connection explorer, with the bundled models */
+/** A host over fakes of the engine, the connection explorer and the data product catalog, with the bundled models */
 export const TEST__createCubeHost = (
   answers?: FakeCubeEngineAnswers,
   applicationStore = TEST__createCubeApplicationStore(),
@@ -77,17 +81,21 @@ export const TEST__createCubeHost = (
   host: CubeHost;
   fake: FakeCubeEngine;
   connections: FakeCubeConnectionExplorer;
+  dataProducts: FakeCubeDataProductCatalog;
 } => {
   const fake = createFakeCubeEngine(answers);
   const connections = createFakeCubeConnectionExplorer();
+  const dataProducts = createFakeCubeDataProductCatalog();
   return {
     host: {
       applicationStore,
       engine: fake.engine,
       modelCatalog: new LocalModelCatalog(fake.engine),
       connectionExplorer: connections.explorer,
+      dataProductCatalog: dataProducts.catalog,
     },
     fake,
     connections,
+    dataProducts,
   };
 };
