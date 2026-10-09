@@ -175,13 +175,14 @@ describe(unitTest('Ingest data set source'), () => {
     expect(failed.describeRedacted()).toBe(failed.describe());
   });
 
-  test('Is its accessor, the definition and the data set, stamped with its node', () => {
+  test('Is its accessor, the definition and the data set, stamped with its node and carrying the URN', () => {
     expect(
       emitIngestDatasetSource(resolvedDataSet('ingestDataset101')),
     ).toStrictEqual({
       k: 'ingestAccessor',
       path: ['sales::ingest::OrdersIngest', 'TRADES'],
       origin: { nodeId: 'ingestDataset101', role: 'accessor' },
+      urn: COORDINATES.ingestDefinitionUrn,
     });
   });
 

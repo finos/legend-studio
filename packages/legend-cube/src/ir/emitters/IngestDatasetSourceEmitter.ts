@@ -18,11 +18,15 @@ import type { IngestDatasetSource } from '../../nodes/sources/IngestDatasetSourc
 import { EmitRole, ingestAccessor, type RelationExpr } from '../CubeIR.js';
 import { originOf } from '../EmitContext.js';
 
-/** An ingest data set is its accessor, `#I{ingestDefinition.dataSet}#` */
+/**
+ * An ingest data set is its accessor, `#I{ingestDefinition.dataSet}#`, which
+ * carries the deployed definition's URN for the host
+ */
 export const emitIngestDatasetSource = (
   node: IngestDatasetSource,
 ): RelationExpr =>
   ingestAccessor(
     [node.ingestDefinition, node.dataSet],
     originOf(node.id, EmitRole.ACCESSOR),
+    node.ingestDefinitionUrn,
   );

@@ -91,6 +91,8 @@ export type IR =
       /** The ingest definition's element path, then the data set's name */
       readonly path: readonly [string, string];
       readonly origin?: Origin;
+      /** The deployed definition's URN, which the host reads it by: not part of the query */
+      readonly urn?: string;
     }
   /** A packageable element, such as the runtime; never a type */
   | { readonly k: 'elementPtr'; readonly path: string }
@@ -244,10 +246,13 @@ export const dataProductAccessor = (
 export const ingestAccessor = (
   path: readonly [string, string],
   origin?: Origin,
-): IR =>
-  origin
-    ? { k: 'ingestAccessor', path, origin }
-    : { k: 'ingestAccessor', path };
+  urn?: string,
+): IR => ({
+  k: 'ingestAccessor',
+  path,
+  ...(origin ? { origin } : {}),
+  ...(urn !== undefined ? { urn } : {}),
+});
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
 
