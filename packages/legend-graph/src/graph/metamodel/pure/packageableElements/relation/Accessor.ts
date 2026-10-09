@@ -109,6 +109,11 @@ export class RelationalStoreAccessor extends Accessor implements Hashable {
    * Whether the path names the schema. `#>{db.TABLE}#` means table `TABLE`
    * in the default schema, as `#>{db.default.TABLE}#` does; this is `false`
    * for the first spelling, so that `path` keeps it as written.
+   *
+   * This is not part of the Pure metamodel: it only records how the path was
+   * written, so that the query is saved back the same way.
+   *
+   * @discrepancy model
    */
   hasExplicitSchema = true;
 
