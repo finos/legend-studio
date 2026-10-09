@@ -212,6 +212,12 @@ export const MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN = (
 export const MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID =
   'Aggregation output name is not valid column name.';
 
+/** Added by Cube: a rank function numbers rows by its window's sort; with none, the database fails with no location (PLAN §11.6) */
+export const MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT = (
+  aggregation: string,
+): string =>
+  `Aggregation function ${quote(aggregation)} requires at least one sort column.`;
+
 export const MESSAGE_SORT_DIRECTION_EMPTY = 'Sort direction cannot be empty.';
 
 export const MESSAGE_SORT_DIRECTION_UNKNOWN = (direction: string): string =>
@@ -272,6 +278,13 @@ export const MESSAGE_GROUP_COLUMN_NOT_GROUPABLE = (
   typeName: string,
 ): string =>
   `Group column ${quote(column)} of type ${typeName} cannot be grouped.`;
+
+/** Added by Cube: VARIANT and a type Cube doesn't know can't be compared, so not partitioned by either (PLAN §11.6) */
+export const MESSAGE_PARTITION_COLUMN_NOT_PARTITIONABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Partition column ${quote(column)} of type ${typeName} cannot be partitioned.`;
 
 /** Added by Cube: Variant and unknown types can't be compared, so not sorted either (PLAN §11.4) */
 export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (

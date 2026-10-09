@@ -12,7 +12,7 @@
 | ------ | --------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656)   |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                               |
-| Step   | M5.1–M5.3 done; next M5.4                                                                                       |
+| Step   | M5.1–M5.4 done; next M5.5                                                                                       |
 | Tests  | 2486 core, 1198 builder (core group), 245 Query, 436 builder engine-roundtrip (after the rebase on `5e424277b`) |
 
 ## Steps
@@ -22,7 +22,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.1** The settled decisions (PLAN §11.6) and this file
 - [x] **M5.2** `let` in the IR, the serializer and the printer
 - [x] **M5.3** The isolation pass in `QueryEmitter`, and the adapter's engine test
-- [ ] **M5.4** The window functions in the aggregation model, and the messages
+- [x] **M5.4** The window functions in the aggregation model, and the messages
 - [ ] **M5.5** Partition in the core
 - [ ] **M5.6** The builder extraction (no behaviour change)
 - [ ] **M5.7** Partition in the builder, and registered
@@ -77,6 +77,13 @@ lambdas never bind. Let names are `n_<id>` lowercased for a short identifier no 
 test-only count window: France's 2 orders up to 10251 count 77 with the let; the single form counts 2 without it and
 77 with it, so the let alone isolates the window; an id like `a-b` runs as `n_1`; the let form types as Cube infers
 it and as the chain does; Show Pure shows the lets; an error inside a let lands on the window it binds.
+
+**M5.4 (2026-10-09).** `WindowRankFunction` (Rank, DenseRank, RowNumber) beside `AggregationFunction`, which is
+unchanged, and an `AggregationUse` (a Group, or a window that knows whether it sorts) that the known-function check,
+the auto-name and `validateColumnAggregation` take, a Group by default. The rank functions take no column, are
+Integer and never empty, are named as shown (`Dense Rank`, `Row Number`) in a window and not at all in a Group, and
+need a sort: checked after the function and the column, before the name. The two Cube messages. Every M4 test passes
+unchanged.
 
 ## Open items
 
