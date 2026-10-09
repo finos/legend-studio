@@ -97,6 +97,12 @@ export interface TransformDefinition<N extends QueryNode = QueryNode>
   ): RelationExpr;
   /** How the saved spec stores the node's own fields */
   readonly spec: NodeSpecCodec<N>;
+  /**
+   * Whether a run binds the node's relation with a `let` when the node isn't
+   * the one captured, so what follows it can't change its rows: a window,
+   * which a later filter would otherwise run before (PLAN §8.6)
+   */
+  readonly isolationBoundary?: boolean;
 }
 
 export interface SourceDefinition<S extends SourceNode = SourceNode>

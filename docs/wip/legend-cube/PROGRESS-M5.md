@@ -12,7 +12,7 @@
 | ------ | --------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656)   |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                               |
-| Step   | M5.1–M5.2 done; next M5.3                                                                                       |
+| Step   | M5.1–M5.3 done; next M5.4                                                                                       |
 | Tests  | 2486 core, 1198 builder (core group), 245 Query, 436 builder engine-roundtrip (after the rebase on `5e424277b`) |
 
 ## Steps
@@ -21,7 +21,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 
 - [x] **M5.1** The settled decisions (PLAN §11.6) and this file
 - [x] **M5.2** `let` in the IR, the serializer and the printer
-- [ ] **M5.3** The isolation pass in `QueryEmitter`, and the adapter's engine test
+- [x] **M5.3** The isolation pass in `QueryEmitter`, and the adapter's engine test
 - [ ] **M5.4** The window functions in the aggregation model, and the messages
 - [ ] **M5.5** Partition in the core
 - [ ] **M5.6** The builder extraction (no behaviour change)
@@ -67,6 +67,16 @@ The full result is `m5-requirements-result.json` in the local evidence folder, w
 is gone, since a block is a lambda with several statements. The serializer writes `letFunction('<name>', <value>)`,
 the name stamped with the let's origin as the engine's own parse places it. The engine parses `printIR`'s let form
 (two window extends bound by a let, a filter on the rank, then `from()`, sort and limit) to Cube's JSON exactly.
+
+**M5.3 (2026-10-09).** `TransformDefinition.isolationBoundary`, and the isolation pass in `QueryEmitter`: a run binds
+each boundary node upstream of the capture with a let, after the lets it reads, and the run lambda becomes
+`{| {| <lets>; <relation>}->from(runtime)->sort(…)->limit(n + 1)}`; without a boundary it is unchanged, and typing
+lambdas never bind. Let names are `n_<id>` lowercased for a short identifier no other let has in any case, else
+`n_<k>`. The requirements' "a window read by two nodes is bound once" can't happen: a node feeds only one other
+(`Query.ts`, PLAN §5.1's invariant 3), so the emitter has no memo. On the engine, through the adapter, with a
+test-only count window: France's 2 orders up to 10251 count 77 with the let; the single form counts 2 without it and
+77 with it, so the let alone isolates the window; an id like `a-b` runs as `n_1`; the let form types as Cube infers
+it and as the chain does; Show Pure shows the lets; an error inside a let lands on the window it binds.
 
 ## Open items
 

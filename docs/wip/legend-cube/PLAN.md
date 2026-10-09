@@ -3198,9 +3198,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
   its consumer's origin. IR `block` is dropped (the protocol has none: a block is a lambda with several statements).
   The serializer writes `letFunction` and `var`; `IRPrinter` prints `{| let n_x = …; <capture>;}`, which the engine
   parses back to the same JSON (a golden test).
-- `TransformDefinition.isolationBoundary` (declared in §4.5, missing from `NodeRegistry.ts`). `QueryEmitter` memoizes
-  emission, binds every boundary node that isn't the capture once, in dependency order (a window feeding both inputs
-  of a Join or Concat is bound once), names it `n_<id>` when the id lowercased matches `[a-z0-9_]{1,28}` and no other
+- `TransformDefinition.isolationBoundary` (declared in §4.5, missing from `NodeRegistry.ts`). `QueryEmitter` binds
+  every boundary node that isn't the capture, after the lets it reads (a node feeds only one other, `Query.ts`, so
+  each is bound once), names it `n_<id>` when the id lowercased matches `[a-z0-9_]{1,28}` and no other
   let has it in any case, else `n_<k>`, never one of the lambda parameters Cube writes (`x`, `row`, `p`, `w`, `r`,
   `y`). An id like `a-b` would break the SQL ✅.
 - The run lambda with lets is `{| <lets>; <capture relation>}->from(rt)->sort(<capture order>)->limit(n + 1)`: one
@@ -3285,7 +3285,7 @@ matrix stays there as a wider check. Integer columns over FREIGHT, whose REAL va
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | M5.1  | This subsection and PROGRESS-M5.md (docs only)                                                                                                                                    | Committed and pushed to #5653                                                                  |
 | M5.2  | `let` in the IR (origin, role), the serializer and `IRPrinter`; `block` dropped                                                                                                   | Unit tests pass; the engine parses the printed let form to Cube's JSON                         |
-| M5.3  | `isolationBoundary`; the isolation pass in `QueryEmitter` (memoized, names, the run lambda's shape), through a test-only window node; an engine test through the adapter          | Every M1–M4 golden unchanged; a let-form run lambda types, runs, renders and maps errors on H2 |
+| M5.3  | `isolationBoundary`; the isolation pass in `QueryEmitter` (lets, names, the run lambda's shape), through a test-only window node; an engine test through the adapter              | Every M1–M4 golden unchanged; a let-form run lambda types, runs, renders and maps errors on H2 |
 | M5.4  | The window functions in the aggregation model, use-aware helpers, the two messages                                                                                                | Every M4 test unchanged; each window cell and message tested                                   |
 | M5.5  | Partition in the core: node, validation, schema, row order, emitter, codec; not registered                                                                                        | `printIR` shows each `over()` form, the split extends and the select; codec round trips pass   |
 | M5.6  | Builder extraction: the column checklist, the sort row and the aggregation row from the Group and Sort editors                                                                    | M4's Group and Sort editor and draft tests pass unchanged                                      |
