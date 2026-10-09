@@ -151,6 +151,10 @@ export enum EmitRole {
   SLICE = 'slice',
   /** a Distinct: its distinct call, and on SQL Server the column that pads it */
   DISTINCT = 'distinct',
+  /** a Group: its groupBy call, or with no key its aggregate call */
+  GROUP = 'group',
+  /** a Group: an aggregation's column read or `1` (Count rows), and its reduce */
+  AGGREGATION = 'aggregation',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
   SORT = 'sort',
   /** a Sort: one of its keys, wherever the order is written */
@@ -211,6 +215,14 @@ export const collection = (values: readonly IR[]): IR => ({
 /** `~name`, or with a function, `~name: x | …` */
 export const colSpec = (name: string, fn1?: IR): IR =>
   fn1 ? { k: 'colSpec', name, fn1 } : { k: 'colSpec', name };
+
+/** `~name: x | … : y | …`, an aggregation: what each row gives, then how the group's values reduce */
+export const aggregationColSpec = (name: string, fn1: IR, fn2: IR): IR => ({
+  k: 'colSpec',
+  name,
+  fn1,
+  fn2,
+});
 
 export const colSpecArray = (specs: readonly IR[]): IR => ({
   k: 'colSpecArray',

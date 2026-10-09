@@ -24,6 +24,7 @@ import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
 import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
+import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
@@ -35,6 +36,7 @@ import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceE
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
+import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
@@ -56,6 +58,7 @@ import {
 import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
+import { Group } from './transforms/Group.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
 import { Rename } from './transforms/Rename.js';
@@ -154,6 +157,18 @@ export const SORT_DEFINITION: TransformDefinition<Sort> = {
   create: (id) => new Sort(id),
   emit: emitSort,
   spec: SORT_CODEC,
+};
+
+/** Group (spec §7.2, PLAN §11.5); registered with the builder's editor, in M4.5 */
+export const GROUP_DEFINITION: TransformDefinition<Group> = {
+  kind: 'transform',
+  type: Group.TYPE,
+  label: 'Group by Column',
+  icon: 'group',
+  beta: false,
+  create: (id) => new Group(id),
+  emit: emitGroup,
+  spec: GROUP_CODEC,
 };
 
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {

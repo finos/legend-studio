@@ -16,20 +16,30 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TEST_DATABASE } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
   FilterOperator,
 } from '../../filter/FilterOperator.js';
 import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
+import type { Query } from '../../graph/Query.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
   ERR_SCHEMAS,
+  MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN,
+  MESSAGE_AGGREGATION_FUNCTION_EMPTY,
+  MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE,
+  MESSAGE_AGGREGATION_FUNCTION_UNKNOWN,
+  MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY,
+  MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN,
   MESSAGE_ALREADY_IN_INPUT_SCHEMA,
+  MESSAGE_ALREADY_IN_OUTPUT_SCHEMA,
   MESSAGE_CANNOT_BE_EMPTY,
   MESSAGE_CANNOT_HAVE_DUPLICATES,
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_DIFFERENT_DATABASES,
+  MESSAGE_DOES_NOT_HAVE_A_NAME,
   MESSAGE_FILTER_EMPTY,
   MESSAGE_FILTER_OPERATOR_UNSUPPORTED,
   MESSAGE_FILTER_VALUE_INVALID,
@@ -42,8 +52,13 @@ import {
   MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
   MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP,
 } from '../../messages/CubeMessages.js';
-import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
+import {
+  createNodeRegistry,
+  type NodeRegistry,
+} from '../../nodes/NodeRegistry.js';
+import type { ColumnAggregation } from '../../nodes/transforms/Aggregation.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { Group } from '../../nodes/transforms/Group.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
 import {
   decodeCubeSpec,
@@ -170,6 +185,29 @@ const restrictSpec = (columns: string[]): JsonObject => ({
   },
 });
 
+/** A saved spec: `relational101` feeding `group101`, which has these keys and aggregations */
+const groupSpec = (
+  columns: string[],
+  aggregations: JsonObject[],
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'group101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'group',
+        id: 'group101',
+        inputs: ['relational101'],
+        columns,
+        aggregations,
+      },
+    ],
+  },
+});
+const COUNT_QTY = { column: 'QTY', function: 'Count', name: 'QTY Count' };
+const COUNT_ROWS = { function: 'CountRows', name: 'Count Rows' };
+
 /** A saved spec: `relational101` feeding `slice101`, which has these bounds, each cleared when undefined */
 const sliceSpec = (
   start: number | undefined,
@@ -238,20 +276,44 @@ const compareSpec = (
   value: JsonValue,
 ): JsonObject => filterSpec({ column, operator, value });
 
+/** The errors inference reports for each node of the query */
+const validityOf = (query: Query): Record<string, readonly string[]> =>
+  Object.fromEntries(
+    buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity,
+  );
+
 /**
  * The errors inference reports for each node of the document the spec holds,
  * which must decode and re-save byte for byte, as JSON and as text
  */
-const errorsOf = (json: JsonObject): Record<string, readonly string[]> => {
-  const { document } = decodeCubeSpec(json);
-  expect(JSON.stringify(encodeCubeSpec(document))).toBe(JSON.stringify(json));
-  const text = JSON.stringify(json, undefined, 2);
-  expect(serializeCubeSpec(parseCubeSpec(text).document)).toBe(text);
-  const { validity } = buildSchemasAndValidity(
-    document.query,
-    createNodeRegistry().queryRules,
+const errorsOf = (
+  json: JsonObject,
+  registry: NodeRegistry = createNodeRegistry(),
+): Record<string, readonly string[]> => {
+  const { document } = decodeCubeSpec(json, { registry });
+  expect(JSON.stringify(encodeCubeSpec(document, registry))).toBe(
+    JSON.stringify(json),
   );
-  return Object.fromEntries(validity);
+  const text = JSON.stringify(json, undefined, 2);
+  expect(
+    serializeCubeSpec(parseCubeSpec(text, { registry }).document, registry),
+  ).toBe(text);
+  return validityOf(document.query);
+};
+
+/** Group is registered in M4.5 (PLAN §11.5): until then its specs are read with a registry that has it */
+const decodeGroupSpec = (json: JsonObject): Query => {
+  const { query } = decodeCubeSpec(json, {
+    registry: TEST__registryWithGroup(),
+  }).document;
+  expect(query.getNode('group101')).toBeInstanceOf(Group);
+  return query;
+};
+
+/** As `errorsOf`, for a spec whose `group101` must be read as a Group */
+const groupErrorsOf = (json: JsonObject): Record<string, readonly string[]> => {
+  decodeGroupSpec(json);
+  return errorsOf(json, TEST__registryWithGroup());
 };
 
 /** The value of the comparison `filter101` holds, as decoded */
@@ -673,6 +735,241 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
     'Reads a document with %s, and reports it through inference',
     (_, json, errors) => {
       expect(errorsOf(json)).toStrictEqual(errors);
+    },
+  );
+});
+
+describe(unitTest('Saved spec validity: groups'), () => {
+  // PLAN §11.5: a group's texts are kept as saved, functions included (Q4),
+  // since an invalid group can't run; each aggregation reports its first
+  // problem
+  const GROUPS: [string, JsonObject, string[]][] = [
+    [
+      'a valid group, its keys listed out of input order',
+      groupSpec(
+        ['COUNTRY', 'QTY'],
+        [
+          COUNT_ROWS,
+          { column: 'FREIGHT', function: 'Sum', name: 'Total freight' },
+        ],
+      ),
+      [],
+    ],
+    ['a valid group with no key', groupSpec([], [COUNT_QTY]), []],
+    [
+      'a group with no aggregation',
+      groupSpec(['COUNTRY'], []),
+      [MESSAGE_CANNOT_BE_EMPTY('Aggregations')],
+    ],
+    [
+      'a group on a column twice',
+      groupSpec(['COUNTRY', 'COUNTRY'], [COUNT_ROWS]),
+      [MESSAGE_CANNOT_HAVE_DUPLICATES('Group columns')],
+    ],
+    [
+      'a group on a blank column',
+      groupSpec([''], [COUNT_ROWS]),
+      [MESSAGE_DOES_NOT_HAVE_A_NAME('Group column')],
+    ],
+    [
+      'a group on a column the input does not have',
+      groupSpec(['SHIPPER'], [COUNT_ROWS]),
+      [MESSAGE_NOT_IN_INPUT_SCHEMA('Group column', 'SHIPPER')],
+    ],
+    [
+      'an unknown function',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'QTY', function: 'Median', name: 'QTY Median' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median')],
+    ],
+    [
+      'a function spelled in another case',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'QTY', function: 'count', name: 'QTY Count' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('count')],
+    ],
+    [
+      'an empty function',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'QTY', function: '', name: 'Quantity' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_EMPTY],
+    ],
+    [
+      // window-only, so unknown in a group (PLAN §11.5, Q4)
+      'Rank',
+      groupSpec(['COUNTRY'], [{ function: 'Rank', name: 'Rank' }]),
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Rank')],
+    ],
+    [
+      'Dense Rank on a column',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'QTY', function: 'DenseRank', name: 'Dense Rank' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('DenseRank')],
+    ],
+    [
+      'Count rows on a column',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'QTY', function: 'CountRows', name: 'Count Rows' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('CountRows')],
+    ],
+    [
+      'Count rows on a blank column',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: '', function: 'CountRows', name: 'Count Rows' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('CountRows')],
+    ],
+    [
+      'an aggregation of a blank column',
+      groupSpec(['COUNTRY'], [{ column: '', function: 'Count', name: 'Rows' }]),
+      [MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column')],
+    ],
+    [
+      'a column function without a column',
+      groupSpec(['COUNTRY'], [{ function: 'Sum', name: 'Sum' }]),
+      [MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column')],
+    ],
+    [
+      'an aggregation of a column the input does not have',
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'SHIPPER', function: 'Count', name: 'SHIPPER Count' }],
+      ),
+      [MESSAGE_NOT_IN_INPUT_SCHEMA('Aggregation column', 'SHIPPER')],
+    ],
+    [
+      "a function the column's type doesn't offer",
+      groupSpec(
+        ['QTY'],
+        [{ column: 'COUNTRY', function: 'Sum', name: 'COUNTRY Sum' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE('Sum', 'COUNTRY')],
+    ],
+    [
+      'an empty output name',
+      groupSpec(['COUNTRY'], [{ ...COUNT_QTY, name: '' }]),
+      [MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY],
+    ],
+    [
+      'an output name that is an input column in another case',
+      groupSpec(['COUNTRY'], [{ ...COUNT_QTY, name: 'qty' }]),
+      [MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN('qty')],
+    ],
+    [
+      'two output names equal but for case',
+      groupSpec(
+        ['COUNTRY'],
+        [
+          { ...COUNT_QTY, name: 'Orders' },
+          { ...COUNT_ROWS, name: 'ORDERS' },
+        ],
+      ),
+      [
+        MESSAGE_ALREADY_IN_OUTPUT_SCHEMA('Aggregation output name', 'Orders'),
+        MESSAGE_ALREADY_IN_OUTPUT_SCHEMA('Aggregation output name', 'ORDERS'),
+      ],
+    ],
+    [
+      'several invalid aggregations beside a valid one',
+      groupSpec(
+        ['COUNTRY'],
+        [
+          { column: 'QTY', function: 'Median', name: 'QTY Median' },
+          COUNT_QTY,
+          { column: 'QTY', function: 'CountRows', name: 'Count Rows' },
+        ],
+      ),
+      [
+        MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+        MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('CountRows'),
+      ],
+    ],
+  ];
+
+  test.each(GROUPS)(
+    'Reads a document with %s, and reports it through inference',
+    (_, json, errors) => {
+      expect(groupErrorsOf(json)).toStrictEqual({
+        relational101: [],
+        group101: errors,
+      });
+    },
+  );
+
+  test('Reads aggregations saved without a name with their auto-names, valid', () => {
+    // PLAN §11.5, Q3: the names are then written (CubeSpecEncode)
+    const query = decodeGroupSpec(
+      groupSpec(
+        ['COUNTRY'],
+        [{ column: 'QTY', function: 'Count' }, { function: 'CountRows' }],
+      ),
+    );
+    expect(
+      (query.getNode('group101') as Group).aggregations.map(({ name }) => name),
+    ).toEqual(['QTY Count', 'Count Rows']);
+    expect(validityOf(query)).toStrictEqual({
+      relational101: [],
+      group101: [],
+    });
+  });
+
+  test.each<[string, JsonObject, string]>([
+    [
+      'an unknown function',
+      { column: 'QTY', function: 'Median' },
+      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+    ],
+    [
+      'a window-only function',
+      { function: 'Rank' },
+      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Rank'),
+    ],
+    [
+      'an empty function',
+      { column: 'QTY', function: '' },
+      MESSAGE_AGGREGATION_FUNCTION_EMPTY,
+    ],
+    [
+      'a column function without a column',
+      { function: 'Sum' },
+      MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column'),
+    ],
+    [
+      'a column function on a blank column',
+      { column: '', function: 'Count' },
+      MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column'),
+    ],
+  ])(
+    'Reads an aggregation saved without a name, with %s, as an empty name, reported once the rest is fixed',
+    (_, saved, message) => {
+      // there is no auto-name to give it (PLAN §11.5, Q3)
+      const query = decodeGroupSpec(groupSpec(['COUNTRY'], [saved]));
+      const group = query.getNode('group101') as Group;
+      const [aggregation] = group.aggregations as [ColumnAggregation];
+      expect(aggregation.name).toBe('');
+      // the aggregation's first problem comes before its name
+      expect(validityOf(query)).toStrictEqual({
+        relational101: [],
+        group101: [message],
+      });
+      const fixed = group.withAggregations([
+        { ...aggregation, column: 'QTY', function: 'Sum' },
+      ]);
+      expect(validityOf(query.replace(fixed))).toStrictEqual({
+        relational101: [],
+        group101: [MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY],
+      });
     },
   );
 });

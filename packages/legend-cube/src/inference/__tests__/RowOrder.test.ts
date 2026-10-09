@@ -16,13 +16,16 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import type { QueryNode } from '../../graph/QueryNode.js';
+import { AggregationFunction } from '../../nodes/transforms/Aggregation.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { Group } from '../../nodes/transforms/Group.js';
 import { Join } from '../../nodes/transforms/Join.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
@@ -226,6 +229,26 @@ describe(unitTest('Row order'), () => {
     expect(orderOf(query, 'join101')).toEqual([]);
   });
 
+  test('Gives a Group no order, even with its input sorted', () => {
+    const query = chain(
+      orders(),
+      byCountryThenId(),
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY', 'ORDER_ID'],
+        [
+          {
+            column: undefined,
+            function: AggregationFunction.COUNT_ROWS,
+            name: 'Count Rows',
+          },
+        ],
+      ),
+    );
+    expect(orderOf(query, 'sort101')).toEqual(COUNTRY_THEN_ID);
+    expect(orderOf(query, 'group101')).toEqual([]);
+  });
+
   test('Leaves the order unknown at an Unknown node and after it, until a Sort', () => {
     const query = chain(
       orders(),
@@ -321,6 +344,30 @@ const joined = (left: QueryNode[], right: QueryNode[]): Query => {
     'join101',
   );
 };
+
+/** Group101 by A, counting rows: valid on any input with A */
+const groupByA = (): Group =>
+  new Group(
+    'group101',
+    ['A'],
+    [
+      {
+        column: undefined,
+        function: AggregationFunction.COUNT_ROWS,
+        name: 'Count Rows',
+      },
+    ],
+  );
+
+/** A node's errors, with the query rules of the registry that has Group */
+const errorsOf = (
+  query: Query,
+  nodeId: string,
+): readonly string[] | undefined =>
+  buildSchemasAndValidity(
+    query,
+    TEST__registryWithGroup().queryRules,
+  ).validity.get(nodeId);
 
 describe(unitTest('Lost sort orders'), () => {
   test.each<[string, QueryNode[]]>([
@@ -509,6 +556,29 @@ describe(unitTest('Lost sort orders'), () => {
         ),
       ),
     ).toEqual({ sort101: { nodeId: 'join101' } });
+  });
+
+  test.each<[string, QueryNode[]]>([
+    ['at the end of the chain', []],
+    ['before a Limit', [new Limit('limit101', 5)]],
+  ])('Names a Group after it as losing the order, %s', (_, after) => {
+    const query = chain(ABC(), byAThenB(), groupByA(), ...after);
+    expect(errorsOf(query, 'group101')).toEqual([]);
+    expect(lossesOf(query)).toEqual({ sort101: { nodeId: 'group101' } });
+  });
+
+  test("Names a Group after a Restrict that dropped some of the keys: the Group's full loss, not the Restrict's partial one", () => {
+    const restricted = [
+      ABC(),
+      byAThenB(),
+      new Restrict('restrict101', ['A', 'C']),
+    ];
+    expect(lossesOf(chain(...restricted))).toEqual({
+      sort101: partial('restrict101', [['restrict101', ['B']]]),
+    });
+    const query = chain(...restricted, groupByA());
+    expect(errorsOf(query, 'group101')).toEqual([]);
+    expect(lossesOf(query)).toEqual({ sort101: { nodeId: 'group101' } });
   });
 
   test('Names the columns as the Sort names them, in its order, through a Rename', () => {

@@ -19,6 +19,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -42,6 +43,7 @@ import {
 } from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
@@ -138,9 +140,14 @@ const filterSpec = (filter: JsonValue): JsonObject => ({
   },
 });
 
-/** The spec text after a decode and an encode */
-const reSave = (json: unknown): string =>
-  JSON.stringify(encodeCubeSpec(decodeCubeSpec(json).document));
+/** The spec text after a decode and an encode with the registry */
+const reSave = (
+  json: unknown,
+  registry: NodeRegistry = createNodeRegistry(),
+): string =>
+  JSON.stringify(
+    encodeCubeSpec(decodeCubeSpec(json, { registry }).document, registry),
+  );
 
 /** The saved node with this id */
 const savedNode = (spec: JsonObject, id: string): JsonValue | undefined =>
@@ -1897,6 +1904,167 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
         id: 'limit101',
         inputs: ['drop101'],
         note: 'top five',
+      }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec: groups, added in M4'), () => {
+  // Group is registered in M4.5 (PLAN §11.5): until then it is read with this registry
+  const GROUP_REGISTRY = TEST__registryWithGroup();
+  /** The registry of the version before M4: every M2 operation, but no Group */
+  const M2_REGISTRY = new NodeRegistry(
+    [...GROUP_REGISTRY.sources, ...GROUP_REGISTRY.transforms].filter(
+      (definition) => definition.type !== Group.TYPE,
+    ),
+  );
+
+  const COUNT_QTY = { column: 'QTY', function: 'Count', name: 'QTY Count' };
+  const COUNT_ROWS = { function: 'CountRows', name: 'Count Rows' };
+
+  /** A saved spec: `relational101` feeding `group101`, by COUNTRY, with these aggregations and other keys */
+  const groupSpec = (
+    aggregations: readonly JsonObject[],
+    other: JsonObject = {},
+  ): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'group101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'group',
+          id: 'group101',
+          inputs: ['relational101'],
+          columns: ['COUNTRY'],
+          aggregations,
+          ...other,
+        },
+      ],
+    },
+  });
+
+  test('Reads a group as an Unknown node in a version without Group, editable, and re-saves it verbatim', () => {
+    // an aggregation saved without a name stays so: only a Group gives it its auto-name
+    const json = groupSpec([COUNT_QTY, { function: 'CountRows' }], {
+      note: 'kept',
+    });
+    const { document, readOnly } = decodeCubeSpec(json, {
+      registry: M2_REGISTRY,
+    });
+    expect(readOnly).toBe(false);
+    const node = document.query.getNode('group101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('group');
+    expect(describeConnections(document.query)).toEqual([
+      'relational101 -> group101.in0',
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, M2_REGISTRY))).toBe(
+      JSON.stringify(json),
+    );
+    // a new node would not take the saved node's id
+    expect(document.query.generateId(Group.TYPE)).not.toBe('group101');
+  });
+
+  test('Reads a group as a Group in this version, its unknown keys kept', () => {
+    const json = groupSpec([COUNT_QTY, COUNT_ROWS], {
+      note: 'kept',
+      zeta: [null, { flag: false }],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: GROUP_REGISTRY,
+    }).document.query.getNode('group101');
+    expect(node).toBeInstanceOf(Group);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(reSave(json, GROUP_REGISTRY)).toBe(JSON.stringify(json));
+  });
+
+  test.each<[string, JsonObject[], JsonObject[]]>([
+    ['its only aggregation', [{ ...COUNT_QTY, distinct: true }], [COUNT_QTY]],
+    [
+      'Count rows',
+      [
+        COUNT_QTY,
+        { ...COUNT_ROWS, where: { column: 'ACTIVE', operator: 'IsEmpty' } },
+      ],
+      [COUNT_QTY, COUNT_ROWS],
+    ],
+    [
+      // the whole node is kept as saved: the aggregation before it gets no name
+      'an aggregation after one saved without a name',
+      [
+        { column: 'QTY', function: 'Sum' },
+        { ...COUNT_QTY, filter: null },
+      ],
+      [{ column: 'QTY', function: 'Sum' }, COUNT_QTY],
+    ],
+  ])(
+    'Keeps a group with a key this version does not know on %s as an Unknown node, re-saved verbatim',
+    (_, aggregations, readable) => {
+      // ignoring the key could change the rows (PLAN §11.5): without it, the
+      // same group is read as a Group
+      expect(
+        decodeCubeSpec(groupSpec(readable), {
+          registry: GROUP_REGISTRY,
+        }).document.query.getNode('group101'),
+      ).toBeInstanceOf(Group);
+      const json = groupSpec(aggregations);
+      const { document } = decodeCubeSpec(json, { registry: GROUP_REGISTRY });
+      const node = document.query.getNode('group101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('group');
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> group101.in0',
+      ]);
+      expect(reSave(json, GROUP_REGISTRY)).toBe(JSON.stringify(json));
+
+      // it is invalid and can't run, but its input can
+      const { validity } = buildSchemasAndValidity(
+        document.query,
+        GROUP_REGISTRY.queryRules,
+      );
+      expect(validity.get('group101')).toEqual(['This graph node is invalid.']);
+      const emitter = new QueryEmitter(document.query, GROUP_REGISTRY);
+      expect(emitter.canEmit('group101')).toBe(false);
+      expect(emitter.canEmit('relational101')).toBe(true);
+    },
+  );
+
+  test('Keeps the unknown keys of a group whose keys or aggregations change', () => {
+    const document = decodeCubeSpec(groupSpec([COUNT_QTY], { note: 'kept' }), {
+      registry: GROUP_REGISTRY,
+    }).document;
+    const group = document.query.getNode('group101') as Group;
+    const saved = (edited: Group): string =>
+      JSON.stringify(
+        savedNode(
+          encodeCubeSpec(
+            document.withQuery(document.query.replace(edited)),
+            GROUP_REGISTRY,
+          ),
+          'group101',
+        ),
+      );
+    const keys = group.withColumns(['COUNTRY', 'QTY']);
+    expect(keys.rest).toEqual({ note: 'kept' });
+    expect(saved(keys)).toBe(
+      JSON.stringify({
+        kind: 'group',
+        id: 'group101',
+        inputs: ['relational101'],
+        columns: ['COUNTRY', 'QTY'],
+        aggregations: [COUNT_QTY],
+        note: 'kept',
+      }),
+    );
+    expect(saved(group.withAggregations([]))).toBe(
+      JSON.stringify({
+        kind: 'group',
+        id: 'group101',
+        inputs: ['relational101'],
+        columns: ['COUNTRY'],
+        aggregations: [],
+        note: 'kept',
       }),
     );
   });

@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
+import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import {
   column,
   enumColumn,
@@ -50,13 +51,20 @@ import {
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
 import {
+  createNodeRegistry,
   DROP_DEFINITION,
+  GROUP_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
+import {
+  AggregationFunction,
+  type ColumnAggregation,
+} from '../../nodes/transforms/Aggregation.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
@@ -142,22 +150,31 @@ const tableSpec = (id: string, tableName: string): JsonObject => ({
  * The document reads back equal (runtime keys aside) from what it saves to,
  * and saving that again gives the same JSON, byte for byte (R137, R143)
  */
-const expectReadBack = (document: CubeDocument): void => {
-  const encoded = encodeCubeSpec(document);
-  const decoded = decodeCubeSpec(encoded).document;
+const expectReadBack = (
+  document: CubeDocument,
+  registry: NodeRegistry = createNodeRegistry(),
+): void => {
+  const encoded = encodeCubeSpec(document, registry);
+  const decoded = decodeCubeSpec(encoded, { registry }).document;
   expect(describeDocument(decoded)).toEqual(describeDocument(document));
-  expect(JSON.stringify(encodeCubeSpec(decoded))).toBe(JSON.stringify(encoded));
+  expect(JSON.stringify(encodeCubeSpec(decoded, registry))).toBe(
+    JSON.stringify(encoded),
+  );
 };
 
 /**
  * The document saves to exactly `expected`, keys in its order (R144), and
  * reads back equal
  */
-const expectEncoded = (document: CubeDocument, expected: JsonObject): void => {
-  const encoded = encodeCubeSpec(document);
+const expectEncoded = (
+  document: CubeDocument,
+  expected: JsonObject,
+  registry: NodeRegistry = createNodeRegistry(),
+): void => {
+  const encoded = encodeCubeSpec(document, registry);
   expect(encoded).toStrictEqual(expected);
   expect(JSON.stringify(encoded)).toBe(JSON.stringify(expected));
-  expectReadBack(document);
+  expectReadBack(document, registry);
 };
 
 /** The schema of a resolved source of a decoded spec */
@@ -1741,6 +1758,254 @@ describe(unitTest('Saved spec encoding: restricts'), () => {
       ),
     ).toStrictEqual(restrictSpec({ columns: ['A'], note: 'n' }));
   });
+});
+
+describe(unitTest('Saved spec encoding: groups'), () => {
+  // Group is registered in M4.5 (PLAN §11.5): until then these pass a registry with it
+  const REGISTRY = TEST__registryWithGroup();
+
+  /** The saved spec of one unconnected group, `group101`, with these fields of its own */
+  const groupSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'group101',
+      nodes: [{ kind: 'group', id: 'group101', inputs: [null], ...own }],
+    },
+  });
+
+  /** A document with this one unconnected group */
+  const groupDocument = (group: Group): CubeDocument =>
+    documentOf([group], [], group.id);
+
+  /** The document a saved spec holds, its `group101` checked to be read as a Group */
+  const decodeGroupSpec = (json: JsonObject): CubeDocument => {
+    const { document } = decodeCubeSpec(json, { registry: REGISTRY });
+    expect(document.query.getNode('group101')).toBeInstanceOf(Group);
+    return document;
+  };
+
+  const aggregationsOf = (
+    document: CubeDocument,
+  ): readonly ColumnAggregation[] =>
+    (document.query.getNode('group101') as Group).aggregations;
+
+  test('Always writes its keys and aggregations, empty lists included', () => {
+    expectEncoded(
+      groupDocument(GROUP_DEFINITION.create('group101')),
+      groupSpec({ columns: [], aggregations: [] }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes each aggregation as column, function, then name, and Count rows without a column', () => {
+    expectEncoded(
+      groupDocument(
+        new Group(
+          'group101',
+          ['SHIP_COUNTRY', 'SHIP_REGION'],
+          [
+            {
+              column: 'ORDER_ID',
+              function: AggregationFunction.COUNT,
+              name: 'ORDER_ID Count',
+            },
+            {
+              column: undefined,
+              function: AggregationFunction.COUNT_ROWS,
+              name: 'Count Rows',
+            },
+            {
+              column: 'FREIGHT',
+              function: AggregationFunction.SUM,
+              name: 'Freight',
+            },
+          ],
+        ),
+      ),
+      groupSpec({
+        columns: ['SHIP_COUNTRY', 'SHIP_REGION'],
+        aggregations: [
+          { column: 'ORDER_ID', function: 'Count', name: 'ORDER_ID Count' },
+          { function: 'CountRows', name: 'Count Rows' },
+          { column: 'FREIGHT', function: 'Sum', name: 'Freight' },
+        ],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes keys and aggregations exactly as held: order, repeats, blanks, and functions it does not know', () => {
+    // validation judges them (PLAN §11.5, Q4); a blank column is kept apart
+    // from none, and Count rows keeps a column it should not have
+    expectEncoded(
+      groupDocument(
+        new Group(
+          'group101',
+          ['SHIP_REGION', 'SHIP_COUNTRY', 'SHIP_COUNTRY', ''],
+          [
+            { column: '', function: 'Count', name: '' },
+            { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+            { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
+            { column: undefined, function: 'Rank', name: 'Rank' },
+            { column: 'ORDER_ID', function: 'CountRows', name: 'Count Rows' },
+            { column: '', function: 'CountRows', name: 'Count Rows' },
+          ],
+        ),
+      ),
+      groupSpec({
+        columns: ['SHIP_REGION', 'SHIP_COUNTRY', 'SHIP_COUNTRY', ''],
+        aggregations: [
+          { column: '', function: 'Count', name: '' },
+          { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+          { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
+          { function: 'Rank', name: 'Rank' },
+          { column: 'ORDER_ID', function: 'CountRows', name: 'Count Rows' },
+          { column: '', function: 'CountRows', name: 'Count Rows' },
+        ],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes the keys and aggregations from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        groupDocument(
+          new Group(
+            'group101',
+            ['A'],
+            [{ column: 'B', function: 'Sum', name: 'Total' }],
+            { columns: ['Z'], aggregations: [], note: 'n' },
+          ),
+        ),
+        REGISTRY,
+      ),
+    ).toStrictEqual(
+      groupSpec({
+        columns: ['A'],
+        aggregations: [{ column: 'B', function: 'Sum', name: 'Total' }],
+        note: 'n',
+      }),
+    );
+  });
+
+  test('Reads back its rest, written after its own keys', () => {
+    expectEncoded(
+      groupDocument(
+        new Group(
+          'group101',
+          [],
+          [{ column: undefined, function: 'CountRows', name: 'Count Rows' }],
+          { note: 'kept', zeta: [null, { flag: false }] },
+        ),
+      ),
+      groupSpec({
+        columns: [],
+        aggregations: [{ function: 'CountRows', name: 'Count Rows' }],
+        note: 'kept',
+        zeta: [null, { flag: false }],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Reads an aggregation saved without a name with its auto-name, and writes the name', () => {
+    // PLAN §11.5, Q3: output names are always stored
+    const document = decodeGroupSpec(
+      groupSpec({
+        columns: ['SHIP_COUNTRY'],
+        aggregations: [
+          { column: 'ORDER_ID', function: 'Count' },
+          { function: 'CountRows' },
+          { column: 'ORDER_ID', function: 'DistinctCount' },
+          { column: 'ORDER_ID', function: 'CountRows' },
+        ],
+      }),
+    );
+    expect(aggregationsOf(document)).toStrictEqual([
+      { column: 'ORDER_ID', function: 'Count', name: 'ORDER_ID Count' },
+      { column: undefined, function: 'CountRows', name: 'Count Rows' },
+      {
+        column: 'ORDER_ID',
+        function: 'DistinctCount',
+        name: 'ORDER_ID Distinct Count',
+      },
+      { column: 'ORDER_ID', function: 'CountRows', name: 'Count Rows' },
+    ]);
+    const saved = encodeCubeSpec(document, REGISTRY);
+    const expected = groupSpec({
+      columns: ['SHIP_COUNTRY'],
+      aggregations: [
+        { column: 'ORDER_ID', function: 'Count', name: 'ORDER_ID Count' },
+        { function: 'CountRows', name: 'Count Rows' },
+        {
+          column: 'ORDER_ID',
+          function: 'DistinctCount',
+          name: 'ORDER_ID Distinct Count',
+        },
+        { column: 'ORDER_ID', function: 'CountRows', name: 'Count Rows' },
+      ],
+    });
+    expect(saved).toStrictEqual(expected);
+    expect(JSON.stringify(saved)).toBe(JSON.stringify(expected));
+    // once written with its names, it saves the same again
+    expect(
+      JSON.stringify(encodeCubeSpec(decodeGroupSpec(saved), REGISTRY)),
+    ).toBe(JSON.stringify(saved));
+  });
+
+  test('Keeps an empty name as written, never giving it the auto-name', () => {
+    const json = groupSpec({
+      columns: [],
+      aggregations: [{ column: 'ORDER_ID', function: 'Count', name: '' }],
+    });
+    const document = decodeGroupSpec(json);
+    expect(aggregationsOf(document)).toStrictEqual([
+      { column: 'ORDER_ID', function: 'Count', name: '' },
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+      JSON.stringify(json),
+    );
+  });
+
+  test.each<[string, JsonObject, JsonObject]>([
+    [
+      'an unknown function',
+      { column: 'ORDER_ID', function: 'Median' },
+      { column: 'ORDER_ID', function: 'Median', name: '' },
+    ],
+    [
+      'a window-only function',
+      { function: 'Rank' },
+      { function: 'Rank', name: '' },
+    ],
+    [
+      'an empty function',
+      { column: 'ORDER_ID', function: '' },
+      { column: 'ORDER_ID', function: '', name: '' },
+    ],
+    [
+      'a column function without a column',
+      { function: 'Sum' },
+      { function: 'Sum', name: '' },
+    ],
+    [
+      'a column function on a blank column',
+      { column: '', function: 'Count' },
+      { column: '', function: 'Count', name: '' },
+    ],
+  ])(
+    'Reads an aggregation saved without a name, with %s and so no auto-name, as an empty name, and writes it',
+    (_, aggregation, written) => {
+      const document = decodeGroupSpec(
+        groupSpec({ columns: [], aggregations: [aggregation] }),
+      );
+      expect(aggregationsOf(document).map(({ name }) => name)).toEqual(['']);
+      expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+        JSON.stringify(groupSpec({ columns: [], aggregations: [written] })),
+      );
+    },
+  );
 });
 
 describe(unitTest('Saved spec encoding: distincts'), () => {

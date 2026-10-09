@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                               |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
-| Step   | M4.1–M4.3 done (the settled decisions; the conformance suite; the aggregation model); **M4.4 next**                                 |
-| Tests  | 1915 core, 750 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.3)                                           |
+| Item   | State                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge    |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                      |
+| Step   | M4.1–M4.4 done (the settled decisions; the conformance suite; the aggregation model; Group in the core, not registered); **M4.5 next** |
+| Tests  | 2069 core, 751 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.4)                                              |
 
 ## Steps
 
@@ -22,7 +22,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.1** The settled decisions (PLAN §11.5) and this file
 - [x] **M4.2** The conformance suite on M2's node types
 - [x] **M4.3** The aggregation model (core)
-- [ ] **M4.4** Group in the core
+- [x] **M4.4** Group in the core
 - [ ] **M4.5** Group in the builder, and registered
 - [ ] **M4.6** Group on the engine and in the browser
 - [ ] **M4.7** The grid's 'Group by "X"'
@@ -45,7 +45,8 @@ Filled in as steps land.
 | M2 merge | `8c1d3f74e` | docs: record Legend Cube M2's merge                              |
 | M4.1     | `95339aeb9` | docs: settle Legend Cube M4 (Group and Concat)                   |
 | M4.2     | `cb6837dd6` | test: hold Legend Cube's inference to the engine's, node by node |
-| M4.3     | (this one)  | feat: add the aggregations Legend Cube's Group will use          |
+| M4.3     | `4c7398dca` | feat: add the aggregations Legend Cube's Group will use          |
+| M4.4     | (this one)  | feat: add Group to Legend Cube's core                            |
 
 ## Step notes
 
@@ -110,6 +111,21 @@ default branch, now carrying the Count-only types, and a blank-name guard), and 
 only when folded (fullwidth, `ß` and `SS`) and the order of the name rules. Also added: Count rows' name rules. Left
 for later steps, in PLAN §11.5's open gaps: M5's functions per use, M4.5's column on a switch to Count rows, and
 auto-names over 128 code points.
+
+**M4.4, Group in the core (2026-10-09).** `Group.ts` (keys in stored order, validation in PLAN §11.5's order with
+`validateGroupColumn` exported, the schema of keys then aggregations, `describe()`, no row order), `GroupEmitter.ts`
+(`groupBy(~[keys], ~[n: x | $x.c : y | $y-><reduce>])`, `aggregate(…)` with no key, Count rows as `x | 1`, roles
+`group` and `aggregation`), `CubeIR.aggregationColSpec`, `GroupCodec.ts` (Q3 and Q4) and `GROUP_DEFINITION`, not in
+`createNodeRegistry()` until M4.5: tests pass `TEST__registryWithGroup()` (`__test-utils__/CubeTestRegistry.ts`).
+Tests by workflow `m44-tests-verify` (5 agents, three writers on disjoint files, then a review and mutants): Group's
+node (55), RowOrder (4: a Sort before a Group is a full loss naming it, even after a Restrict's partial one), the
+emitter (24), the serializer's `function2`, and the four saved-spec suites. The review confirmed the emitted Pure on the
+engine and found two defensive gaps in the emitter, now closed: a Group with no aggregation has its own message, and
+a column function without a column throws instead of counting rows. Mutants: 74 in the isolated copy, 67 killed; of
+the 7 survivors, 2 are equivalent (a guard that only narrows a type; the encoded keys' array identity) and 5 had tests
+or code added (a key repeated in another case, aggregations kept with exactly their three fields, the emitter's three
+guards), each shown to fail its mutant in the copy. Settled: a nameless aggregation with no auto-name is read as `''`
+and its empty name reported once its function and column are valid. The constructor now uses `isStringList`.
 
 ## Open items
 

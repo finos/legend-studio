@@ -15,9 +15,15 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
+import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { CubeDocument } from '../../graph/CubeDocument.js';
-import { FILTER_DEFINITION, NodeRegistry } from '../../nodes/NodeRegistry.js';
+import {
+  createNodeRegistry,
+  FILTER_DEFINITION,
+  NodeRegistry,
+} from '../../nodes/NodeRegistry.js';
+import { Group } from '../../nodes/transforms/Group.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import type { JsonObject } from '../../utils/Json.js';
 import { FILTER_CODEC } from '../codecs/FilterCodec.js';
@@ -50,9 +56,14 @@ const decodeErrorOf = (read: () => unknown): CubeSpecDecodeError => {
   throw new Error('Expected a CubeSpecDecodeError, but the spec was read');
 };
 
-/** Where decoding the JSON fails, and why */
-const failureOf = (json: unknown): [string, string] => {
-  const { path, detail } = decodeErrorOf(() => decodeCubeSpec(json));
+/** Where decoding the JSON with the registry fails, and why */
+const failureOf = (
+  json: unknown,
+  registry: NodeRegistry = createNodeRegistry(),
+): [string, string] => {
+  const { path, detail } = decodeErrorOf(() =>
+    decodeCubeSpec(json, { registry }),
+  );
   return [path, detail];
 };
 
@@ -108,6 +119,19 @@ const JOIN_101 = {
   leftColumns: ['CUSTOMER_ID'],
   rightColumns: ['CUSTOMER_ID'],
 };
+const COUNT_ORDERS = {
+  column: 'ORDER_ID',
+  function: 'Count',
+  name: 'ORDER_ID Count',
+};
+const GROUP_101 = {
+  kind: 'group',
+  id: 'group101',
+  inputs: [null],
+  columns: ['SHIP_COUNTRY'],
+  aggregations: [COUNT_ORDERS, { function: 'CountRows', name: 'Count Rows' }],
+};
+const AGGREGATIONS = 'query.nodes[0].aggregations';
 const ORDER_ID = {
   name: 'ORDER_ID',
   type: { path: 'Integer' },
@@ -144,6 +168,12 @@ const withType = (type: unknown): Record<string, unknown> =>
 /** A document whose one node is this join, `join101` */
 const withJoin = (node: unknown): Record<string, unknown> =>
   withNodes([node], 'join101');
+/** A document whose one node is this group, `group101` */
+const withGroup = (node: unknown): Record<string, unknown> =>
+  withNodes([node], 'group101');
+/** A document whose one node is `group101` with these aggregations */
+const withAggregations = (aggregations: unknown): Record<string, unknown> =>
+  withGroup({ ...GROUP_101, aggregations });
 const withContext = (context: unknown): Record<string, unknown> => ({
   formatVersion: 1,
   context,
@@ -1315,6 +1345,219 @@ describe(unitTest('Saved spec decode errors'), () => {
     ],
   ])('Refuses %s', (_, json, path, detail) => {
     expect(failureOf(json)).toEqual([path, detail]);
+  });
+
+  // Group is registered in M4.5 (PLAN §11.5): until then these pass a registry with it
+  test.each<[string, unknown]>([
+    ['a group', withGroup(GROUP_101)],
+    [
+      'a group with no keys and no aggregations',
+      withGroup({ ...GROUP_101, columns: [], aggregations: [] }),
+    ],
+    [
+      // texts are kept for validation to judge (PLAN §11.5, Q4)
+      'a group whose texts are blank',
+      withGroup({
+        ...GROUP_101,
+        columns: [''],
+        aggregations: [{ column: '', function: '', name: '' }],
+      }),
+    ],
+    [
+      'a group with an unknown function and an aggregation without a name',
+      withAggregations([
+        { column: 'ORDER_ID', function: 'Median', name: 'Median' },
+        { column: 'ORDER_ID', function: 'Sum' },
+      ]),
+    ],
+    [
+      'a group with Count rows on a column',
+      withAggregations([
+        { column: 'ORDER_ID', function: 'CountRows', name: 'n' },
+      ]),
+    ],
+  ])('Reads %s, which the failing cases start from', (_, json) => {
+    const { document, readOnly } = decodeCubeSpec(json, {
+      registry: TEST__registryWithGroup(),
+    });
+    expect(readOnly).toBe(false);
+    expect(document.query.getNode('group101')).toBeInstanceOf(Group);
+  });
+
+  test.each<[string, unknown, string, string]>([
+    [
+      'a group without columns',
+      withGroup({
+        kind: 'group',
+        id: 'group101',
+        inputs: [null],
+        aggregations: [COUNT_ORDERS],
+      }),
+      'query.nodes[0].columns',
+      'is required',
+    ],
+    [
+      'group columns that are not a list',
+      withGroup({ ...GROUP_101, columns: 'SHIP_COUNTRY' }),
+      'query.nodes[0].columns',
+      'must be a list',
+    ],
+    [
+      'group columns set to null',
+      withGroup({ ...GROUP_101, columns: null }),
+      'query.nodes[0].columns',
+      'must be a list',
+    ],
+    [
+      'a group column that is a number',
+      withGroup({ ...GROUP_101, columns: ['SHIP_COUNTRY', 1] }),
+      'query.nodes[0].columns[1]',
+      'must be a string',
+    ],
+    [
+      'a group column set to null',
+      withGroup({ ...GROUP_101, columns: [null] }),
+      'query.nodes[0].columns[0]',
+      'must be a string',
+    ],
+    [
+      'a group without aggregations',
+      withGroup({
+        kind: 'group',
+        id: 'group101',
+        inputs: [null],
+        columns: ['SHIP_COUNTRY'],
+      }),
+      AGGREGATIONS,
+      'is required',
+    ],
+    [
+      'aggregations that are not a list',
+      withAggregations({ ORDER_ID: 'Count' }),
+      AGGREGATIONS,
+      'must be a list',
+    ],
+    [
+      'aggregations set to null',
+      withAggregations(null),
+      AGGREGATIONS,
+      'must be a list',
+    ],
+    [
+      'an aggregation that is a function name',
+      withAggregations(['Count']),
+      `${AGGREGATIONS}[0]`,
+      'must be an object',
+    ],
+    [
+      'an aggregation set to null',
+      withAggregations([COUNT_ORDERS, null]),
+      `${AGGREGATIONS}[1]`,
+      'must be an object',
+    ],
+    [
+      'an aggregation that is a list',
+      withAggregations([['ORDER_ID', 'Count']]),
+      `${AGGREGATIONS}[0]`,
+      'must be an object',
+    ],
+    [
+      'an aggregation without a function',
+      withAggregations([{ column: 'ORDER_ID', name: 'ORDER_ID Count' }]),
+      `${AGGREGATIONS}[0].function`,
+      'is required',
+    ],
+    [
+      'an aggregation function that is a number',
+      withAggregations([{ ...COUNT_ORDERS, function: 1 }]),
+      `${AGGREGATIONS}[0].function`,
+      'must be a string',
+    ],
+    [
+      'an aggregation function set to null',
+      withAggregations([{ ...COUNT_ORDERS, function: null }]),
+      `${AGGREGATIONS}[0].function`,
+      'must be a string',
+    ],
+    [
+      'an aggregation column that is a number',
+      withAggregations([COUNT_ORDERS, { ...COUNT_ORDERS, column: 1 }]),
+      `${AGGREGATIONS}[1].column`,
+      'must be a string',
+    ],
+    [
+      'an aggregation column set to null',
+      withAggregations([{ ...COUNT_ORDERS, column: null }]),
+      `${AGGREGATIONS}[0].column`,
+      'must be a string',
+    ],
+    [
+      'an aggregation name that is a number',
+      withAggregations([{ ...COUNT_ORDERS, name: 1 }]),
+      `${AGGREGATIONS}[0].name`,
+      'must be a string',
+    ],
+    [
+      'an aggregation name set to null',
+      withAggregations([{ ...COUNT_ORDERS, name: null }]),
+      `${AGGREGATIONS}[0].name`,
+      'must be a string',
+    ],
+    [
+      // malformed fields are decode errors even when an aggregation has an unknown key
+      'an aggregation with an unknown key and a function that is a number',
+      withAggregations([{ ...COUNT_ORDERS, function: 1, where: 'QTY > 5' }]),
+      `${AGGREGATIONS}[0].function`,
+      'must be a string',
+    ],
+    [
+      // every entry is read before an unknown key keeps the node as an Unknown node
+      'an aggregation without a function after one with an unknown key',
+      withAggregations([
+        { ...COUNT_ORDERS, where: 'QTY > 5' },
+        { column: 'FREIGHT', name: 'FREIGHT Sum' },
+      ]),
+      `${AGGREGATIONS}[1].function`,
+      'is required',
+    ],
+    [
+      'an aggregation name that is a number after one with an unknown key',
+      withAggregations([
+        { function: 'CountRows', name: 'Count Rows', distinct: true },
+        { ...COUNT_ORDERS, name: 7 },
+      ]),
+      `${AGGREGATIONS}[1].name`,
+      'must be a string',
+    ],
+    [
+      'a group column that is a number beside an aggregation with an unknown key',
+      withGroup({
+        ...GROUP_101,
+        columns: [1],
+        aggregations: [{ ...COUNT_ORDERS, where: 'QTY > 5' }],
+      }),
+      'query.nodes[0].columns[0]',
+      'must be a string',
+    ],
+    [
+      'a group without inputs',
+      withGroup({
+        kind: 'group',
+        id: 'group101',
+        columns: ['SHIP_COUNTRY'],
+        aggregations: [COUNT_ORDERS],
+      }),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a group node, in port order',
+    ],
+    [
+      'a group with two inputs',
+      withGroup({ ...GROUP_101, inputs: [null, null] }),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a group node, in port order',
+    ],
+  ])('Refuses %s', (_, json, path, detail) => {
+    expect(failureOf(json, TEST__registryWithGroup())).toEqual([path, detail]);
   });
 
   test.each<[string, unknown, string, string]>([
