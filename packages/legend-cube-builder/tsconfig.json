@@ -13,6 +13,9 @@
     { "path": "../legend-art" },
     { "path": "../legend-graph" },
     { "path": "../legend-lego" },
-    { "path": "../legend-cube" }
+    { "path": "../legend-cube" },
+    { "path": "../legend-server-depot" },
+    { "path": "../legend-server-lakehouse" },
+    { "path": "../legend-storage" }
   ]
 }
