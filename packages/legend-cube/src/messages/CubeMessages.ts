@@ -92,6 +92,14 @@ export const MESSAGE_DIFFERENT_DATABASES = (
 ): string =>
   `Sources from different databases are not supported yet; ${quote(database)} differs from ${quote(firstDatabase)}.`;
 
+/** Added by Cube: a query reads database tables or data products, never both (PLAN §6.8) */
+export const MESSAGE_TABLE_AFTER_DATA_PRODUCT =
+  'Database tables and data products cannot be mixed in one query; this query reads from data products.';
+
+/** Added by Cube: a query reads database tables or data products, never both (PLAN §6.8) */
+export const MESSAGE_DATA_PRODUCT_AFTER_TABLE =
+  'Database tables and data products cannot be mixed in one query; this query reads from database tables.';
+
 // ---------------------------------------- Join / Difference ----------------------------------------
 
 export const MESSAGE_LEFT_JOIN_COLUMNS_EMPTY =

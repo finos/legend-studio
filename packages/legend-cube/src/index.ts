@@ -37,6 +37,8 @@ export * from './inference/SchemaInference.js';
 export * from './inference/RowOrder.js';
 
 export * from './nodes/sources/RelationalTableSource.js';
+export * from './nodes/sources/DataProductAccessPointSource.js';
+export * from './nodes/sources/ResolvableSource.js';
 export * from './filter/FilterOperator.js';
 export * from './filter/FilterTree.js';
 export * from './filter/FilterBuilder.js';
@@ -60,6 +62,7 @@ export * from './ir/CubeIR.js';
 export * from './ir/EmitContext.js';
 export * from './ir/IRPrinter.js';
 export * from './ir/emitters/RelationalTableSourceEmitter.js';
+export * from './ir/emitters/DataProductAccessPointSourceEmitter.js';
 export * from './ir/emitters/JoinEmitter.js';
 export * from './ir/emitters/FilterEmitter.js';
 export * from './ir/emitters/DistinctEmitter.js';
