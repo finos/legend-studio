@@ -60,7 +60,7 @@ import {
   RelationalOperationElementWithJoin,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 import {
-  type RelationalDataType,
+  RelationalDataType,
   Real,
   Binary,
   Bit,
@@ -85,6 +85,7 @@ import { ColumnMapping } from '../../../../../../../../graph/metamodel/pure/pack
 import { GroupByMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
 import type { JoinReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/JoinReference.js';
 import {
+  type ColumnReference,
   ColumnImplicitReference,
   ColumnExplicitReference,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/ColumnReference.js';
@@ -596,6 +597,8 @@ const buildViewFirstPass = (
   const columns = srcView.columnMappings.map((colMapping) => {
     const col = new Column();
     col.name = colMapping.name;
+    // NOTE: the protocol has no view column types, so this is a placeholder;
+    // see `resolveViewColumnTypes` (second pass)
     col.type = new VarChar(50);
     col.owner = view;
     return col;
@@ -635,6 +638,50 @@ const processFilterMapping = (
     );
   }
   return filterMapping;
+};
+
+/**
+ * View columns are built with a placeholder `VARCHAR(50)` in the first pass.
+ * Once the column mappings are built, a column that maps straight to another
+ * column takes that column's type. It also takes its nullability, unless the
+ * mapping goes through a join, which can produce nulls for a NOT NULL column.
+ *
+ * Every other column keeps the placeholder:
+ * - computed columns (e.g. a function over a column);
+ * - columns over a column with no type (e.g. a Lakehouse generated table);
+ * - columns over a view whose second pass has not run yet (e.g. one declared
+ *   later), since that view's columns still hold the placeholder.
+ */
+const resolveViewColumnTypes = (view: View): void => {
+  view.columnMappings.forEach((columnMapping) => {
+    const column = view.columns.find(
+      (col): col is Column =>
+        col instanceof Column && col.name === columnMapping.columnName,
+    );
+    let operation: RelationalOperationElement | undefined =
+      columnMapping.relationalOperationElement;
+    let throughJoin = false;
+    if (operation instanceof RelationalOperationElementWithJoin) {
+      throughJoin = operation.joinTreeNode !== undefined;
+      operation = operation.relationalOperationElement;
+    }
+    if (!column || !(operation instanceof TableAliasColumn)) {
+      return;
+    }
+    // NOTE: a self-join target (`{target}`) has no column reference
+    const source = (operation.column as ColumnReference | undefined)?.value;
+    if (
+      !source ||
+      !(source.type instanceof RelationalDataType) ||
+      (source.owner instanceof View && !source.owner.columnMappings.length)
+    ) {
+      return;
+    }
+    column.type = source.type;
+    if (!throughJoin) {
+      column.nullable = source.nullable;
+    }
+  });
 };
 
 const buildViewSecondPass = (
@@ -683,6 +730,7 @@ const buildViewSecondPass = (
   }
   view.distinct = srcView.distinct;
   view.columnMappings = columnMappings;
+  resolveViewColumnTypes(view);
   return view;
 };
 
