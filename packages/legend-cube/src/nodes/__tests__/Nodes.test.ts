@@ -197,7 +197,7 @@ describe(unitTest('Node registry'), () => {
     expect(dataProduct).toBe(DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION);
     expect(dataProduct?.label).toBe('Data Product');
     expect(dataProduct?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, then Join
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
@@ -208,12 +208,14 @@ describe(unitTest('Node registry'), () => {
       DROP_DEFINITION,
       LIMIT_DEFINITION,
       SLICE_DEFINITION,
+      CONCAT_DEFINITION,
       JOIN_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('group')).toBe(GROUP_DEFINITION);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
+    expect(registry.get('concat')).toBe(CONCAT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     // the relational sources' database rule, and the one-kind rule once
     expect(registry.queryRules).toHaveLength(2);

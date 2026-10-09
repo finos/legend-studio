@@ -17,11 +17,11 @@
 import { describe, expect, test } from '@jest/globals';
 import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import type { QueryNode } from '../../graph/QueryNode.js';
+import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
@@ -90,9 +90,8 @@ const concatOf = (
     (after.at(-1) ?? concat).id,
   );
 
-/** Concat is registered only in M4.10 (PLAN §11.5): until then, the test registry has it */
 const emitterOf = (query: Query): QueryEmitter =>
-  new QueryEmitter(query, TEST__registryWithConcat());
+  new QueryEmitter(query, createNodeRegistry());
 
 /** The printed relation of the selected node */
 const print = (query: Query, options?: RelationOptions): string =>

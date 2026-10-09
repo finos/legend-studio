@@ -15,10 +15,16 @@
  */
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { CubeDocument, type Join } from '@finos/legend-cube';
+import {
+  ArrowsJoinIcon,
+  LayerGroupIcon,
+  QuestionSquareIcon,
+} from '@finos/legend-art';
+import { Concat, CubeDocument, type Join } from '@finos/legend-cube';
 import {
   act,
   fireEvent,
+  render as renderElement,
   screen,
   waitFor,
   within,
@@ -36,6 +42,7 @@ import {
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { CubePalette } from '../../palette/CubePalette.js';
 import { CubeCanvas } from '../CubeCanvas.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
@@ -50,6 +57,7 @@ const TRANSFORMS = [
   'Drop first <x> rows',
   'Take first <x> rows',
   'Take rows <x> to <y>',
+  'Concatenate Another Input',
   'Join Another Input',
 ];
 const TABLE = 'Relational Database Table';
@@ -206,5 +214,103 @@ describe('Canvas context menu', () => {
     expect(enabledItems(items)).toEqual(['Select']);
     fireEvent.click(items.get('Select') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
+  });
+});
+
+describe('Adding a concat', () => {
+  const CONCAT = 'Concatenate Another Input';
+
+  /** The palette beside the canvas */
+  const renderWithPalette = async (
+    document?: CubeDocument,
+  ): Promise<CubeEditorState> => {
+    const { host } = TEST__createCubeHost();
+    const editorState = new CubeEditorState(host, document);
+    await TEST__renderInCubeApplication(
+      <div style={{ display: 'flex', width: 1000, height: 400 }}>
+        <CubePalette editorState={editorState} />
+        <div style={{ width: 800, height: 400 }}>
+          <CubeCanvas editorState={editorState} />
+        </div>
+      </div>,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.PALETTE,
+    );
+    return editorState;
+  };
+
+  /** The markup inside an icon's svg, which carries no class of its own */
+  const iconMarkup = (element: Element | null): string | undefined =>
+    (element?.tagName.toLowerCase() === 'svg'
+      ? element
+      : element?.querySelector('svg')
+    )?.innerHTML;
+
+  /** The markup inside the svg an icon draws on its own */
+  const drawnIcon = (Icon: React.FC): string | undefined => {
+    const { container, unmount } = renderElement(<Icon />);
+    const markup = iconMarkup(container);
+    unmount();
+    container.remove();
+    return markup;
+  };
+
+  test('Adds a concat that converts no types, from the palette or the canvas menu, drawn with its icon', async () => {
+    const editorState = await renderWithPalette(slice());
+    await TEST__findCanvasNode('join101');
+    const concatIcon = drawnIcon(LayerGroupIcon);
+    expect(concatIcon).toBeDefined();
+    expect(concatIcon).not.toBe(drawnIcon(QuestionSquareIcon));
+    expect(concatIcon).not.toBe(drawnIcon(ArrowsJoinIcon));
+    /** The added concat, checked: a Concat, its types not converted, drawn with the concat icon */
+    const expectConcat = async (nodeId: string): Promise<void> => {
+      const node = editorState.document.query.getNode(nodeId);
+      expect(node instanceof Concat).toBe(true);
+      expect((node as Concat).widenTypes).toBe(false);
+      const drawn = await TEST__findCanvasNode(nodeId);
+      expect(
+        within(drawn).getByText('Concatenate additional input'),
+      ).toBeDefined();
+      expect(iconMarkup(drawn.querySelector('svg'))).toBe(concatIcon);
+    };
+
+    // the palette's item, clicked, adds one on its own
+    const paletteItem = within(
+      screen.getByTestId(LEGEND_CUBE_TEST_ID.PALETTE),
+    ).getByRole('button', { name: CONCAT });
+    expect(iconMarkup(paletteItem.querySelector('svg'))).toBe(concatIcon);
+    fireEvent.click(paletteItem);
+    await expectConcat('concat101');
+    expect(editorState.document.query.getInputIds('concat101')).toEqual([
+      undefined,
+      undefined,
+    ]);
+    expect(editorState.history).toHaveLength(1);
+
+    // the menu of a node adds one after it, the node feeding its First input
+    let items = await openMenu(await TEST__findCanvasNode('join101'));
+    fireEvent.click(items.get(CONCAT) as HTMLButtonElement);
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    await expectConcat('concat102');
+    expect(editorState.document.query.getInputIds('concat102')).toEqual([
+      'join101',
+      undefined,
+    ]);
+    // spliced in before the node the join fed
+    expect(editorState.document.query.getInputIds('filter101')).toEqual([
+      'concat102',
+    ]);
+    expect(editorState.history).toHaveLength(2);
+
+    // the menu around the nodes adds one on its own
+    items = await openMenu(canvasPane());
+    fireEvent.click(items.get(CONCAT) as HTMLButtonElement);
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    await expectConcat('concat103');
+    expect(editorState.document.query.getInputIds('concat103')).toEqual([
+      undefined,
+      undefined,
+    ]);
+    expect(editorState.history).toHaveLength(3);
   });
 });

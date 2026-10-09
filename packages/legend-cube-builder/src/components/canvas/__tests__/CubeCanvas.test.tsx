@@ -20,6 +20,7 @@ import {
   LEGEND_APPLICATION_COLOR_THEME,
 } from '@finos/legend-application';
 import {
+  Concat,
   Connection,
   CubeDocument,
   Filter,
@@ -63,6 +64,7 @@ import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
 import {
+  buildCubeCanvasEdges,
   CUBE_OUTPUT_HANDLE_ID,
   getCubeCanvasNodeStatus,
 } from '../CubeCanvasElements.js';
@@ -133,6 +135,106 @@ describe('Cube canvas', () => {
           )?.groups,
       );
     expect(Number(left?.y)).toBeLessThan(Number(right?.y));
+  });
+
+  test('Labels the two inputs of a concat First and Second by port, not by the order they were connected in, and swaps the labels with Swap Inputs', async () => {
+    const state = await renderCanvas(
+      new CubeDocument({
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+            new Concat('concat101'),
+          ],
+          // the Second input connected first
+          [
+            new Connection('relational102', 'concat101', 'tds2'),
+            new Connection('relational101', 'concat101', 'tds1'),
+          ],
+          'concat101',
+        ),
+      }),
+    );
+    const concat = state.document.query.getNode('concat101');
+    await TEST__findCanvasNode('concat101');
+    await waitFor(() =>
+      expect(document.querySelectorAll('.react-flow__edge')).toHaveLength(2),
+    );
+    expect(
+      Array.from(
+        document.querySelectorAll(
+          '.react-flow__node[data-id="concat101"] .react-flow__handle',
+        ),
+      ).map((handle) => handle.getAttribute('data-handleid')),
+    ).toEqual(['tds1', 'tds2', CUBE_OUTPUT_HANDLE_ID]);
+    /** Each edge's source and port, with its label */
+    const labelled = (): (string | undefined)[][] =>
+      buildCubeCanvasEdges(state.document.query).map((edge) => [
+        edge.source,
+        edge.targetHandle ?? undefined,
+        edge.data?.label,
+      ]);
+    /** Each edge drawn, by id, with the label drawn for it */
+    const drawn = (): (string | null)[][] => {
+      const labels = screen.getAllByTestId(
+        LEGEND_CUBE_TEST_ID.CANVAS_EDGE_LABEL,
+      );
+      return Array.from(document.querySelectorAll('.react-flow__edge')).map(
+        (edge, index) => [
+          edge.getAttribute('data-id'),
+          labels[index]?.textContent ?? null,
+        ],
+      );
+    };
+    /** The labels drawn, top to bottom */
+    const topToBottom = (): (string | null)[] =>
+      screen
+        .getAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_EDGE_LABEL)
+        .map((label): [string | null, number] => [
+          label.textContent,
+          Number(
+            /translate\((?<x>[-\d.]+)px, (?<y>[-\d.]+)px\)$/u.exec(
+              label.style.transform,
+            )?.groups?.y,
+          ),
+        ])
+        .sort(([, a], [, b]) => a - b)
+        .map(([text]) => text);
+    expect(labelled()).toEqual([
+      ['relational102', 'tds2', 'Second'],
+      ['relational101', 'tds1', 'First'],
+    ]);
+    expect(drawn()).toEqual([
+      ['relational102 → concat101 (tds2)', 'Second'],
+      ['relational101 → concat101 (tds1)', 'First'],
+    ]);
+    // each label sits at the input it names: First above Second
+    expect(topToBottom()).toEqual(['First', 'Second']);
+
+    fireEvent.contextMenu(await TEST__findCanvasNode('concat101'));
+    const swap = within(
+      await screen.findByRole('menu'),
+    ).getByRole<HTMLButtonElement>('button', { name: 'Swap Inputs' });
+    expect(swap.disabled).toBe(false);
+    fireEvent.click(swap);
+    expect(state.document.query.getInputIds('concat101')).toEqual([
+      'relational102',
+      'relational101',
+    ]);
+    // a concat has no settings that name its inputs: the node stays as it was
+    expect(state.document.query.getNode('concat101') === concat).toBe(true);
+    expect(state.history).toHaveLength(1);
+    expect(labelled()).toEqual([
+      ['relational102', 'tds1', 'First'],
+      ['relational101', 'tds2', 'Second'],
+    ]);
+    await waitFor(() =>
+      expect(drawn()).toEqual([
+        ['relational102 → concat101 (tds1)', 'First'],
+        ['relational101 → concat101 (tds2)', 'Second'],
+      ]),
+    );
+    expect(topToBottom()).toEqual(['First', 'Second']);
   });
 
   test('Draws every node 200 by 72, with an input handle per port, in port order, and one output', async () => {

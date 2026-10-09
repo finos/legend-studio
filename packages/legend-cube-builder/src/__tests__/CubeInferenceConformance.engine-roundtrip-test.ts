@@ -22,6 +22,7 @@ import {
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
+  Concat,
   Connection,
   createNodeRegistry,
   Distinct,
@@ -135,10 +136,67 @@ const joined =
     );
   };
 
+/** Each arm's nodes, each feeding the next */
+const armConnections = (arm: readonly QueryNode[]): Connection[] =>
+  arm
+    .slice(1)
+    .map(
+      (node, index) =>
+        new Connection(
+          (arm[index] as QueryNode).id,
+          node.id,
+          node.ports[0] as string,
+        ),
+    );
+
+/**
+ * relational101 through the first nodes and relational102 through the second,
+ * concatenated by concat101 (its First and Second), then the nodes after it,
+ * each feeding the next, captured at the last
+ */
+const concatenated =
+  (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+    ...after: QueryNode[]
+  ) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const concat = new Concat('concat101');
+    const arms = [
+      [source(sources, 'relational101'), ...first],
+      [source(sources, 'relational102'), ...second],
+    ];
+    const nodes: QueryNode[] = [concat, ...after];
+    return new Query(
+      [...arms.flat(), ...nodes],
+      [
+        ...arms.flatMap(armConnections),
+        ...arms.map(
+          (arm, side) =>
+            new Connection(
+              (arm.at(-1) as QueryNode).id,
+              concat.id,
+              concat.ports[side] as string,
+            ),
+        ),
+        ...armConnections(nodes),
+      ],
+      nodes.at(-1)?.id,
+    );
+  };
+
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];
 const CUSTOMERS: CaseTable = ['relational102', 'CUSTOMERS'];
 const ALLTYPES: CaseTable = ['relational101', 'ALLTYPES', 'CUBETEST'];
 const ON_CUSTOMER = [['CUSTOMER_ID', 'CUSTOMER_ID']] as const;
+const CUSTOMERS_FIRST: CaseTable = ['relational101', 'CUSTOMERS'];
+const SUPPLIERS: CaseTable = ['relational102', 'SUPPLIERS'];
+const COMPANY_CITY_COUNTRY = ['COMPANY_NAME', 'CITY', 'COUNTRY'];
+/** CUSTOMERS' CUSTOMER_ID and COMPANY_NAME as SHIP_NAME, ORDERS' columns of the same types */
+const customerShipNames = (suffix: string): QueryNode[] => [
+  new Restrict(`restrict${suffix}`, ['CUSTOMER_ID', 'COMPANY_NAME']),
+  new Rename(`rename${suffix}`, [{ from: 'COMPANY_NAME', to: 'SHIP_NAME' }]),
+];
 const ordersByIdDesc = (): Sort =>
   new Sort('sort101', [{ column: 'ORDER_ID', direction: DESC }]);
 
@@ -487,6 +545,91 @@ const CASES: readonly ConformanceCase[] = [
       new Sort('sort101', [{ column: 'VC', direction: ASC }]),
       new Slice('slice101', 0, 2),
     ),
+  },
+  {
+    // the same columns in both: COMPANY_NAME not nullable in either
+    name: 'concat',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: concatenated(
+      [new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+      [new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+    ),
+  },
+  {
+    // nullable when either input's column is: both nullable columns come from
+    // the first input here (ORDERS' CUSTOMER_ID and SHIP_NAME), and from the
+    // second in the reversed case
+    name: 'concat-nullable-from-either',
+    tables: [ORDERS, CUSTOMERS],
+    build: concatenated(
+      [new Restrict('restrict101', ['CUSTOMER_ID', 'SHIP_NAME'])],
+      customerShipNames('102'),
+    ),
+  },
+  {
+    name: 'concat-nullable-from-either-reversed',
+    tables: [CUSTOMERS_FIRST, ['relational102', 'ORDERS']],
+    build: concatenated(customerShipNames('101'), [
+      new Restrict('restrict102', ['CUSTOMER_ID', 'SHIP_NAME']),
+    ]),
+  },
+  {
+    // every type, each column nullable but the key
+    name: 'concat-alltypes',
+    tables: [ALLTYPES, ['relational102', 'ALLTYPES', 'CUBETEST']],
+    build: concatenated([], []),
+  },
+  {
+    // a Sort and a Limit inside the first input; a Group and a Sort after
+    name: 'concat-then-operations',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: concatenated(
+      [
+        new Restrict('restrict101', COMPANY_CITY_COUNTRY),
+        new Sort('sort101', [{ column: 'COMPANY_NAME', direction: DESC }]),
+        new Limit('limit101', 3),
+      ],
+      [new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+      new Group(
+        'group101',
+        ['COUNTRY'],
+        [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'companies')],
+      ),
+      new Sort('sort102', [{ column: 'COUNTRY', direction: ASC }]),
+    ),
+  },
+  {
+    // a Concat of a Concat, on its second input
+    name: 'concat-of-a-concat',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS, ['relational103', 'ORDERS']],
+    build: (sources) => {
+      const inner = concatenated(
+        [new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+        [new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+      )(sources);
+      const orders = source(sources, 'relational103');
+      const restrict = new Restrict('restrict103', [
+        'SHIP_NAME',
+        'SHIP_CITY',
+        'SHIP_COUNTRY',
+      ]);
+      const rename = new Rename('rename103', [
+        { from: 'SHIP_NAME', to: 'COMPANY_NAME' },
+        { from: 'SHIP_CITY', to: 'CITY' },
+        { from: 'SHIP_COUNTRY', to: 'COUNTRY' },
+      ]);
+      const outer = new Concat('concat102');
+      return new Query(
+        [...inner.nodes, orders, restrict, rename, outer],
+        [
+          ...inner.connections,
+          ...armConnections([orders, restrict, rename]),
+          new Connection(rename.id, outer.id, outer.ports[0] as string),
+          new Connection('concat101', outer.id, outer.ports[1] as string),
+        ],
+        outer.id,
+      );
+    },
   },
 ];
 

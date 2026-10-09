@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
-import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -392,10 +391,9 @@ const concatenated = (first: QueryNode[], second: QueryNode[]): Query => {
 
 /** The Concat's errors, with the query rules of the registry that has Concat */
 const concatErrorsOf = (query: Query): readonly string[] | undefined =>
-  buildSchemasAndValidity(
-    query,
-    TEST__registryWithConcat().queryRules,
-  ).validity.get('concat101');
+  buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity.get(
+    'concat101',
+  );
 
 /** Group101 by A, counting rows: valid on any input with A */
 const groupByA = (): Group =>

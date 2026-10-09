@@ -251,7 +251,7 @@ export const SLICE_DEFINITION: TransformDefinition<Slice> = {
   spec: SLICE_CODEC,
 };
 
-/** Concat (spec §7.10, PLAN §11.5); registered with the builder's editor, in M4.10 */
+/** Concat (spec §7.10, PLAN §11.5) */
 export const CONCAT_DEFINITION: TransformDefinition<Concat> = {
   kind: 'transform',
   type: Concat.TYPE,
@@ -336,5 +336,6 @@ export const createNodeRegistry = (): NodeRegistry =>
     DROP_DEFINITION,
     LIMIT_DEFINITION,
     SLICE_DEFINITION,
+    CONCAT_DEFINITION,
     JOIN_DEFINITION,
   ]);

@@ -16,8 +16,10 @@
 
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
+  Concat,
   Connection,
   CubeDocument,
+  Distinct,
   Filter,
   FILTER_DEFINITION,
   Join,
@@ -453,6 +455,95 @@ describe('Node editor panel', () => {
     expect(problems()).toBe(
       'Join columns "ORDER_ID" and "COMPANY_NAME" must be of compatible types.',
     );
+  });
+
+  test('Lists the problems of a transform with nothing to set, with no Apply or Cancel', async () => {
+    // ORDERS then CUSTOMERS, concatenated: 14 columns against 11
+    const editorState = await render(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+            new Concat('concat101'),
+          ],
+          [
+            new Connection('relational101', 'concat101', 'tds1'),
+            new Connection('relational102', 'concat101', 'tds2'),
+          ],
+          'concat101',
+        ),
+      }),
+    );
+    const editor = await openPanel('concat101');
+    const problems = Array.from(
+      within(editor).getByRole('alert', { name: 'Problems' }).children,
+    ).map((problem) => problem.textContent);
+    expect(problems).toEqual([
+      'Both input schemas must be identical.',
+      'The first input has 14 columns and the second 11.',
+    ]);
+    expect(editorState.analysis.validity.get('concat101')).toEqual(problems);
+    expect(within(editor).queryByRole('button', { name: 'Apply' })).toBeNull();
+    expect(within(editor).queryByRole('button', { name: 'Cancel' })).toBeNull();
+    // closing stores nothing
+    fireEvent.click(
+      within(editor).getByRole('button', { name: 'Close the editor' }),
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.history).toHaveLength(0);
+  });
+
+  test('Lists no problems for a Distinct, which has nothing to set and is always valid', async () => {
+    await render(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Distinct('distinct101'),
+          ],
+          [new Connection('relational101', 'distinct101', 'tds')],
+          'distinct101',
+        ),
+      }),
+    );
+    const editor = await openPanel('distinct101');
+    expect(within(editor).getByText('Distinct Values')).toBeDefined();
+    expect(within(editor).queryByRole('alert')).toBeNull();
+  });
+
+  test('Shows a table that failed to resolve once, in its editor, never as a Problem', async () => {
+    const message = `The table "NORTHWIND.NOPE" can't be found`;
+    const editorState = await render(
+      new CubeDocument({
+        query: new Query(
+          [
+            new RelationalTableSource(
+              'relational101',
+              {
+                database: NORTHWIND_DATABASE,
+                schema: 'NORTHWIND',
+                table: 'NOPE',
+              },
+              { kind: 'failed', message },
+            ),
+          ],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    // the source is invalid, with the message the panel must not repeat
+    expect(editorState.analysis.validity.get('relational101')).toEqual([
+      message,
+    ]);
+    const editor = await openPanel('relational101');
+    expect(within(editor).getAllByText(message)).toHaveLength(1);
+    expect(
+      within(editor).queryByRole('alert', { name: 'Problems' }),
+    ).toBeNull();
   });
 
   test("Says an Unknown node can't be edited, with the Unknown help and no Apply or Cancel", async () => {

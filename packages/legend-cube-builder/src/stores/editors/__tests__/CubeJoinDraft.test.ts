@@ -18,15 +18,20 @@ import { describe, expect, test } from '@jest/globals';
 import {
   AggregationFunction,
   buildSchemasAndValidity,
+  Concat,
   Connection,
   Group,
   Join,
   JoinType,
+  MESSAGE_INPUT_SCHEMAS_DIFFER,
   PRIMITIVE_TYPE_PATH,
   PrimitiveType,
+  type QueryNode,
   Query,
+  RelationalTableSource,
   Rename,
   Restrict,
+  Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
 import {
@@ -37,7 +42,10 @@ import {
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
 import { FAKE_NORTHWIND_OUTLINE } from '../../../__test-utils__/FakeCubeEngine.js';
-import type { CubeModelOutline } from '../../../graph-manager/CubeEngine.js';
+import {
+  type CubeModelOutline,
+  CubeTableFlag,
+} from '../../../graph-manager/CubeEngine.js';
 import {
   CubeJoinDraft,
   findColumnOrigins,
@@ -594,6 +602,431 @@ describe("Where a Group's column comes from", () => {
     // a count of it is no value of it
     expect(untyped('group101', 'Ship regions')).toBe(false);
     expect(untyped('group101', 'SHIP_COUNTRY')).toBe(false);
+    expect(untyped('join101', 'REGION')).toBe(false);
+  });
+});
+
+describe("Where a Concat's column comes from", () => {
+  /** A table of the fixture's CUBETEST schema, typed as the engine types it */
+  const cubetestTable = (
+    id: string,
+    name: string,
+    columns: SchemaColumn[],
+  ): RelationalTableSource =>
+    new RelationalTableSource(
+      id,
+      { database: NORTHWIND_DATABASE, schema: 'CUBETEST', table: name },
+      { kind: 'resolved', schema: new Schema(columns) },
+    );
+
+  /** CUBETEST.CUST_REGION, CUSTOMERS' key and region */
+  const custRegion = (id: string): RelationalTableSource =>
+    cubetestTable(
+      id,
+      'CUST_REGION',
+      CUSTOMERS_COLUMNS.filter(({ name }) =>
+        ['CUSTOMER_ID', 'REGION'].includes(name),
+      ),
+    );
+
+  /** CUBETEST.PROBLEM_OTHER's columns: O is an OTHER column, so the engine types it a bare String */
+  const PROBLEM_OTHER_COLUMNS = [
+    new SchemaColumn('ID', PrimitiveType.get(PRIMITIVE_TYPE_PATH.INT), false),
+    new SchemaColumn('O', PrimitiveType.get(PRIMITIVE_TYPE_PATH.STRING), true),
+  ];
+
+  const problemOther = (id: string): RelationalTableSource =>
+    cubetestTable(id, 'PROBLEM_OTHER', PROBLEM_OTHER_COLUMNS);
+
+  /** A table typed as PROBLEM_OTHER is, but whose O is a real String (no such table in the fixture) */
+  const typedOther = (id: string): RelationalTableSource =>
+    cubetestTable(id, 'TYPED_O', PROBLEM_OTHER_COLUMNS);
+
+  /** ORDERS' customer and ship city */
+  const ordersCities = (): QueryNode[] => [
+    northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+    new Restrict('restrict101', ['CUSTOMER_ID', 'SHIP_CITY']),
+  ];
+
+  /** CUSTOMERS' key and city, the city renamed as ORDERS names its ship city */
+  const customersCities = (): QueryNode[] => [
+    northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+    new Restrict('restrict102', ['CUSTOMER_ID', 'CITY']),
+    new Rename('rename101', [{ from: 'CITY', to: 'SHIP_CITY' }]),
+  ];
+
+  /** Each node of the chain feeding the next */
+  const chained = (nodes: readonly QueryNode[]): Connection[] =>
+    nodes
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection((nodes[index] as QueryNode).id, node.id, 'tds'),
+      );
+
+  const lastId = (nodes: readonly QueryNode[]): string =>
+    (nodes[nodes.length - 1] as QueryNode).id;
+
+  /**
+   * Each chain, its nodes one after another, the last feeding the Concat's
+   * First or Second input; the Second's connection is listed first, as the
+   * inputs are told by port
+   */
+  const concatParts = (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+  ): { nodes: QueryNode[]; connections: Connection[] } => ({
+    nodes: [...first, ...second, new Concat('concat101')],
+    connections: [
+      ...chained(first),
+      ...chained(second),
+      new Connection(lastId(second), 'concat101', 'tds2'),
+      new Connection(lastId(first), 'concat101', 'tds1'),
+    ],
+  });
+
+  /** The two chains concatenated, captured at the concat */
+  const concatenated = (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+  ): Query => {
+    const { nodes, connections } = concatParts(first, second);
+    return new Query(nodes, connections, 'concat101');
+  };
+
+  /** The concat on the Left of an INNER join with this table, on these keys, captured at the join */
+  const joinedAfter = (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+    right: QueryNode,
+    leftColumns: string[],
+    rightColumns: string[],
+  ): Query => {
+    const { nodes, connections } = concatParts(first, second);
+    return new Query(
+      [
+        ...nodes,
+        right,
+        new Join('join101', {
+          leftColumns,
+          rightColumns,
+          joinType: JoinType.INNER,
+        }),
+      ],
+      [
+        ...connections,
+        new Connection('concat101', 'join101', 'leftTds'),
+        new Connection(right.id, 'join101', 'rightTds'),
+      ],
+      'join101',
+    );
+  };
+
+  /** Each table column the node's output column comes from, as [table source id, column] */
+  const originsOf = (
+    query: Query,
+    nodeId: string,
+    column: string,
+  ): string[][] =>
+    findColumnOrigins(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((origin) => [origin.source.id, origin.column]);
+
+  const sourcesOf = (query: Query, nodeId: string, column: string): string[] =>
+    findColumnSources(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((source) => source.id);
+
+  /** The fixture's CUBETEST tables as the outline lists them, PROBLEM_OTHER's O untyped */
+  const OUTLINE: CubeModelOutline = {
+    ...FAKE_NORTHWIND_OUTLINE,
+    databases: [
+      {
+        path: NORTHWIND_DATABASE,
+        schemas: [
+          ...(FAKE_NORTHWIND_OUTLINE.databases[0]?.schemas ?? []),
+          {
+            name: 'CUBETEST',
+            tables: [
+              {
+                name: 'PROBLEM_OTHER',
+                isView: false,
+                columnCount: 2,
+                flags: [CubeTableFlag.TYPE_UNKNOWN],
+                untypedColumns: ['O'],
+              },
+              {
+                name: 'TYPED_O',
+                isView: false,
+                columnCount: 2,
+                flags: [],
+                untypedColumns: [],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  test('Follows a column of a valid Concat back to its table in both inputs, in port order, the same name at the same position', () => {
+    const query = concatenated(
+      [
+        northwindTable('relational101', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Restrict('restrict101', ['CUSTOMER_ID', 'REGION']),
+      ],
+      [custRegion('relational102')],
+    );
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('concat101')).toEqual([]);
+    expect(analysis.schemas.get('concat101')?.names()).toEqual([
+      'CUSTOMER_ID',
+      'REGION',
+    ]);
+    // the First input's connection is listed last
+    expect(query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'relational102',
+    ]);
+    expect(originsOf(query, 'concat101', 'REGION')).toEqual([
+      ['relational101', 'REGION'],
+      ['relational102', 'REGION'],
+    ]);
+    expect(sourcesOf(query, 'concat101', 'CUSTOMER_ID')).toEqual([
+      'relational101',
+      'relational102',
+    ]);
+    // a column the Restrict dropped, and so the concat's output doesn't have
+    expect(originsOf(query, 'concat101', 'CITY')).toEqual([]);
+    // the inputs swapped, the Second's table comes first
+    const swapped = query.swapInputs('concat101');
+    expect(buildSchemasAndValidity(swapped).validity.get('concat101')).toEqual(
+      [],
+    );
+    expect(originsOf(swapped, 'concat101', 'REGION')).toEqual([
+      ['relational102', 'REGION'],
+      ['relational101', 'REGION'],
+    ]);
+  });
+
+  test("Follows a column of a Concat back through a Restrict and a Rename inside an input, to that table's own name for it", () => {
+    const query = concatenated(ordersCities(), customersCities());
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('concat101')).toEqual([]);
+    expect(analysis.schemas.get('concat101')?.names()).toEqual([
+      'CUSTOMER_ID',
+      'SHIP_CITY',
+    ]);
+    expect(originsOf(query, 'concat101', 'SHIP_CITY')).toEqual([
+      ['relational101', 'SHIP_CITY'],
+      ['relational102', 'CITY'],
+    ]);
+    expect(originsOf(query, 'concat101', 'CUSTOMER_ID')).toEqual([
+      ['relational101', 'CUSTOMER_ID'],
+      ['relational102', 'CUSTOMER_ID'],
+    ]);
+    expect(sourcesOf(query, 'concat101', 'SHIP_CITY')).toEqual([
+      'relational101',
+      'relational102',
+    ]);
+    // the concat's output has the First input's names, not the Second table's
+    expect(originsOf(query, 'concat101', 'CITY')).toEqual([]);
+  });
+
+  test("Finds no table for a column of a Concat whose inputs don't match, which has no output", () => {
+    const cases: [string, Query][] = [
+      // 14 columns and 11
+      [
+        'a column count',
+        concatenated(
+          [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS)],
+          [northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS)],
+        ),
+      ],
+      // SHIP_CITY and CITY at position 2
+      ['a name', concatenated(ordersCities(), customersCities().slice(0, 2))],
+      // EMPLOYEE_ID a SmallInt in the First, a Varchar(15) in the Second
+      [
+        'a type',
+        concatenated(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Restrict('restrict101', ['CUSTOMER_ID', 'EMPLOYEE_ID']),
+          ],
+          [
+            northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+            new Restrict('restrict102', ['CUSTOMER_ID', 'CITY']),
+            new Rename('rename101', [{ from: 'CITY', to: 'EMPLOYEE_ID' }]),
+          ],
+        ),
+      ],
+    ];
+    cases.forEach(([difference, query]) => {
+      const analysis = buildSchemasAndValidity(query);
+      expect([difference, analysis.validity.get('concat101')?.[0]]).toEqual([
+        difference,
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+      ]);
+      expect(analysis.schemas.get('concat101')).toBeUndefined();
+      // both inputs have CUSTOMER_ID, the concat nothing
+      const [firstId, secondId] = query.getInputIds('concat101');
+      expect(sourcesOf(query, firstId ?? '', 'CUSTOMER_ID')).toEqual([
+        'relational101',
+      ]);
+      expect(sourcesOf(query, secondId ?? '', 'CUSTOMER_ID')).toEqual([
+        'relational102',
+      ]);
+      expect([
+        difference,
+        originsOf(query, 'concat101', 'CUSTOMER_ID'),
+      ]).toEqual([difference, []]);
+    });
+    // nor for one with an input missing
+    const incomplete = new Query(
+      [custRegion('relational101'), new Concat('concat101')],
+      [new Connection('relational101', 'concat101', 'tds1')],
+      'concat101',
+    );
+    expect(originsOf(incomplete, 'concat101', 'REGION')).toEqual([]);
+    // nor a 'type unknown' warning for PROBLEM_OTHER's O, though its input has it
+    const mismatched = concatenated(
+      [problemOther('relational101')],
+      [custRegion('relational102')],
+    );
+    const mismatchedAnalysis = buildSchemasAndValidity(mismatched);
+    expect(mismatchedAnalysis.validity.get('concat101')?.[0]).toBe(
+      MESSAGE_INPUT_SCHEMAS_DIFFER,
+    );
+    expect(mismatchedAnalysis.schemas.get('concat101')).toBeUndefined();
+    expect(
+      isUntypedColumn(
+        OUTLINE,
+        mismatched,
+        mismatchedAnalysis,
+        'relational101',
+        'O',
+      ),
+    ).toBe(true);
+    expect(
+      isUntypedColumn(
+        OUTLINE,
+        mismatched,
+        mismatchedAnalysis,
+        'concat101',
+        'O',
+      ),
+    ).toBe(false);
+  });
+
+  test("Tells a Concat's column fed by PROBLEM_OTHER's untyped O, from either input", () => {
+    const untyped = (query: Query, nodeId: string, column: string): boolean =>
+      isUntypedColumn(
+        OUTLINE,
+        query,
+        buildSchemasAndValidity(query),
+        nodeId,
+        column,
+      );
+    const otherFirst = concatenated(
+      [problemOther('relational101')],
+      [typedOther('relational102')],
+    );
+    const otherSecond = concatenated(
+      [typedOther('relational101')],
+      [problemOther('relational102')],
+    );
+    [otherFirst, otherSecond].forEach((query) => {
+      expect(buildSchemasAndValidity(query).validity.get('concat101')).toEqual(
+        [],
+      );
+      expect(originsOf(query, 'concat101', 'O')).toEqual([
+        ['relational101', 'O'],
+        ['relational102', 'O'],
+      ]);
+      expect(untyped(query, 'concat101', 'O')).toBe(true);
+      expect(untyped(query, 'concat101', 'ID')).toBe(false);
+    });
+    expect(
+      untyped(
+        concatenated(
+          [problemOther('relational101')],
+          [problemOther('relational102')],
+        ),
+        'concat101',
+        'O',
+      ),
+    ).toBe(true);
+    // neither input from PROBLEM_OTHER
+    expect(
+      untyped(
+        concatenated(
+          [typedOther('relational101')],
+          [typedOther('relational102')],
+        ),
+        'concat101',
+        'O',
+      ),
+    ).toBe(false);
+    // no outline yet: no warning
+    expect(
+      isUntypedColumn(
+        undefined,
+        otherSecond,
+        buildSchemasAndValidity(otherSecond),
+        'concat101',
+        'O',
+      ),
+    ).toBe(false);
+  });
+
+  test("A Join after a Concat finds its columns' tables through it, for the Join's 'type unknown' warning too", () => {
+    const query = joinedAfter(
+      ordersCities(),
+      customersCities(),
+      northwindTable('relational103', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+      ['CUSTOMER_ID'],
+      ['CUSTOMER_ID'],
+    );
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('concat101')).toEqual([]);
+    expect(analysis.validity.get('join101')).toEqual([]);
+    // an INNER join keeps the Left's key: the concat's, from both its tables
+    expect(originsOf(query, 'join101', 'CUSTOMER_ID')).toEqual([
+      ['relational101', 'CUSTOMER_ID'],
+      ['relational102', 'CUSTOMER_ID'],
+    ]);
+    expect(originsOf(query, 'join101', 'SHIP_CITY')).toEqual([
+      ['relational101', 'SHIP_CITY'],
+      ['relational102', 'CITY'],
+    ]);
+    expect(originsOf(query, 'join101', 'CITY')).toEqual([
+      ['relational103', 'CITY'],
+    ]);
+
+    // PROBLEM_OTHER's O as a key, against CUSTOMERS' REGION
+    const keyedOnOther = joinedAfter(
+      [typedOther('relational101')],
+      [problemOther('relational102')],
+      northwindTable('relational103', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+      ['O'],
+      ['REGION'],
+    );
+    const otherAnalysis = buildSchemasAndValidity(keyedOnOther);
+    expect(otherAnalysis.validity.get('join101')).toEqual([]);
+    const untyped = (nodeId: string, column: string): boolean =>
+      isUntypedColumn(OUTLINE, keyedOnOther, otherAnalysis, nodeId, column);
+    // the Join editor asks of its Left input's column, the concat's
+    const [leftId] = keyedOnOther.getInputIds('join101');
+    expect(leftId).toBe('concat101');
+    expect(untyped('concat101', 'O')).toBe(true);
+    expect(untyped('join101', 'O')).toBe(true);
+    expect(untyped('join101', 'ID')).toBe(false);
     expect(untyped('join101', 'REGION')).toBe(false);
   });
 });

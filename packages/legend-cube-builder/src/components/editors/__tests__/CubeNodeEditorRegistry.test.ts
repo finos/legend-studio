@@ -50,11 +50,13 @@ describe('Node editor registries', () => {
     expect(hasCubeNodeIcon('constructor')).toBe(false);
   });
 
-  test('Carries the help text and the Select tooltip verbatim (spec §17.9)', () => {
+  test("Carries the help text and the Select tooltip verbatim (spec §17.9; Concat's per PLAN §11.5, Q8)", () => {
     expect(CUBE_NODE_HELP_TEXT).toEqual({
       relational: 'Sources data from relational database table.',
       dataProductAccessPoint:
         'Sources data from an access point of a deployed data product.',
+      concat:
+        'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
       distinct: 'Removes duplicate rows from the previous data set.',
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
       filter:
@@ -100,7 +102,7 @@ describe('Node editor registries', () => {
   );
 
   test('Has no draft for a transform with nothing to set, only an editor', () => {
-    expect(CUBE_NODE_TYPES_WITHOUT_SETTINGS).toEqual(['distinct']);
+    expect(CUBE_NODE_TYPES_WITHOUT_SETTINGS).toEqual(['distinct', 'concat']);
     CUBE_NODE_TYPES_WITHOUT_SETTINGS.forEach((type) => {
       expect(registry.get(type)?.kind).toBe('transform');
       expect(CUBE_NODE_DRAFT_FACTORIES.has(type)).toBe(false);

@@ -22,7 +22,6 @@ import {
   resolvedTable,
   TEST_DATABASE,
 } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -2142,8 +2141,7 @@ describe(unitTest('Saved spec encoding: slices'), () => {
 });
 
 describe(unitTest('Saved spec encoding: concats'), () => {
-  // Concat is registered with the builder in M4.10 (PLAN §11.5)
-  const REGISTRY = TEST__registryWithConcat();
+  const REGISTRY = createNodeRegistry();
 
   /** The saved spec of `concat101`, after these nodes, with these inputs and fields of its own */
   const concatSpec = (

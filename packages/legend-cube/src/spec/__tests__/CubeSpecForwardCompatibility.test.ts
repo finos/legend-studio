@@ -19,7 +19,6 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -1912,10 +1911,11 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
 
 describe(unitTest('Saved spec: groups, added in M4'), () => {
   const GROUP_REGISTRY = createNodeRegistry();
-  /** The registry of the version before M4: every M2 operation, but no Group */
+  /** The registry of the version before M4: every M2 operation, but no Group and no Concat */
   const M2_REGISTRY = new NodeRegistry(
     [...GROUP_REGISTRY.sources, ...GROUP_REGISTRY.transforms].filter(
-      (definition) => definition.type !== Group.TYPE,
+      (definition) =>
+        definition.type !== Group.TYPE && definition.type !== Concat.TYPE,
     ),
   );
 
@@ -2071,8 +2071,7 @@ describe(unitTest('Saved spec: groups, added in M4'), () => {
 });
 
 describe(unitTest('Saved spec: concats, added in M4'), () => {
-  // Concat is registered with the builder in M4.10 (PLAN §11.5)
-  const CONCAT_REGISTRY = TEST__registryWithConcat();
+  const CONCAT_REGISTRY = createNodeRegistry();
   /** The registry of the version before M4: every M2 operation, but no Group and no Concat */
   const M2_REGISTRY = new NodeRegistry(
     [...CONCAT_REGISTRY.sources, ...CONCAT_REGISTRY.transforms].filter(

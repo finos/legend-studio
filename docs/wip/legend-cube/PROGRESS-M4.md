@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
-| Step   | M4.1–M4.9 done (Group complete; Concat in the core); **M4.10 next** (Concat in the builder, and registered)                         |
-| Tests  | 2223 core, 805 builder (core group), 236 Query, 262 builder engine-roundtrip (after M4.9)                                           |
+| Step   | M4.1–M4.10 done (Group complete; Concat in the core and the builder); **M4.11 next** (Concat on the engine and the databases)       |
+| Tests  | 2223 core, 831 builder (core group), 236 Query, 262 builder engine-roundtrip (after M4.9; M4.10 before the rebase)                  |
 
 ## Steps
 
@@ -28,7 +28,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.7** The grid's 'Group by "X"'
 - [x] **M4.8** Group around the databases
 - [x] **M4.9** Concat in the core
-- [ ] **M4.10** Concat in the builder, and registered
+- [x] **M4.10** Concat in the builder, and registered
 - [ ] **M4.11** Concat on the engine and around the databases
 - [ ] **M4.12** Concat's Rename and Restrict autofixes
 - [ ] **M4.13** Concat's Convert types setting
@@ -53,7 +53,8 @@ Filled in as steps land.
 | M4.6       | `84c9f999c` | test: run Legend Cube's Group on the engine and in the browser              |
 | M4.7       | `d2e700fa7` | feat: add Group by to Legend Cube's grid quick actions                      |
 | M4.8       | `3242636e2` | test: pin how each database plans Legend Cube's Group                       |
-| M4.9       | (this one)  | feat: add Concat to Legend Cube's core                                      |
+| M4.9       | `8616f433f` | feat: add Concat to Legend Cube's core                                      |
+| M4.10      | (this one)  | feat: add Concatenate Another Input to Legend Cube's builder                |
 
 ## Step notes
 
@@ -206,6 +207,23 @@ Review fixes: a type message names the paths when both types share a short name 
 input's names, and a nullability fallback, both unreachable once validation passes) and 3 (the definition's label,
 icon and beta) are killed by the new definition test; so are 4 more mutants of the fixes (evidence
 `m4-verify/mutants/results-m49/`).
+
+**M4.10, Concat in the builder (2026-10-09).** Concat is registered between Slice and Join (core registry, the M4.9
+test registry gone; the builder's editor registry, help text per Q8, icon `LayerGroupIcon`), with the pinned lists
+updated (`Nodes.test.ts`, the palette, the canvas menu, icons, help texts). It is in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`
+until Convert types (M4.13): no draft, no Apply or Cancel; the panel now lists the problems of such a transform too
+(PLAN §7.4), never a source's. `CubeConcatEditor`: the requirement in words, then a table of both inputs' columns by
+position (name, type, `?` when nullable; the path when two different types share a short name), each name or type
+that differs from the other input's marked with a title saying what it has, `(none)` where only one input has a
+column, and the 'type unknown' warning for each untyped column of either input. `findColumnOrigins` already follows a
+Concat into both inputs by name. Conformance: six cases (matching columns, nullability from either input both ways,
+every ALLTYPES type, a Sort and Limit inside an input with a Group and Sort after, a Concat of a Concat), exact with
+no declared column. A Concat of CUSTOMERS and SUPPLIERS joins `operations.cube.json`. Browser (:9002): the palette
+item, edges labelled First and Second, a mismatched Concat's marks and messages, and a matching one running 120 rows
+(91 customers and 29 suppliers). Tests by workflow `m410-tests-verify` (run `wf_c13c8a0f-ab6`, 4 agents): the editor
+(14), the panel (3), origins through a Concat (5), the canvas (2). Review fixes: the editor text no longer implies an
+order; long names wrap in the warning and the Problems list; a failed table's message isn't repeated as a Problem
+(pinned). Mutants: 42, 41 killed, the survivor (Problems for every type) killed by that test.
 
 ## Open items
 

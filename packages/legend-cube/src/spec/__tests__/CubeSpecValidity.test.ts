@@ -16,7 +16,6 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TEST_DATABASE } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -982,8 +981,7 @@ describe(unitTest('Saved spec validity: groups'), () => {
 });
 
 describe(unitTest('Saved spec validity: concats'), () => {
-  // Concat is registered with the builder in M4.10 (PLAN §11.5)
-  const REGISTRY = TEST__registryWithConcat();
+  const REGISTRY = createNodeRegistry();
 
   const INTEGER = { path: 'Integer' };
   const varchar = (length: number): JsonObject => ({

@@ -15,6 +15,7 @@
  */
 
 import {
+  Concat,
   Distinct,
   Drop,
   Filter,
@@ -70,11 +71,13 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
 
 /**
  * The transforms with nothing to set (spec §17.6: Distinct is "description
- * only"): an editor in `CUBE_NODE_EDITORS` and no draft factory, so the panel
- * shows no Apply or Cancel (PLAN §7.4 item 2)
+ * only"; Concat until its Convert types setting, PLAN §11.5): an editor in
+ * `CUBE_NODE_EDITORS` and no draft factory, so the panel shows no Apply or
+ * Cancel (PLAN §7.4 item 2)
  */
 export const CUBE_NODE_TYPES_WITHOUT_SETTINGS: readonly string[] = [
   Distinct.TYPE,
+  Concat.TYPE,
 ];
 
 /** The node's draft; a node with nothing to edit gets a read-only one */

@@ -56,6 +56,7 @@ const DISTINCT = 'Distinct Values';
 const DROP = 'Drop first <x> rows';
 const LIMIT = 'Take first <x> rows';
 const SLICE = 'Take rows <x> to <y>';
+const CONCAT = 'Concatenate Another Input';
 const JOIN = 'Join Another Input';
 
 const render = async (
@@ -154,6 +155,7 @@ describe('Cube palette', () => {
       DROP,
       LIMIT,
       SLICE,
+      CONCAT,
       JOIN,
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();

@@ -1329,9 +1329,9 @@ All gestures from §17.4 are kept:
      replaced node, so keys made in it (e.g. filter rows) stay stable while the user edits.
 2. Register its factory in `CUBE_NODE_DRAFT_FACTORIES` (`stores/editors/CubeNodeDraftRegistry.ts`). A type with
    nothing to edit registers an editor but no factory: it gets a read-only draft, and no Apply or Cancel. That is a
-   source, and from M2 a transform with nothing to set (Distinct, whose editor is a description only, spec §17.6),
-   which is also listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS` so the registry test (item 6) doesn't ask it for a
-   factory.
+   source, and from M2 a transform with nothing to set (Distinct, whose editor is a description only, spec §17.6;
+   from M4 Concat, until its Convert types setting), which is also listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS` so
+   the registry test (item 6) doesn't ask it for a factory.
 3. `components/editors/Cube<Type>Editor.tsx`: an observer component taking `CubeNodeEditorProps`, registered in
    `CUBE_NODE_EDITORS` (`components/editors/CubeNodeEditorRegistry.ts`). It gets:
 
@@ -1345,8 +1345,9 @@ All gestures from §17.4 are kept:
    applies the draft first and then rebinds to the new node, as `nodeEditor.swapInputs()` does: calling
    `editorState.applyQuery` (or `editorState.swapInputs`) directly replaces the node under unapplied edits, so the
    panel closes and drops them. A source, which has no draft, may call an `editorState` flow that stays outside the
-   undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, and owns Apply
-   and Cancel.
+   undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, for a type with
+   a factory or one in `CUBE_NODE_TYPES_WITHOUT_SETTINGS` (from M4: a Concat whose inputs don't match), never for a
+   source, and owns Apply and Cancel.
 
 4. The help text, in `CUBE_NODE_HELP_TEXT` (`__lib__/LegendCubeHelpText.ts`).
 5. Its icon name, mapped to an icon in `NODE_ICONS` (`components/CubeNodeIcon.tsx`).

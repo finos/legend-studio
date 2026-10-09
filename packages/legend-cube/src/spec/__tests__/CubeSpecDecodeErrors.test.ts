@@ -15,7 +15,6 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { CubeDocument } from '../../graph/CubeDocument.js';
 import {
@@ -1569,7 +1568,6 @@ describe(unitTest('Saved spec decode errors'), () => {
     expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
   });
 
-  // Concat is registered with the builder in M4.10 (PLAN §11.5)
   test.each<[string, unknown, boolean]>([
     ['a concat', withConcat(CONCAT_101), false],
     [
@@ -1584,7 +1582,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     ],
   ])('Reads %s, which the failing cases start from', (_, json, widenTypes) => {
     const { document, readOnly } = decodeCubeSpec(json, {
-      registry: TEST__registryWithConcat(),
+      registry: createNodeRegistry(),
     });
     expect(readOnly).toBe(false);
     const node = document.query.getNode('concat101');
@@ -1648,7 +1646,7 @@ describe(unitTest('Saved spec decode errors'), () => {
       'must be a node id or null',
     ],
   ])('Refuses %s', (_, json, path, detail) => {
-    expect(failureOf(json, TEST__registryWithConcat())).toEqual([path, detail]);
+    expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
   });
 
   test.each<[string, unknown, string, string]>([

@@ -315,6 +315,225 @@
             "name": "ORDER_DATE Max"
           }
         ]
+      },
+      {
+        "kind": "relational",
+        "id": "relational103",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "CUSTOMERS",
+        "schemaSnapshot": [
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": false
+          },
+          {
+            "name": "COMPANY_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": false
+          },
+          {
+            "name": "CONTACT_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [30]
+            },
+            "nullable": true
+          },
+          {
+            "name": "CONTACT_TITLE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [30]
+            },
+            "nullable": true
+          },
+          {
+            "name": "ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "PHONE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [24]
+            },
+            "nullable": true
+          },
+          {
+            "name": "FAX",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [24]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "restrict",
+        "id": "restrict102",
+        "inputs": ["relational103"],
+        "columns": ["COMPANY_NAME", "CITY", "COUNTRY"]
+      },
+      {
+        "kind": "relational",
+        "id": "relational104",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "SUPPLIERS",
+        "schemaSnapshot": [
+          {
+            "name": "SUPPLIER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "COMPANY_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": false
+          },
+          {
+            "name": "CONTACT_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [30]
+            },
+            "nullable": true
+          },
+          {
+            "name": "CONTACT_TITLE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [30]
+            },
+            "nullable": true
+          },
+          {
+            "name": "ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "PHONE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [24]
+            },
+            "nullable": true
+          },
+          {
+            "name": "FAX",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [24]
+            },
+            "nullable": true
+          },
+          {
+            "name": "HOMEPAGE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [256]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "restrict",
+        "id": "restrict103",
+        "inputs": ["relational104"],
+        "columns": ["COMPANY_NAME", "CITY", "COUNTRY"]
+      },
+      {
+        "kind": "concat",
+        "id": "concat101",
+        "inputs": ["restrict102", "restrict103"],
+        "widenTypes": false
       }
     ]
   }

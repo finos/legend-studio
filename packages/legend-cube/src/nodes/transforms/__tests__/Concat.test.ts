@@ -19,7 +19,6 @@ import {
   resolvedTable,
   TestUnaryNode,
 } from '../../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithConcat } from '../../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../../graph/Connection.js';
 import { Query } from '../../../graph/Query.js';
@@ -32,6 +31,7 @@ import {
   OpaqueType,
   PrimitiveType,
 } from '../../../types/CubeType.js';
+import { createNodeRegistry } from '../../NodeRegistry.js';
 import {
   Concat,
   CONCAT_PORT_LABELS,
@@ -625,7 +625,7 @@ describe(unitTest('Concat in a query'), () => {
     );
 
   const infer = (query: Query): ReturnType<typeof buildSchemasAndValidity> =>
-    buildSchemasAndValidity(query, TEST__registryWithConcat().queryRules);
+    buildSchemasAndValidity(query, createNodeRegistry().queryRules);
 
   test("Gives the first input's columns, nullable where either input is, to the next node", () => {
     const query = concatenated();

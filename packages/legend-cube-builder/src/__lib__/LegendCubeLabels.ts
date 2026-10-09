@@ -182,6 +182,14 @@ export const SLICE_RANGE_HINT =
 export const DISTINCT_EDITOR_TEXT =
   'Keeps one row of each set of identical rows. There is nothing to set.';
 
+/** The Concat editor's text: what Concat requires of its inputs (PLAN §11.5) */
+export const CONCAT_EDITOR_TEXT =
+  'Gives the rows of both inputs, keeping duplicates, in no particular order. Both must have the same columns, matched by position: the same names, in the same order, with the same types.';
+
+/** The Concat editor's warning on columns whose real type Cube doesn't know (PLAN §8.7) */
+export const getConcatUntypedWarning = (columns: readonly string[]): string =>
+  `${CUBE_TABLE_FLAG_LABELS[CubeTableFlag.TYPE_UNKNOWN].label}: Cube doesn't know the real type of ${columns.join(', ')}, so the database may not combine the inputs' values`;
+
 /** Why the Group editor can't take a column as a key (PLAN §11.5) */
 export const CUBE_GROUP_COLUMN_DISABLED_REASON = "can't be grouped";
 
