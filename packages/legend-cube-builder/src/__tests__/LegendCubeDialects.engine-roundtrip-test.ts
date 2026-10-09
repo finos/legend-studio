@@ -19,6 +19,7 @@ import {
   AggregationFunction,
   type ColumnAggregation,
   ColumnComparisonFilter,
+  Concat,
   Connection,
   Distinct,
   Drop,
@@ -209,6 +210,62 @@ const subqueries = (sql: string): string[] => {
   return found;
 };
 
+/**
+ * ORDERS through the first nodes and a second ORDERS through the second,
+ * concatenated by concat101 (its First and Second), then the nodes after it,
+ * the last captured
+ */
+const concatThen = (
+  first: readonly QueryNode[],
+  second: readonly QueryNode[],
+  ...after: QueryNode[]
+): Query => {
+  const arms = [
+    [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), ...first],
+    [northwindTable('relational102', 'ORDERS', ORDERS_COLUMNS), ...second],
+  ];
+  const concat = new Concat('concat101');
+  const chain = (nodes: readonly QueryNode[]): Connection[] =>
+    nodes
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection(
+            (nodes[index] as QueryNode).id,
+            node.id,
+            node.ports[0] as string,
+          ),
+      );
+  const nodes = [concat, ...after];
+  return new Query(
+    [...arms.flat(), ...nodes],
+    [
+      ...arms.flatMap(chain),
+      ...arms.map(
+        (arm, side) =>
+          new Connection(
+            (arm.at(-1) as QueryNode).id,
+            concat.id,
+            concat.ports[side] as string,
+          ),
+      ),
+      ...chain(nodes),
+    ],
+    nodes.at(-1)?.id,
+  );
+};
+
+/** CUSTOMER_ID and ORDER_ID, the keys `byCustomerThenOrder` sorts by */
+const customerAndOrder = (id: string): Restrict =>
+  new Restrict(id, ['CUSTOMER_ID', 'ORDER_ID']);
+
+/** The second input's sort, by the same keys under another id */
+const byCustomerThenOrder2 = (): Sort =>
+  new Sort('sort102', [
+    { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+    { column: 'ORDER_ID', direction: SortDirection.DESC },
+  ]);
+
 const aggregation = (
   fn: AggregationFunction,
   column: string | undefined,
@@ -356,6 +413,64 @@ const SHAPES: [string, () => Query][] = [
             kind: 'integer',
             value: '5',
           }),
+        ),
+      ),
+  ],
+  [
+    'a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+      ),
+  ],
+  [
+    'a Concat of sorted Limits',
+    () =>
+      concatThen(
+        [
+          customerAndOrder('restrict101'),
+          byCustomerThenOrder(),
+          new Limit('limit101', 5),
+        ],
+        [
+          customerAndOrder('restrict102'),
+          byCustomerThenOrder2(),
+          new Limit('limit102', 5),
+        ],
+      ),
+  ],
+  [
+    'a Concat of a sorted Drop',
+    () =>
+      concatThen(
+        [
+          customerAndOrder('restrict101'),
+          byCustomerThenOrder(),
+          new Drop('drop101', 10),
+        ],
+        [customerAndOrder('restrict102')],
+      ),
+  ],
+  [
+    'a Limit after a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+        new Limit('limit101', 5),
+      ),
+  ],
+  [
+    'a Group after a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+        new Group(
+          'group101',
+          ['CUSTOMER_ID'],
+          [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
         ),
       ),
   ],
@@ -608,6 +723,68 @@ describe('Database workarounds, as each database plans them', () => {
         databaseType,
         GROUP_BY_AFTER_TWO_RENAMES[databaseType],
       ]);
+    },
+  );
+  /** Five rows, as each database takes them: TOP, LIMIT, FETCH FIRST, or Cube's row numbers on Sybase IQ */
+  const FIVE_ROWS =
+    /\btop 5\b|\blimit 5\b|fetch first 5 rows only|cube_rn["`]? <= 5/gu;
+
+  const shapeNamed = (label: string): Query =>
+    (SHAPES.find(([name]) => name === label)?.[1] as () => Query)();
+
+  /** The subquery that concatenates, without the subqueries inside it */
+  const unionOf = (sql: string): string | undefined =>
+    subqueries(sql).find((subquery) => subquery.includes('union all'));
+
+  test.each(DATABASE_TYPES)(
+    'Writes a Concat as one UNION ALL of its two inputs, on %s',
+    async (databaseType) => {
+      const sql = await planSql(shapeNamed('a Concat'), databaseType);
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(sql).toContain('union all');
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    "Keeps each input's Sort and Limit in a subquery of its own, under the UNION ALL, on %s",
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Concat of sorted Limits'),
+        databaseType,
+      );
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(sql.match(FIVE_ROWS)).toHaveLength(2);
+      // an ORDER BY only beside its own five rows, never on the union
+      subqueries(sql).forEach((subquery) => {
+        if (subquery.includes('order by')) {
+          expect(subquery).toMatch(FIVE_ROWS);
+        }
+      });
+      expect(unionOf(sql)).not.toContain('order by');
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Takes the rows of a Limit after a Concat from the whole union, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Limit after a Concat'),
+        databaseType,
+      );
+      expect(sql.match(FIVE_ROWS)).toHaveLength(1);
+      expect(unionOf(sql)).not.toMatch(FIVE_ROWS);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Groups the rows of both inputs after a Concat, outside the union, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Group after a Concat'),
+        databaseType,
+      );
+      expect(sql).toContain('group by');
+      expect(unionOf(sql)).not.toContain('group by');
     },
   );
 });

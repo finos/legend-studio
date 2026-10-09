@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644 |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                  |
-| Step   | M4.1–M4.10 done (Group complete; Concat in the core and the builder); **M4.11 next** (Concat on the engine and the databases)                                      |
-| Tests  | 2278 core, 992 builder (core group), 241 Query, 297 builder engine-roundtrip (after M4.10 and the rebase)                                                          |
+| Step   | M4.1–M4.11 done (Group complete; Concat in the core, the builder, on the engine and the databases); **M4.12 next** (Concat's autofixes)                            |
+| Tests  | 2278 core, 992 builder (core group), 241 Query, 386 builder engine-roundtrip (after M4.11)                                                                         |
 
 ## Steps
 
@@ -29,7 +29,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.8** Group around the databases
 - [x] **M4.9** Concat in the core
 - [x] **M4.10** Concat in the builder, and registered
-- [ ] **M4.11** Concat on the engine and around the databases
+- [x] **M4.11** Concat on the engine and around the databases
 - [ ] **M4.12** Concat's Rename and Restrict autofixes
 - [ ] **M4.13** Concat's Convert types setting
 - [ ] **M4.14** Docs and changeset
@@ -56,7 +56,8 @@ Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the 
 | M4.9       | `1c78ae348` | feat: add Concat to Legend Cube's core                                      |
 | M4.10      | `1a5460950` | feat: add Concatenate Another Input to Legend Cube's builder                |
 | Rebase     | `ccadc49b4` | test: leave data product sources out of Legend Cube's conformance guard     |
-| Rebase     | (this one)  | docs: record Legend Cube M4's rebase on master                              |
+| Rebase     | `8ae0cadff` | docs: record Legend Cube M4's rebase on master                              |
+| M4.11      | (this one)  | test: run Legend Cube's Concat on the engine and plan it on each database   |
 
 ## Step notes
 
@@ -234,6 +235,19 @@ ISSUES), each resolved by keeping both; `git range-diff` shows no M4 change alte
 `dataProductAccessPoint`, now registered, is left out of the conformance guard, since the open-source engine doesn't
 read data products (its stand-in engine test checks its types). After the rebase: `yarn install` (three workspace
 dependencies of the builder) and `yarn build:ts`, then every gate green.
+
+**M4.11, Concat on the engine and the databases (2026-10-09).** Eight engine tests in
+`LegendCubeOperations.engine-roundtrip-test.ts` ("Concat on the engine"), each checked against the tables run alone:
+the printed Pure parses to what Cube emits and types as Cube infers; CUSTOMERS and SUPPLIERS give 120 rows, their
+names exactly, and the same rows with the inputs swapped; CUSTOMERS with itself gives each customer twice; a Distinct
+after it removes the countries both have; a Limit inside the first input takes the last 3 customers by its Sort,
+with the 29 suppliers; ORDERS' nullable CUSTOMER_ID and SHIP_NAME with CUSTOMERS' make both nullable, 921 rows; a
+Group after it counts all 120. `LegendCubeDialects.engine-roundtrip-test.ts` gains five Concat shapes (in `SHAPES`,
+so the numbering and SQL Server checks cover them) and pins on all 19 database types: one UNION ALL per Concat; each
+input's Sort and Limit in a subquery of its own with its TOP, LIMIT or FETCH (Sybase IQ: Cube's row numbers), never an
+ORDER BY on the union; a Limit after a Concat taken from the whole union; a Group after it outside the union. A
+Drop inside an input plans as it does alone (`limit m,-1` on Snowflake, Redshift, Hive, BigQuery and Composite, as
+PLAN §8 records), so no workaround and no ISSUES draft.
 
 ## Open items
 

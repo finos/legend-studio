@@ -19,6 +19,7 @@ import {
   AggregationFunction,
   type ColumnAggregation,
   ColumnComparisonFilter,
+  Concat,
   Connection,
   CubeDocument,
   Distinct,
@@ -1245,5 +1246,246 @@ describe('Group on the engine', () => {
     ]);
     const result = await TEST__runQuery(engine, query, ROW_LIMIT);
     expect(orderIds(TEST__columnValues(result, 'ID')).sort()).toEqual([2, 3]);
+  });
+});
+
+describe('Concat on the engine', () => {
+  const COMPANY_CITY_COUNTRY = ['COMPANY_NAME', 'CITY', 'COUNTRY'];
+
+  /** Two tables, resolved, as relational101 and relational102 */
+  const tables = async (
+    first: string,
+    second: string,
+  ): Promise<[RelationalTableSource, RelationalTableSource]> =>
+    (await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', first),
+      TEST__northwindTable('relational102', second),
+    ])) as [RelationalTableSource, RelationalTableSource];
+
+  /**
+   * Each input with the nodes after it, concatenated by concat101 (its
+   * First and Second), then the nodes after it, captured at the last
+   */
+  const concatOf = (
+    first: QueryNode[],
+    second: QueryNode[],
+    ...after: QueryNode[]
+  ): Query => {
+    const concat = new Concat('concat101');
+    const chain = (nodes: readonly QueryNode[]): Connection[] =>
+      nodes
+        .slice(1)
+        .map(
+          (node, index) =>
+            new Connection(
+              (nodes[index] as QueryNode).id,
+              node.id,
+              node.ports[0] as string,
+            ),
+        );
+    const nodes: QueryNode[] = [concat, ...after];
+    return new Query(
+      [...first, ...second, ...nodes],
+      [
+        ...chain(first),
+        ...chain(second),
+        new Connection((first.at(-1) as QueryNode).id, concat.id, 'tds1'),
+        new Connection((second.at(-1) as QueryNode).id, concat.id, 'tds2'),
+        ...chain(nodes),
+      ],
+      nodes.at(-1)?.id,
+    );
+  };
+
+  /** CUSTOMERS and SUPPLIERS, each restricted to COMPANY_NAME, CITY and COUNTRY, concatenated */
+  const companies = async (...after: QueryNode[]): Promise<Query> => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    return concatOf(
+      [customers, new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+      [suppliers, new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+      ...after,
+    );
+  };
+
+  /** The values of one column of a table, run alone */
+  const tableValues = async (
+    table: string,
+    column: string,
+  ): Promise<unknown[]> => {
+    const [source] = await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', table),
+    ]);
+    return TEST__columnValues(
+      await TEST__runQuery(
+        engine,
+        TEST__chainOf([
+          source as RelationalTableSource,
+          new Restrict('restrict101', [column]),
+        ]),
+        ROW_LIMIT,
+      ),
+      column,
+    );
+  };
+
+  const sorted = (values: readonly unknown[]): string[] =>
+    values.map((value) => String(value)).sort();
+
+  test('Emits what the engine parses from the printed Pure, and types as Cube infers', async () => {
+    const query = await companies();
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(printIR(lambda)).toContain('->concatenate(');
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test('Gives the 91 customers and the 29 suppliers: 120 rows', async () => {
+    const result = await TEST__runQuery(engine, await companies(), ROW_LIMIT);
+    expect(result.columns).toEqual(COMPANY_CITY_COUNTRY);
+    expect(result.rows).toHaveLength(120);
+    expect(sorted(TEST__columnValues(result, 'COMPANY_NAME'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'COMPANY_NAME')),
+        ...(await tableValues('SUPPLIERS', 'COMPANY_NAME')),
+      ]),
+    );
+  });
+
+  test('Gives the same rows with its inputs swapped', async () => {
+    const query = await companies();
+    const swapped = query.swapInputs('concat101');
+    expect(swapped === query).toBe(false);
+    const [rows, swappedRows] = [
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      await TEST__runQuery(engine, swapped, ROW_LIMIT),
+    ];
+    expect(sorted(TEST__columnValues(swappedRows, 'COMPANY_NAME'))).toEqual(
+      sorted(TEST__columnValues(rows, 'COMPANY_NAME')),
+    );
+  });
+
+  test('Keeps the rows both inputs share: CUSTOMERS with itself gives each customer twice', async () => {
+    const [first, second] = await tables('CUSTOMERS', 'CUSTOMERS');
+    const query = concatOf(
+      [first, new Restrict('restrict101', ['CUSTOMER_ID'])],
+      [second, new Restrict('restrict102', ['CUSTOMER_ID'])],
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const ids = TEST__columnValues(
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      'CUSTOMER_ID',
+    );
+    expect(ids).toHaveLength(182);
+    const once = await tableValues('CUSTOMERS', 'CUSTOMER_ID');
+    expect(sorted(ids)).toEqual(sorted([...once, ...once]));
+  });
+
+  test('Removes the countries both inputs have with a Distinct after it', async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = concatOf(
+      [customers, new Restrict('restrict101', ['COUNTRY'])],
+      [suppliers, new Restrict('restrict102', ['COUNTRY'])],
+      new Distinct('distinct101'),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const countries = TEST__columnValues(
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      'COUNTRY',
+    );
+    expect(sorted(countries)).toEqual(
+      sorted([
+        ...new Set([
+          ...(await tableValues('CUSTOMERS', 'COUNTRY')),
+          ...(await tableValues('SUPPLIERS', 'COUNTRY')),
+        ]),
+      ]),
+    );
+  });
+
+  test("Takes a Limit inside its first input by that input's Sort: the last 3 customers and the 29 suppliers", async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = concatOf(
+      [
+        customers,
+        new Restrict('restrict101', COMPANY_CITY_COUNTRY),
+        new Sort('sort101', [
+          { column: 'COMPANY_NAME', direction: SortDirection.DESC },
+        ]),
+        new Limit('limit101', 3),
+      ],
+      [suppliers, new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const names = TEST__columnValues(
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      'COMPANY_NAME',
+    );
+    expect(names).toHaveLength(32);
+    const lastCustomers = sorted(
+      await tableValues('CUSTOMERS', 'COMPANY_NAME'),
+    ).slice(-3);
+    expect(sorted(names)).toEqual(
+      sorted([
+        ...lastCustomers,
+        ...(await tableValues('SUPPLIERS', 'COMPANY_NAME')),
+      ]),
+    );
+  });
+
+  test('Makes a column nullable when one input has it nullable: 830 orders and 91 customers', async () => {
+    const [ordersTable, customers] = await tables('ORDERS', 'CUSTOMERS');
+    const query = concatOf(
+      [ordersTable, new Restrict('restrict101', ['CUSTOMER_ID', 'SHIP_NAME'])],
+      [
+        customers,
+        new Restrict('restrict102', ['CUSTOMER_ID', 'COMPANY_NAME']),
+        new Rename('rename102', [{ from: 'COMPANY_NAME', to: 'SHIP_NAME' }]),
+      ],
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const { schemas } = buildSchemasAndValidity(
+      query,
+      createNodeRegistry().queryRules,
+    );
+    expect(
+      schemas
+        .get('concat101')
+        ?.columns.map(({ name, nullable }) => [name, nullable]),
+    ).toEqual([
+      ['CUSTOMER_ID', true],
+      ['SHIP_NAME', true],
+    ]);
+    expect((await TEST__runQuery(engine, query, ROW_LIMIT)).rows).toHaveLength(
+      921,
+    );
+  });
+
+  test('Counts the rows of both inputs in a Group after it', async () => {
+    const query = await companies(
+      new Group(
+        'group101',
+        ['COUNTRY'],
+        [
+          {
+            column: undefined,
+            function: AggregationFunction.COUNT_ROWS,
+            name: 'companies',
+          },
+        ],
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(
+      orderIds(TEST__columnValues(result, 'companies')).reduce(
+        (a, b) => a + b,
+        0,
+      ),
+    ).toBe(120);
   });
 });
