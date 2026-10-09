@@ -43,6 +43,32 @@ interface CubeHost {
   point group from their contracts, and the optional `enterpriseStereotype` names the stereotype marking groups open to
   everyone (Legend Query reads `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do).
 
+In Legend Query's config file, data products need `lakehouse.url` and `depot.url`. Two keys are optional:
+`marketplace.serverUrl`, for search on the marketplace server, takes the value Legend Marketplace's own config gives
+`marketplace.url`; `extensions.core.dataProductConfig.publicStereotype`, for the "Enterprise access" badge, is the
+stereotype Studio and Marketplace use for groups open to everyone.
+
+```json
+{
+  "lakehouse": { "url": "<the lakehouse contract server>" },
+  "marketplace": {
+    "url": "<Legend Marketplace, for links>",
+    "productionParallelUrl": "<its production-parallel deployment>",
+    "serverUrl": "<the marketplace server>"
+  },
+  "extensions": {
+    "core": {
+      "dataProductConfig": {
+        "publicStereotype": {
+          "profile": "<profile path>",
+          "stereotype": "<stereotype>"
+        }
+      }
+    }
+  }
+}
+```
+
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
 lives as long as the page; Legend Query makes a new host on each visit.
 

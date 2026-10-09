@@ -2455,7 +2455,14 @@ Also check and record:
 **Part B2: sources, manual, in the UI** (the direct connection and data products, §6.8)
 
 Prerequisites: as Part B. Data products also need a Query configured with a lakehouse and a depot that serve deployed
-data products (an internal deployment); without a lakehouse the page shows no Data Product item.
+data products (an internal deployment); without a lakehouse the page shows no Data Product item. Two optional Query
+keys turn on the rest (hosting.md):
+
+- `marketplace.serverUrl`, the same value as Legend Marketplace's own `marketplace.url`: search runs on the
+  marketplace server. Without it, the list is the lakehouse's lite list and search filters it in the page.
+- `extensions.core.dataProductConfig.publicStereotype`, the same stereotype Studio and Marketplace use: groups open
+  to everyone show **Enterprise access**, and groups with no contract show **No access**. Without it, only groups
+  with a contract show a badge.
 
 Direct connection:
 
@@ -2476,18 +2483,34 @@ Direct connection:
 Data products:
 
 1. The palette shows **Data Product** with a BETA badge. Click it: the dialog opens on the **Data product** tab, Mode
-   **Production**. The deployed products list; search narrows it.
-2. Pick a product: its access points show by group. A parameterized one is disabled and says why. The warehouse
-   reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the one you last used); change it if needed.
+   **Production**. The deployed products list; search narrows it (with `marketplace.serverUrl`, on the marketplace
+   server: a search with more than 100 matches says "Too many matching items; list truncated.").
+2. Pick a product: its access points show by group, each group with your access as the marketplace shows it
+   (**Entitled**, a pending state, **Enterprise access** or **No access**). A parameterized access point is disabled
+   and says why. Pick an access point: the preview shows its description, its columns with their types and sample
+   rows; **Open in Marketplace** opens the product's page in the marketplace of its class (production or production
+   parallel). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the one you last used); change it if needed.
 3. Add an access point. Open the dialog again: it opens on the same product with its access points shown, the Mode
-   and warehouse are fixed, and only that project's products at that version are listed. Add a second access point of
-   the same product.
+   and warehouse are fixed, and **In this project** lists only that project's products at that version. **Search
+   all** lists the others too, greyed, each saying why ("Belongs to project …", "Deployed from version …"). Add a
+   second access point of the same product.
 4. Join the two on a shared key and press **F9**: rows come back. **Show Pure** shows two `#P{…}#` accessors and
    `->from(cube::dataProduct::Runtime)`.
-5. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
-6. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, and **F9** gives the same rows.
+5. Click an access point's node: the Source panel shows the environment, the data product with **Open in
+   Marketplace**, the group, the project and its version (a `-SNAPSHOT` version is labelled as one that may change).
+   Type another warehouse and click **Apply**: the grid's rows are marked stale, and **F9** runs on it. **Undo**
+   (Ctrl/Cmd+Z) brings the old warehouse back in one step. A new cube then starts on the warehouse last applied.
+6. Apply a warehouse that doesn't exist and press **F9**: the error says the run couldn't use that warehouse and
+   points to the Source panel. If you have an access point you aren't entitled to, run it: the error offers **Request
+   access to <group> in <data product>**, linking to the marketplace.
+7. Click **Refresh** in the Source panel: the access point's columns are read again from the deployed artifact (no
+   warning when nothing changed).
+8. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
+9. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, its access points are re-checked
+   against their deployed artifacts, and **F9** gives the same rows.
 
-Record the deployment, the products and access points used, and any console errors.
+Record the deployment, the products and access points used, whether the two optional keys were set, and any console
+errors.
 
 ### 11.3 After the slice (recommended order, outline)
 
