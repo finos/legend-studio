@@ -150,10 +150,14 @@ real run is in an internal deployment (Part B2).
 A data product cube opens on its saved column snapshots; Refresh and the re-check on import don't read the artifact
 again yet (a planned follow-up). A redeployed product doesn't change a cube, which stays on its saved version.
 
-### The lite list is read whole
+### Listing data products
 
-The data product list reads the lakehouse's lite list through `getAllLiteDataProducts`, as Legend Query does, which
-pages until the server says it's done and takes no abort signal. Paging guards and marketplace search are follow-ups.
+- **The lite list:** Cube pages the lakehouse's lite list itself and stops on a page that isn't one, a missing or
+  repeated cursor, or past 50 pages. The lakehouse client takes no abort signal, so closing the dialog stops further
+  pages but not the page already asked for.
+- **Marketplace search** (when Query's `marketplace.serverUrl` is set) reads one page of 100 matches. On a cube whose
+  data products are fixed to one project, a typed search keeps that page's rows from the project, so it can show few of
+  them; the cube's own products show when the search is empty.
 
 ## Test gaps
 

@@ -1196,9 +1196,10 @@ internals (user, 2026-10-08): questions for the original app's team are about it
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
-- **Data product list:** the marketplace search service when Query is configured for it (a new config field and the
-  marketplace client), falling back to the lakehouse contract server's lite list. The first version uses the lite
-  list only, as Legend Query does; search is a follow-up.
+- **Data product list:** the marketplace's search when Query names its server (`marketplace.serverUrl`, the same
+  server Legend Marketplace's own `marketplace.url` names; user, 2026-10-09), else the lakehouse contract server's lite
+  list, which Cube pages itself with guards. A failed search shows its error with Retry and never falls back to the
+  lite list.
 - **Warehouse (DP-2, user, 2026-10-09):** the cube's saved warehouse wins, else the viewer's remembered one, else the
   default consumer warehouse (`LAKEHOUSE_CONSUMER_DEFAULT_WH`). The first Add saves the warehouse into the cube and
   remembers it for the viewer's next cubes. Editing a saved cube's warehouse is a follow-up.

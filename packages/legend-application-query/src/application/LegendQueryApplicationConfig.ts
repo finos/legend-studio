@@ -158,7 +158,10 @@ export interface LegendQueryApplicationConfigurationData
   marketplace?: {
     url: string;
     productionParallelUrl: string;
-    /** The marketplace server, whose search Legend Cube's data product tab uses */
+    /**
+     * The marketplace server, whose search Legend Cube's data product tab
+     * uses: the URL Legend Marketplace's own config names `marketplace.url`
+     */
     serverUrl?: string;
   };
   lakehouse?: {
