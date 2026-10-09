@@ -113,16 +113,35 @@ export class CubeAccessPointGroup {
   readonly id: string;
   readonly title: string | undefined;
   readonly accessPoints: readonly CubeAccessPoint[];
+  /** Open to everyone in the organization, as the host's marketplace marks such groups */
+  readonly isEnterprise: boolean;
 
   constructor(fields: {
     id: string;
     title?: string | undefined;
     accessPoints: readonly CubeAccessPoint[];
+    isEnterprise?: boolean | undefined;
   }) {
     this.id = fields.id;
     this.title = fields.title;
     this.accessPoints = fields.accessPoints;
+    this.isEnterprise = fields.isEnterprise ?? false;
   }
+}
+
+/**
+ * The viewer's access to an access point group, as the marketplace shows
+ * it: open to everyone, granted, on its way through approval, refused, or
+ * never asked for
+ */
+export enum CubeAccessPointGroupAccess {
+  ENTERPRISE = 'ENTERPRISE',
+  APPROVED = 'APPROVED',
+  SUBMITTED_FOR_APPROVALS = 'SUBMITTED_FOR_APPROVALS',
+  PENDING_MANAGER_APPROVAL = 'PENDING_MANAGER_APPROVAL',
+  PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
+  DENIED = 'DENIED',
+  NO_ACCESS = 'NO_ACCESS',
 }
 
 /** A deployed product's access points, by group */
@@ -208,4 +227,14 @@ export interface CubeDataProductCatalog {
 
   /** The product's page in the marketplace, or none when the host has no marketplace */
   getMarketplaceLink(target: CubeMarketplaceLinkTarget): string | undefined;
+
+  /**
+   * The viewer's access to each of the product's access point groups, by
+   * group id; a group it can't tell has no entry. Optional: a host without
+   * it shows no access
+   */
+  getAccess?(
+    candidate: CubeDataProductCandidate,
+    signal?: AbortSignal,
+  ): Promise<ReadonlyMap<string, CubeAccessPointGroupAccess>>;
 }

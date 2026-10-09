@@ -76,6 +76,13 @@ export interface CubeLakehouseServices {
   readonly getMarketplaceLink?:
     | ((target: CubeMarketplaceLinkTarget) => string | undefined)
     | undefined;
+  /**
+   * The stereotype the host's marketplace marks access point groups open to
+   * everyone with; without it, a group with no contract shows no access
+   */
+  readonly enterpriseStereotype?:
+    | { readonly profile: string; readonly value: string }
+    | undefined;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -86,8 +93,12 @@ export const buildCubeDataProductCatalog = (
     services.contractServerClient,
     services.depotServerClient,
     services.getAccessToken,
-    services.marketplaceServerClient,
-    services.getMarketplaceLink,
+    {
+      marketplaceServerClient: services.marketplaceServerClient,
+      marketplaceLink: services.getMarketplaceLink,
+      getCurrentUser: services.getCurrentUser,
+      enterpriseStereotype: services.enterpriseStereotype,
+    },
   );
 
 /** The viewer's lakehouse environment, which the engine needs to run data product cubes */

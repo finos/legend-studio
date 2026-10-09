@@ -37,7 +37,11 @@ interface CubeHost {
   clients, its token getter and the viewer's id; Legend Query builds them only when its `lakehouse` is configured. With
   the optional `marketplaceServerClient`, the catalog's `search` runs the marketplace's Lakehouse Access full-text
   search instead, one page of 100 matches, never reading the lite list, and its optional `isCutShort` says whether an
-  answer leaves out matches; Legend Query passes a client only when `marketplace.serverUrl` is also set.
+  answer leaves out matches; Legend Query passes a client only when `marketplace.serverUrl` is also set. The optional
+  `getMarketplaceLink` builds a product's page in the host's marketplace, for the preview, the Source panel and the
+  "Request access" links; without it, no link shows. The catalog's `getAccess` reads the viewer's access to each access
+  point group from their contracts, and the optional `enterpriseStereotype` names the stereotype marking groups open to
+  everyone (Legend Query reads `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do).
 
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
 lives as long as the page; Legend Query makes a new host on each visit.

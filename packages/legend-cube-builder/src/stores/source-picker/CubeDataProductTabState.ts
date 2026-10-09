@@ -45,6 +45,7 @@ import {
 } from '../../graph-manager/CubeDataProduct.js';
 import {
   type CubeAccessPoint,
+  type CubeAccessPointGroupAccess,
   CubeDataProductCandidate,
   type CubeDataProductCatalog,
   type CubeDataProductDescription,
@@ -135,6 +136,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   private listedCutShort = false;
   candidate: CubeDataProductCandidate | undefined;
   description: CubeDataProductDescription | undefined;
+  /** The viewer's access to each group of the picked product; none until read, or when it can't be */
+  access: ReadonlyMap<string, CubeAccessPointGroupAccess> | undefined;
   /** The picked access point, by group and id */
   accessPointKey: { readonly group: string; readonly id: string } | undefined;
   warehouse = CUBE_DEFAULT_CONSUMER_WAREHOUSE;
@@ -153,6 +156,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   /** Each counts its calls: a new call or closing the dialog drops a late answer */
   private listRequest = 0;
   private describeRequest = 0;
+  private accessRequest = 0;
   private confirmRequest = 0;
   /** Searches the typed text on the server once typing pauses */
   private readonly searchSoon = debounce((): void => {
@@ -175,6 +179,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       listedCutShort: observable,
       candidate: observable.ref,
       description: observable.ref,
+      access: observable.ref,
       accessPointKey: observable.ref,
       warehouse: observable,
       isListing: observable,
@@ -202,6 +207,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       retryListing: action,
       listCandidates: flow,
       describeCandidate: flow,
+      readAccess: flow,
       confirm: flow,
     });
     this.editorState = editorState;
@@ -512,6 +518,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         return;
       }
       this.description = description;
+      flowResult(this.readAccess(candidate)).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      );
     } catch (error) {
       if (request === this.describeRequest) {
         this.error = toError(error);
@@ -521,6 +530,43 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         this.isDescribing = false;
       }
     }
+  }
+
+  /**
+   * Reads the viewer's access to the picked product's groups, once its
+   * access points are shown. A failure shows no access and never stops an
+   * Add; an answer for a product no longer picked is dropped
+   */
+  *readAccess(candidate: CubeDataProductCandidate): GeneratorFn<void> {
+    const { catalog } = this;
+    if (!catalog?.getAccess) {
+      return;
+    }
+    const request = ++this.accessRequest;
+    try {
+      const access = (yield catalog.getAccess(candidate)) as ReadonlyMap<
+        string,
+        CubeAccessPointGroupAccess
+      >;
+      if (request === this.accessRequest && candidate === this.candidate) {
+        this.access = access;
+      }
+    } catch {
+      // no access shown
+    }
+  }
+
+  /** A group of the picked product in the host's marketplace, where access is asked for */
+  getAccessPointGroupLink(groupId: string): string | undefined {
+    const { candidate } = this;
+    return candidate
+      ? this.catalog?.getMarketplaceLink({
+          dataProductId: candidate.id,
+          deploymentId: candidate.deploymentId,
+          environmentType: candidate.environmentType,
+          accessPointGroup: groupId,
+        })
+      : undefined;
   }
 
   /**
@@ -691,9 +737,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   private resetCandidate(): void {
     this.describeRequest++;
+    this.accessRequest++;
     this.isDescribing = false;
     this.candidate = undefined;
     this.description = undefined;
+    this.access = undefined;
     this.accessPointKey = undefined;
   }
 }

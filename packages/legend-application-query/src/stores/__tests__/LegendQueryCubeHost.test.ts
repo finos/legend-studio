@@ -281,6 +281,33 @@ describe('Legend Query as the Cube host', () => {
     ).toBeUndefined();
   });
 
+  test('Marks the groups open to everyone as Studio and Marketplace configure them', () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    const applicationStore = createApplicationStore({
+      lakehouse,
+      extensions: {
+        core: {
+          dataProductConfig: {
+            classifications: ['ignored by Query'],
+            publicStereotype: {
+              profile: 'meta::pure::profiles::access',
+              stereotype: 'enterprise',
+            },
+          },
+        },
+      },
+    });
+    expect(
+      buildLegendQueryCubeLakehouseServices(applicationStore)
+        ?.enterpriseStereotype,
+    ).toEqual({ profile: 'meta::pure::profiles::access', value: 'enterprise' });
+    expect(
+      buildLegendQueryCubeLakehouseServices(
+        createApplicationStore({ lakehouse }),
+      )?.enterpriseStereotype,
+    ).toBeUndefined();
+  });
+
   test('Prefers the lakehouse environment Query remembers for the viewer', () => {
     const applicationStore = createApplicationStore({
       lakehouse: { url: 'https://lakehouse.test' },

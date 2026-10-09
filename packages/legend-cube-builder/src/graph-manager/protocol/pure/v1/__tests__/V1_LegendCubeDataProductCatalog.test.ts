@@ -368,13 +368,9 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
       accessPointGroup: 'core',
     };
     expect(
-      new V1_LegendCubeDataProductCatalog(
-        contract,
-        depot,
-        () => 'token',
-        undefined,
-        link,
-      ).getMarketplaceLink(target),
+      new V1_LegendCubeDataProductCatalog(contract, depot, () => 'token', {
+        marketplaceLink: link,
+      }).getMarketplaceLink(target),
     ).toBe('https://marketplace.test/page');
     expect(link).toHaveBeenCalledWith(target);
     expect(

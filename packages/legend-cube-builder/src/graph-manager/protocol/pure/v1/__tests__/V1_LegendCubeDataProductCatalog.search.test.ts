@@ -71,7 +71,7 @@ const setUp = (): {
       contract,
       depot,
       () => 'token',
-      marketplace,
+      { marketplaceServerClient: marketplace },
     ),
     liteCatalog: new V1_LegendCubeDataProductCatalog(
       contract,

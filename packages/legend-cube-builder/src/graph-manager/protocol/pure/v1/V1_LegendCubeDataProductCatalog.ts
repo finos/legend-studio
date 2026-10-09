@@ -18,7 +18,11 @@ import type { Schema } from '@finos/legend-cube';
 import {
   type V1_EntitlementsDataProductLite,
   type V1_EntitlementsLakehouseEnvironmentType,
+  type V1_LiteDataContractWithUserStatus,
+  V1_EnrichedUserApprovalStatus,
   V1_EntitlementsDataProductLiteModelSchema,
+  V1_liteDataContractWithUserStatusModelSchema,
+  V1_ResourceType,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import {
@@ -41,6 +45,7 @@ import {
   CubeDataProductEnvironmentType,
 } from '../../../CubeDataProduct.js';
 import {
+  CubeAccessPointGroupAccess,
   type CubeAccessPointLocation,
   type CubeDataProductCatalog,
   type CubeMarketplaceLinkTarget,
@@ -53,6 +58,7 @@ import {
   type NodeId,
 } from '../../../CubeEngine.js';
 import {
+  type V1_CubeEnterpriseStereotype,
   V1_findCubeAccessPointSchema,
   V1_readCubeDataProductDescription,
 } from './V1_CubeDataProductArtifact.js';
@@ -221,17 +227,58 @@ const toCursorDeploymentId = (value: unknown): number | undefined => {
     : undefined;
 };
 
+/**
+ * How far along approval a contract is, as the marketplace ranks a viewer's
+ * contracts for one group, so a granted one is never hidden behind a
+ * pending duplicate
+ */
+const APPROVAL_STAGE: Partial<Record<V1_EnrichedUserApprovalStatus, number>> = {
+  [V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS]: 1,
+  [V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL]: 2,
+  [V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL]: 3,
+  [V1_EnrichedUserApprovalStatus.APPROVED]: 4,
+};
+
+/** A contract's status as the access the marketplace shows for it */
+const toGroupAccess = (
+  status: V1_EnrichedUserApprovalStatus,
+): CubeAccessPointGroupAccess => {
+  switch (status) {
+    case V1_EnrichedUserApprovalStatus.APPROVED:
+      return CubeAccessPointGroupAccess.APPROVED;
+    case V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS:
+      return CubeAccessPointGroupAccess.SUBMITTED_FOR_APPROVALS;
+    case V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL:
+      return CubeAccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
+    case V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL:
+      return CubeAccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
+    case V1_EnrichedUserApprovalStatus.DENIED:
+      return CubeAccessPointGroupAccess.DENIED;
+    default:
+      return CubeAccessPointGroupAccess.NO_ACCESS;
+  }
+};
+
+/** What a host can add to the catalog: each part turns on what it serves */
+export interface V1_CubeDataProductCatalogOptions {
+  /** The marketplace's search API; with it, searches run there */
+  readonly marketplaceServerClient?: MarketplaceServerClient | undefined;
+  /** Builds a product's marketplace page, as the host's marketplace names it */
+  readonly marketplaceLink?:
+    | ((target: CubeMarketplaceLinkTarget) => string | undefined)
+    | undefined;
+  /** The viewer, whose contracts give their access to each group */
+  readonly getCurrentUser?: (() => string) | undefined;
+  /** The stereotype the host's marketplace marks groups open to everyone with */
+  readonly enterpriseStereotype?: V1_CubeEnterpriseStereotype | undefined;
+}
+
 export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
   readonly environmentTypes = ENVIRONMENT_TYPES;
   private readonly contractServerClient: LakehouseContractServerClient;
   private readonly depotServerClient: DepotServerClient;
   private readonly getAccessToken: () => string | undefined;
-  /** The marketplace's search API; with it, searches run there */
-  private readonly marketplaceServerClient: MarketplaceServerClient | undefined;
-  /** Builds a product's marketplace page, as the host's marketplace names it */
-  private readonly marketplaceLink:
-    | ((target: CubeMarketplaceLinkTarget) => string | undefined)
-    | undefined;
+  private readonly options: V1_CubeDataProductCatalogOptions;
   /** Each class's list, read once per page visit */
   private readonly lists = new Map<
     CubeDataProductEnvironmentType,
@@ -251,20 +298,16 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     contractServerClient: LakehouseContractServerClient,
     depotServerClient: DepotServerClient,
     getAccessToken: () => string | undefined,
-    marketplaceServerClient?: MarketplaceServerClient | undefined,
-    marketplaceLink?:
-      | ((target: CubeMarketplaceLinkTarget) => string | undefined)
-      | undefined,
+    options: V1_CubeDataProductCatalogOptions = {},
   ) {
     this.contractServerClient = contractServerClient;
     this.depotServerClient = depotServerClient;
     this.getAccessToken = getAccessToken;
-    this.marketplaceServerClient = marketplaceServerClient;
-    this.marketplaceLink = marketplaceLink;
+    this.options = options;
   }
 
   get searchesOnServer(): boolean {
-    return this.marketplaceServerClient !== undefined;
+    return this.options.marketplaceServerClient !== undefined;
   }
 
   get searchLimit(): number | undefined {
@@ -443,9 +486,9 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     },
     signal?: AbortSignal,
   ): Promise<readonly CubeDataProductCandidate[]> {
-    if (this.marketplaceServerClient) {
+    if (this.options.marketplaceServerClient) {
       return this.searchMarketplace(
-        this.marketplaceServerClient,
+        this.options.marketplaceServerClient,
         search,
         signal,
       );
@@ -515,7 +558,12 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
         this.readDefinition(candidate),
       ])
         .then(([artifact, definition]) =>
-          V1_readCubeDataProductDescription(candidate, artifact, definition),
+          V1_readCubeDataProductDescription(
+            candidate,
+            artifact,
+            definition,
+            this.options.enterpriseStereotype,
+          ),
         )
         .catch((error: unknown) => {
           this.descriptions.delete(key);
@@ -580,6 +628,92 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
 
   /** The product's page in the host's marketplace, as the host builds it; none without one */
   getMarketplaceLink(target: CubeMarketplaceLinkTarget): string | undefined {
-    return this.marketplaceLink?.(target);
+    return this.options.marketplaceLink?.(target);
+  }
+
+  /**
+   * The viewer's access to each of the product's groups, as the marketplace
+   * shows it, from the viewer's contracts, read afresh each time: a group
+   * marked open to everyone needs none; otherwise the contract for that
+   * group of this deployment furthest along approval. A group with no
+   * contract has no access only when the host marks open groups, since it
+   * might be one otherwise
+   */
+  async getAccess(
+    candidate: CubeDataProductCandidate,
+    signal?: AbortSignal,
+  ): Promise<ReadonlyMap<string, CubeAccessPointGroupAccess>> {
+    const { getCurrentUser, enterpriseStereotype } = this.options;
+    if (!getCurrentUser || !/^\d+$/u.test(candidate.deploymentId)) {
+      return new Map();
+    }
+    const deploymentId = Number(candidate.deploymentId);
+    const description = await this.describe(candidate);
+    throwIfAborted(signal);
+    let rows: unknown;
+    try {
+      rows = await this.contractServerClient.getContractsForUser(
+        getCurrentUser(),
+        this.getAccessToken(),
+      );
+    } catch (error) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.NETWORK,
+        `Cube couldn't read your data contracts\n${toMessage(error)}`,
+      );
+    }
+    throwIfAborted(signal);
+    if (!Array.isArray(rows)) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.NETWORK,
+        "Cube couldn't read your data contracts\nThe lakehouse's answer isn't a list of contracts",
+      );
+    }
+    // a contract Cube can't read is left out, never failing the others
+    const contracts = rows.flatMap(
+      (row): V1_LiteDataContractWithUserStatus[] => {
+        if (!isPlainObject(row) || !isPlainObject(row.contractResultLite)) {
+          return [];
+        }
+        try {
+          return [
+            deserialize(V1_liteDataContractWithUserStatusModelSchema([]), row),
+          ];
+        } catch {
+          return [];
+        }
+      },
+    );
+    const access = new Map<string, CubeAccessPointGroupAccess>();
+    description.groups.forEach((group) => {
+      if (group.isEnterprise) {
+        access.set(group.id, CubeAccessPointGroupAccess.ENTERPRISE);
+        return;
+      }
+      const best = contracts
+        .filter(({ contractResultLite: contract }) => {
+          return (
+            contract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP &&
+            contract.accessPointGroup === group.id &&
+            contract.resourceId === candidate.id &&
+            contract.deploymentId === deploymentId
+          );
+        })
+        .reduce<V1_LiteDataContractWithUserStatus | undefined>(
+          (found, contract) =>
+            !found ||
+            (APPROVAL_STAGE[contract.status] ?? 0) >
+              (APPROVAL_STAGE[found.status] ?? 0)
+              ? contract
+              : found,
+          undefined,
+        );
+      if (best) {
+        access.set(group.id, toGroupAccess(best.status));
+      } else if (enterpriseStereotype) {
+        access.set(group.id, CubeAccessPointGroupAccess.NO_ACCESS);
+      }
+    });
+    return access;
   }
 }

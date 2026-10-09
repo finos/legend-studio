@@ -228,6 +228,45 @@ describe('Data product tab', () => {
     expect(fake.typeLambdas).not.toHaveBeenCalled();
   });
 
+  test("Shows the viewer's access to each group, linking a group without it to its page in the marketplace", async () => {
+    const { dataProducts } = await renderPage();
+    let dialog = await openFromPalette();
+    fireEvent.click(within(dialog).getByText('Orders Product'));
+    const core = await within(dialog).findByRole('list', {
+      name: 'Access points of Core',
+    });
+    expect(
+      await within(core.parentElement as HTMLElement).findByText('Entitled'),
+    ).not.toBeNull();
+    const reference = within(dialog).getByRole('list', {
+      name: 'Access points of Reference',
+    });
+    expect(
+      within(
+        reference.parentElement as HTMLElement,
+      ).getByRole<HTMLAnchorElement>('link', { name: 'Request access' }).href,
+    ).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/deployment-orders_product#reference',
+    );
+
+    // access that can't be read shows nothing, and Add still works
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    dataProducts.getAccess.mockRejectedValue(new Error('Forbidden'));
+    dialog = await openFromPalette();
+    fireEvent.click(within(dialog).getByText('Returns Product'));
+    fireEvent.click(await within(dialog).findByText('Daily orders'));
+    await waitFor(() =>
+      expect(dataProducts.getAccess).toHaveBeenCalledTimes(2),
+    );
+    expect(within(dialog).queryByText('Entitled')).toBeNull();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(
+      within(dialog).getByRole<HTMLButtonElement>('button', { name: 'Add' })
+        .disabled,
+    ).toBe(false);
+  });
+
   test('Says when the picked product is at a moving SNAPSHOT version', async () => {
     await renderPage();
     const dialog = await openFromPalette();

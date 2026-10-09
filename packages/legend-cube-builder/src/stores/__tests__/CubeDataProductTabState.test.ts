@@ -45,9 +45,10 @@ import {
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
   CubeDataProductEnvironmentType,
 } from '../../graph-manager/CubeDataProduct.js';
-import type {
-  CubeDataProductCandidate,
-  CubeDataProductDescription,
+import {
+  CubeAccessPointGroupAccess,
+  type CubeDataProductCandidate,
+  type CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { rememberCubeWarehouse } from '../CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../CubeEditorState.js';
@@ -480,6 +481,34 @@ describe('Data product tab', () => {
     await settle();
     expect(tab.candidates).toBeUndefined();
     expect(tab.isListing).toBe(false);
+  });
+
+  test("Reads the viewer's access only for a product shown expanded, and a failure never stops an Add", async () => {
+    const { state, dataProducts } = setUp();
+    let tab = await openTab(state);
+    expect(dataProducts.getAccess).not.toHaveBeenCalled();
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    expect(dataProducts.getAccess).toHaveBeenCalledTimes(1);
+    expect(tab.access?.get('core')).toBe(CubeAccessPointGroupAccess.APPROVED);
+
+    // an answer for a product no longer picked is dropped
+    const held = deferred<ReadonlyMap<string, CubeAccessPointGroupAccess>>();
+    dataProducts.getAccess.mockReturnValueOnce(held.promise);
+    await pickProduct(tab, 'RETURNS_PRODUCT');
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    held.resolve(new Map([['core', CubeAccessPointGroupAccess.DENIED]]));
+    await settle();
+    expect(tab.access?.get('core')).toBe(CubeAccessPointGroupAccess.APPROVED);
+
+    // a failure shows no access, and no error
+    state.sourcePicker.close();
+    tab = await openTab(new CubeEditorState(state.host));
+    dataProducts.getAccess.mockRejectedValueOnce(new Error('Forbidden'));
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    expect(tab.access).toBeUndefined();
+    expect(tab.error).toBeUndefined();
+    tab.selectAccessPoint('core', 'daily_orders');
+    expect(tab.canConfirm).toBe(true);
   });
 
   test('Shows a failed listing in the tab, with its own retry, which lists again', async () => {

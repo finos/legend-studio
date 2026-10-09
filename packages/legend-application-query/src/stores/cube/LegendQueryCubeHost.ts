@@ -89,6 +89,13 @@ export const buildLegendQueryCubeLakehouseServices = (
       LegendQueryUserDataHelper.getLakehouseUserInfo(
         applicationStore.userDataService,
       )?.env,
+    // the stereotype Studio and Marketplace mark groups open to everyone with
+    enterpriseStereotype: config.options.dataProductConfig?.publicStereotype
+      ? {
+          profile: config.options.dataProductConfig.publicStereotype.profile,
+          value: config.options.dataProductConfig.publicStereotype.stereotype,
+        }
+      : undefined,
     // the marketplace of the deployment's class, where its deployment is;
     // Query's own links choose by a SNAPSHOT version instead
     getMarketplaceLink: (target) => {

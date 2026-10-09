@@ -18,8 +18,11 @@ import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
 import {
+  CUBE_ACCESS_POINT_GROUP_ACCESS_LABELS,
   CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS,
+  CUBE_NO_ACCESS_LABEL,
   CUBE_SNAPSHOT_VERSION_LABEL,
+  getCubeRequestAccessLabel,
 } from '../../__lib__/LegendCubeDataProductLabels.js';
 import {
   CUBE_PENDING_LABEL,
@@ -62,6 +65,41 @@ const CubeDataProductTabAlert: React.FC<{
     )}
     {children}
   </div>
+);
+
+/**
+ * The viewer's access to a group, once read: granted or on its way, or a
+ * link to request it in the marketplace; nothing while unread or unreadable
+ */
+const CubeAccessPointGroupBadge = observer(
+  (props: { tab: CubeDataProductTabState; groupId: string }) => {
+    const { tab, groupId } = props;
+    const access = tab.access?.get(groupId);
+    if (access === undefined) {
+      return null;
+    }
+    const label = CUBE_ACCESS_POINT_GROUP_ACCESS_LABELS[access];
+    if (label !== undefined) {
+      return (
+        <span className="shrink-0 rounded-sm bg-[var(--color-bg-panel-header)] px-1">
+          {label}
+        </span>
+      );
+    }
+    const link = tab.getAccessPointGroupLink(groupId);
+    return link !== undefined ? (
+      <a
+        className="shrink-0 text-[var(--color-accent)] underline"
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {getCubeRequestAccessLabel(undefined, undefined)}
+      </a>
+    ) : (
+      <span className="shrink-0">{CUBE_NO_ACCESS_LABEL}</span>
+    );
+  },
 );
 
 /** A sample value as the preview shows it; an empty one plainly */
@@ -243,8 +281,11 @@ export const CubeDataProductTab = observer(
           >
             {tab.description.groups.map((group) => (
               <li key={group.id}>
-                <div className="px-2 pt-1 text-sm text-[var(--color-text-secondary)]">
-                  {group.title ?? group.id}
+                <div className="flex items-center gap-2 px-2 pt-1 text-sm text-[var(--color-text-secondary)]">
+                  <span className="min-w-0 flex-1 truncate">
+                    {group.title ?? group.id}
+                  </span>
+                  <CubeAccessPointGroupBadge tab={tab} groupId={group.id} />
                 </div>
                 <ul aria-label={`Access points of ${group.title ?? group.id}`}>
                   {group.accessPoints.map((point) => {

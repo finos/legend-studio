@@ -16,6 +16,7 @@
 
 import type { SchemaDiff } from '@finos/legend-cube';
 import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
+import { CubeAccessPointGroupAccess } from '../graph-manager/CubeDataProductCatalog.js';
 import { getSchemaChangeList } from './LegendCubeLabels.js';
 
 // The text of data product sources (PLAN §6.8): the source dialog's Data
@@ -61,3 +62,22 @@ export const getCubeRequestAccessLabel = (
   accessPointGroup && dataProductName
     ? `Request access to ${accessPointGroup} in ${dataProductName}`
     : 'Request access';
+
+/**
+ * The viewer's access to a group, as the marketplace says it; a group with
+ * no access, or refused, offers to request it instead
+ */
+export const CUBE_ACCESS_POINT_GROUP_ACCESS_LABELS: Readonly<
+  Partial<Record<CubeAccessPointGroupAccess, string>>
+> = {
+  [CubeAccessPointGroupAccess.ENTERPRISE]: 'Enterprise access',
+  [CubeAccessPointGroupAccess.APPROVED]: 'Entitled',
+  [CubeAccessPointGroupAccess.SUBMITTED_FOR_APPROVALS]:
+    'Submitted for approval',
+  [CubeAccessPointGroupAccess.PENDING_MANAGER_APPROVAL]:
+    'Pending manager approval',
+  [CubeAccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL]:
+    'Pending data owner approval',
+};
+
+export const CUBE_NO_ACCESS_LABEL = 'No access';

@@ -20,6 +20,7 @@ import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct
 import {
   CubeAccessPoint,
   CubeAccessPointGroup,
+  CubeAccessPointGroupAccess,
   type CubeDataProductCatalog,
   CubeDataProductCandidate,
   CubeDataProductDescription,
@@ -133,6 +134,9 @@ export interface FakeCubeDataProductCatalog {
   readonly getMarketplaceLink: jest.Mock<
     CubeDataProductCatalog['getMarketplaceLink']
   >;
+  readonly getAccess: jest.Mock<
+    NonNullable<CubeDataProductCatalog['getAccess']>
+  >;
 }
 
 /**
@@ -192,6 +196,16 @@ export const createFakeCubeDataProductCatalog = (
     (target) =>
       `https://marketplace.test/dataProduct/deployed/${target.dataProductId}/${target.deploymentId}${target.accessPointGroup ? `#${target.accessPointGroup}` : ''}`,
   );
+  // the viewer is entitled to the core group, and has never asked for the reference one
+  const getAccess = jest.fn<NonNullable<CubeDataProductCatalog['getAccess']>>(
+    async () =>
+      Promise.resolve(
+        new Map([
+          ['core', CubeAccessPointGroupAccess.APPROVED],
+          ['reference', CubeAccessPointGroupAccess.NO_ACCESS],
+        ]),
+      ),
+  );
   return {
     catalog: {
       environmentTypes: [PRODUCTION, PRODUCTION_PARALLEL],
@@ -202,10 +216,12 @@ export const createFakeCubeDataProductCatalog = (
       describe,
       resolveSchemas,
       getMarketplaceLink,
+      getAccess,
     },
     search,
     describe,
     resolveSchemas,
     getMarketplaceLink,
+    getAccess,
   };
 };
