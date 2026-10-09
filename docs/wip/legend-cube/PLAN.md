@@ -1907,24 +1907,24 @@ DB2, SQL Server, Databricks, DuckDB, Oracle and Trino unless noted.
 
 **Transforms (§7)**
 
-| Spec           | Lambda construct                                                                                                                                                                                                                | Engine support                                                                                                                                                     | Fallback / notes                                                                                                                                                                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Source (table) | `#>{db.schema.table}#` + one `->from(rt)`                                                                                                                                                                                       | H2, PCT                                                                                                                                                            | Problem tables flagged (§6.2.6)                                                                                                                                                                                                                                       |
-| **Filter**     | `->filter({row \| …})`                                                                                                                                                                                                          | H2, PCT                                                                                                                                                            | §8.4 table                                                                                                                                                                                                                                                            |
-| **Join**       | rename temps → `->join(R, JoinKind.X, {l,r \| …})` → (FULL: coalesce extend) → `->select(~[…])`                                                                                                                                 | H2 all 4 kinds; FULL native on 9 databases, emulated on H2                                                                                                         | Engine rejects any duplicate name ✅ (hence the algorithm); `->toOne()` for SQL NULL semantics                                                                                                                                                                        |
-| Sort           | Nothing where it stands; `->sort(~a->ascending())`, or `->sort([~a->ascending(), ~b->descending()])` for several keys, just before each Limit, Drop or Slice that takes rows by the order and before the capture's limit (§8.4) | H2, PCT                                                                                                                                                            | Written where the order is used, as an ORDER BY in a subquery is lost (SQL Server rejects one without TOP). A Join, a Restrict that drops sort keys or a later Sort on all the same columns loses the order: a derived warning (`findLostSortOrders`), never an error |
-| Group          | `->groupBy(~[k…], ~[n: x \| $x.c : y \| $y->agg()])`, keys as listed; Count rows `n: x \| 1 : y \| $y->count()`; no keys → `->aggregate(~[…])` (M4, §11.5)                                                                      | H2, PCT                                                                                                                                                            | `groupBy(~[], …)` throws NPE ✅; no aggregations → NPE (spec requires ≥ 1 anyway)                                                                                                                                                                                     |
-| Restrict       | `->select(~[…])` listed **in input-schema order**                                                                                                                                                                               | H2, PCT                                                                                                                                                            | `select` keeps the order you list ✅                                                                                                                                                                                                                                  |
-| Rename         | one `->rename(~old, ~'new')` per mapping                                                                                                                                                                                        | H2, PCT                                                                                                                                                            | Array form returns 500 ✅                                                                                                                                                                                                                                             |
-| Distinct       | `->distinct()`, over every column (never `distinct(~[…])`, which also projects)                                                                                                                                                 | H2, PCT                                                                                                                                                            | Padded on SQL Server and Sybase IQ (database workarounds below)                                                                                                                                                                                                       |
-| Drop           | `->drop(n)`, after `->sort(<input order>)` when the input has a row order                                                                                                                                                       | H2; **fails PCT on SQL Server and DB2** (`limit m,-1`); Sybase emits the same SQL (no PCT module); Sybase IQ and MemSQL number the rows by the first sort key only | Row numbers on SQL Server, Sybase, Sybase IQ, DB2 and MemSQL (database workarounds below)                                                                                                                                                                             |
-| Limit          | `->limit(n)`, after `->sort(<input order>)` when the input has a row order                                                                                                                                                      | H2, PCT; Sybase IQ numbers the rows by the first sort key only                                                                                                     | Row numbers on Sybase IQ after a Sort on several columns (database workarounds below)                                                                                                                                                                                 |
-| Slice          | `->slice(start, stop)`, range `[start, stop)` (D5), after `->sort(<input order>)` when the input has a row order                                                                                                                | H2; **fails PCT on SQL Server** (`limit m,n`); DB2 passes; Sybase emits `limit m,n` (no PCT module); Sybase IQ numbers the rows by the first sort key only         | Row numbers on SQL Server, Sybase and Sybase IQ (database workarounds below)                                                                                                                                                                                          |
-| Concat         | `<first>->concatenate(<second>)`; with Convert types, an input first casts its differing columns: `->extend(~[cube_cast: x \| $x.c->cast(@T)])->select(~[…])->rename(~cube_cast, ~c)`                                           | H2, PCT (`UNION ALL`)                                                                                                                                              | Names and order must match ✅; precise types too (D5), though the engine takes a type next to its ancestor ✅. A count mismatch compiles, typed as the shorter relation, and fails at execution (NPE) ✅ → Cube validates. Convert types: §11.5 Q5                    |
-| Difference     | **No relation function.** Rename `x→x_1`/`x_2`, keys → temps; `join(FULL)`; `extend` (keys `coalesce`; `x_valueDifference: x_1->coalesce(0)->toFloat() - x_2->coalesce(0)->toFloat()`); `select` in §7.12 order                 | Emulation H2 ✅                                                                                                                                                    | **Gap:** legacy `columnValueDifference` is TDS-only and differs from §7.12. Spec semantics kept (D5)                                                                                                                                                                  |
-| Partition      | `->extend(over(~[p…], [~s->ascending()]), ~[n: {p,w,r \| $r.c} : y \| $y->agg()])`; ranks in a separate `extend` with `{p,w,r \| $p->rank($w,$r)}`; `let`-isolated (§8.6)                                                       | H2, PCT for ranking with ORDER BY and `size()`                                                                                                                     | **Gap:** window `count()` loses its OVER clause → emit `size()` ✅. Rank without a sort fails → validation. No partition → `over([sorts])`; neither → `over([])`                                                                                                      |
-| Extend         | `->extend(~[n: row \| <expr>])`, expression as `raw` IR from `grammarToJSON_valueSpecification`                                                                                                                                 | H2                                                                                                                                                                 | Type from engine typing over an empty model (§5.7)                                                                                                                                                                                                                    |
-| Unknown        | –                                                                                                                                                                                                                               | –                                                                                                                                                                  | Not executable (§7.16)                                                                                                                                                                                                                                                |
+| Spec           | Lambda construct                                                                                                                                                                                                                | Engine support                                                                                                                                                     | Fallback / notes                                                                                                                                                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Source (table) | `#>{db.schema.table}#` + one `->from(rt)`                                                                                                                                                                                       | H2, PCT                                                                                                                                                            | Problem tables flagged (§6.2.6)                                                                                                                                                                                                                                                          |
+| **Filter**     | `->filter({row \| …})`                                                                                                                                                                                                          | H2, PCT                                                                                                                                                            | §8.4 table                                                                                                                                                                                                                                                                               |
+| **Join**       | rename temps → `->join(R, JoinKind.X, {l,r \| …})` → (FULL: coalesce extend) → `->select(~[…])`                                                                                                                                 | H2 all 4 kinds; FULL native on 9 databases, emulated on H2                                                                                                         | Engine rejects any duplicate name ✅ (hence the algorithm); `->toOne()` for SQL NULL semantics                                                                                                                                                                                           |
+| Sort           | Nothing where it stands; `->sort(~a->ascending())`, or `->sort([~a->ascending(), ~b->descending()])` for several keys, just before each Limit, Drop or Slice that takes rows by the order and before the capture's limit (§8.4) | H2, PCT                                                                                                                                                            | Written where the order is used, as an ORDER BY in a subquery is lost (SQL Server rejects one without TOP). A Join, a Group, a Concat, a Restrict that drops sort keys or a later Sort on all the same columns loses the order: a derived warning (`findLostSortOrders`), never an error |
+| Group          | `->groupBy(~[k…], ~[n: x \| $x.c : y \| $y->agg()])`, keys as listed; Count rows `n: x \| 1 : y \| $y->count()`; no keys → `->aggregate(~[…])` (M4, §11.5)                                                                      | H2, PCT                                                                                                                                                            | `groupBy(~[], …)` throws NPE ✅; no aggregations → NPE (spec requires ≥ 1 anyway)                                                                                                                                                                                                        |
+| Restrict       | `->select(~[…])` listed **in input-schema order**                                                                                                                                                                               | H2, PCT                                                                                                                                                            | `select` keeps the order you list ✅                                                                                                                                                                                                                                                     |
+| Rename         | one `->rename(~old, ~'new')` per mapping                                                                                                                                                                                        | H2, PCT                                                                                                                                                            | Array form returns 500 ✅                                                                                                                                                                                                                                                                |
+| Distinct       | `->distinct()`, over every column (never `distinct(~[…])`, which also projects)                                                                                                                                                 | H2, PCT                                                                                                                                                            | Padded on SQL Server and Sybase IQ (database workarounds below)                                                                                                                                                                                                                          |
+| Drop           | `->drop(n)`, after `->sort(<input order>)` when the input has a row order                                                                                                                                                       | H2; **fails PCT on SQL Server and DB2** (`limit m,-1`); Sybase emits the same SQL (no PCT module); Sybase IQ and MemSQL number the rows by the first sort key only | Row numbers on SQL Server, Sybase, Sybase IQ, DB2 and MemSQL (database workarounds below)                                                                                                                                                                                                |
+| Limit          | `->limit(n)`, after `->sort(<input order>)` when the input has a row order                                                                                                                                                      | H2, PCT; Sybase IQ numbers the rows by the first sort key only                                                                                                     | Row numbers on Sybase IQ after a Sort on several columns (database workarounds below)                                                                                                                                                                                                    |
+| Slice          | `->slice(start, stop)`, range `[start, stop)` (D5), after `->sort(<input order>)` when the input has a row order                                                                                                                | H2; **fails PCT on SQL Server** (`limit m,n`); DB2 passes; Sybase emits `limit m,n` (no PCT module); Sybase IQ numbers the rows by the first sort key only         | Row numbers on SQL Server, Sybase and Sybase IQ (database workarounds below)                                                                                                                                                                                                             |
+| Concat         | `<first>->concatenate(<second>)`; with Convert types, an input first casts its differing columns: `->extend(~[cube_cast: x \| $x.c->cast(@T)])->select(~[…])->rename(~cube_cast, ~c)`                                           | H2, PCT (`UNION ALL`)                                                                                                                                              | Names and order must match ✅; precise types too (D5), though the engine takes a type next to its ancestor ✅. A count mismatch compiles, typed as the shorter relation, and fails at execution (NPE) ✅ → Cube validates. Convert types: §11.5 Q5                                       |
+| Difference     | **No relation function.** Rename `x→x_1`/`x_2`, keys → temps; `join(FULL)`; `extend` (keys `coalesce`; `x_valueDifference: x_1->coalesce(0)->toFloat() - x_2->coalesce(0)->toFloat()`); `select` in §7.12 order                 | Emulation H2 ✅                                                                                                                                                    | **Gap:** legacy `columnValueDifference` is TDS-only and differs from §7.12. Spec semantics kept (D5)                                                                                                                                                                                     |
+| Partition      | `->extend(over(~[p…], [~s->ascending()]), ~[n: {p,w,r \| $r.c} : y \| $y->agg()])`; ranks in a separate `extend` with `{p,w,r \| $p->rank($w,$r)}`; `let`-isolated (§8.6)                                                       | H2, PCT for ranking with ORDER BY and `size()`                                                                                                                     | **Gap:** window `count()` loses its OVER clause → emit `size()` ✅. Rank without a sort fails → validation. No partition → `over([sorts])`; neither → `over([])`                                                                                                                         |
+| Extend         | `->extend(~[n: row \| <expr>])`, expression as `raw` IR from `grammarToJSON_valueSpecification`                                                                                                                                 | H2                                                                                                                                                                 | Type from engine typing over an empty model (§5.7)                                                                                                                                                                                                                                       |
+| Unknown        | –                                                                                                                                                                                                                               | –                                                                                                                                                                  | Not executable (§7.16)                                                                                                                                                                                                                                                                   |
 
 **Database workarounds (M2, §11.4).** For a Drop, Slice or Limit inside a query (Cube's always are, under the run's
 own limit) and a Distinct before a limit, some databases reject the engine's SQL or get the wrong rows.
@@ -2629,7 +2629,7 @@ console errors.
 | M2   | Simple unary transforms + Join autofix     | Rename (§7.5 + collision fix; regex replaced, see Appendix A), the **Join rename autofix** (collision-free names), Restrict (input order), Sort (+ "Sort only affects output at the sink" warning), Distinct, Limit, Drop, Slice (`[start, stop)`); the database workarounds of §11.4 (row numbers for Drop and Slice on SQL Server, Sybase and Sybase IQ, for Drop on DB2, MemSQL and ClickHouse and for every Limit on Sybase IQ; a padded Distinct on SQL Server and Sybase IQ); grid quick actions (Sort by / Filter by X)                                   |
 | M3   | Entry points, sources modal, depot catalog | The direct connection first, then data products (§6.8, moved up from M9). D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                      |
 | M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family) and Count rows, `aggregate()` for global groups, the grid's Group by; Concat with precise-strict schema equality, Convert types (a type-only cast within numbers, strings or dates) and the Rename and Restrict autofixes; a conformance suite comparing local inference with `lambdaRelationType` for every node type, exact on nullability but for each case's declared wider columns (§11.5)                                                                                      |
-| M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas)                                                                                                                                                                                                                                                                                                                                                                                      |
+| M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas). Settled in §11.6: D5's frames, Row Number, Count rows, windowed Distinct natively                                                                                                                                                                                                                                                                                                   |
 | M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
 | M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                        |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -3090,6 +3090,249 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
   Join's Left and Right); §17.6 (keys in input order, 'Add aggregation' never disabled, a Concat editor where the spec
   says "Nothing"); §17.9 (Concat's help text).
 
+### 11.6 M5: Partition (window functions)
+
+M5 is built on the branch `cube-m4-followup`, after M4's follow-ups, and lands in the same PR, #5653 (user,
+2026-10-09: no reviewer is free, so the work continues there). The branch was rebased on master `5e424277b` (#5656,
+CSV into DuckDB) first. Its status is in [PROGRESS-M5.md](PROGRESS-M5.md). Requirements: `m5-requirements` (three
+readers, for the node, for emitting and isolating windows and for the cross-cutting work, and a synthesizer that merged
+them and re-ran 16 engine facts): 62 checklist items, 15 steps and 8 questions, the full result kept in the local
+evidence folder (`m5-requirements-result.json`). Engine facts were probed on the local engine (`93d92b4`): ✅ only
+where the synthesizer re-ran the probe, 💭 where only a plan was made or a reader reported it.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M5** (user, 2026-10-09, all on the requirements' recommendation):
+
+1. **Frames** (answers §12.2 item 8): D5's default, with no saved frame key and no frame clause written. With sort
+   keys, an aggregate runs from the partition's first row to the current one, and rows tied on the sort share a
+   value (SQL's `RANGE` default ✅); with none, it covers the whole partition ✅. The editor notes say so, including
+   that a Rank's sort makes the node's Sum running. A per-node "running / whole partition" setting (the aggregates'
+   `over()` without the sort, the ranks' with it) is the follow-up if users ask; explicit frames are not planned (an
+   unpartitioned window can't take a rows frame ✅, and date ranges plan on 4 of 12 types 💭).
+2. **Functions:** the spec's, plus **Row Number**: no column, Integer, never empty, a sort required as for Rank,
+   `{p,w,r|$p->rowNumber($r)}`. It gives an exact "top N per group" with a Filter after it, where Rank keeps ties.
+   Not ntile, lag, lead, first, last, nth, Percent Rank or Cumulative Distribution.
+3. **Windowed Distinct Count and Distinct Value** are offered, as the spec does, natively: `count(distinct x) over (…)`
+   and, for Distinct Value, `case when count(distinct x) over (…) = 1 then max(x) over (…) end`. They plan on every
+   database with windows ✅ and run on H2 ✅; Postgres, SQL Server, Databricks and Trino are expected to refuse them at
+   run time, and Oracle and BigQuery with a sort (vendor documentation, 💭): an error, never wrong rows. An editor
+   note names the portability, the plan-only test pins the forms, and ISSUES gets a draft.
+4. **The editor's layout** follows the original (QUESTIONS.md U13, on `cube-canvas`): "Window functions", then
+   "Partition by", then "Order by".
+
+**Decided without asking** (each has a precedent; for review):
+
+- **Count rows** is offered in a Partition, as in a Group (M4's shared row model): `{p,w,r|1}:y|$y->size()`, which
+  is `count(1) over (…)` ✅, saved as `{function: 'CountRows', name}`.
+- **Spanner, Presto and Composite** plan no window at all (`Window Columns not supported for Database Type: <T>`, a
+  500 ✅). A run there shows the engine's error on the capture node, as M2 leaves Spanner's missing row numbers to
+  the engine; the plan-only test pins it. A refusal before running is a follow-up if they become targets.
+- **No grid quick action** for windows: spec §12.4 lists none, and one couldn't ask for the partition or direction.
+  M7 reworks the menu.
+- **Row order:** a Partition keeps its input's row order, as Distinct does (`Distinct.ts:37-41`): it keeps every row
+  and column, so the Sort's keys still exist after it, and Cube writes the order where it is used, at the capture
+  after `from()` ✅ or before a later Limit, Drop or Slice. A Sort before a Partition gets no warning.
+  `consumesInputOrder` is false: the window's own sort keys order it.
+- **Group is unchanged.** Rank, Dense Rank and Row Number form a window-only set beside `AggregationFunction`, and the
+  helpers (known, takes a column, auto-name, result type, nullability, `validateColumnAggregation`, reduce) take the
+  set each use allows; in a Group, Rank stays `… is unknown.` (M4 Q4) and every M4 test passes unchanged.
+- **Typing lambdas stay plain chains**: the engine types each node the same in chain and `let` form (8 of 8 💭, checked
+  again in M5.3). Only the run lambda and Show Pure carry `let`s.
+- **The saved shape is Cube's own** (`columns`, `sorts`, `aggregations`, as Group's and Sort's entries), never the
+  spec's V1 `operations` with `olapRank` and `olapAggregation`.
+- **Two Cube messages:** `Partition column "X" of type <T> cannot be partitioned.` (VARIANT and OPAQUE, as Group's
+  keys) and `Aggregation function "<a>" requires at least one sort column.` (Rank, Dense Rank, Row Number), which
+  starts with "Aggregation function" so the editor marks the function control.
+- **Builder:** registered after Join (spec §7.0's order; Difference, M6, will go between them); icon `SigmaIcon`
+  (`Icon.ts:156`), since `DataCubeIcon.Window` reads as a UI window; "Add window function" is never disabled (as
+  Group's "Add aggregation"); "Add sort column" is disabled once every sortable column is used (spec §17.6).
+
+**Window functions** (`Aggregation.ts`, extended; every column function as Group offers it, §11.5):
+
+| Function (saved)    | Shown as         | Offered on        | Result type          | Nullable | In a window                                            |
+| ------------------- | ---------------- | ----------------- | -------------------- | -------- | ------------------------------------------------------ |
+| `Count`             | Count            | every type        | Integer              | no       | `{p,w,r\|$r.c}:y\|$y->size()` (never `count()`, below) |
+| `DistinctCount`     | Distinct Count   | as in a Group     | Integer              | no       | `distinct()->size()`                                   |
+| `DistinctValue`     | Distinct Value   | as in a Group     | the input's type     | yes      | `uniqueValueOnly()`                                    |
+| `Sum`, `Average`    | Sum, Average     | as in a Group     | as in a Group (§5.7) | yes      | `sum()`, `average()`                                   |
+| `Min`, `Max`        | Min, Max         | as in a Group     | as in a Group (§5.7) | yes      | `min()`, `max()`                                       |
+| `CountRows`         | Count Rows       | no column         | Integer              | no       | `{p,w,r\|1}:y\|$y->size()`                             |
+| `Rank`, `DenseRank` | Rank, Dense Rank | no column; a sort | Integer              | no       | `{p,w,r\|$p->rank($w,$r)}`, `$p->denseRank($w,$r)`     |
+| `RowNumber`         | Row Number       | no column; a sort | Integer              | no       | `{p,w,r\|$p->rowNumber($r)}`                           |
+
+- `count()` in a window compiles, typed Integer, but loses its `OVER` and fails on H2 ✅. A rank with no sort types
+  and plans, then fails on the database with no location ✅, so Cube's sort check is the only guard.
+- The engine types Sum and Average `[1]`, but an all-null partition gives null for both ✅: Cube says nullable, and the
+  conformance cases declare them (M4 Q7). Count of an all-null column is 0, Count rows 1 ✅.
+- Auto-names as in a Group (`FREIGHT Sum`), and `Count Rows`, `Rank`, `Dense Rank`, `Row Number`; names are always
+  stored and editable (M4 Q3), and over 128 code points shown invalid, never cut.
+
+**Partition** (`partition`, label `Apply Window Functions`), a `UnaryNode`:
+
+- Holds `columns` (partition by, may be empty, in stored order), `sorts` (Sort's `{column, direction}`, may be
+  empty) and `aggregations` (Group's `{column?, function, name}`). The constructor refuses only wrong shapes.
+- Validation, in order: `Partition columns cannot have duplicates.`, then each column named, present (label
+  `Partition column`) and sortable (the new message); each sort key as `validateSortKey`, then
+  `Sort columns cannot have duplicates.` (never `Sort.validate`, which refuses an empty list; a sort column may also
+  be a partition column); `Aggregations cannot be empty.`; then every row with the window set: function empty or
+  unknown, a column on a no-column function (`… does not allow column.`), the column (label `Aggregation column`) and
+  its compatibility, a rank with no sort (the new message), the name empty or invalid, the name folding to an input
+  column's, two names folding to one. The engine fails on a duplicate with a 500 and no location 💭, so Cube refuses
+  first.
+- Schema: `undefined` unless valid, else the input's columns unchanged, then one per row, in listed order ✅.
+- Saved: `{columns, sorts, aggregations}`, all three always written; entries read as Sort's and Group's (their readers
+  shared); a non-string field is a decode error; an unknown key on an entry makes an Unknown node; an unknown or empty
+  function is kept, invalid (M4 Q4), and so is a Rank saved with a column; a missing name gets the auto-name, or `''`.
+- Emitted, always in array form `~[…]` (the single form lets a later filter run before the window, §8.6):
+  `->extend(<over>, ~[<aggregates>])`, then `->extend(<over>, ~[<ranks>])`, then `->select(~[…])` only when the
+  listed order differs, since the two extends give aggregates first ✅; never one extend holding both (a 500
+  ClassCastException with no location ✅). `<over>` is `over(~[p…], [sorts])`, `over(~[p…])`, `over([sorts])` or
+  `over([])` (never `over(~[], …)`, an NPE, or `over([], [sorts])`, a 400 💭). The emitter asserts the names equal the
+  schema, as `GroupEmitter` does. `describe()`: `Apply 2 Window Functions`, `Apply 1 Window Function`.
+- An isolation boundary (§8.6): bound with a `let` whenever it isn't the capture.
+
+**Window isolation** (§8.6, built in M5.2 and M5.3 before Partition needs it):
+
+- IR: `let` gets an origin, role `let`, so a failure stamped there lands on the window node; a `$n_…` reference takes
+  its consumer's origin. IR `block` is dropped (the protocol has none: a block is a lambda with several statements).
+  The serializer writes `letFunction` and `var`; `IRPrinter` prints `{| let n_x = …; <capture>;}`, which the engine
+  parses back to the same JSON (a golden test).
+- `TransformDefinition.isolationBoundary` (declared in §4.5, missing from `NodeRegistry.ts`). `QueryEmitter` memoizes
+  emission, binds every boundary node that isn't the capture once, in dependency order (a window feeding both inputs
+  of a Join or Concat is bound once), names it `n_<id>` when the id lowercased matches `[a-z0-9_]{1,28}` and no other
+  let has it in any case, else `n_<k>`, never one of the lambda parameters Cube writes (`x`, `row`, `p`, `w`, `r`,
+  `y`). An id like `a-b` would break the SQL ✅.
+- The run lambda with lets is `{| <lets>; <capture relation>}->from(rt)->sort(<capture order>)->limit(n + 1)`: one
+  `from()`, after the block, and the capture's sort and limit after it. Inside the block, the ORDER BY ends in a
+  subselect: Sybase IQ then numbers the rows itself, and SQL Server's outer select has no order ✅. After it, every
+  window database writes a `WITH`, keeps a filter's literal, and puts the ORDER BY at the root ✅. Without lets the run
+  lambda is unchanged, and so is every M1–M4 golden.
+- Never a `let` after a Sort: a Sort writes nothing where it stands, and lets follow only windows. A Limit, Drop or
+  Slice inside a let still writes its sort just before it, as TOP, LIMIT or FETCH FIRST with an ORDER BY in the CTE:
+  pinned on SQL Server and Sybase (Sort → Limit → Partition, and Sort → Partition → Limit) in M5.10.
+- M2's row-number forms (`RowNumberEmitter.ts`) stay chains: they are array form, and a guard in the plan-only test
+  checks every workaround database keeps the `cube_rn` predicate and writes no QUALIFY.
+- Show Pure shows the lets; typing lambdas don't (above). An engine test through `V1_LegendCubeEngine` types, runs,
+  renders and maps an error inside a let (the conformance suite types chains only).
+
+**Databases.** No `CUBE_DIALECT_WORKAROUNDS` entry: the let form and the array form plan on the 17 types with windows
+✅. The plan-only test gets `WINDOW_SHAPES` over `WINDOW_DATABASE_TYPES` (window shapes in `SHAPES` would fail every
+Spanner, Presto and Composite loop), DuckDB in its model with a `duckDB` spec, the three refusals, and pins: no rows or
+range clause, `count(col)`, `count(1)`, `avg(1.0 * …)`, `rank()`, `dense_rank()`, `row_number()`, no bare `count(` in
+a window; a Filter after a Partition as a `WITH n_…` and a `WHERE` outside the window's select, never QUALIFY; the
+capture's ORDER BY and limit at the root, never Sybase IQ's `limitoffset_via_window_subquery`; SQL Server and Sybase
+with no ORDER BY in a subquery or CTE without TOP; `over (order by …)` and `over ()` with no partition; the windowed
+distinct forms per database. ISSUES drafts: window `count()` losing OVER; a single-form window extend not isolated,
+with QUALIFY dropped or refused; a rank with no ORDER BY planning; windowed `count(distinct)` portability.
+
+**Builder.**
+
+- `CubePartitionDraft`: partition columns stored in the input's order, a loaded order kept until the picks change
+  (M4 Q2), a saved column the input lacks kept listed; sort rows as `CubeSortDraft`'s, a blank one left out; rows as
+  `CubeGroupDraft`'s, the name following column and function until typed, Count set when a column is picked first,
+  Count rows, Rank, Dense Rank and Row Number clearing the column; `build()` returns the original when nothing changed.
+- `CubePartitionEditor` (Q4's order): "Window functions" rows (column, function, output name; the no-column functions
+  show a short text in place of the column picker; the column type's functions, then Count Rows, Rank, Dense Rank and
+  Row Number, a held unknown function kept visible; one blank row to start); "Partition columns" (a checklist, VARIANT
+  and OPAQUE disabled with a reason); "Sort columns" rows (column, direction, move, remove; none to start). Each row
+  shows its first problem; aria-labels `Partition columns`, `Sort column <n>`, `Sort direction <n>`, `Aggregation
+column <n>`, `Aggregation function <n>`, `Aggregation output name <n>`. It fits the floating host (§12.2 item 1) and
+  honours read-only. M5.6 first extracts the column checklist, the sort row and the aggregation row from the Group and
+  Sort editors, with no behaviour change.
+- Notes: running versus whole partition (Q1), ties sharing a value and a rank; Rank, Dense Rank and Row Number need a
+  sort, and Rank skips numbers after a tie where Dense Rank doesn't; empty sort values come last ascending and first
+  descending on H2 (databases differ 💭); an earlier Sort doesn't order the window; Count counts non-empty values and
+  Count Rows every row; windowed Distinct Count and Distinct Value fail on some databases (Q3).
+- Help text spec §17.9's ("Adds new columns with outputs of window functions for optional window partition and
+  order."). `findColumnOrigins` follows a Partition: input columns by name, Distinct Value, Min and Max outputs to
+  their column, so the Join's "type unknown" warning still sees them.
+
+**Tests.** Core: every message exactly and in order, each function's schema per family, `describe()`, row order,
+codec round trips and Unknown cases, `printIR` of each `over()` form, the split extends and the select, Group unchanged.
+Conformance (`widerNullable` Sum and Average): every function on ORDERS, ALLTYPES' families, no partition, neither,
+ranks only, Sum, Rank, Max in that order, after a LEFT join, after a Group, a Partition of a Partition, a Filter and a
+Group after one. Two `operations.cube.json` samples. On the engine: ORDERS' tie on 1996-07-08 (Count rows 1, 2, 4,
+4, 5; a Sum of EMPLOYEE_ID 5, 11, 18, 18, 22; Rank 1, 2, 3, 3, 5; Dense Rank 1, 2, 3, 3, 4 ✅), ALFKI's running Sum 6,
+10, 14, 15, 16, 19 against a total of 19 ✅, ALLTYPES ID 3 ✅, France 77 after a Filter ✅, the top 3 per country ✅,
+the null SHIP_REGION partition and null SHIPPED_DATE ranks 💭; DuckDB in memory as a second executed database through
+the direct connection. A composition suite (`CubeWindowComposition.engine-roundtrip-test.ts`) runs Cube graphs, pairs
+and triples with a Partition, on H2 against a small JS reference with D4's null rules; the evidence folder's `g1`
+matrix stays there as a wider check. Integer columns over FREIGHT, whose REAL values show float noise ✅.
+
+**Engine facts** (probes under `m5-requirements/`; `synth/` holds the re-runs, on the Cube fixture through
+`partition-node/probe.mjs` unless `nw.mjs` is named, since the shared model types FREIGHT as String ✅):
+
+| Fact                                                                                                                                                                                                  |     | Probe                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | -------------------------------------------------- |
+| A Filter after a single-form window runs before it (France 2); the array form and the let form keep it after (France 77); in the let form the capture's sort and limit after `from()` are at the root | ✅  | `synth/s1-let-filter.out` (`nw.mjs`)               |
+| One extend with an aggregate and a rank: a 500 ClassCastException, no location; split extends type in emission order, and a select restores the listed order                                          | ✅  | `synth/s3-fixture.out` A–D                         |
+| Running aggregates with a sort, ties sharing a value; the whole partition without one; Rank and Dense Rank on ties                                                                                    | ✅  | `synth/s3-fixture.out` E, `s6-fixture.out` J       |
+| `count()` in a window fails on H2; a rank with no sort fails with no location; an all-null partition's Sum and Average are null, typed `[1]`                                                          | ✅  | `synth/s3-fixture.out` F–H                         |
+| A let-bound Rank with a Filter on it gives the top 3 per country                                                                                                                                      | ✅  | `synth/s3-fixture.out` I                           |
+| The capture's sort and limit inside the block leave the ORDER BY in a subselect (Sybase IQ numbers the rows itself); after `from()`, all 17 window types write a WITH and a root ORDER BY             | ✅  | `synth/s4-plans.out`, `s5-alltypes.out`            |
+| Spanner, Presto and Composite refuse any window; 17 types plan one with no frame clause, and a sorted `count(distinct …) over` with no plan error                                                     | ✅  | `synth/s5-alltypes.out`                            |
+| A let name that isn't an identifier types but breaks H2's SQL; an unpartitioned window can't take a rows frame                                                                                        | ✅  | `synth/s6-fixture.out` K, L                        |
+| Chain and let typing agree node by node; a `from()` inside a let fails                                                                                                                                | 💭  | `emit-isolation/p4_typing_srcinfo.out`, `p1_*.out` |
+| Window result types per family equal §5.7's Group table                                                                                                                                               | 💭  | `partition-node/t1-types.out`                      |
+| A single-form window filter is QUALIFY on 4 types, refused on 6 and dropped on 9                                                                                                                      | 💭  | `cross-cutting/out/all.out` w06a                   |
+| Null placement in window sorts; windowed DISTINCT refused by Postgres, SQL Server, Databricks and Trino                                                                                               | 💭  | readers' notes; vendor documentation               |
+| rowNumber, ntile, percentRank, cumulativeDistribution, lag, lead, first, last and nth run on H2; DuckDB runs the let form and `count(distinct) over`                                                  | 💭  | `partition-node/t5-others.out`, `p8_duckdb.out`    |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                                                                                       | Done when                                                                                      |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| M5.1  | This subsection and PROGRESS-M5.md (docs only)                                                                                                                                    | Committed and pushed to #5653                                                                  |
+| M5.2  | `let` in the IR (origin, role), the serializer and `IRPrinter`; `block` dropped                                                                                                   | Unit tests pass; the engine parses the printed let form to Cube's JSON                         |
+| M5.3  | `isolationBoundary`; the isolation pass in `QueryEmitter` (memoized, names, the run lambda's shape), through a test-only window node; an engine test through the adapter          | Every M1–M4 golden unchanged; a let-form run lambda types, runs, renders and maps errors on H2 |
+| M5.4  | The window functions in the aggregation model, use-aware helpers, the two messages                                                                                                | Every M4 test unchanged; each window cell and message tested                                   |
+| M5.5  | Partition in the core: node, validation, schema, row order, emitter, codec; not registered                                                                                        | `printIR` shows each `over()` form, the split extends and the select; codec round trips pass   |
+| M5.6  | Builder extraction: the column checklist, the sort row and the aggregation row from the Group and Sort editors                                                                    | M4's Group and Sort editor and draft tests pass unchanged                                      |
+| M5.7  | Partition in the builder, registered after Join: draft, editor, notes, help text, icon, `findColumnOrigins`, samples, conformance cases                                           | Builder, registry, spec and conformance tests pass                                             |
+| M5.8  | Partition on the engine (H2 values above; DuckDB through the direct connection) and in the browser (built, run, saved, an error inside a let shown on its node)                   | Engine tests pass; a Partition built, run and saved in the browser                             |
+| M5.9  | The window composition suite                                                                                                                                                      | Passes in the engine-roundtrip group; a single-form emission fails it                          |
+| M5.10 | Partition around the databases: `WINDOW_SHAPES`, the pins above, the row-number guard, the three refusals, ISSUES drafts; the patch changeset                                     | The plan-only test passes on every database type; every gate green                             |
+| M5.11 | Both adding-an-operation guides, testing.md (window plans, DuckDB, the composition suite), README lists                                                                           | `yarn check:ci` passes                                                                         |
+| M5.12 | Verification (reviewers and a skeptic per finding) and an evidence-folder browser rehearsal (`Apply Window Functions` after `Join Another Input` in the menu)                     | Every finding fixed or recorded; the rehearsal passes                                          |
+| M5.13 | A demo video of M5 (§11.3): the palette entry, a running Sum by country against the whole-partition total, Rank and Dense Rank on ties, a top 3 per country, the let in Show Pure | Every caption true on screen; sent to the user                                                 |
+| M5.14 | Rebase on the latest master, fold the supersessions below into the plan                                                                                                           | The plan consistent; the PR updated                                                            |
+
+**Landing (user, 2026-10-09).** M5 is pushed to #5653 after each major step, and #5653's title and description grow to
+cover it. The ingest branch (`cube-ingest`, based before M4) touches the same registries, `NodeRegistry`, `CubeIR`, the
+serializer, `IRPrinter`, the messages and the conformance guard: whichever lands second resolves them. M5 doesn't edit
+QUESTIONS.md, which other branches rewrite.
+
+**Risks and open gaps:**
+
+- Only H2 and DuckDB run here: every other database is a plan 💭, including windowed DISTINCT, null placement and
+  RANGE ties. Sybase ASE gets a `WITH` and MemSQL's PCT manifest leaves out let tests; whether they accept the let
+  form is unknown.
+- The engine treats pushing a filter below a single-form window as intended; the array form is safe today only through
+  its subselect isolation, and the lets are the guard. The CI engine image moves, so the composition and plan-only
+  tests are what catch a change.
+- A user may read a Sum as a partition total while a Rank in the same node makes it running: only the editor note
+  guards it (Q1).
+- Each extend nests a subselect; a Partition of a Partition behind lets makes large SQL.
+- The conformance suite never types the let form; M5.3's adapter test does, for the shapes it builds.
+
+**Supersessions** (applied in M5.14 to the sections they change; kept here as the record of what M5 changed):
+
+- D5 and §12.2 item 8: answered (Q1). §4.5: `isolationBoundary` on `TransformDefinition`; a Partition keeps its
+  input's order (an exception to "no order", as Distinct).
+- §5.7: the window functions' rows (Count rows, Row Number; Rank and Dense Rank never null).
+- §8.6: the capture's sort and limit after `from()`, and "a trailing `from()` after lets fails" corrected; typing
+  lambdas stay chains; `block` dropped; let names; the row-number forms guarded, not bound; never a let after a Sort,
+  by construction.
+- §8.8: the Partition row (array form, split extends and the select, the `over()` forms, Row Number); the aggregations
+  table's window column (Count rows `{p,w,r|1}:y|$y->size()`, Distinct Value's `count(distinct)` form and portability
+  note, Q3 instead of the `groupBy` + join fallback). §8.9: windowed Distinct Count's handling. §8.9 and §12.1: the
+  dropped-filter list, from 5 databases to the 9 a reader found 💭.
+- §10.3: the Partition shape. §11.3's M5 row: Row Number, D5's frames, windowed Distinct natively.
+- Appendix A: §7.13 (Cube's saved shape, Row Number, Count rows, the rank-needs-a-sort rule and its message, the
+  editor's order); §10 (window functions as their own set, Row Number); §16 (the two messages); §17.6 (the Partition
+  editor). Appendix B: the window drafts once filed.
+
 ---
 
 ## 12. G. Risks and open questions
@@ -3125,7 +3368,7 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
    don't rely on the side panel's full height.
 2. **Sort not at the sink:** answered in M2 (§11.4). Cube writes the order where it is used: just before a Limit, Drop
    or Slice that takes rows by it, and before the capture's limit. It warns only when the order is lost (a Join, a
-   Restrict that drops sort keys, a later Sort on all the same columns); the warning is derived, never a validation
+   Group, a Concat, a Restrict that drops sort keys, a later Sort on all the same columns); the warning is derived, never a validation
    error, so Execute stays enabled.
 3. **Count rows:** answered in M4 (§11.5 Q1). Cube adds a Count rows aggregation with no column alongside the
    non-null Count: `x|1 : y|$y->count()`, saved as `{function: 'CountRows', name}`. The grid's Group by adds it.
