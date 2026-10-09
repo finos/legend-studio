@@ -2838,7 +2838,8 @@ nodes may turn invalid (visible, undoable).
 **Conformance suite** (`CubeInferenceConformance.engine-roundtrip-test.ts`): every node of every case that
 `QueryEmitter.canEmit` accepts, Cube's schema against the engine's type of `emitTypingLambda(nodeId)`, in one
 `typeLambdas` batch: names in position, `type.fullName`, nullability exact but for each case's `widerNullable` columns
-(Q7). A guard fails when a type `createNodeRegistry()` registers (`NodeRegistry.ts:273-285`) has no case.
+(Q7). A guard fails when a type `createNodeRegistry()` registers has no case, but a data product's access point, which
+the open-source engine doesn't read (§6.8; its stand-in test checks its types).
 `TEST__expectEngineTyping` stays one-way for M2's tests; both use `TEST__typingDifferences` (`CubeOperationsTestUtils.ts`). The engine is created
 inside the test, never in `beforeAll`; the suite runs against the moving CI engine image, so its failure message says
 the engine's typing may have changed. Cases: the ALLTYPES families and FREIGHT, Filter, the four Joins, the Join

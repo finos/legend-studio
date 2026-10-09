@@ -25,6 +25,7 @@ import {
   Concat,
   Connection,
   createNodeRegistry,
+  DataProductAccessPointSource,
   Distinct,
   Drop,
   Filter,
@@ -184,6 +185,16 @@ const concatenated =
       nodes.at(-1)?.id,
     );
   };
+
+/**
+ * The registered types the open-source engine can't type, so with no case: a
+ * data product's access point, which it doesn't read (PLAN §6.8);
+ * `CubeDataProduct.engine-roundtrip-test.ts` checks Cube's reading of its
+ * types against a stand-in function instead
+ */
+const NOT_TYPED_BY_THE_ENGINE: readonly string[] = [
+  DataProductAccessPointSource.TYPE,
+];
 
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];
 const CUSTOMERS: CaseTable = ['relational102', 'CUSTOMERS'];
@@ -683,7 +694,7 @@ const resolveAll = async (): Promise<
 };
 
 describe('Cube inference against the engine', () => {
-  test('Has a case for every registered node type', () => {
+  test('Has a case for every registered node type the engine can type', () => {
     const registry = createNodeRegistry();
     const covered = new Set(
       CASES.flatMap((conformanceCase) =>
@@ -695,7 +706,10 @@ describe('Cube inference against the engine', () => {
     expect(
       [...registry.sources, ...registry.transforms]
         .map((definition) => definition.type)
-        .filter((type) => !covered.has(type)),
+        .filter(
+          (type) =>
+            !covered.has(type) && !NOT_TYPED_BY_THE_ENGINE.includes(type),
+        ),
     ).toEqual([]);
   });
 
