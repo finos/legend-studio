@@ -16,6 +16,8 @@
 
 import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  type ColumnAggregation,
   ColumnComparisonFilter,
   Connection,
   CubeDocument,
@@ -25,6 +27,9 @@ import {
   createNodeRegistry,
   Filter,
   FilterOperator,
+  getAvailableAggregations,
+  Group,
+  NotFilter,
   fixJoinDuplicates,
   Join,
   JoinType,
@@ -1022,5 +1027,208 @@ describe('Join autofix on the engine', () => {
     expect(
       buildSchemasAndValidity(query).schemas.get('join101')?.names(),
     ).toContain('UNIT_PRICE_1_2');
+  });
+});
+
+describe('Group on the engine', () => {
+  const { COUNT, DISTINCT_VALUE, SUM, MAX, COUNT_ROWS } = AggregationFunction;
+  const aggregation = (
+    fn: AggregationFunction,
+    column: string | undefined,
+    name: string,
+  ): ColumnAggregation => ({ column, function: fn, name });
+
+  /** CUBETEST.ALLTYPES, resolved: three rows, ID 3 empty but for its key */
+  const alltypes = async (): Promise<RelationalTableSource> => {
+    const [resolved] = await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', 'ALLTYPES', 'CUBETEST'),
+    ]);
+    return resolved as RelationalTableSource;
+  };
+
+  test('Groups the 830 orders by SHIP_COUNTRY into 21 groups, through a Cube-emitted function2', async () => {
+    const query = await ordersThen(
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY'],
+        [aggregation(COUNT_ROWS, undefined, 'orders')],
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.columns).toEqual(['SHIP_COUNTRY', 'orders']);
+    expect(result.rows).toHaveLength(21);
+    expect(
+      orderIds(TEST__columnValues(result, 'orders')).reduce((a, b) => a + b, 0),
+    ).toBe(830);
+    expect(new Set(TEST__columnValues(result, 'SHIP_COUNTRY')).size).toBe(21);
+  });
+
+  test('Aggregates all the rows into one, with no group column', async () => {
+    const query = await ordersThen(
+      new Group('group101', [], [aggregation(COUNT_ROWS, undefined, 'orders')]),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(1);
+    expect(orderIds(TEST__columnValues(result, 'orders'))).toEqual([830]);
+  });
+
+  test("Counts the 507 orders with no SHIP_REGION in Count rows, and none of them in the region's Count", async () => {
+    const query = await ordersThen(
+      new Group(
+        'group101',
+        ['SHIP_REGION'],
+        [
+          aggregation(COUNT, 'SHIP_REGION', 'regions'),
+          aggregation(COUNT_ROWS, undefined, 'orders'),
+        ],
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const index = TEST__columnValues(result, 'SHIP_REGION').indexOf(null);
+    expect(index).toBeGreaterThanOrEqual(0);
+    expect(Number(TEST__columnValues(result, 'regions')[index])).toBe(0);
+    expect(Number(TEST__columnValues(result, 'orders')[index])).toBe(507);
+  });
+
+  test('Gives every function each ALLTYPES column offers, as its values work out over the three rows', async () => {
+    const table = await alltypes();
+    const schema =
+      table.resolution.kind === 'resolved'
+        ? table.resolution.schema
+        : undefined;
+    const query = TEST__chainOf([
+      table,
+      new Group(
+        'group101',
+        [],
+        [
+          aggregation(COUNT_ROWS, undefined, 'Count Rows'),
+          ...(schema?.columns ?? []).flatMap((column) =>
+            getAvailableAggregations(column.type).map((fn) =>
+              aggregation(fn, column.name, `${column.name}_${fn}`),
+            ),
+          ),
+        ],
+      ),
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const value = (name: string): unknown =>
+      TEST__columnValues(result, name)[0];
+    expect(result.rows).toHaveLength(1);
+    // counts: ID has three values, every other column two (ID 3 is empty)
+    expect(Number(value('Count Rows'))).toBe(3);
+    expect(Number(value('ID_Count'))).toBe(3);
+    expect(Number(value('ID_DistinctCount'))).toBe(3);
+    ['TI', 'SI', 'BI', 'F', 'D', 'DEC', 'NUM', 'DT', 'TS', 'B', 'VC'].forEach(
+      (column) => {
+        expect([column, Number(value(`${column}_Count`))]).toEqual([column, 2]);
+        expect([column, Number(value(`${column}_DistinctCount`))]).toEqual([
+          column,
+          2,
+        ]);
+        // two distinct values: no single one
+        expect([column, value(`${column}_DistinctValue`)]).toEqual([
+          column,
+          null,
+        ]);
+      },
+    );
+    // sums and averages of numbers, the big integer's sum exact
+    expect(value('TI_Sum')).toBe('3');
+    expect(value('SI_Sum')).toBe('300');
+    expect(value('BI_Sum')).toBe('9007199254740997');
+    expect(value('ID_Sum')).toBe('6');
+    expect(value('F_Sum')).toBe(4);
+    expect(value('D_Sum')).toBe(2.6);
+    expect(value('DEC_Sum')).toBe('13.59');
+    expect(value('NUM_Sum')).toBe('3.7345');
+    expect(value('TI_Average')).toBe(1.5);
+    expect(value('SI_Average')).toBe(150);
+    expect(value('DEC_Average')).toBe(6.795);
+    // smallest and largest, dates and timestamps included
+    expect([value('BI_Min'), value('BI_Max')]).toEqual([
+      '4',
+      '9007199254740993',
+    ]);
+    expect([value('D_Min'), value('D_Max')]).toEqual([0.1, 2.5]);
+    expect([value('NUM_Min'), value('NUM_Max')]).toEqual(['1.2345', '2.5000']);
+    expect([value('DT_Min'), value('DT_Max')]).toEqual([
+      '2024-01-02',
+      '2024-01-03',
+    ]);
+    expect([value('TS_Min'), value('TS_Max')]).toEqual([
+      '2024-01-02T03:04:05.678000000+0000',
+      '2024-01-02T13:00:00.000000000+0000',
+    ]);
+  });
+
+  test("Gives a group's one distinct value, and nothing for a group with none", async () => {
+    const query = TEST__chainOf([
+      await alltypes(),
+      new Group(
+        'group101',
+        ['ID'],
+        [aggregation(DISTINCT_VALUE, 'VC', 'text')],
+      ),
+    ]);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const byId = new Map(
+      TEST__columnValues(result, 'ID').map((id, index) => [
+        Number(id),
+        TEST__columnValues(result, 'text')[index],
+      ]),
+    );
+    expect(Object.fromEntries(byId)).toEqual({ 1: 'abc', 2: 'xyz', 3: null });
+  });
+
+  test('Gives one row over no rows: counts of 0, then nothing', async () => {
+    const query = await ordersThen(
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'Nowhere',
+        }),
+      ),
+      new Group(
+        'group101',
+        [],
+        [
+          aggregation(COUNT_ROWS, undefined, 'orders'),
+          aggregation(COUNT, 'ORDER_ID', 'ids'),
+          aggregation(SUM, 'FREIGHT', 'freight total'),
+          aggregation(MAX, 'ORDER_DATE', 'last'),
+        ],
+      ),
+    );
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(1);
+    expect(
+      result.rows[0]?.map((cell) => (cell === null ? null : Number(cell))),
+    ).toEqual([0, 0, null, null]);
+  });
+
+  test("Keeps a group whose Sum is empty in a negated filter on the Sum, as the Sum's nullability says", async () => {
+    // ID 3's Sum of SI is empty: Cube marks the Sum nullable, so the negation
+    // keeps it (the engine types it as never empty)
+    const query = TEST__chainOf([
+      await alltypes(),
+      new Group('group101', ['ID'], [aggregation(SUM, 'SI', 'total')]),
+      new Filter(
+        'filter101',
+        new NotFilter(
+          new ColumnComparisonFilter('total', FilterOperator.EQUAL, {
+            kind: 'integer',
+            value: '100',
+          }),
+        ),
+      ),
+    ]);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(orderIds(TEST__columnValues(result, 'ID')).sort()).toEqual([2, 3]);
   });
 });

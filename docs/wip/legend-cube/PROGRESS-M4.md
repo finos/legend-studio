@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge  |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                    |
-| Step   | M4.1–M4.5 done (decisions; conformance suite; aggregation model; Group in the core; Group in the builder, registered); **M4.6 next** |
-| Tests  | 2069 core, 751 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.4)                                            |
+| Item   | State                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge    |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                      |
+| Step   | M4.1–M4.6 done (decisions; conformance; aggregations; Group in the core, the builder, on the engine and in the browser); **M4.7 next** |
+| Tests  | 2070 core, 801 builder (core group), 236 Query, 176 builder engine-roundtrip (after M4.6)                                              |
 
 ## Steps
 
@@ -24,7 +24,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.3** The aggregation model (core)
 - [x] **M4.4** Group in the core
 - [x] **M4.5** Group in the builder, and registered
-- [ ] **M4.6** Group on the engine and in the browser
+- [x] **M4.6** Group on the engine and in the browser
 - [ ] **M4.7** The grid's 'Group by "X"'
 - [ ] **M4.8** Group around the databases
 - [ ] **M4.9** Concat in the core
@@ -49,7 +49,8 @@ Filled in as steps land.
 | M4.3       | `4c7398dca` | feat: add the aggregations Legend Cube's Group will use                     |
 | M4.4       | `eefb1dfb5` | feat: add Group to Legend Cube's core                                       |
 | Video rule | `1f7c21c13` | docs: end every Legend Cube milestone that changes the UI with a demo video |
-| M4.5       | (this one)  | feat: add Group by Column to Legend Cube's builder                          |
+| M4.5       | `8165c6598` | feat: add Group by Column to Legend Cube's builder                          |
+| M4.6       | (this one)  | test: run Legend Cube's Group on the engine and in the browser              |
 
 ## Step notes
 
@@ -148,11 +149,27 @@ after a LEFT join; Group types exactly as the engine does but for the declared S
 (the six behaviour fixes above, each shown by a revert in the isolated copy to fail a test, and five small ones);
 mutants: 40, 39 killed, 1 equivalent while validation reports one problem per row.
 
+**M4.6, Group on the engine and in the browser (2026-10-09).** Seven engine tests in
+`LegendCubeOperations.engine-roundtrip-test.ts` ("Group on the engine"), each the first run of the `groupBy` or
+`aggregate` Pure Cube writes: ORDERS by SHIP_COUNTRY gives 21 groups adding up to 830; with no key one row of 830; the
+SHIP_REGION group of no region counts 0 regions and 507 rows; every function each ALLTYPES column offers, as worked out
+over its three rows (counts 3 and 2, two distinct values so no Distinct Value, BigInt's Sum exact as text
+`9007199254740997`, decimals as text, dates and timestamps; BigInt's Average comes back lossy, so isn't pinned); one
+distinct value per ID group (`abc`, `xyz`, none); one row over no rows (0, 0, empty, empty); and a negated filter on a
+Sum keeping ALLTYPES ID 3, whose Sum is empty, because Cube marks the Sum nullable. Browser check (evidence
+`demo/check-m46-group.mjs`, 15 checks, Chromium 149, :9002): Group after Sort in the palette, added from the Filter's
+menu, a key ticked, Sum of FREIGHT and Count Rows built with their auto-names, a name like an input column refused,
+Apply, F9 giving 7 cities adding up to the 19 orders, and the spec saving the Group as PLAN §11.5 says; the console
+clean. It caught a layout gap: the row controls didn't fit the panel side by side (once the Query deployment's
+Tailwind CSS was rebuilt for the new classes), so each aggregation now takes two lines, its column, then its function,
+name and remove button.
+
 ## Open items
 
 | Item                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Gaps to probe         | ALLTYPES' expected values (M4.6); a Cube-emitted `groupBy` and a widened Concat through the serializer; whether engine errors land on the Group's `aggregation` role or the Concat; how PLAN §7.4's editor without settings carries Concat's autofix buttons before M4.13 gives it a draft; VARIANT or OPAQUE keys, two enumerations, enum rows; Group and Concat SQL on DuckDB; whether `CubeColumnPicker` keeps a stored key order; the PCT manifests (PLAN §11.5, "Risks and open gaps")                                                                                                                                             |
+| Grid numbers          | A Sum of a 32-bit REAL column such as FREIGHT shows float noise (`587.9800033569336`); number formatting is M7's (§13)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | cube-direct           | Agree with the cube-direct session which branch lands first; the second rebases. Both touch PLAN.md, PROGRESS.md, the builder's `testing.md` (cube-direct appends "Direct connections"; M4 adds a conformance section beside it) and `hosting.md`, and possibly the builder's `index.ts` and `V1_CubeEngineTestUtils.ts`. M4 leaves `V1_LegendCubeEngine.ts` alone (cube-direct routes `typeLambdas` there for direct models). cube-direct predates M2 and already conflicts with it in PLAN.md, PROGRESS.md, `hosting.md` and `CubeSourceEditor.tsx`. Its samples sit in `fixtures/direct/`, which the corpus engine test doesn't read |
 | QUESTIONS.md U12      | The Group editor question exists only on `cubeV1` and `cube-direct`; copy Q2 and Q3's answers there after those merge                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | M2 product follow-ups | Found while recording M2's demo video: Rename's case-only refusal doesn't name the column it matched; the column dropdowns in the Sort, Rename and Join editors cut names off; a full sort loss at a Restrict could name the removed columns; the Stale hint shows while Execute is disabled for an incomplete node                                                                                                                                                                                                                                                                                                                     |

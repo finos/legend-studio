@@ -90,7 +90,7 @@ const CubeGroupRowEditor = observer(
     const marked = problemControl(problem);
     return (
       <li className="flex flex-col gap-1 border-b border-[var(--color-border-subtle)] py-1">
-        <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,2fr)_auto] items-center gap-1">
+        <div className="flex min-h-6 items-center gap-1">
           {isCountRows ? (
             <span className="flex min-w-0 items-center gap-1 text-[var(--color-text-secondary)]">
               Every row
@@ -116,12 +116,14 @@ const CubeGroupRowEditor = observer(
               onChange={(name) => draft.setColumn(row.key, name)}
             />
           )}
+        </div>
+        <div className="flex items-center gap-1">
           <select
             aria-label={`Aggregation function ${position}`}
             aria-invalid={marked === 'function'}
             title={marked === 'function' ? problem : undefined}
             className={clsx(
-              'h-6 min-w-0 rounded-sm border bg-[var(--color-bg-input)] px-1 text-base',
+              'h-6 w-36 shrink-0 rounded-sm border bg-[var(--color-bg-input)] px-1 text-base',
               marked === 'function'
                 ? 'border-[var(--color-status-error)]'
                 : 'border-[var(--color-border-default)]',
@@ -146,7 +148,7 @@ const CubeGroupRowEditor = observer(
             aria-invalid={marked === 'name'}
             title={marked === 'name' ? problem : undefined}
             className={clsx(
-              'h-6 min-w-0 rounded-sm border bg-[var(--color-bg-input)] px-1 text-base',
+              'h-6 min-w-0 flex-1 rounded-sm border bg-[var(--color-bg-input)] px-1 text-base',
               marked === 'name'
                 ? 'border-[var(--color-status-error)]'
                 : 'border-[var(--color-border-default)]',

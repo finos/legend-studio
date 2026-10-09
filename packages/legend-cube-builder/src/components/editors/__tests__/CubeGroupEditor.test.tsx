@@ -185,10 +185,10 @@ const problems = (): string[] =>
     within(panel()).queryByRole('alert', { name: 'Problems' })?.children ?? [],
   ).map((problem) => problem.textContent ?? '');
 
-/** The messages shown under a row's controls */
+/** The messages shown under a row's two lines of controls */
 const rowMessages = (position: number): string[] =>
   Array.from(row(position).children)
-    .slice(1)
+    .slice(2)
     .map((message) => message.textContent ?? '');
 
 /**
