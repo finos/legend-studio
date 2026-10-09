@@ -209,7 +209,10 @@ const CubeDataProductRunErrorHelp = observer(
     if (runtime.runErrorKind === CubeDataProductRunErrorKind.WAREHOUSE) {
       return (
         <div className="mt-1 text-[var(--color-text-secondary)]">
-          {getCubeWarehouseErrorHint(runtime.effectiveWarehouse ?? '')}
+          {getCubeWarehouseErrorHint(
+            runtime.effectiveWarehouse ?? '',
+            runtime.canEditWarehouse,
+          )}
         </div>
       );
     }

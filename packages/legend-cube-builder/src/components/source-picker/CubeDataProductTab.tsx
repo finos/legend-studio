@@ -291,6 +291,8 @@ export const CubeDataProductTab = observer(
         {project !== undefined &&
           !tab.showAllProjects &&
           !tab.isListing &&
+          tab.listError === undefined &&
+          tab.candidates !== undefined &&
           tab.search.trim().length > 0 &&
           !tab.shownCandidates.length && (
             <span className="text-sm text-[var(--color-text-muted)]">

@@ -35,7 +35,7 @@ export const CUBE_SNAPSHOT_VERSION_LABEL =
   'A SNAPSHOT version: its data and columns may change';
 
 export const CUBE_WAREHOUSE_APPLY_TITLE =
-  "Run the cube on this warehouse; it's remembered for your next cubes";
+  "Use this warehouse for the cube's next runs; it's remembered for your next cubes";
 
 /** The warning on an access point that changed since the cube was saved; its new columns are used */
 export const getAccessPointDriftWarning = (diff: SchemaDiff): string =>
@@ -50,9 +50,17 @@ export const CUBE_DATA_PRODUCT_RECHECK_MESSAGE = {
   NO_CATALOG: "This Legend deployment doesn't serve data products",
 } as const;
 
-/** Beside a run's error that says the cube's warehouse can't be used */
-export const getCubeWarehouseErrorHint = (warehouse: string): string =>
-  `The run couldn't use the warehouse ${warehouse}. Pick another one in a data product source's panel.`;
+/**
+ * Beside a run's error that says the cube's warehouse can't be used; it
+ * offers another only where the warehouse can be changed
+ */
+export const getCubeWarehouseErrorHint = (
+  warehouse: string,
+  canPickAnother: boolean,
+): string =>
+  canPickAnother
+    ? `The run couldn't use the warehouse ${warehouse}. Pick another one in a data product source's panel.`
+    : `The run couldn't use the warehouse ${warehouse}.`;
 
 /** A link to ask for access to an access point group in the marketplace */
 export const getCubeRequestAccessLabel = (

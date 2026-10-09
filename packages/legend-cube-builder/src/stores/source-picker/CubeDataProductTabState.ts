@@ -346,6 +346,17 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   setShowAllProjects(showAllProjects: boolean): void {
     this.showAllProjects = showAllProjects;
+    // searching on a server, Search all with no text lists the server's
+    // matches, and leaving it lists the cube's own products again
+    if (
+      this.searchesOnServer &&
+      this.candidates !== undefined &&
+      this.listedOwnKey !== this.getOwnProductsKey()
+    ) {
+      flowResult(this.listCandidates()).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      );
+    }
   }
 
   /** Whether a server's matches listed may be cut short */
@@ -371,7 +382,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     return (
       this.isAvailable &&
       !this.editorState.readOnly &&
-      !this.isBusy &&
+      // a search under way doesn't change the access point picked
+      !this.isDescribing &&
+      !this.isAdding &&
       (context === undefined || this.fixedProject !== undefined) &&
       this.candidate !== undefined &&
       this.accessPoint?.isPickable === true &&
@@ -540,13 +553,16 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       if (request !== this.listRequest) {
         return;
       }
-      // a server's answer is read anew each time: the picked product stays the one picked
+      // a server's answer is read anew each time: the picked product stays
+      // picked as the answer's row, with the title the server gives it
       const picked = this.candidate;
-      this.candidates = picked
-        ? candidates.map((each) =>
-            isSameProduct(each, picked) ? picked : each,
-          )
-        : candidates;
+      const listedPicked = picked
+        ? candidates.find((each) => isSameProduct(each, picked))
+        : undefined;
+      this.candidates = candidates;
+      if (listedPicked) {
+        this.candidate = listedPicked;
+      }
       this.listedEnvironmentType = environmentType;
       this.listedText = text;
       this.listedOwnKey = undefined;
@@ -556,6 +572,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     } catch (error) {
       if (request === this.listRequest) {
         this.listError = toError(error);
+        // the rows of an earlier listing don't answer this one
+        this.candidates = undefined;
+        this.listedCutShort = false;
       }
     } finally {
       if (request === this.listRequest) {
@@ -578,7 +597,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       const description = (yield catalog.describe(
         candidate,
       )) as CubeDataProductDescription;
-      if (request !== this.describeRequest || candidate !== this.candidate) {
+      if (
+        request !== this.describeRequest ||
+        !this.candidate ||
+        !isSameProduct(candidate, this.candidate)
+      ) {
         return;
       }
       this.description = description;
@@ -612,7 +635,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         string,
         CubeAccessPointGroupAccess
       >;
-      if (request === this.accessRequest && candidate === this.candidate) {
+      if (
+        request === this.accessRequest &&
+        this.candidate &&
+        isSameProduct(candidate, this.candidate)
+      ) {
         this.access = access;
       }
     } catch {
@@ -757,7 +784,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
    * on a server, on a cube with sources and no search. None otherwise
    */
   private getOwnProductsKey(): string | undefined {
-    if (!this.searchesOnServer || this.search.trim()) {
+    // Search all lists the server's matches, not just the cube's own
+    if (!this.searchesOnServer || this.search.trim() || this.showAllProjects) {
       return undefined;
     }
     const products = this.getOwnProducts();

@@ -99,9 +99,11 @@ const contract = (
 });
 
 const CONTRACTS = [
-  // a granted contract is never hidden behind a pending duplicate
-  contract('approved', 'APPROVED'),
+  // a granted contract is never hidden behind a pending duplicate, nor a
+  // refused one, whichever comes first
   contract('pending', 'PENDING_DATA_OWNER_APPROVAL'),
+  contract('approved', 'APPROVED'),
+  contract('denied', 'DENIED'),
   // another deployment, and a contract for the whole product
   contract('other-deployment', 'APPROVED', {
     accessPointGroup: 'model',

@@ -24,6 +24,7 @@ import {
 import {
   getAccessPointDriftWarning,
   getAccessPointRecheckWarning,
+  getCubeWarehouseErrorHint,
 } from '../LegendCubeDataProductLabels.js';
 import { getSchemaDriftWarning } from '../LegendCubeLabels.js';
 
@@ -59,6 +60,15 @@ describe("A data product access point's warnings", () => {
   test("Says an access point it couldn't re-check keeps its saved columns", () => {
     expect(getAccessPointRecheckWarning('Boom')).toBe(
       'Could not re-check this access point, so it keeps its saved columns: Boom',
+    );
+  });
+
+  test('Offers another warehouse only where the warehouse can be changed', () => {
+    expect(getCubeWarehouseErrorHint('SALES_WH', true)).toBe(
+      "The run couldn't use the warehouse SALES_WH. Pick another one in a data product source's panel.",
+    );
+    expect(getCubeWarehouseErrorHint('SALES_WH', false)).toBe(
+      "The run couldn't use the warehouse SALES_WH.",
     );
   });
 });

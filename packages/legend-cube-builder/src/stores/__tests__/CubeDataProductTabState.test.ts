@@ -592,11 +592,16 @@ describe('Data product tab', () => {
 
     // a failure shows no access, and no error
     state.sourcePicker.close();
+    const alert = jest.spyOn(
+      state.host.applicationStore,
+      'alertUnhandledError',
+    );
     tab = await openTab(new CubeEditorState(state.host));
     dataProducts.getAccess.mockRejectedValueOnce(new Error('Forbidden'));
     await pickProduct(tab, 'ORDERS_PRODUCT');
     expect(tab.access).toBeUndefined();
     expect(tab.error).toBeUndefined();
+    expect(alert).not.toHaveBeenCalled();
     tab.selectAccessPoint('core', 'daily_orders');
     expect(tab.canConfirm).toBe(true);
   });
@@ -901,18 +906,76 @@ describe('Data product tab, searching on a server', () => {
     const tab = await openTab(state);
     await pickProduct(tab, 'ORDERS_PRODUCT');
     tab.selectAccessPoint('core', 'daily_orders');
-    const picked = tab.candidate;
     await type(tab, 'orders');
+    // the answer's row is the one picked
     const row = tab.visibleCandidates.find(
       (candidate) => candidate.id === 'ORDERS_PRODUCT',
     );
-    expect(row).toBe(picked);
+    expect(tab.candidate).toBe(row);
     tab.selectCandidate(row);
     await settle();
-    expect(tab.candidate).toBe(picked);
+    expect(tab.candidate).toBe(row);
     expect(tab.accessPointKey).toEqual({ group: 'core', id: 'daily_orders' });
     expect(tab.description).toBeDefined();
     expect(dataProducts.describe).toHaveBeenCalledTimes(1);
+  });
+
+  test("Shows the server's title for a cube's own product once a search lists it", async () => {
+    const { state } = setUpSearch();
+    let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    const reopened = new CubeEditorState(state.host, state.document);
+    tab = await openTab(reopened);
+    // the cube saves the product's id, not its title
+    expect(tab.candidate?.title).toBe('ORDERS_PRODUCT');
+    await type(tab, 'orders');
+    expect(tab.candidate?.title).toBe('Orders Product');
+    expect(tab.accessPointKey).toBeUndefined();
+    expect(tab.description).toBeDefined();
+  });
+
+  test("Search all, with no text, lists the server's matches, and leaving it lists the cube's own products again", async () => {
+    const { state, dataProducts } = setUpSearch();
+    let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    const reopened = new CubeEditorState(state.host, state.document);
+    dataProducts.search.mockClear();
+    tab = await openTab(reopened);
+    expect(dataProducts.search).not.toHaveBeenCalled();
+    tab.setShowAllProjects(true);
+    await settle();
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+    expect(tab.shownCandidates.map(({ id }) => id)).toEqual([
+      'ORDERS_PRODUCT',
+      'RETURNS_PRODUCT',
+    ]);
+    tab.setShowAllProjects(false);
+    await settle();
+    expect(tab.shownCandidates.map(({ id }) => id)).toEqual(['ORDERS_PRODUCT']);
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+  });
+
+  test('Clears the rows of an earlier search when a search fails', async () => {
+    const { state, dataProducts } = setUpSearch();
+    const tab = await openTab(state);
+    expect(tab.visibleCandidates.length).toBeGreaterThan(0);
+    dataProducts.search.mockRejectedValueOnce(new Error('Search unavailable'));
+    await type(tab, 'orders');
+    expect(tab.listError).toBeDefined();
+    expect(tab.visibleCandidates).toEqual([]);
+  });
+
+  test('Adds the access point picked while a search runs', async () => {
+    const { state, dataProducts } = setUpSearch();
+    const tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    tab.selectAccessPoint('core', 'daily_orders');
+    dataProducts.search.mockReturnValueOnce(new Promise(() => undefined));
+    await type(tab, 'ord');
+    expect(tab.isListing).toBe(true);
+    expect(tab.canConfirm).toBe(true);
   });
 
   test("Says a server's matches may be cut short when it gives as many as one search gives", async () => {

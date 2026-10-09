@@ -1202,7 +1202,8 @@ internals (user, 2026-10-08): questions for the original app's team are about it
   lite list.
 - **Warehouse (DP-2, user, 2026-10-09):** the cube's saved warehouse wins, else the viewer's remembered one, else the
   default consumer warehouse (`LAKEHOUSE_CONSUMER_DEFAULT_WH`). The first Add saves the warehouse into the cube and
-  remembers it for the viewer's next cubes. Editing a saved cube's warehouse is a follow-up.
+  remembers it for the viewer's next cubes. A saved cube's warehouse is edited in its Source panel, as one undo step,
+  and remembered too (#5652).
 - **Data products (user, 2026-10-09):**
   - **Saved shape (DP-1):** a Cube-owned model kind, `context.model = {_type: 'cubeDataProduct', groupId, artifactId,
 versionId, environmentType, warehouse?}`, and the fixed runtime path `cube::dataProduct::Runtime`. Each source
@@ -2742,8 +2743,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
    uses `@duckdb/duckdb-wasm` (1.31.0), which is the precedent to study. First step: a research note with the options
    and a recommendation, no code.
 10. **The next sources, still open** (2026-10-08; settled parts in §6.8): versions (recommended: `latest` resolved to a
-    concrete version at pick time, since the engine caches `latest`; SNAPSHOT opt-in, item 5), and access badges for
-    data products the viewer isn't entitled to.
+    concrete version at pick time, since the engine caches `latest`; SNAPSHOT opt-in, item 5). Access badges for data
+    products are settled in §6.8 (#5652).
 
 Questions about the original app's UI that the spec leaves open are in [QUESTIONS.md](QUESTIONS.md).
 

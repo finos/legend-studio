@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { CubeDocument } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProductLabels.js';
@@ -251,7 +251,7 @@ describe('Data product tab', () => {
   });
 
   test("Shows the viewer's access to each group, linking a group without it to its page in the marketplace", async () => {
-    const { dataProducts } = await renderPage();
+    const { dataProducts, host } = await renderPage();
     let dialog = await openFromPalette();
     fireEvent.click(within(dialog).getByText('Orders Product'));
     const core = await within(dialog).findByRole('list', {
@@ -275,6 +275,7 @@ describe('Data product tab', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     dataProducts.getAccess.mockRejectedValue(new Error('Forbidden'));
+    const alert = jest.spyOn(host.applicationStore, 'alertUnhandledError');
     dialog = await openFromPalette();
     fireEvent.click(within(dialog).getByText('Returns Product'));
     fireEvent.click(await within(dialog).findByText('Daily orders'));
@@ -283,6 +284,7 @@ describe('Data product tab', () => {
     );
     expect(within(dialog).queryByText('Entitled')).toBeNull();
     expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(alert).not.toHaveBeenCalled();
     expect(
       within(dialog).getByRole<HTMLButtonElement>('button', { name: 'Add' })
         .disabled,

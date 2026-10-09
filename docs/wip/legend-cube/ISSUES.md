@@ -148,8 +148,8 @@ real run is in an internal deployment (Part B2).
 ### Re-checking saved data product sources
 
 An import and Refresh read a data product cube's access points again from the deployed artifact at the cube's saved
-version. The artifact is read once per page visit, so a SNAPSHOT version redeployed meanwhile shows only after a
-reload, and a redeployed product never moves a cube to another version.
+version. An import uses the artifact this page visit already read, and Refresh reads it again, so a SNAPSHOT version
+redeployed meanwhile shows on Refresh. A redeployed product never moves a cube to another version.
 
 ### Listing data products
 

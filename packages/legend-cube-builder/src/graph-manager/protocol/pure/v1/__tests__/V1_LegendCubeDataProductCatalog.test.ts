@@ -353,6 +353,10 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
     await catalog.resolveSchemas(project, sources);
     expect(generations).toHaveBeenCalledTimes(2);
     expect(entity).toHaveBeenCalledTimes(2);
+    // a Refresh reads the product again
+    await catalog.resolveSchemas(project, sources, { fresh: true });
+    expect(generations).toHaveBeenCalledTimes(3);
+    expect(entity).toHaveBeenCalledTimes(3);
   });
 
   test("Links through the host's link function, and has none without one", () => {
@@ -501,6 +505,17 @@ describe('Paging the lite list', () => {
       V1_CUBE_DATA_PRODUCT_LIST_ERROR.TOO_MANY_PAGES,
     );
     expect(lite).toHaveBeenCalledTimes(50);
+  });
+
+  test('Takes a page that leaves out its empty list as an empty list, as the lakehouse client does', async () => {
+    const { catalog, lite } = setUp();
+    lite.mockImplementationOnce(async () => ({
+      liteDataProductsResponse: {},
+      paginationMetadataRecord: { hasNextPage: false, size: 1000 },
+    }));
+    expect(
+      await catalog.search({ text: '', environmentType: PRODUCTION }),
+    ).toEqual([]);
   });
 
   test('Takes an answer that is no page, such as a 200 carrying an error, as an error', async () => {

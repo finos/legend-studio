@@ -209,7 +209,7 @@ describe('Source panel of a data product cube', () => {
       ),
     );
     await act(() => flowResult(editorState.execution.execute()));
-    const hint = getCubeWarehouseErrorHint('CUBE_WH');
+    const hint = getCubeWarehouseErrorHint('CUBE_WH', true);
     expect(
       within(screen.getByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR)).getByText(
         hint,
@@ -222,7 +222,29 @@ describe('Source panel of a data product cube', () => {
       screen.queryByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR),
     ).toBeNull();
     expect(within(panel()).queryByText(hint)).toBeNull();
-    expect(screen.queryByText(getCubeWarehouseErrorHint('NEW_WH'))).toBeNull();
+    expect(
+      screen.queryByText(getCubeWarehouseErrorHint('NEW_WH', true)),
+    ).toBeNull();
+  });
+
+  test('Offers no other warehouse on a cube saved by a newer version, whose warehouse refused the run', async () => {
+    const { editorState, fake } = await renderPanel({ readOnly: true });
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'No active warehouse selected in the current session',
+        'dataProductAccessPoint101',
+      ),
+    );
+    await act(() => flowResult(editorState.execution.execute()));
+    expect(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR)).getByText(
+        getCubeWarehouseErrorHint('CUBE_WH', false),
+      ),
+    ).not.toBeNull();
+    expect(
+      screen.queryByText(getCubeWarehouseErrorHint('CUBE_WH', true)),
+    ).toBeNull();
   });
 
   test("Links a run refused for access to the data to the access point group's page in the marketplace, in the run's error", async () => {

@@ -46,6 +46,8 @@ export interface CubeExecutionResult {
   readonly query: Query;
   /** The context it ran in: results are stale once the document holds another, e.g. another warehouse */
   readonly context: CubeContext | undefined;
+  /** The warehouse a data product cube ran on, its own or the viewer's: results are stale once another is used */
+  readonly warehouse: string | undefined;
   /** The capture node's schema when the run started; the grid's columns, by position */
   readonly schema: Schema;
   /** At most `rowLimit` rows */
@@ -130,6 +132,8 @@ export class CubeExecutionState {
       !this.isRunning &&
       (this.result.query !== this.editorState.document.query ||
         this.result.context !== this.editorState.document.context ||
+        this.result.warehouse !==
+          this.editorState.dataProductRuntime.effectiveWarehouse ||
         this.result.rowLimit !== this.editorState.rowLimit)
     );
   }
@@ -170,6 +174,7 @@ export class CubeExecutionState {
     }
     const { document, emitter, analysis, rowLimit, host } = this.editorState;
     const { query, context } = document;
+    const warehouse = this.editorState.dataProductRuntime.effectiveWarehouse;
     // checked by canExecute
     const captureId = query.selected as string;
     const model = context?.model;
@@ -234,6 +239,7 @@ export class CubeExecutionState {
         id: ++this.runCount,
         query,
         context,
+        warehouse,
         schema,
         rows: limited ? response.rows.slice(0, rowLimit) : response.rows,
         rowLimit,

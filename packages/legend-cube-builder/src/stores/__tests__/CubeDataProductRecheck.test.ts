@@ -179,11 +179,11 @@ describe("Re-checking a data product cube's access points", () => {
     const state = new CubeEditorState(host);
     await importAndWait(state, dataProductCube());
     expect(dataProducts.resolveSchemas).toHaveBeenCalledTimes(1);
-    const [project, locations] = dataProducts.resolveSchemas.mock.calls[0] as [
-      unknown,
-      ReadonlyMap<string, unknown>,
-    ];
+    const [project, locations, options] = dataProducts.resolveSchemas.mock
+      .calls[0] as [unknown, ReadonlyMap<string, unknown>, unknown];
     expect(project).toEqual(PROJECT);
+    // an import uses what this page visit read
+    expect(options).toEqual({ fresh: false });
     expect([...locations]).toEqual([
       [
         'dataProductAccessPoint101',
@@ -271,6 +271,10 @@ describe("Re-checking a data product cube's access points", () => {
     expect([
       ...(dataProducts.resolveSchemas.mock.calls[0]?.[1] ?? new Map()).keys(),
     ]).toEqual(['dataProductAccessPoint102']);
+    // a Refresh reads the deployed artifact again
+    expect(dataProducts.resolveSchemas.mock.calls[0]?.[2]).toEqual({
+      fresh: true,
+    });
     expect(warningsOf(state, 'dataProductAccessPoint102')).toHaveLength(1);
     const node = state.document.query.getNode('dataProductAccessPoint102');
     const { history } = state;

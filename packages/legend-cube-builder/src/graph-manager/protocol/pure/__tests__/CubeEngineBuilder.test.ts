@@ -20,6 +20,10 @@ import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import { CubeDataProductEnvironmentType } from '../../../CubeDataProduct.js';
 import {
+  CubeAccessPointGroupAccess,
+  CubeDataProductCandidate,
+} from '../../../CubeDataProductCatalog.js';
+import {
   buildCubeDataProductCatalog,
   type CubeLakehouseServices,
 } from '../CubeEngineBuilder.js';
@@ -88,5 +92,70 @@ describe("A host's data product catalog", () => {
       environmentType: CubeDataProductEnvironmentType.PRODUCTION,
     });
     expect(lite).toHaveBeenCalledTimes(1);
+  });
+
+  test("Reads the viewer's access as the host's viewer, marks the host's open groups, and links through the host", async () => {
+    const { services } = setUp();
+    jest
+      .spyOn(services.depotServerClient, 'getGenerationFilesByType')
+      .mockImplementation((async () => [
+        {
+          groupId: 'com.example.sales',
+          artifactId: 'orders-products',
+          versionId: '1.4.0',
+          type: 'dataProduct',
+          path: 'sales::products::OrdersProduct',
+          file: {
+            path: 'sales::products::OrdersProduct.json',
+            content: JSON.stringify({ accessPointGroups: [] }),
+          },
+        },
+      ]) as never);
+    jest
+      .spyOn(services.depotServerClient, 'getVersionEntity')
+      .mockImplementation((async () => ({
+        path: 'sales::products::OrdersProduct',
+        content: {
+          accessPointGroups: [
+            {
+              id: 'core',
+              stereotypes: [{ profile: 'test::Access', value: 'open' }],
+              accessPoints: [],
+            },
+            { id: 'reference', accessPoints: [] },
+          ],
+        },
+      })) as never);
+    const contracts = jest
+      .spyOn(services.contractServerClient, 'getContractsForUser')
+      .mockImplementation((async () => []) as never);
+    const catalog = buildCubeDataProductCatalog({
+      ...services,
+      enterpriseStereotype: { profile: 'test::Access', value: 'open' },
+      getMarketplaceLink: (target) =>
+        `https://marketplace.test/${target.dataProductId}`,
+    });
+    const candidate = new CubeDataProductCandidate({
+      id: 'ORDERS_PRODUCT',
+      deploymentId: '1234',
+      dataProductPath: 'sales::products::OrdersProduct',
+      title: 'Orders Product',
+      groupId: 'com.example.sales',
+      artifactId: 'orders-products',
+      versionId: '1.4.0',
+      environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+    });
+    expect([...((await catalog.getAccess?.(candidate)) ?? [])]).toEqual([
+      ['core', CubeAccessPointGroupAccess.ENTERPRISE],
+      ['reference', CubeAccessPointGroupAccess.NO_ACCESS],
+    ]);
+    expect(contracts).toHaveBeenCalledWith('viewer', 'token');
+    expect(
+      catalog.getMarketplaceLink({
+        dataProductId: 'ORDERS_PRODUCT',
+        deploymentId: '1234',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
+    ).toBe('https://marketplace.test/ORDERS_PRODUCT');
   });
 });

@@ -448,9 +448,13 @@ export class CubeEditorState implements CommandRegistrar {
    * left alone.
    *
    * `only` types just these sources of the cube shown, e.g. one Refresh. A
-   * table found unchanged loses any earlier warning.
+   * table found unchanged loses any earlier warning. `fresh` reads a data
+   * product's artifact again rather than what this page visit read.
    */
-  *reresolveSources(only?: readonly RecheckedSource[]): GeneratorFn<void> {
+  *reresolveSources(
+    only?: readonly RecheckedSource[],
+    fresh = false,
+  ): GeneratorFn<void> {
     const { context, query } = this.document;
     if (!context) {
       return;
@@ -504,6 +508,7 @@ export class CubeEditorState implements CommandRegistrar {
               this.host.dataProductCatalog,
               context.model,
               accessPoints,
+              fresh,
             )
           : new Map(),
       ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
@@ -626,7 +631,8 @@ export class CubeEditorState implements CommandRegistrar {
       source instanceof RelationalTableSource ||
       source instanceof DataProductAccessPointSource
     ) {
-      yield flowResult(this.reresolveSources([source]));
+      // a Refresh reads the deployed artifact again
+      yield flowResult(this.reresolveSources([source], true));
     }
   }
 

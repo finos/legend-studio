@@ -227,6 +227,30 @@ describe("A data product cube's warehouse", () => {
     expect(state.execution.isStale).toBe(false);
   });
 
+  test('Marks rows stale when Undo brings back a cube without a warehouse of its own, which now runs on the newer remembered one', async () => {
+    const { state, fake } = await setUpCube();
+    const context = state.document.context as NonNullable<
+      typeof state.document.context
+    >;
+    const { warehouse: _saved, ...withoutWarehouse } = context.model;
+    // a cube saved without a warehouse, run on the viewer's
+    state.importDocument(
+      state.document.withContext({ ...context, model: withoutWarehouse }),
+      false,
+    );
+    state.dataProductRuntime.remember('VIEWER_WH');
+    fake.execute.mockResolvedValueOnce(answerFor(state));
+    await flowResult(state.execution.execute());
+    expect(state.execution.result?.warehouse).toBe('VIEWER_WH');
+    expect(state.execution.isStale).toBe(false);
+    state.dataProductRuntime.setWarehouse('NEW_WH');
+    state.undo();
+    // the cube is as it ran, but runs on NEW_WH now
+    expect(state.document.context?.model.warehouse).toBeUndefined();
+    expect(state.dataProductRuntime.effectiveWarehouse).toBe('NEW_WH');
+    expect(state.execution.isStale).toBe(true);
+  });
+
   test("Drops a run's error once the warehouse is edited, and an error that arrives after the edit", async () => {
     const { state, fake } = await setUpCube();
     const capture = state.document.query.selected as string;

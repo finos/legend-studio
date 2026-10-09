@@ -168,6 +168,7 @@ export const CubeDataProductSourceEditor = observer(
                   >
                     {getCubeWarehouseErrorHint(
                       runtime.effectiveWarehouse ?? '',
+                      runtime.canEditWarehouse,
                     )}
                   </span>
                 )}

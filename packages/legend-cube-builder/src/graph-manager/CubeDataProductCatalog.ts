@@ -219,10 +219,15 @@ export interface CubeDataProductCatalog {
     signal?: AbortSignal,
   ): Promise<CubeDataProductDescription>;
 
-  /** The schema of each saved source, from the artifact at the cube's version: one entry per key, failures included */
+  /**
+   * The schema of each saved source, from the artifact at the cube's
+   * version: one entry per key, failures included. `fresh` reads the
+   * artifact again rather than what this page visit read, e.g. on Refresh
+   */
   resolveSchemas(
     project: CubeDataProductProject,
     sources: ReadonlyMap<NodeId, CubeAccessPointLocation>,
+    options?: { readonly fresh?: boolean | undefined },
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
 
   /** The product's page in the marketplace, or none when the host has no marketplace */

@@ -143,11 +143,6 @@ const readSampleRows = (
     });
 };
 
-/**
- * A product's access points by group, as its definition lists them. One is
- * pickable when it is a Lakehouse access point without parameters, outside
- * a model group, deployed with a relation of columns Cube can read
- */
 /** The stereotype a host's marketplace marks groups open to everyone with */
 export interface V1_CubeEnterpriseStereotype {
   readonly profile: string;
@@ -167,6 +162,11 @@ const isEnterpriseGroup = (
         each.profile === stereotype.profile && each.value === stereotype.value,
     );
 
+/**
+ * A product's access points by group, as its definition lists them. One is
+ * pickable when it is a Lakehouse access point without parameters, outside
+ * a model group, deployed with a relation of columns Cube can read
+ */
 export const V1_readCubeDataProductDescription = (
   candidate: CubeDataProductCandidate,
   artifact: unknown,

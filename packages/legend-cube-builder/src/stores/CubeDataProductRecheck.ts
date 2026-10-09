@@ -34,13 +34,15 @@ import {
 /**
  * Reads a data product cube's access points again (PLAN §6.8, §10.3): their
  * columns as the product's deployed artifact gives them, at the cube's saved
- * version, through the catalog, with no engine call. One answer per source,
- * failures included; never rejects.
+ * version, through the catalog, with no engine call; `fresh` reads the
+ * artifact again rather than what this page visit read. One answer per
+ * source, failures included; never rejects.
  */
 export const recheckCubeDataProductSources = async (
   catalog: CubeDataProductCatalog | undefined,
   model: ModelContext,
   sources: readonly DataProductAccessPointSource[],
+  fresh = false,
 ): Promise<Map<NodeId, Schema | CubeEngineError>> => {
   const failAll = (
     kind: CubeEngineErrorKind,
@@ -78,6 +80,7 @@ export const recheckCubeDataProductSources = async (
           },
         ]),
       ),
+      { fresh },
     );
   } catch (error) {
     return error instanceof CubeEngineError

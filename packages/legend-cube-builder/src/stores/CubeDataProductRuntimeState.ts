@@ -202,7 +202,8 @@ export class CubeDataProductRuntimeState {
   }
 
   /**
-   * Runs the cube on another warehouse; gives whether it changed. An empty
+   * Uses another warehouse for the cube's next runs; gives whether it
+   * changed. An empty
    * name, the warehouse already used, or a cube that can't be edited changes
    * nothing
    */

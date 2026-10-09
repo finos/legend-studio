@@ -259,6 +259,14 @@ const toGroupAccess = (
   }
 };
 
+/** A product's description, by its project, version and path, read once per visit */
+const descriptionKey = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  dataProductPath: string,
+): string => JSON.stringify([groupId, artifactId, versionId, dataProductPath]);
+
 /** What a host can add to the catalog: each part turns on what it serves */
 export interface V1_CubeDataProductCatalogOptions {
   /** The marketplace's search API; with it, searches run there */
@@ -339,11 +347,14 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
           cursor?.deploymentId,
           this.getAccessToken(),
         );
-      // a 200 carrying an error is no page
+      // a 200 carrying an error is no page; a page may leave out an empty
+      // list, as the lakehouse client and its model allow
       const list = isPlainObject(response)
         ? response.liteDataProductsResponse
         : undefined;
-      const products = isPlainObject(list) ? list.dataProducts : undefined;
+      const products = isPlainObject(list)
+        ? (list.dataProducts ?? [])
+        : undefined;
       if (!Array.isArray(products)) {
         throw new Error(V1_CUBE_DATA_PRODUCT_LIST_ERROR.UNREADABLE_PAGE);
       }
@@ -545,12 +556,12 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
   describe(
     candidate: CubeDataProductCandidate,
   ): Promise<CubeDataProductDescription> {
-    const key = JSON.stringify([
+    const key = descriptionKey(
       candidate.groupId,
       candidate.artifactId,
       candidate.versionId,
       candidate.dataProductPath,
-    ]);
+    );
     let description = this.descriptions.get(key);
     if (!description) {
       description = Promise.all([
@@ -580,7 +591,21 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
   async resolveSchemas(
     project: CubeDataProductProject,
     sources: ReadonlyMap<NodeId, CubeAccessPointLocation>,
+    options?: { readonly fresh?: boolean | undefined },
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
+    if (options?.fresh) {
+      // read the products again, not what this visit read
+      sources.forEach(({ dataProduct }) =>
+        this.descriptions.delete(
+          descriptionKey(
+            project.groupId,
+            project.artifactId,
+            project.versionId,
+            dataProduct,
+          ),
+        ),
+      );
+    }
     const resolved = new Map<NodeId, Schema | CubeEngineError>();
     await Promise.all(
       [...sources].map(async ([nodeId, location]) => {
