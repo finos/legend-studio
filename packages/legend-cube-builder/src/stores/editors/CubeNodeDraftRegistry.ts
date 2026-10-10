@@ -22,6 +22,7 @@ import {
   Group,
   Join,
   Limit,
+  Partition,
   type QueryNode,
   Rename,
   Restrict,
@@ -35,6 +36,7 @@ import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeGroupDraft } from './CubeGroupDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
+import { CubePartitionDraft } from './CubePartitionDraft.js';
 import { CubeRenameDraft } from './CubeRenameDraft.js';
 import { CubeRestrictDraft } from './CubeRestrictDraft.js';
 import { CubeRowCountDraft } from './CubeRowCountDraft.js';
@@ -69,6 +71,10 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
   [Slice.TYPE, (node) => new CubeSliceDraft(guaranteeType(node, Slice))],
   [Concat.TYPE, (node) => new CubeConcatDraft(guaranteeType(node, Concat))],
+  [
+    Partition.TYPE,
+    (node) => new CubePartitionDraft(guaranteeType(node, Partition)),
+  ],
 ]);
 
 /**

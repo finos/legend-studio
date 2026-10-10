@@ -28,6 +28,7 @@ import {
   PackageIcon,
   PencilIcon,
   QuestionSquareIcon,
+  SigmaIcon,
   SortIcon,
   TableIcon,
 } from '@finos/legend-art';
@@ -48,6 +49,7 @@ const NODE_ICONS: Readonly<
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
   group: DataCubeIcon.TableGroupBy,
+  partition: SigmaIcon,
   rename: PencilIcon,
   sort: SortIcon,
 };

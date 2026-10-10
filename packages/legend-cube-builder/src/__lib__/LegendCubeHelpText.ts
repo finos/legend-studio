@@ -24,6 +24,7 @@ import {
   Group,
   Join,
   Limit,
+  Partition,
   RelationalTableSource,
   Rename,
   Restrict,
@@ -56,6 +57,8 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
   [Join.TYPE]:
     'Joins two previous data sets using specified columns as join keys.',
+  [Partition.TYPE]:
+    'Adds new columns with outputs of window functions for optional window partition and order.',
   [Limit.TYPE]:
     'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
   [Rename.TYPE]:

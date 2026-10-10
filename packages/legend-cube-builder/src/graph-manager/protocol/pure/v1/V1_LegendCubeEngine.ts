@@ -117,8 +117,10 @@ const TEXT_MODEL_TYPE = 'text';
 const EXECUTION_CLIENT_VERSION = 'vX_X_X';
 
 /**
- * The node an execution lambda runs: the one its `from` call is stamped with
- * (`{| <relation>->limit(…)->from(runtime)}`), where errors without a stamp go
+ * The node an execution lambda runs: the one its outermost call is stamped
+ * with, `from` in `{| <relation>->limit(…)->from(runtime)}` and `limit` in
+ * the let form, `{| {| <lets>; <relation>}->from(runtime)->limit(…)}` (PLAN
+ * §8.6), where errors without a stamp go
  */
 const captureNodeOf = (executionLambda: IR): NodeId | undefined => {
   const from =

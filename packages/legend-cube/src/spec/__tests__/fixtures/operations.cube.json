@@ -534,6 +534,277 @@
         "id": "concat101",
         "inputs": ["restrict102", "restrict103"],
         "widenTypes": false
+      },
+      {
+        "kind": "relational",
+        "id": "relational105",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "ORDERS",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": true
+          },
+          {
+            "name": "EMPLOYEE_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "ORDER_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "REQUIRED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIPPED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_VIA",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "FREIGHT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Double"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "partition",
+        "id": "partition101",
+        "inputs": ["relational105"],
+        "columns": ["SHIP_COUNTRY"],
+        "sorts": [
+          { "column": "ORDER_DATE", "direction": "ASC" },
+          { "column": "ORDER_ID", "direction": "ASC" }
+        ],
+        "aggregations": [
+          {
+            "column": "EMPLOYEE_ID",
+            "function": "Sum",
+            "name": "EMPLOYEE_ID Sum"
+          },
+          {
+            "column": "SHIPPED_DATE",
+            "function": "Count",
+            "name": "SHIPPED_DATE Count"
+          },
+          {
+            "function": "Rank",
+            "name": "Rank"
+          }
+        ]
+      },
+      {
+        "kind": "relational",
+        "id": "relational106",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "ORDERS",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": true
+          },
+          {
+            "name": "EMPLOYEE_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "ORDER_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "REQUIRED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIPPED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_VIA",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "FREIGHT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Double"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "partition",
+        "id": "partition102",
+        "inputs": ["relational106"],
+        "columns": [],
+        "sorts": [{ "column": "ORDER_ID", "direction": "DESC" }],
+        "aggregations": [
+          {
+            "function": "CountRows",
+            "name": "Count Rows"
+          },
+          {
+            "function": "RowNumber",
+            "name": "Row Number"
+          }
+        ]
       }
     ]
   }

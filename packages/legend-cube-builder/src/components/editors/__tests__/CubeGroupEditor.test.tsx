@@ -513,6 +513,9 @@ describe('Group editor', () => {
     );
     await openGroup();
     expect(functionPicker(1).value).toBe('Rank');
+    // a Group doesn't know Rank, so its row keeps the column like any other
+    expect(columnPicker(1).value).toBe('ORDER_ID');
+    expect(screen.queryByRole('button', { name: 'Clear column 1' })).toBeNull();
     expect(functions(1)).toEqual([
       'Rank (unknown)',
       ...ALL_COLUMN_FUNCTIONS,

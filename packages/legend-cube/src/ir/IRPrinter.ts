@@ -193,8 +193,6 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
         : `${ir.enumPath}.${printName(ir.value)}`;
     case 'let':
       return `let ${ir.name} = ${print(ir.value)}`;
-    case 'block':
-      return `{${statements(ir.statements)}}`;
     case 'raw':
       return `<raw ${JSON.stringify(ir.json)}>`;
     default:

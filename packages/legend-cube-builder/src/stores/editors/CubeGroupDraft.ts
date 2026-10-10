@@ -15,85 +15,39 @@
  */
 
 import {
-  AggregationFunction,
   type ColumnAggregation,
-  getAggregationAutoName,
+  GROUP_AGGREGATION_USE,
   type Group,
-  isAggregationFunction,
   type Schema,
 } from '@finos/legend-cube';
 import { action, makeObservable, observable } from 'mobx';
+import {
+  aggregationRowsOf,
+  aggregationsOfRows,
+  blankAggregationRow,
+  type CubeAggregationRow,
+  isBuiltAggregationRow,
+  isSameAggregations,
+  isSameList,
+  toggledColumns,
+  withRowColumn,
+  withRowFunction,
+  withRowName,
+} from './CubeAggregationRows.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
-/**
- * One aggregation row of the Group editor: a column (`undefined` for Count
- * rows, `''` until picked), a function (`''` until picked; an unknown one is
- * kept as saved) and an output name
- */
-export interface CubeGroupRow {
-  /** Identifies the row in the editor */
-  readonly key: number;
-  readonly column: string | undefined;
-  readonly function: string;
-  readonly name: string;
-  /**
-   * The name was typed: it no longer follows the column and the function.
-   * A name equal to the auto-name follows them again.
-   */
-  readonly named: boolean;
-}
-
-let nextRowKey = 1;
-
-const blankRow = (): CubeGroupRow => ({
-  key: nextRowKey++,
-  column: '',
-  function: '',
-  name: '',
-  named: false,
-});
+/** One aggregation row of the Group editor (`CubeAggregationRow`) */
+export type CubeGroupRow = CubeAggregationRow;
 
 /**
- * Whether a row builds an aggregation: it has a column, or it is Count rows,
- * or it holds a function this version doesn't know with no column (a newer
- * client's, or a window function such as Rank), kept as saved (Q4). A blank
- * row, or a column function whose column isn't picked yet, is left out.
+ * Whether a row builds an aggregation of a Group: it has a column, or it is
+ * Count rows, or it holds a function this version doesn't know with no column
+ * (a newer client's, or a window function such as Rank), kept as saved (Q4).
+ * A blank row, or a column function whose column isn't picked yet, is left
+ * out.
  */
 export const isBuiltGroupRow = (row: CubeGroupRow): boolean =>
-  Boolean(row.column) ||
-  row.function === AggregationFunction.COUNT_ROWS ||
-  (row.column === undefined && !isAggregationFunction(row.function));
-
-/** The row with its name following the column and the function, unless typed */
-const withAutoName = (row: CubeGroupRow): CubeGroupRow =>
-  row.named
-    ? row
-    : { ...row, name: getAggregationAutoName(row.function, row.column) ?? '' };
-
-/**
- * The keys in the input's order, then those the input doesn't have, in the
- * order they were picked: a saved key the input lost stays listed until it is
- * unticked
- */
-const inInputOrder = (names: readonly string[], schema: Schema): string[] => [
-  ...schema.names().filter((name) => names.includes(name)),
-  ...names.filter((name) => schema.lookup(name) === undefined),
-];
-
-const isSameList = (a: readonly string[], b: readonly string[]): boolean =>
-  a.length === b.length && a.every((name, index) => name === b[index]);
-
-const isSameAggregations = (
-  a: readonly ColumnAggregation[],
-  b: readonly ColumnAggregation[],
-): boolean =>
-  a.length === b.length &&
-  a.every(
-    (aggregation, index) =>
-      aggregation.column === b[index]?.column &&
-      aggregation.function === b[index]?.function &&
-      aggregation.name === b[index]?.name,
-  );
+  isBuiltAggregationRow(row, GROUP_AGGREGATION_USE);
 
 /**
  * The Group editor's draft (spec §17.6: a multi-select of keys, then rows of
@@ -125,36 +79,17 @@ export class CubeGroupDraft extends CubeNodeDraft<Group> {
       setName: action,
     });
     this.columns = original.columns;
-    this.rows = original.aggregations.length
-      ? original.aggregations.map(({ column, function: fn, name }) => ({
-          key: nextRowKey++,
-          column,
-          function: fn,
-          name,
-          named: name !== (getAggregationAutoName(fn, column) ?? ''),
-        }))
-      : [blankRow()];
+    this.rows = aggregationRowsOf(original.aggregations, GROUP_AGGREGATION_USE);
   }
 
   /** The aggregations the rows build, in order (`isBuiltGroupRow`) */
   get aggregations(): ColumnAggregation[] {
-    return this.rows
-      .filter(isBuiltGroupRow)
-      .map(({ column, function: fn, name }) => ({
-        column,
-        function: fn,
-        name,
-      }));
+    return aggregationsOfRows(this.rows, GROUP_AGGREGATION_USE);
   }
 
   /** Ticks or unticks a key; the keys then follow the input's order (Q2) */
   toggleColumn(name: string, schema: Schema): void {
-    this.columns = inInputOrder(
-      this.columns.includes(name)
-        ? this.columns.filter((picked) => picked !== name)
-        : [...this.columns, name],
-      schema,
-    );
+    this.columns = toggledColumns(this.columns, name, schema);
     this.touched = true;
   }
 
@@ -165,7 +100,7 @@ export class CubeGroupDraft extends CubeNodeDraft<Group> {
   }
 
   addRow(): void {
-    this.rows = [...this.rows, blankRow()];
+    this.rows = [...this.rows, blankAggregationRow()];
     this.touched = true;
   }
 
@@ -185,35 +120,18 @@ export class CubeGroupDraft extends CubeNodeDraft<Group> {
   /** Picks the row's column; with no function yet, Count */
   setColumn(key: number, column: string): void {
     this.update(key, (row) =>
-      withAutoName({
-        ...row,
-        column,
-        function: row.function || AggregationFunction.COUNT,
-      }),
+      withRowColumn(row, column, GROUP_AGGREGATION_USE),
     );
   }
 
   /** Picks the row's function: Count rows takes no column, the others one */
   setFunction(key: number, fn: string): void {
-    this.update(key, (row) =>
-      withAutoName({
-        ...row,
-        function: fn,
-        column:
-          fn === AggregationFunction.COUNT_ROWS
-            ? undefined
-            : (row.column ?? ''),
-      }),
-    );
+    this.update(key, (row) => withRowFunction(row, fn, GROUP_AGGREGATION_USE));
   }
 
   /** Types the row's name, kept exactly; the auto-name itself follows again */
   setName(key: number, name: string): void {
-    this.update(key, (row) => ({
-      ...row,
-      name,
-      named: name !== (getAggregationAutoName(row.function, row.column) ?? ''),
-    }));
+    this.update(key, (row) => withRowName(row, name, GROUP_AGGREGATION_USE));
   }
 
   build(): Group {

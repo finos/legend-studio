@@ -15,7 +15,14 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { Concat, createNodeRegistry, UnknownNode } from '@finos/legend-cube';
+import {
+  Concat,
+  createNodeRegistry,
+  Partition,
+  SortDirection,
+  UnknownNode,
+  WindowRankFunction,
+} from '@finos/legend-cube';
 import {
   CUBE_NODE_HELP_TEXT,
   SELECT_NODE_TOOLTIP,
@@ -27,6 +34,7 @@ import {
   CUBE_NODE_DRAFT_FACTORIES,
   CUBE_NODE_TYPES_WITHOUT_SETTINGS,
 } from '../../../stores/editors/CubeNodeDraftRegistry.js';
+import { CubePartitionDraft } from '../../../stores/editors/CubePartitionDraft.js';
 import { hasCubeNodeIcon } from '../../CubeNodeIcon.js';
 import { CUBE_NODE_EDITORS } from '../CubeNodeEditorRegistry.js';
 
@@ -69,6 +77,8 @@ describe('Node editor registries', () => {
       join: 'Joins two previous data sets using specified columns as join keys.',
       limit:
         'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
+      partition:
+        'Adds new columns with outputs of window functions for optional window partition and order.',
       rename:
         'Renames specified columns in the previous data set to new names.',
       restrict: 'Restricts outgoing data set to the specified columns only.',
@@ -122,6 +132,27 @@ describe('Node editor registries', () => {
       expect((draft as CubeConcatDraft).original).toBe(concat);
       expect((draft as CubeConcatDraft).widenTypes).toBe(widenTypes);
     });
+  });
+
+  test('Gives a Partition a draft of its partition columns, sort keys and window functions (PLAN §11.6)', () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    const partition = new Partition(
+      'partition101',
+      ['SHIP_COUNTRY'],
+      [{ column: 'ORDER_DATE', direction: SortDirection.DESC }],
+      [{ column: undefined, function: WindowRankFunction.RANK, name: 'Rank' }],
+    );
+    const draft = CUBE_NODE_DRAFT_FACTORIES.get(Partition.TYPE)?.(
+      partition,
+      state,
+    );
+    expect(draft).toBeInstanceOf(CubePartitionDraft);
+    const partitionDraft = draft as CubePartitionDraft;
+    expect(partitionDraft.original).toBe(partition);
+    expect(partitionDraft.columns).toEqual(['SHIP_COUNTRY']);
+    expect(partitionDraft.sorts).toEqual(partition.sorts);
+    expect(partitionDraft.aggregations).toEqual(partition.aggregations);
+    expect(partitionDraft.build()).toBe(partition);
   });
 
   test('Has a draft only for types with an editor, and help for Unknown nodes', () => {

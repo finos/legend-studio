@@ -208,6 +208,32 @@ describe('Grid quick actions', () => {
     expect(state.nodeEditor.node).toBeUndefined();
   });
 
+  test('Names the Count rows of a Group by on a Group after the free name, Count Rows 2, and the Group is valid', async () => {
+    const { state, fake } = await setUp();
+    actionsOn(state, 'SHIP_COUNTRY')[1]?.apply();
+    // run the Group, whose rows have a Count Rows column already
+    fake.execute.mockResolvedValueOnce({
+      columns: ['SHIP_COUNTRY', 'Count Rows'],
+      rows: [['France', '77']],
+      sql: [],
+      durationMs: 1,
+    });
+    await flowResult(state.execution.execute());
+    expect(state.execution.isStale).toBe(false);
+    getCubeGridQuickActions(state, 0, 'France')[1]?.apply();
+    const { query } = state.document;
+    expect(query.selected).toBe('group102');
+    expect(query.getInputIds('group102')).toEqual(['group101']);
+    expect((query.getNode('group102') as Group).aggregations).toEqual([
+      {
+        column: undefined,
+        function: AggregationFunction.COUNT_ROWS,
+        name: 'Count Rows 2',
+      },
+    ]);
+    expect(state.analysis.validity.get('group102')).toEqual([]);
+  });
+
   test("Can't group by a type that can't be compared", async () => {
     const { state } = await setUp();
     expect(reasons(state, 'PAYLOAD')[1]).toBe(

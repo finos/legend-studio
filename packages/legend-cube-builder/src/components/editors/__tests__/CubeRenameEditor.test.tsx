@@ -27,7 +27,10 @@ import {
   type RenameMapping,
 } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { COLUMN_NAME_RULES_HINT } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  COLUMN_NAME_RULES_HINT,
+  READ_ONLY_CUBE_TITLE,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -216,6 +219,7 @@ describe('Rename editor', () => {
     expect(name(1).disabled).toBe(true);
     expect(button('Remove rename 1').disabled).toBe(true);
     expect(button('Add column to rename').disabled).toBe(true);
+    expect(button('Add column to rename').title).toBe(READ_ONLY_CUBE_TITLE);
     expect(button('Apply').disabled).toBe(true);
   });
 
