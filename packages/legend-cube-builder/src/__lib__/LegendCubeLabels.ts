@@ -132,6 +132,8 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   STALE_ROWS:
     'Execute again: these rows are from an earlier version of the query.',
   RUNNING: 'Wait for the run to finish.',
+  EDITING:
+    "Close the node editor first: these rows don't show the changes in it.",
   UNREADABLE_VALUE: "This value can't be used in a filter.",
   notSortable: (typeName: string): string =>
     `Values of type ${typeName} can't be sorted.`,
@@ -158,6 +160,7 @@ export enum CUBE_EDITOR_CLOSED_REASON {
   NODE_CHANGED = 'nodeChanged',
   NODE_REMOVED = 'nodeRemoved',
   CUBE_REPLACED = 'cubeReplaced',
+  CANNOT_APPLY = 'cannotApply',
 }
 
 /** The notice of a node editor that closed by itself, dropping its edits (M1.8b) */
@@ -170,7 +173,9 @@ export const getEditorClosedNotice = (
       ? `${nodeId} changed`
       : reason === CUBE_EDITOR_CLOSED_REASON.NODE_REMOVED
         ? `${nodeId} was removed`
-        : 'Another cube was opened';
+        : reason === CUBE_EDITOR_CLOSED_REASON.CANNOT_APPLY
+          ? `The query can't take the changes to ${nodeId}`
+          : 'Another cube was opened';
   return `${cause}, so the editor of ${nodeId} closed without applying its changes.`;
 };
 
@@ -256,3 +261,14 @@ export const PARTITION_EDITOR_NOTES = [
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';
+
+/**
+ * A node type's label as the node editor's title shows it, each word
+ * capitalised (QUESTIONS.md U1(a)), e.g. 'Take First <x> Rows'; the registry
+ * keeps its own wording
+ */
+export const toEditorTitle = (label: string): string =>
+  label.replace(/(?<=^|\s)[a-z]/gu, (letter) => letter.toUpperCase());
+
+/** The source dialog's body until a tab is chosen, opened from the empty canvas (spec §17.8, U4(b)) */
+export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';

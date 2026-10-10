@@ -59,6 +59,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     `cube-depot-dbs`, finos/legend-studio#5663 into `cube-dev`: the mock depot's sample projects, the pointer model,
     the project catalog, the Project tab, the Source panel rows, tests (CI and the manual `cube-local` group) and docs.
     Verification and the demo video come after the PR, once tested deployed.
+- [ ] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.8, [PROGRESS-M3b.md](PROGRESS-M3b.md))
 - [x] M4 Group, Concat (merged as #5649, `d847e6721`; follow-ups in #5653)
 - [x] M5 Partition (windows), built in #5653 with M4's follow-ups, not merged yet ([PROGRESS-M5.md](PROGRESS-M5.md),
       PLAN §11.6)

@@ -49,7 +49,7 @@ beforeEach(() => {
 describe('Project tab', () => {
   test("Adds a table of a project's Database at its newest release", async () => {
     await renderPage();
-    fireEvent.click(screen.getByText('add a table'));
+    fireEvent.click(screen.getByText('Connect to a source'));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(
       within(dialog).getByRole('tab', { name: 'Project Database' }),
@@ -97,7 +97,7 @@ describe('Project tab', () => {
   test("Says when the depot can't list its projects, with Retry", async () => {
     const { projects } = await renderPage();
     projects.listProjects.mockRejectedValueOnce(new Error('depot down'));
-    fireEvent.click(screen.getByText('add a table'));
+    fireEvent.click(screen.getByText('Connect to a source'));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(
       within(dialog).getByRole('tab', { name: 'Project Database' }),

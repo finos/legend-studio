@@ -49,7 +49,6 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -74,7 +73,6 @@ const render = async (query: Query): Promise<CubeEditorState> => {
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -126,10 +124,10 @@ describe('Rename editor', () => {
     await openRename();
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Column renames')]);
     expect(within(panel()).getByText(COLUMN_NAME_RULES_HINT)).toBeDefined();
-    // the rows scroll on their own, so the editor fits wherever it is shown
+    // the editor's body is its one scroller (PLAN §11.8)
     expect(
       within(panel()).getByRole('list', { name: 'Column renames' }).className,
-    ).toContain('overflow-auto');
+    ).not.toMatch(/\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u);
     pick(1, 'SHIP_COUNTRY');
     type(1, 'Ship Country');
     expect(problems()).toEqual([]);

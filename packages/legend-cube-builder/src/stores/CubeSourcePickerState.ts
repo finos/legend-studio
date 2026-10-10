@@ -59,17 +59,21 @@ export class CubeSourcePickerState {
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
+  /** Open with no tab chosen yet, from the empty canvas's link (U4(b)) */
+  isChoosingTab = false;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
       isOpen: observable,
       activeTabKey: observable,
+      isChoosingTab: observable,
       tabs: computed,
       fixedTab: computed,
       activeTab: computed,
       disabledReason: computed,
       canConfirm: computed,
       open: action,
+      openToChoose: action,
       selectTab: action,
       close: action,
       confirm: flow,
@@ -169,7 +173,11 @@ export class CubeSourcePickerState {
   }
 
   get canConfirm(): boolean {
-    return this.activeTab.canConfirm && this.isTabEnabled(this.activeTab);
+    return (
+      !this.isChoosingTab &&
+      this.activeTab.canConfirm &&
+      this.isTabEnabled(this.activeTab)
+    );
   }
 
   /**
@@ -182,6 +190,7 @@ export class CubeSourcePickerState {
     }
     const { fixedTab } = this;
     this.isOpen = true;
+    this.isChoosingTab = false;
     const tab =
       fixedTab ??
       this.tabs.find((candidate) => candidate.key === tabKey) ??
@@ -190,11 +199,32 @@ export class CubeSourcePickerState {
     tab.open();
   }
 
+  /**
+   * Opens the dialog with no tab chosen, showing the prompt to choose one
+   * (U4(b)); a cube with a fixed context, or a host serving one tab, opens
+   * on it as `open` does
+   */
+  openToChoose(): void {
+    if (this.fixedTab !== undefined || this.tabs.length <= 1) {
+      this.open();
+    } else if (this.disabledReason === undefined) {
+      this.isOpen = true;
+      this.isChoosingTab = true;
+    }
+  }
+
   /** Switches to an enabled tab; the tab left drops what it was waiting for */
   selectTab(tabKey: CubeSourcePickerTabKey): void {
     const tab = this.tabs.find((candidate) => candidate.key === tabKey);
-    if (tab && this.isTabEnabled(tab) && tab !== this.activeTab) {
-      this.activeTab.close();
+    if (
+      tab &&
+      this.isTabEnabled(tab) &&
+      (this.isChoosingTab || tab !== this.activeTab)
+    ) {
+      if (!this.isChoosingTab) {
+        this.activeTab.close();
+      }
+      this.isChoosingTab = false;
       this.activeTabKey = tab.key;
       tab.open();
     }
@@ -203,6 +233,7 @@ export class CubeSourcePickerState {
   /** Closes the dialog; a source still being typed is not added */
   close(): void {
     this.isOpen = false;
+    this.isChoosingTab = false;
     this.modelTab.close();
     this.directTab.close();
     this.dataProductTab.close();

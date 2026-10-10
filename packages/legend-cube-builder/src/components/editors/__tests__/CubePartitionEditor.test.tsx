@@ -64,7 +64,6 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const { COUNT, SUM, AVERAGE, COUNT_ROWS } = AggregationFunction;
@@ -120,7 +119,6 @@ const render = async (query: Query): Promise<CubeEditorState> => {
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -291,7 +289,7 @@ beforeEach(() => {
 });
 
 describe('Partition editor', () => {
-  test('Shows the window functions, then the partition columns, then the sort columns, each list scrolling on its own, and the notes', async () => {
+  test("Shows the window functions, then the partition columns, then the sort columns, in the editor's one scroller, and the notes", async () => {
     await render(ordersPartitioned([], [], []));
     await openPartition();
     expect(
@@ -300,10 +298,12 @@ describe('Partition editor', () => {
         .map((element) => element.getAttribute('aria-label'))
         .filter((label) => label !== null),
     ).toEqual(['Window functions', 'Partition columns', 'Sort columns']);
-    // the lists scroll on their own, so the editor fits wherever it is shown
-    expect(functionList().className).toContain('overflow-auto');
-    expect(columnList().className).toContain('overflow-auto');
-    expect(sortList().className).toContain('overflow-auto');
+    // the editor's body is its one scroller (PLAN §11.8)
+    [functionList(), columnList(), sortList()].forEach((element) =>
+      expect(element.className).not.toMatch(
+        /\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u,
+      ),
+    );
     // one blank window-function row to start, not yet a problem, and no sort row
     expect(rows()).toHaveLength(1);
     expect(columnPicker(1).value).toBe('');

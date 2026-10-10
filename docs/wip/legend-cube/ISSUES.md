@@ -40,6 +40,22 @@
   rule and its autofix offer `ID_1`/`id_2`. Test: left `[ID, X]`, right `[id, X]` joined on X reports the duplicate,
   and the autofix makes the join valid.
 
+### The node tooltip stays through a drag or a zoom
+
+M3b.11's tooltip (MUI) opens 500 ms after the pointer rests on a node. A native drag of the node fires no mouse leave, so
+a tooltip that opened stays during the drag and after the drop, until the pointer next moves off the node. A wheel zoom
+with the tooltip open leaves it where it was, a few pixels over the grown node. Both clear on the next pointer move.
+A fix controls the tooltip's `open` from react-dnd's `isDragging` and closes it on React Flow's `onMoveStart`.
+
+### Entry links: the address keeps a history entry, a malformed one stops Legend Query, and search may miss the product
+
+M3b.12's link (`?sourceType=dataProductAccessPoint&sourceId=…`) is taken out of the address with the navigator's
+`updateCurrentLocation`, which pushes rather than replaces: Back returns to the link (the page, still mounted, doesn't
+read it again; a reload there opens it again). A parameter with a malformed `%` stops Legend Query from loading before
+Cube runs (the framework decodes the parameters as it loads). And the linked product is found with the catalog's
+`search` for its id: a full-text search that ranks or cuts its answers could miss it, though the id is exact. Fixes:
+a `replace` option on the navigator port; a lookup by id on the catalog port (`CubeDataProductCatalog`).
+
 ## Engine issues to file
 
 Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.

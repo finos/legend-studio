@@ -35,10 +35,15 @@ import {
 } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
+import {
+  type CubeEntrySource,
+  CubeEntrySourceState,
+} from '../stores/CubeEntrySource.js';
 import type { CubeHost } from '../stores/CubeHost.js';
+import { CubeAddItemsMenu } from './CubeAddItems.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from './editors/CubeNodeEditorPanel.js';
+import { CubeEntrySourceBanner } from './CubeEntrySourceBanner.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
@@ -48,9 +53,6 @@ import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.j
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
-
-/** How wide the node editor opens, in pixels */
-const NODE_EDITOR_WIDTH = 400;
 
 /** The tallest the graph region may be, following the window's height */
 const useMaxGraphHeight = (): number => {
@@ -86,13 +88,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
             {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
           </span>
         )}
-        <CubeButton
-          title={editorState.sourcePicker.disabledReason}
-          disabled={editorState.sourcePicker.disabledReason !== undefined}
-          onClick={() => editorState.sourcePicker.open()}
-        >
-          Add table
-        </CubeButton>
+        <CubeAddItemsMenu editorState={editorState} />
         <CubeButton
           title="Open an example cube, or start one on sample data"
           onClick={() => editorState.examples.open()}
@@ -105,8 +101,8 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
               ? READ_ONLY_CUBE_TITLE
               : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
           }
-          disabled={!editorState.canUndo}
-          onClick={() => editorState.undo()}
+          disabled={!editorState.canUndo && !editorState.hasEditsToApply}
+          onClick={() => editorState.undoEdited()}
         >
           Undo
         </CubeButton>
@@ -118,6 +114,10 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           }
           disabled={!editorState.execution.canExecute}
           onClick={() => {
+            // what it shows includes the node editor's edits, as Execute runs them
+            if (!editorState.nodeEditor.finishApplied()) {
+              return;
+            }
             flowResult(editorState.showPure.open()).catch(
               editorState.host.applicationStore.alertUnhandledError,
             );
@@ -132,7 +132,11 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
               : "Show the cube's spec, to copy or download"
           }
           disabled={readOnly}
-          onClick={() => editorState.specTransfer.openExport()}
+          onClick={() => {
+            if (editorState.nodeEditor.finishApplied()) {
+              editorState.specTransfer.openExport();
+            }
+          }}
         >
           Export (dev)
         </CubeButton>
@@ -148,7 +152,12 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
               ? 'Hide the graph, leaving more room for the results'
               : 'Show the graph'
           }
-          onClick={() => editorState.setShowGraph(!showGraph)}
+          onClick={() => {
+            // the floating editor goes with the graph, applying its edits
+            if (!showGraph || editorState.nodeEditor.finish()) {
+              editorState.setShowGraph(!showGraph);
+            }
+          }}
         >
           {showGraph ? 'Hide graph' : 'Show graph'}
         </CubeButton>
@@ -186,7 +195,8 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
 
 /**
  * The Legend Cube page: the query above, its results below, both always
- * shown (PLAN §7.1); hiding the graph leaves its header. The host gives it
+ * shown (PLAN §7.1); hiding the graph leaves its header. A node's editor
+ * floats below the node (PLAN §11.8). The host gives it
  * the engine, the models and the application store; the page's state lives
  * as long as the page.
  */
@@ -195,17 +205,26 @@ export const CubeEditor = observer(
     host: CubeHost;
     /** The cube to open; an empty one by default */
     initialDocument?: CubeDocument | undefined;
+    /** A source a link asks the page to start with, on an empty cube (spec §17.15) */
+    initialSource?: CubeEntrySource | undefined;
   }) => {
     const [editorState] = useState(
       () => new CubeEditorState(props.host, props.initialDocument),
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
+    const [entry] = useState(() => new CubeEntrySourceState(editorState));
+    const { initialSource } = props;
+    useEffect(() => {
+      if (initialSource) {
+        flowResult(entry.open(initialSource)).catch(
+          editorState.host.applicationStore.alertUnhandledError,
+        );
+      }
+      // only as the page opens
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     useCommands(editorState);
     const maxGraphHeight = useMaxGraphHeight();
-    const isEditorOpen = editorState.nodeEditor.nodeId !== undefined;
-    const editorPanel = getCollapsiblePanelGroupProps(!isEditorOpen, {
-      size: NODE_EDITOR_WIDTH,
-    });
     const { showGraph } = editorState.document.meta.presentation;
     // hiding the graph collapses its panel: the header and the results stay
     // where they are, so the grid keeps its state
@@ -217,30 +236,23 @@ export const CubeEditor = observer(
         data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
       >
         <CubePalette editorState={editorState} />
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel {...editorPanel.remainingPanel} minSize={320}>
-            <div className="flex h-full min-w-0 flex-1 flex-col">
-              <CubeGraphHeader editorState={editorState} />
-              <ResizablePanelGroup orientation="horizontal">
-                <ResizablePanel
-                  {...graphPanel.collapsiblePanel}
-                  minSize={showGraph ? 96 : 0}
-                  maxSize={maxGraphHeight}
-                >
-                  {showGraph && <CubeCanvas editorState={editorState} />}
-                </ResizablePanel>
-                <ResizablePanelSplitter className={showGraph ? '' : 'hidden'} />
-                <ResizablePanel {...graphPanel.remainingPanel} minSize={96}>
-                  <CubeGridRegion editorState={editorState} />
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </div>
-          </ResizablePanel>
-          <ResizablePanelSplitter className={isEditorOpen ? '' : 'hidden'} />
-          <ResizablePanel {...editorPanel.collapsiblePanel} direction={-1}>
-            <CubeNodeEditorPanel editorState={editorState} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+        <div className="flex h-full min-w-0 flex-1 flex-col">
+          <CubeGraphHeader editorState={editorState} />
+          <CubeEntrySourceBanner entry={entry} />
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel
+              {...graphPanel.collapsiblePanel}
+              minSize={showGraph ? 96 : 0}
+              maxSize={maxGraphHeight}
+            >
+              {showGraph && <CubeCanvas editorState={editorState} />}
+            </ResizablePanel>
+            <ResizablePanelSplitter className={showGraph ? '' : 'hidden'} />
+            <ResizablePanel {...graphPanel.remainingPanel} minSize={96}>
+              <CubeGridRegion editorState={editorState} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </div>
     );
   },

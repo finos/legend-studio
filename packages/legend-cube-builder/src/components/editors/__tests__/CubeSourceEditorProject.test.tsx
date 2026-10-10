@@ -30,7 +30,6 @@ import { createFakeCubeProjectCatalog } from '../../../__test-utils__/FakeCubePr
 import { createCubeProjectModel } from '../../../graph-manager/CubeProject.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 describe('Source panel of a project cube', () => {
   test("Shows the cube's project and version above its Database", async () => {
@@ -62,7 +61,6 @@ describe('Source panel of a project cube', () => {
         <div style={{ width: 800, height: 400 }}>
           <CubeCanvas editorState={editorState} />
         </div>
-        <CubeNodeEditorPanel editorState={editorState} />
       </div>,
       host.applicationStore,
       LEGEND_CUBE_TEST_ID.CANVAS,

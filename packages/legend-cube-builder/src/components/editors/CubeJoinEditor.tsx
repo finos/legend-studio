@@ -233,7 +233,7 @@ export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
           </div>
           <ul aria-label="Columns in both inputs">
             {duplicates.map((name, index) => (
-              <li key={name} className="font-mono">
+              <li key={name} className="break-all font-mono">
                 {fix
                   ? `${name} → ${fix.left[index]?.to} (Left), ${fix.right[index]?.to} (Right)`
                   : name}

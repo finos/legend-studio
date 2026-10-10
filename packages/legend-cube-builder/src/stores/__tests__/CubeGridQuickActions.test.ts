@@ -19,9 +19,11 @@ import {
   AggregationFunction,
   ColumnComparisonFilter,
   CubeDocument,
+  Connection,
   Filter,
   FilterOperator,
   type Group,
+  Limit,
   OpaqueType,
   PrimitiveType,
   Query,
@@ -50,6 +52,7 @@ import type {
 } from '../../graph-manager/CubeEngine.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
+import type { CubeRowCountDraft } from '../editors/CubeRowCountDraft.js';
 import {
   getCubeGridQuickActions,
   getGroupByCountName,
@@ -399,6 +402,39 @@ describe('Grid quick actions', () => {
     ]);
   });
 
+  test('Disables all three while the node editor holds edits, which choosing one would apply first', async () => {
+    const { host } = TEST__createCubeHost({ result: RESULT });
+    const state = new CubeEditorState(
+      host,
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', COLUMNS),
+            new Limit('limit101', 10),
+          ],
+          [new Connection('relational101', 'limit101', 'tds')],
+          'limit101',
+        ),
+      }),
+    );
+    await flowResult(state.execution.execute());
+    state.nodeEditor.open('limit101');
+    expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    (state.nodeEditor.draft as CubeRowCountDraft<Limit>).setSizeText('5');
+    expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+    ]);
+    actionsOn(state, 'SHIP_COUNTRY')[0]?.apply();
+    expect(state.document.query.getNode('sort101')).toBeUndefined();
+  });
+
   test('Does nothing when the query changed after the menu opened', async () => {
     const { state } = await setUp();
     // Sort by, from a menu opened before a Filter was added
@@ -430,6 +466,54 @@ describe('Grid quick actions', () => {
     const afterSort = ids();
     fresh[2]?.apply();
     expect(ids()).toBe(afterSort);
+  });
+
+  test('Disables all three while the node editor holds input not yet stored, which closing it would commit', async () => {
+    const { state } = await setUp();
+    const remove = state.nodeEditor.addFlusher(() => undefined, {
+      isPending: () => true,
+    });
+    expect(state.hasEditsToApply).toBe(false);
+    expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+    ]);
+    actionsOn(state, 'SHIP_COUNTRY')[0]?.apply();
+    expect(state.document.query.getNode('sort101')).toBeUndefined();
+    remove();
+    expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  test('Disables all three on rows run in another context, though the query is the same', async () => {
+    const { state } = await setUp();
+    const { query } = state.document;
+    state.applyDocument(state.document.withContext({ ...CONTEXT }));
+    // by identity: a diff of queries can't be reported
+    expect(state.document.query === query).toBe(true);
+    expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
+      CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS,
+      CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS,
+      CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS,
+    ]);
+    actionsOn(state, 'SHIP_COUNTRY')[0]?.apply();
+    expect(state.document.query.getNode('sort101')).toBeUndefined();
+  });
+
+  test('Does nothing when the cube changed in any way after the menu opened, not only its query', async () => {
+    const { state } = await setUp();
+    const before = actionsOn(state, 'SHIP_COUNTRY');
+    // hiding the graph leaves the query as it is
+    state.setShowGraph(false);
+    const { query } = state.document;
+    before.forEach((action) => action.apply());
+    // by identity: a diff of queries can't be reported
+    expect(state.document.query === query).toBe(true);
+    expect(state.history).toHaveLength(1);
   });
 
   test('Filters a null Float cell with Is Empty, with no note on comparing floats', async () => {

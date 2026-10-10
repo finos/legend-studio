@@ -61,7 +61,7 @@ export const CubeRestrictEditor = observer((props: CubeNodeEditorProps) => {
       </div>
       <ul
         aria-label={KEEP}
-        className="max-h-80 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+        className="rounded-sm border border-[var(--color-border-subtle)]"
       >
         {schema.columns.map((column) => (
           <li key={column.name}>

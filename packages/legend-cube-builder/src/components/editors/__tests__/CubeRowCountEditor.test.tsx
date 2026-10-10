@@ -48,7 +48,6 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const SIZE = 'Rows to keep';
@@ -75,7 +74,6 @@ const render = async (query: Query): Promise<CubeEditorState> => {
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -118,7 +116,7 @@ describe('Limit editor', () => {
     const editorState = await render(ordersLimited(10));
     await openLimit();
     expect(
-      within(panel()).getByText('Take first <x> rows', { exact: true }),
+      within(panel()).getByText('Take First <x> Rows', { exact: true }),
     ).toBeDefined();
     expect(sizeField().value).toBe('10');
     expect(sizeField().getAttribute('aria-invalid')).toBe('false');
@@ -314,7 +312,7 @@ describe('Drop editor', () => {
     const editorState = await render(ordersDropped(10));
     fireEvent.click(await TEST__findCanvasNode('drop101'));
     await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-    expect(within(panel()).getByText('Drop first <x> rows')).toBeDefined();
+    expect(within(panel()).getByText('Drop First <x> Rows')).toBeDefined();
     expect(dropField().value).toBe('10');
     expect(dropField().getAttribute('inputmode')).toBe('numeric');
     fireEvent.change(dropField(), { target: { value: '0' } });

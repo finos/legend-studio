@@ -117,7 +117,7 @@ export const CubePartitionEditor = observer((props: CubeNodeEditorProps) => {
   return (
     <div className="flex flex-col gap-2 text-base">
       <span>{FUNCTIONS}</span>
-      <ul aria-label={FUNCTIONS} className="max-h-80 overflow-auto">
+      <ul aria-label={FUNCTIONS}>
         {draft.rows.map((row, index) => (
           <CubeAggregationRowEditor
             key={row.key}
@@ -156,7 +156,7 @@ export const CubePartitionEditor = observer((props: CubeNodeEditorProps) => {
         onClear={() => draft.clearColumns()}
       />
       <span>{SORTS}</span>
-      <ul aria-label={SORTS} className="max-h-80 overflow-auto">
+      <ul aria-label={SORTS}>
         {sortRows.map((row, index) => (
           <CubeSortRowEditor
             key={row.key}
