@@ -3509,6 +3509,176 @@ QUESTIONS.md, which other branches rewrite.
   editor's order); §10 (window functions as their own set, Row Number); §16 (the two messages); §17.6 (the Partition
   editor). Appendix B: the window drafts once filed.
 
+### 11.7 M6: Difference and Extend
+
+M6 is built on the branch `cube-m6`, from `cube-dev` (`1f8f8cf0b`), and lands in a PR into `cube-dev` (user,
+2026-10-10: with no approver free over the weekend, Cube's PRs are squash-merged into `cube-dev`, which reaches master
+through the draft PR #5659). Its status is in [PROGRESS-M6.md](PROGRESS-M6.md). Requirements: the probes under
+`m6-requirements/` in the local evidence folder, run on the local engine, and `g5-extend/errmap.mjs` run
+again: ✅ where a probe ran, 💭 where only a plan was made or it is reasoned.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M6** (user, 2026-10-10, all on the recommendation):
+
+1. **Where an expression is edited:** inline in the node's panel, a row per column (name, a small Monaco editor, its
+   type), as every other Cube editor works; an expand button grows one editor. Not spec §9.1's modal.
+2. **What the user types:** a full lambda, `x | $x.PRICE * $x.QTY`, valid Pure as Legend DataCube and Query's text
+   mode write it; a new column starts as `x | `. The variable can be renamed.
+3. **A column can use the columns above it** in the same node: Cube writes one `extend` per column. One extend can't
+   see its own columns (`The column 'a' can't be found in the relation`), a chain can ✅, and the chain plans on all
+   20 database types ✅. Reordering columns can break a later one, which validation then reports.
+4. **Retyping is automatic:** when an Extend's input or expressions change, the builder retypes it with the engine in
+   the background. Meanwhile the node shows "Typing…" and the nodes after it wait, not errors; a failure shows on the
+   column.
+5. **Difference keeps native types** (supersedes spec §7.12's "always Float", and D5's "spec semantics" for the
+   types; the rows are the spec's): `x_1` and `x_2` keep their input's type, nullable, and `x_valueDifference` is
+   `coalesce(x_1, 0) - coalesce(x_2, 0)`: Integer for the integer family, Float for the float family, Number for
+   decimals ✅, never empty. It plans on all 20 types ✅, where `toFloat()` is refused when planning on 7 (DB2, MemSQL,
+   Spanner, Trino, Hive, Athena, Composite ✅) and loses a decimal's precision. The engine's own `columnValueDifference`
+   keeps Integer too (`tdsExtension.pure`).
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **Difference first:** it is smaller, reuses Join, and settles `buildJoinSchemaColumns`' exclude set before Extend's
+  larger work.
+- **Extend is typed over the cube's model, not an empty one** (supersedes §5.7's "empty model"): over an empty model
+  the engine can't type an expression with one of the model's enums or functions, or an enum-typed input column, and
+  with the model it can ✅. A call takes about 60 ms with Northwind's model, 6 ms without ✅. The typing lambda stays
+  host-free in shape: `{t: Relation<(input columns)>[1] | $t->extend(~[a: λa])->extend(~[b: λb])…}`, the input's
+  columns written from Cube's types (path, type variables, multiplicity), so an Extend's types depend only on its
+  input schema, its expressions and the model.
+- **Extend columns are always nullable.** A nullable column needs `->toOne()` before arithmetic, or the engine
+  refuses it (`Collection element must have a multiplicity [1]` ✅); `toOne()` writes nothing in SQL, so an empty
+  value still gives an empty result ✅ (§8.4's join condition relies on it). The engine then types the column `[1]`,
+  so the conformance cases declare Extend columns wider (§11.5 Q7).
+- **Result types:** a primitive (precise or abstract) or an enum, as the engine types it. `Any` (an `if` mixing
+  types ✅), a relation, a class or an unknown type is refused with the spec's `"<name>" does not have a valid type.`;
+  the editor shows the type the engine gave.
+- **Only a lambda with one parameter** (Q2): body-only text and two parameters get Cube's message before typing,
+  since the engine's own are confusing (`Can't find property 'ID' in class … Relation` for two ✅).
+- **Names** use `ColumnName.ts`'s rule (≤ 128 code points, folded comparison): not empty, not an input column's,
+  not another new column's (spec §7.14's delta).
+- **Saved shape** (Cube's own, never the spec's TDS expression objects, §9): `columns: [{name, code, lambda}]`, `code`
+  the text as typed and `lambda` the engine's JSON for it without source information, so a cube runs and shows its
+  text without an engine call; on a mismatch the JSON wins. With the last typing:
+  `typed: {input: <signature of the input schema>, columns: [{type: {path, params?}, nullable}]}`, so a loaded cube
+  has its schema at once; it is retyped once on load, as a source is rechecked, which also catches model
+  changes.
+- **Emitted** as one `->extend(~[<name>: <lambda>])` per column in listed order, the lambda as `raw` IR stamped with
+  the column's origin (a new `EmitRole.EXPRESSION`), so an engine error lands on the node. The user's variable is
+  kept. `outputOrder` keeps the input's order (every row is kept, as Distinct).
+- **Errors in the editor:** each expression is parsed with the source id `<node id>:<column index>`, so engine
+  errors carry positions in the user's text, at parse and at typing ✅ (no prefix arithmetic, unlike DataCube's
+  editor). The `->toOne()` hint follows a multiplicity error on `$x.<column>`.
+- **Plan check on Validate only** (F10 or the button): `generatePlan` of the node's chain with `from(<runtime>)` on
+  the cube's own runtime, since some expressions type and then fail when planned: `dayOfWeek()` on all 20 types,
+  `dayOfWeekNumber()` on Hive and Composite, string `+` on Sybase, Hive and Composite, `dateDiff` on 4 ✅. With several
+  columns, the plan of each prefix finds the first that fails. Not on every retype: a plan per edit is heavy.
+- **Pending is its own state:** a new `ERR_TYPING` marker, styled as pending on the canvas, never as an error; the
+  nodes after it show the upstream marker (`ERR_SCHEMAS`), as for any invalid input. Running waits for typing.
+- **Retyping:** after an edit that changes an Extend's input signature or expressions (debounced), on load, and when
+  the model changes; all stale Extends in one batch (`batchLambdasRelationType`); an Extend after a pending one waits
+  for the next round. It is not an undo step: the typed node replaces the old one in every document that shares the
+  query, as source rechecks do. An answer for an older signature is dropped. Offline, a saved typing whose signature
+  matches stays in use; a stale one becomes `failed` with the engine's message.
+- **Difference's shape:** `difference`, label `Compare Column Values`, ports `tds1` and `tds2` labelled Left and Right
+  (spec §7.0); saved as `{leftColumns, rightColumns, differenceColumns}`, Join's key names (the spec's `joinColumns1`,
+  `joinColumns2`); swapping its inputs swaps the key lists, as Join's does.
+- **Two Cube checks for Difference** beyond the spec: a difference column can't be a join column, and each output
+  name (`x_1`, `x_2`, `x_valueDifference`) must not be another output column's (an input may already have `x_1`).
+- **Builder:** Difference registered between Join and Partition, Extend after Partition (spec §7.0's order); help
+  texts spec §17.9's; no grid quick action for either. `findColumnOrigins`: Difference's keys as Join's and `x_1`,
+  `x_2` to their columns; an Extend column has none (computed).
+
+**Difference** (`difference`), a `BinaryNode`:
+
+- Holds `leftColumns`, `rightColumns` (paired by position) and `differenceColumns`. The constructor refuses only
+  wrong shapes.
+- Validation, in order: Join's steps 1–4 (both key lists, as many on each side, each pair present and compatible);
+  then `Difference columns cannot be empty.`, `Difference columns cannot have duplicates.`, and each difference
+  column in both inputs (label `Difference column`), of the same type (strict `equals`, spec message), numeric (spec
+  message) and not a join column (Cube); then the duplicate rule with the difference columns as `extra`; then no
+  output name taken twice (Cube).
+- Schema: `undefined` unless valid; else `buildJoinSchemaColumns(left, right, keys, FULL_OUTER)` without the
+  difference columns, then, suffix by suffix (spec §7.12's order, `a_1, b_1, a_2, b_2, a_valueDifference, …`):
+  `x_1` (left type, nullable), `x_2` (right type, nullable), `x_valueDifference` (by family, above, not nullable).
+- Emitted: each side renames `x` to `x_1` or `x_2`, then Join's FULL path (keys to temporaries, `join(FULL)`, the
+  merged keys' `coalesce` extend), then `->extend(~[x_valueDifference: x | $x.x_1->coalesce(0) - $x.x_2->coalesce(0)])`
+  (`0.0` for the float family, so the result is Float ✅), then `->select(~[…])` in schema order. `describe()`:
+  `Compare Column Values`.
+
+**Extend** (`extend`, label `Extend Columns`), a `UnaryNode`:
+
+- Holds `columns` (`{name, code, lambda}`) and `typing` (`unresolved`, `typed` with its input signature and a type and
+  nullability per column, or `failed` with a message and the column it names).
+- Validation, in order: `Columns cannot be empty.`; per column, the name (above) and an expression (spec's
+  `"<name>" does not have an expression.`); then typing: pending (`ERR_TYPING`) when unresolved or its signature
+  isn't the input's, the engine's message on its column when failed, then each type (spec's message).
+- Schema: the input's columns, then one per column in listed order, typed as the engine typed it, nullable.
+- Saved and emitted as above; `describe()`: `Extend with "x", "y"` (spec), redacted to `Extend with 2 columns`.
+
+**Tests.** Core: every message exactly and in order; Difference's schema per family and with different key names;
+`printIR` of both emitters; codec round trips and Unknown cases; a stale signature reads as pending. Builder: the
+drafts, the editors, retyping with a fake engine (pending, typed, failed, a late answer dropped, offline), the registry.
+On the engine: Difference on H2 with matched, left-only and right-only rows, empty values, each numeric family and
+key names that differ; Extend's arithmetic, string and date expressions, a column using the one above it, a model enum
+and a model function, error positions, the plan failure of `dayOfWeek()`; conformance (the typing form against the
+chain's `lambdaRelationType`, Extend declared wider); both in the plan-only test on every database type.
+
+**Engine facts** (probes under `m6-requirements/`, on the g4 model of `m5-requirements` plus a model function):
+
+| Fact                                                                                                                                                                                                         |     | Probe                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | ------------------------------------------- |
+| Over an empty model, a model enum, a model function and an enum-typed input column fail to type; over the model they type. About 6 ms against 60 ms per call                                                 | ✅  | `p1-typing.out` A1–A3, A10                  |
+| A system enum (`DurationUnit.DAYS`) types over an empty model; an `if` of mixed types types as `Any`; a nullable column in arithmetic is refused without `->toOne()`                                         | ✅  | `p1-typing.out` A4, A6, A9                  |
+| One extend can't see its own columns; chained extends can, and plan on all 20 types                                                                                                                          | ✅  | `p1-typing.out` B, C4                       |
+| `dayOfWeek()` types (as an enum) but fails to plan on all 20 types; `dayOfWeekNumber()` on Hive and Composite; string `+` on Sybase, Hive and Composite; `dateDiff` on Spanner, Hive, BigQuery and Composite | ✅  | `p1-typing.out` A8, C2, C3, C5, C6          |
+| Parse and typing errors carry positions in the user's text under the given source id, the same over an empty model and the store's                                                                           | ✅  | `g5-extend/errmap.mjs` (run again)          |
+| The emulated Difference types `x_1`, `x_2` as the input's type `[0..1]` and the difference `[1]`; it plans on all 20 types natively, on 13 with `toFloat()`                                                  | ✅  | `p2-difference.out`                         |
+| The difference is Integer for Int and BigInt, Number for Double, Float4 and Numeric with `0`, Float for Double with `0.0`; all plan on 20                                                                    | ✅  | `p3-difference-types.out` (type-only casts) |
+| Values (matched, one-sided and empty rows) and Float and Numeric columns of a real table                                                                                                                     | 💭  | M6.4                                        |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                                                                                                                                   | Done when                                                                       |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| M6.1  | This subsection and PROGRESS-M6.md (docs only)                                                                                                                                                                                | Committed and pushed; a draft PR into `cube-dev`                                |
+| M6.2  | Difference in the core: node, validation, schema, emitter, codec, messages; not registered                                                                                                                                    | `printIR` shows the emulation; codec round trips; every message tested          |
+| M6.3  | Difference in the builder, registered between Join and Partition: draft, editor (key pairs as Join's, a checklist of the numeric columns both inputs share), help text, icon, `findColumnOrigins`, samples, conformance cases | Builder, registry, spec and conformance tests pass                              |
+| M6.4  | Difference on the engine (H2 values above, DuckDB), around the databases (shapes pinned on every type) and in the browser                                                                                                     | Engine and plan-only tests pass; built, run and saved in the browser            |
+| M6.5  | Extend in the core: columns, typing state and signature, validation, schema, row order, emitter (`EmitRole.EXPRESSION`), codec, `ERR_TYPING`; not registered                                                                  | `printIR` shows the chain; codec round trips; a stale signature is pending      |
+| M6.6  | The engine adapter: parse an expression with its source id, render it, type Extends over the model in one batch, plan a node's chain; errors mapped to node and column                                                        | Engine tests for the facts above pass                                           |
+| M6.7  | Retyping in the builder: after edits, on load and on a model change; pending on the canvas; not an undo step; late answers dropped; offline                                                                                   | Store tests with a fake engine; the canvas shows "Typing…", then the types      |
+| M6.8  | The Extend editor, registered after Partition: rows with Monaco, the input's columns, `$x.` completion, Validate (F10) with markers and the `->toOne()` hint, add, remove, move, expand, read-only; help text, icon, notes    | Editor tests pass; built, validated, run and saved in the browser               |
+| M6.9  | Extend on the engine and in the conformance suite (the values and cases above), its shapes in the plan-only test                                                                                                              | Engine, conformance and plan-only tests pass                                    |
+| M6.10 | Both adding-an-operation guides (a node the engine types), testing.md, README lists, the patch changeset                                                                                                                      | `yarn check:ci` passes                                                          |
+| M6.11 | Verification (reviewers and a skeptic per finding) and a browser rehearsal                                                                                                                                                    | Every finding fixed or recorded; the rehearsal passes                           |
+| M6.12 | A demo video of M6's features (§11.3): Difference and its editor, Extend's editor, typing, errors and a column using another, with captions; key frames checked against their captions                                        | The video plays every M6 feature, each caption true on screen; sent to the user |
+| M6.13 | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                                                                                                                                  | The plan consistent; the PR ready                                               |
+
+**Risks and open gaps:**
+
+- An expression is arbitrary Pure on the user's model, as in Query's text mode: nothing new is exposed, but a function
+  that types may still fail on the database, which only the plan check (on Validate) or a run shows.
+- Typing over a large model costs a full compile per call (60 ms on Northwind); batching and the input signature keep
+  calls few. If large models are slow, a model trimmed to the elements an expression names is the follow-up.
+- Saved `lambda` JSON follows the engine's protocol version; a newer engine reads older JSON, but an older engine may
+  not read newer JSON (as every saved lambda in Cube).
+- Difference's FULL join is native on 9 database types and emulated by the engine elsewhere (§8.8's Join row); its
+  values on databases other than H2 and DuckDB are plans only 💭.
+
+**Supersessions** (applied in M6.13 to the sections they change; kept here as the record of what M6 changed):
+
+- D5: Difference's types are native (Q5), its rows the spec's. §5.7: Extend typed over the cube's model, with the
+  input signature, saved; Extend columns nullable. §5.8: the saved Extend shape.
+- §8.8: the Difference row (native types, `coalesce(…, 0)`, `0.0` for floats) and the Extend row (one extend per
+  column, the origin, the plan check); §8.8's expression notes (the cube's model, positions under a source id).
+- §10.3: the Difference and Extend shapes. §11.3's M6 row: inline editing, chained columns, native types.
+- Appendix A: §7.12 (native types, the two Cube checks, Left and Right); §7.14 (one lambda per column, columns using
+  the ones above, always nullable, saved shape); §9 (Pure lambdas typed by the engine instead of TDS expression
+  objects and §9.2's table; the editor inline, not a modal); §16 (the new messages); §17.6 (both editors).
+
 ### 11.8 M3b: canvas and layout
 
 M3b is built on the branch `cube-canvas`, from finos master `d847e6721` after M4 merged as #5649. Its first commit,
