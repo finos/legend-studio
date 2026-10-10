@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------ |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10)      |
 | Engine | Local legend-engine on `localhost:6300`                                                    |
-| Step   | M6.8: The Extend editor, and registered                                                    |
+| Step   | M6.9: Extend on the engine, in the conformance suite and around the databases              |
 | Tests  | 2818 core, 1375 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
 
 ## Steps
@@ -27,7 +27,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.6** The engine adapter: parse, type and plan expressions
 - [x] **M6.7** Retyping in the builder
 - [x] **M6.8** The Extend editor, and registered
-- [ ] **M6.9** Extend on the engine, in the conformance suite and around the databases
+- [x] **M6.9** Extend on the engine, in the conformance suite and around the databases
 - [ ] **M6.10** Guides, READMEs and the changeset
 - [ ] **M6.11** Verification and the browser rehearsal
 - [ ] **M6.12** A demo video of M6's features (PLAN §11.3)
@@ -37,16 +37,17 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit      | Subject                                                     |
-| ---- | ----------- | ----------------------------------------------------------- |
-| M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend)            |
-| M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core                  |
-| M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder               |
-| M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine            |
-| M6.5 | `1270430ee` | feat: add Extend to Legend Cube's core                      |
-| M6.6 | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions |
-| M6.7 | `58b6737f8` | feat: type Legend Cube's Extends in the background          |
-| M6.8 | (this one)  | feat: add the Extend editor to Legend Cube                  |
+| Step | Commit      | Subject                                                         |
+| ---- | ----------- | --------------------------------------------------------------- |
+| M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend)                |
+| M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core                      |
+| M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder                   |
+| M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine                |
+| M6.5 | `1270430ee` | feat: add Extend to Legend Cube's core                          |
+| M6.6 | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions     |
+| M6.7 | `58b6737f8` | feat: type Legend Cube's Extends in the background              |
+| M6.8 | `9eb1b2732` | feat: add the Extend editor to Legend Cube                      |
+| M6.9 | (this one)  | test: run Legend Cube's Extend on the engine and every database |
 
 ## Notes
 
@@ -146,3 +147,11 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   (`demo/check-m68-extend.mjs`, 13 checks, `out-m68/`): the palette, the toOne() hint underlined in the code, F10,
   a column using the one above, Apply, the rows (`SHIP_VIA × 10`, then `× 2`), Show Pure's two extends, the saved
   spec.
+- **M6.9** (2026-10-10). Conformance: two Extend cases (arithmetic with a column using the one before and a float
+  times an integer, Number; text, a comparison and a date after a Restrict), typed as Cube expects for the input it
+  infers (`__test-utils__/CubeExpressionTestUtils.ts`: `TEST__expression`, `TEST__typedExtend`), every new column
+  declared wider (the engine types it `[1]` after `toOne()`); a wrong expected type fails the suite (checked by hand).
+  Plans (`LegendCubeDialects`): two Extend shapes join `SHAPES`, and on all 20 types each new column is written as
+  its expression, the second over the first, aliased with `as` or, on Oracle, a space. Direct connection: an Extend
+  of three columns runs on H2 and DuckDB with the hand-computed values. `CubeExpressions` (M6.6) already runs typing,
+  errors, plans and values on H2.

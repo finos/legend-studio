@@ -43,6 +43,10 @@ import {
   TEST__columnValues,
   TEST__expectValidQuery,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
+import {
+  TEST__expression,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
 import { CubeDirectDatabaseType } from '../graph-manager/CubeConnectionExplorer.js';
 import {
   createCubeDirectModel,
@@ -321,6 +325,76 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
       expect(numbers(`${qty}_valueDifference`)).toEqual([10, -5, -5, -7]);
       expect(numbers(`${price}_valueDifference`)).toEqual([
         1.5, 0.5, 3.5, -4.25,
+      ]);
+    });
+
+    // Extend (PLAN §11.7): typed as the engine types it on the direct model
+
+    test('Adds columns computed from each row, the second using the first', async () => {
+      const { engine } = V1_createEngineBackedCubeEngine();
+      const outline = await engine.loadModel(model);
+      const path: [string, string, string] = [
+        CUBE_DIRECT_DATABASE_PATH,
+        `"${schema}"`,
+        `"${table}"`,
+      ];
+      const typed = (
+        await engine.resolveSchemas(model, new Map([['relational101', path]]))
+      ).get('relational101');
+      const source = new RelationalTableSource(
+        'relational101',
+        { database: path[0], schema: path[1], table: path[2] },
+        { kind: 'resolved', schema: typed as Schema },
+      );
+      const { lambda, call, pair, column, integer } = TEST__expression;
+      const extend = TEST__typedExtend('extend101', TEST__chainOf([source]), [
+        [
+          'next_id',
+          lambda(call('plus', pair(column(orderId), integer(1)))),
+          'Integer',
+        ],
+        [
+          'twice',
+          lambda(call('times', pair(column('next_id'), integer(2)))),
+          'Integer',
+        ],
+        [
+          'place',
+          lambda(call('toLower', call('toOne', column(country)))),
+          'String',
+        ],
+      ]);
+      const query = TEST__chainOf([
+        source,
+        extend,
+        new Sort('sort101', [
+          { column: orderId, direction: SortDirection.ASC },
+        ]),
+      ]);
+      TEST__expectValidQuery(query);
+      const result = await engine.execute(
+        model,
+        new QueryEmitter(query).emitExecutionLambda({
+          rowLimit: 100,
+          runtime: CUBE_DIRECT_RUNTIME_PATH,
+          databaseType: getDatabaseType(outline, CUBE_DIRECT_RUNTIME_PATH, [
+            CUBE_DIRECT_DATABASE_PATH,
+          ]),
+        }),
+      );
+      expect(TEST__columnValues(result, 'next_id').map(Number)).toEqual([
+        2, 3, 4, 5, 6, 7,
+      ]);
+      expect(TEST__columnValues(result, 'twice').map(Number)).toEqual([
+        4, 6, 8, 10, 12, 14,
+      ]);
+      expect(TEST__columnValues(result, 'place')).toEqual([
+        'de',
+        'mx',
+        'de',
+        'fr',
+        'mx',
+        'de',
       ]);
     });
   },

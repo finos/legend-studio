@@ -61,6 +61,11 @@ import {
   TEST__northwindTable,
   TEST__typingDifferences,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
+import {
+  TEST__expression,
+  type TEST__ExtendColumn,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
 import { CUBE_NORTHWIND_MODEL } from '../stores/fixtures/CubeNorthwindModel.js';
@@ -147,6 +152,21 @@ const joined =
       ],
       nodes.at(-1)?.id,
     );
+  };
+
+/**
+ * relational101, then the nodes, then extend101 adding these columns, typed
+ * as given for the input Cube infers: the suite checks the types against the
+ * engine's
+ */
+const extended =
+  (before: readonly QueryNode[], columns: readonly TEST__ExtendColumn[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const nodes = [source(sources, 'relational101'), ...before];
+    return TEST__chainOf([
+      ...nodes,
+      TEST__typedExtend('extend101', TEST__chainOf(nodes), columns),
+    ]);
   };
 
 /** Each arm's nodes, each feeding the next */
@@ -1264,6 +1284,128 @@ const CASES: readonly ConformanceCase[] = [
     // the engine types a full join's keys as never empty, yet each is empty
     // on the rows only the other input has (LegendCubeOperations' Difference)
     widerNullable: { difference101: ['ORDER_ID', 'ORDER_REF'] },
+  },
+  // Extend (M6, PLAN §11.7): the engine types each column `[1]` after
+  // toOne(), though an empty value gives an empty result, so every new
+  // column is declared wider
+  {
+    // arithmetic, a column using the one before, and a float times an integer
+    name: 'extend-arithmetic',
+    tables: [ORDERS],
+    build: extended(
+      [],
+      [
+        [
+          'a',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'plus',
+              TEST__expression.pair(
+                TEST__expression.column('ORDER_ID'),
+                TEST__expression.integer(1),
+              ),
+            ),
+          ),
+          'Integer',
+        ],
+        [
+          'b',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'times',
+              TEST__expression.pair(
+                TEST__expression.column('a'),
+                TEST__expression.integer(2),
+              ),
+            ),
+          ),
+          'Integer',
+        ],
+        [
+          'c',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'times',
+              TEST__expression.pair(
+                TEST__expression.call(
+                  'toOne',
+                  TEST__expression.column('FREIGHT'),
+                ),
+                TEST__expression.integer(2),
+              ),
+            ),
+          ),
+          'Number',
+        ],
+      ],
+    ),
+    widerNullable: { extend101: ['a', 'b', 'c'] },
+  },
+  {
+    // text, a comparison and a date, after a Restrict
+    name: 'extend-text-boolean-date',
+    tables: [ORDERS],
+    build: extended(
+      [
+        new Restrict('restrict101', [
+          'ORDER_ID',
+          'SHIP_CITY',
+          'SHIP_VIA',
+          'ORDER_DATE',
+        ]),
+      ],
+      [
+        [
+          'city',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'toUpper',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('SHIP_CITY'),
+              ),
+            ),
+          ),
+          'String',
+        ],
+        [
+          'fast',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'greaterThan',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('SHIP_VIA'),
+              ),
+              TEST__expression.integer(1),
+            ),
+          ),
+          'Boolean',
+        ],
+        [
+          'due',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'adjust',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('ORDER_DATE'),
+              ),
+              TEST__expression.integer(1),
+              {
+                _type: 'property',
+                property: 'DAYS',
+                parameters: [
+                  { _type: 'packageableElementPtr', fullPath: 'DurationUnit' },
+                ],
+              },
+            ),
+          ),
+          'Date',
+        ],
+      ],
+    ),
+    widerNullable: { extend101: ['city', 'fast', 'due'] },
   },
   // Partition (M5, PLAN §11.6): typed as a plain chain, as every case is
   {

@@ -49,6 +49,10 @@ import {
   CUBE_ENGINE_TEST__getCommit,
 } from '../__test-utils__/CubeEngineTestSupport.js';
 import {
+  TEST__ORDER_ID_EXTEND_COLUMNS,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
+import {
   CUSTOMERS_COLUMNS,
   northwindTable,
   ORDERS_COLUMNS,
@@ -347,6 +351,21 @@ const differenceThen = (...after: QueryNode[]): Query => {
   );
 };
 
+/**
+ * ORDERS, then extend101 adding `a: x | $x.ORDER_ID + 1` and `b: x | $x.a *
+ * 2`, typed (the engine tests check those types), then the nodes after it,
+ * the last captured
+ */
+const extendThen = (...after: QueryNode[]): Query => {
+  const input = ordersThen();
+  const extend = TEST__typedExtend(
+    'extend101',
+    input,
+    TEST__ORDER_ID_EXTEND_COLUMNS,
+  );
+  return ordersThen(extend, ...after);
+};
+
 /** Types must match */
 const concatThen = (
   first: readonly QueryNode[],
@@ -591,6 +610,11 @@ const SHAPES: [string, () => Query][] = [
       ),
   ],
   ['a Difference', () => differenceThen()],
+  ['an Extend', () => extendThen()],
+  [
+    'a sorted Limit after an Extend',
+    () => extendThen(byCustomerThenOrder(), new Limit('limit101', 5)),
+  ],
   [
     'a Limit after a Difference',
     () => differenceThen(new Limit('limit101', 5)),
@@ -1384,6 +1408,21 @@ const windowFunctionCount = (query: Query): number =>
 
 /** A float's 0: `0.0`, Oracle's `0.0d`, or H2's cast */
 const FLOAT_ZERO = String.raw`(?:0\.0d?|cast\(0\.0 as float\))`;
+
+describe('Extend, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Writes each new column as an expression, the second over the first, on %s',
+    async (databaseType) => {
+      const sql = await planSql(extendThen(), databaseType);
+      // `a` as ORDER_ID + 1, and `b` as twice it: in place or by its name
+      expect(sql).toMatch(/order_id[^,]*\+ 1/u);
+      expect(sql).toMatch(/\* 2/u);
+      // aliased with `as`, or by a space after the expression (Oracle)
+      expect(sql).toMatch(/(?:\bas |\) )["`]?a["`]?(?:[ ,]|$)/u);
+      expect(sql).toMatch(/(?:\bas |\) )["`]?b["`]?(?:[ ,]|$)/u);
+    },
+  );
+});
 
 describe('Difference, as each database plans it', () => {
   test.each(PLANNED_DATABASE_TYPES)(
