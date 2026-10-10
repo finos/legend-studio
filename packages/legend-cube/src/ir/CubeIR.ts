@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { JsonObject } from '../utils/Json.js';
 import type { LiteralValue } from '../values/LiteralValue.js';
 
 /**
@@ -120,8 +121,19 @@ export type IR =
       readonly value: IR;
       readonly origin?: Origin;
     }
-  /** Protocol JSON passed through as is (Extend expressions, from M6) */
-  | { readonly k: 'raw'; readonly json: unknown };
+  /** Protocol JSON passed through as is */
+  | { readonly k: 'raw'; readonly json: unknown }
+  /**
+   * A lambda Cube holds as the engine's JSON, an Extend column's expression
+   * (PLAN §11.7): without source information, its number literals as their
+   * digit strings; written with its numbers digit for digit and the origin on
+   * each value specification
+   */
+  | {
+      readonly k: 'lambdaJson';
+      readonly json: JsonObject;
+      readonly origin?: Origin;
+    };
 
 /** An IR expression whose value is a relation */
 export type RelationExpr = IR;
@@ -203,6 +215,10 @@ export enum EmitRole {
   FROM = 'from',
   /** a window node that isn't the capture: the `let` that binds it (PLAN §8.6) */
   LET = 'let',
+  /** an Extend: the extend of each new column (PLAN §11.7) */
+  EXTEND = 'extend',
+  /** an Extend: a new column's expression, every value specification in it */
+  EXPRESSION = 'expression',
 }
 
 // -------------------- constructors --------------------
@@ -285,6 +301,10 @@ export const ingestAccessor = (
 });
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
+
+/** An expression's lambda, as the engine's JSON (an Extend column's, PLAN §11.7) */
+export const lambdaJson = (json: JsonObject, origin?: Origin): IR =>
+  origin ? { k: 'lambdaJson', json, origin } : { k: 'lambdaJson', json };
 
 /** `let <name> = <value>`; `variable(name)` reads it */
 export const letBinding = (name: string, value: IR, origin?: Origin): IR =>

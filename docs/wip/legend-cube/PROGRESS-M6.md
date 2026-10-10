@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------- |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10) |
 | Engine | Local legend-engine on `localhost:6300`                                               |
-| Step   | M6.4: Difference on the engine, around the databases and in the browser               |
-| Tests  | 2796 core, 1349 builder (core group); engine: the Difference suites below             |
+| Step   | M6.5: Extend in the core                                                              |
+| Tests  | 2817 core, 1350 builder (core group); engine: the Difference suites                   |
 
 ## Steps
 
@@ -23,7 +23,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.2** Difference in the core
 - [x] **M6.3** Difference in the builder, and registered
 - [x] **M6.4** Difference on the engine, around the databases and in the browser
-- [ ] **M6.5** Extend in the core
+- [x] **M6.5** Extend in the core
 - [ ] **M6.6** The engine adapter: parse, render, type and plan expressions
 - [ ] **M6.7** Retyping in the builder
 - [ ] **M6.8** The Extend editor, and registered
@@ -42,7 +42,8 @@ Filled in as steps land.
 | M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend) |
 | M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core       |
 | M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder    |
-| M6.4 | (this one)  | test: run Legend Cube's Difference on the engine |
+| M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine |
+| M6.5 | (this one)  | feat: add Extend to Legend Cube's core           |
 
 ## Notes
 
@@ -84,3 +85,17 @@ Filled in as steps land.
   the palette order, the editor's problems and reasons, Apply, the 9 rows checked against their inputs, Show Pure,
   the saved spec. The fixture's FREIGHT is a REAL, so its differences show float noise (`32.380001068115234`); a
   demo should compare integers or DOUBLE columns.
+- **M6.5** (2026-10-10). `Extend` (`nodes/transforms/Extend.ts`): columns `{name, code, lambda}` and a typing
+  (`unresolved`, `typed` with a type per column, or `failed` with the engine's message and the column it names), each
+  for a signature (`getExtendSignature`: a digest, cyrb53 over a stable JSON text, of the input's columns and each new
+  column's name and lambda). A stale typing reads as `unresolved`, and an unresolved one makes the node wait on the
+  new marker `ERR_TYPING` (`isTypingError`), which the UI is to show as pending. Validation reuses the spec's and
+  Rename's messages (`Columns cannot be empty.`, `New column name …`, `Column "x" is already present in the input
+schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`) and adds three: a lambda of one
+  parameter, and the engine's failure on a column or on all. Every new column is nullable. Emitted as one `extend`
+  per column, the lambda as the new IR `lambdaJson`, marked `EmitRole.EXPRESSION` (the extends `EmitRole.EXTEND`).
+  Saved as `{columns, typed?: {signature, types}}`, a failed typing never; a typing without a type per column reads as
+  nothing typed; an unknown key on a column or the typing makes an Unknown node. Because a saved spec is read with
+  `JSON.parse`, **a stored lambda keeps its number literals as their digit strings**, as Cube's literal values do
+  (PLAN §4.9), and the serializer writes them digit for digit, stamping the origin on every object with a `_type`
+  (`V1_CubeLambdaSerializer`). `EXTEND_DEFINITION` is defined, not registered until M6.8.

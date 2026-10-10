@@ -192,6 +192,18 @@ test(unitTest('Messages added by Cube'), () => {
   ).toBe(
     'Difference output column "x_valueDifference" is not valid column name.',
   );
+  expect(MESSAGES.MESSAGE_EXPRESSION_NOT_A_LAMBDA('margin')).toBe(
+    '"margin" must be a lambda with one parameter, such as x | $x.PRICE.',
+  );
+  expect(
+    MESSAGES.MESSAGE_EXPRESSION_NOT_TYPED('margin', "Can't find a match"),
+  ).toBe(`"margin" can't be typed: Can't find a match`);
+  expect(MESSAGES.MESSAGE_EXPRESSIONS_NOT_TYPED('No such function')).toBe(
+    "The new columns can't be typed: No such function",
+  );
+  expect(MESSAGES.ERR_TYPING).toBe(
+    'Waiting for the engine to type the new columns.',
+  );
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );

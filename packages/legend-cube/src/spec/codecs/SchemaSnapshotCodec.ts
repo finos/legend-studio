@@ -96,6 +96,14 @@ const decodeType = (value: unknown, path: string): CubeType => {
   return resolveCubeType(typePath, params);
 };
 
+/** A type as saved, `{path, params?}` or `{path, values}` (an Extend's typed columns, PLAN §11.7) */
+export const encodeSavedType = (type: CubeType): JsonObject =>
+  encodeType(type, EMPTY_JSON_OBJECT);
+
+/** A type saved by `encodeSavedType`; a path Cube doesn't know reads as an opaque type */
+export const decodeSavedType = (value: unknown, path: string): CubeType =>
+  decodeType(value, path);
+
 /** A resolved source's schema, as its saved snapshot: one `{name, type, nullable}` per column, in order */
 export const encodeSchemaSnapshot = (
   schema: Schema,

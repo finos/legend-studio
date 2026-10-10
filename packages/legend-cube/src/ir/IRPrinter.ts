@@ -195,6 +195,8 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return `let ${ir.name} = ${print(ir.value)}`;
     case 'raw':
       return `<raw ${JSON.stringify(ir.json)}>`;
+    case 'lambdaJson':
+      return `<lambda ${JSON.stringify(ir.json)}>`;
     default:
       return assertUnreachable(ir);
   }

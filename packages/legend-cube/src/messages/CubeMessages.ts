@@ -74,6 +74,12 @@ export const ERR_SCHEMAS =
 /** The node is invalid but gave no reason */
 export const ERR_OTHER = 'This graph node is invalid.';
 
+/**
+ * Added by Cube: the node waits for the engine to type its columns (an
+ * Extend's, PLAN §11.7 Q4), shown as pending, not as a problem
+ */
+export const ERR_TYPING = 'Waiting for the engine to type the new columns.';
+
 // ---------------------------------------- Sources ----------------------------------------
 
 export const MESSAGE_SOURCE_INFO_UNRESOLVED =
@@ -250,6 +256,20 @@ export const MESSAGE_NO_EXPRESSION = (name: string): string =>
 
 export const MESSAGE_NO_VALID_TYPE = (name: string): string =>
   `${quote(name)} does not have a valid type.`;
+
+/** Added by Cube: an Extend column's expression is a lambda of one row, `x | …` (PLAN §11.7 Q2) */
+export const MESSAGE_EXPRESSION_NOT_A_LAMBDA = (name: string): string =>
+  `${quote(name)} must be a lambda with one parameter, such as x | $x.PRICE.`;
+
+/** Added by Cube: the engine could not type an Extend column, with its first line (PLAN §11.7) */
+export const MESSAGE_EXPRESSION_NOT_TYPED = (
+  name: string,
+  detail: string,
+): string => `${quote(name)} can't be typed: ${detail}`;
+
+/** Added by Cube: the engine could not type an Extend's columns, and named none (PLAN §11.7) */
+export const MESSAGE_EXPRESSIONS_NOT_TYPED = (detail: string): string =>
+  `The new columns can't be typed: ${detail}`;
 
 export const MESSAGE_FILTER_EMPTY = 'Filter cannot be empty.';
 

@@ -54,6 +54,7 @@ import {
   createNodeRegistry,
   DIFFERENCE_DEFINITION,
   DROP_DEFINITION,
+  EXTEND_DEFINITION,
   GROUP_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
@@ -68,6 +69,7 @@ import {
 } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
 import { Difference } from '../../nodes/transforms/Difference.js';
+import { Extend, UNTYPED } from '../../nodes/transforms/Extend.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -3210,5 +3212,135 @@ describe(unitTest('Saved spec encoding: differences'), () => {
     const unknown = decodeCubeSpec(json, { registry: older }).document;
     expect(unknown.query.getNode('difference101')).toBeInstanceOf(UnknownNode);
     expect(encodeCubeSpec(unknown, older)).toStrictEqual(json);
+  });
+});
+
+describe(unitTest('Saved spec encoding: extends'), () => {
+  /** The default registry, with Extend until the builder registers it (M6.8) */
+  const REGISTRY = createNodeRegistry();
+  if (!REGISTRY.get(EXTEND_DEFINITION.type)) {
+    REGISTRY.register(EXTEND_DEFINITION);
+  }
+
+  /** The saved spec of one unconnected extend, `extend101`, with these fields of its own */
+  const extendSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'extend101',
+      nodes: [{ kind: 'extend', id: 'extend101', inputs: [null], ...own }],
+    },
+  });
+  const extendDocument = (extend: Extend): CubeDocument =>
+    documentOf([extend], [], extend.id);
+  /** `x | $x.QTY * 2`, a number literal as its digits */
+  const LAMBDA: JsonObject = {
+    _type: 'lambda',
+    parameters: [{ _type: 'var', name: 'x' }],
+    body: [
+      {
+        _type: 'func',
+        function: 'times',
+        parameters: [
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'property',
+                property: 'QTY',
+                parameters: [{ _type: 'var', name: 'x' }],
+              },
+              { _type: 'integer', value: '9007199254740993' },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  test('Writes a new extend as an empty list of columns, and nothing typed', () => {
+    expectEncoded(
+      extendDocument(EXTEND_DEFINITION.create('extend101')),
+      extendSpec({ columns: [] }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes each column with its code, its lambda once checked, and the types the engine gave', () => {
+    const extend = new Extend(
+      'extend101',
+      [
+        { name: 'big', code: 'x | $x.QTY * 9007199254740993', lambda: LAMBDA },
+        { name: 'draft', code: 'x | $x.', lambda: undefined },
+      ],
+      {
+        kind: 'typed',
+        signature: '1a2b3c',
+        types: [
+          PrimitiveType.get('Integer'),
+          PrimitiveType.get(`${PRECISE}Varchar`, [10]),
+        ],
+      },
+    );
+    expectEncoded(
+      extendDocument(extend),
+      extendSpec({
+        columns: [
+          {
+            name: 'big',
+            code: 'x | $x.QTY * 9007199254740993',
+            lambda: LAMBDA,
+          },
+          { name: 'draft', code: 'x | $x.' },
+        ],
+        typed: {
+          signature: '1a2b3c',
+          types: [
+            { path: 'Integer' },
+            { path: `${PRECISE}Varchar`, params: [10] },
+          ],
+        },
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Saves no failed typing: it is typed again on load', () => {
+    const extend = new Extend(
+      'extend101',
+      [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+      { kind: 'failed', signature: '1a2b3c', message: 'No such column' },
+    );
+    expect(encodeCubeSpec(extendDocument(extend), REGISTRY)).toStrictEqual(
+      extendSpec({ columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }] }),
+    );
+  });
+
+  test('Reads a typing without a type per column as nothing typed yet', () => {
+    const { document } = decodeCubeSpec(
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: { signature: '1a2b3c', types: [] },
+      }),
+      { registry: REGISTRY },
+    );
+    const node = document.query.getNode('extend101') as Extend;
+    expect(node).toBeInstanceOf(Extend);
+    expect(node.typing === UNTYPED).toBe(true);
+  });
+
+  test("Keeps a column or a typing with a key this version doesn't know as an Unknown node", () => {
+    [
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA, window: true }],
+      }),
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: { signature: '1a2b3c', types: [{ path: 'Integer' }], at: 1 },
+      }),
+    ].forEach((json) => {
+      const { document } = decodeCubeSpec(json, { registry: REGISTRY });
+      expect(document.query.getNode('extend101')).toBeInstanceOf(UnknownNode);
+      expect(encodeCubeSpec(document, REGISTRY)).toStrictEqual(json);
+    });
   });
 });
