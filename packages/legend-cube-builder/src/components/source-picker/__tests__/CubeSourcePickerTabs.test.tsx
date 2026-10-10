@@ -61,14 +61,9 @@ const openDialog = async (): Promise<HTMLElement> => {
   return screen.findByRole('dialog');
 };
 
-/**
- * The source tabs: label, whether open, whether disabled; the Examples tab,
- * always enabled, has its own tests
- */
 const tabStates = (dialog: HTMLElement): [string, boolean, boolean][] =>
   within(dialog)
     .getAllByRole('tab')
-    .filter((tab) => tab.textContent !== 'Examples')
     .map((tab) => [
       tab.textContent ?? '',
       tab.getAttribute('aria-selected') === 'true',
@@ -140,18 +135,14 @@ describe('Source dialog', () => {
     ]);
   });
 
-  test('Shows the Model and Examples tabs when the host offers only models', async () => {
+  test('Shows no tabs when the host offers only models', async () => {
     await renderPage((host) => ({
       ...host,
       connectionExplorer: undefined,
       dataProductCatalog: undefined,
     }));
     const dialog = await openDialog();
-    expect(
-      within(dialog)
-        .getAllByRole('tab')
-        .map((tab) => tab.textContent),
-    ).toEqual(['Model', 'Examples']);
+    expect(within(dialog).queryByRole('tablist')).toBeNull();
     expect(within(dialog).getByLabelText('Model')).toBeDefined();
   });
 });
