@@ -3324,7 +3324,7 @@ describe(unitTest('Saved spec encoding: extends'), () => {
     expect(node.typing === UNTYPED).toBe(true);
   });
 
-  test("Keeps a column or a typing with a key this version doesn't know as an Unknown node", () => {
+  test("Keeps a column, a typing or a typed column's type with a key this version doesn't know as an Unknown node", () => {
     [
       extendSpec({
         columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA, window: true }],
@@ -3332,6 +3332,14 @@ describe(unitTest('Saved spec encoding: extends'), () => {
       extendSpec({
         columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
         typed: { signature: '1a2b3c', types: [{ path: 'Integer' }], at: 1 },
+      }),
+      // a key in a typed column's type
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: {
+          signature: '1a2b3c',
+          types: [{ path: 'Integer', unit: 'kg' }],
+        },
       }),
     ].forEach((json) => {
       const { document } = decodeCubeSpec(json, { registry: REGISTRY });

@@ -32,7 +32,11 @@ import {
   readString,
   UnreadableContent,
 } from '../SpecReader.js';
-import { decodeSavedType, encodeSavedType } from './SchemaSnapshotCodec.js';
+import {
+  decodeSavedType,
+  encodeSavedType,
+  SAVED_TYPE_KEYS,
+} from './SchemaSnapshotCodec.js';
 
 const COLUMN_KEYS = ['name', 'code', 'lambda'];
 const TYPED_KEYS = ['signature', 'types'];
@@ -67,7 +71,15 @@ const decodeTyping = (
   const types = readArray(
     typed.types ?? fail(typesPath, 'is required'),
     typesPath,
-  ).map((type, index) => decodeSavedType(type, pathTo(typesPath, index)));
+  ).map((type, index) => {
+    const typePath = pathTo(typesPath, index);
+    if (!hasOnlyKeys(readObject(type, typePath), SAVED_TYPE_KEYS)) {
+      throw new UnreadableContent(
+        `An extend's typed column has a key this version doesn't know`,
+      );
+    }
+    return decodeSavedType(type, typePath);
+  });
   return types.length === columnCount
     ? { kind: 'typed', signature, types }
     : UNTYPED;

@@ -42,6 +42,9 @@ import {
 const COLUMN_KEYS = ['name', 'type', 'nullable'];
 const TYPE_KEYS = ['path', 'params', 'values'];
 
+/** The keys a saved type has: `path`, then `params` or `values` */
+export const SAVED_TYPE_KEYS: readonly string[] = TYPE_KEYS;
+
 /**
  * A type as saved: `{path, params?}`, or `{path, values}` for an enumeration.
  * Paths are canonical (precise types in full, base types bare).
