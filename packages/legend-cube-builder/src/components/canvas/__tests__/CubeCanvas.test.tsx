@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals';
 import {
   Core_LegendApplicationPlugin,
   LEGEND_APPLICATION_COLOR_THEME,
@@ -876,5 +883,131 @@ describe('Connecting by dragging between handles', () => {
         connection('relational102', 'join101', 'rightTds', 'leftTds'),
       ),
     ).toBe(false);
+  });
+});
+
+describe('The node tooltip', () => {
+  afterEach(() => {
+    // MUI remembers a tooltip was open for 800 ms after it closes, across
+    // tests (and jest's retries): let that lapse, so each test starts afresh
+    TEST__getCanvasNodes().forEach((node) => fireEvent.mouseLeave(node));
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    jest.useRealTimers();
+  });
+
+  /** The Join of `keylessJoin`, drawn, with an error of its own */
+  const renderInvalidJoin = async (): Promise<HTMLElement> => {
+    await renderCanvas(
+      new CubeDocument({ context: CONTEXT, query: keylessJoin() }),
+    );
+    const join = await TEST__findCanvasNode('join101');
+    // the timers the tooltip starts from here on are the test's to run
+    jest.useFakeTimers();
+    return join;
+  };
+
+  const wait = (ms: number): void =>
+    act(() => {
+      jest.advanceTimersByTime(ms);
+    });
+
+  test('Gives the node body no native title', async () => {
+    const join = await renderInvalidJoin();
+    expect(join.hasAttribute('title')).toBe(false);
+    expect(join.getAttribute('aria-description')).toBeTruthy();
+  });
+
+  test('Shows the tooltip only once the mouse has rested on the node for 500 ms', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(250);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    wait(249);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    wait(1);
+    expect(screen.getByRole('tooltip')).toBeDefined();
+  });
+
+  test('Places the tooltip above the node', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip.getAttribute('data-popper-placement')).toBe('top');
+    expect(
+      tooltip.querySelector('.MuiTooltip-tooltipPlacementTop'),
+    ).not.toBeNull();
+    expect(
+      tooltip.querySelector('.MuiTooltip-tooltipPlacementBottom'),
+    ).toBeNull();
+  });
+
+  test('Shows one message a line in the tooltip, the same text as the node description', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const text = screen
+      .getByRole('tooltip')
+      .querySelector<HTMLElement>('.whitespace-pre-line');
+    expect(text).not.toBeNull();
+    expect(text?.textContent).toBe(join.getAttribute('aria-description'));
+    expect(text?.textContent?.split('\n')).toEqual([
+      'Left join columns cannot be empty.',
+      'Join additional input',
+      'join101',
+    ]);
+  });
+
+  test('Hides the tooltip when the mouse leaves the node', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    expect(screen.getByRole('tooltip')).toBeDefined();
+    fireEvent.mouseLeave(join);
+    // closing, then the closing transition
+    wait(0);
+    wait(1000);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  test('Describes the node while open, keeping its name', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const tooltip = screen.getByRole('tooltip');
+    expect(join.getAttribute('aria-describedby')).toBe(tooltip.id);
+    expect(join.getAttribute('aria-labelledby')).toBeNull();
+  });
+
+  test('Closes the tooltip when the mouse moves from the node onto the tooltip', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const tooltip = screen.getByRole('tooltip');
+    fireEvent.mouseLeave(join);
+    fireEvent.mouseOver(tooltip);
+    wait(0);
+    wait(1000);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  test('Waits 500 ms again when the mouse moves on to another node just after a tooltip closes', async () => {
+    const join = await renderInvalidJoin();
+    const filter = await TEST__findCanvasNode('filter101');
+    const shown = (nodeId: string): boolean =>
+      screen
+        .queryAllByRole('tooltip')
+        .some((tooltip) => tooltip.textContent?.includes(nodeId));
+    fireEvent.mouseOver(join);
+    wait(500);
+    fireEvent.mouseLeave(join);
+    wait(0);
+    fireEvent.mouseOver(filter);
+    wait(250);
+    expect(shown('filter101')).toBe(false);
+    wait(250);
+    expect(shown('filter101')).toBe(true);
   });
 });

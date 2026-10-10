@@ -40,6 +40,13 @@
   rule and its autofix offer `ID_1`/`id_2`. Test: left `[ID, X]`, right `[id, X]` joined on X reports the duplicate,
   and the autofix makes the join valid.
 
+### The node tooltip stays through a drag or a zoom
+
+M3b.11's tooltip (MUI) opens 500 ms after the pointer rests on a node. A native drag of the node fires no mouse leave, so
+a tooltip that opened stays during the drag and after the drop, until the pointer next moves off the node. A wheel zoom
+with the tooltip open leaves it where it was, a few pixels over the grown node. Both clear on the next pointer move.
+A fix controls the tooltip's `open` from react-dnd's `isDragging` and closes it on React Flow's `onMoveStart`.
+
 ## Engine issues to file
 
 Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.

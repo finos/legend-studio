@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx, ContextMenu, WarningIcon } from '@finos/legend-art';
+import { clsx, ContextMenu, Tooltip, WarningIcon } from '@finos/legend-art';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
@@ -98,49 +98,63 @@ export const CubeCanvasNode = observer(
             style={{ top: getInputHandleOffset(index, node.ports.length) }}
           />
         ))}
-        <div
-          ref={ref}
-          className={clsx(
-            // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
-            // it from moving the node, 'nopan' from panning the canvas
-            'legend-cube__node nodrag nopan flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
-            status.isInvalid
-              ? 'border-[var(--color-status-error)]'
-              : status.isIncomplete
-                ? 'border-dashed border-[var(--color-status-warn)]'
-                : 'border-[var(--color-border-default)]',
-            {
-              'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
-                status.isCapture,
-              'legend-cube__node--invalid': status.isInvalid,
-              'legend-cube__node--incomplete': status.isIncomplete,
-              'legend-cube__node--resolving animate-pulse': status.isResolving,
-              'legend-cube__node--engine-error bg-[var(--color-status-error-bg)]':
-                status.hasEngineError,
-              'legend-cube__node--warning': status.hasWarnings,
-              'legend-cube__node--drop-target outline-dashed outline-2 outline-[var(--color-accent)]':
-                isDropTarget,
-            },
-          )}
-          title={status.tooltip}
-          aria-current={status.isCapture}
-          data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
+        <Tooltip
+          // after a moment, above the node, one message a line (U1(c))
+          title={<div className="whitespace-pre-line">{status.tooltip}</div>}
+          placement="top"
+          enterDelay={500}
+          enterNextDelay={500}
+          disableInteractive={true}
+          // it describes the node, whose name stays its description
+          describeChild={true}
+          slotProps={{ tooltip: { className: 'max-w-[40rem]' } }}
         >
-          <CubeNodeIcon
-            icon={editorState.registry.get(node.type)?.icon}
-            className="shrink-0 text-lg text-[var(--color-text-secondary)]"
-          />
-          <span className="line-clamp-2 min-w-0 break-words leading-tight">
-            {node.describe()}
-          </span>
-          {status.hasWarnings && (
-            // the warning's text is in the node's tooltip
-            <WarningIcon
-              className="ml-auto shrink-0 text-[var(--color-status-warn)]"
-              aria-hidden={true}
+          <div
+            ref={ref}
+            className={clsx(
+              // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
+              // it from moving the node, 'nopan' from panning the canvas
+              'legend-cube__node nodrag nopan flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
+              status.isInvalid
+                ? 'border-[var(--color-status-error)]'
+                : status.isIncomplete
+                  ? 'border-dashed border-[var(--color-status-warn)]'
+                  : 'border-[var(--color-border-default)]',
+              {
+                'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
+                  status.isCapture,
+                'legend-cube__node--invalid': status.isInvalid,
+                'legend-cube__node--incomplete': status.isIncomplete,
+                'legend-cube__node--resolving animate-pulse':
+                  status.isResolving,
+                'legend-cube__node--engine-error bg-[var(--color-status-error-bg)]':
+                  status.hasEngineError,
+                'legend-cube__node--warning': status.hasWarnings,
+                'legend-cube__node--drop-target outline-dashed outline-2 outline-[var(--color-accent)]':
+                  isDropTarget,
+              },
+            )}
+            // the tooltip's text, for assistive technology and tests
+            aria-description={status.tooltip}
+            aria-current={status.isCapture}
+            data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
+          >
+            <CubeNodeIcon
+              icon={editorState.registry.get(node.type)?.icon}
+              className="shrink-0 text-lg text-[var(--color-text-secondary)]"
             />
-          )}
-        </div>
+            <span className="line-clamp-2 min-w-0 break-words leading-tight">
+              {node.describe()}
+            </span>
+            {status.hasWarnings && (
+              // the warning's text is in the node's tooltip
+              <WarningIcon
+                className="ml-auto shrink-0 text-[var(--color-status-warn)]"
+                aria-hidden={true}
+              />
+            )}
+          </div>
+        </Tooltip>
         <Handle
           id={CUBE_OUTPUT_HANDLE_ID}
           type="source"

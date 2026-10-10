@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.10 done (the source dialog's no-tab state)                                                                                      |
+| Step   | M3b.11 done (the node tooltip)                                                                                                      |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -30,7 +30,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.8** One placement rule for the palette, drops and context menus
 - [x] **M3b.9** 'Add Items ▾'
 - [x] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
-- [ ] **M3b.11** The node tooltip
+- [x] **M3b.11** The node tooltip
 - [ ] **M3b.12** Entry links for data product access points (can be cut)
 - [ ] **M3b.13** Docs, guides and changeset
 - [ ] **M3b.14** PR description; marked ready for review
@@ -56,7 +56,8 @@ rebased ones.
 | M3b.7   | `81a29d1dd` | feat: fit each Legend Cube editor to the floating node editor            |
 | M3b.8   | `9b22589e9` | feat: add Legend Cube's steps after the selected node                    |
 | M3b.9   | `1c1bc7469` | feat: add Legend Cube's Add Items menu in place of Add table             |
-| M3b.10  | (this one)  | feat: open Legend Cube's source dialog with no tab from the empty canvas |
+| M3b.10  | `c20ab24b4` | feat: open Legend Cube's source dialog with no tab from the empty canvas |
+| M3b.11  | (this one)  | feat: show Legend Cube's node messages in a tooltip above the node       |
 
 ## Step notes
 
@@ -273,3 +274,18 @@ with a fixed context, or a host serving one tab, opens on that tab. The picker c
 Tests: workflow `wf_d0f07822-b4f`; 21 of 21 mutants killed. The tests that opened the dialog through the old link now
 choose the tab they need. Browser (`check-m3b10.mjs`), 29/29. Noted, not changed: legend-art's `ModalFooterButton`
 looks the same disabled as enabled (older than this step).
+
+**M3b.11 (2026-10-09).** The node's tooltip is legend-art's (MUI). It opens after 500 ms, above the node, one message a
+line (U1(c)), and is non-interactive. It describes the node (`describeChild`) rather than renaming it, and is at most
+40rem wide. The same text is on the node's body as `aria-description`, which the tests read instead of the native
+title, now gone.
+
+Tests: workflow `wf_cb95f66c-ad5`. 15 of 20 mutants killed. The reviewer found why the 500 ms delay looked pinned and
+wasn't: legend-dev-utils retries a failed test twice (`jest.retryTimes(2)`), and MUI remembers an open tooltip for
+800 ms across tests, so a retry passed on `enterNextDelay`. The tests now let that lapse after each test. They pin
+`disableInteractive` and `describeChild` too (`m3b-verify/m3b11-fix-mutants.json`, 3/3). Browser (`check-m3b11.mjs`):
+nothing at 400 ms, the tooltip at 650 ms, above the node, error, then description, then id. Known, low, in ISSUES.md:
+the tooltip stays through a node drag or a zoom until the pointer moves.
+
+Lesson for mutation runs: with `jest.retryTimes(2)`, a mutant whose first failing attempt leaves module-wide state
+behind can pass on a retry. A surviving mutant is worth a second look for that.

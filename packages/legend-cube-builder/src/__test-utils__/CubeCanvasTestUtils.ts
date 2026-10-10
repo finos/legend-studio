@@ -50,4 +50,4 @@ export const TEST__getCanvasNodes = (): HTMLElement[] =>
 
 /** The node's tooltip, one line an item: errors, warnings, description, id */
 export const TEST__getCanvasNodeTooltip = (node: HTMLElement): string[] =>
-  (node.getAttribute('title') ?? '').split('\n');
+  (node.getAttribute('aria-description') ?? '').split('\n');
