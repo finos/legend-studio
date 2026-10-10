@@ -13,7 +13,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, from finos master `d847e6721` (M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003   |
-| Step   | M3b.2 done (one finish path; outside actions apply first)                                               |
+| Step   | M3b.3 done (the floating editor, behind a prop)                                                         |
 | Tests  | 2486 core, 1199 builder (core group), 245 Query, 415 builder engine-roundtrip                           |
 
 ## Steps
@@ -22,7 +22,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 
 - [x] **M3b.1** The settled decisions (PLAN §11.6) and this file
 - [x] **M3b.2** One finish path; Ctrl+click, F9, Ctrl+Z and outside actions apply first
-- [ ] **M3b.3** The floating host, behind a constant
+- [x] **M3b.3** The floating host, behind a prop
 - [ ] **M3b.4** The click-away and Escape
 - [ ] **M3b.5** Switch over from the side panel
 - [ ] **M3b.6** The editor's frame
@@ -47,7 +47,8 @@ Filled in as steps land.
 | ------- | ----------- | ------------------------------------------------------------- |
 | Answers | `220f02218` | docs: record answers to Legend Cube's UI questions            |
 | M3b.1   | `5be141305` | docs: settle Legend Cube M3b (canvas and layout)              |
-| M3b.2   | (this one)  | feat: apply Legend Cube's node editor before any other action |
+| M3b.2   | `e852f688a` | feat: apply Legend Cube's node editor before any other action |
+| M3b.3   | (this one)  | feat: add Legend Cube's floating node editor, not yet in use  |
 
 ## Step notes
 
@@ -101,3 +102,33 @@ evidence folder's `m3b-verify/`): 20 of 23 mutants killed (one unreachable in js
 fixed and each fix's test kills its mutant (`m3b-verify/m3b2-fix*-mutants.json`). Two guards for a held editor (node
 drag, connection) were dropped: a held editor has a backdrop open, so neither can start. Browser check on :9003:
 `m3b-verify/browser/check-m3b2.mjs`, 8/8 (on macOS, Ctrl-click is a right-click: the check uses Cmd-click).
+
+**M3b.3 (2026-10-09).** The floating editor, built but not yet in use: `CubeEditor`'s `floatingEditor` prop (and
+`CubeCanvas`') stays off until M3b.5 removes the side panel.
+
+- **Anchor.** `CubeNodeEditorAnchor.ts` computes the node's screen rectangle from the dagre layout and React Flow's
+  viewport, so nothing is measured.
+- **Popper.** `CubeNodeEditorPopper.tsx` is a legend-art `BasePopper` rendered inside `<ReactFlow>` and portalled to
+  the body: 432px wide, at z-index 1250, 8px below its node. It flips above when it fits there and shifts to stay in
+  the window. It is hidden while its node is out of the canvas, and stays open with its edits.
+- **Panel.** `CubeNodeEditorPanel` gains a `float` variant, with a body of 80px to 33vh that scrolls.
+- **Repositioning.** MUI's Popper repositions on every render, and the popper re-renders on every pan or zoom, so it
+  needs no update effect of its own.
+
+Tests: workflow `wf_c6464b46-ce1` (one writer, a reviewer with mutation testing):
+
+- **Mutants:** 20 of 26 killed. The reviewer showed jsdom can test placement once the canvas rectangle and the
+  window's size are stubbed. Those tests now kill the four placement survivors (`m3b-verify/m3b3-fix-mutants.json`).
+  The update effect was an equivalent mutant and is gone. The side panel's default layout stays unpinned until M3b.5
+  removes it.
+- **Browser** (`m3b-verify/browser/check-m3b3.mjs`, with the floating editor on in a local build), 30/30 at 900px and at
+  560px:
+  - 432px wide, 8px below and centred, shifted at the right edge, inside the window;
+  - the body scrolls between 80px and 33vh;
+  - it follows a pan;
+  - above a node at the canvas's bottom when there is no room below.
+- **The reviewer's extra checks** (`m3b-verify/m3b3/`):
+  - every M2 and M4 node type, data product access points, and H2 and DuckDB tables;
+  - zoom, fitView and a splitter drag;
+  - hidden while out of view;
+  - over the grid after Execute.

@@ -56,6 +56,7 @@ import {
 import { CubeCanvasEdge } from './CubeCanvasEdge.js';
 import { layoutCubeQuery } from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
+import { CubeNodeEditorPopper } from '../editors/CubeNodeEditorPopper.js';
 
 // React Flow re-renders every node when these change identity
 const NODE_TYPES = { [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode };
@@ -81,8 +82,13 @@ export const isCubeCanvasConnectionValid = (
     connection.targetHandle,
   );
 
-const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
-  const { editorState } = props;
+interface CubeCanvasFlowProps {
+  editorState: CubeEditorState;
+  floatingEditor: boolean;
+}
+
+const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
+  const { editorState, floatingEditor } = props;
   const { query } = editorState.document;
   const { readOnly } = editorState;
   const { fitView } = useReactFlow();
@@ -201,6 +207,9 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       <Background />
       <Controls showInteractive={false} />
       <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
+      {floatingEditor && (
+        <CubeNodeEditorPopper editorState={editorState} positions={positions} />
+      )}
     </ReactFlow>
   );
 });
@@ -213,8 +222,12 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
  * context menu.
  */
 export const CubeCanvas = observer(
-  (props: { editorState: CubeEditorState }) => {
-    const { editorState } = props;
+  (props: {
+    editorState: CubeEditorState;
+    /** Whether the node editor floats below its node, in the canvas (PLAN §11.6) */
+    floatingEditor?: boolean | undefined;
+  }) => {
+    const { editorState, floatingEditor = false } = props;
     const ref = useRef<HTMLDivElement>(null);
     const [, dropConnector] = useDrop<CubePaletteDragItem>(
       () => ({
@@ -264,7 +277,10 @@ export const CubeCanvas = observer(
           ) : (
             <CubeCanvasContext.Provider value={editorState}>
               <ReactFlowProvider>
-                <CubeCanvasFlow editorState={editorState} />
+                <CubeCanvasFlow
+                  editorState={editorState}
+                  floatingEditor={floatingEditor}
+                />
               </ReactFlowProvider>
             </CubeCanvasContext.Provider>
           )}

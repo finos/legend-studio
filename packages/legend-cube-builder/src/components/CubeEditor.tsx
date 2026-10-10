@@ -187,14 +187,21 @@ export const CubeEditor = observer(
     host: CubeHost;
     /** The cube to open; an empty one by default */
     initialDocument?: CubeDocument | undefined;
+    /**
+     * Whether the node editor floats below its node (PLAN §11.6) rather than
+     * sitting in the side panel; until the floating editor replaces it
+     */
+    floatingEditor?: boolean | undefined;
   }) => {
+    const floatingEditor = props.floatingEditor ?? false;
     const [editorState] = useState(
       () => new CubeEditorState(props.host, props.initialDocument),
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
     useCommands(editorState);
     const maxGraphHeight = useMaxGraphHeight();
-    const isEditorOpen = editorState.nodeEditor.nodeId !== undefined;
+    const isEditorOpen =
+      !floatingEditor && editorState.nodeEditor.nodeId !== undefined;
     const editorPanel = getCollapsiblePanelGroupProps(!isEditorOpen, {
       size: NODE_EDITOR_WIDTH,
     });
@@ -219,7 +226,12 @@ export const CubeEditor = observer(
                   minSize={showGraph ? 96 : 0}
                   maxSize={maxGraphHeight}
                 >
-                  {showGraph && <CubeCanvas editorState={editorState} />}
+                  {showGraph && (
+                    <CubeCanvas
+                      editorState={editorState}
+                      floatingEditor={floatingEditor}
+                    />
+                  )}
                 </ResizablePanel>
                 <ResizablePanelSplitter className={showGraph ? '' : 'hidden'} />
                 <ResizablePanel {...graphPanel.remainingPanel} minSize={96}>
@@ -230,7 +242,9 @@ export const CubeEditor = observer(
           </ResizablePanel>
           <ResizablePanelSplitter className={isEditorOpen ? '' : 'hidden'} />
           <ResizablePanel {...editorPanel.collapsiblePanel} direction={-1}>
-            <CubeNodeEditorPanel editorState={editorState} />
+            {!floatingEditor && (
+              <CubeNodeEditorPanel editorState={editorState} />
+            )}
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

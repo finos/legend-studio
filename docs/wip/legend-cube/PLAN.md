@@ -3123,7 +3123,7 @@ over §12.2 item 1, which asked where the node editor opens:
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | M3b.1  | This subsection, PROGRESS-M3b.md, §7.3's drop row and §12.2 item 1 (docs only)                                                                            | Committed; the draft PR open                                                              |
 | M3b.2  | One finish path (`finish()`, `holdOpen()`), Ctrl+click and F9 and Ctrl+Z applying first, outside actions applying first; in today's side panel            | The finish, shortcut and outside-action tests pass                                        |
-| M3b.3  | The floating host behind a constant: `CubeNodeEditorPopper`, the anchor function, the float layout of the panel                                           | Anchor tests pass; in the browser every node type opens below its node                    |
+| M3b.3  | The floating host behind a prop: `CubeNodeEditorPopper`, the anchor function, the float layout of the panel                                               | Anchor tests pass; in the browser every node type opens below its node                    |
 | M3b.4  | The click-away and Escape: pointerdown rules, pane click, hold, hiding the graph and emptying the query                                                   | Ordering and hold tests pass; in the browser B opens in one click, Execute runs the edits |
 | M3b.5  | Switch over: the side panel removed                                                                                                                       | Every editor test green in the floating host                                              |
 | M3b.6  | The editor's frame: title case, problems and footer pinned under the scrolling body, focus and `role=dialog`                                              | Frame tests pass                                                                          |
@@ -3159,6 +3159,9 @@ browser on the dev server at :9003, since jsdom measures nothing.
   and M3b.4 proves it.
 - **Native popups.** Whether a native select's or a date picker's dismissing click reaches the page varies by browser.
 - **Height.** At 33vh, Group, a long Filter, Concat and the source column tables scroll.
+- **Short windows.** The editor goes above its node only when it fits there whole; when neither side fits (a tall
+  editor, a node mid-window, a window around 560px tall), it stays below and shifts up into the window, over its own
+  node (M3b.3, Popper's flip and preventOverflow).
 - **Unverified width.** 432px can't be checked against the original, whose answers come from its specs.
 - **Side branches.** Every untargeted transform add now moves the capture node. A side branch is built by dropping onto
   a node or by connecting handles.

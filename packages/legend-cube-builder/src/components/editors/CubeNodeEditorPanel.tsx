@@ -54,8 +54,16 @@ const validateEdited = (
  * columns to pick.
  */
 export const CubeNodeEditorPanel = observer(
-  (props: { editorState: CubeEditorState }) => {
-    const { editorState } = props;
+  (props: {
+    editorState: CubeEditorState;
+    /**
+     * In the side panel, the editor fills it; floating below its node
+     * (PLAN §11.6), its body scrolls between 80px and a third of the window
+     */
+    variant?: 'panel' | 'float' | undefined;
+  }) => {
+    const { editorState, variant = 'panel' } = props;
+    const floats = variant === 'float';
     const { nodeEditor, readOnly } = editorState;
     const rootRef = useRef<HTMLDivElement>(null);
     // finishing first moves the focus out of a field in the editor, so text
@@ -101,7 +109,11 @@ export const CubeNodeEditorPanel = observer(
     return (
       <div
         ref={rootRef}
-        className="flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-panel)]"
+        className={
+          floats
+            ? 'flex flex-col rounded border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] shadow-lg'
+            : 'flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-panel)]'
+        }
         data-testid={LEGEND_CUBE_TEST_ID.NODE_EDITOR}
       >
         <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2">
@@ -161,7 +173,13 @@ export const CubeNodeEditorPanel = observer(
             <TimesIcon />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-auto p-2">
+        <div
+          className={
+            floats
+              ? 'max-h-[33vh] min-h-[80px] overflow-y-auto p-2'
+              : 'min-h-0 flex-1 overflow-auto p-2'
+          }
+        >
           {warnings.map((warning) => (
             <div
               key={warning}
