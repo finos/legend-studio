@@ -89,6 +89,18 @@ would serve it.
   HAVING and the GROUP BY target after two Renames (an engine issue, pinned); for Concat, one UNION ALL, each input's
   Sort and Limit in its own subquery, and no SQL cast when it converts types. A check that should catch
   a missing workaround must fail without it: run it once with the workaround off before relying on it.
+- **Windows** (PLAN §11.6) are planned in `WINDOW_SHAPES` over `WINDOW_DATABASE_TYPES`, since Spanner, Presto and
+  Composite refuse any window (pinned): an OVER clause with no frame, `count(col)` and `count(1)` for the counts,
+  `rank()`, `dense_rank()` and `row_number()`, a Filter after a Partition as a `WITH n_…` and a `WHERE` outside the
+  window, never QUALIFY, and the capture's ORDER BY at the root. Run, they are checked three ways: the operations
+  tests ("Partition on the engine"), with values worked out on the fixture (rows tied on the sort share a running
+  value and a rank); `LegendCubeDirectConnectionOperations.engine-roundtrip-test.ts` on H2 and DuckDB, a second
+  database that runs them, windowed Distinct Count included; and `CubeWindowComposition.engine-roundtrip-test.ts`,
+  which runs pairs and triples of nodes with a Partition against a small JavaScript reference with SQL's null rules
+  and default frame, checks every Partition is written in the array form, and shows (its negative control) that the
+  single form, unbound, gives wrong rows. The core's `PartitionEmitter.test.ts` pins the emitted text.
+  `CubeWindowIsolation.engine-roundtrip-test.ts` checks the lets themselves through the adapter, with a test-only
+  window: they run, type, show in Show Pure, and put an error inside a let on its window.
 - `src/__tests__/CubeNorthwindRelationTypes.json` records the engine's relation type for every table of the bundled
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.

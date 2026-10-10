@@ -7,8 +7,8 @@ The UI half (a draft, an editor, help text and an icon) is in
 [`@finos/legend-cube-builder`'s guide](../../legend-cube-builder/docs/adding-an-operation.md).
 
 Join (`src/nodes/transforms/Join.ts`) and Filter (`Filter.ts`) are the examples to follow; Group (`Group.ts`) for a
-node whose settings are rows, and Concat (`Concat.ts`) for a plain two-input node with a setting that changes its
-output types.
+node whose settings are rows, Concat (`Concat.ts`) for a plain two-input node with a setting that changes its
+output types, and Partition (`Partition.ts`) for a window, which a run must isolate from what follows it.
 
 ## 1. The node
 
@@ -32,7 +32,7 @@ It has:
 - `withSwappedInputs()`, for a binary node whose settings name its inputs by side;
 - `outputOrder(inputOrders)`, the order its rows come in, for `computeRowOrders` (`src/inference/RowOrder.ts`). By
   default none, as from a source or a join. A node that keeps its input's rows in order returns `keepInputOrder`
-  (Filter, Distinct); one that drops or renames columns maps the order (Restrict keeps the keys before the first one
+  (Filter, Distinct, Partition, which keeps every row and column); one that drops or renames columns maps the order (Restrict keeps the keys before the first one
   it drops, Rename renames them); Sort puts its own keys first;
 - `consumesInputOrder`, true for a node that takes rows by their order (Limit, Drop, Slice): its emitter then sorts its
   input first (see 3).
@@ -65,6 +65,12 @@ before one of Concat's inputs).
 A setting that changes the output's types, as Concat's Convert types does (`widenTypes`), is passed to the shared
 validation (`validateConcatSchemas(first, second, errors, widenTypes)`), so the editor, the autofixes and inference
 judge the node the same way.
+
+A node whose rows hold aggregations, as Group and Partition do, judges each row with `validateColumnAggregation`
+(`src/nodes/transforms/Aggregation.ts`) and an `AggregationUse`: a Group's (`GROUP_AGGREGATION_USE`), or a window's,
+which also knows the rank functions (`WindowRankFunction`) and whether the window sorts its rows, which they need. The
+known-function check, the auto-name, the result type and the nullability all take the use, so a function one node
+offers stays unknown in the other (a Group's Rank, PLAN §11.5, Q4).
 
 ## 2. Its messages
 
@@ -99,6 +105,15 @@ under the same rule (names compared folded), as Concat's `cube_cast`, `cube_cast
 that its input hasn't is a type-only `cast(@<T>)` in an `extend`, which the engine writes as no SQL cast; never a
 relation-level cast, which the engine doesn't check (`ConcatEmitter.ts`).
 
+Windows (PLAN §8.6, §11.6): a later filter can run before a window and change its numbers (France's count came back 2
+instead of 77), so a definition that emits one sets `isolationBoundary: true`. A run then binds the node with a `let`
+whenever it isn't the capture (`QueryEmitter`, after the lets it reads, named `n_<id>` or `n_<k>`), and the run lambda
+becomes `{| {| <lets>; <relation>}->from(runtime)->sort(<capture order>)->limit(n + 1)}`: the capture's sort and
+limit go after `from()`, where every database keeps them at the root. Typing lambdas stay plain chains: the engine
+types both forms the same. Write window functions in the array form (`~[…]`, never a single column spec), the
+aggregates and the rank functions in separate `extend`s (one holding both fails on the engine), and counts as `size()`
+(`count()` loses its OVER clause). The engine nests one subselect per window column, so a wide window makes deep SQL.
+
 ## 4. Its codec
 
 A `NodeSpecCodec` in `src/spec/codecs/<Type>Codec.ts`:
@@ -106,7 +121,10 @@ A `NodeSpecCodec` in `src/spec/codecs/<Type>Codec.ts`:
 - `keys`: the node's own keys, in the order they are written (`kind`, `id` and `inputs` are the codec's);
 - `encode(node)`: those fields, leaving out absent ones;
 - `decode(id, json, path, rest)`: the node. Throw `CubeSpecDecodeError` for a malformed field, and
-  `UnreadableContent` for a value this version can't read, which keeps the node as an Unknown node.
+  `UnreadableContent` for a value this version can't read, which keeps the node as an Unknown node. Read every entry
+  of every list before throwing `UnreadableContent`, so a malformed later entry is still a decode error: the shared
+  readers return the entries and the reason (`ReadEntries`), as `readSortKeys` (`SortCodec.ts`) and
+  `readColumnAggregations` (`GroupCodec.ts`) do for Sort, Group and Partition.
 
 Literal values typed by a column are `{kind, value}`, with numbers as strings. A node's own settings, such as a size,
 are JSON numbers, read with `readOptionalFiniteNumber`, which keeps any finite number for validation to judge. A
@@ -121,9 +139,10 @@ After an import types the sources again, only Filter's invalid values are read a
 ## 5. Its definition
 
 A `TransformDefinition` in `src/nodes/NodeRegistry.ts`: `kind: 'transform'`, `type`, `label` (the palette's text),
-`icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`.
-Add it to `createNodeRegistry()` in menu order (Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice,
-Concat, Join; spec §7.0), and export the new modules from `src/index.ts`.
+`icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`,
+and `isolationBoundary` for a window (see 3). Add it to `createNodeRegistry()` in menu order (Sort, Group, Filter,
+Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Partition; spec §7.0), and export the new modules from
+`src/index.ts`.
 
 ## Tests
 
@@ -136,8 +155,11 @@ Concat, Join; spec §7.0), and export the new modules from `src/index.ts`.
     rejects; and, if it throws `UnreadableContent`, a case in `CubeSpecForwardCompatibility.test.ts` showing the node
     kept as an Unknown node.
 - Some tests pin lists to update: the registry's transforms in `src/nodes/__tests__/Nodes.test.ts` (in the spec's
-  menu order), and, for a new `EmitRole`, the roles in `src/ir/__tests__/QueryEmitter.test.ts` ('Names each part of a
-  node with a distinct role, without a colon').
+  menu order, and the isolation boundaries), and, for a new `EmitRole`, the roles in
+  `src/ir/__tests__/QueryEmitter.test.ts` ('Names each part of a node with a distinct role, without a colon').
+- A window's lets are tested with a test-only window node in `src/ir/__tests__/QueryEmitterIsolation.test.ts`, and
+  Partition's own in `PartitionEmitter.test.ts`: a Partition at the capture binds nothing, one followed by a node is
+  bound, and the capture's sort comes after `from()`.
 - The saved-spec suites each get the new kind: a baseline in 'Reads %s, which the failing cases start from' and a
   'Refuses %s' case per malformed field (`CubeSpecDecodeErrors.test.ts`), an encoding block, its rest written from the
   node and not from `rest` (`CubeSpecEncode.test.ts`), invalid settings reported through inference (`CONNECTED` in

@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
-| Step   | M5.1–M5.10 done; next M5.11                                                                                   |
+| Step   | M5.1–M5.11 done; next M5.12                                                                                   |
 | Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
 
 ## Steps
@@ -29,7 +29,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.8** Partition on the engine and in the browser
 - [x] **M5.9** The window composition suite
 - [x] **M5.10** Partition around the databases, and the changeset
-- [ ] **M5.11** Guides and READMEs
+- [x] **M5.11** Guides and READMEs
 - [ ] **M5.12** Verification and the browser rehearsal
 - [ ] **M5.13** A demo video of M5's features (PLAN §11.3)
 - [ ] **M5.14** Rebase on the latest master, fold PLAN §11.6's supersessions in
@@ -162,6 +162,13 @@ column. The patch changeset for both packages. Gates: `check:ci`, `lint:ci`, 275
 tests pass, and 652 of 654 engine tests: the two others are direct-connection setup-failure tests M5 doesn't touch,
 which the local engine now takes about 90 s to fail, past their 30 s timeout (they passed at M5.7, and nothing they
 read has changed since); the engine may need a restart.
+
+**M5.11 (2026-10-09).** The core guide covers windows (isolation boundaries, the lets and the run lambda's shape,
+the array form, separate extends, `size()` counts, the per-column nesting), aggregation uses, and the shared codec
+readers; the builder guide the shared rows (`CubeAggregationRowEditor`, `CubeSortRowEditor`, `CubeColumnChecklist`),
+judging rows by the node Apply stores, a Partition's column origins, and `WINDOW_SHAPES`; `testing.md` the window
+tests (plans, the operations tests, H2 and DuckDB, the composition suite, the isolation test); both READMEs list
+window functions.
 
 ## Open items
 
