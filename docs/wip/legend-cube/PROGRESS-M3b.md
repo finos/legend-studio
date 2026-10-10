@@ -415,5 +415,4 @@ no editor opens, and CUSTOMERS connects to Right.
 - **Docs.** PROGRESS.md, the README and hosting.md keep both sides.
 
 Gates: check:ci and lint pass. Tests: 2506 core, 1456 builder, 259 Query. Engine round trips: the ingest round trip
-passes; the four tests that send rejected setup SQL (H2 and DuckDB) time out on the stuck local engine, and pass
-nothing else (415 of 419 pass).
+passes; the four tests that send rejected setup SQL (H2 and DuckDB) time out on the stuck local engine; the other 415 of 419 pass.
