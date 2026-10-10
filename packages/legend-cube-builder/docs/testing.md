@@ -58,9 +58,12 @@ would serve it.
   keys returned, types and nullability, not SQL or Pure formatting, and never an engine answer that is a known
   defect.
 - **Rows come back in the database's order** unless a Sort reaches the node that runs, and H2's order changes between
-  queries, so compare counts and sets, never positions, without a Sort. Facts of the Cube Northwind data a test may
-  rely on: ORDERS has 830 orders, `ORDER_ID` running from 10248 to 11077 with no gap. Avoid comparing or sorting on its
-  32-bit `REAL` columns (`FREIGHT`, `UNIT_PRICE`, `DISCOUNT`), where exact equality silently matches nothing.
+  queries, so compare counts and sets, never positions, without a Sort. A Concat's rows come in no order either.
+  Facts of the Cube Northwind data a test may rely on: ORDERS has 830 orders, `ORDER_ID` running from 10248 to 11077
+  with no gap, in 21 ship countries; CUSTOMERS has 91 rows and SUPPLIERS 29; `CUBETEST.ALLTYPES` has 3 rows, ID 3
+  empty but for its key. Better still, check a result against its tables run alone, as the Concat tests do. Avoid
+  comparing or sorting on its 32-bit `REAL` columns (`FREIGHT`, `UNIT_PRICE`, `DISCOUNT`), where exact equality
+  silently matches nothing.
 - `src/__tests__/LegendCubeNorthwind.engine-roundtrip-test.ts` is the slice's automated acceptance (PLAN §11.2 Part
   A). It logs the engine's commit.
 - `src/__tests__/LegendCubeOperations.engine-roundtrip-test.ts` checks each operation: its lambda as the engine parses
@@ -70,8 +73,11 @@ would serve it.
   §11.5): it types every node of every case in one batch and compares names, positions, precise types with their
   parameters, and nullability exactly (`TEST__typingDifferences`). Where the engine misreports nullability (an outer
   join's padded columns, the FULL merged key), a case lists the columns in `widerNullable`, and Cube must say nullable
-  there. Every registered node type needs a case, or the coverage test fails. The saved-spec samples are typed the
-  same way, node by node, but one-way (`CubeSpecCorpus.engine-roundtrip-test.ts`).
+  there. Every registered node type needs a case, or the coverage test fails, but a data product's access point
+  (`NOT_TYPED_BY_THE_ENGINE`: the open-source engine reads no data product; `CubeDataProduct.engine-roundtrip-test.ts`
+  types its stand-in). A case whose Concat converts types names the types it converts (`converted`), so a case that
+  silently stops converting fails. A case's every node must be valid. The saved-spec samples are typed the same way,
+  node by node, but one-way (`CubeSpecCorpus.engine-roundtrip-test.ts`).
 - **Sort descending in order tests.** H2 scans ORDERS in ascending `ORDER_ID` order, so a test that sorts ascending,
   or numbers rows by `ORDER_ID`, passes without the sort; the operations tests sort descending, with a control test
   pinning H2's own order.
@@ -79,8 +85,22 @@ would serve it.
   them on the fixture's H2, which takes both forms, so their rows can be compared with the native forms'.
   `src/__tests__/LegendCubeDialects.engine-roundtrip-test.ts` plans them, never running anything, on a test-only copy
   of the fixture model with a static connection per database type (`CUBE_ENGINE_TEST__generatePlanSql`), and checks
-  facts about the SQL: row numbers in the Sort's order, no `limit m,n`, no `top N distinct`. A check that should catch
+  facts about the SQL: row numbers in the Sort's order, no `limit m,n`, no `top N distinct`; for Group, its reduces,
+  HAVING and the GROUP BY target after two Renames (an engine issue, pinned); for Concat, one UNION ALL, each input's
+  Sort and Limit in its own subquery, and no SQL cast when it converts types. A check that should catch
   a missing workaround must fail without it: run it once with the workaround off before relying on it.
+- **Windows** (PLAN §11.6) are planned in `WINDOW_SHAPES` over `WINDOW_DATABASE_TYPES`, since Spanner, Presto and
+  Composite refuse any window (pinned): an OVER clause with no frame, `count(col)` and `count(1)` for the counts,
+  `rank()`, `dense_rank()` and `row_number()`, a Filter after a Partition as a `WITH n_…` and a `WHERE` outside the
+  window, never QUALIFY, and the capture's ORDER BY at the root. Run, they are checked three ways: the operations
+  tests ("Partition on the engine"), with values worked out on the fixture (rows tied on the sort share a running
+  value and a rank); `LegendCubeDirectConnectionOperations.engine-roundtrip-test.ts` on H2 and DuckDB, a second
+  database that runs them, windowed Distinct Count included; and `CubeWindowComposition.engine-roundtrip-test.ts`,
+  which runs pairs and triples of nodes with a Partition against a small JavaScript reference with SQL's null rules
+  and default frame, checks every Partition is written in the array form, and shows (its negative control) that the
+  single form, unbound, gives wrong rows. The core's `PartitionEmitter.test.ts` pins the emitted text.
+  `CubeWindowIsolation.engine-roundtrip-test.ts` checks the lets themselves through the adapter, with a test-only
+  window: they run, type, show in Show Pure, and put an error inside a let on its window.
 - `src/__tests__/CubeNorthwindRelationTypes.json` records the engine's relation type for every table of the bundled
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.

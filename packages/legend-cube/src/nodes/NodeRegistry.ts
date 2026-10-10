@@ -29,6 +29,7 @@ import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
+import { emitPartition } from '../ir/emitters/PartitionEmitter.js';
 import { emitRename } from '../ir/emitters/RenameEmitter.js';
 import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
@@ -43,6 +44,7 @@ import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
+import { PARTITION_CODEC } from '../spec/codecs/PartitionCodec.js';
 import { RENAME_CODEC } from '../spec/codecs/RenameCodec.js';
 import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
@@ -65,6 +67,7 @@ import { Filter } from './transforms/Filter.js';
 import { Group } from './transforms/Group.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
+import { Partition } from './transforms/Partition.js';
 import { Rename } from './transforms/Rename.js';
 import { Restrict } from './transforms/Restrict.js';
 import { Slice } from './transforms/Slice.js';
@@ -97,6 +100,12 @@ export interface TransformDefinition<N extends QueryNode = QueryNode>
   ): RelationExpr;
   /** How the saved spec stores the node's own fields */
   readonly spec: NodeSpecCodec<N>;
+  /**
+   * Whether a run binds the node's relation with a `let` when the node isn't
+   * the one captured, so what follows it can't change its rows: a window,
+   * which a later filter would otherwise run before (PLAN §8.6)
+   */
+  readonly isolationBoundary?: boolean;
 }
 
 export interface SourceDefinition<S extends SourceNode = SourceNode>
@@ -267,6 +276,22 @@ export const SLICE_DEFINITION: TransformDefinition<Slice> = {
   spec: SLICE_CODEC,
 };
 
+/**
+ * Partition (spec §7.13, PLAN §11.6): a window, so a run binds it with a let
+ * when something follows it (§8.6)
+ */
+export const PARTITION_DEFINITION: TransformDefinition<Partition> = {
+  kind: 'transform',
+  type: Partition.TYPE,
+  label: 'Apply Window Functions',
+  icon: 'partition',
+  beta: false,
+  create: (id) => new Partition(id),
+  emit: emitPartition,
+  spec: PARTITION_CODEC,
+  isolationBoundary: true,
+};
+
 /** Concat (spec §7.10, PLAN §11.5) */
 export const CONCAT_DEFINITION: TransformDefinition<Concat> = {
   kind: 'transform',
@@ -355,4 +380,5 @@ export const createNodeRegistry = (): NodeRegistry =>
     SLICE_DEFINITION,
     CONCAT_DEFINITION,
     JOIN_DEFINITION,
+    PARTITION_DEFINITION,
   ]);
