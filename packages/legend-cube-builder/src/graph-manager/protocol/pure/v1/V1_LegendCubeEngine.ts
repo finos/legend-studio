@@ -1179,7 +1179,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
     let text: string;
     try {
       // unread, so it can be read losslessly: a literal keeps its digits
-      const response = (await this.client.postWithTracing(
+      const response = await this.client.postWithTracing<Response>(
         this.client.getTraceData(GRAMMAR_TO_JSON_TRACE),
         `${this.client._grammarToJSON()}/valueSpecification`,
         code,
@@ -1188,7 +1188,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
         { sourceId, returnSourceInformation: true },
         { enableCompression: true },
         { skipProcessing: true },
-      )) as Response;
+      );
       text = await response.text();
     } catch (error) {
       throw V1_toCubeEngineError(error, undefined, CubeEngineErrorKind.COMPILE);

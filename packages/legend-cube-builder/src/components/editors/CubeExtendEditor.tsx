@@ -53,11 +53,12 @@ const columnAccessOf = (name: string): string =>
 
 /** The error the code editor marks, from a row's problem located in its code */
 const markerOf = (row: CubeExtendRow): CompilationError | undefined => {
-  const location = row.problem?.location;
-  if (!location) {
+  const { problem } = row;
+  const location = problem?.location;
+  if (!problem || !location) {
     return undefined;
   }
-  const error = new CompilationError(row.problem?.message);
+  const error = new CompilationError(problem.message);
   error.sourceInformation = new SourceInformation(
     location.sourceId,
     location.startLine,
