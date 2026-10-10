@@ -124,6 +124,55 @@ describe('Legend Query as the Cube host', () => {
     ).toBeDefined();
   });
 
+  test('Offers ingest data sets only when Query has a lakehouse and its platform', () => {
+    expect(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          lakehouse: { url: 'https://lakehouse.test' },
+        }),
+      ).ingestCatalog,
+    ).toBeUndefined();
+    expect(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          lakehouse: {
+            url: 'https://lakehouse.test',
+            platformUrl: 'https://platform.test',
+          },
+        }),
+      ).ingestCatalog,
+    ).toBeDefined();
+  });
+
+  test("Finds the ingest servers through Query's lakehouse platform, traced by Query's tracer", async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () =>
+        Promise.reject(new Error('No server in tests')),
+      );
+    const applicationStore = createApplicationStore({
+      lakehouse: {
+        url: 'https://lakehouse.test',
+        platformUrl: 'https://platform.test',
+      },
+    });
+    const trace = jest.spyOn(applicationStore.tracerService, 'createTrace');
+    const catalog = guaranteeNonNullable(
+      new LegendQueryCubeHost(applicationStore).ingestCatalog,
+    );
+    await expect(
+      catalog.listProducers(CubeDataProductEnvironmentType.PRODUCTION),
+    ).rejects.toThrow('No server in tests');
+    expect(
+      fetchSpy.mock.calls
+        .map(([url]) => String(url))
+        .some((url) =>
+          url.startsWith('https://platform.test/ingest/discovery/environments'),
+        ),
+    ).toBe(true);
+    expect(trace).toHaveBeenCalled();
+  });
+
   test("Lists data products from Query's lakehouse, and reads them from Query's depot, traced by Query's tracer", async () => {
     const fetchSpy = jest
       .spyOn(globalThis, 'fetch')

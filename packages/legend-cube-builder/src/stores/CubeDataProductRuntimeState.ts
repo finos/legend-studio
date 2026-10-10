@@ -30,6 +30,11 @@ import {
 } from '../graph-manager/CubeDataProduct.js';
 import type { CubeEngineError } from '../graph-manager/CubeEngine.js';
 import {
+  getCubeIngestSettings,
+  isCubeIngestModel,
+  withCubeIngestWarehouse,
+} from '../graph-manager/CubeIngest.js';
+import {
   getCubeRememberedWarehouse,
   rememberCubeWarehouse,
 } from './CubeDataProductWarehouse.js';
@@ -65,11 +70,19 @@ export interface CubeAccessRequestLink {
   readonly url: string;
 }
 
+/** What a lakehouse cube runs on, as its model saves it: its class and its warehouse */
+type CubeLakehouseSettings = Pick<
+  CubeDataProductProject,
+  'environmentType' | 'warehouse'
+>;
+
 /**
- * Where a data product cube runs (PLAN §6.8, DP-2): its deployment class
- * and the warehouse, shown as it is sent. Editing the warehouse changes the
- * cube's model, as one undo step, and remembers the warehouse for the
- * viewer's next cubes; it calls no engine and re-types no source.
+ * Where a lakehouse cube runs, a data product's (PLAN §6.8, DP-2) or an
+ * ingest one's (§6.7): its deployment class and the warehouse, shown as it
+ * is sent. Editing the warehouse changes the cube's model, as one undo step,
+ * and remembers the warehouse for the viewer's next cubes; it calls no
+ * engine and re-types no source. The project, its version and the
+ * marketplace's links are a data product cube's only.
  */
 export class CubeDataProductRuntimeState {
   readonly editorState: CubeEditorState;
@@ -83,6 +96,7 @@ export class CubeDataProductRuntimeState {
     makeObservable<CubeDataProductRuntimeState, 'rememberedChanges'>(this, {
       rememberedChanges: observable,
       project: computed,
+      settings: computed,
       isSnapshot: computed,
       canEditWarehouse: computed,
       runErrorKind: computed,
@@ -108,11 +122,19 @@ export class CubeDataProductRuntimeState {
     return model ? getCubeDataProductProject(model) : undefined;
   }
 
+  /** The cube's class and warehouse; none on a cube of tables, or one Cube can't run */
+  get settings(): CubeLakehouseSettings | undefined {
+    const model = this.editorState.document.context?.model;
+    return model
+      ? (getCubeDataProductProject(model) ?? getCubeIngestSettings(model))
+      : undefined;
+  }
+
   /** The warehouse the next run uses, as the engine picks it, from user data read at run time */
   get effectiveWarehouse(): string | undefined {
-    const { project } = this;
-    return project
-      ? getEffectiveCubeWarehouse(project, this.rememberedWarehouse)
+    const { settings } = this;
+    return settings
+      ? getEffectiveCubeWarehouse(settings, this.rememberedWarehouse)
       : undefined;
   }
 
@@ -121,13 +143,13 @@ export class CubeDataProductRuntimeState {
   }
 
   get canEditWarehouse(): boolean {
-    return !this.editorState.readOnly && this.project !== undefined;
+    return !this.editorState.readOnly && this.settings !== undefined;
   }
 
   /** What the last run's error says it lacked; none on a cube of tables */
   get runErrorKind(): CubeDataProductRunErrorKind | undefined {
     const { error } = this.editorState.execution;
-    return this.project && error
+    return this.settings && error
       ? classifyCubeDataProductRunError(error)
       : undefined;
   }
@@ -221,7 +243,9 @@ export class CubeDataProductRuntimeState {
     this.editorState.applyDocument(
       this.editorState.document.withContext({
         ...context,
-        model: withCubeDataProductWarehouse(context.model, warehouse),
+        model: isCubeIngestModel(context.model)
+          ? withCubeIngestWarehouse(context.model, warehouse)
+          : withCubeDataProductWarehouse(context.model, warehouse),
       }),
     );
     this.remember(warehouse);

@@ -33,6 +33,7 @@ import {
   fixJoinDuplicates,
   getAvailableAggregations,
   Group,
+  IngestDatasetSource,
   Join,
   JoinType,
   Limit,
@@ -205,12 +206,14 @@ const converting = concatenatedWith(true);
 
 /**
  * The registered types the open-source engine can't type, so with no case: a
- * data product's access point, which it doesn't read (PLAN §6.8);
- * `CubeDataProduct.engine-roundtrip-test.ts` checks Cube's reading of its
- * types against a stand-in function instead
+ * data product's access point, which it doesn't read (PLAN §6.8), and an
+ * ingest definition's data set, which needs a deployed definition (PLAN
+ * §6.7); `CubeDataProduct.engine-roundtrip-test.ts` checks Cube's reading of
+ * a data product's types against a stand-in function instead
  */
 const NOT_TYPED_BY_THE_ENGINE: readonly string[] = [
   DataProductAccessPointSource.TYPE,
+  IngestDatasetSource.TYPE,
 ];
 
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];

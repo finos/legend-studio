@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  IngestDatasetSource,
   buildSchemasAndValidity,
   createNodeRegistry,
   CubeDocument,
@@ -59,7 +60,13 @@ import {
   getAccessPointDriftWarning,
   getAccessPointRecheckWarning,
 } from '../__lib__/LegendCubeDataProductLabels.js';
+import {
+  CUBE_INGEST_RECHECK_MESSAGE,
+  getDataSetDriftWarning,
+  getDataSetRecheckWarning,
+} from '../__lib__/LegendCubeIngestLabels.js';
 import { isCubeDataProductModel } from '../graph-manager/CubeDataProduct.js';
+import { isCubeIngestModel } from '../graph-manager/CubeIngest.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -67,6 +74,7 @@ import {
 } from '../graph-manager/CubeEngine.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
+import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
@@ -95,7 +103,10 @@ const isTypingText = (): boolean => {
 };
 
 /** A source Cube types again to see drift: a table, or a data product's access point */
-type RecheckedSource = RelationalTableSource | DataProductAccessPointSource;
+type RecheckedSource =
+  | RelationalTableSource
+  | DataProductAccessPointSource
+  | IngestDatasetSource;
 
 /**
  * The state of one Cube page (PLAN §7.8). The document is immutable: every
@@ -108,7 +119,7 @@ export class CubeEditorState implements CommandRegistrar {
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
   readonly execution: CubeExecutionState;
-  /** Where a data product cube runs: its class and warehouse */
+  /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
@@ -473,48 +484,70 @@ export class CubeEditorState implements CommandRegistrar {
             node instanceof DataProductAccessPointSource,
         )
       : [];
-    const sources: readonly RecheckedSource[] = [...tables, ...accessPoints];
+    const dataSets = isCubeIngestModel(context.model)
+      ? kept.filter(
+          (node): node is IngestDatasetSource =>
+            node instanceof IngestDatasetSource,
+        )
+      : [];
+    const sources: readonly RecheckedSource[] = [
+      ...tables,
+      ...accessPoints,
+      ...dataSets,
+    ];
     if (!sources.length) {
       return;
     }
     this.pendingSources = new Set([...this.pendingSources, ...sources]);
     let answers: ReadonlyMap<string, Schema | CubeEngineError>;
     try {
-      const [tableAnswers, accessPointAnswers] = (yield Promise.all([
-        tables.length
-          ? this.host.engine
-              .resolveSchemas(
+      const [tableAnswers, accessPointAnswers, dataSetAnswers] =
+        (yield Promise.all([
+          tables.length
+            ? this.host.engine
+                .resolveSchemas(
+                  context.model,
+                  new Map(
+                    tables.map((source) => [
+                      source.id,
+                      [source.database, source.schema, source.table],
+                    ]),
+                  ),
+                )
+                .catch((error: unknown) => {
+                  const failure =
+                    error instanceof CubeEngineError
+                      ? error
+                      : new CubeEngineError(
+                          CubeEngineErrorKind.NETWORK,
+                          error instanceof Error
+                            ? error.message
+                            : String(error),
+                        );
+                  return new Map(tables.map((source) => [source.id, failure]));
+                })
+            : new Map(),
+          accessPoints.length
+            ? recheckCubeDataProductSources(
+                this.host.dataProductCatalog,
                 context.model,
-                new Map(
-                  tables.map((source) => [
-                    source.id,
-                    [source.database, source.schema, source.table],
-                  ]),
-                ),
+                accessPoints,
+                fresh,
               )
-              .catch((error: unknown) => {
-                const failure =
-                  error instanceof CubeEngineError
-                    ? error
-                    : new CubeEngineError(
-                        CubeEngineErrorKind.NETWORK,
-                        error instanceof Error ? error.message : String(error),
-                      );
-                return new Map(tables.map((source) => [source.id, failure]));
-              })
-          : new Map(),
-        accessPoints.length
-          ? recheckCubeDataProductSources(
-              this.host.dataProductCatalog,
-              context.model,
-              accessPoints,
-              fresh,
-            )
-          : new Map(),
-      ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
+            : new Map(),
+          dataSets.length
+            ? recheckCubeIngestSources(
+                this.host.ingestCatalog,
+                context.model,
+                dataSets,
+                fresh,
+              )
+            : new Map(),
+        ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
       answers = new Map([
         ...(tableAnswers ?? []),
         ...(accessPointAnswers ?? []),
+        ...(dataSetAnswers ?? []),
       ]);
     } finally {
       this.pendingSources = new Set(
@@ -528,13 +561,16 @@ export class CubeEditorState implements CommandRegistrar {
     const replacements = new Map<RecheckedSource, RecheckedSource>();
     sources.forEach((source) => {
       const isAccessPoint = source instanceof DataProductAccessPointSource;
+      const isDataSet = source instanceof IngestDatasetSource;
       const answer =
         answers.get(source.id) ??
         new CubeEngineError(
           CubeEngineErrorKind.COMPILE,
           isAccessPoint
             ? CUBE_DATA_PRODUCT_RECHECK_MESSAGE.NO_ANSWER
-            : 'The engine gave no schema for this table',
+            : isDataSet
+              ? CUBE_INGEST_RECHECK_MESSAGE.NO_ANSWER
+              : 'The engine gave no schema for this table',
           source.id,
         );
       const saved =
@@ -546,7 +582,9 @@ export class CubeEditorState implements CommandRegistrar {
           warnings.set(source.key, [
             isAccessPoint
               ? getAccessPointRecheckWarning(answer.firstLine)
-              : getSourceRecheckWarning(answer.firstLine),
+              : isDataSet
+                ? getDataSetRecheckWarning(answer.firstLine)
+                : getSourceRecheckWarning(answer.firstLine),
           ]);
         } else if (
           source.resolution.kind !== 'failed' ||
@@ -573,7 +611,9 @@ export class CubeEditorState implements CommandRegistrar {
         warnings.set(resolved.key, [
           isAccessPoint
             ? getAccessPointDriftWarning(diff)
-            : getSchemaDriftWarning(diff),
+            : isDataSet
+              ? getDataSetDriftWarning(diff)
+              : getSchemaDriftWarning(diff),
         ]);
       }
       replacements.set(source, resolved);
@@ -629,9 +669,10 @@ export class CubeEditorState implements CommandRegistrar {
     const source = this.document.query.getNode(nodeId);
     if (
       source instanceof RelationalTableSource ||
-      source instanceof DataProductAccessPointSource
+      source instanceof DataProductAccessPointSource ||
+      source instanceof IngestDatasetSource
     ) {
-      // a Refresh reads the deployed artifact again
+      // a Refresh reads the deployed artifact or definition again
       yield flowResult(this.reresolveSources([source], true));
     }
   }
@@ -711,14 +752,17 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * The kinds of source the host serves: data products only with a catalog.
-   * The cube's kind may still disable one (`canAddNode`)
+   * The kinds of source the host serves: data products and ingest data sets
+   * only with their catalogs. The cube's kind may still disable one
+   * (`canAddNode`)
    */
   get offeredSources(): readonly SourceDefinition[] {
     return this.registry.sources.filter(
       (definition) =>
-        definition.type !== DataProductAccessPointSource.TYPE ||
-        this.sourcePicker.dataProductTab.isAvailable,
+        (definition.type !== DataProductAccessPointSource.TYPE ||
+          this.sourcePicker.dataProductTab.isAvailable) &&
+        (definition.type !== IngestDatasetSource.TYPE ||
+          this.sourcePicker.ingestTab.isAvailable),
     );
   }
 

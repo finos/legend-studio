@@ -17,6 +17,7 @@
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { CubeConnectionExplorer } from '../graph-manager/CubeConnectionExplorer.js';
 import type { CubeDataProductCatalog } from '../graph-manager/CubeDataProductCatalog.js';
+import type { CubeIngestCatalog } from '../graph-manager/CubeIngestCatalog.js';
 import type { CubeEngine } from '../graph-manager/CubeEngine.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
@@ -41,4 +42,9 @@ export interface CubeHost {
    * offers no data products
    */
   readonly dataProductCatalog?: CubeDataProductCatalog | undefined;
+  /**
+   * The deployed ingest definitions (PLAN §6.7); without one, the source
+   * dialog offers no ingest data sets
+   */
+  readonly ingestCatalog?: CubeIngestCatalog | undefined;
 }

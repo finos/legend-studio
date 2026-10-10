@@ -19,7 +19,7 @@
 | D3  | **ag-grid Enterprise license is available** in every deployment. Use `@finos/legend-lego/data-grid` (enterprise modules).                                                                                                                                                                                                                                                                                                                                | user                               |
 | D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (made explicit by the emitter, §8.4: the engine does it only for columns it types `[0..1]`; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                                  | user (default; wording 2026-10-06) |
 | D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected (widen autofix later).                                                                                                                   | user (default)                     |
-| D6  | Post-slice source order: services → Pure functions → data products → ingest. Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                                                                               | user (default)                     |
+| D6  | Post-slice source order: services → Pure functions → data products → ingest (data products and ingest moved to M3, §6.7–6.8). Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                              | user (default)                     |
 | D7  | Route **`/cube`** inside Legend Query (URL `/query/cube`), hard-wired in the Query router. New module(s) `legend-cube` / `legend-cube-builder` (§3). Further entry points, the sources modal and the final look are revisited in M3.                                                                                                                                                                                                                     | user + recommendation              |
 | D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                                                                                                                                          | user (default)                     |
 | D9  | Execution is a **Pure relation-function chain** over store accessors (`#>{db.schema.table}#`), built as **protocol JSON** (never Pure text). Legend SQL is only a possible future "SQL source" node.                                                                                                                                                                                                                                                     | recommendation (§8.1)              |
@@ -1142,13 +1142,40 @@ single SQL statement ✅. Its type comes from the declared signature, and it has
 **Unknowns:** the meaning of access-point `parameters` (always sent empty today), environment and entitlement
 resolution, and which access modes Cube exposes.
 
-### 6.7 Ingest (M9, outline)
+### 6.7 Ingest data sets (M3, settled by the user, 2026-10-09)
 
-- **Accessor:** `#I{ingestPath.dataset}#`, with the same lakehouse constraints.
-- **Schema:** from the definition plus milestoning columns. Studio's helper drops sizes, so prefer an engine call.
+Ingest definitions became a source in M3, built before Depot databases (they rebase onto it). Requirements: the local
+evidence `ingest-requirements` (four rounds of answers recorded there). Cube copies Data Cube's Lakehouse Producer
+source for now; the user plans to improve it later.
 
-**Unknowns:** consumer vs producer environment, the meaning of the `metadata` flag, and whether end users should see
-ingest datasets directly.
+- **Picking (an "Ingest" tab of its own, with an "Ingest Dataset" BETA palette item):** Mode (Production or Production
+  (parallel)), then the environment (the viewer's entitled one, shown read-only and never saved), then a producer
+  deployment (numeric deployment ids only; the viewer's own user-id environments are left out for now), then one of its
+  deployed definitions, then a data set. Only definitions deployed from SDLC (`alloy-git:<group>~<artifact>~<path>`
+  URNs) are listed; ad hoc ones (`rest-api:` URNs) are not supported. Everyone can add data sets: the lakehouse refuses
+  a run the viewer may not make, and Cube shows that error.
+- **The definition:** read from the ingest server by URN through its grammar route, then parsed by the engine, as Data
+  Cube does (user, 2026-10-09). No project version is looked up now. TODO: read the definition from Depot instead, at
+  the project version it was deployed from, which also gives the SDLC pointer (a later improvement).
+- **Schema:** each data set's declared columns, with their type parameters and nullability, then the LAKE\_\* columns its
+  write mode adds, as legend-graph types them for Legend Query; no engine call. Materialized views, many-valued columns
+  and types Cube doesn't know are listed disabled with the reason.
+- **Accessor and run:** `#I{definition.dataSet}#` (`metadata: false`), run on a model of the definitions the cube reads
+  plus a LakehouseRuntime at `cube::ingest::Runtime`. Its environment is the one of the ingest server that served the
+  definition; the warehouse follows the data product rule (§6.8).
+- **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
+  saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
+  data products or ingest data sets) and one producer deployment.
+- **Config:** Legend Query's optional `lakehouse.platformUrl` (the key Data Cube and Marketplace use); the ingest
+  servers are found through it.
+- **After Add:** a data set's Source panel shows its definition (the URN on hover), the class, the producer deployment
+  and the warehouse, which is edited there as a data product cube's is (§6.8). Import and **Refresh** read the
+  definition again and warn when a data set's columns changed. A data set whose definition can't be read again (e.g.
+  no longer deployed) keeps its saved columns, with a warning saying why.
+- **Tests:** the open-source engine can't parse a definition or type `#I`, so the engine tests stand each data set in
+  for with a Pure function over an H2 table, and check a Filter on `LAKE_OUT_ID`, a Join of two data sets and a Group
+  downstream (testing.md). The ingest servers, the grammar parse, `#I` itself, the environment name and the warehouse
+  are checked in Part B2 (§11.2).
 
 ### 6.8 The next sources: settled so far (user, 2026-10-08)
 
@@ -2457,10 +2484,17 @@ Also check and record:
   from `react-reflex` when the editor panel opens or a splitter moves (Appendix B), and the Query ServiceWorker's
   "fetching the script" errors. Anything else is recorded.
 
-**Part B2: sources, manual, in the UI** (the direct connection and data products, §6.8)
+**Part B2: sources, manual, in the UI** (the direct connection, data products and ingest data sets, §6.7, §6.8)
 
 Prerequisites: as Part B. Data products also need a Query configured with a lakehouse and a depot that serve deployed
-data products (an internal deployment); without a lakehouse the page shows no Data Product item.
+data products (an internal deployment); without a lakehouse the page shows no Data Product item. Two optional Query
+keys turn on the rest (hosting.md):
+
+- `marketplace.serverUrl`, the same value as Legend Marketplace's own `marketplace.url`: search runs on the
+  marketplace server. Without it, the list is the lakehouse's lite list and search filters it in the page.
+- `extensions.core.dataProductConfig.publicStereotype`, the same stereotype Studio and Marketplace use: groups open
+  to everyone show **Enterprise access**, and groups with no contract show **No access**. Without it, only groups
+  with a contract show a badge.
 
 Direct connection:
 
@@ -2485,18 +2519,57 @@ Direct connection:
 Data products:
 
 1. The palette shows **Data Product** with a BETA badge. Click it: the dialog opens on the **Data product** tab, Mode
-   **Production**. The deployed products list; search narrows it.
-2. Pick a product: its access points show by group. A parameterized one is disabled and says why. The warehouse
-   reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the one you last used); change it if needed.
+   **Production**. The deployed products list; search narrows it (with `marketplace.serverUrl`, on the marketplace
+   server: a search with more than 100 matches says "Too many matching items; list truncated.").
+2. Pick a product: its access points show by group, each group with your access as the marketplace shows it
+   (**Entitled**, a pending state, **Enterprise access** or **No access**). A parameterized access point is disabled
+   and says why. Pick an access point: the preview shows its description, its columns with their types and sample
+   rows; **Open in Marketplace** opens the product's page in the marketplace of its class (production or production
+   parallel). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the one you last used); change it if needed.
 3. Add an access point. Open the dialog again: it opens on the same product with its access points shown, the Mode
-   and warehouse are fixed, and only that project's products at that version are listed. Add a second access point of
-   the same product.
+   and warehouse are fixed, and **In this project** lists only that project's products at that version. **Search
+   all** lists the others too, greyed, each saying why ("Belongs to project …", "Deployed from version …"). Add a
+   second access point of the same product.
 4. Join the two on a shared key and press **F9**: rows come back. **Show Pure** shows two `#P{…}#` accessors and
    `->from(cube::dataProduct::Runtime)`.
-5. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
-6. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, and **F9** gives the same rows.
+5. Click an access point's node: the Source panel shows the environment, the data product with **Open in
+   Marketplace**, the group, the project and its version (a `-SNAPSHOT` version is labelled as one that may change).
+   Type another warehouse and click **Apply**: the grid's rows are marked stale, and **F9** runs on it. **Undo**
+   (Ctrl/Cmd+Z) brings the old warehouse back in one step. A new cube then starts on the warehouse last applied.
+6. Apply a warehouse that doesn't exist and press **F9**: the error says the run couldn't use that warehouse and
+   points to the Source panel. If you have an access point you aren't entitled to, run it: the error offers **Request
+   access to <group> in <data product>**, linking to the marketplace.
+7. Click **Refresh** in the Source panel: the access point's columns are read again from the deployed artifact (no
+   warning when nothing changed).
+8. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
+9. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, its access points are re-checked
+   against their deployed artifacts, and **F9** gives the same rows.
 
-Record the deployment, the products and access points used, and any console errors.
+Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows no Ingest Dataset item):
+
+1. The palette shows **Ingest Dataset** with a BETA badge. Click it: the dialog opens on the **Ingest** tab, Mode
+   **Production**, and shows your environment, read-only. Pick a producer deployment: its deployed definitions list
+   with their project (`group:artifact`); search narrows them. Definitions deployed ad hoc, or to another environment,
+   are counted below the list, not shown.
+2. Pick a definition: its data sets list with their column counts; a materialized view is disabled and says why. Pick
+   a data set: its columns show, the declared ones then `LAKE_IN_ID`, `LAKE_OUT_ID` and `LAKE_DIGEST` (and
+   `LAKE_FROM`, `LAKE_THRU` for a business-temporal one). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the
+   one you last used); change it if needed.
+3. Add the data set. Open the dialog again: the Mode, producer deployment and warehouse are fixed, and the Model,
+   Database connection and Data product tabs are disabled. Add a second data set of the same producer.
+4. Join the two on a shared key, add a Filter `LAKE_OUT_ID` **is** `999999999` (or the current-rows marker your
+   deployment uses) before the Join if they are batch-milestoned, and press **F9**: rows come back. **Show Pure**
+   shows two `#I{…}#` accessors and `->from(cube::ingest::Runtime)`.
+5. Click a data set's node: the Source panel shows the definition (its URN on hover), the data set, the environment,
+   the producer deployment and the warehouse. Apply another warehouse: the rows are marked stale; **Undo** brings the
+   old one back. Apply one that doesn't exist and press **F9**: the error says the run couldn't use it, beside the
+   warehouse and in the run's error. Click **Refresh**: the columns are read again (no warning when nothing changed).
+6. On a new cube, choose Mode **Production (parallel)**, add a data set and press **F9**.
+7. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, its data sets are re-checked
+   against their definitions, and **F9** gives the same rows.
+
+Record the deployment, the products, access points and data sets used, whether the optional keys were set, and any
+console errors.
 
 ### 11.3 After the slice (recommended order, outline)
 
@@ -2510,7 +2583,7 @@ Record the deployment, the products and access points used, and any console erro
 | M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
 | M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                        |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| M9   | More sources                               | Services → Pure functions → ingest (`#I` against mocks), with parameter forms (§17.6); data products moved to M3 (§6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points
@@ -2982,6 +3055,7 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
 | Saved format changes before the store exists                                                                                      | Stranded exports                                 | Format marked draft until M8; migrations are still written                                                                                                                  |
 | Northwind reloads on every connection (≈0.6 s per execute) ✅                                                                     | Slow tests                                       | Compile-only (`lambdaRelationType`, ~20–70 ms) for schema assertions; few executions                                                                                        |
 | Data products and ingest are absent from the open-source engine ✅                                                                | M9 slips                                         | Mocks (D6); mapping-based data product modes first                                                                                                                          |
+| An ingest definition is read through its grammar and the engine's parse, with no project version (§6.7)                           | A definition the parse rejects can't be added    | The error shows on the tab with Retry; reading it from Depot at its deployed version is the TODO; Part B2 checks real definitions                                           |
 | Single runtime and single database per query (v1, and in the `let` form)                                                          | Some joins not expressible                       | Explicit validation messages; revisit with the depot catalog and services                                                                                                   |
 | Grid license assumed (D3)                                                                                                         | Watermark on unlicensed builds                   | The local dev host is `localhost` (no watermark) ✅; the community-only path is documented if ever needed                                                                   |
 
@@ -3185,6 +3259,9 @@ the `legend-pure-m3-precisePrimitives` 5.105.0 jar (`platform_precise_primitives
 - [DataCubeEngine.tsx](../../../packages/legend-data-cube/src/stores/core/DataCubeEngine.tsx)
 - [DataCubeQueryBuilderUtils.ts](../../../packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts)
 - [LegendDataCubeDataCubeEngine.ts](../../../packages/legend-application-data-cube/src/stores/LegendDataCubeDataCubeEngine.ts)
+- ingest data sets (§6.7): [LakehouseProducerDataCubeSourceBuilderState.ts](../../../packages/legend-application-data-cube/src/stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.ts),
+  [LakehouseProducerDataCubeSource.ts](../../../packages/legend-application-data-cube/src/stores/model/LakehouseProducerDataCubeSource.ts),
+  and legend-graph's `createAccessorFromPackageableElement` ([V1_PureGraphManager.ts](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/V1_PureGraphManager.ts))
 - **Reuse:** the xyflow + dagre stack, engine-client calls, and the undo / commit-on-Apply patterns.
 - **Keep separate:** snapshot model, filter and aggregate classes, type utilities, grid datasource, persistence.
 

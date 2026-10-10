@@ -205,6 +205,18 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
         },
         ir.origin ?? inherited,
       );
+    case 'ingestAccessor':
+      // as legend-graph sends it, and Legend Query's ingest queries with it:
+      // the data set's rows, never its metadata
+      return stamped(
+        {
+          _type: 'classInstance',
+          type: 'I',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          value: { path: [...ir.path], metadata: false },
+        },
+        ir.origin ?? inherited,
+      );
     case 'elementPtr':
       return stamped(
         { _type: 'packageableElementPtr', fullPath: ir.path },

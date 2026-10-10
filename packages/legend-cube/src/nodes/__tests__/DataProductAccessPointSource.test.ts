@@ -32,9 +32,9 @@ import type { JsonObject } from '../../utils/Json.js';
 import {
   type DataProductAccessPointCoordinates,
   DataProductAccessPointSource,
-  sourcesAreOneKind,
 } from '../sources/DataProductAccessPointSource.js';
 import { isResolvableSource } from '../sources/ResolvableSource.js';
+import { sourcesAreOneKind } from '../sources/SourceKinds.js';
 import { Join } from '../transforms/Join.js';
 import { UnknownNode } from '../UnknownNode.js';
 

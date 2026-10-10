@@ -7,15 +7,15 @@
 > **Upkeep:** update it at the end of every working session and whenever a milestone step lands, and commit it with
 > that work. Git history on the branch is the detailed log; this file is the summary.
 
-## Current state (2026-10-08)
+## Current state (2026-10-09)
 
-| Item        | State                                                                                                                                                                                                                                                                                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch      | `cubeV1`, rebased on finos master `a32e5c0fb` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                                                                                                                                              |
-| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                                                                                                                                       |
-| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine). **M1.8a done** (S1–S12) and **M1.8b done** (S13–S21: canvas, palette, drag and drop, context menu, editor panel with Join/Filter/Source editors, shortcuts), both verified, on `cubeV1` and in PR finos/legend-studio#5591 |
-| Decisions   | PLAN.md §0, D1–D13. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not                                                                                                                             |
-| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                                                                                                                                              |
+| Item        | State                                                                                                                                                                                                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch      | Work goes to finos master through one PR per milestone or source, each from its own branch of the fork. Open: ingest data sets on `cube-ingest` (finos/legend-studio#5654); Depot databases on `cube-depot`                                                     |
+| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
+| Code        | **On master:** M1 (#5591, #5634), M2 (#5644), the direct connection and data products (#5641, #5652), M4 Group and Concat (#5649), a CSV as a DuckDB table (#5656). **In progress:** ingest data sets (#5654), Depot databases (requirements)                   |
+| Decisions   | PLAN.md §0, D1–D13. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
+| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
 ## Milestone checklist
 
@@ -35,11 +35,27 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. No longer gates the sources (PLAN §6.8)
 - [x] M2 Rename + Join autofix + simple unary transforms (merged as #5644, `0335b3f5f`)
 - [ ] M3 Sources: the direct connection first (H2 and DuckDB; PLAN §6.8), then data products, then Depot databases; entry points and the sources modal
-  - The direct connection (H2 and DuckDB) and a thin end-to-end data product slice (beta) go in one PR, #5641, so data
-    products can be tested inside an internal deployment (user, 2026-10-09). Part B2 (PLAN §11.2) is the manual check
-    of both. The data product follow-ups (PLAN §6.8) come in the next PR, then Depot databases.
-- [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
-- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
+  - The direct connection (H2 and DuckDB) and a thin end-to-end data product slice (beta) merged on 2026-10-09 as
+    #5641 (`e01552380`), so data products can be tested inside an internal deployment. The data product follow-ups
+    (PLAN §6.8) merged the same day as #5652 (`4f5aab13d`).
+  - Left for these two sources: Part B2 (PLAN §11.2), the manual check of both, run by the user in an internal
+    deployment, with Query's two optional data product keys set (hosting.md); the mock-backed data product tests
+    (DP22), which wait for the local lakehouse, marketplace and depot mocks; and the data product half of the demo
+    video (the direct connection's half was recorded on 2026-10-09; the data product tab needs the mocks or an internal
+    deployment).
+  - A CSV pasted or chosen in the Database connection tab becomes a DuckDB table of the setup SQL (user, 2026-10-09):
+    merged as #5656 (`5e424277b`).
+  - Ingest data sets (PLAN §6.7; user, 2026-10-09: before Depot databases) on `cube-ingest`, finos/legend-studio#5654,
+    with master merged in (`8b235e495`): build steps IN1–IN11 done (the `#I` accessor, the source and its kinds rule,
+    the `cubeIngest` model and runs, the ingest catalog, Query's `lakehouse.platformUrl`, the Ingest tab and palette
+    item, the data set's panel with its warehouse, the engine stand-ins, the docs). Left after the PR (user,
+    2026-10-09): skeptic verification and the demo video, then Part B2's ingest steps in an internal deployment. Later:
+    reading a definition from Depot at its deployed version (the SDLC pointer), and producers' user-id environments.
+  - Next: Depot databases (PLAN §6.3, §6.8; their requirements are answered: released versions only, no dependency
+    Databases), starting with the local mock depot.
+- [x] M4 Group, Concat (merged as #5649, `d847e6721`)
+- [ ] M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
+- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
 
@@ -79,7 +95,7 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 
 **In parallel:** M1.9 merged on 2026-10-08 as #5634 (`3260216a6`). M2, the simple unary operations, merged on
 2026-10-09 as #5644 (`0335b3f5f`), with its record in [PROGRESS-M2.md](PROGRESS-M2.md) and its decisions in PLAN §11.4.
-M4, Group and Concat, follows on `cube-m4`, a branch from master, with its status in [PROGRESS-M4.md](PROGRESS-M4.md)
+M4, Group and Concat, merged on 2026-10-09 as #5649 (`d847e6721`), with its record in [PROGRESS-M4.md](PROGRESS-M4.md)
 and its decisions in PLAN §11.5; each operation follows the editor contract in PLAN §7.4. Direct connections and data
 products' access points merged on 2026-10-09 as #5641 (`e01552380`). Also planned: test setup and a DuckDB WASM study
 (low priority, research first: PLAN §12.2 item 9). The next sources (databases from Depot and direct connections,
