@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                      |
-| ------ | ------------------------------------------------------------------------------------------ |
-| Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10)      |
-| Engine | Local legend-engine on `localhost:6300`                                                    |
-| Step   | M6.10: Guides, READMEs and the changeset                                                   |
-| Tests  | 2818 core, 1375 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
+| Item   | State                                                                                       |
+| ------ | ------------------------------------------------------------------------------------------- |
+| Branch | `cube-m6`, on `cube-dev` `b23afd19f`; draft PR #5662 into `cube-dev` (user, 2026-10-10)     |
+| Engine | Local legend-engine on `localhost:6300`                                                     |
+| Step   | M6.11: Verification and the browser rehearsal                                               |
+| Tests  | 2820 core, 1413 builder (core group); engine: the Difference suites, `CubeExpressions` (10) |
 
 ## Steps
 
@@ -29,7 +29,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.8** The Extend editor, and registered
 - [x] **M6.9** Extend on the engine, in the conformance suite and around the databases
 - [x] **M6.10** Guides, READMEs and the changeset
-- [ ] **M6.11** Verification and the browser rehearsal
+- [x] **M6.11** Verification and the browser rehearsal
 - [ ] **M6.12** A demo video of M6's features (PLAN §11.3)
 - [ ] **M6.13** Fold PLAN §11.7's supersessions in; the PR ready for `cube-dev`
 
@@ -37,18 +37,24 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit      | Subject                                                         |
-| ----- | ----------- | --------------------------------------------------------------- |
-| M6.1  | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend)                |
-| M6.2  | `58c56830e` | feat: add Difference to Legend Cube's core                      |
-| M6.3  | `1a5a879ae` | feat: add Difference to Legend Cube's builder                   |
-| M6.4  | `5b1fa39c9` | test: run Legend Cube's Difference on the engine                |
-| M6.5  | `1270430ee` | feat: add Extend to Legend Cube's core                          |
-| M6.6  | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions     |
-| M6.7  | `58b6737f8` | feat: type Legend Cube's Extends in the background              |
-| M6.8  | `9eb1b2732` | feat: add the Extend editor to Legend Cube                      |
-| M6.9  | `6a65db52d` | test: run Legend Cube's Extend on the engine and every database |
-| M6.10 | (this one)  | docs: cover Legend Cube's Difference and Extend in its guides   |
+Hashes after the rebase onto #5663 (`b23afd19f`); the PR is squash-merged, so they last only as long as the branch.
+
+| Step  | Commit      | Subject                                                                                                     |
+| ----- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| M6.1  | `d247225cb` | docs: settle Legend Cube M6 (Difference, Extend)                                                            |
+| M6.2  | `e7479d406` | feat: add Difference to Legend Cube's core                                                                  |
+| M6.3  | `f48188d97` | feat: add Difference to Legend Cube's builder                                                               |
+| M6.4  | `af8292782` | test: run Legend Cube's Difference on the engine                                                            |
+| M6.5  | `cab62d39b` | feat: add Extend to Legend Cube's core                                                                      |
+| M6.6  | `72f0f8f9f` | feat: parse, type and plan Legend Cube's Extend expressions                                                 |
+| M6.7  | `cc7948e84` | feat: type Legend Cube's Extends in the background                                                          |
+| M6.8  | `058b3c7dd` | feat: add the Extend editor to Legend Cube                                                                  |
+| M6.9  | `daabb6332` | test: run Legend Cube's Extend on the engine and every database                                             |
+| M6.10 | `3ce35c4a6` | docs: cover Legend Cube's Difference and Extend in its guides                                               |
+| M6.11 | `f0112d2ce` | fix: redact Legend Cube expression literals, and read unknown typed-column keys as Unknown                  |
+| M6.11 | `cf21a5337` | fix: retype a Legend Cube Extend when the input the engine sees changes, and keep the Extend editor's edits |
+| M6.11 | `aed47eaaf` | test: show on the engine that an Extend over another types by what Cube's schema hides                      |
+| M6.11 | (this one)  | docs: record Legend Cube M6.11's review and fixes                                                           |
 
 ## Notes
 
@@ -131,7 +137,7 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   back the same leaves the node alone (`isSameCubeExtendTyping`). Pending is not invalid: the canvas shows a waiting
   or typing Extend as resolving (pulsing), the header says "typing new columns" with the loading bar, and the panel
   leaves `ERR_TYPING` out of its problems; Execute's reason names the waiting node. Not done: retyping on a model
-  change within a session (the import covers a loaded cube).
+  change within a session (the import covers a loaded cube); M6.11 does it.
 - **M6.8** (2026-10-10). Extend is registered last, after Partition (spec §7.0's order), with the spec's help text
   and `CalculatorIcon`. `CubeExtendDraft`: a row per column, named `col_<n>` (the first name no column has), its code
   starting `x | `; Validate (button, or F10 through a new `legend-cube.validate-expressions` command) parses each
@@ -162,3 +168,36 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   checklist's reasons, the code editor, background typing, column origins, the fake engine's new mocks, `act` and the
   Monaco mock. `testing.md`: Difference's and Extend's engine tests, `CubeExpressions`, `TEST__typedExtend`, the new
   wider-nullable columns. Both READMEs list the two operations; the changeset names both.
+- **M6.11** (2026-10-10). Rebased onto #5663 (`b23afd19f`, Depot databases): the adapter keeps Depot's message beside
+  Extend's error locations, and `executionBodyOf` checks a tables model as `checkTablesModel` does, so a project
+  pointer plans as it runs. Review: a workflow of three reviewers (core; builder and adapter; tests and docs), then a
+  skeptic per finding. 18 findings, 14 confirmed, 4 refuted: Difference checks "not a join column" first on purpose
+  (documented and pinned); the serializer's own-locations path is covered by `CubeExpressions`; the direct-connection
+  Extend's hand types are the engine's; Apply after a rename is meant to leave the typing waiting. Fixed:
+  - **Stale typing over another Extend** (medium): typing is a chain, so an Extend's types depend on what the engine
+    sees of its input, which Cube's schema hides (every Extend column nullable). Dropping `->toOne()` above left the
+    one below valid and failing at Run; adding it left a failure stuck. Each typing now records `upstream`, a digest
+    of the input's emitted relation and the model (not saved); the editor adds a query rule that makes an Extend with
+    another digest wait, so it is typed again and Execute waits meanwhile. This also retypes on a model change
+    (M6.7's gap). The engine test shows the two typings over one Cube schema.
+  - **Undo snapshots:** a background typing goes only into the snapshots that give the engine the same input, so an
+    undo past an upstream edit is valid at once.
+  - **Offline:** a typing still current for its input (a loaded one has no digest) is kept when the engine can't be
+    reached, with a warning, as PLAN says; it used to become a stored failure, with nothing to retry it.
+  - **The panel:** a background typing of the node it shows used to close it and drop its edits; the draft now follows
+    a node that differs only in its typing (`CubeNodeDraft.follow`). Closing it, or opening another node, used to
+    store unvalidated codes as columns without expressions; it now stays open with a notice (the user may prefer
+    "drop with a notice"), and Apply refuses them.
+  - **Validate** threw an unhandled error when the engine typed what Cube refuses (`ship_via` over ORDERS, a type
+    such as `Any`): Cube's per-column checks (`getColumnProblems`) run before typing, the types
+    (`getTypeProblems`) before planning, each on its row, and an emitter failure becomes a row problem. Body-only
+    code and two parameters get Cube's message, as PLAN said.
+  - **Core lows:** `describeRedacted` gives `Extend with N columns`; `printIR`'s `redactLiterals` redacts a lambda's
+    literals; an unknown key in a typed column's type makes the node Unknown.
+  - **Tests the reviewers asked for:** a column type in the signature, the first of three columns failing to plan,
+    the error marker reaching the code editor, and F10.
+  - **Docs:** PLAN §11.7's retyping (no debounce; the digest; offline) and closing; the builder guide's source ids.
+  - **Gates** on the fixed branch: `check:ci` and `lint:ci` pass; 2820 core, 1413 builder and 247 Query tests; the
+    builder's engine group 746 of 750, the 4 failures the direct-connection "setup SQL fails" cases that time out on
+    the local engine, as before. In the browser (evidence `demo/`): the rehearsal 57 of 57, Difference 12 of 12,
+    Extend 13 of 13.

@@ -3577,11 +3577,20 @@ This subsection overrides the sections it names until they are updated (see "Sup
   columns, the plan of each prefix finds the first that fails. Not on every retype: a plan per edit is heavy.
 - **Pending is its own state:** a new `ERR_TYPING` marker, styled as pending on the canvas, never as an error; the
   nodes after it show the upstream marker (`ERR_SCHEMAS`), as for any invalid input. Running waits for typing.
-- **Retyping:** after an edit that changes an Extend's input signature or expressions (debounced), on load, and when
-  the model changes; all stale Extends in one batch (`batchLambdasRelationType`); an Extend after a pending one waits
-  for the next round. It is not an undo step: the typed node replaces the old one in every document that shares the
-  query, as source rechecks do. An answer for an older signature is dropped. Offline, a saved typing whose signature
-  matches stays in use; a stale one becomes `failed` with the engine's message.
+- **Retyping:** as soon as an Extend waits (a MobX reaction, without a delay): after an edit that changes its input
+  signature or expressions, on load, and when what the engine is given for its input changes though Cube's schema
+  doesn't (M6.11). Each typing records a digest of the input's emitted relation and the model (`upstream`, never
+  saved), and the editor's own query rule makes an Extend whose digest differs wait (`ERR_TYPING`), so Execute waits
+  too: an Extend above that gains or drops `->toOne()` changes what the engine types (Cube's schema says nullable
+  either way ✅), as does a model change. All waiting Extends go in one batch (`typeLambdas`); an Extend after a
+  pending one waits for the next round. It is not an undo step: the typed node replaces the one sent in the cube shown
+  and in each undo snapshot that gives the engine the same input. An answer for a node changed meanwhile is dropped.
+  Offline, a typing still current for its input (its signature, and its digest when it has one, as a loaded typing
+  doesn't) stays in use, with a warning, as a table keeps its saved columns; any other becomes `failed` with the
+  engine's message, and isn't retried until something changes.
+- **Closing the editor** (M6.11): a panel whose expressions aren't validated stays open when closed or when another
+  node is opened, with a notice to validate them or Cancel; Apply refuses them too, since a column's lambda comes only
+  from the engine. A background typing of the node the panel shows keeps the panel and its rows.
 - **Difference's shape:** `difference`, label `Compare Column Values`, ports `tds1` and `tds2` labelled Left and Right
   (spec §7.0); saved as `{leftColumns, rightColumns, differenceColumns}`, Join's key names (the spec's `joinColumns1`,
   `joinColumns2`); swapping its inputs swaps the key lists, as Join's does.

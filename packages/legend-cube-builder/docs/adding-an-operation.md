@@ -50,8 +50,9 @@ it).
   difference columns do.
 - A code editor is legend-lego's `CodeEditor` (language `pure`), with the error it should underline built from the
   engine's location (`CubeEngineError.location`, as a legend-graph `CompilationError` with its `SourceInformation`),
-  as `CubeExtendEditor` does. Parse a text under a source id that names the row, so a typing or plan error points back
-  to it.
+  as `CubeExtendEditor` does. Parse a text under a source id that names the row, so a parse error, and a typing error
+  on the text just parsed, point back to it. A stored lambda has no locations, and a plan has none either: the
+  Extend draft finds the row of a plan error by planning the columns' prefixes.
 - Rows that Group, Sort and Partition share: `CubeAggregationRowEditor` (column, function and output name, given its
   function list, the `AggregationUse` and what a function that takes no column shows in the column's place),
   `CubeSortRowEditor` (column, direction, move and remove; `getSortRowProblems`, `getTakenSortColumns`) and
