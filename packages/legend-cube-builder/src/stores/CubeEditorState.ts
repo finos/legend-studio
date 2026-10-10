@@ -46,6 +46,7 @@ import {
   observable,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
+import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
@@ -93,6 +94,12 @@ const isTypingText = (): boolean => {
     (element instanceof HTMLElement && element.isContentEditable)
   );
 };
+
+/** Focus is in the node editor, whose shortcuts give it back to the node (PLAN §11.6) */
+const isFocusInNodeEditor = (): boolean =>
+  document.activeElement?.closest(
+    `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
+  ) !== null && document.activeElement !== null;
 
 /** A source Cube types again to see drift: a table, or a data product's access point */
 type RecheckedSource = RelationalTableSource | DataProductAccessPointSource;
@@ -384,7 +391,11 @@ export class CubeEditorState implements CommandRegistrar {
         !this.nodeEditor.isHeld &&
         !this.execution.isRunning &&
         (this.execution.canExecute || this.hasEditsToApply),
-      action: () => this.executeEdited(),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.executeEdited(),
+          isFocusInNodeEditor(),
+        ),
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
@@ -393,7 +404,11 @@ export class CubeEditorState implements CommandRegistrar {
         !this.nodeEditor.isHeld &&
         (this.canUndo || this.hasEditsToApply) &&
         !isTypingText(),
-      action: () => this.undoEdited(),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.undoEdited(),
+          isFocusInNodeEditor(),
+        ),
     });
   }
 

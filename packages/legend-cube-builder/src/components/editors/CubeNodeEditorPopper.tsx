@@ -17,7 +17,9 @@
 import { BasePopper } from '@finos/legend-art';
 import { useStore } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { noop } from '@finos/legend-shared';
+import { autorun } from 'mobx';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeCanvasPosition } from '../canvas/CubeCanvasLayout.js';
 import {
@@ -25,6 +27,7 @@ import {
   isCubeNodeInView,
   toDOMRect,
 } from '../canvas/CubeNodeEditorAnchor.js';
+import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
 import { CubeNodeEditorPanel } from './CubeNodeEditorPanel.js';
 import { useCubeNodeEditorDismiss } from './useCubeNodeEditorDismiss.js';
 
@@ -57,6 +60,13 @@ const MODIFIERS = [
   },
 ];
 
+type CubePopperInstance = NonNullable<
+  Extract<
+    React.ComponentProps<typeof BasePopper>['popperRef'],
+    React.RefObject<unknown>
+  >['current']
+>;
+
 /**
  * The node editor, floating below its node (PLAN §11.6, spec §17.5): one
  * width for every node type, over the results grid if it must be, inside the
@@ -81,6 +91,35 @@ export const CubeNodeEditorPopper = observer(
     const position = nodeId === undefined ? undefined : positions.get(nodeId);
     const editorRef = useRef<HTMLDivElement>(null);
     useCubeNodeEditorDismiss(editorState, editorRef);
+    // MUI's layer mounts its content a render later: watch the element itself
+    const [editorElement, setEditorElement] = useState<HTMLDivElement | null>(
+      null,
+    );
+    const popperRef = useRef<CubePopperInstance>(null);
+    // the editor placed again whenever its own content changes its size, e.g. a
+    // row added, so it stays inside the window
+    useEffect(() => {
+      if (!editorElement || typeof ResizeObserver === 'undefined') {
+        return undefined;
+      }
+      const resizeObserver = new ResizeObserver(() => {
+        popperRef.current?.update().catch(noop());
+      });
+      resizeObserver.observe(editorElement);
+      return () => resizeObserver.disconnect();
+    }, [editorElement]);
+    // the keyboard goes back to the node a shortcut closed the editor of
+    useEffect(
+      () =>
+        autorun(() => {
+          const target = editorState.nodeEditor.nodeToFocus;
+          if (target !== undefined) {
+            returnFocusToCubeCanvasNode(target, null, document.activeElement);
+            editorState.nodeEditor.clearNodeToFocus();
+          }
+        }),
+      [editorState],
+    );
     // the popper reads the node's place whenever it positions the editor,
     // which it does on every render, so one anchor serves the whole pan or
     // zoom
@@ -116,6 +155,7 @@ export const CubeNodeEditorPopper = observer(
         open={true}
         // the editor inside is the dialog; the layer is no tooltip
         role="presentation"
+        popperRef={popperRef}
         anchorEl={anchor}
         placement="bottom"
         modifiers={MODIFIERS}
@@ -126,7 +166,13 @@ export const CubeNodeEditorPopper = observer(
         }}
       >
         {/* a right-click in the editor is the editor's, never the canvas's menu */}
-        <div ref={editorRef} onContextMenu={(event) => event.stopPropagation()}>
+        <div
+          ref={(element) => {
+            editorRef.current = element;
+            setEditorElement(element);
+          }}
+          onContextMenu={(event) => event.stopPropagation()}
+        >
           <CubeNodeEditorPanel editorState={editorState} />
         </div>
       </BasePopper>

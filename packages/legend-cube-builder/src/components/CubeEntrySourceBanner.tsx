@@ -47,7 +47,15 @@ export const CubeEntrySourceBanner = observer(
       >
         <span className="min-w-0 flex-1 break-words">
           <span className="font-medium">{CUBE_ENTRY_SOURCE_ERROR_TITLE}</span>{' '}
-          {entry.error}
+          {entry.error.message}
+          {entry.error.detail !== undefined && (
+            <details>
+              <summary className="cursor-pointer">Details</summary>
+              <pre className="whitespace-pre-wrap text-sm">
+                {entry.error.detail}
+              </pre>
+            </details>
+          )}
         </span>
         <CubeButton onClick={() => entry.dismissError()}>Dismiss</CubeButton>
       </div>

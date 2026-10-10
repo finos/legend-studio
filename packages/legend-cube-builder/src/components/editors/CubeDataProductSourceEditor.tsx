@@ -67,11 +67,22 @@ const CubeWarehouseControl = observer(
       }
     };
     // closing the node editor applies, as for every edit (PLAN §11.6)
-    const latestApply = useRef(apply);
-    latestApply.current = apply;
+    // without remembering it for the viewer's next cubes: Undo takes it back
+    const latest = useRef({ text, canApply });
+    latest.current = { text, canApply };
     useEffect(
       () =>
-        runtime.editorState.nodeEditor.addFlusher(() => latestApply.current()),
+        runtime.editorState.nodeEditor.addFlusher(
+          () => {
+            if (
+              latest.current.canApply &&
+              runtime.setWarehouse(latest.current.text, { remember: false })
+            ) {
+              setDraft(undefined);
+            }
+          },
+          { isPending: () => latest.current.canApply },
+        ),
       [runtime],
     );
     return (

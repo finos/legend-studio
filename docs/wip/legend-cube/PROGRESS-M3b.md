@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.13 done (docs and changeset); next M3b.14, the PR marked ready                                                                  |
+| Step   | M3b.15 done (verification); the PR is ready for review; next M3b.16, the rehearsal                                                  |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -33,8 +33,8 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.11** The node tooltip
 - [x] **M3b.12** Entry links for data product access points (can be cut)
 - [x] **M3b.13** Docs, guides and changeset
-- [ ] **M3b.14** PR description; marked ready for review
-- [ ] **M3b.15** Verification
+- [x] **M3b.14** PR description; marked ready for review
+- [x] **M3b.15** Verification
 - [ ] **M3b.16** Browser rehearsal
 - [ ] **M3b.17** A demo video of M3b's features (PLAN §11.3)
 - [ ] **M3b.18** Rebase on the latest master; fold PLAN §11.6's supersessions in
@@ -59,7 +59,8 @@ rebased ones.
 | M3b.10  | `c20ab24b4` | feat: open Legend Cube's source dialog with no tab from the empty canvas |
 | M3b.11  | `5c0521b07` | feat: show Legend Cube's node messages in a tooltip above the node       |
 | M3b.12  | `d4e937d1f` | feat: open Legend Cube on a data product access point from a link        |
-| M3b.13  | (this one)  | docs: guide Legend Cube's editors in the floating node editor            |
+| M3b.13  | `ced0bf124` | docs: guide Legend Cube's editors in the floating node editor            |
+| M3b.15  | (this one)  | fix: fix Legend Cube M3b's verification findings                         |
 
 ## Step notes
 
@@ -329,3 +330,32 @@ Tests: workflow `wf_a4d586cc-6b3`, 20 of 22 mutants killed:
   the tooltip's MUI memory against Jest's retries, and the Add Items helpers.
 - **`hosting.md`** gives `initialSource` and the link format.
 - **Also:** the README, the last "side panel" docstring, and the changeset's final text.
+
+**M3b.14 (2026-10-10).** #5657's description rewritten for review and marked ready, with Auto-fix on. #5655 closed
+without merging, so this PR's first commit carries the answers.
+
+**M3b.15 (2026-10-10).** Verification (`wf_ce506b61-8ab`, four area reviewers and a skeptic per finding, in the
+evidence folder's `verify-5657-result.json`) kept 11 findings, all reproduced, all fixed:
+
+- **Floating editor.**
+  - It is placed again when its own content grows (a ResizeObserver), so Apply and Cancel stay in the window.
+  - F9 and Ctrl+Z from inside it give the focus back to the node.
+- **Add Items.** A disabled source can be hovered and reached by the keyboard, so its reason shows. It uses
+  `aria-disabled` and `disabledItemsFocusable`, with a not-allowed cursor.
+- **Grid quick actions.** They wait while the editor holds uncommitted input (`hasPendingInput`), and treat any stale
+  result as stale. Their apply compares the whole document.
+- **Data product warehouse.** Text applied when the editor closes isn't remembered for the viewer's next cubes, so
+  Undo takes it back entirely.
+- **Entry links.**
+  - The error keeps the catalog's detail, shown on demand.
+  - A link refuses a cube that changed while it was read, and is interrupted (not misreported) when the dialog closed
+    or another product was picked meanwhile.
+  - The dialog's tab is left clean after a failure.
+  - Only the source's parameters leave the address.
+  - The public API is documented, and the parser is no longer exported.
+- **testing.md** shows how a page test gets the page's state.
+
+Tests: workflow `wf_9b0a6e64-1b1` wrote a test for each fix. Its review found two more problems: a product picked in
+the dialog while a link read its own, and the keyboard still skipping a disabled item. Both are fixed. The fix mutants
+are 5/5 (`m3b-verify/m3b15-fix-mutants.json`). Browser: the verification's probes pass (`m3b15/`), and every
+`check-m3b*.mjs` passes but the three recorded `check-m3b12` limits.

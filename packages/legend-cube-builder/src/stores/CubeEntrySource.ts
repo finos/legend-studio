@@ -29,6 +29,7 @@ import {
   CubeDataProductEnvironmentType,
 } from '../graph-manager/CubeDataProduct.js';
 import type { CubeDataProductCandidate } from '../graph-manager/CubeDataProductCatalog.js';
+import { CubeEngineError } from '../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import type { CubeDataProductTabError } from './source-picker/CubeDataProductTabState.js';
 
@@ -51,6 +52,36 @@ export interface CubeAccessPointEntry {
   readonly accessPoint: string;
 }
 
+/** Why a linked source couldn't be added: a line, with the rest on demand */
+export interface CubeEntrySourceError {
+  readonly message: string;
+  readonly detail?: string | undefined;
+}
+
+/** A failure carrying the source dialog's error as it is */
+class CubeEntrySourceFailure extends Error {
+  readonly error: CubeEntrySourceError;
+
+  constructor(error: CubeEntrySourceError) {
+    super(error.message);
+    this.error = error;
+  }
+}
+
+const toEntrySourceError = (error: unknown): CubeEntrySourceError => {
+  if (error instanceof CubeEntrySourceFailure) {
+    return error.error;
+  }
+  if (error instanceof CubeEngineError) {
+    return {
+      message: error.firstLine,
+      detail: error.detail !== error.firstLine ? error.detail : undefined,
+    };
+  }
+  assertErrorThrown(error);
+  return { message: error.message };
+};
+
 /** The banner's title over the reason a linked source couldn't be added (spec §17.13) */
 export const CUBE_ENTRY_SOURCE_ERROR_TITLE = 'Error resolving source!';
 
@@ -61,6 +92,7 @@ export const CUBE_ENTRY_SOURCE_MESSAGE = {
     `"${sourceId}" doesn't name an access point: it takes <class>/<data product id>/<deployment id>/<access point group>/<access point>.`,
   NO_CATALOG: 'This page has no data products to open.',
   NOT_NEW: 'A link opens a source on a new cube only.',
+  INTERRUPTED: 'Opening the linked source was interrupted; open it again.',
   NOT_FOUND: (dataProductId: string, deploymentId: string): string =>
     `No data product "${dataProductId}" is deployed as "${deploymentId}".`,
   NO_ACCESS_POINT: (group: string, accessPoint: string): string =>
@@ -129,16 +161,22 @@ export class CubeEntrySourceState {
   readonly editorState: CubeEditorState;
   isOpening = false;
   /** Why the linked source couldn't be added, until dismissed */
-  error: string | undefined;
+  error: CubeEntrySourceError | undefined;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
       isOpening: observable,
-      error: observable,
+      error: observable.ref,
       open: flow,
       dismissError: action,
     });
     this.editorState = editorState;
+  }
+
+  /** The cube is still new: empty, editable and on no model */
+  private isNewCube(): boolean {
+    const { document, readOnly } = this.editorState;
+    return !readOnly && !document.context && document.query.isEmpty;
   }
 
   *open(entry: CubeEntrySource): GeneratorFn<void> {
@@ -147,13 +185,10 @@ export class CubeEntrySourceState {
     }
     this.isOpening = true;
     this.error = undefined;
+    const tab = this.editorState.sourcePicker.dataProductTab;
+    let picked = false;
     try {
-      const { document } = this.editorState;
-      if (
-        this.editorState.readOnly ||
-        document.context ||
-        !document.query.isEmpty
-      ) {
+      if (!this.isNewCube()) {
         throw new Error(CUBE_ENTRY_SOURCE_MESSAGE.NOT_NEW);
       }
       if (entry.sourceType !== DataProductAccessPointSource.TYPE) {
@@ -165,7 +200,6 @@ export class CubeEntrySourceState {
       if (!location) {
         throw new Error(CUBE_ENTRY_SOURCE_MESSAGE.BAD_ID(entry.sourceId));
       }
-      const tab = this.editorState.sourcePicker.dataProductTab;
       const { catalog } = tab;
       if (!catalog) {
         throw new Error(CUBE_ENTRY_SOURCE_MESSAGE.NO_CATALOG);
@@ -189,9 +223,15 @@ export class CubeEntrySourceState {
       }
       // the tab adds it, as a pick in the dialog would
       tab.selectCandidate(candidate);
+      picked = true;
       yield when(() => !tab.isDescribing);
       if (tab.error) {
-        throw new Error(tab.error.message);
+        throw new CubeEntrySourceFailure(tab.error);
+      }
+      if (!tab.description || tab.candidate !== candidate) {
+        // e.g. the source dialog was opened meanwhile, and closed, or another
+        // product picked in it
+        throw new Error(CUBE_ENTRY_SOURCE_MESSAGE.INTERRUPTED);
       }
       tab.selectAccessPoint(location.accessPointGroup, location.accessPoint);
       if (!tab.accessPoint) {
@@ -202,6 +242,13 @@ export class CubeEntrySourceState {
           ),
         );
       }
+      if (tab.accessPoint.disabledReason !== undefined) {
+        throw new Error(tab.accessPoint.disabledReason);
+      }
+      // the user may have added a source while the product was read
+      if (!this.isNewCube()) {
+        throw new Error(CUBE_ENTRY_SOURCE_MESSAGE.NOT_NEW);
+      }
       tab.setWarehouse(
         this.editorState.dataProductRuntime.rememberedWarehouse ??
           CUBE_DEFAULT_CONSUMER_WAREHOUSE,
@@ -210,18 +257,16 @@ export class CubeEntrySourceState {
       if (!added) {
         // the confirm may have set it since it was read above
         const confirmError = tab.error as CubeDataProductTabError | undefined;
-        throw new Error(
-          confirmError?.message ??
-            tab.accessPoint.disabledReason ??
-            CUBE_ENTRY_SOURCE_MESSAGE.NO_ACCESS_POINT(
-              location.accessPointGroup,
-              location.accessPoint,
-            ),
-        );
+        throw confirmError
+          ? new CubeEntrySourceFailure(confirmError)
+          : new Error(CUBE_ENTRY_SOURCE_MESSAGE.INTERRUPTED);
       }
     } catch (error) {
-      assertErrorThrown(error);
-      this.error = error.message;
+      this.error = toEntrySourceError(error);
+      if (picked) {
+        // the dialog's tab opens clean, not on the link's product
+        tab.selectCandidate(undefined);
+      }
     } finally {
       this.isOpening = false;
     }

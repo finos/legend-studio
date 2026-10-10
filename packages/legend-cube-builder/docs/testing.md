@@ -21,8 +21,9 @@ run some files, e.g. `TEST_GROUP=core yarn workspace @finos/legend-cube-builder 
 - A test of one part of the page makes the state itself, `new CubeEditorState(host, document)`, and renders the part
   with it, e.g. `<CubeCanvas editorState={editorState} />`, which floats the node editor from the canvas when a node
   is clicked (as `CubeJoinEditor.test.tsx` does). `TEST__importDocument(editorState, document)` then imports a cube and waits
-  for its tables to be typed again, so nothing changes after the test. A `<CubeEditor>` test has no handle on the
-  state, so it imports through the Import dialog.
+  for its tables to be typed again, so nothing changes after the test. A `<CubeEditor>` test gets the page's state by
+  spying on `CubeEditorState.prototype.registerCommands`, which the page calls once, and reading the spy's
+  `mock.contexts[0]` (as `CubeCommands.test.tsx`'s `renderPage` does); it imports a cube through the Import dialog.
 - `TEST__findCanvasNode(id)`, `TEST__getCanvasNodes()` and `TEST__getCanvasNodeTooltip(node)` read the canvas; the
   tooltip's text is the node's `aria-description`.
 - `TEST__openAddItems()` and `TEST__chooseAddItem(label)` use the header's Add Items, e.g. to open the source dialog on

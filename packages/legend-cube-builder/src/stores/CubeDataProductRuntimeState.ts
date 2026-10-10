@@ -207,7 +207,7 @@ export class CubeDataProductRuntimeState {
    * name, the warehouse already used, or a cube that can't be edited changes
    * nothing
    */
-  setWarehouse(text: string): boolean {
+  setWarehouse(text: string, options?: { remember?: boolean }): boolean {
     const warehouse = text.trim();
     const { context } = this.editorState.document;
     if (
@@ -224,7 +224,9 @@ export class CubeDataProductRuntimeState {
         model: withCubeDataProductWarehouse(context.model, warehouse),
       }),
     );
-    this.remember(warehouse);
+    if (options?.remember !== false) {
+      this.remember(warehouse);
+    }
     return true;
   }
 }

@@ -86,10 +86,12 @@ export class CubeNodeEditorState {
   draft: CubeNodeDraft | undefined;
   /** Why the panel closed by itself, until it opens again or is dismissed */
   notice: string | undefined;
+  /** A node the keyboard goes back to, once its editor closed from the keyboard */
+  nodeToFocus: string | undefined;
   /** How many dropdowns, pickers or dialogs opened from the editor hold it open */
   private holds = 0;
   /** What commits the editor's pending input, e.g. a field's text not yet stored, in order */
-  private flushers: (() => void)[] = [];
+  private flushers: { flush: () => void; isPending: () => boolean }[] = [];
 
   private readonly disposeSync: IReactionDisposer;
 
@@ -98,6 +100,9 @@ export class CubeNodeEditorState {
       nodeId: observable,
       nodeKey: observable,
       holds: observable,
+      nodeToFocus: observable,
+      runFromKeyboard: action,
+      clearNodeToFocus: action,
       isHeld: computed,
       holdOpen: action,
       finish: action,
@@ -405,13 +410,29 @@ export class CubeNodeEditorState {
    * that removes it. One asked to run first runs before the others: the
    * editor's blur, so a field's text is stored before what reads it.
    */
-  addFlusher(flush: () => void, options?: { first?: boolean }): () => void {
+  addFlusher(
+    flush: () => void,
+    options?: {
+      first?: boolean;
+      /** Whether it has input to commit, e.g. text typed and not applied */
+      isPending?: () => boolean;
+    },
+  ): () => void {
+    const flusher = { flush, isPending: options?.isPending ?? (() => false) };
     this.flushers = options?.first
-      ? [flush, ...this.flushers]
-      : [...this.flushers, flush];
+      ? [flusher, ...this.flushers]
+      : [...this.flushers, flusher];
     return () => {
-      this.flushers = this.flushers.filter((other) => other !== flush);
+      this.flushers = this.flushers.filter((other) => other !== flusher);
     };
+  }
+
+  /**
+   * Whether the editor holds input a flusher would commit on closing, e.g. a
+   * warehouse typed and not applied; read when asked, not observed
+   */
+  hasPendingInput(): boolean {
+    return this.flushers.some((flusher) => flusher.isPending());
   }
 
   /**
@@ -427,7 +448,7 @@ export class CubeNodeEditorState {
     if (this.isHeld) {
       return 'held';
     }
-    this.flushers.forEach((flush) => flush());
+    this.flushers.forEach((flusher) => flusher.flush());
     const { edited } = this;
     if (
       edited !== undefined &&
@@ -454,6 +475,23 @@ export class CubeNodeEditorState {
    */
   finishApplied(): boolean {
     return this.finishWith() === 'closed';
+  }
+
+  /**
+   * Runs what a shortcut does (F9, Ctrl+Z), which may finish the editor: when
+   * it closes the editor while the keyboard was in it, the keyboard goes back
+   * to the node (PLAN §11.6), as on Escape. The canvas takes the request.
+   */
+  runFromKeyboard(run: () => void, focusWasInEditor: boolean): void {
+    const { nodeId } = this;
+    run();
+    if (focusWasInEditor && nodeId !== undefined && this.nodeId === undefined) {
+      this.nodeToFocus = nodeId;
+    }
+  }
+
+  clearNodeToFocus(): void {
+    this.nodeToFocus = undefined;
   }
 
   /** Closes the panel, dropping the draft */

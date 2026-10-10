@@ -16,7 +16,13 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import { DataProductAccessPointSource } from '@finos/legend-cube';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import {
+  fireEvent,
+  getDefaultNormalizer,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -27,6 +33,10 @@ import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.j
 import { FAKE_DATA_PRODUCT_CANDIDATES } from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
 import type { CubeDataProductCandidate } from '../../graph-manager/CubeDataProductCatalog.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../graph-manager/CubeEngine.js';
 import {
   type CubeEntrySource,
   formatCubeAccessPointEntryId,
@@ -112,6 +122,7 @@ describe('Entry link', () => {
         'No data product "NO_SUCH_PRODUCT" is deployed as "deployment-orders_product".',
       ),
     ).toBeDefined();
+    expect(within(banner).queryByText('Details')).toBeNull();
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     fireEvent.click(within(banner).getByRole('button', { name: 'Dismiss' }));
     await waitFor(() =>
@@ -119,5 +130,32 @@ describe('Entry link', () => {
         screen.queryByTestId(LEGEND_CUBE_TEST_ID.ENTRY_SOURCE_ERROR),
       ).toBeNull(),
     );
+  });
+
+  test("Shows an engine error's first line, with its whole message under a Details disclosure", async () => {
+    const detail =
+      'The lakehouse could not be reached\nConnection refused: lakehouse.test:443\nRetried 3 times';
+    await renderPage(linkTo('ORDERS_PRODUCT'), ({ dataProducts }) => {
+      dataProducts.describe.mockRejectedValueOnce(
+        new CubeEngineError(CubeEngineErrorKind.NETWORK, detail),
+      );
+    });
+    const banner = await screen.findByTestId(
+      LEGEND_CUBE_TEST_ID.ENTRY_SOURCE_ERROR,
+    );
+    expect(
+      within(banner).getByText('The lakehouse could not be reached'),
+    ).toBeDefined();
+    const disclosure = within(banner).getByText('Details').closest('details');
+    expect(disclosure).not.toBeNull();
+    expect(
+      within(disclosure as HTMLElement).getByText(detail, {
+        normalizer: getDefaultNormalizer({
+          trim: false,
+          collapseWhitespace: false,
+        }),
+      }),
+    ).toBeDefined();
+    expect(TEST__getCanvasNodes()).toHaveLength(0);
   });
 });

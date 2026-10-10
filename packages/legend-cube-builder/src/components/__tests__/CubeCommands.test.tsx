@@ -27,6 +27,8 @@ import {
   type IR,
   Limit,
   Query,
+  Sort,
+  SortDirection,
 } from '@finos/legend-cube';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
@@ -457,6 +459,96 @@ describe('Cube keyboard shortcuts', () => {
     expect(within(graph()).getByText<HTMLButtonElement>('Undo').disabled).toBe(
       false,
     );
+  });
+
+  test('Gives the keyboard back to the node when F9 closes its editor from inside it', async () => {
+    const { fake } = await renderPage(limitDocument(10));
+    const wrapper = async (): Promise<HTMLElement> => {
+      await TEST__findCanvasNode('limit101');
+      return document.querySelector<HTMLElement>(
+        '.react-flow__node[data-id="limit101"]',
+      ) as HTMLElement;
+    };
+    (await wrapper()).focus();
+    fireEvent.keyDown(await wrapper(), { key: 'Enter' });
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const size = sizeField();
+    size.focus();
+    fireEvent.change(size, { target: { value: '5' } });
+    pressF9(size);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    await waitFor(async () =>
+      expect(document.activeElement).toBe(await wrapper()),
+    );
+    // and again, from the same node
+    fireEvent.keyDown(await wrapper(), { key: 'Enter' });
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const again = sizeField();
+    again.focus();
+    fireEvent.change(again, { target: { value: '6' } });
+    pressF9(again);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    await waitFor(async () =>
+      expect(document.activeElement).toBe(await wrapper()),
+    );
+  });
+
+  test('Gives the keyboard back to the node when Ctrl+Z closes its editor from a select in it', async () => {
+    const { editorState } = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            Sort.byColumn('sort101', 'ORDER_ID'),
+          ],
+          [new Connection('relational101', 'sort101', 'tds')],
+          'sort101',
+        ),
+      }),
+    );
+    const sort = editorState.document.query.getNode('sort101');
+    const wrapper = async (): Promise<HTMLElement> => {
+      await TEST__findCanvasNode('sort101');
+      return document.querySelector<HTMLElement>(
+        '.react-flow__node[data-id="sort101"]',
+      ) as HTMLElement;
+    };
+    (await wrapper()).focus();
+    fireEvent.keyDown(await wrapper(), { key: 'Enter' });
+    const direction = within(
+      await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),
+    ).getByLabelText('Sort direction 1');
+    // not a text field, whose own undo Ctrl+Z would be
+    expect(direction).toBeInstanceOf(HTMLSelectElement);
+    direction.focus();
+    fireEvent.change(direction, { target: { value: SortDirection.DESC } });
+    pressUndo(direction);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.document.query.getNode('sort101')).toBe(sort);
+    await waitFor(async () =>
+      expect(document.activeElement).toBe(await wrapper()),
+    );
+  });
+
+  test('Leaves the keyboard where it is when F9 closes the editor with the focus outside it', async () => {
+    const { fake } = await renderPage(limitDocument(10));
+    await typeSize('5');
+    // on the page, then on a button outside the editor
+    (document.activeElement as HTMLElement | null)?.blur();
+    expect(document.activeElement).toBe(document.body);
+    pressF9();
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(document.activeElement).toBe(document.body);
+    await typeSize('3');
+    const undo = within(graph()).getByText<HTMLButtonElement>('Undo');
+    undo.focus();
+    pressF9(undo);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(document.activeElement).toBe(undo);
   });
 
   test('Takes its commands away when the page closes', async () => {

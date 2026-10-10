@@ -32,6 +32,7 @@ import {
   CUBE_SNAPSHOT_VERSION_LABEL,
   getCubeWarehouseErrorHint,
 } from '../../../__lib__/LegendCubeDataProductLabels.js';
+import { CUBE_QUICK_ACTION_DISABLED_REASON } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
@@ -46,12 +47,20 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../../../graph-manager/CubeEngine.js';
+import { getCubeRememberedWarehouse } from '../../../stores/CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import { getCubeGridQuickActions } from '../../../stores/CubeGridQuickActions.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 import { CubeGridRegion } from '../../grid/CubeGridRegion.js';
 
-/** A data product cube of one access point, daily_orders, on CUBE_WH */
-const dataProductCube = (versionId: string): CubeDocument =>
+/**
+ * A data product cube of one access point, daily_orders, on CUBE_WH, or
+ * without a warehouse of its own, on the viewer's remembered one
+ */
+const dataProductCube = (
+  versionId: string,
+  ownWarehouse = true,
+): CubeDocument =>
   new CubeDocument({
     context: {
       model: createCubeDataProductModel({
@@ -59,7 +68,7 @@ const dataProductCube = (versionId: string): CubeDocument =>
         artifactId: 'orders-products',
         versionId,
         environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
-        warehouse: 'CUBE_WH',
+        warehouse: ownWarehouse ? 'CUBE_WH' : undefined,
       }),
       runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
     },
@@ -83,7 +92,11 @@ const dataProductCube = (versionId: string): CubeDocument =>
   });
 
 const renderPanel = async (
-  options: { versionId?: string; readOnly?: boolean } = {},
+  options: {
+    versionId?: string;
+    readOnly?: boolean;
+    ownWarehouse?: boolean;
+  } = {},
 ): Promise<
   ReturnType<typeof TEST__createCubeHost> & { editorState: CubeEditorState }
 > => {
@@ -91,7 +104,7 @@ const renderPanel = async (
   const { host } = created;
   const editorState = new CubeEditorState(
     host,
-    dataProductCube(options.versionId ?? '1.4.0'),
+    dataProductCube(options.versionId ?? '1.4.0', options.ownWarehouse),
   );
   runInAction(() => {
     editorState.readOnly = options.readOnly ?? false;
@@ -202,6 +215,59 @@ describe('Source panel of a data product cube', () => {
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
     expect(editorState.document.context?.model.warehouse).toBe('CUBE_WH');
     expect(editorState.history).toHaveLength(0);
+  });
+
+  test("Holds the grid's quick actions while a warehouse is typed but not applied, which closing the editor would commit", async () => {
+    const { editorState, fake } = await renderPanel();
+    fake.execute.mockResolvedValueOnce({
+      columns: FAKE_DAILY_ORDERS_SCHEMA.names(),
+      rows: [['1', 'ALFKI', 'EMEA', '12.34']],
+      sql: [],
+      durationMs: 1,
+    });
+    await act(() => flowResult(editorState.execution.execute()));
+    const reasons = (): (string | undefined)[] =>
+      getCubeGridQuickActions(editorState, 2, 'EMEA').map(
+        (action) => action.disabledReason,
+      );
+    expect(editorState.nodeEditor.hasPendingInput()).toBe(false);
+    expect(reasons()).toEqual([undefined, undefined, undefined]);
+    fireEvent.change(warehouseInput(), { target: { value: 'TYPED_WH' } });
+    expect(editorState.nodeEditor.hasPendingInput()).toBe(true);
+    expect(editorState.hasEditsToApply).toBe(false);
+    expect(reasons()).toEqual([
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.EDITING,
+    ]);
+  });
+
+  test('Remembers no warehouse the closing editor commits, so Undo takes it back entirely, while Apply remembers it', async () => {
+    const { editorState, host } = await renderPanel({ ownWarehouse: false });
+    const runtime = editorState.dataProductRuntime;
+    const remembered = (): string | undefined =>
+      getCubeRememberedWarehouse(host.applicationStore.userDataService);
+    act(() => runtime.remember('MY_WH'));
+    expect(warehouseInput().value).toBe('MY_WH');
+    fireEvent.change(warehouseInput(), { target: { value: 'TYPED_WH' } });
+    act(() => {
+      editorState.nodeEditor.finish();
+    });
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.document.context?.model.warehouse).toBe('TYPED_WH');
+    expect(runtime.rememberedWarehouse).toBe('MY_WH');
+    expect(remembered()).toBe('MY_WH');
+    // the cube runs on the remembered warehouse again
+    act(() => editorState.undo());
+    expect(editorState.document.context?.model.warehouse).toBeUndefined();
+    expect(runtime.effectiveWarehouse).toBe('MY_WH');
+    fireEvent.click(await TEST__findCanvasNode('dataProductAccessPoint101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(warehouseInput().value).toBe('MY_WH');
+    fireEvent.change(warehouseInput(), { target: { value: 'APPLIED_WH' } });
+    fireEvent.click(applyButton());
+    expect(runtime.rememberedWarehouse).toBe('APPLIED_WH');
+    expect(remembered()).toBe('APPLIED_WH');
   });
 
   test("Links the access point's group to its product's page in the marketplace", async () => {

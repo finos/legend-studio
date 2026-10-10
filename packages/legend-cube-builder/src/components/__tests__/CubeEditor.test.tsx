@@ -976,6 +976,52 @@ describe("The header's Add Items", () => {
     ]);
   });
 
+  test('Lets the keyboard reach a disabled source item, to read why', async () => {
+    await renderEditor(slice());
+    await TEST__findCanvasNode('join101');
+    const menu = await TEST__openAddItems();
+    await waitFor(() =>
+      expect(menu.contains(document.activeElement)).toBe(true),
+    );
+    for (
+      let presses = 0;
+      presses < 4 &&
+      document.activeElement?.textContent !== 'Data Product (BETA)';
+      presses++
+    ) {
+      fireEvent.keyDown(document.activeElement as Element, {
+        key: 'ArrowDown',
+      });
+    }
+    expect(document.activeElement?.textContent).toBe('Data Product (BETA)');
+    expect(document.activeElement?.getAttribute('title')).toBe(
+      OTHER_SOURCE_KIND_TITLE,
+    );
+    await TEST__closeAddItems();
+  });
+
+  test('Keeps a disabled source item hoverable, showing why, and does nothing on its click', async () => {
+    const editorState = await renderEditor(slice());
+    await TEST__findCanvasNode('join101');
+    const { query } = editorState.document;
+    const menu = await TEST__openAddItems();
+    const dataProduct = within(menu).getByRole('menuitem', {
+      name: 'Data Product (BETA)',
+      hidden: true,
+    });
+    // not MUI's disabled, which takes the pointer, and so the tooltip, away
+    expect(dataProduct.classList.contains('Mui-disabled')).toBe(false);
+    expect(dataProduct.getAttribute('aria-disabled')).toBe('true');
+    expect(dataProduct.title).toBe(OTHER_SOURCE_KIND_TITLE);
+    fireEvent.click(dataProduct);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(editorState.document.query).toBe(query);
+    expect(editorState.history).toHaveLength(0);
+    // the menu stays open on it
+    expect(screen.getByRole('menu')).toBe(menu);
+    await TEST__closeAddItems();
+  });
+
   test('Lists no Data Product item on a host without a catalog', async () => {
     await renderEditor(slice(), (host) => ({
       ...host,

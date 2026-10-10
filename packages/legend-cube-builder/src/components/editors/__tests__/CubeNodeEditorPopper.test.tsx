@@ -321,4 +321,72 @@ describe('Placing the floating node editor', () => {
     });
     expect(popperRoot(editor())?.style.visibility).not.toBe('hidden');
   });
+
+  test('Places the editor again when its own content changes its size, watching it only while it is open', async () => {
+    /** Each observer made, with what it watches */
+    const observers: {
+      callback: ResizeObserverCallback;
+      observed: Element[];
+      disconnect: jest.Mock;
+    }[] = [];
+    const original = window.ResizeObserver;
+    window.ResizeObserver = class {
+      readonly record: (typeof observers)[number];
+      constructor(callback: ResizeObserverCallback) {
+        this.record = { callback, observed: [], disconnect: jest.fn() };
+        observers.push(this.record);
+      }
+      observe(target: Element): void {
+        this.record.observed.push(target);
+      }
+      unobserve(): void {
+        // nothing to stop
+      }
+      disconnect(): void {
+        this.record.disconnect();
+      }
+    } as unknown as typeof ResizeObserver;
+    restores.push(() => {
+      window.ResizeObserver = original;
+    });
+    await render();
+    stubLayout({ left: 100, top: 50, width: 800, height: 400 });
+    const opened = await openEditor('join101');
+    const root = popperRoot(opened);
+    expect(root?.style.transform).toBe('translate(480px, 182px)');
+    const watching = observers.find(({ observed }) =>
+      observed.includes(opened.parentElement as Element),
+    );
+    expect(watching).toBeDefined();
+    // the canvas moved: nothing else re-places the editor until it grows
+    jest
+      .spyOn(
+        document.querySelector('.react-flow') as Element,
+        'getBoundingClientRect',
+      )
+      .mockReturnValue({
+        left: 300,
+        top: 50,
+        width: 800,
+        height: 400,
+        x: 300,
+        y: 50,
+        right: 1100,
+        bottom: 450,
+        toJSON: () => undefined,
+      } as DOMRect);
+    expect(root?.style.transform).toBe('translate(480px, 182px)');
+    await act(async () => {
+      watching?.callback([], {} as ResizeObserver);
+      await Promise.resolve();
+    });
+    await waitFor(() =>
+      expect(root?.style.transform).toBe('translate(680px, 182px)'),
+    );
+    expect(watching?.disconnect).not.toHaveBeenCalled();
+    fireEvent.click(
+      within(editor()).getByRole('button', { name: 'Close the editor' }),
+    );
+    expect(watching?.disconnect).toHaveBeenCalled();
+  });
 });

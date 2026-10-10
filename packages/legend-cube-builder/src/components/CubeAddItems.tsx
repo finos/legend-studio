@@ -16,6 +16,7 @@
 
 import {
   CaretDownIcon,
+  clsx,
   DropdownMenu,
   DropdownMenuItem,
   MenuContentDivider,
@@ -120,12 +121,19 @@ export const CubeAddItemsMenu = observer(
     const menuItem = (item: CubeAddItem): React.ReactNode => (
       <DropdownMenuItem
         key={item.definition.type}
-        className="flex items-center gap-2 px-2 text-base"
-        disabled={item.disabled}
+        className={clsx(
+          'flex items-center gap-2 px-2 text-base',
+          item.disabled && '!cursor-not-allowed opacity-50',
+        )}
+        // not MUI's disabled, which takes the pointer away: a disabled
+        // source's reason shows on hover
+        aria-disabled={item.disabled}
         title={item.title}
         onClick={() => {
-          closeMenu();
-          item.add();
+          if (!item.disabled) {
+            closeMenu();
+            item.add();
+          }
         }}
       >
         <CubeNodeIcon icon={item.definition.icon} />
@@ -150,7 +158,17 @@ export const CubeAddItemsMenu = observer(
           Add Items
           <CaretDownIcon aria-hidden={true} />
         </button>
-        <DropdownMenu {...menuProps} menuProps={{ elevation: 7 }}>
+        <DropdownMenu
+          {...menuProps}
+          menuProps={{
+            elevation: 7,
+            slotProps: {
+              root: { slotProps: { backdrop: { invisible: true } } },
+              // the keyboard reaches a disabled source too, to read why
+              list: { disabledItemsFocusable: true },
+            },
+          }}
+        >
           {sources.map(menuItem)}
           <MenuContentDivider />
           {transforms.map(menuItem)}

@@ -24,7 +24,6 @@ export {
   type CubeAccessPointEntry,
   type CubeEntrySource,
   formatCubeAccessPointEntryId,
-  parseCubeAccessPointEntryId,
 } from './stores/CubeEntrySource.js';
 
 export * from './graph-manager/CubeConnectionExplorer.js';

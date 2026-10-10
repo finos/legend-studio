@@ -94,10 +94,10 @@ export const getCubeGridQuickActions = (
   const rule = buildQuickFilterRule(column.name, column.type, cell);
   // what keeps both from being used, in order
   const blocked =
-    result.query !== query
+    result.query !== query || execution.isStale
       ? CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS
       : // choosing would apply the edits first, leaving these rows stale
-        editorState.hasEditsToApply
+        editorState.hasEditsToApply || editorState.nodeEditor.hasPendingInput()
         ? CUBE_QUICK_ACTION_DISABLED_REASON.EDITING
         : execution.isRunning
           ? CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING
@@ -128,7 +128,7 @@ export const getCubeGridQuickActions = (
       hint: undefined,
       apply: () => {
         // as the menu found it: nothing changed since it opened
-        if (sortReason === undefined && editorState.document.query === query) {
+        if (sortReason === undefined && editorState.document === document) {
           editorState.addConfiguredNode(
             Sort.byColumn(query.generateId(Sort.TYPE), column.name),
             afterId,
@@ -141,7 +141,7 @@ export const getCubeGridQuickActions = (
       disabledReason: groupReason,
       hint: undefined,
       apply: () => {
-        if (groupReason === undefined && editorState.document.query === query) {
+        if (groupReason === undefined && editorState.document === document) {
           editorState.addConfiguredNode(
             new Group(
               query.generateId(Group.TYPE),
@@ -171,7 +171,7 @@ export const getCubeGridQuickActions = (
         if (
           filterReason === undefined &&
           rule &&
-          editorState.document.query === query
+          editorState.document === document
         ) {
           editorState.addConfiguredNode(
             new Filter(query.generateId(Filter.TYPE), rule),

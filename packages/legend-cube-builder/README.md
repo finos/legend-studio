@@ -38,7 +38,9 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
 
 `src/index.ts` exports:
 
-- `CubeEditor`, the page, and `CubeHost`, what a host gives it;
+- `CubeEditor`, the page, and `CubeHost`, what a host gives it; `CubeEntrySource`, a source a link asks the page to
+  start with (`initialSource`), and `formatCubeAccessPointEntryId` with its `CubeAccessPointEntry`, which write a
+  data product access point's link id ([hosting.md](./docs/hosting.md));
 - the engine port, everything in `CubeEngine.ts` (`CubeEngine`, `CubeEngineError`, `CubeEngineErrorKind`,
   `CubeResult`, `CubeModelOutline`, …), with `buildCubeEngine` and `CubeEngineConfig`;
 - the connection explorer port, everything in `CubeConnectionExplorer.ts`, with `buildCubeConnectionExplorer`;

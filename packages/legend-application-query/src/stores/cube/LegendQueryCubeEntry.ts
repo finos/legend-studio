@@ -50,8 +50,9 @@ export const readLegendQueryCubeEntry = (
 };
 
 /**
- * Takes a link's source out of the address, whether or not it resolves, and
- * keeps a saved query's id (U9: the address then names the cube shown)
+ * Takes a link's source out of the address, whether or not it resolves,
+ * keeping the address's other parameters and its hash, a saved query's id
+ * among them (U9: the address then names the cube shown)
  */
 export const stripLegendQueryCubeEntry = (
   navigator: NavigationService['navigator'],
@@ -63,11 +64,11 @@ export const stripLegendQueryCubeEntry = (
   ) {
     return;
   }
-  const queryId = parameters.get(LEGEND_QUERY_CUBE_PARAMETER.QUERY_ID);
-  const location = navigator.getCurrentLocation();
+  // only the source's parameters: the rest, a saved query's id included, stay
+  parameters.delete(LEGEND_QUERY_CUBE_PARAMETER.SOURCE_TYPE);
+  parameters.delete(LEGEND_QUERY_CUBE_PARAMETER.SOURCE_ID);
+  const rest = parameters.toString();
   navigator.updateCurrentLocation(
-    queryId === null
-      ? location
-      : `${location}?${LEGEND_QUERY_CUBE_PARAMETER.QUERY_ID}=${encodeURIComponent(queryId)}`,
+    `${navigator.getCurrentLocation()}${rest ? `?${rest}` : ''}${new URL(navigator.getCurrentAddress()).hash}`,
   );
 };

@@ -82,8 +82,30 @@ describe("The Cube page's entry link", () => {
     );
     expect(readLegendQueryCubeEntry(navigator)).toBeUndefined();
     stripLegendQueryCubeEntry(navigator);
+    expect(updateCurrentLocation).toHaveBeenCalledTimes(1);
+    const location = new URL(
+      String(updateCurrentLocation.mock.calls[0]?.[0]),
+      'http://localhost',
+    );
+    expect(location.pathname).toBe('/cube');
+    expect([...location.searchParams]).toEqual([['queryId', 'my query&id']]);
+  });
+
+  test("Strips only the source's parameters, keeping the others and the hash", () => {
+    const { navigator, updateCurrentLocation } = createNavigator(
+      '?a=1&sourceType=x&sourceId=y#zone',
+    );
+    stripLegendQueryCubeEntry(navigator);
+    expect(updateCurrentLocation).toHaveBeenCalledWith('/cube?a=1#zone');
+  });
+
+  test('Keeps a saved query among the other parameters it keeps', () => {
+    const { navigator, updateCurrentLocation } = createNavigator(
+      '?a=1&sourceType=x&sourceId=y&queryId=q&b=2#zone',
+    );
+    stripLegendQueryCubeEntry(navigator);
     expect(updateCurrentLocation).toHaveBeenCalledWith(
-      `/cube?queryId=${encodeURIComponent('my query&id')}`,
+      '/cube?a=1&queryId=q&b=2#zone',
     );
   });
 

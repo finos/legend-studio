@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   DataProductAccessPointSource,
   RelationalTableSource,
 } from '@finos/legend-cube';
-import { flowResult, runInAction } from 'mobx';
+import { flowResult, runInAction, when } from 'mobx';
+import {
+  northwindTable,
+  ORDERS_COLUMNS,
+} from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
   FAKE_DAILY_ORDERS_SCHEMA,
   FAKE_DATA_PRODUCT_CANDIDATES,
+  fakeDescriptionOf,
 } from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
   createCubeDataProductModel,
@@ -35,6 +40,10 @@ import type {
   CubeDataProductCandidate,
   CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../graph-manager/CubeEngine.js';
 import { rememberCubeWarehouse } from '../CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import {
@@ -79,6 +88,18 @@ const deferred = <T>(): {
     resolve = onResolve;
   });
   return { promise, resolve };
+};
+
+/** Holds the product's description until the returned gate is opened */
+const holdDescribe = (
+  dataProducts: ReturnType<typeof setUp>['dataProducts'],
+): (() => void) => {
+  const gate = deferred<void>();
+  dataProducts.describe.mockImplementationOnce(async (product) => {
+    await gate.promise;
+    return fakeDescriptionOf(product);
+  });
+  return () => gate.resolve();
 };
 
 /** The cube has no source, no model and nothing to undo */
@@ -232,7 +253,9 @@ describe('Opening a linked access point', () => {
     await flowResult(entry.open(linkTo()));
     expect(state.document.query.nodes).toHaveLength(1);
     await flowResult(entry.open(linkTo()));
-    expect(entry.error).toBe('A link opens a source on a new cube only.');
+    expect(entry.error?.message).toBe(
+      'A link opens a source on a new cube only.',
+    );
     expect(state.document.query.nodes).toHaveLength(1);
     expect(dataProducts.search).toHaveBeenCalledTimes(1);
     const readOnly = setUp();
@@ -240,7 +263,7 @@ describe('Opening a linked access point', () => {
       readOnly.state.readOnly = true;
     });
     await flowResult(readOnly.entry.open(linkTo()));
-    expect(readOnly.entry.error).toBe(
+    expect(readOnly.entry.error?.message).toBe(
       'A link opens a source on a new cube only.',
     );
     expectNothingAdded(readOnly.state);
@@ -254,7 +277,7 @@ describe('Opening a linked access point', () => {
         sourceId: linkTo().sourceId,
       }),
     );
-    expect(entry.error).toBe(
+    expect(entry.error?.message).toBe(
       `A link can't name a source of type "${RelationalTableSource.TYPE}": only data product access points.`,
     );
     expect(entry.isOpening).toBe(false);
@@ -267,7 +290,7 @@ describe('Opening a linked access point', () => {
     await flowResult(
       entry.open({ sourceType: TYPE, sourceId: 'PRODUCTION/ORDERS_PRODUCT' }),
     );
-    expect(entry.error).toBe(
+    expect(entry.error?.message).toBe(
       `"PRODUCTION/ORDERS_PRODUCT" doesn't name an access point: it takes <class>/<data product id>/<deployment id>/<access point group>/<access point>.`,
     );
     expect(dataProducts.search).not.toHaveBeenCalled();
@@ -277,7 +300,9 @@ describe('Opening a linked access point', () => {
   test('Refuses on a host without data products, adding nothing', async () => {
     const { state, entry } = setUp({ withoutCatalog: true });
     await flowResult(entry.open(linkTo()));
-    expect(entry.error).toBe('This page has no data products to open.');
+    expect(entry.error?.message).toBe(
+      'This page has no data products to open.',
+    );
     expectNothingAdded(state);
   });
 
@@ -288,7 +313,7 @@ describe('Opening a linked access point', () => {
     const { state, entry, dataProducts } = setUp();
     await flowResult(entry.open(linkTo(link)));
     const { dataProductId, deploymentId } = { ...DAILY_ORDERS, ...link };
-    expect(entry.error).toBe(
+    expect(entry.error?.message).toBe(
       `No data product "${dataProductId}" is deployed as "${deploymentId}".`,
     );
     expect(dataProducts.describe).not.toHaveBeenCalled();
@@ -302,7 +327,7 @@ describe('Opening a linked access point', () => {
         linkTo({ accessPointGroup: 'reference', accessPoint: 'nope' }),
       ),
     );
-    expect(entry.error).toBe(
+    expect(entry.error?.message).toBe(
       'The data product has no access point "nope" in group "reference".',
     );
     expectNothingAdded(state);
@@ -311,7 +336,7 @@ describe('Opening a linked access point', () => {
   test("Gives a disabled access point's reason, adding nothing", async () => {
     const { state, entry } = setUp();
     await flowResult(entry.open(linkTo({ accessPoint: 'orders_as_of' })));
-    expect(entry.error).toBe(
+    expect(entry.error?.message).toBe(
       'It takes parameters, which Cube does not support yet',
     );
     expectNothingAdded(state);
@@ -323,7 +348,7 @@ describe('Opening a linked access point', () => {
       new Error('The catalog is unreachable'),
     );
     await flowResult(entry.open(linkTo()));
-    expect(entry.error).toBe('The catalog is unreachable');
+    expect(entry.error?.message).toBe('The catalog is unreachable');
     expect(entry.isOpening).toBe(false);
     expectNothingAdded(state);
   });
@@ -335,10 +360,144 @@ describe('Opening a linked access point', () => {
         Promise.reject(new Error('The product could not be read')),
     );
     await flowResult(entry.open(linkTo()));
-    expect(entry.error).toBe('The product could not be read');
+    expect(entry.error?.message).toBe('The product could not be read');
     expect(entry.isOpening).toBe(false);
     expectNothingAdded(state);
   });
+
+  test.each(['search', 'describe'] as const)(
+    "Gives an engine error's first line when the catalog can't %s, with its whole message as the detail",
+    async (call) => {
+      const { state, entry, dataProducts } = setUp();
+      const detail =
+        'The lakehouse could not be reached\nConnection refused: lakehouse.test:443\nRetried 3 times';
+      dataProducts[call].mockRejectedValueOnce(
+        new CubeEngineError(CubeEngineErrorKind.NETWORK, detail),
+      );
+      await flowResult(entry.open(linkTo()));
+      expect(entry.error).toEqual({
+        message: 'The lakehouse could not be reached',
+        detail,
+      });
+      expectNothingAdded(state);
+    },
+  );
+
+  test("Refuses when a source was added to the cube while the product was read, adding the link's access point nowhere", async () => {
+    const { state, entry, dataProducts } = setUp();
+    const release = holdDescribe(dataProducts);
+    const opened = flowResult(entry.open(linkTo()));
+    await when(() => state.sourcePicker.dataProductTab.isDescribing);
+    const orders = northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS);
+    state.applyQuery(state.document.query.add(orders));
+    release();
+    await opened;
+    expect(entry.error?.message).toBe(
+      'A link opens a source on a new cube only.',
+    );
+    expect(state.document.query.nodes).toEqual([orders]);
+    expect(state.document.context).toBeUndefined();
+  });
+
+  test('Says opening was interrupted when the product stopped being read meanwhile, adding nothing', async () => {
+    const { state, entry, dataProducts } = setUp();
+    const tab = state.sourcePicker.dataProductTab;
+    const release = holdDescribe(dataProducts);
+    const opened = flowResult(entry.open(linkTo()));
+    await when(() => tab.isDescribing);
+    // as closing the source dialog does
+    tab.close();
+    release();
+    await opened;
+    expect(entry.error?.message).toBe(
+      'Opening the linked source was interrupted; open it again.',
+    );
+    expect(entry.isOpening).toBe(false);
+    expectNothingAdded(state);
+  });
+
+  test('Says opening was interrupted when another product was picked in the dialog meanwhile, adding nothing', async () => {
+    const { state, entry, dataProducts } = setUp();
+    const tab = state.sourcePicker.dataProductTab;
+    const release = holdDescribe(dataProducts);
+    const opened = flowResult(entry.open(linkTo()));
+    await when(() => tab.isDescribing);
+    const other = FAKE_DATA_PRODUCT_CANDIDATES.find(
+      (candidate) =>
+        candidate !== tab.candidate &&
+        tab.getCandidateDisabledReason(candidate) === undefined,
+    );
+    expect(other).toBeDefined();
+    // the user, in the source dialog, picks another product
+    tab.selectCandidate(other);
+    await when(() => !tab.isDescribing);
+    release();
+    await opened;
+    expect(entry.error?.message).toBe(
+      'Opening the linked source was interrupted; open it again.',
+    );
+    expectNothingAdded(state);
+  });
+
+  test('Says opening was interrupted when the access point was refused with no reason, e.g. the dialog closed while it was added', async () => {
+    const { state, entry } = setUp();
+    const tab = state.sourcePicker.dataProductTab;
+    // as a confirm whose request a closing dialog dropped
+    jest.spyOn(tab, 'confirm').mockReturnValue(Promise.resolve(false) as never);
+    await flowResult(entry.open(linkTo()));
+    expect(entry.error?.message).toBe(
+      'Opening the linked source was interrupted; open it again.',
+    );
+    expectNothingAdded(state);
+  });
+
+  test('Leaves a product the user picked in the dialog when the link fails before picking its own', async () => {
+    const { state, entry } = setUp();
+    const tab = state.sourcePicker.dataProductTab;
+    const mine = FAKE_DATA_PRODUCT_CANDIDATES.find(
+      (candidate) => tab.getCandidateDisabledReason(candidate) === undefined,
+    );
+    tab.selectCandidate(mine);
+    await when(() => !tab.isDescribing);
+    await flowResult(entry.open(linkTo({ dataProductId: 'NO_SUCH_PRODUCT' })));
+    expect(entry.error).toBeDefined();
+    expect(tab.candidate).toBe(mine);
+  });
+
+  test.each([
+    [
+      'it has no such access point',
+      (): void => undefined,
+      { accessPointGroup: 'reference', accessPoint: 'nope' },
+    ],
+    [
+      'its access point is disabled',
+      (): void => undefined,
+      { accessPoint: 'orders_as_of' },
+    ],
+    [
+      "the product can't be read",
+      (dataProducts: ReturnType<typeof setUp>['dataProducts']): void => {
+        dataProducts.describe.mockRejectedValueOnce(
+          new Error('The product could not be read'),
+        );
+      },
+      {},
+    ],
+  ])(
+    "Leaves the source dialog's data product tab on no product when %s",
+    async (_label, prepare, link: Partial<CubeAccessPointEntry>) => {
+      const { state, entry, dataProducts } = setUp();
+      prepare(dataProducts);
+      await flowResult(entry.open(linkTo(link)));
+      expect(entry.error).toBeDefined();
+      const tab = state.sourcePicker.dataProductTab;
+      expect(tab.candidate).toBeUndefined();
+      expect(tab.accessPointKey).toBeUndefined();
+      expect(tab.accessPoint).toBeUndefined();
+      expectNothingAdded(state);
+    },
+  );
 
   test('Dismissing the error clears it', async () => {
     const { entry } = setUp({ withoutCatalog: true });
