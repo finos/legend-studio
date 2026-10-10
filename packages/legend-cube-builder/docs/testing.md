@@ -19,11 +19,14 @@ run some files, e.g. `TEST_GROUP=core yarn workspace @finos/legend-cube-builder 
 - `TEST__renderInCubeApplication(<CubeEditor host={host} />, host.applicationStore, LEGEND_CUBE_TEST_ID.EDITOR)`
   renders the page in a Legend application and waits for it.
 - A test of one part of the page makes the state itself, `new CubeEditorState(host, document)`, and renders the part
-  with it, e.g. `<CubeCanvas editorState={editorState} />` and `<CubeNodeEditorPanel editorState={editorState} />`
-  (as `CubeJoinEditor.test.tsx` does). `TEST__importDocument(editorState, document)` then imports a cube and waits
+  with it, e.g. `<CubeCanvas editorState={editorState} />`, which floats the node editor from the canvas when a node
+  is clicked (as `CubeJoinEditor.test.tsx` does). `TEST__importDocument(editorState, document)` then imports a cube and waits
   for its tables to be typed again, so nothing changes after the test. A `<CubeEditor>` test has no handle on the
   state, so it imports through the Import dialog.
-- `TEST__findCanvasNode(id)`, `TEST__getCanvasNodes()` and `TEST__getCanvasNodeTooltip(node)` read the canvas.
+- `TEST__findCanvasNode(id)`, `TEST__getCanvasNodes()` and `TEST__getCanvasNodeTooltip(node)` read the canvas; the
+  tooltip's text is the node's `aria-description`.
+- `TEST__openAddItems()` and `TEST__chooseAddItem(label)` use the header's Add Items, e.g. to open the source dialog on
+  a table tab (`'Relational Database Table'`); the empty canvas's link opens it with no tab chosen.
 - `src/__test-utils__/CubeNorthwindTestQueries.ts` has the Northwind tables' columns and ready-made queries, e.g.
   `sliceQuery()`.
 
@@ -34,6 +37,16 @@ What jsdom can't do:
 - **Show Chrome's own behaviour**, e.g. its date input sending React no Enter key.
 - **Print a failing comparison of two queries.** A query holds `BigInt`s, which Jest can't print, so a failing
   `toBe` between queries crashes the worker. Compare them as booleans: `expect(a === b).toBe(true)`.
+
+The floating node editor (PLAN §11.6):
+
+- **A press outside it** closes it on `pointerdown`, which jsdom 20 has no event class for: dispatch
+  `new MouseEvent('pointerdown', { bubbles: true, button: 0 })`, as `useCubeNodeEditorDismiss.test.tsx` does
+  (`fireEvent.pointerDown` sends no button).
+- **Its placement** can be tested once the canvas's rectangle and the window's size are stubbed, as
+  `CubeNodeEditorPopper.test.tsx` does; flipping and scrolling are checked in a browser.
+- **A tooltip test** lets MUI's 800 ms memory of an open tooltip lapse after each test, or a retry (`jest.retryTimes`,
+  set for every package) passes on the shorter `enterNextDelay`, as `CubeCanvas.test.tsx`'s tooltip tests do.
 
 Drag and drop goes through react-dnd's HTML5 backend: fire `dragStart`, `dragEnter`, `dragOver`, `drop` and
 `dragEnd` on the elements.

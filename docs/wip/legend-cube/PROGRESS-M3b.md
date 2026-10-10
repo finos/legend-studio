@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.12 done (entry links for data product access points)                                                                            |
+| Step   | M3b.13 done (docs and changeset); next M3b.14, the PR marked ready                                                                  |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -32,7 +32,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
 - [x] **M3b.11** The node tooltip
 - [x] **M3b.12** Entry links for data product access points (can be cut)
-- [ ] **M3b.13** Docs, guides and changeset
+- [x] **M3b.13** Docs, guides and changeset
 - [ ] **M3b.14** PR description; marked ready for review
 - [ ] **M3b.15** Verification
 - [ ] **M3b.16** Browser rehearsal
@@ -58,7 +58,8 @@ rebased ones.
 | M3b.9   | `1c1bc7469` | feat: add Legend Cube's Add Items menu in place of Add table             |
 | M3b.10  | `c20ab24b4` | feat: open Legend Cube's source dialog with no tab from the empty canvas |
 | M3b.11  | `5c0521b07` | feat: show Legend Cube's node messages in a tooltip above the node       |
-| M3b.12  | (this one)  | feat: open Legend Cube on a data product access point from a link        |
+| M3b.12  | `d4e937d1f` | feat: open Legend Cube on a data product access point from a link        |
+| M3b.13  | (this one)  | docs: guide Legend Cube's editors in the floating node editor            |
 
 ## Step notes
 
@@ -319,3 +320,12 @@ Tests: workflow `wf_a4d586cc-6b3`, 20 of 22 mutants killed:
   a raw `%2F` (not encoded as the documented format asks) decodes to `/`. Recorded in ISSUES.md: the history entry, a
   malformed `%` stopping Legend Query itself, and a full-text catalog search that could miss an exact id. A real
   access point couldn't be resolved in the browser: the data product servers aren't running.
+
+**M3b.13 (2026-10-09).** Docs for the floating node editor:
+
+- **`adding-an-operation.md`** gives the editor's rules: 432px, the body as the one scroller, closing applies, a field's
+  blur and `addFlusher`, and portals hold the editor open.
+- **`testing.md`** covers the canvas floating the editor in tests, `pointerdown` as a `MouseEvent`, stubbing placement,
+  the tooltip's MUI memory against Jest's retries, and the Add Items helpers.
+- **`hosting.md`** gives `initialSource` and the link format.
+- **Also:** the README, the last "side panel" docstring, and the changeset's final text.

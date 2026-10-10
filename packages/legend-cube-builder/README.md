@@ -14,15 +14,15 @@ the Cube store exists. A pasted model is kept in the cube. Nothing links to the 
 
 ## Layout
 
-| Folder                                | Holds                                                                                                                                                   |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/components/`                     | the page, `CubeEditor`, and its parts: `canvas/`, `palette/`, `editors/`, `source-picker/`, `grid/`, `show-pure/`, `spec-transfer/`                     |
-| `src/stores/`                         | the MobX state of the page, its parts and the side panel; `editors/` (node drafts); `LocalModelCatalog` and `fixtures/` (the bundled model); `CubeHost` |
-| `src/graph-manager/`                  | the engine port (`CubeEngine.ts`), the connection explorer and data product catalog ports, and their builders                                           |
-| `src/graph-manager/protocol/pure/v1/` | the engine adapter, `V1_LegendCubeEngine`: the lambda serializer, the result and relation-type readers, the error mapping                               |
-| `src/__lib__/`                        | labels, help text, the command config and test ids                                                                                                      |
-| `src/__test-utils__/`                 | the fake engine and the helpers of the tests                                                                                                            |
-| `style/`                              | the stylesheet, built to `lib/index.css`                                                                                                                |
+| Folder                                | Holds                                                                                                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/`                     | the page, `CubeEditor`, and its parts: `canvas/`, `palette/`, `editors/`, `source-picker/`, `grid/`, `show-pure/`, `spec-transfer/`                      |
+| `src/stores/`                         | the MobX state of the page, its parts and the node editor; `editors/` (node drafts); `LocalModelCatalog` and `fixtures/` (the bundled model); `CubeHost` |
+| `src/graph-manager/`                  | the engine port (`CubeEngine.ts`), the connection explorer and data product catalog ports, and their builders                                            |
+| `src/graph-manager/protocol/pure/v1/` | the engine adapter, `V1_LegendCubeEngine`: the lambda serializer, the result and relation-type readers, the error mapping                                |
+| `src/__lib__/`                        | labels, help text, the command config and test ids                                                                                                       |
+| `src/__test-utils__/`                 | the fake engine and the helpers of the tests                                                                                                             |
+| `style/`                              | the stylesheet, built to `lib/index.css`                                                                                                                 |
 
 It depends on `@finos/legend-cube`, legend-graph, legend-application, legend-art, legend-lego, legend-shared, and the
 depot, lakehouse and storage clients, never

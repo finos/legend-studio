@@ -9,8 +9,9 @@ the icon name the node's definition gives. Join and Filter are the examples to f
 
 ## 1. A draft
 
-The side panel never edits the document: an editor edits a draft, and the panel's **Apply** stores the draft's node
-as one undo step (**Cancel** drops it).
+The node editor floats below its node (PLAN §11.6) and never edits the document: an editor edits a draft, and the
+editor's **Apply**, or closing it any way but **Cancel**, stores the draft's node as one undo step (**Cancel** drops
+it).
 
 - In `src/stores/editors/Cube<Type>Draft.ts`, extend `CubeNodeDraft<Type>`: observable fields for the settings being
   edited, actions that change them, and `build()`. `build()` returns `original` itself while nothing was edited, and
@@ -38,10 +39,14 @@ as one undo step (**Cancel** drops it).
   example.
 - Give each control a stable `aria-label` (numbered per row in a list, e.g. `Sort column 2`): the tests and the
   browser rehearsal find controls by it.
-- An editor must work in either host: today's side panel, or a floating editor anchored under the node, which M3
-  decides on (PLAN §11.4, §12.2 question 1). Don't rely on the panel's height: a list scrolls on its own (a
-  `max-height` with `overflow: auto`), column and direction pickers stay native `<select>` elements, as
-  `CubeColumnPicker` is, and no editor measures the panel or reads its size.
+- The editor shows in the floating node editor (PLAN §11.6): 432px wide, its body between 80px and a third of the
+  window, which scrolls. Fit that width (wrap long names with `break-words` or `break-all`), and give no list a
+  height cap or a scroller of its own: the body is the one scroller. Column and direction pickers stay native
+  `<select>` elements, as `CubeColumnPicker` is, and no editor measures the editor or reads its size.
+- Text a field stores on blur is kept when the editor closes: the editor's blur runs first. Text an editor keeps in
+  React state can register with `nodeEditor.addFlusher` to be applied on close, as the data product warehouse does.
+- A dropdown, picker or dialog opened from an editor and shown elsewhere (a portal) must be one of MUI's layers, or
+  hold the editor open with `nodeEditor.holdOpen()` while it is open: otherwise a press in it closes the editor.
 - A Tailwind class no other file uses yet, such as an arbitrary `grid-cols-[…]`, does nothing in the dev server until
   the deployment's Tailwind build runs again ([hosting.md](./hosting.md)); jsdom tests don't see it either way, so
   check a new layout in the browser.
