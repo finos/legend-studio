@@ -153,7 +153,7 @@ export enum EmitRole {
   COALESCE = 'coalesce',
   /** a FULL Join: `cast` of the merged key to the keys' common type; a Concat that converts types: `cast` of a column to the type both inputs share */
   CAST = 'cast',
-  /** a select: a Join's last, a Restrict's, and the one that drops a temporary column */
+  /** a select: a Join's last, a Restrict's, the one that drops a temporary column, and a Partition's that lists its columns in order */
   SELECT = 'select',
   /** a Filter: the filter call */
   FILTER = 'filter',
@@ -173,8 +173,10 @@ export enum EmitRole {
   DISTINCT = 'distinct',
   /** a Group: its groupBy call, or with no key its aggregate call */
   GROUP = 'group',
-  /** a Group: an aggregation's column read or `1` (Count rows), and its reduce */
+  /** a Group or a Partition: an aggregation's column read or `1` (Count rows), and its reduce; a Partition's rank function */
   AGGREGATION = 'aggregation',
+  /** a Partition: its extends, their window and its sort keys (PLAN §11.6) */
+  WINDOW = 'window',
   /** a Concat: its concatenate call */
   CONCAT = 'concat',
   /** a Concat that converts types: the extend of an input's converted columns, and the column each reads */

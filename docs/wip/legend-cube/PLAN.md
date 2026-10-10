@@ -3313,7 +3313,9 @@ QUESTIONS.md, which other branches rewrite.
   tests are what catch a change.
 - A user may read a Sum as a partition total while a Rank in the same node makes it running: only the editor note
   guards it (Q1).
-- Each extend nests a subselect; a Partition of a Partition behind lets makes large SQL.
+- The engine nests one subselect per window column, even inside one array-form extend over one `over()` (4 functions, 4
+  levels; the select that restores the listed order adds none, M5.5's review ✅); wide Partitions, and a Partition of a
+  Partition behind lets, make deep SQL. The plan-only test pins the depth (M5.10).
 - The conformance suite never types the let form; M5.3's adapter test does, for the shapes it builds.
 
 **Supersessions** (applied in M5.14 to the sections they change; kept here as the record of what M5 changed):

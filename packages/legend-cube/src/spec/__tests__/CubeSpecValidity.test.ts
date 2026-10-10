@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TEST_DATABASE } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -30,6 +31,7 @@ import {
   MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN,
   MESSAGE_AGGREGATION_FUNCTION_EMPTY,
   MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE,
+  MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT,
   MESSAGE_AGGREGATION_FUNCTION_UNKNOWN,
   MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY,
   MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN,
@@ -66,6 +68,7 @@ import type { ColumnAggregation } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
 import {
   decodeCubeSpec,
@@ -215,6 +218,36 @@ const groupSpec = (
 const COUNT_QTY = { column: 'QTY', function: 'Count', name: 'QTY Count' };
 const COUNT_ROWS = { function: 'CountRows', name: 'Count Rows' };
 
+/** A saved spec: `relational101` feeding `partition101`, which has these columns, sorts and aggregations */
+const partitionSpec = (
+  columns: string[],
+  sorts: { column: string; direction: string }[],
+  aggregations: JsonObject[],
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'partition101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'partition',
+        id: 'partition101',
+        inputs: ['relational101'],
+        columns,
+        sorts,
+        aggregations,
+      },
+    ],
+  },
+});
+const QTY_DESC = { column: 'QTY', direction: 'DESC' };
+const RANK = { function: 'Rank', name: 'Rank' };
+const SUM_FREIGHT = {
+  column: 'FREIGHT',
+  function: 'Sum',
+  name: 'Running freight',
+};
+
 /** A saved spec: `relational101` feeding `slice101`, which has these bounds, each cleared when undefined */
 const sliceSpec = (
   start: number | undefined,
@@ -284,9 +317,12 @@ const compareSpec = (
 ): JsonObject => filterSpec({ column, operator, value });
 
 /** The errors inference reports for each node of the query */
-const validityOf = (query: Query): Record<string, readonly string[]> =>
+const validityOf = (
+  query: Query,
+  registry: NodeRegistry = createNodeRegistry(),
+): Record<string, readonly string[]> =>
   Object.fromEntries(
-    buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity,
+    buildSchemasAndValidity(query, registry.queryRules).validity,
   );
 
 /**
@@ -305,7 +341,7 @@ const errorsOf = (
   expect(
     serializeCubeSpec(parseCubeSpec(text, { registry }).document, registry),
   ).toBe(text);
-  return validityOf(document.query);
+  return validityOf(document.query, registry);
 };
 
 /** A spec's query, its `group101` read as a Group */
@@ -321,6 +357,27 @@ const decodeGroupSpec = (json: JsonObject): Query => {
 const groupErrorsOf = (json: JsonObject): Record<string, readonly string[]> => {
   decodeGroupSpec(json);
   return errorsOf(json, createNodeRegistry());
+};
+
+/** A spec's query, its `partition101` read as a Partition by the registry that knows it, until M5.7 (PLAN §11.6) */
+const decodePartitionSpec = (json: JsonObject): Query => {
+  const { query } = decodeCubeSpec(json, {
+    registry: TEST__registryWithPartition(),
+  }).document;
+  expect(query.getNode('partition101')).toBeInstanceOf(Partition);
+  return query;
+};
+
+/** As `validityOf`, for a query with a partition */
+const partitionValidityOf = (query: Query): Record<string, readonly string[]> =>
+  validityOf(query, TEST__registryWithPartition());
+
+/** As `errorsOf`, for a spec whose `partition101` must be read as a Partition */
+const partitionErrorsOf = (
+  json: JsonObject,
+): Record<string, readonly string[]> => {
+  decodePartitionSpec(json);
+  return errorsOf(json, TEST__registryWithPartition());
 };
 
 /** The value of the comparison `filter101` holds, as decoded */
@@ -979,6 +1036,377 @@ describe(unitTest('Saved spec validity: groups'), () => {
       });
     },
   );
+});
+
+describe(unitTest('Saved spec validity: partitions'), () => {
+  // PLAN §11.6: a partition's texts are kept as saved, functions included, as
+  // a Group's (M4 Q4), and so is a rank function saved with a column; each
+  // window function reports its first problem
+  const PARTITIONS: [string, JsonObject, string[]][] = [
+    [
+      'a valid partition, with every window function',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [
+          COUNT_QTY,
+          { column: 'QTY', function: 'DistinctCount', name: 'Products' },
+          { column: 'COUNTRY', function: 'DistinctValue', name: 'Only' },
+          SUM_FREIGHT,
+          { column: 'PRICE', function: 'Average', name: 'Mean price' },
+          { column: 'RATIO', function: 'Min', name: 'Lowest' },
+          { column: 'QTY', function: 'Max', name: 'Highest' },
+          COUNT_ROWS,
+          RANK,
+          { function: 'DenseRank', name: 'Dense Rank' },
+          { function: 'RowNumber', name: 'Row Number' },
+        ],
+      ),
+      [],
+    ],
+    [
+      'a valid partition with no partition column and no sort',
+      partitionSpec([], [], [COUNT_ROWS, SUM_FREIGHT]),
+      [],
+    ],
+    [
+      'a valid partition sorted by its partition column',
+      partitionSpec(
+        ['COUNTRY'],
+        [{ column: 'COUNTRY', direction: 'ASC' }],
+        [RANK],
+      ),
+      [],
+    ],
+    [
+      'a partition with no aggregation',
+      partitionSpec(['COUNTRY'], [QTY_DESC], []),
+      [MESSAGE_CANNOT_BE_EMPTY('Aggregations')],
+    ],
+    [
+      'a partition on a column twice',
+      partitionSpec(['COUNTRY', 'COUNTRY'], [QTY_DESC], [RANK]),
+      [MESSAGE_CANNOT_HAVE_DUPLICATES('Partition columns')],
+    ],
+    [
+      'a partition on a blank column',
+      partitionSpec([''], [QTY_DESC], [RANK]),
+      [MESSAGE_DOES_NOT_HAVE_A_NAME('Partition column')],
+    ],
+    [
+      'a partition on a column the input does not have',
+      partitionSpec(['SHIPPER'], [QTY_DESC], [RANK]),
+      [MESSAGE_NOT_IN_INPUT_SCHEMA('Partition column', 'SHIPPER')],
+    ],
+    [
+      'a sort on a column twice',
+      partitionSpec(['COUNTRY'], [QTY_DESC, QTY_DESC], [RANK]),
+      [MESSAGE_CANNOT_HAVE_DUPLICATES('Sort columns')],
+    ],
+    [
+      'a sort on a blank column',
+      partitionSpec(['COUNTRY'], [{ column: '', direction: 'ASC' }], [RANK]),
+      [MESSAGE_DOES_NOT_HAVE_A_NAME('Sort column')],
+    ],
+    [
+      'an unknown function',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [{ column: 'QTY', function: 'Median', name: 'QTY Median' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median')],
+    ],
+    [
+      'a rank function spelled in another case',
+      partitionSpec(['COUNTRY'], [QTY_DESC], [{ ...RANK, function: 'rank' }]),
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('rank')],
+    ],
+    [
+      'an empty function',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [{ column: 'QTY', function: '', name: 'Quantity' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_EMPTY],
+    ],
+    [
+      'Rank on a column',
+      partitionSpec(['COUNTRY'], [QTY_DESC], [{ column: 'QTY', ...RANK }]),
+      [MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('Rank')],
+    ],
+    [
+      'Row Number on a blank column',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [{ column: '', function: 'RowNumber', name: 'Row Number' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('RowNumber')],
+    ],
+    [
+      // its column is its first problem
+      'Rank on a column in a partition with no sort',
+      partitionSpec(['COUNTRY'], [], [{ column: 'QTY', ...RANK }]),
+      [MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('Rank')],
+    ],
+    [
+      'Rank in a partition with no sort',
+      partitionSpec(['COUNTRY'], [], [RANK]),
+      [MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('Rank')],
+    ],
+    [
+      'every rank function in a partition with no sort, beside aggregates that need none',
+      partitionSpec(
+        ['COUNTRY'],
+        [],
+        [
+          SUM_FREIGHT,
+          RANK,
+          { function: 'DenseRank', name: 'Dense Rank' },
+          COUNT_ROWS,
+          { function: 'RowNumber', name: 'Row Number' },
+        ],
+      ),
+      [
+        MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('Rank'),
+        MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('DenseRank'),
+        MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('RowNumber'),
+      ],
+    ],
+    [
+      'a column function without a column',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [{ function: 'Sum', name: 'Sum' }],
+      ),
+      [MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column')],
+    ],
+    [
+      'an aggregation of a column the input does not have',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [{ column: 'SHIPPER', function: 'Count', name: 'SHIPPER Count' }],
+      ),
+      [MESSAGE_NOT_IN_INPUT_SCHEMA('Aggregation column', 'SHIPPER')],
+    ],
+    [
+      "a function the column's type doesn't offer",
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [{ column: 'COUNTRY', function: 'Sum', name: 'COUNTRY Sum' }],
+      ),
+      [MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE('Sum', 'COUNTRY')],
+    ],
+    [
+      'an empty output name',
+      partitionSpec(['COUNTRY'], [QTY_DESC], [{ ...RANK, name: '' }]),
+      [MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY],
+    ],
+    [
+      'an output name that is an input column in another case',
+      partitionSpec(['COUNTRY'], [QTY_DESC], [{ ...RANK, name: 'qty' }]),
+      [MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN('qty')],
+    ],
+    [
+      'two output names equal but for case',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [
+          { ...RANK, name: 'Position' },
+          { ...COUNT_ROWS, name: 'POSITION' },
+        ],
+      ),
+      [
+        MESSAGE_ALREADY_IN_OUTPUT_SCHEMA('Aggregation output name', 'Position'),
+        MESSAGE_ALREADY_IN_OUTPUT_SCHEMA('Aggregation output name', 'POSITION'),
+      ],
+    ],
+    [
+      'several invalid window functions beside a valid one',
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [
+          { column: 'QTY', function: 'Median', name: 'QTY Median' },
+          RANK,
+          { column: 'QTY', function: 'DenseRank', name: 'Dense Rank' },
+        ],
+      ),
+      [
+        MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+        MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('DenseRank'),
+      ],
+    ],
+  ];
+
+  test.each(PARTITIONS)(
+    'Reads a document with %s, and reports it through inference',
+    (_, json, errors) => {
+      expect(partitionErrorsOf(json)).toStrictEqual({
+        relational101: [],
+        partition101: errors,
+      });
+    },
+  );
+
+  test('Reports the messages of a saved window function in their exact words', () => {
+    // PLAN §11.6: kept as saved, end to end
+    const errorsOfRank = (
+      sorts: { column: string; direction: string }[],
+      rank: JsonObject,
+    ): readonly string[] =>
+      partitionErrorsOf(partitionSpec(['COUNTRY'], sorts, [rank]))
+        .partition101 ?? [];
+    expect(errorsOfRank([QTY_DESC], { column: 'QTY', ...RANK })).toStrictEqual([
+      'Aggregation function "Rank" does not allow column.',
+    ]);
+    expect(errorsOfRank([], RANK)).toStrictEqual([
+      'Aggregation function "Rank" requires at least one sort column.',
+    ]);
+    expect(
+      errorsOfRank([QTY_DESC], { ...RANK, function: 'Median' }),
+    ).toStrictEqual(['Aggregation function "Median" is unknown.']);
+    expect(errorsOfRank([QTY_DESC], { ...RANK, function: '' })).toStrictEqual([
+      'Aggregation function cannot be empty.',
+    ]);
+    expect(errorsOfRank([QTY_DESC], { ...RANK, name: '' })).toStrictEqual([
+      'Aggregation output name cannot be empty.',
+    ]);
+  });
+
+  test('Reads aggregations saved without a name with their window auto-names, valid', () => {
+    // PLAN §11.6, as M4 Q3: the names are then written (CubeSpecEncode)
+    const query = decodePartitionSpec(
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [
+          { column: 'QTY', function: 'Sum' },
+          { function: 'Rank' },
+          { function: 'DenseRank' },
+          { function: 'RowNumber' },
+          { function: 'CountRows' },
+        ],
+      ),
+    );
+    expect(
+      (query.getNode('partition101') as Partition).aggregations.map(
+        ({ name }) => name,
+      ),
+    ).toEqual(['QTY Sum', 'Rank', 'Dense Rank', 'Row Number', 'Count Rows']);
+    expect(partitionValidityOf(query)).toStrictEqual({
+      relational101: [],
+      partition101: [],
+    });
+  });
+
+  test('Reads Rank saved without a name in a partition with no sort as Rank, reported for its sort', () => {
+    const query = decodePartitionSpec(
+      partitionSpec(['COUNTRY'], [], [{ function: 'Rank' }]),
+    );
+    expect(
+      (query.getNode('partition101') as Partition).aggregations.map(
+        ({ name }) => name,
+      ),
+    ).toEqual(['Rank']);
+    expect(partitionValidityOf(query)).toStrictEqual({
+      relational101: [],
+      partition101: [MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('Rank')],
+    });
+  });
+
+  test.each<[string, JsonObject, string]>([
+    [
+      'an unknown function',
+      { column: 'QTY', function: 'Median' },
+      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+    ],
+    [
+      'a rank function spelled in another case',
+      { function: 'rank' },
+      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('rank'),
+    ],
+    [
+      'an empty function',
+      { column: 'QTY', function: '' },
+      MESSAGE_AGGREGATION_FUNCTION_EMPTY,
+    ],
+    [
+      'a column function without a column',
+      { function: 'Sum' },
+      MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column'),
+    ],
+    [
+      'a column function on a blank column',
+      { column: '', function: 'Count' },
+      MESSAGE_DOES_NOT_HAVE_A_NAME('Aggregation column'),
+    ],
+  ])(
+    'Reads an aggregation saved without a name, with %s, as an empty name, reported once the rest is fixed',
+    (_, saved, message) => {
+      // there is no auto-name to give it (PLAN §11.6, as M4 Q3)
+      const query = decodePartitionSpec(
+        partitionSpec(['COUNTRY'], [QTY_DESC], [saved]),
+      );
+      const partition = query.getNode('partition101') as Partition;
+      const [aggregation] = partition.aggregations as [ColumnAggregation];
+      expect(aggregation.name).toBe('');
+      // the aggregation's first problem comes before its name
+      expect(partitionValidityOf(query)).toStrictEqual({
+        relational101: [],
+        partition101: [message],
+      });
+      const fixed = partition.withAggregations([
+        { ...aggregation, column: 'QTY', function: 'Sum' },
+      ]);
+      expect(partitionValidityOf(query.replace(fixed))).toStrictEqual({
+        relational101: [],
+        partition101: [MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY],
+      });
+    },
+  );
+
+  test("Gives a valid partition its input's columns, then one column per window function, in listed order", () => {
+    const query = decodePartitionSpec(
+      partitionSpec(
+        ['COUNTRY'],
+        [QTY_DESC],
+        [
+          RANK,
+          { column: 'QTY', function: 'Sum', name: 'QTY Sum' },
+          COUNT_ROWS,
+          { column: 'COUNTRY', function: 'DistinctValue', name: 'Only' },
+          { function: 'RowNumber', name: 'Row Number' },
+        ],
+      ),
+    );
+    const { schemas, validity } = buildSchemasAndValidity(
+      query,
+      TEST__registryWithPartition().queryRules,
+    );
+    expect(validity.get('partition101')).toEqual([]);
+    const describeColumns = (id: string): string[] =>
+      schemas
+        .get(id)
+        ?.columns.map(
+          ({ name, type, nullable }) =>
+            `${name} ${type.displayName}${nullable ? '?' : ''}`,
+        ) ?? [];
+    expect(describeColumns('partition101')).toEqual([
+      ...describeColumns('relational101'),
+      'Rank Integer',
+      'QTY Sum Integer?',
+      'Count Rows Integer',
+      'Only String?',
+      'Row Number Integer',
+    ]);
+  });
 });
 
 describe(unitTest('Saved spec validity: concats'), () => {

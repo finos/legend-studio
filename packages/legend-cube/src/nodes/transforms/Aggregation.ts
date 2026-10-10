@@ -117,6 +117,25 @@ export interface ColumnAggregation {
   readonly name: string;
 }
 
+/** Whether a value has a `ColumnAggregation`'s shape: texts, the column left out or not */
+export const isColumnAggregation = (
+  value: unknown,
+): value is ColumnAggregation => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const {
+    column,
+    function: fn,
+    name,
+  } = value as Partial<Record<keyof ColumnAggregation, unknown>>;
+  return (
+    (column === undefined || typeof column === 'string') &&
+    typeof fn === 'string' &&
+    typeof name === 'string'
+  );
+};
+
 const DISPLAY_NAMES = new Map<string, string>([
   [AggregationFunction.DISTINCT_COUNT, 'Distinct Count'],
   [AggregationFunction.DISTINCT_VALUE, 'Distinct Value'],

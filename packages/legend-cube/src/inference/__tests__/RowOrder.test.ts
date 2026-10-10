@@ -17,6 +17,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
+import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -29,6 +30,7 @@ import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join } from '../../nodes/transforms/Join.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
@@ -301,6 +303,30 @@ describe(unitTest('Row order'), () => {
     const rowOrders = computeRowOrders(query);
     expect(rowOrders.get('limit101') === rowOrders.get('sort101')).toBe(true);
   });
+
+  test("Keeps the order through a Partition, as it is: its window's sort orders no rows", () => {
+    const query = chain(
+      orders(),
+      byCountryThenId(),
+      new Partition(
+        'partition101',
+        ['CUSTOMER_ID'],
+        [{ column: 'ORDER_ID', direction: DESC }],
+        [
+          {
+            column: 'ORDER_ID',
+            function: AggregationFunction.SUM,
+            name: 'ORDER_ID Sum',
+          },
+        ],
+      ),
+    );
+    const rowOrders = computeRowOrders(query);
+    expect(orderOf(query, 'partition101')).toEqual(COUNTRY_THEN_ID);
+    expect(rowOrders.get('partition101') === rowOrders.get('sort101')).toBe(
+      true,
+    );
+  });
 });
 
 /** Sort101 by A then B, ascending, on a table with A, B and C */
@@ -417,6 +443,25 @@ const errorsOf = (
   buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity.get(
     nodeId,
   );
+
+/**
+ * Partition101 by C, a running Sum of A in its window's order, B descending:
+ * valid on any input with A, B and C
+ */
+const windowByC = (): Partition =>
+  new Partition(
+    'partition101',
+    ['C'],
+    [{ column: 'B', direction: DESC }],
+    [{ column: 'A', function: AggregationFunction.SUM, name: 'A Sum' }],
+  );
+
+/** The Partition's errors, with the query rules of the registry that has Partition */
+const partitionErrorsOf = (query: Query): readonly string[] | undefined =>
+  buildSchemasAndValidity(
+    query,
+    TEST__registryWithPartition().queryRules,
+  ).validity.get('partition101');
 
 describe(unitTest('Lost sort orders'), () => {
   test.each<[string, QueryNode[]]>([
@@ -736,5 +781,52 @@ describe(unitTest('Lost sort orders'), () => {
     const query = chain(ABC(), byAThenB(), new Restrict('restrict101', ['A']));
     expect(lossesOf(query.select('sort101'))).toEqual(lossesOf(query));
     expect(lossesOf(query.select('relational101'))).toEqual(lossesOf(query));
+  });
+
+  test.each<[string, QueryNode[]]>([
+    ['as the capture', []],
+    ['with the capture after it', [new Distinct('distinct101')]],
+  ])(
+    "Reports nothing for a Sort before a Partition %s, which keeps the Sort's order",
+    (_, after) => {
+      const query = chain(ABC(), byAThenB(), windowByC(), ...after);
+      expect(partitionErrorsOf(query)).toEqual([]);
+      expect(orderOf(query, 'partition101')).toEqual([
+        key('A', ASC, 'sort101', 0),
+        key('B', ASC, 'sort101', 1),
+      ]);
+      expect(lossesOf(query)).toEqual({});
+    },
+  );
+
+  test("Gives a Limit after a Partition the Sort's order before the Partition, and reports nothing", () => {
+    const query = chain(
+      ABC(),
+      byAThenB(),
+      windowByC(),
+      new Limit('limit101', 5),
+    );
+    expect(partitionErrorsOf(query)).toEqual([]);
+    // the Limit's input order, which the emitter writes as a sort just before it
+    expect(orderOf(query, 'partition101')).toEqual([
+      key('A', ASC, 'sort101', 0),
+      key('B', ASC, 'sort101', 1),
+    ]);
+    expect(orderOf(query, 'limit101')).toEqual([
+      key('A', ASC, 'sort101', 0),
+      key('B', ASC, 'sort101', 1),
+    ]);
+    expect(lossesOf(query)).toEqual({});
+  });
+
+  test("Names a Restrict after a Partition that drops the Sort's keys: the order got through the window", () => {
+    const query = chain(
+      ABC(),
+      byAThenB(),
+      windowByC(),
+      new Restrict('restrict101', ['C', 'A Sum']),
+    );
+    expect(partitionErrorsOf(query)).toEqual([]);
+    expect(lossesOf(query)).toEqual({ sort101: { nodeId: 'restrict101' } });
   });
 });

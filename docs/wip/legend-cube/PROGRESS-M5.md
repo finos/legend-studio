@@ -12,7 +12,7 @@
 | ------ | --------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656)   |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                               |
-| Step   | M5.1–M5.4 done; next M5.5                                                                                       |
+| Step   | M5.1–M5.6 done; next M5.7                                                                                       |
 | Tests  | 2486 core, 1198 builder (core group), 245 Query, 436 builder engine-roundtrip (after the rebase on `5e424277b`) |
 
 ## Steps
@@ -23,8 +23,8 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.2** `let` in the IR, the serializer and the printer
 - [x] **M5.3** The isolation pass in `QueryEmitter`, and the adapter's engine test
 - [x] **M5.4** The window functions in the aggregation model, and the messages
-- [ ] **M5.5** Partition in the core
-- [ ] **M5.6** The builder extraction (no behaviour change)
+- [x] **M5.5** Partition in the core
+- [x] **M5.6** The builder extraction (no behaviour change)
 - [ ] **M5.7** Partition in the builder, and registered
 - [ ] **M5.8** Partition on the engine and in the browser
 - [ ] **M5.9** The window composition suite
@@ -84,6 +84,20 @@ the auto-name and `validateColumnAggregation` take, a Group by default. The rank
 Integer and never empty, are named as shown (`Dense Rank`, `Row Number`) in a window and not at all in a Group, and
 need a sort: checked after the function and the column, before the name. The two Cube messages. Every M4 test passes
 unchanged.
+
+**M5.5 (2026-10-09).** `Partition` in the core: the node (`validatePartitionColumn`, validation in PLAN §11.6's order,
+the input's columns then one per window function, the input's row order kept, `Apply <n> Window Functions`), the
+emitter (an aggregates extend, then a ranks extend, then a select only when the listed order differs; the four
+`over()` forms; `size()` counts; no frame) and the codec, which reads its sorts and window functions with the
+readers it now shares with Sort and Group (`readSortKeys`, `readColumnAggregations`, `ReadEntries`). The shape
+guards `isColumnDirection` and `isColumnAggregation` are exported. `PARTITION_DEFINITION` (an isolation boundary)
+waits for M5.7; tests use `TEST__registryWithPartition()`. Tests by workflow `m55-tests-verify` (`wf_9b00f7a3-35f`):
+three writers (the node and row order, the emitter, the saved-spec suites; 211 tests), a reviewer that ran the
+emitted shapes on the engine, and 103 mutants in an isolated copy: 97 killed, 4 equivalent (one was dead code, the
+sort duplicates check's blank filter, now removed), and 2 decode-order mutants killed by rows added after. The review
+found no bug; its two isolation shapes (a captured Sort after a Partition, a Partition of a Partition) are tested,
+and its finding that the engine nests a subselect per window column, not per extend, corrected PLAN §11.6's risk.
+Result: `m5-verify/m55-result.json` in the evidence folder.
 
 ## Open items
 

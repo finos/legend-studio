@@ -19,6 +19,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -48,8 +49,9 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
-import { Sort } from '../../nodes/transforms/Sort.js';
+import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -2248,6 +2250,219 @@ describe(unitTest('Saved spec: concats, added in M4'), () => {
         inputs: ['relational102', 'relational101'],
         widenTypes: false,
         note: 'kept',
+      }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec: partitions, added in M5'), () => {
+  // Partition is registered in M5.7 (PLAN §11.6); until then, this registry
+  const PARTITION_REGISTRY = TEST__registryWithPartition();
+  /** The registry of the version before M5: every M4 operation, but no Partition */
+  const M4_REGISTRY = new NodeRegistry(
+    [...PARTITION_REGISTRY.sources, ...PARTITION_REGISTRY.transforms].filter(
+      (definition) => definition.type !== Partition.TYPE,
+    ),
+  );
+
+  const QTY_DESC = { column: 'QTY', direction: 'DESC' };
+  const RANK = { function: 'Rank', name: 'Rank' };
+  const SUM_QTY = { column: 'QTY', function: 'Sum', name: 'QTY Sum' };
+
+  /** A saved spec: `relational101` feeding `partition101`, by COUNTRY, with these sorts, aggregations and other keys */
+  const partitionSpec = (
+    sorts: readonly JsonObject[],
+    aggregations: readonly JsonObject[],
+    other: JsonObject = {},
+  ): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'partition101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'partition',
+          id: 'partition101',
+          inputs: ['relational101'],
+          columns: ['COUNTRY'],
+          sorts,
+          aggregations,
+          ...other,
+        },
+      ],
+    },
+  });
+
+  test('Reads a partition as an Unknown node in a version without Partition, editable, and re-saves it verbatim', () => {
+    // an aggregation saved without a name stays so: only a Partition gives it its auto-name
+    const json = partitionSpec([QTY_DESC], [SUM_QTY, { function: 'Rank' }], {
+      note: 'kept',
+    });
+    const { document, readOnly } = decodeCubeSpec(json, {
+      registry: M4_REGISTRY,
+    });
+    expect(readOnly).toBe(false);
+    const node = document.query.getNode('partition101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('partition');
+    expect(describeConnections(document.query)).toEqual([
+      'relational101 -> partition101.in0',
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, M4_REGISTRY))).toBe(
+      JSON.stringify(json),
+    );
+    // a new node would not take the saved node's id
+    expect(document.query.generateId(Partition.TYPE)).not.toBe('partition101');
+  });
+
+  test('Reads a partition as a Partition in this version, its unknown keys kept', () => {
+    const json = partitionSpec([QTY_DESC], [SUM_QTY, RANK], {
+      note: 'kept',
+      zeta: [null, { flag: false }],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: PARTITION_REGISTRY,
+    }).document.query.getNode('partition101');
+    expect(node).toBeInstanceOf(Partition);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(reSave(json, PARTITION_REGISTRY)).toBe(JSON.stringify(json));
+  });
+
+  test.each<[string, JsonObject[], JsonObject[], JsonObject[], JsonObject[]]>([
+    [
+      'a sort direction this version does not know',
+      [{ column: 'QTY', direction: 'RANDOM' }],
+      [RANK],
+      [QTY_DESC],
+      [RANK],
+    ],
+    [
+      'a key this version does not know on a sort entry',
+      [
+        { column: 'COUNTRY', direction: 'ASC' },
+        { ...QTY_DESC, nulls: 'first' },
+      ],
+      [RANK],
+      [{ column: 'COUNTRY', direction: 'ASC' }, QTY_DESC],
+      [RANK],
+    ],
+    [
+      'a key this version does not know on an aggregation',
+      [QTY_DESC],
+      [SUM_QTY, { ...RANK, ties: 'dense' }],
+      [QTY_DESC],
+      [SUM_QTY, RANK],
+    ],
+    [
+      // the whole node is kept as saved: the aggregation gets no name
+      'a sort direction this version does not know beside an aggregation saved without a name',
+      [{ column: 'QTY', direction: 'RANDOM' }],
+      [{ function: 'RowNumber' }],
+      [QTY_DESC],
+      [{ function: 'RowNumber' }],
+    ],
+    [
+      'a key this version does not know on an aggregation after one saved without a name',
+      [QTY_DESC],
+      [{ function: 'RowNumber' }, { ...SUM_QTY, filter: null }],
+      [QTY_DESC],
+      [{ function: 'RowNumber' }, SUM_QTY],
+    ],
+  ])(
+    'Keeps a partition with %s as an Unknown node, re-saved verbatim',
+    (_, sorts, aggregations, readableSorts, readableAggregations) => {
+      // ignoring either could change the rows (PLAN §11.4, §11.6): without
+      // it, the same partition is read as a Partition
+      expect(
+        decodeCubeSpec(partitionSpec(readableSorts, readableAggregations), {
+          registry: PARTITION_REGISTRY,
+        }).document.query.getNode('partition101'),
+      ).toBeInstanceOf(Partition);
+      const json = partitionSpec(sorts, aggregations, { note: 'kept' });
+      const { document, readOnly } = decodeCubeSpec(json, {
+        registry: PARTITION_REGISTRY,
+      });
+      expect(readOnly).toBe(false);
+      const node = document.query.getNode('partition101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('partition');
+      // the whole node as saved, but its id and inputs, which the query holds
+      expect(JSON.stringify(node.json)).toBe(
+        JSON.stringify({
+          kind: 'partition',
+          columns: ['COUNTRY'],
+          sorts,
+          aggregations,
+          note: 'kept',
+        }),
+      );
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> partition101.in0',
+      ]);
+      expect(reSave(json, PARTITION_REGISTRY)).toBe(JSON.stringify(json));
+
+      // it is invalid and can't run, but its input can
+      const { validity } = buildSchemasAndValidity(
+        document.query,
+        PARTITION_REGISTRY.queryRules,
+      );
+      expect(validity.get('partition101')).toEqual([
+        'This graph node is invalid.',
+      ]);
+      expect(validity.get('relational101')).toEqual([]);
+      const emitter = new QueryEmitter(document.query, PARTITION_REGISTRY);
+      expect(emitter.canEmit('partition101')).toBe(false);
+      expect(emitter.canEmit('relational101')).toBe(true);
+    },
+  );
+
+  test('Keeps the unknown keys of a partition whose columns, sorts or aggregations change', () => {
+    const document = decodeCubeSpec(
+      partitionSpec([QTY_DESC], [RANK], { note: 'kept' }),
+      { registry: PARTITION_REGISTRY },
+    ).document;
+    const partition = document.query.getNode('partition101') as Partition;
+    const saved = (edited: Partition): string =>
+      JSON.stringify(
+        savedNode(
+          encodeCubeSpec(
+            document.withQuery(document.query.replace(edited)),
+            PARTITION_REGISTRY,
+          ),
+          'partition101',
+        ),
+      );
+    const savedPartition = (own: JsonObject): string =>
+      JSON.stringify({
+        kind: 'partition',
+        id: 'partition101',
+        inputs: ['relational101'],
+        ...own,
+        note: 'kept',
+      });
+    const columns = partition.withColumns([]);
+    expect(columns.rest).toEqual({ note: 'kept' });
+    expect(saved(columns)).toBe(
+      savedPartition({ columns: [], sorts: [QTY_DESC], aggregations: [RANK] }),
+    );
+    const sorts = partition.withSorts([
+      { column: 'COUNTRY', direction: SortDirection.ASC },
+    ]);
+    expect(sorts.rest).toEqual({ note: 'kept' });
+    expect(saved(sorts)).toBe(
+      savedPartition({
+        columns: ['COUNTRY'],
+        sorts: [{ column: 'COUNTRY', direction: 'ASC' }],
+        aggregations: [RANK],
+      }),
+    );
+    const aggregations = partition.withAggregations([]);
+    expect(aggregations.rest).toEqual({ note: 'kept' });
+    expect(saved(aggregations)).toBe(
+      savedPartition({
+        columns: ['COUNTRY'],
+        sorts: [QTY_DESC],
+        aggregations: [],
       }),
     );
   });
