@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------- |
 | Branch | `cube-m6`, on `cube-dev` `b23afd19f`; draft PR #5662 into `cube-dev` (user, 2026-10-10)     |
 | Engine | Local legend-engine on `localhost:6300`                                                     |
-| Step   | M6.12: The demo video                                                                       |
+| Step   | M6.1–M6.13 done: M6 is complete, in draft #5662 for `cube-dev`                              |
 | Tests  | 2820 core, 1413 builder (core group); engine: the Difference suites, `CubeExpressions` (10) |
 
 ## Steps
@@ -31,7 +31,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.10** Guides, READMEs and the changeset
 - [x] **M6.11** Verification and the browser rehearsal
 - [x] **M6.12** A demo video of M6's features (PLAN §11.3)
-- [ ] **M6.13** Fold PLAN §11.7's supersessions in; the PR ready for `cube-dev`
+- [x] **M6.13** Fold PLAN §11.7's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -211,3 +211,11 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   (`SHIP_CITY->toOne()`) types `toUpper()`; dropping `->toOne()` above types it again and shows the engine's refusal,
   Execute waiting; adding it below runs again. Each of the 17 key frames was checked against its caption; two were
   changed (a scroll that hid EMPLOYEE_ID, and a caption that claimed the error named `->toOne()`).
+- **M6.13** (2026-10-10). PLAN §11.7's supersessions folded into the sections they change, by hand: D5 (Difference's
+  native types); §4 (no `exclude` set); §4.11 and Appendix A §16 (M6's messages); §5.7 (Extend typed over the cube's
+  model as a chain, its signature and digest, nullable columns, the enumeration gap); §5.8 (the lambda JSON and the
+  saved Extend); §8.8 (the Join row's FULL on 19 types, the Difference and Extend rows, the expression notes); §10.3
+  (both saved shapes); §11.3's M6 row; Appendix A §7.12, §7.14, §9 and §17.6. §11.7's own text now says what was
+  built (the chain typing, the saved typing, `lambdaJson`, row-key source ids, Difference's check order and labels, no
+  completion, the M6.4 values ✅, FULL native on 19) and keeps its Supersessions list as the record. M6 is complete;
+  marking #5662 ready, and merging it into `cube-dev`, are the user's.
