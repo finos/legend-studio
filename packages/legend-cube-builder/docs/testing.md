@@ -86,7 +86,8 @@ would serve it.
 - `src/__tests__/CubeInferenceConformance.engine-roundtrip-test.ts` holds Cube's inference to the engine's (PLAN
   §11.5): it types every node of every case in one batch and compares names, positions, precise types with their
   parameters, and nullability exactly (`TEST__typingDifferences`). Where the engine misreports nullability (an outer
-  join's padded columns, the FULL merged key), a case lists the columns in `widerNullable`, and Cube must say nullable
+  join's padded columns, the FULL merged key, a Difference's keys named apart, an Extend's columns after `toOne()`), a
+  case lists the columns in `widerNullable`, and Cube must say nullable
   there. Every registered node type needs a case, or the coverage test fails, but a data product's access point
   (`NOT_TYPED_BY_THE_ENGINE`: the open-source engine reads no data product; `CubeDataProduct.engine-roundtrip-test.ts`
   types its stand-in). A case whose Concat converts types names the types it converts (`converted`), so a case that
@@ -115,6 +116,15 @@ would serve it.
   single form, unbound, gives wrong rows. The core's `PartitionEmitter.test.ts` pins the emitted text.
   `CubeWindowIsolation.engine-roundtrip-test.ts` checks the lets themselves through the adapter, with a test-only
   window: they run, type, show in Show Pure, and put an error inside a let on its window.
+- **Difference and Extend** (PLAN §11.7). The operations tests run a Difference against a reference computed from its
+  inputs' own rows, every numeric family included; the plan-only test pins its join (a native `full outer join` on
+  every type but H2, where the engine emulates it) and its `coalesce(…, 0) - coalesce(…, 0)`, never a cast, and an
+  Extend's columns written as their expressions; both run on H2 and DuckDB through the direct connection.
+  `CubeExpressions.engine-roundtrip-test.ts` covers Extend's engine calls: an expression parsed with its digits and
+  locations, typed as a chain after its input over the cube's model (its own enumerations and functions too), the
+  failing column found and located, a plan that fails, and a run. A test that needs a typed Extend without the engine
+  builds one with `TEST__typedExtend` (`src/__test-utils__/CubeExpressionTestUtils.ts`), whose types the conformance
+  cases check against the engine.
 - `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
   example cube (PLAN §6.9) as the Examples dialog does: it types its tables, checks every node types as Cube infers it
   (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.

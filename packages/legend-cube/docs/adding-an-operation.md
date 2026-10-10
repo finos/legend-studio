@@ -8,7 +8,9 @@ The UI half (a draft, an editor, help text and an icon) is in
 
 Join (`src/nodes/transforms/Join.ts`) and Filter (`Filter.ts`) are the examples to follow; Group (`Group.ts`) for a
 node whose settings are rows, Concat (`Concat.ts`) for a plain two-input node with a setting that changes its
-output types, and Partition (`Partition.ts`) for a window, which a run must isolate from what follows it.
+output types, Partition (`Partition.ts`) for a window, which a run must isolate from what follows it, Difference
+(`Difference.ts`) for a node built from another's parts (Join's key checks and join relation), and Extend
+(`Extend.ts`) for a node whose output types only the engine knows.
 
 ## 1. The node
 
@@ -66,11 +68,31 @@ A setting that changes the output's types, as Concat's Convert types does (`wide
 validation (`validateConcatSchemas(first, second, errors, widenTypes)`), so the editor, the autofixes and inference
 judge the node the same way.
 
+A node built on another's semantics reuses its parts rather than copying them: Difference checks its keys with
+Join's `validateJoinKeys` and emits its join with `emitJoinRelation` (the join before its `select`), so a fix to
+either reaches both.
+
 A node whose rows hold aggregations, as Group and Partition do, judges each row with `validateColumnAggregation`
 (`src/nodes/transforms/Aggregation.ts`) and an `AggregationUse`: a Group's (`GROUP_AGGREGATION_USE`), or a window's,
 which also knows the rank functions (`WindowRankFunction`) and whether the window sorts its rows, which they need. The
 known-function check, the auto-name, the result type and the nullability all take the use, so a function one node
 offers stays unknown in the other (a Group's Rank, PLAN §11.5, Q4).
+
+### A node the engine types
+
+Extend's output types are its expressions' (PLAN §11.7), which only the engine can type, against the cube's model.
+The core stays host-free, so the node holds the answer: a typing (`unresolved`, `typed` with a type per column, or
+`failed` with the engine's message and the column it names) for a signature, a digest of its input's columns and
+its own settings (`getExtendSignature`, over `stableJsonText` and `hashText` in `src/utils/Json.ts`). A typing whose
+signature isn't the current one reads as `unresolved`, and an unresolved node fails validation with `ERR_TYPING`
+only, which `isTypingError` tells apart: the UI shows the node pending, not invalid, and the builder types it in the
+background (its guide). `schematize` reads the types from the typing. Save the last good typing with the node, so a
+loaded cube has its schema at once, but never a failure, which is typed again.
+
+The expression itself is the engine's JSON for its text, without source information, its number literals as their
+digit strings (a saved spec is read with `JSON.parse`), and the text as the user typed it, so the cube shows it
+without an engine call. It is emitted as the IR `lambdaJson`, whose serializer writes the numbers digit for digit and
+stamps the origin on every value specification.
 
 ## 2. Its messages
 
@@ -141,8 +163,8 @@ After an import types the sources again, only Filter's invalid values are read a
 A `TransformDefinition` in `src/nodes/NodeRegistry.ts`: `kind: 'transform'`, `type`, `label` (the palette's text),
 `icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`,
 and `isolationBoundary` for a window (see 3). Add it to `createNodeRegistry()` in menu order (Sort, Group, Filter,
-Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Partition; spec §7.0), and export the new modules from
-`src/index.ts`.
+Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, Extend; spec §7.0), and export
+the new modules from `src/index.ts`.
 
 ## Tests
 
@@ -157,6 +179,9 @@ Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Partition; spec §
 - Some tests pin lists to update: the registry's transforms in `src/nodes/__tests__/Nodes.test.ts` (in the spec's
   menu order, and the isolation boundaries), and, for a new `EmitRole`, the roles in
   `src/ir/__tests__/QueryEmitter.test.ts` ('Names each part of a node with a distinct role, without a colon').
+- A node the engine types is tested with typings built in the test (`getExtendSignature` for the input), as
+  `Extend.test.ts` does: pending until typed, pending again once the input or a setting changes, the engine's
+  failure on its column, and a type that isn't a primitive or an enumeration refused.
 - A window's lets are tested with a test-only window node in `src/ir/__tests__/QueryEmitterIsolation.test.ts`, and
   Partition's own in `PartitionEmitter.test.ts`: a Partition at the capture binds nothing, one followed by a node is
   bound, and the capture's sort comes after `from()`.

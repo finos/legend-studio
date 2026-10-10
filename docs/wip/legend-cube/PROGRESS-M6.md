@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------ |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10)      |
 | Engine | Local legend-engine on `localhost:6300`                                                    |
-| Step   | M6.9: Extend on the engine, in the conformance suite and around the databases              |
+| Step   | M6.10: Guides, READMEs and the changeset                                                   |
 | Tests  | 2818 core, 1375 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
 
 ## Steps
@@ -28,7 +28,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.7** Retyping in the builder
 - [x] **M6.8** The Extend editor, and registered
 - [x] **M6.9** Extend on the engine, in the conformance suite and around the databases
-- [ ] **M6.10** Guides, READMEs and the changeset
+- [x] **M6.10** Guides, READMEs and the changeset
 - [ ] **M6.11** Verification and the browser rehearsal
 - [ ] **M6.12** A demo video of M6's features (PLAN §11.3)
 - [ ] **M6.13** Fold PLAN §11.7's supersessions in; the PR ready for `cube-dev`
@@ -37,17 +37,18 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit      | Subject                                                         |
-| ---- | ----------- | --------------------------------------------------------------- |
-| M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend)                |
-| M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core                      |
-| M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder                   |
-| M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine                |
-| M6.5 | `1270430ee` | feat: add Extend to Legend Cube's core                          |
-| M6.6 | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions     |
-| M6.7 | `58b6737f8` | feat: type Legend Cube's Extends in the background              |
-| M6.8 | `9eb1b2732` | feat: add the Extend editor to Legend Cube                      |
-| M6.9 | (this one)  | test: run Legend Cube's Extend on the engine and every database |
+| Step  | Commit      | Subject                                                         |
+| ----- | ----------- | --------------------------------------------------------------- |
+| M6.1  | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend)                |
+| M6.2  | `58c56830e` | feat: add Difference to Legend Cube's core                      |
+| M6.3  | `1a5a879ae` | feat: add Difference to Legend Cube's builder                   |
+| M6.4  | `5b1fa39c9` | test: run Legend Cube's Difference on the engine                |
+| M6.5  | `1270430ee` | feat: add Extend to Legend Cube's core                          |
+| M6.6  | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions     |
+| M6.7  | `58b6737f8` | feat: type Legend Cube's Extends in the background              |
+| M6.8  | `9eb1b2732` | feat: add the Extend editor to Legend Cube                      |
+| M6.9  | `6a65db52d` | test: run Legend Cube's Extend on the engine and every database |
+| M6.10 | (this one)  | docs: cover Legend Cube's Difference and Extend in its guides   |
 
 ## Notes
 
@@ -155,3 +156,9 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   its expression, the second over the first, aliased with `as` or, on Oracle, a space. Direct connection: an Extend
   of three columns runs on H2 and DuckDB with the hand-computed values. `CubeExpressions` (M6.6) already runs typing,
   errors, plans and values on H2.
+- **M6.10** (2026-10-10). The core guide: Difference and Extend as examples, a node built from another's parts, a node
+  the engine types (typing, signature, `ERR_TYPING`, the saved typing, the expression JSON and `lambdaJson`), the menu
+  order, its tests. The builder guide: drafts that wait for the engine (`applyDisabledReason`), Join's key rows and the
+  checklist's reasons, the code editor, background typing, column origins, the fake engine's new mocks, `act` and the
+  Monaco mock. `testing.md`: Difference's and Extend's engine tests, `CubeExpressions`, `TEST__typedExtend`, the new
+  wider-nullable columns. Both READMEs list the two operations; the changeset names both.
