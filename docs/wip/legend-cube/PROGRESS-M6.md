@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------- |
 | Branch | `cube-m6`, on `cube-dev` `b23afd19f`; draft PR #5662 into `cube-dev` (user, 2026-10-10)     |
 | Engine | Local legend-engine on `localhost:6300`                                                     |
-| Step   | M6.11: Verification and the browser rehearsal                                               |
+| Step   | M6.12: The demo video                                                                       |
 | Tests  | 2820 core, 1413 builder (core group); engine: the Difference suites, `CubeExpressions` (10) |
 
 ## Steps
@@ -30,7 +30,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.9** Extend on the engine, in the conformance suite and around the databases
 - [x] **M6.10** Guides, READMEs and the changeset
 - [x] **M6.11** Verification and the browser rehearsal
-- [ ] **M6.12** A demo video of M6's features (PLAN §11.3)
+- [x] **M6.12** A demo video of M6's features (PLAN §11.3)
 - [ ] **M6.13** Fold PLAN §11.7's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
@@ -201,3 +201,13 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
     builder's engine group 746 of 750, the 4 failures the direct-connection "setup SQL fails" cases that time out on
     the local engine, as before. In the browser (evidence `demo/`): the rehearsal 57 of 57, Difference 12 of 12,
     Extend 13 of 13.
+- **M6.12** (2026-10-10). The demo video, `legend-cube-m6-difference-extend.webm` (3 min, sent to the user), recorded
+  by `demo/demo-m6.mjs` in the evidence folder from two cubes in `demo/m6-specs/`, against the dev server on :9002 and
+  the local engine, 23 checks passing. (1) Compare Column Values: each employee's total freight and orders by Speedy
+  Express against United Package (two Groups by EMPLOYEE_ID), the palette, the key pair, the checklist's reasons (a
+  join column; not a number), the 9 rows, then the differences, Float and Integer. (2) Extend Columns: the editor, the
+  `->toOne()` error underlined with its hint, the panel kept open on unvalidated code, a column using the one before,
+  F10, the rows, a plan H2 refuses on its row, Show Pure. (3) M6.11's fix: a second Extend over `city`
+  (`SHIP_CITY->toOne()`) types `toUpper()`; dropping `->toOne()` above types it again and shows the engine's refusal,
+  Execute waiting; adding it below runs again. Each of the 17 key frames was checked against its caption; two were
+  changed (a scroll that hid EMPLOYEE_ID, and a caption that claimed the error named `->toOne()`).
