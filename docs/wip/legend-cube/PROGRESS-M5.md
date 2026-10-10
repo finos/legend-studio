@@ -99,6 +99,11 @@ found no bug; its two isolation shapes (a captured Sort after a Partition, a Par
 and its finding that the engine nests a subselect per window column, not per extend, corrected PLAN §11.6's risk.
 Result: `m5-verify/m55-result.json` in the evidence folder.
 
+**M5.6 (2026-10-09).** No behaviour change: the aggregation rows (`CubeAggregationRows.ts`, judged by an
+`AggregationUse`), the sort rows (`CubeSortRows.ts`) and their row editors (`CubeAggregationRowEditor`,
+`CubeSortRowEditor`, driven by callbacks), and the column checklist (`CubeColumnChecklist`) come out of the Group and
+Sort drafts and editors, which now use them. Every builder test passes unchanged (1199).
+
 ## Open items
 
 - The engine issue drafts in ISSUES.md for windows (M5.10), filed by the user.
