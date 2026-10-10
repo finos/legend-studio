@@ -29,6 +29,7 @@ import {
   CUBE_PARTITION_COLUMN_DISABLED_REASON,
   getPartitionNoColumnText,
   PARTITION_EDITOR_NOTES,
+  READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeAggregationRow } from '../../stores/editors/CubeAggregationRows.js';
 import { CubePartitionDraft } from '../../stores/editors/CubePartitionDraft.js';
@@ -178,9 +179,11 @@ export const CubePartitionEditor = observer((props: CubeNodeEditorProps) => {
       <div>
         <CubeButton
           title={
-            canAddSortRow
-              ? 'Add a column to sort the window by'
-              : 'Every column that can be sorted already has a row'
+            readOnly
+              ? READ_ONLY_CUBE_TITLE
+              : canAddSortRow
+                ? 'Add a column to sort the window by'
+                : 'Every column that can be sorted already has a row'
           }
           disabled={!canAddSortRow}
           onClick={() => draft.addSortRow()}

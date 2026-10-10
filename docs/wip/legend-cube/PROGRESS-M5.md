@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
-| Step   | M5.1–M5.11 done; next M5.12                                                                                   |
+| Step   | M5.1–M5.12 done; next M5.13                                                                                   |
 | Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
 
 ## Steps
@@ -30,7 +30,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.9** The window composition suite
 - [x] **M5.10** Partition around the databases, and the changeset
 - [x] **M5.11** Guides and READMEs
-- [ ] **M5.12** Verification and the browser rehearsal
+- [x] **M5.12** Verification and the browser rehearsal
 - [ ] **M5.13** A demo video of M5's features (PLAN §11.3)
 - [ ] **M5.14** Rebase on the latest master, fold PLAN §11.6's supersessions in
 
@@ -169,6 +169,25 @@ readers; the builder guide the shared rows (`CubeAggregationRowEditor`, `CubeSor
 judging rows by the node Apply stores, a Partition's column origins, and `WINDOW_SHAPES`; `testing.md` the window
 tests (plans, the operations tests, H2 and DuckDB, the composition suite, the isolation test); both READMEs list
 window functions.
+
+**M5.12 (2026-10-09).** Workflow `m512-verify` (`wf_ec764d63-8c0`): reviewers of the core, the builder, and the engine
+and tests, over all of M5, a skeptic per finding, and the browser rehearsal. Nine findings: three refuted (a same-name
+second window refused as Group's is, by design; DuckDB's direct tests not alone in pinning isolation; Distinct Value
+covered elsewhere), six confirmed, none a wrong result, all fixed:
+
+- windows read by a node with two inputs ran on no engine test: now a Join of two Partitions (830 rows, VINET's 5
+  orders, France's 11 customers) and a Concat of two Partitions (VINET counted 5 by customer and 77 by country) run on
+  H2, and both are window shapes, bound in one `WITH`, on the 17 window types;
+- the editor notes listed the functions a sort makes run and left out Distinct Count and Distinct Value: they now say
+  "every function but Rank, Dense Rank and Row Number"; and Row Number's note says tied rows get their numbers in no set
+  order, with how to get a stable top N;
+- "Add sort column" (Partition and Sort) and "Add column to rename" gave the wrong reason when disabled on a read-only
+  cube: they now say it is read-only;
+- PLAN: the "running / whole partition" follow-up goes on each aggregation entry, never a node key an older Cube would
+  ignore, and the policy for future settings says so.
+
+The rehearsal (`demo/rehearsal-m5.mjs`, M4's with Apply Window Functions in the menu lists) passes all 57 checks, and
+the M5.8 browser check its 20. Result: `m5-verify/m512-result.json`.
 
 ## Open items
 

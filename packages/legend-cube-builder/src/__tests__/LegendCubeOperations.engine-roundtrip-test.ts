@@ -2005,3 +2005,87 @@ describe('Partition on the engine', () => {
     expect(row(3)).toEqual([null, null, 0, 1]);
   });
 });
+
+describe('Windows read by a node with two inputs, on the engine', () => {
+  const countRows = (id: string, columns: string[], name: string): Partition =>
+    new Partition(
+      id,
+      columns,
+      [],
+      [{ column: undefined, function: AggregationFunction.COUNT_ROWS, name }],
+    );
+  const lets = (query: Query): number =>
+    (
+      printIR(
+        new QueryEmitter(query).emitExecutionLambda({
+          rowLimit: ROW_LIMIT,
+          runtime: CUBE_NORTHWIND_RUNTIME,
+        }),
+      ).match(/\blet n_/gu) ?? []
+    ).length;
+
+  test("Joins orders counted by customer to customers counted by country: VINET's 5 orders, France's 11 customers", async () => {
+    const [ordersTable, customersTable] = await ordersAndCustomers();
+    const query = joinOn(
+      [ordersTable, countRows('partition101', ['CUSTOMER_ID'], 'n')],
+      [customersTable, countRows('partition102', ['COUNTRY'], 'perCountry')],
+      JoinType.INNER,
+    );
+    expect(lets(query)).toBe(2);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(830);
+    const customers = TEST__columnValues(result, 'CUSTOMER_ID');
+    const n = TEST__columnValues(result, 'n').map(Number);
+    const perCountry = TEST__columnValues(result, 'perCountry').map(Number);
+    const vinet = customers.flatMap((c, i) => (c === 'VINET' ? [i] : []));
+    expect(vinet.map((i) => n[i])).toEqual([5, 5, 5, 5, 5]);
+    expect(new Set(vinet.map((i) => perCountry[i]))).toEqual(new Set([11]));
+  });
+
+  test("Concatenates two windows: VINET's 5 orders counted by customer, then by country (France's 77)", async () => {
+    const [first, second] = (await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', 'ORDERS'),
+      TEST__northwindTable('relational102', 'ORDERS'),
+    ])) as [RelationalTableSource, RelationalTableSource];
+    const columns = ['ORDER_ID', 'CUSTOMER_ID', 'SHIP_COUNTRY'];
+    const concat = new Concat('concat101', false);
+    const filter = new Filter(
+      'filter101',
+      new ColumnComparisonFilter('CUSTOMER_ID', FilterOperator.EQUAL, {
+        kind: 'string',
+        value: 'VINET',
+      }),
+    );
+    const query = new Query(
+      [
+        first,
+        new Restrict('restrict101', columns),
+        countRows('partition101', ['CUSTOMER_ID'], 'n'),
+        second,
+        new Restrict('restrict102', columns),
+        countRows('partition102', ['SHIP_COUNTRY'], 'n'),
+        concat,
+        filter,
+      ],
+      [
+        new Connection('relational101', 'restrict101', 'tds'),
+        new Connection('restrict101', 'partition101', 'tds'),
+        new Connection('relational102', 'restrict102', 'tds'),
+        new Connection('restrict102', 'partition102', 'tds'),
+        new Connection('partition101', 'concat101', concat.ports[0] as string),
+        new Connection('partition102', 'concat101', concat.ports[1] as string),
+        new Connection('concat101', 'filter101', 'tds'),
+      ],
+      'filter101',
+    );
+    expect(lets(query)).toBe(2);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(
+      TEST__columnValues(result, 'n')
+        .map(Number)
+        .sort((a, b) => a - b),
+    ).toEqual([5, 5, 5, 5, 5, 77, 77, 77, 77, 77]);
+  });
+});

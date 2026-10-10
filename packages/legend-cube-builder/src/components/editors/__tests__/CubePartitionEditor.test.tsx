@@ -44,6 +44,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   COLUMN_NAME_RULES_HINT,
   PARTITION_EDITOR_NOTES,
+  READ_ONLY_CUBE_TITLE,
 } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
@@ -915,6 +916,7 @@ describe('Partition editor', () => {
       expect(button(`Remove sort column ${position}`).disabled).toBe(true);
     });
     expect(button('Add sort column').disabled).toBe(true);
+    expect(button('Add sort column').title).toBe(READ_ONLY_CUBE_TITLE);
     expect(button('Apply').disabled).toBe(true);
     // the problems still show
     expect(problems()).toEqual([

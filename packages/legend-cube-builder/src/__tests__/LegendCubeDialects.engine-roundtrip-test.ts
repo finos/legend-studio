@@ -27,6 +27,8 @@ import {
   Filter,
   FilterOperator,
   Group,
+  Join,
+  JoinType,
   Limit,
   Partition,
   printIR,
@@ -46,6 +48,7 @@ import {
   CUBE_ENGINE_TEST__getCommit,
 } from '../__test-utils__/CubeEngineTestSupport.js';
 import {
+  CUSTOMERS_COLUMNS,
   northwindTable,
   ORDERS_COLUMNS,
 } from '../__test-utils__/CubeNorthwindTestQueries.js';
@@ -1153,6 +1156,81 @@ const WINDOW_SHAPES: [string, () => Query][] = [
         ),
       ),
   ],
+  [
+    'a Partition on both inputs of a Join',
+    () => {
+      const nodes: QueryNode[] = [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Partition(
+          'partition101',
+          ['CUSTOMER_ID'],
+          [],
+          [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+        ),
+        new Partition(
+          'partition102',
+          ['COUNTRY'],
+          [],
+          [
+            windowFunction(
+              AggregationFunction.COUNT_ROWS,
+              undefined,
+              'perCountry',
+            ),
+          ],
+        ),
+        new Join('join101', {
+          leftColumns: ['CUSTOMER_ID'],
+          rightColumns: ['CUSTOMER_ID'],
+          joinType: JoinType.INNER,
+        }),
+      ];
+      return new Query(
+        nodes,
+        [
+          new Connection('relational101', 'partition101', 'tds'),
+          new Connection('relational102', 'partition102', 'tds'),
+          new Connection('partition101', 'join101', 'leftTds'),
+          new Connection('partition102', 'join101', 'rightTds'),
+        ],
+        'join101',
+      );
+    },
+  ],
+  [
+    'a Concat of two Partitions',
+    () =>
+      concatThenWith(
+        false,
+        [
+          new Restrict('restrict101', [
+            'ORDER_ID',
+            'CUSTOMER_ID',
+            'SHIP_COUNTRY',
+          ]),
+          new Partition(
+            'partition101',
+            ['CUSTOMER_ID'],
+            [],
+            [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+          ),
+        ],
+        [
+          new Restrict('restrict102', [
+            'ORDER_ID',
+            'CUSTOMER_ID',
+            'SHIP_COUNTRY',
+          ]),
+          new Partition(
+            'partition102',
+            ['SHIP_COUNTRY'],
+            [],
+            [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+          ),
+        ],
+      ),
+  ],
 ];
 
 const windowShapeNamed = (label: string): Query =>
@@ -1350,6 +1428,27 @@ describe('Window functions, as each database plans them', () => {
         expect(
           windowSelects(sql).filter((select) => predicate.test(select)),
         ).toEqual([]);
+      }
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Binds the windows of both inputs of a Join or a Concat in one WITH, on %s',
+    async (databaseType) => {
+      for (const name of [
+        'a Partition on both inputs of a Join',
+        'a Concat of two Partitions',
+      ]) {
+        const sql = await windowPlanSql(name, databaseType);
+        expect([name, sql]).toEqual([
+          name,
+          expect.stringMatching(/^with n_partition101 as \(/u),
+        ]);
+        expect([
+          name,
+          withQuery(sql, 'n_partition101') !== undefined,
+          /\bn_partition102 as \(/u.test(sql),
+        ]).toEqual([name, true, true]);
       }
     },
   );

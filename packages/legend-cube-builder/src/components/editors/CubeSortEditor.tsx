@@ -17,6 +17,7 @@
 import { isSortableType, type Schema } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
+import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { CubeSortDraft } from '../../stores/editors/CubeSortDraft.js';
 import { CubeButton } from '../CubeButton.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -66,9 +67,11 @@ export const CubeSortEditor = observer((props: CubeNodeEditorProps) => {
       <div>
         <CubeButton
           title={
-            canAddRow
-              ? 'Add a column to sort by'
-              : 'Every column that can be sorted already has a row'
+            readOnly
+              ? READ_ONLY_CUBE_TITLE
+              : canAddRow
+                ? 'Add a column to sort by'
+                : 'Every column that can be sorted already has a row'
           }
           disabled={!canAddRow}
           onClick={() => draft.addRow()}

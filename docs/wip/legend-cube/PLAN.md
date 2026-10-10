@@ -2253,9 +2253,10 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
 - **Unknown keys are kept on every object**: top level, `context`, `query`, nodes, snapshot columns and
   types, `meta`, `presentation`, width items. Rules and values are the exception above (unsupported), since ignoring
   a key such as `caseInsensitive` would change the rows; so are sort entries and rename mappings (an Unknown node,
-  M2), and aggregations (M4). A future key that would change the rows on a node with no list (e.g. Distinct gaining
-  `columns`) needs a new kind or a format version, since an older reader would keep it in `rest` and ignore it (M2,
-  §11.4). A snapshot column's unknown keys (on the column or its
+  M2), and aggregations (M4). A future setting that would change the rows outside a list's entries, on any node (e.g.
+  Distinct gaining `columns`, or a Partition's "whole partition" setting), needs a new kind, or a key on each entry,
+  since an older reader would keep a node key in `rest` and ignore it (M2, §11.4); a format version alone isn't enough,
+  as a newer document still runs read-only (M5.12). A snapshot column's unknown keys (on the column or its
   type) live on the source node by column name; when the host re-resolves the source they stay with the columns that
   still exist.
 - **The model is the engine's model context** as plain JSON (§6.2.2): `{_type: 'text', code}` in the slice,
@@ -3108,7 +3109,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
    keys, an aggregate runs from the partition's first row to the current one, and rows tied on the sort share a
    value (SQL's `RANGE` default ✅); with none, it covers the whole partition ✅. The editor notes say so, including
    that a Rank's sort makes the node's Sum running. A per-node "running / whole partition" setting (the aggregates'
-   `over()` without the sort, the ranks' with it) is the follow-up if users ask; explicit frames are not planned (an
+   `over()` without the sort, the ranks' with it) is the follow-up if users ask, saved on each aggregation entry, where
+   an older Cube reads an unknown key as an Unknown node and can't run it, never as a node key it would ignore
+   (M5.12); explicit frames are not planned (an
    unpartitioned window can't take a rows frame ✅, and date ranges plan on 4 of 12 types 💭).
 2. **Functions:** the spec's, plus **Row Number**: no column, Integer, never empty, a sort required as for Rank,
    `{p,w,r|$p->rowNumber($r)}`. It gives an exact "top N per group" with a Filter after it, where Rank keeps ties.

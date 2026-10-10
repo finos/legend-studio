@@ -30,6 +30,7 @@ import {
   SortDirection,
 } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { READ_ONLY_CUBE_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -268,6 +269,7 @@ describe('Sort editor', () => {
     expect(button('Move sort column 2 up').disabled).toBe(true);
     expect(button('Remove sort column 1').disabled).toBe(true);
     expect(button('Add sort column').disabled).toBe(true);
+    expect(button('Add sort column').title).toBe(READ_ONLY_CUBE_TITLE);
     expect(button('Apply').disabled).toBe(true);
   });
 });

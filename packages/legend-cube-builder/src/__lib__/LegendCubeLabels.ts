@@ -244,9 +244,9 @@ export const getPartitionNoColumnText = (fn: string): string =>
 
 /** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3) */
 export const PARTITION_EDITOR_NOTES = [
-  'With sort columns, Sum, Average, Count, Count Rows, Min and Max run from the first row of the partition to the current row, and rows that tie on the sort columns count together. Without sort columns, they cover the whole partition.',
-  "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row.",
-  "Their sort columns also make this node's Sum, Average, Count, Count Rows, Min and Max run. For totals over the whole partition, add another Apply Window Functions without sort columns.",
+  'With sort columns, every function but Rank, Dense Rank and Row Number runs from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
+  "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",
+  "Their sort columns also make this node's other functions run. For totals over the whole partition, add another Apply Window Functions without sort columns.",
   'Empty sort values come last when ascending and first when descending on H2; other databases may differ.',
   "A Sort before this node doesn't order the window: its sort columns do. The rows keep the order they came in.",
   'Count counts the values that are not empty; Count Rows counts every row.',
