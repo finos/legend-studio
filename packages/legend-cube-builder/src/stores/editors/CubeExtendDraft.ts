@@ -16,15 +16,18 @@
 
 import {
   type CubeType,
-  type Extend,
+  Extend,
   type ExtendColumn,
   type ExtendTyping,
   foldColumnName,
   getExtendSignature,
+  type IR,
   type JsonObject,
   type Query,
   QueryEmitter,
+  type QueryNode,
   type Schema,
+  UNTYPED,
 } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
@@ -50,6 +53,7 @@ import {
 import type { CubeEditorState } from '../CubeEditorState.js';
 import {
   buildCubeExtendTypingLambdas,
+  getCubeExtendUpstream,
   readCubeExtendTyping,
   withoutEngineContext,
 } from '../CubeExtendTyping.js';
@@ -118,6 +122,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   constructor(original: Extend, editorState: CubeEditorState) {
     super(original);
     makeObservable<CubeExtendDraft, 'touched'>(this, {
+      original: observable.ref,
       rows: observable.ref,
       typing: observable.ref,
       validating: observable,
@@ -131,6 +136,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       setName: action,
       setCode: action,
       validate: flow,
+      follow: action,
     });
     this.editorState = editorState;
     const types = original.typing.kind === 'typed' ? original.typing.types : [];
@@ -254,6 +260,34 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   }
 
   /**
+   * Goes on from an Extend that differs from the original only in its
+   * typing, e.g. typed in the background after an Apply, keeping the rows;
+   * rows not validated in this draft take the new types
+   */
+  override follow(node: QueryNode): boolean {
+    const { original } = this;
+    if (
+      !(node instanceof Extend) ||
+      node.id !== original.id ||
+      JSON.stringify([node.columns, node.rest]) !==
+        JSON.stringify([original.columns, original.rest])
+    ) {
+      return false;
+    }
+    this.original = node;
+    if (this.typing === undefined) {
+      const types = node.typing.kind === 'typed' ? node.typing.types : [];
+      this.rows = this.rows.map((row, index) => {
+        const column = node.columns[index];
+        return column?.name === row.name && column.code === row.code
+          ? { ...row, type: types[index] }
+          : row;
+      });
+    }
+    return true;
+  }
+
+  /**
    * Checks every row with the engine (F10): parses each code changed since
    * the last Validate, then, when every code parses and the input is valid,
    * types the columns after the input, located in their codes, and plans the
@@ -312,8 +346,14 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       if (!input || rows.some((row) => row.checked === undefined)) {
         return;
       }
-      // 2. type the columns, located in their codes
+      // 2. Cube's own checks of each column, which need no engine: a name
+      // the input has, in another case, would otherwise type
       const candidate = this.original.withColumns(this.columns);
+      if (this.putCubeProblems(candidate.getColumnProblems(input))) {
+        this.typing = UNTYPED;
+        return;
+      }
+      // 3. type the columns, located in their codes
       const query = editorState.document.query.replace(candidate);
       const located = rows.map((row) => ({
         name: row.name,
@@ -334,6 +374,11 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
         candidate,
         input,
         located,
+        getCubeExtendUpstream(
+          new QueryEmitter(query, editorState.registry),
+          candidate.id,
+          context.model,
+        ),
       );
       this.typing = typing;
       if (typing.kind !== 'typed') {
@@ -347,7 +392,11 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
         ...row,
         type: typing.types[index],
       }));
-      // 3. plan the query up to this node, for the cube's database
+      // a type Cube can't hold, such as an enumeration's own `Any`
+      if (this.putCubeProblems(candidate.getTypeProblems(typing.types))) {
+        return;
+      }
+      // 4. plan the query up to this node, for the cube's database
       const failure = (yield this.planFrom(
         query.replace(candidate.withTyping(typing)),
         candidate,
@@ -360,6 +409,15 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
     } finally {
       this.validating = false;
     }
+  }
+
+  /** Cube's problems, each on its row; whether there was one */
+  private putCubeProblems(problems: readonly (string | undefined)[]): boolean {
+    this.rows = this.rows.map((row, index) => {
+      const message = problems[index];
+      return message === undefined ? row : { ...row, problem: { message } };
+    });
+    return problems.some((problem) => problem !== undefined);
   }
 
   /** The problem on its row, or on every row when the engine named none */
@@ -421,15 +479,27 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
         types: typing.types.slice(0, count),
       });
       const replaced = query.replace(prefix);
-      const lambda = new QueryEmitter(
-        // run up to this node, as Execute would with it selected
-        replaced.selected === prefix.id ? replaced : replaced.select(prefix.id),
-        editorState.registry,
-      ).emitExecutionLambda({
-        rowLimit: 1,
-        runtime,
-        databaseType: this.planDatabaseType,
-      });
+      let lambda: IR;
+      try {
+        lambda = new QueryEmitter(
+          // run up to this node, as Execute would with it selected
+          replaced.selected === prefix.id
+            ? replaced
+            : replaced.select(prefix.id),
+          editorState.registry,
+        ).emitExecutionLambda({
+          rowLimit: 1,
+          runtime,
+          databaseType: this.planDatabaseType,
+        });
+      } catch (error) {
+        // the query up to here can't run, e.g. a node above is invalid
+        return new CubeEngineError(
+          CubeEngineErrorKind.COMPILE,
+          error instanceof Error ? error.message : String(error),
+          candidate.id,
+        );
+      }
       return editorState.host.engine.planLambda(context.model, lambda).then(
         () => undefined,
         (error: unknown) =>

@@ -180,7 +180,9 @@ export const CubeNodeEditorPanel = observer(
             className="flex h-6 w-6 shrink-0 items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             title={
               nodeEditor.hasChanges && !readOnly
-                ? 'Close, applying the changes'
+                ? draft.applyDisabledReason !== undefined
+                  ? `Can't close yet: ${draft.applyDisabledReason}, or Cancel`
+                  : 'Close, applying the changes'
                 : 'Close'
             }
             aria-label="Close the editor"

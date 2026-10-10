@@ -15,22 +15,30 @@
  */
 
 import {
+  buildSchemasAndValidity,
   colSpec,
   colSpecArray,
   EmitRole,
-  type Extend,
+  ERR_TYPING,
+  Extend,
   type ExtendTyping,
   func,
   getExtendSignature,
+  hashText,
   type IR,
+  isTypingError,
   type JsonObject,
   lambda,
   lambdaJson,
+  type ModelContext,
   type NodeRegistry,
   originOf,
+  printIR,
   type Query,
   QueryEmitter,
+  type QueryRule,
   type Schema,
+  stableJsonText,
 } from '@finos/legend-cube';
 import {
   CubeEngineError,
@@ -95,6 +103,102 @@ export const buildCubeExtendTypingLambdas = (
   return lambdas;
 };
 
+/** Each model's digest, by the object, so a large model is digested once */
+const MODEL_DIGESTS = new WeakMap<ModelContext, string>();
+
+const digestModel = (model: ModelContext): string => {
+  let digest = MODEL_DIGESTS.get(model);
+  if (digest === undefined) {
+    digest = hashText(stableJsonText(model));
+    MODEL_DIGESTS.set(model, digest);
+  }
+  return digest;
+};
+
+/**
+ * What the engine is given for an Extend's input when it types it, digested
+ * (PLAN §11.7): the input's relation as emitted, and the model. A typing
+ * records it (`upstream`), since the engine sees more than Cube's schema
+ * does; `undefined` when the input can't be emitted, e.g. it is invalid.
+ */
+export const getCubeExtendUpstream = (
+  emitter: QueryEmitter,
+  extendId: string,
+  model: ModelContext,
+): string | undefined => {
+  const [inputId] = emitter.query.getInputIds(extendId);
+  if (inputId === undefined || !emitter.canEmit(inputId)) {
+    return undefined;
+  }
+  return hashText(
+    `${digestModel(model)}\n${printIR(emitter.emitRelation(inputId))}`,
+  );
+};
+
+/** The digest of what the engine was given for the input, which the typing recorded */
+export const getCubeExtendTypingUpstream = (
+  typing: ExtendTyping,
+): string | undefined =>
+  typing.kind === 'unresolved' ? undefined : typing.upstream;
+
+const upstreamOf = getCubeExtendTypingUpstream;
+
+/**
+ * Whether the Extend's typing gives its types for this input: typed, for
+ * this schema and these columns, and for this input as the engine is given
+ * it, or recorded without it, as when loaded
+ */
+export const isCubeExtendTypingCurrent = (
+  extend: Extend,
+  input: Schema,
+  upstream: string | undefined,
+): boolean => {
+  const { typing } = extend;
+  const recorded = upstreamOf(typing);
+  return (
+    typing.kind === 'typed' &&
+    extend.currentTyping(input) === typing &&
+    (recorded === undefined || recorded === upstream)
+  );
+};
+
+/**
+ * A query rule for the editor (PLAN §11.7): an Extend whose typing recorded
+ * another input than the engine would be given now waits to be typed again
+ * (`ERR_TYPING`), e.g. after an Extend above it gains `->toOne()`, which
+ * Cube's schema doesn't show. A typing that recorded nothing, as one loaded,
+ * is used as it is; an Extend that already waits, or whose input is invalid,
+ * is left to its own checks.
+ */
+export const createStaleCubeExtendTypingRule =
+  (
+    registry: NodeRegistry,
+    modelOf: () => ModelContext | undefined,
+  ): QueryRule =>
+  (query) => {
+    const stale = new Map<string, readonly string[]>();
+    const model = modelOf();
+    const recorded = query.nodes.filter(
+      (node): node is Extend =>
+        node instanceof Extend && upstreamOf(node.typing) !== undefined,
+    );
+    if (!model || !recorded.length) {
+      return stale;
+    }
+    const { validity } = buildSchemasAndValidity(query, registry.queryRules);
+    const emitter = new QueryEmitter(query, registry);
+    recorded.forEach((node) => {
+      if ((validity.get(node.id) ?? []).some(isTypingError)) {
+        return;
+      }
+      const upstream = getCubeExtendUpstream(emitter, node.id, model);
+      if (upstream !== undefined && upstream !== upstreamOf(node.typing)) {
+        stale.set(node.id, [ERR_TYPING]);
+      }
+    });
+    return stale;
+  };
+
 /** What typing an Extend gave: the typing to store, and the error the engine gave, if it failed */
 export interface CubeExtendTypingResult {
   readonly typing: ExtendTyping;
@@ -111,6 +215,7 @@ export const readCubeExtendTyping = (
   extend: Extend,
   input: Schema,
   columns: readonly CubeExtendTypingColumn[],
+  upstream: string | undefined,
 ): CubeExtendTypingResult => {
   const signature = getExtendSignature(input, extend.columns);
   const whole = answers.get(keyOf(extend.id, columns.length));
@@ -122,6 +227,7 @@ export const readCubeExtendTyping = (
         types: whole.columns
           .slice(-columns.length)
           .map((column) => column.type),
+        upstream,
       },
     };
   }
@@ -147,15 +253,23 @@ export const readCubeExtendTyping = (
         failing < 0 || error.kind === CubeEngineErrorKind.NETWORK
           ? undefined
           : failing,
+      upstream,
     },
     error,
   };
 };
-/** Whether two typings say the same: the same kind and signature, and the same types, or the same failure */
+
+/**
+ * Whether two typings say the same: the same kind, signature and input as
+ * the engine was given it, and the same types, or the same failure
+ */
 export const isSameCubeExtendTyping = (
   a: ExtendTyping,
   b: ExtendTyping,
 ): boolean => {
+  if (upstreamOf(a) !== upstreamOf(b)) {
+    return false;
+  }
   if (a.kind === 'typed' && b.kind === 'typed') {
     return (
       a.signature === b.signature &&

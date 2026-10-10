@@ -66,7 +66,14 @@ export interface ExtendColumn {
  * What the engine said the columns' types are, for one input schema and one
  * list of columns, told apart by their signature (`getExtendSignature`):
  * nothing yet, a type per column, or why it couldn't type them, with the
- * index of the column that failed when the engine named one
+ * index of the column that failed when the engine named one.
+ *
+ * `upstream` is what the host that typed it gave the engine for the input,
+ * digested: its relation and the model. Cube's schema can't tell everything
+ * the engine sees (an Extend's column is nullable to Cube, never empty to the
+ * engine after `toOne()`), so a host compares it and types again when it
+ * differs (PLAN §11.7). Cube never reads it, and doesn't save it: a loaded
+ * cube is typed again.
  */
 export type ExtendTyping =
   | { readonly kind: 'unresolved' }
@@ -74,12 +81,14 @@ export type ExtendTyping =
       readonly kind: 'typed';
       readonly signature: string;
       readonly types: readonly CubeType[];
+      readonly upstream?: string | undefined;
     }
   | {
       readonly kind: 'failed';
       readonly signature: string;
       readonly message: string;
       readonly column?: number | undefined;
+      readonly upstream?: string | undefined;
     };
 
 export const UNTYPED: ExtendTyping = Object.freeze({ kind: 'unresolved' });
@@ -202,42 +211,58 @@ export class Extend extends UnaryNode {
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     // `ensureSchemas` has checked there is one schema per port
     const [schema] = ensureSchemas(inputSchemas, this.ports) as [Schema];
-    const inputNames = new Set(schema.names().map(foldColumnName));
-    const names = this.columns.map(({ name }) => foldColumnName(name));
     return (
       validate(
         this.columns.length > 0,
         MESSAGE_CANNOT_BE_EMPTY('Columns'),
         errors,
       ) &&
-      validateAllItems(
-        this.columns,
-        ({ name, lambda }, index) =>
-          validate(name !== '', MESSAGE_NEW_COLUMN_NAME_EMPTY, errors) &&
-          validate(
-            isValidColumnName(name),
-            MESSAGE_NEW_COLUMN_NAME_INVALID,
-            errors,
-          ) &&
-          validate(
-            !inputNames.has(names[index] ?? ''),
-            MESSAGE_ALREADY_IN_INPUT_SCHEMA('Column', name),
-            errors,
-          ) &&
-          validate(
-            !names.slice(0, index).includes(names[index] ?? ''),
-            MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER(name),
-            errors,
-          ) &&
-          validate(lambda !== undefined, MESSAGE_NO_EXPRESSION(name), errors) &&
-          validate(
-            lambda !== undefined && isOneParameterLambda(lambda),
-            MESSAGE_EXPRESSION_NOT_A_LAMBDA(name),
-            errors,
-          ),
+      validateAllItems(this.getColumnProblems(schema), (problem) =>
+        validate(problem === undefined, problem ?? '', errors),
       ) &&
       this.validateTyping(this.currentTyping(schema), errors)
     );
+  }
+
+  /**
+   * Each column's first problem that needs no engine, by index, `undefined`
+   * for a column without one: a name, valid, no input column's and no earlier
+   * column's (compared as databases that ignore case compare them), and an
+   * expression, a lambda of one row. The editor checks these before it asks
+   * the engine to type the columns.
+   */
+  getColumnProblems(input: Schema): (string | undefined)[] {
+    const inputNames = new Set(input.names().map(foldColumnName));
+    const names = this.columns.map(({ name }) => foldColumnName(name));
+    return this.columns.map(({ name, lambda }, index) => {
+      const folded = names[index] ?? '';
+      return name === ''
+        ? MESSAGE_NEW_COLUMN_NAME_EMPTY
+        : !isValidColumnName(name)
+          ? MESSAGE_NEW_COLUMN_NAME_INVALID
+          : inputNames.has(folded)
+            ? MESSAGE_ALREADY_IN_INPUT_SCHEMA('Column', name)
+            : names.slice(0, index).includes(folded)
+              ? MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER(name)
+              : lambda === undefined
+                ? MESSAGE_NO_EXPRESSION(name)
+                : !isOneParameterLambda(lambda)
+                  ? MESSAGE_EXPRESSION_NOT_A_LAMBDA(name)
+                  : undefined;
+    });
+  }
+
+  /**
+   * Each column's problem with the type the engine gave it, by index: a
+   * primitive or an enumeration, never a type Cube doesn't know, such as Any
+   */
+  getTypeProblems(types: readonly CubeType[]): (string | undefined)[] {
+    return this.columns.map(({ name }, index) => {
+      const type = types[index];
+      return type !== undefined && isColumnType(type)
+        ? undefined
+        : MESSAGE_NO_VALID_TYPE(name);
+    });
   }
 
   private validateTyping(typing: ExtendTyping, errors?: string[]): boolean {
@@ -264,14 +289,9 @@ export class Extend extends UnaryNode {
             ERR_TYPING,
             errors,
           ) &&
-          validateAllItems(this.columns, ({ name }, index) => {
-            const type = typing.types[index];
-            return validate(
-              type !== undefined && isColumnType(type),
-              MESSAGE_NO_VALID_TYPE(name),
-              errors,
-            );
-          })
+          validateAllItems(this.getTypeProblems(typing.types), (problem) =>
+            validate(problem === undefined, problem ?? '', errors),
+          )
         );
     }
   }
@@ -310,5 +330,11 @@ export class Extend extends UnaryNode {
   /** As the spec says: `Extend with "x", "y"` */
   describe(): string {
     return `Extend with ${this.columns.map(({ name }) => `"${name || '(blank)'}"`).join(', ')}`;
+  }
+
+  /** Without the names the user gave: `Extend with 2 columns` */
+  override describeRedacted(): string {
+    const count = this.columns.length;
+    return `Extend with ${count} column${count === 1 ? '' : 's'}`;
   }
 }

@@ -150,8 +150,35 @@ const open = (
   return { state, fake, calls };
 };
 
-const extendOf = (state: CubeEditorState): Extend =>
-  state.document.query.getNode('extend101') as Extend;
+const extendOf = (state: CubeEditorState, id = 'extend101'): Extend =>
+  state.document.query.getNode(id) as Extend;
+
+/** `x | <value>`, as the engine's JSON */
+const literalLambda = (value: string): JsonObject => ({
+  ...LAMBDA,
+  body: [{ _type: 'integer', value }],
+});
+
+/** ORDERS, then extend101 (a), then extend102 (b), captured */
+const ordersExtendedTwice = (): Query => {
+  const nodes = [
+    northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+    new Extend('extend101', [column('a')]),
+    new Extend('extend102', [column('b')]),
+  ];
+  return new Query(
+    nodes,
+    [
+      new Connection('relational101', 'extend101', 'tds'),
+      new Connection('extend101', 'extend102', 'tds'),
+    ],
+    'extend102',
+  );
+};
+
+/** The keys of each typing call, as `<extend id>#<k>` */
+const keysOf = (calls: ReturnType<typeof deferTyping>): string[][] =>
+  calls.map(({ lambdas }) => [...lambdas.keys()]);
 
 describe('Extend retyping', () => {
   test('Types a waiting Extend in the background, in one call, outside the undo history', async () => {
@@ -256,5 +283,126 @@ describe('Extend retyping', () => {
     // the same node: nothing changed
     expect(extendOf(state) === typed).toBe(true);
     expect(state.analysis.validity.get('extend101')).toEqual([]);
+  });
+
+  test("Types an Extend again when its input as the engine is given it changes, though Cube's schema doesn't", async () => {
+    const { state, calls } = open(ordersExtendedTwice());
+    calls[0]?.resolve(answerFor(calls[0].lambdas));
+    await settle();
+    calls[1]?.resolve(answerFor(calls[1].lambdas));
+    await settle();
+    expect(keysOf(calls)).toEqual([['extend101#1'], ['extend102#1']]);
+    expect(state.analysis.validity.get('extend102')).toEqual([]);
+    // extend101 gets another expression of the same type, as when it gains
+    // or drops ->toOne(): Cube's schema of extend102's input is the same
+    state.applyQuery(
+      state.document.query.replace(
+        extendOf(state).withColumns([
+          { name: 'a', code: 'x | 2', lambda: literalLambda('2') },
+        ]),
+      ),
+    );
+    calls[2]?.resolve(answerFor(calls[2].lambdas));
+    await settle();
+    expect(extendOf(state).typing.kind).toBe('typed');
+    // extend102 waits, so Execute does too, and it is typed again
+    expect(state.analysis.validity.get('extend102')).toEqual([ERR_TYPING]);
+    expect(state.execution.canExecute).toBe(false);
+    expect(keysOf(calls).slice(2)).toEqual([['extend101#1'], ['extend102#1']]);
+    calls[3]?.resolve(answerFor(calls[3].lambdas));
+    await settle();
+    expect(state.analysis.validity.get('extend102')).toEqual([]);
+    expect(state.execution.canExecute).toBe(true);
+    // the same types once more: typed once, never again
+    await settle();
+    expect(calls).toHaveLength(4);
+
+    // again, the engine unreachable: extend102 fails once, not in a loop
+    state.applyQuery(
+      state.document.query.replace(
+        extendOf(state).withColumns([
+          { name: 'a', code: 'x | 3', lambda: literalLambda('3') },
+        ]),
+      ),
+    );
+    calls[4]?.resolve(answerFor(calls[4].lambdas));
+    await settle();
+    calls[5]?.reject(new Error('Failed to fetch'));
+    await settle();
+    await settle();
+    expect(keysOf(calls).slice(4)).toEqual([['extend101#1'], ['extend102#1']]);
+    expect(state.analysis.validity.get('extend102')).toEqual([
+      "The new columns can't be typed: Failed to fetch",
+    ]);
+  });
+
+  test("Keeps a saved typing that is current when the engine can't be reached on import, with a warning", async () => {
+    const { state, calls } = open(ordersExtended(['a']));
+    calls[0]?.resolve(answerFor(calls[0].lambdas));
+    await settle();
+    const typed = extendOf(state);
+    if (typed.typing.kind !== 'typed') {
+      throw new Error('Expected a typed Extend');
+    }
+    // as loaded: the saved typing, without what the engine was given
+    const loaded = typed.withTyping({
+      kind: 'typed',
+      signature: typed.typing.signature,
+      types: typed.typing.types,
+    });
+    state.importDocument(
+      new CubeDocument({
+        context: CONTEXT,
+        query: state.document.query.replace(loaded),
+      }),
+      false,
+    );
+    calls[1]?.reject(new Error('Failed to fetch'));
+    await settle();
+    await settle();
+    expect(extendOf(state) === loaded).toBe(true);
+    expect(state.analysis.validity.get('extend101')).toEqual([]);
+    expect(state.getNodeWarnings(loaded)).toEqual([
+      "Could not check these columns' types again, so they keep their saved ones: Failed to fetch",
+    ]);
+    expect(calls).toHaveLength(2);
+  });
+
+  test('Writes a typing into an undo snapshot only when that snapshot gives the engine the same input', async () => {
+    const { state, calls } = open(ordersExtended(['a'], true));
+    calls[0]?.resolve(answerFor(calls[0].lambdas));
+    await settle();
+    const restrict = state.document.query.getNode('restrict101') as Restrict;
+    state.applyQuery(
+      state.document.query.replace(
+        new Restrict('restrict101', [...restrict.columns, 'FREIGHT']),
+      ),
+    );
+    calls[1]?.resolve(answerFor(calls[1].lambdas));
+    await settle();
+    expect(state.analysis.validity.get('extend101')).toEqual([]);
+    // the snapshot before the edit keeps the typing for its own input
+    state.undo();
+    expect(state.analysis.validity.get('extend101')).toEqual([]);
+    await settle();
+    expect(calls).toHaveLength(2);
+  });
+
+  test('Types an Extend again when the model changes', async () => {
+    const { state, calls } = open(ordersExtended(['a']));
+    calls[0]?.resolve(answerFor(calls[0].lambdas));
+    await settle();
+    expect(state.analysis.validity.get('extend101')).toEqual([]);
+    state.applyDocument(
+      state.document.withContext({
+        ...CONTEXT,
+        model: {
+          ...CUBE_NORTHWIND_MODEL,
+          code: `${CUBE_NORTHWIND_MODEL.code as string}\n`,
+        },
+      }),
+    );
+    expect(state.analysis.validity.get('extend101')).toEqual([ERR_TYPING]);
+    expect(calls).toHaveLength(2);
   });
 });

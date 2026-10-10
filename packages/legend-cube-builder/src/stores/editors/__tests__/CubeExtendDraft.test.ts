@@ -21,6 +21,7 @@ import {
   Extend,
   type IR,
   type JsonObject,
+  OpaqueType,
   PrimitiveType,
   Query,
   Schema,
@@ -39,6 +40,7 @@ import {
   CubeEngineErrorKind,
   type NodeId,
 } from '../../../graph-manager/CubeEngine.js';
+import { getEditorKeptOpenNotice } from '../../../__lib__/LegendCubeLabels.js';
 import { CubeEditorState } from '../../CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../fixtures/CubeNorthwindModel.js';
 import { CubeExtendDraft, NEW_EXPRESSION_CODE } from '../CubeExtendDraft.js';
@@ -277,5 +279,165 @@ describe('Extend draft', () => {
     expect(draft.build().columns.map(({ name }) => name)).toEqual(['b', 'a']);
     draft.removeRow(a ?? 0);
     expect(draft.build().columns.map(({ name }) => name)).toEqual(['b']);
+  });
+
+  test("Puts Cube's own problems on their rows before the engine types anything", async () => {
+    const { fake, draft } = open();
+    fake.parseExpression.mockImplementation(async (code, sourceId) => {
+      const lambda: JsonObject =
+        code === '1'
+          ? { _type: 'integer', value: '1' }
+          : code === '{a, b | 1}'
+            ? {
+                _type: 'lambda',
+                parameters: [
+                  { _type: 'var', name: 'a' },
+                  { _type: 'var', name: 'b' },
+                ],
+                body: [{ _type: 'integer', value: '1' }],
+              }
+            : lambdaOf(code, sourceId);
+      return { lambda, located: lambda };
+    });
+    const [first] = keysOf(draft);
+    // ORDERS has SHIP_VIA: the engine, which compares names exactly, would type it
+    draft.setName(first ?? 0, 'ship_via');
+    draft.setCode(first ?? 0, 'x | 1');
+    draft.addRow();
+    draft.setCode(keysOf(draft)[1] ?? 0, '1');
+    draft.addRow();
+    draft.setCode(keysOf(draft)[2] ?? 0, '{a, b | 1}');
+    await flowResult(draft.validate());
+    expect(draft.rows.map(({ problem }) => problem?.message)).toEqual([
+      'Column "ship_via" is already present in the input schema.',
+      // the first row's name was free again for the next
+      '"col_1" must be a lambda with one parameter, such as x | $x.PRICE.',
+      '"col_2" must be a lambda with one parameter, such as x | $x.PRICE.',
+    ]);
+    expect(fake.typeLambdas).not.toHaveBeenCalled();
+    expect(fake.planLambda).not.toHaveBeenCalled();
+    expect(draft.typing?.kind).toBe('unresolved');
+  });
+
+  test("Puts a type Cube can't hold on its row, and plans nothing", async () => {
+    const { fake, draft } = open();
+    fake.typeLambdas.mockImplementation(
+      async (_model, lambdas) =>
+        new Map(
+          [...lambdas.keys()].map((key) => [
+            key,
+            new Schema([
+              ...ORDERS_COLUMNS,
+              new SchemaColumn(
+                'col_1',
+                OpaqueType.get('meta::pure::metamodel::type::Any'),
+                false,
+              ),
+            ]),
+          ]),
+        ),
+    );
+    draft.setCode(keysOf(draft)[0] ?? 0, "x | if(true, |1, |'a')");
+    await flowResult(draft.validate());
+    expect(draft.rows[0]?.problem?.message).toBe(
+      '"col_1" does not have a valid type.',
+    );
+    expect(fake.planLambda).not.toHaveBeenCalled();
+  });
+
+  test("Names the first column the database can't run, planning only up to it", async () => {
+    const { fake, draft } = open();
+    draft.setCode(keysOf(draft)[0] ?? 0, 'x | [1, 2]->stdDevSample()');
+    draft.addRow();
+    draft.setCode(keysOf(draft)[1] ?? 0, 'x | 1');
+    draft.addRow();
+    draft.setCode(keysOf(draft)[2] ?? 0, 'x | 2');
+    // every plan has the first column
+    fake.planLambda.mockRejectedValue(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Assert failure at typeInference.pure',
+        'extend101',
+      ),
+    );
+    await flowResult(draft.validate());
+    // the whole node, then the first column alone
+    expect(fake.planLambda).toHaveBeenCalledTimes(2);
+    expect(draft.rows.map(({ problem }) => problem !== undefined)).toEqual([
+      true,
+      false,
+      false,
+    ]);
+  });
+});
+
+describe('Extend editor panel', () => {
+  test('Stays open while its expressions wait for Validate, rather than storing or dropping them', async () => {
+    const { state } = open();
+    const { nodeEditor } = state;
+    nodeEditor.open('extend101');
+    const draft = nodeEditor.draft as CubeExtendDraft;
+    draft.setCode(keysOf(draft)[0] ?? 0, 'x | 2');
+    nodeEditor.apply();
+    expect(state.history).toHaveLength(0);
+    nodeEditor.close();
+    expect(nodeEditor.nodeId).toBe('extend101');
+    expect(nodeEditor.notice).toBe(
+      getEditorKeptOpenNotice(
+        'extend101',
+        'Validate the expressions first (F10)',
+      ),
+    );
+    // another node
+    nodeEditor.open('relational101');
+    expect(nodeEditor.nodeId).toBe('extend101');
+    expect(nodeEditor.draft === draft).toBe(true);
+    // validated, it closes, applying
+    await flowResult(draft.validate());
+    nodeEditor.close();
+    expect(nodeEditor.nodeId).toBeUndefined();
+    expect(nodeEditor.notice).toBeUndefined();
+    expect(
+      (state.document.query.getNode('extend101') as Extend).columns[0]?.code,
+    ).toBe('x | 2');
+    // Cancel drops the changes
+    nodeEditor.open('extend101');
+    const next = nodeEditor.draft as CubeExtendDraft;
+    next.setCode(keysOf(next)[0] ?? 0, 'x | 3');
+    nodeEditor.cancel();
+    expect(nodeEditor.nodeId).toBeUndefined();
+  });
+
+  test('Goes on with its edits when the engine types the node in the background', async () => {
+    const { state } = open();
+    const { nodeEditor } = state;
+    nodeEditor.open('extend101');
+    const draft = nodeEditor.draft as CubeExtendDraft;
+    const [key] = keysOf(draft);
+    draft.setCode(key ?? 0, 'x | 1');
+    await flowResult(draft.validate());
+    // a rename keeps the codes validated, but not the typing: the stored
+    // node waits, and the engine types it in the background
+    draft.setName(key ?? 0, 'renamed');
+    nodeEditor.apply();
+    const stored = state.document.query.getNode('extend101') as Extend;
+    expect(state.isTypingNode(stored)).toBe(true);
+    const editing = nodeEditor.draft as CubeExtendDraft;
+    editing.addRow();
+    editing.setCode(keysOf(editing)[1] ?? 0, 'x | $x.renamed + 1');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const typed = state.document.query.getNode('extend101') as Extend;
+    expect(typed === stored).toBe(false);
+    expect(typed.typing.kind).toBe('typed');
+    // the panel follows it, with the rows being edited
+    expect(nodeEditor.nodeId).toBe('extend101');
+    expect(nodeEditor.notice).toBeUndefined();
+    expect(nodeEditor.draft === editing).toBe(true);
+    expect(editing.original === typed).toBe(true);
+    expect(editing.rows.map(({ code }) => code)).toEqual([
+      'x | 1',
+      'x | $x.renamed + 1',
+    ]);
+    expect(nodeEditor.hasChanges).toBe(true);
   });
 });

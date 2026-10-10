@@ -105,6 +105,11 @@ describe(unitTest('Extend node'), () => {
     expect(Extend.TYPE).toBe('extend');
     expect(node.ports).toEqual(['tds']);
     expect(node.describe()).toBe('Extend with "a", "b"');
+    // without the names the user gave, for logs
+    expect(node.describeRedacted()).toBe('Extend with 2 columns');
+    expect(
+      new Extend('extend101', [columnOf('secret')]).describeRedacted(),
+    ).toBe('Extend with 1 column');
     expect(
       new Extend('extend101', [
         { name: '', code: '', lambda: undefined },
@@ -175,6 +180,17 @@ describe(unitTest('Extend node'), () => {
       '"c" must be a lambda with one parameter, such as x | $x.PRICE.',
       '"d" must be a lambda with one parameter, such as x | $x.PRICE.',
     ]);
+    // the same problems by column, which the editor puts on its rows
+    expect(node.getColumnProblems(ORDERS)).toEqual([
+      'New column name cannot be empty.',
+      'New column name is not valid column name.',
+      'Column "freight" is already present in the input schema.',
+      undefined,
+      'New column name "A" cannot be the same as other column name.',
+      '"b" does not have an expression.',
+      '"c" must be a lambda with one parameter, such as x | $x.PRICE.',
+      '"d" must be a lambda with one parameter, such as x | $x.PRICE.',
+    ]);
   });
 
   test('Waits for the engine to type its columns, and for this input', () => {
@@ -228,6 +244,13 @@ describe(unitTest('Extend node'), () => {
         ),
       ),
     ).toEqual(['"b" does not have a valid type.']);
+    // by column, for the editor
+    expect(
+      new Extend('extend101', [columnOf('a'), columnOf('b')]).getTypeProblems([
+        INTEGER,
+        OpaqueType.get('meta::pure::metamodel::type::Any'),
+      ]),
+    ).toEqual([undefined, '"b" does not have a valid type.']);
     // a typing that doesn't give a type per column waits for another
     expect(validationErrors(typed([columnOf('a')], []))).toEqual([ERR_TYPING]);
   });
@@ -278,6 +301,33 @@ describe(unitTest('Extend signatures and lambdas'), () => {
       ...ORDERS.columns.slice(1),
     ]);
     expect(getExtendSignature(nullable, [columnOf('a')])).not.toBe(signature);
+    // the same name and nullability, another type
+    const retyped = new Schema([
+      column('ORDER_ID', `${P}Double`),
+      ...ORDERS.columns.slice(1),
+    ]);
+    expect(getExtendSignature(retyped, [columnOf('a')])).not.toBe(signature);
+    const renamed = new Schema([
+      column('ORDER_REF', `${P}SmallInt`),
+      ...ORDERS.columns.slice(1),
+    ]);
+    expect(getExtendSignature(renamed, [columnOf('a')])).not.toBe(signature);
+  });
+
+  test('Keeps the digest of what the engine was given for the input, which Cube never reads', () => {
+    const columns = [columnOf('a')];
+    const node = new Extend('extend101', columns).withTyping({
+      kind: 'typed',
+      signature: getExtendSignature(ORDERS, columns),
+      types: [INTEGER],
+      upstream: 'abc',
+    });
+    expect(node.typing.kind === 'typed' && node.typing.upstream).toBe('abc');
+    expect(
+      node.withColumns(columns).typing.kind === 'typed' &&
+        node.withColumns(columns).typing,
+    ).toEqual(node.typing);
+    expect(validationErrors(node)).toEqual([]);
   });
 
   test('Takes a lambda of one parameter and a body as an expression', () => {

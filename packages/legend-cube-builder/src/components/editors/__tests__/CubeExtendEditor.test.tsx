@@ -25,7 +25,10 @@ import {
   Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
-import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import {
+  MockedMonacoEditorAPI,
+  MockedMonacoEditorInstance,
+} from '@finos/legend-lego/code-editor/test';
 import {
   act,
   fireEvent,
@@ -203,5 +206,46 @@ describe('Extend editor', () => {
       ),
     ).toBeTruthy();
     await waitFor(() => expect(button('Validate').disabled).toBe(false));
+  });
+
+  test('Underlines a problem the engine located in its code', async () => {
+    const { state, fake } = await render();
+    const draft = draftOf(state);
+    const key = draft.rows[0]?.key ?? 0;
+    act(() => draft.setCode(key, 'x | $x.ORDER_ID +'));
+    fake.parseExpression.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        "no viable alternative at input '+'",
+        undefined,
+        undefined,
+        {
+          sourceId: `extend101:${key}`,
+          startLine: 1,
+          startColumn: 17,
+          endLine: 1,
+          endColumn: 17,
+        },
+      ),
+    );
+    MockedMonacoEditorAPI.setModelMarkers.mockClear();
+    fireEvent.click(button('Validate'));
+    await within(panel()).findByText("no viable alternative at input '+'");
+    await waitFor(() =>
+      expect(MockedMonacoEditorAPI.setModelMarkers).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        [
+          expect.objectContaining({
+            message: "no viable alternative at input '+'",
+            startLineNumber: 1,
+            startColumn: 17,
+            endLineNumber: 1,
+            // the code editor's end is past the last character
+            endColumn: 18,
+          }),
+        ],
+      ),
+    );
   });
 });

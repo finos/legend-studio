@@ -288,6 +288,17 @@ export const EXTEND_APPLY_DISABLED_REASON = Object.freeze({
   VALIDATING: 'Validating the expressions',
 });
 
+/** The warning on an Extend whose saved types the engine couldn't check again, e.g. offline (PLAN §11.7) */
+export const getExtendRetypeWarning = (firstLine: string): string =>
+  `Could not check these columns' types again, so they keep their saved ones: ${firstLine}`;
+
+/** The notice of a node editor kept open, since its changes can't be applied yet, e.g. an Extend's expressions not validated */
+export const getEditorKeptOpenNotice = (
+  nodeId: string,
+  waiting: string,
+): string =>
+  `The editor of ${nodeId} stays open, since its changes can't be applied yet: ${waiting}, or Cancel to drop them.`;
+
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
 export const EXTEND_TO_ONE_HINT =
   'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.';

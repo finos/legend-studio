@@ -149,7 +149,7 @@ const typeOf = async (
     query,
     registry().queryRules,
   ).schemas.get('restrict101') as Schema;
-  return readCubeExtendTyping(answers, extend, inputSchema, columns);
+  return readCubeExtendTyping(answers, extend, inputSchema, columns, undefined);
 };
 
 const typesOf = async (

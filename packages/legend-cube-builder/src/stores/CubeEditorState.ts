@@ -33,6 +33,7 @@ import {
   type Query,
   QueryEmitter,
   type QueryNode,
+  type QueryRule,
   RelationalTableSource,
   rereadQueryFilterValues,
   type Schema,
@@ -57,6 +58,7 @@ import {
   CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
   getSchemaDriftWarning,
+  getExtendRetypeWarning,
   getSourceRecheckWarning,
   LEGEND_CUBE_USER_DATA_KEY,
   MAX_UNDO_STEPS,
@@ -88,6 +90,10 @@ import { CubeExecutionState } from './CubeExecutionState.js';
 import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
 import {
   buildCubeExtendTypingLambdas,
+  createStaleCubeExtendTypingRule,
+  getCubeExtendTypingUpstream,
+  getCubeExtendUpstream,
+  isCubeExtendTypingCurrent,
   isSameCubeExtendTyping,
   readCubeExtendTyping,
 } from './CubeExtendTyping.js';
@@ -138,6 +144,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly host: CubeHost;
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
+  /** The editor's own query rule: an Extend typed for another input than its own waits to be typed again (PLAN §11.7) */
+  private readonly staleExtendTyping: QueryRule;
   readonly execution: CubeExecutionState;
   /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
@@ -234,6 +242,10 @@ export class CubeEditorState implements CommandRegistrar {
     });
     this.host = host;
     this.registry = createNodeRegistry();
+    this.staleExtendTyping = createStaleCubeExtendTypingRule(
+      this.registry,
+      () => this.document.context?.model,
+    );
     this.document = document;
     const storedLimit = host.applicationStore.userDataService.getNumericValue(
       LEGEND_CUBE_USER_DATA_KEY.ROW_LIMIT,
@@ -265,12 +277,16 @@ export class CubeEditorState implements CommandRegistrar {
     );
   }
 
-  /** Each node's schema and errors, query-level rules included, as the emitter sees them */
+  /**
+   * Each node's schema and errors, query-level rules included, as the
+   * emitter sees them, and an Extend typed for another input than its own
+   * waiting (`ERR_TYPING`), which only the editor can tell
+   */
   get analysis(): SchemaInferenceResult {
-    return buildSchemasAndValidity(
-      this.document.query,
-      this.registry.queryRules,
-    );
+    return buildSchemasAndValidity(this.document.query, [
+      ...this.registry.queryRules,
+      this.staleExtendTyping,
+    ]);
   }
 
   get emitter(): QueryEmitter {
@@ -324,8 +340,11 @@ export class CubeEditorState implements CommandRegistrar {
    * history (PLAN §11.7 Q4): each for the input it has now, its columns
    * after its input's relation, as typing types any node. The typing goes in
    * place of the very nodes sent, in the cube shown and the undo snapshots
-   * taken meanwhile; one the user changed meanwhile is left to type again. A
-   * typing the engine couldn't give names the column it failed on.
+   * that give the engine the same input; one the user changed meanwhile is
+   * left to type again. Each typing records the input as the engine was given
+   * it (`upstream`). A typing the engine couldn't give names the column it
+   * failed on; when the engine can't be reached, a typing still current for
+   * the input is kept, with a warning, as a source's saved columns are.
    */
   *retypeExtends(nodes: readonly Extend[]): GeneratorFn<void> {
     const { context, query } = this.document;
@@ -333,6 +352,7 @@ export class CubeEditorState implements CommandRegistrar {
       return;
     }
     const { schemas } = this.analysis;
+    const emitter = new QueryEmitter(query, this.registry);
     const requests = nodes.flatMap((node) => {
       const [inputId] = query.getInputIds(node.id);
       const input = inputId === undefined ? undefined : schemas.get(inputId);
@@ -353,6 +373,7 @@ export class CubeEditorState implements CommandRegistrar {
           node,
           input,
           columns,
+          upstream: getCubeExtendUpstream(emitter, node.id, context.model),
           lambdas: buildCubeExtendTypingLambdas(
             query,
             node,
@@ -395,21 +416,47 @@ export class CubeEditorState implements CommandRegistrar {
       );
     }
     // a typing that comes back the same leaves its node, and the query, alone
-    this.replaceOutsideHistory(
-      new Map(
-        requests.flatMap(({ node, input, columns }) => {
-          const { typing } = readCubeExtendTyping(
-            answers,
-            node,
-            input,
-            columns,
-          );
-          return isSameCubeExtendTyping(typing, node.typing)
-            ? []
-            : [[node, node.withTyping(typing)] as const];
-        }),
-      ),
+    const warnings = new Map(this.warnings);
+    const replacements = new Map<QueryNode, QueryNode>(
+      requests.flatMap(({ node, input, columns, upstream }) => {
+        const { typing, error } = readCubeExtendTyping(
+          answers,
+          node,
+          input,
+          columns,
+          upstream,
+        );
+        if (
+          error?.kind === CubeEngineErrorKind.NETWORK &&
+          isCubeExtendTypingCurrent(node, input, upstream)
+        ) {
+          warnings.set(node.key, [getExtendRetypeWarning(error.firstLine)]);
+          return [];
+        }
+        warnings.delete(node.key);
+        return isSameCubeExtendTyping(typing, node.typing)
+          ? []
+          : [[node, node.withTyping(typing)] as const];
+      }),
     );
+    this.warnings = warnings;
+    // an undo snapshot whose input differs keeps the typing it had
+    const emitters = new Map<Query, QueryEmitter>([[query, emitter]]);
+    this.replaceOutsideHistory(replacements, (snapshot, resolved) => {
+      const upstream = getCubeExtendTypingUpstream((resolved as Extend).typing);
+      if (upstream === undefined) {
+        return true;
+      }
+      let snapshotEmitter = emitters.get(snapshot);
+      if (!snapshotEmitter) {
+        snapshotEmitter = new QueryEmitter(snapshot, this.registry);
+        emitters.set(snapshot, snapshotEmitter);
+      }
+      return (
+        getCubeExtendUpstream(snapshotEmitter, resolved.id, context.model) ===
+        upstream
+      );
+    });
   }
 
   /**
@@ -876,6 +923,7 @@ export class CubeEditorState implements CommandRegistrar {
    */
   private replaceOutsideHistory(
     replacements: ReadonlyMap<QueryNode, QueryNode>,
+    accepts?: (query: Query, resolved: QueryNode) => boolean,
   ): void {
     if (!replacements.size) {
       return;
@@ -888,7 +936,10 @@ export class CubeEditorState implements CommandRegistrar {
       if (checked === undefined) {
         let replaced = document.query;
         replacements.forEach((resolved, source) => {
-          if (replaced.getNode(source.id) === source) {
+          if (
+            replaced.getNode(source.id) === source &&
+            (accepts?.(document.query, resolved) ?? true)
+          ) {
             replaced = replaced.replace(resolved);
           }
         });
