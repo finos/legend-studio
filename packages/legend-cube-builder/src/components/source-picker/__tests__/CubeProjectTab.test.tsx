@@ -51,7 +51,9 @@ describe('Project tab', () => {
     await renderPage();
     fireEvent.click(screen.getByText('add a table'));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('tab', { name: 'Project' }));
+    fireEvent.click(
+      within(dialog).getByRole('tab', { name: 'Project Database' }),
+    );
     const project =
       await within(dialog).findByLabelText<HTMLSelectElement>('Project');
     await waitFor(() =>
@@ -97,7 +99,9 @@ describe('Project tab', () => {
     projects.listProjects.mockRejectedValueOnce(new Error('depot down'));
     fireEvent.click(screen.getByText('add a table'));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('tab', { name: 'Project' }));
+    fireEvent.click(
+      within(dialog).getByRole('tab', { name: 'Project Database' }),
+    );
     const alert = await within(dialog).findByRole('alert');
     expect(alert.textContent).toContain(
       "Can't list the depot's projects: depot down",

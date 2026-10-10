@@ -1129,7 +1129,8 @@ Problem tables are flagged in the picker rather than crashing the canvas:
 
 **6.2.7 Picker UI (slice).** A minimal dialog. M3 redesigns it.
 
-1. Pick a model (bundled "Northwind (Cube fixture)" or "Paste Pure model…").
+1. Pick a model (bundled "Northwind (Cube fixture)" or "Paste Pure model…"). Since 2026-10-10 this is the **Sample
+   Data** tab's Dataset step, offering the three bundled datasets only (§6.9).
 2. Pick a database, then a runtime filtered to it (§6.2.5; the filter needs the database, so it comes first —
    Settled before M1.8). A step with a single choice is picked automatically.
 3. Pick schema → a table list with search, column counts and the flags above.
@@ -1139,7 +1140,7 @@ source fixes `context.model` and `context.runtime`; later picks are limited to t
 
 ### 6.3 Relational with depot (M3, built 2026-10-10)
 
-A cube can read tables of the Databases in a published project, through the source dialog's **Project** tab.
+A cube can read tables of the Databases in a published project, through the source dialog's **Project Database** tab.
 
 - **What it saves:** the engine's alloy pointer at a released version (§6.2.2's M3 form,
   `graph-manager/CubeProject.ts`), plus the runtime's path. The engine types and runs it as saved, and fetches the
@@ -1335,15 +1336,20 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
 
 To make Cube easy to demo and explore, it ships three small datasets and six example cubes.
 
-- **Datasets:** bundled models in the Model tab: Northwind (the Cube fixture, loaded by the engine's
-  `loadNorthwindData()`), **Sports (sample)** (10 sports, 360 events of 2025 with viewers and attendance) and **Trades
+- **Datasets:** bundled models in the Sample Data tab: Northwind (loaded by the engine's `loadNorthwindData()`),
+  **Sports (sample)** (10 sports, 360 events of 2025 with viewers and attendance) and **Trades
   (sample)** (6 desks, 15 instruments, 400 trades of the first half of 2026). The two samples are made up and seeded,
   so their rows are the same on every load (a cube saves the model text). They load through in-memory H2 setup SQL like
   Northwind's CUBETEST tables, which the deployed engine already runs; the SQL also runs on DuckDB (not used: DuckDB in
   a deployment is untested). Hundreds of rows each, one insert per table, since the setup runs on every connection
   checkout.
-- **Model tab:** opens on the cube's model, else the pasted model while the paste box is shown, else the bundled model
-  picked last, else the first (Northwind), so the one-click start stays.
+- **Sample Data tab** (the Model tab, renamed by the user on 2026-10-10): its Dataset step lists the three datasets,
+  named Northwind, Sports and Trades. Northwind is the fixture without Cube's test tables (`CUBE_NORTHWIND_SAMPLE_MODEL`;
+  the tests keep `CUBE_NORTHWIND_MODEL`), and a cube saved with the fixture still shows as Northwind. Pasting a Pure
+  model is no longer offered in the UI; the tab's state keeps it, and a cube on a pasted or other text model still
+  opens, as "The cube's model". The tab opens on the cube's model, else the dataset picked last, else Northwind.
+- **The dialog's tabs** (user, 2026-10-10): **Sample Data · Project Database · Direct Connection · Data Product ·
+  Ingest**, two tabs for the two relational sources, named for where the tables come from.
 - **Example cubes:** two per dataset, built in code (`stores/CubeExamples.ts`), not saved JSON, so they hold no schema
   snapshot to keep current: their tables are typed when they open, like an imported cube's. They use only nodes on
   master (no windows yet): top customers by orders and products in stock by category (Northwind), top watched sports
@@ -1354,7 +1360,7 @@ To make Cube easy to demo and explore, it ships three small datasets and six exa
   card first (icon, one line, its tables), then its two example cards (icon, one line, the example's steps as node
   icons). An example card opens a new copy of the example in place of the cube, as Import does (one undo step), waits
   for its tables to be typed, then runs it, unless the user has moved off it. A dataset card starts a new cube on its
-  model (one undo step) and opens the source dialog's Model tab on it, to add a first table. Both work on a read-only
+  model (one undo step) and opens the source dialog's Sample Data tab on it, to add a first table. Both work on a read-only
   cube too, since they replace it with an editable one. Icons: a cart (Northwind), a trophy (Sports, `TrophyIcon`, new
   in legend-art), a bar chart (Trades).
 - **Tests:** the core tests cover the list, opening an example, Undo, the no-run case, a read-only cube, starting on a
@@ -2582,9 +2588,9 @@ Prerequisites:
 The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.2.4).
 
 1. Open `http://localhost:9001/query/cube` and open the picker: **Add table**, the canvas's "add a table" link, or the
-   palette's **Relational Database Table**. Model ("Northwind (Cube fixture)"), Database and Runtime
-   (`showcase::northwind::mapping::StoreRuntime`) fill themselves; choose Schema **NORTHWIND** (the list also shows
-   CUBETEST, and `default`, which holds only a decoy table).
+   palette's **Relational Database Table**. On the **Sample Data** tab, Dataset ("Northwind"), Database, Runtime
+   (`showcase::northwind::mapping::StoreRuntime`) and Schema **NORTHWIND** fill themselves (Cube's test tables aren't
+   offered: they are in the test fixture only).
 2. Add **ORDERS** (14 columns). The picker closes after each **Add**, so open it again and add **CUSTOMERS** (11
    columns). Both land on the canvas with their
    schemas; ORDERS, the first table, has the accent ring of the node Execute runs. Click ORDERS: the side panel's
@@ -2648,10 +2654,10 @@ keys turn on the rest (hosting.md):
 
 Direct connection:
 
-1. Open the dialog from the palette's **Relational Database Table**, and click the **Database connection** tab. The
+1. Open the dialog from the palette's **Relational Database Table**, and click the **Direct Connection** tab. The
    form starts on H2 with a sample setup SQL. Click **Test connection**: schema `CUBE_SAMPLE` is chosen, and its
    tables list CUSTOMERS (3 columns) and ORDERS (4 columns).
-2. Add **ORDERS**; open the dialog again (it reopens on the Database connection tab, with the Model and Data product
+2. Add **ORDERS**; open the dialog again (it reopens on the Direct Connection tab, with the Sample Data and Data Product
    tabs disabled) and add **CUSTOMERS**. Click ORDERS: the Source panel shows the connection's summary ("H2: an H2
    database in the engine's H2 server, 6 setup statements, authentication h2Default"), never its setup SQL.
 3. Join them on `CUSTOMER_ID` (Inner), make the Join the node Execute runs (Cmd/Ctrl-click it, or **Select**), and
@@ -2676,13 +2682,13 @@ Examples (§6.9):
 3. Open each other example the same way: Top customers by orders (10 rows), Products in stock by category (8), Most
    watched finals in Europe (up to 10), Notional by desk and asset class (9), Largest buys (20). Each replaces the
    cube before it.
-4. Click the **Trades** dataset card: a new cube on the Trades model, with the source dialog's Model tab open on it
+4. Click the **Trades** dataset card: a new cube on the Trades model, with the source dialog's Sample Data tab open on it
    (DESKS, INSTRUMENTS, TRADES). Add **TRADES** and press **F9**: 400 rows. **Undo** brings back the cube before.
 5. **Export (dev)** an example and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
 
 Data products:
 
-1. The palette shows **Data Product** with a BETA badge. Click it: the dialog opens on the **Data product** tab, Mode
+1. The palette shows **Data Product** with a BETA badge. Click it: the dialog opens on the **Data Product** tab, Mode
    **Production**. The deployed products list; search narrows it (with `marketplace.serverUrl`, on the marketplace
    server: a search with more than 100 matches says "Too many matching items; list truncated.").
 2. Pick a product: its access points show by group, each group with your access as the marketplace shows it
@@ -2720,7 +2726,7 @@ Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows
    `LAKE_FROM`, `LAKE_THRU` for a business-temporal one). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the
    one you last used); change it if needed.
 3. Add the data set. Open the dialog again: the Mode, producer deployment and warehouse are fixed, and the Model,
-   Database connection and Data product tabs are disabled. Add a second data set of the same producer.
+   Direct Connection and Data Product tabs are disabled. Add a second data set of the same producer.
 4. Join the two on a shared key, add a Filter `LAKE_OUT_ID` **is** `999999999` (or the current-rows marker your
    deployment uses) before the Join if they are batch-milestoned, and press **F9**: rows come back. **Show Pure**
    shows two `#I{…}#` accessors and `->from(cube::ingest::Runtime)`.
@@ -2741,17 +2747,17 @@ Prerequisites: the engine on :6300 and `yarn dev:mock-depot-server` (the mock de
 fetches projects), and Query on its dev server (its `depot.url` points at the mock). In a deployment, use a published
 project with a Database and a runtime.
 
-1. Open the dialog (**Add table**) and click the **Project** tab: the projects list. Pick
+1. Open the dialog (**Add table**) and click the **Project Database** tab: the projects list. Pick
    `org.finos.legend.cube.samples:cube-sales`: its versions read `1.10.0 (latest)`, `1.9.0`, `1.0.0` (no SNAPSHOT), the
    newest picked. Its Databases are `SalesDb`, `ArchiveDb` and `PlannedDb`, not `cube-reference`'s `CurrencyDb`.
 2. Pick `SalesDb`: its one runtime is picked for you. Pick `PlannedDb`: the tab says no runtime connects to it, and
    **Add** stays disabled. Pick `ArchiveDb`: two runtimes; choose one.
 3. Pick `SalesDb`, schema `SALES`, table `ORDERS`, and **Add**. Press **F9**: 6 rows, with a `STATUS` column. Open the
-   dialog again: it reopens on the Project tab with the project and version fixed, the other tabs disabled.
+   dialog again: it reopens on the Project Database tab with the project and version fixed, the other tabs disabled.
 4. Click the table's node: the Source panel shows the project and version above the Database.
 5. On a new cube, pick version `1.0.0` and add `ORDERS`: no `STATUS` column; `RETURNS` is listed only from 1.10.0.
 6. **Export (dev)** the cube and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
-7. Stop the mock depot, open a new page and pick the Project tab: it says it can't list the depot's projects, with
+7. Stop the mock depot, open a new page and pick the Project Database tab: it says it can't list the depot's projects, with
    **Retry**. Start the mock again and click **Retry**.
 
 ### 11.3 After the slice (recommended order, outline)

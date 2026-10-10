@@ -125,7 +125,7 @@ const isSameProduct = (
  */
 export class CubeDataProductTabState implements CubeSourcePickerTab {
   readonly key = CubeSourcePickerTabKey.DATA_PRODUCT;
-  readonly label = 'Data product';
+  readonly label = 'Data Product';
   readonly editorState: CubeEditorState;
 
   environmentType = CubeDataProductEnvironmentType.PRODUCTION;

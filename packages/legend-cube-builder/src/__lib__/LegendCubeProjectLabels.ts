@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// The words of Legend Cube's Project tab (PLAN §6.3)
+// The words of Legend Cube's Project Database tab (PLAN §6.3)
 
 export const CUBE_PROJECT_LABEL = Object.freeze({
   LOADING_PROJECTS: "Listing the depot's projects…",

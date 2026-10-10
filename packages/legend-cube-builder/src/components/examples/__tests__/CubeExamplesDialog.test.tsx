@@ -94,15 +94,15 @@ describe('Examples dialog', () => {
     expect(screen.getByText('open an example')).toBeDefined();
   });
 
-  test("Starts a new cube on a dataset, in the source dialog's Model tab on it", async () => {
+  test("Starts a new cube on a dataset, in the source dialog's Sample Data tab on it", async () => {
     await renderPage();
     const dialog = await openExamples();
     fireEvent.click(within(dialog).getByRole('button', { name: /^Sports/u }));
     const picker = await screen.findByRole('dialog');
     expect(within(picker).getByText('Add a source')).toBeDefined();
-    const model = within(picker).getByLabelText<HTMLSelectElement>('Model');
+    const model = within(picker).getByLabelText<HTMLSelectElement>('Dataset');
     // the cube's model, fixed
     expect(model.disabled).toBe(true);
-    expect(model.selectedOptions[0]?.textContent).toBe('Sports (sample)');
+    expect(model.selectedOptions[0]?.textContent).toBe('Sports');
   });
 });

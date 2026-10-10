@@ -134,7 +134,7 @@ export const isExploredTableSelectable = (table: CubeExploredTable): boolean =>
  */
 export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
   readonly key = CubeSourcePickerTabKey.DIRECT_CONNECTION;
-  readonly label = 'Database connection';
+  readonly label = 'Direct Connection';
   readonly editorState: CubeEditorState;
 
   databaseType = CubeDirectDatabaseType.H2;

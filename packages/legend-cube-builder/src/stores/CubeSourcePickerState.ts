@@ -45,7 +45,7 @@ import {
 
 /**
  * The source dialog (PLAN §6.1, §6.8): a tab per way to find a source, the
- * Model tab first. It opens on the tab asked for, or the one the cube's
+ * Sample Data tab first. It opens on the tab asked for, or the one the cube's
  * fixed context belongs to, which is then the only tab enabled; Add runs the
  * open tab's Add and closes the dialog once the source is added.
  */
@@ -103,7 +103,7 @@ export class CubeSourcePickerState {
 
   /**
    * The tab the cube's fixed context belongs to, which the host may not
-   * serve; the Model tab takes any context no tab claims
+   * serve; the Sample Data tab takes any context no tab claims
    */
   get fixedTab(): CubeSourcePickerTab | undefined {
     const { context } = this.editorState.document;
@@ -126,7 +126,7 @@ export class CubeSourcePickerState {
   /**
    * The tab a palette item opens (DP-3): a data product's or an ingest data
    * set's own tab, when the host serves it; for a table, the table tab the
-   * cube uses, else the table tab open last, else the Model tab
+   * cube uses, else the table tab open last, else the Sample Data tab
    */
   tabForSourceType(type: string): CubeSourcePickerTab | undefined {
     const dedicated = this.dedicatedTabs.get(type);

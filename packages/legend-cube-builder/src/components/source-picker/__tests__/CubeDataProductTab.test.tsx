@@ -70,7 +70,7 @@ describe('Data product tab', () => {
     const dialog = await openFromPalette();
     expect(
       within(dialog)
-        .getByRole('tab', { name: 'Data product' })
+        .getByRole('tab', { name: 'Data Product' })
         .getAttribute('aria-selected'),
     ).toBe('true');
     expect(
@@ -157,8 +157,9 @@ describe('Data product tab', () => {
     ).toBe(true);
     // the cube's tables tabs are disabled
     expect(
-      within(dialog).getByRole<HTMLButtonElement>('tab', { name: 'Model' })
-        .disabled,
+      within(dialog).getByRole<HTMLButtonElement>('tab', {
+        name: 'Sample Data',
+      }).disabled,
     ).toBe(true);
   });
 
@@ -310,7 +311,7 @@ describe('Data product tab', () => {
     fireEvent.click(screen.getByText('add a table'));
     const dialog = await screen.findByRole('dialog');
     expect(
-      within(dialog).queryByRole('tab', { name: 'Data product' }),
+      within(dialog).queryByRole('tab', { name: 'Data Product' }),
     ).toBeNull();
   });
 

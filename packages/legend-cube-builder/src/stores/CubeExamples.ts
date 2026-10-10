@@ -38,7 +38,7 @@ import {
 } from '@finos/legend-cube';
 import {
   CUBE_NORTHWIND_DATABASE,
-  CUBE_NORTHWIND_MODEL,
+  CUBE_NORTHWIND_SAMPLE_MODEL,
   CUBE_NORTHWIND_RUNTIME,
 } from './fixtures/CubeNorthwindModel.js';
 import {
@@ -90,7 +90,7 @@ const NORTHWIND: CubeExampleDataset = {
   description:
     'A small trading company: its orders, customers, products and employees',
   tables: ['ORDERS', 'CUSTOMERS', 'PRODUCTS', 'CATEGORIES', 'EMPLOYEES', '…'],
-  model: CUBE_NORTHWIND_MODEL,
+  model: CUBE_NORTHWIND_SAMPLE_MODEL,
   runtime: CUBE_NORTHWIND_RUNTIME,
   database: CUBE_NORTHWIND_DATABASE,
   schema: 'NORTHWIND',

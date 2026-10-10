@@ -75,33 +75,33 @@ beforeEach(() => {
 });
 
 describe('Source dialog', () => {
-  test('Opens on the Model tab of an "Add a source" dialog, with a Database connection tab beside it', async () => {
+  test('Opens on the Sample Data tab of an "Add a source" dialog, with a Direct Connection tab beside it', async () => {
     await renderPage();
     const dialog = await openDialog();
     expect(within(dialog).getByText('Add a source')).toBeDefined();
     expect(tabStates(dialog)).toEqual([
-      ['Model', true, false],
-      ['Database connection', false, false],
-      ['Data product', false, false],
+      ['Sample Data', true, false],
+      ['Direct Connection', false, false],
+      ['Data Product', false, false],
     ]);
-    expect(within(dialog).getByLabelText('Model')).toBeDefined();
+    expect(within(dialog).getByLabelText('Dataset')).toBeDefined();
     fireEvent.click(
-      within(dialog).getByRole('tab', { name: 'Database connection' }),
+      within(dialog).getByRole('tab', { name: 'Direct Connection' }),
     );
     expect(tabStates(dialog)).toEqual([
-      ['Model', false, false],
-      ['Database connection', true, false],
-      ['Data product', false, false],
+      ['Sample Data', false, false],
+      ['Direct Connection', true, false],
+      ['Data Product', false, false],
     ]);
     expect(within(dialog).getByLabelText('Setup SQL')).toBeDefined();
-    expect(within(dialog).queryByLabelText('Model')).toBeNull();
+    expect(within(dialog).queryByLabelText('Dataset')).toBeNull();
   });
 
   test('Adds a table through the Database connection tab and shows it on the canvas', async () => {
     const { connections } = await renderPage();
     const dialog = await openDialog();
     fireEvent.click(
-      within(dialog).getByRole('tab', { name: 'Database connection' }),
+      within(dialog).getByRole('tab', { name: 'Direct Connection' }),
     );
     const add = within(dialog).getByRole<HTMLButtonElement>('button', {
       name: 'Add',
@@ -129,9 +129,9 @@ describe('Source dialog', () => {
     );
     const dialog = await openDialog();
     expect(tabStates(dialog)).toEqual([
-      ['Model', false, true],
-      ['Database connection', true, false],
-      ['Data product', false, true],
+      ['Sample Data', false, true],
+      ['Direct Connection', true, false],
+      ['Data Product', false, true],
     ]);
   });
 
@@ -143,6 +143,6 @@ describe('Source dialog', () => {
     }));
     const dialog = await openDialog();
     expect(within(dialog).queryByRole('tablist')).toBeNull();
-    expect(within(dialog).getByLabelText('Model')).toBeDefined();
+    expect(within(dialog).getByLabelText('Dataset')).toBeDefined();
   });
 });
