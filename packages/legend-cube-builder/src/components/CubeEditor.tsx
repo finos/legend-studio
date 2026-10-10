@@ -35,10 +35,15 @@ import {
 } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
+import {
+  type CubeEntrySource,
+  CubeEntrySourceState,
+} from '../stores/CubeEntrySource.js';
 import type { CubeHost } from '../stores/CubeHost.js';
 import { CubeAddItemsMenu } from './CubeAddItems.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
+import { CubeEntrySourceBanner } from './CubeEntrySourceBanner.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
@@ -192,11 +197,24 @@ export const CubeEditor = observer(
     host: CubeHost;
     /** The cube to open; an empty one by default */
     initialDocument?: CubeDocument | undefined;
+    /** A source a link asks the page to start with, on an empty cube (spec §17.15) */
+    initialSource?: CubeEntrySource | undefined;
   }) => {
     const [editorState] = useState(
       () => new CubeEditorState(props.host, props.initialDocument),
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
+    const [entry] = useState(() => new CubeEntrySourceState(editorState));
+    const { initialSource } = props;
+    useEffect(() => {
+      if (initialSource) {
+        flowResult(entry.open(initialSource)).catch(
+          editorState.host.applicationStore.alertUnhandledError,
+        );
+      }
+      // only as the page opens
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     useCommands(editorState);
     const maxGraphHeight = useMaxGraphHeight();
     const { showGraph } = editorState.document.meta.presentation;
@@ -212,6 +230,7 @@ export const CubeEditor = observer(
         <CubePalette editorState={editorState} />
         <div className="flex h-full min-w-0 flex-1 flex-col">
           <CubeGraphHeader editorState={editorState} />
+          <CubeEntrySourceBanner entry={entry} />
           <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel
               {...graphPanel.collapsiblePanel}

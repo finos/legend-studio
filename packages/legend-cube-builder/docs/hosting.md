@@ -43,7 +43,12 @@ interface CubeHost {
   point group from their contracts, and the optional `enterpriseStereotype` names the stereotype marking groups open to
   everyone (Legend Query reads `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do).
 
-Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
+Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, or
+`initialSource` to start an empty cube with one data product access point, as a link to Legend Query's Cube page does:
+`?sourceType=dataProductAccessPoint&sourceId=<id>`. The id is `<class>/<data product id>/<deployment id>/<access point
+group>/<access point>`, each part URI-encoded (`formatCubeAccessPointEntryId` writes it), and the link encodes the
+whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`). Legend Query reads the
+two parameters and takes them out of the address; a `?queryId=` wins and stays, for when Cube saves queries (M8). The page's state
 lives as long as the page; Legend Query makes a new host on each visit.
 
 **The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an

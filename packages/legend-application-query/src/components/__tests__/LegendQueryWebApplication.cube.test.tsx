@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, expect, test } from '@jest/globals';
+import { afterEach, beforeEach, expect, test } from '@jest/globals';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
@@ -28,6 +28,26 @@ import { LegendQueryWebApplication } from '../LegendQueryWebApplication.js';
 beforeEach(() => {
   localStorage.clear();
 });
+
+afterEach(() => {
+  window.history.replaceState({}, '', '/');
+});
+
+const renderAt = (url: string): ReturnType<typeof render> => {
+  window.history.replaceState({}, '', url);
+  return render(
+    <ApplicationStoreProvider
+      store={
+        new ApplicationStore(
+          TEST__getTestLegendQueryApplicationConfig(),
+          LegendQueryPluginManager.create(),
+        )
+      }
+    >
+      <LegendQueryWebApplication baseUrl="/query/" />
+    </ApplicationStoreProvider>,
+  );
+};
 
 test("Opens the Cube page at /query/cube through Query's own router, with no flag set", async () => {
   // Query's base URL is `/query/`; the route is hard-wired at `/cube`, not
@@ -48,4 +68,28 @@ test("Opens the Cube page at /query/cube through Query's own router, with no fla
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
   expect(page.textContent).toContain('Unsaved Query');
   expect(page.textContent).toContain('Connect to a source to start a new one.');
+});
+
+test("Says why a linked source couldn't be added, and takes the link out of the address", async () => {
+  const { findByTestId } = renderAt(
+    '/query/cube?sourceType=dataProductAccessPoint&sourceId=bad',
+  );
+  const banner = await findByTestId(LEGEND_CUBE_TEST_ID.ENTRY_SOURCE_ERROR);
+  expect(banner.textContent).toContain('Error resolving source!');
+  expect(banner.textContent).toContain('"bad" doesn\'t name an access point');
+  expect(
+    (await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR)).textContent,
+  ).toContain('Connect to a source to start a new one.');
+  expect(window.location.pathname).toBe('/query/cube');
+  expect(window.location.search).toBe('');
+});
+
+test('Opens no linked source when a saved query is named, keeping it in the address', async () => {
+  const { findByTestId, queryByTestId } = renderAt(
+    '/query/cube?queryId=my-query&sourceType=dataProductAccessPoint&sourceId=bad',
+  );
+  await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
+  expect(queryByTestId(LEGEND_CUBE_TEST_ID.ENTRY_SOURCE_ERROR)).toBeNull();
+  expect(window.location.pathname).toBe('/query/cube');
+  expect(window.location.search).toBe('?queryId=my-query');
 });

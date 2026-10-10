@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.11 done (the node tooltip)                                                                                                      |
+| Step   | M3b.12 done (entry links for data product access points)                                                                            |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -31,7 +31,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.9** 'Add Items ▾'
 - [x] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
 - [x] **M3b.11** The node tooltip
-- [ ] **M3b.12** Entry links for data product access points (can be cut)
+- [x] **M3b.12** Entry links for data product access points (can be cut)
 - [ ] **M3b.13** Docs, guides and changeset
 - [ ] **M3b.14** PR description; marked ready for review
 - [ ] **M3b.15** Verification
@@ -57,7 +57,8 @@ rebased ones.
 | M3b.8   | `9b22589e9` | feat: add Legend Cube's steps after the selected node                    |
 | M3b.9   | `1c1bc7469` | feat: add Legend Cube's Add Items menu in place of Add table             |
 | M3b.10  | `c20ab24b4` | feat: open Legend Cube's source dialog with no tab from the empty canvas |
-| M3b.11  | (this one)  | feat: show Legend Cube's node messages in a tooltip above the node       |
+| M3b.11  | `5c0521b07` | feat: show Legend Cube's node messages in a tooltip above the node       |
+| M3b.12  | (this one)  | feat: open Legend Cube on a data product access point from a link        |
 
 ## Step notes
 
@@ -289,3 +290,32 @@ the tooltip stays through a node drag or a zoom until the pointer moves.
 
 Lesson for mutation runs: with `jest.retryTimes(2)`, a mutant whose first failing attempt leaves module-wide state
 behind can pass on a retry. A surviving mutant is worth a second look for that.
+
+**M3b.12 (2026-10-09).** Entry links for data product access points (U9, Q4):
+`?sourceType=dataProductAccessPoint&sourceId=<class>/<data product id>/<deployment id>/<group>/<access point>`.
+
+- **Legend Query** (`LegendQueryCubeEntry.ts`) reads the parameters once with `URLSearchParams` (Legend's own reader
+  decodes twice, which breaks an encoded part) and takes them out of the address after the page shows. A `queryId`
+  wins and stays.
+- **The builder** (`CubeEntrySource.ts`) finds the product through the catalog and adds the access point through the
+  data product tab, as a pick would: alone, selected, on the remembered warehouse, with no dialog or editor and
+  nothing run. It refuses a cube that isn't new, and opens once.
+- **Failures** show "Error resolving source!" with the reason (`CubeEntrySourceBanner`).
+
+Tests: workflow `wf_a4d586cc-6b3`, 20 of 22 mutants killed:
+
+- **The review's fixes.**
+
+  - The page changed the address while rendering, which React warned about. The read is now pure and the strip runs in
+    an effect.
+  - The double decoding.
+  - Wrong messages, and a second open running at the same time: the open now refuses a cube that isn't new, and opens
+    once.
+
+  Their tests kill their mutants (`m3b-verify/m3b12-fix-mutants.json`, 2/2).
+
+- **Real-router page tests** check that the address is stripped, and that `queryId` wins.
+- **Browser** (`check-m3b12.mjs`), 27/30. The three failures are recorded limits: the strip pushes a history entry, and
+  a raw `%2F` (not encoded as the documented format asks) decodes to `/`. Recorded in ISSUES.md: the history entry, a
+  malformed `%` stopping Legend Query itself, and a full-text catalog search that could miss an exact id. A real
+  access point couldn't be resolved in the browser: the data product servers aren't running.

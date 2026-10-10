@@ -20,6 +20,12 @@ export {
 } from './__lib__/LegendCubeCommand.js';
 export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
 export { CubeEditor } from './components/CubeEditor.js';
+export {
+  type CubeAccessPointEntry,
+  type CubeEntrySource,
+  formatCubeAccessPointEntryId,
+  parseCubeAccessPointEntryId,
+} from './stores/CubeEntrySource.js';
 
 export * from './graph-manager/CubeConnectionExplorer.js';
 export * from './graph-manager/CubeDataProduct.js';
