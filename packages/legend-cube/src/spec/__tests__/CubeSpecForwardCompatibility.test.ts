@@ -19,7 +19,6 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -2256,8 +2255,7 @@ describe(unitTest('Saved spec: concats, added in M4'), () => {
 });
 
 describe(unitTest('Saved spec: partitions, added in M5'), () => {
-  // Partition is registered in M5.7 (PLAN §11.6); until then, this registry
-  const PARTITION_REGISTRY = TEST__registryWithPartition();
+  const PARTITION_REGISTRY = createNodeRegistry();
   /** The registry of the version before M5: every M4 operation, but no Partition */
   const M4_REGISTRY = new NodeRegistry(
     [...PARTITION_REGISTRY.sources, ...PARTITION_REGISTRY.transforms].filter(

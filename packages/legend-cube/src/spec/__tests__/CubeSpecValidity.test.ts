@@ -16,7 +16,6 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TEST_DATABASE } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -359,10 +358,10 @@ const groupErrorsOf = (json: JsonObject): Record<string, readonly string[]> => {
   return errorsOf(json, createNodeRegistry());
 };
 
-/** A spec's query, its `partition101` read as a Partition by the registry that knows it, until M5.7 (PLAN §11.6) */
+/** A spec's query, its `partition101` read as a Partition */
 const decodePartitionSpec = (json: JsonObject): Query => {
   const { query } = decodeCubeSpec(json, {
-    registry: TEST__registryWithPartition(),
+    registry: createNodeRegistry(),
   }).document;
   expect(query.getNode('partition101')).toBeInstanceOf(Partition);
   return query;
@@ -370,14 +369,14 @@ const decodePartitionSpec = (json: JsonObject): Query => {
 
 /** As `validityOf`, for a query with a partition */
 const partitionValidityOf = (query: Query): Record<string, readonly string[]> =>
-  validityOf(query, TEST__registryWithPartition());
+  validityOf(query, createNodeRegistry());
 
 /** As `errorsOf`, for a spec whose `partition101` must be read as a Partition */
 const partitionErrorsOf = (
   json: JsonObject,
 ): Record<string, readonly string[]> => {
   decodePartitionSpec(json);
-  return errorsOf(json, TEST__registryWithPartition());
+  return errorsOf(json, createNodeRegistry());
 };
 
 /** The value of the comparison `filter101` holds, as decoded */
@@ -1388,7 +1387,7 @@ describe(unitTest('Saved spec validity: partitions'), () => {
     );
     const { schemas, validity } = buildSchemasAndValidity(
       query,
-      TEST__registryWithPartition().queryRules,
+      createNodeRegistry().queryRules,
     );
     expect(validity.get('partition101')).toEqual([]);
     const describeColumns = (id: string): string[] =>

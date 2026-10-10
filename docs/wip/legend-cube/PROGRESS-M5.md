@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                           |
-| ------ | --------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656)   |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                               |
-| Step   | M5.1–M5.6 done; next M5.7                                                                                       |
-| Tests  | 2486 core, 1198 builder (core group), 245 Query, 436 builder engine-roundtrip (after the rebase on `5e424277b`) |
+| Item   | State                                                                                                         |
+| ------ | ------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
+| Step   | M5.1–M5.8 done; next M5.9                                                                                     |
+| Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
 
 ## Steps
 
@@ -25,7 +25,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.4** The window functions in the aggregation model, and the messages
 - [x] **M5.5** Partition in the core
 - [x] **M5.6** The builder extraction (no behaviour change)
-- [ ] **M5.7** Partition in the builder, and registered
+- [x] **M5.7** Partition in the builder, and registered
 - [ ] **M5.8** Partition on the engine and in the browser
 - [ ] **M5.9** The window composition suite
 - [ ] **M5.10** Partition around the databases, and the changeset
@@ -103,6 +103,21 @@ Result: `m5-verify/m55-result.json` in the evidence folder.
 `AggregationUse`), the sort rows (`CubeSortRows.ts`) and their row editors (`CubeAggregationRowEditor`,
 `CubeSortRowEditor`, driven by callbacks), and the column checklist (`CubeColumnChecklist`) come out of the Group and
 Sort drafts and editors, which now use them. Every builder test passes unchanged (1199).
+
+**M5.7 (2026-10-09).** Partition registered after Join (`createNodeRegistry`; the test registry is gone), with
+`CubePartitionDraft` and `CubePartitionEditor` (window functions, then partition columns, then sort rows, on M5.6's
+shared rows), labels and notes, the help text, `SigmaIcon`, both registries, and `findColumnOrigins` through a
+Partition. Tests by workflow `m57-tests-verify` (`wf_3703c964-c6a`): the draft and editor, the column origins, two
+`operations.cube.json` samples (typed by the engine in `CubeSpecCorpus`), and the Partition conformance cases (every
+function on ORDERS and on ALLTYPES' families, no partition, neither, ranks only, a listed order that needs the select,
+after a LEFT join, after a Group, a Partition of a Partition, a Filter and a Group after one; Cube's types equal the
+engine's but for Sum and Average nullability, declared). A reviewer, and 113 mutants in the isolated builder copy:
+103 killed, 1 equivalent, and the 9 others killed by the tests added after (one change at a time on the draft; a
+saved Rank holding an empty column; a Group's saved Rank keeping its column). The review's fixes: two notes (where
+empty sort values go; a Rank's sort makes the node's aggregates run), and rows judged by the node Apply stores (a
+saved blank sort key still counts as a sort until something changes). A windowed Max of an untyped column can't
+exist (an OTHER column is a String, which offers no Max), so the Join warning's test uses Distinct Value, as Group's
+does. Result: `m5-verify/m57-result.json`.
 
 ## Open items
 

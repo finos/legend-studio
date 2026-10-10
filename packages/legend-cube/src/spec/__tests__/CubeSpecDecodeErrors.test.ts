@@ -15,7 +15,6 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { CubeDocument } from '../../graph/CubeDocument.js';
 import {
@@ -1590,8 +1589,6 @@ describe(unitTest('Saved spec decode errors'), () => {
     expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
   });
 
-  // Partition is registered in M5.7 (PLAN §11.6); until then, its cases take
-  // this registry, without which a partition is an Unknown node, never an error
   test.each<[string, unknown]>([
     ['a partition', withPartition(PARTITION_101)],
     [
@@ -1624,7 +1621,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a partition with Rank and no sort', withPartitionSorts([])],
   ])('Reads %s, which the failing cases start from', (_, json) => {
     const { document, readOnly } = decodeCubeSpec(json, {
-      registry: TEST__registryWithPartition(),
+      registry: createNodeRegistry(),
     });
     expect(readOnly).toBe(false);
     expect(document.query.getNode('partition101')).toBeInstanceOf(Partition);
@@ -1924,10 +1921,7 @@ describe(unitTest('Saved spec decode errors'), () => {
       'must be a string',
     ],
   ])('Refuses %s', (_, json, path, detail) => {
-    expect(failureOf(json, TEST__registryWithPartition())).toEqual([
-      path,
-      detail,
-    ]);
+    expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
   });
 
   test.each<[string, unknown, boolean]>([

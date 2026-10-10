@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
-import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -458,10 +457,9 @@ const windowByC = (): Partition =>
 
 /** The Partition's errors, with the query rules of the registry that has Partition */
 const partitionErrorsOf = (query: Query): readonly string[] | undefined =>
-  buildSchemasAndValidity(
-    query,
-    TEST__registryWithPartition().queryRules,
-  ).validity.get('partition101');
+  buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity.get(
+    'partition101',
+  );
 
 describe(unitTest('Lost sort orders'), () => {
   test.each<[string, QueryNode[]]>([

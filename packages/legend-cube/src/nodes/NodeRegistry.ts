@@ -380,4 +380,5 @@ export const createNodeRegistry = (): NodeRegistry =>
     SLICE_DEFINITION,
     CONCAT_DEFINITION,
     JOIN_DEFINITION,
+    PARTITION_DEFINITION,
   ]);

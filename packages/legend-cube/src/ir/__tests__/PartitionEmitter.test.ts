@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
@@ -30,6 +29,7 @@ import {
   WindowRankFunction,
 } from '../../nodes/transforms/Aggregation.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { Partition } from '../../nodes/transforms/Partition.js';
 import {
   type ColumnDirection,
@@ -130,9 +130,8 @@ const ordersThen = (...nodes: QueryNode[]): Query => {
   );
 };
 
-// Partition is registered in M5.7 (PLAN §11.6); until then, its registry
 const emitterOf = (query: Query): QueryEmitter =>
-  new QueryEmitter(query, TEST__registryWithPartition());
+  new QueryEmitter(query, createNodeRegistry());
 
 /** The relation of ORDERS, then a Partition with the columns, sorts and window functions */
 const windowedOrders = (

@@ -22,7 +22,6 @@ import {
   resolvedTable,
   TEST_DATABASE,
 } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithPartition } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -2013,8 +2012,7 @@ describe(unitTest('Saved spec encoding: groups'), () => {
 });
 
 describe(unitTest('Saved spec encoding: partitions'), () => {
-  // Partition is registered in M5.7 (PLAN §11.6); until then, this registry
-  const REGISTRY = TEST__registryWithPartition();
+  const REGISTRY = createNodeRegistry();
 
   /** The saved spec of one unconnected partition, `partition101`, with these fields of its own */
   const partitionSpec = (own: JsonObject): JsonObject => ({

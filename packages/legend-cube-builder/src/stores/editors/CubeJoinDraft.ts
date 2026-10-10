@@ -19,6 +19,7 @@ import {
   getSameNamedJoinKeys,
   Group,
   Join,
+  Partition,
   JoinType,
   type Query,
   RelationalTableSource,
@@ -168,6 +169,26 @@ const groupInputName = (
     : undefined;
 };
 
+/**
+ * The input column a Partition's output column comes from: an input column by
+ * its name, a Distinct Value, Min or Max by its aggregated column; a count, a
+ * sum, an average or a rank is no column's value, so it comes from none
+ */
+const partitionInputName = (
+  partition: Partition,
+  columnName: string,
+): string | undefined => {
+  const aggregation = partition.aggregations.find(
+    ({ name }) => name === columnName,
+  );
+  if (!aggregation) {
+    return columnName;
+  }
+  return VALUE_AGGREGATIONS.includes(aggregation.function)
+    ? aggregation.column
+    : undefined;
+};
+
 /** Where a column of a node's output comes from: a table, and the column's name in it */
 export interface CubeColumnOrigin {
   readonly source: RelationalTableSource;
@@ -180,9 +201,10 @@ export interface CubeColumnOrigin {
  * name. A join key of the same name on both sides comes from the side the
  * join keeps (the left for INNER and LEFT OUTER, the right for RIGHT OUTER),
  * and from both for FULL OUTER, which merges them. A Group's key comes from
- * its column, and a Distinct Value, Min or Max from the column it aggregates.
- * A column the node's output doesn't have, e.g. one a Restrict dropped, or a
- * Group's count, sum or average, comes from nowhere.
+ * its column, and a Distinct Value, Min or Max from the column it aggregates,
+ * as a Partition's do; a Partition's input columns come from its input. A
+ * column the node's output doesn't have, e.g. one a Restrict dropped, or a
+ * Group's or Partition's count, sum, average or rank, comes from nowhere.
  */
 export const findColumnOrigins = (
   query: Query,
@@ -207,7 +229,9 @@ export const findColumnOrigins = (
       ? (node.mappings.find(({ to }) => to === columnName)?.from ?? columnName)
       : node instanceof Group
         ? groupInputName(node, columnName)
-        : columnName;
+        : node instanceof Partition
+          ? partitionInputName(node, columnName)
+          : columnName;
   if (inputName === undefined) {
     return [];
   }
