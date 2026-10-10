@@ -12,15 +12,15 @@
 | ------ | ------------------------------------------------------------------------------------- |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10) |
 | Engine | Local legend-engine on `localhost:6300`                                               |
-| Step   | M6.1: the settled decisions (PLAN §11.7) and this file                                |
-| Tests  | Unchanged from `cube-dev`                                                             |
+| Step   | M6.2: Difference in the core                                                          |
+| Tests  | 2795 core                                                                             |
 
 ## Steps
 
 See PLAN §11.7 for each step's deliverable and when it is done.
 
 - [x] **M6.1** The settled decisions (PLAN §11.7) and this file
-- [ ] **M6.2** Difference in the core
+- [x] **M6.2** Difference in the core
 - [ ] **M6.3** Difference in the builder, and registered
 - [ ] **M6.4** Difference on the engine, around the databases and in the browser
 - [ ] **M6.5** Extend in the core
@@ -37,9 +37,10 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit     | Subject                                          |
-| ---- | ---------- | ------------------------------------------------ |
-| M6.1 | (this one) | docs: settle Legend Cube M6 (Difference, Extend) |
+| Step | Commit      | Subject                                          |
+| ---- | ----------- | ------------------------------------------------ |
+| M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend) |
+| M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core       |
 
 ## Notes
 
@@ -48,3 +49,12 @@ Filled in as steps land.
   native types, after the probes showed `toFloat()` refused when planning on 7 of 20 database types. The probes
   (`m6-requirements/` in the evidence folder) also found that Extend must be typed over the cube's model, since an
   empty model can't type the model's enums or functions.
+- **M6.2** (2026-10-10). `Difference` (`nodes/transforms/Difference.ts`), its emitter and codec, defined in the
+  registry as `DIFFERENCE_DEFINITION` but not in `createNodeRegistry()` until M6.3. Join's key checks are shared
+  (`validateJoinKeys`), and so is its relation (`emitJoinRelation`, the join before its `select`), with no change to
+  Join's output. Two Cube messages: a difference column that is a join column, and an output name that is too long;
+  an output name an input already has, or that folds to another output's, reuses the generic "already present"
+  messages. A missing difference column names its side (`Left difference column`, `Right difference column`), as
+  Join's keys do, where the spec says "Difference column". The schema filters the difference columns out of
+  `buildJoinSchemaColumns`' output rather than adding PLAN §2's `exclude` set (to fold in M6.13). New role
+  `EmitRole.DIFFERENCE`.
