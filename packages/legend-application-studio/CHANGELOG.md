@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.21.51
+
+### Patch Changes
+
+- [#5651](https://github.com/finos/legend-studio/pull/5651) [`c3618c1`](https://github.com/finos/legend-studio/commit/c3618c1c0adb70d18d262d51b2a09e5dd887116b) ([@jackp5150](https://github.com/jackp5150)) - Added a relatedDataspaces section to DataSpaceEditor in Studio that allows users to select related dataspace via text input/dropdown.
+  Added redirection to marketplace from Studio dataspace preview.
+  Add info tab to DataSpaceViewer to change in-development/verified values in marketplace.
+
 ## 28.21.50
 
 ### Patch Changes

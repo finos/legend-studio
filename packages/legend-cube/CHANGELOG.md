@@ -1,5 +1,29 @@
 # @finos/legend-cube
 
+## 0.0.4
+
+### Patch Changes
+
+- [#5641](https://github.com/finos/legend-studio/pull/5641) [`e015523`](https://github.com/finos/legend-studio/commit/e01552380b877e9de4251a7a46ebfefde718aaf1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: add the access points of deployed data products as a source, in beta (production and production-parallel deployments).
+
+- [#5641](https://github.com/finos/legend-studio/pull/5641) [`e015523`](https://github.com/finos/legend-studio/commit/e01552380b877e9de4251a7a46ebfefde718aaf1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: add tables from a direct database connection (H2 and DuckDB) through a tabbed "Add a source" dialog.
+
+- [#5649](https://github.com/finos/legend-studio/pull/5649) [`d847e67`](https://github.com/finos/legend-studio/commit/d847e6721c83fe0d82b437e12a7c87e257ef83ee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube gains Group ("Group by Column") and Concat ("Concatenate Another Input").
+
+  Group gives one row per value of its group columns, or one row for all the rows with none, each with its
+  aggregations: Count, Distinct Count, Distinct Value, Sum, Average, Min, Max and Count Rows, which counts every row.
+  Each is offered on the column types the spec lists, typed and made nullable as the engine types it, and named after
+  its column until renamed. The grid's quick actions gain `Group by "X"`.
+
+  Concat gives the rows of its two inputs, which must have the same columns, matched by position. Its editor shows both
+  inputs' columns side by side, marking each difference, and offers a Rename or a Restrict before an input when one
+  makes them match. Its Convert types setting converts types that differ within numbers, strings or dates to the type
+  they share; the Join and Filter editors warn that a date converted with timestamps matches them only at midnight.
+
+  Engine tests hold the schema Cube infers to the engine's for every node type.
+
+- [#5654](https://github.com/finos/legend-studio/pull/5654) [`59bbf5d`](https://github.com/finos/legend-studio/commit/59bbf5d54238b5049d7cb7a298aa0f0d04f9cf94) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads the data sets of deployed ingest definitions (beta), as Data Cube's producer source picks them: an Ingest tab and an "Ingest Dataset" palette item (Mode, the viewer's environment, a producer deployment, one of its definitions, a data set), typed from what the definition declares, and run through the `#I` accessor on a lakehouse runtime with the cube's warehouse, which the data set's panel edits. A cube reads one kind of source: tables, data products or ingest data sets. Legend Query offers it when its optional `lakehouse.platformUrl` is set.
+
 ## 0.0.3
 
 ### Patch Changes

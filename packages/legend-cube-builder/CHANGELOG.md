@@ -1,5 +1,33 @@
 # @finos/legend-cube-builder
 
+## 0.0.4
+
+### Patch Changes
+
+- [#5656](https://github.com/finos/legend-studio/pull/5656) [`5e42427`](https://github.com/finos/legend-studio/commit/5e424277b3b950ea418cf1ee496f5e50d77b9f72) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Load a CSV, pasted or from a file, into a Legend Cube DuckDB connection as a table: the database connection tab writes it into the setup SQL, guessing each column's type.
+
+- [#5652](https://github.com/finos/legend-studio/pull/5652) [`4f5aab1`](https://github.com/finos/legend-studio/commit/4f5aab13d3d5745ed056c332c609dfdae7216e92) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's data product tab pages the lakehouse's list of data products itself, stopping on a page that isn't one, a missing, unreadable or repeated cursor, or past a page cap, drops a listed product it can't read rather than failing the whole list, and stops a listing once the dialog closes or the mode changes. A failed listing shows in the tab with its own Retry. When Legend Query's config names a marketplace server (`marketplace.serverUrl`, unset by default), the tab instead searches the marketplace as the viewer types, keeping only the latest search's answer and the product picked, says when a search's matches may be cut short, and reopens a data product cube on its own product without searching. A data product cube's Source panel shows its deployment class and edits its warehouse, as one undo step that is remembered for the viewer's next cubes; a warehouse change clears the run's error and marks its rows stale, a read-only cube allows no change, and a SNAPSHOT project is labelled as one that may change. An import and Refresh re-check a data product cube's access points against the deployed artifact, as tables are re-checked, Refresh reading it again, with warnings that name the access point. A run on a data product cube refused for its warehouse says so in the run's error and beside the warehouse, and one refused for access to the data links to each access point group's page in the marketplace, which Legend Query builds from its marketplace URLs by the deployment's class. The data product tab previews a picked access point from its deployed artifact, with its description, typed columns and up to five sample rows, and both the tab and the Source panel open the product's page in the marketplace. Each access point group shows the viewer's access, from their contracts, with a link to request it in the marketplace; Legend Query marks the groups open to everyone from `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do. On a cube whose data products come from one project, Search all shows the class's other products too, greyed, saying which project or version they belong to.
+
+- [#5641](https://github.com/finos/legend-studio/pull/5641) [`e015523`](https://github.com/finos/legend-studio/commit/e01552380b877e9de4251a7a46ebfefde718aaf1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: add the access points of deployed data products as a source, in beta (production and production-parallel deployments).
+
+- [#5641](https://github.com/finos/legend-studio/pull/5641) [`e015523`](https://github.com/finos/legend-studio/commit/e01552380b877e9de4251a7a46ebfefde718aaf1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: add tables from a direct database connection (H2 and DuckDB) through a tabbed "Add a source" dialog.
+
+- [#5649](https://github.com/finos/legend-studio/pull/5649) [`d847e67`](https://github.com/finos/legend-studio/commit/d847e6721c83fe0d82b437e12a7c87e257ef83ee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube gains Group ("Group by Column") and Concat ("Concatenate Another Input").
+
+  Group gives one row per value of its group columns, or one row for all the rows with none, each with its
+  aggregations: Count, Distinct Count, Distinct Value, Sum, Average, Min, Max and Count Rows, which counts every row.
+  Each is offered on the column types the spec lists, typed and made nullable as the engine types it, and named after
+  its column until renamed. The grid's quick actions gain `Group by "X"`.
+
+  Concat gives the rows of its two inputs, which must have the same columns, matched by position. Its editor shows both
+  inputs' columns side by side, marking each difference, and offers a Rename or a Restrict before an input when one
+  makes them match. Its Convert types setting converts types that differ within numbers, strings or dates to the type
+  they share; the Join and Filter editors warn that a date converted with timestamps matches them only at midnight.
+
+  Engine tests hold the schema Cube infers to the engine's for every node type.
+
+- [#5654](https://github.com/finos/legend-studio/pull/5654) [`59bbf5d`](https://github.com/finos/legend-studio/commit/59bbf5d54238b5049d7cb7a298aa0f0d04f9cf94) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads the data sets of deployed ingest definitions (beta), as Data Cube's producer source picks them: an Ingest tab and an "Ingest Dataset" palette item (Mode, the viewer's environment, a producer deployment, one of its definitions, a data set), typed from what the definition declares, and run through the `#I` accessor on a lakehouse runtime with the cube's warehouse, which the data set's panel edits. A cube reads one kind of source: tables, data products or ingest data sets. Legend Query offers it when its optional `lakehouse.platformUrl` is set.
+
 ## 0.0.3
 
 ### Patch Changes

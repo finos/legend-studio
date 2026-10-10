@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.263
+
+### Patch Changes
+
+- [#5651](https://github.com/finos/legend-studio/pull/5651) [`c3618c1`](https://github.com/finos/legend-studio/commit/c3618c1c0adb70d18d262d51b2a09e5dd887116b) ([@jackp5150](https://github.com/jackp5150)) - Adds logic to redirect users in marketplace to the correct url for user-defined related dataspaces from a studio model.
+
 ## 10.4.262
 
 ## 10.4.261
