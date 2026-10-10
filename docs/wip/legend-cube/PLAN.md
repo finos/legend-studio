@@ -3081,6 +3081,12 @@ over §12.2 item 1, which asked where the node editor opens:
 
   Native selects and date pickers are checked in a browser.
 
+- **Later editors and portals** (M3b.4). A dropdown, picker or dialog opened from the editor and shown elsewhere (a
+  portal) must be one of MUI's layers or call `nodeEditor.holdOpen()`. Otherwise a press in it closes the editor.
+- **Grid quick actions while editing** (M3b.4). Sort by, Group by and Filter by are disabled while the editor holds
+  edits: choosing one would apply them first, leaving the rows the menu was opened on stale.
+- **Header actions** (M3b.4). Show Pure, Export, Add table and a palette click apply the editor first, by keyboard
+  too, as Execute and Undo do.
 - **Shortcuts.**
   - F9 with changes runs even while the committed query is invalid: it applies first, then runs only if the result can
     run. The Execute button keeps its gating.

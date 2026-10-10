@@ -72,7 +72,8 @@ const CubePaletteItem = observer(
     dragConnector(ref);
     const label = `${definition.label}${definition.beta ? ' (BETA)' : ''}`;
     const add = (): void => {
-      if (!disabled) {
+      // the node editor's edits are applied first, as for every other change
+      if (!disabled && editorState.nodeEditor.finishApplied()) {
         editorState.addNode(definition.type);
       }
     };

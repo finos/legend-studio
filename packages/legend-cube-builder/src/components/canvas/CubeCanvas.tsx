@@ -182,6 +182,13 @@ const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
       // a connection changes the query, so the open editor applies first,
       // whether the handles are dragged or clicked
       onConnectStart={() => editorState.nodeEditor.finish()}
+      // a click on the canvas's background closes the floating editor; a
+      // press there that pans leaves it open
+      onPaneClick={() => {
+        if (floatingEditor) {
+          editorState.nodeEditor.finish();
+        }
+      }}
       onClickConnectStart={() => editorState.nodeEditor.finish()}
       onConnect={(connection) => {
         if (connection.targetHandle) {

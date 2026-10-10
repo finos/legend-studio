@@ -96,11 +96,14 @@ export const getCubeGridQuickActions = (
   const blocked =
     result.query !== query
       ? CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS
-      : execution.isRunning
-        ? CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING
-        : editorState.readOnly
-          ? READ_ONLY_CUBE_TITLE
-          : undefined;
+      : // choosing would apply the edits first, leaving these rows stale
+        editorState.hasEditsToApply
+        ? CUBE_QUICK_ACTION_DISABLED_REASON.EDITING
+        : execution.isRunning
+          ? CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING
+          : editorState.readOnly
+            ? READ_ONLY_CUBE_TITLE
+            : undefined;
   const sortReason =
     blocked ??
     (isSortableType(column.type)

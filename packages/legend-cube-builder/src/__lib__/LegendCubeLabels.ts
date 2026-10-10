@@ -132,6 +132,8 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   STALE_ROWS:
     'Execute again: these rows are from an earlier version of the query.',
   RUNNING: 'Wait for the run to finish.',
+  EDITING:
+    "Close the node editor first: these rows don't show the changes in it.",
   UNREADABLE_VALUE: "This value can't be used in a filter.",
   notSortable: (typeName: string): string =>
     `Values of type ${typeName} can't be sorted.`,

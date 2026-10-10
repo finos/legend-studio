@@ -23,11 +23,13 @@ import {
   CubeDocument,
   FilterOperator,
   Join,
+  Limit,
   Query,
   RelationalTableSource,
   Schema,
   serializeCubeSpec,
 } from '@finos/legend-cube';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   act,
   fireEvent,
@@ -59,6 +61,7 @@ import type {
   CubeModelOutline,
   CubeResult,
 } from '../../graph-manager/CubeEngine.js';
+import { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../CubeEditor.js';
 
@@ -546,5 +549,159 @@ describe('Cube page', () => {
     expect(signal?.aborted).toBe(false);
     unmount();
     expect(signal?.aborted).toBe(true);
+  });
+});
+
+describe('Header actions with the node editor open', () => {
+  /** ORDERS → limit101, holding size 10 */
+  const ordersLimited = (): CubeDocument =>
+    new CubeDocument({
+      context: CONTEXT,
+      query: new Query(
+        [
+          northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+          new Limit('limit101', 10),
+        ],
+        [new Connection('relational101', 'limit101', 'tds')],
+        'limit101',
+      ),
+    });
+
+  /** The page, and the state it made, caught as the page registers its commands */
+  const renderEditor = async (
+    floatingEditor: boolean,
+  ): Promise<CubeEditorState> => {
+    const { host } = TEST__createCubeHost();
+    const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
+    try {
+      await TEST__renderInCubeApplication(
+        <CubeEditor
+          host={host}
+          initialDocument={ordersLimited()}
+          floatingEditor={floatingEditor}
+        />,
+        host.applicationStore,
+        LEGEND_CUBE_TEST_ID.EDITOR,
+      );
+      return guaranteeNonNullable(
+        spy.mock.contexts[0] as CubeEditorState | undefined,
+      );
+    } finally {
+      spy.mockRestore();
+    }
+  };
+
+  const graph = (): HTMLElement =>
+    screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
+
+  const sizeField = (): HTMLInputElement =>
+    within(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).getByLabelText(
+      'Rows to keep',
+    );
+
+  /** Opens the Limit's editor and types a new size, not yet stored */
+  const editLimit = async (): Promise<void> => {
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    fireEvent.change(sizeField(), { target: { value: '5' } });
+  };
+
+  const storedSize = (editorState: CubeEditorState): number | undefined =>
+    (editorState.document.query.getNode('limit101') as Limit).size;
+
+  /** The Limit's size in the cube before each undo step */
+  const historySizes = (editorState: CubeEditorState): (number | undefined)[] =>
+    editorState.history.map(
+      (document) => (document.query.getNode('limit101') as Limit).size,
+    );
+
+  test('Applies the floating editor as one undo step and closes it, then hides the graph', async () => {
+    const editorState = await renderEditor(true);
+    await editLimit();
+    // a click with no press first: the button, not a press outside, closes it
+    fireEvent.click(within(graph()).getByText('Hide graph'));
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(storedSize(editorState)).toBe(5);
+    // the edit, then hiding the graph, each its own undo step
+    expect(historySizes(editorState)).toEqual([10, 5]);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
+    // showing the graph again opens no editor
+    fireEvent.click(within(graph()).getByText('Show graph'));
+    await TEST__findCanvasNode('limit101');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+  });
+
+  test('Hides nothing while something opened from the floating editor holds it open', async () => {
+    const editorState = await renderEditor(true);
+    await editLimit();
+    let release: () => void = () => undefined;
+    act(() => {
+      release = editorState.nodeEditor.holdOpen();
+    });
+    fireEvent.click(within(graph()).getByText('Hide graph'));
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeDefined();
+    expect(within(graph()).getByText('Hide graph')).toBeDefined();
+    expect(editorState.nodeEditor.nodeId).toBe('limit101');
+    expect(sizeField().value).toBe('5');
+    expect(storedSize(editorState)).toBe(10);
+    expect(editorState.history).toHaveLength(0);
+    act(() => release());
+    fireEvent.click(within(graph()).getByText('Hide graph'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
+    expect(storedSize(editorState)).toBe(5);
+  });
+
+  test.each([
+    ['Show Pure', (state: CubeEditorState): boolean => state.showPure.isOpen],
+    [
+      'Export (dev)',
+      (state: CubeEditorState): boolean =>
+        state.specTransfer.mode !== undefined,
+    ],
+    [
+      'Add table',
+      (state: CubeEditorState): boolean => state.sourcePicker.isOpen,
+    ],
+  ])(
+    'Applies the floating editor before %s, clicked from the keyboard with no press first',
+    async (label, opened) => {
+      const editorState = await renderEditor(true);
+      await editLimit();
+      fireEvent.click(within(graph()).getByText(label));
+      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(storedSize(editorState)).toBe(5);
+      expect(historySizes(editorState)).toEqual([10]);
+      await waitFor(() => expect(opened(editorState)).toBe(true));
+    },
+  );
+
+  test('Applies the floating editor before a palette item adds its node', async () => {
+    const editorState = await renderEditor(true);
+    await editLimit();
+    fireEvent.click(
+      screen
+        .getAllByTestId(LEGEND_CUBE_TEST_ID.PALETTE_ITEM)
+        .find((item) =>
+          item.textContent?.includes('Sort by Column'),
+        ) as HTMLElement,
+    );
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(historySizes(editorState)).toEqual([10, 5]);
+    expect(
+      editorState.document.query.nodes.some((node) => node.type === 'sort'),
+    ).toBe(true);
+  });
+
+  test('Leaves the side panel open with its edits', async () => {
+    const editorState = await renderEditor(false);
+    await editLimit();
+    fireEvent.click(within(graph()).getByText('Hide graph'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
+    expect(editorState.nodeEditor.nodeId).toBe('limit101');
+    expect(sizeField().value).toBe('5');
+    expect(storedSize(editorState)).toBe(10);
+    // only hiding the graph is an undo step
+    expect(historySizes(editorState)).toEqual([10]);
   });
 });

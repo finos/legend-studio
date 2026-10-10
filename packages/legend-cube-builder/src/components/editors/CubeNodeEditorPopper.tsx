@@ -26,6 +26,7 @@ import {
   toDOMRect,
 } from '../canvas/CubeNodeEditorAnchor.js';
 import { CubeNodeEditorPanel } from './CubeNodeEditorPanel.js';
+import { useCubeNodeEditorDismiss } from './useCubeNodeEditorDismiss.js';
 
 /**
  * Every node type's editor is this wide (U1: 27rem, read at a 16px root;
@@ -78,6 +79,8 @@ export const CubeNodeEditorPopper = observer(
     useStore((state) => state.width);
     useStore((state) => state.height);
     const position = nodeId === undefined ? undefined : positions.get(nodeId);
+    const editorRef = useRef<HTMLDivElement>(null);
+    useCubeNodeEditorDismiss(editorState, editorRef);
     // the popper reads the node's place whenever it positions the editor,
     // which it does on every render, so one anchor serves the whole pan or
     // zoom
@@ -121,7 +124,7 @@ export const CubeNodeEditorPopper = observer(
         }}
       >
         {/* a right-click in the editor is the editor's, never the canvas's menu */}
-        <div onContextMenu={(event) => event.stopPropagation()}>
+        <div ref={editorRef} onContextMenu={(event) => event.stopPropagation()}>
           <CubeNodeEditorPanel editorState={editorState} variant="float" />
         </div>
       </BasePopper>

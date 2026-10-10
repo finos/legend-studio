@@ -13,7 +13,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, from finos master `d847e6721` (M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003   |
-| Step   | M3b.3 done (the floating editor, behind a prop)                                                         |
+| Step   | M3b.4 done (closing the floating editor, behind a prop)                                                 |
 | Tests  | 2486 core, 1199 builder (core group), 245 Query, 415 builder engine-roundtrip                           |
 
 ## Steps
@@ -23,7 +23,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.1** The settled decisions (PLAN §11.6) and this file
 - [x] **M3b.2** One finish path; Ctrl+click, F9, Ctrl+Z and outside actions apply first
 - [x] **M3b.3** The floating host, behind a prop
-- [ ] **M3b.4** The click-away and Escape
+- [x] **M3b.4** The click-away and Escape
 - [ ] **M3b.5** Switch over from the side panel
 - [ ] **M3b.6** The editor's frame
 - [ ] **M3b.7** Each editor's sizing and edges
@@ -48,7 +48,7 @@ Filled in as steps land.
 | Answers | `220f02218` | docs: record answers to Legend Cube's UI questions            |
 | M3b.1   | `5be141305` | docs: settle Legend Cube M3b (canvas and layout)              |
 | M3b.2   | `e852f688a` | feat: apply Legend Cube's node editor before any other action |
-| M3b.3   | (this one)  | feat: add Legend Cube's floating node editor, not yet in use  |
+| M3b.3   | `e68c8b730` | feat: add Legend Cube's floating node editor, not yet in use  |
 
 ## Step notes
 
@@ -132,3 +132,38 @@ Tests: workflow `wf_c6464b46-ce1` (one writer, a reviewer with mutation testing)
   - zoom, fitView and a splitter drag;
   - hidden while out of view;
   - over the grid after Execute.
+
+**M3b.4 (2026-10-09).** Closing the floating editor (`useCubeNodeEditorDismiss.ts`). The editor closes and applies its
+edits on:
+
+- a press of the main button outside it, as the button goes down, so Execute, Undo and the grid act on the applied
+  edits;
+- a click on the canvas's background;
+- Escape;
+- hiding the graph.
+
+These don't close it:
+
+- a press on a node, whose click applies the edits and opens that node or selects it;
+- a press on the background, controls or minimap, so a pan or zoom keeps it open;
+- a press in MUI's layers;
+- a right-click, including Ctrl with the main button (a right-click on macOS);
+- an Escape a field or the grid's menu already used;
+- anything while a Cube dialog is open or the editor is held.
+
+Show Pure, Export, Add table and a palette click apply the editor first by keyboard too. The grid's quick actions are
+disabled while the editor holds edits.
+
+Tests: workflow `wf_e63c407e-215`:
+
+- **Mutants:** 20 of 25 killed, four of the five survivors equivalent. Every review fix has a test that kills its
+  mutant (`m3b-verify/m3b4-fix-mutants.json`, 8/8).
+- **jsdom has no PointerEvent.** The tests dispatch a MouseEvent of type `pointerdown`, which carries the button.
+- **Browser** (`m3b-verify/browser/check-m3b4.mjs`), 18/18.
+- **The reviewer's probe** (`probe-m3b4-review.mjs`), done before the fixes:
+
+  - a press on a disabled Execute applies the edits, then the click runs them;
+  - Show Pure pressed with the mouse shows the edited query (by keyboard it now does too);
+  - the grid's column header and a palette drag apply the edits.
+
+  Native select popups don't show in a headless browser: a headed manual check stays for the rehearsal (M3b.16).

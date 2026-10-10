@@ -67,8 +67,13 @@ const useMaxGraphHeight = (): number => {
  * name, its actions, its pending and read-only notes, and its dialogs. It
  * stays when the graph is hidden; its buttons wrap when the page is narrow.
  */
-const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
-  const { editorState } = props;
+interface CubeGraphHeaderProps {
+  editorState: CubeEditorState;
+  floatingEditor: boolean;
+}
+
+const CubeGraphHeader = observer((props: CubeGraphHeaderProps) => {
+  const { editorState, floatingEditor } = props;
   const { readOnly } = editorState;
   const { showGraph } = editorState.document.meta.presentation;
   return (
@@ -88,7 +93,11 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
         <CubeButton
           title={editorState.sourcePicker.disabledReason}
           disabled={editorState.sourcePicker.disabledReason !== undefined}
-          onClick={() => editorState.sourcePicker.open()}
+          onClick={() => {
+            if (editorState.nodeEditor.finishApplied()) {
+              editorState.sourcePicker.open();
+            }
+          }}
         >
           Add table
         </CubeButton>
@@ -111,6 +120,10 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           }
           disabled={!editorState.execution.canExecute}
           onClick={() => {
+            // what it shows includes the node editor's edits, as Execute runs them
+            if (!editorState.nodeEditor.finishApplied()) {
+              return;
+            }
             flowResult(editorState.showPure.open()).catch(
               editorState.host.applicationStore.alertUnhandledError,
             );
@@ -125,7 +138,11 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
               : "Show the cube's spec, to copy or download"
           }
           disabled={readOnly}
-          onClick={() => editorState.specTransfer.openExport()}
+          onClick={() => {
+            if (editorState.nodeEditor.finishApplied()) {
+              editorState.specTransfer.openExport();
+            }
+          }}
         >
           Export (dev)
         </CubeButton>
@@ -141,7 +158,16 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
               ? 'Hide the graph, leaving more room for the results'
               : 'Show the graph'
           }
-          onClick={() => editorState.setShowGraph(!showGraph)}
+          onClick={() => {
+            // the floating editor goes with the graph, applying its edits
+            if (
+              !showGraph ||
+              !floatingEditor ||
+              editorState.nodeEditor.finish()
+            ) {
+              editorState.setShowGraph(!showGraph);
+            }
+          }}
         >
           {showGraph ? 'Hide graph' : 'Show graph'}
         </CubeButton>
@@ -219,7 +245,10 @@ export const CubeEditor = observer(
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel {...editorPanel.remainingPanel} minSize={320}>
             <div className="flex h-full min-w-0 flex-1 flex-col">
-              <CubeGraphHeader editorState={editorState} />
+              <CubeGraphHeader
+                editorState={editorState}
+                floatingEditor={floatingEditor}
+              />
               <ResizablePanelGroup orientation="horizontal">
                 <ResizablePanel
                   {...graphPanel.collapsiblePanel}
