@@ -13,8 +13,8 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.15 done (verification); the PR is ready for review; next M3b.16, the rehearsal                                                  |
-| Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
+| Step   | M3b.17 done (demo video); next M3b.18, the rebase and the PLAN fold                                                                 |
+| Tests  | 2486 core, 1347 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.15)                                        |
 
 ## Steps
 
@@ -35,8 +35,8 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.13** Docs, guides and changeset
 - [x] **M3b.14** PR description; marked ready for review
 - [x] **M3b.15** Verification
-- [ ] **M3b.16** Browser rehearsal
-- [ ] **M3b.17** A demo video of M3b's features (PLAN §11.3)
+- [x] **M3b.16** Browser rehearsal
+- [x] **M3b.17** A demo video of M3b's features (PLAN §11.3)
 - [ ] **M3b.18** Rebase on the latest master; fold PLAN §11.6's supersessions in
 
 ## Commits
@@ -60,7 +60,8 @@ rebased ones.
 | M3b.11  | `5c0521b07` | feat: show Legend Cube's node messages in a tooltip above the node       |
 | M3b.12  | `d4e937d1f` | feat: open Legend Cube on a data product access point from a link        |
 | M3b.13  | `ced0bf124` | docs: guide Legend Cube's editors in the floating node editor            |
-| M3b.15  | (this one)  | fix: fix Legend Cube M3b's verification findings                         |
+| M3b.15  | `0ea779e8c` | fix: fix Legend Cube M3b's verification findings                         |
+| M3b.16+ | (this one)  | docs: record Legend Cube M3b's rehearsal and demo video                  |
 
 ## Step notes
 
@@ -359,3 +360,27 @@ Tests: workflow `wf_9b0a6e64-1b1` wrote a test for each fix. Its review found tw
 the dialog while a link read its own, and the keyboard still skipping a disabled item. Both are fixed. The fix mutants
 are 5/5 (`m3b-verify/m3b15-fix-mutants.json`). Browser: the verification's probes pass (`m3b15/`), and every
 `check-m3b*.mjs` passes but the three recorded `check-m3b12` limits.
+
+**M3b.16 (2026-10-10).** Browser rehearsal (`m3b-verify/browser/rehearsal-m3b.sh`, against :9003 at `0ea779e8c` with
+the libraries rebuilt; results in `rehearsal-m3b/summary.txt`). Every check passes but the three recorded `check-m3b12`
+limits (the strip's history entry, Back returning to the link, a raw `%2F` id):
+
+- every `check-m3b*.mjs`, with the editor checks (`check-m3b3`, `-6` and `-7`) at window heights of 900px and 768px;
+- the host growth probe at both heights, and the Add Items hover probe.
+
+Not checkable headless: a native `<select>`'s OS popup (Escape, or a click outside, while it is open). It stays a
+manual check.
+
+**M3b.17 (2026-10-10).** Demo video (`demo/demo-m3b.mjs`; `demo/out-demo-m3b/legend-cube-m3b-canvas.webm`, with a
+screenshot per moment in `frames/`). All 22 of its checks pass. It shows:
+
+1. the empty canvas, and the source dialog with no tab chosen;
+2. the floating editor, and Execute applying its edit first;
+3. a click on another node applying the open editor and opening that node's in the same click, and Cmd+click selecting
+   with no editor;
+4. Add Items and a palette drop each adding after the selected node, and a source dropped on a node opening the dialog;
+5. the tooltip;
+6. an entry link that can't be opened.
+
+Each frame was read against its caption. The recording has no address bar, so the demo shows the address in an overlay
+for the entry link, before and after. The video was sent to the user, to attach to #5657.
