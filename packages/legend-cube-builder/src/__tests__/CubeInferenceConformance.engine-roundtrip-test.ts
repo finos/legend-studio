@@ -26,6 +26,7 @@ import {
   Concat,
   Connection,
   createNodeRegistry,
+  Difference,
   DataProductAccessPointSource,
   Distinct,
   Drop,
@@ -145,6 +146,45 @@ const joined =
         ),
       ],
       nodes.at(-1)?.id,
+    );
+  };
+
+/**
+ * relational101 through the first nodes and relational102 through the second,
+ * compared by difference101 (its Left and Right) on the keys by the difference
+ * columns, captured
+ */
+const differenced =
+  (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+    keys: readonly (readonly [string, string])[],
+    differenceColumns: readonly string[],
+  ) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const difference = new Difference('difference101', {
+      leftColumns: keys.map(([left]) => left),
+      rightColumns: keys.map(([, right]) => right),
+      differenceColumns,
+    });
+    const arms = [
+      [source(sources, 'relational101'), ...first],
+      [source(sources, 'relational102'), ...second],
+    ];
+    return new Query(
+      [...arms.flat(), difference],
+      [
+        ...arms.flatMap(armConnections),
+        ...arms.map(
+          (arm, index) =>
+            new Connection(
+              (arm.at(-1) as QueryNode).id,
+              difference.id,
+              difference.ports[index] as string,
+            ),
+        ),
+      ],
+      difference.id,
     );
   };
 
@@ -1162,6 +1202,68 @@ const CASES: readonly ConformanceCase[] = [
         ],
       ),
     ),
+  },
+  // Difference (M6, PLAN §11.7): a full outer join, then the differences
+  {
+    // integer and float differences, on a merged key
+    name: 'difference-orders',
+    tables: [ORDERS, ['relational102', 'ORDERS']],
+    build: differenced(
+      [new Restrict('restrict101', ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'])],
+      [new Restrict('restrict102', ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'])],
+      [['ORDER_ID', 'ORDER_ID']],
+      ['SHIP_VIA', 'FREIGHT'],
+    ),
+  },
+  {
+    // every numeric family of ALLTYPES, by the family's difference type
+    name: 'difference-every-alltypes-number',
+    tables: [ALLTYPES, ['relational102', 'ALLTYPES', 'CUBETEST']],
+    build: differenced(
+      [
+        new Restrict('restrict101', [
+          'ID',
+          'TI',
+          'SI',
+          'BI',
+          'F',
+          'D',
+          'DEC',
+          'NUM',
+        ]),
+      ],
+      [
+        new Restrict('restrict102', [
+          'ID',
+          'TI',
+          'SI',
+          'BI',
+          'F',
+          'D',
+          'DEC',
+          'NUM',
+        ]),
+      ],
+      [['ID', 'ID']],
+      ['TI', 'SI', 'BI', 'F', 'D', 'DEC', 'NUM'],
+    ),
+  },
+  {
+    // keys whose names differ, both kept, and a column of each input
+    name: 'difference-keys-named-apart',
+    tables: [ORDERS, ['relational102', 'ORDERS']],
+    build: differenced(
+      [new Restrict('restrict101', ['ORDER_ID', 'SHIP_CITY', 'SHIP_VIA'])],
+      [
+        new Restrict('restrict102', ['ORDER_ID', 'CUSTOMER_ID', 'SHIP_VIA']),
+        new Rename('rename102', [{ from: 'ORDER_ID', to: 'ORDER_REF' }]),
+      ],
+      [['ORDER_ID', 'ORDER_REF']],
+      ['SHIP_VIA'],
+    ),
+    // the engine types a full join's keys as never empty, yet each is empty
+    // on the rows only the other input has (LegendCubeOperations' Difference)
+    widerNullable: { difference101: ['ORDER_ID', 'ORDER_REF'] },
   },
   // Partition (M5, PLAN §11.6): typed as a plain chain, as every case is
   {

@@ -21,6 +21,7 @@ import {
   ColumnComparisonFilter,
   Concat,
   Connection,
+  Difference,
   CUBE_DIALECT_WORKAROUNDS,
   Distinct,
   Drop,
@@ -294,6 +295,58 @@ const concatThenWith = (
   );
 };
 
+/**
+ * ORDERS through the first nodes and a second ORDERS through the second,
+ * compared by difference101 (its Left and Right) on ORDER_ID by SHIP_VIA, an
+ * integer, and FREIGHT, a float, then the nodes after it, the last captured
+ */
+const differenceThen = (...after: QueryNode[]): Query => {
+  const compared = ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'];
+  const arms = [
+    [
+      northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+      new Restrict('restrict101', compared),
+    ],
+    [
+      northwindTable('relational102', 'ORDERS', ORDERS_COLUMNS),
+      new Restrict('restrict102', compared),
+    ],
+  ];
+  const difference = new Difference('difference101', {
+    leftColumns: ['ORDER_ID'],
+    rightColumns: ['ORDER_ID'],
+    differenceColumns: ['SHIP_VIA', 'FREIGHT'],
+  });
+  const nodes = [difference, ...after];
+  const chain = (chained: readonly QueryNode[]): Connection[] =>
+    chained
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection(
+            (chained[index] as QueryNode).id,
+            node.id,
+            node.ports[0] as string,
+          ),
+      );
+  return new Query(
+    [...arms.flat(), ...nodes],
+    [
+      ...arms.flatMap(chain),
+      ...arms.map(
+        (arm, side) =>
+          new Connection(
+            (arm.at(-1) as QueryNode).id,
+            difference.id,
+            difference.ports[side] as string,
+          ),
+      ),
+      ...chain(nodes),
+    ],
+    nodes.at(-1)?.id,
+  );
+};
+
 /** Types must match */
 const concatThen = (
   first: readonly QueryNode[],
@@ -536,6 +589,11 @@ const SHAPES: [string, () => Query][] = [
           ]),
         ],
       ),
+  ],
+  ['a Difference', () => differenceThen()],
+  [
+    'a Limit after a Difference',
+    () => differenceThen(new Limit('limit101', 5)),
   ],
   [
     'a Sort after a Concat',
@@ -1323,6 +1381,40 @@ const windowFunctionCount = (query: Query): number =>
   query.nodes
     .filter((node): node is Partition => node instanceof Partition)
     .reduce((count, node) => count + node.aggregations.length, 0);
+
+/** A float's 0: `0.0`, Oracle's `0.0d`, or H2's cast */
+const FLOAT_ZERO = String.raw`(?:0\.0d?|cast\(0\.0 as float\))`;
+
+describe('Difference, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Joins FULL, natively but on H2, and subtracts the values with an empty one as 0, never cast to a float, on %s',
+    async (databaseType) => {
+      const sql = await planSql(differenceThen(), databaseType);
+      if (databaseType === 'H2') {
+        // the engine's emulation: matched and left rows, then the right's
+        expect(sql).toContain('left outer join');
+        expect(sql).toContain('right outer join');
+        expect(sql).toContain('union all');
+      } else {
+        expect(sql.match(/full outer join/gu)).toHaveLength(1);
+        expect(sql).not.toContain('union');
+      }
+      expect(sql).toMatch(
+        /coalesce\([^()]*ship_via_1[^()]*, 0\) - coalesce\([^()]*ship_via_2[^()]*, 0\)/u,
+      );
+      expect(sql).toMatch(
+        new RegExp(
+          `coalesce\\([^()]*freight_1[^()]*, ${FLOAT_ZERO}\\) - coalesce\\([^()]*freight_2[^()]*, ${FLOAT_ZERO}\\)`,
+          'u',
+        ),
+      );
+      // toFloat() fails to plan on 7 types (PLAN §11.7 Q5)
+      expect(sql).not.toMatch(
+        /cast\([^()]*ship_via[^()]* as (?:float|double)/u,
+      );
+    },
+  );
+});
 
 describe('Window functions, as each database plans them', () => {
   test.each(WINDOW_DATABASE_TYPES)(

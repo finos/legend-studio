@@ -18,6 +18,8 @@ import { describe, expect, test } from '@jest/globals';
 import {
   AggregationFunction,
   ColumnComparisonFilter,
+  Connection,
+  Difference,
   Distinct,
   Drop,
   Filter,
@@ -25,6 +27,7 @@ import {
   Limit,
   Partition,
   type QueryNode,
+  Query,
   QueryEmitter,
   RelationalTableSource,
   Restrict,
@@ -71,6 +74,11 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
         `create schema ${schema}`,
         `create table ${schema}.orders_table (${orderId} INTEGER PRIMARY KEY, ${country} VARCHAR(15))`,
         `insert into ${schema}.orders_table values ${ROWS}`,
+        // last month's and this month's stock, for Difference (PLAN §11.7)
+        `create table ${schema}.stock_last (item INTEGER PRIMARY KEY, qty INTEGER, price DOUBLE)`,
+        `insert into ${schema}.stock_last values (1, 10, 1.5), (2, 20, 2.5), (3, null, 3.5)`,
+        `create table ${schema}.stock_now (item INTEGER PRIMARY KEY, qty INTEGER, price DOUBLE)`,
+        `insert into ${schema}.stock_now values (2, 25, 2.0), (3, 5, null), (4, 7, 4.25)`,
       ],
       ...(databaseType === CubeDirectDatabaseType.DUCKDB ? { path: '' } : {}),
     });
@@ -242,6 +250,78 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
       expect(TEST__columnValues(result, 'v')).toEqual(
         TEST__columnValues(result, country),
       );
+    });
+
+    // Difference (PLAN §11.7): a full outer join, native on DuckDB, emulated
+    // by the engine on H2
+
+    test('Compares two tables by their items, an empty value counting as 0', async () => {
+      const { engine } = V1_createEngineBackedCubeEngine();
+      const outline = await engine.loadModel(model);
+      const named = (name: string): string =>
+        databaseType === CubeDirectDatabaseType.H2 ? name.toUpperCase() : name;
+      const path = (tableName: string): [string, string, string] => [
+        CUBE_DIRECT_DATABASE_PATH,
+        `"${schema}"`,
+        `"${named(tableName)}"`,
+      ];
+      const paths = new Map([
+        ['relational101', path('stock_last')],
+        ['relational102', path('stock_now')],
+      ]);
+      const typed = await engine.resolveSchemas(model, paths);
+      const sources = [...paths].map(
+        ([id, [database, tableSchema, tableName]]) =>
+          new RelationalTableSource(
+            id,
+            { database, schema: tableSchema, table: tableName },
+            { kind: 'resolved', schema: typed.get(id) as Schema },
+          ),
+      );
+      const [item, qty, price] = ['item', 'qty', 'price'].map(named) as [
+        string,
+        string,
+        string,
+      ];
+      const query = new Query(
+        [
+          ...sources,
+          new Difference('difference101', {
+            leftColumns: [item],
+            rightColumns: [item],
+            differenceColumns: [qty, price],
+          }),
+          new Sort('sort101', [{ column: item, direction: SortDirection.ASC }]),
+        ],
+        [
+          new Connection('relational101', 'difference101', 'tds1'),
+          new Connection('relational102', 'difference101', 'tds2'),
+          new Connection('difference101', 'sort101', 'tds'),
+        ],
+        'sort101',
+      );
+      TEST__expectValidQuery(query);
+      const result = await engine.execute(
+        model,
+        new QueryEmitter(query).emitExecutionLambda({
+          rowLimit: 100,
+          runtime: CUBE_DIRECT_RUNTIME_PATH,
+          databaseType: getDatabaseType(outline, CUBE_DIRECT_RUNTIME_PATH, [
+            CUBE_DIRECT_DATABASE_PATH,
+          ]),
+        }),
+      );
+      const numbers = (column: string): (number | null)[] =>
+        TEST__columnValues(result, column).map((value) =>
+          value === null ? null : Number(value),
+        );
+      expect(numbers(item)).toEqual([1, 2, 3, 4]);
+      expect(numbers(`${qty}_1`)).toEqual([10, 20, null, null]);
+      expect(numbers(`${qty}_2`)).toEqual([null, 25, 5, 7]);
+      expect(numbers(`${qty}_valueDifference`)).toEqual([10, -5, -5, -7]);
+      expect(numbers(`${price}_valueDifference`)).toEqual([
+        1.5, 0.5, 3.5, -4.25,
+      ]);
     });
   },
 );

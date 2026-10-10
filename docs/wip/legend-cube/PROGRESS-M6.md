@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------- |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10) |
 | Engine | Local legend-engine on `localhost:6300`                                               |
-| Step   | M6.3: Difference in the builder, and registered                                       |
-| Tests  | 2796 core, 1349 builder (core group)                                                  |
+| Step   | M6.4: Difference on the engine, around the databases and in the browser               |
+| Tests  | 2796 core, 1349 builder (core group); engine: the Difference suites below             |
 
 ## Steps
 
@@ -22,7 +22,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.1** The settled decisions (PLAN §11.7) and this file
 - [x] **M6.2** Difference in the core
 - [x] **M6.3** Difference in the builder, and registered
-- [ ] **M6.4** Difference on the engine, around the databases and in the browser
+- [x] **M6.4** Difference on the engine, around the databases and in the browser
 - [ ] **M6.5** Extend in the core
 - [ ] **M6.6** The engine adapter: parse, render, type and plan expressions
 - [ ] **M6.7** Retyping in the builder
@@ -41,7 +41,8 @@ Filled in as steps land.
 | ---- | ----------- | ------------------------------------------------ |
 | M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend) |
 | M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core       |
-| M6.3 | (this one)  | feat: add Difference to Legend Cube's builder    |
+| M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder    |
+| M6.4 | (this one)  | test: run Legend Cube's Difference on the engine |
 
 ## Notes
 
@@ -69,3 +70,17 @@ Filled in as steps land.
   duplicate columns are listed in its problems). `operations.cube.json` gains a Difference of two ORDERS on
   ORDER_ID and EMPLOYEE_ID, by SHIP_VIA and FREIGHT. The patch changeset now names Difference; Extend joins it later.
   Conformance cases move to M6.4, with the engine.
+- **M6.4** (2026-10-10). On H2 (`LegendCubeOperations`, 3 tests): last month's orders against this month's, each
+  row checked against a reference computed from ORDERS itself; every numeric family of ALLTYPES (TI, SI, BI as
+  Integer, F, D as Float, DEC, NUM as Number), BI's 9007199254740993 read exactly, a right-only row of empty values
+  giving 0; keys named apart, each empty on the other input's rows. On H2 and DuckDB through the direct connection, a
+  small stock table compared with hand-computed values (`LegendCubeDirectConnectionOperations`). Conformance: three
+  cases, the keys named apart declared wider (the engine types a full join's keys as never empty, yet they are, as
+  the H2 test shows). Plans (`LegendCubeDialects`): a native `full outer join` on all 19 types but H2, where the
+  engine emulates it (a left join `union all` a right join), so PLAN §8.8's "FULL native on 9" is outdated for this
+  shape (to fold in M6.13); `coalesce(…, 0) - coalesce(…, 0)` and the float zero (`0.0`, Oracle's `0.0d`, H2's
+  cast), never a cast of the values; two Difference shapes join `SHAPES`. The operations sample's Difference types
+  as Cube infers it (`CubeSpecCorpus`). In the browser (`demo/check-m64-difference.mjs`, 12 checks, `out-m64/`):
+  the palette order, the editor's problems and reasons, Apply, the 9 rows checked against their inputs, Show Pure,
+  the saved spec. The fixture's FREIGHT is a REAL, so its differences show float noise (`32.380001068115234`); a
+  demo should compare integers or DOUBLE columns.
