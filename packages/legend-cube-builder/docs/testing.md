@@ -101,6 +101,9 @@ would serve it.
   single form, unbound, gives wrong rows. The core's `PartitionEmitter.test.ts` pins the emitted text.
   `CubeWindowIsolation.engine-roundtrip-test.ts` checks the lets themselves through the adapter, with a test-only
   window: they run, type, show in Show Pure, and put an error inside a let on its window.
+- `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
+  example cube (PLAN §6.9) as the Examples tab does: it types its tables, checks every node types as Cube infers it
+  (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.
 - `src/__tests__/CubeNorthwindRelationTypes.json` records the engine's relation type for every table of the bundled
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.
