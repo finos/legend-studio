@@ -116,6 +116,22 @@ export const CubeInlineModelTab = observer(
             </div>
           </div>
         )}
+        <CubeOutlineSteps tab={tab} />
+      </div>
+    );
+  },
+);
+
+/**
+ * The steps after a model is picked, shared by the Model and Project tabs:
+ * its loading, then a database, a runtime keyed by it, a schema and a table,
+ * and why the last step failed
+ */
+export const CubeOutlineSteps = observer(
+  (props: { tab: CubeInlineModelTabState }) => {
+    const { tab } = props;
+    return (
+      <>
         {tab.isLoadingModel && (
           <div className="text-base text-[var(--color-text-secondary)]">
             {CUBE_PENDING_LABEL.LOADING_MODEL}
@@ -213,7 +229,7 @@ export const CubeInlineModelTab = observer(
             {tab.error}
           </div>
         )}
-      </div>
+      </>
     );
   },
 );
