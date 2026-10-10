@@ -20,6 +20,8 @@ import type {
   CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
 import { CUBE_NORTHWIND_MODEL } from './fixtures/CubeNorthwindModel.js';
+import { CUBE_SPORTS_MODEL } from './fixtures/CubeSportsModel.js';
+import { CUBE_TRADES_MODEL } from './fixtures/CubeTradesModel.js';
 
 // The models of the slice (PLAN §6.2.3): Pure text bundled with Cube, or
 // pasted by the user. Picking one gives the model context the cube saves, the
@@ -36,6 +38,16 @@ export const BUNDLED_MODELS: readonly BundledModel[] = Object.freeze([
     id: 'cube-northwind',
     label: 'Northwind (Cube fixture)',
     model: CUBE_NORTHWIND_MODEL,
+  },
+  {
+    id: 'cube-sample-sports',
+    label: 'Sports (sample)',
+    model: CUBE_SPORTS_MODEL,
+  },
+  {
+    id: 'cube-sample-trades',
+    label: 'Trades (sample)',
+    model: CUBE_TRADES_MODEL,
   },
 ]);
 
