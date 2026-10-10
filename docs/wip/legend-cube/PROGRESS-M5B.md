@@ -12,8 +12,8 @@
 | ------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m5b`, stacked on `cube-m6` (#5662, rebased onto `cube-dev` with #5657, not merged yet); draft PR #5665 into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                                                                                      |
-| Step   | M5b.8: the plan folded and renumbered §11.9; rebased onto the floating node editor; the final gates                          |
-| Tests  | 2833 core, 1618 builder (core group, with #5657's)                                                                           |
+| Step   | M5b.1–M5b.8 done: M5b is complete, in draft #5665 for `cube-dev`                                                             |
+| Tests  | 2833 core, 1619 builder (core group, with #5657's); the engine suites as M5b.4                                               |
 
 ## Steps
 
@@ -26,7 +26,7 @@ See PLAN §11.9 for each step's deliverable and when it is done.
 - [x] **M5b.5** Guides, testing.md and the changeset
 - [x] **M5b.6** Verification and the browser rehearsal
 - [x] **M5b.7** A demo video of the new functions (PLAN §11.3)
-- [ ] **M5b.8** Fold PLAN §11.9's supersessions in; the PR ready for `cube-dev`
+- [x] **M5b.8** Fold PLAN §11.9's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -44,7 +44,9 @@ Filled in as steps land.
 | M5b.7 | `5fc892ac5` | docs: record Legend Cube M5b's demo video                                                               |
 | M5b.8 | `00c8c6c69` | docs: fold Legend Cube M5b's supersessions into its plan                                                |
 | M5b.8 | `7e20ee709` | docs: number Legend Cube M5b's plan section 11.9, after M3b's 11.8                                      |
-| M5b.8 | (this one)  | docs: record Legend Cube M5b's rebase onto the floating node editor                                     |
+| M5b.8 | `ebe1f8ed9` | docs: record Legend Cube M5b's rebase onto the floating node editor                                     |
+| M5b.8 | `78991e50a` | fix: mark invalid fields in Legend Cube's floating node editor too                                      |
+| M5b.8 | (this one)  | docs: record Legend Cube M5b.8                                                                          |
 
 ## Notes
 
@@ -117,3 +119,24 @@ Filled in as steps land.
   offset of 0 marked on its field; every new function's problem without a sort column; Show Pure's Last as `first` over
   the descending sort. 13 checks pass; each of its 11 frames was read against its caption. Two frames first showed less
   than their captions said (the functions list scrolls past five rows), so the script scrolls it to its end there.
+- **M5b.8** (2026-10-10). PLAN §11.9's supersessions folded into the sections they change: §5.7 (the seven functions'
+  rows and nullability), §8.8 (the Partition row's three extends, the aggregations table's window column, "Window
+  functions beyond the spec"), §10.3 (`offset` and `buckets`), §11.6 Q2's "not offered" line, and Appendix A §10,
+  §16 and §17.6. The user kept Lag, Lead, First and Last on ClickHouse with the editor's note rather than refusing them
+  there. Then the user merged #5657 (M3b) into `cube-dev`, which took PLAN §11.8, so M5b's plan section is now
+  **§11.9**, and both PRs were rebased: #5662 onto `cube-dev` (see PROGRESS-M6.md's Rebase note: an Extend whose Apply
+  waits now stays open through M3b's `finish()`), and this branch onto it. The M5b commits applied cleanly apart from
+  the plan. One fix on top: M5b.6's red border for a field marked invalid is scoped to `.legend-cube`, and the floating
+  editor is portalled out of it, so its layer now carries a class the rule names too (a test pins the class).
+  - Gates: `check:ci` passes (`GITHUB_BASE_REF=master` locally), lint and stylelint are clean, 2833 core and 1619
+    builder tests pass. The engine suites pass but four tests in three direct-connection suites (#5641's "setup SQL
+    the database refuses") time out at 30 s against the local engine; the same suites pass in #5662's CI engine group
+    on the rebased M6 (27 suites, 1058 tests), so it is this engine, not the code. The repo-wide run's one failure,
+    legend-dev-utils' `TypescriptConfigUtils`, comes from this checkout's path: an unquoted `tsc -p` breaks on the
+    space in "Goldman Sachs".
+  - In the browser, on the floating editor (evidence `demo/`): the dev server's Tailwind CSS had to be rebuilt first
+    (`build:tailwindcss`; nothing watched it, so M3b's arbitrary-value classes such as the body's `max-h-[33vh]` were
+    missing and the editor grew past the window). Then the rehearsal 57 of 57 (`rehearsal-floating.mjs`), Difference
+    12 of 12, Extend 13 of 13, and the M5b demo 13 of 13, re-recorded as
+    `out-demo-m5b-floating/legend-cube-m5b-window-functions-floating.webm` (99 s, sent), each of its 11 frames read
+    against its caption: the editor's body now scrolls to the rows each caption names.
