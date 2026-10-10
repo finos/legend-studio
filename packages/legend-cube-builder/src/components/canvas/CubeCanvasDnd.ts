@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { addCubeNode, canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 
 // Drag and drop on the canvas (spec §17.3): palette items and nodes are
@@ -42,8 +43,9 @@ const isNodeDragItem = (item: CubeDragItem): item is CubeNodeDragItem =>
 
 /**
  * Whether dropping the item on the node does anything, which also decides
- * whether the node lights up under it: a palette item is spliced in after
- * the node, another node connects to it or else moves after it
+ * whether the node lights up under it: a transform is spliced in after the
+ * node, another node connects to it or else moves after it. A source is the
+ * canvas's, whatever node it is dropped on (PLAN §11.6, U4).
  */
 export const canDropOnCubeNode = (
   editorState: CubeEditorState,
@@ -52,7 +54,8 @@ export const canDropOnCubeNode = (
 ): boolean =>
   isNodeDragItem(item)
     ? editorState.canDropNode(item.nodeId, targetId)
-    : editorState.canAddNode(item.nodeType, targetId);
+    : editorState.registry.get(item.nodeType)?.kind !== 'source' &&
+      canAddCubeNode(editorState, item.nodeType, targetId);
 
 export const dropOnCubeNode = (
   editorState: CubeEditorState,
@@ -62,21 +65,25 @@ export const dropOnCubeNode = (
   if (isNodeDragItem(item)) {
     editorState.dropNode(item.nodeId, targetId);
   } else {
-    editorState.addNode(item.nodeType, targetId);
+    addCubeNode(editorState, item.nodeType, targetId);
   }
 };
 
 /**
- * A palette item dropped on the canvas around the nodes: a transform is
- * added unconnected, a source opens the picker. A drop on a node is the
- * node's, taken or refused, never the canvas's.
+ * A palette item dropped on the canvas (PLAN §11.6, U3 and U4): a transform
+ * around the nodes goes after the selected node; a source opens the source
+ * dialog on its tab, even dropped on a node, which leaves it to the canvas.
+ * A transform dropped on a node is the node's, taken or refused.
  */
 export const dropOnCubeCanvas = (
   editorState: CubeEditorState,
   item: CubeDragItem,
   isOverNode: boolean,
 ): void => {
-  if (!isOverNode && !isNodeDragItem(item)) {
-    editorState.addNode(item.nodeType);
+  if (
+    !isNodeDragItem(item) &&
+    (!isOverNode || editorState.registry.get(item.nodeType)?.kind === 'source')
+  ) {
+    addCubeNode(editorState, item.nodeType);
   }
 };

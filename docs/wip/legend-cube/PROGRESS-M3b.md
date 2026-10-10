@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.7 done (each editor in the floating editor)                                                                                     |
+| Step   | M3b.8 done (one placement rule)                                                                                                     |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -27,7 +27,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.5** Switch over from the side panel
 - [x] **M3b.6** The editor's frame
 - [x] **M3b.7** Each editor's sizing and edges
-- [ ] **M3b.8** One placement rule for the palette, drops and context menus
+- [x] **M3b.8** One placement rule for the palette, drops and context menus
 - [ ] **M3b.9** 'Add Items ▾'
 - [ ] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
 - [ ] **M3b.11** The node tooltip
@@ -53,7 +53,8 @@ rebased ones.
 | M3b.4   | `172d8cbcc` | feat: close Legend Cube's floating node editor, applying its edits |
 | M3b.5   | `d2f39ed89` | feat: float Legend Cube's node editor in place of its side panel   |
 | M3b.6   | `1e76a681a` | feat: frame Legend Cube's floating node editor as a dialog         |
-| M3b.7   | (this one)  | feat: fit each Legend Cube editor to the floating node editor      |
+| M3b.7   | `81a29d1dd` | feat: fit each Legend Cube editor to the floating node editor      |
+| M3b.8   | (this one)  | feat: add Legend Cube's steps after the selected node              |
 
 ## Step notes
 
@@ -218,3 +219,27 @@ a regex over the list's classes; one is equivalent (`setWarehouse` refuses blank
 - every node type of the all-types spec, a data product access point, and H2 and DuckDB tables: 432px, nothing wider
   than the editor;
 - no element in the body with a cap or a scroller (since the review, even one that doesn't overflow).
+
+**M3b.8 (2026-10-09).** One placement rule (`stores/CubeAddPlacement.ts`) for the palette (click and drop), drops
+on the canvas and both context menus (U3, U4):
+
+- **Transforms.** A transform goes after the node it targets, or else after the selected node, and stands alone only in
+  an empty query.
+- **Sources.** A source ignores any node and opens its dialog tab: dropped on a node, which doesn't light up, or picked
+  from a node's menu, where it is now enabled.
+- **Empty query.** It has no context menu.
+- **Applying first.** Adds apply the node editor first and add nothing when its edits had to be dropped
+  (`finishApplied`), as Execute and Undo do. Select, Remove and Swap Inputs keep `finish()`.
+
+Tests: workflow `wf_597e1ab9-673`:
+
+- **Mutants:** 16 of 20 killed, two equivalent. The other two, the drops' own apply, were a backstop the browser covers
+  with the drag's press; they are now pinned by a drop test with the editor open (`m3b-verify/m3b8-fix-mutants.json`,
+  2/2).
+- **Browser** (`check-m3b8.mjs`, real drags), 28/28:
+  - a palette click and a drop on the pane go after the selected node;
+  - a drop on a node splices after it and lights it;
+  - a table dropped on a node opens the Model tab, unlit;
+  - the menus place nodes as decided;
+  - an empty cube has no menu.
+- **Probe** (`probe-m3b8-editor-drop.mjs`, 7/7): a drop with the editor holding edits applies them first.

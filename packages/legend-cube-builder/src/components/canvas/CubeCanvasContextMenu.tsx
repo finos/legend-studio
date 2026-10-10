@@ -24,17 +24,20 @@ import {
 import type { AnyNodeDefinition } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
+import { addCubeNode, canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
 
 /**
  * The canvas's context menu (spec §17.4): the palette, then what can be done
- * to the node it was opened on. On a node, a palette item is added after it;
- * around the nodes, on its own. Every item shows, disabled when it can't be
- * done, so Swap Inputs can be found. The node comes through props: a menu
- * opened around the nodes has none. Each item finishes the node editor
- * first, so its edits are applied, never dropped (PLAN §11.6), except Swap
- * Inputs on the edited node, which its editor applies and follows.
+ * to the node it was opened on. On a node, a transform is added after it;
+ * around the nodes, after the selected node; a source opens the source
+ * dialog on its tab (PLAN §11.6, U3 and U4). Every item shows, disabled when
+ * it can't be done, so Swap Inputs can be found. The node comes through
+ * props: a menu opened around the nodes has none. Each item applies the node
+ * editor first, so its edits are never dropped; a palette item adds nothing
+ * when they had to be. Swap Inputs on the edited node is its editor's own,
+ * which applies and follows it.
  */
 export const CubeCanvasContextMenu = observer(
   forwardRef<
@@ -54,8 +57,8 @@ export const CubeCanvasContextMenu = observer(
     const paletteItem = (definition: AnyNodeDefinition): React.ReactNode => (
       <MenuContentItem
         key={definition.type}
-        disabled={!editorState.canAddNode(definition.type, nodeId)}
-        onClick={finishing(() => editorState.addNode(definition.type, nodeId))}
+        disabled={!canAddCubeNode(editorState, definition.type, nodeId)}
+        onClick={() => addCubeNode(editorState, definition.type, nodeId)}
       >
         <MenuContentItemIcon>
           <CubeNodeIcon icon={definition.icon} />

@@ -766,6 +766,8 @@ export class CubeEditorState implements CommandRegistrar {
    * Whether a node of the type can be added: a transform, unconnected or
    * spliced in after `afterId`, when the query allows it; a source only
    * unconnected, through the source picker. Never while the cube is read-only.
+   * The low-level rule: the palette, drops and menus place nodes through
+   * `CubeAddPlacement` (PLAN §11.6).
    */
   canAddNode(type: string, afterId?: string): boolean {
     const definition = this.registry.get(type);
@@ -786,8 +788,8 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Adds a node of the type, as the palette and the context menu do (spec
-   * §17.4): a transform with its default settings, unconnected or spliced in
+   * Adds a node of the type (spec §17.4), the low-level add that
+   * `CubeAddPlacement` places for the palette, drops and menus: a transform with its default settings, unconnected or spliced in
    * after `afterId`; a source opens the source picker, which adds it once
    * the engine has typed it. Does nothing `canAddNode` refuses.
    */

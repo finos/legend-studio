@@ -27,6 +27,7 @@ import {
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import { addCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_DND_TYPE,
@@ -41,7 +42,7 @@ export const PALETTE_EMPTY_HINT = 'Drag items onto the canvas.';
 const describeItem = (definition: AnyNodeDefinition): string =>
   definition.kind === 'source'
     ? `Click, or drop it on the canvas, to pick ${definition.type === DataProductAccessPointSource.TYPE ? 'an access point' : 'a table'}`
-    : 'Drag it onto a node to add it after that node, or onto the canvas to add it on its own; click to add it on its own';
+    : 'Click, or drop it on the canvas, to add it after the selected node; drop it on a node to add it after that node';
 
 const CubePaletteItem = observer(
   (props: {
@@ -72,9 +73,8 @@ const CubePaletteItem = observer(
     dragConnector(ref);
     const label = `${definition.label}${definition.beta ? ' (BETA)' : ''}`;
     const add = (): void => {
-      // the node editor's edits are applied first, as for every other change
-      if (!disabled && editorState.nodeEditor.finishApplied()) {
-        editorState.addNode(definition.type);
+      if (!disabled) {
+        addCubeNode(editorState, definition.type);
       }
     };
     return (

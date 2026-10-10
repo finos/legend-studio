@@ -36,6 +36,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import { canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   buildCubeCanvasEdges,
@@ -220,9 +221,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
 /**
  * The query as a graph, laid out left to right (spec §17.3). Click a node to
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
- * output to another node's input to connect them. A palette item dropped
- * around the nodes is added unconnected. Right-click it, or a node, for the
- * context menu.
+ * output to another node's input to connect them. A transform dropped
+ * around the nodes goes after the selected node; a source, dropped anywhere,
+ * opens the source dialog on its tab (PLAN §11.6). Right-click it, or a
+ * node, for the context menu.
  */
 export const CubeCanvas = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -232,7 +234,7 @@ export const CubeCanvas = observer(
       () => ({
         accept: [CUBE_DND_TYPE.PALETTE_ITEM],
         canDrop: (item) =>
-          !editorState.readOnly && editorState.canAddNode(item.nodeType),
+          !editorState.readOnly && canAddCubeNode(editorState, item.nodeType),
         // a node under the pointer, whether it took the drop or refused it,
         // keeps it from the canvas
         drop: (item, monitor) =>
@@ -253,6 +255,8 @@ export const CubeCanvas = observer(
       >
         <ContextMenu
           className="h-full w-full"
+          // an empty query has no menu: there is nothing to add after (U3)
+          disabled={editorState.document.query.isEmpty}
           content={<CubeCanvasContextMenu editorState={editorState} />}
           menuProps={{ elevation: 7 }}
         >

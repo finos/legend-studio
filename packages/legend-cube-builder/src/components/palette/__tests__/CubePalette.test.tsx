@@ -21,6 +21,7 @@ import {
   FILTER_DEFINITION,
   Filter,
   Join,
+  Limit,
   Query,
 } from '@finos/legend-cube';
 import { act, fireEvent, screen, within } from '@testing-library/react';
@@ -41,6 +42,8 @@ import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageT
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 import { CubePalette, PALETTE_EMPTY_HINT } from '../CubePalette.js';
@@ -126,6 +129,27 @@ const unwiredJoin = (): CubeDocument =>
       'relational101',
     ),
   });
+
+/** The slice query, with the Join, which feeds the Filter, selected */
+const joinSelectedQuery = (): Query => {
+  const query = sliceQuery();
+  return new Query(query.nodes, query.connections, 'join101');
+};
+
+/** A new Filter went in between the Join and the Filter it fed, as one undo step, and is the capture */
+const expectSplicedAfterJoin = (editorState: CubeEditorState): void => {
+  const { query } = editorState.document;
+  expect(query.nodes).toHaveLength(5);
+  expect(query.getInputIds('filter102')).toEqual(['join101']);
+  expect(query.getInputIds('filter101')).toEqual(['filter102']);
+  expect(query.getInputIds('join101')).toEqual([
+    'relational101',
+    'relational102',
+  ]);
+  expect(query.selected).toBe('filter102');
+  expect(editorState.history).toHaveLength(1);
+  expect(editorState.nodeEditor.nodeId).toBeUndefined();
+};
 
 beforeEach(() => {
   localStorage.clear();
@@ -235,23 +259,50 @@ describe('Cube palette', () => {
     expect(screen.queryByText(PALETTE_EMPTY_HINT)).toBeNull();
   });
 
-  test('Opens the source picker from the table item, clicked or dropped on the canvas, never on a node', async () => {
+  test("Opens the source dialog on the table's tab, clicked or dropped anywhere, even on a node, which doesn't light up", async () => {
     const editorState = await render(new CubeDocument({ query: sliceQuery() }));
+    const { document } = editorState;
+    const { sourcePicker } = editorState;
     fireEvent.click(paletteItem(TABLE));
-    expect(editorState.sourcePicker.isOpen).toBe(true);
-    act(() => editorState.sourcePicker.close());
+    expect(sourcePicker.isOpen).toBe(true);
+    expect(sourcePicker.activeTabKey).toBe(CubeSourcePickerTabKey.MODEL);
+    act(() => sourcePicker.close());
 
     const join = await TEST__findCanvasNode('join101');
     startDrag(paletteItem(TABLE));
     dragOver(join);
     expect(isLit(join)).toBe(false);
     drop(paletteItem(TABLE), join);
-    expect(editorState.sourcePicker.isOpen).toBe(false);
-    expect(editorState.history).toHaveLength(0);
+    expect(sourcePicker.isOpen).toBe(true);
+    expect(sourcePicker.activeTabKey).toBe(CubeSourcePickerTabKey.MODEL);
+    act(() => sourcePicker.close());
 
     startDrag(paletteItem(TABLE));
     drop(paletteItem(TABLE), canvasPane());
-    expect(editorState.sourcePicker.isOpen).toBe(true);
+    expect(sourcePicker.isOpen).toBe(true);
+    // nothing is added until the dialog's Add
+    expect(editorState.document).toBe(document);
+    expect(editorState.history).toHaveLength(0);
+  });
+
+  test("Opens the source dialog on the data product's tab, clicked or dropped on a node", async () => {
+    const editorState = await render(new CubeDocument({ query: sliceQuery() }));
+    const { document } = editorState;
+    const { sourcePicker } = editorState;
+    const dataProduct = (): HTMLElement => paletteItem('Data Product (BETA)');
+    fireEvent.click(dataProduct());
+    expect(sourcePicker.isOpen).toBe(true);
+    expect(sourcePicker.activeTabKey).toBe(CubeSourcePickerTabKey.DATA_PRODUCT);
+    act(() => sourcePicker.close());
+
+    const join = await TEST__findCanvasNode('join101');
+    startDrag(dataProduct());
+    dragOver(join);
+    expect(isLit(join)).toBe(false);
+    drop(dataProduct(), join);
+    expect(sourcePicker.isOpen).toBe(true);
+    expect(sourcePicker.activeTabKey).toBe(CubeSourcePickerTabKey.DATA_PRODUCT);
+    expect(editorState.document).toBe(document);
     expect(editorState.history).toHaveLength(0);
   });
 
@@ -272,16 +323,78 @@ describe('Cube palette', () => {
     await TEST__findCanvasNode('join101');
   });
 
-  test('Adds a transform dropped around the nodes on its own, once', async () => {
-    const editorState = await render(new CubeDocument({ query: sliceQuery() }));
+  test('Splices a transform clicked in after the selected node, which captures it, opening no editor', async () => {
+    const editorState = await render(
+      new CubeDocument({ query: joinSelectedQuery() }),
+    );
+    fireEvent.click(paletteItem(FILTER));
+    expectSplicedAfterJoin(editorState);
+    await TEST__findCanvasNode('filter102');
+  });
+
+  test('Splices a transform dropped around the nodes in after the selected node, once', async () => {
+    const editorState = await render(
+      new CubeDocument({ query: joinSelectedQuery() }),
+    );
     await TEST__findCanvasNode('join101');
     startDrag(paletteItem(FILTER));
     drop(paletteItem(FILTER), canvasPane());
-    expect(editorState.document.query.nodes).toHaveLength(5);
-    expect(editorState.document.query.getInputIds('filter102')).toEqual([
-      undefined,
-    ]);
-    expect(editorState.history).toHaveLength(1);
+    expectSplicedAfterJoin(editorState);
+    await TEST__findCanvasNode('filter102');
+  });
+
+  test.each([['on the canvas'], ['on a node']])(
+    'Applies the open editor before a transform dropped %s is added',
+    async (where) => {
+      const editorState = await render(
+        new CubeDocument({
+          context: CONTEXT,
+          query: new Query(
+            [
+              northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+              new Limit('limit101', 10),
+            ],
+            [new Connection('relational101', 'limit101', 'tds')],
+            'limit101',
+          ),
+        }),
+      );
+      await TEST__findCanvasNode('limit101');
+      act(() => {
+        editorState.nodeEditor.open('limit101');
+        (editorState.nodeEditor.draft as CubeRowCountDraft<Limit>).setSizeText(
+          '5',
+        );
+      });
+      startDrag(paletteItem(FILTER));
+      drop(
+        paletteItem(FILTER),
+        where === 'on a node'
+          ? await TEST__findCanvasNode('limit101')
+          : canvasPane(),
+      );
+      expect(
+        (editorState.document.query.getNode('limit101') as Limit).size,
+      ).toBe(5);
+      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(editorState.document.query.getInputIds('filter101')).toEqual([
+        'limit101',
+      ]);
+      expect(editorState.history).toHaveLength(2);
+    },
+  );
+
+  test('Says in the tooltip where an item goes', async () => {
+    await render(new CubeDocument({ query: sliceQuery() }));
+    expect(paletteItem(FILTER).title).toBe(
+      'Click, or drop it on the canvas, to add it after the selected node; drop it on a node to add it after that node',
+    );
+    expect(paletteItem(TABLE).title).toBe(
+      'Click, or drop it on the canvas, to pick a table',
+    );
+    expect(paletteItem('Data Product (BETA)').title).toBe(
+      'Click, or drop it on the canvas, to pick an access point',
+    );
   });
 
   test('Splices a transform dropped on a node in after it, once', async () => {
@@ -425,5 +538,9 @@ describe('Cube palette', () => {
       'filter',
       'join',
     ]);
+    // the Join went after the Filter, the selected node, and captures it
+    const { query } = editorState.document;
+    expect(query.getInputIds('join101')).toEqual(['filter101', undefined]);
+    expect(query.selected).toBe('join101');
   });
 });

@@ -36,6 +36,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import { runInAction } from 'mobx';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -49,6 +50,7 @@ import {
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubePalette } from '../../palette/CubePalette.js';
 import { CubeCanvas } from '../CubeCanvas.js';
@@ -124,8 +126,10 @@ describe('Canvas context menu', () => {
     await render(slice());
     let items = await openMenu(await TEST__findCanvasNode('join101'));
     expect([...items.keys()]).toEqual(ITEMS);
-    // a table can't go after a node; a Join can be selected, removed and swapped
+    // a table opens its dialog from any node, a cube of tables takes no data
+    // product; a Join can be selected, removed and swapped
     expect(enabledItems(items)).toEqual([
+      TABLE,
       ...TRANSFORMS,
       'Select',
       'Remove',
@@ -135,25 +139,32 @@ describe('Canvas context menu', () => {
 
     // the node Execute runs, with one input
     items = await openMenu(await TEST__findCanvasNode('filter101'));
-    expect(enabledItems(items)).toEqual([...TRANSFORMS, 'Remove']);
+    expect(enabledItems(items)).toEqual([TABLE, ...TRANSFORMS, 'Remove']);
     await closeMenu();
 
     items = await openMenu(await TEST__findCanvasNode('relational101'));
-    expect(enabledItems(items)).toEqual([...TRANSFORMS, 'Select', 'Remove']);
+    expect(enabledItems(items)).toEqual([
+      TABLE,
+      ...TRANSFORMS,
+      'Select',
+      'Remove',
+    ]);
   });
 
-  test('Offers only the palette around the nodes and on an empty canvas', async () => {
+  test("Offers the palette around the nodes, the node's actions shown disabled, and no menu on an empty canvas", async () => {
     const editorState = await render(slice());
     await TEST__findCanvasNode('join101');
-    let items = await openMenu(canvasPane());
+    const items = await openMenu(canvasPane());
     expect([...items.keys()]).toEqual(ITEMS);
     // a cube of tables takes no data product
     expect(enabledItems(items)).toEqual([TABLE, ...TRANSFORMS]);
     await closeMenu();
 
+    // nothing to add after
     act(() => editorState.importDocument(new CubeDocument(), false));
-    items = await openMenu(screen.getByText(/No tables yet/u));
-    expect(enabledItems(items)).toEqual(PALETTE);
+    fireEvent.contextMenu(screen.getByText(/No tables yet/u));
+    fireEvent.contextMenu(canvasPane());
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 
   test('Removes a node, as one undoable edit, without opening its editor', async () => {
@@ -192,28 +203,58 @@ describe('Canvas context menu', () => {
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
   });
 
-  test('Adds a palette item after the node the menu was opened on, or on its own around the nodes', async () => {
+  test('Adds a transform after the node the menu was opened on, or after the selected node around the nodes, without opening its editor', async () => {
     const editorState = await render(slice());
     let items = await openMenu(await TEST__findCanvasNode('join101'));
     fireEvent.click(items.get('Filter by Column') as HTMLButtonElement);
-    expect(editorState.document.query.getInputIds('filter102')).toEqual([
-      'join101',
-    ]);
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    let { query } = editorState.document;
+    expect(query.getInputIds('filter102')).toEqual(['join101']);
+    // spliced in before the node the join fed
+    expect(query.getInputIds('filter101')).toEqual(['filter102']);
+    // the join wasn't the capture node, so the capture node stays
+    expect(query.selected).toBe('filter101');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.history).toHaveLength(1);
+
+    act(() => editorState.select('join101'));
+    const historyLength = editorState.history.length;
     items = await openMenu(canvasPane());
     fireEvent.click(items.get('Join Another Input') as HTMLButtonElement);
-    expect(editorState.document.query.getInputIds('join102')).toEqual([
-      undefined,
-      undefined,
-    ]);
-    expect(editorState.history).toHaveLength(2);
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
-    items = await openMenu(canvasPane());
-    fireEvent.click(
-      items.get('Relational Database Table') as HTMLButtonElement,
-    );
-    expect(editorState.sourcePicker.isOpen).toBe(true);
+    query = editorState.document.query;
+    expect(query.getInputIds('join102')).toEqual(['join101', undefined]);
+    expect(query.getInputIds('filter102')).toEqual(['join102']);
+    // added after the capture node, it becomes the capture node
+    expect(query.selected).toBe('join102');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.history).toHaveLength(historyLength + 1);
   });
+
+  test.each<[string, () => Element | Promise<Element>]>([
+    ['on a node', () => TEST__findCanvasNode('join101')],
+    ['around the nodes', canvasPane],
+  ])(
+    'Opens the source dialog on its tab from the table item %s, adding no node',
+    async (_where, target) => {
+      const editorState = await render(slice());
+      await TEST__findCanvasNode('join101');
+      const { query } = editorState.document;
+      // a tab open last, which the cube's own table tab overrides
+      runInAction(() => {
+        editorState.sourcePicker.activeTabKey =
+          CubeSourcePickerTabKey.DATA_PRODUCT;
+      });
+      const items = await openMenu(await target());
+      fireEvent.click(items.get(TABLE) as HTMLButtonElement);
+      expect(editorState.sourcePicker.isOpen).toBe(true);
+      expect(editorState.sourcePicker.activeTabKey).toBe(
+        CubeSourcePickerTabKey.MODEL,
+      );
+      expect(editorState.document.query).toBe(query);
+      expect(editorState.history).toHaveLength(0);
+    },
+  );
 
   test('Only selects in a read-only cube', async () => {
     const editorState = await render();
@@ -366,7 +407,7 @@ describe('Adding a concat', () => {
       expect(iconMarkup(drawn.querySelector('svg'))).toBe(concatIcon);
     };
 
-    // the palette's item, clicked, adds one on its own
+    // the palette's item, clicked, adds one after the capture node, which it becomes
     const paletteItem = within(
       screen.getByTestId(LEGEND_CUBE_TEST_ID.PALETTE),
     ).getByRole('button', { name: CONCAT });
@@ -374,9 +415,11 @@ describe('Adding a concat', () => {
     fireEvent.click(paletteItem);
     await expectConcat('concat101');
     expect(editorState.document.query.getInputIds('concat101')).toEqual([
-      undefined,
+      'filter101',
       undefined,
     ]);
+    expect(editorState.document.query.selected).toBe('concat101');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
     expect(editorState.history).toHaveLength(1);
 
     // the menu of a node adds one after it, the node feeding its First input
@@ -392,17 +435,20 @@ describe('Adding a concat', () => {
     expect(editorState.document.query.getInputIds('filter101')).toEqual([
       'concat102',
     ]);
+    expect(editorState.document.query.selected).toBe('concat101');
     expect(editorState.history).toHaveLength(2);
 
-    // the menu around the nodes adds one on its own
+    // the menu around the nodes adds one after the capture node
     items = await openMenu(canvasPane());
     fireEvent.click(items.get(CONCAT) as HTMLButtonElement);
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
     await expectConcat('concat103');
     expect(editorState.document.query.getInputIds('concat103')).toEqual([
-      undefined,
+      'concat101',
       undefined,
     ]);
+    expect(editorState.document.query.selected).toBe('concat103');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
     expect(editorState.history).toHaveLength(3);
   });
 });
