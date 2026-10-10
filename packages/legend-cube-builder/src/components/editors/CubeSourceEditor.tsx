@@ -28,6 +28,7 @@ import {
 } from '../../__lib__/LegendCubeDirectConnectionLabels.js';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { getCubeDirectConnection } from '../../graph-manager/CubeDirectConnection.js';
+import { getCubeProjectCoordinates } from '../../graph-manager/CubeProject.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -49,6 +50,8 @@ export const CubeSourceEditor = observer((props: CubeNodeEditorProps) => {
   const description =
     connection &&
     editorState.host.connectionExplorer?.describeConnection(connection);
+  // a project cube's tables come from its project at the saved version (PLAN §6.3)
+  const project = model ? getCubeProjectCoordinates(model) : undefined;
   return (
     <div className="relative flex flex-col gap-2">
       <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-base">
@@ -63,6 +66,16 @@ export const CubeSourceEditor = observer((props: CubeNodeEditorProps) => {
           </>
         ) : (
           <>
+            {project && (
+              <>
+                <dt className="text-[var(--color-text-secondary)]">Project</dt>
+                <dd className="min-w-0 break-all">
+                  {project.groupId}:{project.artifactId}
+                </dd>
+                <dt className="text-[var(--color-text-secondary)]">Version</dt>
+                <dd>{project.versionId}</dd>
+              </>
+            )}
             <dt className="text-[var(--color-text-secondary)]">Database</dt>
             <dd className="min-w-0 break-all">{source.database}</dd>
           </>

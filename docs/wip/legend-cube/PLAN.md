@@ -1137,21 +1137,39 @@ Problem tables are flagged in the picker rather than crashing the canvas:
 Confirming resolves the table first and then adds the node (§17.8: "lands with its schema populated"). The first
 source fixes `context.model` and `context.runtime`; later picks are limited to that runtime's database.
 
-### 6.3 Relational with depot (M3, outline)
+### 6.3 Relational with depot (M3, built 2026-10-10)
 
-The fetch sequence needs no graph build ✅📄:
+A cube can read tables of the Databases in a published project, through the source dialog's **Project** tab.
 
-1. depot `project-configurations` → versions.
-2. In parallel: `GET …/versions/{v}/classifiers/meta::relational::metamodel::Database` and
-   `…/classifiers/…Database/dependencies?transitive=true`. The responses are `DepotEntity` wrappers (Studio types
-   them as `Entity[]`, which is wrong).
-3. The same two calls for `meta::pure::runtime::PackageableRuntime`, filtered by §6.2.5.
-4. Column types: batch with an **SDLC pointer** model context. Warm calls take 1–7 ms; a `combination` context
-   recompiles every call; `*-SNAPSHOT` versions are re-fetched every call ✅.
-5. Execute with the same pointer.
-
-`getSchema` with a pointer is **not** used: it takes 3.3 s on 1,216 tables, is uncached, and omits views and
-includes ✅.
+- **What it saves:** the engine's alloy pointer at a released version (§6.2.2's M3 form,
+  `graph-manager/CubeProject.ts`), plus the runtime's path. The engine types and runs it as saved, and fetches the
+  project from its depot. SNAPSHOT versions and the `latest` and `HEAD` aliases are refused, saved or not (user,
+  2026-10-09: released versions only).
+- **The catalog** (`CubeProjectCatalog`, implemented over the host's `DepotServerClient`): the project list
+  (`project-configurations`), a project's released versions (newest first, by number: 1.10.0 before 1.9.0), and a
+  version's outline. The outline is built from the version's model twice over: with its dependencies, for the
+  runtimes, and without, for the Databases offered. Only the project's own Databases are listed (user, 2026-10-09).
+  An outline is read once per version and page; a failed read is tried again.
+- **The tab** extends the Model tab: project, version (the newest picked, marked "(latest)"), then the Model tab's
+  Database, runtime, schema and table steps (shared component). A Database that no runtime connects to says so and
+  can't be added. A cube on a project belongs to the tab: the dialog reopens on its project and version, fixed, and a
+  host without a catalog offers nothing on it.
+- **The run's database type** comes from the project's outline, so §11.4's workarounds apply to project cubes too.
+- **Errors:** the engine's "unable to load information from the Pure SDLC" HTML, e.g. for a version the depot doesn't
+  have or a depot that is down, reads as plain words naming the URL tried.
+- **Hosts:** `CubeHost.projectCatalog` (optional), built with `buildCubeProjectCatalog(depotServerClient)`. Legend
+  Query builds it from `depot.url`; it reads nothing until the Project tab opens. The Model tab stays the dialog's
+  default tab.
+- **Tests:** unit and page tests with a fake catalog; a CI engine test that the mock depot's sample projects compile
+  and type (`CubeDepotSamples.engine-roundtrip-test.ts`); and the manual `cube-local` group, end to end through the
+  mock depot and the engine (`CubeDepot.cube-local-test.ts`).
+- **The mock depot** (`fixtures/legend-mock-server`) serves two small sample projects beside its test project:
+  `cube-sales` (releases 1.0.0, 1.9.0 and 1.10.0, a master-SNAPSHOT, Databases with one, two and no runtimes) and
+  `cube-reference`, a dependency. `scripts/generate-cube-depot.mjs` writes them from Pure through an engine. These
+  replace the EMIT-generated dataset the requirements planned: with released versions only and no dependency
+  Databases, small hand-written projects cover the cases.
+- **Not yet:** moving a cube to another version; a search across projects' Databases; SNAPSHOT versions; Databases
+  from dependencies; paging the project list (unmeasured at a real depot's size).
 
 ### 6.4 Services (M9, outline)
 
@@ -2716,6 +2734,25 @@ Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows
 
 Record the deployment, the products, access points and data sets used, whether the optional keys were set, and any
 console errors.
+
+**Part B3: Depot databases, manual, in the UI** (§6.3)
+
+Prerequisites: the engine on :6300 and `yarn dev:mock-depot-server` (the mock depot on :6200, where the local engine
+fetches projects), and Query on its dev server (its `depot.url` points at the mock). In a deployment, use a published
+project with a Database and a runtime.
+
+1. Open the dialog (**Add table**) and click the **Project** tab: the projects list. Pick
+   `org.finos.legend.cube.samples:cube-sales`: its versions read `1.10.0 (latest)`, `1.9.0`, `1.0.0` (no SNAPSHOT), the
+   newest picked. Its Databases are `SalesDb`, `ArchiveDb` and `PlannedDb`, not `cube-reference`'s `CurrencyDb`.
+2. Pick `SalesDb`: its one runtime is picked for you. Pick `PlannedDb`: the tab says no runtime connects to it, and
+   **Add** stays disabled. Pick `ArchiveDb`: two runtimes; choose one.
+3. Pick `SalesDb`, schema `SALES`, table `ORDERS`, and **Add**. Press **F9**: 6 rows, with a `STATUS` column. Open the
+   dialog again: it reopens on the Project tab with the project and version fixed, the other tabs disabled.
+4. Click the table's node: the Source panel shows the project and version above the Database.
+5. On a new cube, pick version `1.0.0` and add `ORDERS`: no `STATUS` column; `RETURNS` is listed only from 1.10.0.
+6. **Export (dev)** the cube and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
+7. Stop the mock depot, open a new page and pick the Project tab: it says it can't list the depot's projects, with
+   **Retry**. Start the mock again and click **Retry**.
 
 ### 11.3 After the slice (recommended order, outline)
 

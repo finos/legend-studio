@@ -55,8 +55,10 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     Sports and Trades sample models beside Northwind, and six example cubes, merged into `cube-dev` as #5660. Then an
     Examples dialog in place of the tab (user, 2026-10-10): a grid of dataset and example cards with icons, on
     `cube-examples-modal`.
-  - Next: Depot databases (PLAN §6.3, §6.8; their requirements are answered: released versions only, no dependency
-    Databases), starting with the local mock depot.
+  - Depot databases (PLAN §6.3; released versions only, no dependency Databases, one PR, user 2026-10-10) on
+    `cube-depot-dbs`, finos/legend-studio#5663 into `cube-dev`: the mock depot's sample projects, the pointer model,
+    the project catalog, the Project tab, the Source panel rows, tests (CI and the manual `cube-local` group) and docs.
+    Verification and the demo video come after the PR, once tested deployed.
 - [x] M4 Group, Concat (merged as #5649, `d847e6721`; follow-ups in #5653)
 - [x] M5 Partition (windows), built in #5653 with M4's follow-ups, not merged yet ([PROGRESS-M5.md](PROGRESS-M5.md),
       PLAN §11.6)
