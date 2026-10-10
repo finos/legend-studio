@@ -37,7 +37,7 @@ import { CubeSourcePickerTabKey } from './source-picker/CubeSourcePickerTab.js';
  * The Examples dialog (PLAN §6.9): the sample datasets, each with its example
  * cubes. An example opens in place of the cube, as Import does (one undo
  * step), and runs once its tables are typed. A dataset starts a new cube on
- * its model, in the source dialog's Model tab. Either works whatever the
+ * its model, in the source dialog's Sample Data tab. Either works whatever the
  * cube is, read-only included, since it replaces it.
  */
 export class CubeExamplesState {
@@ -73,7 +73,8 @@ export class CubeExamplesState {
 
   /**
    * Starts a new cube on the dataset's model, in place of the cube (one undo
-   * step), and opens the source dialog's Model tab on it to add a first table
+   * step), and opens the source dialog's Sample Data tab on it to add a first
+   * table
    */
   startOnDataset(dataset: CubeExampleDataset): void {
     this.close();

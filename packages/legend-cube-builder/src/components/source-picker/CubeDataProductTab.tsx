@@ -180,7 +180,7 @@ const CubeAccessPointPreview: React.FC<{
 );
 
 /**
- * The source dialog's Data product tab (PLAN §6.8), as Data Cube's selection
+ * The source dialog's Data Product tab (PLAN §6.8), as Data Cube's selection
  * goes: the mode, a deployed data product, one of its access points, and the
  * warehouse. The dialog's Add adds the access point.
  */

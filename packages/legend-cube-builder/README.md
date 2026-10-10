@@ -74,13 +74,13 @@ builder, a tab, a Source panel editor, help text and an icon, and its branch in 
 builds the model each call runs on from the cube's saved model kind (`src/graph-manager/CubeDirectConnection.ts`,
 `CubeDataProduct.ts` and `CubeIngest.ts` are the examples).
 
-Tables of a published project's Databases come through the Project tab (PLAN §6.3), which extends the Model tab: the
+Tables of a published project's Databases come through the Project Database tab (PLAN §6.3), which extends the Sample Data tab: the
 cube saves the engine's pointer to the project at a released version, and the host's `projectCatalog` lists projects,
 versions and outlines from its depot.
 
 ## Samples and examples
 
-The Model tab bundles three models: the Northwind fixture and two made-up, seeded samples, Sports and Trades
+The Sample Data tab bundles three datasets: Northwind (without Cube's test tables) and two made-up, seeded samples, Sports and Trades
 (`src/stores/fixtures/`), each an in-memory H2 database filled by its setup SQL. The Examples dialog (the header's
 Examples button) opens one of six example cubes over them (`src/stores/CubeExamples.ts`) in place of the cube, then
 runs it, or starts a new cube on a dataset (PLAN §6.9). An

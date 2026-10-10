@@ -68,7 +68,7 @@ export const isTableSelectable = (table: CubeOutlineTable): boolean =>
  */
 export class CubeInlineModelTabState implements CubeSourcePickerTab {
   readonly key: CubeSourcePickerTabKey = CubeSourcePickerTabKey.MODEL;
-  readonly label: string = 'Model';
+  readonly label: string = 'Sample Data';
   readonly editorState: CubeEditorState;
 
   model: ModelContext | undefined;
