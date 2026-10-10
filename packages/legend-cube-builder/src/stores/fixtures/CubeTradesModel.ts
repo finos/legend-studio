@@ -69,6 +69,13 @@ const INSTRUMENTS: readonly (readonly [
   ['COPPER', 'Copper', 'Commodity', 'USD', 4.15],
 ];
 
+/** What a unit of each currency is worth in dollars, fixed for the sample */
+export const CUBE_TRADES_USD_RATES: ReadonlyMap<string, number> = new Map([
+  ['USD', 1],
+  ['EUR', 1.08],
+  ['JPY', 0.0067],
+]);
+
 /** How many units a trade of an asset class is for, at most */
 const MAX_QUANTITY = new Map([
   ['Equity', 5_000],
@@ -96,7 +103,7 @@ const createTrades = (): SampleSqlValue[][] => {
       instrument[2] === assetClass ? [index] : [],
     );
     const instrumentIndex = pickSample(choices, random());
-    const [, , , , price] = pickSample(
+    const [, , , currency, price] = pickSample(
       INSTRUMENTS,
       instrumentIndex / INSTRUMENTS.length,
     );
@@ -108,9 +115,14 @@ const createTrades = (): SampleSqlValue[][] => {
     const priceInTenThousandths = Math.round(
       price * (0.95 + random() * 0.1) * 10_000,
     );
-    // the notional, kept to cents
+    // the notional in dollars, at a fixed rate, kept to cents
     const notionalInTenThousandths =
-      Math.round((quantity * priceInTenThousandths) / 100) * 100;
+      Math.round(
+        (quantity *
+          priceInTenThousandths *
+          (CUBE_TRADES_USD_RATES.get(currency) ?? 1)) /
+          100,
+      ) * 100;
     // trading days: Monday to Friday
     let day = Math.floor(random() * 181);
     while ([0, 6].includes(new Date(Date.UTC(2026, 0, 1 + day)).getUTCDay())) {
@@ -150,7 +162,7 @@ export const CUBE_TRADES_SETUP_SQLS = [
       currency,
     ]),
   ),
-  `create table ${CUBE_TRADES_SCHEMA}.TRADES (TRADE_ID INTEGER PRIMARY KEY, TRADE_DATE DATE NOT NULL, DESK_ID INTEGER NOT NULL, INSTRUMENT_ID INTEGER NOT NULL, SIDE VARCHAR(4) NOT NULL, QUANTITY INTEGER NOT NULL, PRICE DECIMAL(14,4) NOT NULL, NOTIONAL DECIMAL(18,2) NOT NULL)`,
+  `create table ${CUBE_TRADES_SCHEMA}.TRADES (TRADE_ID INTEGER PRIMARY KEY, TRADE_DATE DATE NOT NULL, DESK_ID INTEGER NOT NULL, INSTRUMENT_ID INTEGER NOT NULL, SIDE VARCHAR(4) NOT NULL, QUANTITY INTEGER NOT NULL, PRICE DECIMAL(14,4) NOT NULL, NOTIONAL_USD DECIMAL(18,2) NOT NULL)`,
   sampleInsert(`${CUBE_TRADES_SCHEMA}.TRADES`, createTrades()),
 ];
 
@@ -182,7 +194,7 @@ Database ${CUBE_TRADES_DATABASE}
       SIDE VARCHAR(4) NOT NULL,
       QUANTITY INTEGER NOT NULL,
       PRICE DECIMAL(14,4) NOT NULL,
-      NOTIONAL DECIMAL(18,2) NOT NULL
+      NOTIONAL_USD DECIMAL(18,2) NOT NULL
     )
   )
 

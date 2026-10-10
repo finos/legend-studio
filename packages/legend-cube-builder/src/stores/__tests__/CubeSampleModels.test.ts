@@ -22,6 +22,7 @@ import {
 import {
   CUBE_TRADES_SETUP_SQLS,
   CUBE_TRADES_TRADE_COUNT,
+  CUBE_TRADES_USD_RATES,
 } from '../fixtures/CubeTradesModel.js';
 import {
   addSampleDays,
@@ -97,6 +98,10 @@ describe('The sports sample', () => {
 
 describe('The trades sample', () => {
   const trades = insertedRows(CUBE_TRADES_SETUP_SQLS, 'TRADES_SAMPLE.TRADES');
+  const instruments = insertedRows(
+    CUBE_TRADES_SETUP_SQLS,
+    'TRADES_SAMPLE.INSTRUMENTS',
+  );
 
   test('Has its trades, on weekdays of the first half of 2026', () => {
     expect(trades).toHaveLength(CUBE_TRADES_TRADE_COUNT);
@@ -107,16 +112,27 @@ describe('The trades sample', () => {
     });
   });
 
-  test('Has buys and sells, each notional the quantity times the price, to the cent', () => {
+  test('Has buys and sells, each notional the quantity times the price in dollars, to the cent', () => {
     expect(new Set(trades.map((row) => row[4]))).toEqual(
       new Set(["'BUY'", "'SELL'"]),
     );
-    trades.forEach(([, , , , , quantity, price, notional]) => {
+    const currencies = new Set<string>();
+    trades.forEach(([, , , instrumentId, , quantity, price, notional]) => {
       expect(price).toMatch(/^\d+\.\d{4}$/u);
       expect(notional).toMatch(/^\d+\.\d{2}$/u);
+      const currency = (
+        instruments[Number(instrumentId) - 1]?.[4] ?? ''
+      ).replaceAll("'", '');
+      currencies.add(currency);
+      const rate = CUBE_TRADES_USD_RATES.get(currency);
+      expect(rate).toBeDefined();
       expect(
-        Math.abs(Number(quantity) * Number(price) - Number(notional)),
+        Math.abs(
+          Number(quantity) * Number(price) * (rate ?? 0) - Number(notional),
+        ),
       ).toBeLessThanOrEqual(0.005 + 1e-6);
     });
+    // every currency's trades are converted
+    expect(currencies).toEqual(new Set(['USD', 'EUR', 'JPY']));
   });
 });

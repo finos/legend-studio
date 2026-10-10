@@ -297,7 +297,7 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
     TRADES,
     'trades-notional-by-desk',
     'Notional by desk and asset class',
-    'Joins trades to their desks and instruments, then adds up the notional of each desk and asset class',
+    'Joins trades to their desks and instruments, then adds up the dollar notional of each desk and asset class',
     (table) => ({
       nodes: [
         table('relational101', 'TRADES'),
@@ -319,9 +319,9 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
           ['DESK', 'ASSET_CLASS'],
           [
             {
-              column: 'NOTIONAL',
+              column: 'NOTIONAL_USD',
               function: AggregationFunction.SUM,
-              name: 'TOTAL_NOTIONAL',
+              name: 'TOTAL_NOTIONAL_USD',
             },
             {
               column: undefined,
@@ -332,7 +332,7 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
         ),
         new Sort('sort101', [
           { column: 'DESK', direction: SortDirection.ASC },
-          { column: 'TOTAL_NOTIONAL', direction: SortDirection.DESC },
+          { column: 'TOTAL_NOTIONAL_USD', direction: SortDirection.DESC },
         ]),
       ],
       connections: [
@@ -349,13 +349,13 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
     TRADES,
     'trades-largest-buys',
     'Largest buys',
-    'Filters the trades to buys and keeps the twenty largest by notional',
+    'Filters the trades to buys and keeps the twenty largest by dollar notional',
     (table) => ({
       nodes: [
         table('relational101', 'TRADES'),
         new Filter('filter101', equal('SIDE', 'BUY')),
         new Sort('sort101', [
-          { column: 'NOTIONAL', direction: SortDirection.DESC },
+          { column: 'NOTIONAL_USD', direction: SortDirection.DESC },
         ]),
         new Limit('limit101', 20),
         new Restrict('restrict101', [
@@ -364,7 +364,7 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
           'INSTRUMENT_ID',
           'QUANTITY',
           'PRICE',
-          'NOTIONAL',
+          'NOTIONAL_USD',
         ]),
       ],
       connections: chain([

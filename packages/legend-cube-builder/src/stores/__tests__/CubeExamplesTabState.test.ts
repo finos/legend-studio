@@ -15,7 +15,15 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { CubeDocument, Query, RelationalTableSource } from '@finos/legend-cube';
+import {
+  createNodeRegistry,
+  CubeDocument,
+  MAX_SPEC_BYTES,
+  parseCubeSpec,
+  Query,
+  RelationalTableSource,
+  serializeCubeSpec,
+} from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import {
   NORTHWIND_RUNTIME,
@@ -89,6 +97,21 @@ describe('Examples tab', () => {
         });
       // a new cube each time, so editing one never changes the next
       expect(example.createDocument()).not.toBe(document);
+    });
+  });
+
+  test('Exports each example as a spec that imports back to the same cube, within the size cap', () => {
+    const registry = createNodeRegistry();
+    CUBE_EXAMPLES.forEach((example) => {
+      const document = example.createDocument();
+      const text = serializeCubeSpec(document, registry);
+      expect(new TextEncoder().encode(text).length).toBeLessThan(
+        MAX_SPEC_BYTES,
+      );
+      const decoded = parseCubeSpec(text, { registry }).document;
+      expect(decoded.name).toBe(document.name);
+      expect(decoded.context).toEqual(document.context);
+      expect(serializeCubeSpec(decoded, registry)).toBe(text);
     });
   });
 
