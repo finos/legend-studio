@@ -36,8 +36,8 @@ const insertedRows = (sqls: readonly string[], table: string): string[][] => {
     throw new Error(`No insert into ${table}`);
   }
   // no sample text holds a parenthesis
-  return [...insert.matchAll(/\(([^()]*)\)/gu)].map((match) =>
-    (match[1] ?? '').split(', '),
+  return [...insert.matchAll(/\((?<values>[^()]*)\)/gu)].map((match) =>
+    (match.groups?.values ?? '').split(', '),
   );
 };
 
