@@ -150,7 +150,7 @@ packages/legend-cube-builder/src/
                                     V1_CubeExecutionResultReader (lossless), V1_CubeEngineErrors (payload → node error),
                                     V1_LegendCubeEngine (implements the port; builds its own client; imports only the
                                     port, legend-graph, legend-shared and @finos/legend-cube)
-  stores/       CubeEditorState, CubeExecutionState, CubeNodeEditorState (the side panel), CubeSourcePickerState,
+  stores/       CubeEditorState, CubeExecutionState, CubeNodeEditorState (the floating node editor), CubeSourcePickerState,
                 CubeShowPureState, CubeSpecTransferState (Export/Import), LocalModelCatalog (the bundled model texts;
                 talks only to the port; loadModel parses a model context once and returns its databases and runtimes as
                 plain data), CubeHost interface, editors/ (node drafts and their registry, §7.4), fixtures/ (Cube
@@ -1249,12 +1249,12 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
 The four regions of §17.1 are kept:
 
 - a **sidebar palette**, collapsible, with state in local storage;
-- a **graph toolbar**: name (`Unsaved Query`), Undo, Show Pure, Export spec / Import spec (dev);
+- a **graph toolbar**: name (`Unsaved Query`), **Add Items ▾**, Undo, Show Pure, Export spec / Import spec (dev);
 - the **canvas**: collapsible, at most 60% of the viewport, with `presentation.showGraph` saved;
 - a **grid toolbar** + **results grid**.
 
-A resizable **side panel** on the right holds the node editor. A panel replaces the original popover, which removes
-§17.5's nested-dismiss problem.
+The node editor **floats below its node**, as the original's popover does (M3b, U1; §7.4). It replaced M1's side
+panel. The click-away's rules and `holdOpen()` handle §17.5's nested-dismiss problem (§7.4).
 
 ### 7.2 Canvas
 
@@ -1285,21 +1285,27 @@ A resizable **side panel** on the right holds the node editor. A panel replaces 
 | **resolving**    | a source schema request is in flight (new) |
 | **engine error** | a host issue mapped back by node id (new)  |
 
-The tooltip shows deduplicated errors first, then `describe()` (§17.3).
+The tooltip shows deduplicated errors first, then `describe()` and the node's id, one per line (§17.3). It is
+legend-art's Tooltip, shown above the node after 500 ms (M3b, U1(c)).
 
 ### 7.3 Interactions
 
-All gestures from §17.4 are kept:
+All gestures from §17.4 are kept. Since M3b, one placement rule (`CubeAddPlacement.ts`, U3 and U4) covers every add,
+and every gesture outside the editor applies it first:
 
-| Gesture                             | Effect                                                                                                    |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| click a node                        | open its editor                                                                                           |
-| Ctrl/Cmd-click                      | make it the capture node                                                                                  |
-| drag a palette item onto the canvas | a transform goes after the selected node (U3; spec §17.4 says unconnected); a source opens its dialog tab |
-| drag a palette item onto a node     | add it and splice it in after that node                                                                   |
-| drag node A onto node B             | `connect`, else `move`                                                                                    |
-| right-click                         | legend-art `ContextMenu`: palette, then Select / Remove / Swap Inputs (show-but-disable)                  |
-| Ctrl+Z, F9                          | undo, execute                                                                                             |
+| Gesture                         | Effect                                                                                                           |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| click a node                    | apply the open editor and open this node's, in one click                                                         |
+| Ctrl/Cmd-click                  | apply and close the open editor, then make the node the capture node, opening no editor                          |
+| click or drag a palette item    | a transform goes after the selected node, spliced in (U3; spec §17.4 says unconnected); a source opens its tab   |
+| drag a palette item onto a node | a transform is spliced in after that node; a source opens its dialog tab, and the node ignores it (U4)           |
+| drag node A onto node B         | `connect`, else `move`                                                                                           |
+| right-click                     | legend-art `ContextMenu`: palette, then Select / Remove / Swap Inputs (show-but-disable); none on an empty query |
+| **Add Items ▾** (graph toolbar) | the palette's items, by the same rule; it opens no editor                                                        |
+| Ctrl+Z, F9                      | apply the open editor, then undo or execute                                                                      |
+
+A transform added after the selected node becomes the capture node (`Query.add`). No add opens an editor. A source
+appears, unconnected, after the dialog's confirm. The empty canvas's link opens the source dialog with no tab chosen.
 
 - **New:** dragging from an output handle to a specific input handle calls `connect(source, target, port)`.
 - **Live drop targets:** a node highlights only when `canConnect || canMove`.
@@ -1308,29 +1314,47 @@ All gestures from §17.4 are kept:
 
 ### 7.4 Editor shell
 
-- **Header:** label, help text (§17.9), and the Select link or "(Selected)".
-- **Edits are buffered** locally. **Apply** (or closing the panel) emits one replacement node, so there is one undo
+- **Host** (M3b, U1; details in §11.6): a non-modal MUI Popper (legend-art `BasePopper`) portalled to the body at
+  z-index 1250, below its node and centred, 432px wide. It flips above the node when there is no room below, stays
+  inside the window, follows the node through pan and zoom, and hides while the node is out of the canvas. It is
+  `role=dialog`, named by its title.
+- **Frame:** a fixed title bar; a body of 80px to 33vh, the editor's only scroller; under it the problems strip and the
+  footer (none on a source).
+- **Header:** the label with each word capitalised, the node id, help text (§17.9), and the Select link or
+  "(Selected)".
+- **Edits are buffered** locally. **Apply** (or any close but Cancel) emits one replacement node, so there is one undo
   entry per edit (§17.5). Cancel discards.
-- **If an upstream node is invalid,** the panel shows the upstream error instead of the editor (§17.5).
+- **If an upstream node is invalid,** the editor shows the upstream error instead of its body (§17.5).
 - **Column pickers** only offer columns from the actual input schema(s). Each column shows its type label and
   nullable marker.
-- **Following the cube** (built in M1.8b S17, narrowing the user's answer to the panel with edits):
-  - a panel with unapplied edits whose node is replaced or removed underneath (Undo, a re-check, Remove) closes
+- **Following the cube** (built in M1.8b S17, narrowing the user's answer to the panel with edits). Since M3b, user
+  actions outside the editor apply it first (below), so this covers re-checks, Import and Undo's own effects:
+  - an editor with unapplied edits whose node is replaced or removed underneath (Undo, a re-check, Remove) closes
     without applying them and says so in the graph region;
-  - a panel without edits shows the replacing node (e.g. after Refresh, or after Undo of its own Apply), and closes
+  - an editor without edits shows the replacing node (e.g. after Refresh, or after Undo of its own Apply), and closes
     silently when the node is gone;
   - Import, and Undo back over an Import, always close it without applying, since another cube can hold a node with
     the same id.
-- **Closing applies** (spec §17.5): clicking another node, or the panel's close button, applies first. Cancel drops
-  the edits. A read-only cube never applies.
+- **Closing applies** (spec §17.5, U2). Every close but Cancel goes through `nodeEditor.finish()`, which blurs the
+  focused field, applies a data product's typed warehouse text, then applies the edits as one undo step:
+
+  - the ×, Escape (unless a field inside used it), hiding the graph, and emptying the query;
+  - a pointerdown outside the editor, except on a node (its click handles it), on the pane, the controls, the minimap
+    or the splitter (a pan, zoom or drag keeps the editor; a plain click on the empty pane closes it), inside a MUI
+    layer, a right-click, or while a Cube dialog is open or `holdOpen()` is held;
+  - Execute and F9, Undo and Ctrl+Z, Show Pure, Export, a node drag or connect, and every context-menu and Add Items
+    action, which apply first and then act.
+
+  Cancel drops the edits. A read-only cube never applies. A dropdown, picker or dialog opened from the editor and
+  shown elsewhere must be a MUI layer or call `holdOpen()`, or a press in it closes the editor.
 
 **The editor contract, for a new node type** (M1.8b S17). Every file is in `@finos/legend-cube-builder`:
 
 1. `stores/editors/Cube<Type>Draft.ts`: a `CubeNodeDraft<N>` subclass, a MobX class holding the editor's state.
    - Its `build()` returns the node Apply stores, or `original` itself while nothing was edited.
-   - The panel compares the codec encodings (`definition.spec.encode` plus `rest`), so a node that saves the same
+   - The editor compares the codec encodings (`definition.spec.encode` plus `rest`), so a node that saves the same
      counts as no change and adds no undo step.
-   - It is made once per open, again after each Apply or Swap Inputs, and again when a clean panel follows a
+   - It is made once per open, again after each Apply or Swap Inputs, and again when a clean editor follows a
      replaced node, so keys made in it (e.g. filter rows) stay stable while the user edits.
 2. Register its factory in `CUBE_NODE_DRAFT_FACTORIES` (`stores/editors/CubeNodeDraftRegistry.ts`). A type with
    nothing to edit registers an editor but no factory: it gets a read-only draft, and no Apply or Cancel. That is a
@@ -1341,7 +1365,7 @@ All gestures from §17.4 are kept:
    `CUBE_NODE_EDITORS` (`components/editors/CubeNodeEditorRegistry.ts`). It gets:
 
    - `draft`;
-   - `inputSchemas`, in port order and all present: while an input is missing or invalid, the panel shows why
+   - `inputSchemas`, in port order and all present: while an input is missing or invalid, the editor shows why
      instead of the editor;
    - `readOnly`;
    - `editorState`, for reads such as the model outline.
@@ -1349,9 +1373,10 @@ All gestures from §17.4 are kept:
    Its edits go to its draft. A button that must change the document calls a `CubeNodeEditorState` method that
    applies the draft first and then rebinds to the new node, as `nodeEditor.swapInputs()` does: calling
    `editorState.applyQuery` (or `editorState.swapInputs`) directly replaces the node under unapplied edits, so the
-   panel closes and drops them. A source, which has no draft, may call an `editorState` flow that stays outside the
-   undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, and owns Apply
-   and Cancel.
+   editor closes and drops them. A source, which has no draft, may call an `editorState` flow that stays outside the
+   undo history (Refresh). The editor lists the edited node's problems (`node.validate`) under it, and owns Apply
+   and Cancel. The editor must fit 432px with the body as its one scroller (no inner height caps), and register a
+   field that commits late with `nodeEditor.addFlusher` (the builder's `docs/adding-an-operation.md`).
 
 4. The help text, in `CUBE_NODE_HELP_TEXT` (`__lib__/LegendCubeHelpText.ts`).
 5. Its icon name, mapped to an icon in `NODE_ICONS` (`components/CubeNodeIcon.tsx`).
@@ -1366,8 +1391,8 @@ name, beta).
 - Paired rows of (left column from the left schema, right column from the right schema), with type labels. An
   incompatible pair is marked inline using the domain's compatibility check.
 - Add or remove rows. The add button is disabled once every column is used (§17.6).
-- A Swap Inputs button. It applies the panel's edits and swaps, as one undo step (M1.8b S18).
-- When the duplicate-column error fires, the panel lists the offending names, with the new names the autofix would
+- A Swap Inputs button. It applies the editor's edits and swaps, as one undo step (M1.8b S18).
+- When the duplicate-column error fires, the editor lists the offending names, with the new names the autofix would
   give and a "Rename them" button (M2, §4.7).
 - A pair with no column picked on either side is not stored, as a Filter's blank rows aren't (M1.8b S18).
 - A key on a column Cube typed as a bare String (OTHER or ARRAY) shows "type unknown" and is not blocked. The editor
@@ -1410,12 +1435,12 @@ an earlier warning on that table cleared once it re-checks clean (M1.8b S17).
 | `pendingSources` (private, `observable.ref`)      | sources sent to the engine to be typed again; read through `isResolvingSources` and `isPendingSource(node)`                                                 |
 | `modelOutlines` (private, by model)               | outlines loaded on demand by `loadModelOutline`, read through `modelOutline`, e.g. for the Join's 'type unknown' warning                                    |
 | `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                                                            |
-| `nodeEditor` (`CubeNodeEditorState`)              | the open editor panel: `nodeId`, `draft`, `notice`; ephemeral, not saved (panel sizes stay in the component)                                                |
+| `nodeEditor` (`CubeNodeEditorState`)              | the open node editor: `nodeId`, `draft`, `notice`; `finish()`, `holdOpen()` and `addFlusher()` (M3b); ephemeral, not saved                                  |
 | `isPaletteCollapsed`                              | kept per user in user data, never in the cube                                                                                                               |
 
 Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change), which pushes onto history.
 Import goes through `importDocument`, which pushes history and replaces the document itself, not through
-`applyDocument`: it resets the run, the picker, the editor panel and the engine errors (warnings stay, keyed by
+`applyDocument`: it resets the run, the picker, the node editor and the engine errors (warnings stay, keyed by
 nodes the imported cube doesn't share), then re-checks the sources. Domain objects are immutable but not all frozen (only `Query`'s arrays are), so they are held as
 `observable.ref` and MobX never observes them deeply.
 
@@ -1472,7 +1497,9 @@ start of M1.8b.
 
 - **Palette source item:** "Relational Database Table" opens the source picker when clicked or dropped on empty
   canvas. It can't be dropped onto a node: palette drops onto nodes use `canAdd`, and sources have no ports. The
-  palette and the context menu stay one list built from the registry.
+  palette and the context menu stay one list built from the registry. _(M3b, 2026-10-10: U4 changed this. Dropped
+  onto a node, or picked from a node's menu, a source now opens its tab too, and the node ignores it. 'Add Items ▾'
+  shares the list.)_
 - **Removing the last source:** when a Remove leaves the query empty, the same undo entry clears the context (model
   and runtime), so the next pick starts fresh.
 - **Filter Apply with only blank rows:** an edited tree of untouched blank rows stores no filter. It counts as no
@@ -1480,7 +1507,8 @@ start of M1.8b.
 - **A side-panel edit whose node changed underneath:** the panel records the key of the node it opened from. If that
   node is gone or its key changed (Undo, Remove, Import, re-check), the panel closes, discards its buffer and shows
   a short notice. The question was about a panel with unapplied edits; a panel without edits follows the node
-  instead (§7.4).
+  instead (§7.4). _(M3b, 2026-10-10: the panel is now the floating editor, and the rule holds for it. User actions
+  outside it apply it first, so this covers Undo's own effects, re-checks and Import.)_
 - **Shortcuts while a Cube dialog is open:** Cube's command triggers return false while any Cube dialog is open
   (picker, Import, Show Pure). Picker and Import results are also re-checked when they are applied.
 - **Join "type unknown" warning:** `CubeOutlineTable` gains `untypedColumns`, filled in `V1_CubeModelOutlineBuilder`
@@ -2404,18 +2432,20 @@ Prerequisites:
 
 The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.2.4).
 
-1. Open `http://localhost:9001/query/cube` and open the picker: **Add table**, the canvas's "add a table" link, or the
-   palette's **Relational Database Table**. Model ("Northwind (Cube fixture)"), Database and Runtime
+1. Open `http://localhost:9001/query/cube` and open the picker: **Add Items ▾ → Relational Database Table**, the
+   palette's **Relational Database Table**, or the canvas's "Connect to a source" link, then its **Model** tab (M3b).
+   Model ("Northwind (Cube fixture)"), Database and Runtime
    (`showcase::northwind::mapping::StoreRuntime`) fill themselves; choose Schema **NORTHWIND** (the list also shows
    CUBETEST, and `default`, which holds only a decoy table).
 2. Add **ORDERS** (14 columns). The picker closes after each **Add**, so open it again and add **CUSTOMERS** (11
    columns). Both land on the canvas with their
-   schemas; ORDERS, the first table, has the accent ring of the node Execute runs. Click ORDERS: the side panel's
+   schemas; ORDERS, the first table, has the accent ring of the node Execute runs. Click ORDERS: its editor's
    Columns table shows `ORDER_ID SmallInt` and `CUSTOMER_ID Varchar(5)?` (CUSTOMERS' own `CUSTOMER_ID` is its key,
    with no `?`).
-3. Drag **Join Another Input** from the palette onto empty canvas. It shows incomplete (a dashed amber border). Drag
-   from ORDERS' output handle (its right side) to the Join's upper input handle (Left), and from CUSTOMERS' to the
-   lower one (Right). The Join now shows invalid (a red border); its tooltip and, once you click it, the red text at the
+3. Drag **Join Another Input** from the palette onto empty canvas. It goes after ORDERS, the selected node (M3b,
+   U3): ORDERS feeds its upper input (Left), and it becomes the node Execute runs. It shows incomplete (a dashed amber
+   border). Drag from CUSTOMERS' output handle (its right side) to the Join's lower input handle (Right). The Join
+   now shows invalid (a red border); its tooltip and, once you click it, the red text at the
    bottom of its editor say "Left join columns cannot be empty."
 4. Click the Join. Set **Join type** to **Inner** (a new Join is Left Outer, which gives the same 19 rows here, so the
    row count can't catch it), click **Add join columns**, pick `CUSTOMER_ID` on both sides and **Apply**. The Join
@@ -2448,13 +2478,13 @@ The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.
 Also check and record:
 
 - **Canvas fit:** every node stays inside the canvas and the minimap covers none, after each node is added, after the
-  Join is connected and the Filter spliced in, after the editor panel opens and closes, after Import, and after
+  Join is connected and the Filter spliced in, after the editor opens and closes, after Import, and after
   height-only changes: dragging the splitter between the graph and the grid, and changing the window's height.
 - **No watermark** on the grid (D3: `localhost` shows none).
 - **The console, through the whole run**, at the Default and Verbose levels: outside production builds,
   `legend-lego`'s DataGrid sends `console.error` to `console.debug` from each render until the grid is ready
   (Appendix B), so an error logged while a run's grid loads shows only as Verbose. Expected: React 19's "Accessing element.ref was removed"
-  from `react-reflex` when the editor panel opens or a splitter moves (Appendix B), and the Query ServiceWorker's
+  from `react-reflex` when a splitter moves (Appendix B), and the Query ServiceWorker's
   "fetching the script" errors. Anything else is recorded.
 
 **Part B2: sources, manual, in the UI** (the direct connection and data products, §6.8)
@@ -2967,7 +2997,7 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
 ### 11.6 M3b: canvas and layout
 
 M3b is built on the branch `cube-canvas`, from finos master `d847e6721` after M4 merged as #5649. Its first commit,
-`220f02218`, copies the user's answers to [QUESTIONS.md](QUESTIONS.md) from #5655. Its status is in
+`12c8782f1`, copies the user's answers to [QUESTIONS.md](QUESTIONS.md) from #5655. Its status is in
 [PROGRESS-M3b.md](PROGRESS-M3b.md).
 
 Requirements came from `m3b-requirements` (run `wf_b6df1aad-dfc`):
@@ -2981,11 +3011,11 @@ Requirements came from `m3b-requirements` (run `wf_b6df1aad-dfc`):
 
 The grid is M7 and not part of M3b.
 
-This subsection overrides the sections it names until they are updated (see "Supersessions" at its end). It takes
-over §12.2 item 1, which asked where the node editor opens:
+This subsection overrode the sections it names until M3b.18 folded it into them (see "Supersessions" at its end). It
+takes over §12.2 item 1, which asked where the node editor opens:
 
-- The original app opens a small floating editor anchored just below the node (spec §17.5's popover), where Cube has a
-  side panel (§7.1).
+- The original app opens a small floating editor anchored just below the node (spec §17.5's popover), where Cube had a
+  side panel (§7.1, until M3b).
 - Going back means a floating host for the same editors. §7.4 keeps the editors independent of where they are shown.
 - The host must follow the spec's rule that clicking outside never closes the editor while a dropdown, picker or dialog
   opened from it is open.
@@ -3181,7 +3211,8 @@ browser on the dev server at :9003, since jsdom measures nothing.
   a node or by connecting handles.
 - **Later editors.** M5's Window editor, M6's expression editor and the type-aheads must use `holdOpen()` and fit 432px.
 
-**Supersessions** (applied in M3b.18; kept as the record of what M3b changed):
+**Supersessions** (folded in at M3b.18, 2026-10-10, along with Part B's steps 1–3; kept as the record of what M3b
+changed):
 
 - **§7.1:** the node editor floats below its node, in place of the side panel. The toolbar has 'Add Items ▾' in place
   of 'Add table'.
@@ -3254,48 +3285,51 @@ Questions about the original app's UI that the spec leaves open are in [QUESTION
 
 The user accepted the departures from the spec's guidance sections (§14.4, §17.7, §17.11) on 2026-10-05.
 
-| Spec §               | Status           | Change                                                                                                                                                                                                                                                                                                      |
-| -------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Preamble (22–30), §0 | Superseded       | Non-negotiable = §3 (extended), §4–5, §7–10, §16 semantics. Wire = relation lambda (protocol JSON). Storage = CubeSpec v1. Sources = relational tables, then services, functions, data products, ingest                                                                                                     |
-| §1                   | Kept, nuanced    | "No server round trip for editing" holds for the slice's nodes; Extend typing uses an engine call, cached (§5.7)                                                                                                                                                                                            |
-| §2.1, §18            | Superseded       | Host auth, config, telemetry                                                                                                                                                                                                                                                                                |
-| §2.2                 | Kept + narrowed  | The core has no host imports through the slice (§3.3). From M2.0 it may use legend-graph's metamodel types, but still no `V1_*` and no UI or app packages (D12)                                                                                                                                             |
-| §3.1                 | **Extended**     | Precise primitive registry, families, comparison classes (§5.4); interning per `(path, params)`; unknown → Opaque instead of throwing; `Decimal`, `StrictTime`, `Variant` added                                                                                                                             |
-| §3.2                 | **Extended**     | `nullable` on columns; unique names asserted; `equals` ignores nullability                                                                                                                                                                                                                                  |
-| §4                   | Kept + fixes     | Acyclicity invariant; `connect(…, port)`; per-type ids; port labels                                                                                                                                                                                                                                         |
-| §5                   | Kept + extended  | Query-level rule pass; host issues map (display only)                                                                                                                                                                                                                                                       |
-| §6.1                 | Idea kept        | Source and transform registries + builder adapters; batch resolution                                                                                                                                                                                                                                        |
-| §6.2–6.7             | Superseded       | §6 of this plan                                                                                                                                                                                                                                                                                             |
-| §7.0, `V1:` lines    | Replaced         | Saved shapes (§10.3) + emission table (§8.8)                                                                                                                                                                                                                                                                |
-| §7.1 (M2)            | Extended         | Cube adds `Sort column "<c>" of type <type> cannot be sorted.` (VARIANT, OPAQUE), then `Sort columns cannot have duplicates.` One `isSortableType` also serves the editor's picker, the grid's Sort by and the row-number fallback's default key. The direction messages are unreachable                    |
-| §7.4                 | Kept + labels    | Emit `select` in input order; the editor stores picks in input order too. The spec names no labels: Cube's messages use `Columns` (empty, duplicates) and `Column` (unnamed, not in the input) (M2)                                                                                                         |
-| §7.5 (M2)            | Fixed            | `isValidColumnName` replaces the regex: non-empty, trimmed, no `"`, `\` or control characters, ≤ 128 code points 💭. Spaces, hyphens, `'` and unicode work; `"` breaks at execution, `\` later references ✅. New names may not equal untouched input columns or each other, in any case (`foldColumnName`) |
-| §7.7–7.9 (M2)        | Changed          | No `arguments.length` trick: no JS defaults, so an explicit `undefined` stays cleared and invalid, saved and loaded too (§10.3); the defaults (10; 10 and 20) live only in the registry's `create(id)`. Size 0, Drop 0 and an empty Slice stay invalid, though the engine takes them (M2)                   |
-| §7.9, §17.9          | Changed (D5)     | `[start, stop)`; help-text copy fixed (counting from 0). The canvas reads `Take rows 10 to 20 (20 excluded)`, or `Take rows 10 to (blank)` without a stop; the palette label stays `Take rows <x> to <y>` (M2, §11.4)                                                                                       |
-| §7.10 (M4)           | Extended         | Precise-strict equality; reject with a precise message; widen autofix through real conversions                                                                                                                                                                                                              |
-| §7.11                | Kept + extended  | FULL OUTER; nullability and merged-key rules (§4.7); step 4 per §5.4. Autofix (M2): `c_1`/`c_2`, then `c_<side>_2`… when taken in any case, ≤ 128 code points; the key lists rewritten through the renames; offered only when the duplicate rule is the join's only error                                   |
-| §7.12 (M6)           | Kept, emulated   | Semantics as the spec; join and null rules written down                                                                                                                                                                                                                                                     |
-| §7.13 (M5)           | Extended         | Rank/DenseRank need ≥ 1 sort; Count emitted as `size()`; running default frame (D5)                                                                                                                                                                                                                         |
-| §7.14 (M6)           | Extended         | Validate empty names and duplicates among new columns                                                                                                                                                                                                                                                       |
-| §7.16                | Fixed            | Unknown gets synthetic per-instance ports (keeps its edges and raw JSON); not rewireable; re-saved with regenerated `inputs`                                                                                                                                                                                |
-| §8.2                 | **Extended**     | Matrix keyed by family (§5.5); VARIANT/OPAQUE row                                                                                                                                                                                                                                                           |
-| §8.3, §21            | **Fixed**        | Operator availability and value-type validation (§5.6) with new messages                                                                                                                                                                                                                                    |
-| §8.2, §8.3 (M1.5)    | **Restricted**   | A StartsWith/EndsWith/Contains value (or a negation's) may not contain `\`: the engine does not escape it in LIKE patterns, so the rows would be wrong (§8.4, Appendix B). Temporary; lifted when the engine is fixed. User OK 2026-10-06 (option a: refuse, not pre-escape)                                |
-| §8.4                 | Replaced         | Emission (§8.4 of this plan) + saved filter shape (§10.3). NULL behaviour documented (D4)                                                                                                                                                                                                                   |
-| §9 (M6)              | Replaced         | Pure expressions stored as JSON (+ display text); typed by the engine; §9.2 table becomes help only, with Pure names                                                                                                                                                                                        |
-| §10.1                | Kept (for now)   | Per-family view; extend later (Min/Max on strings etc.)                                                                                                                                                                                                                                                     |
-| §10.2                | **Replaced**     | §5.7 measured table; every aggregate except Count is nullable                                                                                                                                                                                                                                               |
-| §11.1                | Idea kept        | `CubeEngine` port (§8.7)                                                                                                                                                                                                                                                                                    |
-| §11.2–11.3           | Superseded       | –                                                                                                                                                                                                                                                                                                           |
-| §11.4                | Superseded       | Host HTTP client; keep "truncate and show trace link" behaviour via host                                                                                                                                                                                                                                    |
-| §12–13               | Idea kept        | §9 of this plan; lambda-derived drill-down; `limit + 1`; typed group keys; §21 fixes                                                                                                                                                                                                                        |
-| §12.4 (M2)           | Changed          | Client-side grid (spec: server-side mode only): Sort by and Filter by first, then ag-grid's items until M7; no icons; Group by in M4, Drilldown in M7. They add a node after the selected one, never run, and are disabled on stale rows, during a run, read-only, or on a type or value they can't use     |
-| §14, §15             | Superseded / out | §10; publishing out of scope. §14.4 "Save disabled while invalid": Export spec is allowed for invalid queries; server Save gating decided in M8 (§10.3)                                                                                                                                                     |
-| §16                  | Kept + additions | §4.11                                                                                                                                                                                                                                                                                                       |
-| §17                  | Guidance         | §7; panel instead of popover; visible Left/Right; xyflow + dagre; deep links as path params (M3/M8). §17.11: Execute needs only the capture subtree to be valid (§10.3). §17.7: uncoercible text is kept as an invalid value with a type message (§4.9), and STRING values are not trimmed                  |
-| §19.1–19.3           | Superseded       | §3 (two packages), §8 (relation functions, not `meta::pure::tds::*`)                                                                                                                                                                                                                                        |
-| §20                  | Idea kept        | §11 (headless first; join and filter in M1; persistence last)                                                                                                                                                                                                                                               |
-| Appendix C.4         | Replaced         | §8.5 lambda + relation type; §11.2 acceptance                                                                                                                                                                                                                                                               |
+| Spec §               | Status           | Change                                                                                                                                                                                                                                                                                                                   |
+| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Preamble (22–30), §0 | Superseded       | Non-negotiable = §3 (extended), §4–5, §7–10, §16 semantics. Wire = relation lambda (protocol JSON). Storage = CubeSpec v1. Sources = relational tables, then services, functions, data products, ingest                                                                                                                  |
+| §1                   | Kept, nuanced    | "No server round trip for editing" holds for the slice's nodes; Extend typing uses an engine call, cached (§5.7)                                                                                                                                                                                                         |
+| §2.1, §18            | Superseded       | Host auth, config, telemetry                                                                                                                                                                                                                                                                                             |
+| §2.2                 | Kept + narrowed  | The core has no host imports through the slice (§3.3). From M2.0 it may use legend-graph's metamodel types, but still no `V1_*` and no UI or app packages (D12)                                                                                                                                                          |
+| §3.1                 | **Extended**     | Precise primitive registry, families, comparison classes (§5.4); interning per `(path, params)`; unknown → Opaque instead of throwing; `Decimal`, `StrictTime`, `Variant` added                                                                                                                                          |
+| §3.2                 | **Extended**     | `nullable` on columns; unique names asserted; `equals` ignores nullability                                                                                                                                                                                                                                               |
+| §4                   | Kept + fixes     | Acyclicity invariant; `connect(…, port)`; per-type ids; port labels                                                                                                                                                                                                                                                      |
+| §5                   | Kept + extended  | Query-level rule pass; host issues map (display only)                                                                                                                                                                                                                                                                    |
+| §6.1                 | Idea kept        | Source and transform registries + builder adapters; batch resolution                                                                                                                                                                                                                                                     |
+| §6.2–6.7             | Superseded       | §6 of this plan                                                                                                                                                                                                                                                                                                          |
+| §7.0, `V1:` lines    | Replaced         | Saved shapes (§10.3) + emission table (§8.8)                                                                                                                                                                                                                                                                             |
+| §7.1 (M2)            | Extended         | Cube adds `Sort column "<c>" of type <type> cannot be sorted.` (VARIANT, OPAQUE), then `Sort columns cannot have duplicates.` One `isSortableType` also serves the editor's picker, the grid's Sort by and the row-number fallback's default key. The direction messages are unreachable                                 |
+| §7.4                 | Kept + labels    | Emit `select` in input order; the editor stores picks in input order too. The spec names no labels: Cube's messages use `Columns` (empty, duplicates) and `Column` (unnamed, not in the input) (M2)                                                                                                                      |
+| §7.5 (M2)            | Fixed            | `isValidColumnName` replaces the regex: non-empty, trimmed, no `"`, `\` or control characters, ≤ 128 code points 💭. Spaces, hyphens, `'` and unicode work; `"` breaks at execution, `\` later references ✅. New names may not equal untouched input columns or each other, in any case (`foldColumnName`)              |
+| §7.7–7.9 (M2)        | Changed          | No `arguments.length` trick: no JS defaults, so an explicit `undefined` stays cleared and invalid, saved and loaded too (§10.3); the defaults (10; 10 and 20) live only in the registry's `create(id)`. Size 0, Drop 0 and an empty Slice stay invalid, though the engine takes them (M2)                                |
+| §7.9, §17.9          | Changed (D5)     | `[start, stop)`; help-text copy fixed (counting from 0). The canvas reads `Take rows 10 to 20 (20 excluded)`, or `Take rows 10 to (blank)` without a stop; the palette label stays `Take rows <x> to <y>` (M2, §11.4)                                                                                                    |
+| §7.10 (M4)           | Extended         | Precise-strict equality; reject with a precise message; widen autofix through real conversions                                                                                                                                                                                                                           |
+| §7.11                | Kept + extended  | FULL OUTER; nullability and merged-key rules (§4.7); step 4 per §5.4. Autofix (M2): `c_1`/`c_2`, then `c_<side>_2`… when taken in any case, ≤ 128 code points; the key lists rewritten through the renames; offered only when the duplicate rule is the join's only error                                                |
+| §7.12 (M6)           | Kept, emulated   | Semantics as the spec; join and null rules written down                                                                                                                                                                                                                                                                  |
+| §7.13 (M5)           | Extended         | Rank/DenseRank need ≥ 1 sort; Count emitted as `size()`; running default frame (D5)                                                                                                                                                                                                                                      |
+| §7.14 (M6)           | Extended         | Validate empty names and duplicates among new columns                                                                                                                                                                                                                                                                    |
+| §7.16                | Fixed            | Unknown gets synthetic per-instance ports (keeps its edges and raw JSON); not rewireable; re-saved with regenerated `inputs`                                                                                                                                                                                             |
+| §8.2                 | **Extended**     | Matrix keyed by family (§5.5); VARIANT/OPAQUE row                                                                                                                                                                                                                                                                        |
+| §8.3, §21            | **Fixed**        | Operator availability and value-type validation (§5.6) with new messages                                                                                                                                                                                                                                                 |
+| §8.2, §8.3 (M1.5)    | **Restricted**   | A StartsWith/EndsWith/Contains value (or a negation's) may not contain `\`: the engine does not escape it in LIKE patterns, so the rows would be wrong (§8.4, Appendix B). Temporary; lifted when the engine is fixed. User OK 2026-10-06 (option a: refuse, not pre-escape)                                             |
+| §8.4                 | Replaced         | Emission (§8.4 of this plan) + saved filter shape (§10.3). NULL behaviour documented (D4)                                                                                                                                                                                                                                |
+| §9 (M6)              | Replaced         | Pure expressions stored as JSON (+ display text); typed by the engine; §9.2 table becomes help only, with Pure names                                                                                                                                                                                                     |
+| §10.1                | Kept (for now)   | Per-family view; extend later (Min/Max on strings etc.)                                                                                                                                                                                                                                                                  |
+| §10.2                | **Replaced**     | §5.7 measured table; every aggregate except Count is nullable                                                                                                                                                                                                                                                            |
+| §11.1                | Idea kept        | `CubeEngine` port (§8.7)                                                                                                                                                                                                                                                                                                 |
+| §11.2–11.3           | Superseded       | –                                                                                                                                                                                                                                                                                                                        |
+| §11.4                | Superseded       | Host HTTP client; keep "truncate and show trace link" behaviour via host                                                                                                                                                                                                                                                 |
+| §12–13               | Idea kept        | §9 of this plan; lambda-derived drill-down; `limit + 1`; typed group keys; §21 fixes                                                                                                                                                                                                                                     |
+| §12.4 (M2)           | Changed          | Client-side grid (spec: server-side mode only): Sort by and Filter by first, then ag-grid's items until M7; no icons; Group by in M4, Drilldown in M7. They add a node after the selected one, never run, and are disabled on stale rows, during a run, read-only, or on a type or value they can't use                  |
+| §14, §15             | Superseded / out | §10; publishing out of scope. §14.4 "Save disabled while invalid": Export spec is allowed for invalid queries; server Save gating decided in M8 (§10.3)                                                                                                                                                                  |
+| §16                  | Kept + additions | §4.11                                                                                                                                                                                                                                                                                                                    |
+| §17                  | Guidance         | §7; a floating editor below the node, as the popover (M3b); visible Left/Right; xyflow + dagre; deep links as path params (M3/M8). §17.11: Execute needs only the capture subtree to be valid (§10.3). §17.7: uncoercible text is kept as an invalid value with a type message (§4.9), and STRING values are not trimmed |
+| §17.4 (M3b)          | Changed          | A transform added without a node target goes after the selected node, spliced in, not unconnected (U3); a source opens its dialog tab, even dropped onto a node or picked from a node's menu (U4); an empty query has no context menu; 'Add Items ▾' lists the palette                                                   |
+| §17.5 (M3b)          | Kept + extended  | The floating editor below the node (432px, flips, follows pan and zoom), with Cube's Apply/Cancel footer and problems list. Every close but Cancel applies, Escape included; outside clicks change nothing while a layer opened from it is open (`holdOpen()`)                                                           |
+| §17.15 (M3b)         | Changed          | `?queryId=` stays in the address bar (U9). Entry links open data product access points only (`?sourceType=dataProductAccessPoint&sourceId=…`), stripped whether they resolve or not                                                                                                                                      |
+| §19.1–19.3           | Superseded       | §3 (two packages), §8 (relation functions, not `meta::pure::tds::*`)                                                                                                                                                                                                                                                     |
+| §20                  | Idea kept        | §11 (headless first; join and filter in M1; persistence last)                                                                                                                                                                                                                                                            |
+| Appendix C.4         | Replaced         | §8.5 lambda + relation type; §11.2 acceptance                                                                                                                                                                                                                                                                            |
 
 ## Appendix B: Defects found (upstream, non-blocking, D8)
 

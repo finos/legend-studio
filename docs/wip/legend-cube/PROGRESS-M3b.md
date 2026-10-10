@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.17 done (demo video); next M3b.18, the rebase and the PLAN fold                                                                 |
+| Step   | M3b.18 done: every step done; the PR is ready for review                                                                            |
 | Tests  | 2486 core, 1347 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.15)                                        |
 
 ## Steps
@@ -37,7 +37,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.15** Verification
 - [x] **M3b.16** Browser rehearsal
 - [x] **M3b.17** A demo video of M3b's features (PLAN §11.3)
-- [ ] **M3b.18** Rebase on the latest master; fold PLAN §11.6's supersessions in
+- [x] **M3b.18** Rebase on the latest master; fold PLAN §11.6's supersessions in
 
 ## Commits
 
@@ -61,7 +61,8 @@ rebased ones.
 | M3b.12  | `d4e937d1f` | feat: open Legend Cube on a data product access point from a link        |
 | M3b.13  | `ced0bf124` | docs: guide Legend Cube's editors in the floating node editor            |
 | M3b.15  | `0ea779e8c` | fix: fix Legend Cube M3b's verification findings                         |
-| M3b.16+ | (this one)  | docs: record Legend Cube M3b's rehearsal and demo video                  |
+| M3b.16+ | `cdfe12d91` | docs: record Legend Cube M3b's rehearsal and demo video                  |
+| M3b.18  | (this one)  | docs: fold Legend Cube M3b into the plan's canvas and editor sections    |
 
 ## Step notes
 
@@ -384,3 +385,21 @@ screenshot per moment in `frames/`). All 22 of its checks pass. It shows:
 
 Each frame was read against its caption. The recording has no address bar, so the demo shows the address in an overlay
 for the entry link, before and after. The video was sent to the user, to attach to #5657.
+
+**M3b.18 (2026-10-10).** finos master is still `5e424277b`, the commit the branch sits on, so no rebase was needed.
+PLAN §11.6's supersessions are folded in:
+
+- **§7.1:** the floating editor and 'Add Items ▾'.
+- **§7.2:** the tooltip.
+- **§7.3:** the gesture table rewritten to the placement rule and to applying first.
+- **§7.4:** the host, the frame and the finish path, with the click-away's rules and `holdOpen()`. "Following the
+  cube" is narrowed to what the user didn't do from outside the editor. The editor contract gains the 432px,
+  one-scroller and `addFlusher` rules.
+- **§7.5, §7.8:** "panel" becomes "editor", and `nodeEditor` lists `finish()`, `holdOpen()` and `addFlusher()`.
+- **M1.8b's settled answers:** dated notes only, for the palette source item and the side panel's rule.
+- **Appendix A:** rows for §17.4, §17.5 and §17.15.
+
+Part B's manual steps 1–3 still named 'Add table', the side panel, and a Join dropped unconnected. Step 3 now says the
+Join goes after ORDERS, the selected node, and only CUSTOMERS is connected by hand. A probe checks that step in the
+browser (`m3b-verify/browser/probe-partb3.mjs`, 10/10): ORDERS feeds Left, the Join is incomplete and the capture node,
+no editor opens, and CUSTOMERS connects to Right.
