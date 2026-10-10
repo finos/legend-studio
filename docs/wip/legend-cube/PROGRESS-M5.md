@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                         |
-| ------ | ------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
-| Step   | M5.1–M5.14 done: M5 is complete, in #5653, which isn't merged yet                                             |
-| Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
+| Item   | State                                                                                                                                              |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `59bbf5d54` (#5654, ingest)                              |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                  |
+| Step   | M5.1–M5.14 done: M5 is complete, in #5653, which isn't merged yet                                                                                  |
+| Tests  | 2772 core, 1317 builder (core group), 247 Query; 672 of 676 builder engine-roundtrip locally (after the rebase on `59bbf5d54`; see the M5.14 note) |
 
 ## Steps
 
@@ -207,6 +207,14 @@ no `block`); §8.6 (rewritten as built); §8.8 (the Partition row and the window
 §8.9 and §12.1 (the 9 databases that drop a window filter, ✅ from M5.10's plans); §10.3 (the Partition shape); §11.3's
 M5 row; Appendix A §7.13, §10, §10.2 and §17.6; Appendix B (the five window drafts, not filed yet). §11.6's
 Supersessions list stays as the record. M5 is complete.
+
+**Rebase (2026-10-10).** On master `59bbf5d54` (#5654, ingest data sets as a source), at the user's request: 18
+commits, conflicts only in docs (PROGRESS, both READMEs, PLAN's decisions and milestones tables, ISSUES' section
+heading) and in `Nodes.test.ts`'s menu-order comment, each kept from both sides. The IR, the serializer, the
+registries and the engine adapter merged on their own, and both changes hold together: ingest's `ingestAccessor`
+beside M5's `let`. `check:ci`, `lint:ci`, 2772 core, 1317 builder and 247 Query tests pass; 672 of 676 engine
+tests, the four others being the direct-connection setup-failure tests that today's local engine is too slow to
+refuse (CI's engine passes them).
 
 ## Open items
 
