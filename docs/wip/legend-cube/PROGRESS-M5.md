@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
-| Step   | M5.1–M5.13 done; next M5.14                                                                                   |
+| Step   | M5.1–M5.14 done: M5 is complete, in #5653, which isn't merged yet                                             |
 | Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
 
 ## Steps
@@ -32,7 +32,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.11** Guides and READMEs
 - [x] **M5.12** Verification and the browser rehearsal
 - [x] **M5.13** A demo video of M5's features (PLAN §11.3)
-- [ ] **M5.14** Rebase on the latest master, fold PLAN §11.6's supersessions in
+- [x] **M5.14** Rebase on the latest master, fold PLAN §11.6's supersessions in
 
 ## Commits
 
@@ -198,7 +198,18 @@ country. 22 checks, no page problems. Two frame reviews checked each caption aga
 filtering on the partition column itself (France) proves nothing, since it gives the same counts either way, so the
 scene filters on a customer; the second caught five captions claiming more than their frames showed, now reworded.
 
+**M5.14 (2026-10-10).** Master hadn't moved since the rebase on `5e424277b`, so no rebase. PLAN §11.6's
+supersessions are folded into the sections they change, by workflow `m514-plan-fold` (`wf_a76aab75-1e1`: two drafters,
+each checked against the code by a checker; 34 edits, 13 corrected by the checkers): D5 and §12.2 item 8 (answered);
+§4.4 and §4.5 (Partition keeps its input's order; `isolationBoundary`; an as-built note); §4.11 and Appendix A §16
+(the two messages); §5.7 (Row Number, Count rows in a window, never-null ranks); §8.3 (the IR's `let` with an origin,
+no `block`); §8.6 (rewritten as built); §8.8 (the Partition row and the window column of the aggregations table);
+§8.9 and §12.1 (the 9 databases that drop a window filter, ✅ from M5.10's plans); §10.3 (the Partition shape); §11.3's
+M5 row; Appendix A §7.13, §10, §10.2 and §17.6; Appendix B (the five window drafts, not filed yet). §11.6's
+Supersessions list stays as the record. M5 is complete.
+
 ## Open items
 
-- The engine issue drafts in ISSUES.md for windows (M5.10), filed by the user.
+- The five engine issue drafts for windows in ISSUES.md (M5.10), to be filed by the user; PLAN's Appendix B lists
+  them.
 - The landing order with `cube-ingest`, based before M4, which touches the same registries (PLAN §11.6, Landing).

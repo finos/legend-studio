@@ -54,7 +54,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
   - Next: Depot databases (PLAN §6.3, §6.8; their requirements are answered: released versions only, no dependency
     Databases), starting with the local mock depot.
 - [x] M4 Group, Concat (merged as #5649, `d847e6721`; follow-ups in #5653)
-- [ ] M5 Partition (windows), in #5653 with M4's follow-ups ([PROGRESS-M5.md](PROGRESS-M5.md), PLAN §11.6)
+- [x] M5 Partition (windows), built in #5653 with M4's follow-ups, not merged yet ([PROGRESS-M5.md](PROGRESS-M5.md),
+      PLAN §11.6)
 - [ ] M6 Extend, Difference · M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
