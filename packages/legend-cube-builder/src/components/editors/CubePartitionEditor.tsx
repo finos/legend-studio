@@ -21,6 +21,7 @@ import {
   type Schema,
   validateColumnAggregation,
   WINDOW_RANK_FUNCTIONS,
+  WINDOW_ROW_FUNCTIONS,
 } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -55,10 +56,11 @@ const NO_COLUMN_FUNCTIONS: readonly string[] = [
 
 /**
  * The functions a row can take: those its column's type offers, or every
- * column function before a column is picked, then Count rows and the rank
- * functions; a function the row holds that isn't among them (an unknown one
- * kept as saved, or one its column doesn't offer) stays listed, so the
- * problem can be seen and fixed
+ * column function before a column is picked, then the row functions (Lag,
+ * Lead, First, Last) on a column a window can sort by, then Count rows and
+ * the rank functions; a function the row holds that isn't among them (an
+ * unknown one kept as saved, or one its column doesn't offer) stays listed,
+ * so the problem can be seen and fixed
  */
 const functionOptions = (row: CubeAggregationRow, schema: Schema): string[] => {
   const type = row.column ? schema.lookup(row.column)?.type : undefined;
@@ -68,6 +70,7 @@ const functionOptions = (row: CubeAggregationRow, schema: Schema): string[] => {
       : Object.values(AggregationFunction).filter(
           (fn) => fn !== AggregationFunction.COUNT_ROWS,
         )),
+    ...(type === undefined || isSortableType(type) ? WINDOW_ROW_FUNCTIONS : []),
     ...NO_COLUMN_FUNCTIONS,
   ];
   return row.function && !offered.includes(row.function)
@@ -76,8 +79,9 @@ const functionOptions = (row: CubeAggregationRow, schema: Schema): string[] => {
 };
 
 /**
- * The Partition editor (spec §17.6, PLAN §11.6), in the original's order
- * (Q4): rows of window function column, function and output name; the
+ * The Partition editor (spec §17.6, PLAN §11.6, §11.8), in the original's
+ * order (Q4): rows of window function column, function, its offset or bucket
+ * count when it takes one, and output name; the
  * partition columns, each ticked (a column that can't be compared is shown
  * but can't be ticked); then the sort rows, as a Sort's. Each row shows its
  * first problem, as the node checks it. Window functions can always be added;
@@ -131,6 +135,9 @@ export const CubePartitionEditor = observer((props: CubeNodeEditorProps) => {
             readOnly={readOnly}
             onColumn={(column) => draft.setColumn(row.key, column)}
             onFunction={(fn) => draft.setFunction(row.key, fn)}
+            onSetting={(setting, text) =>
+              draft.setSetting(row.key, setting, text)
+            }
             onName={(name) => draft.setName(row.key, name)}
             onRemove={() => draft.removeRow(row.key)}
           />

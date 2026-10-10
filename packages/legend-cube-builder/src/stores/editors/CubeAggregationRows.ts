@@ -15,18 +15,28 @@
  */
 
 import {
+  AGGREGATION_SETTING_DEFAULTS,
   AggregationFunction,
+  AggregationSetting,
   type AggregationUse,
   type ColumnAggregation,
   getAggregationAutoName,
+  getAggregationSetting,
   isAggregationFunctionOf,
   type Schema,
   takesAggregationColumn,
 } from '@finos/legend-cube';
+import { parseWholeNumberText } from './CubeIntegerText.js';
 
 // The rows of the editors that aggregate (Group, PLAN §11.5; Partition,
-// §11.6): each a column, a function and an output name, judged by where the
-// aggregations are (`AggregationUse`)
+// §11.6, §11.8): each a column, a function, a setting for a function that
+// takes one, and an output name, judged by where the aggregations are
+// (`AggregationUse`)
+
+/** A row's settings as typed, by key: Lag's and Lead's offset, NTile's bucket count */
+export type CubeAggregationSettingTexts = Readonly<
+  Partial<Record<AggregationSetting, string>>
+>;
 
 /**
  * One aggregation row: a column (`undefined` for a function that takes none,
@@ -39,6 +49,11 @@ export interface CubeAggregationRow {
   readonly column: string | undefined;
   readonly function: string;
   readonly name: string;
+  /**
+   * The settings as typed (PLAN §11.8): the function's own, and a saved one
+   * it doesn't take, kept so it is reported until the function is picked again
+   */
+  readonly settings: CubeAggregationSettingTexts;
   /**
    * The name was typed: it no longer follows the column and the function.
    * A name equal to the auto-name follows them again.
@@ -53,8 +68,39 @@ export const blankAggregationRow = (): CubeAggregationRow => ({
   column: '',
   function: '',
   name: '',
+  settings: {},
   named: false,
 });
+
+/** The settings a saved aggregation holds, as texts */
+const settingTextsOf = ({
+  offset,
+  buckets,
+}: ColumnAggregation): CubeAggregationSettingTexts => ({
+  ...(offset === undefined
+    ? {}
+    : { [AggregationSetting.OFFSET]: String(offset) }),
+  ...(buckets === undefined
+    ? {}
+    : { [AggregationSetting.BUCKETS]: String(buckets) }),
+});
+
+/** The settings the texts give: a whole number, or none, which the node reports */
+const settingsOfTexts = (
+  texts: CubeAggregationSettingTexts,
+): Pick<ColumnAggregation, 'offset' | 'buckets'> => {
+  const [offset, buckets] = [
+    AggregationSetting.OFFSET,
+    AggregationSetting.BUCKETS,
+  ].map((key) => {
+    const text = texts[key];
+    return text === undefined ? undefined : parseWholeNumberText(text);
+  });
+  return {
+    ...(offset === undefined ? {} : { offset }),
+    ...(buckets === undefined ? {} : { buckets }),
+  };
+};
 
 /** Whether the use knows the function and it takes no column: Count rows, and in a window the rank functions */
 export const takesNoAggregationColumn = (
@@ -95,13 +141,17 @@ export const aggregationRowsOf = (
   use: AggregationUse,
 ): CubeAggregationRow[] =>
   aggregations.length
-    ? aggregations.map(({ column, function: fn, name }) => ({
-        key: nextRowKey++,
-        column,
-        function: fn,
-        name,
-        named: name !== (getAggregationAutoName(fn, column, use) ?? ''),
-      }))
+    ? aggregations.map((aggregation) => {
+        const { column, function: fn, name } = aggregation;
+        return {
+          key: nextRowKey++,
+          column,
+          function: fn,
+          name,
+          settings: settingTextsOf(aggregation),
+          named: name !== (getAggregationAutoName(fn, column, use) ?? ''),
+        };
+      })
     : [blankAggregationRow()];
 
 /** The aggregations the rows build, in order (`isBuiltAggregationRow`) */
@@ -111,10 +161,11 @@ export const aggregationsOfRows = (
 ): ColumnAggregation[] =>
   rows
     .filter((row) => isBuiltAggregationRow(row, use))
-    .map(({ column, function: fn, name }) => ({
+    .map(({ column, function: fn, name, settings }) => ({
       column,
       function: fn,
       name,
+      ...settingsOfTexts(settings),
     }));
 
 /** The row with its column picked; with no function yet, Count */
@@ -130,23 +181,44 @@ export const withRowColumn = (
 
 /**
  * The row with its function picked: a function that takes no column clears
- * it, and back to a column function leaves one to pick
+ * it, and back to a column function leaves one to pick. It keeps only the
+ * function's own setting, as typed, or its default.
  */
 export const withRowFunction = (
   row: CubeAggregationRow,
   fn: string,
   use: AggregationUse,
-): CubeAggregationRow =>
-  withAutoName(
+): CubeAggregationRow => {
+  const setting = getAggregationSetting(fn);
+  return withAutoName(
     {
       ...row,
       function: fn,
       column: takesNoAggregationColumn(fn, use)
         ? undefined
         : (row.column ?? ''),
+      settings:
+        setting === undefined
+          ? {}
+          : {
+              [setting]:
+                row.settings[setting] ??
+                String(AGGREGATION_SETTING_DEFAULTS[setting]),
+            },
     },
     use,
   );
+};
+
+/** The row with a setting typed, kept exactly as text */
+export const withRowSetting = (
+  row: CubeAggregationRow,
+  setting: AggregationSetting,
+  text: string,
+): CubeAggregationRow => ({
+  ...row,
+  settings: { ...row.settings, [setting]: text },
+});
 
 /** The row with its name typed, kept exactly; the auto-name itself follows again */
 export const withRowName = (
@@ -168,7 +240,9 @@ export const isSameAggregations = (
     (aggregation, index) =>
       aggregation.column === b[index]?.column &&
       aggregation.function === b[index]?.function &&
-      aggregation.name === b[index]?.name,
+      aggregation.name === b[index]?.name &&
+      aggregation.offset === b[index]?.offset &&
+      aggregation.buckets === b[index]?.buckets,
   );
 
 /**
