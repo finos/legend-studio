@@ -29,11 +29,14 @@ export {
 export * from './graph-manager/CubeConnectionExplorer.js';
 export * from './graph-manager/CubeDataProduct.js';
 export * from './graph-manager/CubeDataProductCatalog.js';
+export * from './graph-manager/CubeIngest.js';
+export * from './graph-manager/CubeIngestCatalog.js';
 export * from './graph-manager/CubeEngine.js';
 export { getRuntimesForDatabase } from './graph-manager/CubeModelOutlineHelper.js';
 export {
   buildCubeConnectionExplorer,
   buildCubeDataProductCatalog,
+  buildCubeIngestCatalog,
   buildCubeEngine,
   buildCubeLakehouseEnvironment,
   type CubeEngineConfig,

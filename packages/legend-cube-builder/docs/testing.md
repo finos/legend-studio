@@ -114,5 +114,24 @@ would serve it.
   as `Numeric(0,0)` and DuckDB's `VARCHAR(5)` as `Varchar(0)`; only the core's DuckDB sample
   (`packages/legend-cube/src/spec/__tests__/fixtures/direct/`) holds those types, and no engine test reads it.
 
+### Data products and ingest data sets
+
+- **Fakes.** `TEST__createCubeHost()` also gives `dataProducts`, a fake data product catalog
+  (`src/__test-utils__/FakeCubeDataProductCatalog.ts`). An ingest catalog is opt-in: build one per test with
+  `createFakeCubeIngestCatalog()` (`src/__test-utils__/FakeCubeIngestCatalog.ts`) and pass its `catalog` as the host's
+  `ingestCatalog`; without it, Cube offers no Ingest tab.
+- **The open-source engine reads neither.** It has no data product or ingest definition to read, can't parse an ingest
+  definition, and can't type or run a `#I{...}#` accessor. So the engine tests stand each source in for with a Pure
+  function declaring the relation type the source would have, over an H2 table:
+  `src/__tests__/CubeDataProduct.engine-roundtrip-test.ts` for access points, and
+  `src/__tests__/CubeIngest.engine-roundtrip-test.ts` for ingest data sets. The ingest one swaps each accessor Cube
+  emits for its stand-in, then checks the nodes downstream (a Filter on `LAKE_OUT_ID`, a Join of two data sets, a
+  Group) against the engine's typing, and runs them.
+- **Testable locally:** reading a definition's data sets and types, the URN parser, the saved model, the source
+  dialog, the panels and the re-checks, all with fakes; downstream lambdas, on the stand-ins.
+- **Not testable locally:** the ingest servers' answers, the parse of a deployed definition's grammar, compiling and
+  running `#I{...}#`, the environment name and whether a warehouse is accepted. Those are checked in an internal
+  deployment (PLAN §11.2 Part B2).
+
 The engine tests in `src/__tests__/` import `V1_*` classes there, as an exception to the V1 rule: they need both the
 `v1/` adapter and `stores/`, which the import-hierarchy lint rule keeps apart.

@@ -19,7 +19,7 @@ import type { SnapshotColumnRest } from './RelationalTableSource.js';
 
 /**
  * A source the host resolves to a schema, and resolves again to see drift: a
- * relational table or a data product's access point
+ * relational table, a data product's access point or an ingest data set
  */
 export interface ResolvableSource extends QueryNode {
   readonly resolution: SourceResolution;

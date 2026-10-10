@@ -122,8 +122,13 @@ export class V1_CubeLakehouseEnvironmentResolver
     return this.userEnvironment;
   }
 
+  /** The viewer's environment with no realm: what ingest environments are named by */
+  async resolveBaseEnvironment(): Promise<string> {
+    return withoutRealm(await this.readUserEnvironment());
+  }
+
   async resolveEnvironment(project: CubeDataProductProject): Promise<string> {
-    const environment = withoutRealm(await this.readUserEnvironment());
+    const environment = await this.resolveBaseEnvironment();
     return project.environmentType ===
       CubeDataProductEnvironmentType.PRODUCTION_PARALLEL ||
       isCubeSnapshotVersion(project.versionId)

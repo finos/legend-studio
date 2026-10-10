@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  IngestDatasetSource,
   RelationalTableSource,
 } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -34,6 +35,7 @@ import {
 import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
+import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
 import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
 import {
   type CubeSourcePickerTab,
@@ -51,6 +53,7 @@ export class CubeSourcePickerState {
   readonly modelTab: CubeInlineModelTabState;
   readonly directTab: CubeDirectConnectionTabState;
   readonly dataProductTab: CubeDataProductTabState;
+  readonly ingestTab: CubeIngestTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -77,13 +80,25 @@ export class CubeSourcePickerState {
     this.modelTab = new CubeInlineModelTabState(editorState);
     this.directTab = new CubeDirectConnectionTabState(editorState);
     this.dataProductTab = new CubeDataProductTabState(editorState);
+    this.ingestTab = new CubeIngestTabState(editorState);
+  }
+
+  /** The tabs that add their own kind of source, each from its palette item */
+  private get dedicatedTabs(): ReadonlyMap<string, CubeSourcePickerTab> {
+    return new Map<string, CubeSourcePickerTab>([
+      [DataProductAccessPointSource.TYPE, this.dataProductTab],
+      [IngestDatasetSource.TYPE, this.ingestTab],
+    ]);
   }
 
   /** The tabs the host serves, in order */
   get tabs(): readonly CubeSourcePickerTab[] {
-    return [this.modelTab, this.directTab, this.dataProductTab].filter(
-      (tab) => tab.isAvailable,
-    );
+    return [
+      this.modelTab,
+      this.directTab,
+      this.dataProductTab,
+      this.ingestTab,
+    ].filter((tab) => tab.isAvailable);
   }
 
   /**
@@ -93,7 +108,7 @@ export class CubeSourcePickerState {
   get fixedTab(): CubeSourcePickerTab | undefined {
     const { context } = this.editorState.document;
     return context
-      ? ([this.directTab, this.dataProductTab].find((tab) =>
+      ? ([this.directTab, this.dataProductTab, this.ingestTab].find((tab) =>
           tab.ownsContext(context),
         ) ?? this.modelTab)
       : undefined;
@@ -106,18 +121,20 @@ export class CubeSourcePickerState {
   }
 
   /**
-   * The tab a palette item opens (DP-3): a data product's for a data
-   * product, otherwise the table tab the cube uses, else the table tab open
-   * last, else the Model tab
+   * The tab a palette item opens (DP-3): a data product's or an ingest data
+   * set's own tab, when the host serves it; for a table, the table tab the
+   * cube uses, else the table tab open last, else the Model tab
    */
   tabForSourceType(type: string): CubeSourcePickerTab | undefined {
-    if (type === DataProductAccessPointSource.TYPE) {
-      return this.dataProductTab.isAvailable ? this.dataProductTab : undefined;
+    const dedicated = this.dedicatedTabs.get(type);
+    if (dedicated) {
+      return dedicated.isAvailable ? dedicated : undefined;
     }
     if (type !== RelationalTableSource.TYPE) {
       return undefined;
     }
-    const tableTabs = this.tabs.filter((tab) => tab !== this.dataProductTab);
+    const dedicatedTabs = [...this.dedicatedTabs.values()];
+    const tableTabs = this.tabs.filter((tab) => !dedicatedTabs.includes(tab));
     const { fixedTab } = this;
     return fixedTab
       ? tableTabs.find((tab) => tab === fixedTab)
@@ -213,6 +230,7 @@ export class CubeSourcePickerState {
     this.modelTab.close();
     this.directTab.close();
     this.dataProductTab.close();
+    this.ingestTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

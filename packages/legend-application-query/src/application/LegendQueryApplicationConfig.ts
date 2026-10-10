@@ -190,6 +190,11 @@ export interface LegendQueryApplicationConfigurationData
   };
   lakehouse?: {
     url: string;
+    /**
+     * The lakehouse platform, which names the ingest servers: Legend Cube's
+     * ingest data sets need it, as Data Cube's and Marketplace's do
+     */
+    platformUrl?: string;
   };
   legendAI?: {
     url?: string;
@@ -211,6 +216,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly marketplaceProductionParallelUrl?: string;
   readonly marketplaceServerUrl?: string;
   readonly lakehouseContractUrl?: string;
+  readonly lakehousePlatformUrl?: string;
   readonly legendAIUrl?: string;
   readonly legendAIAgentUrl?: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
@@ -300,6 +306,11 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     if (input.configData.lakehouse?.url) {
       this.lakehouseContractUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.lakehouse.url,
+      );
+    }
+    if (input.configData.lakehouse?.platformUrl) {
+      this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.lakehouse.platformUrl,
       );
     }
 

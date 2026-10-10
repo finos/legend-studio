@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-import type { Query } from '../../graph/Query.js';
 import {
-  type QueryNode,
   SourceNode,
   type SourceResolution,
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
-import type { QueryRule } from '../../inference/SchemaInference.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
-import {
-  MESSAGE_DATA_PRODUCT_AFTER_TABLE,
-  MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
-  MESSAGE_TABLE_AFTER_DATA_PRODUCT,
-} from '../../messages/CubeMessages.js';
+import { MESSAGE_SOURCE_SCHEMA_UNRESOLVED } from '../../messages/CubeMessages.js';
 import type { Schema } from '../../schema/Schema.js';
 import type { JsonObject } from '../../utils/Json.js';
-import {
-  RelationalTableSource,
-  type SnapshotColumnRest,
-} from './RelationalTableSource.js';
+import type { SnapshotColumnRest } from './RelationalTableSource.js';
 
 /**
  * Which access point a source reads (PLAN §6.8): the data product's element
@@ -190,33 +180,3 @@ export class DataProductAccessPointSource extends SourceNode {
       : `Access point "${this.accessPoint}" from data product "${this.dataProductName}"`;
   }
 }
-
-/**
- * Database tables and data products are kept apart (PLAN §6.8): the query's
- * first source of either kind fixes which kind it reads, and each source of
- * the other kind is invalid. Registered once, on the data product source.
- */
-export const sourcesAreOneKind: QueryRule = (query: Query) => {
-  const isTable = (node: QueryNode): boolean =>
-    node.type === RelationalTableSource.TYPE;
-  const isDataProduct = (node: QueryNode): boolean =>
-    node.type === DataProductAccessPointSource.TYPE;
-  const sources = query.nodes.filter(
-    (node) => isTable(node) || isDataProduct(node),
-  );
-  const [first] = sources;
-  const errors = new Map<string, string[]>();
-  if (first) {
-    const readsTables = isTable(first);
-    sources
-      .filter((source) => isTable(source) !== readsTables)
-      .forEach((source) =>
-        errors.set(source.id, [
-          readsTables
-            ? MESSAGE_DATA_PRODUCT_AFTER_TABLE
-            : MESSAGE_TABLE_AFTER_DATA_PRODUCT,
-        ]),
-      );
-  }
-  return errors;
-};

@@ -29,6 +29,7 @@ import {
   enumValue,
   func,
   genericType,
+  ingestAccessor,
   type IR,
   lambda,
   literal,
@@ -361,6 +362,26 @@ describe(unitTest('IR printer'), () => {
     expect(
       listOrigins(dataProductAccessor(['a::sales::Orders', 'daily'])),
     ).toEqual(['#P{a::sales::Orders.daily}#@-']);
+  });
+
+  test("Prints an ingest definition's data set, never redacted, whatever its origin", () => {
+    const accessor = ingestAccessor(['a::sales::OrdersIngest', 'TRADES'], {
+      nodeId: 'ingest101',
+      role: EmitRole.ACCESSOR,
+    });
+    expect(printIR(accessor)).toBe('#I{a::sales::OrdersIngest.TRADES}#');
+    const limited = func('limit', [accessor, integer('5')]);
+    expect(printIR(limited, { redactLiterals: true })).toBe(
+      '#I{a::sales::OrdersIngest.TRADES}#->limit(?)',
+    );
+    expect(listOrigins(limited)).toEqual([
+      'limit@-',
+      '#I{a::sales::OrdersIngest.TRADES}#@ingest101:accessor',
+      '5@-',
+    ]);
+    expect(
+      listOrigins(ingestAccessor(['a::sales::OrdersIngest', 'TRADES'])),
+    ).toEqual(['#I{a::sales::OrdersIngest.TRADES}#@-']);
   });
 
   test('Quotes enumeration values that are not identifiers', () => {

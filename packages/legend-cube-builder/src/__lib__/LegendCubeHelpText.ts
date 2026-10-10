@@ -17,6 +17,7 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  IngestDatasetSource,
   Distinct,
   Drop,
   Filter,
@@ -41,6 +42,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   /** Added by Cube: the original has no data product source (PLAN §6.8) */
   [DataProductAccessPointSource.TYPE]:
     'Sources data from an access point of a deployed data product.',
+  /** Added by Cube: the original has no ingest data set source (PLAN §6.7) */
+  [IngestDatasetSource.TYPE]:
+    'Sources data from a data set of a deployed ingest definition.',
   [Concat.TYPE]:
     'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
   [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',

@@ -30,6 +30,7 @@ import { SELECT_SOURCE_TYPE_PROMPT } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeDataProductTab } from './CubeDataProductTab.js';
+import { CubeIngestTab } from './CubeIngestTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
 
@@ -105,6 +106,8 @@ export const CubeSourcePicker = observer(
                 <CubeDirectConnectionTab tab={picker.directTab} />
               ) : activeTab.key === CubeSourcePickerTabKey.DATA_PRODUCT ? (
                 <CubeDataProductTab tab={picker.dataProductTab} />
+              ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
+                <CubeIngestTab tab={picker.ingestTab} />
               ) : (
                 <CubeInlineModelTab tab={picker.modelTab} />
               )}

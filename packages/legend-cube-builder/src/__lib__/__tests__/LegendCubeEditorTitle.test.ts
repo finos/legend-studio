@@ -22,6 +22,7 @@ import { toEditorTitle } from '../LegendCubeLabels.js';
 const TITLES: Record<string, string> = {
   relational: 'Relational Database Table',
   dataProductAccessPoint: 'Data Product',
+  ingestDataset: 'Ingest Dataset',
   sort: 'Sort By Column',
   group: 'Group By Column',
   filter: 'Filter By Column',

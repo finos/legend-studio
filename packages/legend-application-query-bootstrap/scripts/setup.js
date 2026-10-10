@@ -53,6 +53,7 @@ export const setup = (outputDir) => {
         },
         lakehouse: {
           url: 'http://localhost:6600/lakehouse/api',
+          platformUrl: 'http://localhost:6600/lakehouse/platform',
         },
         studio: {
           url: 'http://localhost:9000/studio',

@@ -403,3 +403,16 @@ Part B's manual steps 1–3 still named 'Add table', the side panel, and a Join 
 Join goes after ORDERS, the selected node, and only CUSTOMERS is connected by hand. A probe checks that step in the
 browser (`m3b-verify/browser/probe-partb3.mjs`, 10/10): ORDERS feeds Left, the Join is incomplete and the capture node,
 no editor opens, and CUSTOMERS connects to Right.
+
+**Merge of finos master (2026-10-10).** #5654 (ingest data sets, `59bbf5d54`) merged into master and conflicted with
+#5657, so master was merged in (Auto-fix asks for a merge, not a rebase):
+
+- **Warehouse control.** Master moved the data product's warehouse control to `CubeWarehouseControl.tsx`, shared with
+  ingest data sets. The flusher that applies typed text when the editor closes moved with it, so it covers both.
+- **Ingest editor tests.** They drop the side panel they rendered beside the canvas, since the canvas floats the
+  editor.
+- **Editor title test.** It lists `ingestDataset`.
+- **Docs.** PROGRESS.md, the README and hosting.md keep both sides.
+
+Gates: check:ci and lint pass. Tests: 2506 core, 1456 builder, 259 Query. Engine round trips: the ingest round trip
+passes; the two setup-SQL tests still time out on the stuck local engine.

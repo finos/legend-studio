@@ -147,6 +147,14 @@ test(unitTest('Messages added by Cube'), () => {
     'Database tables and data products cannot be mixed in one query; this query reads from database tables.',
   );
   expect(
+    MESSAGES.MESSAGE_SOURCE_KINDS_MIXED(
+      ['data products', 'ingest data sets'],
+      'ingest data sets',
+    ),
+  ).toBe(
+    'Data products and ingest data sets cannot be mixed in one query; this query reads from ingest data sets.',
+  );
+  expect(
     MESSAGES.MESSAGE_FILTER_OPERATOR_UNSUPPORTED(
       'contains',
       'FREIGHT',

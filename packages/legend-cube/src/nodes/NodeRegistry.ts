@@ -35,6 +35,7 @@ import { emitSlice } from '../ir/emitters/SliceEmitter.js';
 import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
+import { emitIngestDatasetSource } from '../ir/emitters/IngestDatasetSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
@@ -48,15 +49,15 @@ import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
 import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProductAccessPointSourceCodec.js';
+import { INGEST_DATASET_SOURCE_CODEC } from '../spec/codecs/IngestDatasetSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
-import {
-  DataProductAccessPointSource,
-  sourcesAreOneKind,
-} from './sources/DataProductAccessPointSource.js';
+import { DataProductAccessPointSource } from './sources/DataProductAccessPointSource.js';
+import { IngestDatasetSource } from './sources/IngestDatasetSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { sourcesAreOneKind } from './sources/SourceKinds.js';
 import { Concat } from './transforms/Concat.js';
 import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
@@ -149,6 +150,21 @@ export const DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION: SourceDefinition<DataP
     queryRules: [sourcesAreOneKind],
     emit: (node) => emitDataProductAccessPointSource(node),
     spec: DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC,
+  };
+
+/** A data set of a deployed ingest definition (PLAN §6.7), in beta */
+export const INGEST_DATASET_SOURCE_DEFINITION: SourceDefinition<IngestDatasetSource> =
+  {
+    kind: 'source',
+    type: IngestDatasetSource.TYPE,
+    label: 'Ingest Dataset',
+    icon: 'ingest',
+    beta: true,
+    fromCoordinates: (id, coordinates) =>
+      IngestDatasetSource.fromCoordinates(id, coordinates),
+    resolve: (node, resolution) => node.withResolution(resolution),
+    emit: (node) => emitIngestDatasetSource(node),
+    spec: INGEST_DATASET_SOURCE_CODEC,
   };
 
 export const SORT_DEFINITION: TransformDefinition<Sort> = {
@@ -327,6 +343,7 @@ export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
+    INGEST_DATASET_SOURCE_DEFINITION,
     SORT_DEFINITION,
     GROUP_DEFINITION,
     FILTER_DEFINITION,

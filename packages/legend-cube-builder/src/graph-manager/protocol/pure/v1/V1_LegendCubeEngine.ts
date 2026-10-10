@@ -40,6 +40,13 @@ import {
   getEffectiveCubeWarehouse,
   isCubeDataProductModel,
 } from '../../../CubeDataProduct.js';
+import {
+  checkCubeIngestModel,
+  CUBE_INGEST_RUNTIME_PATH,
+  type CubeIngestSettings,
+  getCubeIngestSettings,
+  isCubeIngestModel,
+} from '../../../CubeIngest.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
 import {
   CUBE_DIRECT_DATABASE_PATH,
@@ -65,6 +72,15 @@ import {
   V1_buildCubeDataProductTypingContext,
   V1_hasCubeDataProductAccessor,
 } from './V1_CubeDataProductModel.js';
+import {
+  V1_buildCubeIngestExecutionContext,
+  V1_buildCubeIngestTypingContext,
+  V1_checkCubeIngestAccessors,
+  V1_collectCubeIngestAccessors,
+  type V1_CubeIngestDefinitionSource,
+  V1_getCubeIngestUrns,
+  V1_hasCubeIngestAccessor,
+} from './V1_CubeIngestModel.js';
 import {
   V1_buildCubeDirectModelContext,
   V1_collectCubeStoreAccessors,
@@ -116,6 +132,68 @@ const TABLES_IN_DATA_PRODUCT_CUBE =
   "A data product cube can't read database tables";
 const NO_LAKEHOUSE =
   "This page can't run data products: its host has no lakehouse";
+/** Why a lambda can't run on the cube's model: ingest data sets are kept apart too (PLAN §6.7) */
+const INGEST_ONLY = 'Only an ingest cube can read ingest data sets';
+const OTHER_SOURCES_IN_INGEST_CUBE =
+  'An ingest cube reads ingest data sets only';
+const NO_INGEST =
+  "This page can't read ingest data sets: its host has no ingest servers";
+
+/** The kinds of model a cube's sources must match */
+enum CubeSourceFamily {
+  DATA_PRODUCT = 'dataProduct',
+  INGEST = 'ingest',
+  TABLES = 'tables',
+}
+
+const familyOf = (model: ModelContext): CubeSourceFamily =>
+  isCubeDataProductModel(model)
+    ? CubeSourceFamily.DATA_PRODUCT
+    : isCubeIngestModel(model)
+      ? CubeSourceFamily.INGEST
+      : CubeSourceFamily.TABLES;
+
+/** Why a lambda reads a source its cube's kind can't, if it does */
+const foreignSourceProblemOf = (
+  family: CubeSourceFamily,
+  ir: IR,
+): string | undefined => {
+  const readsTables = V1_collectCubeStoreAccessors(ir).length > 0;
+  const readsDataProducts = V1_hasCubeDataProductAccessor(ir);
+  const readsIngest = V1_hasCubeIngestAccessor(ir);
+  switch (family) {
+    case CubeSourceFamily.DATA_PRODUCT:
+      return readsTables
+        ? TABLES_IN_DATA_PRODUCT_CUBE
+        : readsIngest
+          ? INGEST_ONLY
+          : undefined;
+    case CubeSourceFamily.INGEST:
+      return readsTables || readsDataProducts
+        ? OTHER_SOURCES_IN_INGEST_CUBE
+        : undefined;
+    default:
+      return readsDataProducts
+        ? DATA_PRODUCT_ONLY
+        : readsIngest
+          ? INGEST_ONLY
+          : undefined;
+  }
+};
+
+/** An error of the host's ingest servers, placed on a node */
+const toIngestError = (
+  error: unknown,
+  kind: CubeEngineErrorKind,
+  nodeId: NodeId | undefined,
+): CubeEngineError =>
+  error instanceof CubeEngineError
+    ? new CubeEngineError(error.kind, error.detail, nodeId)
+    : new CubeEngineError(
+        kind,
+        error instanceof Error ? error.message : String(error),
+        nodeId,
+      );
 
 /** The message for a model of a kind this version can't run (PLAN §8.7) */
 export const V1_unsupportedModelMessage = (type: string): string =>
@@ -192,6 +270,8 @@ export class V1_LegendCubeEngine implements CubeEngine {
   private readonly lakehouseEnvironment: CubeLakehouseEnvironment | undefined;
   /** The warehouse the viewer last picked, for a data product cube without its own */
   private readonly getRememberedWarehouse: () => string | undefined;
+  /** The deployed ingest definitions, which ingest cubes read */
+  private readonly ingestDefinitions: V1_CubeIngestDefinitionSource | undefined;
 
   constructor(
     config: V1_CubeEngineConfig,
@@ -199,6 +279,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
     options?: {
       lakehouseEnvironment?: CubeLakehouseEnvironment | undefined;
       getRememberedWarehouse?: (() => string | undefined) | undefined;
+      ingestDefinitions?: V1_CubeIngestDefinitionSource | undefined;
     },
   ) {
     this.client = new V1_EngineServerClient(config);
@@ -207,6 +288,65 @@ export class V1_LegendCubeEngine implements CubeEngine {
     this.lakehouseEnvironment = options?.lakehouseEnvironment;
     this.getRememberedWarehouse =
       options?.getRememberedWarehouse ?? (() => undefined);
+    this.ingestDefinitions = options?.ingestDefinitions;
+  }
+
+  /** An ingest model's settings, or an unsupported-model error naming its problems */
+  private ingestSettingsOf(
+    model: ModelContext,
+    nodeId?: NodeId,
+  ): CubeIngestSettings {
+    const settings = getCubeIngestSettings(model);
+    if (!settings) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        checkCubeIngestModel(model).join('\n'),
+        nodeId,
+      );
+    }
+    return settings;
+  }
+
+  /**
+   * The definitions the URNs name, read from the host's ingest servers, each
+   * once; a definition that can't be read gives its error instead
+   */
+  private async ingestDefinitionsOf(
+    urns: readonly string[],
+    settings: CubeIngestSettings,
+  ): Promise<Map<string, PlainObject | CubeEngineError>> {
+    const source = this.ingestDefinitions;
+    return new Map(
+      await Promise.all(
+        urns.map(
+          async (urn): Promise<[string, PlainObject | CubeEngineError]> => {
+            if (!source) {
+              return [
+                urn,
+                new CubeEngineError(
+                  CubeEngineErrorKind.UNSUPPORTED_MODEL,
+                  NO_INGEST,
+                ),
+              ];
+            }
+            try {
+              return [
+                urn,
+                await source.getDefinitionElement(
+                  urn,
+                  settings.environmentType,
+                ),
+              ];
+            } catch (error) {
+              return [
+                urn,
+                toIngestError(error, CubeEngineErrorKind.NETWORK, undefined),
+              ];
+            }
+          },
+        ),
+      ),
+    );
   }
 
   /** A data product model's project, or an unsupported-model error naming its problems */
@@ -316,6 +456,14 @@ export class V1_LegendCubeEngine implements CubeEngine {
   }
 
   async loadModel(model: ModelContext): Promise<CubeModelOutline> {
+    if (isCubeIngestModel(model)) {
+      this.ingestSettingsOf(model);
+      // its data sets are listed through the ingest catalog
+      return {
+        databases: [],
+        runtimes: [{ path: CUBE_INGEST_RUNTIME_PATH, storePaths: [] }],
+      };
+    }
     if (isCubeDataProductModel(model)) {
       this.dataProductProjectOf(model);
       // its access points are listed through the data product catalog
@@ -364,14 +512,16 @@ export class V1_LegendCubeEngine implements CubeEngine {
         lambda([], [storeAccessor(path, { nodeId, role: EmitRole.ACCESSOR })]),
       ]),
     );
-    if (isCubeDataProductModel(model)) {
+    if (isCubeDataProductModel(model) || isCubeIngestModel(model)) {
       return Promise.resolve(
         new Map(
           [...accessors.keys()].map((nodeId) => [
             nodeId,
             new CubeEngineError(
               CubeEngineErrorKind.UNSUPPORTED_MODEL,
-              TABLES_IN_DATA_PRODUCT_CUBE,
+              isCubeIngestModel(model)
+                ? OTHER_SOURCES_IN_INGEST_CUBE
+                : TABLES_IN_DATA_PRODUCT_CUBE,
               nodeId,
             ),
           ]),
@@ -388,18 +538,12 @@ export class V1_LegendCubeEngine implements CubeEngine {
     model: ModelContext,
     lambdas: ReadonlyMap<NodeId, IR>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
-    const isDataProductCube = isCubeDataProductModel(model);
-    // a lambda reading the other kind of source is refused before any call
+    const family = familyOf(model);
+    // a lambda reading another kind of source is refused before any call
     const refused = new Map<NodeId, CubeEngineError>();
     const typable = new Map<NodeId, IR>();
     lambdas.forEach((ir, nodeId) => {
-      const problem = isDataProductCube
-        ? V1_collectCubeStoreAccessors(ir).length
-          ? TABLES_IN_DATA_PRODUCT_CUBE
-          : undefined
-        : V1_hasCubeDataProductAccessor(ir)
-          ? DATA_PRODUCT_ONLY
-          : undefined;
+      const problem = foreignSourceProblemOf(family, ir);
       if (problem) {
         refused.set(
           nodeId,
@@ -409,11 +553,14 @@ export class V1_LegendCubeEngine implements CubeEngine {
         typable.set(nodeId, ir);
       }
     });
-    const typed = isDataProductCube
-      ? await this.typeDataProduct(model, typable)
-      : model._type === CUBE_DIRECT_MODEL_TYPE
-        ? await this.typeDirect(model, typable, false)
-        : await this.typeAll(model, typable);
+    const typed =
+      family === CubeSourceFamily.DATA_PRODUCT
+        ? await this.typeDataProduct(model, typable)
+        : family === CubeSourceFamily.INGEST
+          ? await this.typeIngest(model, typable)
+          : model._type === CUBE_DIRECT_MODEL_TYPE
+            ? await this.typeDirect(model, typable, false)
+            : await this.typeAll(model, typable);
     // in the order the lambdas were given
     return new Map(
       [...lambdas.keys()].map((nodeId) => [
@@ -448,6 +595,87 @@ export class V1_LegendCubeEngine implements CubeEngine {
       );
     }
     return this.typeOn(V1_buildCubeDataProductTypingContext(project), lambdas);
+  }
+
+  /**
+   * Types lambdas on an ingest cube: on the definitions they read, as the
+   * ingest servers serve them, with no runtime. A lambda whose data sets
+   * can't be read on the cube, or whose definition can't be fetched, fails
+   * on its own node. The open-source engine reads no ingest definition
+   */
+  private async typeIngest(
+    model: ModelContext,
+    lambdas: ReadonlyMap<NodeId, IR>,
+  ): Promise<Map<NodeId, Schema | CubeEngineError>> {
+    const typed = new Map<NodeId, Schema | CubeEngineError>();
+    if (!lambdas.size) {
+      return typed;
+    }
+    let settings: CubeIngestSettings;
+    try {
+      settings = this.ingestSettingsOf(model);
+    } catch (error) {
+      return new Map(
+        [...lambdas.keys()].map((nodeId) => [
+          nodeId,
+          toIngestError(error, CubeEngineErrorKind.COMPILE, nodeId),
+        ]),
+      );
+    }
+    const accessorsOf = new Map(
+      [...lambdas].map(([nodeId, ir]) => [
+        nodeId,
+        V1_collectCubeIngestAccessors(ir),
+      ]),
+    );
+    const checked = new Map<NodeId, IR>();
+    lambdas.forEach((ir, nodeId) => {
+      const problem = V1_checkCubeIngestAccessors(
+        accessorsOf.get(nodeId) ?? [],
+        settings,
+      );
+      if (problem) {
+        typed.set(
+          nodeId,
+          new CubeEngineError(CubeEngineErrorKind.COMPILE, problem, nodeId),
+        );
+      } else {
+        checked.set(nodeId, ir);
+      }
+    });
+    const definitions = await this.ingestDefinitionsOf(
+      V1_getCubeIngestUrns(
+        [...checked.keys()].flatMap((nodeId) => accessorsOf.get(nodeId) ?? []),
+      ),
+      settings,
+    );
+    const typable = new Map<NodeId, IR>();
+    checked.forEach((ir, nodeId) => {
+      const failure = V1_getCubeIngestUrns(accessorsOf.get(nodeId) ?? [])
+        .map((urn) => definitions.get(urn))
+        .find((read) => read instanceof CubeEngineError);
+      if (failure) {
+        typed.set(
+          nodeId,
+          toIngestError(failure, CubeEngineErrorKind.COMPILE, nodeId),
+        );
+      } else {
+        typable.set(nodeId, ir);
+      }
+    });
+    const elements = [...definitions.values()].filter(
+      (read): read is PlainObject => !(read instanceof CubeEngineError),
+    );
+    (
+      await this.typeOn(V1_buildCubeIngestTypingContext(elements), typable)
+    ).forEach((schema, nodeId) => typed.set(nodeId, schema));
+    // in the order the lambdas were given
+    return new Map(
+      [...lambdas.keys()].map((nodeId) => [
+        nodeId,
+        typed.get(nodeId) as Schema | CubeEngineError,
+      ]),
+    );
   }
 
   /**
@@ -626,31 +854,38 @@ export class V1_LegendCubeEngine implements CubeEngine {
   ): Promise<CubeResult> {
     const captureId = captureNodeOf(executionLambda);
     const startedAt = Date.now();
-    const isDataProductCube = isCubeDataProductModel(model);
-    if (!isDataProductCube && V1_hasCubeDataProductAccessor(executionLambda)) {
+    const family = familyOf(model);
+    const problem = foreignSourceProblemOf(family, executionLambda);
+    if (problem) {
       throw new CubeEngineError(
         CubeEngineErrorKind.EXECUTION,
-        DATA_PRODUCT_ONLY,
+        problem,
         captureId,
       );
     }
-    const context = isDataProductCube
-      ? await this.dataProductExecutionContext(
-          model,
-          executionLambda,
-          captureId,
-        )
-      : model._type === CUBE_DIRECT_MODEL_TYPE
-        ? await this.directExecutionContext(
+    const context =
+      family === CubeSourceFamily.DATA_PRODUCT
+        ? await this.dataProductExecutionContext(
             model,
             executionLambda,
             captureId,
-            options?.abortController,
           )
-        : model;
+        : family === CubeSourceFamily.INGEST
+          ? await this.ingestExecutionContext(model, executionLambda, captureId)
+          : model._type === CUBE_DIRECT_MODEL_TYPE
+            ? await this.directExecutionContext(
+                model,
+                executionLambda,
+                captureId,
+                options?.abortController,
+              )
+            : model;
     let text: string;
     try {
-      if (model._type !== CUBE_DIRECT_MODEL_TYPE && !isDataProductCube) {
+      if (
+        model._type !== CUBE_DIRECT_MODEL_TYPE &&
+        family === CubeSourceFamily.TABLES
+      ) {
         this.textOf(model);
       }
       const body = stringifyLosslessJSON({
@@ -734,6 +969,61 @@ export class V1_LegendCubeEngine implements CubeEngine {
       project,
       environment,
       getEffectiveCubeWarehouse(project, this.getRememberedWarehouse()),
+    );
+  }
+
+  /**
+   * The model a run on an ingest cube runs on (PLAN §6.7): the definitions it
+   * reads, as the ingest servers serve them, and a lakehouse runtime at
+   * Cube's fixed path, in the environment of the cube's class, with the
+   * cube's warehouse, else the one the viewer last picked, else the default
+   */
+  private async ingestExecutionContext(
+    model: ModelContext,
+    executionLambda: IR,
+    captureId: NodeId | undefined,
+  ): Promise<PlainObject> {
+    const settings = this.ingestSettingsOf(model, captureId);
+    const accessors = V1_collectCubeIngestAccessors(executionLambda);
+    const problem = V1_checkCubeIngestAccessors(accessors, settings);
+    if (problem) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        problem,
+        captureId,
+      );
+    }
+    const source = this.ingestDefinitions;
+    if (!source) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        NO_INGEST,
+        captureId,
+      );
+    }
+    const definitions = await this.ingestDefinitionsOf(
+      V1_getCubeIngestUrns(accessors),
+      settings,
+    );
+    const elements: PlainObject[] = [];
+    definitions.forEach((read) => {
+      if (read instanceof CubeEngineError) {
+        throw toIngestError(read, CubeEngineErrorKind.EXECUTION, captureId);
+      }
+      elements.push(read);
+    });
+    let environment: string;
+    try {
+      environment = await source.getRuntimeEnvironment(
+        settings.environmentType,
+      );
+    } catch (error) {
+      throw toIngestError(error, CubeEngineErrorKind.EXECUTION, captureId);
+    }
+    return V1_buildCubeIngestExecutionContext(
+      elements,
+      environment,
+      getEffectiveCubeWarehouse(settings, this.getRememberedWarehouse()),
     );
   }
 

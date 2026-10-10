@@ -59,7 +59,7 @@ export const getCubeWarehouseErrorHint = (
   canPickAnother: boolean,
 ): string =>
   canPickAnother
-    ? `The run couldn't use the warehouse ${warehouse}. Pick another one in a data product source's panel.`
+    ? `The run couldn't use the warehouse ${warehouse}. Pick another one in a source's panel.`
     : `The run couldn't use the warehouse ${warehouse}.`;
 
 /** A link to ask for access to an access point group in the marketplace */
