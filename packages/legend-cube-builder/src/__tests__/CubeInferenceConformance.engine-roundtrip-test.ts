@@ -149,6 +149,19 @@ const joined =
     );
   };
 
+/** Each arm's nodes, each feeding the next */
+const armConnections = (arm: readonly QueryNode[]): Connection[] =>
+  arm
+    .slice(1)
+    .map(
+      (node, index) =>
+        new Connection(
+          (arm[index] as QueryNode).id,
+          node.id,
+          node.ports[0] as string,
+        ),
+    );
+
 /**
  * relational101 through the first nodes and relational102 through the second,
  * compared by difference101 (its Left and Right) on the keys by the difference
@@ -187,19 +200,6 @@ const differenced =
       difference.id,
     );
   };
-
-/** Each arm's nodes, each feeding the next */
-const armConnections = (arm: readonly QueryNode[]): Connection[] =>
-  arm
-    .slice(1)
-    .map(
-      (node, index) =>
-        new Connection(
-          (arm[index] as QueryNode).id,
-          node.id,
-          node.ports[0] as string,
-        ),
-    );
 
 /**
  * relational101 through the first nodes and relational102 through the second,
