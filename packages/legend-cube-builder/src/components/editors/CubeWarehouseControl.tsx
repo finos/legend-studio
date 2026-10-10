@@ -16,7 +16,7 @@
 
 import type { CubeContext } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CUBE_WAREHOUSE_APPLY_TITLE,
   getCubeWarehouseErrorHint,
@@ -29,8 +29,8 @@ import {
 import { CubeButton } from '../CubeButton.js';
 
 /**
- * The warehouse a lakehouse cube runs on, edited in place: Apply, or Enter,
- * runs the cube on another one, as one undo step. Text typed but not
+ * The warehouse a lakehouse cube runs on, edited in place: Apply, Enter, or
+ * closing the node editor, runs the cube on another one, as one undo step. Text typed but not
  * applied belongs to the cube's context it was typed on; once the context
  * changes, e.g. on Undo, the control shows the cube's warehouse again.
  * Below it, after a run the warehouse failed, what to do about it
@@ -53,6 +53,25 @@ export const CubeWarehouseControl = observer(
         setDraft(undefined);
       }
     };
+    // closing the node editor applies, as for every edit (PLAN §11.8),
+    // without remembering it for the viewer's next cubes: Undo takes it back
+    const latest = useRef({ text, canApply });
+    latest.current = { text, canApply };
+    useEffect(
+      () =>
+        runtime.editorState.nodeEditor.addFlusher(
+          () => {
+            if (
+              latest.current.canApply &&
+              runtime.setWarehouse(latest.current.text, { remember: false })
+            ) {
+              setDraft(undefined);
+            }
+          },
+          { isPending: () => latest.current.canApply },
+        ),
+      [runtime],
+    );
     return (
       <>
         <span className="flex min-w-0 items-center gap-1">

@@ -28,6 +28,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import { SELECT_SOURCE_TYPE_PROMPT } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   NORTHWIND_DATABASE,
@@ -39,7 +40,10 @@ import {
   TEST__findCanvasNode,
   TEST__getCanvasNodes,
 } from '../../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseAddItem,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -78,9 +82,12 @@ const renderPage = async (
   return { result, fake };
 };
 
-/** Opens the picker from the empty page and returns the dialog */
+/**
+ * Opens the picker from the empty page straight on the Sample Data tab, as
+ * Add Items' table does, and returns the dialog
+ */
 const openPicker = async (): Promise<HTMLElement> => {
-  fireEvent.click(screen.getByText('add a table'));
+  await TEST__chooseAddItem('Relational Database Table');
   return screen.findByRole('dialog');
 };
 
@@ -240,6 +247,27 @@ describe('Cube source picker', () => {
     ).toBeDefined();
     expect(button('PROBLEM_OTHER').disabled).toBe(false);
     expect(within(tables).queryByText('PROBLEM_VIEW')).toBeNull();
+  });
+
+  test('Shows no loading bar until a source type is chosen, though the model tab left still loads', async () => {
+    const held = deferred<CubeModelOutline>();
+    await renderPage(undefined, (fake) =>
+      fake.loadModel.mockReturnValueOnce(held.promise),
+    );
+    const dialog = await openPicker();
+    expect(isBarLoading(loadingBar(dialog))).toBe(true);
+    fireEvent.click(within(dialog).getByText('Cancel'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    fireEvent.click(screen.getByText('Connect to a source'));
+    const reopened = await screen.findByRole('dialog');
+    expect(within(reopened).getByText(SELECT_SOURCE_TYPE_PROMPT)).toBeDefined();
+    const bar = loadingBar(reopened);
+    expect(isBarLoading(bar)).toBe(false);
+    fireEvent.click(within(reopened).getByRole('tab', { name: 'Sample Data' }));
+    expect(isBarLoading(bar)).toBe(true);
+    held.resolve(FAKE_NORTHWIND_OUTLINE);
+    await waitFor(() => expect(isBarLoading(bar)).toBe(false));
   });
 
   test('Filters the tables by the search text', async () => {
@@ -428,7 +456,7 @@ describe('Cube source picker', () => {
     await TEST__findCanvasNode('relational101');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
-    fireEvent.click(screen.getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const again = await screen.findByRole('dialog');
     await within(again).findByRole('list', { name: 'Tables' });
     const select = (label: string): HTMLSelectElement =>
@@ -466,7 +494,7 @@ describe('Cube source picker', () => {
         ),
       }),
     );
-    fireEvent.click(screen.getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     const tables = await within(dialog).findByRole('list', { name: 'Tables' });
     const select = (label: string): HTMLSelectElement =>
@@ -564,11 +592,7 @@ describe('Cube source picker: a model that is not bundled', () => {
         ),
       }),
     );
-    fireEvent.click(
-      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByText(
-        'Add table',
-      ),
-    );
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     await within(dialog).findByRole('list', { name: 'Tables' });
     expect(fake.loadModel).toHaveBeenCalledWith(pasted);

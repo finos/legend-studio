@@ -47,6 +47,7 @@ import {
   observable,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
+import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
@@ -102,6 +103,12 @@ const isTypingText = (): boolean => {
     (element instanceof HTMLElement && element.isContentEditable)
   );
 };
+
+/** Focus is in the node editor, whose shortcuts give it back to the node (PLAN §11.8) */
+const isFocusInNodeEditor = (): boolean =>
+  document.activeElement?.closest(
+    `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
+  ) !== null && document.activeElement !== null;
 
 /** A source Cube types again to see drift: a table, or a data product's access point */
 type RecheckedSource =
@@ -179,6 +186,9 @@ export class CubeEditorState implements CommandRegistrar {
       analysis: computed,
       emitter: computed,
       canUndo: computed,
+      hasEditsToApply: computed,
+      executeEdited: action,
+      undoEdited: action,
       isDialogOpen: computed,
       applyDocument: action,
       undo: action,
@@ -383,25 +393,70 @@ export class CubeEditorState implements CommandRegistrar {
    * The page's keyboard shortcuts, while it is open (spec §17.12). Each does
    * nothing when its button can't be used, and nothing while a Cube dialog
    * is open, since a dialog doesn't stop the app's shortcuts (user's choice,
-   * 2026-10-07). Undo leaves Ctrl+Z to a text field that has the focus.
+   * 2026-10-07), or while something opened from the node editor holds it
+   * open. Like their buttons, they finish the node editor first (PLAN §11.8):
+   * F9 runs the edited query, and Ctrl+Z undoes what finishing applied. Undo
+   * leaves Ctrl+Z to a text field that has the focus.
    */
   registerCommands(): void {
-    const { commandService, alertUnhandledError } = this.host.applicationStore;
+    const { commandService } = this.host.applicationStore;
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.EXECUTE,
       trigger: () =>
         !this.isDialogOpen &&
-        this.execution.canExecute &&
-        !this.execution.isRunning,
-      action: () => {
-        flowResult(this.execution.execute()).catch(alertUnhandledError);
-      },
+        !this.nodeEditor.isHeld &&
+        !this.execution.isRunning &&
+        (this.execution.canExecute || this.hasEditsToApply),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.executeEdited(),
+          isFocusInNodeEditor(),
+        ),
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
-      trigger: () => !this.isDialogOpen && this.canUndo && !isTypingText(),
-      action: () => this.undo(),
+      trigger: () =>
+        !this.isDialogOpen &&
+        !this.nodeEditor.isHeld &&
+        (this.canUndo || this.hasEditsToApply) &&
+        !isTypingText(),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.undoEdited(),
+          isFocusInNodeEditor(),
+        ),
     });
+  }
+
+  /** The node editor has edits that closing it would apply */
+  get hasEditsToApply(): boolean {
+    return this.nodeEditor.hasChanges && !this.readOnly;
+  }
+
+  /**
+   * Execute, as its button and F9 do (spec §17.5): finishes the node editor
+   * first, so the edits run, then runs the query if it can; runs nothing
+   * when the edits had to be dropped, since the run would not be what the
+   * user edited
+   */
+  executeEdited(): void {
+    if (!this.nodeEditor.finishApplied() || !this.execution.canExecute) {
+      return;
+    }
+    flowResult(this.execution.execute()).catch(
+      this.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * Undo, as its button and Ctrl+Z do: finishes the node editor first, then
+   * undoes the last change, which drops the edits it just applied; when the
+   * edits had to be dropped instead, that was the undo
+   */
+  undoEdited(): void {
+    if (this.nodeEditor.finishApplied()) {
+      this.undo();
+    }
   }
 
   deregisterCommands(): void {
@@ -775,6 +830,8 @@ export class CubeEditorState implements CommandRegistrar {
    * Whether a node of the type can be added: a transform, unconnected or
    * spliced in after `afterId`, when the query allows it; a source only
    * unconnected, through the source picker. Never while the cube is read-only.
+   * The low-level rule: the palette, drops and menus place nodes through
+   * `CubeAddPlacement` (PLAN §11.8).
    */
   canAddNode(type: string, afterId?: string): boolean {
     const definition = this.registry.get(type);
@@ -795,8 +852,8 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Adds a node of the type, as the palette and the context menu do (spec
-   * §17.4): a transform with its default settings, unconnected or spliced in
+   * Adds a node of the type (spec §17.4), the low-level add that
+   * `CubeAddPlacement` places for the palette, drops and menus: a transform with its default settings, unconnected or spliced in
    * after `afterId`; a source opens the source picker, which adds it once
    * the engine has typed it. Does nothing `canAddNode` refuses.
    */

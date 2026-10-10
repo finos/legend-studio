@@ -97,7 +97,7 @@ export const CubeGroupEditor = observer((props: CubeNodeEditorProps) => {
         onToggle={(name) => draft.toggleColumn(name, schema)}
         onClear={() => draft.clearColumns()}
       />
-      <ul aria-label="Aggregations" className="max-h-80 overflow-auto">
+      <ul aria-label="Aggregations">
         {draft.rows.map((row, index) => (
           <CubeAggregationRowEditor
             key={row.key}

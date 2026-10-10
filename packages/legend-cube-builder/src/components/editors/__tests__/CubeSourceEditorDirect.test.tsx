@@ -41,7 +41,6 @@ import {
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONNECTION = {
   _type: 'saved',
@@ -88,7 +87,6 @@ const renderPanel = async (
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,

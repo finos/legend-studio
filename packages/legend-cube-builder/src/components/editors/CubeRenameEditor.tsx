@@ -112,7 +112,7 @@ export const CubeRenameEditor = observer((props: CubeNodeEditorProps) => {
   const canAddRow = !readOnly && draft.rows.length < schema.columns.length;
   return (
     <div className="flex flex-col gap-2 text-base">
-      <ul aria-label="Column renames" className="max-h-80 overflow-auto">
+      <ul aria-label="Column renames">
         {draft.rows.map((row, index) => (
           <CubeRenameRowEditor
             key={row.key}

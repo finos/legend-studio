@@ -15,7 +15,6 @@
  */
 
 import { PanelLoadingIndicator } from '@finos/legend-art';
-import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { EXECUTE_SHORTCUT_LABEL } from '../../__lib__/LegendCubeCommand.js';
@@ -96,15 +95,9 @@ const CubeGridToolbar = observer(
     onToggleSql: () => void;
   }) => {
     const { editorState, showSql, onToggleSql } = props;
-    const { execution, host } = editorState;
-    const { applicationStore } = host;
+    const { execution } = editorState;
     const { result } = execution;
     const disabledReasons = execution.disabledReasons;
-    const execute = (): void => {
-      flowResult(execution.execute()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
     return (
       <div
         className="flex h-8 shrink-0 items-center gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2"
@@ -123,7 +116,8 @@ const CubeGridToolbar = observer(
                 ? `${formatDisabledReasons(disabledReasons)}\n(${EXECUTE_SHORTCUT_LABEL})`
                 : `Run the query up to the selected node (${EXECUTE_SHORTCUT_LABEL})`
             }
-            onClick={execute}
+            // the node editor's edits apply first, so they run (spec §17.5)
+            onClick={() => editorState.executeEdited()}
           >
             Execute
           </CubeButton>

@@ -67,7 +67,7 @@ export const CubeColumnChecklist = observer(
         </div>
         <ul
           aria-label={label}
-          className="max-h-60 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+          className="rounded-sm border border-[var(--color-border-subtle)]"
         >
           {schema.columns.map((column) => {
             const comparable = isSortableType(column.type);

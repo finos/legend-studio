@@ -63,7 +63,6 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -79,7 +78,6 @@ const render = async (
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -418,13 +416,26 @@ describe('Node editor panel', () => {
     ).toHaveLength(0);
   });
 
-  test('Says so when its node is removed with edits pending, the removal being the one undo step', async () => {
+  test("Applies its edits before Remove from its node's menu, as their own undo step", async () => {
     const editorState = await render(keylessJoin());
     await openPanel('join101');
     editJoinKeys();
     fireEvent.contextMenu(await TEST__findCanvasNode('join101'));
     const menu = await screen.findByRole('menu');
     fireEvent.click(within(menu).getByRole('button', { name: 'Remove' }));
+    expect(editorState.document.query.getNode('join101')).toBeUndefined();
+    expect(editorState.history).toHaveLength(2);
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    act(() => editorState.undo());
+    expect(storedJoin(editorState).leftColumns).toEqual(['CUSTOMER_ID']);
+  });
+
+  test('Says so when its node is removed underneath it with edits pending, the removal being the one undo step', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    act(() => editorState.removeNode('join101'));
     expect(editorState.document.query.getNode('join101')).toBeUndefined();
     expect(editorState.history).toHaveLength(1);
     expect(editorState.nodeEditor.notice).toBe(
@@ -604,5 +615,132 @@ describe('Node editor panel', () => {
     expect(
       within(await openPanel('filter101')).getByText('BETA'),
     ).toBeDefined();
+  });
+});
+
+/** The editor's body, which scrolls between 80px and a third of the window */
+const body = (): HTMLElement => {
+  const found = Array.from(panel().children).filter(
+    (child) =>
+      child.classList.contains('overflow-y-auto') &&
+      child.classList.contains('max-h-[33vh]'),
+  );
+  expect(found).toHaveLength(1);
+  return found[0] as HTMLElement;
+};
+
+/** The canvas's own wrapper of a node, which takes the keyboard focus */
+const nodeWrapper = (nodeId: string): HTMLElement =>
+  document.querySelector<HTMLElement>(
+    `.react-flow__node[data-id="${nodeId}"]`,
+  ) as HTMLElement;
+
+describe("Node editor's frame", () => {
+  test('Is a non-modal dialog named by its title, each word of the label capitalised', async () => {
+    await render(new CubeDocument({ context: CONTEXT, query: sliceQuery() }));
+    await openPanel('filter101');
+    const dialog = screen.getByRole('dialog', { name: 'Filter By Column' });
+    expect(dialog).toBe(panel());
+    expect(dialog.getAttribute('aria-modal')).toBe('false');
+    expect(dialog.tabIndex).toBe(-1);
+    expect(within(dialog).queryByText('Filter by Column')).toBeNull();
+    await openPanel('join101');
+    expect(screen.getByRole('dialog', { name: 'Join Another Input' })).toBe(
+      panel(),
+    );
+  });
+
+  test('Shows its problems under the scrolling body and above Apply and Cancel, and no strip once there are none', async () => {
+    await render(keylessJoin());
+    const editor = await openPanel('join101');
+    const problems = within(editor).getByRole('alert', { name: 'Problems' });
+    expect(body().contains(problems)).toBe(false);
+    // three lines at most, then it scrolls on its own
+    expect(problems.classList).toContain('max-h-[56px]');
+    expect(problems.classList).toContain('overflow-y-auto');
+    // the floating layer is no tooltip around the dialog
+    expect(editor.closest('[role="tooltip"]')).toBeNull();
+    // the title bar, the body, the problems, then Apply and Cancel
+    const parts = Array.from(editor.children);
+    expect(parts).toHaveLength(4);
+    expect(
+      within(parts[0] as HTMLElement).getByText('Join Another Input'),
+    ).toBeDefined();
+    expect(parts[1]).toBe(body());
+    expect(parts[2]).toBe(problems);
+    expect(
+      within(parts[3] as HTMLElement).getByRole('button', { name: 'Apply' }),
+    ).toBeDefined();
+    expect(
+      within(parts[3] as HTMLElement).getByRole('button', { name: 'Cancel' }),
+    ).toBeDefined();
+    editJoinKeys();
+    expect(
+      within(panel()).queryByRole('alert', { name: 'Problems' }),
+    ).toBeNull();
+    const after = Array.from(panel().children);
+    expect(after).toHaveLength(3);
+    expect(after[1]).toBe(body());
+    expect(
+      within(after[2] as HTMLElement).getByRole('button', { name: 'Apply' }),
+    ).toBeDefined();
+  });
+
+  test("Shows why an input is invalid in its body, in place of the type's editor", async () => {
+    await render(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+            new Join('join101'),
+            new Filter('filter101'),
+          ],
+          [
+            new Connection('relational101', 'join101', 'leftTds'),
+            new Connection('relational102', 'join101', 'rightTds'),
+            new Connection('join101', 'filter101', 'tds'),
+          ],
+          'filter101',
+        ),
+      }),
+    );
+    const editor = await openPanel('filter101');
+    const message = within(editor).getByRole('alert');
+    expect(message.textContent).toBe(
+      'This node depends on some invalid inputs. Please correct these first.',
+    );
+    expect(body().contains(message)).toBe(true);
+    expect(
+      within(editor).queryByRole('alert', { name: 'Problems' }),
+    ).toBeNull();
+  });
+
+  test('Shows warnings in its body', async () => {
+    await render(ordersOnly(), (fake) =>
+      fake.resolveSchemas.mockRejectedValueOnce(
+        new CubeEngineError(CubeEngineErrorKind.NETWORK, 'Engine unreachable'),
+      ),
+    );
+    const editor = await openPanel('relational101');
+    fireEvent.click(within(editor).getByText('Refresh'));
+    const warning = await within(panel()).findByRole('status');
+    expect(body().contains(warning)).toBe(true);
+  });
+
+  test('Takes the keyboard focus when Enter on a focused node opens it', async () => {
+    const editorState = await render(
+      new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
+    );
+    await TEST__findCanvasNode('join101');
+    const wrapper = nodeWrapper('join101');
+    wrapper.focus();
+    fireEvent.keyDown(wrapper, { key: 'Enter' });
+    expect(editorState.nodeEditor.nodeId).toBe('join101');
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(document.activeElement).toBe(panel());
   });
 });
