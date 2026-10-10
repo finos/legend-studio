@@ -121,10 +121,10 @@ describe('Rename editor', () => {
     await openRename();
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Column renames')]);
     expect(within(panel()).getByText(COLUMN_NAME_RULES_HINT)).toBeDefined();
-    // the rows scroll on their own, so the editor fits wherever it is shown
+    // the editor's body is its one scroller (PLAN §11.6)
     expect(
       within(panel()).getByRole('list', { name: 'Column renames' }).className,
-    ).toContain('overflow-auto');
+    ).not.toMatch(/\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u);
     pick(1, 'SHIP_COUNTRY');
     type(1, 'Ship Country');
     expect(problems()).toEqual([]);

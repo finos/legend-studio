@@ -3105,6 +3105,8 @@ over §12.2 item 1, which asked where the node editor opens:
   it is opened from the keyboard, and returns to the node when Escape, Cancel or the × closes it with the focus inside
   it (or nowhere); focus the user moved elsewhere stays there. The problems strip shows three lines, then scrolls. Its
   test id stays `NODE_EDITOR`.
+- **No footer on a source.** A source's editor has nothing to Apply or Cancel, so it has no footer: every close applies
+  the warehouse text typed in a data product's editor (M3b.7).
 - **One scroller.** The body is the editor's only scroller. Sort, Rename, Restrict and Group drop their inner caps, and
   Join's autofix list wraps long names.
 - **Wording and the last tab.**

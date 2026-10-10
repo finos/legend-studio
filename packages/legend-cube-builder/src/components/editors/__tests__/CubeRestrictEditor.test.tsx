@@ -113,8 +113,10 @@ describe('Restrict editor', () => {
     expect(items).toHaveLength(ORDERS_COLUMNS.length);
     expect(items[0]?.textContent).toContain('ORDER_ID');
     expect(items[0]?.textContent).toContain('SmallInt');
-    // the list scrolls on its own, so the editor fits wherever it is shown
-    expect(list().className).toContain('overflow-auto');
+    // the editor's body is its one scroller (PLAN §11.6)
+    expect(list().className).not.toMatch(
+      /\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u,
+    );
     fireEvent.click(checkbox('SHIP_COUNTRY'));
     fireEvent.click(checkbox('ORDER_ID'));
     expect(problems()).toEqual([]);

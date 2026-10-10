@@ -69,15 +69,18 @@ export const CubeNodeEditorPanel = observer(
     // typed but not yet stored (a filter value is stored on blur) is applied
     useEffect(
       () =>
-        nodeEditor.addFlusher(() => {
-          const focused = document.activeElement;
-          if (
-            focused instanceof HTMLElement &&
-            rootRef.current?.contains(focused)
-          ) {
-            focused.blur();
-          }
-        }),
+        nodeEditor.addFlusher(
+          () => {
+            const focused = document.activeElement;
+            if (
+              focused instanceof HTMLElement &&
+              rootRef.current?.contains(focused)
+            ) {
+              focused.blur();
+            }
+          },
+          { first: true },
+        ),
       [nodeEditor],
     );
     const { node, draft, edited } = nodeEditor;

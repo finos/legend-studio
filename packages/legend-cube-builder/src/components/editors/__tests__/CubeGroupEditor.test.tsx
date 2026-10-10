@@ -261,9 +261,13 @@ describe('Group editor', () => {
         .getAllByRole<HTMLInputElement>('checkbox')
         .some((box) => box.checked),
     ).toBe(false);
-    // both lists scroll on their own, so the editor fits wherever it is shown
-    expect(keyList().className).toContain('overflow-auto');
-    expect(aggregationList().className).toContain('overflow-auto');
+    // the editor's body is its one scroller (PLAN §11.6)
+    expect(keyList().className).not.toMatch(
+      /\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u,
+    );
+    expect(aggregationList().className).not.toMatch(
+      /\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u,
+    );
     // one blank row to start, not yet a problem
     expect(rows()).toHaveLength(1);
     expect(columnPicker(1).value).toBe('');

@@ -136,10 +136,10 @@ describe('Sort editor', () => {
     const editorState = await render(ordersSorted([]));
     await openSort();
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Sorts')]);
-    // the rows scroll on their own, so the editor fits wherever it is shown
+    // the editor's body is its one scroller (PLAN §11.6)
     expect(
       within(panel()).getByRole('list', { name: 'Sort columns' }).className,
-    ).toContain('overflow-auto');
+    ).not.toMatch(/\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u);
     expect(columnPicker(1).value).toBe('');
     expect(
       Array.from(directionPicker(1).options).map(({ text }) => text),

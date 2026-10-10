@@ -167,7 +167,7 @@ export const CubeSortEditor = observer((props: CubeNodeEditorProps) => {
   const canAddRow = !readOnly && rows.length < sortable.length;
   return (
     <div className="flex flex-col gap-2 text-base">
-      <ul aria-label="Sort columns" className="max-h-80 overflow-auto">
+      <ul aria-label="Sort columns">
         {rows.map((row, index) => (
           <CubeSortRowEditor
             key={row.key}

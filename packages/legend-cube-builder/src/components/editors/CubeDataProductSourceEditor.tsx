@@ -22,7 +22,7 @@ import { PanelLoadingIndicator } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS,
   CUBE_SNAPSHOT_VERSION_LABEL,
@@ -42,10 +42,11 @@ import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /**
- * The warehouse the cube runs on, edited in place: Apply, or Enter, runs the
- * cube on another one, as one undo step. Text typed but not applied belongs
- * to the cube's context it was typed on; once the context changes, e.g. on
- * Undo, the control shows the cube's warehouse again
+ * The warehouse the cube runs on, edited in place: Apply, Enter, or closing
+ * the node editor, runs the cube on another one, as one undo step. Text
+ * typed but not applied belongs to the cube's context it was typed on; once
+ * the context changes, e.g. on Undo, the control shows the cube's warehouse
+ * again
  */
 const CubeWarehouseControl = observer(
   (props: { runtime: CubeDataProductRuntimeState; readOnly: boolean }) => {
@@ -65,6 +66,14 @@ const CubeWarehouseControl = observer(
         setDraft(undefined);
       }
     };
+    // closing the node editor applies, as for every edit (PLAN §11.6)
+    const latestApply = useRef(apply);
+    latestApply.current = apply;
+    useEffect(
+      () =>
+        runtime.editorState.nodeEditor.addFlusher(() => latestApply.current()),
+      [runtime],
+    );
     return (
       <span className="flex min-w-0 items-center gap-1">
         <input

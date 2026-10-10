@@ -222,7 +222,7 @@ export const CubeGroupEditor = observer((props: CubeNodeEditorProps) => {
       </div>
       <ul
         aria-label={KEYS}
-        className="max-h-60 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+        className="rounded-sm border border-[var(--color-border-subtle)]"
       >
         {schema.columns.map((column) => {
           const groupable = isSortableType(column.type);
@@ -270,7 +270,7 @@ export const CubeGroupEditor = observer((props: CubeNodeEditorProps) => {
           </li>
         ))}
       </ul>
-      <ul aria-label="Aggregations" className="max-h-80 overflow-auto">
+      <ul aria-label="Aggregations">
         {draft.rows.map((row, index) => (
           <CubeGroupRowEditor
             key={row.key}

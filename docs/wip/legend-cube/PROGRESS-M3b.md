@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.6 done (the editor's frame)                                                                                                     |
+| Step   | M3b.7 done (each editor in the floating editor)                                                                                     |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -26,7 +26,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.4** The click-away and Escape
 - [x] **M3b.5** Switch over from the side panel
 - [x] **M3b.6** The editor's frame
-- [ ] **M3b.7** Each editor's sizing and edges
+- [x] **M3b.7** Each editor's sizing and edges
 - [ ] **M3b.8** One placement rule for the palette, drops and context menus
 - [ ] **M3b.9** 'Add Items ▾'
 - [ ] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
@@ -52,7 +52,8 @@ rebased ones.
 | M3b.3   | `3c70a267f` | feat: add Legend Cube's floating node editor, not yet in use       |
 | M3b.4   | `172d8cbcc` | feat: close Legend Cube's floating node editor, applying its edits |
 | M3b.5   | `d2f39ed89` | feat: float Legend Cube's node editor in place of its side panel   |
-| M3b.6   | (this one)  | feat: frame Legend Cube's floating node editor as a dialog         |
+| M3b.6   | `1e76a681a` | feat: frame Legend Cube's floating node editor as a dialog         |
+| M3b.7   | (this one)  | feat: fit each Legend Cube editor to the floating node editor      |
 
 ## Step notes
 
@@ -200,3 +201,20 @@ incompatible pairs: the strip sits between the body and the footer, inside the w
 Gates: green but for one engine test, `CubeDirectConnection`'s 'setup SQL' case, which timed out at 30s twice. The
 same test with another H2 database name passes in 56ms in the isolated copy, so the shared engine holds a stuck
 connection to `CUBE_DIRECT_BAD` (an engine restart clears it); M3b.6 doesn't touch the engine path.
+
+**M3b.7 (2026-10-09).** Each editor in the floating editor:
+
+- **One scroller.** The body is the only scroller: the Sort, Rename, Restrict and Group lists lose their own caps.
+- **Join.** Its autofix list wraps a long name instead of widening the editor.
+- **Data product warehouse.** Text typed but not applied is applied when the editor closes. Its editor has no footer, so
+  there is no Cancel.
+- **Flusher order.** The editor's blur runs before other flushers (`addFlusher(..., { first: true })`), as PLAN orders
+  them.
+
+Tests: workflow `wf_4d45cc70-ce3`. 13 of 18 mutants killed. Four survivors were caps written another way, now caught by
+a regex over the list's classes; one is equivalent (`setWarehouse` refuses blank text itself). The fix mutants are 4/4
+(`m3b-verify/m3b7-fix-mutants.json`). Browser (`check-m3b7.mjs`), at 900px and 768px:
+
+- every node type of the all-types spec, a data product access point, and H2 and DuckDB tables: 432px, nothing wider
+  than the editor;
+- no element in the body with a cap or a scroller (since the review, even one that doesn't overflow).

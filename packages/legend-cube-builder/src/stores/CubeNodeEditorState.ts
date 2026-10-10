@@ -88,8 +88,8 @@ export class CubeNodeEditorState {
   notice: string | undefined;
   /** How many dropdowns, pickers or dialogs opened from the editor hold it open */
   private holds = 0;
-  /** What commits the editor's pending input, e.g. a field's text not yet stored */
-  private readonly flushers = new Set<() => void>();
+  /** What commits the editor's pending input, e.g. a field's text not yet stored, in order */
+  private flushers: (() => void)[] = [];
 
   private readonly disposeSync: IReactionDisposer;
 
@@ -402,12 +402,15 @@ export class CubeNodeEditorState {
   /**
    * Has `finish` commit the editor's pending input first, e.g. by moving the
    * focus out of a field that stores its text on blur; returns the function
-   * that removes it
+   * that removes it. One asked to run first runs before the others: the
+   * editor's blur, so a field's text is stored before what reads it.
    */
-  addFlusher(flush: () => void): () => void {
-    this.flushers.add(flush);
+  addFlusher(flush: () => void, options?: { first?: boolean }): () => void {
+    this.flushers = options?.first
+      ? [flush, ...this.flushers]
+      : [...this.flushers, flush];
     return () => {
-      this.flushers.delete(flush);
+      this.flushers = this.flushers.filter((other) => other !== flush);
     };
   }
 

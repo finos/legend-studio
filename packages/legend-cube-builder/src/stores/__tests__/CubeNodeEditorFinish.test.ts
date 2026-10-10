@@ -153,6 +153,17 @@ describe('Finishing the node editor', () => {
     expect(state.history).toHaveLength(1);
   });
 
+  test('Runs a flusher asked to run first before the others, whenever it was added', () => {
+    const { state } = setUp();
+    state.nodeEditor.open('limit101');
+    const order: string[] = [];
+    state.nodeEditor.addFlusher(() => order.push('warehouse'));
+    state.nodeEditor.addFlusher(() => order.push('blur'), { first: true });
+    state.nodeEditor.addFlusher(() => order.push('other'));
+    state.nodeEditor.finish();
+    expect(order).toEqual(['blur', 'warehouse', 'other']);
+  });
+
   test('Applies nothing in a read-only cube, and closes', () => {
     const { state } = setUp(new CubeDocument());
     state.importDocument(limitsDocument(3), true);

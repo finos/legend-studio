@@ -516,6 +516,16 @@ describe('Join editor, renaming the columns both inputs have', () => {
   const sharedColumns = (): HTMLElement =>
     within(panel()).getByRole('list', { name: 'Columns in both inputs' });
 
+  test('Wraps each shared column rather than widening the editor', async () => {
+    await render(ordersJoinCustomers(['SHIP_COUNTRY'], ['COUNTRY']));
+    await openJoin();
+    const items = within(sharedColumns()).getAllByRole('listitem');
+    expect(items).toHaveLength(1);
+    items.forEach((item) =>
+      expect(item.classList.contains('break-all')).toBe(true),
+    );
+  });
+
   test('Puts a Rename before each input, as one undo step, and the join turns valid', async () => {
     const editorState = await render(
       ordersJoinCustomers(['SHIP_COUNTRY'], ['COUNTRY']),

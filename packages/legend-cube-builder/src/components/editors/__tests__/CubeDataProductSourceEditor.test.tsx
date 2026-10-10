@@ -145,6 +145,65 @@ describe('Source panel of a data product cube', () => {
     expect(within(panel()).queryByText(CUBE_SNAPSHOT_VERSION_LABEL)).toBeNull();
   });
 
+  test('Runs the cube on a warehouse typed but not applied when the editor closes, as one undo step', async () => {
+    const { editorState } = await renderPanel();
+    fireEvent.change(warehouseInput(), { target: { value: 'TYPED_WH' } });
+    act(() => {
+      editorState.nodeEditor.finish();
+    });
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.document.context?.model.warehouse).toBe('TYPED_WH');
+    expect(editorState.history).toHaveLength(1);
+  });
+
+  test('Changes no warehouse when the editor closes with blank text', async () => {
+    const { editorState } = await renderPanel();
+    fireEvent.change(warehouseInput(), { target: { value: '  ' } });
+    act(() => {
+      editorState.nodeEditor.finish();
+    });
+    expect(editorState.document.context?.model.warehouse).toBe('CUBE_WH');
+    expect(editorState.history).toHaveLength(0);
+  });
+
+  test('Drops a warehouse typed but not applied when the editor is cancelled', async () => {
+    const { editorState } = await renderPanel();
+    fireEvent.change(warehouseInput(), { target: { value: 'TYPED_WH' } });
+    // a source's editor has no Cancel button; cancel is what drops edits
+    act(() => editorState.nodeEditor.cancel());
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.document.context?.model.warehouse).toBe('CUBE_WH');
+    expect(editorState.history).toHaveLength(0);
+  });
+
+  test('Runs the cube on a warehouse typed but not applied when a press outside closes the editor', async () => {
+    const { editorState } = await renderPanel();
+    fireEvent.change(warehouseInput(), { target: { value: 'TYPED_WH' } });
+    act(() => {
+      document.body.dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, button: 0 }),
+      );
+    });
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.document.context?.model.warehouse).toBe('TYPED_WH');
+    expect(editorState.history).toHaveLength(1);
+  });
+
+  test('Leaves text typed in an editor since closed out of later closes', async () => {
+    const { editorState } = await renderPanel();
+    fireEvent.change(warehouseInput(), { target: { value: 'TYPED_WH' } });
+    act(() => editorState.nodeEditor.cancel());
+    fireEvent.click(await TEST__findCanvasNode('dataProductAccessPoint101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(warehouseInput().value).toBe('CUBE_WH');
+    act(() => {
+      editorState.nodeEditor.finish();
+    });
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.document.context?.model.warehouse).toBe('CUBE_WH');
+    expect(editorState.history).toHaveLength(0);
+  });
+
   test("Links the access point's group to its product's page in the marketplace", async () => {
     await renderPanel();
     expect(
