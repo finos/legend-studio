@@ -41,6 +41,7 @@ import {
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DIFFERENCE_DEFINITION,
+  EXTEND_DEFINITION,
   INGEST_DATASET_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
   DROP_DEFINITION,
@@ -66,6 +67,7 @@ import {
 import { Concat } from '../transforms/Concat.js';
 import { Partition } from '../transforms/Partition.js';
 import { Difference } from '../transforms/Difference.js';
+import { Extend } from '../transforms/Extend.js';
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
@@ -207,7 +209,7 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, then Partition
+    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
@@ -222,6 +224,7 @@ describe(unitTest('Node registry'), () => {
       JOIN_DEFINITION,
       DIFFERENCE_DEFINITION,
       PARTITION_DEFINITION,
+      EXTEND_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('group')).toBe(GROUP_DEFINITION);
@@ -231,6 +234,7 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     expect(registry.get('difference')).toBe(DIFFERENCE_DEFINITION);
     expect(registry.get('partition')).toBe(PARTITION_DEFINITION);
+    expect(registry.get('extend')).toBe(EXTEND_DEFINITION);
     // a window is the only node a run binds with a let (PLAN §8.6)
     expect(
       registry.transforms
@@ -264,6 +268,19 @@ describe(unitTest('Node registry'), () => {
     expect(group.id).toBe('group101');
     expect(group.columns).toEqual([]);
     expect(group.aggregations).toEqual([]);
+  });
+
+  test('Creates an extend with no column yet, and nothing typed', () => {
+    expect(EXTEND_DEFINITION.kind).toBe('transform');
+    expect(EXTEND_DEFINITION.type).toBe('extend');
+    expect(EXTEND_DEFINITION.label).toBe('Extend Columns');
+    expect(EXTEND_DEFINITION.icon).toBe('extend');
+    expect(EXTEND_DEFINITION.beta).toBe(false);
+    expect(EXTEND_DEFINITION.isolationBoundary).toBe(undefined);
+    const node = EXTEND_DEFINITION.create('extend101');
+    expect(node).toBeInstanceOf(Extend);
+    expect(node.columns).toEqual([]);
+    expect(node.typing.kind).toBe('unresolved');
   });
 
   test('Creates a difference with no key and no difference column yet', () => {

@@ -19,7 +19,6 @@ import {
   Connection,
   createNodeRegistry,
   Extend,
-  EXTEND_DEFINITION,
   type ExtendColumn,
   getExtendSignature,
   type JsonObject,
@@ -43,13 +42,7 @@ import {
   readCubeExtendTyping,
 } from '../CubeExtendTyping.js';
 
-const registry = (): NodeRegistry => {
-  const result = createNodeRegistry();
-  if (!result.get(EXTEND_DEFINITION.type)) {
-    result.register(EXTEND_DEFINITION);
-  }
-  return result;
-};
+const registry = (): NodeRegistry => createNodeRegistry();
 
 const LAMBDA: JsonObject = {
   _type: 'lambda',
@@ -116,7 +109,7 @@ describe('Extend typing answers', () => {
   test('Names the first column whose chain fails, with its error', () => {
     const failure = new CubeEngineError(
       CubeEngineErrorKind.COMPILE,
-      "The column 'NOPE' can't be found\nmore",
+      "The column 'NOPE' can't be found - Context:[Processing return type]\nmore",
       'extend101',
     );
     const { typing, error } = readCubeExtendTyping(

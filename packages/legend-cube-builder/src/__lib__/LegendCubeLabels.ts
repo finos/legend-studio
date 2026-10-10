@@ -275,6 +275,30 @@ export const DIFFERENCE_EDITOR_NOTES = [
   'A difference column needs the same number type in both inputs; the difference of integers is an Integer, of floats a Float, and of decimals a Number.',
 ];
 
+/** What the Extend editor says about its expressions (PLAN §11.7) */
+export const EXTEND_EDITOR_NOTES = [
+  'Write each expression as a lambda of one row, such as x | $x.PRICE * $x.QTY: $x.PRICE reads the column PRICE. A column can use the new columns above it.',
+  'A column that can be empty needs ->toOne() before arithmetic, such as $x.QTY->toOne() * 2; an empty value still gives an empty result. Every new column can be empty.',
+  "Validate (F10) checks the expressions with the engine, types them, and plans them for this cube's database: some functions type, but not every database runs them.",
+];
+
+/** Why the Extend editor's Apply waits (PLAN §11.7) */
+export const EXTEND_APPLY_DISABLED_REASON = Object.freeze({
+  NOT_VALIDATED: 'Validate the expressions first (F10)',
+  VALIDATING: 'Validating the expressions',
+});
+
+/** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
+export const EXTEND_TO_ONE_HINT =
+  'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.';
+
+/** The problem a database refusing an Extend's plan gives (PLAN §11.7) */
+export const getExtendPlanProblem = (
+  databaseType: string | undefined,
+  detail: string,
+): string =>
+  `${databaseType ? `${databaseType} can't run it` : "The database can't run it"}: ${detail}`;
+
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';

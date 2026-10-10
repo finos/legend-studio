@@ -22,7 +22,6 @@ import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import {
   createNodeRegistry,
-  EXTEND_DEFINITION,
   type NodeRegistry,
 } from '../../nodes/NodeRegistry.js';
 import {
@@ -44,14 +43,7 @@ const COLUMNS = [
   column('QTY', `${P}Int`, true),
 ];
 
-/** The default registry, with Extend until the builder registers it (M6.8) */
-const registry = (): NodeRegistry => {
-  const result = createNodeRegistry();
-  if (!result.get(EXTEND_DEFINITION.type)) {
-    result.register(EXTEND_DEFINITION);
-  }
-  return result;
-};
+const registry = (): NodeRegistry => createNodeRegistry();
 
 /** `x | $x.<of> * 2` */
 const doubled = (of: string): JsonObject => ({

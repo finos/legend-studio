@@ -19,7 +19,6 @@ import {
   buildSchemasAndValidity,
   createNodeRegistry,
   Extend,
-  EXTEND_DEFINITION,
   type ExtendColumn,
   type ModelContext,
   type NodeRegistry,
@@ -82,14 +81,7 @@ beforeEach(() => {
   ({ engine } = V1_createEngineBackedCubeEngine());
 });
 
-/** The default registry, with Extend until the builder registers it (M6.8) */
-const registry = (): NodeRegistry => {
-  const result = createNodeRegistry();
-  if (!result.get(EXTEND_DEFINITION.type)) {
-    result.register(EXTEND_DEFINITION);
-  }
-  return result;
-};
+const registry = (): NodeRegistry => createNodeRegistry();
 
 /** ORDERS, restricted to a few columns, then the nodes */
 const orders = async (...nodes: QueryNode[]): Promise<Query> => {

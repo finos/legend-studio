@@ -19,6 +19,7 @@ import {
   Difference,
   Distinct,
   Drop,
+  Extend,
   Filter,
   Group,
   Join,
@@ -34,6 +35,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeConcatDraft } from './CubeConcatDraft.js';
 import { CubeDifferenceDraft } from './CubeDifferenceDraft.js';
+import { CubeExtendDraft } from './CubeExtendDraft.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeGroupDraft } from './CubeGroupDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
@@ -80,6 +82,11 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   [
     Partition.TYPE,
     (node) => new CubePartitionDraft(guaranteeType(node, Partition)),
+  ],
+  [
+    Extend.TYPE,
+    (node, editorState) =>
+      new CubeExtendDraft(guaranteeType(node, Extend), editorState),
   ],
 ]);
 

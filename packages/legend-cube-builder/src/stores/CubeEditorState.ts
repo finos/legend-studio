@@ -85,6 +85,7 @@ import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
+import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
 import {
   buildCubeExtendTypingLambdas,
   isSameCubeExtendTyping,
@@ -568,6 +569,25 @@ export class CubeEditorState implements CommandRegistrar {
           () => this.executeEdited(),
           isFocusInNodeEditor(),
         ),
+    });
+    // F10 in the Extend editor (PLAN §11.7)
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS,
+      trigger: () => {
+        const { draft } = this.nodeEditor;
+        return (
+          !this.isDialogOpen &&
+          !this.readOnly &&
+          draft instanceof CubeExtendDraft &&
+          !draft.validating
+        );
+      },
+      action: () => {
+        const { draft } = this.nodeEditor;
+        if (draft instanceof CubeExtendDraft) {
+          flowResult(draft.validate()).catch(alertUnhandledError);
+        }
+      },
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,

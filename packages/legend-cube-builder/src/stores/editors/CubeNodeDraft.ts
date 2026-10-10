@@ -37,6 +37,15 @@ export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
    * as no change.
    */
   abstract build(): N;
+
+  /**
+   * Why Apply waits, if it does: the panel disables it with this reason and
+   * shows it in place of the problems, e.g. an Extend whose expressions
+   * aren't validated yet (PLAN §11.7)
+   */
+  get applyDisabledReason(): string | undefined {
+    return undefined;
+  }
 }
 
 /** A node with nothing to edit in the panel, such as a source or an Unknown node */

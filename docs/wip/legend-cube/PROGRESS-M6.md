@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------------ |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10)      |
 | Engine | Local legend-engine on `localhost:6300`                                                    |
-| Step   | M6.7: Retyping in the builder                                                              |
-| Tests  | 2817 core, 1362 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
+| Step   | M6.8: The Extend editor, and registered                                                    |
+| Tests  | 2818 core, 1375 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
 
 ## Steps
 
@@ -26,7 +26,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.5** Extend in the core
 - [x] **M6.6** The engine adapter: parse, type and plan expressions
 - [x] **M6.7** Retyping in the builder
-- [ ] **M6.8** The Extend editor, and registered
+- [x] **M6.8** The Extend editor, and registered
 - [ ] **M6.9** Extend on the engine, in the conformance suite and around the databases
 - [ ] **M6.10** Guides, READMEs and the changeset
 - [ ] **M6.11** Verification and the browser rehearsal
@@ -45,7 +45,8 @@ Filled in as steps land.
 | M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine            |
 | M6.5 | `1270430ee` | feat: add Extend to Legend Cube's core                      |
 | M6.6 | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions |
-| M6.7 | (this one)  | feat: type Legend Cube's Extends in the background          |
+| M6.7 | `58b6737f8` | feat: type Legend Cube's Extends in the background          |
+| M6.8 | (this one)  | feat: add the Extend editor to Legend Cube                  |
 
 ## Notes
 
@@ -129,3 +130,19 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   or typing Extend as resolving (pulsing), the header says "typing new columns" with the loading bar, and the panel
   leaves `ERR_TYPING` out of its problems; Execute's reason names the waiting node. Not done: retyping on a model
   change within a session (the import covers a loaded cube).
+- **M6.8** (2026-10-10). Extend is registered last, after Partition (spec §7.0's order), with the spec's help text
+  and `CalculatorIcon`. `CubeExtendDraft`: a row per column, named `col_<n>` (the first name no column has), its code
+  starting `x | `; Validate (button, or F10 through a new `legend-cube.validate-expressions` command) parses each
+  changed code under the source id `<node id>:<row key>`, types the columns located (so an error is underlined in its
+  code), then plans the query up to the node for the cube's database, planning again column by column to name the one
+  that fails; each problem goes on its row, with the `->toOne()` hint after a multiplicity error, and the engine's
+  ` - Context:[…]` trail cut. Apply waits until every code is the one validated: drafts gained `applyDisabledReason`,
+  which the panel shows in place of the problems and as Apply's title; the node then holds the lambdas and their
+  typing, so it needs no retyping. `CubeExtendEditor`: rows of name, move, expand, remove and a Monaco editor
+  (legend-lego's `CodeEditor`, Pure, no gutter), the row's status (its problem, its type and "can be empty", or "Not
+  validated yet"), Add column, Validate, and the input's columns, a click writing `$x.NAME` (quoted when not an
+  identifier) at the end of the expression last used. **Deltas from PLAN §11.7:** no `$x.` completion (the column
+  list writes the access instead); the input's columns aren't inserted at the cursor but at the end. In the browser
+  (`demo/check-m68-extend.mjs`, 13 checks, `out-m68/`): the palette, the toOne() hint underlined in the code, F10,
+  a column using the one above, Apply, the rows (`SHIP_VIA × 10`, then `× 2`), Show Pure's two extends, the saved
+  spec.

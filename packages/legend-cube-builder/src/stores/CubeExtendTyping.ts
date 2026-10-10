@@ -43,6 +43,10 @@ import {
 // chain gives every type; each shorter chain, typed with it, tells which
 // column the engine fails on, since a stored lambda has no locations.
 
+/** An engine message without the compiler's ` - Context:[…]` trail, which repeats what it was doing */
+export const withoutEngineContext = (message: string): string =>
+  message.replace(/ - Context:\[[^\n]*/gu, '');
+
 /** A column to type: its name, and its lambda, located in its text or not */
 export interface CubeExtendTypingColumn {
   readonly name: string;
@@ -138,7 +142,7 @@ export const readCubeExtendTyping = (
     typing: {
       kind: 'failed',
       signature,
-      message: error.detail,
+      message: withoutEngineContext(error.detail),
       column:
         failing < 0 || error.kind === CubeEngineErrorKind.NETWORK
           ? undefined

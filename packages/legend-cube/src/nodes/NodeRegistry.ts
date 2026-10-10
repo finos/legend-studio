@@ -412,4 +412,5 @@ export const createNodeRegistry = (): NodeRegistry =>
     JOIN_DEFINITION,
     DIFFERENCE_DEFINITION,
     PARTITION_DEFINITION,
+    EXTEND_DEFINITION,
   ]);

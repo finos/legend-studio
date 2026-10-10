@@ -74,6 +74,8 @@ describe('Node editor registries', () => {
         'Compares numeric values of specified columns from two previous data sets.',
       distinct: 'Removes duplicate rows from the previous data set.',
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
+      extend:
+        'Extends outgoing data set with new columns produced by expressions.',
       filter:
         'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
       group:

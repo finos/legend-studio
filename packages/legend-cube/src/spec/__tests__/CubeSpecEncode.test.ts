@@ -3216,11 +3216,7 @@ describe(unitTest('Saved spec encoding: differences'), () => {
 });
 
 describe(unitTest('Saved spec encoding: extends'), () => {
-  /** The default registry, with Extend until the builder registers it (M6.8) */
   const REGISTRY = createNodeRegistry();
-  if (!REGISTRY.get(EXTEND_DEFINITION.type)) {
-    REGISTRY.register(EXTEND_DEFINITION);
-  }
 
   /** The saved spec of one unconnected extend, `extend101`, with these fields of its own */
   const extendSpec = (own: JsonObject): JsonObject => ({
