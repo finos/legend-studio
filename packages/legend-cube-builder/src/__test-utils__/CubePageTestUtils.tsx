@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { expect } from '@jest/globals';
 import {
   ApplicationFrameworkProvider,
   ApplicationStoreProvider,
@@ -23,10 +24,14 @@ import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test
 import type { CubeDocument } from '@finos/legend-cube';
 import {
   act,
+  fireEvent,
   type RenderResult,
   render,
+  screen,
   waitFor,
+  within,
 } from '@testing-library/react';
+import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../stores/CubeEditorState.js';
 
 /** React Flow watches the canvas with an IntersectionObserver, which jsdom lacks */
@@ -93,4 +98,34 @@ export const TEST__importDocument = async (
       throw new Error('The imported tables are still being typed');
     }
   });
+};
+
+/** The graph header's 'Add Items' trigger */
+export const TEST__getAddItemsTrigger = (): HTMLButtonElement =>
+  within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByRole(
+    'button',
+    { name: 'Add Items' },
+  );
+
+/** Opens 'Add Items' in the graph's header and returns its menu */
+export const TEST__openAddItems = async (): Promise<HTMLElement> => {
+  fireEvent.click(TEST__getAddItemsTrigger());
+  return screen.findByRole('menu');
+};
+
+/**
+ * Chooses an item of 'Add Items' by its label, as the menu shows it (e.g.
+ * 'Relational Database Table', 'Data Product (BETA)', 'Filter by Column'),
+ * and waits for the menu to close
+ */
+export const TEST__chooseAddItem = async (label: string): Promise<void> => {
+  const menu = await TEST__openAddItems();
+  fireEvent.click(within(menu).getByRole('menuitem', { name: label }));
+  await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+};
+
+/** Closes 'Add Items' without choosing an item, as Escape does */
+export const TEST__closeAddItems = async (): Promise<void> => {
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+  await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
 };

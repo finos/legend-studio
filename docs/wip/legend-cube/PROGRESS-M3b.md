@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.8 done (one placement rule)                                                                                                     |
+| Step   | M3b.9 done (Add Items)                                                                                                              |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -28,7 +28,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.6** The editor's frame
 - [x] **M3b.7** Each editor's sizing and edges
 - [x] **M3b.8** One placement rule for the palette, drops and context menus
-- [ ] **M3b.9** 'Add Items ▾'
+- [x] **M3b.9** 'Add Items ▾'
 - [ ] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
 - [ ] **M3b.11** The node tooltip
 - [ ] **M3b.12** Entry links for data product access points (can be cut)
@@ -54,7 +54,8 @@ rebased ones.
 | M3b.5   | `d2f39ed89` | feat: float Legend Cube's node editor in place of its side panel   |
 | M3b.6   | `1e76a681a` | feat: frame Legend Cube's floating node editor as a dialog         |
 | M3b.7   | `81a29d1dd` | feat: fit each Legend Cube editor to the floating node editor      |
-| M3b.8   | (this one)  | feat: add Legend Cube's steps after the selected node              |
+| M3b.8   | `9b22589e9` | feat: add Legend Cube's steps after the selected node              |
+| M3b.9   | (this one)  | feat: add Legend Cube's Add Items menu in place of Add table       |
 
 ## Step notes
 
@@ -243,3 +244,22 @@ Tests: workflow `wf_597e1ab9-673`:
   - the menus place nodes as decided;
   - an empty cube has no menu.
 - **Probe** (`probe-m3b8-editor-drop.mjs`, 7/7): a drop with the editor holding edits applies them first.
+
+**M3b.9 (2026-10-09).** 'Add Items ▾' replaces 'Add table' in the graph's header (`components/CubeAddItems.tsx`). It
+lists the palette's items: the sources the cube can take, then the transforms, placed by M3b.8's rule. The canvas's
+context menu lists the same items from the same function. A disabled source says why: `OTHER_SOURCE_KIND_TITLE`, as in
+the palette, or the source dialog's own reason. Tests open the source dialog through Add Items (`TEST__chooseAddItem`).
+
+Tests: workflow `wf_579863ba-371`, 14 of 17 mutants killed:
+
+- **The keyboard trap.** The reviewer found that the first version, built on `ControlledDropdownMenu`, trapped the
+  keyboard: no Escape, no item reachable. It is now legend-art's `DropdownMenu` with MUI menu items, as Data Cube's
+  title bar: the arrows, Enter and Escape work, and the focus goes back to the button.
+- **Tests added:** for that, for disabled reasons and titles, and that 'Add table' is gone. The fix mutants are 4/4
+  (`m3b-verify/m3b9-fix-mutants.json`).
+- **Browser** (`check-m3b9.mjs`), 27/27:
+  - the menu's items;
+  - a transform after the selected node;
+  - the table item opens the dialog;
+  - a typed Limit size is applied first;
+  - the menu sits over the floating editor.

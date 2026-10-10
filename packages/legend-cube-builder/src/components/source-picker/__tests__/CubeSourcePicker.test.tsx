@@ -39,7 +39,10 @@ import {
   TEST__findCanvasNode,
   TEST__getCanvasNodes,
 } from '../../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseAddItem,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -429,7 +432,7 @@ describe('Cube source picker', () => {
     await TEST__findCanvasNode('relational101');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
-    fireEvent.click(screen.getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const again = await screen.findByRole('dialog');
     await within(again).findByRole('list', { name: 'Tables' });
     const select = (label: string): HTMLSelectElement =>
@@ -467,7 +470,7 @@ describe('Cube source picker', () => {
         ),
       }),
     );
-    fireEvent.click(screen.getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     const tables = await within(dialog).findByRole('list', { name: 'Tables' });
     const select = (label: string): HTMLSelectElement =>
@@ -596,13 +599,10 @@ describe('Cube source picker: a pasted Pure model', () => {
       _type: 'text',
       code: PASTED,
     });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     // later picks come from the pasted model
-    fireEvent.click(
-      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByText(
-        'Add table',
-      ),
-    );
+    await TEST__chooseAddItem('Relational Database Table');
     const again = await screen.findByRole('dialog');
     const fixed = within(again).getByLabelText<HTMLSelectElement>('Model');
     expect(fixed.disabled).toBe(true);
@@ -774,11 +774,7 @@ describe('Cube source picker: a pasted Pure model', () => {
         ),
       }),
     );
-    fireEvent.click(
-      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByText(
-        'Add table',
-      ),
-    );
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     await within(dialog).findByRole('list', { name: 'Tables' });
     expect(fake.loadModel).toHaveBeenCalledWith(pasted);

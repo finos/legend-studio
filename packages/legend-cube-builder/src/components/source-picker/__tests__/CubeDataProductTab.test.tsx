@@ -21,7 +21,10 @@ import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProd
 import { UNSERVED_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__openAddItems,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import {
   createFakeCubeDataProductCatalog,
@@ -314,7 +317,7 @@ describe('Data product tab', () => {
     ).toBeNull();
   });
 
-  test('Disables Add table, saying why, on a data product cube a host without a catalog opens', async () => {
+  test("Disables Add Items' sources, saying why, on a data product cube a host without a catalog opens", async () => {
     const created = TEST__createCubeHost();
     const host = { ...created.host, dataProductCatalog: undefined };
     // imported with its context and no source yet
@@ -332,14 +335,24 @@ describe('Data product tab', () => {
       host.applicationStore,
       LEGEND_CUBE_TEST_ID.EDITOR,
     );
-    [
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Add table' }),
-      screen.getByRole<HTMLButtonElement>('button', { name: 'add a table' }),
-    ].forEach((control) => {
-      expect(control.disabled).toBe(true);
-      expect(control.title).toBe(UNSERVED_SOURCE_KIND_TITLE);
-      fireEvent.click(control);
+    const link = screen.getByRole<HTMLButtonElement>('button', {
+      name: 'add a table',
     });
+    expect(link.disabled).toBe(true);
+    expect(link.title).toBe(UNSERVED_SOURCE_KIND_TITLE);
+    fireEvent.click(link);
+
+    const menu = await TEST__openAddItems();
+    // the one source the host serves; no data product without a catalog
+    expect(
+      within(menu).queryByRole('menuitem', { name: /^Data Product/u }),
+    ).toBeNull();
+    const source = within(menu).getByRole('menuitem', {
+      name: 'Relational Database Table',
+    });
+    expect(source.getAttribute('aria-disabled')).toBe('true');
+    expect(source.title).toBe(UNSERVED_SOURCE_KIND_TITLE);
+    fireEvent.click(source);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

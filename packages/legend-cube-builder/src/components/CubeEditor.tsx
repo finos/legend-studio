@@ -36,6 +36,7 @@ import {
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import type { CubeHost } from '../stores/CubeHost.js';
+import { CubeAddItemsMenu } from './CubeAddItems.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
@@ -81,17 +82,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
             {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
           </span>
         )}
-        <CubeButton
-          title={editorState.sourcePicker.disabledReason}
-          disabled={editorState.sourcePicker.disabledReason !== undefined}
-          onClick={() => {
-            if (editorState.nodeEditor.finishApplied()) {
-              editorState.sourcePicker.open();
-            }
-          }}
-        >
-          Add table
-        </CubeButton>
+        <CubeAddItemsMenu editorState={editorState} />
         <CubeButton
           title={
             readOnly

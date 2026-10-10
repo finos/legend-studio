@@ -48,7 +48,10 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseAddItem,
+  TEST__renderInCubeApplication,
+} from '../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -254,7 +257,7 @@ describe('Cube keyboard shortcuts', () => {
       new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
     );
     fireEvent.click(await TEST__findCanvasNode('join101'), { ctrlKey: true });
-    fireEvent.click(within(graph()).getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     await within(dialog).findByRole('list', { name: 'Tables' });
     pressF9();

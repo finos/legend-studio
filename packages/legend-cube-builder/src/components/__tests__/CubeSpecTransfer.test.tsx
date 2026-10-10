@@ -49,12 +49,16 @@ import {
   waitForElementToBeRemoved,
   within,
 } from '@testing-library/react';
+import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
   TEST__getCanvasNodeTooltip,
 } from '../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__getAddItemsTrigger,
+  TEST__renderInCubeApplication,
+} from '../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -469,7 +473,11 @@ describe('Cube spec export and import, on the page', () => {
     expect(banner.textContent).toContain(
       'saved by a newer version of Legend Cube',
     );
-    expect(headerButton('Add table').disabled).toBe(true);
+    const addItems = TEST__getAddItemsTrigger();
+    expect(addItems.disabled).toBe(true);
+    expect(addItems.title).toBe(READ_ONLY_CUBE_TITLE);
+    fireEvent.click(addItems);
+    expect(screen.queryByRole('menu')).toBeNull();
     expect(headerButton('Undo').disabled).toBe(true);
     expect(headerButton('Export (dev)').disabled).toBe(true);
     expect(headerButton('Import (dev)').disabled).toBe(false);

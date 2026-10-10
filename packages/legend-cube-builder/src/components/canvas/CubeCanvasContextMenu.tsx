@@ -18,15 +18,11 @@ import {
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
-  MenuContentItemIcon,
-  MenuContentItemLabel,
 } from '@finos/legend-art';
-import type { AnyNodeDefinition } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
-import { addCubeNode, canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
-import { CubeNodeIcon } from '../CubeNodeIcon.js';
+import { CubeAddMenuItems } from '../CubeAddItems.js';
 
 /**
  * The canvas's context menu (spec §17.4): the palette, then what can be done
@@ -46,7 +42,6 @@ export const CubeCanvasContextMenu = observer(
   >(function CubeCanvasContextMenu(props, ref) {
     const { editorState, nodeId } = props;
     const { query } = editorState.document;
-    const { registry } = editorState;
     const finishing =
       (run: () => void): (() => void) =>
       () => {
@@ -54,26 +49,9 @@ export const CubeCanvasContextMenu = observer(
           run();
         }
       };
-    const paletteItem = (definition: AnyNodeDefinition): React.ReactNode => (
-      <MenuContentItem
-        key={definition.type}
-        disabled={!canAddCubeNode(editorState, definition.type, nodeId)}
-        onClick={() => addCubeNode(editorState, definition.type, nodeId)}
-      >
-        <MenuContentItemIcon>
-          <CubeNodeIcon icon={definition.icon} />
-        </MenuContentItemIcon>
-        <MenuContentItemLabel>
-          {definition.label}
-          {definition.beta ? ' (BETA)' : ''}
-        </MenuContentItemLabel>
-      </MenuContentItem>
-    );
     return (
       <MenuContent ref={ref}>
-        {editorState.offeredSources.map(paletteItem)}
-        <MenuContentDivider />
-        {registry.transforms.map(paletteItem)}
+        <CubeAddMenuItems editorState={editorState} nodeId={nodeId} />
         <MenuContentDivider />
         <MenuContentItem
           title="Execute runs the query up to this node"

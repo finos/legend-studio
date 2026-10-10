@@ -37,6 +37,11 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import { runInAction } from 'mobx';
+import {
+  OTHER_SOURCE_KIND_TITLE,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   CUSTOMERS_COLUMNS,
@@ -51,7 +56,14 @@ import {
   TEST__getCanvasNodes,
   TEST__getCanvasNodeTooltip,
 } from '../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseAddItem,
+  TEST__closeAddItems,
+  TEST__getAddItemsTrigger,
+  TEST__importDocument,
+  TEST__openAddItems,
+  TEST__renderInCubeApplication,
+} from '../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
   FAKE_NORTHWIND_OUTLINE,
@@ -62,6 +74,8 @@ import type {
   CubeResult,
 } from '../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../stores/CubeEditorState.js';
+import type { CubeHost } from '../../stores/CubeHost.js';
+import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../CubeEditor.js';
 
@@ -204,7 +218,7 @@ describe('Cube page', () => {
     fireEvent.click(toggle);
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
     // the header and the results stay the same elements: the grid keeps its state
-    expect(within(graph()).getByText('Add table')).toBeDefined();
+    expect(TEST__getAddItemsTrigger()).toBeDefined();
     expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBe(grid);
     expect(within(graph()).getByText('Show graph')).toBe(toggle);
     expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
@@ -443,16 +457,14 @@ describe('Cube page', () => {
     ]);
   });
 
-  test('Adds a second table from the header', async () => {
-    const { getByTestId, queryByText } = await renderPage(
-      withOrders(),
-      (fake) => fake.loadModel.mockResolvedValue(TWO_DATABASES),
+  test("Adds a second table from the header's Add Items", async () => {
+    const { queryByText } = await renderPage(withOrders(), (fake) =>
+      fake.loadModel.mockResolvedValue(TWO_DATABASES),
     );
-    // no empty state: the header's button is the only way in
+    // no empty state: the header's menu is the way in
     expect(queryByText(/No tables yet/u)).toBeNull();
     expect(queryByText('add a table')).toBeNull();
-    const graph = getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
-    fireEvent.click(within(graph).getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     await waitFor(() =>
       expect(within(dialog).queryByText('loading model')).toBeNull(),
@@ -490,9 +502,7 @@ describe('Cube page', () => {
     ).not.toBeNull();
     const graph = getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
     expect(loadingBarIn(graph)).toBeNull();
-    expect(
-      within(graph).getByText<HTMLButtonElement>('Add table').disabled,
-    ).toBe(false);
+    expect(TEST__getAddItemsTrigger().disabled).toBe(false);
     fireEvent.click(await TEST__findCanvasNode('join101'), {
       ctrlKey: true,
     });
@@ -500,7 +510,7 @@ describe('Cube page', () => {
       (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
     ).toBe('true');
     // the picker opens too, and closing it leaves the run going
-    fireEvent.click(within(graph).getByText('Add table'));
+    await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     expect(
       await within(dialog).findByRole('list', { name: 'Tables' }),
@@ -566,12 +576,15 @@ const ordersLimited = (): CubeDocument =>
   });
 
 /** The page, and the state it made, caught as the page registers its commands */
-const renderEditor = async (): Promise<CubeEditorState> => {
-  const { host } = TEST__createCubeHost();
+const renderEditor = async (
+  initialDocument: CubeDocument = ordersLimited(),
+  adaptHost: (host: CubeHost) => CubeHost = (host) => host,
+): Promise<CubeEditorState> => {
+  const host = adaptHost(TEST__createCubeHost().host);
   const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
   try {
     await TEST__renderInCubeApplication(
-      <CubeEditor host={host} initialDocument={ordersLimited()} />,
+      <CubeEditor host={host} initialDocument={initialDocument} />,
       host.applicationStore,
       LEGEND_CUBE_TEST_ID.EDITOR,
     );
@@ -652,10 +665,6 @@ describe('Header actions with the node editor open', () => {
       (state: CubeEditorState): boolean =>
         state.specTransfer.mode !== undefined,
     ],
-    [
-      'Add table',
-      (state: CubeEditorState): boolean => state.sourcePicker.isOpen,
-    ],
   ])(
     'Applies the floating editor before %s, clicked from the keyboard with no press first',
     async (label, opened) => {
@@ -668,6 +677,29 @@ describe('Header actions with the node editor open', () => {
       await waitFor(() => expect(opened(editorState)).toBe(true));
     },
   );
+
+  test("Applies the floating editor before Add Items' table item, clicked with no press first", async () => {
+    const editorState = await renderEditor();
+    await editLimit();
+    await TEST__chooseAddItem('Relational Database Table');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(storedSize(editorState)).toBe(5);
+    expect(historySizes(editorState)).toEqual([10]);
+    await waitFor(() => expect(editorState.sourcePicker.isOpen).toBe(true));
+  });
+
+  test("Applies the floating editor before Add Items' transform adds its node after the selected node, each its own undo step", async () => {
+    const editorState = await renderEditor();
+    await editLimit();
+    await TEST__chooseAddItem('Sort by Column');
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(storedSize(editorState)).toBe(5);
+    expect(historySizes(editorState)).toEqual([10, 5]);
+    const { query } = editorState.document;
+    expect(query.getInputIds('sort101')).toEqual(['limit101']);
+    expect(query.selected).toBe('sort101');
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+  });
 
   test('Applies the floating editor before a palette item adds its node', async () => {
     const editorState = await renderEditor();
@@ -776,5 +808,176 @@ describe('The node editor floating over the page', () => {
     // undoing the removal brings the node back with the edit applied
     fireEvent.click(within(graph).getByText('Undo'));
     expect(storedSize(editorState)).toBe(5);
+  });
+});
+
+describe("The header's Add Items", () => {
+  const TABLE = 'Relational Database Table';
+  /** The palette's transforms, in palette order */
+  const TRANSFORMS = [
+    'Sort by Column',
+    'Group by Column',
+    'Filter by Column',
+    'Restrict Columns',
+    'Rename Columns',
+    'Distinct Values',
+    'Drop first <x> rows',
+    'Take first <x> rows',
+    'Take rows <x> to <y>',
+    'Concatenate Another Input',
+    'Join Another Input',
+  ];
+
+  const slice = (): CubeDocument =>
+    new CubeDocument({ context: CONTEXT, query: sliceQuery() });
+
+  /** The menu's items, in menu order */
+  const menuItems = (menu: HTMLElement): HTMLElement[] =>
+    within(menu).getAllByRole('menuitem', { hidden: true });
+
+  test('Lists the sources the cube can take, then the transforms, as the palette does, with BETA marks', async () => {
+    await renderEditor(slice());
+    await TEST__findCanvasNode('join101');
+    const palette = screen
+      .getAllByTestId(LEGEND_CUBE_TEST_ID.PALETTE_ITEM)
+      .map((item) => item.getAttribute('aria-label'));
+    const menu = await TEST__openAddItems();
+    const items = menuItems(menu);
+    const labels = items.map((item) => item.textContent);
+    expect(labels).toEqual([TABLE, 'Data Product (BETA)', ...TRANSFORMS]);
+    expect(labels).toEqual(palette);
+    // the sources, then the transforms, apart
+    const divider = menu.querySelectorAll('.menu__divider');
+    expect(divider).toHaveLength(1);
+    expect(divider[0]?.previousElementSibling?.textContent).toBe(
+      'Data Product (BETA)',
+    );
+    expect(divider[0]?.nextElementSibling?.textContent).toBe('Sort by Column');
+    // a cube of tables takes no data product, and says why
+    const enabled = items.filter(
+      (item) => item.getAttribute('aria-disabled') !== 'true',
+    );
+    expect(enabled.map((item) => item.textContent)).toEqual([
+      TABLE,
+      ...TRANSFORMS,
+    ]);
+    expect(
+      items.find((item) => item.textContent === 'Data Product (BETA)')?.title,
+    ).toBe(OTHER_SOURCE_KIND_TITLE);
+    expect(enabled.every((item) => item.title === '')).toBe(true);
+    await TEST__closeAddItems();
+    // in place of 'Add table'
+    expect(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).queryByRole(
+        'button',
+        { name: 'Add table' },
+      ),
+    ).toBeNull();
+  });
+
+  test('Takes the keyboard: the arrows move between items, Enter adds one, Escape closes it, each giving the focus back to its button', async () => {
+    const editorState = await renderEditor(slice());
+    await TEST__findCanvasNode('join101');
+    // as a click or the keyboard leaves it, on the button
+    TEST__getAddItemsTrigger().focus();
+    let menu = await TEST__openAddItems();
+    fireEvent.keyDown(menu, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    await waitFor(() =>
+      expect(document.activeElement).toBe(TEST__getAddItemsTrigger()),
+    );
+    menu = await TEST__openAddItems();
+    await waitFor(() =>
+      expect(menu.contains(document.activeElement)).toBe(true),
+    );
+    // down the list, past the disabled Data Product item, to the first transform
+    for (
+      let presses = 0;
+      presses < 4 && document.activeElement?.textContent !== 'Sort by Column';
+      presses++
+    ) {
+      fireEvent.keyDown(document.activeElement as Element, {
+        key: 'ArrowDown',
+      });
+    }
+    expect(document.activeElement?.textContent).toBe('Sort by Column');
+    fireEvent.keyDown(document.activeElement as Element, { key: 'Enter' });
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    expect(editorState.document.query.getInputIds('sort101')).toEqual([
+      'filter101',
+    ]);
+  });
+
+  test('Lists no Data Product item on a host without a catalog', async () => {
+    await renderEditor(slice(), (host) => ({
+      ...host,
+      dataProductCatalog: undefined,
+    }));
+    const menu = await TEST__openAddItems();
+    expect(menuItems(menu).map((item) => item.textContent)).toEqual([
+      TABLE,
+      ...TRANSFORMS,
+    ]);
+    await TEST__closeAddItems();
+  });
+
+  test('Adds a transform after the selected node, spliced in, as one undo step, the new node becoming the selected one, opening no editor', async () => {
+    const editorState = await renderEditor(slice());
+    fireEvent.click(await TEST__findCanvasNode('join101'), { ctrlKey: true });
+    expect(editorState.document.query.selected).toBe('join101');
+    const historyLength = editorState.history.length;
+    await TEST__chooseAddItem('Filter by Column');
+    const { query } = editorState.document;
+    expect(query.getInputIds('filter102')).toEqual(['join101']);
+    // spliced in before the node the join fed
+    expect(query.getInputIds('filter101')).toEqual(['filter102']);
+    expect(query.getInputIds('join101')).toEqual([
+      'relational101',
+      'relational102',
+    ]);
+    expect(query.selected).toBe('filter102');
+    expect(editorState.history).toHaveLength(historyLength + 1);
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    await TEST__findCanvasNode('filter102');
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+  });
+
+  test.each<[string, () => CubeDocument | undefined]>([
+    ['an empty cube', () => undefined],
+    ['a cube of tables', slice],
+  ])(
+    "Opens the source dialog on the table tab from 'Relational Database Table' in %s, adding no node",
+    async (_cube, document) => {
+      const editorState = await renderEditor(document() ?? new CubeDocument());
+      const { query } = editorState.document;
+      // a tab open last, which the table item overrides
+      runInAction(() => {
+        editorState.sourcePicker.activeTabKey =
+          CubeSourcePickerTabKey.DATA_PRODUCT;
+      });
+      await TEST__chooseAddItem(TABLE);
+      const dialog = await screen.findByRole('dialog');
+      expect(editorState.sourcePicker.activeTabKey).toBe(
+        CubeSourcePickerTabKey.MODEL,
+      );
+      expect(
+        await within(dialog).findByRole('list', { name: 'Tables' }),
+      ).toBeDefined();
+      expect(editorState.document.query).toBe(query);
+      expect(editorState.history).toHaveLength(0);
+    },
+  );
+
+  test('Is disabled in a read-only cube, saying why, and opens no menu', async () => {
+    const editorState = await renderEditor();
+    expect(TEST__getAddItemsTrigger().title).toBe(
+      'Add a source, or a step after the selected node',
+    );
+    await TEST__importDocument(editorState, slice(), true);
+    const trigger = TEST__getAddItemsTrigger();
+    expect(trigger.disabled).toBe(true);
+    expect(trigger.title).toBe(READ_ONLY_CUBE_TITLE);
+    fireEvent.click(trigger);
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 });

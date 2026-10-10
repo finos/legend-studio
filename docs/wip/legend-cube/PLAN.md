@@ -3086,6 +3086,9 @@ over §12.2 item 1, which asked where the node editor opens:
   portal) must be one of MUI's layers or call `nodeEditor.holdOpen()`. Otherwise a press in it closes the editor.
 - **Grid quick actions while editing** (M3b.4). Sort by, Group by and Filter by are disabled while the editor holds
   edits: choosing one would apply them first, leaving the rows the menu was opened on stale.
+- **Add Items** (M3b.9). It is a menu of the palette's items (legend-art's `DropdownMenu`, as Data Cube's): the arrow
+  keys move through it, Enter adds, Escape closes it, and the focus goes back to its button. A disabled source item
+  says why (another kind of source than the cube's, or the cube's own reason); the context menu lists the same items.
 - **Header actions** (M3b.4). Show Pure, Export, Add table and a palette click apply the editor first, by keyboard
   too, as Execute and Undo do.
 - **Shortcuts.**
