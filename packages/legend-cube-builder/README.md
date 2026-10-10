@@ -75,8 +75,9 @@ builds the model each call runs on from the cube's saved model kind (`src/graph-
 ## Samples and examples
 
 The Model tab bundles three models: the Northwind fixture and two made-up, seeded samples, Sports and Trades
-(`src/stores/fixtures/`), each an in-memory H2 database filled by its setup SQL. The dialog's last tab, Examples, opens
-one of six example cubes over them (`src/stores/CubeExamples.ts`) in place of the cube, then runs it (PLAN §6.9). An
+(`src/stores/fixtures/`), each an in-memory H2 database filled by its setup SQL. The Examples dialog (the header's
+Examples button) opens one of six example cubes over them (`src/stores/CubeExamples.ts`) in place of the cube, then
+runs it, or starts a new cube on a dataset (PLAN §6.9). An
 example is built in code, so a new one needs no saved spec; add it to `CUBE_EXAMPLES`, and the engine test
 `CubeExamples.engine-roundtrip-test.ts` opens, types and runs it.
 

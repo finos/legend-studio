@@ -70,14 +70,12 @@ const DIRECT_CUBE = new CubeDocument().withContext({
   runtime: CUBE_DIRECT_RUNTIME_PATH,
 });
 
-/**
- * The keys of the source tabs, and whether each is enabled; the Examples
- * tab, always enabled, has its own tests
- */
+/** The keys of the tabs, and whether each is enabled */
 const tabsOf = (state: CubeEditorState): [string, boolean][] =>
-  state.sourcePicker.tabs
-    .filter((tab) => tab !== state.sourcePicker.examplesTab)
-    .map((tab) => [tab.key, state.sourcePicker.isTabEnabled(tab)]);
+  state.sourcePicker.tabs.map((tab) => [
+    tab.key,
+    state.sourcePicker.isTabEnabled(tab),
+  ]);
 
 describe('Source dialog tabs', () => {
   test('Offers every tab on an empty cube, opening on the one asked for, else the one open last', () => {

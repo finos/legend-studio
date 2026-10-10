@@ -61,7 +61,7 @@ import {
 
 export interface CubeExample {
   readonly id: string;
-  /** The bundled model it reads, as the Model tab names it */
+  /** The id of the dataset it reads */
   readonly dataset: string;
   readonly name: string;
   /** One line on what it shows */
@@ -70,42 +70,64 @@ export interface CubeExample {
   createDocument(): CubeDocument;
 }
 
-interface ExampleModel {
-  readonly dataset: string;
+/** A bundled model the examples read: a new cube can start on it too */
+export interface CubeExampleDataset {
+  readonly id: string;
+  readonly name: string;
+  /** One line on what it holds */
+  readonly description: string;
+  /** Its tables, as the Model tab lists them */
+  readonly tables: readonly string[];
   readonly model: ModelContext;
   readonly runtime: string;
   readonly database: string;
   readonly schema: string;
 }
 
-const NORTHWIND: ExampleModel = {
-  dataset: 'Northwind',
+const NORTHWIND: CubeExampleDataset = {
+  id: 'northwind',
+  name: 'Northwind',
+  description:
+    'A small trading company: its orders, customers, products and employees',
+  tables: ['ORDERS', 'CUSTOMERS', 'PRODUCTS', 'CATEGORIES', 'EMPLOYEES', '…'],
   model: CUBE_NORTHWIND_MODEL,
   runtime: CUBE_NORTHWIND_RUNTIME,
   database: CUBE_NORTHWIND_DATABASE,
   schema: 'NORTHWIND',
 };
-const SPORTS: ExampleModel = {
-  dataset: 'Sports',
+const SPORTS: CubeExampleDataset = {
+  id: 'sports',
+  name: 'Sports',
+  description:
+    'Made-up events of 2025 in ten sports, with viewers and attendance by region',
+  tables: ['EVENTS', 'SPORTS'],
   model: CUBE_SPORTS_MODEL,
   runtime: CUBE_SPORTS_RUNTIME,
   database: CUBE_SPORTS_DATABASE,
   schema: CUBE_SPORTS_SCHEMA,
 };
-const TRADES: ExampleModel = {
-  dataset: 'Trades',
+const TRADES: CubeExampleDataset = {
+  id: 'trades',
+  name: 'Trades',
+  description:
+    'Made-up trades of the first half of 2026 by six desks, with dollar notionals',
+  tables: ['TRADES', 'DESKS', 'INSTRUMENTS'],
   model: CUBE_TRADES_MODEL,
   runtime: CUBE_TRADES_RUNTIME,
   database: CUBE_TRADES_DATABASE,
   schema: CUBE_TRADES_SCHEMA,
 };
 
+/** The datasets, in the order the examples show them */
+export const CUBE_EXAMPLE_DATASETS: readonly CubeExampleDataset[] =
+  Object.freeze([NORTHWIND, SPORTS, TRADES]);
+
 /**
  * A cube over the model: the nodes in order, each after the one before it
  * unless the connections say otherwise, with the last one selected
  */
 const example = (
-  model: ExampleModel,
+  model: CubeExampleDataset,
   id: string,
   name: string,
   description: string,
@@ -115,7 +137,7 @@ const example = (
   },
 ): CubeExample => ({
   id,
-  dataset: model.dataset,
+  dataset: model.id,
   name,
   description,
   createDocument: () => {

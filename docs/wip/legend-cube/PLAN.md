@@ -1331,14 +1331,17 @@ To make Cube easy to demo and explore, it ships three small datasets and six exa
   master (no windows yet): top customers by orders and products in stock by category (Northwind), top watched sports
   and the most watched finals in Europe (Sports), dollar notional by desk and asset class and the largest buys (Trades; notionals are converted to dollars at fixed
   rates, column `NOTIONAL_USD`).
-- **Examples tab:** the source dialog's last tab, always enabled (it opens a whole cube, so the one-kind-of-source rule
-  doesn't apply), listing the examples by dataset; its button reads **Open**. Open replaces the cube with a new copy of
-  the example, as Import does (one undo step), waits for its tables to be typed, then runs it, unless the user has
-  moved off it. A table palette item never opens on it. The empty canvas offers "open an example" beside "add a
-  table". The dialog stays closed on a read-only cube, so its examples are reached from a new cube.
-- **Tests:** the core tests cover the list, Open, Undo, the no-run case and each example's spec round trip (under
-  the 1 MB cap) with the fake engine
-  (`CubeExamplesTabState.test.ts`, `CubeExamplesTab.test.tsx`) and the generated rows (`CubeSampleModels.test.ts`);
+- **Examples dialog** (user, 2026-10-10, replacing an Examples tab in the source dialog): an **Examples** button
+  beside **Add table**, and "open an example" on the empty canvas, open one dialog with a grid: a row per dataset, its
+  card first (icon, one line, its tables), then its two example cards (icon, one line, the example's steps as node
+  icons). An example card opens a new copy of the example in place of the cube, as Import does (one undo step), waits
+  for its tables to be typed, then runs it, unless the user has moved off it. A dataset card starts a new cube on its
+  model (one undo step) and opens the source dialog's Model tab on it, to add a first table. Both work on a read-only
+  cube too, since they replace it with an editable one. Icons: a cart (Northwind), a trophy (Sports, `TrophyIcon`, new
+  in legend-art), a bar chart (Trades).
+- **Tests:** the core tests cover the list, opening an example, Undo, the no-run case, a read-only cube, starting on a
+  dataset and each example's spec round trip (under the 1 MB cap) with the fake engine (`CubeExamplesState.test.ts`,
+  `CubeExamplesDialog.test.tsx`) and the generated rows (`CubeSampleModels.test.ts`);
   `CubeExamples.engine-roundtrip-test.ts` compiles the sample models, then opens every example on the engine, checks
   every node types as Cube infers it (Sum outputs wider, §5.7) and runs it.
 
@@ -2648,17 +2651,16 @@ Direct connection:
 Examples (§6.9):
 
 1. On a new cube, the canvas reads "No tables yet: add a table to start, or open an example." Click **open an
-   example**: the dialog opens on the **Examples** tab, listing Northwind, Sports and Trades, two examples each, and
-   **Open** is disabled until one is picked.
-2. Pick **Top watched sports** and click **Open**: the dialog closes, the cube is named after the example, its tables
-   are typed, and it runs: 10 rows, one per sport, by total viewers. **Undo** brings back the empty cube.
+   example** (or the header's **Examples** button): the Examples dialog shows a grid, a row per dataset (Northwind,
+   Sports, Trades), each with its card and two example cards, each example with its steps as icons.
+2. Click **Top watched sports**: the dialog closes, the cube is named after the example, its tables are typed, and it
+   runs: 10 rows, one per sport, by total viewers. **Undo** brings back the empty cube.
 3. Open each other example the same way: Top customers by orders (10 rows), Products in stock by category (8), Most
-   watched finals in Europe (up to 10), Notional by desk and asset class (9), Largest buys (20).
-4. On a cube with a table, open the dialog: the Examples tab is enabled beside the cube's own tab, and opening an
-   example replaces the cube (Undo brings it back).
-5. In the **Model** tab, pick **Sports (sample)** and **Trades (sample)**: their tables list, and adding one and
-   pressing **F9** gives rows.
-6. **Export (dev)** an example and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
+   watched finals in Europe (up to 10), Notional by desk and asset class (9), Largest buys (20). Each replaces the
+   cube before it.
+4. Click the **Trades** dataset card: a new cube on the Trades model, with the source dialog's Model tab open on it
+   (DESKS, INSTRUMENTS, TRADES). Add **TRADES** and press **F9**: 400 rows. **Undo** brings back the cube before.
+5. **Export (dev)** an example and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
 
 Data products:
 

@@ -36,7 +36,6 @@ import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
-import { CubeExamplesTabState } from './source-picker/CubeExamplesTabState.js';
 import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
 import {
   type CubeSourcePickerTab,
@@ -44,12 +43,10 @@ import {
 } from './source-picker/CubeSourcePickerTab.js';
 
 /**
- * The source dialog (PLAN §6.1, §6.8, §6.9): a tab per way to find a source,
- * the Model tab first, and the Examples tab last. It opens on the tab asked
- * for, or the one the cube's fixed context belongs to, which is then the
- * only source tab enabled (Examples, which opens a whole cube, stays
- * enabled); Add runs the open tab's Add and closes the dialog once the
- * source is added.
+ * The source dialog (PLAN §6.1, §6.8): a tab per way to find a source, the
+ * Model tab first. It opens on the tab asked for, or the one the cube's
+ * fixed context belongs to, which is then the only tab enabled; Add runs the
+ * open tab's Add and closes the dialog once the source is added.
  */
 export class CubeSourcePickerState {
   readonly editorState: CubeEditorState;
@@ -57,7 +54,6 @@ export class CubeSourcePickerState {
   readonly directTab: CubeDirectConnectionTabState;
   readonly dataProductTab: CubeDataProductTabState;
   readonly ingestTab: CubeIngestTabState;
-  readonly examplesTab: CubeExamplesTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -81,7 +77,6 @@ export class CubeSourcePickerState {
     this.directTab = new CubeDirectConnectionTabState(editorState);
     this.dataProductTab = new CubeDataProductTabState(editorState);
     this.ingestTab = new CubeIngestTabState(editorState);
-    this.examplesTab = new CubeExamplesTabState(editorState);
   }
 
   /** The tabs that add their own kind of source, each from its palette item */
@@ -99,7 +94,6 @@ export class CubeSourcePickerState {
       this.directTab,
       this.dataProductTab,
       this.ingestTab,
-      this.examplesTab,
     ].filter((tab) => tab.isAvailable);
   }
 
@@ -136,9 +130,7 @@ export class CubeSourcePickerState {
       return undefined;
     }
     const dedicatedTabs = [...this.dedicatedTabs.values()];
-    const tableTabs = this.tabs.filter(
-      (tab) => !dedicatedTabs.includes(tab) && tab !== this.examplesTab,
-    );
+    const tableTabs = this.tabs.filter((tab) => !dedicatedTabs.includes(tab));
     const { fixedTab } = this;
     return fixedTab
       ? tableTabs.find((tab) => tab === fixedTab)
@@ -147,15 +139,11 @@ export class CubeSourcePickerState {
 
   /**
    * A cube with a fixed context takes sources from its own tab only, and
-   * none when the host doesn't serve that tab; examples, which replace the
-   * cube, are always offered
+   * none when the host doesn't serve that tab
    */
   isTabEnabled(tab: CubeSourcePickerTab): boolean {
     return (
-      tab.isAvailable &&
-      (this.fixedTab === undefined ||
-        tab === this.fixedTab ||
-        tab === this.examplesTab)
+      tab.isAvailable && (this.fixedTab === undefined || tab === this.fixedTab)
     );
   }
 
@@ -178,9 +166,8 @@ export class CubeSourcePickerState {
   }
 
   /**
-   * Opens the dialog on the tab asked for if it is enabled, else the cube's
-   * own tab, else the one open last. Does nothing while it can't open
-   * (`disabledReason`).
+   * Opens the dialog on the cube's own tab, else the tab asked for, else the
+   * one open last. Does nothing while it can't open (`disabledReason`).
    */
   open(tabKey?: CubeSourcePickerTabKey): void {
     if (this.disabledReason !== undefined) {
@@ -188,10 +175,10 @@ export class CubeSourcePickerState {
     }
     const { fixedTab } = this;
     this.isOpen = true;
-    const asked = this.tabs.find(
-      (candidate) => candidate.key === tabKey && this.isTabEnabled(candidate),
-    );
-    const tab = asked ?? fixedTab ?? this.activeTab;
+    const tab =
+      fixedTab ??
+      this.tabs.find((candidate) => candidate.key === tabKey) ??
+      this.activeTab;
     this.activeTabKey = tab.key;
     tab.open();
   }
@@ -213,7 +200,6 @@ export class CubeSourcePickerState {
     this.directTab.close();
     this.dataProductTab.close();
     this.ingestTab.close();
-    this.examplesTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

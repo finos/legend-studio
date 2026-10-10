@@ -76,6 +76,7 @@ import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
+import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
@@ -123,6 +124,7 @@ export class CubeEditorState implements CommandRegistrar {
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
+  readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
   readonly nodeEditor: CubeNodeEditorState;
 
@@ -214,6 +216,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
+    this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
   }
@@ -369,6 +372,7 @@ export class CubeEditorState implements CommandRegistrar {
   get isDialogOpen(): boolean {
     return (
       this.sourcePicker.isOpen ||
+      this.examples.isOpen ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen
     );

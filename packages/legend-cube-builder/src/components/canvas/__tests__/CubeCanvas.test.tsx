@@ -479,12 +479,10 @@ describe('Cube canvas', () => {
     expect(state.sourcePicker.activeTab.key).toBe(CubeSourcePickerTabKey.MODEL);
     act(() => state.sourcePicker.close());
     fireEvent.click(within(canvas).getByText('open an example'));
-    expect(state.sourcePicker.activeTab.key).toBe(
-      CubeSourcePickerTabKey.EXAMPLES,
-    );
+    expect(state.examples.isOpen).toBe(true);
   });
 
-  test('Offers no table to add when an empty cube is read-only', async () => {
+  test('Offers no table to add when an empty cube is read-only, but still its examples', async () => {
     const state = await renderCanvas();
     act(() => state.importDocument(new CubeDocument(), true));
     const link = within(
@@ -495,7 +493,7 @@ describe('Cube canvas', () => {
       within(
         screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
       ).getByText<HTMLButtonElement>('open an example').disabled,
-    ).toBe(true);
+    ).toBe(false);
   });
 });
 
