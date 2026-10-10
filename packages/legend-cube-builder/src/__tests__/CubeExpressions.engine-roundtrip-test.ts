@@ -43,6 +43,7 @@ import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_L
 import {
   buildCubeExtendTypingLambdas,
   type CubeExtendTypingColumn,
+  getCubeExtendUpstream,
   readCubeExtendTyping,
 } from '../stores/CubeExtendTyping.js';
 import {
@@ -245,6 +246,79 @@ describe('Extend expressions, typed by the engine', () => {
     expect(await typesOf(['x | $x.SHIP_VIA->toOne() + 1'])).toEqual([
       'Integer',
     ]);
+  });
+});
+
+describe('Extend expressions over another Extend', () => {
+  /** ORDERS, extend101 (a: the given text), then extend102 (b = `$x.a->toUpper()`), each typed as the editor types it */
+  const typeChain = async (
+    first: string,
+  ): Promise<{
+    firstSchema: Schema;
+    second: ReturnType<typeof readCubeExtendTyping>;
+    upstream: string | undefined;
+  }> => {
+    const [a] = (await parsed(first)).stored;
+    const b = await engine.parseExpression(
+      'x | $x.a->toUpper()',
+      'extend102:0',
+    );
+    const firstExtend = new Extend('extend101', [a as ExtendColumn]);
+    const secondExtend = new Extend('extend102', [
+      { name: 'b', code: 'x | $x.a->toUpper()', lambda: b.lambda },
+    ]);
+    const query = await orders(firstExtend, secondExtend);
+    const schemasOf = (of: Query): Map<string, Schema | undefined> =>
+      new Map(buildSchemasAndValidity(of, registry().queryRules).schemas);
+    const typeIn = async (
+      of: Query,
+      extend: Extend,
+      inputId: string,
+    ): Promise<ReturnType<typeof readCubeExtendTyping>> => {
+      const columns = extend.columns.map(({ name, lambda }) => ({
+        name,
+        lambda: lambda as NonNullable<typeof lambda>,
+      }));
+      const answers = await engine.typeLambdas(
+        MODEL,
+        buildCubeExtendTypingLambdas(of, extend, columns, registry(), false),
+      );
+      return readCubeExtendTyping(
+        answers,
+        extend,
+        schemasOf(of).get(inputId) as Schema,
+        columns,
+        undefined,
+      );
+    };
+    const typedFirst = query.replace(
+      firstExtend.withTyping(
+        (await typeIn(query, firstExtend, 'restrict101')).typing,
+      ),
+    );
+    return {
+      firstSchema: schemasOf(typedFirst).get('extend101') as Schema,
+      second: await typeIn(typedFirst, secondExtend, 'extend101'),
+      upstream: getCubeExtendUpstream(
+        new QueryEmitter(typedFirst, registry()),
+        'extend102',
+        MODEL,
+      ),
+    };
+  };
+
+  test("Types differently once the Extend above drops ->toOne(), though Cube's schema is the same, and the digest of its input tells them apart", async () => {
+    const one = await typeChain('x | $x.SHIP_CITY->toOne()');
+    const maybe = await typeChain('x | $x.SHIP_CITY');
+    // Cube's schema: every new column nullable, whatever the engine says
+    expect(one.firstSchema.isIdenticalTo(maybe.firstSchema)).toBe(true);
+    expect(one.second.typing.kind).toBe('typed');
+    expect(maybe.second.typing.kind).toBe('failed');
+    expect(maybe.second.error?.firstLine).toMatch(
+      /toUpper\(Varchar\(15\)\[0\.\.1\]\)/u,
+    );
+    expect(one.upstream).toBeDefined();
+    expect(one.upstream).not.toBe(maybe.upstream);
   });
 });
 
