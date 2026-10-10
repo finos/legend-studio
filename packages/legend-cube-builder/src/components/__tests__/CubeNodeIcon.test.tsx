@@ -20,6 +20,7 @@ import {
   AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
+  CompareIcon,
   CompressIcon,
   DataCubeIcon,
   DatabaseImportIcon,
@@ -52,6 +53,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   group: DataCubeIcon.TableGroupBy,
   rename: PencilIcon,
   sort: SortIcon,
+  difference: CompareIcon,
   partition: SigmaIcon,
 };
 

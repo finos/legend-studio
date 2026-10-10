@@ -258,6 +258,22 @@ export const PARTITION_EDITOR_NOTES = [
   'Some databases, such as Postgres, SQL Server, Databricks and Trino, refuse Distinct Count and Distinct Value in a window.',
 ];
 
+/** Why a column of the Left input can't be a difference column (PLAN §11.7) */
+export const CUBE_DIFFERENCE_COLUMN_REASONS = Object.freeze({
+  JOIN_COLUMN: 'a join column',
+  NOT_NUMERIC: 'not a number',
+  NOT_IN_RIGHT: 'not in the Right input',
+  TYPE_DIFFERS: (rightType: string): string =>
+    `${rightType} in the Right input`,
+});
+
+/** What the Difference editor says about its output (spec §7.12, PLAN §11.7) */
+export const DIFFERENCE_EDITOR_NOTES = [
+  "For each difference column x, the output has x_1, the Left input's value, x_2, the Right input's value, and x_valueDifference, x_1 minus x_2.",
+  'Rows only one input has are kept, with empty values for the other input, and an empty value counts as 0 in the difference.',
+  'A difference column needs the same number type in both inputs; the difference of integers is an Integer, of floats a Float, and of decimals a Number.',
+];
+
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';

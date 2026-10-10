@@ -21,11 +21,6 @@ import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import {
-  createNodeRegistry,
-  DIFFERENCE_DEFINITION,
-  type NodeRegistry,
-} from '../../nodes/NodeRegistry.js';
-import {
   Difference,
   type DifferenceSettings,
 } from '../../nodes/transforms/Difference.js';
@@ -38,15 +33,6 @@ const P = 'meta::pure::precisePrimitives::';
 const KIND = 'meta::pure::functions::relation::JoinKind';
 const L = '#>{test::Northwind.NORTHWIND.L}#';
 const R = '#>{test::Northwind.NORTHWIND.R}#';
-
-/** The default registry, with Difference until the builder registers it (M6.3) */
-const registry = (): NodeRegistry => {
-  const result = createNodeRegistry();
-  if (!result.get(DIFFERENCE_DEFINITION.type)) {
-    result.register(DIFFERENCE_DEFINITION);
-  }
-  return result;
-};
 
 const emitIR = (
   leftColumns: SchemaColumn[],
@@ -66,7 +52,6 @@ const emitIR = (
       ],
       'difference101',
     ),
-    registry(),
   ).emitRelation('difference101');
 
 const emit = (

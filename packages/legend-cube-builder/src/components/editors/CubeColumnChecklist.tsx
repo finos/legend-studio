@@ -15,7 +15,11 @@
  */
 
 import { clsx } from '@finos/legend-art';
-import { isSortableType, type Schema } from '@finos/legend-cube';
+import {
+  isSortableType,
+  type Schema,
+  type SchemaColumn,
+} from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { getColumnTypeLabel } from '../../__lib__/LegendCubeLabels.js';
 import { CubeButton } from '../CubeButton.js';
@@ -23,8 +27,9 @@ import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
 
 /**
  * The input's columns, each ticked to pick it (a Group's keys, PLAN §11.5; a
- * Partition's columns, §11.6), with a button that unticks them all. A column
- * that can't be compared is shown but can't be ticked, with the reason; a
+ * Partition's columns, §11.6; a Difference's difference columns, §11.7), with
+ * a button that unticks them all. A column that can't be picked, by default
+ * one that can't be compared, is shown but can't be ticked, with the reason; a
  * picked column the input lacks stays listed, marked, until it is unticked.
  * The list scrolls on its own.
  */
@@ -35,7 +40,9 @@ export const CubeColumnChecklist = observer(
     schema: Schema;
     picked: readonly string[];
     /** Why a column that can't be compared can't be ticked */
-    disabledReason: string;
+    disabledReason?: string;
+    /** Why a column can't be ticked, `undefined` when it can; by default, `disabledReason` for one that can't be compared */
+    unpickableReason?: (column: SchemaColumn) => string | undefined;
     /** The title of the button that unticks every column */
     clearTitle: string;
     readOnly: boolean;
@@ -47,6 +54,8 @@ export const CubeColumnChecklist = observer(
       schema,
       picked,
       disabledReason,
+      unpickableReason = (column: SchemaColumn): string | undefined =>
+        isSortableType(column.type) ? undefined : (disabledReason ?? ''),
       clearTitle,
       readOnly,
       onToggle,
@@ -70,20 +79,21 @@ export const CubeColumnChecklist = observer(
           className="rounded-sm border border-[var(--color-border-subtle)]"
         >
           {schema.columns.map((column) => {
-            const comparable = isSortableType(column.type);
+            const reason = unpickableReason(column);
+            const pickable = reason === undefined;
             return (
               <li key={column.name}>
                 <label
                   className={clsx(
                     'flex items-center gap-2 px-1 py-0.5',
-                    !comparable && 'text-[var(--color-text-disabled)]',
+                    !pickable && 'text-[var(--color-text-disabled)]',
                   )}
                 >
                   <input
                     type="checkbox"
                     checked={picked.includes(column.name)}
                     disabled={
-                      readOnly || (!comparable && !picked.includes(column.name))
+                      readOnly || (!pickable && !picked.includes(column.name))
                     }
                     onChange={() => onToggle(column.name)}
                   />
@@ -93,7 +103,7 @@ export const CubeColumnChecklist = observer(
                   />
                   <span className="min-w-0 truncate">{column.name}</span>
                   <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                    {`${getColumnTypeLabel(column)}${comparable ? '' : ` (${disabledReason})`}`}
+                    {`${getColumnTypeLabel(column)}${pickable ? '' : ` (${reason})`}`}
                   </span>
                 </label>
               </li>

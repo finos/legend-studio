@@ -18,6 +18,7 @@ import { describe, expect, test } from '@jest/globals';
 import {
   Concat,
   createNodeRegistry,
+  Difference,
   Partition,
   SortDirection,
   UnknownNode,
@@ -30,6 +31,7 @@ import {
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeConcatDraft } from '../../../stores/editors/CubeConcatDraft.js';
+import { CubeDifferenceDraft } from '../../../stores/editors/CubeDifferenceDraft.js';
 import {
   CUBE_NODE_DRAFT_FACTORIES,
   CUBE_NODE_TYPES_WITHOUT_SETTINGS,
@@ -68,6 +70,8 @@ describe('Node editor registries', () => {
         'Sources data from a data set of a deployed ingest definition.',
       concat:
         'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
+      difference:
+        'Compares numeric values of specified columns from two previous data sets.',
       distinct: 'Removes duplicate rows from the previous data set.',
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
       filter:
@@ -132,6 +136,24 @@ describe('Node editor registries', () => {
       expect((draft as CubeConcatDraft).original).toBe(concat);
       expect((draft as CubeConcatDraft).widenTypes).toBe(widenTypes);
     });
+  });
+
+  test('Gives a Difference a draft of its join columns and difference columns (PLAN §11.7)', () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    const difference = new Difference('difference101', {
+      leftColumns: ['ORDER_ID'],
+      rightColumns: ['ORDER_ID'],
+      differenceColumns: ['FREIGHT'],
+    });
+    const draft = CUBE_NODE_DRAFT_FACTORIES.get(Difference.TYPE)?.(
+      difference,
+      state,
+    );
+    expect(draft).toBeInstanceOf(CubeDifferenceDraft);
+    const differenceDraft = draft as CubeDifferenceDraft;
+    expect(differenceDraft.original).toBe(difference);
+    expect(differenceDraft.differenceColumns).toEqual(['FREIGHT']);
+    expect(differenceDraft.build()).toBe(difference);
   });
 
   test('Gives a Partition a draft of its partition columns, sort keys and window functions (PLAN §11.6)', () => {

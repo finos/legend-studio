@@ -3121,11 +3121,7 @@ describe(unitTest('Cube document'), () => {
 });
 
 describe(unitTest('Saved spec encoding: differences'), () => {
-  /** The default registry, with Difference until the builder registers it (M6.3) */
   const REGISTRY = createNodeRegistry();
-  if (!REGISTRY.get(DIFFERENCE_DEFINITION.type)) {
-    REGISTRY.register(DIFFERENCE_DEFINITION);
-  }
 
   /** The saved spec of one unconnected difference, `difference101`, with these fields of its own */
   const differenceSpec = (own: JsonObject): JsonObject => ({

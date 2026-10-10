@@ -20,6 +20,7 @@ import {
   buildSchemasAndValidity,
   Concat,
   Connection,
+  Difference,
   Group,
   Join,
   JoinType,
@@ -1420,5 +1421,61 @@ describe("Where a Partition's column comes from", () => {
     expect(untyped('partition101', 'Ship regions')).toBe(false);
     expect(untyped('partition101', 'SHIP_COUNTRY')).toBe(false);
     expect(untyped('join101', 'REGION')).toBe(false);
+  });
+});
+
+describe("Where a Difference's column comes from", () => {
+  const P = 'meta::pure::precisePrimitives::';
+  const LAST = [
+    new SchemaColumn('ORDER_ID', PrimitiveType.get(`${P}SmallInt`), false),
+    new SchemaColumn('SHIP_VIA', PrimitiveType.get(`${P}SmallInt`), true),
+    new SchemaColumn('SHIP_CITY', PrimitiveType.get(`${P}Varchar`, [15]), true),
+  ];
+  const NOW = [
+    new SchemaColumn('ORDER_ID', PrimitiveType.get(`${P}SmallInt`), false),
+    new SchemaColumn('SHIP_VIA', PrimitiveType.get(`${P}SmallInt`), true),
+    new SchemaColumn('CARRIER', PrimitiveType.get(`${P}Varchar`, [15]), true),
+  ];
+  /** Last month's orders and this month's, compared on ORDER_ID by SHIP_VIA */
+  const query = new Query(
+    [
+      northwindTable('relational101', 'ORDERS', LAST),
+      northwindTable('relational102', 'ORDERS_ARCHIVE', NOW),
+      new Difference('difference101', {
+        leftColumns: ['ORDER_ID'],
+        rightColumns: ['ORDER_ID'],
+        differenceColumns: ['SHIP_VIA'],
+      }),
+    ],
+    [
+      new Connection('relational101', 'difference101', 'tds1'),
+      new Connection('relational102', 'difference101', 'tds2'),
+    ],
+    'difference101',
+  );
+  const analysis = buildSchemasAndValidity(query);
+  const originsOf = (column: string): string[] =>
+    findColumnOrigins(query, analysis, 'difference101', column).map(
+      ({ source, column: name }) => `${source.id}.${name}`,
+    );
+
+  test('The difference is valid, so its output has every column asked about', () => {
+    expect(analysis.validity.get('difference101')).toEqual([]);
+  });
+
+  test("Follows x_1 to the Left input's x and x_2 to the Right input's, and the merged key to both", () => {
+    expect(originsOf('SHIP_VIA_1')).toEqual(['relational101.SHIP_VIA']);
+    expect(originsOf('SHIP_VIA_2')).toEqual(['relational102.SHIP_VIA']);
+    expect(originsOf('ORDER_ID')).toEqual([
+      'relational101.ORDER_ID',
+      'relational102.ORDER_ID',
+    ]);
+    expect(originsOf('SHIP_CITY')).toEqual(['relational101.SHIP_CITY']);
+    expect(originsOf('CARRIER')).toEqual(['relational102.CARRIER']);
+  });
+
+  test("Finds no table for a difference, which is no column's value, or for a column it doesn't have", () => {
+    expect(originsOf('SHIP_VIA_valueDifference')).toEqual([]);
+    expect(originsOf('SHIP_VIA')).toEqual([]);
   });
 });

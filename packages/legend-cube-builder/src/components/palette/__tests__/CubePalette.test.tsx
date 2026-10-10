@@ -61,6 +61,7 @@ const LIMIT = 'Take first <x> rows';
 const SLICE = 'Take rows <x> to <y>';
 const CONCAT = 'Concatenate Another Input';
 const JOIN = 'Join Another Input';
+const DIFFERENCE = 'Compare Column Values';
 const PARTITION = 'Apply Window Functions';
 
 const render = async (
@@ -182,6 +183,7 @@ describe('Cube palette', () => {
       SLICE,
       CONCAT,
       JOIN,
+      DIFFERENCE,
       PARTITION,
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();

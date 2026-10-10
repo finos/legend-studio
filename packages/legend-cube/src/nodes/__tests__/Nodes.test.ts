@@ -40,6 +40,7 @@ import {
   CONCAT_DEFINITION,
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
+  DIFFERENCE_DEFINITION,
   INGEST_DATASET_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
   DROP_DEFINITION,
@@ -64,6 +65,7 @@ import {
 } from '../sources/RelationalTableSource.js';
 import { Concat } from '../transforms/Concat.js';
 import { Partition } from '../transforms/Partition.js';
+import { Difference } from '../transforms/Difference.js';
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
@@ -205,7 +207,7 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, then Partition
+    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, then Partition
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
@@ -218,6 +220,7 @@ describe(unitTest('Node registry'), () => {
       SLICE_DEFINITION,
       CONCAT_DEFINITION,
       JOIN_DEFINITION,
+      DIFFERENCE_DEFINITION,
       PARTITION_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
@@ -226,6 +229,7 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('concat')).toBe(CONCAT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
+    expect(registry.get('difference')).toBe(DIFFERENCE_DEFINITION);
     expect(registry.get('partition')).toBe(PARTITION_DEFINITION);
     // a window is the only node a run binds with a let (PLAN §8.6)
     expect(
@@ -260,6 +264,20 @@ describe(unitTest('Node registry'), () => {
     expect(group.id).toBe('group101');
     expect(group.columns).toEqual([]);
     expect(group.aggregations).toEqual([]);
+  });
+
+  test('Creates a difference with no key and no difference column yet', () => {
+    expect(DIFFERENCE_DEFINITION.kind).toBe('transform');
+    expect(DIFFERENCE_DEFINITION.type).toBe('difference');
+    expect(DIFFERENCE_DEFINITION.label).toBe('Compare Column Values');
+    expect(DIFFERENCE_DEFINITION.icon).toBe('difference');
+    expect(DIFFERENCE_DEFINITION.beta).toBe(false);
+    expect(DIFFERENCE_DEFINITION.isolationBoundary).toBe(undefined);
+    const node = DIFFERENCE_DEFINITION.create('difference101');
+    expect(node).toBeInstanceOf(Difference);
+    expect(node.id).toBe('difference101');
+    expect(node.leftColumns).toEqual([]);
+    expect(node.differenceColumns).toEqual([]);
   });
 
   test('Creates a partition with no partition column, sort or window function yet', () => {

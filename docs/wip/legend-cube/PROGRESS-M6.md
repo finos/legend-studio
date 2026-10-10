@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------- |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10) |
 | Engine | Local legend-engine on `localhost:6300`                                               |
-| Step   | M6.2: Difference in the core                                                          |
-| Tests  | 2795 core                                                                             |
+| Step   | M6.3: Difference in the builder, and registered                                       |
+| Tests  | 2796 core, 1349 builder (core group)                                                  |
 
 ## Steps
 
@@ -21,7 +21,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 - [x] **M6.1** The settled decisions (PLAN §11.7) and this file
 - [x] **M6.2** Difference in the core
-- [ ] **M6.3** Difference in the builder, and registered
+- [x] **M6.3** Difference in the builder, and registered
 - [ ] **M6.4** Difference on the engine, around the databases and in the browser
 - [ ] **M6.5** Extend in the core
 - [ ] **M6.6** The engine adapter: parse, render, type and plan expressions
@@ -41,6 +41,7 @@ Filled in as steps land.
 | ---- | ----------- | ------------------------------------------------ |
 | M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend) |
 | M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core       |
+| M6.3 | (this one)  | feat: add Difference to Legend Cube's builder    |
 
 ## Notes
 
@@ -58,3 +59,13 @@ Filled in as steps land.
   Join's keys do, where the spec says "Difference column". The schema filters the difference columns out of
   `buildJoinSchemaColumns`' output rather than adding PLAN §2's `exclude` set (to fold in M6.13). New role
   `EmitRole.DIFFERENCE`.
+- **M6.3** (2026-10-10). Registered between Join and Partition, with the spec's help text and `CompareIcon`. Join's
+  key-pair rows are shared (`CubeJoinKeyPairs.ts`, `CubeJoinKeyRows.tsx`), and `CubeColumnChecklist` takes a reason per
+  column (`unpickableReason`). `CubeDifferenceDraft`: Join's pairs, and difference columns kept in a saved order until
+  the picks change, then in the Left input's order. `CubeDifferenceEditor`: Swap Inputs, the pairs, and the Left
+  input's columns, each one that can't be a difference column saying why (a join column, not a number, not in the
+  Right input, or another type there), then three notes. `findColumnOrigins` follows `x_1` and `x_2` to their side's
+  `x`; a difference comes from none. The Join editor's "Rename them" autofix isn't offered for a Difference (its
+  duplicate columns are listed in its problems). `operations.cube.json` gains a Difference of two ORDERS on
+  ORDER_ID and EMPLOYEE_ID, by SHIP_VIA and FREIGHT. The patch changeset now names Difference; Extend joins it later.
+  Conformance cases move to M6.4, with the engine.

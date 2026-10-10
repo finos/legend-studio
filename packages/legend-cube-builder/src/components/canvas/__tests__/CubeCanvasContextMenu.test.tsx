@@ -69,6 +69,7 @@ const TRANSFORMS = [
   'Take rows <x> to <y>',
   'Concatenate Another Input',
   'Join Another Input',
+  'Compare Column Values',
   'Apply Window Functions',
 ];
 const TABLE = 'Relational Database Table';
