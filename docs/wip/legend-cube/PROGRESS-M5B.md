@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                    |
-| ------ | ---------------------------------------------------------------------------------------- |
-| Branch | `cube-m5b`, stacked on `cube-m6` (#5662, not merged yet); draft PR #5665 into `cube-dev` |
-| Engine | Local legend-engine on `localhost:6300`                                                  |
-| Step   | M5b.7: the demo video, sent; next M5b.8 (the ClickHouse choice is the user's)            |
-| Tests  | 2833 core, 1420 builder (core group)                                                     |
+| Item   | State                                                                                                                        |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m5b`, stacked on `cube-m6` (#5662, rebased onto `cube-dev` with #5657, not merged yet); draft PR #5665 into `cube-dev` |
+| Engine | Local legend-engine on `localhost:6300`                                                                                      |
+| Step   | M5b.8: the plan folded and renumbered §11.9; rebased onto the floating node editor; the final gates                          |
+| Tests  | 2833 core, 1618 builder (core group, with #5657's)                                                                           |
 
 ## Steps
 
@@ -34,14 +34,17 @@ Filled in as steps land.
 
 | Step  | Commit      | Subject                                                                                                 |
 | ----- | ----------- | ------------------------------------------------------------------------------------------------------- |
-| M5b.1 | `0b4bfb89e` | docs: settle Legend Cube M5b (more window functions)                                                    |
-| M5b.2 | `dfc86d46b` | feat: add Lag, Lead, NTile, Percent Rank, Cumulative Distribution, First and Last to Legend Cube's core |
-| M5b.3 | `f1622f395` | feat: offer the new window functions in Legend Cube's Partition editor                                  |
-| M5b.4 | `3be7bf081` | test: run Legend Cube's new window functions on the engine and every database                           |
-| M5b.5 | `1ad274e36` | docs: cover Legend Cube's new window functions in its guides                                            |
-| M5b.6 | `99cff424d` | fix: show the error border of Legend Cube's invalid fields under Legend Query's theme                   |
-| M5b.6 | `d8a84f1fd` | fix: report Legend Cube's window function problems one at a time, and keep invalid settings             |
-| M5b.7 | (this one)  | docs: record Legend Cube M5b's demo video                                                               |
+| M5b.1 | `890819853` | docs: settle Legend Cube M5b (more window functions)                                                    |
+| M5b.2 | `083786106` | feat: add Lag, Lead, NTile, Percent Rank, Cumulative Distribution, First and Last to Legend Cube's core |
+| M5b.3 | `3eed1be6a` | feat: offer the new window functions in Legend Cube's Partition editor                                  |
+| M5b.4 | `d10790dee` | test: run Legend Cube's new window functions on the engine and every database                           |
+| M5b.5 | `e69f9d7dd` | docs: cover Legend Cube's new window functions in its guides                                            |
+| M5b.6 | `9b3b70779` | fix: show the error border of Legend Cube's invalid fields under Legend Query's theme                   |
+| M5b.6 | `195101e69` | fix: report Legend Cube's window function problems one at a time, and keep invalid settings             |
+| M5b.7 | `5fc892ac5` | docs: record Legend Cube M5b's demo video                                                               |
+| M5b.8 | `00c8c6c69` | docs: fold Legend Cube M5b's supersessions into its plan                                                |
+| M5b.8 | `7e20ee709` | docs: number Legend Cube M5b's plan section 11.9, after M3b's 11.8                                      |
+| M5b.8 | (this one)  | docs: record Legend Cube M5b's rebase onto the floating node editor                                     |
 
 ## Notes
 
