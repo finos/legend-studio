@@ -134,7 +134,8 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   the undo snapshots (`replaceOutsideHistory`, now shared with the source re-check), so an answer for a node the user
   changed meanwhile is dropped and the new node gets its own round. A failure is stored, so it isn't retried until
   something changes. On import every Extend is typed once more, as sources are re-checked, and a typing that comes
-  back the same leaves the node alone (`isSameCubeExtendTyping`). Pending is not invalid: the canvas shows a waiting
+  back the same leaves the node alone (`isSameCubeExtendTyping`; from M6.11, a loaded typing without a digest is
+  replaced once, to record it). Pending is not invalid: the canvas shows a waiting
   or typing Extend as resolving (pulsing), the header says "typing new columns" with the loading bar, and the panel
   leaves `ERR_TYPING` out of its problems; Execute's reason names the waiting node. Not done: retyping on a model
   change within a session (the import covers a loaded cube); M6.11 does it.
@@ -196,7 +197,11 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
     literals; an unknown key in a typed column's type makes the node Unknown.
   - **Tests the reviewers asked for:** a column type in the signature, the first of three columns failing to plan,
     the error marker reaching the code editor, and F10.
-  - **Docs:** PLAN §11.7's retyping (no debounce; the digest; offline) and closing; the builder guide's source ids.
+  - **Docs:** PLAN §11.7's retyping (no debounce; the digest; offline) and closing; the builder guide's source ids;
+    then (after M6.13) both guides on the digest, the editor's rule, Execute's gate, snapshot predicates, `follow`
+    and the kept-open panel, and a test that the digest is the same whichever node is selected.
+  - **The digest's cost:** it covers the whole emitted relation, filter values included, so any edit above an Extend
+    makes it, and the nodes after it, wait for one engine call, Execute too.
   - **Gates** on the fixed branch: `check:ci` and `lint:ci` pass; 2820 core, 1413 builder and 247 Query tests; the
     builder's engine group 746 of 750, the 4 failures the direct-connection "setup SQL fails" cases that time out on
     the local engine, as before. In the browser (evidence `demo/`): the rehearsal 57 of 57, Difference 12 of 12,

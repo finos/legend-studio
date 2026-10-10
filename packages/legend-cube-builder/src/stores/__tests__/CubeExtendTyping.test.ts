@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
   Connection,
   createNodeRegistry,
   ERR_TYPING,
@@ -25,12 +26,14 @@ import {
   type JsonObject,
   type ModelContext,
   type NodeRegistry,
+  Partition,
   PrimitiveType,
   printIR,
   Query,
   QueryEmitter,
   Schema,
   SchemaColumn,
+  SortDirection,
 } from '@finos/legend-cube';
 import {
   northwindTable,
@@ -276,6 +279,45 @@ describe('Extend typing upstreams', () => {
         CUBE_NORTHWIND_MODEL,
       ),
     ).toBeUndefined();
+  });
+
+  test('Digests the input the same whichever node runs, a window above it included', () => {
+    // a run binds a Partition that isn't the one run with a let; typing never does
+    const partition = new Partition(
+      'partition101',
+      ['SHIP_COUNTRY'],
+      [{ column: 'ORDER_DATE', direction: SortDirection.ASC }],
+      [
+        {
+          column: 'ORDER_DATE',
+          function: AggregationFunction.MIN,
+          name: 'First order',
+        },
+      ],
+    );
+    const nodes = [
+      northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+      partition,
+      new Extend('extend101', [COLUMNS[0] as ExtendColumn]),
+    ];
+    const query = new Query(
+      nodes,
+      [
+        new Connection('relational101', 'partition101', 'tds'),
+        new Connection('partition101', 'extend101', 'tds'),
+      ],
+      'extend101',
+    );
+    const upstreamOf = (of: Query): string | undefined =>
+      getCubeExtendUpstream(
+        new QueryEmitter(of, registry()),
+        'extend101',
+        CUBE_NORTHWIND_MODEL,
+      );
+    const upstream = upstreamOf(query);
+    expect(upstream).toBeDefined();
+    expect(upstreamOf(query.select('relational101'))).toBe(upstream);
+    expect(upstreamOf(query.select('partition101'))).toBe(upstream);
   });
 
   test('Makes an Extend typed for another input wait, but not one typed for this input or recorded without it', () => {

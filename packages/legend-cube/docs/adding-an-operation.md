@@ -87,7 +87,11 @@ its own settings (`getExtendSignature`, over `stableJsonText` and `hashText` in 
 signature isn't the current one reads as `unresolved`, and an unresolved node fails validation with `ERR_TYPING`
 only, which `isTypingError` tells apart: the UI shows the node pending, not invalid, and the builder types it in the
 background (its guide). `schematize` reads the types from the typing. Save the last good typing with the node, so a
-loaded cube has its schema at once, but never a failure, which is typed again.
+loaded cube has its schema at once, but never a failure, which is typed again. A typing may also carry `upstream`, a
+digest of what the host gave the engine for the input: the core never reads or saves it, and the builder compares it,
+since the engine sees more of the input than Cube's schema shows. Give the node per-item checks the editor can run
+before asking the engine (Extend's `getColumnProblems` and `getTypeProblems`), so a problem Cube can tell lands on its
+row.
 
 The expression itself is the engine's JSON for its text, without source information, its number literals as their
 digit strings (a saved spec is read with `JSON.parse`), and the text as the user typed it, so the cube shows it
