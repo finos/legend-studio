@@ -162,7 +162,7 @@ describe('Canvas context menu', () => {
 
     // nothing to add after
     act(() => editorState.importDocument(new CubeDocument(), false));
-    fireEvent.contextMenu(screen.getByText(/No tables yet/u));
+    fireEvent.contextMenu(screen.getByText(/to start a new one/u));
     fireEvent.contextMenu(canvasPane());
     expect(screen.queryByRole('menu')).toBeNull();
   });

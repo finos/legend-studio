@@ -263,18 +263,17 @@ export const CubeCanvas = observer(
           {editorState.document.query.isEmpty ? (
             <div className="flex h-full items-center justify-center p-4 text-base text-[var(--color-text-secondary)]">
               <span>
-                No tables yet:{' '}
                 <button
                   className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
                   title={editorState.sourcePicker.disabledReason}
                   disabled={
                     editorState.sourcePicker.disabledReason !== undefined
                   }
-                  onClick={() => editorState.sourcePicker.open()}
+                  onClick={() => editorState.sourcePicker.openToChoose()}
                 >
-                  add a table
+                  Connect to a source
                 </button>{' '}
-                to start.
+                to start a new one.
               </span>
             </div>
           ) : (

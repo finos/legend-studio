@@ -47,5 +47,5 @@ test("Opens the Cube page at /query/cube through Query's own router, with no fla
   );
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
   expect(page.textContent).toContain('Unsaved Query');
-  expect(page.textContent).toContain('No tables yet');
+  expect(page.textContent).toContain('Connect to a source to start a new one.');
 });

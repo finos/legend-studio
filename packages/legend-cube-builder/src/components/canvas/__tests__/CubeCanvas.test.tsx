@@ -38,6 +38,7 @@ import {
   within,
 } from '@testing-library/react';
 import { runInAction } from 'mobx';
+import { READ_ONLY_CUBE_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -58,11 +59,17 @@ import {
 } from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
+  createCubeDirectModel,
+  CUBE_DIRECT_RUNTIME_PATH,
+} from '../../../graph-manager/CubeDirectConnection.js';
+import {
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import type { CubeHost } from '../../../stores/CubeHost.js';
 import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
 import {
@@ -76,9 +83,11 @@ const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const renderCanvas = async (
   document?: CubeDocument,
   prepare?: (fake: FakeCubeEngine) => void,
+  adaptHost: (host: CubeHost) => CubeHost = (host) => host,
 ): Promise<CubeEditorState> => {
-  const { host, fake } = TEST__createCubeHost();
-  prepare?.(fake);
+  const created = TEST__createCubeHost();
+  prepare?.(created.fake);
+  const host = adaptHost(created.host);
   const editorState = new CubeEditorState(host, document);
   await TEST__renderInCubeApplication(
     <div style={{ width: 800, height: 400 }}>
@@ -468,22 +477,53 @@ describe('Cube canvas', () => {
     ).toBe(false);
   });
 
-  test('Offers to add a table when the cube is empty', async () => {
+  test('Offers to connect to a source when the cube is empty, opening the dialog with no tab chosen', async () => {
     const state = await renderCanvas();
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     const canvas = screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS);
-    expect(canvas.textContent).toBe('No tables yet: add a table to start.');
-    fireEvent.click(within(canvas).getByText('add a table'));
+    expect(canvas.textContent).toBe('Connect to a source to start a new one.');
+    fireEvent.click(within(canvas).getByText('Connect to a source'));
     expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.isChoosingTab).toBe(true);
   });
 
-  test('Offers no table to add when an empty cube is read-only', async () => {
+  test('Opens an empty cube with a fixed context on its own tab from the link', async () => {
+    const state = await renderCanvas(
+      new CubeDocument().withContext({
+        model: createCubeDirectModel({ _type: 'saved' }),
+        runtime: CUBE_DIRECT_RUNTIME_PATH,
+      }),
+    );
+    fireEvent.click(screen.getByText('Connect to a source'));
+    expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.isChoosingTab).toBe(false);
+    expect(state.sourcePicker.activeTab.key).toBe(
+      CubeSourcePickerTabKey.DIRECT_CONNECTION,
+    );
+  });
+
+  test('Opens on the only tab from the link when the host offers only models', async () => {
+    const state = await renderCanvas(undefined, undefined, (host) => ({
+      ...host,
+      connectionExplorer: undefined,
+      dataProductCatalog: undefined,
+    }));
+    fireEvent.click(screen.getByText('Connect to a source'));
+    expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.isChoosingTab).toBe(false);
+    expect(state.sourcePicker.activeTab.key).toBe(CubeSourcePickerTabKey.MODEL);
+  });
+
+  test('Offers no source to connect to when an empty cube is read-only', async () => {
     const state = await renderCanvas();
     act(() => state.importDocument(new CubeDocument(), true));
     const link = within(
       screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
-    ).getByText<HTMLButtonElement>('add a table');
+    ).getByText<HTMLButtonElement>('Connect to a source');
     expect(link.disabled).toBe(true);
+    expect(link.title).toBe(READ_ONLY_CUBE_TITLE);
+    fireEvent.click(link);
+    expect(state.sourcePicker.isOpen).toBe(false);
   });
 });
 

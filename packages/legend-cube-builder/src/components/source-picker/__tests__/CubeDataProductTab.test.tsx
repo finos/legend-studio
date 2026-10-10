@@ -310,7 +310,7 @@ describe('Data product tab', () => {
   test('Has no Data Product item or tab on a host without a catalog', async () => {
     await renderPage((host) => ({ ...host, dataProductCatalog: undefined }));
     expect(screen.queryByRole('button', { name: /^Data Product/u })).toBeNull();
-    fireEvent.click(screen.getByText('add a table'));
+    fireEvent.click(screen.getByText('Connect to a source'));
     const dialog = await screen.findByRole('dialog');
     expect(
       within(dialog).queryByRole('tab', { name: 'Data product' }),
@@ -336,7 +336,7 @@ describe('Data product tab', () => {
       LEGEND_CUBE_TEST_ID.EDITOR,
     );
     const link = screen.getByRole<HTMLButtonElement>('button', {
-      name: 'add a table',
+      name: 'Connect to a source',
     });
     expect(link.disabled).toBe(true);
     expect(link.title).toBe(UNSERVED_SOURCE_KIND_TITLE);

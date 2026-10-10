@@ -13,7 +13,7 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
-| Step   | M3b.9 done (Add Items)                                                                                                              |
+| Step   | M3b.10 done (the source dialog's no-tab state)                                                                                      |
 | Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
@@ -29,7 +29,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.7** Each editor's sizing and edges
 - [x] **M3b.8** One placement rule for the palette, drops and context menus
 - [x] **M3b.9** 'Add Items ▾'
-- [ ] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
+- [x] **M3b.10** The source dialog's no-tab state and the empty-canvas wording
 - [ ] **M3b.11** The node tooltip
 - [ ] **M3b.12** Entry links for data product access points (can be cut)
 - [ ] **M3b.13** Docs, guides and changeset
@@ -44,18 +44,19 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 Filled in as steps land. Rebased on finos master `5e424277b` (#5656, CSV into DuckDB) after M3b.5: the hashes are the
 rebased ones.
 
-| Step    | Commit      | Subject                                                            |
-| ------- | ----------- | ------------------------------------------------------------------ |
-| Answers | `12c8782f1` | docs: record answers to Legend Cube's UI questions                 |
-| M3b.1   | `455e3376e` | docs: settle Legend Cube M3b (canvas and layout)                   |
-| M3b.2   | `1b7277d0a` | feat: apply Legend Cube's node editor before any other action      |
-| M3b.3   | `3c70a267f` | feat: add Legend Cube's floating node editor, not yet in use       |
-| M3b.4   | `172d8cbcc` | feat: close Legend Cube's floating node editor, applying its edits |
-| M3b.5   | `d2f39ed89` | feat: float Legend Cube's node editor in place of its side panel   |
-| M3b.6   | `1e76a681a` | feat: frame Legend Cube's floating node editor as a dialog         |
-| M3b.7   | `81a29d1dd` | feat: fit each Legend Cube editor to the floating node editor      |
-| M3b.8   | `9b22589e9` | feat: add Legend Cube's steps after the selected node              |
-| M3b.9   | (this one)  | feat: add Legend Cube's Add Items menu in place of Add table       |
+| Step    | Commit      | Subject                                                                  |
+| ------- | ----------- | ------------------------------------------------------------------------ |
+| Answers | `12c8782f1` | docs: record answers to Legend Cube's UI questions                       |
+| M3b.1   | `455e3376e` | docs: settle Legend Cube M3b (canvas and layout)                         |
+| M3b.2   | `1b7277d0a` | feat: apply Legend Cube's node editor before any other action            |
+| M3b.3   | `3c70a267f` | feat: add Legend Cube's floating node editor, not yet in use             |
+| M3b.4   | `172d8cbcc` | feat: close Legend Cube's floating node editor, applying its edits       |
+| M3b.5   | `d2f39ed89` | feat: float Legend Cube's node editor in place of its side panel         |
+| M3b.6   | `1e76a681a` | feat: frame Legend Cube's floating node editor as a dialog               |
+| M3b.7   | `81a29d1dd` | feat: fit each Legend Cube editor to the floating node editor            |
+| M3b.8   | `9b22589e9` | feat: add Legend Cube's steps after the selected node                    |
+| M3b.9   | `1c1bc7469` | feat: add Legend Cube's Add Items menu in place of Add table             |
+| M3b.10  | (this one)  | feat: open Legend Cube's source dialog with no tab from the empty canvas |
 
 ## Step notes
 
@@ -263,3 +264,12 @@ Tests: workflow `wf_579863ba-371`, 14 of 17 mutants killed:
   - the table item opens the dialog;
   - a typed Limit size is applied first;
   - the menu sits over the floating editor.
+
+**M3b.10 (2026-10-09).** The empty canvas reads "Connect to a source to start a new one." Its link opens the source
+dialog with no tab chosen, prompting "Select source type above" (U4(b)); Add stays disabled until a tab is chosen. A cube
+with a fixed context, or a host serving one tab, opens on that tab. The picker change is a few small hunks in
+`CubeSourcePickerState` (the sources session's file): `isChoosingTab` and `openToChoose()`.
+
+Tests: workflow `wf_d0f07822-b4f`; 21 of 21 mutants killed. The tests that opened the dialog through the old link now
+choose the tab they need. Browser (`check-m3b10.mjs`), 29/29. Noted, not changed: legend-art's `ModalFooterButton`
+looks the same disabled as enabled (older than this step).

@@ -53,5 +53,5 @@ test('Opens the Cube page at /cube, empty', async () => {
   // the page loads lazily
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
   expect(page.textContent).toContain('Unsaved Query');
-  expect(page.textContent).toContain('No tables yet');
+  expect(page.textContent).toContain('Connect to a source to start a new one.');
 });

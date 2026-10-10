@@ -247,3 +247,6 @@ export const COLUMN_NAME_RULES_HINT =
  */
 export const toEditorTitle = (label: string): string =>
   label.replace(/(?<=^|\s)[a-z]/gu, (letter) => letter.toUpperCase());
+
+/** The source dialog's body until a tab is chosen, opened from the empty canvas (spec §17.8, U4(b)) */
+export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';

@@ -181,7 +181,7 @@ describe('Cube page', () => {
     expect(within(graph).getByText('Unsaved Query')).toBeDefined();
     expect(
       within(getByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).getByText(
-        /No tables yet/u,
+        'Connect to a source',
       ),
     ).toBeDefined();
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
@@ -462,8 +462,7 @@ describe('Cube page', () => {
       fake.loadModel.mockResolvedValue(TWO_DATABASES),
     );
     // no empty state: the header's menu is the way in
-    expect(queryByText(/No tables yet/u)).toBeNull();
-    expect(queryByText('add a table')).toBeNull();
+    expect(queryByText('Connect to a source')).toBeNull();
     await TEST__chooseAddItem('Relational Database Table');
     const dialog = await screen.findByRole('dialog');
     await waitFor(() =>
@@ -487,6 +486,74 @@ describe('Cube page', () => {
       ),
     ).toBeDefined();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  test("Connects an empty page to a source from the canvas's link, choosing the tab first", async () => {
+    await renderPage();
+    fireEvent.click(screen.getByText('Connect to a source'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Select source type above')).toBeDefined();
+    expect(
+      within(dialog)
+        .getAllByRole('tab')
+        .filter((tab) => tab.getAttribute('aria-selected') === 'true'),
+    ).toHaveLength(0);
+    expect(within(dialog).queryByRole('list', { name: 'Tables' })).toBeNull();
+    const add = within(dialog).getByRole<HTMLButtonElement>('button', {
+      name: 'Add',
+    });
+    expect(add.disabled).toBe(true);
+    const model = within(dialog).getByRole('tab', { name: 'Model' });
+    fireEvent.click(model);
+    expect(model.getAttribute('aria-selected')).toBe('true');
+    expect(within(dialog).queryByText('Select source type above')).toBeNull();
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.click(within(tables).getByText('ORDERS'));
+    fireEvent.click(add);
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(
+      within(await TEST__findCanvasNode('relational101')).getByText(
+        'Table "ORDERS" from schema "NORTHWIND"',
+      ),
+    ).toBeDefined();
+  });
+
+  test("Opens 'Add Items' Relational Database Table straight on the table tab used last, after the link was left without a choice", async () => {
+    await renderPage();
+    const selectedTab = (dialog: HTMLElement): string | undefined =>
+      within(dialog)
+        .getAllByRole('tab')
+        .find((tab) => tab.getAttribute('aria-selected') === 'true')
+        ?.textContent ?? undefined;
+    const cancel = async (dialog: HTMLElement): Promise<void> => {
+      fireEvent.click(within(dialog).getByText('Cancel'));
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    };
+
+    // the link, left with no tab chosen
+    fireEvent.click(screen.getByText('Connect to a source'));
+    await cancel(await screen.findByRole('dialog'));
+    await TEST__chooseAddItem('Relational Database Table');
+    let dialog = await screen.findByRole('dialog');
+    expect(within(dialog).queryByText('Select source type above')).toBeNull();
+    expect(selectedTab(dialog)).toBe('Model');
+    expect(
+      await within(dialog).findByRole('list', { name: 'Tables' }),
+    ).toBeDefined();
+    await cancel(dialog);
+
+    // a tab chosen from the link is the one the item opens next
+    fireEvent.click(screen.getByText('Connect to a source'));
+    dialog = await screen.findByRole('dialog');
+    fireEvent.click(
+      within(dialog).getByRole('tab', { name: 'Database connection' }),
+    );
+    await cancel(dialog);
+    await TEST__chooseAddItem('Relational Database Table');
+    dialog = await screen.findByRole('dialog');
+    expect(within(dialog).queryByText('Select source type above')).toBeNull();
+    expect(selectedTab(dialog)).toBe('Database connection');
+    expect(within(dialog).getByLabelText('Setup SQL')).toBeDefined();
   });
 
   test('Keeps the query usable while a query runs', async () => {
@@ -524,11 +591,12 @@ describe('Cube page', () => {
     const { getByTestId } = await renderPage(undefined, (fake) =>
       fake.resolveSchemas.mockReturnValueOnce(new Promise(() => undefined)),
     );
-    fireEvent.click(screen.getByText('add a table'));
+    fireEvent.click(screen.getByText('Connect to a source'));
     const dialog = await screen.findByRole('dialog');
     // the picker only adds tables: the page stays as it is behind it
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).toBeDefined();
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
+    fireEvent.click(within(dialog).getByRole('tab', { name: 'Model' }));
     const tables = await within(dialog).findByRole('list', { name: 'Tables' });
     fireEvent.click(within(tables).getByText('ORDERS'));
     fireEvent.click(within(dialog).getByText('Add'));

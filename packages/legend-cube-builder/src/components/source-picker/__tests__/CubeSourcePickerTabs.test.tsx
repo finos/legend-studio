@@ -22,9 +22,13 @@ import {
   SchemaColumn,
 } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { SELECT_SOURCE_TYPE_PROMPT } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseAddItem,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import {
   createCubeDirectModel,
@@ -56,10 +60,14 @@ const renderPage = async (
   return created;
 };
 
+/** Opens the dialog from the empty canvas's link */
 const openDialog = async (): Promise<HTMLElement> => {
-  fireEvent.click(screen.getByText('add a table'));
+  fireEvent.click(screen.getByText('Connect to a source'));
   return screen.findByRole('dialog');
 };
+
+const addButton = (dialog: HTMLElement): HTMLButtonElement =>
+  within(dialog).getByRole<HTMLButtonElement>('button', { name: 'Add' });
 
 const tabStates = (dialog: HTMLElement): [string, boolean, boolean][] =>
   within(dialog)
@@ -75,9 +83,34 @@ beforeEach(() => {
 });
 
 describe('Source dialog', () => {
-  test('Opens on the Model tab of an "Add a source" dialog, with a Database connection tab beside it', async () => {
+  test('Opens from the empty canvas with no source type chosen: no tab selected, a prompt to choose one, and Add disabled', async () => {
     await renderPage();
     const dialog = await openDialog();
+    expect(within(dialog).getByText('Add a source')).toBeDefined();
+    expect(tabStates(dialog)).toEqual([
+      ['Model', false, false],
+      ['Database connection', false, false],
+      ['Data product', false, false],
+    ]);
+    expect(within(dialog).getByText(SELECT_SOURCE_TYPE_PROMPT)).toBeDefined();
+    expect(within(dialog).queryByLabelText('Model')).toBeNull();
+    expect(addButton(dialog).disabled).toBe(true);
+
+    fireEvent.click(within(dialog).getByRole('tab', { name: 'Model' }));
+    expect(tabStates(dialog)).toEqual([
+      ['Model', true, false],
+      ['Database connection', false, false],
+      ['Data product', false, false],
+    ]);
+    expect(within(dialog).queryByText(SELECT_SOURCE_TYPE_PROMPT)).toBeNull();
+    expect(within(dialog).getByLabelText('Model')).toBeDefined();
+    await within(dialog).findByRole('list', { name: 'Tables' });
+  });
+
+  test('Opens Add Items\' table on the Model tab of an "Add a source" dialog, with a Database connection tab beside it', async () => {
+    await renderPage();
+    await TEST__chooseAddItem('Relational Database Table');
+    const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Add a source')).toBeDefined();
     expect(tabStates(dialog)).toEqual([
       ['Model', true, false],
@@ -103,9 +136,7 @@ describe('Source dialog', () => {
     fireEvent.click(
       within(dialog).getByRole('tab', { name: 'Database connection' }),
     );
-    const add = within(dialog).getByRole<HTMLButtonElement>('button', {
-      name: 'Add',
-    });
+    const add = addButton(dialog);
     expect(add.disabled).toBe(true);
     fireEvent.click(
       within(dialog).getByRole('button', { name: 'Test connection' }),
@@ -133,6 +164,7 @@ describe('Source dialog', () => {
       ['Database connection', true, false],
       ['Data product', false, true],
     ]);
+    expect(within(dialog).queryByText(SELECT_SOURCE_TYPE_PROMPT)).toBeNull();
   });
 
   test('Shows no tabs when the host offers only models', async () => {
@@ -143,6 +175,7 @@ describe('Source dialog', () => {
     }));
     const dialog = await openDialog();
     expect(within(dialog).queryByRole('tablist')).toBeNull();
+    expect(within(dialog).queryByText(SELECT_SOURCE_TYPE_PROMPT)).toBeNull();
     expect(within(dialog).getByLabelText('Model')).toBeDefined();
   });
 });
