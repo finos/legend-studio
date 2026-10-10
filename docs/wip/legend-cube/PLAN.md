@@ -2819,6 +2819,7 @@ project with a Database and a runtime.
 | M3b  | Canvas and layout                          | The node editor floats below its node (§12.2 item 1, moved here); finishing an edit; where an added step lands; palette click and 'Add Items ▾'; the source dialog's entry points; the node tooltip; entry links for data product access points (§11.8)                                                                                                                                                                                                                                                                                                              |
 | M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family) and Count rows, `aggregate()` for global groups, the grid's Group by; Concat with precise-strict schema equality, Convert types (a type-only cast within numbers, strings or dates) and the Rename and Restrict autofixes; a conformance suite comparing local inference with `lambdaRelationType` for every node type, exact on nullability but for each case's declared wider columns (§11.5)                                                                                          |
 | M5   | Partition (windows)                        | Partition (`Apply Window Functions`): the functions a Group offers, Count rows included, plus Rank, Dense Rank and Row Number, which need a sort; D5's default frame, with no frame setting; windowed Distinct Count and Distinct Value natively; the array form, aggregates and ranks in separate extends, and `size()` counts; §8.6 `let` isolation of every Partition that isn't the capture; the **dialect harness**: plans pinned on the 17 window database types (`WINDOW_SHAPES`); runs on H2 and DuckDB, and a composition suite against a reference (§11.6) |
+| M5b  | More window functions                      | Lag and Lead (an offset), NTile (buckets), Percent Rank, Cumulative Distribution, First and Last (the partition's, Last over the reversed sort), all needing a sort; planned on the 17 window types (§11.8)                                                                                                                                                                                                                                                                                                                                                          |
 | M6   | Difference and Extend                      | Difference (`Compare Column Values`) with the spec's rows and native types, a FULL join; Extend (`Extend Columns`) edited inline, a row per column with a Monaco editor, its text a full lambda (`x \| …`), each column able to use the ones above; JSON-canonical storage with the text; typing by the engine over the cube's model, in the background, again when the input the engine sees changes; Validate (F10) with plan-time checks (§11.7)                                                                                                                  |
 | M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                            |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -3947,6 +3948,102 @@ changed):
   - §17.4: a transform drop is after the selected node (U3);
   - §17.5: the floating editor, with Cube's Apply/Cancel footer and problems list;
   - §17.15: queryId stays in the address bar (U9).
+
+### 11.8 M5b: More window functions
+
+M5b adds window functions to Partition (`Apply Window Functions`), which M5 built (§11.6). It is built on the branch
+`cube-m5b`, stacked on `cube-m6` because #5662 isn't merged yet and both change the window and editor code, and lands
+in a PR into `cube-dev`, rebased onto it once #5662 merges. Its status is in [PROGRESS-M5B.md](PROGRESS-M5B.md).
+Requirements: the probes under `m5b-requirements/` in the local evidence folder, run on the local engine, and M5's
+`m5-requirements/partition-node/t5-others`: ✅ where a probe ran, 💭 where only a plan was made or it is reasoned.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M5b** (user, 2026-10-10, all on the recommendation):
+
+1. **Seven functions:** Lag, Lead, NTile, Percent Rank, Cumulative Distribution, First and Last. Not Nth: "the
+   partition's nth row" needs a whole-partition frame, which the engine writes only with a partition column
+   (`over(~[], [sorts], rows(…))` is an NPE ✅, and there is no `over([sorts], rows(…))` ✅), and SQL Server has no
+   `nth_value` 💭, though the engine plans it there ✅.
+2. **Lag and Lead take an offset**, 1 by default, and nothing else: the first rows (Lag) or the last rows (Lead) of
+   each partition are empty, as in SQL ✅.
+3. **Last is the partition's last row** in the window's sort order, the same on every row, the mirror of First. It is
+   written as First over the reversed sort, which gives the values `last_value` gives over a whole-partition frame ✅,
+   needs no frame and works with no partition column ✅. The engine's own `last()` with no frame is the current row ✅.
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **Every new function needs a sort**, as Rank does: without one, H2 refuses Lag, NTile, Percent Rank and Cumulative
+  Distribution (`ORDER BY NULL` ✅), and First and Last would take any row. The message is M5's
+  `Aggregation function "<a>" requires at least one sort column.`
+- **Columns and types:** Lag, Lead, First and Last take a column of any type a window can partition by
+  (`isSortableType`: not VARIANT or a type Cube doesn't know), and give that column's type, nullable ✅
+  (`Double[0..1]`, `Varchar(15)[0..1]`, `StrictDate[0..1]`). NTile is Integer, Percent Rank and Cumulative
+  Distribution are Float, none of them nullable ✅. They take no column.
+- **NTile takes a bucket count**, 4 by default (quartiles). More buckets than rows gives each row its own ✅.
+- **Offsets and bucket counts** are whole numbers of at least 1, checked by Cube (two new messages). The engine has no
+  `offset()` a query can call ✅, so Lag and Lead are the only way back or ahead.
+- **Names:** saved as `Lag`, `Lead`, `NTile`, `PercentRank`, `CumulativeDistribution`, `First` and `Last`; shown as
+  `Lag`, `Lead`, `NTile`, `Percent Rank`, `Cumulative Distribution`, `First` and `Last`. Auto-names as M5's:
+  `<column> Lag` for a function of a column, the shown name for the others. A Group never offers them (§11.5 Q4).
+- **Emitted** in M5's two extends and a third:
+  - the aggregates in the first, as before; an aggregate can't share an extend with the new functions
+    (ClassCastException ✅, as with the ranks);
+  - the rank functions, NTile, Percent Rank, Cumulative Distribution, Lag, Lead and First in the second:
+    `$p->ntile($r, n)`, `$p->percentRank($w, $r)`, `$p->cumulativeDistribution($w, $r)`, `$p->lag($r, n).c`,
+    `$p->lead($r, n).c` and `$p->first($w, $r).c`. One extend holding them all runs on H2 ✅ and plans on the 17 window
+    types ✅;
+  - Last in a third, over the window with every sort reversed: `->extend(over(~[p…], [~s->descending()]),
+~[n: {p,w,r | $p->first($w, $r).c}])`. It plans on the 17 window types ✅.
+    Then, as before, a `select` when the functions are listed in another order. No frame is written (D5).
+- **Databases:** every function plans on the 17 window types ✅; Spanner, Presto and Composite refuse any window, as in
+  M5 ✅. ClickHouse writes Lag and Lead as `lagInFrame` and `leadInFrame` over a whole-partition frame ✅, its own
+  correct form; DuckDB writes First as `first(…)` ✅.
+- **Ties:** Lag, Lead, First and Last take any of the rows tied on the sort, as Row Number does (§11.6 Q2); the editor
+  says so.
+- **Saved shape:** a window function's entry gains `offset` (Lag and Lead) or `buckets` (NTile), a JSON number, always
+  written for those functions; a missing one reads as its default. An offset or a bucket count on a function that
+  takes none, or one that isn't a whole number of at least 1, is kept and reported. An unknown key still makes an
+  Unknown node (§10.3).
+
+**Engine facts** (probes under `m5b-requirements/`):
+
+| Fact                                                                                                                                          |     | Probe                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
+| Lag and Lead, offsets 1 and 2, of a number, a text and a date: values and types as SQL's; the edges empty                                     | ✅  | `p1-semantics.out` A1           |
+| `offset()` can't be called; Lag, NTile, Percent Rank and Cumulative Distribution with no sort fail on H2                                      | ✅  | `p1-semantics.out` A2, A3, B2   |
+| NTile 4, 10 and 1, Percent Rank and Cumulative Distribution: values as SQL's, types Integer and Float, never empty                            | ✅  | `p1-semantics.out` B1, B3       |
+| With no frame, First is the partition's first row, Last the current row, Nth empty until the nth; over a whole frame, each is the partition's | ✅  | `p1-semantics.out` C1, C2       |
+| A rank, NTile, Percent Rank, Lag and First share an extend; an aggregate can't share one with them                                            | ✅  | `p1-semantics.out` D1–D5        |
+| First over the reversed sort gives `last_value` over a whole frame; a frame can't hold a rank or a Lag; no frame without a partition column   | ✅  | `p3-frames.out` F1, F5–F7       |
+| Each function alone, and the shape Cube writes, plan on the 17 window types                                                                   | ✅  | `p2-plans.out`, `p4-plans*.out` |
+| Values on DuckDB, and on H2 against a reference                                                                                               | 💭  | M5b.4                           |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                                                                           | Done when                                                                  |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| M5b.1 | This subsection and PROGRESS-M5B.md (docs only)                                                                                                                       | Committed and pushed; a draft PR into `cube-dev`                           |
+| M5b.2 | The core: the seven functions, their types, validation (sort, offset, buckets), auto-names, the emitter's three extends, the codec's `offset` and `buckets`, messages | Every message tested; `printIR` shows the three extends; codec round trips |
+| M5b.3 | The builder: the window function rows with an Offset or Buckets field, the column lists, help text and notes, samples                                                 | Editor and draft tests pass                                                |
+| M5b.4 | On the engine: values on H2 and DuckDB, the plan-only test's window shapes on the 17 types, the composition suite's reference, conformance cases                      | Engine, plan-only, composition and conformance tests pass                  |
+| M5b.5 | Guides, testing.md, the patch changeset                                                                                                                               | `yarn check:ci` passes                                                     |
+| M5b.6 | Verification (reviewers and a skeptic per finding) and a browser rehearsal                                                                                            | Every finding fixed or recorded; the rehearsal passes                      |
+| M5b.7 | A demo video of the new functions (§11.3), key frames checked against their captions                                                                                  | The video plays every new function, each caption true on screen; sent      |
+| M5b.8 | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                                                                          | The plan consistent; the PR ready                                          |
+
+**Risks and open gaps:**
+
+- Values on databases other than H2 and DuckDB are plans only 💭; an older database may refuse a function it plans
+  (an error, never wrong rows), as with M5's windowed Distinct Count.
+- Nth, a default value for Lag and Lead, and frames stay out; each is a follow-up if users ask.
+
+**Supersessions** (applied in M5b.8 to the sections they change; kept here as the record of what M5b changed):
+
+- §5.7: the window functions' rows and nullability. §8.8: the Partition row (the third extend, the new functions)
+  and the window column of the aggregations table; "Window functions beyond the spec" (all offered but Nth).
+- §10.3: the Partition shape (`offset`, `buckets`). §11.3: the M5b row.
+- Appendix A: §10 (the functions beyond the spec), §16 (the two messages), §17.6 (the Partition editor's fields).
 
 ---
 
