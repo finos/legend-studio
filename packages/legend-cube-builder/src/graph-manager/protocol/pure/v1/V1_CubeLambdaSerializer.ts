@@ -75,8 +75,10 @@ const NUMBER_LITERAL_TYPES: readonly unknown[] = [
 
 /**
  * An expression's lambda as the engine reads it (PLAN §11.7): each number
- * literal written digit for digit from the string Cube keeps, any source
- * information replaced by the origin, on every value specification
+ * literal written digit for digit from the string Cube keeps, and with an
+ * origin, any source information replaced by it on every value
+ * specification; with none, the JSON's own source information kept, so a
+ * lambda parsed with its locations is typed with them (the editor's Validate)
  */
 const serializeLambdaJson = (
   json: unknown,
@@ -90,7 +92,7 @@ const serializeLambdaJson = (
   }
   const object: PlainObject = Object.fromEntries(
     Object.entries(json)
-      .filter(([key]) => key !== 'sourceInformation')
+      .filter(([key]) => !origin || key !== 'sourceInformation')
       .map(([key, value]) => [key, serializeLambdaJson(value, origin)]),
   );
   if (

@@ -99,6 +99,8 @@ export interface FakeCubeEngine {
   readonly typeLambdas: jest.Mock<CubeEngine['typeLambdas']>;
   readonly execute: jest.Mock<CubeEngine['execute']>;
   readonly renderPure: jest.Mock<CubeEngine['renderPure']>;
+  readonly parseExpression: jest.Mock<CubeEngine['parseExpression']>;
+  readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
 }
 
 /** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
@@ -134,12 +136,34 @@ export const createFakeCubeEngine = (
   const renderPure = jest.fn<CubeEngine['renderPure']>(async () =>
     Promise.resolve(answers.pure ?? ''),
   );
+  // a test that types expressions says how; by default, each parses to nothing
+  const parseExpression = jest.fn<CubeEngine['parseExpression']>(async () =>
+    Promise.reject(
+      new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        'The fake engine parses no expression',
+      ),
+    ),
+  );
+  const planLambda = jest.fn<CubeEngine['planLambda']>(async () =>
+    Promise.resolve(),
+  );
   return {
-    engine: { loadModel, resolveSchemas, typeLambdas, execute, renderPure },
+    engine: {
+      loadModel,
+      resolveSchemas,
+      typeLambdas,
+      execute,
+      renderPure,
+      parseExpression,
+      planLambda,
+    },
     loadModel,
     resolveSchemas,
     typeLambdas,
     execute,
     renderPure,
+    parseExpression,
+    planLambda,
   };
 };

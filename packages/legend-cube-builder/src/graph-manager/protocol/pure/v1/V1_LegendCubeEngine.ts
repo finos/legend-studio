@@ -24,6 +24,9 @@ import {
 } from '@finos/legend-cube';
 import { V1_EngineServerClient, V1_RenderStyle } from '@finos/legend-graph';
 import {
+  ContentType,
+  HttpHeader,
+  parseLosslessJSON,
   type PlainObject,
   stringifyLosslessJSON,
   type TracerService,
@@ -64,6 +67,7 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeModelOutline,
+  type CubeParsedExpression,
   type CubeResult,
   type NodeId,
 } from '../../../CubeEngine.js';
@@ -99,6 +103,7 @@ import {
   V1_CubeUnreadableResultError,
   V1_readCubeExecutionResult,
 } from './V1_CubeExecutionResultReader.js';
+import { V1_readCubeExpression } from './V1_CubeExpression.js';
 import { V1_serializeCubeLambda } from './V1_CubeLambdaSerializer.js';
 import { V1_buildCubeModelOutline } from './V1_CubeModelOutlineBuilder.js';
 import { V1_buildCubeSchema } from './V1_CubeRelationTypeAdapter.js';
@@ -119,6 +124,9 @@ export type V1_CubeEngineConfig = ConstructorParameters<
 const TEXT_MODEL_TYPE = 'text';
 
 const EXECUTION_CLIENT_VERSION = 'vX_X_X';
+
+/** The engine client's trace name for its grammar-to-JSON calls */
+const GRAMMAR_TO_JSON_TRACE = 'transform Pure code to protocol';
 
 /**
  * The node an execution lambda runs: the one its outermost call is stamped
@@ -887,47 +895,15 @@ export class V1_LegendCubeEngine implements CubeEngine {
   ): Promise<CubeResult> {
     const captureId = captureNodeOf(executionLambda);
     const startedAt = Date.now();
-    const family = familyOf(model);
-    const problem = foreignSourceProblemOf(family, executionLambda);
-    if (problem) {
-      throw new CubeEngineError(
-        CubeEngineErrorKind.EXECUTION,
-        problem,
-        captureId,
-      );
-    }
-    const context =
-      family === CubeSourceFamily.DATA_PRODUCT
-        ? await this.dataProductExecutionContext(
-            model,
-            executionLambda,
-            captureId,
-          )
-        : family === CubeSourceFamily.INGEST
-          ? await this.ingestExecutionContext(model, executionLambda, captureId)
-          : model._type === CUBE_DIRECT_MODEL_TYPE
-            ? await this.directExecutionContext(
-                model,
-                executionLambda,
-                captureId,
-                options?.abortController,
-              )
-            : model;
+    const context = await this.executionContextOf(
+      model,
+      executionLambda,
+      captureId,
+      options?.abortController,
+    );
     let text: string;
     try {
-      if (
-        model._type !== CUBE_DIRECT_MODEL_TYPE &&
-        family === CubeSourceFamily.TABLES
-      ) {
-        this.checkTablesModel(model);
-      }
-      const body = stringifyLosslessJSON({
-        clientVersion: EXECUTION_CLIENT_VERSION,
-        function: V1_serializeCubeLambda(executionLambda),
-        model: context,
-        context: { _type: 'BaseExecutionContext' },
-        parameterValues: [],
-      });
+      const body = this.executionBodyOf(model, context, executionLambda);
       // `returnAsResponse` leaves the body unread, so it can be read losslessly
       const response = (await this.client.runQuery(
         body as unknown as PlainObject,
@@ -1114,6 +1090,117 @@ export class V1_LegendCubeEngine implements CubeEngine {
       );
     }
     return built.context;
+  }
+
+  /**
+   * The model a run of the lambda runs on: the cube's, or the context its
+   * data products, ingest data sets or direct connection need. A lambda
+   * reading another kind of source is refused first
+   */
+  private async executionContextOf(
+    model: ModelContext,
+    executionLambda: IR,
+    captureId: NodeId | undefined,
+    abortController: AbortController | undefined,
+  ): Promise<ModelContext | PlainObject> {
+    const family = familyOf(model);
+    const problem = foreignSourceProblemOf(family, executionLambda);
+    if (problem) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        problem,
+        captureId,
+      );
+    }
+    return family === CubeSourceFamily.DATA_PRODUCT
+      ? this.dataProductExecutionContext(model, executionLambda, captureId)
+      : family === CubeSourceFamily.INGEST
+        ? this.ingestExecutionContext(model, executionLambda, captureId)
+        : model._type === CUBE_DIRECT_MODEL_TYPE
+          ? this.directExecutionContext(
+              model,
+              executionLambda,
+              captureId,
+              abortController,
+            )
+          : model;
+  }
+
+  /** The body of a run, or of its plan, as text, so numbers keep every digit */
+  private executionBodyOf(
+    model: ModelContext,
+    context: ModelContext | PlainObject,
+    executionLambda: IR,
+  ): string {
+    if (
+      model._type !== CUBE_DIRECT_MODEL_TYPE &&
+      familyOf(model) === CubeSourceFamily.TABLES
+    ) {
+      this.checkTablesModel(model);
+    }
+    return stringifyLosslessJSON({
+      clientVersion: EXECUTION_CLIENT_VERSION,
+      function: V1_serializeCubeLambda(executionLambda),
+      model: context,
+      context: { _type: 'BaseExecutionContext' },
+      parameterValues: [],
+    });
+  }
+
+  async planLambda(model: ModelContext, executionLambda: IR): Promise<void> {
+    const captureId = captureNodeOf(executionLambda);
+    const context = await this.executionContextOf(
+      model,
+      executionLambda,
+      captureId,
+      undefined,
+    );
+    try {
+      await this.client.generatePlan(
+        this.executionBodyOf(
+          model,
+          context,
+          executionLambda,
+        ) as unknown as PlainObject,
+      );
+    } catch (error) {
+      throw V1_toCubeEngineError(
+        error,
+        captureId,
+        CubeEngineErrorKind.EXECUTION,
+      );
+    }
+  }
+
+  async parseExpression(
+    code: string,
+    sourceId: string,
+  ): Promise<CubeParsedExpression> {
+    let text: string;
+    try {
+      // unread, so it can be read losslessly: a literal keeps its digits
+      const response = (await this.client.postWithTracing(
+        this.client.getTraceData(GRAMMAR_TO_JSON_TRACE),
+        `${this.client._grammarToJSON()}/valueSpecification`,
+        code,
+        {},
+        { [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN },
+        { sourceId, returnSourceInformation: true },
+        { enableCompression: true },
+        { skipProcessing: true },
+      )) as Response;
+      text = await response.text();
+    } catch (error) {
+      throw V1_toCubeEngineError(error, undefined, CubeEngineErrorKind.COMPILE);
+    }
+    try {
+      return V1_readCubeExpression(parseLosslessJSON(text));
+    } catch (error) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        (error as Error).message,
+      );
+    }
   }
 
   async renderPure(lambdaIR: IR): Promise<string> {

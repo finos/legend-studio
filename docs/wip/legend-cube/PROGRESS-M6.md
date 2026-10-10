@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                 |
-| ------ | ------------------------------------------------------------------------------------- |
-| Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10) |
-| Engine | Local legend-engine on `localhost:6300`                                               |
-| Step   | M6.5: Extend in the core                                                              |
-| Tests  | 2817 core, 1350 builder (core group); engine: the Difference suites                   |
+| Item   | State                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------ |
+| Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10)      |
+| Engine | Local legend-engine on `localhost:6300`                                                    |
+| Step   | M6.6: Extend's engine calls                                                                |
+| Tests  | 2817 core, 1357 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
 
 ## Steps
 
@@ -24,7 +24,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.3** Difference in the builder, and registered
 - [x] **M6.4** Difference on the engine, around the databases and in the browser
 - [x] **M6.5** Extend in the core
-- [ ] **M6.6** The engine adapter: parse, render, type and plan expressions
+- [x] **M6.6** The engine adapter: parse, type and plan expressions
 - [ ] **M6.7** Retyping in the builder
 - [ ] **M6.8** The Extend editor, and registered
 - [ ] **M6.9** Extend on the engine, in the conformance suite and around the databases
@@ -37,13 +37,14 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit      | Subject                                          |
-| ---- | ----------- | ------------------------------------------------ |
-| M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend) |
-| M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core       |
-| M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder    |
-| M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine |
-| M6.5 | (this one)  | feat: add Extend to Legend Cube's core           |
+| Step | Commit      | Subject                                                     |
+| ---- | ----------- | ----------------------------------------------------------- |
+| M6.1 | `13fc28972` | docs: settle Legend Cube M6 (Difference, Extend)            |
+| M6.2 | `58c56830e` | feat: add Difference to Legend Cube's core                  |
+| M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder               |
+| M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine            |
+| M6.5 | `1270430ee` | feat: add Extend to Legend Cube's core                      |
+| M6.6 | (this one)  | feat: parse, type and plan Legend Cube's Extend expressions |
 
 ## Notes
 
@@ -99,3 +100,21 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   `JSON.parse`, **a stored lambda keeps its number literals as their digit strings**, as Cube's literal values do
   (PLAN §4.9), and the serializer writes them digit for digit, stamping the origin on every object with a `_type`
   (`V1_CubeLambdaSerializer`). `EXTEND_DEFINITION` is defined, not registered until M6.8.
+- **M6.6** (2026-10-10). `CubeEngine.parseExpression(code, sourceId)` reads the engine's JSON for a text losslessly
+  (the client's unread response) into Cube's form, number literals as digit strings, both without locations (stored)
+  and located (`V1_CubeExpression.ts`); `planLambda(model, lambda)` posts `generatePlan` with the body a run sends
+  (`executionContextOf` and `executionBodyOf`, shared with `execute`). A `CubeEngineError` now carries the location the
+  engine gives (`CubeSourceLocation`: source id, lines and columns). **Typing changed from PLAN §11.7's typed-parameter
+  lambda to the chain Cube already types**: `typeLambdas` of the input's relation then one extend per column
+  (`stores/CubeExtendTyping.ts`), which works on every kind of source as typing does (data products, ingest, direct
+  connections), keyed `<extend id>#<k>` for the first k columns, so the first failing chain names the column. A
+  stored lambda is marked with the Extend; a located one keeps its locations (the serializer keeps a lambda's own
+  source information when no origin is given), so the editor can underline the text. Facts on the engine
+  (`CubeExpressions.engine-roundtrip-test.ts`): digits kept; a parse error located; types per family (Double × Integer
+  is Number); a column using the one before; the model's own enumeration and function typed over the cube's model,
+  refused over the fixture without them; the failing column and its location (`NOPE` at 1:8–11); a nullable column
+  refused until `->toOne()`; `dayOfWeekNumber()` plans and a row's `[…]->stdDevSample()` types, then fails to plan on
+  H2 (`m6-requirements/p4-plan-fail.out`); two columns run with a literal beyond 2^53 exact. **A gap:** an
+  expression whose result is an enumeration (`dayOfWeek()`) reads as a type Cube doesn't know, so it is refused with
+  "does not have a valid type"; `->toString()` works around it. The test harness routes the new calls
+  (`generatePlan`, and the expression parse through `postWithTracing`).

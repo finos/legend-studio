@@ -170,3 +170,41 @@ export const CUBE_ENGINE_TEST__generatePlanSql = async (
   visit(parseLosslessJSON(data));
   return sql;
 };
+/**
+ * The protocol JSON of a value specification's text, parsed with its source
+ * information under the source id, given as the client's unread response
+ * (an Extend column's expression, PLAN §11.7), so it is read losslessly
+ */
+export const CUBE_ENGINE_TEST__grammarToJson_valueSpecification = async (
+  code: string,
+  sourceId: string,
+): Promise<{ ok: boolean; status: number; text: () => Promise<string> }> => {
+  const response = await axios.post<unknown, AxiosResponse<string>>(
+    `${PURE_API}/grammar/grammarToJson/valueSpecification`,
+    code,
+    {
+      headers: { [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN },
+      params: { sourceId, returnSourceInformation: true },
+      responseType: 'text',
+      transformResponse: (data: string) => data,
+      validateStatus: () => true,
+    },
+  );
+  return {
+    ok: response.status >= 200 && response.status < 300,
+    status: response.status,
+    text: async () => response.data,
+  };
+};
+
+/** Generates the execution plan of a query, never running it; a body given as text is sent as it is */
+export const CUBE_ENGINE_TEST__generatePlan = async (
+  input: object | string,
+): Promise<PlainObject> =>
+  (
+    await axios.post<unknown, AxiosResponse<PlainObject>>(
+      `${PURE_API}/execution/generatePlan`,
+      input,
+      { headers: JSON_HEADERS },
+    )
+  ).data;
