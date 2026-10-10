@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
-| Step   | M5.1–M5.8 done; next M5.9                                                                                     |
+| Step   | M5.1–M5.9 done; next M5.10                                                                                    |
 | Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
 
 ## Steps
@@ -27,7 +27,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.6** The builder extraction (no behaviour change)
 - [x] **M5.7** Partition in the builder, and registered
 - [x] **M5.8** Partition on the engine and in the browser
-- [ ] **M5.9** The window composition suite
+- [x] **M5.9** The window composition suite
 - [ ] **M5.10** Partition around the databases, and the changeset
 - [ ] **M5.11** Guides and READMEs
 - [ ] **M5.12** Verification and the browser rehearsal
@@ -133,6 +133,18 @@ function until a sort row has a column; a running Sum by city; the 19 rows with 
 reaching each city's total; the grid's Filter by on Rank 1 giving one row per city; the let in Show Pure; the saved
 spec. An error inside a let is checked on the engine (M5.3), not in the browser: Cube's validation keeps one from
 being built.
+
+**M5.9 (2026-10-09).** `CubeWindowComposition.engine-roundtrip-test.ts` (workflow `m59-m510-windows`,
+`wf_197ca968-a37`): 29 Cube graphs, pairs and triples with a Partition, run on H2 through Cube's emitter and checked
+against a JavaScript reference with SQL's null rules and default frame, computed from ORDERS' 830 rows, read once
+(about 20 s). Each checks the query is valid, the reference's columns are Cube's schema, one let per Partition that
+isn't the capture, every Partition written in the array form, and the rows (as multisets, as tie sets for Row Number,
+in order where a Sort reaches the capture). They include SQL Server's and Sybase IQ's row-number forms, nullable
+partition and sort columns, a negated filter on nullable columns after a window, and windowed Distinct Count and
+Distinct Value over a column with empty values. The negative control writes the single form, unbound: France's two
+rows count 2, not 77. On H2 a filter on the window column itself is written QUALIFY and comes out right, so the control
+filters on input columns. Twelve mutations of the reference each fail the suite (a reversed tie order rightly
+doesn't). A reviewer and a skeptic, who broke the core's built lib in an isolated copy, found test gaps, now closed.
 
 ## Open items
 
