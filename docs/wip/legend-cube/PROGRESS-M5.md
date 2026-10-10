@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656) |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                             |
-| Step   | M5.1–M5.12 done; next M5.13                                                                                   |
+| Step   | M5.1–M5.13 done; next M5.14                                                                                   |
 | Tests  | 2752 core, 1264 builder (core group), 245 Query, 453 builder engine-roundtrip (after M5.8)                    |
 
 ## Steps
@@ -31,7 +31,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.10** Partition around the databases, and the changeset
 - [x] **M5.11** Guides and READMEs
 - [x] **M5.12** Verification and the browser rehearsal
-- [ ] **M5.13** A demo video of M5's features (PLAN §11.3)
+- [x] **M5.13** A demo video of M5's features (PLAN §11.3)
 - [ ] **M5.14** Rebase on the latest master, fold PLAN §11.6's supersessions in
 
 ## Commits
@@ -188,6 +188,15 @@ covered elsewhere), six confirmed, none a wrong result, all fixed:
 
 The rehearsal (`demo/rehearsal-m5.mjs`, M4's with Apply Window Functions in the menu lists) passes all 57 checks, and
 the M5.8 browser check its 20. Result: `m5-verify/m512-result.json`.
+
+**M5.13 (2026-10-09).** The demo video, `demo/out-demo-m5/legend-cube-m5-window-functions.webm` in the evidence folder
+(2:06, sent to the user), from `demo/demo-m5.mjs` and its specs (`demo-m5-specs.mjs` → `m5-specs/`), against the
+dev server on :9002 and the engine: adding Apply Window Functions; Rank needing a sort; a running count by country;
+a Filter on one French customer after the window (VICTE's counts run 2, 9, 21, … 60, as the window counted France's
+other orders first); the let and the Filter reading it in Show Pure; ranks on tied dates; the top 3 freights per
+country. 22 checks, no page problems. Two frame reviews checked each caption against its frame: the first caught that
+filtering on the partition column itself (France) proves nothing, since it gives the same counts either way, so the
+scene filters on a customer; the second caught five captions claiming more than their frames showed, now reworded.
 
 ## Open items
 
