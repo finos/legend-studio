@@ -31,13 +31,11 @@ import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePic
 import { CubeDataProductTab } from './CubeDataProductTab.js';
 import { CubeIngestTab } from './CubeIngestTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
-import { CubeExamplesTab } from './CubeExamplesTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
 
 /**
  * Adds a source to the cube (PLAN §6.1, §6.2.7, §6.8): a tab per way to find
- * one, shown when the host offers more than one, and an Examples tab that
- * opens an example cube instead (§6.9). The source lands with its
+ * one, shown when the host offers more than one. The source lands with its
  * schema; the first one fixes the cube's context, and with it the only tab
  * enabled.
  */
@@ -97,8 +95,6 @@ export const CubeSourcePicker = observer(
                 <CubeDataProductTab tab={picker.dataProductTab} />
               ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
                 <CubeIngestTab tab={picker.ingestTab} />
-              ) : activeTab.key === CubeSourcePickerTabKey.EXAMPLES ? (
-                <CubeExamplesTab tab={picker.examplesTab} />
               ) : (
                 <CubeInlineModelTab tab={picker.modelTab} />
               )}
@@ -108,11 +104,7 @@ export const CubeSourcePicker = observer(
             <ModalFooterButton
               darkMode={darkMode}
               formatText={false}
-              text={
-                activeTab.key === CubeSourcePickerTabKey.EXAMPLES
-                  ? 'Open'
-                  : 'Add'
-              }
+              text="Add"
               disabled={!picker.canConfirm}
               onClick={confirm}
             />

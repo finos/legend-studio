@@ -47,7 +47,6 @@ import {
   type CubeCanvasFlowNode,
 } from './CubeCanvasElements.js';
 import { CubeCanvasContext } from './CubeCanvasContext.js';
-import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
 import {
   CUBE_DND_TYPE,
@@ -252,16 +251,8 @@ export const CubeCanvas = observer(
                 </button>{' '}
                 to start, or{' '}
                 <button
-                  className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
-                  title={editorState.sourcePicker.disabledReason}
-                  disabled={
-                    editorState.sourcePicker.disabledReason !== undefined
-                  }
-                  onClick={() =>
-                    editorState.sourcePicker.open(
-                      CubeSourcePickerTabKey.EXAMPLES,
-                    )
-                  }
+                  className="text-[var(--color-accent)] underline"
+                  onClick={() => editorState.examples.open()}
                 >
                   open an example
                 </button>

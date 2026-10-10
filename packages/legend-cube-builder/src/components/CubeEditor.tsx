@@ -42,6 +42,7 @@ import { CubeNodeEditorPanel } from './editors/CubeNodeEditorPanel.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
+import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
 
@@ -91,6 +92,12 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           onClick={() => editorState.sourcePicker.open()}
         >
           Add table
+        </CubeButton>
+        <CubeButton
+          title="Open an example cube, or start one on sample data"
+          onClick={() => editorState.examples.open()}
+        >
+          Examples
         </CubeButton>
         <CubeButton
           title={
@@ -170,6 +177,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
         </div>
       )}
       <CubeSourcePicker editorState={editorState} />
+      <CubeExamplesDialog editorState={editorState} />
       <CubeSpecTransferDialog editorState={editorState} />
       <CubeShowPureDialog editorState={editorState} />
     </div>
