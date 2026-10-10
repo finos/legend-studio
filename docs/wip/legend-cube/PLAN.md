@@ -3609,7 +3609,7 @@ This subsection overrides the sections it names until they are updated (see "Sup
   doesn't) stays in use, with a warning, as a table keeps its saved columns; any other becomes `failed` with the
   engine's message, and isn't retried until something changes.
 - **Closing the editor** (M6.11): a panel whose expressions aren't validated stays open when closed or when another
-  node is opened, with a notice to validate them or Cancel; Apply refuses them too, since a column's lambda comes only
+  node is opened, with a notice to validate them or Cancel (user, 2026-10-10, over dropping them with a notice); Apply refuses them too, since a column's lambda comes only
   from the engine. A background typing of the node the panel shows keeps the panel and its rows.
 - **Difference's shape:** `difference`, label `Compare Column Values`, ports `tds1` and `tds2` labelled Left and Right
   (spec §7.0); saved as `{leftColumns, rightColumns, differenceColumns}`, Join's key names (the spec's `joinColumns1`,

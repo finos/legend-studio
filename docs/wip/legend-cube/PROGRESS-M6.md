@@ -187,8 +187,8 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
     reached, with a warning, as PLAN says; it used to become a stored failure, with nothing to retry it.
   - **The panel:** a background typing of the node it shows used to close it and drop its edits; the draft now follows
     a node that differs only in its typing (`CubeNodeDraft.follow`). Closing it, or opening another node, used to
-    store unvalidated codes as columns without expressions; it now stays open with a notice (the user may prefer
-    "drop with a notice"), and Apply refuses them.
+    store unvalidated codes as columns without expressions; it now stays open with a notice (the user kept it,
+    2026-10-10, over "drop with a notice"), and Apply refuses them.
   - **Validate** threw an unhandled error when the engine typed what Cube refuses (`ship_via` over ORDERS, a type
     such as `Any`): Cube's per-column checks (`getColumnProblems`) run before typing, the types
     (`getTypeProblems`) before planning, each on its row, and an emitter failure becomes a row problem. Body-only
