@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                       |
-| ------ | ------------------------------------------------------------------------------------------- |
-| Branch | `cube-m6`, on `cube-dev` `b23afd19f`; draft PR #5662 into `cube-dev` (user, 2026-10-10)     |
-| Engine | Local legend-engine on `localhost:6300`                                                     |
-| Step   | M6.1–M6.13 done: M6 is complete, in draft #5662 for `cube-dev`                              |
-| Tests  | 2820 core, 1413 builder (core group); engine: the Difference suites, `CubeExpressions` (10) |
+| Item   | State                                                                                                     |
+| ------ | --------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m6`, on `cube-dev` `aa75bd020` (#5657); draft PR #5662 into `cube-dev` (user, 2026-10-10)           |
+| Engine | Local legend-engine on `localhost:6300`                                                                   |
+| Step   | M6.1–M6.13 done: M6 is complete, in draft #5662 for `cube-dev`                                            |
+| Tests  | 2820 core, 1612 builder (core group, with #5657's); engine: the Difference suites, `CubeExpressions` (10) |
 
 ## Steps
 
@@ -37,24 +37,30 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-Hashes after the rebase onto #5663 (`b23afd19f`); the PR is squash-merged, so they last only as long as the branch.
+Hashes after the rebase onto #5657 (`aa75bd020`); the PR is squash-merged, so they last only as long as the branch.
 
-| Step  | Commit      | Subject                                                                                                     |
-| ----- | ----------- | ----------------------------------------------------------------------------------------------------------- |
-| M6.1  | `d247225cb` | docs: settle Legend Cube M6 (Difference, Extend)                                                            |
-| M6.2  | `e7479d406` | feat: add Difference to Legend Cube's core                                                                  |
-| M6.3  | `f48188d97` | feat: add Difference to Legend Cube's builder                                                               |
-| M6.4  | `af8292782` | test: run Legend Cube's Difference on the engine                                                            |
-| M6.5  | `cab62d39b` | feat: add Extend to Legend Cube's core                                                                      |
-| M6.6  | `72f0f8f9f` | feat: parse, type and plan Legend Cube's Extend expressions                                                 |
-| M6.7  | `cc7948e84` | feat: type Legend Cube's Extends in the background                                                          |
-| M6.8  | `058b3c7dd` | feat: add the Extend editor to Legend Cube                                                                  |
-| M6.9  | `daabb6332` | test: run Legend Cube's Extend on the engine and every database                                             |
-| M6.10 | `3ce35c4a6` | docs: cover Legend Cube's Difference and Extend in its guides                                               |
-| M6.11 | `f0112d2ce` | fix: redact Legend Cube expression literals, and read unknown typed-column keys as Unknown                  |
-| M6.11 | `cf21a5337` | fix: retype a Legend Cube Extend when the input the engine sees changes, and keep the Extend editor's edits |
-| M6.11 | `aed47eaaf` | test: show on the engine that an Extend over another types by what Cube's schema hides                      |
-| M6.11 | (this one)  | docs: record Legend Cube M6.11's review and fixes                                                           |
+| Step   | Commit      | Subject                                                                                                     |
+| ------ | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| M6.1   | `a14bdba58` | docs: settle Legend Cube M6 (Difference, Extend)                                                            |
+| M6.2   | `9a7abbe08` | feat: add Difference to Legend Cube's core                                                                  |
+| M6.3   | `049871ef2` | feat: add Difference to Legend Cube's builder                                                               |
+| M6.4   | `9c77a22b2` | test: run Legend Cube's Difference on the engine                                                            |
+| M6.5   | `1a3b0c045` | feat: add Extend to Legend Cube's core                                                                      |
+| M6.6   | `adc6a30b9` | feat: parse, type and plan Legend Cube's Extend expressions                                                 |
+| M6.7   | `7ca04f710` | feat: type Legend Cube's Extends in the background                                                          |
+| M6.8   | `5fd3fee63` | feat: add the Extend editor to Legend Cube                                                                  |
+| M6.9   | `96a484af0` | test: run Legend Cube's Extend on the engine and every database                                             |
+| M6.10  | `95230793a` | docs: cover Legend Cube's Difference and Extend in its guides                                               |
+| M6.11  | `7f00dfa78` | fix: redact Legend Cube expression literals, and read unknown typed-column keys as Unknown                  |
+| M6.11  | `b6464ba3c` | fix: retype a Legend Cube Extend when the input the engine sees changes, and keep the Extend editor's edits |
+| M6.11  | `691e15498` | test: show on the engine that an Extend over another types by what Cube's schema hides                      |
+| M6.11  | `f9aa044ad` | docs: record Legend Cube M6.11's review and fixes                                                           |
+| M6.12  | `09e4a950d` | docs: record Legend Cube M6.12's demo video                                                                 |
+| M6.13  | `fc90e61e3` | docs: fold Legend Cube M6's changes into its plan                                                           |
+| M6.13  | `c116f394b` | docs: describe Legend Cube's Extend typing digest in its guides                                             |
+| M6.13  | `ac4d55387` | docs: record that Legend Cube's Extend panel stays open over unvalidated expressions                        |
+| Rebase | `965ac7c5e` | fix: fit Legend Cube's Difference and Extend to the floating node editor                                    |
+| Rebase | (this one)  | docs: record Legend Cube M6's rebase onto the floating node editor                                          |
 
 ## Notes
 
@@ -224,3 +230,14 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   built (the chain typing, the saved typing, `lambdaJson`, row-key source ids, Difference's check order and labels, no
   completion, the M6.4 values ✅, FULL native on 19) and keeps its Supersessions list as the record. M6 is complete;
   marking #5662 ready, and merging it into `cube-dev`, are the user's.
+- **Rebase** (2026-10-10). Rebased onto `cube-dev` once the user merged #5657 (M3b: the node editor floats below its
+  node, and every close but Cancel goes through `finish()`). Conflicts: the plan (M6's §11.7 before M3b's §11.8;
+  Appendix A merged row by row), the header (the typing label beside Add Items) and the editor's footer. Fixed on top:
+  `finish()` now keeps an Extend whose Apply waits open, saying why, as `close()` does (so a click on the canvas or
+  outside, Escape, F9 or another node no longer bind over it), before its cannot-apply check, so its edits are never
+  dropped; the waiting status sits under the body, as M3b's problems do; the Extend editor's column list no longer
+  scrolls on its own (the body is the one scroller); F10 reads `alertUnhandledError` from the application store; the
+  editor tests render the canvas's editor, and M3b's lists name Compare Column Values and Extend Columns.
+  2820 core and 1612 builder tests pass. In the browser, on the floating editor: the Difference check 12 of 12, the
+  Extend check 13 of 13, and the rehearsal 57 of 57 as `demo/rehearsal-floating.mjs` (M6's, with Add Items for Add
+  table, Select only when the added node isn't selected already, and the node's tooltip read on hover).
