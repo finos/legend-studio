@@ -26,9 +26,9 @@ import { CubeOutlineSteps } from './CubeInlineModelTab.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
 /**
- * The source dialog's Project tab (PLAN §6.3): a published project, one of
- * its released versions, then, as in the Model tab, one of its own
- * Databases, a runtime keyed by it, a schema and a table
+ * The source dialog's Project Database tab (PLAN §6.3): a published project,
+ * one of its released versions, then, as in the Sample Data tab, one of its
+ * own Databases, a runtime keyed by it, a schema and a table
  */
 export const CubeProjectTab = observer(
   (props: { tab: CubeProjectTabState }) => {

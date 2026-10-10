@@ -23,7 +23,7 @@ interface CubeHost {
 - **The engine:** `buildCubeEngine(config, tracerService)` builds Legend's implementation of the `CubeEngine` port.
   `config` is the engine client's configuration (`CubeEngineConfig`); Legend Query passes its own engine server URL
   and options, so Cube talks to the engine its query editor uses.
-- **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the "Northwind (Cube fixture)" model)
+- **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the Northwind, Sports and Trades datasets of the Sample Data tab)
   and caches each model's outline: its tables, for the source picker, and its runtimes' connections with their
   database types, which Drop, Slice, Limit and Distinct need on some databases (PLAN §11.4). Users can also paste a Pure
   model.

@@ -53,7 +53,7 @@ const toMessage = (error: unknown): string => {
  */
 export class CubeProjectTabState extends CubeInlineModelTabState {
   override readonly key = CubeSourcePickerTabKey.PROJECT;
-  override readonly label = 'Project';
+  override readonly label = 'Project Database';
 
   projects: readonly CubeProjectSummary[] | undefined;
   isLoadingProjects = false;

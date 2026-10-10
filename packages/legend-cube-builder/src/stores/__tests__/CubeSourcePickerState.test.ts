@@ -43,7 +43,7 @@ import {
   CubeTableFlag,
 } from '../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../CubeEditorState.js';
-import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
+import { CUBE_NORTHWIND_SAMPLE_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { createTextModel } from '../LocalModelCatalog.js';
 
 type ResolvedSchemas = Awaited<ReturnType<CubeEngine['resolveSchemas']>>;
@@ -152,8 +152,8 @@ describe('Cube source picker: choosing a table', () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    expect(fake.loadModel).toHaveBeenCalledWith(CUBE_NORTHWIND_MODEL);
-    expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_MODEL);
+    expect(fake.loadModel).toHaveBeenCalledWith(CUBE_NORTHWIND_SAMPLE_MODEL);
+    expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_SAMPLE_MODEL);
     expect(picker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
     expect(picker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
     expect(picker.modelTab.schemaName).toBe('NORTHWIND');
@@ -327,7 +327,7 @@ describe('Cube source picker: choosing a table', () => {
     await pick(state, 'NORTHWIND', 'ORDERS');
     const { document } = state;
     expect(document.context).toEqual({
-      model: CUBE_NORTHWIND_MODEL,
+      model: CUBE_NORTHWIND_SAMPLE_MODEL,
       runtime: NORTHWIND_RUNTIME,
     });
     expect(document.query.selected).toBe('relational101');
@@ -490,7 +490,10 @@ describe('Cube source picker: a cube that already has a model', () => {
     const { state } = setUp(
       { outline },
       new CubeDocument({
-        context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
+        context: {
+          model: CUBE_NORTHWIND_SAMPLE_MODEL,
+          runtime: NORTHWIND_RUNTIME,
+        },
       }),
     );
     await openPicker(state);
@@ -506,7 +509,7 @@ describe('Cube source picker: a cube that already has a model', () => {
     const { state } = setUp(
       undefined,
       new CubeDocument({
-        context: { model: CUBE_NORTHWIND_MODEL, rest: { note: 'kept' } },
+        context: { model: CUBE_NORTHWIND_SAMPLE_MODEL, rest: { note: 'kept' } },
       }),
     );
     await openPicker(state);
@@ -514,7 +517,7 @@ describe('Cube source picker: a cube that already has a model', () => {
     await pick(state, 'NORTHWIND', 'ORDERS');
     const { context } = state.document;
     expect(context?.runtime).toBe(NORTHWIND_RUNTIME);
-    expect(context?.model).toBe(CUBE_NORTHWIND_MODEL);
+    expect(context?.model).toBe(CUBE_NORTHWIND_SAMPLE_MODEL);
     expect(context?.rest).toEqual({ note: 'kept' });
     expect(nodeIds(state)).toEqual(['relational101']);
     expect(state.history.length).toBe(1);
@@ -742,7 +745,10 @@ describe('Cube source picker: failures', () => {
     // e.g. an import, while the engine answered
     state.applyDocument(
       new CubeDocument({
-        context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
+        context: {
+          model: CUBE_NORTHWIND_SAMPLE_MODEL,
+          runtime: NORTHWIND_RUNTIME,
+        },
       }),
     );
     held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
@@ -842,7 +848,7 @@ describe('Cube source picker: a pasted model', () => {
     const state = new CubeEditorState(TEST__createCubeHost().host);
     const picker = state.sourcePicker;
     picker.open();
-    await flowResult(picker.modelTab.selectModel(CUBE_NORTHWIND_MODEL));
+    await flowResult(picker.modelTab.selectModel(CUBE_NORTHWIND_SAMPLE_MODEL));
     picker.modelTab.startPastingModel();
     picker.modelTab.setPastedModelText(
       '###Relational\nDatabase my::Pasted ( )',
@@ -852,7 +858,7 @@ describe('Cube source picker: a pasted model', () => {
     picker.close();
 
     // a cube on a copy of Northwind, as an import decodes it
-    const copy = createTextModel(CUBE_NORTHWIND_MODEL.code as string);
+    const copy = createTextModel(CUBE_NORTHWIND_SAMPLE_MODEL.code as string);
     state.importDocument(
       new CubeDocument({
         context: { model: copy, runtime: NORTHWIND_RUNTIME },
@@ -868,6 +874,6 @@ describe('Cube source picker: a pasted model', () => {
     state.undo();
     picker.open();
     expect(picker.modelTab.isPastingModel).toBe(false);
-    expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_MODEL);
+    expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_SAMPLE_MODEL);
   });
 });
