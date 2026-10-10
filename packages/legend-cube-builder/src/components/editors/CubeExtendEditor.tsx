@@ -238,10 +238,7 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
         </CubeButton>
       </div>
       <span>Input columns</span>
-      <ul
-        aria-label="Input columns"
-        className="flex max-h-40 flex-wrap gap-1 overflow-auto"
-      >
+      <ul aria-label="Input columns" className="flex flex-wrap gap-1">
         {schema.columns.map((column) => (
           <li key={column.name}>
             <button

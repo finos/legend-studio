@@ -392,6 +392,13 @@ describe('Extend editor panel', () => {
     nodeEditor.open('relational101');
     expect(nodeEditor.nodeId).toBe('extend101');
     expect(nodeEditor.draft === draft).toBe(true);
+    // every other way of finishing with it too: a click on the canvas or
+    // outside, Escape, a shortcut (PLAN §11.8)
+    expect(nodeEditor.finish()).toBe(false);
+    expect(nodeEditor.finishApplied()).toBe(false);
+    expect(nodeEditor.nodeId).toBe('extend101');
+    expect(nodeEditor.draft === draft).toBe(true);
+    expect(state.history).toHaveLength(0);
     // validated, it closes, applying
     await flowResult(draft.validate());
     nodeEditor.close();

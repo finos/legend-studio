@@ -632,7 +632,9 @@ export class CubeEditorState implements CommandRegistrar {
       action: () => {
         const { draft } = this.nodeEditor;
         if (draft instanceof CubeExtendDraft) {
-          flowResult(draft.validate()).catch(alertUnhandledError);
+          flowResult(draft.validate()).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
         }
       },
     });

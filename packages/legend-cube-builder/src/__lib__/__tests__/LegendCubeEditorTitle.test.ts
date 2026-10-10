@@ -34,7 +34,9 @@ const TITLES: Record<string, string> = {
   slice: 'Take Rows <x> To <y>',
   concat: 'Concatenate Another Input',
   join: 'Join Another Input',
+  difference: 'Compare Column Values',
   partition: 'Apply Window Functions',
+  extend: 'Extend Columns',
 };
 
 describe("A node editor's title", () => {
