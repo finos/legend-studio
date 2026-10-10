@@ -363,6 +363,16 @@ deployment (PLAN §11.2 Part B2).
 - **A data set re-checked on import** keeps its saved columns, with a warning, when its definition can't be read again
   (e.g. no longer deployed).
 
+## Depot databases
+
+- **Scale is unmeasured.** The project list isn't paged and has no search, and a version's first typing call compiles
+  the project with its dependencies. Neither was measured at a real depot's size.
+- **The mock copies Studio's depot client.** The real depot's answers for versions (`snapshots=false`), `latest` and
+  its wrappers weren't checked in a deployment.
+- **No CI test sends a pointer:** CI runs no depot. The `cube-local` group does, by hand.
+- **The engine caches a pointer's project per version,** so a sample project changed under the same version needs an
+  engine restart (local only: a published release doesn't change).
+
 ## Test gaps
 
 None hides a known bug.

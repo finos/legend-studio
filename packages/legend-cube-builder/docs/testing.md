@@ -144,3 +144,19 @@ would serve it.
 
 The engine tests in `src/__tests__/` import `V1_*` classes there, as an exception to the V1 rule: they need both the
 `v1/` adapter and `stores/`, which the import-hierarchy lint rule keeps apart.
+
+### Depot databases
+
+- **Fakes.** `createFakeCubeProjectCatalog()` (`src/__test-utils__/FakeCubeProjectCatalog.ts`) gives a catalog to pass
+  as the host's `projectCatalog`; without one, Cube offers no Project tab. Its `com.example:sales` holds the fake
+  engine's Northwind Database, so the fake engine types its tables.
+- **CI:** `src/__tests__/CubeDepotSamples.engine-roundtrip-test.ts` compiles the mock depot's committed sample
+  projects and types every table of their own Databases. The engine fetches a pointer's project from a depot, which CI
+  doesn't run, so no CI test sends a pointer.
+- **By hand (`cube-local`):** with the engine on :6300 and `yarn dev:mock-depot-server` on :6200,
+  `TEST_GROUP=cube-local yarn workspace @finos/legend-cube-builder test` runs the real catalog, the engine's pointer
+  fetch and the Project tab end to end (`src/__tests__/CubeDepot.cube-local-test.ts`). Its depot client sends its GETs
+  through axios, since the repo's Jest setup blocks `fetch`.
+- **Changing the sample projects:** edit `fixtures/legend-mock-server/scripts/generate-cube-depot.mjs` and run it with
+  the engine up (`node scripts/generate-cube-depot.mjs`). The engine caches a pointer's project per version, so restart
+  it after changing a version it has fetched.
