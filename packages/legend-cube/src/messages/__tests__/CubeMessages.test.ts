@@ -184,6 +184,14 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('DenseRank')).toBe(
     'Aggregation function "DenseRank" requires at least one sort column.',
   );
+  expect(MESSAGES.MESSAGE_DIFFERENCE_COLUMN_IS_JOIN_COLUMN('FREIGHT')).toBe(
+    'Difference column "FREIGHT" cannot be a join column.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DIFFERENCE_OUTPUT_NAME_INVALID('x_valueDifference'),
+  ).toBe(
+    'Difference output column "x_valueDifference" is not valid column name.',
+  );
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );

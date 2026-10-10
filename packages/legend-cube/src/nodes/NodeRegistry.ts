@@ -27,6 +27,7 @@ import { emitConcat } from '../ir/emitters/ConcatEmitter.js';
 import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
+import { emitDifference } from '../ir/emitters/DifferenceEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitPartition } from '../ir/emitters/PartitionEmitter.js';
@@ -42,6 +43,7 @@ import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
+import { DIFFERENCE_CODEC } from '../spec/codecs/DifferenceCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { PARTITION_CODEC } from '../spec/codecs/PartitionCodec.js';
@@ -65,6 +67,7 @@ import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Group } from './transforms/Group.js';
+import { Difference } from './transforms/Difference.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
 import { Partition } from './transforms/Partition.js';
@@ -313,6 +316,18 @@ export const JOIN_DEFINITION: TransformDefinition<Join> = {
   create: (id) => new Join(id),
   emit: emitJoin,
   spec: JOIN_CODEC,
+};
+
+/** Difference, "Compare Column Values" (spec §7.12, PLAN §11.7) */
+export const DIFFERENCE_DEFINITION: TransformDefinition<Difference> = {
+  kind: 'transform',
+  type: Difference.TYPE,
+  label: 'Compare Column Values',
+  icon: 'difference',
+  beta: false,
+  create: (id) => new Difference(id),
+  emit: emitDifference,
+  spec: DIFFERENCE_CODEC,
 };
 
 /**

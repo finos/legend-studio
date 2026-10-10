@@ -52,6 +52,7 @@ import {
 import {
   CONCAT_DEFINITION,
   createNodeRegistry,
+  DIFFERENCE_DEFINITION,
   DROP_DEFINITION,
   GROUP_DEFINITION,
   LIMIT_DEFINITION,
@@ -66,6 +67,7 @@ import {
   WindowRankFunction,
 } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
+import { Difference } from '../../nodes/transforms/Difference.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -3115,5 +3117,102 @@ describe(unitTest('Cube document'), () => {
     expect(changed.meta).toBe(DEFAULT_META);
     expectKept(changed, ['name', 'context', 'query', 'queryRest', 'rest']);
     expect(BASE.meta).toBe(META);
+  });
+});
+
+describe(unitTest('Saved spec encoding: differences'), () => {
+  /** The default registry, with Difference until the builder registers it (M6.3) */
+  const REGISTRY = createNodeRegistry();
+  if (!REGISTRY.get(DIFFERENCE_DEFINITION.type)) {
+    REGISTRY.register(DIFFERENCE_DEFINITION);
+  }
+
+  /** The saved spec of one unconnected difference, `difference101`, with these fields of its own */
+  const differenceSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'difference101',
+      nodes: [
+        {
+          kind: 'difference',
+          id: 'difference101',
+          inputs: [null, null],
+          ...own,
+        },
+      ],
+    },
+  });
+
+  /** A document with this one unconnected difference */
+  const differenceDocument = (difference: Difference): CubeDocument =>
+    documentOf([difference], [], difference.id);
+
+  test('Always writes its key and difference columns, empty lists included', () => {
+    expectEncoded(
+      differenceDocument(DIFFERENCE_DEFINITION.create('difference101')),
+      differenceSpec({
+        leftColumns: [],
+        rightColumns: [],
+        differenceColumns: [],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Keeps its lists exactly, even when they differ in length, repeat or hold a blank', () => {
+    expectEncoded(
+      differenceDocument(
+        new Difference('difference101', {
+          leftColumns: ['BOOK', 'BOOK', ''],
+          rightColumns: ['BOOK_ID'],
+          differenceColumns: ['QTY', '', 'QTY'],
+        }),
+      ),
+      differenceSpec({
+        leftColumns: ['BOOK', 'BOOK', ''],
+        rightColumns: ['BOOK_ID'],
+        differenceColumns: ['QTY', '', 'QTY'],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes a swapped difference as it stands, with no swapped flag', () => {
+    const swapped = new Difference('difference101', {
+      leftColumns: ['BOOK'],
+      rightColumns: ['BOOK_ID'],
+      differenceColumns: ['QTY'],
+    }).withSwappedInputs();
+    expectEncoded(
+      differenceDocument(swapped),
+      differenceSpec({
+        leftColumns: ['BOOK_ID'],
+        rightColumns: ['BOOK'],
+        differenceColumns: ['QTY'],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Reads a difference back, and an older Cube keeps one it does not know', () => {
+    const json = differenceSpec({
+      leftColumns: ['BOOK'],
+      rightColumns: ['BOOK'],
+      differenceColumns: ['QTY'],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: REGISTRY,
+    }).document.query.getNode('difference101');
+    expect(node).toBeInstanceOf(Difference);
+    expect((node as Difference).differenceColumns).toEqual(['QTY']);
+    // without Difference registered, it is an Unknown node, written back as it was
+    const older = new NodeRegistry(
+      createNodeRegistry().transforms.filter(
+        (definition) => definition.type !== DIFFERENCE_DEFINITION.type,
+      ),
+    );
+    const unknown = decodeCubeSpec(json, { registry: older }).document;
+    expect(unknown.query.getNode('difference101')).toBeInstanceOf(UnknownNode);
+    expect(encodeCubeSpec(unknown, older)).toStrictEqual(json);
   });
 });

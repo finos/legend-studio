@@ -699,6 +699,7 @@ describe(unitTest('Query emission'), () => {
       'aggregation',
       'window',
       'concat',
+      'difference',
       'convert',
       'sort',
       'sortKey',

@@ -179,6 +179,8 @@ export enum EmitRole {
   WINDOW = 'window',
   /** a Concat: its concatenate call */
   CONCAT = 'concat',
+  /** a Difference: the extend of its differences, and each `coalesce` and `minus` in them (PLAN §11.7) */
+  DIFFERENCE = 'difference',
   /** a Concat that converts types: the extend of an input's converted columns, and the column each reads */
   CONVERT = 'convert',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */

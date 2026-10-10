@@ -142,6 +142,15 @@ export const MESSAGE_DIFFERENCE_COLUMN_TYPE_DIFFERS = (name: string): string =>
 export const MESSAGE_DIFFERENCE_COLUMN_NOT_NUMERIC = (name: string): string =>
   `Difference column ${quote(name)} must be of numeric type.`;
 
+/** Added by Cube: a difference column is renamed on each side, so it can't also join them (PLAN §11.7) */
+export const MESSAGE_DIFFERENCE_COLUMN_IS_JOIN_COLUMN = (
+  name: string,
+): string => `Difference column ${quote(name)} cannot be a join column.`;
+
+/** Added by Cube: an output name a difference column gives, such as `x_valueDifference`, is too long (PLAN §11.7) */
+export const MESSAGE_DIFFERENCE_OUTPUT_NAME_INVALID = (name: string): string =>
+  `Difference output column ${quote(name)} is not valid column name.`;
+
 export const MESSAGE_INPUT_SCHEMAS_DIFFER =
   'Both input schemas must be identical.';
 
