@@ -15,8 +15,13 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { CubeDocument, RelationalTableSource } from '@finos/legend-cube';
+import { CubeDocument, Query, RelationalTableSource } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
+import {
+  NORTHWIND_RUNTIME,
+  northwindTable,
+  ORDERS_COLUMNS,
+} from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import type { CubeEngine } from '../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../CubeEditorState.js';
@@ -112,7 +117,18 @@ describe('Examples tab', () => {
   });
 
   test("Doesn't run an example the user has moved off before its tables were typed", async () => {
-    const { state, fake } = setUp();
+    // a cube that could run, so only the check stops a run on Undo
+    const { state, fake } = setUp(
+      new CubeDocument({
+        context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
+        query: new Query(
+          [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS)],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    expect(state.execution.canExecute).toBe(true);
     const answer = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(answer.promise);
     const picker = state.sourcePicker;
@@ -121,6 +137,7 @@ describe('Examples tab', () => {
     const opening = flowResult(picker.confirm());
     expect(state.document.name).toBe('Top customers by orders');
     state.undo();
+    expect(state.execution.canExecute).toBe(true);
     answer.resolve(new Map());
     await opening;
     expect(fake.execute).not.toHaveBeenCalled();
@@ -146,6 +163,17 @@ describe('Examples tab', () => {
     picker.selectTab(EXAMPLES);
     expect(picker.tabForSourceType(RelationalTableSource.TYPE)?.key).toBe(
       CubeSourcePickerTabKey.DIRECT_CONNECTION,
+    );
+  });
+
+  test('Never gives a table palette item the Examples tab, even when it was open last', () => {
+    const { state } = setUp();
+    const picker = state.sourcePicker;
+    picker.open(EXAMPLES);
+    picker.close();
+    expect(picker.activeTab.key).toBe(EXAMPLES);
+    expect(picker.tabForSourceType(RelationalTableSource.TYPE)?.key).toBe(
+      CubeSourcePickerTabKey.MODEL,
     );
   });
 });
