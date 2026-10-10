@@ -35,9 +35,11 @@ const engineWith = (
 ): CubeEngine => ({ loadModel }) as unknown as CubeEngine;
 
 describe('Local model catalog', () => {
-  test('Offers the Cube Northwind fixture as Pure text, the model a cube saves', () => {
+  test('Offers the Cube Northwind fixture first, then the samples, as Pure text, the model a cube saves', () => {
     expect(BUNDLED_MODELS.map((entry) => entry.label)).toEqual([
       'Northwind (Cube fixture)',
+      'Sports (sample)',
+      'Trades (sample)',
     ]);
     expect(BUNDLED_MODELS[0]?.model).toEqual({
       _type: 'text',

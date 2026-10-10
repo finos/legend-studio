@@ -15,6 +15,7 @@
  */
 
 import type { ModelContext } from '@finos/legend-cube';
+import { toPureSetupSqls } from './CubeSampleSql.js';
 
 // The Cube Northwind fixture (PLAN §6.2.4): a corrected copy of the Northwind
 // Database of the query builder's tests, which is left as it is. Corrections:
@@ -77,13 +78,10 @@ const CUBETEST_SETUP_SQLS = [
   'insert into CUBETEST.KEY_NUM values (1.2500), (3.0000)',
 ];
 
-/** A Pure string literal */
-const pureString = (text: string): string =>
-  `'${text.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
-
-const SETUP_SQLS = ['call loadNorthwindData()', ...CUBETEST_SETUP_SQLS]
-  .map((sql) => `      ${pureString(sql)}`)
-  .join(',\n');
+const SETUP_SQLS = toPureSetupSqls([
+  'call loadNorthwindData()',
+  ...CUBETEST_SETUP_SQLS,
+]);
 
 export const CUBE_NORTHWIND_MODEL_CODE = `###Relational
 Database ${CUBE_NORTHWIND_DATABASE}

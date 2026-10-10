@@ -96,6 +96,8 @@ describe('Legend Query as the Cube host', () => {
     expect(host.modelCatalog.models).toBe(BUNDLED_MODELS);
     expect(host.modelCatalog.models.map((model) => model.label)).toEqual([
       'Northwind (Cube fixture)',
+      'Sports (sample)',
+      'Trades (sample)',
     ]);
     // the catalog reads models through the host's engine
     const [northwind] = host.modelCatalog.models;

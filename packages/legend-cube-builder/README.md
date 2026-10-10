@@ -72,6 +72,14 @@ builder, a tab, a Source panel editor, help text and an icon, and its branch in 
 builds the model each call runs on from the cube's saved model kind (`src/graph-manager/CubeDirectConnection.ts`,
 `CubeDataProduct.ts` and `CubeIngest.ts` are the examples).
 
+## Samples and examples
+
+The Model tab bundles three models: the Northwind fixture and two made-up, seeded samples, Sports and Trades
+(`src/stores/fixtures/`), each an in-memory H2 database filled by its setup SQL. The dialog's last tab, Examples, opens
+one of six example cubes over them (`src/stores/CubeExamples.ts`) in place of the cube, then runs it (PLAN §6.9). An
+example is built in code, so a new one needs no saved spec; add it to `CUBE_EXAMPLES`, and the engine test
+`CubeExamples.engine-roundtrip-test.ts` opens, types and runs it.
+
 ## Documentation
 
 - [Hosting the page](./docs/hosting.md): what a host gives the page, the shortcuts, the stylesheet, and the dev loop.

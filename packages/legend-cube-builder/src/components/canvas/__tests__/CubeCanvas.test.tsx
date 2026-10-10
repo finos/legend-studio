@@ -62,6 +62,7 @@ import {
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
 import {
   buildCubeCanvasEdges,
@@ -466,13 +467,21 @@ describe('Cube canvas', () => {
     ).toBe(false);
   });
 
-  test('Offers to add a table when the cube is empty', async () => {
+  test('Offers to add a table, or open an example, when the cube is empty', async () => {
     const state = await renderCanvas();
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     const canvas = screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS);
-    expect(canvas.textContent).toBe('No tables yet: add a table to start.');
+    expect(canvas.textContent).toBe(
+      'No tables yet: add a table to start, or open an example.',
+    );
     fireEvent.click(within(canvas).getByText('add a table'));
     expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.activeTab.key).toBe(CubeSourcePickerTabKey.MODEL);
+    act(() => state.sourcePicker.close());
+    fireEvent.click(within(canvas).getByText('open an example'));
+    expect(state.sourcePicker.activeTab.key).toBe(
+      CubeSourcePickerTabKey.EXAMPLES,
+    );
   });
 
   test('Offers no table to add when an empty cube is read-only', async () => {
@@ -482,6 +491,11 @@ describe('Cube canvas', () => {
       screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
     ).getByText<HTMLButtonElement>('add a table');
     expect(link.disabled).toBe(true);
+    expect(
+      within(
+        screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
+      ).getByText<HTMLButtonElement>('open an example').disabled,
+    ).toBe(true);
   });
 });
 

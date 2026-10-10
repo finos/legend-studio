@@ -1313,6 +1313,35 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
   their deployed artifact, so neither needs legend-graph's precise types. M2.0 stays a separate legend-graph PR, needed
   when Cube types tables locally (§11.3).
 
+### 6.9 Sample data and example cubes (user, 2026-10-09)
+
+To make Cube easy to demo and explore, it ships three small datasets and six example cubes.
+
+- **Datasets:** bundled models in the Model tab: Northwind (the Cube fixture, loaded by the engine's
+  `loadNorthwindData()`), **Sports (sample)** (10 sports, 360 events of 2025 with viewers and attendance) and **Trades
+  (sample)** (6 desks, 15 instruments, 400 trades of the first half of 2026). The two samples are made up and seeded,
+  so their rows are the same on every load (a cube saves the model text). They load through in-memory H2 setup SQL like
+  Northwind's CUBETEST tables, which the deployed engine already runs; the SQL also runs on DuckDB (not used: DuckDB in
+  a deployment is untested). Hundreds of rows each, one insert per table, since the setup runs on every connection
+  checkout.
+- **Model tab:** opens on the cube's model, else the pasted model while the paste box is shown, else the bundled model
+  picked last, else the first (Northwind), so the one-click start stays.
+- **Example cubes:** two per dataset, built in code (`stores/CubeExamples.ts`), not saved JSON, so they hold no schema
+  snapshot to keep current: their tables are typed when they open, like an imported cube's. They use only nodes on
+  master (no windows yet): top customers by orders and products in stock by category (Northwind), top watched sports
+  and the most watched finals in Europe (Sports), dollar notional by desk and asset class and the largest buys (Trades; notionals are converted to dollars at fixed
+  rates, column `NOTIONAL_USD`).
+- **Examples tab:** the source dialog's last tab, always enabled (it opens a whole cube, so the one-kind-of-source rule
+  doesn't apply), listing the examples by dataset; its button reads **Open**. Open replaces the cube with a new copy of
+  the example, as Import does (one undo step), waits for its tables to be typed, then runs it, unless the user has
+  moved off it. A table palette item never opens on it. The empty canvas offers "open an example" beside "add a
+  table". The dialog stays closed on a read-only cube, so its examples are reached from a new cube.
+- **Tests:** the core tests cover the list, Open, Undo, the no-run case and each example's spec round trip (under
+  the 1 MB cap) with the fake engine
+  (`CubeExamplesTabState.test.ts`, `CubeExamplesTab.test.tsx`) and the generated rows (`CubeSampleModels.test.ts`);
+  `CubeExamples.engine-roundtrip-test.ts` compiles the sample models, then opens every example on the engine, checks
+  every node types as Cube infers it (Sum outputs wider, §5.7) and runs it.
+
 ---
 
 ## 7. C. Canvas and editors (slice)
@@ -2615,6 +2644,21 @@ Direct connection:
    the table `cities` and click **Add to setup SQL**: the setup SQL now creates `csv.cities`, and the tab says "Added
    table csv.cities: 2 rows, 2 columns". **Test connection**, pick schema `csv`, add `cities` and press **F9**: 2 rows.
    Choosing a `.csv` file fills the box and the table name the same way.
+
+Examples (§6.9):
+
+1. On a new cube, the canvas reads "No tables yet: add a table to start, or open an example." Click **open an
+   example**: the dialog opens on the **Examples** tab, listing Northwind, Sports and Trades, two examples each, and
+   **Open** is disabled until one is picked.
+2. Pick **Top watched sports** and click **Open**: the dialog closes, the cube is named after the example, its tables
+   are typed, and it runs: 10 rows, one per sport, by total viewers. **Undo** brings back the empty cube.
+3. Open each other example the same way: Top customers by orders (10 rows), Products in stock by category (8), Most
+   watched finals in Europe (up to 10), Notional by desk and asset class (9), Largest buys (20).
+4. On a cube with a table, open the dialog: the Examples tab is enabled beside the cube's own tab, and opening an
+   example replaces the cube (Undo brings it back).
+5. In the **Model** tab, pick **Sports (sample)** and **Trades (sample)**: their tables list, and adding one and
+   pressing **F9** gives rows.
+6. **Export (dev)** an example and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
 
 Data products:
 

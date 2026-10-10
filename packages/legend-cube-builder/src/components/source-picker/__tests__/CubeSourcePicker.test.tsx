@@ -569,10 +569,15 @@ describe('Cube source picker: a pasted Pure model', () => {
       },
     });
     const dialog = await openPicker();
-    // the bundled model loads first, as the only one
+    // the first bundled model loads first
     await within(dialog).findByRole('list', { name: 'Tables' });
     const model = within(dialog).getByLabelText<HTMLSelectElement>('Model');
-    expect(selectOptions(model)).toEqual(['cube-northwind', 'paste']);
+    expect(selectOptions(model)).toEqual([
+      'cube-northwind',
+      'cube-sample-sports',
+      'cube-sample-trades',
+      'paste',
+    ]);
     expect(model.selectedOptions[0]?.textContent).toBe(
       'Northwind (Cube fixture)',
     );
