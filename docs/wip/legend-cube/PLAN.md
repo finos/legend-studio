@@ -4008,16 +4008,17 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 **Engine facts** (probes under `m5b-requirements/`):
 
-| Fact                                                                                                                                          |     | Probe                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
-| Lag and Lead, offsets 1 and 2, of a number, a text and a date: values and types as SQL's; the edges empty                                     | ✅  | `p1-semantics.out` A1           |
-| `offset()` can't be called; Lag, NTile, Percent Rank and Cumulative Distribution with no sort fail on H2                                      | ✅  | `p1-semantics.out` A2, A3, B2   |
-| NTile 4, 10 and 1, Percent Rank and Cumulative Distribution: values as SQL's, types Integer and Float, never empty                            | ✅  | `p1-semantics.out` B1, B3       |
-| With no frame, First is the partition's first row, Last the current row, Nth empty until the nth; over a whole frame, each is the partition's | ✅  | `p1-semantics.out` C1, C2       |
-| A rank, NTile, Percent Rank, Lag and First share an extend; an aggregate can't share one with them                                            | ✅  | `p1-semantics.out` D1–D5        |
-| First over the reversed sort gives `last_value` over a whole frame; a frame can't hold a rank or a Lag; no frame without a partition column   | ✅  | `p3-frames.out` F1, F5–F7       |
-| Each function alone, and the shape Cube writes, plan on the 17 window types                                                                   | ✅  | `p2-plans.out`, `p4-plans*.out` |
-| Values on DuckDB, and on H2 against a reference                                                                                               | 💭  | M5b.4                           |
+| Fact                                                                                                                                                                      |     | Probe                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
+| Lag and Lead, offsets 1 and 2, of a number, a text and a date: values and types as SQL's; the edges empty                                                                 | ✅  | `p1-semantics.out` A1           |
+| `offset()` can't be called; Lag, NTile, Percent Rank and Cumulative Distribution with no sort fail on H2                                                                  | ✅  | `p1-semantics.out` A2, A3, B2   |
+| NTile 4, 10 and 1, Percent Rank and Cumulative Distribution: values as SQL's, types Integer and Float, never empty                                                        | ✅  | `p1-semantics.out` B1, B3       |
+| With no frame, First is the partition's first row, Last the current row, Nth empty until the nth; over a whole frame, each is the partition's                             | ✅  | `p1-semantics.out` C1, C2       |
+| A rank, NTile, Percent Rank, Lag and First share an extend; an aggregate can't share one with them                                                                        | ✅  | `p1-semantics.out` D1–D5        |
+| First over the reversed sort gives `last_value` over a whole frame; a frame can't hold a rank or a Lag; no frame without a partition column                               | ✅  | `p3-frames.out` F1, F5–F7       |
+| Each function alone, and the shape Cube writes, plan on the 17 window types                                                                                               | ✅  | `p2-plans.out`, `p4-plans*.out` |
+| Reversed, a sort puts empty values at the other end too: where a database's default wouldn't (DuckDB, Trino, ClickHouse and others), the engine writes `desc nulls first` | ✅  | `LegendCubeDialects` (M5b.4)    |
+| Values on H2 (ALFKI) and DuckDB, and on H2 against the composition suite's reference; Cube's types are the engine's, none declared wider                                  | ✅  | M5b.4                           |
 
 **Steps:**
 

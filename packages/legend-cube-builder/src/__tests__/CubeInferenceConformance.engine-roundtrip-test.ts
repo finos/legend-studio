@@ -53,6 +53,7 @@ import {
   Sort,
   SortDirection,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import {
   TEST__chainOf,
@@ -351,7 +352,7 @@ const sumsAndAverages = (
     .map(({ name }) => name);
 
 const aggregation = (
-  fn: AggregationFunction,
+  fn: AggregationFunction | WindowRankFunction | WindowRowFunction,
   column: string | undefined,
   name: string,
 ): ColumnAggregation => ({ column, function: fn, name });
@@ -1501,6 +1502,37 @@ const CASES: readonly ConformanceCase[] = [
           ...RANKS,
         ],
       ),
+    ),
+  },
+  {
+    // M5b (PLAN §11.8): the row functions of a number, a text and a date,
+    // nullable, and the new rank functions, never empty; Last as First over
+    // the reversed sort, in a third extend
+    name: 'partition-m5b-functions',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', ['SHIP_COUNTRY'], LATEST_FIRST, [
+        {
+          ...aggregation(WindowRowFunction.LAG, 'FREIGHT', 'previous freight'),
+          offset: 1,
+        },
+        {
+          ...aggregation(WindowRowFunction.LEAD, 'SHIP_CITY', 'next city'),
+          offset: 3,
+        },
+        aggregation(WindowRowFunction.FIRST, 'ORDER_DATE', 'first date'),
+        aggregation(WindowRowFunction.LAST, 'SHIP_REGION', 'last region'),
+        {
+          ...aggregation(WindowRankFunction.NTILE, undefined, 'quartile'),
+          buckets: 4,
+        },
+        aggregation(WindowRankFunction.PERCENT_RANK, undefined, 'percent'),
+        aggregation(
+          WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+          undefined,
+          'cumulative',
+        ),
+      ]),
     ),
   },
   {

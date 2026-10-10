@@ -22,7 +22,7 @@ See PLAN §11.8 for each step's deliverable and when it is done.
 - [x] **M5b.1** The settled decisions (PLAN §11.8) and this file
 - [x] **M5b.2** The core
 - [x] **M5b.3** The builder
-- [ ] **M5b.4** On the engine, around the databases, and in the composition and conformance suites
+- [x] **M5b.4** On the engine, around the databases, and in the composition and conformance suites
 - [ ] **M5b.5** Guides, testing.md and the changeset
 - [ ] **M5b.6** Verification and the browser rehearsal
 - [ ] **M5b.7** A demo video of the new functions (PLAN §11.3)
@@ -63,3 +63,15 @@ Filled in as steps land.
   `Aggregation offset <n>` or `Aggregation buckets <n>` field before the name and marks a setting's problem on it.
   The Partition editor offers Lag, Lead, First and Last after the column type's functions, on a column a window can
   sort by, and NTile, Percent Rank and Cumulative Distribution after the ranks; its notes explain them.
+- **M5b.4** (2026-10-10). On H2 (`LegendCubeOperations`): ALFKI's six orders by date, no tie, with all seven
+  functions, the values checked and the engine's typing equal to Cube's. Direct connection (`…DirectConnectionOperations`):
+  the six-row orders table on H2 and DuckDB, each country's rows. Plans (`LegendCubeDialects`): a shape with all seven
+  joins `WINDOW_SHAPES`; on the 17 window types, `ntile(4)`, `percent_rank()`, `cume_dist()`, `lag(…, 1)`,
+  `lead(…, 2)` and First's `first_value` over the window, and Last's over the reversed sort. ClickHouse writes
+  `lagInFrame`/`leadInFrame` over a whole-partition frame (the frame check skips those) and DuckDB `first`. A pin shows
+  the reversed sort puts empty values at the other end on every type: the engine writes `desc nulls first` where the
+  database's default wouldn't. Composition (`CubeWindowComposition`): the reference gains the seven functions (SQL's
+  NTile buckets, Percent Rank, Cumulative Distribution with ties, and the placed functions refusing a tie) and three
+  graphs (two customers' Lag, Lead, First, Last and places; each country's Last by a ship date that can be empty; the
+  newest tenth with NTile over no partition column); breaking Last's reversal in the built lib fails two of them.
+  Conformance: one case with all seven, Cube's types exactly the engine's. The corpus types the new sample.

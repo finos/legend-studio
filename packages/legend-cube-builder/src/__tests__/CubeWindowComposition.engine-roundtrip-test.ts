@@ -49,6 +49,7 @@ import {
   SortDirection,
   type TransformDefinition,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import {
   TEST__chainOf,
@@ -268,11 +269,31 @@ const cutRows = (input: Relation, size: number, nodeId: string): void => {
   }
 };
 
+/** NTile's bucket for the row at a place of a partition: the first buckets one row larger, as SQL fills them */
+const ntileOf = (place: number, size: number, buckets: number): number => {
+  const small = Math.floor(size / buckets);
+  const large = size % buckets;
+  return place < large * (small + 1)
+    ? Math.floor(place / (small + 1)) + 1
+    : large + Math.floor((place - large * (small + 1)) / small) + 1;
+};
+
+/** The functions whose value depends on where a row is, which a tie on the sort leaves open (PLAN §11.8) */
+const PLACED_FUNCTIONS: readonly string[] = [
+  WindowRankFunction.NTILE,
+  ...Object.values(WindowRowFunction),
+];
+
 /**
- * A window (spec §7.13, D5): each row of a partition gets its functions over
- * the partition's rows up to it and the rows tied with it on the sort keys,
- * or over the whole partition without any; a rank counts the rows before the
- * tie, a dense rank the ties before it, a row number its place
+ * A window (spec §7.13, D5, PLAN §11.8): each row of a partition gets its
+ * functions over the partition's rows up to it and the rows tied with it on
+ * the sort keys, or over the whole partition without any; a rank counts the
+ * rows before the tie, a dense rank the ties before it, a row number its
+ * place, NTile its bucket by place, Percent Rank (rank - 1) / (rows - 1) and
+ * Cumulative Distribution the rows up to and tied with it, over the
+ * partition's; Lag and Lead read the row so many places before or after, First
+ * and Last the partition's first and last rows. The reference refuses a tie
+ * for the functions that depend on a row's place.
  */
 const applyWindow = (input: Relation, node: Partition): Relation => {
   const sortColumns = node.sorts.map(({ column }) => column);
@@ -294,6 +315,16 @@ const applyWindow = (input: Relation, node: Partition): Relation => {
       ties += 1;
       const frame = node.sorts.length ? sorted.slice(0, end) : sorted;
       const tie = sorted.slice(start, end);
+      if (
+        tie.length > 1 &&
+        node.aggregations.some(({ function: fn }) =>
+          PLACED_FUNCTIONS.includes(fn),
+        )
+      ) {
+        throw new Error(
+          `The reference can't place the rows of "${node.id}": a tie on its sort`,
+        );
+      }
       tie.forEach((row, index) => {
         added.set(
           row,
@@ -312,6 +343,44 @@ const applyWindow = (input: Relation, node: Partition): Relation => {
                     ]);
                   }
                   return [aggregation.name, start + index + 1];
+                case WindowRankFunction.NTILE:
+                  return [
+                    aggregation.name,
+                    ntileOf(
+                      start + index,
+                      sorted.length,
+                      aggregation.buckets ?? 0,
+                    ),
+                  ];
+                case WindowRankFunction.PERCENT_RANK:
+                  return [
+                    aggregation.name,
+                    sorted.length === 1 ? 0 : start / (sorted.length - 1),
+                  ];
+                case WindowRankFunction.CUMULATIVE_DISTRIBUTION:
+                  return [aggregation.name, end / sorted.length];
+                case WindowRowFunction.LAG:
+                case WindowRowFunction.LEAD: {
+                  const offset =
+                    (aggregation.offset ?? 0) *
+                    (aggregation.function === WindowRowFunction.LAG ? -1 : 1);
+                  return [
+                    aggregation.name,
+                    sorted[start + index + offset]?.[
+                      aggregation.column as string
+                    ] ?? null,
+                  ];
+                }
+                case WindowRowFunction.FIRST:
+                  return [
+                    aggregation.name,
+                    sorted[0]?.[aggregation.column as string] ?? null,
+                  ];
+                case WindowRowFunction.LAST:
+                  return [
+                    aggregation.name,
+                    sorted.at(-1)?.[aggregation.column as string] ?? null,
+                  ];
                 default:
                   return [aggregation.name, aggregate(aggregation, frame)];
               }
@@ -548,19 +617,38 @@ const referenceDifferences = (
 const { ASC, DESC } = SortDirection;
 const { COUNT, COUNT_ROWS, DISTINCT_COUNT, DISTINCT_VALUE, SUM, MIN, MAX } =
   AggregationFunction;
-const { RANK, DENSE_RANK, ROW_NUMBER } = WindowRankFunction;
+const {
+  RANK,
+  DENSE_RANK,
+  ROW_NUMBER,
+  NTILE,
+  PERCENT_RANK,
+  CUMULATIVE_DISTRIBUTION,
+} = WindowRankFunction;
+const { LAG, LEAD, FIRST, LAST } = WindowRowFunction;
 
 const asc = (column: string): ColumnDirection => ({ column, direction: ASC });
 const desc = (column: string): ColumnDirection => ({ column, direction: DESC });
 
-/** A window or group function: its function, its column if it takes one, its name */
-type FunctionSpec = readonly [string, string | undefined, string];
+/** A window or group function: its function, its column if it takes one, its name, and an offset or a bucket count */
+type FunctionSpec = readonly [
+  string,
+  string | undefined,
+  string,
+  Pick<ColumnAggregation, 'offset' | 'buckets'>?,
+];
 
 const aggregationOf = ([
   function_,
   column,
   name,
-]: FunctionSpec): ColumnAggregation => ({ column, function: function_, name });
+  settings,
+]: FunctionSpec): ColumnAggregation => ({
+  column,
+  function: function_,
+  name,
+  ...settings,
+});
 
 const partition = (
   id: string,
@@ -1155,6 +1243,59 @@ const COMPOSITIONS: readonly (readonly [string, Composition])[] = [
         ),
         new Sort('sort101', [desc('n'), asc('rn'), asc('ORDER_ID')]),
         new Limit('limit101', 12),
+      ],
+    },
+  ],
+  [
+    "Reads two customers' orders before and after each one, first and last, and places each in its customer's orders (M5b)",
+    {
+      nodes: [
+        partition(
+          'partition101',
+          ['CUSTOMER_ID'],
+          [asc('ORDER_ID')],
+          [LAG, 'ORDER_DATE', 'previous', { offset: 1 }],
+          [LEAD, 'EMPLOYEE_ID', 'second next', { offset: 2 }],
+          [FIRST, 'ORDER_DATE', 'first'],
+          [LAST, 'SHIP_REGION', 'last region'],
+          [NTILE, undefined, 'quartile', { buckets: 4 }],
+          [PERCENT_RANK, undefined, 'percent'],
+          [CUMULATIVE_DISTRIBUTION, undefined, 'cumulative'],
+        ),
+        filter(
+          'filter101',
+          is('CUSTOMER_ID', IN, [str('ALFKI'), str('BONAP'), str('CENTC')]),
+        ),
+      ],
+    },
+  ],
+  [
+    "Takes each country's last order by a ship date that can be empty, the empty ones last, as Last reverses the sort (M5b)",
+    {
+      nodes: [
+        partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [asc('SHIPPED_DATE'), asc('ORDER_ID')],
+          [FIRST, 'ORDER_ID', 'first shipped'],
+          [LAST, 'ORDER_ID', 'last'],
+          [LAG, 'SHIPPED_DATE', 'shipped before', { offset: 1 }],
+        ),
+      ],
+    },
+  ],
+  [
+    "Keeps the newest tenth of all orders with NTile over no partition column, and the oldest order's id on each (M5b)",
+    {
+      nodes: [
+        partition(
+          'partition101',
+          [],
+          [desc('ORDER_ID')],
+          [NTILE, undefined, 'tenth', { buckets: 10 }],
+          [LAST, 'ORDER_ID', 'oldest'],
+        ),
+        filter('filter101', is('tenth', EQUAL, int(1))),
       ],
     },
   ],

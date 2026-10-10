@@ -36,6 +36,7 @@ import {
   Sort,
   SortDirection,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
@@ -167,13 +168,23 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
     const window = (
       columns: string[],
       sorted: boolean,
-      ...functions: [string, string | undefined, string][]
+      ...functions: [
+        string,
+        string | undefined,
+        string,
+        { offset?: number; buckets?: number }?,
+      ][]
     ): Partition =>
       new Partition(
         'partition101',
         columns,
         sorted ? [{ column: orderId, direction: SortDirection.ASC }] : [],
-        functions.map(([fn, column, name]) => ({ column, function: fn, name })),
+        functions.map(([fn, column, name, settings]) => ({
+          column,
+          function: fn,
+          name,
+          ...settings,
+        })),
       );
     const germany = (): Filter =>
       new Filter(
@@ -231,6 +242,39 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
       expect(TEST__columnValues(result, 'rn')).toEqual(
         TEST__columnValues(result, 'n'),
       );
+    });
+
+    test("Reads the row before and after each, each country's first and last, and places each row in its country (M5b)", async () => {
+      const result = await run(
+        window(
+          [country],
+          true,
+          [WindowRowFunction.LAG, orderId, 'previous', { offset: 1 }],
+          [WindowRowFunction.LEAD, orderId, 'next', { offset: 1 }],
+          [WindowRowFunction.FIRST, orderId, 'first'],
+          [WindowRowFunction.LAST, orderId, 'last'],
+          [WindowRankFunction.NTILE, undefined, 'half', { buckets: 2 }],
+          [WindowRankFunction.PERCENT_RANK, undefined, 'percent'],
+          [WindowRankFunction.CUMULATIVE_DISTRIBUTION, undefined, 'cumulative'],
+        ),
+        ascending(),
+      );
+      const numbers = (column: string): (number | null)[] =>
+        TEST__columnValues(result, column).map((value) =>
+          value === null ? null : Number(value),
+        );
+      // DE holds orders 1, 3 and 6, MX 2 and 5, FR 4
+      expect(numbers(orderId)).toEqual([1, 2, 3, 4, 5, 6]);
+      expect(numbers('previous')).toEqual([null, null, 1, null, 2, 3]);
+      expect(numbers('next')).toEqual([3, 5, 6, null, null, null]);
+      expect(numbers('first')).toEqual([1, 2, 1, 4, 2, 1]);
+      // the country's last order on each of its rows
+      expect(numbers('last')).toEqual([6, 5, 6, 4, 5, 6]);
+      expect(numbers('half')).toEqual([1, 1, 1, 1, 2, 2]);
+      expect(numbers('percent')).toEqual([0, 0, 0.5, 0, 1, 1]);
+      expect(
+        numbers('cumulative').map((value) => Math.round((value ?? 0) * 6)),
+      ).toEqual([2, 3, 4, 6, 6, 6]);
     });
 
     test('Counts the distinct countries over every row, and gives each row its own country as the distinct value', async () => {

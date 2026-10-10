@@ -51,6 +51,7 @@ import {
   SortDirection,
   Partition,
   WindowRankFunction,
+  WindowRowFunction,
   CompositeFilter,
   CompositeFilterOperator,
 } from '@finos/legend-cube';
@@ -2201,6 +2202,71 @@ describe('Partition on the engine', () => {
     expect(
       byOrderId(await TEST__runQuery(engine, total, ROW_LIMIT), 'total'),
     ).toEqual([19, 19, 19, 19, 19, 19]);
+  });
+
+  test("Reads ALFKI's freight and dates from other rows by date, and places each order in its partition (M5b)", async () => {
+    // ALFKI's 6 orders have 6 dates: no tie, so every function has one answer
+    const { NTILE, PERCENT_RANK, CUMULATIVE_DISTRIBUTION } = WindowRankFunction;
+    const { LAG, LEAD, FIRST, LAST } = WindowRowFunction;
+    const query = await ordersThen(
+      new Partition(
+        'partition101',
+        ['CUSTOMER_ID'],
+        [by('ORDER_DATE')],
+        [
+          { ...fn(LAG, 'FREIGHT', 'previous'), offset: 1 },
+          { ...fn(LEAD, 'ORDER_DATE', 'second next'), offset: 2 },
+          fn(FIRST, 'FREIGHT', 'first'),
+          fn(LAST, 'FREIGHT', 'last'),
+          { ...fn(NTILE, undefined, 'quartile'), buckets: 4 },
+          fn(PERCENT_RANK, undefined, 'percent'),
+          fn(CUMULATIVE_DISTRIBUTION, undefined, 'cumulative'),
+        ],
+      ),
+      equals('CUSTOMER_ID', 'ALFKI'),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const cents = (column: string): (number | null)[] =>
+      byOrderId(result, column).map((value) =>
+        value === null ? null : Math.round(value * 100) / 100,
+      );
+    // FREIGHT by date: 29.46, 61.02, 23.94, 69.53, 40.42, 1.21
+    expect(cents('previous')).toEqual([
+      null,
+      29.46,
+      61.02,
+      23.94,
+      69.53,
+      40.42,
+    ]);
+    expect(cents('first')).toEqual(Array(6).fill(29.46));
+    // the partition's last row on every row, not the current one
+    expect(cents('last')).toEqual(Array(6).fill(1.21));
+    const ids = orderIds(TEST__columnValues(result, 'ORDER_ID'));
+    const dates = TEST__columnValues(result, 'second next').map((value) =>
+      value === null ? null : String(value).slice(0, 10),
+    );
+    expect(
+      ids
+        .map((id, index) => [id, dates[index]] as const)
+        .sort(([a], [b]) => a - b)
+        .map(([, date]) => date),
+    ).toEqual([
+      '1997-10-13',
+      '1998-01-15',
+      '1998-03-16',
+      '1998-04-09',
+      null,
+      null,
+    ]);
+    expect(byOrderId(result, 'quartile')).toEqual([1, 1, 2, 2, 3, 4]);
+    expect(byOrderId(result, 'percent')).toEqual([0, 0.2, 0.4, 0.6, 0.8, 1]);
+    expect(
+      byOrderId(result, 'cumulative').map(
+        (value) => Math.round((value ?? 0) * 6) / 6,
+      ),
+    ).toEqual([1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1]);
   });
 
   test("Counts France's 77 orders on each of its rows though a Filter after the window keeps only France", async () => {

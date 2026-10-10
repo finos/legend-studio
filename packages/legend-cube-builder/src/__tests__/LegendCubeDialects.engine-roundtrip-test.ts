@@ -42,6 +42,7 @@ import {
   Sort,
   SortDirection,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import { stringifyLosslessJSON } from '@finos/legend-shared';
 import {
@@ -1044,6 +1045,39 @@ const distinctByCountry = (
 
 const WINDOW_SHAPES: [string, () => Query][] = [
   [
+    "a Partition with M5b's functions",
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [by('ORDER_DATE')],
+          [
+            {
+              ...windowFunction(WindowRowFunction.LAG, 'FREIGHT', 'lg'),
+              offset: 1,
+            },
+            {
+              ...windowFunction(WindowRowFunction.LEAD, 'ORDER_DATE', 'ld'),
+              offset: 2,
+            },
+            windowFunction(WindowRowFunction.FIRST, 'FREIGHT', 'f'),
+            windowFunction(WindowRowFunction.LAST, 'FREIGHT', 'l'),
+            {
+              ...windowFunction(WindowRankFunction.NTILE, undefined, 'nt'),
+              buckets: 4,
+            },
+            windowFunction(WindowRankFunction.PERCENT_RANK, undefined, 'pr'),
+            windowFunction(
+              WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+              undefined,
+              'cd',
+            ),
+          ],
+        ),
+      ),
+  ],
+  [
     'a sorted Partition with a Sum and an Average',
     () =>
       ordersThen(
@@ -1465,11 +1499,88 @@ describe('Window functions, as each database plans them', () => {
         if (!sql.includes(' over (')) {
           problems.push(`${name}: no over clause`);
         }
-        if (FRAME_CLAUSE.test(sql)) {
+        // ClickHouse's own Lag and Lead read over the whole partition, as
+        // its lagInFrame and leadInFrame need (PLAN §11.8)
+        if (
+          FRAME_CLAUSE.test(
+            sql.replace(
+              /\b(?:lag|lead)inframe\([^()]*\) over \([^()]*\)/gu,
+              '',
+            ),
+          )
+        ) {
           problems.push(`${name}: a frame clause`);
         }
       }
       expect(problems).toEqual([]);
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Writes M5b's functions over the window: NTile, Percent Rank, Cumulative Distribution, Lag and Lead by offset, First, and Last as First over the reversed sort, on %s",
+    async (databaseType) => {
+      const sql = await windowPlanSql(
+        "a Partition with M5b's functions",
+        databaseType,
+      );
+      const window = `over \\(partition by [^()]*ship_country[^()]* order by [^()]*order_date[^()]*`;
+      ['ntile\\(4\\)', 'percent_rank\\(\\)', 'cume_dist\\(\\)'].forEach((fn) =>
+        expect(sql).toMatch(
+          new RegExp(`\\b${fn} ${window}\\basc(?: nulls last)?\\)`, 'u'),
+        ),
+      );
+      // ClickHouse's own forms, over the whole partition
+      const [lag, lead] =
+        databaseType === 'ClickHouse'
+          ? ['laginframe', 'leadinframe']
+          : ['lag', 'lead'];
+      expect(sql).toMatch(
+        new RegExp(`\\b${lag}\\([^()]*freight[\`"]?, 1\\) ${window}`, 'u'),
+      );
+      expect(sql).toMatch(
+        new RegExp(`\\b${lead}\\([^()]*order_date[\`"]?, 2\\) ${window}`, 'u'),
+      );
+      // DuckDB's first() is first_value()
+      const first = databaseType === 'DuckDB' ? 'first' : 'first_value';
+      expect(sql).toMatch(
+        new RegExp(
+          `\\b${first}\\([^()]*freight[\`"]?\\) ${window}\\basc(?: nulls last)?\\)`,
+          'u',
+        ),
+      );
+      expect(sql).toMatch(
+        new RegExp(
+          `\\b${first}\\([^()]*freight[\`"]?\\) ${window}\\bdesc(?: nulls first)?\\)`,
+          'u',
+        ),
+      );
+      expect(sql).not.toMatch(/\blast_value\(|\bnth_value\(/u);
+      // reversed, the sort puts empty values at the other end too: where
+      // the database's own default wouldn't, the engine writes it
+      const ascending =
+        /\border by [^()]*order_date[`"]? asc(?<nulls> nulls last)?\)/u.exec(
+          sql,
+        );
+      const descending =
+        /\border by [^()]*order_date[`"]? desc(?<nulls> nulls first)?\)/u.exec(
+          sql,
+        );
+      expect(Boolean(ascending?.groups?.nulls)).toBe(
+        ['MemSQL', 'Databricks', 'Hive', 'BigQuery'].includes(databaseType),
+      );
+      expect(Boolean(descending?.groups?.nulls)).toBe(
+        ![
+          'H2',
+          'Postgres',
+          'SqlServer',
+          'Sybase',
+          'SybaseIQ',
+          'DB2',
+          'Snowflake',
+          'Oracle',
+          'Redshift',
+        ].includes(databaseType),
+      );
     },
   );
 
