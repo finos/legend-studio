@@ -18,6 +18,7 @@ import { QuestionCircleIcon, TimesIcon, WarningIcon } from '@finos/legend-art';
 import {
   isIncompleteError,
   isSchemasError,
+  isTypingError,
   type QueryNode,
   type Schema,
   UnknownNode,
@@ -47,7 +48,8 @@ const validateEdited = (
 ): string[] => {
   const errors: string[] = [];
   node.validate(inputSchemas, errors);
-  return [...new Set(errors)];
+  // waiting for the engine to type an Extend is no problem (PLAN §11.7)
+  return [...new Set(errors)].filter((error) => !isTypingError(error));
 };
 
 /**

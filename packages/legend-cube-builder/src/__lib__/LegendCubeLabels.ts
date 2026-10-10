@@ -56,6 +56,7 @@ export enum CUBE_PENDING_LABEL {
   EXECUTING_QUERY = 'executing query',
   RENDERING_QUERY = 'rendering query',
   REFRESHING_SOURCE = 'refreshing source',
+  TYPING_COLUMNS = 'typing new columns',
 }
 
 export const getRowLimitError = (text: string): string | undefined => {

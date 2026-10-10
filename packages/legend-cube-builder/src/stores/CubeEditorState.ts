@@ -21,7 +21,10 @@ import {
   createNodeRegistry,
   CubeDocument,
   diffSchemas,
+  Extend,
   findLostSortOrders,
+  isTypingError,
+  type JsonObject,
   MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
   MESSAGE_SORT_ORDER_LOST,
@@ -43,8 +46,10 @@ import {
   computed,
   flow,
   flowResult,
+  type IReactionDisposer,
   makeObservable,
   observable,
+  reaction,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
@@ -72,6 +77,7 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeModelOutline,
+  type NodeId,
 } from '../graph-manager/CubeEngine.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
@@ -79,6 +85,11 @@ import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
+import {
+  buildCubeExtendTypingLambdas,
+  isSameCubeExtendTyping,
+  readCubeExtendTyping,
+} from './CubeExtendTyping.js';
 import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
@@ -154,6 +165,10 @@ export class CubeEditorState implements CommandRegistrar {
     new Map();
   /** Sources sent to the engine to be typed again, until it answers */
   private pendingSources: ReadonlySet<QueryNode> = new Set();
+  /** Extends sent to the engine to be typed, until it answers (PLAN §11.7) */
+  private typingExtends: ReadonlySet<QueryNode> = new Set();
+  /** Types the Extends that wait for it, whenever one does (PLAN §11.7 Q4) */
+  private readonly retyping: IReactionDisposer;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /** The palette shows icons only; kept per user, never in the cube */
@@ -169,8 +184,15 @@ export class CubeEditorState implements CommandRegistrar {
   private readonly importedOver = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
-    makeObservable<CubeEditorState, 'pendingSources' | 'modelOutlines'>(this, {
+    makeObservable<
+      CubeEditorState,
+      'pendingSources' | 'modelOutlines' | 'typingExtends'
+    >(this, {
       pendingSources: observable.ref,
+      typingExtends: observable.ref,
+      extendsToType: computed,
+      isTypingExtends: computed,
+      retypeExtends: flow,
       modelOutlines: observable.ref,
       modelOutline: computed,
       loadModelOutline: flow,
@@ -229,6 +251,17 @@ export class CubeEditorState implements CommandRegistrar {
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
+    this.retyping = reaction(
+      () => this.extendsToType,
+      (waiting) => {
+        if (waiting.length) {
+          flowResult(this.retypeExtends(waiting)).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      { fireImmediately: true },
+    );
   }
 
   /** Each node's schema and errors, query-level rules included, as the emitter sees them */
@@ -253,6 +286,129 @@ export class CubeEditorState implements CommandRegistrar {
   /** The source is being typed again by the engine, e.g. after an import */
   isPendingSource(node: QueryNode): boolean {
     return this.pendingSources.has(node);
+  }
+
+  /**
+   * The Extends of the cube shown that wait for the engine to type their
+   * columns, their input valid, and that aren't being typed (PLAN §11.7):
+   * new expressions, or an input that changed
+   */
+  get extendsToType(): readonly Extend[] {
+    const { validity } = this.analysis;
+    return this.document.query.nodes.filter(
+      (node): node is Extend =>
+        node instanceof Extend &&
+        !this.typingExtends.has(node) &&
+        (validity.get(node.id) ?? []).some(isTypingError),
+    );
+  }
+
+  /** The cube shown has Extends the engine is typing */
+  get isTypingExtends(): boolean {
+    return this.document.query.nodes.some((node) =>
+      this.typingExtends.has(node),
+    );
+  }
+
+  /** The node waits for the engine to type it, or is being typed: an Extend (PLAN §11.7) */
+  isTypingNode(node: QueryNode): boolean {
+    return (
+      this.typingExtends.has(node) ||
+      (this.analysis.validity.get(node.id) ?? []).some(isTypingError)
+    );
+  }
+
+  /**
+   * Types Extends' columns with the engine, in one call, outside the undo
+   * history (PLAN §11.7 Q4): each for the input it has now, its columns
+   * after its input's relation, as typing types any node. The typing goes in
+   * place of the very nodes sent, in the cube shown and the undo snapshots
+   * taken meanwhile; one the user changed meanwhile is left to type again. A
+   * typing the engine couldn't give names the column it failed on.
+   */
+  *retypeExtends(nodes: readonly Extend[]): GeneratorFn<void> {
+    const { context, query } = this.document;
+    if (!context) {
+      return;
+    }
+    const { schemas } = this.analysis;
+    const requests = nodes.flatMap((node) => {
+      const [inputId] = query.getInputIds(node.id);
+      const input = inputId === undefined ? undefined : schemas.get(inputId);
+      if (
+        query.getNode(node.id) !== node ||
+        this.typingExtends.has(node) ||
+        !input ||
+        node.columns.some(({ lambda }) => lambda === undefined)
+      ) {
+        return [];
+      }
+      const columns = node.columns.map(({ name, lambda }) => ({
+        name,
+        lambda: lambda as JsonObject,
+      }));
+      return [
+        {
+          node,
+          input,
+          columns,
+          lambdas: buildCubeExtendTypingLambdas(
+            query,
+            node,
+            columns,
+            this.registry,
+            false,
+          ),
+        },
+      ];
+    });
+    if (!requests.length) {
+      return;
+    }
+    const sent = requests.map(({ node }) => node);
+    this.typingExtends = new Set([...this.typingExtends, ...sent]);
+    let answers: ReadonlyMap<NodeId, Schema | CubeEngineError>;
+    try {
+      answers = (yield this.host.engine.typeLambdas(
+        context.model,
+        new Map(requests.flatMap(({ lambdas }) => [...lambdas])),
+      )) as ReadonlyMap<NodeId, Schema | CubeEngineError>;
+    } catch (error) {
+      const failure =
+        error instanceof CubeEngineError
+          ? error
+          : new CubeEngineError(
+              CubeEngineErrorKind.NETWORK,
+              error instanceof Error ? error.message : String(error),
+            );
+      answers = new Map(
+        requests.flatMap(({ lambdas }) =>
+          [...lambdas.keys()].map((key) => [key, failure] as const),
+        ),
+      );
+    } finally {
+      this.typingExtends = new Set(
+        [...this.typingExtends].filter(
+          (node) => !sent.includes(node as Extend),
+        ),
+      );
+    }
+    // a typing that comes back the same leaves its node, and the query, alone
+    this.replaceOutsideHistory(
+      new Map(
+        requests.flatMap(({ node, input, columns }) => {
+          const { typing } = readCubeExtendTyping(
+            answers,
+            node,
+            input,
+            columns,
+          );
+          return isSameCubeExtendTyping(typing, node.typing)
+            ? []
+            : [[node, node.withTyping(typing)] as const];
+        }),
+      ),
+    );
   }
 
   /**
@@ -498,6 +654,15 @@ export class CubeEditorState implements CommandRegistrar {
     flowResult(this.reresolveSources()).catch(
       this.host.applicationStore.alertUnhandledError,
     );
+    // typed once on load too, as sources are checked again: the model may
+    // have changed the types of its functions (PLAN §11.7)
+    flowResult(
+      this.retypeExtends(
+        next.query.nodes.filter(
+          (node): node is Extend => node instanceof Extend,
+        ),
+      ),
+    ).catch(this.host.applicationStore.alertUnhandledError);
   }
 
   /**
@@ -679,6 +844,19 @@ export class CubeEditorState implements CommandRegistrar {
       replacements.set(source, resolved);
     });
     this.warnings = warnings;
+    this.replaceOutsideHistory(replacements);
+  }
+
+  /**
+   * Puts nodes the engine checked in place of the very objects that were
+   * sent, outside the undo history: in the cube shown and in the undo
+   * snapshots taken meanwhile, so undoing an edit made meanwhile keeps them.
+   * A node the user changed meanwhile is a new object, and is left alone.
+   * Filter values saved as invalid text are read again against the columns.
+   */
+  private replaceOutsideHistory(
+    replacements: ReadonlyMap<QueryNode, QueryNode>,
+  ): void {
     if (!replacements.size) {
       return;
     }
@@ -997,6 +1175,7 @@ export class CubeEditorState implements CommandRegistrar {
 
   /** Stops any run; call when the page closes */
   dispose(): void {
+    this.retyping();
     this.execution.stop();
     this.nodeEditor.dispose();
   }

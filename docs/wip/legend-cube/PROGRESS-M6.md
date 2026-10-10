@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------------ |
 | Branch | `cube-m6`, from `cube-dev` `1f8f8cf0b`; a draft PR into `cube-dev` (user, 2026-10-10)      |
 | Engine | Local legend-engine on `localhost:6300`                                                    |
-| Step   | M6.6: Extend's engine calls                                                                |
-| Tests  | 2817 core, 1357 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
+| Step   | M6.7: Retyping in the builder                                                              |
+| Tests  | 2817 core, 1362 builder (core group); engine: the Difference suites, `CubeExpressions` (9) |
 
 ## Steps
 
@@ -25,7 +25,7 @@ See PLAN §11.7 for each step's deliverable and when it is done.
 - [x] **M6.4** Difference on the engine, around the databases and in the browser
 - [x] **M6.5** Extend in the core
 - [x] **M6.6** The engine adapter: parse, type and plan expressions
-- [ ] **M6.7** Retyping in the builder
+- [x] **M6.7** Retyping in the builder
 - [ ] **M6.8** The Extend editor, and registered
 - [ ] **M6.9** Extend on the engine, in the conformance suite and around the databases
 - [ ] **M6.10** Guides, READMEs and the changeset
@@ -44,7 +44,8 @@ Filled in as steps land.
 | M6.3 | `1a5a879ae` | feat: add Difference to Legend Cube's builder               |
 | M6.4 | `5b1fa39c9` | test: run Legend Cube's Difference on the engine            |
 | M6.5 | `1270430ee` | feat: add Extend to Legend Cube's core                      |
-| M6.6 | (this one)  | feat: parse, type and plan Legend Cube's Extend expressions |
+| M6.6 | `8c0ee2f41` | feat: parse, type and plan Legend Cube's Extend expressions |
+| M6.7 | (this one)  | feat: type Legend Cube's Extends in the background          |
 
 ## Notes
 
@@ -118,3 +119,13 @@ schema.`, `"x" does not have an expression.`, `"x" does not have a valid type.`)
   expression whose result is an enumeration (`dayOfWeek()`) reads as a type Cube doesn't know, so it is refused with
   "does not have a valid type"; `->toString()` works around it. The test harness routes the new calls
   (`generatePlan`, and the expression parse through `postWithTracing`).
+- **M6.7** (2026-10-10). `CubeEditorState` types every Extend waiting on `ERR_TYPING` (`extendsToType`: its own
+  checks passed, its input valid, not already sent) through a MobX reaction, in one `typeLambdas` call
+  (`retypeExtends`), outside the undo history: the typing goes in place of the very nodes sent, in the cube shown and
+  the undo snapshots (`replaceOutsideHistory`, now shared with the source re-check), so an answer for a node the user
+  changed meanwhile is dropped and the new node gets its own round. A failure is stored, so it isn't retried until
+  something changes. On import every Extend is typed once more, as sources are re-checked, and a typing that comes
+  back the same leaves the node alone (`isSameCubeExtendTyping`). Pending is not invalid: the canvas shows a waiting
+  or typing Extend as resolving (pulsing), the header says "typing new columns" with the loading bar, and the panel
+  leaves `ERR_TYPING` out of its problems; Execute's reason names the waiting node. Not done: retyping on a model
+  change within a session (the import covers a loaded cube).

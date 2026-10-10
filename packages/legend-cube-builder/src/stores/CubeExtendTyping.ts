@@ -147,3 +147,27 @@ export const readCubeExtendTyping = (
     error,
   };
 };
+/** Whether two typings say the same: the same kind and signature, and the same types, or the same failure */
+export const isSameCubeExtendTyping = (
+  a: ExtendTyping,
+  b: ExtendTyping,
+): boolean => {
+  if (a.kind === 'typed' && b.kind === 'typed') {
+    return (
+      a.signature === b.signature &&
+      a.types.length === b.types.length &&
+      a.types.every((type, index) => {
+        const other = b.types[index];
+        return other !== undefined && type.equals(other);
+      })
+    );
+  }
+  if (a.kind === 'failed' && b.kind === 'failed') {
+    return (
+      a.signature === b.signature &&
+      a.message === b.message &&
+      a.column === b.column
+    );
+  }
+  return a.kind === 'unresolved' && b.kind === 'unresolved';
+};
