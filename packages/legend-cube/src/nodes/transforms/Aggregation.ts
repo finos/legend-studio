@@ -17,9 +17,11 @@
 import { validate } from '../../inference/ValidationUtils.js';
 import {
   MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN,
+  MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING,
   MESSAGE_AGGREGATION_FUNCTION_EMPTY,
   MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE,
   MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT,
+  MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID,
   MESSAGE_AGGREGATION_FUNCTION_UNKNOWN,
   MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY,
   MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID,
@@ -32,10 +34,11 @@ import { foldColumnName, isValidColumnName } from '../../schema/ColumnName.js';
 import type { Schema } from '../../schema/Schema.js';
 import { type CubeType, PrimitiveType } from '../../types/CubeType.js';
 import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
+import { isSortableType } from '../../types/TypeCompatibility.js';
 import { TypeFamily } from '../../types/TypeFamily.js';
 
-// Aggregations (spec §10, PLAN §5.7, §11.5 and §11.6), shared by Group and
-// Partition, whose windows also offer the rank functions
+// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6 and §11.8), shared by Group
+// and Partition, whose windows also offer the rank and row functions
 
 /** An aggregation function, as saved: a Group's, and a window's but its rank functions */
 export enum AggregationFunction {
@@ -58,15 +61,21 @@ export const isAggregationFunction = (
 ): value is AggregationFunction => AGGREGATION_FUNCTIONS.includes(value);
 
 /**
- * A window-only function, as saved (spec §10, PLAN §11.6): it numbers each
- * row of its partition by the window's sort, so it takes no column and needs
- * a sort. A Group doesn't know them (PLAN §11.5, Q4).
+ * A window-only function, as saved (spec §10, PLAN §11.6, §11.8): it ranks
+ * each row of its partition by the window's sort, so it takes no column and
+ * needs a sort. A Group doesn't know them (PLAN §11.5, Q4).
  */
 export enum WindowRankFunction {
   RANK = 'Rank',
   DENSE_RANK = 'DenseRank',
   /** Added by Cube (PLAN §11.6, Q2): one number per row, ties or not */
   ROW_NUMBER = 'RowNumber',
+  /** Added in M5b (PLAN §11.8): the bucket, from 1, of `buckets` near-equal ones */
+  NTILE = 'NTile',
+  /** Added in M5b: (rank - 1) / (rows - 1), from 0 to 1 */
+  PERCENT_RANK = 'PercentRank',
+  /** Added in M5b: the share of the partition's rows up to this one, ties included */
+  CUMULATIVE_DISTRIBUTION = 'CumulativeDistribution',
 }
 
 /** The rank functions, in the order an editor offers them */
@@ -78,11 +87,70 @@ export const isWindowRankFunction = (
 ): value is WindowRankFunction =>
   (WINDOW_RANK_FUNCTIONS as readonly string[]).includes(value);
 
-/** A function a window offers: every aggregation function, and the rank functions */
-export type WindowFunction = AggregationFunction | WindowRankFunction;
+/**
+ * A window-only function of a column, as saved (PLAN §11.8): a value of
+ * another row of the partition, by the window's sort, so it needs a sort, and
+ * it has the column's type, nullable. Last is the partition's last row, the
+ * same on every row, as First is its first.
+ */
+export enum WindowRowFunction {
+  /** The value `offset` rows before, empty for the first rows */
+  LAG = 'Lag',
+  /** The value `offset` rows after, empty for the last rows */
+  LEAD = 'Lead',
+  FIRST = 'First',
+  LAST = 'Last',
+}
+
+/** The row functions, in the order an editor offers them */
+export const WINDOW_ROW_FUNCTIONS: readonly WindowRowFunction[] = Object.freeze(
+  Object.values(WindowRowFunction),
+);
+
+export const isWindowRowFunction = (
+  value: string,
+): value is WindowRowFunction =>
+  (WINDOW_ROW_FUNCTIONS as readonly string[]).includes(value);
+
+/** A function a window offers: every aggregation function, and the rank and row functions */
+export type WindowFunction =
+  | AggregationFunction
+  | WindowRankFunction
+  | WindowRowFunction;
 
 export const isWindowFunction = (value: string): value is WindowFunction =>
-  isAggregationFunction(value) || isWindowRankFunction(value);
+  isAggregationFunction(value) ||
+  isWindowRankFunction(value) ||
+  isWindowRowFunction(value);
+
+/** Whether the function needs the window to sort its rows: the rank and row functions */
+export const needsWindowSort = (aggregation: string): boolean =>
+  isWindowRankFunction(aggregation) || isWindowRowFunction(aggregation);
+
+/** What a function sets beside its column, if anything: Lag's and Lead's offset, NTile's bucket count */
+export enum AggregationSetting {
+  OFFSET = 'offset',
+  BUCKETS = 'buckets',
+}
+
+/** The setting the function takes, if any */
+export const getAggregationSetting = (
+  aggregation: string,
+): AggregationSetting | undefined =>
+  aggregation === WindowRowFunction.LAG ||
+  aggregation === WindowRowFunction.LEAD
+    ? AggregationSetting.OFFSET
+    : aggregation === WindowRankFunction.NTILE
+      ? AggregationSetting.BUCKETS
+      : undefined;
+
+/** A setting's value until the user gives one: one row back or ahead, four buckets (quartiles) */
+export const AGGREGATION_SETTING_DEFAULTS: Readonly<
+  Record<AggregationSetting, number>
+> = Object.freeze({
+  [AggregationSetting.OFFSET]: 1,
+  [AggregationSetting.BUCKETS]: 4,
+});
 
 /**
  * Where aggregations are: a Group, or a window, which also knows the rank
@@ -106,18 +174,23 @@ export const isAggregationFunctionOf = (
     : isAggregationFunction(value);
 
 /**
- * One output column of a Group: a function of a column, under a name. The
- * function is kept as saved, so an unknown or empty one is held and reported,
- * never dropped (PLAN §11.5, Q4). `column` is `undefined` for a function that
- * takes none (Count rows) and `''` until picked; `name` is `''` until given.
+ * One output column of a Group or a window: a function of a column, under a
+ * name. The function is kept as saved, so an unknown or empty one is held and
+ * reported, never dropped (PLAN §11.5, Q4). `column` is `undefined` for a
+ * function that takes none (Count rows, the rank functions) and `''` until
+ * picked; `name` is `''` until given. `offset` (Lag, Lead) and `buckets`
+ * (NTile) are their functions' settings (PLAN §11.8), kept as given for
+ * validation to judge, and `undefined` on every other function.
  */
 export interface ColumnAggregation {
   readonly column: string | undefined;
   readonly function: string;
   readonly name: string;
+  readonly offset?: number | undefined;
+  readonly buckets?: number | undefined;
 }
 
-/** Whether a value has a `ColumnAggregation`'s shape: texts, the column left out or not */
+/** Whether a value has a `ColumnAggregation`'s shape: texts, the column left out or not, and numbers for the settings */
 export const isColumnAggregation = (
   value: unknown,
 ): value is ColumnAggregation => {
@@ -128,13 +201,33 @@ export const isColumnAggregation = (
     column,
     function: fn,
     name,
+    offset,
+    buckets,
   } = value as Partial<Record<keyof ColumnAggregation, unknown>>;
   return (
     (column === undefined || typeof column === 'string') &&
     typeof fn === 'string' &&
-    typeof name === 'string'
+    typeof name === 'string' &&
+    (offset === undefined || typeof offset === 'number') &&
+    (buckets === undefined || typeof buckets === 'number')
   );
 };
+
+/** A frozen copy of an aggregation, its settings left out when undefined */
+export const freezeColumnAggregation = ({
+  column,
+  function: fn,
+  name,
+  offset,
+  buckets,
+}: ColumnAggregation): ColumnAggregation =>
+  Object.freeze({
+    column,
+    function: fn,
+    name,
+    ...(offset === undefined ? {} : { offset }),
+    ...(buckets === undefined ? {} : { buckets }),
+  });
 
 const DISPLAY_NAMES = new Map<string, string>([
   [AggregationFunction.DISTINCT_COUNT, 'Distinct Count'],
@@ -142,17 +235,19 @@ const DISPLAY_NAMES = new Map<string, string>([
   [AggregationFunction.COUNT_ROWS, 'Count Rows'],
   [WindowRankFunction.DENSE_RANK, 'Dense Rank'],
   [WindowRankFunction.ROW_NUMBER, 'Row Number'],
+  [WindowRankFunction.PERCENT_RANK, 'Percent Rank'],
+  [WindowRankFunction.CUMULATIVE_DISTRIBUTION, 'Cumulative Distribution'],
 ]);
 
 /**
  * How a function is shown (spec §10): `Distinct Count`, `Distinct Value`,
- * `Count Rows`, `Dense Rank` and `Row Number`; every other text as it is, an
- * unknown one included
+ * `Count Rows`, `Dense Rank`, `Row Number`, `Percent Rank` and `Cumulative
+ * Distribution`; every other text as it is, an unknown one included
  */
 export const getAggregationDisplayName = (aggregation: string): string =>
   DISPLAY_NAMES.get(aggregation) ?? aggregation;
 
-/** Whether the function aggregates a column: all but Count rows and the rank functions */
+/** Whether the function takes a column: all but Count rows and the rank functions */
 export const takesAggregationColumn = (aggregation: WindowFunction): boolean =>
   aggregation !== AggregationFunction.COUNT_ROWS &&
   !isWindowRankFunction(aggregation);
@@ -205,14 +300,20 @@ export const getAvailableAggregations = (
   }
 };
 
-/** Whether a column of the type offers the function: never a rank function, which takes no column */
+/**
+ * Whether a column of the type offers the function: a row function any type
+ * a window can partition by (`isSortableType`), never a rank function, which
+ * takes no column
+ */
 const offersAggregation = (
   columnType: CubeType,
   aggregation: WindowFunction,
 ): boolean =>
-  (getAvailableAggregations(columnType) as readonly WindowFunction[]).includes(
-    aggregation,
-  );
+  isWindowRowFunction(aggregation)
+    ? isSortableType(columnType)
+    : (
+        getAvailableAggregations(columnType) as readonly WindowFunction[]
+      ).includes(aggregation);
 
 const primitive = (path: PRIMITIVE_TYPE_PATH): PrimitiveType =>
   PrimitiveType.get(path);
@@ -242,9 +343,10 @@ const dateResultType = (family: TypeFamily): PrimitiveType => {
 };
 
 /**
- * The type of a function's output, as the engine types it (PLAN §5.7):
- * Integer for the counts and the rank functions; the column's own precise
- * type for Distinct Value;
+ * The type of a function's output, as the engine types it (PLAN §5.7,
+ * §11.8): Integer for the counts and the rank functions but Percent Rank and
+ * Cumulative Distribution, which are Float; the column's own precise type
+ * for Distinct Value and the row functions;
  * for Sum, Integer, Float, or else Number; Float for Average; Min and Max as
  * Sum on numbers, StrictDate on a StrictDate, DateTime on a Timestamp or
  * DateTime. `undefined` for a function the column's type doesn't offer, or a
@@ -255,10 +357,16 @@ export const getAggregationResultType = (
   columnType: CubeType | undefined,
 ): CubeType | undefined => {
   if (!takesAggregationColumn(aggregation)) {
-    return primitive(PRIMITIVE_TYPE_PATH.INTEGER);
+    return aggregation === WindowRankFunction.PERCENT_RANK ||
+      aggregation === WindowRankFunction.CUMULATIVE_DISTRIBUTION
+      ? primitive(PRIMITIVE_TYPE_PATH.FLOAT)
+      : primitive(PRIMITIVE_TYPE_PATH.INTEGER);
   }
   if (!columnType || !offersAggregation(columnType, aggregation)) {
     return undefined;
+  }
+  if (isWindowRowFunction(aggregation)) {
+    return columnType;
   }
   switch (aggregation) {
     case AggregationFunction.COUNT:
@@ -285,7 +393,7 @@ export const getAggregationResultType = (
 /**
  * Whether a function's output can be null: all but the counts and the rank
  * functions, though the engine types Sum and Average as never null (PLAN
- * §5.7, D4). It decides rows: a negated filter guards with `isEmpty` only on a
+ * §5.7, D4); a row function's is empty when there is no such row (PLAN §11.8). It decides rows: a negated filter guards with `isEmpty` only on a
  * nullable column.
  */
 export const isAggregationNullable = (aggregation: WindowFunction): boolean =>
@@ -319,11 +427,13 @@ export const getAggregationAutoName = (
 
 /**
  * Checks one aggregation against the input schema, stopping at its first
- * problem (spec §10.3, then Cube's checks, PLAN §11.5 and §11.6): the
+ * problem (spec §10.3, then Cube's checks, PLAN §11.5, §11.6 and §11.8): the
  * function is given and the use knows it; Count rows and the rank functions
  * have no column, any other function a column of the input whose type offers
- * it; a rank function's window sorts its rows (with none, the database fails
- * with no location); the output name is given, is a valid column name
+ * it; a rank or row function's window sorts its rows (with none, the
+ * database fails with no location); Lag's and Lead's offset and NTile's bucket
+ * count are whole numbers of at least 1, and no other function has one; the
+ * output name is given, is a valid column name
  * (`isValidColumnName`), is no input column's name, keys included, in any case
  * (`foldColumnName`), and no other aggregation's, in any case either: the
  * engine fails on a duplicate name with no location. Exported so an editor can
@@ -369,13 +479,29 @@ export const validateColumnAggregation = (
         MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN(fn),
         errors,
       );
+  const setting = getAggregationSetting(fn);
+  const settingValid = Object.values(AggregationSetting).every((key) => {
+    const value = aggregation[key];
+    return key === setting
+      ? validate(
+          value !== undefined && Number.isSafeInteger(value) && value >= 1,
+          MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID(fn, key),
+          errors,
+        )
+      : validate(
+          value === undefined,
+          MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING(fn, key),
+          errors,
+        );
+  });
   return (
     columnValid &&
     validate(
-      !isWindowRankFunction(fn) || (use.kind === 'window' && use.sorted),
+      !needsWindowSort(fn) || (use.kind === 'window' && use.sorted),
       MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT(fn),
       errors,
     ) &&
+    settingValid &&
     validate(name !== '', MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY, errors) &&
     validate(
       isValidColumnName(name),

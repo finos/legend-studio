@@ -242,6 +242,12 @@ export const columnAccess = (
     : { k: 'property', name, receiver };
 };
 
+/** `<receiver>.<column>`, e.g. a column of the row a window function gives (`$p->lag($r, 1).c`) */
+export const property = (receiver: IR, name: string, origin?: Origin): IR =>
+  origin
+    ? { k: 'property', name, receiver, origin }
+    : { k: 'property', name, receiver };
+
 export const variable = (name: string): IR => ({ k: 'var', name });
 
 export const lambda = (params: readonly string[], body: readonly IR[]): IR => ({

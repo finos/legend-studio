@@ -18,7 +18,9 @@ import {
   AggregationFunction,
   type ColumnAggregation,
   isWindowRankFunction,
+  isWindowRowFunction,
   WindowRankFunction,
+  WindowRowFunction,
 } from '../../nodes/transforms/Aggregation.js';
 import type { Partition } from '../../nodes/transforms/Partition.js';
 import { SortDirection } from '../../nodes/transforms/Sort.js';
@@ -34,6 +36,7 @@ import {
   lambda,
   literal,
   type Origin,
+  property,
   type RelationExpr,
   variable,
 } from '../CubeIR.js';
@@ -66,8 +69,29 @@ const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
   }
 };
 
-/** A rank function's number for a row, `$p->rank($w, $r)`, `denseRank` the same, `$p->rowNumber($r)` */
-const rank = (fn: WindowRankFunction, origin: Origin): IR => {
+/** A whole number a window function takes, an offset or a bucket count, as an integer literal */
+const settingLiteral = (
+  value: number | undefined,
+  name: string,
+  origin: Origin,
+): IR => {
+  if (value === undefined || !Number.isSafeInteger(value) || value < 1) {
+    throw new Error(
+      `Can't emit window function "${name}": its setting isn't a whole number of at least 1`,
+    );
+  }
+  return literal({ kind: 'integer', value: String(value) }, origin);
+};
+
+/**
+ * A rank function's value for a row: `$p->rank($w, $r)`, `denseRank`,
+ * `percentRank` and `cumulativeDistribution` the same, `$p->rowNumber($r)`,
+ * and `$p->ntile($r, <buckets>)`
+ */
+const rank = (
+  { function: fn, buckets, name }: ColumnAggregation,
+  origin: Origin,
+): IR => {
   const [p, w, r] = [variable('p'), variable('w'), variable('r')];
   switch (fn) {
     case WindowRankFunction.RANK:
@@ -76,51 +100,99 @@ const rank = (fn: WindowRankFunction, origin: Origin): IR => {
       return func('denseRank', [p, w, r], origin);
     case WindowRankFunction.ROW_NUMBER:
       return func('rowNumber', [p, r], origin);
+    case WindowRankFunction.NTILE:
+      return func(
+        'ntile',
+        [p, r, settingLiteral(buckets, name, origin)],
+        origin,
+      );
+    case WindowRankFunction.PERCENT_RANK:
+      return func('percentRank', [p, w, r], origin);
+    case WindowRankFunction.CUMULATIVE_DISTRIBUTION:
+      return func('cumulativeDistribution', [p, w, r], origin);
     default:
-      throw new Error(`Can't emit window function "${String(fn)}"`);
+      throw new Error(`Can't emit window function "${fn}"`);
   }
+};
+
+/**
+ * A row function's value, a column of another row: `$p->lag($r, <offset>).c`,
+ * `lead` the same, and `$p->first($w, $r).c`, which is also Last's, written
+ * over the reversed window (PLAN §11.8)
+ */
+const rowValue = (
+  { column, function: fn, offset, name }: ColumnAggregation,
+  partitionId: string,
+  origin: Origin,
+): IR => {
+  if (!column) {
+    throw new Error(
+      `Can't emit window function "${name}" of partition "${partitionId}": it has no column`,
+    );
+  }
+  const [p, w, r] = [variable('p'), variable('w'), variable('r')];
+  const row =
+    fn === WindowRowFunction.LAG || fn === WindowRowFunction.LEAD
+      ? func(
+          fn === WindowRowFunction.LAG ? 'lag' : 'lead',
+          [p, r, settingLiteral(offset, name, origin)],
+          origin,
+        )
+      : func('first', [p, w, r], origin);
+  return property(row, column, origin);
 };
 
 /**
  * `~name: {p, w, r | $r.<column>} : y | $y-><reduce>`, or for Count rows
  * `~name: {p, w, r | 1} : y | $y->size()`, which counts every row; a rank
- * function `~name: {p, w, r | <rank>}`
+ * function `~name: {p, w, r | <rank>}`, a row function
+ * `~name: {p, w, r | <row>.<column>}`
  */
 const emitWindowFunction = (
-  { column, function: fn, name }: ColumnAggregation,
+  aggregation: ColumnAggregation,
   partitionId: string,
   origin: Origin,
 ): IR => {
+  const { column, function: fn, name } = aggregation;
   if (isWindowRankFunction(fn)) {
-    return colSpec(name, lambda(['p', 'w', 'r'], [rank(fn, origin)]));
+    return colSpec(name, lambda(['p', 'w', 'r'], [rank(aggregation, origin)]));
   }
-  const aggregation = fn as AggregationFunction;
-  if (aggregation !== AggregationFunction.COUNT_ROWS && !column) {
+  if (isWindowRowFunction(fn)) {
+    return colSpec(
+      name,
+      lambda(['p', 'w', 'r'], [rowValue(aggregation, partitionId, origin)]),
+    );
+  }
+  const reduced = fn as AggregationFunction;
+  if (reduced !== AggregationFunction.COUNT_ROWS && !column) {
     throw new Error(
       `Can't emit window function "${name}" of partition "${partitionId}": it has no column`,
     );
   }
   const value =
-    aggregation === AggregationFunction.COUNT_ROWS
+    reduced === AggregationFunction.COUNT_ROWS
       ? literal({ kind: 'integer', value: '1' }, origin)
       : columnAccess('r', column as string, origin);
   return aggregationColSpec(
     name,
     lambda(['p', 'w', 'r'], [value]),
-    lambda(['y'], [reduce(aggregation, origin)]),
+    lambda(['y'], [reduce(reduced, origin)]),
   );
 };
 
 /**
  * The window: `over(~[<partition columns>], [<sort keys>])`, without either
  * list when it is empty, and `over([])` with neither; never an empty column
- * list (an NPE on the engine) or an empty sort list beside columns
+ * list (an NPE on the engine) or an empty sort list beside columns. Reversed,
+ * every key's direction is the other one: Last's window (PLAN §11.8).
  */
-const emitOver = (node: Partition, origin: Origin): IR => {
+const emitOver = (node: Partition, origin: Origin, reversed = false): IR => {
   const sorts = collection(
     node.sorts.map(({ column, direction }) =>
       func(
-        direction === SortDirection.DESC ? 'descending' : 'ascending',
+        (direction === SortDirection.DESC) === reversed
+          ? 'ascending'
+          : 'descending',
         [colSpec(column)],
         origin,
       ),
@@ -134,13 +206,15 @@ const emitOver = (node: Partition, origin: Origin): IR => {
 };
 
 /**
- * Emits a partition (PLAN §8.8, §11.6) as
- * `<input>->extend(<over>, ~[<aggregates>])->extend(<over>, ~[<ranks>])`, in
- * the array form (the engine runs a later filter before a single-form
- * window) and in two extends (one holding both fails on the engine), each
- * left out when it has nothing; then, when the window functions are listed in
- * another order, a `select` of every column in the schema's order. No frame
- * is written: SQL's default (D5). The emitter checks the columns come out as
+ * Emits a partition (PLAN §8.8, §11.6, §11.8) as
+ * `<input>->extend(<over>, ~[<aggregates>])->extend(<over>, ~[<ranks and
+ * rows>])->extend(<reversed over>, ~[<lasts>])`, in the array form (the
+ * engine runs a later filter before a single-form window): an aggregate can't
+ * share an extend with a rank or row function (it fails on the engine), and
+ * Last is First over the reversed window, each extend left out when it has
+ * nothing; then, when the window functions are listed in another order, a
+ * `select` of every column in the schema's order. No frame is written: SQL's
+ * default (D5). The emitter checks the columns come out as
  * the node's inferred schema, so a mismatch fails in Cube, not on the engine.
  */
 export const emitPartition = (
@@ -173,21 +247,33 @@ export const emitPartition = (
   }
   const origin = originOf(node.id, EmitRole.WINDOW);
   const functionOrigin = originOf(node.id, EmitRole.AGGREGATION);
+  const isLast = ({ function: fn }: ColumnAggregation): boolean =>
+    fn === WindowRowFunction.LAST;
   const aggregates = node.aggregations.filter(
-    ({ function: fn }) => !isWindowRankFunction(fn),
+    ({ function: fn }) => !isWindowRankFunction(fn) && !isWindowRowFunction(fn),
   );
-  const ranks = node.aggregations.filter(({ function: fn }) =>
-    isWindowRankFunction(fn),
+  const ranks = node.aggregations.filter(
+    (aggregation) =>
+      (isWindowRankFunction(aggregation.function) ||
+        isWindowRowFunction(aggregation.function)) &&
+      !isLast(aggregation),
   );
-  const extended = [aggregates, ranks]
-    .filter((functions) => functions.length)
+  const lasts = node.aggregations.filter(isLast);
+  const extended = (
+    [
+      [aggregates, false],
+      [ranks, false],
+      [lasts, true],
+    ] as const
+  )
+    .filter(([functions]) => functions.length)
     .reduce(
-      (relation, functions) =>
+      (relation, [functions, reversed]) =>
         func(
           'extend',
           [
             relation,
-            emitOver(node, origin),
+            emitOver(node, origin, reversed),
             colSpecArray(
               functions.map((aggregation) =>
                 emitWindowFunction(aggregation, node.id, functionOrigin),
@@ -200,7 +286,7 @@ export const emitPartition = (
     );
   const emitted = [
     ...inputSchema.names(),
-    ...[...aggregates, ...ranks].map(({ name }) => name),
+    ...[...aggregates, ...ranks, ...lasts].map(({ name }) => name),
   ];
   return emitted.every((name, index) => name === expected[index])
     ? extended

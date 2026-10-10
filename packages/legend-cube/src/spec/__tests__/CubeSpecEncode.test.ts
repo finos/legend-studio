@@ -2375,6 +2375,81 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
       (partition as Partition).aggregations.map(({ name }) => name),
     ).toEqual(['Rank', 'Row Number']);
   });
+  test("Writes Lag's and Lead's offset and NTile's bucket count after the name, and reads one left out as its default, written back", () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 2 },
+      { column: 'FREIGHT', function: 'Lead', name: 'n', offset: 1 },
+      { function: 'NTile', name: 'q', buckets: 10 },
+      { column: 'FREIGHT', function: 'Last', name: 'l' },
+    ];
+    const sorts = [{ column: 'ORDER_ID', direction: 'ASC' }];
+    const document = decodePartitionSpec(
+      partitionSpec({ columns: [], sorts, aggregations }),
+    );
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(
+      document,
+      partitionSpec({ columns: [], sorts, aggregations }),
+      REGISTRY,
+    );
+    const defaulted = decodePartitionSpec(
+      partitionSpec({
+        columns: [],
+        sorts,
+        aggregations: [
+          { column: 'FREIGHT', function: 'Lead' },
+          { function: 'NTile' },
+        ],
+      }),
+    );
+    expect(aggregationsOf(defaulted)).toEqual([
+      { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead', offset: 1 },
+      { column: undefined, function: 'NTile', name: 'NTile', buckets: 4 },
+    ]);
+    expect(encodeCubeSpec(defaulted, REGISTRY)).toEqual(
+      partitionSpec({
+        columns: [],
+        sorts,
+        aggregations: [
+          {
+            column: 'FREIGHT',
+            function: 'Lead',
+            name: 'FREIGHT Lead',
+            offset: 1,
+          },
+          { function: 'NTile', name: 'NTile', buckets: 4 },
+        ],
+      }),
+    );
+  });
+
+  test('Keeps an offset or a bucket count out of range, or on a function that takes none, for validation to report', () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 0 },
+      { function: 'NTile', name: 'q', buckets: 2.5 },
+      { column: 'FREIGHT', function: 'Sum', name: 's', offset: 3 },
+    ];
+    const document = decodePartitionSpec(
+      partitionSpec({ columns: [], sorts: [], aggregations }),
+    );
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(
+      document,
+      partitionSpec({ columns: [], sorts: [], aggregations }),
+      REGISTRY,
+    );
+    // a setting that isn't a number can't be read
+    expect(() =>
+      decodeCubeSpec(
+        partitionSpec({
+          columns: [],
+          sorts: [],
+          aggregations: [{ function: 'NTile', name: 'q', buckets: '4' }],
+        }),
+        { registry: REGISTRY },
+      ),
+    ).toThrow();
+  });
 });
 
 describe(unitTest('Saved spec encoding: distincts'), () => {
