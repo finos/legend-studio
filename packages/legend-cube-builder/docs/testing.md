@@ -81,6 +81,9 @@ would serve it.
   of the fixture model with a static connection per database type (`CUBE_ENGINE_TEST__generatePlanSql`), and checks
   facts about the SQL: row numbers in the Sort's order, no `limit m,n`, no `top N distinct`. A check that should catch
   a missing workaround must fail without it: run it once with the workaround off before relying on it.
+- `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
+  example cube (PLAN §6.9) as the Examples tab does: it types its tables, checks every node types as Cube infers it
+  (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.
 - `src/__tests__/CubeNorthwindRelationTypes.json` records the engine's relation type for every table of the bundled
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.

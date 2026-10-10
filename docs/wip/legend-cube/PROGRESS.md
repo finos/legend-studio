@@ -51,6 +51,9 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     item, the data set's panel with its warehouse, the engine stand-ins, the docs). Left after the PR (user,
     2026-10-09): skeptic verification and the demo video, then Part B2's ingest steps in an internal deployment. Later:
     reading a definition from Depot at its deployed version (the SDLC pointer), and producers' user-id environments.
+  - Sample data and example cubes (PLAN §6.9, user, 2026-10-09), before Depot databases, to make Cube easy to demo:
+    Sports and Trades sample models beside Northwind, and six example cubes in an Examples tab of the source dialog.
+    Branch `cube-examples`, finos/legend-studio#5658; its demo video is recorded.
   - Next: Depot databases (PLAN §6.3, §6.8; their requirements are answered: released versions only, no dependency
     Databases), starting with the local mock depot.
 - [x] M4 Group, Concat (merged as #5649, `d847e6721`)
