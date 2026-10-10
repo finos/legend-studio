@@ -70,6 +70,14 @@ const accessorOf = (database: string, schema: string, table: string) =>
     role: EmitRole.ACCESSOR,
   });
 
+/** Waits for a condition the page reaches on its own, e.g. an outline loading */
+const waitUntil = async (condition: () => boolean): Promise<void> => {
+  for (let tries = 0; tries < 100 && !condition(); tries++) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  expect(condition()).toBe(true);
+};
+
 let engine: V1_LegendCubeEngine;
 let catalog: V1_LegendCubeProjectCatalog;
 
@@ -218,11 +226,3 @@ describe('Depot databases, through the mock depot and the engine', () => {
     expect(state.execution.result?.rows).toHaveLength(6);
   });
 });
-
-/** Waits for a condition the page reaches on its own, e.g. an outline loading */
-const waitUntil = async (condition: () => boolean): Promise<void> => {
-  for (let tries = 0; tries < 100 && !condition(); tries++) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  }
-  expect(condition()).toBe(true);
-};
