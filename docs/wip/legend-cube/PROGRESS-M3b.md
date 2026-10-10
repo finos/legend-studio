@@ -9,12 +9,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                   |
-| ------ | ------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-canvas`, from finos master `d847e6721` (M4 merged as #5649); worktree `legend-studio-cube-canvas` |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003   |
-| Step   | M3b.5 done (the floating editor replaces the side panel)                                                |
-| Tests  | 2486 core, 1199 builder (core group), 245 Query, 415 builder engine-roundtrip                           |
+| Item   | State                                                                                                                               |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-canvas`, on finos master `5e424277b` (first from `d847e6721`, after M4 merged as #5649); worktree `legend-studio-cube-canvas` |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003                               |
+| Step   | M3b.6 done (the editor's frame)                                                                                                     |
+| Tests  | 2486 core, 1298 builder (core group), 245 Query, 416 builder engine-roundtrip (after M3b.6)                                         |
 
 ## Steps
 
@@ -25,7 +25,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.3** The floating host, behind a prop
 - [x] **M3b.4** The click-away and Escape
 - [x] **M3b.5** Switch over from the side panel
-- [ ] **M3b.6** The editor's frame
+- [x] **M3b.6** The editor's frame
 - [ ] **M3b.7** Each editor's sizing and edges
 - [ ] **M3b.8** One placement rule for the palette, drops and context menus
 - [ ] **M3b.9** 'Add Items ▾'
@@ -41,14 +41,18 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 
 ## Commits
 
-Filled in as steps land.
+Filled in as steps land. Rebased on finos master `5e424277b` (#5656, CSV into DuckDB) after M3b.5: the hashes are the
+rebased ones.
 
-| Step    | Commit      | Subject                                                       |
-| ------- | ----------- | ------------------------------------------------------------- |
-| Answers | `220f02218` | docs: record answers to Legend Cube's UI questions            |
-| M3b.1   | `5be141305` | docs: settle Legend Cube M3b (canvas and layout)              |
-| M3b.2   | `e852f688a` | feat: apply Legend Cube's node editor before any other action |
-| M3b.3   | `e68c8b730` | feat: add Legend Cube's floating node editor, not yet in use  |
+| Step    | Commit      | Subject                                                            |
+| ------- | ----------- | ------------------------------------------------------------------ |
+| Answers | `12c8782f1` | docs: record answers to Legend Cube's UI questions                 |
+| M3b.1   | `455e3376e` | docs: settle Legend Cube M3b (canvas and layout)                   |
+| M3b.2   | `1b7277d0a` | feat: apply Legend Cube's node editor before any other action      |
+| M3b.3   | `3c70a267f` | feat: add Legend Cube's floating node editor, not yet in use       |
+| M3b.4   | `172d8cbcc` | feat: close Legend Cube's floating node editor, applying its edits |
+| M3b.5   | `d2f39ed89` | feat: float Legend Cube's node editor in place of its side panel   |
+| M3b.6   | (this one)  | feat: frame Legend Cube's floating node editor as a dialog         |
 
 ## Step notes
 
@@ -177,3 +181,22 @@ body, one editor follows the node clicked, Remove of the edited node applies fir
 on the graph/results splitter closed the editor, against C-07: the splitter is now left alone (its test kills its
 mutant). Browser, with the floating editor the default: `check-m3b2` 8/8, `check-m3b3` 39/39 at 900px and 768px,
 `check-m3b4` 18/18; the reviewer's probes confirm the canvas no longer refits when the editor opens or closes.
+
+**M3b.6 (2026-10-09).** The editor's frame, in one floating layout:
+
+- **Dialog.** It is a non-modal dialog named by its title, each word of the label capitalised (`toEditorTitle`, display
+  only).
+- **Layout.** The body (80px to 33vh) scrolls. The problems strip (three lines, then it scrolls) and Apply and Cancel
+  stay under it.
+- **Focus.** Enter on a node moves the focus into its editor. Escape, Cancel and the × give it back to the node when it
+  was in the editor; an Escape or a press elsewhere leaves it where the user put it.
+- **Popper role.** MUI's Popper no longer wraps the dialog in a tooltip role.
+
+Tests: workflow `wf_d240978c-273`. 20 of 23 mutants killed, two of the survivors equivalent and the third (the strip's
+cap) now pinned by a class check; every review fix's test kills its mutant (`m3b-verify/m3b6-fix-mutants.json`, 5/5).
+Browser: `check-m3b6.mjs` 7/7 at 768px, and the reviewer's `m3b6/review-m3b6.mjs` 28/28 (a tall Join with seven
+incompatible pairs: the strip sits between the body and the footer, inside the window).
+
+Gates: green but for one engine test, `CubeDirectConnection`'s 'setup SQL' case, which timed out at 30s twice. The
+same test with another H2 database name passes in 56ms in the isolated copy, so the shared engine holds a stuck
+connection to `CUBE_DIRECT_BAD` (an engine restart clears it); M3b.6 doesn't touch the engine path.

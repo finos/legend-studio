@@ -116,7 +116,7 @@ describe('Limit editor', () => {
     const editorState = await render(ordersLimited(10));
     await openLimit();
     expect(
-      within(panel()).getByText('Take first <x> rows', { exact: true }),
+      within(panel()).getByText('Take First <x> Rows', { exact: true }),
     ).toBeDefined();
     expect(sizeField().value).toBe('10');
     expect(sizeField().getAttribute('aria-invalid')).toBe('false');
@@ -312,7 +312,7 @@ describe('Drop editor', () => {
     const editorState = await render(ordersDropped(10));
     fireEvent.click(await TEST__findCanvasNode('drop101'));
     await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-    expect(within(panel()).getByText('Drop first <x> rows')).toBeDefined();
+    expect(within(panel()).getByText('Drop First <x> Rows')).toBeDefined();
     expect(dropField().value).toBe('10');
     expect(dropField().getAttribute('inputmode')).toBe('numeric');
     fireEvent.change(dropField(), { target: { value: '0' } });

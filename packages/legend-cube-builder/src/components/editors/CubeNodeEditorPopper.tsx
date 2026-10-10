@@ -114,6 +114,8 @@ export const CubeNodeEditorPopper = observer(
     return (
       <BasePopper
         open={true}
+        // the editor inside is the dialog; the layer is no tooltip
+        role="presentation"
         anchorEl={anchor}
         placement="bottom"
         modifiers={MODIFIERS}
@@ -125,7 +127,7 @@ export const CubeNodeEditorPopper = observer(
       >
         {/* a right-click in the editor is the editor's, never the canvas's menu */}
         <div ref={editorRef} onContextMenu={(event) => event.stopPropagation()}>
-          <CubeNodeEditorPanel editorState={editorState} variant="float" />
+          <CubeNodeEditorPanel editorState={editorState} />
         </div>
       </BasePopper>
     );

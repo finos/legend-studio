@@ -168,6 +168,14 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           }
         } else {
           editorState.nodeEditor.open(nodeId);
+          // the keyboard goes on in the editor, once it is shown
+          window.setTimeout(() =>
+            document
+              .querySelector<HTMLElement>(
+                `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
+              )
+              ?.focus(),
+          );
         }
       }}
       isValidConnection={(connection) =>

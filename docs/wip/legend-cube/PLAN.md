@@ -3101,8 +3101,10 @@ over §12.2 item 1, which asked where the node editor opens:
   - the net-change rule (an edit put back by hand adds no undo step);
   - the rule that the editor follows the cube on a re-check or Import.
 - **Title.** The editor's title shows the label with each word capitalised (U1(a)), for display only.
-- **Accessibility and test hooks.** The editor is `role=dialog`, non-modal. Focus moves into it when it is opened from
-  the keyboard and returns to the node when it closes. Its test id stays `NODE_EDITOR`.
+- **Accessibility and test hooks.** The editor is `role=dialog`, non-modal, named by its title. Focus moves into it when
+  it is opened from the keyboard, and returns to the node when Escape, Cancel or the × closes it with the focus inside
+  it (or nowhere); focus the user moved elsewhere stays there. The problems strip shows three lines, then scrolls. Its
+  test id stays `NODE_EDITOR`.
 - **One scroller.** The body is the editor's only scroller. Sort, Rename, Restrict and Group drop their inner caps, and
   Join's autofix list wraps long names.
 - **Wording and the last tab.**

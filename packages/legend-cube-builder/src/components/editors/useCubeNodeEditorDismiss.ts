@@ -16,6 +16,7 @@
 
 import { useEffect } from 'react';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
 
 /**
  * What a press outside the floating editor leaves alone (PLAN §11.6):
@@ -84,7 +85,11 @@ export const useCubeNodeEditorDismiss = (
         ) &&
         canDismiss()
       ) {
-        editorState.nodeEditor.finish();
+        const { nodeId } = editorState.nodeEditor;
+        const focused = document.activeElement;
+        if (editorState.nodeEditor.finish() && nodeId !== undefined) {
+          returnFocusToCubeCanvasNode(nodeId, editorRef.current, focused);
+        }
       }
     };
     // capturing, so a press that something else stops still closes it

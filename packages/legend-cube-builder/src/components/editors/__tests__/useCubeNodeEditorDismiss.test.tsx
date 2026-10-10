@@ -411,3 +411,60 @@ describe('Closing the floating node editor', () => {
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
   });
 });
+
+/** The canvas's own wrapper of a node, which takes the keyboard focus */
+const nodeWrapper = (nodeId: string): HTMLElement =>
+  document.querySelector<HTMLElement>(
+    `.react-flow__node[data-id="${nodeId}"]`,
+  ) as HTMLElement;
+
+describe('The keyboard focus when the floating node editor closes', () => {
+  test('Goes back to the node the editor was open on, on the Escape that closes it', async () => {
+    const editorState = await render(ordersLimited());
+    await editLimit();
+    editor().focus();
+    expect(document.activeElement).toBe(editor());
+    pressEscape(editor());
+    expectClosedApplied(editorState);
+    expect(document.activeElement).toBe(nodeWrapper('limit101'));
+  });
+
+  test.each([['Cancel'], ['Close the editor']])(
+    'Goes back to the node when %s is pressed from the keyboard',
+    async (name) => {
+      const editorState = await render(ordersLimited());
+      await editLimit();
+      const button = within(editor()).getByRole('button', { name });
+      button.focus();
+      fireEvent.click(button);
+      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(document.activeElement).toBe(nodeWrapper('limit101'));
+    },
+  );
+
+  test('Stays where the user put it, outside the editor, on a press or an Escape there', async () => {
+    const editorState = await render(ordersLimited());
+    await editLimit();
+    outside().focus();
+    pressEscape(outside());
+    expectClosedApplied(editorState);
+    expect(document.activeElement).toBe(outside());
+    await openEditor('limit101');
+    outside().focus();
+    press(outside());
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(document.activeElement).toBe(outside());
+  });
+
+  test('Stays in the editor on an Escape that leaves it open', async () => {
+    const editorState = await render(ordersLimited());
+    await editLimit();
+    editor().focus();
+    act(() => {
+      editorState.nodeEditor.holdOpen();
+    });
+    pressEscape(editor());
+    expectStillEditing(editorState);
+    expect(document.activeElement).toBe(editor());
+  });
+});

@@ -239,3 +239,11 @@ export const GROUP_EDITOR_NOTES = [
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';
+
+/**
+ * A node type's label as the node editor's title shows it, each word
+ * capitalised (QUESTIONS.md U1(a)), e.g. 'Take First <x> Rows'; the registry
+ * keeps its own wording
+ */
+export const toEditorTitle = (label: string): string =>
+  label.replace(/(?<=^|\s)[a-z]/gu, (letter) => letter.toUpperCase());
