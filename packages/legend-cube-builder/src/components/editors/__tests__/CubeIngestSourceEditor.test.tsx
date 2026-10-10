@@ -123,22 +123,22 @@ describe("An ingest data set's panel", () => {
       LEGEND_CUBE_TEST_ID.CANVAS,
     );
     fireEvent.click(await TEST__findCanvasNode('ingestDataset101'));
-    const panel = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-    expect(within(panel).getByText(FAKE_INGEST_ORDERS)).toHaveProperty(
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(within(panel()).getByText(FAKE_INGEST_ORDERS)).toHaveProperty(
       'title',
       fakeIngestUrnOf(FAKE_INGEST_ORDERS),
     );
-    expect(within(panel).getByText('TRADES')).toBeTruthy();
-    expect(within(panel).getByText('Production')).toBeTruthy();
-    expect(within(panel).getByText('Deployment 1234')).toBeTruthy();
+    expect(within(panel()).getByText('TRADES')).toBeTruthy();
+    expect(within(panel()).getByText('Production')).toBeTruthy();
+    expect(within(panel()).getByText('Deployment 1234')).toBeTruthy();
     expect(
-      within(panel).getByLabelText<HTMLInputElement>('Warehouse').value,
+      within(panel()).getByLabelText<HTMLInputElement>('Warehouse').value,
     ).toBe('CUBE_WH');
     // its saved columns, one fewer than the deployed definition declares
-    expect(within(panel).getAllByRole('row')).toHaveLength(2);
-    fireEvent.click(within(panel).getByRole('button', { name: 'Refresh' }));
+    expect(within(panel()).getAllByRole('row')).toHaveLength(2);
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Refresh' }));
     await waitFor(() =>
-      expect(within(panel).getAllByRole('row')).toHaveLength(
+      expect(within(panel()).getAllByRole('row')).toHaveLength(
         FAKE_INGEST_TRADES_SCHEMA.columns.length + 1,
       ),
     );

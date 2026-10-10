@@ -28,8 +28,11 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { CubeDataProductEnvironmentType } from '../../../CubeDataProduct.js';
-import { CubeEngineError, CubeEngineErrorKind } from '../../../CubeEngine.js';
-import type { NodeId } from '../../../CubeEngine.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+  type NodeId,
+} from '../../../CubeEngine.js';
 import { parseCubeIngestUrn } from '../../../CubeIngest.js';
 import {
   type CubeIngestCatalog,
