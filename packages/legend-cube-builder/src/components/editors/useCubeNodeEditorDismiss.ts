@@ -21,12 +21,13 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
  * What a press outside the floating editor leaves alone (PLAN §11.6):
  * a node, whose click applies and opens it or selects it; the canvas's
  * background, controls and minimap, so panning or zooming keeps the editor
- * (a plain click on the background closes it, through the canvas); and
- * MUI's layers, where a dropdown, menu or dialog opened from the editor
- * lives.
+ * (a plain click on the background closes it, through the canvas); the
+ * splitter above the results, as the editor follows its node when the
+ * canvas is resized; and MUI's layers, where a dropdown, menu or dialog
+ * opened from the editor lives.
  */
 const LEFT_ALONE =
-  '.react-flow__node, .react-flow__pane, .react-flow__controls, .react-flow__minimap, .MuiModal-root, .MuiPopover-root, .MuiPopper-root';
+  '.react-flow__node, .react-flow__pane, .react-flow__controls, .react-flow__minimap, .reflex-splitter, .MuiModal-root, .MuiPopover-root, .MuiPopper-root';
 
 /** An Escape there is the results grid's, e.g. closing its menu */
 const GRID_LAYERS = '.ag-popup, .ag-menu';

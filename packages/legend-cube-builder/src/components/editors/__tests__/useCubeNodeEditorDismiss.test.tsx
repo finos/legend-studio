@@ -31,13 +31,7 @@ import {
   Limit,
   Query,
 } from '@finos/legend-cube';
-import {
-  act,
-  fireEvent,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -51,7 +45,6 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 import { isCubeNodeEditorDismissedBy } from '../useCubeNodeEditorDismiss.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
@@ -77,6 +70,7 @@ describe('What a press outside the floating node editor closes it on', () => {
       <div class="MuiModal-root"><div><button id="in-modal"></button></div></div>
       <div class="MuiPopover-root"><ul><li id="in-popover"></li></ul></div>
       <div class="MuiPopper-root"><div id="in-popper"></div></div>
+      <div class="reflex-splitter"><span id="on-splitter"></span></div>
       <div><button id="elsewhere"></button></div>
     `;
   });
@@ -96,6 +90,12 @@ describe('What a press outside the floating node editor closes it on', () => {
     ['on-node', 'pane', 'on-controls', 'on-minimap'].forEach((id) =>
       expect(isCubeNodeEditorDismissedBy(byId(id), editor)).toBe(false),
     );
+  });
+
+  test('Not on the splitter between the graph and the results, which it follows', () => {
+    expect(
+      isCubeNodeEditorDismissedBy(byId('on-splitter'), byId('editor')),
+    ).toBe(false);
   });
 
   test("Not in MUI's layers, where a dialog, menu or dropdown opened from the editor lives", () => {
@@ -132,10 +132,7 @@ const ordersLimited = (): Query =>
     'limit101',
   );
 
-const render = async (
-  query: Query,
-  floatingEditor = true,
-): Promise<CubeEditorState> => {
+const render = async (query: Query): Promise<CubeEditorState> => {
   const { host } = TEST__createCubeHost();
   const editorState = new CubeEditorState(
     host,
@@ -145,9 +142,8 @@ const render = async (
     <div style={{ display: 'flex' }}>
       <button>{OUTSIDE}</button>
       <div style={{ width: 800, height: 400 }}>
-        <CubeCanvas editorState={editorState} floatingEditor={floatingEditor} />
+        <CubeCanvas editorState={editorState} />
       </div>
-      {!floatingEditor && <CubeNodeEditorPanel editorState={editorState} />}
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -413,21 +409,5 @@ describe('Closing the floating node editor', () => {
     press(outside());
     expect(finish).toHaveBeenCalledTimes(1);
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
-  });
-});
-
-describe('Closing the node editor in the side panel', () => {
-  test('Leaves the panel open, with its edits, on a press outside, Escape or a click on the canvas', async () => {
-    const editorState = await render(ordersLimited(), false);
-    await editLimit();
-    press(outside());
-    pressEscape();
-    fireEvent.click(pane());
-    expectStillEditing(editorState);
-    await waitFor(() =>
-      expect(
-        within(editor()).getByLabelText<HTMLInputElement>('Rows to keep').value,
-      ).toBe('5'),
-    );
   });
 });

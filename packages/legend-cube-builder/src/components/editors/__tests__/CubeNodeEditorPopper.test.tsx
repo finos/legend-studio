@@ -107,16 +107,12 @@ const editJoinKeys = (): void => {
 const storedJoin = (editorState: CubeEditorState): Join =>
   editorState.document.query.getNode('join101') as Join;
 
-const render = async (floatingEditor?: boolean): Promise<CubeEditorState> => {
+const render = async (): Promise<CubeEditorState> => {
   const { host } = TEST__createCubeHost();
   const editorState = new CubeEditorState(host, keylessJoin());
   await TEST__renderInCubeApplication(
     <div style={{ width: 800, height: 400 }}>
-      {floatingEditor === undefined ? (
-        <CubeCanvas editorState={editorState} />
-      ) : (
-        <CubeCanvas editorState={editorState} floatingEditor={floatingEditor} />
-      )}
+      <CubeCanvas editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -130,7 +126,7 @@ beforeEach(() => {
 
 describe('Floating node editor', () => {
   test('Opens on a click in a layer of its own, outside the canvas, one width for every node and above the canvas', async () => {
-    await render(true);
+    await render();
     const opened = await openEditor('join101');
     expect(
       screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS).contains(opened),
@@ -146,7 +142,7 @@ describe('Floating node editor', () => {
   });
 
   test('Lays the editor out to float: its own size, its body scrolling between 80px and a third of the window', async () => {
-    await render(true);
+    await render();
     const opened = await openEditor('join101');
     expect(opened.classList.contains('h-full')).toBe(false);
     expect(opened.classList.contains('border-l')).toBe(false);
@@ -159,7 +155,7 @@ describe('Floating node editor', () => {
   });
 
   test('Applies its edits as one undo step, staying open', async () => {
-    const editorState = await render(true);
+    const editorState = await render();
     await openEditor('join101');
     editJoinKeys();
     fireEvent.click(within(editor()).getByRole('button', { name: 'Apply' }));
@@ -171,7 +167,7 @@ describe('Floating node editor', () => {
   });
 
   test('Drops its edits and closes on Cancel', async () => {
-    const editorState = await render(true);
+    const editorState = await render();
     await openEditor('join101');
     editJoinKeys();
     fireEvent.click(within(editor()).getByRole('button', { name: 'Cancel' }));
@@ -182,7 +178,7 @@ describe('Floating node editor', () => {
   });
 
   test('Shows the node clicked next, in the one floating editor', async () => {
-    const editorState = await render(true);
+    const editorState = await render();
     await openEditor('join101');
     fireEvent.click(await TEST__findCanvasNode('relational101'));
     expect(editorState.nodeEditor.nodeId).toBe('relational101');
@@ -198,7 +194,7 @@ describe('Floating node editor', () => {
   });
 
   test("Keeps a right-click in the editor from opening the canvas's menu", async () => {
-    await render(true);
+    await render();
     // a right-click on a node opens the menu
     fireEvent.contextMenu(await TEST__findCanvasNode('join101'));
     expect(await screen.findByRole('menu')).toBeDefined();
@@ -212,7 +208,7 @@ describe('Floating node editor', () => {
   });
 
   test('Shows nothing while no node is open, nor once it closes', async () => {
-    const editorState = await render(true);
+    const editorState = await render();
     await TEST__findCanvasNode('join101');
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
     const opened = await openEditor('join101');
@@ -223,16 +219,6 @@ describe('Floating node editor', () => {
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
     expect(root && document.body.contains(root)).toBe(false);
-  });
-
-  test('Draws no editor from the canvas unless it is told to float', async () => {
-    const editorState = await render();
-    fireEvent.click(await TEST__findCanvasNode('join101'));
-    expect(editorState.nodeEditor.nodeId).toBe('join101');
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
   });
 });
 
@@ -294,7 +280,7 @@ describe('Placing the floating node editor', () => {
   });
 
   test('Places the editor 8px below its node, centred, following the node opened next', async () => {
-    await render(true);
+    await render();
     stubLayout({ left: 100, top: 50, width: 800, height: 400 });
     // join101 at (280, 52) in the layout, at zoom 1 with no pan: 380..580 x 102..174
     const root = popperRoot(await openEditor('join101'));
@@ -311,7 +297,7 @@ describe('Placing the floating node editor', () => {
   });
 
   test('Follows its node through a zoom', async () => {
-    await render(true);
+    await render();
     stubLayout({ left: 100, top: 50, width: 800, height: 400 });
     const root = popperRoot(await openEditor('join101'));
     expect(root?.style.transform).toBe('translate(480px, 182px)');
@@ -324,7 +310,7 @@ describe('Placing the floating node editor', () => {
 
   test('Hides the editor while its node is out of the canvas, keeping it open', async () => {
     // a canvas 100px tall shows relational101 (50..122) but not relational102 (154..226)
-    const editorState = await render(true);
+    const editorState = await render();
     stubLayout({ left: 100, top: 50, width: 800, height: 100 });
     const opened = await openEditor('relational102');
     expect(popperRoot(opened)?.style.visibility).toBe('hidden');

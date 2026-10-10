@@ -49,7 +49,6 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 import { CubeGridRegion } from '../../grid/CubeGridRegion.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 /** A data product cube of one access point, daily_orders, on CUBE_WH */
 const dataProductCube = (versionId: string): CubeDocument =>
@@ -102,7 +101,6 @@ const renderPanel = async (
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
       <CubeGridRegion editorState={editorState} />
     </div>,
     host.applicationStore,

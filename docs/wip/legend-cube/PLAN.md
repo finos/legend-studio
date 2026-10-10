@@ -3074,6 +3074,7 @@ over §12.2 item 1, which asked where the node editor opens:
 
   - a pointerdown on a node: the node's click handles it;
   - on the pane, the controls or the minimap: a pan or zoom keeps the editor; a plain click on the empty pane closes it;
+  - on the splitter between the graph and the results, which the editor follows (M3b.5);
   - inside a MUI modal or popper;
   - while a Cube dialog is open, or while `nodeEditor.holdOpen()` is held (the spec's rule 2, for later editors'
     pickers);

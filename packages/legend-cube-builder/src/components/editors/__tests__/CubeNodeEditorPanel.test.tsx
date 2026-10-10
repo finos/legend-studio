@@ -63,7 +63,6 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -79,7 +78,6 @@ const render = async (
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,

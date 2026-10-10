@@ -125,7 +125,7 @@ const renderPage = async (
   );
 };
 
-/** The group that stacks the graph above the results; the node editor sits beside it, in another */
+/** The group that stacks the graph above the results */
 const stackedGroup = (): HTMLElement | undefined =>
   screen
     .queryAllByTestId(mockPanelGroupTestId)
@@ -253,7 +253,7 @@ describe('Cube page', () => {
     }
   });
 
-  test('Opens the node editor beside the page, has Undo apply its edits before undoing them, and says in the graph region when it closed dropping edits', async () => {
+  test('Opens the node editor floating outside the page, has Undo apply its edits before undoing them, and says in the graph region when it closed dropping edits', async () => {
     await renderPage(
       new CubeDocument({
         context: CONTEXT,
@@ -273,12 +273,11 @@ describe('Cube page', () => {
     );
     fireEvent.click(await TEST__findCanvasNode('join101'));
     let editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-    // beside the graph and the results, in a group of its own
+    // floating in a layer of its own, outside the page's panels
     expect(
-      editor
-        .closest(`[data-orientation="vertical"]`)
-        ?.getAttribute('data-testid'),
-    ).toBe(mockPanelGroupTestId);
+      editor.closest(`[data-testid="${LEGEND_CUBE_TEST_ID.EDITOR}"]`),
+    ).toBeNull();
+    expect(editor.closest('[data-orientation]')).toBeNull();
     const keyRows = (): HTMLElement[] =>
       within(
         within(editor).getByRole('list', { name: 'Join columns' }),
@@ -552,71 +551,65 @@ describe('Cube page', () => {
   });
 });
 
+/** ORDERS → limit101, holding size 10 */
+const ordersLimited = (): CubeDocument =>
+  new CubeDocument({
+    context: CONTEXT,
+    query: new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        new Limit('limit101', 10),
+      ],
+      [new Connection('relational101', 'limit101', 'tds')],
+      'limit101',
+    ),
+  });
+
+/** The page, and the state it made, caught as the page registers its commands */
+const renderEditor = async (): Promise<CubeEditorState> => {
+  const { host } = TEST__createCubeHost();
+  const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
+  try {
+    await TEST__renderInCubeApplication(
+      <CubeEditor host={host} initialDocument={ordersLimited()} />,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    return guaranteeNonNullable(
+      spy.mock.contexts[0] as CubeEditorState | undefined,
+    );
+  } finally {
+    spy.mockRestore();
+  }
+};
+
+const sizeField = (): HTMLInputElement =>
+  within(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).getByLabelText(
+    'Rows to keep',
+  );
+
+/** Opens the Limit's editor and types a new size, not yet stored */
+const editLimit = async (): Promise<void> => {
+  fireEvent.click(await TEST__findCanvasNode('limit101'));
+  await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+  fireEvent.change(sizeField(), { target: { value: '5' } });
+};
+
+const storedSize = (editorState: CubeEditorState): number | undefined =>
+  (editorState.document.query.getNode('limit101') as Limit).size;
+
+/** The Limit's size in the cube before each undo step */
+const historySizes = (editorState: CubeEditorState): (number | undefined)[] =>
+  editorState.history.map(
+    (document) => (document.query.getNode('limit101') as Limit).size,
+  );
+
 describe('Header actions with the node editor open', () => {
-  /** ORDERS → limit101, holding size 10 */
-  const ordersLimited = (): CubeDocument =>
-    new CubeDocument({
-      context: CONTEXT,
-      query: new Query(
-        [
-          northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
-          new Limit('limit101', 10),
-        ],
-        [new Connection('relational101', 'limit101', 'tds')],
-        'limit101',
-      ),
-    });
-
-  /** The page, and the state it made, caught as the page registers its commands */
-  const renderEditor = async (
-    floatingEditor: boolean,
-  ): Promise<CubeEditorState> => {
-    const { host } = TEST__createCubeHost();
-    const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
-    try {
-      await TEST__renderInCubeApplication(
-        <CubeEditor
-          host={host}
-          initialDocument={ordersLimited()}
-          floatingEditor={floatingEditor}
-        />,
-        host.applicationStore,
-        LEGEND_CUBE_TEST_ID.EDITOR,
-      );
-      return guaranteeNonNullable(
-        spy.mock.contexts[0] as CubeEditorState | undefined,
-      );
-    } finally {
-      spy.mockRestore();
-    }
-  };
-
   const graph = (): HTMLElement =>
     screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
 
-  const sizeField = (): HTMLInputElement =>
-    within(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).getByLabelText(
-      'Rows to keep',
-    );
-
-  /** Opens the Limit's editor and types a new size, not yet stored */
-  const editLimit = async (): Promise<void> => {
-    fireEvent.click(await TEST__findCanvasNode('limit101'));
-    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-    fireEvent.change(sizeField(), { target: { value: '5' } });
-  };
-
-  const storedSize = (editorState: CubeEditorState): number | undefined =>
-    (editorState.document.query.getNode('limit101') as Limit).size;
-
-  /** The Limit's size in the cube before each undo step */
-  const historySizes = (editorState: CubeEditorState): (number | undefined)[] =>
-    editorState.history.map(
-      (document) => (document.query.getNode('limit101') as Limit).size,
-    );
-
   test('Applies the floating editor as one undo step and closes it, then hides the graph', async () => {
-    const editorState = await renderEditor(true);
+    const editorState = await renderEditor();
     await editLimit();
     // a click with no press first: the button, not a press outside, closes it
     fireEvent.click(within(graph()).getByText('Hide graph'));
@@ -633,7 +626,7 @@ describe('Header actions with the node editor open', () => {
   });
 
   test('Hides nothing while something opened from the floating editor holds it open', async () => {
-    const editorState = await renderEditor(true);
+    const editorState = await renderEditor();
     await editLimit();
     let release: () => void = () => undefined;
     act(() => {
@@ -666,7 +659,7 @@ describe('Header actions with the node editor open', () => {
   ])(
     'Applies the floating editor before %s, clicked from the keyboard with no press first',
     async (label, opened) => {
-      const editorState = await renderEditor(true);
+      const editorState = await renderEditor();
       await editLimit();
       fireEvent.click(within(graph()).getByText(label));
       expect(editorState.nodeEditor.nodeId).toBeUndefined();
@@ -677,7 +670,7 @@ describe('Header actions with the node editor open', () => {
   );
 
   test('Applies the floating editor before a palette item adds its node', async () => {
-    const editorState = await renderEditor(true);
+    const editorState = await renderEditor();
     await editLimit();
     fireEvent.click(
       screen
@@ -692,16 +685,96 @@ describe('Header actions with the node editor open', () => {
       editorState.document.query.nodes.some((node) => node.type === 'sort'),
     ).toBe(true);
   });
+});
 
-  test('Leaves the side panel open with its edits', async () => {
-    const editorState = await renderEditor(false);
+describe('The node editor floating over the page', () => {
+  /** The editor's outermost layer: the one portalled to the document's body */
+  const editorRoot = (): HTMLElement => {
+    let current: HTMLElement = screen.getByTestId(
+      LEGEND_CUBE_TEST_ID.NODE_EDITOR,
+    );
+    while (current.parentElement && current.parentElement !== document.body) {
+      current = current.parentElement;
+    }
+    return current;
+  };
+
+  test("Opens without changing the page's layout: no panel is added and the graph stays above the results", async () => {
+    await renderEditor();
+    await TEST__findCanvasNode('limit101');
+    const groups = screen.queryAllByTestId(mockPanelGroupTestId);
+    const stacked = stackedGroup();
+    const regions = (): (string | null)[] =>
+      [
+        ...(stackedGroup() as HTMLElement).querySelectorAll(
+          `[data-testid="${LEGEND_CUBE_TEST_ID.CANVAS}"], [data-testid="${LEGEND_CUBE_TEST_ID.GRID_REGION}"]`,
+        ),
+      ].map((region) => region.getAttribute('data-testid'));
+    expect(groups).toHaveLength(1);
+    expect(regions()).toEqual([
+      LEGEND_CUBE_TEST_ID.CANVAS,
+      LEGEND_CUBE_TEST_ID.GRID_REGION,
+    ]);
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(screen.queryAllByTestId(mockPanelGroupTestId)).toEqual(groups);
+    expect(stackedGroup()).toBe(stacked);
+    expect(regions()).toEqual([
+      LEGEND_CUBE_TEST_ID.CANVAS,
+      LEGEND_CUBE_TEST_ID.GRID_REGION,
+    ]);
+  });
+
+  test('Floats in a layer of its own on the body, outside the page, 432px wide', async () => {
+    await renderEditor();
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    const editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const page = screen.getByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
+    expect(page.contains(editor)).toBe(false);
+    const root = editorRoot();
+    expect(root.parentElement).toBe(document.body);
+    expect(root.contains(page)).toBe(false);
+    expect(root.style.width).toBe('432px');
+  });
+
+  test('Switches the one floating editor to the node clicked next, applying the edits', async () => {
+    const editorState = await renderEditor();
     await editLimit();
-    fireEvent.click(within(graph()).getByText('Hide graph'));
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
-    expect(editorState.nodeEditor.nodeId).toBe('limit101');
-    expect(sizeField().value).toBe('5');
-    expect(storedSize(editorState)).toBe(10);
-    // only hiding the graph is an undo step
+    fireEvent.click(await TEST__findCanvasNode('relational101'));
+    expect(editorState.nodeEditor.nodeId).toBe('relational101');
     expect(historySizes(editorState)).toEqual([10]);
+    expect(storedSize(editorState)).toBe(5);
+    await waitFor(() =>
+      expect(
+        within(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).getByText(
+          'relational101',
+        ),
+      ).toBeDefined(),
+    );
+    expect(screen.getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toHaveLength(
+      1,
+    );
+    expect(editorRoot().parentElement).toBe(document.body);
+    expect(editorRoot().style.width).toBe('432px');
+  });
+
+  test('Applies the edits, then removes the node, when the node being edited is removed from its menu, with no notice', async () => {
+    const editorState = await renderEditor();
+    await editLimit();
+    fireEvent.contextMenu(await TEST__findCanvasNode('limit101'));
+    const menu = await screen.findByRole('menu');
+    fireEvent.click(within(menu).getByRole('button', { name: 'Remove' }));
+    expect(editorState.document.query.getNode('limit101')).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    // the edit, then the removal, each its own undo step
+    expect(historySizes(editorState)).toEqual([10, 5]);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    const graph = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
+    expect(
+      within(graph).queryByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE),
+    ).toBeNull();
+    // undoing the removal brings the node back with the edit applied
+    fireEvent.click(within(graph).getByText('Undo'));
+    expect(storedSize(editorState)).toBe(5);
   });
 });

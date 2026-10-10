@@ -38,7 +38,6 @@ import { CubeEditorState } from '../stores/CubeEditorState.js';
 import type { CubeHost } from '../stores/CubeHost.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from './editors/CubeNodeEditorPanel.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
@@ -47,9 +46,6 @@ import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.j
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
-
-/** How wide the node editor opens, in pixels */
-const NODE_EDITOR_WIDTH = 400;
 
 /** The tallest the graph region may be, following the window's height */
 const useMaxGraphHeight = (): number => {
@@ -67,13 +63,8 @@ const useMaxGraphHeight = (): number => {
  * name, its actions, its pending and read-only notes, and its dialogs. It
  * stays when the graph is hidden; its buttons wrap when the page is narrow.
  */
-interface CubeGraphHeaderProps {
-  editorState: CubeEditorState;
-  floatingEditor: boolean;
-}
-
-const CubeGraphHeader = observer((props: CubeGraphHeaderProps) => {
-  const { editorState, floatingEditor } = props;
+const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
+  const { editorState } = props;
   const { readOnly } = editorState;
   const { showGraph } = editorState.document.meta.presentation;
   return (
@@ -160,11 +151,7 @@ const CubeGraphHeader = observer((props: CubeGraphHeaderProps) => {
           }
           onClick={() => {
             // the floating editor goes with the graph, applying its edits
-            if (
-              !showGraph ||
-              !floatingEditor ||
-              editorState.nodeEditor.finish()
-            ) {
+            if (!showGraph || editorState.nodeEditor.finish()) {
               editorState.setShowGraph(!showGraph);
             }
           }}
@@ -204,7 +191,8 @@ const CubeGraphHeader = observer((props: CubeGraphHeaderProps) => {
 
 /**
  * The Legend Cube page: the query above, its results below, both always
- * shown (PLAN §7.1); hiding the graph leaves its header. The host gives it
+ * shown (PLAN §7.1); hiding the graph leaves its header. A node's editor
+ * floats below the node (PLAN §11.6). The host gives it
  * the engine, the models and the application store; the page's state lives
  * as long as the page.
  */
@@ -213,24 +201,13 @@ export const CubeEditor = observer(
     host: CubeHost;
     /** The cube to open; an empty one by default */
     initialDocument?: CubeDocument | undefined;
-    /**
-     * Whether the node editor floats below its node (PLAN §11.6) rather than
-     * sitting in the side panel; until the floating editor replaces it
-     */
-    floatingEditor?: boolean | undefined;
   }) => {
-    const floatingEditor = props.floatingEditor ?? false;
     const [editorState] = useState(
       () => new CubeEditorState(props.host, props.initialDocument),
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
     useCommands(editorState);
     const maxGraphHeight = useMaxGraphHeight();
-    const isEditorOpen =
-      !floatingEditor && editorState.nodeEditor.nodeId !== undefined;
-    const editorPanel = getCollapsiblePanelGroupProps(!isEditorOpen, {
-      size: NODE_EDITOR_WIDTH,
-    });
     const { showGraph } = editorState.document.meta.presentation;
     // hiding the graph collapses its panel: the header and the results stay
     // where they are, so the grid keeps its state
@@ -242,40 +219,22 @@ export const CubeEditor = observer(
         data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
       >
         <CubePalette editorState={editorState} />
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel {...editorPanel.remainingPanel} minSize={320}>
-            <div className="flex h-full min-w-0 flex-1 flex-col">
-              <CubeGraphHeader
-                editorState={editorState}
-                floatingEditor={floatingEditor}
-              />
-              <ResizablePanelGroup orientation="horizontal">
-                <ResizablePanel
-                  {...graphPanel.collapsiblePanel}
-                  minSize={showGraph ? 96 : 0}
-                  maxSize={maxGraphHeight}
-                >
-                  {showGraph && (
-                    <CubeCanvas
-                      editorState={editorState}
-                      floatingEditor={floatingEditor}
-                    />
-                  )}
-                </ResizablePanel>
-                <ResizablePanelSplitter className={showGraph ? '' : 'hidden'} />
-                <ResizablePanel {...graphPanel.remainingPanel} minSize={96}>
-                  <CubeGridRegion editorState={editorState} />
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </div>
-          </ResizablePanel>
-          <ResizablePanelSplitter className={isEditorOpen ? '' : 'hidden'} />
-          <ResizablePanel {...editorPanel.collapsiblePanel} direction={-1}>
-            {!floatingEditor && (
-              <CubeNodeEditorPanel editorState={editorState} />
-            )}
-          </ResizablePanel>
-        </ResizablePanelGroup>
+        <div className="flex h-full min-w-0 flex-1 flex-col">
+          <CubeGraphHeader editorState={editorState} />
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel
+              {...graphPanel.collapsiblePanel}
+              minSize={showGraph ? 96 : 0}
+              maxSize={maxGraphHeight}
+            >
+              {showGraph && <CubeCanvas editorState={editorState} />}
+            </ResizablePanel>
+            <ResizablePanelSplitter className={showGraph ? '' : 'hidden'} />
+            <ResizablePanel {...graphPanel.remainingPanel} minSize={96}>
+              <CubeGridRegion editorState={editorState} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </div>
     );
   },

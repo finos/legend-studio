@@ -82,13 +82,8 @@ export const isCubeCanvasConnectionValid = (
     connection.targetHandle,
   );
 
-interface CubeCanvasFlowProps {
-  editorState: CubeEditorState;
-  floatingEditor: boolean;
-}
-
-const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
-  const { editorState, floatingEditor } = props;
+const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
+  const { editorState } = props;
   const { query } = editorState.document;
   const { readOnly } = editorState;
   const { fitView } = useReactFlow();
@@ -99,9 +94,8 @@ const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
   );
   const edges = useMemo(() => buildCubeCanvasEdges(query), [query]);
   // the view fits the graph again whenever the layout moves a node, or the
-  // canvas changes size (e.g. the node editor opens beside it, or the
-  // splitter above the grid moves), once React Flow has measured every node:
-  // it fits only measured ones
+  // canvas changes size (e.g. the splitter above the grid moves), once React
+  // Flow has measured every node: it fits only measured ones
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
     [positions],
@@ -184,11 +178,7 @@ const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
       onConnectStart={() => editorState.nodeEditor.finish()}
       // a click on the canvas's background closes the floating editor; a
       // press there that pans leaves it open
-      onPaneClick={() => {
-        if (floatingEditor) {
-          editorState.nodeEditor.finish();
-        }
-      }}
+      onPaneClick={() => editorState.nodeEditor.finish()}
       onClickConnectStart={() => editorState.nodeEditor.finish()}
       onConnect={(connection) => {
         if (connection.targetHandle) {
@@ -214,9 +204,7 @@ const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
       <Background />
       <Controls showInteractive={false} />
       <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
-      {floatingEditor && (
-        <CubeNodeEditorPopper editorState={editorState} positions={positions} />
-      )}
+      <CubeNodeEditorPopper editorState={editorState} positions={positions} />
     </ReactFlow>
   );
 });
@@ -229,12 +217,8 @@ const CubeCanvasFlow = observer((props: CubeCanvasFlowProps) => {
  * context menu.
  */
 export const CubeCanvas = observer(
-  (props: {
-    editorState: CubeEditorState;
-    /** Whether the node editor floats below its node, in the canvas (PLAN §11.6) */
-    floatingEditor?: boolean | undefined;
-  }) => {
-    const { editorState, floatingEditor = false } = props;
+  (props: { editorState: CubeEditorState }) => {
+    const { editorState } = props;
     const ref = useRef<HTMLDivElement>(null);
     const [, dropConnector] = useDrop<CubePaletteDragItem>(
       () => ({
@@ -284,10 +268,7 @@ export const CubeCanvas = observer(
           ) : (
             <CubeCanvasContext.Provider value={editorState}>
               <ReactFlowProvider>
-                <CubeCanvasFlow
-                  editorState={editorState}
-                  floatingEditor={floatingEditor}
-                />
+                <CubeCanvasFlow editorState={editorState} />
               </ReactFlowProvider>
             </CubeCanvasContext.Provider>
           )}

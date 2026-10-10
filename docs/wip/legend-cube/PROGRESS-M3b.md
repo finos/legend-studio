@@ -13,7 +13,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-canvas`, from finos master `d847e6721` (M4 merged as #5649); worktree `legend-studio-cube-canvas` |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`; the Query dev server for this branch runs on :9003   |
-| Step   | M3b.4 done (closing the floating editor, behind a prop)                                                 |
+| Step   | M3b.5 done (the floating editor replaces the side panel)                                                |
 | Tests  | 2486 core, 1199 builder (core group), 245 Query, 415 builder engine-roundtrip                           |
 
 ## Steps
@@ -24,7 +24,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.2** One finish path; Ctrl+click, F9, Ctrl+Z and outside actions apply first
 - [x] **M3b.3** The floating host, behind a prop
 - [x] **M3b.4** The click-away and Escape
-- [ ] **M3b.5** Switch over from the side panel
+- [x] **M3b.5** Switch over from the side panel
 - [ ] **M3b.6** The editor's frame
 - [ ] **M3b.7** Each editor's sizing and edges
 - [ ] **M3b.8** One placement rule for the palette, drops and context menus
@@ -167,3 +167,13 @@ Tests: workflow `wf_e63c407e-215`:
   - the grid's column header and a palette drag apply the edits.
 
   Native select popups don't show in a headless browser: a headed manual check stays for the rehearsal (M3b.16).
+
+**M3b.5 (2026-10-09).** The floating editor replaces the side panel: the page is the palette, the graph header, then
+the graph above the results, and opening an editor no longer changes the page's layout or refits the canvas. The
+editor's tests render the canvas alone, which floats the editor; the side panel's own tests are gone.
+
+Tests: workflow `wf_f7acd161-e57` (page tests: the layout is unchanged when the editor opens, the editor is on the
+body, one editor follows the node clicked, Remove of the edited node applies first). The reviewer found that a press
+on the graph/results splitter closed the editor, against C-07: the splitter is now left alone (its test kills its
+mutant). Browser, with the floating editor the default: `check-m3b2` 8/8, `check-m3b3` 39/39 at 900px and 768px,
+`check-m3b4` 18/18; the reviewer's probes confirm the canvas no longer refits when the editor opens or closes.
