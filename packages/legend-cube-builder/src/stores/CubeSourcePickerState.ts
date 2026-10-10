@@ -36,6 +36,7 @@ import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
+import { CubeProjectTabState } from './source-picker/CubeProjectTabState.js';
 import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
 import {
   type CubeSourcePickerTab,
@@ -44,7 +45,7 @@ import {
 
 /**
  * The source dialog (PLAN §6.1, §6.8): a tab per way to find a source, the
- * Model tab first. It opens on the tab asked for, or the one the cube's
+ * Sample Data tab first. It opens on the tab asked for, or the one the cube's
  * fixed context belongs to, which is then the only tab enabled; Add runs the
  * open tab's Add and closes the dialog once the source is added.
  */
@@ -54,6 +55,7 @@ export class CubeSourcePickerState {
   readonly directTab: CubeDirectConnectionTabState;
   readonly dataProductTab: CubeDataProductTabState;
   readonly ingestTab: CubeIngestTabState;
+  readonly projectTab: CubeProjectTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -81,6 +83,7 @@ export class CubeSourcePickerState {
     this.directTab = new CubeDirectConnectionTabState(editorState);
     this.dataProductTab = new CubeDataProductTabState(editorState);
     this.ingestTab = new CubeIngestTabState(editorState);
+    this.projectTab = new CubeProjectTabState(editorState);
   }
 
   /** The tabs that add their own kind of source, each from its palette item */
@@ -95,6 +98,7 @@ export class CubeSourcePickerState {
   get tabs(): readonly CubeSourcePickerTab[] {
     return [
       this.modelTab,
+      this.projectTab,
       this.directTab,
       this.dataProductTab,
       this.ingestTab,
@@ -103,14 +107,17 @@ export class CubeSourcePickerState {
 
   /**
    * The tab the cube's fixed context belongs to, which the host may not
-   * serve; the Model tab takes any context no tab claims
+   * serve; the Sample Data tab takes any context no tab claims
    */
   get fixedTab(): CubeSourcePickerTab | undefined {
     const { context } = this.editorState.document;
     return context
-      ? ([this.directTab, this.dataProductTab, this.ingestTab].find((tab) =>
-          tab.ownsContext(context),
-        ) ?? this.modelTab)
+      ? ([
+          this.projectTab,
+          this.directTab,
+          this.dataProductTab,
+          this.ingestTab,
+        ].find((tab) => tab.ownsContext(context)) ?? this.modelTab)
       : undefined;
   }
 
@@ -123,7 +130,7 @@ export class CubeSourcePickerState {
   /**
    * The tab a palette item opens (DP-3): a data product's or an ingest data
    * set's own tab, when the host serves it; for a table, the table tab the
-   * cube uses, else the table tab open last, else the Model tab
+   * cube uses, else the table tab open last, else the Sample Data tab
    */
   tabForSourceType(type: string): CubeSourcePickerTab | undefined {
     const dedicated = this.dedicatedTabs.get(type);
@@ -231,6 +238,7 @@ export class CubeSourcePickerState {
     this.directTab.close();
     this.dataProductTab.close();
     this.ingestTab.close();
+    this.projectTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

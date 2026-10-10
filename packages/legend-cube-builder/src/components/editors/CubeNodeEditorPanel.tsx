@@ -51,7 +51,7 @@ const validateEdited = (
 };
 
 /**
- * The node editor's frame (spec §17.5, PLAN §11.6): a title bar with the
+ * The node editor's frame (spec §17.5, PLAN §11.8): a title bar with the
  * node's label and id, its help and Select; a body of 80px to a third of
  * the window, which scrolls, with its type's editor; then its problems and
  * Apply and Cancel, which stay in view. Edits stay in the editor until

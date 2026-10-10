@@ -32,8 +32,10 @@ import {
   func,
   type IR,
   lambda,
+  letBinding,
   literal,
   type RelationExpr,
+  variable,
 } from './CubeIR.js';
 import { originOf } from './EmitContext.js';
 import { emitRowOrder } from './emitters/SortEmitter.js';
@@ -65,6 +67,34 @@ export interface RelationOptions {
   /** The database type to write the relation for (`ExecutionOptions.databaseType`); typing needs none */
   readonly databaseType?: string | undefined;
 }
+
+/** The lets a run writes, in order, each binding a window before what reads it, and their names */
+interface Isolation {
+  readonly lets: IR[];
+  readonly names: Set<string>;
+}
+
+/** What a let's name is made of: an identifier in any case, short enough for every database */
+const LET_NAME_ID = /^[a-z0-9_]{1,28}$/u;
+
+/**
+ * The name of a node's let: `n_<id>`, lowercased, when the id is a short
+ * identifier no other let has in any case (databases compare a CTE's name
+ * without case), else `n_<k>`. A node id can be any text, and one that isn't
+ * an identifier breaks the SQL (PLAN §11.6). Never a lambda parameter Cube
+ * writes, since none starts with `n_`.
+ */
+const nameLet = (nodeId: string, taken: ReadonlySet<string>): string => {
+  const own = `n_${nodeId.toLowerCase()}`;
+  if (LET_NAME_ID.test(nodeId.toLowerCase()) && !taken.has(own)) {
+    return own;
+  }
+  let index = 1;
+  while (taken.has(`n_${index}`)) {
+    index += 1;
+  }
+  return `n_${index}`;
+};
 
 /**
  * Builds the IR of queries, from the node types of a registry. Inference
@@ -115,6 +145,14 @@ export class QueryEmitter {
    * node): `{| <relation>->limit(rowLimit + 1)->from(runtime)}`. The relation
    * is written with its rows' order where it is used, and the capture's own
    * order, if any, as a sort before the limit, so the rows shown are in it.
+   *
+   * Each node upstream of the capture whose type is an isolation boundary (a
+   * window) is bound with a `let`, after the lets it reads, and read by name
+   * (PLAN §8.6). The lambda is then
+   * `{| {| <lets>; <relation>}->from(runtime)->sort(…)->limit(rowLimit + 1)}`:
+   * a `from()` can't go inside a let, and the capture's sort and limit go
+   * after it, since inside, the ORDER BY ends in a subquery that some
+   * databases don't keep. Typing lambdas never bind: they type the same.
    */
   emitExecutionLambda(options: ExecutionOptions): IR {
     const { rowLimit, runtime, databaseType } = options;
@@ -130,39 +168,51 @@ export class QueryEmitter {
     if (captureId === undefined) {
       throw new Error(`An empty query can't run`);
     }
-    const relation = this.emitRelation(captureId, {
-      withRowOrder: true,
-      databaseType,
-    });
-    const order = this.rowOrders.get(captureId);
-    const sorted = order?.length
-      ? emitRowOrder(
-          relation,
-          order,
-          this.schemaOf(captureId),
-          originOf(captureId, EmitRole.CAPTURE_SORT),
-        )
-      : relation;
-    const limitOrigin = originOf(captureId, EmitRole.LIMIT);
-    const limited = func(
-      'limit',
-      [
-        sorted,
-        literal(
-          { kind: 'integer', value: String(BigInt(rowLimit) + 1n) },
-          limitOrigin,
-        ),
-      ],
-      limitOrigin,
+    const error = this.findEmitError(captureId, new Set());
+    if (error) {
+      throw new Error(error);
+    }
+    const isolation: Isolation = { lets: [], names: new Set() };
+    const relation = this.emitNode(
+      captureId,
+      { withRowOrder: true, databaseType },
+      isolation,
     );
+    const order = this.rowOrders.get(captureId);
+    const sortedAndLimited = (rows: RelationExpr): RelationExpr => {
+      const sorted = order?.length
+        ? emitRowOrder(
+            rows,
+            order,
+            this.schemaOf(captureId),
+            originOf(captureId, EmitRole.CAPTURE_SORT),
+          )
+        : rows;
+      const limitOrigin = originOf(captureId, EmitRole.LIMIT);
+      return func(
+        'limit',
+        [
+          sorted,
+          literal(
+            { kind: 'integer', value: String(BigInt(rowLimit) + 1n) },
+            limitOrigin,
+          ),
+        ],
+        limitOrigin,
+      );
+    };
+    const from = (rows: IR): IR =>
+      func(
+        'from',
+        [rows, elementPtr(runtime)],
+        originOf(captureId, EmitRole.FROM),
+      );
     return lambda(
       [],
       [
-        func(
-          'from',
-          [limited, elementPtr(runtime)],
-          originOf(captureId, EmitRole.FROM),
-        ),
+        isolation.lets.length
+          ? sortedAndLimited(from(lambda([], [...isolation.lets, relation])))
+          : from(sortedAndLimited(relation)),
       ],
     );
   }
@@ -199,7 +249,39 @@ export class QueryEmitter {
     return undefined;
   }
 
-  private emitNode(nodeId: string, options: RelationOptions): RelationExpr {
+  /**
+   * An input's relation: with `isolation`, an isolation boundary is bound
+   * with a let, after the lets its own relation reads, and read by name. A
+   * node feeds one node only (`Query`), so each is bound once.
+   */
+  private emitInput(
+    nodeId: string,
+    options: RelationOptions,
+    isolation: Isolation | undefined,
+  ): RelationExpr {
+    if (!isolation || !this.isIsolationBoundary(nodeId)) {
+      return this.emitNode(nodeId, options, isolation);
+    }
+    const value = this.emitNode(nodeId, options, isolation);
+    const name = nameLet(nodeId, isolation.names);
+    isolation.names.add(name);
+    isolation.lets.push(
+      letBinding(name, value, originOf(nodeId, EmitRole.LET)),
+    );
+    return variable(name);
+  }
+
+  private isIsolationBoundary(nodeId: string): boolean {
+    const node = this.query.getNode(nodeId);
+    const definition = node && this.registry.get(node.type);
+    return definition?.kind === 'transform' && !!definition.isolationBoundary;
+  }
+
+  private emitNode(
+    nodeId: string,
+    options: RelationOptions,
+    isolation?: Isolation,
+  ): RelationExpr {
     const { withRowOrder, databaseType } = options;
     const node = this.query.getNode(nodeId);
     const definition = node && this.registry.get(node.type);
@@ -216,7 +298,7 @@ export class QueryEmitter {
     // the definition is the one registered for the node's type
     return (definition as TransformDefinition).emit(
       node,
-      inputIds.map((id) => this.emitNode(id, options)),
+      inputIds.map((id) => this.emitInput(id, options, isolation)),
       {
         inputSchemas: inputIds.map((id) => this.schemaOf(id)),
         schema: this.schemaOf(nodeId),

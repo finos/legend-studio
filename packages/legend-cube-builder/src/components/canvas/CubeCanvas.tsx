@@ -223,7 +223,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
  * output to another node's input to connect them. A transform dropped
  * around the nodes goes after the selected node; a source, dropped anywhere,
- * opens the source dialog on its tab (PLAN §11.6). Right-click it, or a
+ * opens the source dialog on its tab (PLAN §11.8). Right-click it, or a
  * node, for the context menu.
  */
 export const CubeCanvas = observer(
@@ -273,7 +273,14 @@ export const CubeCanvas = observer(
                 >
                   Connect to a source
                 </button>{' '}
-                to start a new one.
+                to start a new one, or{' '}
+                <button
+                  className="text-[var(--color-accent)] underline"
+                  onClick={() => editorState.examples.open()}
+                >
+                  open an example
+                </button>
+                .
               </span>
             </div>
           ) : (

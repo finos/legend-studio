@@ -16,7 +16,7 @@
 
 /**
  * Gives the keyboard focus back to a node on the canvas, as its editor
- * closes from the keyboard (PLAN §11.6), when the focus was in the editor or
+ * closes from the keyboard (PLAN §11.8), when the focus was in the editor or
  * nowhere: focus the user put elsewhere stays there
  */
 export const returnFocusToCubeCanvasNode = (

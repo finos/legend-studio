@@ -5,11 +5,14 @@ node, its messages, emitter and codec, and its entry in the node registry. The p
 canvas read that registry, so the new type shows there with no change here.
 
 The builder adds four pieces: a draft, an editor and help text, in registries keyed by node type, and an icon, keyed by
-the icon name the node's definition gives. Join and Filter are the examples to follow.
+the icon name the node's definition gives. Join and Filter are the examples to follow; Group for an editor of rows
+(`CubeGroupEditor`, `CubeGroupDraft`), Concat for a two-input editor with fixes and one setting
+(`CubeConcatEditor`, `CubeConcatDraft`), and Partition for an editor made of the shared rows
+(`CubePartitionEditor`, `CubePartitionDraft`).
 
 ## 1. A draft
 
-The node editor floats below its node (PLAN §11.6) and never edits the document: an editor edits a draft, and the
+The node editor floats below its node (PLAN §11.8) and never edits the document: an editor edits a draft, and the
 editor's **Apply**, or closing it any way but **Cancel**, stores the draft's node as one undo step (**Cancel** drops
 it).
 
@@ -20,7 +23,9 @@ it).
 - Register a factory in `CUBE_NODE_DRAFT_FACTORIES` (`src/stores/editors/CubeNodeDraftRegistry.ts`).
 - A transform with nothing to set, such as Distinct, has no draft: it registers an editor that only describes it
   (`CubeDistinctEditor`) and is listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`, which the registry test skips when it
-  asks for a factory. The panel then shows no Apply or Cancel (PLAN §7.4 item 2).
+  asks for a factory. The panel then shows no Apply or Cancel, and no Problems list (PLAN §7.4 item 2): every
+  transform that can be invalid has a draft. When such a transform gains a setting, as Concat did with Convert types,
+  give it a draft and take it off the list.
 
 ## 2. An editor
 
@@ -28,8 +33,18 @@ it).
   `editorState`, `draft`, `inputSchemas` (the inputs' schemas in port order; the panel shows the editor only once all
   are there) and `readOnly` (a cube saved by a newer version: show, don't edit).
 - It changes only the draft. An action on the document, such as Join's Swap Inputs, goes through
-  `editorState.nodeEditor`, which applies the draft first.
+  `editorState.nodeEditor`, which applies the draft first. A fix that adds nodes, as Join's "Rename them" and Concat's
+  "Rename them" and "Drop them" do, is a `can…` getter and an action there, made from the core's fix on the query with
+  the draft applied (`queryWithEdits`), as one undo step, the panel staying on the node. The editor shows the fix's
+  changes from the core's plan, given the draft's settings, so the editor and the store agree on what it offers.
 - `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
+- Rows that Group, Sort and Partition share: `CubeAggregationRowEditor` (column, function and output name, given its
+  function list, the `AggregationUse` and what a function that takes no column shows in the column's place),
+  `CubeSortRowEditor` (column, direction, move and remove; `getSortRowProblems`, `getTakenSortColumns`) and
+  `CubeColumnChecklist` (the input's columns, ticked, those that can't be compared shown but not tickable), with their
+  drafts' helpers in `CubeAggregationRows.ts` and `CubeSortRows.ts`. They are driven by callbacks, so a new editor
+  wires them to its own draft. Judge a row with the node Apply would store (`draft.build()`), as the Partition editor
+  does, so the row and the panel's Problems list agree.
   `isColumnDisabled` gives the reason a column can't be picked, shown after its type, as Sort does for a type that can't
   be sorted (`isSortableType`) and a column another row has; the column stays shown.
 - A whole-number setting (a size, a row index) is a `CubeIntegerField` over text the draft keeps as typed, read with
@@ -39,7 +54,7 @@ it).
   example.
 - Give each control a stable `aria-label` (numbered per row in a list, e.g. `Sort column 2`): the tests and the
   browser rehearsal find controls by it.
-- The editor shows in the floating node editor (PLAN §11.6): 432px wide, its body between 80px and a third of the
+- The editor shows in the floating node editor (PLAN §11.8): 432px wide, its body between 80px and a third of the
   window, which scrolls. Fit that width (wrap long names with `break-words` or `break-all`), and give no list a
   height cap or a scroller of its own: the body is the one scroller. Column and direction pickers stay native
   `<select>` elements, as `CubeColumnPicker` is, and no editor measures the editor or reads its size.
@@ -70,14 +85,23 @@ changed, is stored in `CubeEditorState.warnings`, by node key. `getNodeWarnings(
 node (`legend-cube__node--warning`) and lists them in its tooltip after its errors, and the panel shows each one as a
 `role="status"` line above the editor. A derived warning waits until the nodes it names have no errors of their own.
 
+Some warnings belong to one control, not to the node, and the editor shows them under it in the warning colour: Join's
+'type unknown' on a key whose column the model can't type, Concat's on any such column, and the Join and Filter
+editors' warning on a Date that Convert types made from dates and timestamps (`isDateOrTimestampType`), whose dates
+match timestamps only at midnight. An editor must not offer a change it warns about, as Concat's never offers Convert
+types for a column whose real type Cube doesn't know.
+
 ## Columns that change name
 
 The Join editor warns when a join key's column has no type in the model, tracing the column back to its table and the
 table's own name for it with `findColumnOrigins` (`src/stores/editors/CubeJoinDraft.ts`). It requires each node's
 output to have the column, maps a Rename's new name back to its old one, and follows a Join's same-named keys to the
-side the join keeps. Every other node is taken to pass its input's columns through under the same name. If a new
-transform's output columns aren't its inputs' under the same name (a computed column, say), teach `findColumnOrigins`
-how they map back, or the warning goes missing or shows on the wrong column.
+side the join keeps. A Group's keys and its Distinct Value, Min and Max outputs map back to their columns, and its
+counts, sums and averages to none, as a Partition's window functions do, its input columns passing through; a
+Concat's columns come from both inputs under the same name. Every other node is
+taken to pass its input's columns through under the same name. If a new transform's output columns aren't its inputs'
+under the same name (a computed column, say), teach `findColumnOrigins` how they map back, or the warning goes missing
+or shows on the wrong column.
 
 ## Tests
 
@@ -93,6 +117,12 @@ how they map back, or the warning goes missing or shows on the wrong column.
   schema, and what it returns, not its text.
 - A case of the new node type in `src/__tests__/CubeInferenceConformance.engine-roundtrip-test.ts`, whose coverage
   test fails until there is one: the engine must type every node of the case as Cube infers it.
+- If its SQL can differ by database, its shapes at the end of `SHAPES` in
+  `src/__tests__/LegendCubeDialects.engine-roundtrip-test.ts` (earlier tests index the first ones by position), so the
+  checks every shape gets cover it, and a test of the facts its plans must keep on every database type. A shape some
+  database types can't plan at all goes in a list of its own over the types that can: windows are in
+  `WINDOW_SHAPES`, over `WINDOW_DATABASE_TYPES` (Spanner, Presto and Composite refuse any window), with the refusal
+  pinned.
 
 The `v1/` adapter (`V1_CubeLambdaSerializer`) needs no change while the operation's emitter uses only IR and literal
 kinds it already writes. A new kind of IR node or literal needs its own case there, with a test in

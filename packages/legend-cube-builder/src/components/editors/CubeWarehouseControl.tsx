@@ -53,7 +53,7 @@ export const CubeWarehouseControl = observer(
         setDraft(undefined);
       }
     };
-    // closing the node editor applies, as for every edit (PLAN §11.6),
+    // closing the node editor applies, as for every edit (PLAN §11.8),
     // without remembering it for the viewer's next cubes: Undo takes it back
     const latest = useRef({ text, canApply });
     latest.current = { text, canApply };

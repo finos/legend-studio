@@ -35,7 +35,7 @@ import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import type { CubeRowCountDraft } from '../editors/CubeRowCountDraft.js';
 
-// One finish path for the node editor (PLAN §11.6, M3b.2): every close but
+// One finish path for the node editor (PLAN §11.8, M3b.2): every close but
 // Cancel commits the editor's pending input, then applies its edits as one
 // undo step; nothing finishes it while something opened from it holds it open
 

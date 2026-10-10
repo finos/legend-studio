@@ -503,7 +503,7 @@ describe('Cube page', () => {
       name: 'Add',
     });
     expect(add.disabled).toBe(true);
-    const model = within(dialog).getByRole('tab', { name: 'Model' });
+    const model = within(dialog).getByRole('tab', { name: 'Sample Data' });
     fireEvent.click(model);
     expect(model.getAttribute('aria-selected')).toBe('true');
     expect(within(dialog).queryByText('Select source type above')).toBeNull();
@@ -536,7 +536,7 @@ describe('Cube page', () => {
     await TEST__chooseAddItem('Relational Database Table');
     let dialog = await screen.findByRole('dialog');
     expect(within(dialog).queryByText('Select source type above')).toBeNull();
-    expect(selectedTab(dialog)).toBe('Model');
+    expect(selectedTab(dialog)).toBe('Sample Data');
     expect(
       await within(dialog).findByRole('list', { name: 'Tables' }),
     ).toBeDefined();
@@ -546,13 +546,13 @@ describe('Cube page', () => {
     fireEvent.click(screen.getByText('Connect to a source'));
     dialog = await screen.findByRole('dialog');
     fireEvent.click(
-      within(dialog).getByRole('tab', { name: 'Database connection' }),
+      within(dialog).getByRole('tab', { name: 'Direct Connection' }),
     );
     await cancel(dialog);
     await TEST__chooseAddItem('Relational Database Table');
     dialog = await screen.findByRole('dialog');
     expect(within(dialog).queryByText('Select source type above')).toBeNull();
-    expect(selectedTab(dialog)).toBe('Database connection');
+    expect(selectedTab(dialog)).toBe('Direct Connection');
     expect(within(dialog).getByLabelText('Setup SQL')).toBeDefined();
   });
 
@@ -596,7 +596,7 @@ describe('Cube page', () => {
     // the picker only adds tables: the page stays as it is behind it
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).toBeDefined();
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
-    fireEvent.click(within(dialog).getByRole('tab', { name: 'Model' }));
+    fireEvent.click(within(dialog).getByRole('tab', { name: 'Sample Data' }));
     const tables = await within(dialog).findByRole('list', { name: 'Tables' });
     fireEvent.click(within(tables).getByText('ORDERS'));
     fireEvent.click(within(dialog).getByText('Add'));
@@ -894,6 +894,7 @@ describe("The header's Add Items", () => {
     'Take rows <x> to <y>',
     'Concatenate Another Input',
     'Join Another Input',
+    'Apply Window Functions',
   ];
 
   const slice = (): CubeDocument =>

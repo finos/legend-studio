@@ -484,14 +484,19 @@ describe('Cube canvas', () => {
     ).toBe(false);
   });
 
-  test('Offers to connect to a source when the cube is empty, opening the dialog with no tab chosen', async () => {
+  test('Offers to connect to a source, or open an example, when the cube is empty, opening the dialog with no tab chosen', async () => {
     const state = await renderCanvas();
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     const canvas = screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS);
-    expect(canvas.textContent).toBe('Connect to a source to start a new one.');
+    expect(canvas.textContent).toBe(
+      'Connect to a source to start a new one, or open an example.',
+    );
     fireEvent.click(within(canvas).getByText('Connect to a source'));
     expect(state.sourcePicker.isOpen).toBe(true);
     expect(state.sourcePicker.isChoosingTab).toBe(true);
+    act(() => state.sourcePicker.close());
+    fireEvent.click(within(canvas).getByText('open an example'));
+    expect(state.examples.isOpen).toBe(true);
   });
 
   test('Opens an empty cube with a fixed context on its own tab from the link', async () => {
@@ -521,7 +526,7 @@ describe('Cube canvas', () => {
     expect(state.sourcePicker.activeTab.key).toBe(CubeSourcePickerTabKey.MODEL);
   });
 
-  test('Offers no source to connect to when an empty cube is read-only', async () => {
+  test('Offers no source to connect to when an empty cube is read-only, but still its examples', async () => {
     const state = await renderCanvas();
     act(() => state.importDocument(new CubeDocument(), true));
     const link = within(
@@ -531,6 +536,11 @@ describe('Cube canvas', () => {
     expect(link.title).toBe(READ_ONLY_CUBE_TITLE);
     fireEvent.click(link);
     expect(state.sourcePicker.isOpen).toBe(false);
+    expect(
+      within(
+        screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
+      ).getByText<HTMLButtonElement>('open an example').disabled,
+    ).toBe(false);
   });
 });
 

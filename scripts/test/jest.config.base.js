@@ -48,6 +48,14 @@ const GROUPS = [
     key: 'data-cube',
     extension: 'data-cube',
   },
+  {
+    name: 'Cube Local',
+    description:
+      'Legend Cube tests against a local engine (:6300) and the mock depot (:6200, `yarn dev:mock-depot-server`), run by hand',
+    key: 'cube-local',
+    extension: 'cube-local',
+    manual: true,
+  },
 ];
 
 export function printTestGroups() {

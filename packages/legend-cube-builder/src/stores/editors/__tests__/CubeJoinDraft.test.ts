@@ -24,6 +24,7 @@ import {
   Join,
   JoinType,
   MESSAGE_INPUT_SCHEMAS_DIFFER,
+  Partition,
   PRIMITIVE_TYPE_PATH,
   PrimitiveType,
   type QueryNode,
@@ -33,6 +34,8 @@ import {
   Restrict,
   Schema,
   SchemaColumn,
+  SortDirection,
+  WindowRankFunction,
 } from '@finos/legend-cube';
 import {
   CUSTOMERS_COLUMNS,
@@ -1027,6 +1030,395 @@ describe("Where a Concat's column comes from", () => {
     expect(untyped('concat101', 'O')).toBe(true);
     expect(untyped('join101', 'O')).toBe(true);
     expect(untyped('join101', 'ID')).toBe(false);
+    expect(untyped('join101', 'REGION')).toBe(false);
+  });
+});
+
+describe("Where a Partition's column comes from", () => {
+  /** ORDERS, then these nodes one after another, captured at the last */
+  const ordersThrough = (...nodes: (Rename | Restrict | Partition)[]): Query =>
+    new Query(
+      [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), ...nodes],
+      nodes.map(
+        (node, index) =>
+          new Connection(
+            nodes[index - 1]?.id ?? 'relational101',
+            node.id,
+            'tds',
+          ),
+      ),
+      nodes[nodes.length - 1]?.id ?? 'relational101',
+    );
+
+  /** ORDERS by ship country, in order date order, with a window function of each kind */
+  const byCountry = (): Partition =>
+    new Partition(
+      'partition101',
+      ['SHIP_COUNTRY'],
+      [{ column: 'ORDER_DATE', direction: SortDirection.ASC }],
+      [
+        {
+          column: 'SHIP_REGION',
+          function: AggregationFunction.DISTINCT_VALUE,
+          name: 'Only region',
+        },
+        {
+          column: 'ORDER_DATE',
+          function: AggregationFunction.MIN,
+          name: 'First order',
+        },
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.MAX,
+          name: 'Top freight',
+        },
+        {
+          column: 'ORDER_ID',
+          function: AggregationFunction.COUNT,
+          name: 'Orders',
+        },
+        {
+          column: 'CUSTOMER_ID',
+          function: AggregationFunction.DISTINCT_COUNT,
+          name: 'Customers',
+        },
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.SUM,
+          name: 'Running freight',
+        },
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.AVERAGE,
+          name: 'Average freight',
+        },
+        {
+          column: undefined,
+          function: AggregationFunction.COUNT_ROWS,
+          name: 'Rows',
+        },
+        {
+          column: undefined,
+          function: WindowRankFunction.RANK,
+          name: 'Rank',
+        },
+        {
+          column: undefined,
+          function: WindowRankFunction.DENSE_RANK,
+          name: 'Dense rank',
+        },
+        {
+          column: undefined,
+          function: WindowRankFunction.ROW_NUMBER,
+          name: 'Row number',
+        },
+      ],
+    );
+
+  /** Each table column the node's output column comes from, as [table source id, column] */
+  const originsOf = (
+    query: Query,
+    nodeId: string,
+    column: string,
+  ): string[][] =>
+    findColumnOrigins(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((origin) => [origin.source.id, origin.column]);
+
+  const sourcesOf = (query: Query, nodeId: string, column: string): string[] =>
+    findColumnSources(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((source) => source.id);
+
+  test('The partition is valid, so its output has every column asked about', () => {
+    const query = ordersThrough(byCountry());
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('partition101')).toEqual([]);
+    expect(analysis.schemas.get('partition101')?.names()).toEqual([
+      ...ORDERS_COLUMNS.map(({ name }) => name),
+      'Only region',
+      'First order',
+      'Top freight',
+      'Orders',
+      'Customers',
+      'Running freight',
+      'Average freight',
+      'Rows',
+      'Rank',
+      'Dense rank',
+      'Row number',
+    ]);
+  });
+
+  test("Follows each of a Partition's input columns back to its table column under the same name, whether the window partitions, sorts or aggregates by it or not", () => {
+    const query = ordersThrough(byCountry());
+    // its partition column
+    expect(originsOf(query, 'partition101', 'SHIP_COUNTRY')).toEqual([
+      ['relational101', 'SHIP_COUNTRY'],
+    ]);
+    // its sort column
+    expect(originsOf(query, 'partition101', 'ORDER_DATE')).toEqual([
+      ['relational101', 'ORDER_DATE'],
+    ]);
+    // a column its window functions aggregate, which a Group would drop
+    expect(originsOf(query, 'partition101', 'FREIGHT')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    // a column the window doesn't use
+    expect(originsOf(query, 'partition101', 'SHIP_CITY')).toEqual([
+      ['relational101', 'SHIP_CITY'],
+    ]);
+    expect(sourcesOf(query, 'partition101', 'SHIP_CITY')).toEqual([
+      'relational101',
+    ]);
+    // a column its output doesn't have
+    expect(originsOf(query, 'partition101', 'NOPE')).toEqual([]);
+  });
+
+  test('Follows a windowed Distinct Value, Min or Max back to the table column it aggregates', () => {
+    const query = ordersThrough(byCountry());
+    expect(originsOf(query, 'partition101', 'Only region')).toEqual([
+      ['relational101', 'SHIP_REGION'],
+    ]);
+    expect(originsOf(query, 'partition101', 'First order')).toEqual([
+      ['relational101', 'ORDER_DATE'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Top freight')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    expect(sourcesOf(query, 'partition101', 'Top freight')).toEqual([
+      'relational101',
+    ]);
+  });
+
+  test("Finds no table for a windowed Count, Distinct Count, Sum, Average, Count Rows, Rank, Dense Rank or Row Number, which is no column's value", () => {
+    const query = ordersThrough(byCountry());
+    expect(originsOf(query, 'partition101', 'Orders')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Customers')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Running freight')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Average freight')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Rows')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Rank')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Dense rank')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Row number')).toEqual([]);
+    expect(sourcesOf(query, 'partition101', 'Running freight')).toEqual([]);
+  });
+
+  test("Follows a Partition's columns back through a Rename before it, to the table's names", () => {
+    const query = ordersThrough(
+      new Rename('rename101', [
+        { from: 'SHIP_REGION', to: 'Region' },
+        { from: 'FREIGHT', to: 'Cost' },
+      ]),
+      new Partition(
+        'partition101',
+        ['Region'],
+        [{ column: 'Cost', direction: SortDirection.DESC }],
+        [
+          {
+            column: 'Cost',
+            function: AggregationFunction.MAX,
+            name: 'Top cost',
+          },
+          {
+            column: 'Cost',
+            function: AggregationFunction.SUM,
+            name: 'Running cost',
+          },
+          {
+            column: undefined,
+            function: WindowRankFunction.RANK,
+            name: 'Cost rank',
+          },
+        ],
+      ),
+    );
+    expect(buildSchemasAndValidity(query).validity.get('partition101')).toEqual(
+      [],
+    );
+    expect(originsOf(query, 'partition101', 'Region')).toEqual([
+      ['relational101', 'SHIP_REGION'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Cost')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Top cost')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Running cost')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Cost rank')).toEqual([]);
+    // the old names are gone from the rename's output, so from the partition's
+    expect(originsOf(query, 'partition101', 'SHIP_REGION')).toEqual([]);
+  });
+
+  test("Follows a Partition's columns back through a Join before it, a same-named key to the side the join keeps", () => {
+    // RIGHT OUTER keeps CUSTOMERS' CUSTOMER_ID
+    const query = new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101', {
+          leftColumns: ['CUSTOMER_ID'],
+          rightColumns: ['CUSTOMER_ID'],
+          joinType: JoinType.RIGHT_OUTER,
+        }),
+        new Partition(
+          'partition101',
+          ['COUNTRY'],
+          [{ column: 'ORDER_DATE', direction: SortDirection.ASC }],
+          [
+            {
+              column: 'CUSTOMER_ID',
+              function: AggregationFunction.DISTINCT_VALUE,
+              name: 'Only customer',
+            },
+            {
+              column: 'CITY',
+              function: AggregationFunction.DISTINCT_VALUE,
+              name: 'Only city',
+            },
+            {
+              column: 'FREIGHT',
+              function: AggregationFunction.MAX,
+              name: 'Top freight',
+            },
+            {
+              column: undefined,
+              function: WindowRankFunction.ROW_NUMBER,
+              name: 'Row number',
+            },
+          ],
+        ),
+      ],
+      [
+        new Connection('relational101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+        new Connection('join101', 'partition101', 'tds'),
+      ],
+      'partition101',
+    );
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('join101')).toEqual([]);
+    expect(analysis.validity.get('partition101')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'COUNTRY')).toEqual([
+      ['relational102', 'COUNTRY'],
+    ]);
+    expect(originsOf(query, 'partition101', 'ORDER_DATE')).toEqual([
+      ['relational101', 'ORDER_DATE'],
+    ]);
+    expect(originsOf(query, 'partition101', 'CUSTOMER_ID')).toEqual([
+      ['relational102', 'CUSTOMER_ID'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Only customer')).toEqual([
+      ['relational102', 'CUSTOMER_ID'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Only city')).toEqual([
+      ['relational102', 'CITY'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Top freight')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    expect(originsOf(query, 'partition101', 'Row number')).toEqual([]);
+  });
+
+  test("Still tells a windowed Distinct Value of a column Cube typed as a bare String, and the column itself, through a Partition feeding a Join, for the Join's 'type unknown' warning", () => {
+    // ORDERS as the engine types it when SHIP_REGION is an OTHER column; a
+    // bare String offers no Min or Max, so Distinct Value is the window's
+    // only function whose value is the column's
+    const ordersColumns = ORDERS_COLUMNS.map((column) =>
+      column.name === 'SHIP_REGION'
+        ? new SchemaColumn(
+            column.name,
+            PrimitiveType.get(PRIMITIVE_TYPE_PATH.STRING),
+            true,
+          )
+        : column,
+    );
+    const query = new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ordersColumns),
+        // without ORDERS' CUSTOMER_ID, which CUSTOMERS has too
+        new Restrict('restrict101', [
+          'ORDER_ID',
+          'SHIP_COUNTRY',
+          'SHIP_REGION',
+        ]),
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [{ column: 'ORDER_ID', direction: SortDirection.ASC }],
+          [
+            {
+              column: 'SHIP_REGION',
+              function: AggregationFunction.DISTINCT_VALUE,
+              name: 'Ship region',
+            },
+            {
+              column: 'SHIP_REGION',
+              function: AggregationFunction.COUNT,
+              name: 'Ship regions',
+            },
+          ],
+        ),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101', {
+          leftColumns: ['Ship region'],
+          rightColumns: ['REGION'],
+          joinType: JoinType.INNER,
+        }),
+      ],
+      [
+        new Connection('relational101', 'restrict101', 'tds'),
+        new Connection('restrict101', 'partition101', 'tds'),
+        new Connection('partition101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+      ],
+      'join101',
+    );
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('partition101')).toEqual([]);
+    expect(analysis.validity.get('join101')).toEqual([]);
+    const outline: CubeModelOutline = {
+      ...FAKE_NORTHWIND_OUTLINE,
+      databases: [
+        {
+          path: NORTHWIND_DATABASE,
+          schemas: [
+            {
+              name: 'NORTHWIND',
+              tables: [
+                {
+                  name: 'ORDERS',
+                  isView: false,
+                  columnCount: 1,
+                  flags: [],
+                  untypedColumns: ['SHIP_REGION'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    // the Join editor asks of its Left input's column, the partition's
+    const [leftId] = query.getInputIds('join101');
+    expect(leftId).toBe('partition101');
+    const untyped = (nodeId: string, column: string): boolean =>
+      isUntypedColumn(outline, query, analysis, nodeId, column);
+    expect(untyped('partition101', 'Ship region')).toBe(true);
+    expect(untyped('join101', 'Ship region')).toBe(true);
+    // the column itself, which the partition keeps
+    expect(untyped('partition101', 'SHIP_REGION')).toBe(true);
+    expect(untyped('join101', 'SHIP_REGION')).toBe(true);
+    // a count of it is no value of it
+    expect(untyped('partition101', 'Ship regions')).toBe(false);
+    expect(untyped('partition101', 'SHIP_COUNTRY')).toBe(false);
     expect(untyped('join101', 'REGION')).toBe(false);
   });
 });

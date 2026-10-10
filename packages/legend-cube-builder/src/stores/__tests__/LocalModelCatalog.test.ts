@@ -20,7 +20,7 @@ import type {
   CubeEngine,
   CubeModelOutline,
 } from '../../graph-manager/CubeEngine.js';
-import { CUBE_NORTHWIND_MODEL_CODE } from '../fixtures/CubeNorthwindModel.js';
+import { CUBE_NORTHWIND_SAMPLE_MODEL_CODE } from '../fixtures/CubeNorthwindModel.js';
 import {
   BUNDLED_MODELS,
   createTextModel,
@@ -35,13 +35,15 @@ const engineWith = (
 ): CubeEngine => ({ loadModel }) as unknown as CubeEngine;
 
 describe('Local model catalog', () => {
-  test('Offers the Cube Northwind fixture as Pure text, the model a cube saves', () => {
+  test("Offers Northwind without Cube's test tables first, then the samples, as Pure text, the model a cube saves", () => {
     expect(BUNDLED_MODELS.map((entry) => entry.label)).toEqual([
-      'Northwind (Cube fixture)',
+      'Northwind',
+      'Sports',
+      'Trades',
     ]);
     expect(BUNDLED_MODELS[0]?.model).toEqual({
       _type: 'text',
-      code: CUBE_NORTHWIND_MODEL_CODE,
+      code: CUBE_NORTHWIND_SAMPLE_MODEL_CODE,
     });
   });
 

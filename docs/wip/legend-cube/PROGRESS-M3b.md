@@ -1,8 +1,8 @@
 # Legend Cube — M3b Progress Log
 
-> **What this file is:** the "where are we" ledger for M3b, canvas and layout (PLAN §11.6). It is kept apart from
+> **What this file is:** the "where are we" ledger for M3b, canvas and layout (PLAN §11.8). It is kept apart from
 > [PROGRESS.md](PROGRESS.md) and the other milestones' logs, so the lines of work merge cleanly. [PLAN.md](PLAN.md)
-> §11.6 holds what M3b settled; [QUESTIONS.md](QUESTIONS.md) the user's answers it builds on; [ISSUES.md](ISSUES.md) the
+> §11.8 holds what M3b settled; [QUESTIONS.md](QUESTIONS.md) the user's answers it builds on; [ISSUES.md](ISSUES.md) the
 > known issues later PRs fix.
 >
 > **Upkeep:** update it whenever a step lands, and commit it with that step.
@@ -18,9 +18,9 @@
 
 ## Steps
 
-See PLAN §11.6 for each step's deliverable and when it is done.
+See PLAN §11.8 for each step's deliverable and when it is done.
 
-- [x] **M3b.1** The settled decisions (PLAN §11.6) and this file
+- [x] **M3b.1** The settled decisions (PLAN §11.8) and this file
 - [x] **M3b.2** One finish path; Ctrl+click, F9, Ctrl+Z and outside actions apply first
 - [x] **M3b.3** The floating host, behind a prop
 - [x] **M3b.4** The click-away and Escape
@@ -37,7 +37,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M3b.15** Verification
 - [x] **M3b.16** Browser rehearsal
 - [x] **M3b.17** A demo video of M3b's features (PLAN §11.3)
-- [x] **M3b.18** Rebase on the latest master; fold PLAN §11.6's supersessions in
+- [x] **M3b.18** Rebase on the latest master; fold PLAN §11.8's supersessions in
 
 ## Commits
 
@@ -387,7 +387,7 @@ Each frame was read against its caption. The recording has no address bar, so th
 for the entry link, before and after. The video was sent to the user, to attach to #5657.
 
 **M3b.18 (2026-10-10).** finos master is still `5e424277b`, the commit the branch sits on, so no rebase was needed.
-PLAN §11.6's supersessions are folded in:
+PLAN §11.8's supersessions are folded in:
 
 - **§7.1:** the floating editor and 'Add Items ▾'.
 - **§7.2:** the tooltip.
@@ -416,3 +416,22 @@ no editor opens, and CUSTOMERS connects to Right.
 
 Gates: check:ci and lint pass. Tests: 2506 core, 1456 builder, 259 Query. Engine round trips: the ingest round trip
 passes; the four tests that send rejected setup SQL (H2 and DuckDB) time out on the stuck local engine; the other 415 of 419 pass.
+
+**Retargeted to `cube-dev` (2026-10-10).** The user moved Legend Cube's PRs to finos `cube-dev`, squash-merged there,
+while master has no approvers over the weekend. #5657 now targets `cube-dev`, which was merged in (`ed375e076`: M4's
+follow-ups and M5, the examples, Depot databases, the renamed source tabs):
+
+- **Plan.** M5 holds §11.6 on `cube-dev` and M6 (#5662) takes §11.7, so M3b is now **§11.8**, along with every
+  reference M3b added. Part B's first step, the milestone table and Appendix A keep both sides.
+- **Empty canvas.** "Connect to a source to start a new one, or open an example."
+- **One scroller.** M5's Partition editor, the shared column checklist and the Group editor's aggregations drop their
+  inner caps. A browser probe at window heights of 900px and 768px (`probe-partition-fit.mjs`) finds the Partition
+  editor 432px wide, with its body as its one scroller and Apply in the window.
+- **Tests.**
+  - `cube-dev`'s Partition and project source editor tests no longer render the side panel.
+  - Tests that open the source dialog use its new tab names (Sample Data, Direct Connection).
+  - The source picker's tests open it from Add Items, straight on its tab.
+  - The editor-title and Add Items lists include Apply Window Functions.
+
+Gates: check:ci and lint pass. Tests: 2772 core, 1555 builder, 259 Query. Engine round trips: 685 of 689 pass; the four
+setup-SQL tests still time out on the stuck local engine.

@@ -49,6 +49,10 @@ import {
 } from '../../../CubeIngest.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
 import {
+  checkCubeProjectModel,
+  isCubeProjectModel,
+} from '../../../CubeProject.js';
+import {
   CUBE_DIRECT_DATABASE_PATH,
   CUBE_DIRECT_MODEL_TYPE,
   CUBE_DIRECT_RUNTIME_PATH,
@@ -117,8 +121,10 @@ const TEXT_MODEL_TYPE = 'text';
 const EXECUTION_CLIENT_VERSION = 'vX_X_X';
 
 /**
- * The node an execution lambda runs: the one its `from` call is stamped with
- * (`{| <relation>->limit(…)->from(runtime)}`), where errors without a stamp go
+ * The node an execution lambda runs: the one its outermost call is stamped
+ * with, `from` in `{| <relation>->limit(…)->from(runtime)}` and `limit` in
+ * the let form, `{| {| <lets>; <relation>}->from(runtime)->limit(…)}` (PLAN
+ * §8.6), where errors without a stamp go
  */
 const captureNodeOf = (executionLambda: IR): NodeId | undefined => {
   const from =
@@ -365,6 +371,26 @@ export class V1_LegendCubeEngine implements CubeEngine {
     return project;
   }
 
+  /**
+   * Checks a tables cube's model can be sent to the engine: Pure text, or a
+   * project pointer at a released version (PLAN §6.3); else an
+   * unsupported-model error
+   */
+  private checkTablesModel(model: ModelContext, nodeId?: NodeId): void {
+    if (isCubeProjectModel(model)) {
+      const problems = checkCubeProjectModel(model);
+      if (problems.length) {
+        throw new CubeEngineError(
+          CubeEngineErrorKind.UNSUPPORTED_MODEL,
+          problems.join('\n'),
+          nodeId,
+        );
+      }
+      return;
+    }
+    this.textOf(model, nodeId);
+  }
+
   /** The model's Pure text, or an unsupported-model error for any other kind */
   private textOf(model: ModelContext, nodeId?: NodeId): string {
     if (model._type !== TEXT_MODEL_TYPE || typeof model.code !== 'string') {
@@ -491,6 +517,13 @@ export class V1_LegendCubeEngine implements CubeEngine {
           },
         ],
       };
+    }
+    if (isCubeProjectModel(model)) {
+      // its Databases and runtimes are listed through the project catalog
+      throw new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        `A project's outline comes from its depot, through the project catalog`,
+      );
     }
     const code = this.textOf(model);
     try {
@@ -760,7 +793,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
     if (lambdas.size) {
       try {
-        this.textOf(model);
+        this.checkTablesModel(model);
       } catch (error) {
         return new Map(
           [...lambdas.keys()].map((nodeId) => [
@@ -886,7 +919,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
         model._type !== CUBE_DIRECT_MODEL_TYPE &&
         family === CubeSourceFamily.TABLES
       ) {
-        this.textOf(model);
+        this.checkTablesModel(model);
       }
       const body = stringifyLosslessJSON({
         clientVersion: EXECUTION_CLIENT_VERSION,

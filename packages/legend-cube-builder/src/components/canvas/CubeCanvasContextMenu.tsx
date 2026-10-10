@@ -28,7 +28,7 @@ import { CubeAddMenuItems } from '../CubeAddItems.js';
  * The canvas's context menu (spec §17.4): the palette, then what can be done
  * to the node it was opened on. On a node, a transform is added after it;
  * around the nodes, after the selected node; a source opens the source
- * dialog on its tab (PLAN §11.6, U3 and U4). Every item shows, disabled when
+ * dialog on its tab (PLAN §11.8, U3 and U4). Every item shows, disabled when
  * it can't be done, so Swap Inputs can be found. The node comes through
  * props: a menu opened around the nodes has none. Each item applies the node
  * editor first, so its edits are never dropped; a palette item adds nothing

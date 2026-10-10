@@ -261,7 +261,7 @@ describe('Group editor', () => {
         .getAllByRole<HTMLInputElement>('checkbox')
         .some((box) => box.checked),
     ).toBe(false);
-    // the editor's body is its one scroller (PLAN §11.6)
+    // the editor's body is its one scroller (PLAN §11.8)
     expect(keyList().className).not.toMatch(
       /\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u,
     );
@@ -515,6 +515,9 @@ describe('Group editor', () => {
     );
     await openGroup();
     expect(functionPicker(1).value).toBe('Rank');
+    // a Group doesn't know Rank, so its row keeps the column like any other
+    expect(columnPicker(1).value).toBe('ORDER_ID');
+    expect(screen.queryByRole('button', { name: 'Clear column 1' })).toBeNull();
     expect(functions(1)).toEqual([
       'Rank (unknown)',
       ...ALL_COLUMN_FUNCTIONS,

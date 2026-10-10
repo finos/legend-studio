@@ -113,7 +113,7 @@ describe('Restrict editor', () => {
     expect(items).toHaveLength(ORDERS_COLUMNS.length);
     expect(items[0]?.textContent).toContain('ORDER_ID');
     expect(items[0]?.textContent).toContain('SmallInt');
-    // the editor's body is its one scroller (PLAN §11.6)
+    // the editor's body is its one scroller (PLAN §11.8)
     expect(list().className).not.toMatch(
       /\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u,
     );

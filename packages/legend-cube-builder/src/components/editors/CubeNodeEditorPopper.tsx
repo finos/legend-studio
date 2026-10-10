@@ -68,7 +68,7 @@ type CubePopperInstance = NonNullable<
 >;
 
 /**
- * The node editor, floating below its node (PLAN §11.6, spec §17.5): one
+ * The node editor, floating below its node (PLAN §11.8, spec §17.5): one
  * width for every node type, over the results grid if it must be, inside the
  * window, above the node when there is no room below. It is rendered inside
  * the canvas, whose pan and zoom it follows, and shown in a layer of its own

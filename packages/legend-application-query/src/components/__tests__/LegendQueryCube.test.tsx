@@ -53,7 +53,9 @@ test('Opens the Cube page at /cube, empty', async () => {
   // the page loads lazily
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
   expect(page.textContent).toContain('Unsaved Query');
-  expect(page.textContent).toContain('Connect to a source to start a new one.');
+  expect(page.textContent).toContain(
+    'Connect to a source to start a new one, or open an example.',
+  );
 });
 
 test('Says why a linked source could not be added, leaving the cube empty', async () => {
@@ -83,5 +85,7 @@ test('Says why a linked source could not be added, leaving the cube empty', asyn
   expect(banner.textContent).toContain('Error resolving source!');
   expect(banner.textContent).toContain(`"bad" doesn't name an access point`);
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
-  expect(page.textContent).toContain('Connect to a source to start a new one.');
+  expect(page.textContent).toContain(
+    'Connect to a source to start a new one, or open an example.',
+  );
 });

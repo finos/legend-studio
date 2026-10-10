@@ -48,7 +48,7 @@ interface CubeAddItem {
 /**
  * The items that add a node, as the palette lists them (spec §17.2): the
  * sources the cube can take, then the transforms. Each adds where the
- * placement rule puts it (PLAN §11.6): after `nodeId` when given, else after
+ * placement rule puts it (PLAN §11.8): after `nodeId` when given, else after
  * the selected node; a source opens the source dialog on its tab. An item
  * that can't be added is listed, disabled; a source says why. Read in an
  * observer's render.

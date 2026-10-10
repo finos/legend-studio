@@ -30,6 +30,7 @@ import {
   genericType,
   type IR,
   lambda,
+  letBinding,
   literal,
   NotFilter,
   type Origin,
@@ -480,18 +481,73 @@ describe('Cube lambda serializer: shapes', () => {
     expect(bodyOf({ k: 'raw', json })).toEqual(json);
   });
 
-  test('Refuses let and block, which come with window isolation (M5)', () => {
-    const relation = storeAccessor(['db::Db', 'S', 'T']);
-    expect(() =>
-      V1_serializeCubeLambda(
-        lambda([], [{ k: 'let', name: 'x', value: relation }]),
+  test("Writes a let as the engine's letFunction, stamped with its origin, name and all", () => {
+    const LET: Origin = { nodeId: 'partition101', role: EmitRole.LET };
+    const DISTINCT: Origin = { nodeId: 'distinct101', role: EmitRole.DISTINCT };
+    const json = V1_serializeCubeLambda(
+      lambda(
+        [],
+        [
+          letBinding(
+            'n_partition101',
+            storeAccessor(['db::Db', 'S', 'T']),
+            LET,
+          ),
+          func('distinct', [variable('n_partition101')], DISTINCT),
+        ],
       ),
-    ).toThrow(`Can't send "let" yet`);
-    expect(() =>
-      V1_serializeCubeLambda(
-        lambda([], [{ k: 'block', statements: [relation] }]),
+    );
+    expect(withoutSourceInformation(json)).toEqual({
+      _type: 'lambda',
+      parameters: [],
+      body: [
+        {
+          _type: 'func',
+          function: 'letFunction',
+          parameters: [
+            { _type: 'string', value: 'n_partition101' },
+            {
+              _type: 'classInstance',
+              type: '>',
+              value: { path: ['db::Db', 'S', 'T'] },
+            },
+          ],
+        },
+        {
+          _type: 'func',
+          function: 'distinct',
+          parameters: [{ _type: 'var', name: 'n_partition101' }],
+        },
+      ],
+    });
+    // the reference takes its reader's origin
+    expect(sourceIds(json)).toEqual([
+      'cube:partition101:let',
+      'cube:partition101:let',
+      'cube:partition101:let',
+      'cube:partition101:let',
+      'cube:distinct101:distinct',
+      'cube:distinct101:distinct',
+    ]);
+  });
+
+  test('Stamps a let without an origin with the nearest one around it', () => {
+    expect(
+      sourceIds(
+        bodyOf(
+          func(
+            'from',
+            [
+              lambda(
+                [],
+                [letBinding('n_a', literal({ kind: 'integer', value: '1' }))],
+              ),
+            ],
+            ORIGIN,
+          ),
+        ),
       ),
-    ).toThrow(`Can't send "block" yet`);
+    ).toEqual(Array(5).fill(SOURCE_ID));
   });
 
   test('Refuses anything but a lambda at the root', () => {

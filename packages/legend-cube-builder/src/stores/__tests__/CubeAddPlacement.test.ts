@@ -45,7 +45,7 @@ import type { CubeRowCountDraft } from '../editors/CubeRowCountDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
-// One placement rule for the palette, drops and the context menu (PLAN §11.6,
+// One placement rule for the palette, drops and the context menu (PLAN §11.8,
 // QUESTIONS.md U3 and U4): a transform goes after the node it targets, else
 // after the selected node; a source opens the source dialog on its tab
 

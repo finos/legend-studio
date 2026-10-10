@@ -45,17 +45,25 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     deployment).
   - A CSV pasted or chosen in the Database connection tab becomes a DuckDB table of the setup SQL (user, 2026-10-09):
     merged as #5656 (`5e424277b`).
-  - Ingest data sets (PLAN §6.7; user, 2026-10-09: before Depot databases) on `cube-ingest`, finos/legend-studio#5654,
-    with master merged in (`8b235e495`): build steps IN1–IN11 done (the `#I` accessor, the source and its kinds rule,
+  - Ingest data sets (PLAN §6.7; user, 2026-10-09: before Depot databases) merged as finos/legend-studio#5654
+    (`59bbf5d54`): build steps IN1–IN11 done (the `#I` accessor, the source and its kinds rule,
     the `cubeIngest` model and runs, the ingest catalog, Query's `lakehouse.platformUrl`, the Ingest tab and palette
     item, the data set's panel with its warehouse, the engine stand-ins, the docs). Left after the PR (user,
     2026-10-09): skeptic verification and the demo video, then Part B2's ingest steps in an internal deployment. Later:
     reading a definition from Depot at its deployed version (the SDLC pointer), and producers' user-id environments.
-  - Next: Depot databases (PLAN §6.3, §6.8; their requirements are answered: released versions only, no dependency
-    Databases), starting with the local mock depot.
-- [ ] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.6, [PROGRESS-M3b.md](PROGRESS-M3b.md))
-- [x] M4 Group, Concat (merged as #5649, `d847e6721`)
-- [ ] M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
+  - Sample data and example cubes (PLAN §6.9, user, 2026-10-09), before Depot databases, to make Cube easy to demo:
+    Sports and Trades sample models beside Northwind, and six example cubes, merged into `cube-dev` as #5660. Then an
+    Examples dialog in place of the tab (user, 2026-10-10): a grid of dataset and example cards with icons, on
+    `cube-examples-modal`.
+  - Depot databases (PLAN §6.3; released versions only, no dependency Databases, one PR, user 2026-10-10) on
+    `cube-depot-dbs`, finos/legend-studio#5663 into `cube-dev`: the mock depot's sample projects, the pointer model,
+    the project catalog, the Project tab, the Source panel rows, tests (CI and the manual `cube-local` group) and docs.
+    Verification and the demo video come after the PR, once tested deployed.
+- [ ] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.8, [PROGRESS-M3b.md](PROGRESS-M3b.md))
+- [x] M4 Group, Concat (merged as #5649, `d847e6721`; follow-ups in #5653)
+- [x] M5 Partition (windows), built in #5653 with M4's follow-ups, not merged yet ([PROGRESS-M5.md](PROGRESS-M5.md),
+      PLAN §11.6)
+- [ ] M6 Extend, Difference · M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
@@ -97,8 +105,11 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 **In parallel:** M1.9 merged on 2026-10-08 as #5634 (`3260216a6`). M2, the simple unary operations, merged on
 2026-10-09 as #5644 (`0335b3f5f`), with its record in [PROGRESS-M2.md](PROGRESS-M2.md) and its decisions in PLAN §11.4.
 M4, Group and Concat, merged on 2026-10-09 as #5649 (`d847e6721`), with its record in [PROGRESS-M4.md](PROGRESS-M4.md)
-and its decisions in PLAN §11.5; each operation follows the editor contract in PLAN §7.4. Direct connections and data
-products' access points merged on 2026-10-09 as #5641 (`e01552380`). Also planned: test setup and a DuckDB WASM study
+and its decisions in PLAN §11.5; its follow-ups (guides, verification, PLAN's folding) are on `cube-m4-followup` (#5653). M5, Partition (window
+functions), continues on the same branch and PR (user, 2026-10-09), with its record in [PROGRESS-M5.md](PROGRESS-M5.md)
+and its decisions in PLAN §11.6. Each
+operation follows the editor contract in PLAN §7.4. Direct connections and data products' access points merged on
+2026-10-09 as #5641 (`e01552380`), and the data product sources were finished in #5652 (`4f5aab13d`). Also planned: test setup and a DuckDB WASM study
 (low priority, research first: PLAN §12.2 item 9). The next sources (databases from Depot and direct connections,
 deployed data products) and their local test setup are being designed with the user: settled parts in PLAN §6.8, open
 ones in §12.2 item 10, UI questions for the original app in [QUESTIONS.md](QUESTIONS.md). Decimal precision stays for a

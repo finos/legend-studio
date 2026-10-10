@@ -47,6 +47,7 @@ import { CubeEntrySourceBanner } from './CubeEntrySourceBanner.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
+import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
 
@@ -88,6 +89,12 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           </span>
         )}
         <CubeAddItemsMenu editorState={editorState} />
+        <CubeButton
+          title="Open an example cube, or start one on sample data"
+          onClick={() => editorState.examples.open()}
+        >
+          Examples
+        </CubeButton>
         <CubeButton
           title={
             readOnly
@@ -179,6 +186,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
         </div>
       )}
       <CubeSourcePicker editorState={editorState} />
+      <CubeExamplesDialog editorState={editorState} />
       <CubeSpecTransferDialog editorState={editorState} />
       <CubeShowPureDialog editorState={editorState} />
     </div>
@@ -188,7 +196,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
 /**
  * The Legend Cube page: the query above, its results below, both always
  * shown (PLAN §7.1); hiding the graph leaves its header. A node's editor
- * floats below the node (PLAN §11.6). The host gives it
+ * floats below the node (PLAN §11.8). The host gives it
  * the engine, the models and the application store; the page's state lives
  * as long as the page.
  */

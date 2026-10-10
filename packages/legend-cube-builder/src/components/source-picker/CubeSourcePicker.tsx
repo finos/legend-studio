@@ -31,6 +31,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeDataProductTab } from './CubeDataProductTab.js';
 import { CubeIngestTab } from './CubeIngestTab.js';
+import { CubeProjectTab } from './CubeProjectTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
 
@@ -108,6 +109,8 @@ export const CubeSourcePicker = observer(
                 <CubeDataProductTab tab={picker.dataProductTab} />
               ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
                 <CubeIngestTab tab={picker.ingestTab} />
+              ) : activeTab.key === CubeSourcePickerTabKey.PROJECT ? (
+                <CubeProjectTab tab={picker.projectTab} />
               ) : (
                 <CubeInlineModelTab tab={picker.modelTab} />
               )}

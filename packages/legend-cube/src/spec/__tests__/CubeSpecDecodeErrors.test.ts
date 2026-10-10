@@ -24,6 +24,7 @@ import {
 } from '../../nodes/NodeRegistry.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
 import { Group } from '../../nodes/transforms/Group.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import type { JsonObject } from '../../utils/Json.js';
 import { FILTER_CODEC } from '../codecs/FilterCodec.js';
@@ -132,6 +133,17 @@ const GROUP_101 = {
   aggregations: [COUNT_ORDERS, { function: 'CountRows', name: 'Count Rows' }],
 };
 const AGGREGATIONS = 'query.nodes[0].aggregations';
+const RANK = { function: 'Rank', name: 'Rank' };
+const ORDER_DATE_ASC = { column: 'ORDER_DATE', direction: 'ASC' };
+const PARTITION_101 = {
+  kind: 'partition',
+  id: 'partition101',
+  inputs: [null],
+  columns: ['SHIP_COUNTRY'],
+  sorts: [ORDER_DATE_ASC],
+  aggregations: [COUNT_ORDERS, RANK],
+};
+const SORTS = 'query.nodes[0].sorts';
 const CONCAT_101 = {
   kind: 'concat',
   id: 'concat101',
@@ -180,6 +192,15 @@ const withGroup = (node: unknown): Record<string, unknown> =>
 /** A document whose one node is `group101` with these aggregations */
 const withAggregations = (aggregations: unknown): Record<string, unknown> =>
   withGroup({ ...GROUP_101, aggregations });
+/** A document whose one node is this partition, `partition101` */
+const withPartition = (node: unknown): Record<string, unknown> =>
+  withNodes([node], 'partition101');
+/** A document whose one node is `partition101` with these sorts */
+const withPartitionSorts = (sorts: unknown): Record<string, unknown> =>
+  withPartition({ ...PARTITION_101, sorts });
+/** A document whose one node is `partition101` with these aggregations */
+const withWindowFunctions = (aggregations: unknown): Record<string, unknown> =>
+  withPartition({ ...PARTITION_101, aggregations });
 /** A document whose one node is this concat, `concat101` */
 const withConcat = (node: unknown): Record<string, unknown> =>
   withNodes([node], 'concat101');
@@ -1563,6 +1584,341 @@ describe(unitTest('Saved spec decode errors'), () => {
       withGroup({ ...GROUP_101, inputs: [null, null] }),
       'query.nodes[0].inputs',
       'must list the 1 input(s) of a group node, in port order',
+    ],
+  ])('Refuses %s', (_, json, path, detail) => {
+    expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
+  });
+
+  test.each<[string, unknown]>([
+    ['a partition', withPartition(PARTITION_101)],
+    [
+      'a partition with no columns, no sorts and no aggregations',
+      withPartition({
+        ...PARTITION_101,
+        columns: [],
+        sorts: [],
+        aggregations: [],
+      }),
+    ],
+    [
+      // texts are kept for validation to judge (PLAN §11.6)
+      'a partition whose texts are blank',
+      withPartition({
+        ...PARTITION_101,
+        columns: [''],
+        sorts: [{ column: '', direction: 'ASC' }],
+        aggregations: [{ column: '', function: '', name: '' }],
+      }),
+    ],
+    [
+      'a partition with an unknown function, Rank on a column and an aggregation without a name',
+      withWindowFunctions([
+        { column: 'ORDER_ID', function: 'Median', name: 'Median' },
+        { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
+        { function: 'RowNumber' },
+      ]),
+    ],
+    ['a partition with Rank and no sort', withPartitionSorts([])],
+  ])('Reads %s, which the failing cases start from', (_, json) => {
+    const { document, readOnly } = decodeCubeSpec(json, {
+      registry: createNodeRegistry(),
+    });
+    expect(readOnly).toBe(false);
+    expect(document.query.getNode('partition101')).toBeInstanceOf(Partition);
+  });
+
+  test.each<[string, unknown, string, string]>([
+    [
+      'a partition without columns',
+      withPartition({
+        kind: 'partition',
+        id: 'partition101',
+        inputs: [null],
+        sorts: [ORDER_DATE_ASC],
+        aggregations: [RANK],
+      }),
+      'query.nodes[0].columns',
+      'is required',
+    ],
+    [
+      'partition columns that are not a list',
+      withPartition({ ...PARTITION_101, columns: 'SHIP_COUNTRY' }),
+      'query.nodes[0].columns',
+      'must be a list',
+    ],
+    [
+      'partition columns set to null',
+      withPartition({ ...PARTITION_101, columns: null }),
+      'query.nodes[0].columns',
+      'must be a list',
+    ],
+    [
+      'a partition column that is a number',
+      withPartition({ ...PARTITION_101, columns: ['SHIP_COUNTRY', 1] }),
+      'query.nodes[0].columns[1]',
+      'must be a string',
+    ],
+    [
+      'a partition column set to null',
+      withPartition({ ...PARTITION_101, columns: [null] }),
+      'query.nodes[0].columns[0]',
+      'must be a string',
+    ],
+    [
+      'a partition without sorts',
+      withPartition({
+        kind: 'partition',
+        id: 'partition101',
+        inputs: [null],
+        columns: ['SHIP_COUNTRY'],
+        aggregations: [RANK],
+      }),
+      SORTS,
+      'is required',
+    ],
+    [
+      'partition sorts that are not a list',
+      withPartitionSorts({ column: 'ORDER_DATE' }),
+      SORTS,
+      'must be a list',
+    ],
+    [
+      'partition sorts set to null',
+      withPartitionSorts(null),
+      SORTS,
+      'must be a list',
+    ],
+    [
+      'a partition sort entry that is a column name',
+      withPartitionSorts(['ORDER_DATE']),
+      `${SORTS}[0]`,
+      'must be an object',
+    ],
+    [
+      'a partition sort entry set to null',
+      withPartitionSorts([ORDER_DATE_ASC, null]),
+      `${SORTS}[1]`,
+      'must be an object',
+    ],
+    [
+      'a partition sort entry without a direction',
+      withPartitionSorts([{ column: 'ORDER_DATE' }]),
+      `${SORTS}[0].direction`,
+      'is required',
+    ],
+    [
+      // as for a Sort: a direction the user can't have picked
+      'a partition sort entry with an empty direction',
+      withPartitionSorts([{ column: 'ORDER_DATE', direction: '' }]),
+      `${SORTS}[0].direction`,
+      'must not be empty',
+    ],
+    [
+      'a partition sort entry whose direction is a number',
+      withPartitionSorts([{ column: 'ORDER_DATE', direction: 1 }]),
+      `${SORTS}[0].direction`,
+      'must be a string',
+    ],
+    [
+      'a partition sort entry without a column',
+      withPartitionSorts([ORDER_DATE_ASC, { direction: 'DESC' }]),
+      `${SORTS}[1].column`,
+      'is required',
+    ],
+    [
+      'a partition sort entry whose column is a number',
+      withPartitionSorts([{ column: 1, direction: 'ASC' }]),
+      `${SORTS}[0].column`,
+      'must be a string',
+    ],
+    [
+      'a partition without aggregations',
+      withPartition({
+        kind: 'partition',
+        id: 'partition101',
+        inputs: [null],
+        columns: ['SHIP_COUNTRY'],
+        sorts: [ORDER_DATE_ASC],
+      }),
+      AGGREGATIONS,
+      'is required',
+    ],
+    [
+      'partition aggregations that are not a list',
+      withWindowFunctions({ ORDER_ID: 'Rank' }),
+      AGGREGATIONS,
+      'must be a list',
+    ],
+    [
+      'partition aggregations set to null',
+      withWindowFunctions(null),
+      AGGREGATIONS,
+      'must be a list',
+    ],
+    [
+      'a partition aggregation that is a function name',
+      withWindowFunctions(['Rank']),
+      `${AGGREGATIONS}[0]`,
+      'must be an object',
+    ],
+    [
+      'a partition aggregation set to null',
+      withWindowFunctions([RANK, null]),
+      `${AGGREGATIONS}[1]`,
+      'must be an object',
+    ],
+    [
+      'a partition aggregation that is a list',
+      withWindowFunctions([['ORDER_ID', 'Count']]),
+      `${AGGREGATIONS}[0]`,
+      'must be an object',
+    ],
+    [
+      'a partition aggregation without a function',
+      withWindowFunctions([{ name: 'Rank' }]),
+      `${AGGREGATIONS}[0].function`,
+      'is required',
+    ],
+    [
+      'a partition aggregation function that is a number',
+      withWindowFunctions([{ ...RANK, function: 1 }]),
+      `${AGGREGATIONS}[0].function`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation function set to null',
+      withWindowFunctions([{ ...RANK, function: null }]),
+      `${AGGREGATIONS}[0].function`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation column that is a number',
+      withWindowFunctions([RANK, { ...COUNT_ORDERS, column: 1 }]),
+      `${AGGREGATIONS}[1].column`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation column set to null',
+      withWindowFunctions([{ ...RANK, column: null }]),
+      `${AGGREGATIONS}[0].column`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation name that is a number',
+      withWindowFunctions([{ ...RANK, name: 1 }]),
+      `${AGGREGATIONS}[0].name`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation name set to null',
+      withWindowFunctions([COUNT_ORDERS, { ...RANK, name: null }]),
+      `${AGGREGATIONS}[1].name`,
+      'must be a string',
+    ],
+    [
+      // malformed fields are decode errors even when an entry has an unknown
+      // direction or key: every entry of the three lists is read before one
+      // keeps the node as an Unknown node
+      'a partition sort entry without a column after one with an unknown direction',
+      withPartitionSorts([
+        { column: 'ORDER_DATE', direction: 'RANDOM' },
+        { direction: 'ASC' },
+      ]),
+      `${SORTS}[1].column`,
+      'is required',
+    ],
+    [
+      'a partition sort entry with an empty direction after one with an unknown key',
+      withPartitionSorts([
+        { ...ORDER_DATE_ASC, nulls: 'first' },
+        { column: 'ORDER_ID', direction: '' },
+      ]),
+      `${SORTS}[1].direction`,
+      'must not be empty',
+    ],
+    [
+      'a partition aggregation with an unknown key and a function that is a number',
+      withWindowFunctions([{ ...RANK, function: 1, where: 'QTY > 5' }]),
+      `${AGGREGATIONS}[0].function`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation column that is a number after one with an unknown key',
+      withWindowFunctions([
+        { ...RANK, ties: 'dense' },
+        { ...COUNT_ORDERS, column: 1 },
+      ]),
+      `${AGGREGATIONS}[1].column`,
+      'must be a string',
+    ],
+    [
+      'a partition aggregation without a function after a sort entry with an unknown direction',
+      withPartition({
+        ...PARTITION_101,
+        sorts: [{ column: 'ORDER_DATE', direction: 'RANDOM' }],
+        aggregations: [RANK, { column: 'ORDER_ID', name: 'ORDER_ID Count' }],
+      }),
+      `${AGGREGATIONS}[1].function`,
+      'is required',
+    ],
+    [
+      'a partition aggregation name that is a number after a sort entry with an unknown key',
+      withPartition({
+        ...PARTITION_101,
+        sorts: [{ ...ORDER_DATE_ASC, nulls: 'last' }],
+        aggregations: [RANK, { ...COUNT_ORDERS, name: 7 }],
+      }),
+      `${AGGREGATIONS}[1].name`,
+      'must be a string',
+    ],
+    [
+      'a partition column that is a number beside a sort entry with an unknown direction and an aggregation with an unknown key',
+      withPartition({
+        ...PARTITION_101,
+        columns: [1],
+        sorts: [{ column: 'ORDER_DATE', direction: 'RANDOM' }],
+        aggregations: [{ ...RANK, where: 'QTY > 5' }],
+      }),
+      'query.nodes[0].columns[0]',
+      'must be a string',
+    ],
+    [
+      'a partition without inputs',
+      withPartition({
+        kind: 'partition',
+        id: 'partition101',
+        columns: ['SHIP_COUNTRY'],
+        sorts: [ORDER_DATE_ASC],
+        aggregations: [RANK],
+      }),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a partition node, in port order',
+    ],
+    [
+      'a partition with two inputs',
+      withPartition({ ...PARTITION_101, inputs: [null, null] }),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a partition node, in port order',
+    ],
+    [
+      'a partition with a malformed column and a malformed sort, at the column: the columns are read first',
+      withPartition({
+        ...PARTITION_101,
+        columns: [1],
+        sorts: [{ column: 'ORDER_DATE' }],
+      }),
+      'query.nodes[0].columns[0]',
+      'must be a string',
+    ],
+    [
+      'a partition with a malformed sort and a malformed aggregation, at the sort: the sorts are read before the aggregations',
+      withPartition({
+        ...PARTITION_101,
+        sorts: [{ column: 1, direction: 'ASC' }],
+        aggregations: [{ column: 'ORDER_ID', name: 'ORDER_ID Count' }],
+      }),
+      `${SORTS}[0].column`,
+      'must be a string',
     ],
   ])('Refuses %s', (_, json, path, detail) => {
     expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);

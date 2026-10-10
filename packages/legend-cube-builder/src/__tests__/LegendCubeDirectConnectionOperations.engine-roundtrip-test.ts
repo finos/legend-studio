@@ -16,9 +16,14 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  ColumnComparisonFilter,
   Distinct,
   Drop,
+  Filter,
+  FilterOperator,
   Limit,
+  Partition,
   type QueryNode,
   QueryEmitter,
   RelationalTableSource,
@@ -27,6 +32,7 @@ import {
   Slice,
   Sort,
   SortDirection,
+  WindowRankFunction,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
@@ -141,6 +147,100 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
       expect(result.rows).toHaveLength(3);
       expect(new Set(TEST__columnValues(result, country))).toEqual(
         new Set(['DE', 'MX', 'FR']),
+      );
+    });
+
+    // window functions (PLAN §11.6): DuckDB is a second database that runs them
+
+    const window = (
+      columns: string[],
+      sorted: boolean,
+      ...functions: [string, string | undefined, string][]
+    ): Partition =>
+      new Partition(
+        'partition101',
+        columns,
+        sorted ? [{ column: orderId, direction: SortDirection.ASC }] : [],
+        functions.map(([fn, column, name]) => ({ column, function: fn, name })),
+      );
+    const germany = (): Filter =>
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter(country, FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'DE',
+        }),
+      );
+    const ascending = (): Sort =>
+      new Sort('sort102', [{ column: orderId, direction: SortDirection.ASC }]);
+
+    test("Counts each country's rows on every row, though a Filter after the window keeps one country", async () => {
+      const result = await run(
+        window([country], false, [
+          AggregationFunction.COUNT_ROWS,
+          undefined,
+          'n',
+        ]),
+        germany(),
+      );
+      expect(TEST__columnValues(result, 'n')).toEqual(['3', '3', '3']);
+    });
+
+    test('Runs a count, ranks and numbers the rows of each country in order', async () => {
+      const result = await run(
+        window(
+          [country],
+          true,
+          [AggregationFunction.COUNT_ROWS, undefined, 'n'],
+          [WindowRankFunction.RANK, undefined, 'rk'],
+          [WindowRankFunction.ROW_NUMBER, undefined, 'rn'],
+        ),
+        ascending(),
+      );
+      expect(TEST__columnValues(result, orderId)).toEqual([
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+      ]);
+      expect(TEST__columnValues(result, 'n')).toEqual([
+        '1',
+        '1',
+        '2',
+        '1',
+        '2',
+        '3',
+      ]);
+      expect(TEST__columnValues(result, 'rk')).toEqual(
+        TEST__columnValues(result, 'n'),
+      );
+      expect(TEST__columnValues(result, 'rn')).toEqual(
+        TEST__columnValues(result, 'n'),
+      );
+    });
+
+    test('Counts the distinct countries over every row, and gives each row its own country as the distinct value', async () => {
+      const result = await run(
+        window([], false, [AggregationFunction.DISTINCT_COUNT, country, 'd']),
+        new Partition(
+          'partition102',
+          [country],
+          [],
+          [
+            {
+              column: country,
+              function: AggregationFunction.DISTINCT_VALUE,
+              name: 'v',
+            },
+          ],
+        ),
+        ascending(),
+      );
+      expect(TEST__columnValues(result, 'd')).toEqual(Array(6).fill('3'));
+      expect(TEST__columnValues(result, 'v')).toEqual(
+        TEST__columnValues(result, country),
       );
     });
   },

@@ -67,7 +67,9 @@ test("Opens the Cube page at /query/cube through Query's own router, with no fla
   );
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
   expect(page.textContent).toContain('Unsaved Query');
-  expect(page.textContent).toContain('Connect to a source to start a new one.');
+  expect(page.textContent).toContain(
+    'Connect to a source to start a new one, or open an example.',
+  );
 });
 
 test("Says why a linked source couldn't be added, and takes the link out of the address", async () => {
@@ -79,7 +81,7 @@ test("Says why a linked source couldn't be added, and takes the link out of the 
   expect(banner.textContent).toContain('"bad" doesn\'t name an access point');
   expect(
     (await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR)).textContent,
-  ).toContain('Connect to a source to start a new one.');
+  ).toContain('Connect to a source to start a new one, or open an example.');
   expect(window.location.pathname).toBe('/query/cube');
   expect(window.location.search).toBe('');
 });

@@ -482,6 +482,7 @@ import {
   FaToggleOff,
   FaToggleOn,
   FaTrash,
+  FaTrophy,
   FaTruckLoading,
   FaUndo,
   FaUpload,
@@ -630,6 +631,7 @@ export const TimesIcon = FaTimes;
 export const ToggleIcon = FaToggleOn;
 export const ToggleOffIcon = FaToggleOff;
 export const TrashIcon = FaTrash;
+export const TrophyIcon = FaTrophy;
 export const TruckLoadingIcon = FaTruckLoading;
 export const UndoIcon = FaUndo;
 export const UploadIcon = FaUpload;

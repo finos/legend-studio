@@ -19,7 +19,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
 
 /**
- * What a press outside the floating editor leaves alone (PLAN §11.6):
+ * What a press outside the floating editor leaves alone (PLAN §11.8):
  * a node, whose click applies and opens it or selects it; the canvas's
  * background, controls and minimap, so panning or zooming keeps the editor
  * (a plain click on the background closes it, through the canvas); the
@@ -44,7 +44,7 @@ export const isCubeNodeEditorDismissedBy = (
 
 /**
  * Closes the floating node editor, applying its edits, on a press of the
- * main button outside it, or on Escape (PLAN §11.6, spec §17.5). A press
+ * main button outside it, or on Escape (PLAN §11.8, spec §17.5). A press
  * closes it as it goes down, before the click, so a button pressed outside
  * (Execute, Undo) acts on the applied edits. Nothing closes it while a Cube
  * dialog is open or something opened from it holds it; an Escape a field or

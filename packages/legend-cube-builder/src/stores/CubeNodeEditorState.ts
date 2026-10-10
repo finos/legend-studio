@@ -65,7 +65,7 @@ export const isSameNodeContent = (
 };
 
 /**
- * The node editor (PLAN §7.4, §11.6, spec §17.5). Opening it never changes
+ * The node editor (PLAN §7.4, §11.8, spec §17.5). Opening it never changes
  * which node Execute runs. Edits go to a draft, and only Apply, or closing
  * the editor, stores them, as one undo step; Cancel drops them. Every close
  * that applies goes through `finish`, which first lets the editor's fields
@@ -436,7 +436,7 @@ export class CubeNodeEditorState {
   }
 
   /**
-   * Finishes with the editor as anything but Cancel does (PLAN §11.6): commits
+   * Finishes with the editor as anything but Cancel does (PLAN §11.8): commits
    * its pending input, then closes it, applying the edits as one undo step.
    * Edits the query can't take close it with a notice instead of vanishing.
    * Does nothing while something opened from the editor holds it open.
@@ -480,7 +480,7 @@ export class CubeNodeEditorState {
   /**
    * Runs what a shortcut does (F9, Ctrl+Z), which may finish the editor: when
    * it closes the editor while the keyboard was in it, the keyboard goes back
-   * to the node (PLAN §11.6), as on Escape. The canvas takes the request.
+   * to the node (PLAN §11.8), as on Escape. The canvas takes the request.
    */
   runFromKeyboard(run: () => void, focusWasInEditor: boolean): void {
     const { nodeId } = this;

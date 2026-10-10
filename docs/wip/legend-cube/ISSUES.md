@@ -202,6 +202,123 @@ the sum passes 2,147,483,647, though Pure types the result as Integer (a long). 
 `sum(cast("t_0".I as bigint))` on SQL Server would match the Pure type.
 ```
 
+### A window `count()` loses its OVER clause
+
+Found in M5's requirements; run on H2 and planned on every database type again in M5.10 (engine `93d92b4`). In a
+window, `count()` types as Integer but is written as a plain aggregate:
+`->extend(over(~[SHIP_COUNTRY]), ~[c:{p,w,r|$r.SHIP_REGION}:y|$y->count()])`
+plans `count("orders_0".SHIP_REGION) as "c"`, with no OVER, on all 20 database types ✅ (even Spanner, Presto and
+Composite, which refuse every other window column). Run on H2, it fails: `Column "orders_1.ORDER_ID" must be in the
+GROUP BY list` ✅. `size()` plans `count(x) over (…)`. Cube writes a window's Count and Count Rows with `size()`
+(`PartitionEmitter.ts`), and `LegendCubeDialects.engine-roundtrip-test.ts` pins `count(…) over` on the 17 window
+types, and no `count(` without OVER in any select but a Group's GROUP BY. Draft issue for finos/legend-engine:
+
+```text
+Title: count() in a window extend is written without its OVER clause
+
+`#>{db.S.T}#->extend(over(~[P]), ~[c:{p,w,r|$r.X}:y|$y->count()])` compiles, typed Integer, but
+plans `count("t_0".X) as "c"` with no `OVER (Partition By "t_0".P)` on every database type, so it
+runs as an aggregate without a GROUP BY and fails (H2: "must be in the GROUP BY list").
+`$y->size()` in the same place plans `count("t_0".X) OVER (…)`. count() should keep its window,
+as size() does, or fail to compile.
+```
+
+### A filter after a single-form window extend runs before the window, or is dropped
+
+Found in M5's requirements; run on H2 and planned on every database type again in M5.10 (engine `93d92b4`). A
+filter after an `extend` whose window column is in the single form, `~c:…`, is folded into the window's SELECT:
+
+- On an input column it becomes the window's WHERE, so it runs first:
+  `->extend(over(~SHIP_COUNTRY), ~c:{p,w,r|$r.ORDER_ID}:y|$y->size())->filter(r|$r.ORDER_ID < 10252)->filter(r|$r.SHIP_COUNTRY == 'France')`
+  counts France's orders as 2, not 77, on H2 ✅ (`CubeWindowIsolation.engine-roundtrip-test.ts` runs the single form
+  unbound, 2, and bound by a let, 77; the unbound array form also gives 77 ✅, in a probe), and every one of the 17
+  window types plans the WHERE in the window's SELECT ✅.
+- On the window column (`->filter(x|$x.c > 100)`) it is written as QUALIFY on 4 types (H2, Snowflake, Databricks,
+  DuckDB), refused on 6 (Postgres, MemSQL and Spanner: "QUALIFY grammar is not supported"; Redshift, Hive and
+  Composite: "QUALIFY is not supported") and silently dropped, every row returned, on 9 (SQL Server, Sybase, Sybase IQ,
+  DB2, Oracle, Trino, BigQuery, Athena, ClickHouse) ✅ (plans). Presto refuses any window.
+
+The array form, `~[c:…]`, plans both filters after the window on all 17 ✅. Cube writes every window in the array form
+and binds every Partition that isn't the capture with a `let` (PLAN §8.6, §11.6), whose WITH keeps the filter
+outside; the plan-only test pins the WITH, the WHERE outside the window's select and no QUALIFY. Draft issue for
+finos/legend-engine:
+
+```text
+Title: A filter after a single-form window extend runs before the window, or is dropped
+
+`#>{db.S.T}#->extend(over(~P), ~c:{p,w,r|$r.X}:y|$y->size())->filter(x|$x.Y == 'v')` puts
+`where Y = 'v'` in the same SELECT as `count(X) OVER (Partition By P)`, so the window counts only
+the filtered rows (H2: 2 instead of 77). With `->filter(x|$x.c > 100)` the predicate becomes a
+QUALIFY on H2, Snowflake, Databricks and DuckDB, an error ("QUALIFY ... is not supported") on
+Postgres, MemSQL, Spanner, Redshift, Hive and Composite, and disappears from the SQL on SqlServer,
+Sybase, SybaseIQ, DB2, Oracle, Trino, BigQuery, Athena and ClickHouse. The array form `~[c:…]`
+plans a subselect and is right on all of them; the single form should be too.
+```
+
+### A rank with no ORDER BY plans, and fails only on the database
+
+Found in M5's requirements; run on H2 and planned on every database type again in M5.10 (engine `93d92b4`).
+`->extend(over(~[SHIP_COUNTRY]), ~[rk:{p,w,r|$p->rank($w,$r)}])` types (`rk` Integer) and plans
+`rank() over (partition by …)`, with no ORDER BY, on all 17 window types ✅. Run on H2, it fails as an HTTP 500 with
+no source location: `Syntax error in SQL statement "RANK() OVER (PARTITION BY … ORDER BY NULL[*])"; expected
+"ORDER BY"` ✅. Other databases weren't run: SQL Server requires an ORDER BY for ranking functions, while Postgres
+ranks every row 1 (💭, vendor documentation); `denseRank` and `rowNumber` with no sort weren't probed (💭). Cube
+refuses a Rank, Dense Rank or Row Number with no sort before running
+(`Aggregation function "<a>" requires at least one sort column.`). Draft issue for finos/legend-engine:
+
+```text
+Title: rank() over a window with no sort compiles and plans, then fails in the database
+
+`#>{db.S.T}#->extend(over(~[P]), ~[rk:{p,w,r|$p->rank($w,$r)}])` compiles and plans
+`rank() over (partition by P)` with no ORDER BY on every database type with windows. H2 then
+fails with a syntax error ("expected ORDER BY") as an HTTP 500 with no source information. A
+rank over a window with no sort keys should be a compilation error at the call.
+```
+
+### A windowed `count(distinct …)` plans on every database, though some refuse it
+
+Found in M5's requirements; run on H2 and pinned in the plan-only test in M5.10 (engine `93d92b4`).
+`->extend(over(~[SHIP_COUNTRY], [~ORDER_DATE->ascending()]), ~[dc:{p,w,r|$r.CUSTOMER_ID}:y|$y->distinct()->size()])`
+plans `count(distinct(x)) over (…)`, and `uniqueValueOnly()` plans
+`case when count(distinct(x)) over (…) = 1 then max(x) over (…) else null end`, sorted or not, on all 17 window types
+✅; H2 runs them (France's running Distinct Count 1, 2, 3, and 10 over the whole partition ✅). At least Postgres, SQL
+Server, Databricks and Trino (and so Athena, on Trino) reject DISTINCT in a window aggregate, and Oracle and BigQuery
+with an ORDER BY in the window (💭,
+vendor documentation; none was run here), so such a query plans and then fails in the database. Cube offers windowed Distinct Count and Distinct Value natively, with an editor note on where
+they fail (PLAN §11.6, Q3), and the plan-only test pins each database's form (`WINDOWED_DISTINCT`). Draft issue for
+finos/legend-engine:
+
+```text
+Title: distinct()->size() and uniqueValueOnly() in a window plan where DISTINCT in a window is rejected
+
+`->extend(over(~[P], [~O->ascending()]), ~[d:{p,w,r|$r.X}:y|$y->distinct()->size()])` plans
+`count(distinct(X)) OVER (Partition By P Order By O asc)` on every database type with windows,
+and uniqueValueOnly() plans `case when count(distinct(X)) OVER (…) = 1 then max(X) OVER (…)`.
+Postgres, SQL Server, Databricks and Trino reject DISTINCT in a window aggregate (Oracle and
+BigQuery with an ORDER BY), so the error only comes from the database. Those dialects could
+refuse it when planning, with a clear message, as they refuse QUALIFY.
+```
+
+### One nested subselect per window column, even inside one extend
+
+Found in M5.5's review and planned again in M5.10 (engine `93d92b4`).
+`->extend(over(~[SHIP_COUNTRY]), ~[a:{p,w,r|$r.EMPLOYEE_ID}:y|$y->sum(), b:{p,w,r|$r.ORDER_ID}:y|$y->max(), c:{p,w,r|$r.ORDER_ID}:y|$y->min()])->limit(1001)`
+plans three nested selects, each computing one window column over the select inside it, on H2, Postgres and SQL
+Server ✅. With nothing after the extend it is one select with three OVER clauses ✅; a filter after it, or a `let`
+that binds it, nests it the same way ✅. The rows are right, but a Partition of N functions is N levels deep, each
+selecting every column again, and a Partition of a Partition adds its own. Cube has no workaround: a run always ends
+with a limit, so every Partition nests. `LegendCubeDialects.engine-roundtrip-test.ts` pins one select with an OVER per
+window column on H2. Draft issue for finos/legend-engine:
+
+```text
+Title: A window extend of several columns plans one nested subselect per column
+
+`#>{db.S.T}#->extend(over(~[P]), ~[a:{p,w,r|$r.X}:y|$y->sum(), b:{p,w,r|$r.X}:y|$y->max(),
+c:{p,w,r|$r.X}:y|$y->min()])->limit(10)` plans three nested selects with one OVER each, though
+the three columns share one window and none reads another. Without the limit it is one select
+with three OVER clauses. The columns of one extend could stay in one select whatever follows it.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns
@@ -262,6 +379,19 @@ deployment (PLAN §11.2 Part B2).
 - **A data set re-checked on import** keeps its saved columns, with a warning, when its definition can't be read again
   (e.g. no longer deployed).
 
+## Depot databases
+
+- **Scale is unmeasured.** The project list isn't paged and has no search, and a version's first typing call compiles
+  the project with its dependencies. Neither was measured at a real depot's size.
+- **An outline downloads the version's whole model twice,** with and without its dependencies, in the browser. On a
+  project with a large dependency closure the Project tab could be slow: the first thing to watch when testing
+  deployed. The follow-up is the requirements' smaller classifier GETs (Databases and runtimes only).
+- **The mock copies Studio's depot client.** The real depot's answers for versions (`snapshots=false`), `latest` and
+  its wrappers weren't checked in a deployment.
+- **No CI test sends a pointer:** CI runs no depot. The `cube-local` group does, by hand.
+- **The engine caches a pointer's project per version,** so a sample project changed under the same version needs an
+  engine restart (local only: a published release doesn't change).
+
 ## Test gaps
 
 None hides a known bug.
@@ -294,4 +424,10 @@ None hides a known bug.
 - **Long column names on Postgres (💭, not probed).** A Rename (M2.9) accepts new names of up to 128 code points
   (PLAN §11.4), but Postgres cuts identifiers at 63 bytes, so two long names could collide or be cut once a Postgres
   runtime is in use. Suggested check: plan a rename to a name of 64 bytes or more on Postgres, and lower the cap per
-  database if needed.
+  database if needed. Group's auto-names, `<column> <function>`, reach the limit with no name typed (M4.15, plans
+  only): from a 53-byte column, Distinct Count and Distinct Value share their first 63 bytes; from 61 bytes, Min and
+  Max do too; from 62 bytes, every aggregation of the column. Cube accepts both names and the engine passes them on,
+  so Postgres would reject a Sort on either after the Group ("ORDER BY … is ambiguous") and a Concat's outer select
+  ("column reference is ambiguous"); a Filter, Limit or select after the Group is unaffected. A per-database cap on
+  Rename's names wouldn't cover this: a guard has to check every derived output name, a Group's included, and only
+  when the runtime's database is Postgres (the names run on H2).

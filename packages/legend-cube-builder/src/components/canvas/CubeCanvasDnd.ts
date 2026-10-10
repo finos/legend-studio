@@ -45,7 +45,7 @@ const isNodeDragItem = (item: CubeDragItem): item is CubeNodeDragItem =>
  * Whether dropping the item on the node does anything, which also decides
  * whether the node lights up under it: a transform is spliced in after the
  * node, another node connects to it or else moves after it. A source is the
- * canvas's, whatever node it is dropped on (PLAN §11.6, U4).
+ * canvas's, whatever node it is dropped on (PLAN §11.8, U4).
  */
 export const canDropOnCubeNode = (
   editorState: CubeEditorState,
@@ -70,7 +70,7 @@ export const dropOnCubeNode = (
 };
 
 /**
- * A palette item dropped on the canvas (PLAN §11.6, U3 and U4): a transform
+ * A palette item dropped on the canvas (PLAN §11.8, U3 and U4): a transform
  * around the nodes goes after the selected node; a source opens the source
  * dialog on its tab, even dropped on a node, which leaves it to the canvas.
  * A transform dropped on a node is the node's, taken or refused.

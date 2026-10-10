@@ -178,6 +178,12 @@ test(unitTest('Messages added by Cube'), () => {
   expect(
     MESSAGES.MESSAGE_GROUP_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
   ).toBe('Group column "PAYLOAD" of type Variant cannot be grouped.');
+  expect(
+    MESSAGES.MESSAGE_PARTITION_COLUMN_NOT_PARTITIONABLE('PAYLOAD', 'Variant'),
+  ).toBe('Partition column "PAYLOAD" of type Variant cannot be partitioned.');
+  expect(MESSAGES.MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('DenseRank')).toBe(
+    'Aggregation function "DenseRank" requires at least one sort column.',
+  );
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );

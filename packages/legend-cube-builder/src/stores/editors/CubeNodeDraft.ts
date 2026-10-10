@@ -18,7 +18,7 @@ import type { QueryNode } from '@finos/legend-cube';
 
 /**
  * The edits of one node in the node editor, kept until Apply or closing it
- * (PLAN §7.4, §11.6, spec §17.5). A node type's editor edits its draft,
+ * (PLAN §7.4, §11.8, spec §17.5). A node type's editor edits its draft,
  * never the document: only Apply, or closing the editor any way but Cancel,
  * stores `build()`, as one undo step. A draft is made once each time the
  * editor opens on a node, and again after an Apply.

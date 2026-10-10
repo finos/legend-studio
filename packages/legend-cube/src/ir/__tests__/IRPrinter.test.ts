@@ -32,6 +32,7 @@ import {
   ingestAccessor,
   type IR,
   lambda,
+  letBinding,
   literal,
   storeAccessor,
   variable,
@@ -397,16 +398,63 @@ describe(unitTest('IR printer'), () => {
   });
 
   test('Prints the forms the slice does not use', () => {
-    expect(printIR({ k: 'let', name: 'n_join101', value: integer('1') })).toBe(
+    expect(printIR(letBinding('n_join101', integer('1')))).toBe(
       'let n_join101 = 1',
     );
-    expect(
-      printIR({ k: 'block', statements: [integer('1'), variable('x')] }),
-    ).toBe('{1; $x;}');
-    expect(printIR({ k: 'block', statements: [integer('1')] })).toBe('{1}');
     expect(printIR({ k: 'raw', json: { _type: 'integer', value: 1 } })).toBe(
       '<raw {"_type":"integer","value":1}>',
     );
+  });
+
+  test('Prints lets as statements of a lambda, which reads them by name', () => {
+    const table = storeAccessor(['a::Db', 'SCH', 'T']);
+    expect(
+      printIR(
+        func('limit', [
+          func('from', [
+            lambda(
+              [],
+              [
+                letBinding('n_a', table),
+                letBinding('n_b', func('distinct', [variable('n_a')])),
+                func('concatenate', [variable('n_a'), variable('n_b')]),
+              ],
+            ),
+            elementPtr('a::Runtime'),
+          ]),
+          integer('11'),
+        ]),
+      ),
+    ).toBe(
+      '{| let n_a = #>{a::Db.SCH.T}#; let n_b = $n_a->distinct(); $n_a->concatenate($n_b);}->from(a::Runtime)->limit(11)',
+    );
+  });
+
+  test("Lists a let's origin, and its value's", () => {
+    expect(
+      listOrigins(
+        lambda(
+          [],
+          [
+            letBinding(
+              'n_w',
+              func('distinct', [storeAccessor(['a::Db', 'S', 'T'])], {
+                nodeId: 'w',
+                role: EmitRole.DISTINCT,
+              }),
+              { nodeId: 'w', role: EmitRole.LET },
+            ),
+            letBinding('n_x', variable('n_w')),
+            variable('n_x'),
+          ],
+        ),
+      ),
+    ).toEqual([
+      'let n_w@w:let',
+      'distinct@w:distinct',
+      '#>{a::Db.S.T}#@-',
+      'let n_x@-',
+    ]);
   });
 
   test('Redacts every literal, and no name or accessor', () => {

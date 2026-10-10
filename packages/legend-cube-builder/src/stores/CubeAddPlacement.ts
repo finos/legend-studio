@@ -17,7 +17,7 @@
 import type { CubeEditorState } from './CubeEditorState.js';
 
 // Where a node added from the palette, the canvas's context menu or 'Add
-// Items' goes (PLAN §11.6, QUESTIONS.md U3 and U4): one rule for all of them.
+// Items' goes (PLAN §11.8, QUESTIONS.md U3 and U4): one rule for all of them.
 
 /**
  * The node a new node of the type goes after: a transform after the node it

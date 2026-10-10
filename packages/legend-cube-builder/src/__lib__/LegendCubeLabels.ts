@@ -199,6 +199,10 @@ export const CONCAT_EDITOR_TEXT =
 export const CONCAT_CONVERT_TYPES_HINT =
   'Converts types that differ within numbers, strings or dates to the type they share, e.g. Varchar(15) and Varchar(40) to String.';
 
+/** What the Concat editor says when a fix would make its inputs match only with Convert types ticked (PLAN §11.5) */
+export const CONCAT_FIX_NEEDS_CONVERT_TEXT =
+  'With Convert types ticked, Cube can rename or drop columns to make the inputs match.';
+
 /** What the Concat editor says when Convert types would make its inputs match (PLAN §11.5, Q5) */
 export const CONCAT_CONVERT_FIX_TEXT =
   'The types differ, but converting them to the type they share makes the inputs match:';
@@ -234,6 +238,24 @@ export const GROUP_EDITOR_NOTES = [
   'Count counts the values that are not empty; Count Rows counts every row.',
   'Distinct Value is the value when the group has exactly one distinct value that is not empty, and empty otherwise.',
   'With no group column, the result is one row, even when there are no rows.',
+];
+
+/** Why the Partition editor won't tick a column that can't be compared (PLAN §11.6) */
+export const CUBE_PARTITION_COLUMN_DISABLED_REASON = "can't be partitioned by";
+
+/** What a Partition row shows in the column's place for a function that takes none (PLAN §11.6) */
+export const getPartitionNoColumnText = (fn: string): string =>
+  fn === 'CountRows' ? 'Every row' : 'By the sort columns';
+
+/** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3) */
+export const PARTITION_EDITOR_NOTES = [
+  'With sort columns, every function but Rank, Dense Rank and Row Number runs from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
+  "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",
+  "Their sort columns also make this node's other functions run. For totals over the whole partition, add another Apply Window Functions without sort columns.",
+  'Empty sort values come last when ascending and first when descending on H2; other databases may differ.',
+  "A Sort before this node doesn't order the window: its sort columns do. The rows keep the order they came in.",
+  'Count counts the values that are not empty; Count Rows counts every row.',
+  'Some databases, such as Postgres, SQL Server, Databricks and Trino, refuse Distinct Count and Distinct Value in a window.',
 ];
 
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */

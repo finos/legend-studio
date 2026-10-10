@@ -24,6 +24,7 @@ import {
   Group,
   Join,
   Limit,
+  Partition,
   RelationalTableSource,
   Rename,
   Restrict,
@@ -40,6 +41,7 @@ import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeGroupEditor } from './CubeGroupEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
+import { CubePartitionEditor } from './CubePartitionEditor.js';
 import { CubeRenameEditor } from './CubeRenameEditor.js';
 import { CubeRestrictEditor } from './CubeRestrictEditor.js';
 import { CubeRowCountEditor } from './CubeRowCountEditor.js';
@@ -90,4 +92,5 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Limit.TYPE, CubeRowCountEditor],
   [Slice.TYPE, CubeSliceEditor],
   [Concat.TYPE, CubeConcatEditor],
+  [Partition.TYPE, CubePartitionEditor],
 ]);

@@ -15,6 +15,7 @@
  */
 
 import type { ModelContext } from '@finos/legend-cube';
+import { toPureSetupSqls } from './CubeSampleSql.js';
 
 // The Cube Northwind fixture (PLAN §6.2.4): a corrected copy of the Northwind
 // Database of the query builder's tests, which is left as it is. Corrections:
@@ -77,15 +78,90 @@ const CUBETEST_SETUP_SQLS = [
   'insert into CUBETEST.KEY_NUM values (1.2500), (3.0000)',
 ];
 
-/** A Pure string literal */
-const pureString = (text: string): string =>
-  `'${text.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
+/** The CUBETEST schema and the decoy table, in the Database's text */
+const CUBETEST_DATABASE_TEXT = `  Schema CUBETEST
+  (
+    Table ALLTYPES
+    (
+      ID INTEGER PRIMARY KEY,
+      TI TINYINT,
+      SI SMALLINT,
+      BI BIGINT,
+      F FLOAT,
+      D DOUBLE,
+      DEC DECIMAL(10, 2),
+      NUM NUMERIC(12, 4),
+      DT DATE,
+      TS TIMESTAMP,
+      B BIT,
+      VC VARCHAR(20)
+    )
+    Table "ORDER.LINES"
+    (
+      LINE_ID INTEGER PRIMARY KEY,
+      RIGHT_COL VARCHAR(10)
+    )
+    Table PROBLEM_BINARY
+    (
+      ID INTEGER PRIMARY KEY,
+      PAYLOAD BINARY(8)
+    )
+    Table PROBLEM_CHAR
+    (
+      CODE CHAR(3) PRIMARY KEY,
+      LABEL VARCHAR(10)
+    )
+    Table PROBLEM_OTHER
+    (
+      ID INTEGER PRIMARY KEY,
+      O OTHER
+    )
+    View PROBLEM_VIEW
+    (
+      ID: CUBETEST.ALLTYPES.ID PRIMARY KEY,
+      VC: CUBETEST.ALLTYPES.VC
+    )
+    Table EMP_REGION
+    (
+      EMPLOYEE_ID SMALLINT PRIMARY KEY,
+      REGION VARCHAR(15)
+    )
+    Table CUST_REGION
+    (
+      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,
+      REGION VARCHAR(15)
+    )
+    Table CATEGORY_REGION
+    (
+      CATEGORY_ID SMALLINT PRIMARY KEY,
+      SHIP_REGION VARCHAR(15) NOT NULL
+    )
+    Table KEY_VC15
+    (
+      K VARCHAR(15)
+    )
+    Table KEY_VC2
+    (
+      K VARCHAR(2)
+    )
+    Table KEY_DEC
+    (
+      K DECIMAL(10, 2)
+    )
+    Table KEY_NUM
+    (
+      K NUMERIC(12, 4)
+    )
+  )
+  Table CUBETEST
+  (
+    WRONG_TABLE VARCHAR(10)
+  )
 
-const SETUP_SQLS = ['call loadNorthwindData()', ...CUBETEST_SETUP_SQLS]
-  .map((sql) => `      ${pureString(sql)}`)
-  .join(',\n');
+`;
 
-export const CUBE_NORTHWIND_MODEL_CODE = `###Relational
+/** The Northwind model's text, with Cube's test tables or without */
+const northwindModelCode = (withTestTables: boolean): string => `###Relational
 Database ${CUBE_NORTHWIND_DATABASE}
 (
   Schema NORTHWIND
@@ -222,86 +298,7 @@ Database ${CUBE_NORTHWIND_DATABASE}
       STATE_REGION VARCHAR(50)
     )
   )
-  Schema CUBETEST
-  (
-    Table ALLTYPES
-    (
-      ID INTEGER PRIMARY KEY,
-      TI TINYINT,
-      SI SMALLINT,
-      BI BIGINT,
-      F FLOAT,
-      D DOUBLE,
-      DEC DECIMAL(10, 2),
-      NUM NUMERIC(12, 4),
-      DT DATE,
-      TS TIMESTAMP,
-      B BIT,
-      VC VARCHAR(20)
-    )
-    Table "ORDER.LINES"
-    (
-      LINE_ID INTEGER PRIMARY KEY,
-      RIGHT_COL VARCHAR(10)
-    )
-    Table PROBLEM_BINARY
-    (
-      ID INTEGER PRIMARY KEY,
-      PAYLOAD BINARY(8)
-    )
-    Table PROBLEM_CHAR
-    (
-      CODE CHAR(3) PRIMARY KEY,
-      LABEL VARCHAR(10)
-    )
-    Table PROBLEM_OTHER
-    (
-      ID INTEGER PRIMARY KEY,
-      O OTHER
-    )
-    View PROBLEM_VIEW
-    (
-      ID: CUBETEST.ALLTYPES.ID PRIMARY KEY,
-      VC: CUBETEST.ALLTYPES.VC
-    )
-    Table EMP_REGION
-    (
-      EMPLOYEE_ID SMALLINT PRIMARY KEY,
-      REGION VARCHAR(15)
-    )
-    Table CUST_REGION
-    (
-      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,
-      REGION VARCHAR(15)
-    )
-    Table CATEGORY_REGION
-    (
-      CATEGORY_ID SMALLINT PRIMARY KEY,
-      SHIP_REGION VARCHAR(15) NOT NULL
-    )
-    Table KEY_VC15
-    (
-      K VARCHAR(15)
-    )
-    Table KEY_VC2
-    (
-      K VARCHAR(2)
-    )
-    Table KEY_DEC
-    (
-      K DECIMAL(10, 2)
-    )
-    Table KEY_NUM
-    (
-      K NUMERIC(12, 4)
-    )
-  )
-  Table CUBETEST
-  (
-    WRONG_TABLE VARCHAR(10)
-  )
-
-  Join ORDERS_CUSTMERS(NORTHWIND.ORDERS.CUSTOMER_ID = NORTHWIND.CUSTOMERS.CUSTOMER_ID)
+${withTestTables ? CUBETEST_DATABASE_TEXT : '\n'}  Join ORDERS_CUSTMERS(NORTHWIND.ORDERS.CUSTOMER_ID = NORTHWIND.CUSTOMERS.CUSTOMER_ID)
   Join ORDERS_EMPLOYEES(NORTHWIND.ORDERS.EMPLOYEE_ID = NORTHWIND.EMPLOYEES.EMPLOYEE_ID)
   Join ORDERS_SHIPPERS(NORTHWIND.ORDERS.SHIP_VIA = NORTHWIND.SHIPPERS.SHIPPER_ID)
   Join ORDERS_ORDER_DETAILS(NORTHWIND.ORDERS.ORDER_ID = NORTHWIND.ORDER_DETAILS.ORDER_ID)
@@ -325,7 +322,11 @@ RelationalDatabaseConnection ${CUBE_NORTHWIND_CONNECTION}
   specification: LocalH2
   {
     testDataSetupSqls: [
-${SETUP_SQLS}
+${toPureSetupSqls(
+  withTestTables
+    ? ['call loadNorthwindData()', ...CUBETEST_SETUP_SQLS]
+    : ['call loadNorthwindData()'],
+)}
     ];
   };
   auth: DefaultH2;
@@ -348,8 +349,22 @@ Runtime ${CUBE_NORTHWIND_RUNTIME}
 }
 `;
 
+export const CUBE_NORTHWIND_MODEL_CODE = northwindModelCode(true);
+
+/**
+ * Northwind as the Sample Data tab offers it: Northwind's own tables, without
+ * Cube's test tables
+ */
+export const CUBE_NORTHWIND_SAMPLE_MODEL_CODE = northwindModelCode(false);
+
 /** The Cube Northwind fixture as a cube saves it (PLAN §6.2.2) */
 export const CUBE_NORTHWIND_MODEL: ModelContext = Object.freeze({
   _type: 'text',
   code: CUBE_NORTHWIND_MODEL_CODE,
+});
+
+/** The Northwind sample, without Cube's test tables, as a cube saves it */
+export const CUBE_NORTHWIND_SAMPLE_MODEL: ModelContext = Object.freeze({
+  _type: 'text',
+  code: CUBE_NORTHWIND_SAMPLE_MODEL_CODE,
 });

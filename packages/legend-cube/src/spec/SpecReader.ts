@@ -50,6 +50,14 @@ export class UnreadableContent extends Error {
   }
 }
 
+/** A list of entries read, and why the node can't be read, if it can't */
+export interface ReadEntries<T> {
+  /** Every entry; trusted only when `unreadable` is `undefined` */
+  readonly entries: T[];
+  /** Why the entries make the node unreadable (an Unknown node, `UnreadableContent`), found once every entry was read */
+  readonly unreadable: string | undefined;
+}
+
 /** The path of a key or an index under `path` */
 export const pathTo = (path: string, key: string | number): string =>
   typeof key === 'number' ? `${path}[${key}]` : path ? `${path}.${key}` : key;

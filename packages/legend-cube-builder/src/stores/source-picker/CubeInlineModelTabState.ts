@@ -42,6 +42,7 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import { getRuntimesForDatabase } from '../../graph-manager/CubeModelOutlineHelper.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { loadCubeModelOutline } from '../CubeHost.js';
 import { type BundledModel, createTextModel } from '../LocalModelCatalog.js';
 import {
   type CubeSourcePickerTab,
@@ -66,9 +67,8 @@ export const isTableSelectable = (table: CubeOutlineTable): boolean =>
  * It serves every cube no other tab claims, e.g. one on Pure text.
  */
 export class CubeInlineModelTabState implements CubeSourcePickerTab {
-  readonly key = CubeSourcePickerTabKey.MODEL;
-  readonly label = 'Model';
-  readonly isAvailable = true;
+  readonly key: CubeSourcePickerTabKey = CubeSourcePickerTabKey.MODEL;
+  readonly label: string = 'Sample Data';
   readonly editorState: CubeEditorState;
 
   model: ModelContext | undefined;
@@ -190,12 +190,17 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     );
   }
 
+  /** The host serves the tab: it always serves models */
+  get isAvailable(): boolean {
+    return true;
+  }
+
   get isBusy(): boolean {
     return this.isLoadingModel || this.isResolving;
   }
 
   /** The tab claims no cube: the dialog gives it every cube no other tab claims */
-  ownsContext(): boolean {
+  ownsContext(context: CubeContext): boolean {
     return false;
   }
 
@@ -214,16 +219,20 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
   }
 
   /**
-   * When the dialog opens on the tab: on the cube's model, or on the only
-   * model offered. A model whose outline failed to load is loaded again.
+   * When the dialog opens on the tab: on the cube's model, else the pasted
+   * model while the paste box is shown, else the bundled model picked last,
+   * else the first one. A model whose outline failed to load is loaded again.
    */
   open(): void {
     this.error = undefined;
     const model =
       this.fixedContext?.model ??
-      (this.models.length === 1 && !this.isPastingModel
-        ? this.models[0]?.model
-        : this.model);
+      (this.isPastingModel
+        ? this.model
+        : (
+            this.models.find((bundled) => bundled.model === this.model) ??
+            this.models[0]
+          )?.model);
     if (!model) {
       return;
     }
@@ -286,7 +295,8 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     this.resetFrom('database');
     this.isLoadingModel = true;
     try {
-      const outline = (yield this.editorState.host.modelCatalog.loadOutline(
+      const outline = (yield loadCubeModelOutline(
+        this.editorState.host,
         model,
       )) as CubeModelOutline;
       if (this.model !== model) {
@@ -424,7 +434,7 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     }
   }
 
-  private resetFrom(step: 'database' | 'runtime' | 'table'): void {
+  protected resetFrom(step: 'database' | 'runtime' | 'table'): void {
     if (step === 'database') {
       this.databasePath = undefined;
     }

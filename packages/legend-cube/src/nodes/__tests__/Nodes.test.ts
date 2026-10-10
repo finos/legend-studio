@@ -48,6 +48,7 @@ import {
   JOIN_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
+  PARTITION_DEFINITION,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   RENAME_DEFINITION,
   RESTRICT_DEFINITION,
@@ -62,6 +63,7 @@ import {
   type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
 import { Concat } from '../transforms/Concat.js';
+import { Partition } from '../transforms/Partition.js';
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
@@ -203,7 +205,7 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, then Join
+    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, then Partition
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
@@ -216,6 +218,7 @@ describe(unitTest('Node registry'), () => {
       SLICE_DEFINITION,
       CONCAT_DEFINITION,
       JOIN_DEFINITION,
+      PARTITION_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('group')).toBe(GROUP_DEFINITION);
@@ -223,6 +226,13 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('concat')).toBe(CONCAT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
+    expect(registry.get('partition')).toBe(PARTITION_DEFINITION);
+    // a window is the only node a run binds with a let (PLAN §8.6)
+    expect(
+      registry.transforms
+        .filter((transform) => transform.isolationBoundary)
+        .map((transform) => transform.type),
+    ).toEqual(['partition']);
     // the relational sources' database rule, and the one-kind rule once
     expect(registry.queryRules).toHaveLength(2);
   });
@@ -250,6 +260,21 @@ describe(unitTest('Node registry'), () => {
     expect(group.id).toBe('group101');
     expect(group.columns).toEqual([]);
     expect(group.aggregations).toEqual([]);
+  });
+
+  test('Creates a partition with no partition column, sort or window function yet', () => {
+    expect(PARTITION_DEFINITION.kind).toBe('transform');
+    expect(PARTITION_DEFINITION.type).toBe('partition');
+    expect(PARTITION_DEFINITION.label).toBe('Apply Window Functions');
+    expect(PARTITION_DEFINITION.icon).toBe('partition');
+    expect(PARTITION_DEFINITION.beta).toBe(false);
+    expect(PARTITION_DEFINITION.isolationBoundary).toBe(true);
+    const node = PARTITION_DEFINITION.create('partition101');
+    expect(node).toBeInstanceOf(Partition);
+    expect(node.id).toBe('partition101');
+    expect(node.columns).toEqual([]);
+    expect(node.sorts).toEqual([]);
+    expect(node.aggregations).toEqual([]);
   });
 
   test('Creates a concat that converts no types', () => {

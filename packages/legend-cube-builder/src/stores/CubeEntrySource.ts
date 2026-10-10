@@ -36,7 +36,7 @@ import type { CubeDataProductTabError } from './source-picker/CubeDataProductTab
 /**
  * A source a link from another screen asks the page to start with (spec
  * §17.15, QUESTIONS.md U9): its kind and its id. Only data product access
- * points can be named by ids alone (PLAN §11.6).
+ * points can be named by ids alone (PLAN §11.8).
  */
 export interface CubeEntrySource {
   readonly sourceType: string;
