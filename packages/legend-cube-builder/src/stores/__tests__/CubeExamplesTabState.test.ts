@@ -31,6 +31,12 @@ import {
   ORDERS_COLUMNS,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
+import { createFakeCubeIngestCatalog } from '../../__test-utils__/FakeCubeIngestCatalog.js';
+import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
+import {
+  createCubeIngestModel,
+  CUBE_INGEST_RUNTIME_PATH,
+} from '../../graph-manager/CubeIngest.js';
 import type { CubeEngine } from '../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import { CUBE_EXAMPLES } from '../CubeExamples.js';
@@ -187,6 +193,29 @@ describe('Examples tab', () => {
     expect(picker.tabForSourceType(RelationalTableSource.TYPE)?.key).toBe(
       CubeSourcePickerTabKey.DIRECT_CONNECTION,
     );
+  });
+
+  test('Stays enabled on an ingest cube, beside its Ingest tab', () => {
+    const created = TEST__createCubeHost();
+    const state = new CubeEditorState(
+      { ...created.host, ingestCatalog: createFakeCubeIngestCatalog().catalog },
+      new CubeDocument().withContext({
+        model: createCubeIngestModel({
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+          producerDeploymentId: '1234',
+        }),
+        runtime: CUBE_INGEST_RUNTIME_PATH,
+      }),
+    );
+    const picker = state.sourcePicker;
+    expect(picker.fixedTab).toBe(picker.ingestTab);
+    expect(
+      picker.tabs
+        .filter((tab) => picker.isTabEnabled(tab))
+        .map((tab) => tab.key),
+    ).toEqual([CubeSourcePickerTabKey.INGEST, EXAMPLES]);
+    picker.open(EXAMPLES);
+    expect(picker.activeTab.key).toBe(EXAMPLES);
   });
 
   test('Never gives a table palette item the Examples tab, even when it was open last', () => {
