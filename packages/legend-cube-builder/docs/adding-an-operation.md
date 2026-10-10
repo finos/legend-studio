@@ -59,7 +59,9 @@ it).
   on the text just parsed, point back to it. A stored lambda has no locations, and a plan has none either: the
   Extend draft finds the row of a plan error by planning the columns' prefixes.
 - Rows that Group, Sort and Partition share: `CubeAggregationRowEditor` (column, function and output name, given its
-  function list, the `AggregationUse` and what a function that takes no column shows in the column's place),
+  function list, the `AggregationUse` and what a function that takes no column shows in the column's place, and a
+  field for a function's setting, Lag's and Lead's offset or NTile's bucket count, when the editor gives
+  `onSetting`; the row keeps a setting as typed text, parsed as Limit's size is),
   `CubeSortRowEditor` (column, direction, move and remove; `getSortRowProblems`, `getTakenSortColumns`) and
   `CubeColumnChecklist` (the input's columns, ticked, those that can't be compared shown but not tickable), with their
   drafts' helpers in `CubeAggregationRows.ts` and `CubeSortRows.ts`. They are driven by callbacks, so a new editor

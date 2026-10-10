@@ -23,7 +23,7 @@ See PLAN §11.8 for each step's deliverable and when it is done.
 - [x] **M5b.2** The core
 - [x] **M5b.3** The builder
 - [x] **M5b.4** On the engine, around the databases, and in the composition and conformance suites
-- [ ] **M5b.5** Guides, testing.md and the changeset
+- [x] **M5b.5** Guides, testing.md and the changeset
 - [ ] **M5b.6** Verification and the browser rehearsal
 - [ ] **M5b.7** A demo video of the new functions (PLAN §11.3)
 - [ ] **M5b.8** Fold PLAN §11.8's supersessions in; the PR ready for `cube-dev`
@@ -75,3 +75,7 @@ Filled in as steps land.
   graphs (two customers' Lag, Lead, First, Last and places; each country's Last by a ship date that can be empty; the
   newest tenth with NTile over no partition column); breaking Last's reversal in the built lib fails two of them.
   Conformance: one case with all seven, Cube's types exactly the engine's. The corpus types the new sample.
+- **M5b.5** (2026-10-10). The core guide: the rank and row functions, a function's setting, and how they are emitted
+  (the third extend for Last, the `property` IR). The builder guide: the row editor's setting field. `testing.md`: the
+  new pins and the reference's functions. `.changeset/legend-cube-more-window-functions.md`: a patch for both packages.
+  `check:ci` passes.

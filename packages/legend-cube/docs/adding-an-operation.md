@@ -74,9 +74,13 @@ either reaches both.
 
 A node whose rows hold aggregations, as Group and Partition do, judges each row with `validateColumnAggregation`
 (`src/nodes/transforms/Aggregation.ts`) and an `AggregationUse`: a Group's (`GROUP_AGGREGATION_USE`), or a window's,
-which also knows the rank functions (`WindowRankFunction`) and whether the window sorts its rows, which they need. The
-known-function check, the auto-name, the result type and the nullability all take the use, so a function one node
-offers stays unknown in the other (a Group's Rank, PLAN §11.5, Q4).
+which also knows the rank functions (`WindowRankFunction`, NTile, Percent Rank and Cumulative Distribution among them)
+and the row functions of a column (`WindowRowFunction`: Lag, Lead, First, Last), and whether the window sorts its
+rows, which both need (`needsWindowSort`). The known-function check, the auto-name, the result type and the
+nullability all take the use, so a function one node offers stays unknown in the other (a Group's Rank, PLAN §11.5,
+Q4). A function that takes a setting beside its column says which (`getAggregationSetting`: Lag's and Lead's
+`offset`, NTile's `buckets`), with a default (`AGGREGATION_SETTING_DEFAULTS`); the setting is a field of the
+`ColumnAggregation`, checked as a whole number of at least 1, and reported on any function that doesn't take it.
 
 ### A node the engine types
 
@@ -137,8 +141,10 @@ whenever it isn't the capture (`QueryEmitter`, after the lets it reads, named `n
 becomes `{| {| <lets>; <relation>}->from(runtime)->sort(<capture order>)->limit(n + 1)}`: the capture's sort and
 limit go after `from()`, where every database keeps them at the root. Typing lambdas stay plain chains: the engine
 types both forms the same. Write window functions in the array form (`~[…]`, never a single column spec), the
-aggregates and the rank functions in separate `extend`s (one holding both fails on the engine), and counts as `size()`
-(`count()` loses its OVER clause). The engine nests one subselect per window column, so a wide window makes deep SQL.
+aggregates and the rank and row functions in separate `extend`s (one holding both fails on the engine), and counts as
+`size()` (`count()` loses its OVER clause). Last is First over the window with every sort direction reversed, in a
+third `extend` (PLAN §11.8): the engine's `last()` with no frame is the current row, and it writes a frame only with a
+partition column. A column of another row is a `property` IR on the function's result, `$p->lag($r, 1).c`. The engine nests one subselect per window column, so a wide window makes deep SQL.
 
 ## 4. Its codec
 
