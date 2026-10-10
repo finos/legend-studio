@@ -37,6 +37,7 @@ import {
   SchemaColumn,
   SortDirection,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import {
   CUSTOMERS_COLUMNS,
@@ -1180,6 +1181,63 @@ describe("Where a Partition's column comes from", () => {
     ]);
     // a column its output doesn't have
     expect(originsOf(query, 'partition101', 'NOPE')).toEqual([]);
+  });
+
+  test('Follows a Lag, Lead, First or Last back to the table column whose values it holds, and an NTile, Percent Rank or Cumulative Distribution to none (M5b)', () => {
+    const query = ordersThrough(
+      byCountry().withAggregations([
+        {
+          column: 'FREIGHT',
+          function: WindowRowFunction.LAG,
+          name: 'Previous freight',
+          offset: 1,
+        },
+        {
+          column: 'SHIP_CITY',
+          function: WindowRowFunction.LEAD,
+          name: 'Next city',
+          offset: 2,
+        },
+        {
+          column: 'ORDER_DATE',
+          function: WindowRowFunction.FIRST,
+          name: 'First date',
+        },
+        {
+          column: 'SHIP_REGION',
+          function: WindowRowFunction.LAST,
+          name: 'Last region',
+        },
+        {
+          column: undefined,
+          function: WindowRankFunction.NTILE,
+          name: 'Quartile',
+          buckets: 4,
+        },
+        {
+          column: undefined,
+          function: WindowRankFunction.PERCENT_RANK,
+          name: 'Percent',
+        },
+      ]),
+    );
+    expect(buildSchemasAndValidity(query).validity.get('partition101')).toEqual(
+      [],
+    );
+    (
+      [
+        ['Previous freight', 'FREIGHT'],
+        ['Next city', 'SHIP_CITY'],
+        ['First date', 'ORDER_DATE'],
+        ['Last region', 'SHIP_REGION'],
+      ] as const
+    ).forEach(([name, column]) =>
+      expect(originsOf(query, 'partition101', name)).toEqual([
+        ['relational101', column],
+      ]),
+    );
+    expect(originsOf(query, 'partition101', 'Quartile')).toEqual([]);
+    expect(originsOf(query, 'partition101', 'Percent')).toEqual([]);
   });
 
   test('Follows a windowed Distinct Value, Min or Max back to the table column it aggregates', () => {

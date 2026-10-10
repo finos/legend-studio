@@ -15,12 +15,10 @@
  */
 
 import {
-  AGGREGATION_SETTING_DEFAULTS,
   AggregationSetting,
   type AggregationUse,
   type ColumnAggregation,
   getAggregationAutoName,
-  getAggregationSetting,
   GROUP_AGGREGATION_USE,
 } from '../../nodes/transforms/Aggregation.js';
 import { Group } from '../../nodes/transforms/Group.js';
@@ -47,8 +45,9 @@ const AGGREGATION_KEYS = ['column', 'function', 'name', 'offset', 'buckets'];
  * §11.8). Texts and numbers are kept exactly, `''` included, for validation
  * to judge: an unknown, empty or misplaced function or setting is held, not
  * dropped (Q4), since an invalid node can't run. A name left out is read as
- * the auto-name for the use (Q3), or `''` when there is none, and a setting
- * left out as its default, and both are written back. An entry key this version doesn't
+ * the auto-name for the use (Q3), or `''` when there is none, and written
+ * back; a setting left out stays out, which validation reports, as a Limit's
+ * cleared size: never its default, so an invalid one is never saved as valid. An entry key this version doesn't
  * know could change the rows, so it makes the node unreadable, once every
  * entry has been read. Shared by the nodes that aggregate (Group, Partition).
  */
@@ -65,17 +64,10 @@ export const readColumnAggregations = (
     const column = readOptionalString(item, 'column', itemPath, true);
     const fn = readString(item, 'function', itemPath, true);
     const name = readOptionalString(item, 'name', itemPath, true);
-    const setting = getAggregationSetting(fn);
     const [offset, buckets] = [
       AggregationSetting.OFFSET,
       AggregationSetting.BUCKETS,
-    ].map(
-      (settingKey) =>
-        readOptionalFiniteNumber(item, settingKey, itemPath) ??
-        (settingKey === setting
-          ? AGGREGATION_SETTING_DEFAULTS[settingKey]
-          : undefined),
-    );
+    ].map((setting) => readOptionalFiniteNumber(item, setting, itemPath));
     return {
       column,
       function: fn,

@@ -1007,6 +1007,65 @@ describe('Partition editor', () => {
     });
   });
 
+  test("Marks a name, not a setting, when the name's own problem quotes the words of a setting's", async () => {
+    const odd = 'x needs an offset that is a whole number of at least 1.';
+    await render(
+      ordersPartitioned(
+        [],
+        [BY_DATE],
+        [
+          { column: undefined, function: 'CountRows', name: odd },
+          { column: undefined, function: 'CountRows', name: odd },
+        ],
+      ),
+    );
+    await openPartition();
+    expect(rowMessages(2)).toEqual([
+      `Aggregation output name "${odd}" is already present in the output schema.`,
+    ]);
+    expect(name(2).getAttribute('aria-invalid')).toBe('true');
+  });
+
+  test("Keeps a saved offset that isn't a whole number, reported on its row, until its text is edited", async () => {
+    const editorState = await render(
+      ordersPartitioned(
+        [],
+        [BY_DATE],
+        [
+          { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 2.5 },
+          { column: 'FREIGHT', function: 'Sum', name: 's', offset: 1.5 },
+        ],
+      ),
+    );
+    await openPartition();
+    const offset = within(panel()).getByLabelText<HTMLInputElement>(
+      'Aggregation offset 1',
+    );
+    expect(offset.value).toBe('2.5');
+    expect(rowMessages(1)).toEqual([
+      'Aggregation function "Lag" needs an offset that is a whole number of at least 1.',
+    ]);
+    // a setting on a function that takes none is reported on its row too
+    expect(rowMessages(2)).toEqual([
+      'Aggregation function "Sum" does not take an offset.',
+    ]);
+    // an unrelated change and back keeps both, so nothing is stored
+    fireEvent.click(checkbox('SHIP_COUNTRY'));
+    fireEvent.click(checkbox('SHIP_COUNTRY'));
+    expect(button('Apply').disabled).toBe(true);
+    // edited, the offset is the text's
+    fireEvent.change(offset, { target: { value: '3' } });
+    expect(rowMessages(1)).toEqual([]);
+    fireEvent.click(button('Apply'));
+    expect(stored(editorState).aggregations[0]).toEqual({
+      column: 'FREIGHT',
+      function: 'Lag',
+      name: 'p',
+      offset: 3,
+    });
+    expect(stored(editorState).aggregations[1]?.offset).toBe(1.5);
+  });
+
   test('Reports a saved offset on a function that takes none until the function is picked again', async () => {
     await render(
       ordersPartitioned(

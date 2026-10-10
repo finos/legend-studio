@@ -20,9 +20,10 @@ import {
   DifferenceSuffix,
   getSameNamedJoinKeys,
   Group,
+  isWindowRowFunction,
   Join,
-  Partition,
   JoinType,
+  Partition,
   type Query,
   RelationalTableSource,
   Rename,
@@ -151,8 +152,9 @@ const groupInputName = (
 
 /**
  * The input column a Partition's output column comes from: an input column by
- * its name, a Distinct Value, Min or Max by its aggregated column; a count, a
- * sum, an average or a rank is no column's value, so it comes from none
+ * its name, a Distinct Value, Min or Max, or a Lag, Lead, First or Last (PLAN
+ * §11.8), by its column, whose values it holds; a count, a sum, an average or
+ * a rank is no column's value, so it comes from none
  */
 const partitionInputName = (
   partition: Partition,
@@ -164,7 +166,8 @@ const partitionInputName = (
   if (!aggregation) {
     return columnName;
   }
-  return VALUE_AGGREGATIONS.includes(aggregation.function)
+  return VALUE_AGGREGATIONS.includes(aggregation.function) ||
+    isWindowRowFunction(aggregation.function)
     ? aggregation.column
     : undefined;
 };

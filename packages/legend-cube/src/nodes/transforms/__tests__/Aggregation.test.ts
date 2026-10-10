@@ -975,6 +975,35 @@ describe('Window function validation', () => {
 
   test(
     unitTest(
+      'Reports only the first problem of a row: its column, then its sort, then its setting',
+    ),
+    () => {
+      expect(
+        errorsOf(
+          [
+            // no column, and an offset of 0
+            { ...agg(LAG, '', 'a'), offset: 0 },
+            // no sort, and an offset of 0
+            { ...agg(LEAD, 'AMOUNT', 'b'), offset: 0 },
+            // no sort, and no bucket count
+            agg(NTILE, undefined, 'c'),
+          ],
+          UNSORTED_WINDOW,
+        ),
+      ).toEqual([
+        ['Aggregation column does not have a name.'],
+        ['Aggregation function "Lead" requires at least one sort column.'],
+        ['Aggregation function "NTile" requires at least one sort column.'],
+      ]);
+      // a Group: the function is unknown, whatever its settings
+      expect(errorsOf([{ ...agg(SUM, 'NOPE', 'd'), offset: 0 }])).toEqual([
+        ['Aggregation column "NOPE" is not present in the input schema.'],
+      ]);
+    },
+  );
+
+  test(
+    unitTest(
       'Checks a row function: a column of a type it can take, then a sort',
     ),
     () => {

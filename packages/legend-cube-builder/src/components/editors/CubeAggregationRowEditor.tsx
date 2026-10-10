@@ -39,7 +39,9 @@ const problemControl = (
     ? undefined
     : problem.startsWith('Aggregation column')
       ? 'column'
-      : / needs (?:an offset|a bucket count) /u.test(problem)
+      : /^Aggregation function "[^"]*" needs (?:an offset|a bucket count) that is a whole number of at least 1\.$/u.test(
+            problem,
+          )
         ? 'setting'
         : problem.startsWith('Aggregation function')
           ? 'function'

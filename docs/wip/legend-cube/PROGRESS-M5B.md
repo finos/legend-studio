@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                |
-| ------ | ------------------------------------------------------------------------------------ |
-| Branch | `cube-m5b`, stacked on `cube-m6` (#5662, not merged yet); a draft PR into `cube-dev` |
-| Engine | Local legend-engine on `localhost:6300`                                              |
-| Step   | M5b.1: The plan and this file                                                        |
-| Tests  | As M6's: 2820 core, 1413 builder (core group)                                        |
+| Item   | State                                                                                    |
+| ------ | ---------------------------------------------------------------------------------------- |
+| Branch | `cube-m5b`, stacked on `cube-m6` (#5662, not merged yet); draft PR #5665 into `cube-dev` |
+| Engine | Local legend-engine on `localhost:6300`                                                  |
+| Step   | M5b.6: Verification (fixes in; the ClickHouse choice is the user's)                      |
+| Tests  | 2833 core, 1420 builder (core group)                                                     |
 
 ## Steps
 
@@ -36,7 +36,11 @@ Filled in as steps land.
 | ----- | ----------- | ------------------------------------------------------------------------------------------------------- |
 | M5b.1 | `0b4bfb89e` | docs: settle Legend Cube M5b (more window functions)                                                    |
 | M5b.2 | `dfc86d46b` | feat: add Lag, Lead, NTile, Percent Rank, Cumulative Distribution, First and Last to Legend Cube's core |
-| M5b.3 | (this one)  | feat: offer the new window functions in Legend Cube's Partition editor                                  |
+| M5b.3 | `f1622f395` | feat: offer the new window functions in Legend Cube's Partition editor                                  |
+| M5b.4 | `3be7bf081` | test: run Legend Cube's new window functions on the engine and every database                           |
+| M5b.5 | `1ad274e36` | docs: cover Legend Cube's new window functions in its guides                                            |
+| M5b.6 | `99cff424d` | fix: show the error border of Legend Cube's invalid fields under Legend Query's theme                   |
+| M5b.6 | (this one)  | fix: report Legend Cube's window function problems one at a time, and keep invalid settings             |
 
 ## Notes
 
@@ -79,3 +83,26 @@ Filled in as steps land.
   (the third extend for Last, the `property` IR). The builder guide: the row editor's setting field. `testing.md`: the
   new pins and the reference's functions. `.changeset/legend-cube-more-window-functions.md`: a patch for both packages.
   `check:ci` passes.
+- **M5b.6** (2026-10-10). Review: a workflow of three reviewers (core; builder; tests and docs), then a skeptic per
+  finding: 13 findings, 10 confirmed (one reported three times), 3 refuted (Group entries gaining defaults on save, which
+  the codec change below makes moot; no test editing only a saved setting, the code being right; Percent Rank's and
+  Cumulative Distribution's ties, which the database computes). Fixed:
+  - **One problem per row:** the setting check ran before the sort check and beside a failed column check, so a row
+    showed two problems and the editor marked the offset where the sort was missing. It now runs after them, lazily.
+  - **A missing setting stays missing:** the codec read one as its default, so an invalid setting dropped from a draft
+    came back valid after a save; now it is reported, as a Limit's cleared size. The draft keeps a saved setting that
+    isn't a whole number (2.5, `1e21`) while its text is as it opened, so it stays reported on its row and an unrelated
+    change doesn't drop it.
+  - **Column origins:** Lag, Lead, First and Last hold their column's values, so `findColumnOrigins` follows them back
+    to it (the Join and Concat editors' "type unknown" warnings depend on it).
+  - **The editor's setting mark** matched any message quoting a setting's words; it is anchored to the function's own.
+  - **ClickHouse** (from its documentation, not run): First and Last skip NULLs and Lag and Lead give a non-Nullable
+    column's default at the edges, so wrong rows. Cube can't correct the SQL; PLAN §11.8, an editor note and an ISSUES
+    draft for the engine record it. Refusing the four functions there is the user's choice.
+  - **Tests:** the first composition's Last read a column empty on every row it reads (EMPLOYEE_ID now), the emitter's
+    Lag check was never reached by its test (now called directly), a first-problem test, an origins test, a
+    marking test and a saved-setting test.
+  - **Also found while checking the demo's frames:** under Legend Query's theme no Cube text field showed its red error
+    border (the theme's `input` rule outranks a utility class), filter values, names and sizes included; a Cube rule
+    on `input[aria-invalid='true']` fixes it (`99cff424d`).
+  - The browser rehearsal passes 57 of 57.

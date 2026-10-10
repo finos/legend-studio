@@ -479,21 +479,24 @@ export const validateColumnAggregation = (
         MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN(fn),
         errors,
       );
-  const setting = getAggregationSetting(fn);
-  const settingValid = Object.values(AggregationSetting).every((key) => {
-    const value = aggregation[key];
-    return key === setting
-      ? validate(
-          value !== undefined && Number.isSafeInteger(value) && value >= 1,
-          MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID(fn, key),
-          errors,
-        )
-      : validate(
-          value === undefined,
-          MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING(fn, key),
-          errors,
-        );
-  });
+  // after the column and the sort, stopping at the first setting that fails
+  const settingValid = (): boolean => {
+    const setting = getAggregationSetting(fn);
+    return Object.values(AggregationSetting).every((key) => {
+      const value = aggregation[key];
+      return key === setting
+        ? validate(
+            value !== undefined && Number.isSafeInteger(value) && value >= 1,
+            MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID(fn, key),
+            errors,
+          )
+        : validate(
+            value === undefined,
+            MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING(fn, key),
+            errors,
+          );
+    });
+  };
   return (
     columnValid &&
     validate(
@@ -501,7 +504,7 @@ export const validateColumnAggregation = (
       MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT(fn),
       errors,
     ) &&
-    settingValid &&
+    settingValid() &&
     validate(name !== '', MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY, errors) &&
     validate(
       isValidColumnName(name),

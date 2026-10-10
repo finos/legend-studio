@@ -54,6 +54,8 @@ export interface CubeAggregationRow {
    * it doesn't take, kept so it is reported until the function is picked again
    */
   readonly settings: CubeAggregationSettingTexts;
+  /** The settings as saved, kept while their text is as it opened, so one that isn't a whole number stays reported */
+  readonly savedSettings?: Pick<ColumnAggregation, 'offset' | 'buckets'>;
   /**
    * The name was typed: it no longer follows the column and the function.
    * A name equal to the auto-name follows them again.
@@ -85,16 +87,27 @@ const settingTextsOf = ({
     : { [AggregationSetting.BUCKETS]: String(buckets) }),
 });
 
-/** The settings the texts give: a whole number, or none, which the node reports */
+/**
+ * The settings the texts give: a whole number, or the saved number while the
+ * text is as it opened (so a saved 2.5 stays 2.5, reported, never dropped), or
+ * none, which the node reports
+ */
 const settingsOfTexts = (
   texts: CubeAggregationSettingTexts,
+  saved: Pick<ColumnAggregation, 'offset' | 'buckets'> = {},
 ): Pick<ColumnAggregation, 'offset' | 'buckets'> => {
   const [offset, buckets] = [
     AggregationSetting.OFFSET,
     AggregationSetting.BUCKETS,
   ].map((key) => {
     const text = texts[key];
-    return text === undefined ? undefined : parseWholeNumberText(text);
+    const savedValue = saved[key];
+    return text === undefined
+      ? undefined
+      : (parseWholeNumberText(text) ??
+          (savedValue !== undefined && text === String(savedValue)
+            ? savedValue
+            : undefined));
   });
   return {
     ...(offset === undefined ? {} : { offset }),
@@ -149,6 +162,14 @@ export const aggregationRowsOf = (
           function: fn,
           name,
           settings: settingTextsOf(aggregation),
+          savedSettings: {
+            ...(aggregation.offset === undefined
+              ? {}
+              : { offset: aggregation.offset }),
+            ...(aggregation.buckets === undefined
+              ? {}
+              : { buckets: aggregation.buckets }),
+          },
           named: name !== (getAggregationAutoName(fn, column, use) ?? ''),
         };
       })
@@ -161,11 +182,11 @@ export const aggregationsOfRows = (
 ): ColumnAggregation[] =>
   rows
     .filter((row) => isBuiltAggregationRow(row, use))
-    .map(({ column, function: fn, name, settings }) => ({
+    .map(({ column, function: fn, name, settings, savedSettings }) => ({
       column,
       function: fn,
       name,
-      ...settingsOfTexts(settings),
+      ...settingsOfTexts(settings, savedSettings),
     }));
 
 /** The row with its column picked; with no function yet, Count */

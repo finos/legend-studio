@@ -385,15 +385,31 @@ describe(unitTest('Partition emission'), () => {
   });
 
   test('Refuses to emit a Lag without a whole offset, or an NTile without a bucket count', () => {
-    expect(() =>
-      emitterOf(
-        ordersThen(
-          partition(['SHIP_COUNTRY'], BY_ORDER_DATE, [
-            { column: 'FREIGHT', function: WindowRowFunction.LAG, name: 'p' },
+    // the emitter's own check, past the query's validation
+    const lag = partition(['SHIP_COUNTRY'], BY_ORDER_DATE, [
+      { column: 'FREIGHT', function: WindowRowFunction.LAG, name: 'p' },
+    ]);
+    [undefined, 0, 1.5].forEach((offset) =>
+      expect(() =>
+        emitPartition(
+          lag.withAggregations([
+            {
+              column: 'FREIGHT',
+              function: WindowRowFunction.LAG,
+              name: 'p',
+              ...(offset === undefined ? {} : { offset }),
+            },
           ]),
+          [ACCESSOR],
+          {
+            inputSchemas: [new Schema(COLUMNS)],
+            schema: new Schema([...COLUMNS, column('p', 'Float')]),
+          } as never,
         ),
-      ).emitRelation('partition101'),
-    ).toThrow();
+      ).toThrow(
+        `Can't emit window function "p": its setting isn't a whole number of at least 1`,
+      ),
+    );
     const query = ordersThen(
       partition(['SHIP_COUNTRY'], BY_ORDER_DATE, [
         { ...rankFunction(WindowRankFunction.NTILE, 'nt'), buckets: 4 },

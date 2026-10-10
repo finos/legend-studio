@@ -3997,14 +3997,17 @@ This subsection overrides the sections it names until they are updated (see "Sup
 ~[n: {p,w,r | $p->first($w, $r).c}])`. It plans on the 17 window types ✅.
     Then, as before, a `select` when the functions are listed in another order. No frame is written (D5).
 - **Databases:** every function plans on the 17 window types ✅; Spanner, Presto and Composite refuse any window, as in
-  M5 ✅. ClickHouse writes Lag and Lead as `lagInFrame` and `leadInFrame` over a whole-partition frame ✅, its own
-  correct form; DuckDB writes First as `first(…)` ✅.
+  M5 ✅. DuckDB writes First as `first(…)` ✅. ClickHouse writes Lag and Lead as `lagInFrame`/`leadInFrame` over a
+  whole-partition frame and First as `first_value` ✅, and those give wrong rows there (M5b.6, from ClickHouse's
+  documentation 💭; ISSUES.md): First and Last skip NULLs, and Lag and Lead give a non-Nullable column's type default
+  at a partition's edges instead of empty.
 - **Ties:** Lag, Lead, First and Last take any of the rows tied on the sort, as Row Number does (§11.6 Q2); the editor
   says so.
-- **Saved shape:** a window function's entry gains `offset` (Lag and Lead) or `buckets` (NTile), a JSON number, always
-  written for those functions; a missing one reads as its default. An offset or a bucket count on a function that
-  takes none, or one that isn't a whole number of at least 1, is kept and reported. An unknown key still makes an
-  Unknown node (§10.3).
+- **Saved shape:** a window function's entry gains `offset` (Lag and Lead) or `buckets` (NTile), a JSON number, written
+  whenever the entry has one (the editor gives each its default when the function is picked). A missing one stays
+  missing and is reported, as a Limit's cleared size is, so an invalid setting is never read back as a valid one
+  (M5b.6). An offset or a bucket count on a function that takes none, or one that isn't a whole number of at least 1,
+  is kept and reported. An unknown key still makes an Unknown node (§10.3).
 
 **Engine facts** (probes under `m5b-requirements/`):
 
@@ -4036,7 +4039,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
 **Risks and open gaps:**
 
 - Values on databases other than H2 and DuckDB are plans only 💭; an older database may refuse a function it plans
-  (an error, never wrong rows), as with M5's windowed Distinct Count.
+  (an error), as with M5's windowed Distinct Count. ClickHouse is the exception: Lag, Lead, First and Last can give
+  wrong rows there (Databases above), which only the engine can correct.
 - Nth, a default value for Lag and Lead, and frames stay out; each is a follow-up if users ask.
 
 **Supersessions** (applied in M5b.8 to the sections they change; kept here as the record of what M5b changed):

@@ -2375,7 +2375,7 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
       (partition as Partition).aggregations.map(({ name }) => name),
     ).toEqual(['Rank', 'Row Number']);
   });
-  test("Writes Lag's and Lead's offset and NTile's bucket count after the name, and reads one left out as its default, written back", () => {
+  test("Writes Lag's and Lead's offset and NTile's bucket count after the name, and reads one left out as missing, never its default", () => {
     const aggregations = [
       { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 2 },
       { column: 'FREIGHT', function: 'Lead', name: 'n', offset: 1 },
@@ -2402,22 +2402,19 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
         ],
       }),
     );
+    // missing, as a Limit's cleared size: validation reports it, so an
+    // invalid setting is never read back as a valid one
     expect(aggregationsOf(defaulted)).toEqual([
-      { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead', offset: 1 },
-      { column: undefined, function: 'NTile', name: 'NTile', buckets: 4 },
+      { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead' },
+      { column: undefined, function: 'NTile', name: 'NTile' },
     ]);
     expect(encodeCubeSpec(defaulted, REGISTRY)).toEqual(
       partitionSpec({
         columns: [],
         sorts,
         aggregations: [
-          {
-            column: 'FREIGHT',
-            function: 'Lead',
-            name: 'FREIGHT Lead',
-            offset: 1,
-          },
-          { function: 'NTile', name: 'NTile', buckets: 4 },
+          { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead' },
+          { function: 'NTile', name: 'NTile' },
         ],
       }),
     );

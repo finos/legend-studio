@@ -1247,7 +1247,7 @@ const COMPOSITIONS: readonly (readonly [string, Composition])[] = [
     },
   ],
   [
-    "Reads two customers' orders before and after each one, first and last, and places each in its customer's orders (M5b)",
+    "Reads three customers' orders before and after each one, first and last, and places each in its customer's orders (M5b)",
     {
       nodes: [
         partition(
@@ -1257,7 +1257,8 @@ const COMPOSITIONS: readonly (readonly [string, Composition])[] = [
           [LAG, 'ORDER_DATE', 'previous', { offset: 1 }],
           [LEAD, 'EMPLOYEE_ID', 'second next', { offset: 2 }],
           [FIRST, 'ORDER_DATE', 'first'],
-          [LAST, 'SHIP_REGION', 'last region'],
+          // EMPLOYEE_ID differs between their first and last orders
+          [LAST, 'EMPLOYEE_ID', 'last employee'],
           [NTILE, undefined, 'quartile', { buckets: 4 }],
           [PERCENT_RANK, undefined, 'percent'],
           [CUMULATIVE_DISTRIBUTION, undefined, 'cumulative'],
