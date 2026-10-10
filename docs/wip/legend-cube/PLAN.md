@@ -3224,7 +3224,9 @@ a window; a Filter after a Partition as a `WITH n_…` and a `WHERE` outside the
 capture's ORDER BY and limit at the root, never Sybase IQ's `limitoffset_via_window_subquery`; SQL Server and Sybase
 with no ORDER BY in a subquery or CTE without TOP; `over (order by …)` and `over ()` with no partition; the windowed
 distinct forms per database. ISSUES drafts: window `count()` losing OVER; a single-form window extend not isolated,
-with QUALIFY dropped or refused; a rank with no ORDER BY planning; windowed `count(distinct)` portability.
+with QUALIFY dropped or refused; a rank with no ORDER BY planning; windowed `count(distinct)` portability; one nested
+subselect per window column (M5.10). An unpartitioned window can't take a rows frame (no `over(SortInfo, Rows)` ✅),
+but Cube writes no frame (Q1), so it isn't drafted.
 
 **Builder.**
 
