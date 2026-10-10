@@ -214,16 +214,20 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
   }
 
   /**
-   * When the dialog opens on the tab: on the cube's model, or on the only
-   * model offered. A model whose outline failed to load is loaded again.
+   * When the dialog opens on the tab: on the cube's model, else the pasted
+   * model while the paste box is shown, else the bundled model picked last,
+   * else the first one. A model whose outline failed to load is loaded again.
    */
   open(): void {
     this.error = undefined;
     const model =
       this.fixedContext?.model ??
-      (this.models.length === 1 && !this.isPastingModel
-        ? this.models[0]?.model
-        : this.model);
+      (this.isPastingModel
+        ? this.model
+        : (
+            this.models.find((bundled) => bundled.model === this.model) ??
+            this.models[0]
+          )?.model);
     if (!model) {
       return;
     }
