@@ -47,6 +47,10 @@ import {
   Slice,
   Sort,
   SortDirection,
+  Partition,
+  WindowRankFunction,
+  CompositeFilter,
+  CompositeFilterOperator,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
@@ -1805,5 +1809,199 @@ describe('Concat on the engine', () => {
         ...(await tableValues('SUPPLIERS', 'CONTACT_NAME')),
       ]),
     );
+  });
+});
+
+describe('Partition on the engine', () => {
+  const { COUNT, SUM, AVERAGE, COUNT_ROWS } = AggregationFunction;
+  const { RANK, DENSE_RANK, ROW_NUMBER } = WindowRankFunction;
+  const fn = (
+    function_: string,
+    column: string | undefined,
+    name: string,
+  ): ColumnAggregation => ({ column, function: function_, name });
+  const by = (
+    column: string,
+    direction = SortDirection.ASC,
+  ): { column: string; direction: SortDirection } => ({ column, direction });
+  const equals = (column: string, value: string): Filter =>
+    new Filter(
+      'filter101',
+      new ColumnComparisonFilter(column, FilterOperator.EQUAL, {
+        kind: 'string',
+        value,
+      }),
+    );
+  const numbers = (values: readonly unknown[]): (number | null)[] =>
+    values.map((value) => (value === null ? null : Number(value)));
+  /** The rows of a column, in ORDER_ID order */
+  const byOrderId = (
+    result: Awaited<ReturnType<typeof TEST__runQuery>>,
+    column: string,
+  ): (number | null)[] => {
+    const ids = orderIds(TEST__columnValues(result, 'ORDER_ID'));
+    const values = numbers(TEST__columnValues(result, column));
+    return ids
+      .map((id, index) => [id, values[index] ?? null] as const)
+      .sort(([a], [b]) => a - b)
+      .map(([, value]) => value);
+  };
+
+  test('Runs aggregates over the rows up to each row, rows tied on the sort counting together, and ranks the ties', async () => {
+    // ORDERS 10250 and 10251 share 1996-07-08; no partition column
+    const query = await ordersThen(
+      new Restrict('restrict101', ['ORDER_ID', 'EMPLOYEE_ID', 'ORDER_DATE']),
+      new Partition(
+        'partition101',
+        [],
+        [by('ORDER_DATE')],
+        [
+          fn(COUNT_ROWS, undefined, 'n'),
+          fn(SUM, 'EMPLOYEE_ID', 's'),
+          fn(RANK, undefined, 'rk'),
+          fn(DENSE_RANK, undefined, 'drk'),
+          fn(ROW_NUMBER, undefined, 'rn'),
+        ],
+      ),
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('ORDER_ID', FilterOperator.LESS_THAN, {
+          kind: 'integer',
+          value: '10254',
+        }),
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.columns).toEqual([
+      'ORDER_ID',
+      'EMPLOYEE_ID',
+      'ORDER_DATE',
+      'n',
+      's',
+      'rk',
+      'drk',
+      'rn',
+    ]);
+    expect(byOrderId(result, 'n')).toEqual([1, 2, 4, 4, 5, 6]);
+    expect(byOrderId(result, 's')).toEqual([5, 11, 18, 18, 22, 25]);
+    expect(byOrderId(result, 'rk')).toEqual([1, 2, 3, 3, 5, 6]);
+    expect(byOrderId(result, 'drk')).toEqual([1, 2, 3, 3, 4, 5]);
+    // Row Number numbers the tied rows 3 and 4, in either order
+    const rowNumbers = byOrderId(result, 'rn');
+    expect([
+      rowNumbers[0],
+      rowNumbers[1],
+      rowNumbers[4],
+      rowNumbers[5],
+    ]).toEqual([1, 2, 5, 6]);
+    expect(new Set([rowNumbers[2], rowNumbers[3]])).toEqual(new Set([3, 4]));
+  });
+
+  test("Runs ALFKI's sum of EMPLOYEE_ID by date, and gives every row the whole total without a sort", async () => {
+    const running = await ordersThen(
+      new Partition(
+        'partition101',
+        ['CUSTOMER_ID'],
+        [by('ORDER_DATE')],
+        [fn(SUM, 'EMPLOYEE_ID', 'running')],
+      ),
+      equals('CUSTOMER_ID', 'ALFKI'),
+    );
+    const result = await TEST__runQuery(engine, running, ROW_LIMIT);
+    expect(byOrderId(result, 'running')).toEqual([6, 10, 14, 15, 16, 19]);
+    const total = await ordersThen(
+      new Partition(
+        'partition101',
+        ['CUSTOMER_ID'],
+        [],
+        [fn(SUM, 'EMPLOYEE_ID', 'total')],
+      ),
+      equals('CUSTOMER_ID', 'ALFKI'),
+    );
+    expect(
+      byOrderId(await TEST__runQuery(engine, total, ROW_LIMIT), 'total'),
+    ).toEqual([19, 19, 19, 19, 19, 19]);
+  });
+
+  test("Counts France's 77 orders on each of its rows though a Filter after the window keeps only France", async () => {
+    const query = await ordersThen(
+      new Partition(
+        'partition101',
+        ['SHIP_COUNTRY'],
+        [],
+        [fn(COUNT_ROWS, undefined, 'n')],
+      ),
+      equals('SHIP_COUNTRY', 'France'),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(77);
+    expect(new Set(numbers(TEST__columnValues(result, 'n')))).toEqual(
+      new Set([77]),
+    );
+    expect(result.sql.join('\n')).toMatch(/\bwith\b/iu);
+  });
+
+  test("Keeps each country's top 3 freights with a Filter on their Rank", async () => {
+    const query = await ordersThen(
+      new Partition(
+        'partition101',
+        ['SHIP_COUNTRY'],
+        [by('FREIGHT', SortDirection.DESC)],
+        [fn(RANK, undefined, 'rk')],
+      ),
+      new Filter(
+        'filter101',
+        new CompositeFilter(CompositeFilterOperator.AND, [
+          new ColumnComparisonFilter('rk', FilterOperator.LESS_THAN_OR_EQUAL, {
+            kind: 'integer',
+            value: '3',
+          }),
+          new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+            kind: 'string',
+            value: 'France',
+          }),
+        ]),
+      ),
+      new Sort('sort101', [by('rk')]),
+    );
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    // sorted by the rank, after the window: the capture's sort is outside its let
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual([
+      10634, 10511, 10787,
+    ]);
+    expect(numbers(TEST__columnValues(result, 'rk'))).toEqual([1, 2, 3]);
+  });
+
+  test("Leaves ALLTYPES ID 3's Sum and Average empty, its Count 0 and its Count Rows 1", async () => {
+    const [alltypes] = await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', 'ALLTYPES', 'CUBETEST'),
+    ]);
+    const query = TEST__chainOf([
+      alltypes as RelationalTableSource,
+      new Restrict('restrict101', ['ID', 'SI']),
+      new Partition(
+        'partition101',
+        ['ID'],
+        [],
+        [
+          fn(AVERAGE, 'SI', 'a'),
+          fn(SUM, 'SI', 's'),
+          fn(COUNT, 'SI', 'c'),
+          fn(COUNT_ROWS, undefined, 'n'),
+        ],
+      ),
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const row = (id: number): (number | null)[] => {
+      const index = numbers(TEST__columnValues(result, 'ID')).indexOf(id);
+      return ['a', 's', 'c', 'n'].map(
+        (column) => numbers(TEST__columnValues(result, column))[index] ?? null,
+      );
+    };
+    expect(row(1)).toEqual([100, 100, 1, 1]);
+    expect(row(3)).toEqual([null, null, 0, 1]);
   });
 });

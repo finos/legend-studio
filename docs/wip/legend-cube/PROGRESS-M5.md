@@ -26,7 +26,7 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 - [x] **M5.5** Partition in the core
 - [x] **M5.6** The builder extraction (no behaviour change)
 - [x] **M5.7** Partition in the builder, and registered
-- [ ] **M5.8** Partition on the engine and in the browser
+- [x] **M5.8** Partition on the engine and in the browser
 - [ ] **M5.9** The window composition suite
 - [ ] **M5.10** Partition around the databases, and the changeset
 - [ ] **M5.11** Guides and READMEs
@@ -118,6 +118,21 @@ empty sort values go; a Rank's sort makes the node's aggregates run), and rows j
 saved blank sort key still counts as a sort until something changes). A windowed Max of an untyped column can't
 exist (an OTHER column is a String, which offers no Max), so the Join warning's test uses Distinct Value, as Group's
 does. Result: `m5-verify/m57-result.json`.
+
+**M5.8 (2026-10-09).** On the engine, through Cube's emitter (`LegendCubeOperations`, "Partition on the engine"):
+the ORDERS tie on 1996-07-08 (Count Rows 1, 2, 4, 4, 5, 6; a Sum of EMPLOYEE_ID 5, 11, 18, 18, 22, 25; Rank 1, 2, 3, 3,
+5, 6; Dense Rank 1, 2, 3, 3, 4, 5; Row Number 3 and 4 on the tie, either way), ALFKI's running Sum 6, 10, 14, 15, 16,
+19 against 19 on every row without a sort, France's 77 on each of its rows after a Filter (a `WITH` in the SQL), the
+top 3 freights per country by a Filter on the Rank (10634, 10511, 10787, sorted after the window), and ALLTYPES ID 3's
+empty Sum and Average, Count 0 and Count Rows 1. On H2 and DuckDB through the direct connection
+(`LegendCubeDirectConnectionOperations`): a count per country after a Filter, a running count, Rank and Row Number,
+and a windowed Distinct Count (`count(distinct …) over ()`, native on DuckDB) and Distinct Value, in a Partition of a
+Partition. In the browser (evidence `demo/check-m58-partition.mjs`, on :9002 and :6300; 20 checks, no page problems):
+Apply Window Functions last in the palette; the editor's sections in Q4's order; Rank without a sort marked on its
+function until a sort row has a column; a running Sum by city; the 19 rows with every city's rank 1 and running sums
+reaching each city's total; the grid's Filter by on Rank 1 giving one row per city; the let in Show Pure; the saved
+spec. An error inside a let is checked on the engine (M5.3), not in the browser: Cube's validation keeps one from
+being built.
 
 ## Open items
 
