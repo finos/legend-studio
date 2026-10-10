@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.7.6
+
+### Patch Changes
+
+- [#5648](https://github.com/finos/legend-studio/pull/5648) [`c2c0cbb`](https://github.com/finos/legend-studio/commit/c2c0cbb58edb6b50112888255db9df04d552af89) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix relational store accessors (`#>{db.schema.TABLE}#`) built from a lambda. A table name that exists in several schemas now comes from the schema in the path, instead of the first schema that has it, which also rewrote the query to that schema on save. `#>{db.TABLE}#` now means the default schema, as in the engine, instead of the first table of the database, and is saved as written: `RelationalStoreAccessor` gains `hasExplicitSchema`. A quoted table name containing a dot, which the grammar splits into several path parts, is joined back. A path with no table, or with more than three parts, is now an error instead of resolving to some other table.
+
+- [#5599](https://github.com/finos/legend-studio/pull/5599) [`f59c5af`](https://github.com/finos/legend-studio/commit/f59c5aff43ca8f466b65bd8ffc29f4d190ede84c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Type database view columns from their source columns: a view column that maps straight to a table column (directly, through a join, from an included database, or through a view built earlier) now takes that column's type, and its nullability when no join is involved, instead of an invented `VARCHAR(50)`. Computed columns, and columns over a view built later, keep the `VARCHAR(50)` placeholder. The protocol and element hashes are unchanged.
+
+- [#5603](https://github.com/finos/legend-studio/pull/5603) [`2fd42b1`](https://github.com/finos/legend-studio/commit/2fd42b11dd3bb156c0f5bfcef32aa52c12ec3902) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `getLambdaResolvedRelationType` and `getBatchLambdasResolvedRelationType` to the graph manager. They return the engine's relation type as a metamodel `RelationType`, keeping type parameters (`Varchar(5)`), multiplicity, stereotypes and tagged values that `getLambdaRelationType` drops. A column whose type isn't in the graph (for example an enum that isn't loaded) is typed `Any` and listed in `unresolvedColumns` instead of failing the whole relation type. The same behaviour is available as `V1_buildResolvedRelationTypeFromV1RelationType`; `V1_buildRelationTypeFromV1RelationType` is unchanged and still throws.
+
 ## 32.7.5
 
 ### Patch Changes
