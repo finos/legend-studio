@@ -1283,13 +1283,15 @@ To make Cube easy to demo and explore, it ships three small datasets and six exa
 - **Example cubes:** two per dataset, built in code (`stores/CubeExamples.ts`), not saved JSON, so they hold no schema
   snapshot to keep current: their tables are typed when they open, like an imported cube's. They use only nodes on
   master (no windows yet): top customers by orders and products in stock by category (Northwind), top watched sports
-  and the most watched finals in Europe (Sports), notional by desk and asset class and the largest buys (Trades).
+  and the most watched finals in Europe (Sports), dollar notional by desk and asset class and the largest buys (Trades; notionals are converted to dollars at fixed
+  rates, column `NOTIONAL_USD`).
 - **Examples tab:** the source dialog's last tab, always enabled (it opens a whole cube, so the one-kind-of-source rule
   doesn't apply), listing the examples by dataset; its button reads **Open**. Open replaces the cube with a new copy of
   the example, as Import does (one undo step), waits for its tables to be typed, then runs it, unless the user has
   moved off it. A table palette item never opens on it. The empty canvas offers "open an example" beside "add a
   table". The dialog stays closed on a read-only cube, so its examples are reached from a new cube.
-- **Tests:** the core tests cover the list, Open, Undo and the no-run case with the fake engine
+- **Tests:** the core tests cover the list, Open, Undo, the no-run case and each example's spec round trip (under
+  the 1 MB cap) with the fake engine
   (`CubeExamplesTabState.test.ts`, `CubeExamplesTab.test.tsx`) and the generated rows (`CubeSampleModels.test.ts`);
   `CubeExamples.engine-roundtrip-test.ts` compiles the sample models, then opens every example on the engine, checks
   every node types as Cube infers it (Sum outputs wider, §5.7) and runs it.
@@ -2556,6 +2558,7 @@ Examples (§6.9):
    example replaces the cube (Undo brings it back).
 5. In the **Model** tab, pick **Sports (sample)** and **Trades (sample)**: their tables list, and adding one and
    pressing **F9** gives rows.
+6. **Export (dev)** an example and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
 
 Data products:
 
