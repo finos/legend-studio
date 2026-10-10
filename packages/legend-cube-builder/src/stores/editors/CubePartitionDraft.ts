@@ -57,7 +57,7 @@ import {
  * Picking a column first sets Count; Count rows and the rank functions clear
  * the column, which they can't hold. Lag and Lead take an offset, NTile a
  * bucket count, typed as text and given their defaults when picked (PLAN
- * §11.8). Until something changes, `build()`
+ * §11.9). Until something changes, `build()`
  * gives the original back, a saved sort key without a column included.
  */
 export class CubePartitionDraft extends CubeNodeDraft<Partition> {
@@ -189,7 +189,7 @@ export class CubePartitionDraft extends CubeNodeDraft<Partition> {
     this.update(key, (row) => withRowFunction(row, fn, this.aggregationUse));
   }
 
-  /** Types the row's setting, Lag's and Lead's offset or NTile's bucket count, kept as text (PLAN §11.8) */
+  /** Types the row's setting, Lag's and Lead's offset or NTile's bucket count, kept as text (PLAN §11.9) */
   setSetting(key: number, setting: AggregationSetting, text: string): void {
     this.update(key, (row) => withRowSetting(row, setting, text));
   }

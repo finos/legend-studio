@@ -1,8 +1,8 @@
 # Legend Cube — M5b Progress Log
 
-> **What this file is:** the "where are we" ledger for M5b, more window functions (PLAN §11.3 and §11.8). It is kept
+> **What this file is:** the "where are we" ledger for M5b, more window functions (PLAN §11.3 and §11.9). It is kept
 > apart from [PROGRESS.md](PROGRESS.md) and the other milestone logs, so the lines of work merge cleanly.
-> [PLAN.md](PLAN.md) §11.8 holds what M5b settled; [ISSUES.md](ISSUES.md) the known issues later PRs fix.
+> [PLAN.md](PLAN.md) §11.9 holds what M5b settled; [ISSUES.md](ISSUES.md) the known issues later PRs fix.
 >
 > **Upkeep:** update it whenever a step lands, and commit it with that step.
 
@@ -17,16 +17,16 @@
 
 ## Steps
 
-See PLAN §11.8 for each step's deliverable and when it is done.
+See PLAN §11.9 for each step's deliverable and when it is done.
 
-- [x] **M5b.1** The settled decisions (PLAN §11.8) and this file
+- [x] **M5b.1** The settled decisions (PLAN §11.9) and this file
 - [x] **M5b.2** The core
 - [x] **M5b.3** The builder
 - [x] **M5b.4** On the engine, around the databases, and in the composition and conformance suites
 - [x] **M5b.5** Guides, testing.md and the changeset
 - [x] **M5b.6** Verification and the browser rehearsal
 - [x] **M5b.7** A demo video of the new functions (PLAN §11.3)
-- [ ] **M5b.8** Fold PLAN §11.8's supersessions in; the PR ready for `cube-dev`
+- [ ] **M5b.8** Fold PLAN §11.9's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -98,7 +98,7 @@ Filled in as steps land.
     to it (the Join and Concat editors' "type unknown" warnings depend on it).
   - **The editor's setting mark** matched any message quoting a setting's words; it is anchored to the function's own.
   - **ClickHouse** (from its documentation, not run): First and Last skip NULLs and Lag and Lead give a non-Nullable
-    column's default at the edges, so wrong rows. Cube can't correct the SQL; PLAN §11.8, an editor note and an ISSUES
+    column's default at the edges, so wrong rows. Cube can't correct the SQL; PLAN §11.9, an editor note and an ISSUES
     draft for the engine record it. Refusing the four functions there is the user's choice.
   - **Tests:** the first composition's Last read a column empty on every row it reads (EMPLOYEE_ID now), the emitter's
     Lag check was never reached by its test (now called directly), a first-problem test, an origins test, a

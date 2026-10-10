@@ -87,7 +87,7 @@ export const validatePartitionColumn = (
  * from the partition's first row to the current one, rows tied on the sort
  * sharing a value, as SQL's default frame does (D5, PLAN §11.6); without
  * one, it covers the whole partition. The rank and row functions need a sort
- * (PLAN §11.8). The input's columns and rows stay as they are, in the
+ * (PLAN §11.9). The input's columns and rows stay as they are, in the
  * input's order.
  */
 export class Partition extends UnaryNode {
@@ -234,7 +234,7 @@ export class Partition extends UnaryNode {
   /**
    * The input's columns as they are, then one column per window function, in
    * the order listed, typed as the engine types it and nullable but for the
-   * counts and the rank functions (PLAN §5.7, §11.6, §11.8); `undefined` when
+   * counts and the rank functions (PLAN §5.7, §11.6, §11.9); `undefined` when
    * invalid
    */
   override schematize(inputSchemas: readonly Schema[]): Schema | undefined {

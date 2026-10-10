@@ -153,7 +153,7 @@ const groupInputName = (
 /**
  * The input column a Partition's output column comes from: an input column by
  * its name, a Distinct Value, Min or Max, or a Lag, Lead, First or Last (PLAN
- * §11.8), by its column, whose values it holds; a count, a sum, an average or
+ * §11.9), by its column, whose values it holds; a count, a sum, an average or
  * a rank is no column's value, so it comes from none
  */
 const partitionInputName = (

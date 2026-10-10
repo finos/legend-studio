@@ -47,7 +47,7 @@ const problemControl = (
           ? 'function'
           : 'name';
 
-/** How a setting's field is named and explained (PLAN §11.8) */
+/** How a setting's field is named and explained (PLAN §11.9) */
 const SETTING_FIELDS: Readonly<
   Record<AggregationSetting, { label: string; title: string }>
 > = Object.freeze({

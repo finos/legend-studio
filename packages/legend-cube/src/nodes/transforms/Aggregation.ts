@@ -37,7 +37,7 @@ import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import { isSortableType } from '../../types/TypeCompatibility.js';
 import { TypeFamily } from '../../types/TypeFamily.js';
 
-// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6 and §11.8), shared by Group
+// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6 and §11.9), shared by Group
 // and Partition, whose windows also offer the rank and row functions
 
 /** An aggregation function, as saved: a Group's, and a window's but its rank functions */
@@ -61,7 +61,7 @@ export const isAggregationFunction = (
 ): value is AggregationFunction => AGGREGATION_FUNCTIONS.includes(value);
 
 /**
- * A window-only function, as saved (spec §10, PLAN §11.6, §11.8): it ranks
+ * A window-only function, as saved (spec §10, PLAN §11.6, §11.9): it ranks
  * each row of its partition by the window's sort, so it takes no column and
  * needs a sort. A Group doesn't know them (PLAN §11.5, Q4).
  */
@@ -70,7 +70,7 @@ export enum WindowRankFunction {
   DENSE_RANK = 'DenseRank',
   /** Added by Cube (PLAN §11.6, Q2): one number per row, ties or not */
   ROW_NUMBER = 'RowNumber',
-  /** Added in M5b (PLAN §11.8): the bucket, from 1, of `buckets` near-equal ones */
+  /** Added in M5b (PLAN §11.9): the bucket, from 1, of `buckets` near-equal ones */
   NTILE = 'NTile',
   /** Added in M5b: (rank - 1) / (rows - 1), from 0 to 1 */
   PERCENT_RANK = 'PercentRank',
@@ -88,7 +88,7 @@ export const isWindowRankFunction = (
   (WINDOW_RANK_FUNCTIONS as readonly string[]).includes(value);
 
 /**
- * A window-only function of a column, as saved (PLAN §11.8): a value of
+ * A window-only function of a column, as saved (PLAN §11.9): a value of
  * another row of the partition, by the window's sort, so it needs a sort, and
  * it has the column's type, nullable. Last is the partition's last row, the
  * same on every row, as First is its first.
@@ -179,7 +179,7 @@ export const isAggregationFunctionOf = (
  * reported, never dropped (PLAN §11.5, Q4). `column` is `undefined` for a
  * function that takes none (Count rows, the rank functions) and `''` until
  * picked; `name` is `''` until given. `offset` (Lag, Lead) and `buckets`
- * (NTile) are their functions' settings (PLAN §11.8), kept as given for
+ * (NTile) are their functions' settings (PLAN §11.9), kept as given for
  * validation to judge, and `undefined` on every other function.
  */
 export interface ColumnAggregation {
@@ -344,7 +344,7 @@ const dateResultType = (family: TypeFamily): PrimitiveType => {
 
 /**
  * The type of a function's output, as the engine types it (PLAN §5.7,
- * §11.8): Integer for the counts and the rank functions but Percent Rank and
+ * §11.9): Integer for the counts and the rank functions but Percent Rank and
  * Cumulative Distribution, which are Float; the column's own precise type
  * for Distinct Value and the row functions;
  * for Sum, Integer, Float, or else Number; Float for Average; Min and Max as
@@ -393,7 +393,7 @@ export const getAggregationResultType = (
 /**
  * Whether a function's output can be null: all but the counts and the rank
  * functions, though the engine types Sum and Average as never null (PLAN
- * §5.7, D4); a row function's is empty when there is no such row (PLAN §11.8). It decides rows: a negated filter guards with `isEmpty` only on a
+ * §5.7, D4); a row function's is empty when there is no such row (PLAN §11.9). It decides rows: a negated filter guards with `isEmpty` only on a
  * nullable column.
  */
 export const isAggregationNullable = (aggregation: WindowFunction): boolean =>
@@ -427,7 +427,7 @@ export const getAggregationAutoName = (
 
 /**
  * Checks one aggregation against the input schema, stopping at its first
- * problem (spec §10.3, then Cube's checks, PLAN §11.5, §11.6 and §11.8): the
+ * problem (spec §10.3, then Cube's checks, PLAN §11.5, §11.6 and §11.9): the
  * function is given and the use knows it; Count rows and the rank functions
  * have no column, any other function a column of the input whose type offers
  * it; a rank or row function's window sorts its rows (with none, the

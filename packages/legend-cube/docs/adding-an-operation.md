@@ -143,7 +143,7 @@ limit go after `from()`, where every database keeps them at the root. Typing lam
 types both forms the same. Write window functions in the array form (`~[…]`, never a single column spec), the
 aggregates and the rank and row functions in separate `extend`s (one holding both fails on the engine), and counts as
 `size()` (`count()` loses its OVER clause). Last is First over the window with every sort direction reversed, in a
-third `extend` (PLAN §11.8): the engine's `last()` with no frame is the current row, and it writes a frame only with a
+third `extend` (PLAN §11.9): the engine's `last()` with no frame is the current row, and it writes a frame only with a
 partition column. A column of another row is a `property` IR on the function's result, `$p->lag($r, 1).c`. The engine nests one subselect per window column, so a wide window makes deep SQL.
 
 ## 4. Its codec

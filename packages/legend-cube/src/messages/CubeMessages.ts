@@ -233,14 +233,14 @@ export const MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT = (
 ): string =>
   `Aggregation function ${quote(aggregation)} requires at least one sort column.`;
 
-/** Added by Cube (PLAN §11.8): Lag's and Lead's offset, NTile's bucket count */
+/** Added by Cube (PLAN §11.9): Lag's and Lead's offset, NTile's bucket count */
 export const MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID = (
   aggregation: string,
   setting: string,
 ): string =>
   `Aggregation function ${quote(aggregation)} needs ${setting === 'offset' ? 'an offset' : 'a bucket count'} that is a whole number of at least 1.`;
 
-/** Added by Cube (PLAN §11.8): an offset or a bucket count on a function that takes none */
+/** Added by Cube (PLAN §11.9): an offset or a bucket count on a function that takes none */
 export const MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING = (
   aggregation: string,
   setting: string,

@@ -1505,7 +1505,7 @@ const CASES: readonly ConformanceCase[] = [
     ),
   },
   {
-    // M5b (PLAN §11.8): the row functions of a number, a text and a date,
+    // M5b (PLAN §11.9): the row functions of a number, a text and a date,
     // nullable, and the new rank functions, never empty; Last as First over
     // the reversed sort, in a third extend
     name: 'partition-m5b-functions',

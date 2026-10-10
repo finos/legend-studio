@@ -321,7 +321,7 @@ with three OVER clauses. The columns of one extend could stay in one select what
 
 ### ClickHouse: First and Last skip NULLs, and Lag and Lead fill a non-Nullable column's edges
 
-Found in M5b.6's review (PLAN §11.8); planned, not run (no ClickHouse here): the SQL is pinned in
+Found in M5b.6's review (PLAN §11.9); planned, not run (no ClickHouse here): the SQL is pinned in
 `LegendCubeDialects.engine-roundtrip-test.ts`, and its meaning is ClickHouse's documentation 💭. On ClickHouse the
 engine writes First as `first_value(x) over (…)` with no `RESPECT NULLS`, and ClickHouse's `first_value` skips NULLs:
 with a NULL in the partition's first rows, First varies from row to row instead of being the first row's value, and

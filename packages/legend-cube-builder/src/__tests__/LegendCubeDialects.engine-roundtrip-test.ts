@@ -1500,7 +1500,7 @@ describe('Window functions, as each database plans them', () => {
           problems.push(`${name}: no over clause`);
         }
         // ClickHouse's own Lag and Lead read over the whole partition, as
-        // its lagInFrame and leadInFrame need (PLAN §11.8)
+        // its lagInFrame and leadInFrame need (PLAN §11.9)
         if (
           FRAME_CLAUSE.test(
             sql.replace(

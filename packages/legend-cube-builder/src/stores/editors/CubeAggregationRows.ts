@@ -29,7 +29,7 @@ import {
 import { parseWholeNumberText } from './CubeIntegerText.js';
 
 // The rows of the editors that aggregate (Group, PLAN §11.5; Partition,
-// §11.6, §11.8): each a column, a function, a setting for a function that
+// §11.6, §11.9): each a column, a function, a setting for a function that
 // takes one, and an output name, judged by where the aggregations are
 // (`AggregationUse`)
 
@@ -50,7 +50,7 @@ export interface CubeAggregationRow {
   readonly function: string;
   readonly name: string;
   /**
-   * The settings as typed (PLAN §11.8): the function's own, and a saved one
+   * The settings as typed (PLAN §11.9): the function's own, and a saved one
    * it doesn't take, kept so it is reported until the function is picked again
    */
   readonly settings: CubeAggregationSettingTexts;

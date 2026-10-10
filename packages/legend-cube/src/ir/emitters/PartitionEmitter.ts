@@ -118,7 +118,7 @@ const rank = (
 /**
  * A row function's value, a column of another row: `$p->lag($r, <offset>).c`,
  * `lead` the same, and `$p->first($w, $r).c`, which is also Last's, written
- * over the reversed window (PLAN §11.8)
+ * over the reversed window (PLAN §11.9)
  */
 const rowValue = (
   { column, function: fn, offset, name }: ColumnAggregation,
@@ -184,7 +184,7 @@ const emitWindowFunction = (
  * The window: `over(~[<partition columns>], [<sort keys>])`, without either
  * list when it is empty, and `over([])` with neither; never an empty column
  * list (an NPE on the engine) or an empty sort list beside columns. Reversed,
- * every key's direction is the other one: Last's window (PLAN §11.8).
+ * every key's direction is the other one: Last's window (PLAN §11.9).
  */
 const emitOver = (node: Partition, origin: Origin, reversed = false): IR => {
   const sorts = collection(
@@ -206,7 +206,7 @@ const emitOver = (node: Partition, origin: Origin, reversed = false): IR => {
 };
 
 /**
- * Emits a partition (PLAN §8.8, §11.6, §11.8) as
+ * Emits a partition (PLAN §8.8, §11.6, §11.9) as
  * `<input>->extend(<over>, ~[<aggregates>])->extend(<over>, ~[<ranks and
  * rows>])->extend(<reversed over>, ~[<lasts>])`, in the array form (the
  * engine runs a later filter before a single-form window): an aggregate can't

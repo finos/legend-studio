@@ -42,7 +42,7 @@ const AGGREGATION_KEYS = ['column', 'function', 'name', 'offset', 'buckets'];
  * The aggregations under `key`, each `{column, function, name}`, the column
  * left out for a function that takes none (PLAN §11.5), and a window
  * function's `offset` (Lag, Lead) or `buckets` (NTile), JSON numbers (PLAN
- * §11.8). Texts and numbers are kept exactly, `''` included, for validation
+ * §11.9). Texts and numbers are kept exactly, `''` included, for validation
  * to judge: an unknown, empty or misplaced function or setting is held, not
  * dropped (Q4), since an invalid node can't run. A name left out is read as
  * the auto-name for the use (Q3), or `''` when there is none, and written

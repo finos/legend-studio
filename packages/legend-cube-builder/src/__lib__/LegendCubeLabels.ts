@@ -248,7 +248,7 @@ export const CUBE_PARTITION_COLUMN_DISABLED_REASON = "can't be partitioned by";
 export const getPartitionNoColumnText = (fn: string): string =>
   fn === 'CountRows' ? 'Every row' : 'By the sort columns';
 
-/** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3; §11.8) */
+/** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3; §11.9) */
 export const PARTITION_EDITOR_NOTES = [
   'With sort columns, the aggregations (Count to Max, and Count Rows) run from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
   "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",

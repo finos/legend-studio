@@ -79,7 +79,7 @@ const functionOptions = (row: CubeAggregationRow, schema: Schema): string[] => {
 };
 
 /**
- * The Partition editor (spec §17.6, PLAN §11.6, §11.8), in the original's
+ * The Partition editor (spec §17.6, PLAN §11.6, §11.9), in the original's
  * order (Q4): rows of window function column, function, its offset or bucket
  * count when it takes one, and output name; the
  * partition columns, each ticked (a column that can't be compared is shown

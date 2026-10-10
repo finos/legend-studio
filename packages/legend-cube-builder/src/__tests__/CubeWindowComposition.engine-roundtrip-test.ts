@@ -278,14 +278,14 @@ const ntileOf = (place: number, size: number, buckets: number): number => {
     : large + Math.floor((place - large * (small + 1)) / small) + 1;
 };
 
-/** The functions whose value depends on where a row is, which a tie on the sort leaves open (PLAN §11.8) */
+/** The functions whose value depends on where a row is, which a tie on the sort leaves open (PLAN §11.9) */
 const PLACED_FUNCTIONS: readonly string[] = [
   WindowRankFunction.NTILE,
   ...Object.values(WindowRowFunction),
 ];
 
 /**
- * A window (spec §7.13, D5, PLAN §11.8): each row of a partition gets its
+ * A window (spec §7.13, D5, PLAN §11.9): each row of a partition gets its
  * functions over the partition's rows up to it and the rows tied with it on
  * the sort keys, or over the whole partition without any; a rank counts the
  * rows before the tie, a dense rank the ties before it, a row number its

@@ -66,7 +66,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] M6 Difference and Extend, built on `cube-m6` in draft #5662 for `cube-dev`, not merged yet
       ([PROGRESS-M6.md](PROGRESS-M6.md), PLAN §11.7)
 - [ ] M5b More window functions, started on `cube-m5b`, stacked on `cube-m6` ([PROGRESS-M5B.md](PROGRESS-M5B.md),
-      PLAN §11.8)
+      PLAN §11.9)
 - [ ] M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
