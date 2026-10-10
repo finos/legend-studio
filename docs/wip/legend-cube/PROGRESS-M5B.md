@@ -12,7 +12,7 @@
 | ------ | ---------------------------------------------------------------------------------------- |
 | Branch | `cube-m5b`, stacked on `cube-m6` (#5662, not merged yet); draft PR #5665 into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                                                  |
-| Step   | M5b.6: Verification (fixes in; the ClickHouse choice is the user's)                      |
+| Step   | M5b.7: the demo video, sent; next M5b.8 (the ClickHouse choice is the user's)            |
 | Tests  | 2833 core, 1420 builder (core group)                                                     |
 
 ## Steps
@@ -24,8 +24,8 @@ See PLAN §11.8 for each step's deliverable and when it is done.
 - [x] **M5b.3** The builder
 - [x] **M5b.4** On the engine, around the databases, and in the composition and conformance suites
 - [x] **M5b.5** Guides, testing.md and the changeset
-- [ ] **M5b.6** Verification and the browser rehearsal
-- [ ] **M5b.7** A demo video of the new functions (PLAN §11.3)
+- [x] **M5b.6** Verification and the browser rehearsal
+- [x] **M5b.7** A demo video of the new functions (PLAN §11.3)
 - [ ] **M5b.8** Fold PLAN §11.8's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
@@ -40,7 +40,8 @@ Filled in as steps land.
 | M5b.4 | `3be7bf081` | test: run Legend Cube's new window functions on the engine and every database                           |
 | M5b.5 | `1ad274e36` | docs: cover Legend Cube's new window functions in its guides                                            |
 | M5b.6 | `99cff424d` | fix: show the error border of Legend Cube's invalid fields under Legend Query's theme                   |
-| M5b.6 | (this one)  | fix: report Legend Cube's window function problems one at a time, and keep invalid settings             |
+| M5b.6 | `d8a84f1fd` | fix: report Legend Cube's window function problems one at a time, and keep invalid settings             |
+| M5b.7 | (this one)  | docs: record Legend Cube M5b's demo video                                                               |
 
 ## Notes
 
@@ -106,3 +107,10 @@ Filled in as steps land.
     border (the theme's `input` rule outranks a utility class), filter values, names and sizes included; a Cube rule
     on `input[aria-invalid='true']` fixes it (`99cff424d`).
   - The browser rehearsal passes 57 of 57.
+- **M5b.7** (2026-10-10). The demo video (`legend-cube-m5b-window-functions.webm`, 97 s, in the evidence folder's
+  `demo/out-demo-m5b/`; `demo/demo-m5b.mjs` records it from `demo/m5b-specs/m5b-orders.json`): ALFKI's and ANATR's
+  orders by date; Lag on FREIGHT, Lead on ORDER_DATE, First and Last on FREIGHT, run, each row checked against the
+  orders before and after it; NTile with 2 buckets, Percent Rank and Cumulative Distribution, run and checked; an
+  offset of 0 marked on its field; every new function's problem without a sort column; Show Pure's Last as `first` over
+  the descending sort. 13 checks pass; each of its 11 frames was read against its caption. Two frames first showed less
+  than their captions said (the functions list scrolls past five rows), so the script scrolls it to its end there.
