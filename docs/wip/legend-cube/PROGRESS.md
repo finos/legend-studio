@@ -45,8 +45,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     deployment).
   - A CSV pasted or chosen in the Database connection tab becomes a DuckDB table of the setup SQL (user, 2026-10-09):
     merged as #5656 (`5e424277b`).
-  - Ingest data sets (PLAN §6.7; user, 2026-10-09: before Depot databases) on `cube-ingest`, finos/legend-studio#5654,
-    with master merged in (`8b235e495`): build steps IN1–IN11 done (the `#I` accessor, the source and its kinds rule,
+  - Ingest data sets (PLAN §6.7; user, 2026-10-09: before Depot databases) merged as finos/legend-studio#5654
+    (`59bbf5d54`): build steps IN1–IN11 done (the `#I` accessor, the source and its kinds rule,
     the `cubeIngest` model and runs, the ingest catalog, Query's `lakehouse.platformUrl`, the Ingest tab and palette
     item, the data set's panel with its warehouse, the engine stand-ins, the docs). Left after the PR (user,
     2026-10-09): skeptic verification and the demo video, then Part B2's ingest steps in an internal deployment. Later:
