@@ -36,6 +36,7 @@ import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
+import { CubeProjectTabState } from './source-picker/CubeProjectTabState.js';
 import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
 import {
   type CubeSourcePickerTab,
@@ -54,6 +55,7 @@ export class CubeSourcePickerState {
   readonly directTab: CubeDirectConnectionTabState;
   readonly dataProductTab: CubeDataProductTabState;
   readonly ingestTab: CubeIngestTabState;
+  readonly projectTab: CubeProjectTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -77,6 +79,7 @@ export class CubeSourcePickerState {
     this.directTab = new CubeDirectConnectionTabState(editorState);
     this.dataProductTab = new CubeDataProductTabState(editorState);
     this.ingestTab = new CubeIngestTabState(editorState);
+    this.projectTab = new CubeProjectTabState(editorState);
   }
 
   /** The tabs that add their own kind of source, each from its palette item */
@@ -91,6 +94,7 @@ export class CubeSourcePickerState {
   get tabs(): readonly CubeSourcePickerTab[] {
     return [
       this.modelTab,
+      this.projectTab,
       this.directTab,
       this.dataProductTab,
       this.ingestTab,
@@ -104,9 +108,12 @@ export class CubeSourcePickerState {
   get fixedTab(): CubeSourcePickerTab | undefined {
     const { context } = this.editorState.document;
     return context
-      ? ([this.directTab, this.dataProductTab, this.ingestTab].find((tab) =>
-          tab.ownsContext(context),
-        ) ?? this.modelTab)
+      ? ([
+          this.projectTab,
+          this.directTab,
+          this.dataProductTab,
+          this.ingestTab,
+        ].find((tab) => tab.ownsContext(context)) ?? this.modelTab)
       : undefined;
   }
 
@@ -200,6 +207,7 @@ export class CubeSourcePickerState {
     this.directTab.close();
     this.dataProductTab.close();
     this.ingestTab.close();
+    this.projectTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

@@ -1,0 +1,1852 @@
+[
+ {
+  "groupId": "org.finos.legend.cube.samples",
+  "artifactId": "cube-reference",
+  "projectId": "CUBE-REFERENCE",
+  "versions": [
+   {
+    "versionId": "1.0.0",
+    "dependencies": [],
+    "entities": [
+     {
+      "path": "cube::samples::reference::store::CurrencyDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "CurrencyDb",
+       "package": "cube::samples::reference::store",
+       "schemas": [
+        {
+         "name": "REF",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "CODE",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 3
+             }
+            },
+            {
+             "name": "NAME",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "CURRENCIES",
+           "primaryKey": [
+            "CODE"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::reference::CurrencyConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists REF cascade",
+          "create schema REF",
+          "create table REF.CURRENCIES (CODE VARCHAR(3) PRIMARY KEY, NAME VARCHAR(40) NOT NULL)",
+          "insert into REF.CURRENCIES values ('USD', 'US Dollar'), ('EUR', 'Euro'), ('GBP', 'Pound Sterling')"
+         ]
+        },
+        "element": "cube::samples::reference::store::CurrencyDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "CurrencyConnection",
+       "package": "cube::samples::reference"
+      }
+     },
+     {
+      "path": "cube::samples::reference::CurrencyRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "CurrencyRuntime",
+       "package": "cube::samples::reference",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::reference::store::CurrencyDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::reference::CurrencyConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "groupId": "org.finos.legend.cube.samples",
+  "artifactId": "cube-sales",
+  "projectId": "CUBE-SALES",
+  "versions": [
+   {
+    "versionId": "1.0.0",
+    "dependencies": [
+     {
+      "groupId": "org.finos.legend.cube.samples",
+      "artifactId": "cube-reference",
+      "versionId": "1.0.0"
+     }
+    ],
+    "entities": [
+     {
+      "path": "cube::samples::sales::store::SalesDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [
+        {
+         "name": "ORDER_CUSTOMER",
+         "operation": {
+          "_type": "dynaFunc",
+          "funcName": "equal",
+          "parameters": [
+           {
+            "_type": "column",
+            "column": "CUSTOMER_ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "ORDERS"
+            },
+            "tableAlias": "ORDERS"
+           },
+           {
+            "_type": "column",
+            "column": "ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "CUSTOMERS"
+            },
+            "tableAlias": "CUSTOMERS"
+           }
+          ]
+         }
+        }
+       ],
+       "name": "SalesDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "SALES",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "NAME",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            },
+            {
+             "name": "COUNTRY",
+             "nullable": true,
+             "type": {
+              "_type": "Varchar",
+              "size": 20
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "CUSTOMERS",
+           "primaryKey": [
+            "ID"
+           ]
+          },
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "CUSTOMER_ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "ORDER_DATE",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS",
+           "primaryKey": [
+            "ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::ArchiveDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "ArchiveDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "ARCHIVE",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS_2025",
+           "primaryKey": [
+            "ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::PlannedDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "PlannedDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "PLANNED",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "MONTH",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": true,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "FORECASTS",
+           "primaryKey": [
+            "MONTH"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists SALES cascade",
+          "create schema SALES",
+          "create table SALES.CUSTOMERS (ID INTEGER PRIMARY KEY, NAME VARCHAR(40) NOT NULL, COUNTRY VARCHAR(20))",
+          "insert into SALES.CUSTOMERS values (1, 'Acme', 'France'), (2, 'Globex', 'Germany'), (3, 'Initech', NULL), (4, 'Umbrella', 'France')",
+          "create table SALES.ORDERS (ID INTEGER PRIMARY KEY, CUSTOMER_ID INTEGER NOT NULL, ORDER_DATE DATE NOT NULL, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into SALES.ORDERS values (1, 1, DATE '2026-01-05', 120.50), (2, 1, DATE '2026-01-19', 75.00), (3, 2, DATE '2026-02-02', 310.25), (4, 3, DATE '2026-02-14', 42.10), (5, 2, DATE '2026-03-01', 980.00), (6, 4, DATE '2026-03-09', 15.99)"
+         ]
+        },
+        "element": "cube::samples::sales::store::SalesDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "SalesConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00), (3, 30.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveReplicaConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "SalesRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::SalesDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::SalesConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveReplicaRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveReplicaConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     }
+    ]
+   },
+   {
+    "versionId": "1.9.0",
+    "dependencies": [
+     {
+      "groupId": "org.finos.legend.cube.samples",
+      "artifactId": "cube-reference",
+      "versionId": "1.0.0"
+     }
+    ],
+    "entities": [
+     {
+      "path": "cube::samples::sales::store::SalesDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [
+        {
+         "name": "ORDER_CUSTOMER",
+         "operation": {
+          "_type": "dynaFunc",
+          "funcName": "equal",
+          "parameters": [
+           {
+            "_type": "column",
+            "column": "CUSTOMER_ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "ORDERS"
+            },
+            "tableAlias": "ORDERS"
+           },
+           {
+            "_type": "column",
+            "column": "ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "CUSTOMERS"
+            },
+            "tableAlias": "CUSTOMERS"
+           }
+          ]
+         }
+        }
+       ],
+       "name": "SalesDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "SALES",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "NAME",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            },
+            {
+             "name": "COUNTRY",
+             "nullable": true,
+             "type": {
+              "_type": "Varchar",
+              "size": 20
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "CUSTOMERS",
+           "primaryKey": [
+            "ID"
+           ]
+          },
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "CUSTOMER_ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "ORDER_DATE",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            },
+            {
+             "name": "STATUS",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 10
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS",
+           "primaryKey": [
+            "ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::ArchiveDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "ArchiveDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "ARCHIVE",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS_2025",
+           "primaryKey": [
+            "ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::PlannedDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "PlannedDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "PLANNED",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "MONTH",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": true,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "FORECASTS",
+           "primaryKey": [
+            "MONTH"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists SALES cascade",
+          "create schema SALES",
+          "create table SALES.CUSTOMERS (ID INTEGER PRIMARY KEY, NAME VARCHAR(40) NOT NULL, COUNTRY VARCHAR(20))",
+          "insert into SALES.CUSTOMERS values (1, 'Acme', 'France'), (2, 'Globex', 'Germany'), (3, 'Initech', NULL), (4, 'Umbrella', 'France')",
+          "create table SALES.ORDERS (ID INTEGER PRIMARY KEY, CUSTOMER_ID INTEGER NOT NULL, ORDER_DATE DATE NOT NULL, AMOUNT DECIMAL(12,2) NOT NULL, STATUS VARCHAR(10) NOT NULL)",
+          "insert into SALES.ORDERS values (1, 1, DATE '2026-01-05', 120.50, 'SHIPPED'), (2, 1, DATE '2026-01-19', 75.00, 'SHIPPED'), (3, 2, DATE '2026-02-02', 310.25, 'OPEN'), (4, 3, DATE '2026-02-14', 42.10, 'CANCELLED'), (5, 2, DATE '2026-03-01', 980.00, 'SHIPPED'), (6, 4, DATE '2026-03-09', 15.99, 'OPEN')"
+         ]
+        },
+        "element": "cube::samples::sales::store::SalesDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "SalesConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00), (3, 30.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveReplicaConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "SalesRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::SalesDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::SalesConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveReplicaRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveReplicaConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     }
+    ]
+   },
+   {
+    "versionId": "1.10.0",
+    "dependencies": [
+     {
+      "groupId": "org.finos.legend.cube.samples",
+      "artifactId": "cube-reference",
+      "versionId": "1.0.0"
+     }
+    ],
+    "entities": [
+     {
+      "path": "cube::samples::sales::store::SalesDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [
+        {
+         "name": "ORDER_CUSTOMER",
+         "operation": {
+          "_type": "dynaFunc",
+          "funcName": "equal",
+          "parameters": [
+           {
+            "_type": "column",
+            "column": "CUSTOMER_ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "ORDERS"
+            },
+            "tableAlias": "ORDERS"
+           },
+           {
+            "_type": "column",
+            "column": "ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "CUSTOMERS"
+            },
+            "tableAlias": "CUSTOMERS"
+           }
+          ]
+         }
+        }
+       ],
+       "name": "SalesDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "SALES",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "NAME",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            },
+            {
+             "name": "COUNTRY",
+             "nullable": true,
+             "type": {
+              "_type": "Varchar",
+              "size": 20
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "CUSTOMERS",
+           "primaryKey": [
+            "ID"
+           ]
+          },
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "CUSTOMER_ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "ORDER_DATE",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            },
+            {
+             "name": "STATUS",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 10
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS",
+           "primaryKey": [
+            "ID"
+           ]
+          },
+          {
+           "columns": [
+            {
+             "name": "ORDER_ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "REASON",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "RETURNS",
+           "primaryKey": [
+            "ORDER_ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::ArchiveDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "ArchiveDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "ARCHIVE",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS_2025",
+           "primaryKey": [
+            "ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::PlannedDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "PlannedDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "PLANNED",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "MONTH",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": true,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "FORECASTS",
+           "primaryKey": [
+            "MONTH"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists SALES cascade",
+          "create schema SALES",
+          "create table SALES.CUSTOMERS (ID INTEGER PRIMARY KEY, NAME VARCHAR(40) NOT NULL, COUNTRY VARCHAR(20))",
+          "insert into SALES.CUSTOMERS values (1, 'Acme', 'France'), (2, 'Globex', 'Germany'), (3, 'Initech', NULL), (4, 'Umbrella', 'France')",
+          "create table SALES.ORDERS (ID INTEGER PRIMARY KEY, CUSTOMER_ID INTEGER NOT NULL, ORDER_DATE DATE NOT NULL, AMOUNT DECIMAL(12,2) NOT NULL, STATUS VARCHAR(10) NOT NULL)",
+          "insert into SALES.ORDERS values (1, 1, DATE '2026-01-05', 120.50, 'SHIPPED'), (2, 1, DATE '2026-01-19', 75.00, 'SHIPPED'), (3, 2, DATE '2026-02-02', 310.25, 'OPEN'), (4, 3, DATE '2026-02-14', 42.10, 'CANCELLED'), (5, 2, DATE '2026-03-01', 980.00, 'SHIPPED'), (6, 4, DATE '2026-03-09', 15.99, 'OPEN')",
+          "create table SALES.RETURNS (ORDER_ID INTEGER PRIMARY KEY, REASON VARCHAR(40) NOT NULL)",
+          "insert into SALES.RETURNS values (2, 'Damaged'), (5, 'Wrong size')"
+         ]
+        },
+        "element": "cube::samples::sales::store::SalesDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "SalesConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00), (3, 30.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveReplicaConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "SalesRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::SalesDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::SalesConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveReplicaRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveReplicaConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     }
+    ]
+   },
+   {
+    "versionId": "master-SNAPSHOT",
+    "dependencies": [
+     {
+      "groupId": "org.finos.legend.cube.samples",
+      "artifactId": "cube-reference",
+      "versionId": "1.0.0"
+     }
+    ],
+    "entities": [
+     {
+      "path": "cube::samples::sales::store::SalesDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [
+        {
+         "name": "ORDER_CUSTOMER",
+         "operation": {
+          "_type": "dynaFunc",
+          "funcName": "equal",
+          "parameters": [
+           {
+            "_type": "column",
+            "column": "CUSTOMER_ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "ORDERS"
+            },
+            "tableAlias": "ORDERS"
+           },
+           {
+            "_type": "column",
+            "column": "ID",
+            "table": {
+             "_type": "Table",
+             "database": "cube::samples::sales::store::SalesDb",
+             "mainTableDb": "cube::samples::sales::store::SalesDb",
+             "schema": "SALES",
+             "table": "CUSTOMERS"
+            },
+            "tableAlias": "CUSTOMERS"
+           }
+          ]
+         }
+        }
+       ],
+       "name": "SalesDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "SALES",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "NAME",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            },
+            {
+             "name": "COUNTRY",
+             "nullable": true,
+             "type": {
+              "_type": "Varchar",
+              "size": 20
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "CUSTOMERS",
+           "primaryKey": [
+            "ID"
+           ]
+          },
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "CUSTOMER_ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "ORDER_DATE",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            },
+            {
+             "name": "STATUS",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 10
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS",
+           "primaryKey": [
+            "ID"
+           ]
+          },
+          {
+           "columns": [
+            {
+             "name": "ORDER_ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "REASON",
+             "nullable": false,
+             "type": {
+              "_type": "Varchar",
+              "size": 40
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "RETURNS",
+           "primaryKey": [
+            "ORDER_ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::ArchiveDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "ArchiveDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "ARCHIVE",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "ID",
+             "nullable": false,
+             "type": {
+              "_type": "Integer"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": false,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "ORDERS_2025",
+           "primaryKey": [
+            "ID"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::store::PlannedDb",
+      "classifierPath": "meta::relational::metamodel::Database",
+      "content": {
+       "_type": "relational",
+       "filters": [],
+       "includedStores": [],
+       "joins": [],
+       "name": "PlannedDb",
+       "package": "cube::samples::sales::store",
+       "schemas": [
+        {
+         "name": "PLANNED",
+         "tables": [
+          {
+           "columns": [
+            {
+             "name": "MONTH",
+             "nullable": false,
+             "type": {
+              "_type": "Date"
+             }
+            },
+            {
+             "name": "AMOUNT",
+             "nullable": true,
+             "type": {
+              "_type": "Decimal",
+              "precision": 12,
+              "scale": 2
+             }
+            }
+           ],
+           "milestoning": [],
+           "name": "FORECASTS",
+           "primaryKey": [
+            "MONTH"
+           ]
+          }
+         ],
+         "tabularFunctions": [],
+         "views": []
+        }
+       ],
+       "stereotypes": []
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists SALES cascade",
+          "create schema SALES",
+          "create table SALES.CUSTOMERS (ID INTEGER PRIMARY KEY, NAME VARCHAR(40) NOT NULL, COUNTRY VARCHAR(20))",
+          "insert into SALES.CUSTOMERS values (1, 'Acme', 'France'), (2, 'Globex', 'Germany'), (3, 'Initech', NULL), (4, 'Umbrella', 'France')",
+          "create table SALES.ORDERS (ID INTEGER PRIMARY KEY, CUSTOMER_ID INTEGER NOT NULL, ORDER_DATE DATE NOT NULL, AMOUNT DECIMAL(12,2) NOT NULL, STATUS VARCHAR(10) NOT NULL)",
+          "insert into SALES.ORDERS values (1, 1, DATE '2026-01-05', 120.50, 'SHIPPED'), (2, 1, DATE '2026-01-19', 75.00, 'SHIPPED'), (3, 2, DATE '2026-02-02', 310.25, 'OPEN'), (4, 3, DATE '2026-02-14', 42.10, 'CANCELLED'), (5, 2, DATE '2026-03-01', 980.00, 'SHIPPED'), (6, 4, DATE '2026-03-09', 15.99, 'OPEN')",
+          "create table SALES.RETURNS (ORDER_ID INTEGER PRIMARY KEY, REASON VARCHAR(40) NOT NULL)",
+          "insert into SALES.RETURNS values (2, 'Damaged'), (5, 'Wrong size')"
+         ]
+        },
+        "element": "cube::samples::sales::store::SalesDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "SalesConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00), (3, 30.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaConnection",
+      "classifierPath": "meta::pure::runtime::PackageableConnection",
+      "content": {
+       "_type": "connection",
+       "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+         "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+         "_type": "h2Local",
+         "testDataSetupSqls": [
+          "drop schema if exists ARCHIVE cascade",
+          "create schema ARCHIVE",
+          "create table ARCHIVE.ORDERS_2025 (ID INTEGER PRIMARY KEY, AMOUNT DECIMAL(12,2) NOT NULL)",
+          "insert into ARCHIVE.ORDERS_2025 values (1, 10.00), (2, 20.00)"
+         ]
+        },
+        "element": "cube::samples::sales::store::ArchiveDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+       },
+       "name": "ArchiveReplicaConnection",
+       "package": "cube::samples::sales"
+      }
+     },
+     {
+      "path": "cube::samples::sales::SalesRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "SalesRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::SalesDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::SalesConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     },
+     {
+      "path": "cube::samples::sales::ArchiveReplicaRuntime",
+      "classifierPath": "meta::pure::runtime::PackageableRuntime",
+      "content": {
+       "_type": "runtime",
+       "name": "ArchiveReplicaRuntime",
+       "package": "cube::samples::sales",
+       "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+         {
+          "store": {
+           "path": "cube::samples::sales::store::ArchiveDb",
+           "type": "STORE"
+          },
+          "storeConnections": [
+           {
+            "connection": {
+             "_type": "connectionPointer",
+             "connection": "cube::samples::sales::ArchiveReplicaConnection"
+            },
+            "id": "connection_1"
+           }
+          ]
+         }
+        ],
+        "mappings": []
+       }
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

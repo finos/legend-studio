@@ -29,6 +29,13 @@ import { V1_parseCubeSourceId } from './V1_CubeLambdaSerializer.js';
 
 const COMPILATION_ERROR_TYPES = new Set(['COMPILATION', 'PARSER']);
 
+/**
+ * The engine's message when it can't fetch a pointer's project, e.g. a depot
+ * that is down or a version it doesn't have: HTML, with the URL it tried
+ */
+const DEPOT_FAILURE =
+  /unable to load information from the Pure SDLC(?: using: <a href='(?<url>[^']*)')?/u;
+
 /** The engine's error payload: `{message, errorType?, sourceInformation?, trace?}` */
 const readPayload = (
   payload: unknown,
@@ -40,12 +47,15 @@ const readPayload = (
   if (typeof message !== 'string' || !message.trim()) {
     return undefined;
   }
+  const depotFailure = DEPOT_FAILURE.exec(message);
   const sourceId =
     sourceInformation && typeof sourceInformation === 'object'
       ? (sourceInformation as PlainObject).sourceId
       : undefined;
   return {
-    message,
+    message: depotFailure
+      ? `The engine couldn't load the cube's project from its depot${depotFailure.groups?.url ? ` (${depotFailure.groups.url})` : ''}: check that the version is published and the depot can be reached`
+      : message,
     ...(typeof errorType === 'string' ? { errorType } : {}),
     ...(typeof sourceId === 'string' ? { sourceId } : {}),
   };

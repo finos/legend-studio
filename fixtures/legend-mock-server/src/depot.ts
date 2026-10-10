@@ -23,6 +23,14 @@ import {
   PMCD,
   PROJECT_DATA,
 } from './depot-data.js';
+import {
+  CUBE_PROJECT_CONFIGURATIONS,
+  findCubeProject,
+  findCubeProjectVersion,
+  getCubeProjectDependencies,
+  getCubeProjectModel,
+  getCubeProjectVersions,
+} from './cube-depot.js';
 
 const PORT = 6200;
 const API_BASE_URL = '/depot/api';
@@ -41,6 +49,12 @@ server.get(`${API_BASE_URL}/info`, async (request, reply) => {
   await reply.send({ status: 'ok' });
 });
 
+// the projects a project list shows: Legend Cube's samples, whose versions
+// and models it serves in full (the test project's answers ignore the version)
+server.get(`${API_BASE_URL}/project-configurations`, async (request, reply) => {
+  await reply.send(CUBE_PROJECT_CONFIGURATIONS);
+});
+
 server.get<
   RequestGenericInterface & {
     Params: {
@@ -51,7 +65,39 @@ server.get<
 >(
   `${API_BASE_URL}/project-configurations/:groupId/:artifactId`,
   async (request, reply) => {
-    await reply.send(PROJECT_DATA);
+    const { groupId, artifactId } = request.params;
+    const cubeProject = findCubeProject(groupId, artifactId);
+    await reply.send(
+      cubeProject
+        ? CUBE_PROJECT_CONFIGURATIONS.find(
+            (project) => project.projectId === cubeProject.projectId,
+          )
+        : PROJECT_DATA,
+    );
+  },
+);
+
+// a project's versions: Legend Cube's samples only
+server.get<
+  RequestGenericInterface & {
+    Params: {
+      groupId: string;
+      artifactId: string;
+    };
+    Querystring: { snapshots?: string };
+  }
+>(
+  `${API_BASE_URL}/projects/:groupId/:artifactId/versions`,
+  async (request, reply) => {
+    const { groupId, artifactId } = request.params;
+    const cubeProject = findCubeProject(groupId, artifactId);
+    if (!cubeProject) {
+      await reply.code(404).send({ message: 'No such project' });
+      return;
+    }
+    await reply.send(
+      getCubeProjectVersions(cubeProject, request.query.snapshots === 'true'),
+    );
   },
 );
 
@@ -65,7 +111,14 @@ server.get<
 >(
   `${API_BASE_URL}/versions/:groupId/:artifactId/latest`,
   async (request, reply) => {
-    await reply.send(PROJECT_DATA);
+    const { groupId, artifactId } = request.params;
+    const cubeProject = findCubeProject(groupId, artifactId);
+    const latest = cubeProject && findCubeProjectVersion(cubeProject, 'latest');
+    await reply.send(
+      cubeProject && latest
+        ? { groupId, artifactId, versionId: latest.versionId }
+        : PROJECT_DATA,
+    );
   },
 );
 
@@ -80,7 +133,11 @@ server.get<
 >(
   `${API_BASE_URL}/projects/:groupId/:artifactId/versions/:versionId/dependencies`,
   async (request, reply) => {
-    await reply.send([]);
+    const { groupId, artifactId, versionId } = request.params;
+    const cubeProject = findCubeProject(groupId, artifactId);
+    const version =
+      cubeProject && findCubeProjectVersion(cubeProject, versionId);
+    await reply.send(version ? getCubeProjectDependencies(version) : []);
   },
 );
 
@@ -95,7 +152,18 @@ server.get<
 >(
   `${API_BASE_URL}/projects/:groupId/:artifactId/versions/:versionId`,
   async (request, reply) => {
-    await reply.send(ENTITIES);
+    const { groupId, artifactId, versionId } = request.params;
+    const cubeProject = findCubeProject(groupId, artifactId);
+    if (!cubeProject) {
+      await reply.send(ENTITIES);
+      return;
+    }
+    const version = findCubeProjectVersion(cubeProject, versionId);
+    if (!version) {
+      await reply.code(404).send({ message: 'No such version' });
+      return;
+    }
+    await reply.send(version.entities);
   },
 );
 
@@ -106,11 +174,30 @@ server.get<
       artifactId: string;
       versionId: string;
     };
+    Querystring: { getDependencies?: string };
   }
 >(
   `${API_BASE_URL}/projects/:groupId/:artifactId/versions/:versionId/pureModelContextData`,
   async (request, reply) => {
-    await reply.send(PMCD);
+    const { groupId, artifactId, versionId } = request.params;
+    const cubeProject = findCubeProject(groupId, artifactId);
+    if (!cubeProject) {
+      await reply.send(PMCD);
+      return;
+    }
+    const version = findCubeProjectVersion(cubeProject, versionId);
+    if (!version) {
+      await reply.code(404).send({ message: 'No such version' });
+      return;
+    }
+    // with its dependencies unless asked not to, as the engine's fetch expects
+    await reply.send(
+      getCubeProjectModel(
+        cubeProject,
+        version,
+        request.query.getDependencies !== 'false',
+      ),
+    );
   },
 );
 

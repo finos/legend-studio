@@ -78,7 +78,7 @@ import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
-import type { CubeHost } from './CubeHost.js';
+import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
@@ -359,7 +359,8 @@ export class CubeEditorState implements CommandRegistrar {
       return;
     }
     try {
-      const outline = (yield this.host.modelCatalog.loadOutline(
+      const outline = (yield loadCubeModelOutline(
+        this.host,
         model,
       )) as CubeModelOutline;
       this.modelOutlines = new Map([...this.modelOutlines, [model, outline]]);

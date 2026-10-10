@@ -49,6 +49,8 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
   and `getCubeRememberedWarehouse`;
 - ingest data sets: everything in `CubeIngest.ts` (the model kind, its runtime path, the saved settings) and
   `CubeIngestCatalog.ts` (the catalog port and its classes), with `buildCubeIngestCatalog`;
+- published projects: everything in `CubeProject.ts` (the pointer model and its checks) and `CubeProjectCatalog.ts`
+  (the catalog port), with `buildCubeProjectCatalog`;
 - `LocalModelCatalog` and `BUNDLED_MODELS`;
 - `LEGEND_CUBE_COMMAND_CONFIG` and `LEGEND_CUBE_COMMAND_KEY`, the page's shortcuts;
 - `LEGEND_CUBE_TEST_ID`;
@@ -71,6 +73,10 @@ A new kind of source needs, in the core, a `SourceDefinition` (node, codec, emit
 builder, a tab, a Source panel editor, help text and an icon, and its branch in the engine's implementation, which
 builds the model each call runs on from the cube's saved model kind (`src/graph-manager/CubeDirectConnection.ts`,
 `CubeDataProduct.ts` and `CubeIngest.ts` are the examples).
+
+Tables of a published project's Databases come through the Project tab (PLAN §6.3), which extends the Model tab: the
+cube saves the engine's pointer to the project at a released version, and the host's `projectCatalog` lists projects,
+versions and outlines from its depot.
 
 ## Samples and examples
 

@@ -42,6 +42,7 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import { getRuntimesForDatabase } from '../../graph-manager/CubeModelOutlineHelper.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { loadCubeModelOutline } from '../CubeHost.js';
 import { type BundledModel, createTextModel } from '../LocalModelCatalog.js';
 import {
   type CubeSourcePickerTab,
@@ -66,9 +67,8 @@ export const isTableSelectable = (table: CubeOutlineTable): boolean =>
  * It serves every cube no other tab claims, e.g. one on Pure text.
  */
 export class CubeInlineModelTabState implements CubeSourcePickerTab {
-  readonly key = CubeSourcePickerTabKey.MODEL;
-  readonly label = 'Model';
-  readonly isAvailable = true;
+  readonly key: CubeSourcePickerTabKey = CubeSourcePickerTabKey.MODEL;
+  readonly label: string = 'Model';
   readonly editorState: CubeEditorState;
 
   model: ModelContext | undefined;
@@ -190,12 +190,17 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     );
   }
 
+  /** The host serves the tab: it always serves models */
+  get isAvailable(): boolean {
+    return true;
+  }
+
   get isBusy(): boolean {
     return this.isLoadingModel || this.isResolving;
   }
 
   /** The tab claims no cube: the dialog gives it every cube no other tab claims */
-  ownsContext(): boolean {
+  ownsContext(context: CubeContext): boolean {
     return false;
   }
 
@@ -290,7 +295,8 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     this.resetFrom('database');
     this.isLoadingModel = true;
     try {
-      const outline = (yield this.editorState.host.modelCatalog.loadOutline(
+      const outline = (yield loadCubeModelOutline(
+        this.editorState.host,
         model,
       )) as CubeModelOutline;
       if (this.model !== model) {
@@ -428,7 +434,7 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     }
   }
 
-  private resetFrom(step: 'database' | 'runtime' | 'table'): void {
+  protected resetFrom(step: 'database' | 'runtime' | 'table'): void {
     if (step === 'database') {
       this.databasePath = undefined;
     }

@@ -15,10 +15,22 @@
  */
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { ModelContext } from '@finos/legend-cube';
 import type { CubeConnectionExplorer } from '../graph-manager/CubeConnectionExplorer.js';
 import type { CubeDataProductCatalog } from '../graph-manager/CubeDataProductCatalog.js';
 import type { CubeIngestCatalog } from '../graph-manager/CubeIngestCatalog.js';
-import type { CubeEngine } from '../graph-manager/CubeEngine.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+  type CubeEngine,
+  type CubeModelOutline,
+} from '../graph-manager/CubeEngine.js';
+import {
+  checkCubeProjectModel,
+  getCubeProjectCoordinates,
+  isCubeProjectModel,
+} from '../graph-manager/CubeProject.js';
+import type { CubeProjectCatalog } from '../graph-manager/CubeProjectCatalog.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
 /**
@@ -47,4 +59,44 @@ export interface CubeHost {
    * dialog offers no ingest data sets
    */
   readonly ingestCatalog?: CubeIngestCatalog | undefined;
+  /**
+   * The published projects in the host's depot (PLAN §6.3); without one, the
+   * source dialog offers no projects
+   */
+  readonly projectCatalog?: CubeProjectCatalog | undefined;
 }
+
+/** Why the host can't list a project model's Databases */
+const NO_PROJECT_CATALOG =
+  "This page can't read published projects: its host has no depot";
+
+/**
+ * A model's databases and runtimes, wherever its kind keeps them: a
+ * project's in the host's depot (PLAN §6.3), any other through the model
+ * catalog's engine
+ */
+export const loadCubeModelOutline = (
+  host: CubeHost,
+  model: ModelContext,
+): Promise<CubeModelOutline> => {
+  if (!isCubeProjectModel(model)) {
+    return host.modelCatalog.loadOutline(model);
+  }
+  const project = getCubeProjectCoordinates(model);
+  if (!project) {
+    return Promise.reject(
+      new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        checkCubeProjectModel(model).join('\n'),
+      ),
+    );
+  }
+  return host.projectCatalog
+    ? host.projectCatalog.loadOutline(project)
+    : Promise.reject(
+        new CubeEngineError(
+          CubeEngineErrorKind.UNSUPPORTED_MODEL,
+          NO_PROJECT_CATALOG,
+        ),
+      );
+};

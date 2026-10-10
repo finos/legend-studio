@@ -31,10 +31,12 @@ import type {
 import type { CubeEngine } from '../../CubeEngine.js';
 import type { CubeIngestCatalog } from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
+import type { CubeProjectCatalog } from '../../CubeProjectCatalog.js';
 import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnvironmentResolver.js';
 import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
 import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCatalog.js';
 import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
+import { V1_LegendCubeProjectCatalog } from './v1/V1_LegendCubeProjectCatalog.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -122,6 +124,15 @@ export const buildCubeDataProductCatalog = (
       enterpriseStereotype: services.enterpriseStereotype,
     },
   );
+
+/**
+ * The published projects a cube reads Databases from (PLAN §6.3), through
+ * the host's depot. It reads nothing until the source dialog's Project tab
+ * asks
+ */
+export const buildCubeProjectCatalog = (
+  depotServerClient: DepotServerClient,
+): CubeProjectCatalog => new V1_LegendCubeProjectCatalog(depotServerClient);
 
 /** The viewer's lakehouse environment, which the engine needs to run data product cubes */
 export const buildCubeLakehouseEnvironment = (
