@@ -15,11 +15,19 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { CubeDocument, RelationalTableSource } from '@finos/legend-cube';
+import {
+  Connection,
+  CubeDocument,
+  Limit,
+  Query,
+  RelationalTableSource,
+} from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import {
   NORTHWIND_DATABASE,
   NORTHWIND_RUNTIME,
+  northwindTable,
+  ORDERS_COLUMNS,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
@@ -193,11 +201,31 @@ describe('Project tab', () => {
       versionId: '1.10.0',
     });
     const { state, projects, fake } = setUp(
-      new CubeDocument().withContext({ model, runtime: NORTHWIND_RUNTIME }),
+      new CubeDocument({
+        context: { model, runtime: NORTHWIND_RUNTIME },
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Limit('limit101', 5),
+          ],
+          [new Connection('relational101', 'limit101', 'tds')],
+          'limit101',
+        ),
+      }),
     );
-    await flowResult(state.loadModelOutline());
+    // a run with a Limit reads the outline first, for its database type
+    await flowResult(state.execution.execute());
     expect(projects.loadOutline).toHaveBeenCalledTimes(1);
     expect(fake.loadModel).not.toHaveBeenCalled();
     expect(state.getModelOutline(model)).toBe(FAKE_SALES_OUTLINE);
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+    expect(
+      state.getRunDatabaseType(
+        state.document.query,
+        'limit101',
+        model,
+        NORTHWIND_RUNTIME,
+      ),
+    ).toBe('H2');
   });
 });

@@ -49,9 +49,10 @@ server.get(`${API_BASE_URL}/info`, async (request, reply) => {
   await reply.send({ status: 'ok' });
 });
 
-// every project: the test project and Legend Cube's samples
+// the projects a project list shows: Legend Cube's samples, whose versions
+// and models it serves in full (the test project's answers ignore the version)
 server.get(`${API_BASE_URL}/project-configurations`, async (request, reply) => {
-  await reply.send([PROJECT_DATA, ...CUBE_PROJECT_CONFIGURATIONS]);
+  await reply.send(CUBE_PROJECT_CONFIGURATIONS);
 });
 
 server.get<

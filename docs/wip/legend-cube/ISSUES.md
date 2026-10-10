@@ -367,6 +367,9 @@ deployment (PLAN §11.2 Part B2).
 
 - **Scale is unmeasured.** The project list isn't paged and has no search, and a version's first typing call compiles
   the project with its dependencies. Neither was measured at a real depot's size.
+- **An outline downloads the version's whole model twice,** with and without its dependencies, in the browser. On a
+  project with a large dependency closure the Project tab could be slow: the first thing to watch when testing
+  deployed. The follow-up is the requirements' smaller classifier GETs (Databases and runtimes only).
 - **The mock copies Studio's depot client.** The real depot's answers for versions (`snapshots=false`), `latest` and
   its wrappers weren't checked in a deployment.
 - **No CI test sends a pointer:** CI runs no depot. The `cube-local` group does, by hand.

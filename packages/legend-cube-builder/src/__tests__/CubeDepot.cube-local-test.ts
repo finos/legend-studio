@@ -117,6 +117,12 @@ describe('Depot databases, through the mock depot and the engine', () => {
         (database) => getRuntimesForDatabase(outline, database).length,
       ),
     ).toEqual([1, 2, 0]);
+    // the connections' database type, which the database workarounds read (PLAN §11.4)
+    expect(
+      getRuntimesForDatabase(outline, SALES_DB).flatMap(
+        (runtime) => runtime.connections ?? [],
+      ),
+    ).toEqual([{ storePath: SALES_DB, databaseType: 'H2' }]);
   });
 
   test('Types tables at the version the pointer names', async () => {
@@ -224,5 +230,17 @@ describe('Depot databases, through the mock depot and the engine', () => {
     expect(state.document.context?.model).toEqual(pointerAt('1.10.0'));
     await flowResult(state.execution.execute());
     expect(state.execution.result?.rows).toHaveLength(6);
+    // the cube's outline, loaded from the depot, gives a run its database type
+    const context = state.document.context;
+    await flowResult(state.loadModelOutline());
+    expect(
+      context &&
+        state.getRunDatabaseType(
+          state.document.query,
+          'relational101',
+          context.model,
+          context.runtime ?? '',
+        ),
+    ).toBe('H2');
   });
 });

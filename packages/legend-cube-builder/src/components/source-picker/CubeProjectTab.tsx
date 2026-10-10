@@ -34,7 +34,8 @@ export const CubeProjectTab = observer(
   (props: { tab: CubeProjectTabState }) => {
     const { tab } = props;
     const { applicationStore } = tab.editorState.host;
-    const isFixed = tab.fixedProjectKey !== undefined;
+    // the cube's model is fixed, even one Cube can't read as a project
+    const isFixed = tab.fixedContext !== undefined;
     const noRuntime =
       tab.databasePath !== undefined &&
       !tab.isLoadingModel &&
