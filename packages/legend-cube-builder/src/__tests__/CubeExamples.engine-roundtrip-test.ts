@@ -112,6 +112,8 @@ const ROW_COUNTS = new Map([
   ['sports-top-watched', 10],
   // the desks' nine pairs of desk and asset class
   ['trades-notional-by-desk', 9],
+  // the six desks, each ranked within its region
+  ['trades-desk-league', 6],
   ['trades-largest-buys', 20],
 ]);
 

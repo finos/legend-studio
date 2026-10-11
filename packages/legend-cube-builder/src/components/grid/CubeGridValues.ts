@@ -123,3 +123,58 @@ export const formatDuration = (durationMs: number): string =>
   durationMs < 1000
     ? `${Math.round(durationMs)} ms`
     : `${(durationMs / 1000).toFixed(1)} s`;
+
+/** The decimal places a Float value shows in the grid */
+export const CUBE_GRID_FLOAT_DECIMAL_PLACES = 2;
+
+const PLAIN_NUMBER_TEXT = /^(?<sign>-?)(?<whole>\d+)(?<fraction>\.\d*)?$/u;
+
+/**
+ * Number text with a comma between each group of three digits of its whole
+ * part ("31102024.71" reads "31,102,024.71"); any other text is kept as it is
+ */
+export const groupThousands = (text: string): string => {
+  const groups = PLAIN_NUMBER_TEXT.exec(text)?.groups;
+  if (!groups) {
+    return text;
+  }
+  const { sign = '', whole = '', fraction = '' } = groups;
+  return `${sign}${whole.replace(/\B(?=(?:\d{3})+(?!\d))/gu, ',')}${fraction}`;
+};
+
+/**
+ * How the grid shows a value of a column of the family (PLAN §9, user,
+ * 2026-10-10): Decimal and Number values keep every digit,
+ * their thousands grouped; Float values are rounded to
+ * `CUBE_GRID_FLOAT_DECIMAL_PLACES` places, grouped too; Integer values, and
+ * everything else, show as they are, so ids and years get no commas. The
+ * value itself is unchanged, so copying a cell copies its exact value.
+ */
+export const formatCellValue = (
+  value: Exclude<CubeResultValue, null>,
+  family: TypeFamily,
+): string => {
+  const text = String(value);
+  switch (family) {
+    case TypeFamily.DECIMAL:
+    case TypeFamily.NUMBER:
+      return groupThousands(text);
+    case TypeFamily.FLOAT: {
+      const number = typeof value === 'number' ? value : Number(text);
+      if (
+        typeof value === 'boolean' ||
+        text.trim() === '' ||
+        !Number.isFinite(number)
+      ) {
+        return text;
+      }
+      const rounded = number.toFixed(CUBE_GRID_FLOAT_DECIMAL_PLACES);
+      // a value that rounds to zero shows no sign
+      return groupThousands(
+        Number(rounded) === 0 ? rounded.replace(/^-/u, '') : rounded,
+      );
+    }
+    default:
+      return text;
+  }
+};

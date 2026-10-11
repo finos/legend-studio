@@ -19,7 +19,9 @@ import { TypeFamily } from '@finos/legend-cube';
 import {
   compareCellValues,
   compareNumberText,
+  formatCellValue,
   formatDuration,
+  groupThousands,
   isNumericFamily,
 } from '../CubeGridValues.js';
 
@@ -88,5 +90,43 @@ describe('Cube grid values', () => {
   test('Shows a run time in milliseconds under a second, else in seconds', () => {
     expect(formatDuration(566.4)).toBe('566 ms');
     expect(formatDuration(1250)).toBe('1.3 s');
+  });
+
+  test('Groups the thousands of a number written as text, keeping every digit and the sign', () => {
+    expect(groupThousands('31102024.71')).toBe('31,102,024.71');
+    expect(groupThousands('-1234.5')).toBe('-1,234.5');
+    expect(groupThousands('1000')).toBe('1,000');
+    expect(groupThousands('999')).toBe('999');
+    expect(groupThousands('0.123456789')).toBe('0.123456789');
+    expect(groupThousands('9007199254740993')).toBe('9,007,199,254,740,993');
+    // anything else is kept as it is
+    expect(groupThousands('1.5e21')).toBe('1.5e21');
+    expect(groupThousands('abc')).toBe('abc');
+    expect(groupThousands('')).toBe('');
+  });
+
+  test('Shows Decimal and Number values grouped with every digit, Float values grouped and rounded to 2 places, and the rest as they are', () => {
+    expect(formatCellValue('31102024.71', TypeFamily.DECIMAL)).toBe(
+      '31,102,024.71',
+    );
+    expect(formatCellValue('12.300', TypeFamily.DECIMAL)).toBe('12.300');
+    expect(formatCellValue('1234567', TypeFamily.NUMBER)).toBe('1,234,567');
+    expect(formatCellValue(31.10202471, TypeFamily.FLOAT)).toBe('31.10');
+    expect(formatCellValue(1234567.891, TypeFamily.FLOAT)).toBe('1,234,567.89');
+    expect(formatCellValue(-2.005, TypeFamily.FLOAT)).toBe('-2.00');
+    expect(formatCellValue(5124, TypeFamily.FLOAT)).toBe('5,124.00');
+    // a Float written as text reads the same
+    expect(formatCellValue('0.5', TypeFamily.FLOAT)).toBe('0.50');
+    // rounded to zero, with no sign
+    expect(formatCellValue(-0.001, TypeFamily.FLOAT)).toBe('0.00');
+    // what isn't a finite number is kept
+    expect(formatCellValue(Number.NaN, TypeFamily.FLOAT)).toBe('NaN');
+    expect(formatCellValue(1e21, TypeFamily.FLOAT)).toBe('1e+21');
+    expect(formatCellValue('n/a', TypeFamily.FLOAT)).toBe('n/a');
+    // ids and years get no commas
+    expect(formatCellValue('10692', TypeFamily.INTEGER)).toBe('10692');
+    expect(formatCellValue('2026', TypeFamily.INTEGER)).toBe('2026');
+    expect(formatCellValue('31102024', TypeFamily.STRING)).toBe('31102024');
+    expect(formatCellValue(true, TypeFamily.BOOLEAN)).toBe('true');
   });
 });

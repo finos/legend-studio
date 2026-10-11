@@ -309,7 +309,7 @@ describe('Cube keyboard shortcuts', () => {
       (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
     ).toBe('true');
     rowLimit.blur();
-    fireEvent.click(within(graph()).getByText('Import (dev)'));
+    fireEvent.click(within(graph()).getByText('Import'));
     await screen.findByRole('dialog');
     pressUndo();
     expect(

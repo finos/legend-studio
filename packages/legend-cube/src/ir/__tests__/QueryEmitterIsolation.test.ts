@@ -153,6 +153,37 @@ describe(unitTest('Query emission: window isolation'), () => {
     );
   });
 
+  test('Writes no limit of its own when no row limit is given, as Show Pure shows the query, in either form', () => {
+    const show = (query: Query): string =>
+      printIR(
+        new QueryEmitter(query, registry()).emitExecutionLambda({
+          runtime: RUNTIME,
+        }),
+      );
+    expect(show(chain(france('filter101')))).toBe(
+      `{| ${ORDERS}${FRANCE}->from(${RUNTIME})}`,
+    );
+    expect(
+      show(chain(new TestWindowNode('window101'), france('filter101'))),
+    ).toBe(
+      `{| {| let n_window101 = ${ORDERS}->window(); $n_window101${FRANCE};}->from(${RUNTIME})}`,
+    );
+    // the capture's sort stays: it is the user's
+    expect(
+      show(
+        chain(
+          new TestWindowNode('window101'),
+          new Sort('sort101', [
+            { column: 'ORDER_ID', direction: SortDirection.DESC },
+          ]),
+          france('filter101'),
+        ),
+      ),
+    ).toBe(
+      `{| {| let n_window101 = ${ORDERS}->window(); $n_window101${FRANCE};}->from(${RUNTIME})->sort(~ORDER_ID->descending())}`,
+    );
+  });
+
   test('Never binds a window to type a node', () => {
     const query = chain(new TestWindowNode('window101'), france('filter101'));
     expect(

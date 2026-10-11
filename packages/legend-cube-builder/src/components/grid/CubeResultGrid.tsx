@@ -15,6 +15,7 @@
  */
 
 import { clsx } from '@finos/legend-art';
+import type { TypeFamily } from '@finos/legend-cube';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -30,7 +31,11 @@ import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { getCubeGridQuickActions } from '../../stores/CubeGridQuickActions.js';
-import { compareCellValues, isNumericFamily } from './CubeGridValues.js';
+import {
+  compareCellValues,
+  formatCellValue,
+  isNumericFamily,
+} from './CubeGridValues.js';
 
 type CubeRow = readonly CubeResultValue[];
 
@@ -72,14 +77,24 @@ export const getCubeGridContextMenuItems = (
   ];
 };
 
+/**
+ * A cell: its value as the column's family shows it (`formatCellValue`), with
+ * the exact value on hover when the two differ
+ */
 const CubeCell: React.FC<
-  DataGridCellRendererParams<CubeRow, CubeResultValue>
-> = (props) =>
-  props.value === null || props.value === undefined ? (
-    <span className="text-[var(--color-text-muted)]">{NULL_CELL_TEXT}</span>
-  ) : (
-    <>{String(props.value)}</>
-  );
+  DataGridCellRendererParams<CubeRow, CubeResultValue> & {
+    family: TypeFamily;
+  }
+> = (props) => {
+  if (props.value === null || props.value === undefined) {
+    return (
+      <span className="text-[var(--color-text-muted)]">{NULL_CELL_TEXT}</span>
+    );
+  }
+  const exact = String(props.value);
+  const shown = formatCellValue(props.value, props.family);
+  return shown === exact ? <>{exact}</> : <span title={exact}>{shown}</span>;
+};
 
 /**
  * The rows of a run (PLAN §9): columns from Cube's own schema of the capture
@@ -109,6 +124,7 @@ export const CubeResultGrid = memo(
             headerTooltip: `${column.type.displayName}${column.nullable ? '?' : ''} (${column.type.fullName})`,
             valueGetter: (params) => params.data?.[position] ?? null,
             cellRenderer: CubeCell,
+            cellRendererParams: { family: column.type.family },
             ...(numeric
               ? { type: 'rightAligned', comparator: compareCellValues }
               : {}),

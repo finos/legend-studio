@@ -52,7 +52,7 @@ export const CubeSpecTransferDialog = observer(
         <Modal darkMode={darkMode} className="w-[720px] max-w-full">
           <ModalHeader>
             <div className="modal__title">
-              {isExport ? 'Export spec (dev)' : 'Import spec (dev)'}
+              {isExport ? 'Export spec' : 'Import spec'}
             </div>
           </ModalHeader>
           <PanelLoadingIndicator isLoading={transfer.isReadingFile} />

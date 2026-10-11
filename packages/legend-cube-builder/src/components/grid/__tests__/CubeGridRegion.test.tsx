@@ -69,6 +69,7 @@ import {
 } from '../../../graph-manager/CubeEngine.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { NULL_CELL_TEXT } from '../../../__lib__/LegendCubeLabels.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
 const P = 'meta::pure::precisePrimitives::';
@@ -250,7 +251,7 @@ describe('Cube results', () => {
     expect(fake.execute).toHaveBeenCalledTimes(1);
   });
 
-  test("Shows booleans as true and false, an empty string as empty and a 0 as 0, and only nulls as a muted '(null)'", async () => {
+  test("Shows booleans as true and false, an empty string as empty and a Float 0 as 0.00, and only nulls as a muted '(null)'", async () => {
     const schema = new Schema([
       new SchemaColumn('B', PrimitiveType.get('Boolean'), true),
       new SchemaColumn('S', PrimitiveType.get(`${P}Varchar`, [10]), true),
@@ -270,7 +271,7 @@ describe('Cube results', () => {
     fireEvent.click(executeButton());
     expect(await cellTexts(0)).toEqual(['true', 'false', '(null)']);
     expect(await cellTexts(1)).toEqual(['', ' a ', '(null)']);
-    expect(await cellTexts(2)).toEqual(['0', '1.5', '(null)']);
+    expect(await cellTexts(2)).toEqual(['0.00', '1.50', '(null)']);
     expect(within(cell(2, 1)).getByText('(null)').className).toContain(
       'text-[var(--color-text-muted)]',
     );
@@ -343,6 +344,47 @@ describe('Cube results', () => {
     });
     expect(grid().classList.contains('ag-theme-balham-dark')).toBe(true);
     expect(grid().classList.contains('ag-theme-balham')).toBe(false);
+  });
+
+  test('Shows Decimal values grouped and Float values rounded to 2 places, with the exact value on hover, and leaves ids and years plain', async () => {
+    const schema = new Schema([
+      new SchemaColumn('TRADE_ID', PrimitiveType.get(`${P}BigInt`), false),
+      new SchemaColumn('NOTIONAL', PrimitiveType.get('Decimal'), false),
+      new SchemaColumn('NOTIONAL_MM', PrimitiveType.get('Float'), true),
+      new SchemaColumn('YEAR', PrimitiveType.get(`${P}Int`), false),
+    ]);
+    await renderCube({
+      document: new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(schema),
+      }),
+      result: resultFor(schema, [
+        ['10692', '31102024.71', 31.10202471, '2026'],
+        ['5', '-1234.5', null, '1999'],
+        ['7', '512.00', 0.5, '2025'],
+      ]),
+    });
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual(['10692', '5', '7']);
+    expect(await cellTexts(1)).toEqual(['31,102,024.71', '-1,234.5', '512.00']);
+    expect(await cellTexts(2)).toEqual(['31.10', NULL_CELL_TEXT, '0.50']);
+    expect(await cellTexts(3)).toEqual(['2026', '1999', '2025']);
+    // the exact value on hover, where the two differ
+    const shown = (row: number, column: number): HTMLElement =>
+      cell(row, column).querySelector('span') as HTMLElement;
+    expect(shown(0, 1).title).toBe('31102024.71');
+    expect(shown(0, 2).title).toBe('31.10202471');
+    expect(cell(2, 1).querySelector('span[title]')).toBeNull();
+    expect(cell(0, 0).querySelector('span[title]')).toBeNull();
+    // sorting still reads the values, not the text shown
+    clickHeader(1);
+    await waitFor(async () =>
+      expect(await cellTexts(1)).toEqual([
+        '-1,234.5',
+        '512.00',
+        '31,102,024.71',
+      ]),
+    );
   });
 
   test('Sorts a number column by value, digit for digit past what a JS number holds', async () => {

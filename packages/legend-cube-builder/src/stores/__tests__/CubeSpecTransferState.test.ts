@@ -117,7 +117,7 @@ const settle = async (): Promise<void> =>
     setTimeout(resolve, 0);
   });
 
-/** Imports `text`, as Import (dev) does */
+/** Imports `text`, as Import does */
 const importSpecText = (state: CubeEditorState, text: string): void => {
   state.specTransfer.openImport();
   state.specTransfer.setImportText(text);

@@ -49,8 +49,7 @@ out for a source, which has none) and its own fields.
 - Keys this version doesn't know are kept and written back, and a node of an unknown kind is kept as an Unknown node.
 - A spec is at most 1 MiB (`MAX_SPEC_BYTES`). One saved by a newer version is read as read-only. There are no
   migrations yet (`CUBE_SPEC_MIGRATIONS`), since version 1 is the first.
-- **The format is a draft** until the Cube store exists: it may still change, with migrations. In the UI, the "(dev)"
-  on Export and Import marks it.
+- **The format is a draft** until the Cube store exists: it may still change, with migrations.
 
 ## Host-free rule
 
