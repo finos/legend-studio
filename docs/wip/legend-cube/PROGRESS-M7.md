@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.4 done                                                       |
+| Step   | M7.1–M7.5 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -23,7 +23,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.2** Decimal literals sent as strings
 - [x] **M7.3** The drill-down in the core
 - [x] **M7.4** Query derivation in the core
-- [ ] **M7.5** The builder's row fetcher
+- [x] **M7.5** The builder's row fetcher
 - [ ] **M7.6** The grid's server-side row model and the mode toggle
 - [ ] **M7.7** The drill-down in the UI
 - [ ] **M7.8** Export
@@ -45,7 +45,9 @@ Filled in as steps land.
 | M7.1 | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
 | M7.2 | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
 | M7.3 | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
-| M7.4 | (this one)  | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
+| M7.4 | `6bf07c65f` | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
+| M7.5 | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
+| M7.5 | (this one)  | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
 
 ## Notes
 
@@ -92,3 +94,18 @@ Filled in as steps land.
   `FREIGHT` keys each expanded to its rows, and a key of each `ALLTYPES` type. Mutants: float keys by
   Equal only (caught by the unit test and the engine's `FREIGHT` sample), no default sort at a group level (caught by
   the unit test; H2 happens to return groups in key order), grouping by the new level alone (caught).
+- **M7.5** (2026-10-11). Asked first (advisor): Execute stays the flat run of the capture node, so its rows, node
+  errors, staleness and quick actions are unchanged; the fetcher serves every server-side level, the top one included
+  when a drill-down or a header sort is set (PLAN §11.10). `runCubeQuery` (`CubeQueryRun.ts`) is the run path both use:
+  outline and database type when needed, emit, engine, column check, truncation; committed alone, the whole builder
+  suite green after it. `CubeGridFetcher` derives a level from the run on screen (its query, context, schema and row
+  limit, never the live cube's) with the cube's drill-down as it is now, checks it with Cube's own rules before the
+  engine sees it, maps each row to the run's column positions (`undefined` where a group row has no aggregation, the
+  group's count beside), and caches each level by its whole run lambda, the least recently used dropped past 200,000
+  rows (never the one just answered). A purge (a new run, a reset) aborts the fetches in flight and drops their
+  answers by a generation number; a failed fetch leaves the cache, so a retry runs again. It refuses a run made in
+  another context, since the engine reads the warehouse from the page. `CubeRunStatsState` keeps the 15 latest runs
+  (Execute and each fetch, labelled e.g. `Groups by SHIP_COUNTRY, sorted by FREIGHT descending`). Tests: 13 store
+  tests on the fake engine; a unit test that the leaf keeps the run's own sort (after the grid's, as a tie-breaker);
+  two more engine cases: a Partition run expanded to Lyon keeps France's running sum and row numbers (M5's `let`
+  isolation applies), and a Limit run's groups hold its 100 rows.

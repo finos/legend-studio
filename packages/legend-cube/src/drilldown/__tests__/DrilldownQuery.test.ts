@@ -28,6 +28,7 @@ import { AggregationFunction } from '../../nodes/transforms/Aggregation.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import {
   type ColumnDirection,
+  Sort,
   SortDirection,
 } from '../../nodes/transforms/Sort.js';
 import { Schema } from '../../schema/Schema.js';
@@ -296,6 +297,36 @@ describe(unitTest('Drill-down levels'), () => {
       'sort101',
     ]);
     expect(derived.query.selected).toBe('sort101');
+  });
+
+  test("The leaf keeps the run's own sort: alone when the grid has none, else after the grid's, breaking its ties", () => {
+    const nodes: QueryNode[] = [
+      resolvedTable('relational101', 'ORDERS', COLUMNS),
+      new Sort('sort101', [{ column: 'FREIGHT', direction: DESC }]),
+    ];
+    const run = new Query(
+      nodes,
+      [new Connection('relational101', 'sort101', 'tds')],
+      'sort101',
+    );
+    const derive = (sorts: ColumnDirection[]) =>
+      deriveDrilldownLevel({
+        query: run,
+        captureId: 'sort101',
+        schema: RUN_SCHEMA,
+        drilldown: checkDrilldown(
+          { columns: ['SHIP_COUNTRY'], aggregations: [] },
+          RUN_SCHEMA,
+        ),
+        keys: ['France'],
+        sorts,
+      });
+    expect(pureOf(derive([]))).toBe(
+      `{| ${ORDERS}->filter({row | $row.SHIP_COUNTRY == 'France'})->sort(~FREIGHT->descending())->limit(1001)->from(${RUNTIME})}`,
+    );
+    expect(pureOf(derive([{ column: 'ORDER_ID', direction: ASC }]))).toContain(
+      `->sort([~ORDER_ID->ascending(), ~FREIGHT->descending()])->limit(1001)`,
+    );
   });
 
   test('Refuses more keys than levels, and a key it cannot compare', () => {

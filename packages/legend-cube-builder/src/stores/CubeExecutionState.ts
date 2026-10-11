@@ -209,6 +209,7 @@ export class CubeExecutionState {
         sql: run.sql,
         durationMs: run.durationMs,
       };
+      this.editorState.runStats.record('Execute', run);
     } catch (error) {
       // a stopped or replaced run shows nothing
       if (this.runController !== controller || controller.signal.aborted) {
@@ -259,6 +260,7 @@ export class CubeExecutionState {
   /** Stops any run and forgets the last one's rows and error, e.g. when another cube is opened */
   reset(): void {
     this.stop();
+    this.editorState.gridFetcher.purge();
     this.result = undefined;
     this.error = undefined;
   }

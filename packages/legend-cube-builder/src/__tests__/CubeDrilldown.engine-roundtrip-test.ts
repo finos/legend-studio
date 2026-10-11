@@ -25,13 +25,18 @@ import {
   type DrilldownCell,
   deriveDrilldownLevel,
   type DrilldownLevel,
+  Limit,
+  Partition,
   Query,
+  type QueryNode,
+  type RelationalTableSource,
   type Schema,
   SortDirection,
   QueryEmitter,
 } from '@finos/legend-cube';
 import { CUBE_ENGINE_TEST__getCommit } from '../__test-utils__/CubeEngineTestSupport.js';
 import {
+  TEST__chainOf,
   TEST__northwindTable,
   TEST__resolveSources,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
@@ -81,6 +86,25 @@ const runOf = async (
     query: new Query([source], [], source.id),
     schema: source.resolution.schema,
   };
+};
+
+/** The table, resolved, with these nodes after it, as the query of a run captured at the last */
+const runThrough = async (
+  table: string,
+  ...nodes: QueryNode[]
+): Promise<{ query: Query; schema: Schema }> => {
+  const [source] = await TEST__resolveSources(engine, [
+    TEST__northwindTable('relational101', table),
+  ]);
+  const query = TEST__chainOf([source as RelationalTableSource, ...nodes]);
+  const schema = buildSchemasAndValidity(
+    query,
+    createNodeRegistry().queryRules,
+  ).schemas.get(query.selected as string);
+  if (!schema) {
+    throw new Error('The run has no schema');
+  }
+  return { query, schema };
 };
 
 const execute = async (query: Query): Promise<CubeResult> => {
@@ -326,5 +350,54 @@ describe('Drill-down keys on the engine', () => {
     expect(top.rows.map((row) => row[column])).toContainEqual(key);
     const rows = await runLevel(run, [column], [key]);
     expect(rows.rows.map((row) => row.ID)).toHaveLength(1);
+  });
+});
+
+describe('Drill-down over the run on the engine', () => {
+  test("A window's values are the run's: Lyon's orders keep France's running freight, not Lyon's alone", async () => {
+    const run = await runThrough(
+      'ORDERS',
+      new Partition(
+        'partition101',
+        ['SHIP_COUNTRY'],
+        [{ column: 'ORDER_ID', direction: ASC }],
+        [
+          {
+            column: 'FREIGHT',
+            function: AggregationFunction.SUM,
+            name: 'RUNNING',
+          },
+          {
+            column: undefined,
+            function: 'RowNumber',
+            name: 'NTH',
+          },
+        ],
+      ),
+    );
+    const flat = new Map(
+      (await allRows(run)).map((row) => [String(row.ORDER_ID), row]),
+    );
+    const lyon = await runLevel(run, ['SHIP_CITY'], ['Lyon']);
+    expect(lyon.rows.length).toBeGreaterThan(0);
+    lyon.rows.forEach((row) => {
+      const same = flat.get(String(row.ORDER_ID));
+      expect(row.SHIP_COUNTRY).toBe('France');
+      expect([row.ORDER_ID, Number(row.NTH)]).toEqual([
+        row.ORDER_ID,
+        Number(same?.NTH),
+      ]);
+      expect(Number(row.RUNNING)).toBeCloseTo(Number(same?.RUNNING), 2);
+    });
+    // numbered among France's 77 orders, not Lyon's few
+    expect(
+      Math.max(...lyon.rows.map((row) => Number(row.NTH))),
+    ).toBeGreaterThan(lyon.rows.length);
+  });
+
+  test("A Limit run: the groups hold its 100 rows, not the table's 830", async () => {
+    const run = await runThrough('ORDERS', new Limit('limit101', 100));
+    const top = await runLevel(run, ['SHIP_COUNTRY'], []);
+    expect(top.counts.reduce((a, b) => a + b, 0)).toBe(100);
   });
 });

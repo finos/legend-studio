@@ -86,6 +86,8 @@ import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
+import { CubeGridFetcher } from './CubeGridFetcher.js';
+import { CubeRunStatsState } from './CubeRunStatsState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
 import {
@@ -147,6 +149,10 @@ export class CubeEditorState implements CommandRegistrar {
   /** The editor's own query rule: an Extend typed for another input than its own waits to be typed again (PLAN §11.7) */
   private readonly staleExtendTyping: QueryRule;
   readonly execution: CubeExecutionState;
+  /** The latest runs, fetches and exports (spec §12.6) */
+  readonly runStats: CubeRunStatsState;
+  /** The grid's server-side levels (PLAN §11.10) */
+  readonly gridFetcher: CubeGridFetcher;
   /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
@@ -258,6 +264,8 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
+    this.runStats = new CubeRunStatsState();
+    this.gridFetcher = new CubeGridFetcher(this);
     this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
