@@ -180,6 +180,8 @@ export const CubeServerSideGrid = memo(
                     data: CubeGridRowData | undefined;
                   }) => groupKeyText(params.data),
                   headerName: levels.join(' › '),
+                  // the groups stay in view as the grid scrolls sideways
+                  pinned: 'left' as const,
                   headerTooltip: `The groups, by ${levels.join(', then ')}`,
                   minWidth: 200,
                   sortable: true,

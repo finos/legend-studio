@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                           |
-| ------ | ----------------------------------------------------------------------------------------------- |
-| Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev`                            |
-| Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M7.1–M7.13 done; M7.14's browser rehearsal done, its reviewer verification awaits the user's go |
-| Tests  | Unchanged from `cube-dev`                                                                       |
+| Item   | State                                                                |
+| ------ | -------------------------------------------------------------------- |
+| Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
+| Engine | Local legend-engine on `localhost:6300`                              |
+| Step   | M7.1–M7.15 done                                                      |
+| Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
 
@@ -32,8 +32,8 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.11** Column formatting and widths
 - [x] **M7.12** Around the databases
 - [x] **M7.13** Guides, testing.md and the changeset
-- [ ] **M7.14** Verification and the browser rehearsal
-- [ ] **M7.15** A demo video of M7 (PLAN §11.3)
+- [x] **M7.14** Verification and the browser rehearsal
+- [x] **M7.15** A demo video of M7 (PLAN §11.3)
 - [ ] **M7.16** Fold PLAN §11.10's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
@@ -218,3 +218,11 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   rows dialog flag left on when its dialog unmounted; the groups column exporting the row's JSON id (and ag-grid's
   `->` prefix, then fixed with `processRowGroupCallback`; the workbook now has `5`, `12`, `13` as numbers); a local
   group row's Filter by adding an unrelated Is Empty. Each has a test.
+- **M7.15** (2026-10-11). `demo/demo-m7.mjs` in the evidence folder (Playwright, against :9004 and the engine on
+  :6300) records `out-demo-m7/legend-cube-m7-results-grid.webm`: the Trades example's join made the node that runs
+  (its menu's Select; Ctrl+click is a right-click on macOS Chromium) and run (400 rows); a header sort on the engine,
+  twice; Drilldown by REGION then DESK from cells; Group rows… (ids Nothing, PRICE Average); a region and a desk
+  expanded; Format Column on NOTIONAL_USD (USD, no cents); the runs; Export ▸ CSV (the file saved, a header and 400
+  trades); local mode's panels. Ten checks pass, no page error; the twelve frames were read against their captions,
+  which led to two changes: the groups column is pinned on the left, so the groups stay in view beside the numbers
+  (a product change), and the export's caption names the saved file.
