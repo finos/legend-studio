@@ -158,7 +158,11 @@ export class CubeExecutionState {
     const captureId = query.selected;
     if (captureId === undefined) {
       reasons.push('Select the node to run.');
-    } else if (!emitter.canEmit(captureId)) {
+    } else if (
+      !emitter.canEmit(captureId) ||
+      // as the editor sees it: an Extend typed for another input waits
+      (analysis.validity.get(captureId) ?? []).length > 0
+    ) {
       reasons.push(findUpstreamError(query, analysis.validity, captureId));
     }
     return reasons;

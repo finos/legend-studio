@@ -46,6 +46,8 @@ const label = (node: IR): string | undefined => {
       return node.name;
     case 'let':
       return `let ${node.name}`;
+    case 'lambdaJson':
+      return 'lambda';
     case 'property':
       return `.${node.name}`;
     case 'literal':

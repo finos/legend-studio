@@ -88,6 +88,11 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
             {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
           </span>
         )}
+        {editorState.isTypingExtends && (
+          <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
+            {CUBE_PENDING_LABEL.TYPING_COLUMNS}
+          </span>
+        )}
         <CubeAddItemsMenu editorState={editorState} />
         <CubeButton
           title="Open an example cube, or start one on sample data"
@@ -162,7 +167,11 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           {showGraph ? 'Hide graph' : 'Show graph'}
         </CubeButton>
       </div>
-      <PanelLoadingIndicator isLoading={editorState.isResolvingSources} />
+      <PanelLoadingIndicator
+        isLoading={
+          editorState.isResolvingSources || editorState.isTypingExtends
+        }
+      />
       {readOnly && (
         <div
           className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"

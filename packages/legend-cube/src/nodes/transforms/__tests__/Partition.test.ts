@@ -24,6 +24,7 @@ import {
   AggregationFunction,
   type ColumnAggregation,
   WindowRankFunction,
+  WindowRowFunction,
 } from '../Aggregation.js';
 import { Partition, validatePartitionColumn } from '../Partition.js';
 import { type ColumnDirection, SortDirection } from '../Sort.js';
@@ -52,6 +53,7 @@ const {
   COUNT_ROWS,
 } = AggregationFunction;
 const { RANK, DENSE_RANK, ROW_NUMBER } = WindowRankFunction;
+const { LAG, LEAD, FIRST, LAST } = WindowRowFunction;
 const { ASC, DESC } = SortDirection;
 
 const agg = (
@@ -232,7 +234,7 @@ describe(unitTest('Partition'), () => {
           aggregations as never,
         ),
     ).toThrow(
-      `A partition's window functions must be a list of {column, function, name}, the column left out for a function that takes none`,
+      `A partition's window functions must be a list of {column, function, name, offset?, buckets?}, the column left out for a function that takes none`,
     );
   });
 
@@ -874,6 +876,42 @@ describe(unitTest('Partition'), () => {
       ['Average Freight', 'Float', true],
       ['First Order', 'DateTime', true],
       ['Ship Region', `${P}Varchar(15)`, true],
+    ]);
+  });
+
+  test('Types the new window functions: a row function as its column, nullable; NTile Integer, Percent Rank and Cumulative Distribution Float, never empty', () => {
+    expect(
+      addedColumnsOf(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [BY_ID],
+          [
+            { ...agg(LAG, 'FREIGHT', 'Previous Freight'), offset: 1 },
+            { ...agg(LEAD, 'ORDER_DATE', 'Next Date'), offset: 2 },
+            agg(FIRST, 'SHIP_REGION', 'First Region'),
+            agg(LAST, 'ORDER_ID', 'Last Id'),
+            {
+              ...agg(WindowRankFunction.NTILE, undefined, 'Quartile'),
+              buckets: 4,
+            },
+            agg(WindowRankFunction.PERCENT_RANK, undefined, 'Percent Rank'),
+            agg(
+              WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+              undefined,
+              'Cumulative Distribution',
+            ),
+          ],
+        ),
+      ),
+    ).toEqual([
+      ['Previous Freight', `${P}Double`, true],
+      ['Next Date', `${P}Timestamp`, true],
+      ['First Region', `${P}Varchar(15)`, true],
+      ['Last Id', `${P}SmallInt`, true],
+      ['Quartile', 'Integer', false],
+      ['Percent Rank', 'Float', false],
+      ['Cumulative Distribution', 'Float', false],
     ]);
   });
 

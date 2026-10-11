@@ -15,6 +15,7 @@
  */
 
 import {
+  AggregationSetting,
   type AggregationUse,
   type ColumnAggregation,
   getAggregationAutoName,
@@ -28,21 +29,25 @@ import {
   pathTo,
   type ReadEntries,
   readItems,
+  readOptionalFiniteNumber,
   readOptionalString,
   readString,
   readStringList,
   UnreadableContent,
 } from '../SpecReader.js';
 
-const AGGREGATION_KEYS = ['column', 'function', 'name'];
+const AGGREGATION_KEYS = ['column', 'function', 'name', 'offset', 'buckets'];
 
 /**
  * The aggregations under `key`, each `{column, function, name}`, the column
- * left out for a function that takes none (PLAN §11.5). Texts are kept
- * exactly, `''` included, for validation to judge: an unknown, empty or
- * misplaced function is held, not dropped (Q4), since an invalid node can't
- * run. A name left out is read as the auto-name for the use (Q3), or `''`
- * when there is none, and written back. An entry key this version doesn't
+ * left out for a function that takes none (PLAN §11.5), and a window
+ * function's `offset` (Lag, Lead) or `buckets` (NTile), JSON numbers (PLAN
+ * §11.9). Texts and numbers are kept exactly, `''` included, for validation
+ * to judge: an unknown, empty or misplaced function or setting is held, not
+ * dropped (Q4), since an invalid node can't run. A name left out is read as
+ * the auto-name for the use (Q3), or `''` when there is none, and written
+ * back; a setting left out stays out, which validation reports, as a Limit's
+ * cleared size: never its default, so an invalid one is never saved as valid. An entry key this version doesn't
  * know could change the rows, so it makes the node unreadable, once every
  * entry has been read. Shared by the nodes that aggregate (Group, Partition).
  */
@@ -59,10 +64,16 @@ export const readColumnAggregations = (
     const column = readOptionalString(item, 'column', itemPath, true);
     const fn = readString(item, 'function', itemPath, true);
     const name = readOptionalString(item, 'name', itemPath, true);
+    const [offset, buckets] = [
+      AggregationSetting.OFFSET,
+      AggregationSetting.BUCKETS,
+    ].map((setting) => readOptionalFiniteNumber(item, setting, itemPath));
     return {
       column,
       function: fn,
       name: name ?? getAggregationAutoName(fn, column, use) ?? '',
+      ...(offset === undefined ? {} : { offset }),
+      ...(buckets === undefined ? {} : { buckets }),
     };
   });
   return {
@@ -73,15 +84,18 @@ export const readColumnAggregations = (
   };
 };
 
-/** The JSON of aggregations, the column left out for a function that takes none */
+/** The JSON of aggregations, the column left out for a function that takes none, a setting for one that has it */
 export const encodeColumnAggregations = (
   aggregations: readonly ColumnAggregation[],
 ): JsonObject[] =>
   aggregations.map(
-    ({ column, function: fn, name }): JsonObject =>
-      column === undefined
-        ? { function: fn, name }
-        : { column, function: fn, name },
+    ({ column, function: fn, name, offset, buckets }): JsonObject => ({
+      ...(column === undefined ? {} : { column }),
+      function: fn,
+      name,
+      ...(offset === undefined ? {} : { offset }),
+      ...(buckets === undefined ? {} : { buckets }),
+    }),
   );
 
 /**

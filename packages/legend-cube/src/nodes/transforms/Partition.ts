@@ -35,6 +35,7 @@ import type { JsonObject } from '../../utils/Json.js';
 import {
   type AggregationUse,
   type ColumnAggregation,
+  freezeColumnAggregation,
   getAggregationResultType,
   isAggregationNullable,
   isColumnAggregation,
@@ -85,8 +86,9 @@ export const validatePartitionColumn = (
  * without any), in the window's sort order. With a sort, an aggregate runs
  * from the partition's first row to the current one, rows tied on the sort
  * sharing a value, as SQL's default frame does (D5, PLAN §11.6); without
- * one, it covers the whole partition. The rank functions need a sort. The
- * input's columns and rows stay as they are, in the input's order.
+ * one, it covers the whole partition. The rank and row functions need a sort
+ * (PLAN §11.9). The input's columns and rows stay as they are, in the
+ * input's order.
  */
 export class Partition extends UnaryNode {
   static readonly TYPE = 'partition';
@@ -125,7 +127,7 @@ export class Partition extends UnaryNode {
       !Array.from(aggregationList as unknown[]).every(isColumnAggregation)
     ) {
       throw new Error(
-        `A partition's window functions must be a list of {column, function, name}, the column left out for a function that takes none`,
+        `A partition's window functions must be a list of {column, function, name, offset?, buckets?}, the column left out for a function that takes none`,
       );
     }
     this.columns = Object.freeze([...columns]);
@@ -135,9 +137,7 @@ export class Partition extends UnaryNode {
       ),
     );
     this.aggregations = Object.freeze(
-      aggregations.map(({ column, function: fn, name }) =>
-        Object.freeze({ column, function: fn, name }),
-      ),
+      aggregations.map(freezeColumnAggregation),
     );
   }
 
@@ -234,7 +234,7 @@ export class Partition extends UnaryNode {
   /**
    * The input's columns as they are, then one column per window function, in
    * the order listed, typed as the engine types it and nullable but for the
-   * counts and the rank functions (PLAN §5.7, §11.6); `undefined` when
+   * counts and the rank functions (PLAN §5.7, §11.6, §11.9); `undefined` when
    * invalid
    */
   override schematize(inputSchemas: readonly Schema[]): Schema | undefined {

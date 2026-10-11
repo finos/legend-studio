@@ -34,6 +34,7 @@ import {
   ERR_INCOMPLETE,
   ERR_OTHER,
   ERR_SCHEMAS,
+  ERR_TYPING,
   MESSAGE_DIFFERENT_DATABASES,
   MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
 } from '../../messages/CubeMessages.js';
@@ -47,6 +48,7 @@ import {
   buildSchemasAndValidity,
   isIncompleteError,
   isSchemasError,
+  isTypingError,
 } from '../SchemaInference.js';
 
 const edge = (s: string, t: string, port = 'tds'): Connection =>
@@ -236,6 +238,9 @@ describe(unitTest('Schema inference'), () => {
     expect(isSchemasError(ERR_INCOMPLETE)).toBe(false);
     expect(isIncompleteError(ERR_INCOMPLETE)).toBe(true);
     expect(isIncompleteError(ERR_OTHER)).toBe(false);
+    // a node waiting for the engine is pending, not invalid (PLAN §11.7)
+    expect(isTypingError(ERR_TYPING)).toBe(true);
+    expect(isTypingError(ERR_SCHEMAS)).toBe(false);
   });
 });
 

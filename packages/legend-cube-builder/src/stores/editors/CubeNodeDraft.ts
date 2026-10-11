@@ -24,8 +24,8 @@ import type { QueryNode } from '@finos/legend-cube';
  * editor opens on a node, and again after an Apply.
  */
 export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
-  /** The node the draft was made from */
-  readonly original: N;
+  /** The node the draft was made from; `follow` may move it on */
+  original: N;
 
   constructor(original: N) {
     this.original = original;
@@ -37,6 +37,25 @@ export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
    * as no change.
    */
   abstract build(): N;
+
+  /**
+   * Why Apply waits, if it does: the panel disables it with this reason and
+   * shows it in place of the problems, e.g. an Extend whose expressions
+   * aren't validated yet (PLAN §11.7)
+   */
+  get applyDisabledReason(): string | undefined {
+    return undefined;
+  }
+
+  /**
+   * Whether the draft goes on, made from this node, when the node it was
+   * made from is replaced underneath it by one that differs in nothing the
+   * draft edits, e.g. an Extend the engine typed in the background; else
+   * the panel drops the edits (PLAN §7.4)
+   */
+  follow(node: QueryNode): boolean {
+    return false;
+  }
 }
 
 /** A node with nothing to edit in the panel, such as a source or an Unknown node */

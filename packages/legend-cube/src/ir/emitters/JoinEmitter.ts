@@ -19,6 +19,7 @@ import {
   getMergedJoinKeyType,
   getSameNamedJoinKeys,
   type Join,
+  type JoinSettings,
   JoinType,
 } from '../../nodes/transforms/Join.js';
 import { foldColumnName } from '../../schema/ColumnName.js';
@@ -66,28 +67,24 @@ const lookup = (schema: Schema, name: string, side: string): SchemaColumn => {
 };
 
 /**
- * Emits a join as the engine needs it (PLAN §8.4). The engine rejects any
- * column name both inputs have, so each positionally identical key is renamed
- * to a temporary name on the side whose value is not kept (both sides for a
- * FULL join, which then merges them with `coalesce`). The condition compares
- * each pair of keys, with `toOne()` on the left key when both keys are
- * nullable, so NULL keys never match. A final `select` gives the columns their
- * order and drops the temporary ones.
+ * Emits a join's relation, before its last `select` (PLAN §8.4). The engine
+ * rejects any column name both inputs have, so each positionally identical
+ * key is renamed to a temporary name on the side whose value is not kept
+ * (both sides for a FULL join, which then merges them with `coalesce`). The
+ * condition compares each pair of keys, with `toOne()` on the left key when
+ * both keys are nullable, so NULL keys never match. The parts carry the
+ * node's id: a Join's, or a Difference's, which joins its inputs this way.
  *
- * The join must be valid for its input schemas.
+ * The keys must be valid for the input schemas.
  */
-export const emitJoin = (
-  node: Join,
-  inputs: readonly RelationExpr[],
-  context: EmitContext,
-): RelationExpr => {
-  const [leftInput, rightInput] = inputs;
-  const [leftSchema, rightSchema] = context.inputSchemas;
-  if (!leftInput || !rightInput || !leftSchema || !rightSchema) {
-    throw new Error(`Join "${node.id}" needs two inputs to be emitted`);
-  }
+export const emitJoinRelation = (
+  nodeId: string,
+  node: JoinSettings,
+  [leftInput, rightInput]: readonly [RelationExpr, RelationExpr],
+  [leftSchema, rightSchema]: readonly [Schema, Schema],
+): IR => {
   const origin = (role: EmitRole): ReturnType<typeof originOf> =>
-    originOf(node.id, role);
+    originOf(nodeId, role);
   const { joinType } = node;
   const sameNamedKeys = getSameNamedJoinKeys(
     node.leftColumns,
@@ -144,7 +141,7 @@ export const emitJoin = (
     .filter((name) => renamedRight.has(name));
   if (shared.length) {
     throw new Error(
-      `Join "${node.id}" would give the engine two columns named ${shared.map((name) => `"${name}"`).join(', ')}`,
+      `Join "${nodeId}" would give the engine two columns named ${shared.map((name) => `"${name}"`).join(', ')}`,
     );
   }
 
@@ -152,7 +149,7 @@ export const emitJoin = (
   const comparisons = node.leftColumns.map((leftKey, index) => {
     const rightKey = node.rightColumns[index];
     if (rightKey === undefined) {
-      throw new Error(`Join "${node.id}" has more left keys than right keys`);
+      throw new Error(`Join "${nodeId}" has more left keys than right keys`);
     }
     const bothNullable =
       lookup(leftSchema, leftKey, 'left').nullable &&
@@ -175,7 +172,7 @@ export const emitJoin = (
   });
   const [first, ...others] = comparisons;
   if (!first) {
-    throw new Error(`Join "${node.id}" has no key columns`);
+    throw new Error(`Join "${nodeId}" has no key columns`);
   }
   const condition = others.reduce(
     (folded, comparison) =>
@@ -229,13 +226,39 @@ export const emitJoin = (
     );
   }
 
+  return joined;
+};
+
+/**
+ * Emits a join as the engine needs it (`emitJoinRelation`), then a `select`
+ * that gives the columns their order and drops the temporary ones.
+ *
+ * The join must be valid for its input schemas.
+ */
+export const emitJoin = (
+  node: Join,
+  inputs: readonly RelationExpr[],
+  context: EmitContext,
+): RelationExpr => {
+  const [leftInput, rightInput] = inputs;
+  const [leftSchema, rightSchema] = context.inputSchemas;
+  if (!leftInput || !rightInput || !leftSchema || !rightSchema) {
+    throw new Error(`Join "${node.id}" needs two inputs to be emitted`);
+  }
+  const joined = emitJoinRelation(
+    node.id,
+    node,
+    [leftInput, rightInput],
+    [leftSchema, rightSchema],
+  );
+
   // 6. the output columns, in order
   const names = buildJoinSchemaColumns(
     leftSchema,
     rightSchema,
     node.leftColumns,
     node.rightColumns,
-    joinType,
+    node.joinType,
   ).map((column) => column.name);
   const expected = context.schema.names();
   if (
@@ -249,6 +272,6 @@ export const emitJoin = (
   return func(
     'select',
     [joined, colSpecArray(names.map((name) => colSpec(name)))],
-    origin(EmitRole.SELECT),
+    originOf(node.id, EmitRole.SELECT),
   );
 };

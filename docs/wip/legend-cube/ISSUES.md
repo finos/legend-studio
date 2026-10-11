@@ -319,6 +319,30 @@ the three columns share one window and none reads another. Without the limit it 
 with three OVER clauses. The columns of one extend could stay in one select whatever follows it.
 ```
 
+### ClickHouse: First and Last skip NULLs, and Lag and Lead fill a non-Nullable column's edges
+
+Found in M5b.6's review (PLAN §11.9); planned, not run (no ClickHouse here): the SQL is pinned in
+`LegendCubeDialects.engine-roundtrip-test.ts`, and its meaning is ClickHouse's documentation 💭. On ClickHouse the
+engine writes First as `first_value(x) over (…)` with no `RESPECT NULLS`, and ClickHouse's `first_value` skips NULLs:
+with a NULL in the partition's first rows, First varies from row to row instead of being the first row's value, and
+Last (First over the reversed sort) gives the last non-null value. It writes Lag and Lead as
+`lagInFrame(x, n) over (… rows between unbounded preceding and unbounded following)` with no default, and
+`lagInFrame` then gives the column type's default (0, '', 1970-01-01) at the partition's edges for a column that
+isn't `Nullable(T)`, ClickHouse's default, instead of empty. Both are wrong rows with no error. Cube can't write
+either correction through Pure. Draft issue for finos/legend-engine:
+
+```text
+Title: ClickHouse first_value/last_value skip NULLs, and lagInFrame/leadInFrame fill edges with the type's default
+
+`->extend(over(~[P], [~O->ascending()]), ~[f:{p,w,r|$p->first($w,$r).X}, l:{p,w,r|$p->lag($r, 1).X}])`
+plans `first_value(X) OVER (…)` and `lagInFrame(X, 1) OVER (… ROWS BETWEEN UNBOUNDED PRECEDING AND
+UNBOUNDED FOLLOWING)` on ClickHouse. ClickHouse's first_value/last_value skip NULLs unless
+`RESPECT NULLS` is given, so a NULL in the partition changes first()/last(); and lagInFrame/leadInFrame
+return the column type's default outside the frame for a non-Nullable column, where lag()/lead() should
+give empty. The ClickHouse dialect could write `first_value(X) RESPECT NULLS` and
+`lagInFrame(toNullable(X), n)`.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns

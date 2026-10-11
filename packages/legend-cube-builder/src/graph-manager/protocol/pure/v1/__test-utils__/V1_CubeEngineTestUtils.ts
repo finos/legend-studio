@@ -27,6 +27,8 @@ import {
 import { AxiosError } from 'axios';
 import {
   CUBE_ENGINE_TEST__execute,
+  CUBE_ENGINE_TEST__generatePlan,
+  CUBE_ENGINE_TEST__grammarToJson_valueSpecification,
   CUBE_ENGINE_TEST__jsonToGrammar_lambda,
   CUBE_ENGINE_TEST__lambdaRelationTypeBatch,
 } from '../../../../../__test-utils__/CubeEngineTestSupport.js';
@@ -118,6 +120,34 @@ export const V1_createEngineBackedCubeEngine = (): {
     .mockImplementation(async (input) =>
       CUBE_ENGINE_TEST__schemaExploration(input).catch(rethrowAsClientError),
     );
+  // an Extend's planned lambda (PLAN §11.7)
+  jest
+    .spyOn(client, 'generatePlan')
+    .mockImplementation(
+      async (input) =>
+        (await CUBE_ENGINE_TEST__generatePlan(input).catch(
+          rethrowAsClientError,
+        )) as never,
+    );
+  // an Extend's expression, read unread as the adapter asks; every other
+  // request goes on as it would, and fails as any network call in a test
+  const post = client.postWithTracing.bind(client);
+  jest
+    .spyOn(client, 'postWithTracing')
+    .mockImplementation(async (...args: Parameters<typeof post>) => {
+      const [, url, data, , , parameters] = args;
+      if (!url.endsWith('/grammar/grammarToJson/valueSpecification')) {
+        return post(...args);
+      }
+      const response = await CUBE_ENGINE_TEST__grammarToJson_valueSpecification(
+        data as string,
+        String(parameters?.sourceId),
+      );
+      if (!response.ok) {
+        throw clientError(response.status, parseOrText(await response.text()));
+      }
+      return response as never;
+    });
   jest
     .spyOn(client, 'JSONToGrammar_lambda')
     .mockImplementation(async (lambda, renderStyle) =>

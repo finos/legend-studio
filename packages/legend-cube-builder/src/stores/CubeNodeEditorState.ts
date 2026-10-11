@@ -37,6 +37,7 @@ import {
 import {
   CUBE_EDITOR_CLOSED_REASON,
   getEditorClosedNotice,
+  getEditorKeptOpenNotice,
 } from '../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import type { CubeNodeDraft } from './editors/CubeNodeDraft.js';
@@ -159,7 +160,7 @@ export class CubeNodeEditorState {
 
   /**
    * Opens the editor on a node, finishing (and so applying) the one it showed;
-   * does nothing while that one is held open
+   * does nothing while that one is held open, or kept open saying why
    */
   open(nodeId: string): void {
     if (nodeId === this.nodeId) {
@@ -189,7 +190,8 @@ export class CubeNodeEditorState {
       !edited ||
       node.key !== this.nodeKey ||
       !this.hasChanges ||
-      this.editorState.readOnly
+      this.editorState.readOnly ||
+      this.draft?.applyDisabledReason !== undefined
     ) {
       return;
     }
@@ -374,10 +376,19 @@ export class CubeNodeEditorState {
     }
   }
 
-  /** Applies the draft, then closes the panel (spec §17.5: edits commit on close) */
+  /**
+   * Applies the draft, then closes the panel (spec §17.5: edits commit on
+   * close). A draft whose Apply waits, e.g. an Extend whose expressions
+   * aren't validated, keeps the panel open and says why, rather than
+   * dropping or storing what can't be applied yet; Cancel drops it.
+   */
   close(): void {
+    if (this.keepOpenWhileWaiting()) {
+      return;
+    }
     this.apply();
     this.reset();
+    this.notice = undefined;
   }
 
   /**
@@ -436,12 +447,33 @@ export class CubeNodeEditorState {
   }
 
   /**
+   * Keeps the editor open, saying why, when its draft's Apply waits, e.g. an
+   * Extend whose expressions aren't validated (PLAN §11.7), rather than
+   * dropping or storing what can't be applied yet; says whether it did
+   */
+  private keepOpenWhileWaiting(): boolean {
+    const { nodeId, draft } = this;
+    const waiting = draft?.applyDisabledReason;
+    if (
+      nodeId === undefined ||
+      waiting === undefined ||
+      !this.hasChanges ||
+      this.editorState.readOnly
+    ) {
+      return false;
+    }
+    this.notice = getEditorKeptOpenNotice(nodeId, waiting);
+    return true;
+  }
+
+  /**
    * Finishes with the editor as anything but Cancel does (PLAN §11.8): commits
    * its pending input, then closes it, applying the edits as one undo step.
    * Edits the query can't take close it with a notice instead of vanishing.
-   * Does nothing while something opened from the editor holds it open.
+   * Does nothing while something opened from the editor holds it open, and
+   * keeps it open, saying why, while its Apply waits (PLAN §11.7).
    */
-  private finishWith(): 'held' | 'dropped' | 'closed' {
+  private finishWith(): 'held' | 'kept' | 'dropped' | 'closed' {
     if (this.nodeId === undefined) {
       return 'closed';
     }
@@ -449,6 +481,9 @@ export class CubeNodeEditorState {
       return 'held';
     }
     this.flushers.forEach((flusher) => flusher.flush());
+    if (this.keepOpenWhileWaiting()) {
+      return 'kept';
+    }
     const { edited } = this;
     if (
       edited !== undefined &&
@@ -465,13 +500,14 @@ export class CubeNodeEditorState {
 
   /** Finishes with the editor (`finishWith`); says whether it is closed */
   finish(): boolean {
-    return this.finishWith() !== 'held';
+    const finished = this.finishWith();
+    return finished === 'dropped' || finished === 'closed';
   }
 
   /**
    * Finishes with the editor (`finishWith`); says whether its edits, if any,
    * are now in the cube, so what comes next acts on them: false while it is
-   * held open, or when its edits had to be dropped
+   * held or kept open, or when its edits had to be dropped
    */
   finishApplied(): boolean {
     return this.finishWith() === 'closed';
@@ -539,6 +575,10 @@ export class CubeNodeEditorState {
       return;
     }
     if (this.hasChanges) {
+      if (node && this.draft?.follow(node)) {
+        this.nodeKey = node.key;
+        return;
+      }
       this.discard(
         node
           ? CUBE_EDITOR_CLOSED_REASON.NODE_CHANGED

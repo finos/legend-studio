@@ -19,10 +19,12 @@ import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   copyJson,
   EMPTY_JSON_OBJECT,
+  hashText,
   isJsonObject,
   type JsonObject,
   type JsonValue,
   pickUnknownKeys,
+  stableJsonText,
 } from '../Json.js';
 
 /** Whether the value and everything in it is frozen */
@@ -211,5 +213,22 @@ describe(unitTest('Picking unknown keys'), () => {
     const rest = pickUnknownKeys(json, ['kind']);
     expect(hasOwnKey(rest, '__proto__')).toBe(true);
     expect(JSON.stringify(rest)).toBe('{"__proto__":{"a":1},"z":2}');
+  });
+});
+describe(unitTest('Stable JSON text and digests'), () => {
+  test("Writes every object's keys sorted, at every depth, arrays in their order", () => {
+    expect(stableJsonText({ b: 1, a: [{ d: 2, c: 3 }, 'x'] })).toBe(
+      '{"a":[{"c":3,"d":2},"x"],"b":1}',
+    );
+    expect(stableJsonText({ a: 1, b: 2 })).toBe(stableJsonText({ b: 2, a: 1 }));
+  });
+
+  test('Digests a text the same way every time, and two texts differently', () => {
+    // pinned, so a change to the digest, which saved specs hold, shows
+    expect(hashText('')).toBe('bdcb81aee8d83');
+    expect(hashText('abc')).toBe('11f9f91ac18c8d');
+    expect(hashText('abc')).toBe(hashText('abc'));
+    expect(hashText('abc')).not.toBe(hashText('abd'));
+    expect(hashText('abc')).toMatch(/^[0-9a-f]{13,14}$/u);
   });
 });

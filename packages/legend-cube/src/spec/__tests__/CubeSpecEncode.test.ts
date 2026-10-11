@@ -52,7 +52,9 @@ import {
 import {
   CONCAT_DEFINITION,
   createNodeRegistry,
+  DIFFERENCE_DEFINITION,
   DROP_DEFINITION,
+  EXTEND_DEFINITION,
   GROUP_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
@@ -66,6 +68,8 @@ import {
   WindowRankFunction,
 } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
+import { Difference } from '../../nodes/transforms/Difference.js';
+import { Extend, UNTYPED } from '../../nodes/transforms/Extend.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -2371,6 +2375,78 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
       (partition as Partition).aggregations.map(({ name }) => name),
     ).toEqual(['Rank', 'Row Number']);
   });
+  test("Writes Lag's and Lead's offset and NTile's bucket count after the name, and reads one left out as missing, never its default", () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 2 },
+      { column: 'FREIGHT', function: 'Lead', name: 'n', offset: 1 },
+      { function: 'NTile', name: 'q', buckets: 10 },
+      { column: 'FREIGHT', function: 'Last', name: 'l' },
+    ];
+    const sorts = [{ column: 'ORDER_ID', direction: 'ASC' }];
+    const document = decodePartitionSpec(
+      partitionSpec({ columns: [], sorts, aggregations }),
+    );
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(
+      document,
+      partitionSpec({ columns: [], sorts, aggregations }),
+      REGISTRY,
+    );
+    const defaulted = decodePartitionSpec(
+      partitionSpec({
+        columns: [],
+        sorts,
+        aggregations: [
+          { column: 'FREIGHT', function: 'Lead' },
+          { function: 'NTile' },
+        ],
+      }),
+    );
+    // missing, as a Limit's cleared size: validation reports it, so an
+    // invalid setting is never read back as a valid one
+    expect(aggregationsOf(defaulted)).toEqual([
+      { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead' },
+      { column: undefined, function: 'NTile', name: 'NTile' },
+    ]);
+    expect(encodeCubeSpec(defaulted, REGISTRY)).toEqual(
+      partitionSpec({
+        columns: [],
+        sorts,
+        aggregations: [
+          { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead' },
+          { function: 'NTile', name: 'NTile' },
+        ],
+      }),
+    );
+  });
+
+  test('Keeps an offset or a bucket count out of range, or on a function that takes none, for validation to report', () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 0 },
+      { function: 'NTile', name: 'q', buckets: 2.5 },
+      { column: 'FREIGHT', function: 'Sum', name: 's', offset: 3 },
+    ];
+    const document = decodePartitionSpec(
+      partitionSpec({ columns: [], sorts: [], aggregations }),
+    );
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(
+      document,
+      partitionSpec({ columns: [], sorts: [], aggregations }),
+      REGISTRY,
+    );
+    // a setting that isn't a number can't be read
+    expect(() =>
+      decodeCubeSpec(
+        partitionSpec({
+          columns: [],
+          sorts: [],
+          aggregations: [{ function: 'NTile', name: 'q', buckets: '4' }],
+        }),
+        { registry: REGISTRY },
+      ),
+    ).toThrow();
+  });
 });
 
 describe(unitTest('Saved spec encoding: distincts'), () => {
@@ -3115,5 +3191,232 @@ describe(unitTest('Cube document'), () => {
     expect(changed.meta).toBe(DEFAULT_META);
     expectKept(changed, ['name', 'context', 'query', 'queryRest', 'rest']);
     expect(BASE.meta).toBe(META);
+  });
+});
+
+describe(unitTest('Saved spec encoding: differences'), () => {
+  const REGISTRY = createNodeRegistry();
+
+  /** The saved spec of one unconnected difference, `difference101`, with these fields of its own */
+  const differenceSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'difference101',
+      nodes: [
+        {
+          kind: 'difference',
+          id: 'difference101',
+          inputs: [null, null],
+          ...own,
+        },
+      ],
+    },
+  });
+
+  /** A document with this one unconnected difference */
+  const differenceDocument = (difference: Difference): CubeDocument =>
+    documentOf([difference], [], difference.id);
+
+  test('Always writes its key and difference columns, empty lists included', () => {
+    expectEncoded(
+      differenceDocument(DIFFERENCE_DEFINITION.create('difference101')),
+      differenceSpec({
+        leftColumns: [],
+        rightColumns: [],
+        differenceColumns: [],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Keeps its lists exactly, even when they differ in length, repeat or hold a blank', () => {
+    expectEncoded(
+      differenceDocument(
+        new Difference('difference101', {
+          leftColumns: ['BOOK', 'BOOK', ''],
+          rightColumns: ['BOOK_ID'],
+          differenceColumns: ['QTY', '', 'QTY'],
+        }),
+      ),
+      differenceSpec({
+        leftColumns: ['BOOK', 'BOOK', ''],
+        rightColumns: ['BOOK_ID'],
+        differenceColumns: ['QTY', '', 'QTY'],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes a swapped difference as it stands, with no swapped flag', () => {
+    const swapped = new Difference('difference101', {
+      leftColumns: ['BOOK'],
+      rightColumns: ['BOOK_ID'],
+      differenceColumns: ['QTY'],
+    }).withSwappedInputs();
+    expectEncoded(
+      differenceDocument(swapped),
+      differenceSpec({
+        leftColumns: ['BOOK_ID'],
+        rightColumns: ['BOOK'],
+        differenceColumns: ['QTY'],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Reads a difference back, and an older Cube keeps one it does not know', () => {
+    const json = differenceSpec({
+      leftColumns: ['BOOK'],
+      rightColumns: ['BOOK'],
+      differenceColumns: ['QTY'],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: REGISTRY,
+    }).document.query.getNode('difference101');
+    expect(node).toBeInstanceOf(Difference);
+    expect((node as Difference).differenceColumns).toEqual(['QTY']);
+    // without Difference registered, it is an Unknown node, written back as it was
+    const older = new NodeRegistry(
+      createNodeRegistry().transforms.filter(
+        (definition) => definition.type !== DIFFERENCE_DEFINITION.type,
+      ),
+    );
+    const unknown = decodeCubeSpec(json, { registry: older }).document;
+    expect(unknown.query.getNode('difference101')).toBeInstanceOf(UnknownNode);
+    expect(encodeCubeSpec(unknown, older)).toStrictEqual(json);
+  });
+});
+
+describe(unitTest('Saved spec encoding: extends'), () => {
+  const REGISTRY = createNodeRegistry();
+
+  /** The saved spec of one unconnected extend, `extend101`, with these fields of its own */
+  const extendSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'extend101',
+      nodes: [{ kind: 'extend', id: 'extend101', inputs: [null], ...own }],
+    },
+  });
+  const extendDocument = (extend: Extend): CubeDocument =>
+    documentOf([extend], [], extend.id);
+  /** `x | $x.QTY * 2`, a number literal as its digits */
+  const LAMBDA: JsonObject = {
+    _type: 'lambda',
+    parameters: [{ _type: 'var', name: 'x' }],
+    body: [
+      {
+        _type: 'func',
+        function: 'times',
+        parameters: [
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'property',
+                property: 'QTY',
+                parameters: [{ _type: 'var', name: 'x' }],
+              },
+              { _type: 'integer', value: '9007199254740993' },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  test('Writes a new extend as an empty list of columns, and nothing typed', () => {
+    expectEncoded(
+      extendDocument(EXTEND_DEFINITION.create('extend101')),
+      extendSpec({ columns: [] }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes each column with its code, its lambda once checked, and the types the engine gave', () => {
+    const extend = new Extend(
+      'extend101',
+      [
+        { name: 'big', code: 'x | $x.QTY * 9007199254740993', lambda: LAMBDA },
+        { name: 'draft', code: 'x | $x.', lambda: undefined },
+      ],
+      {
+        kind: 'typed',
+        signature: '1a2b3c',
+        types: [
+          PrimitiveType.get('Integer'),
+          PrimitiveType.get(`${PRECISE}Varchar`, [10]),
+        ],
+      },
+    );
+    expectEncoded(
+      extendDocument(extend),
+      extendSpec({
+        columns: [
+          {
+            name: 'big',
+            code: 'x | $x.QTY * 9007199254740993',
+            lambda: LAMBDA,
+          },
+          { name: 'draft', code: 'x | $x.' },
+        ],
+        typed: {
+          signature: '1a2b3c',
+          types: [
+            { path: 'Integer' },
+            { path: `${PRECISE}Varchar`, params: [10] },
+          ],
+        },
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Saves no failed typing: it is typed again on load', () => {
+    const extend = new Extend(
+      'extend101',
+      [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+      { kind: 'failed', signature: '1a2b3c', message: 'No such column' },
+    );
+    expect(encodeCubeSpec(extendDocument(extend), REGISTRY)).toStrictEqual(
+      extendSpec({ columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }] }),
+    );
+  });
+
+  test('Reads a typing without a type per column as nothing typed yet', () => {
+    const { document } = decodeCubeSpec(
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: { signature: '1a2b3c', types: [] },
+      }),
+      { registry: REGISTRY },
+    );
+    const node = document.query.getNode('extend101') as Extend;
+    expect(node).toBeInstanceOf(Extend);
+    expect(node.typing === UNTYPED).toBe(true);
+  });
+
+  test("Keeps a column, a typing or a typed column's type with a key this version doesn't know as an Unknown node", () => {
+    [
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA, window: true }],
+      }),
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: { signature: '1a2b3c', types: [{ path: 'Integer' }], at: 1 },
+      }),
+      // a key in a typed column's type
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: {
+          signature: '1a2b3c',
+          types: [{ path: 'Integer', unit: 'kg' }],
+        },
+      }),
+    ].forEach((json) => {
+      const { document } = decodeCubeSpec(json, { registry: REGISTRY });
+      expect(document.query.getNode('extend101')).toBeInstanceOf(UnknownNode);
+      expect(encodeCubeSpec(document, REGISTRY)).toStrictEqual(json);
+    });
   });
 });

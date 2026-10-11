@@ -61,7 +61,9 @@ const LIMIT = 'Take first <x> rows';
 const SLICE = 'Take rows <x> to <y>';
 const CONCAT = 'Concatenate Another Input';
 const JOIN = 'Join Another Input';
+const DIFFERENCE = 'Compare Column Values';
 const PARTITION = 'Apply Window Functions';
+const EXTEND = 'Extend Columns';
 
 const render = async (
   document?: CubeDocument,
@@ -182,7 +184,9 @@ describe('Cube palette', () => {
       SLICE,
       CONCAT,
       JOIN,
+      DIFFERENCE,
       PARTITION,
+      EXTEND,
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();
     expect(paletteItem(FILTER).querySelector('svg')).not.toBeNull();

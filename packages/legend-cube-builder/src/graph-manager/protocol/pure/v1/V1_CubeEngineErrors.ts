@@ -18,6 +18,7 @@ import { NetworkClientError, type PlainObject } from '@finos/legend-shared';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeSourceLocation,
   type NodeId,
 } from '../../../CubeEngine.js';
 import { V1_parseCubeSourceId } from './V1_CubeLambdaSerializer.js';
@@ -36,10 +37,36 @@ const COMPILATION_ERROR_TYPES = new Set(['COMPILATION', 'PARSER']);
 const DEPOT_FAILURE =
   /unable to load information from the Pure SDLC(?: using: <a href='(?<url>[^']*)')?/u;
 
+/** Where the source information says the error is, when it gives every line and column */
+const readLocation = (
+  sourceInformation: PlainObject,
+): CubeSourceLocation | undefined => {
+  const { sourceId, startLine, startColumn, endLine, endColumn } =
+    sourceInformation;
+  const lines = [startLine, startColumn, endLine, endColumn];
+  return typeof sourceId === 'string' &&
+    lines.every((value) => Number.isInteger(Number(value)) && Number(value) > 0)
+    ? {
+        sourceId,
+        startLine: Number(startLine),
+        startColumn: Number(startColumn),
+        endLine: Number(endLine),
+        endColumn: Number(endColumn),
+      }
+    : undefined;
+};
+
 /** The engine's error payload: `{message, errorType?, sourceInformation?, trace?}` */
 const readPayload = (
   payload: unknown,
-): { message: string; errorType?: string; sourceId?: string } | undefined => {
+):
+  | {
+      message: string;
+      errorType?: string;
+      sourceId?: string;
+      location?: CubeSourceLocation;
+    }
+  | undefined => {
   if (!payload || typeof payload !== 'object') {
     return undefined;
   }
@@ -48,16 +75,19 @@ const readPayload = (
     return undefined;
   }
   const depotFailure = DEPOT_FAILURE.exec(message);
-  const sourceId =
+  const located =
     sourceInformation && typeof sourceInformation === 'object'
-      ? (sourceInformation as PlainObject).sourceId
+      ? (sourceInformation as PlainObject)
       : undefined;
+  const sourceId = located?.sourceId;
+  const location = located ? readLocation(located) : undefined;
   return {
     message: depotFailure
       ? `The engine couldn't load the cube's project from its depot${depotFailure.groups?.url ? ` (${depotFailure.groups.url})` : ''}: check that the version is published and the depot can be reached`
       : message,
     ...(typeof errorType === 'string' ? { errorType } : {}),
     ...(typeof sourceId === 'string' ? { sourceId } : {}),
+    ...(location ? { location } : {}),
   };
 };
 
@@ -82,6 +112,7 @@ export const V1_buildCubeEngineError = (
     read.message,
     origin?.nodeId ?? fallbackNodeId,
     origin?.role,
+    read.location,
   );
 };
 

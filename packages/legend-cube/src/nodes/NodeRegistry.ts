@@ -27,6 +27,8 @@ import { emitConcat } from '../ir/emitters/ConcatEmitter.js';
 import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
+import { emitDifference } from '../ir/emitters/DifferenceEmitter.js';
+import { emitExtend } from '../ir/emitters/ExtendEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitPartition } from '../ir/emitters/PartitionEmitter.js';
@@ -42,6 +44,8 @@ import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
+import { DIFFERENCE_CODEC } from '../spec/codecs/DifferenceCodec.js';
+import { EXTEND_CODEC } from '../spec/codecs/ExtendCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { PARTITION_CODEC } from '../spec/codecs/PartitionCodec.js';
@@ -65,6 +69,8 @@ import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Group } from './transforms/Group.js';
+import { Difference } from './transforms/Difference.js';
+import { Extend } from './transforms/Extend.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
 import { Partition } from './transforms/Partition.js';
@@ -315,6 +321,30 @@ export const JOIN_DEFINITION: TransformDefinition<Join> = {
   spec: JOIN_CODEC,
 };
 
+/** Extend, "Extend Columns" (spec §7.14, PLAN §11.7) */
+export const EXTEND_DEFINITION: TransformDefinition<Extend> = {
+  kind: 'transform',
+  type: Extend.TYPE,
+  label: 'Extend Columns',
+  icon: 'extend',
+  beta: false,
+  create: (id) => new Extend(id),
+  emit: emitExtend,
+  spec: EXTEND_CODEC,
+};
+
+/** Difference, "Compare Column Values" (spec §7.12, PLAN §11.7) */
+export const DIFFERENCE_DEFINITION: TransformDefinition<Difference> = {
+  kind: 'transform',
+  type: Difference.TYPE,
+  label: 'Compare Column Values',
+  icon: 'difference',
+  beta: false,
+  create: (id) => new Difference(id),
+  emit: emitDifference,
+  spec: DIFFERENCE_CODEC,
+};
+
 /**
  * The node types Cube offers, as the one source of truth for the palette, the
  * context menu and the saved-spec codec. The Unknown type is reserved: it is
@@ -380,5 +410,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     SLICE_DEFINITION,
     CONCAT_DEFINITION,
     JOIN_DEFINITION,
+    DIFFERENCE_DEFINITION,
     PARTITION_DEFINITION,
+    EXTEND_DEFINITION,
   ]);

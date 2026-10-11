@@ -92,7 +92,17 @@ const ALL_COLUMN_FUNCTIONS = [
   'Max',
 ];
 /** How the function select shows the functions that take no column, after the column functions */
-const NO_COLUMN_FUNCTIONS = ['Count Rows', 'Rank', 'Dense Rank', 'Row Number'];
+const NO_COLUMN_FUNCTIONS = [
+  'Count Rows',
+  'Rank',
+  'Dense Rank',
+  'Row Number',
+  'NTile',
+  'Percent Rank',
+  'Cumulative Distribution',
+];
+/** The functions of another row, on a column a window can sort by, between the two */
+const ROW_FUNCTIONS = ['Lag', 'Lead', 'First', 'Last'];
 
 const ordersPartitioned = (
   columns: string[],
@@ -464,12 +474,13 @@ describe('Partition editor', () => {
     ]);
   });
 
-  test("Offers the column type's functions, then Count Rows, Rank, Dense Rank and Row Number; every column function before a column is picked", async () => {
+  test("Offers the column type's functions, then Lag, Lead, First and Last on a column it can sort by, then Count Rows and the rank functions; every column function before a column is picked", async () => {
     await render(ordersPartitioned([], [BY_DATE], []));
     await openPartition();
     expect(functions(1)).toEqual([
       'Pick a function',
       ...ALL_COLUMN_FUNCTIONS,
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
     pick(1, 'SHIP_COUNTRY');
@@ -477,11 +488,13 @@ describe('Partition editor', () => {
       'Count',
       'Distinct Count',
       'Distinct Value',
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
     pick(1, 'ORDER_ID');
     expect(functions(1)).toEqual([
       ...ALL_COLUMN_FUNCTIONS,
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
     pick(1, 'ORDER_DATE');
@@ -491,9 +504,11 @@ describe('Partition editor', () => {
       'Distinct Value',
       'Min',
       'Max',
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
-    // a Variant or unknown type can be counted, though not partitioned by
+    // a Variant or unknown type can be counted, though not partitioned by,
+    // nor read from another row
     pick(1, 'PAYLOAD');
     expect(functions(1)).toEqual(['Count', ...NO_COLUMN_FUNCTIONS]);
     pick(1, 'SHAPE');
@@ -509,6 +524,7 @@ describe('Partition editor', () => {
       'Count',
       'Distinct Count',
       'Distinct Value',
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
     const incompatible = MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE(
@@ -532,6 +548,7 @@ describe('Partition editor', () => {
     expect(functions(1)).toEqual([
       'Median (unknown)',
       ...ALL_COLUMN_FUNCTIONS,
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
     const unknown = MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median');
@@ -542,6 +559,7 @@ describe('Partition editor', () => {
     choose(1, AVERAGE);
     expect(functions(1)).toEqual([
       ...ALL_COLUMN_FUNCTIONS,
+      ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
     expectRowProblem(1, undefined);
@@ -574,6 +592,7 @@ describe('Partition editor', () => {
       expect(name(1).value).toBe(autoName);
       expect(functions(1)).toEqual([
         ...ALL_COLUMN_FUNCTIONS,
+        ...ROW_FUNCTIONS,
         ...NO_COLUMN_FUNCTIONS,
       ]);
       expectRowProblem(1, undefined);
@@ -922,5 +941,145 @@ describe('Partition editor', () => {
     expect(problems()).toEqual([
       MESSAGE_NOT_IN_INPUT_SCHEMA('Partition column', 'SHIPPER'),
     ]);
+  });
+
+  test('Gives Lag and Lead an offset field and NTile a buckets field, with their defaults, and stores what is typed', async () => {
+    const editorState = await render(ordersPartitioned([], [BY_DATE], []));
+    await openPartition();
+    const setting = (label: string): HTMLInputElement =>
+      within(panel()).getByLabelText<HTMLInputElement>(label);
+    pick(1, 'FREIGHT');
+    choose(1, 'Lag');
+    expect(name(1).value).toBe('FREIGHT Lag');
+    expect(setting('Aggregation offset 1').value).toBe('1');
+    expect(setting('Aggregation offset 1').title).toBe(
+      'How many rows back (Lag) or ahead (Lead), in the sort order',
+    );
+    fireEvent.change(setting('Aggregation offset 1'), {
+      target: { value: '2' },
+    });
+    // Lead keeps the offset typed
+    choose(1, 'Lead');
+    expect(setting('Aggregation offset 1').value).toBe('2');
+    fireEvent.click(button('Add window function'));
+    choose(2, 'NTile');
+    expect(within(panel()).queryByLabelText('Aggregation offset 2')).toBeNull();
+    expect(setting('Aggregation buckets 2').value).toBe('4');
+    fireEvent.click(button('Add window function'));
+    pick(3, 'SHIP_COUNTRY');
+    choose(3, 'Last');
+    // a function without a setting has no field
+    expect(within(row(3)).queryAllByRole('textbox')).toHaveLength(1);
+    expect(problems()).toEqual([]);
+    fireEvent.click(button('Apply'));
+    expect(stored(editorState).aggregations).toEqual([
+      { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead', offset: 2 },
+      { column: undefined, function: 'NTile', name: 'NTile', buckets: 4 },
+      { column: 'SHIP_COUNTRY', function: 'Last', name: 'SHIP_COUNTRY Last' },
+    ]);
+  });
+
+  test("Marks an offset that isn't a whole number of at least 1 on its field, and a row function with no sort column on its function", async () => {
+    await render(ordersPartitioned([], [], []));
+    await openPartition();
+    const offset = (): HTMLInputElement =>
+      within(panel()).getByLabelText<HTMLInputElement>('Aggregation offset 1');
+    pick(1, 'FREIGHT');
+    choose(1, 'Lag');
+    // no sort column yet
+    expect(rowMessages(1)).toEqual([
+      'Aggregation function "Lag" requires at least one sort column.',
+    ]);
+    expect(functionPicker(1).getAttribute('aria-invalid')).toBe('true');
+    fireEvent.click(button('Add sort column'));
+    pickSort(1, 'ORDER_DATE');
+    expect(rowMessages(1)).toEqual([]);
+    ['0', '1.5', 'two', ''].forEach((text) => {
+      fireEvent.change(offset(), { target: { value: text } });
+      const problem =
+        'Aggregation function "Lag" needs an offset that is a whole number of at least 1.';
+      expect(rowMessages(1)).toEqual([problem]);
+      expect(offset().getAttribute('aria-invalid')).toBe('true');
+      expect(offset().title).toBe(problem);
+      expect(functionPicker(1).getAttribute('aria-invalid')).toBe('false');
+      // the text stays as typed
+      expect(offset().value).toBe(text);
+    });
+  });
+
+  test("Marks a name, not a setting, when the name's own problem quotes the words of a setting's", async () => {
+    const odd = 'x needs an offset that is a whole number of at least 1.';
+    await render(
+      ordersPartitioned(
+        [],
+        [BY_DATE],
+        [
+          { column: undefined, function: 'CountRows', name: odd },
+          { column: undefined, function: 'CountRows', name: odd },
+        ],
+      ),
+    );
+    await openPartition();
+    expect(rowMessages(2)).toEqual([
+      `Aggregation output name "${odd}" is already present in the output schema.`,
+    ]);
+    expect(name(2).getAttribute('aria-invalid')).toBe('true');
+  });
+
+  test("Keeps a saved offset that isn't a whole number, reported on its row, until its text is edited", async () => {
+    const editorState = await render(
+      ordersPartitioned(
+        [],
+        [BY_DATE],
+        [
+          { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 2.5 },
+          { column: 'FREIGHT', function: 'Sum', name: 's', offset: 1.5 },
+        ],
+      ),
+    );
+    await openPartition();
+    const offset = within(panel()).getByLabelText<HTMLInputElement>(
+      'Aggregation offset 1',
+    );
+    expect(offset.value).toBe('2.5');
+    expect(rowMessages(1)).toEqual([
+      'Aggregation function "Lag" needs an offset that is a whole number of at least 1.',
+    ]);
+    // a setting on a function that takes none is reported on its row too
+    expect(rowMessages(2)).toEqual([
+      'Aggregation function "Sum" does not take an offset.',
+    ]);
+    // an unrelated change and back keeps both, so nothing is stored
+    fireEvent.click(checkbox('SHIP_COUNTRY'));
+    fireEvent.click(checkbox('SHIP_COUNTRY'));
+    expect(button('Apply').disabled).toBe(true);
+    // edited, the offset is the text's
+    fireEvent.change(offset, { target: { value: '3' } });
+    expect(rowMessages(1)).toEqual([]);
+    fireEvent.click(button('Apply'));
+    expect(stored(editorState).aggregations[0]).toEqual({
+      column: 'FREIGHT',
+      function: 'Lag',
+      name: 'p',
+      offset: 3,
+    });
+    expect(stored(editorState).aggregations[1]?.offset).toBe(1.5);
+  });
+
+  test('Reports a saved offset on a function that takes none until the function is picked again', async () => {
+    await render(
+      ordersPartitioned(
+        [],
+        [BY_DATE],
+        [{ column: 'FREIGHT', function: 'Sum', name: 's', offset: 3 }],
+      ),
+    );
+    await openPartition();
+    expect(rowMessages(1)).toEqual([
+      'Aggregation function "Sum" does not take an offset.',
+    ]);
+    expect(within(panel()).queryByLabelText('Aggregation offset 1')).toBeNull();
+    choose(1, 'Sum');
+    expect(rowMessages(1)).toEqual([]);
   });
 });

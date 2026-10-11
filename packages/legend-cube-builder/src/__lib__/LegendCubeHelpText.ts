@@ -17,9 +17,11 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  Difference,
   IngestDatasetSource,
   Distinct,
   Drop,
+  Extend,
   Filter,
   Group,
   Join,
@@ -48,9 +50,13 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Sources data from a data set of a deployed ingest definition.',
   [Concat.TYPE]:
     'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
+  [Difference.TYPE]:
+    'Compares numeric values of specified columns from two previous data sets.',
   [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',
   [Drop.TYPE]:
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
+  [Extend.TYPE]:
+    'Extends outgoing data set with new columns produced by expressions.',
   [Filter.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
   [Group.TYPE]:

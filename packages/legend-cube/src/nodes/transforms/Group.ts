@@ -34,6 +34,7 @@ import { isStringList } from '../../utils/AssertionUtils.js';
 import type { JsonObject } from '../../utils/Json.js';
 import {
   type ColumnAggregation,
+  freezeColumnAggregation,
   getAggregationResultType,
   isAggregationFunction,
   isColumnAggregation,
@@ -108,9 +109,7 @@ export class Group extends UnaryNode {
     }
     this.columns = Object.freeze([...columns]);
     this.aggregations = Object.freeze(
-      aggregations.map(({ column, function: fn, name }) =>
-        Object.freeze({ column, function: fn, name }),
-      ),
+      aggregations.map(freezeColumnAggregation),
     );
   }
 

@@ -481,6 +481,56 @@ describe('Cube lambda serializer: shapes', () => {
     expect(bodyOf({ k: 'raw', json })).toEqual(json);
   });
 
+  test("Writes an expression's lambda with its numbers digit for digit, and its origin on every value specification in place of any source information", () => {
+    const EXPRESSION: Origin = {
+      nodeId: 'extend101',
+      role: EmitRole.EXPRESSION,
+    };
+    const written = text(
+      lambda(
+        [],
+        [
+          {
+            k: 'lambdaJson',
+            json: {
+              _type: 'lambda',
+              parameters: [{ _type: 'var', name: 'x' }],
+              body: [
+                {
+                  _type: 'func',
+                  function: 'times',
+                  sourceInformation: { sourceId: 'extend101:0' },
+                  parameters: [
+                    {
+                      _type: 'collection',
+                      multiplicity: { lowerBound: 2, upperBound: 2 },
+                      values: [
+                        { _type: 'integer', value: '9007199254740993' },
+                        { _type: 'decimal', value: '1.10' },
+                        { _type: 'string', value: '12' },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            origin: EXPRESSION,
+          },
+        ],
+      ),
+    );
+    // digit for digit, a decimal's trailing zero too; a string stays a string
+    expect(written).toContain('"value":9007199254740993');
+    expect(written).toContain('"value":1.10');
+    expect(written).toContain('"value":"12"');
+    expect(written).not.toContain('extend101:0');
+    const stamps = written.match(/"sourceId":"cube:extend101:expression"/gu);
+    // the lambda, its parameter, the func, the collection and its three values
+    expect(stamps).toHaveLength(7);
+    // the multiplicity has no _type, so it isn't stamped
+    expect(written).toContain('"multiplicity":{"lowerBound":2,"upperBound":2}');
+  });
+
   test("Writes a let as the engine's letFunction, stamped with its origin, name and all", () => {
     const LET: Origin = { nodeId: 'partition101', role: EmitRole.LET };
     const DISTINCT: Origin = { nodeId: 'distinct101', role: EmitRole.DISTINCT };

@@ -7,8 +7,10 @@ canvas read that registry, so the new type shows there with no change here.
 The builder adds four pieces: a draft, an editor and help text, in registries keyed by node type, and an icon, keyed by
 the icon name the node's definition gives. Join and Filter are the examples to follow; Group for an editor of rows
 (`CubeGroupEditor`, `CubeGroupDraft`), Concat for a two-input editor with fixes and one setting
-(`CubeConcatEditor`, `CubeConcatDraft`), and Partition for an editor made of the shared rows
-(`CubePartitionEditor`, `CubePartitionDraft`).
+(`CubeConcatEditor`, `CubeConcatDraft`), Partition for an editor made of the shared rows
+(`CubePartitionEditor`, `CubePartitionDraft`), Difference for a two-input editor sharing Join's key rows
+(`CubeDifferenceEditor`, `CubeDifferenceDraft`), and Extend for an editor that asks the engine before Apply
+(`CubeExtendEditor`, `CubeExtendDraft`).
 
 ## 1. A draft
 
@@ -20,7 +22,17 @@ it).
   edited, actions that change them, and `build()`. `build()` returns `original` itself while nothing was edited, and
   otherwise a new node with the same id and `rest`. The panel also treats a node that saves the same as `original`
   as no change.
-- Register a factory in `CUBE_NODE_DRAFT_FACTORIES` (`src/stores/editors/CubeNodeDraftRegistry.ts`).
+- Register a factory in `CUBE_NODE_DRAFT_FACTORIES` (`src/stores/editors/CubeNodeDraftRegistry.ts`); it gets the
+  editor state too, for a draft that needs the engine.
+- A draft that must ask the engine before its node can be stored, as Extend's Validate does, says why in
+  `applyDisabledReason`: the panel then disables Apply with that reason as its title, and shows it in place of the
+  Problems list until it is `undefined`. Its engine work is a MobX `flow` on the draft; the node it builds then holds
+  the engine's answer (Extend's lambdas and typing), so it needs no more engine work once applied. While the reason
+  is set, Apply refuses the draft, and closing the panel or opening another node keeps it open with a notice
+  (`getEditorKeptOpenNotice`) rather than storing or dropping the edits.
+- A draft whose node the cube may replace underneath it with one that differs in nothing it edits, such as an Extend
+  typed in the background, overrides `follow(node)` to go on from the new node, keeping its rows; by default the panel
+  drops the edits with a notice (`CubeNodeEditorState.sync`).
 - A transform with nothing to set, such as Distinct, has no draft: it registers an editor that only describes it
   (`CubeDistinctEditor`) and is listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`, which the registry test skips when it
   asks for a factory. The panel then shows no Apply or Cancel, and no Problems list (PLAN §7.4 item 2): every
@@ -38,8 +50,18 @@ it).
   the draft applied (`queryWithEdits`), as one undo step, the panel staying on the node. The editor shows the fix's
   changes from the core's plan, given the draft's settings, so the editor and the store agree on what it offers.
 - `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
+- Join's key-pair rows are shared with Difference (`CubeJoinKeyRows`, over a `CubeJoinKeysDraft` from
+  `CubeJoinKeyPairs.ts`); `CubeColumnChecklist` takes a reason per column (`unpickableReason`), as Difference's
+  difference columns do.
+- A code editor is legend-lego's `CodeEditor` (language `pure`), with the error it should underline built from the
+  engine's location (`CubeEngineError.location`, as a legend-graph `CompilationError` with its `SourceInformation`),
+  as `CubeExtendEditor` does. Parse a text under a source id that names the row, so a parse error, and a typing error
+  on the text just parsed, point back to it. A stored lambda has no locations, and a plan has none either: the
+  Extend draft finds the row of a plan error by planning the columns' prefixes.
 - Rows that Group, Sort and Partition share: `CubeAggregationRowEditor` (column, function and output name, given its
-  function list, the `AggregationUse` and what a function that takes no column shows in the column's place),
+  function list, the `AggregationUse` and what a function that takes no column shows in the column's place, and a
+  field for a function's setting, Lag's and Lead's offset or NTile's bucket count, when the editor gives
+  `onSetting`; the row keeps a setting as typed text, parsed as Limit's size is),
   `CubeSortRowEditor` (column, direction, move and remove; `getSortRowProblems`, `getTakenSortColumns`) and
   `CubeColumnChecklist` (the input's columns, ticked, those that can't be compared shown but not tickable), with their
   drafts' helpers in `CubeAggregationRows.ts` and `CubeSortRows.ts`. They are driven by callbacks, so a new editor
@@ -76,6 +98,29 @@ text (§17.9) where it has one.
 
 Map the icon name of the node's definition to a legend-art icon in `NODE_ICONS` (`src/components/CubeNodeIcon.tsx`).
 
+## A node the engine types
+
+Extend's types come from the engine (the core guide). `CubeEditorState` types every Extend that waits on `ERR_TYPING`
+through a reaction (`extendsToType`, `retypeExtends`), in one `typeLambdas` call, outside the undo history: the
+answer replaces the very nodes sent, in the cube shown and in the undo snapshots that give the engine the same input
+(`replaceOutsideHistory` takes a predicate per snapshot), and an answer for a node changed meanwhile is dropped. Each
+node is typed as a chain after its input's relation, one chain per first k columns (`src/stores/CubeExtendTyping.ts`),
+so a failure names its column.
+
+A chain's types depend on what the engine sees of the input, which Cube's schema doesn't fully show (an Extend's
+columns are nullable to Cube, `[1]` to the engine after `toOne()`). So each typing records `upstream`, a digest of the
+input's emitted relation and the model (`getCubeExtendUpstream`), and the editor adds its own query rule to
+`analysis` (`createStaleCubeExtendTypingRule`): an Extend whose digest differs waits on `ERR_TYPING` and is typed
+again. Execute reads that validity as well as the emitter's `canEmit`, since the emitter doesn't know the rule. The
+digest covers the whole relation, filter values included, so any edit above an Extend has it typed again. A typing
+without a digest, as one loaded, is used as it is; on import every Extend is typed once more, as sources are checked
+again, which records one. When the engine can't be reached, a typing still current for its input is kept, with a
+warning. Every way out of `retypeExtends` leaves the node not stale, or the reaction would loop.
+
+The canvas shows a waiting node as resolving (`isTypingNode`), the header says so, and the panel leaves `ERR_TYPING`
+out of its problems. A new node type the engine types needs the same: today the reaction, the rule and the typing
+are Extend's.
+
 ## Warnings
 
 A warning is never an error: it doesn't make the node invalid or keep Execute from running. A warning worked out from
@@ -99,7 +144,9 @@ output to have the column, maps a Rename's new name back to its old one, and fol
 side the join keeps. A Group's keys and its Distinct Value, Min and Max outputs map back to their columns, and its
 counts, sums and averages to none, as a Partition's window functions do, its input columns passing through; a
 Concat's columns come from both inputs under the same name. Every other node is
-taken to pass its input's columns through under the same name. If a new transform's output columns aren't its inputs'
+taken to pass its input's columns through under the same name: an Extend's input columns do, and its new columns,
+which the input lacks, come from none. A Difference's `x_1` and `x_2` come from `x` on their side, its difference
+from none. If a new transform's output columns aren't its inputs'
 under the same name (a computed column, say), teach `findColumnOrigins` how they map back, or the warning goes missing
 or shows on the wrong column.
 
@@ -123,6 +170,11 @@ or shows on the wrong column.
   database types can't plan at all goes in a list of its own over the types that can: windows are in
   `WINDOW_SHAPES`, over `WINDOW_DATABASE_TYPES` (Spanner, Presto and Composite refuse any window), with the refusal
   pinned.
+
+- A draft that waits for the engine is tested against the fake engine's mocks (`parseExpression`, `typeLambdas`,
+  `planLambda` in `FakeCubeEngine`), and an editor that changes a draft from the test wraps the change in `act`. An
+  editor with a code editor needs `MockedMonacoEditorInstance.getValue.mockReturnValue('')` before it renders: the
+  mocked editor holds no text of its own.
 
 The `v1/` adapter (`V1_CubeLambdaSerializer`) needs no change while the operation's emitter uses only IR and literal
 kinds it already writes. A new kind of IR node or literal needs its own case there, with a test in

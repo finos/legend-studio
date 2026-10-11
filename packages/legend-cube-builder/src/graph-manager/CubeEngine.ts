@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { IR, ModelContext, Schema } from '@finos/legend-cube';
+import type { IR, JsonObject, ModelContext, Schema } from '@finos/legend-cube';
 
 // The engine port (PLAN §8.7): what Cube asks of an engine, in Cube's own
 // terms. Only its Legend implementation, under `protocol/pure/v1/`, knows the
@@ -102,6 +102,30 @@ export enum CubeEngineErrorKind {
 }
 
 /**
+ * Where in a text the engine places a problem: the source id the text was
+ * parsed under, and its 1-based first and last lines and columns, the last
+ * column included (an Extend column's expression, PLAN §11.7)
+ */
+export interface CubeSourceLocation {
+  readonly sourceId: string;
+  readonly startLine: number;
+  readonly startColumn: number;
+  readonly endLine: number;
+  readonly endColumn: number;
+}
+
+/**
+ * An expression's text as the engine's JSON (PLAN §11.7), its number
+ * literals as their digit strings: as a column stores it, with no source
+ * information, and as the engine located it in the text, so a later error
+ * can point into the text
+ */
+export interface CubeParsedExpression {
+  readonly lambda: JsonObject;
+  readonly located: JsonObject;
+}
+
+/**
  * An engine failure, placed on the node it concerns: the node a stamp in the
  * error points to, else the source being typed or the node being run.
  */
@@ -114,12 +138,15 @@ export class CubeEngineError extends Error {
   readonly firstLine: string;
   /** The engine's whole message, without its Java trace, shown in the panel */
   readonly detail: string;
+  /** Where in a text the error is, when the text was parsed with its locations */
+  readonly location: CubeSourceLocation | undefined;
 
   constructor(
     kind: CubeEngineErrorKind,
     detail: string,
     nodeId?: NodeId,
     role?: string,
+    location?: CubeSourceLocation,
   ) {
     const firstLine = detail.split('\n', 1)[0]?.trim() ?? '';
     super(firstLine);
@@ -129,6 +156,7 @@ export class CubeEngineError extends Error {
     this.firstLine = firstLine;
     this.nodeId = nodeId;
     this.role = role;
+    this.location = location;
   }
 }
 
@@ -166,4 +194,18 @@ export interface CubeEngine {
   ): Promise<CubeResult>;
   /** The Pure text of a lambda, for display only: never parsed back */
   renderPure(lambda: IR): Promise<string>;
+  /**
+   * An Extend column's expression as the engine's JSON (PLAN §11.7), located
+   * under the source id; rejects with a `CubeEngineError` placed in the text
+   */
+  parseExpression(
+    code: string,
+    sourceId: string,
+  ): Promise<CubeParsedExpression>;
+  /**
+   * Plans an execution lambda for its runtime's database, as a run would,
+   * without running it: some expressions type, then fail when planned (PLAN
+   * §11.7). Rejects with a `CubeEngineError`
+   */
+  planLambda(model: ModelContext, lambda: IR): Promise<void>;
 }

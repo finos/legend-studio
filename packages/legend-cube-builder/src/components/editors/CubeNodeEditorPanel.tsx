@@ -18,6 +18,7 @@ import { QuestionCircleIcon, TimesIcon, WarningIcon } from '@finos/legend-art';
 import {
   isIncompleteError,
   isSchemasError,
+  isTypingError,
   type QueryNode,
   type Schema,
   UnknownNode,
@@ -47,7 +48,8 @@ const validateEdited = (
 ): string[] => {
   const errors: string[] = [];
   node.validate(inputSchemas, errors);
-  return [...new Set(errors)];
+  // waiting for the engine to type an Extend is no problem (PLAN §11.7)
+  return [...new Set(errors)].filter((error) => !isTypingError(error));
 };
 
 /**
@@ -112,8 +114,10 @@ export const CubeNodeEditorPanel = observer(
       .filter((schema): schema is Schema => schema !== undefined);
     const Editor = CUBE_NODE_EDITORS.get(node.type);
     const isEditable = CUBE_NODE_DRAFT_FACTORIES.has(node.type);
+    // a draft that waits, e.g. on a Validate, says why in place of its problems
+    const waiting = draft.applyDisabledReason;
     const problems =
-      isEditable && !inputProblems.length
+      isEditable && !inputProblems.length && waiting === undefined
         ? validateEdited(edited, inputSchemas)
         : [];
     const warnings = editorState.getNodeWarnings(node);
@@ -176,7 +180,9 @@ export const CubeNodeEditorPanel = observer(
             className="flex h-6 w-6 shrink-0 items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             title={
               nodeEditor.hasChanges && !readOnly
-                ? 'Close, applying the changes'
+                ? draft.applyDisabledReason !== undefined
+                  ? `Can't close yet: ${draft.applyDisabledReason}, or Cancel`
+                  : 'Close, applying the changes'
                 : 'Close'
             }
             aria-label="Close the editor"
@@ -218,6 +224,15 @@ export const CubeNodeEditorPanel = observer(
             </div>
           )}
         </div>
+        {isEditable && !inputProblems.length && waiting !== undefined && (
+          // in place of the problems, under the body too
+          <div
+            className="shrink-0 break-words border-t border-[var(--color-border-default)] px-2 py-1 text-base text-[var(--color-text-secondary)]"
+            role="status"
+          >
+            {waiting}
+          </div>
+        )}
         {problems.length > 0 && (
           // under the body, so they stay in view while it scrolls
           <div
@@ -243,9 +258,14 @@ export const CubeNodeEditorPanel = observer(
               title={
                 readOnly
                   ? READ_ONLY_CUBE_TITLE
-                  : 'Store the changes, as one step to undo'
+                  : (draft.applyDisabledReason ??
+                    'Store the changes, as one step to undo')
               }
-              disabled={readOnly || !nodeEditor.hasChanges}
+              disabled={
+                readOnly ||
+                !nodeEditor.hasChanges ||
+                draft.applyDisabledReason !== undefined
+              }
               onClick={() => nodeEditor.apply()}
             >
               Apply

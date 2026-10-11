@@ -894,7 +894,9 @@ describe("The header's Add Items", () => {
     'Take rows <x> to <y>',
     'Concatenate Another Input',
     'Join Another Input',
+    'Compare Column Values',
     'Apply Window Functions',
+    'Extend Columns',
   ];
 
   const slice = (): CubeDocument =>

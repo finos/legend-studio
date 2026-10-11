@@ -24,12 +24,15 @@ import {
 import {
   Connection,
   CubeDocument,
+  Extend,
   type IR,
+  type JsonObject,
   Limit,
   Query,
   Sort,
   SortDirection,
 } from '@finos/legend-cube';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   act,
@@ -138,6 +141,10 @@ const renderPage = async (
 
 const pressF9 = (target: Element | Document = document): void => {
   fireEvent.keyDown(target, { key: 'F9', code: 'F9' });
+};
+
+const pressF10 = (target: Element | Document = document): void => {
+  fireEvent.keyDown(target, { key: 'F10', code: 'F10' });
 };
 
 const pressUndo = (
@@ -581,6 +588,41 @@ describe('Cube keyboard shortcuts', () => {
     );
     expect(within(graph()).getByText('Undo').title).toBe(
       'Undo the last change (Ctrl+Z / Cmd+Z)',
+    );
+  });
+
+  test('Validates the expressions of the Extend being edited on F10, and does nothing without one', async () => {
+    // the mocked code editor holds no text of its own
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    const { fake } = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Extend('extend101'),
+          ],
+          [new Connection('relational101', 'extend101', 'tds')],
+          'extend101',
+        ),
+      }),
+    );
+    const lambda: JsonObject = {
+      _type: 'lambda',
+      parameters: [{ _type: 'var', name: 'x' }],
+      body: [{ _type: 'integer', value: '1' }],
+    };
+    fake.parseExpression.mockResolvedValue({ lambda, located: lambda });
+    pressF10();
+    expect(fake.parseExpression).not.toHaveBeenCalled();
+    fireEvent.click(await TEST__findCanvasNode('extend101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    pressF10();
+    await waitFor(() =>
+      expect(fake.parseExpression).toHaveBeenCalledWith(
+        'x | ',
+        expect.stringMatching(/^extend101:\d+$/u),
+      ),
     );
   });
 });

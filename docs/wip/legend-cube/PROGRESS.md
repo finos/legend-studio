@@ -52,18 +52,22 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     2026-10-09): skeptic verification and the demo video, then Part B2's ingest steps in an internal deployment. Later:
     reading a definition from Depot at its deployed version (the SDLC pointer), and producers' user-id environments.
   - Sample data and example cubes (PLAN §6.9, user, 2026-10-09), before Depot databases, to make Cube easy to demo:
-    Sports and Trades sample models beside Northwind, and six example cubes, merged into `cube-dev` as #5660. Then an
-    Examples dialog in place of the tab (user, 2026-10-10): a grid of dataset and example cards with icons, on
-    `cube-examples-modal`.
-  - Depot databases (PLAN §6.3; released versions only, no dependency Databases, one PR, user 2026-10-10) on
-    `cube-depot-dbs`, finos/legend-studio#5663 into `cube-dev`: the mock depot's sample projects, the pointer model,
+    Sports and Trades sample models beside Northwind, and six example cubes, merged into `cube-dev` as #5660
+    (`1f8f8cf0b`), its demo video recorded. Then an Examples dialog in place of the tab (user, 2026-10-10): a grid of
+    dataset and example cards with icons, merged into `cube-dev` as #5661 (`1f77e8e29`).
+  - Depot databases (PLAN §6.3; released versions only, no dependency Databases, one PR, user 2026-10-10),
+    finos/legend-studio#5663, merged into `cube-dev` (`b23afd19f`): the mock depot's sample projects, the pointer model,
     the project catalog, the Project tab, the Source panel rows, tests (CI and the manual `cube-local` group) and docs.
-    Verification and the demo video come after the PR, once tested deployed.
 - [ ] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.8, [PROGRESS-M3b.md](PROGRESS-M3b.md))
 - [x] M4 Group, Concat (merged as #5649, `d847e6721`; follow-ups in #5653)
-- [x] M5 Partition (windows), built in #5653 with M4's follow-ups, not merged yet ([PROGRESS-M5.md](PROGRESS-M5.md),
-      PLAN §11.6)
-- [ ] M6 Extend, Difference · M7 Grid and presentation
+- [x] M5 Partition (windows), built in #5653 with M4's follow-ups, squash-merged into `cube-dev` as `9e692a313`
+      ([PROGRESS-M5.md](PROGRESS-M5.md), PLAN §11.6). `cube-dev` reaches master through the draft #5659 (user,
+      2026-10-10: no approver over the weekend)
+- [x] M6 Difference and Extend, built on `cube-m6` in draft #5662 for `cube-dev`, rebased onto it with #5657, not
+      merged yet ([PROGRESS-M6.md](PROGRESS-M6.md), PLAN §11.7)
+- [x] M5b More window functions, built on `cube-m5b`, stacked on `cube-m6`, in draft #5665 for `cube-dev`, not merged
+      yet ([PROGRESS-M5B.md](PROGRESS-M5B.md), PLAN §11.9)
+- [ ] M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action

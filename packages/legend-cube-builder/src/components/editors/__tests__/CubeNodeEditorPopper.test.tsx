@@ -141,6 +141,14 @@ describe('Floating node editor', () => {
     expect(root?.style.visibility).not.toBe('hidden');
   });
 
+  test("Names its layer, which Cube's stylesheet styles outside `.legend-cube`", async () => {
+    await render();
+    const opened = await openEditor('join101');
+    // e.g. the red border of a field marked invalid (style/index.scss)
+    expect(opened.closest('.legend-cube')).toBeNull();
+    expect(opened.closest('.legend-cube__node-editor-layer')).not.toBeNull();
+  });
+
   test('Lays the editor out to float: its own size, its body scrolling between 80px and a third of the window', async () => {
     await render();
     const opened = await openEditor('join101');

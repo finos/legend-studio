@@ -16,11 +16,14 @@
 
 import {
   AggregationFunction,
+  Difference,
+  DifferenceSuffix,
   getSameNamedJoinKeys,
   Group,
+  isWindowRowFunction,
   Join,
-  Partition,
   JoinType,
+  Partition,
   type Query,
   RelationalTableSource,
   Rename,
@@ -28,35 +31,25 @@ import {
 } from '@finos/legend-cube';
 import { action, makeObservable, observable } from 'mobx';
 import type { CubeModelOutline } from '../../graph-manager/CubeEngine.js';
+import { isSameList } from './CubeAggregationRows.js';
+import {
+  blankJoinKeyPair,
+  type CubeJoinKeyPair,
+  type CubeJoinKeysDraft,
+  joinKeyListsOf,
+  joinKeyPairsOf,
+} from './CubeJoinKeyPairs.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
-
-/** One pair of key columns, matched by position; `''` until a column is picked */
-export interface CubeJoinKeyPair {
-  /** Identifies the row in the editor */
-  readonly key: number;
-  readonly left: string;
-  readonly right: string;
-}
-
-let nextPairKey = 1;
-
-const isSameList = (a: readonly string[], b: readonly string[]): boolean =>
-  a.length === b.length && a.every((name, index) => name === b[index]);
-
-/** The key lists pairs build: a pair with no column picked is left out */
-const toKeyLists = (
-  pairs: readonly CubeJoinKeyPair[],
-): [string[], string[]] => {
-  const kept = pairs.filter((pair) => pair.left || pair.right);
-  return [kept.map((pair) => pair.left), kept.map((pair) => pair.right)];
-};
 
 /**
  * The Join editor's draft (spec §17.6): the join type and the key column
  * pairs. A pair with no column picked on either side is left out when built,
  * as a Filter's blank rows are (user's choice, 2026-10-07).
  */
-export class CubeJoinDraft extends CubeNodeDraft<Join> {
+export class CubeJoinDraft
+  extends CubeNodeDraft<Join>
+  implements CubeJoinKeysDraft
+{
   joinType: JoinType;
   pairs: CubeJoinKeyPair[];
   /** Anything was changed; until then, `build()` gives the original back */
@@ -80,20 +73,8 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
       setRightColumn: action,
     });
     this.joinType = original.joinType;
-    this.pairs = Array.from(
-      {
-        length: Math.max(
-          original.leftColumns.length,
-          original.rightColumns.length,
-        ),
-      },
-      (_, index) => ({
-        key: nextPairKey++,
-        left: original.leftColumns[index] ?? '',
-        right: original.rightColumns[index] ?? '',
-      }),
-    );
-    this.initialKeyLists = toKeyLists(this.pairs);
+    this.pairs = joinKeyPairsOf(original.leftColumns, original.rightColumns);
+    this.initialKeyLists = joinKeyListsOf(this.pairs);
   }
 
   setJoinType(joinType: JoinType): void {
@@ -102,7 +83,7 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
   }
 
   addPair(): void {
-    this.pairs = [...this.pairs, { key: nextPairKey++, left: '', right: '' }];
+    this.pairs = [...this.pairs, blankJoinKeyPair()];
     this.touched = true;
   }
 
@@ -126,7 +107,7 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
   }
 
   build(): Join {
-    const [leftColumns, rightColumns] = toKeyLists(this.pairs);
+    const [leftColumns, rightColumns] = joinKeyListsOf(this.pairs);
     const [initialLeft, initialRight] = this.initialKeyLists;
     const { original } = this;
     return !this.touched ||
@@ -171,8 +152,9 @@ const groupInputName = (
 
 /**
  * The input column a Partition's output column comes from: an input column by
- * its name, a Distinct Value, Min or Max by its aggregated column; a count, a
- * sum, an average or a rank is no column's value, so it comes from none
+ * its name, a Distinct Value, Min or Max, or a Lag, Lead, First or Last (PLAN
+ * §11.9), by its column, whose values it holds; a count, a sum, an average or
+ * a rank is no column's value, so it comes from none
  */
 const partitionInputName = (
   partition: Partition,
@@ -184,8 +166,36 @@ const partitionInputName = (
   if (!aggregation) {
     return columnName;
   }
-  return VALUE_AGGREGATIONS.includes(aggregation.function)
+  return VALUE_AGGREGATIONS.includes(aggregation.function) ||
+    isWindowRowFunction(aggregation.function)
     ? aggregation.column
+    : undefined;
+};
+
+/**
+ * Where a Difference's output column comes from: `x_1` from the Left input's
+ * `x`, `x_2` from the Right input's, a key or another column from the inputs
+ * that have it (both for a key of the same name, which the full outer join
+ * merges); `x_valueDifference` is no column's value, so it comes from none
+ */
+const differenceInputOf = (
+  difference: Difference,
+  columnName: string,
+): { name: string; side?: 'left' | 'right' } | undefined => {
+  const of = (suffix: DifferenceSuffix): string | undefined =>
+    difference.differenceColumns.find(
+      (name) => `${name}${suffix}` === columnName,
+    );
+  const left = of(DifferenceSuffix.LEFT);
+  if (left !== undefined) {
+    return { name: left, side: 'left' };
+  }
+  const right = of(DifferenceSuffix.RIGHT);
+  if (right !== undefined) {
+    return { name: right, side: 'right' };
+  }
+  return of(DifferenceSuffix.DIFFERENCE) === undefined
+    ? { name: columnName }
     : undefined;
 };
 
@@ -203,8 +213,10 @@ export interface CubeColumnOrigin {
  * and from both for FULL OUTER, which merges them. A Group's key comes from
  * its column, and a Distinct Value, Min or Max from the column it aggregates,
  * as a Partition's do; a Partition's input columns come from its input. A
- * column the node's output doesn't have, e.g. one a Restrict dropped, or a
- * Group's or Partition's count, sum, average or rank, comes from nowhere.
+ * Difference's `x_1` and `x_2` come from `x` on their side. A column the node's
+ * output doesn't have, e.g. one a Restrict dropped, or a Group's or
+ * Partition's count, sum, average or rank, or a Difference's difference,
+ * comes from nowhere.
  */
 export const findColumnOrigins = (
   query: Query,
@@ -224,6 +236,23 @@ export const findColumnOrigins = (
   }
   const inputIds = query.getInputIds(nodeId);
   const [leftId, rightId] = inputIds;
+  if (node instanceof Difference) {
+    const input = differenceInputOf(node, columnName);
+    if (!input) {
+      return [];
+    }
+    const sides =
+      input.side === 'left'
+        ? [leftId]
+        : input.side === 'right'
+          ? [rightId]
+          : inputIds;
+    return sides.flatMap((inputId) =>
+      inputId !== undefined && analysis.schemas.get(inputId)?.lookup(input.name)
+        ? findColumnOrigins(query, analysis, inputId, input.name)
+        : [],
+    );
+  }
   const inputName =
     node instanceof Rename
       ? (node.mappings.find(({ to }) => to === columnName)?.from ?? columnName)
