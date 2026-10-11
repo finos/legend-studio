@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.11 done                                                      |
+| Step   | M7.1–M7.12 done                                                      |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -30,7 +30,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.9** The curated context menu
 - [x] **M7.10** The stats popover
 - [x] **M7.11** Column formatting and widths
-- [ ] **M7.12** Around the databases
+- [x] **M7.12** Around the databases
 - [ ] **M7.13** Guides, testing.md and the changeset
 - [ ] **M7.14** Verification and the browser rehearsal
 - [ ] **M7.15** A demo video of M7 (PLAN §11.3)
@@ -173,3 +173,10 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   presentation key became `columnStyles`. Tests: core (format lookup and edits, the codec), the formatter, the cell's
   red and fallback, the grid state's edits, the region (a saved currency format, the dialog from the cell's menu to a
   percent, a saved width). Browser: Largest buys, NOTIONAL_USD as USD with no places, `$2,206,337`.
+- **M7.12** (2026-10-11). The plan-only dialect test plans five drill-down shapes (the top level sorted by a Sum, a
+  country's cities, the cities with no country, a city's orders, the top level of a run with a Limit) on the 19
+  database types and DuckDB: every one plans, groups, and names its Sum; a run's Limit stays before the groups
+  everywhere (Sybase IQ by Cube's row numbers, `cube_rn <= 100` ahead of the GROUP BY). The conformance suite gains four
+  drill-down cases (the top level, a level below with an Average, a Distinct Count and nothing, the rows under an empty
+  and a float key, ALLTYPES by its Boolean): Cube's types are the engine's but for the Sums and Averages, which the
+  engine types never null (declared wider, as M4's); dropping one declaration fails the suite.
