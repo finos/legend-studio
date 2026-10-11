@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1 done                                                            |
+| Step   | M7.1–M7.2 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -20,7 +20,7 @@
 See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 
 - [x] **M7.1** The settled decisions (PLAN §11.10) and this file
-- [ ] **M7.2** Decimal literals sent as strings
+- [x] **M7.2** Decimal literals sent as strings
 - [ ] **M7.3** The drill-down in the core
 - [ ] **M7.4** Query derivation in the core
 - [ ] **M7.5** The builder's row fetcher
@@ -40,9 +40,10 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit     | Subject                                                 |
-| ---- | ---------- | ------------------------------------------------------- |
-| M7.1 | (this one) | docs: settle Legend Cube M7 (the grid and presentation) |
+| Step | Commit      | Subject                                                                    |
+| ---- | ----------- | -------------------------------------------------------------------------- |
+| M7.1 | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                    |
+| M7.2 | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit |
 
 ## Notes
 
@@ -57,3 +58,10 @@ Filled in as steps land.
   REAL (Float4) key isn't found again by `Equal` with the text the engine returns (0 of 25 `FREIGHT` keys), but is at
   its 32-bit value written in full (`Math.fround`), so the shared quick-filter rule will write it that way, which also
   fixes 'Filter by' on a REAL cell.
+- **M7.2** (2026-10-11). `V1_CubeLambdaSerializer` writes a decimal literal's value as its text, in a filter and in
+  an Extend's expression; integers and floats stay lossless JSON numbers. The engine reads the text as a `BigDecimal`
+  in every call Cube makes: rendering, typing and running (`p5-decimal-string.out`). Two engine cases on
+  `ALLTYPES.NUM` (`1.2345`) fail before the fix and pass after: `> 1.2344999999999999` gives rows 1 and 2, and `==`
+  gives none; as a JSON number the literal was read as `1.2345`. The ISSUES entry is gone; one patch changeset for M7
+  is started. Jest reads `@finos/legend-cube` from its `lib/`, which must be rebuilt after a rebase
+  (`yarn workspace @finos/legend-cube build`), or the builder's tests fail on code the build lacks.

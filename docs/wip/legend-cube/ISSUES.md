@@ -9,15 +9,6 @@
 
 ## Bugs
 
-### Decimal literals lose precision
-
-- **Found:** M1.7 verification. **Deferred** by the user on 2026-10-07, until after the main end-to-end.
-- **What:** the engine reads a `decimal` literal sent as a JSON number through a double. Digits past double precision
-  are lost (e.g. `0.10000000000000000001`), so a filter can return the wrong rows.
-- **Reachable:** only once a filter on a Decimal column can be built or imported (S7 import, M1.8b Filter editor).
-- **Suggested fix:** in `V1_CubeLambdaSerializer`, write a decimal literal's value as a JSON string (the engine's
-  `CDecimal` reads it with `new BigDecimal`). Verify it on the engine and add an engine-roundtrip test.
-
 ### The row limit accepts hexadecimal and exponent text
 
 - **Found:** M2's requirements and its first verification (2026-10-08). M1 page code, so not fixed in M2's Limit

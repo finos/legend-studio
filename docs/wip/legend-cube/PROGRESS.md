@@ -134,7 +134,7 @@ then the verify fixes in the commit after `8df31aaa3`. 1595 Cube tests green wit
   runtimes, Decimal/Number/Float result values, the engine commit logged by Part A. Fix run `m17-fixes`: each new
   test was shown to fail on the mutant
   its finding named.
-- **Deferred by the user** until after the main end-to-end: decimal-literal precision (still deferred, ISSUES.md).
+- **Deferred by the user** until after the main end-to-end: decimal-literal precision (fixed in M7.2: decimals are sent as text, PROGRESS-M7.md).
   Show Pure printing numbers as 0 was fixed later (`dcaf0efdb`).
 
 **M1.8 (editor state, page, picker, grid; then canvas and editors) has started.** Requirements: `m18-requirements`,

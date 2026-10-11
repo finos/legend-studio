@@ -689,6 +689,21 @@ describe('A.5 Precise literals', () => {
     ],
     // exact equality on a real DOUBLE
     ['D', FilterOperator.EQUAL, { kind: 'float', value: '2.5' }, ['1']],
+    // a decimal past a double's precision keeps its digits (sent as text):
+    // as a JSON number it was read as 1.2345, which lost row 1 and found it
+    // equal (PLAN §11.10)
+    [
+      'NUM',
+      FilterOperator.GREATER_THAN,
+      { kind: 'decimal', value: '1.2344999999999999' },
+      ['1', '2'],
+    ],
+    [
+      'NUM',
+      FilterOperator.EQUAL,
+      { kind: 'decimal', value: '1.2344999999999999' },
+      [],
+    ],
   ])(
     '%s %s %j gives the ALLTYPES rows %j',
     async (column, operator, value, ids) => {
