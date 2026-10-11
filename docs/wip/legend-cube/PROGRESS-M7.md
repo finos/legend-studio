@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                |
-| ------ | -------------------------------------------------------------------- |
-| Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
-| Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.13 done                                                      |
-| Tests  | Unchanged from `cube-dev`                                            |
+| Item   | State                                                                                           |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev`                            |
+| Engine | Local legend-engine on `localhost:6300`                                                         |
+| Step   | M7.1–M7.13 done; M7.14's browser rehearsal done, its reviewer verification awaits the user's go |
+| Tests  | Unchanged from `cube-dev`                                                                       |
 
 ## Steps
 
@@ -186,3 +186,10 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   client's format, the object-URL stub); ISSUES.md lists the grid's gaps (a level cut at the row limit, Excel
   unformatted and of the rows shown, local totals as doubles, two float groups that can merge, no server-side pivot).
   The changeset covers both packages. `check:pkg`, `check:ts`, `check:format` and `check:copyright` pass.
+- **M7.14, the browser rehearsal** (2026-10-11, :9004 with the engine on :6300): Top customers by orders; 'Drilldown by
+  "COUNTRY"' from a cell gives seven groups whose ORDER_COUNT sums are right (Germany 28 + 15 = 43, Sweden 37, USA 49);
+  the header sorts the groups by their sum, both ways, on the engine; Germany expands to its two customers; Runs (5)
+  lists the Execute, three group fetches and the rows of Germany with their SQL; Export ▸ CSV saves
+  `Top_customers_by_orders.csv` (`text/csv`, a header and the 10 rows, flat; the save intercepted, no file written);
+  Undo removes the drill-down and the grid shows the run's rows; no console error. Earlier checks: Largest buys sorted
+  on the engine, drilled down two levels, the group rows' settings, Format Column to USD, local mode's panels.
