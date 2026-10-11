@@ -606,7 +606,7 @@ export class CubeEditorState implements CommandRegistrar {
     return (
       this.sourcePicker.isOpen ||
       this.examples.isOpen ||
-      this.grid.isSettingsOpen ||
+      this.grid.isSettingsShown ||
       this.grid.formatColumn !== undefined ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen
@@ -1029,11 +1029,22 @@ export class CubeEditorState implements CommandRegistrar {
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
     }
-    const { query } = this.document;
+    const { query, meta } = this.document;
+    const restored = previous.withQuery(
+      previous.query === query ? query : previous.query.clone(),
+    );
+    // widths take no undo step, so the same cube keeps the ones set since
+    // (review of M7); the cube before an import keeps its own
     this.replaceDocument(
-      previous.withQuery(
-        previous.query === query ? query : previous.query.clone(),
-      ),
+      this.importedOver.has(previous)
+        ? restored
+        : restored.withMeta({
+            ...restored.meta,
+            presentation: {
+              ...restored.meta.presentation,
+              columnWidths: meta.presentation.columnWidths,
+            },
+          }),
     );
   }
 

@@ -4157,6 +4157,14 @@ aggregations}`, an aggregation per column only where it differs from the default
 - **Local mode's totals** (M7.6) read a column's values as JS numbers: the engine writes integers and decimals as
   exact text, which ag-grid's own Sum would join as text. A total past a double's precision is rounded there; local
   mode works on the fetched rows in the browser, and the exact totals are server-side mode's.
+- **From the review of M7** (M7.14): a level's type must have Equal as well as group (`isDrilldownLevelType`), so
+  StrictTime, whose groups Equal could never find again, isn't one; every group level's sort ends with the level's own
+  column, so a sort that leaves ties (a constant outer key, equal aggregations) still cuts a level the same way; each
+  server-side grid takes a token as it renders, and an answer for an earlier grid says nothing on the one shown now;
+  widths set since an edit survive its undo (not across an import); a format with no places keeps the value's own
+  digits (a currency at least its cents), and a negative that rounds to zero shows as zero; local mode's count totals
+  and the drill-down's count aggregations aren't formatted; the groups column exports and copies its key; a local
+  group row offers no Filter by; the shared format has its own Remove.
 - **Late answers are dropped:** a fetch started before an Execute, a mode switch, a new cube or the grid's destruction
   is never applied, by the run id `execute()` already keeps.
 - **Errors of a fetch** show in the grid region, as a run's, and fail only that level (`params.fail()`); they don't

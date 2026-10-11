@@ -163,8 +163,9 @@ const freeName = (
  * (`CheckedDrilldown.aggregationOf`) under a Group's own name and a Count
  * rows, then a Sort. At a group level the grid's sort on a group column is
  * kept, on another column becomes its aggregation's, and is left out on a
- * column with none; with no sort left, the groups are sorted by the new
- * level's column, so a level cut at the row limit is always the same. At the
+ * column with none; then the groups are sorted by the new level's column,
+ * unless the grid already sorts by it, so a level cut at the row limit is
+ * always the same. At the
  * leaf the grid's sort is kept as it is. A sort on a type that can't be
  * sorted is left out. Throws when a key can't be compared, or there are more
  * keys than levels.
@@ -267,11 +268,15 @@ export const deriveDrilldownLevel = (
         : true);
     return sortable ? [{ column: output, direction }] : [];
   });
-  if (!levelSorts.length && !isLeaf) {
-    levelSorts.push({
-      column: groupColumns.at(-1) as string,
-      direction: SortDirection.ASC,
-    });
+  // the groups always end sorted by the level's own column, so a level cut
+  // at the row limit is the same each time, whatever the grid's sort leaves
+  // tied: a constant outer key, equal aggregations (review of M7)
+  const levelColumn = groupColumns.at(-1);
+  if (
+    levelColumn !== undefined &&
+    !levelSorts.some(({ column }) => column === levelColumn)
+  ) {
+    levelSorts.push({ column: levelColumn, direction: SortDirection.ASC });
   }
   if (levelSorts.length) {
     append(new Sort(query.generateId(Sort.TYPE), levelSorts));

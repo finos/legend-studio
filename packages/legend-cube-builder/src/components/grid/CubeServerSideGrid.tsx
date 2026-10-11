@@ -24,7 +24,7 @@ import {
   type DataGridServerSideDatasource,
   type DataGridServerSideGetRowsParams,
 } from '@finos/legend-lego/data-grid';
-import { memo, useCallback, useEffect, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { NULL_CELL_TEXT } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
@@ -40,6 +40,15 @@ import {
   getCubeGridContextMenuItems,
   keepCubeColumnWidths,
 } from './CubeResultGrid.js';
+
+/** A group row's key as text, for export and copy: `(null)` for an empty one; nothing on a run row */
+const groupKeyText = (row: CubeGridRowData | undefined): string => {
+  if (!row?.isGroup) {
+    return '';
+  }
+  const key = row.keys.at(-1) ?? null;
+  return key === null ? NULL_CELL_TEXT : String(key);
+};
 
 /** A group's key in the groups' column, as its level's column shows a value */
 const CubeGroupKey: React.FC<
@@ -81,7 +90,9 @@ export const CubeServerSideGrid = memo(
   }) => {
     const { editorState, result, levels, presentation, darkMode } = props;
     const { grid } = editorState;
-    // a new grid for each run and drill-down (its key), whose levels say anew
+    // a new grid for each run and drill-down (its key): its own token, taken
+    // before ag-grid's first request, and its levels say anew
+    const [token] = useState(() => grid.beginGrid());
     useEffect(() => {
       grid.resetLevels();
     }, [grid]);
@@ -114,7 +125,12 @@ export const CubeServerSideGrid = memo(
           const keys = params.parentNode.data?.keys ?? [];
           const { startRow = 0, endRow, sortModel } = params.request;
           grid
-            .loadRows(result, keys, sortModel as readonly CubeGridSortRequest[])
+            .loadRows(
+              result,
+              keys,
+              sortModel as readonly CubeGridSortRequest[],
+              token,
+            )
             .then((rows) => {
               // rows the grid no longer shows are left alone
               if (rows) {
@@ -128,7 +144,7 @@ export const CubeServerSideGrid = memo(
             .catch(() => params.fail());
         },
       }),
-      [grid, result],
+      [grid, result, token],
     );
     const hasLevels = levels.length > 0;
     return (
@@ -159,6 +175,10 @@ export const CubeServerSideGrid = memo(
                 getServerSideGroupKey: (data: CubeGridRowData) => data.id,
                 getChildCount: (data: CubeGridRowData) => data.count ?? 0,
                 autoGroupColumnDef: {
+                  // the key, as export and copy read it, not the row's id
+                  valueGetter: (params: {
+                    data: CubeGridRowData | undefined;
+                  }) => groupKeyText(params.data),
                   headerName: levels.join(' › '),
                   headerTooltip: `The groups, by ${levels.join(', then ')}`,
                   minWidth: 200,

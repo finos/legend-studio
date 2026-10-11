@@ -28,6 +28,10 @@ import {
   getAvailableAggregations,
   isAggregationFunction,
 } from '../nodes/transforms/Aggregation.js';
+import {
+  FilterOperator,
+  isOperatorAvailable,
+} from '../filter/FilterOperator.js';
 import { foldColumnName } from '../schema/ColumnName.js';
 import type { Schema } from '../schema/Schema.js';
 import { isSortableType } from '../types/TypeCompatibility.js';
@@ -59,6 +63,14 @@ export interface Drilldown {
   readonly aggregations: readonly DrilldownAggregation[];
   readonly rest?: JsonObject;
 }
+
+/**
+ * Whether a column of the type can be a level: one that groups
+ * (`isSortableType`) and whose groups can be found again by Equal, so not
+ * StrictTime, which has no Equal (review of M7)
+ */
+export const isDrilldownLevelType = (type: CubeType): boolean =>
+  isSortableType(type) && isOperatorAvailable(FilterOperator.EQUAL, type);
 
 /** Whether a value has a `DrilldownAggregation`'s shape */
 export const isDrilldownAggregation = (
@@ -121,7 +133,8 @@ export interface CheckedDrilldown {
 
 /**
  * Checks a drill-down against the schema of the run it expands. A level must
- * be a column of the schema, one that can be grouped (`isSortableType`), and
+ * be a column of the schema, one that can be grouped and compared
+ * (`isDrilldownLevelType`), and
  * not an earlier level again, all in any case (`foldColumnName`). A saved
  * aggregation must name a column of the schema, once, and be `null` or a
  * function its type offers (`getDrilldownAggregations`).
@@ -143,7 +156,7 @@ export const checkDrilldown = (
       problems.push(MESSAGE_DRILLDOWN_COLUMN_LISTED_TWICE(name));
     } else if (!column) {
       problems.push(MESSAGE_DRILLDOWN_COLUMN_NOT_IN_OUTPUT(name));
-    } else if (!isSortableType(column.type)) {
+    } else if (!isDrilldownLevelType(column.type)) {
       problems.push(
         MESSAGE_DRILLDOWN_COLUMN_NOT_GROUPABLE(name, column.type.displayName),
       );

@@ -184,6 +184,8 @@ export class CubeExecutionState {
     this.runController = controller;
     this.error = undefined;
     this.editorState.clearHostIssues();
+    // an export's failure is of the run it exported
+    this.editorState.export.clearError();
     try {
       // the query, model and runtime are the ones captured
       const run = (yield runCubeQuery(this.editorState, {
@@ -262,6 +264,9 @@ export class CubeExecutionState {
     this.stop();
     this.editorState.gridFetcher.purge();
     this.editorState.export.stop();
+    // an export's failure is of the run it exported (review of M7)
+    this.editorState.export.clearError();
+    this.editorState.grid.closeSettings();
     this.result = undefined;
     this.error = undefined;
   }

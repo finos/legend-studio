@@ -208,3 +208,13 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   TypeScript had narrowed away (it now checks that it is still the export in flight). Core tests: the Excel cell class
   replaced the right-aligned column type's own, so number cells were no longer right-aligned; both classes are set now.
   The CI lint is the one to run before a push.
+- **M7.14, the reviewers** (2026-10-11, user's go; workflow `wf_3daf0acf-9a0`, 18 agents: four reviewers by area,
+  derivation and keys, run path and fetcher, grid wiring, formats, then a skeptic per finding with probes in the
+  scratchpad). 14 findings, all confirmed (12 distinct), none refuted, all fixed: StrictTime accepted as a level whose
+  groups couldn't expand; no tie-breaking sort at a group level; late answers from an earlier grid still noted on the
+  new one (twice); an export's error kept across reset and a new run; widths lost on an undo (twice); a blank
+  places format dropping a value's trailing zeros (`$20.2`); a negative rounding to zero keeping its sign, red and
+  parentheses; local mode's count total formatted (`$3`); no way to remove the every-number-column format; the group
+  rows dialog flag left on when its dialog unmounted; the groups column exporting the row's JSON id (and ag-grid's
+  `->` prefix, then fixed with `processRowGroupCallback`; the workbook now has `5`, `12`, `13` as numbers); a local
+  group row's Filter by adding an unrelated Is Empty. Each has a test.

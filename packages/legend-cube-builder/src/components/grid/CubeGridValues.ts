@@ -222,14 +222,18 @@ export const formatColumnValue = (
   format: ColumnFormat,
 ): { readonly text: string; readonly negative: boolean } | undefined => {
   const text = String(value).trim();
-  if (
-    typeof value === 'boolean' ||
-    !parseNumberText(text) ||
-    getColumnFormatProblem(format) !== undefined
-  ) {
+  const parsed = typeof value === 'boolean' ? undefined : parseNumberText(text);
+  if (!parsed || getColumnFormatProblem(format) !== undefined) {
     return undefined;
   }
-  const negative = Boolean(parseNumberText(text)?.negative);
+  // with no places set, the value's own: '20.20' keeps its zero (a
+  // currency at least its usual cents), as the grid shows it unformatted
+  const ownPlaces = Math.min(
+    20,
+    /e/iu.test(text)
+      ? Math.max(0, parsed.digits.length - parsed.point)
+      : (text.split('.')[1]?.length ?? 0),
+  );
   const places = format.decimalPlaces;
   const formatter = new Intl.NumberFormat('en-US', {
     style:
@@ -242,13 +246,32 @@ export const formatColumnValue = (
       ? { currency: format.currency }
       : {}),
     useGrouping: format.grouping,
-    minimumFractionDigits: places ?? 0,
-    maximumFractionDigits: places ?? 20,
+    // a negative that rounds to zero shows as zero, with no sign
+    signDisplay: 'negative',
+    ...(places !== undefined
+      ? { minimumFractionDigits: places, maximumFractionDigits: places }
+      : format.style === ColumnFormatStyle.PERCENT
+        ? { minimumFractionDigits: 0, maximumFractionDigits: 20 }
+        : {
+            minimumFractionDigits: Math.max(
+              ownPlaces,
+              format.style === ColumnFormatStyle.CURRENCY
+                ? (new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: format.currency,
+                  }).resolvedOptions().minimumFractionDigits ?? 0)
+                : 0,
+            ),
+            maximumFractionDigits: 20,
+          }),
   });
   // a decimal string keeps every digit, where a JS number would round
   const shown = (number: string): string =>
     formatter.format(number as unknown as number);
+  const signed = shown(text);
+  // negative as shown: one that rounds to zero isn't
+  const negative = parsed.negative && signed.includes('-');
   return format.parenthesesIfNegative && negative
     ? { text: `(${shown(text.replace(/^-/u, ''))})`, negative }
-    : { text: shown(text), negative };
+    : { text: signed, negative };
 };

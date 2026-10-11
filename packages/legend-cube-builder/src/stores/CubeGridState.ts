@@ -24,8 +24,8 @@ import {
   type Drilldown,
   type DrilldownCell,
   foldColumnName,
+  isDrilldownLevelType,
   isEmptyDrilldown,
-  isSortableType,
   removeDrilldownLevel,
   setColumnFormat,
   setDrilldownAggregation,
@@ -102,6 +102,8 @@ export class CubeGridState {
   hasLimitedLevel = false;
   /** Fetches in flight */
   fetching = 0;
+  /** The grid on screen: answers for an earlier one are left alone */
+  private gridToken = 0;
   /** The drill-down's settings dialog is open */
   isSettingsOpen = false;
   /** The column whose format the Format Column dialog edits, while it is open */
@@ -122,6 +124,7 @@ export class CubeGridState {
       openSettings: action,
       closeSettings: action,
       isSettingsOpen: observable,
+      isSettingsShown: computed,
       formatColumn: observable,
       openFormat: action,
       closeFormat: action,
@@ -178,7 +181,7 @@ export class CubeGridState {
     if (editorState.readOnly) {
       return READ_ONLY_CUBE_TITLE;
     }
-    if (!type || !isSortableType(type)) {
+    if (!type || !isDrilldownLevelType(type)) {
       return CUBE_DRILLDOWN_BLOCKER.notGroupable(type?.displayName ?? '');
     }
     return (editorState.document.meta.drilldown?.columns ?? []).some(
@@ -242,6 +245,7 @@ export class CubeGridState {
   /** Removes the drill-down: its levels and its aggregations */
   clearDrilldown(): void {
     if (!this.editorState.readOnly) {
+      this.closeSettings();
       this.setDrilldown(undefined);
     }
   }
@@ -295,10 +299,30 @@ export class CubeGridState {
     this.fetchError = undefined;
   }
 
-  /** A new grid: what earlier levels said is forgotten */
+  /** A new grid on screen: what earlier levels said is forgotten */
   resetLevels(): void {
     this.fetchError = undefined;
     this.hasLimitedLevel = false;
+  }
+
+  /**
+   * A new grid, for a new run or drill-down, taking its token for
+   * `loadRows`: the earlier grid's answers, still on their way, are then left
+   * alone, saying nothing (PLAN §11.10). Not observable, so a grid takes it
+   * as it renders, before its first request.
+   */
+  beginGrid(): number {
+    this.gridToken += 1;
+    return this.gridToken;
+  }
+
+  /** The drill-down's settings dialog shows: asked for, on a run with a drill-down */
+  get isSettingsShown(): boolean {
+    return (
+      this.isSettingsOpen &&
+      this.drilldown !== undefined &&
+      !isEmptyDrilldown(this.editorState.document.meta.drilldown)
+    );
   }
 
   /**
@@ -338,6 +362,7 @@ export class CubeGridState {
     result: CubeExecutionResult,
     keys: readonly DrilldownCell[],
     sortModel: readonly CubeGridSortRequest[],
+    token = this.gridToken,
   ): Promise<CubeGridRowData[] | undefined> {
     const parentId = JSON.stringify(keys);
     const sorts = this.toSorts(result, sortModel, keys.length);
@@ -356,6 +381,9 @@ export class CubeGridState {
         keys,
         sorts,
       );
+      if (token !== this.gridToken) {
+        return undefined;
+      }
       this.noteLevel(level.limited);
       const levels = this.drilldown?.columns ?? [];
       const keyAt = level.level.isLeaf
@@ -380,7 +408,7 @@ export class CubeGridState {
         };
       });
     } catch (error) {
-      if (error instanceof CubeGridFetchDropped) {
+      if (error instanceof CubeGridFetchDropped || token !== this.gridToken) {
         return undefined;
       }
       this.noteError(

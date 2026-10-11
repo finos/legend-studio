@@ -69,6 +69,9 @@ const CubeColumnFormatForm = observer(
         hint.column !== undefined &&
         foldColumnName(hint.column) === foldColumnName(column),
     );
+    // the column shows the format of every number column (review of M7)
+    const sharedFormat =
+      !ownFormat && hints.some((hint) => hint.column === undefined);
     const [format, setFormat] = useState<ColumnFormat>(
       current ?? DEFAULT_FORMAT,
     );
@@ -216,6 +219,18 @@ const CubeColumnFormatForm = observer(
               text="Remove Format"
               onClick={() => {
                 grid.setColumnFormat(column, undefined);
+                close();
+              }}
+            />
+          )}
+          {sharedFormat && (
+            <ModalFooterButton
+              darkMode={darkMode}
+              formatText={false}
+              type="secondary"
+              text="Remove Format of Every Number Column"
+              onClick={() => {
+                grid.setColumnFormat(undefined, undefined);
                 close();
               }}
             />

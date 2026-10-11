@@ -60,7 +60,7 @@ export const CubeDrilldownSettingsDialog = observer(
     const label = (fn: AggregationFunction | null, isDefault: boolean) =>
       `${fn === null ? 'Nothing' : getAggregationDisplayName(fn)}${isDefault ? ' (default)' : ''}`;
     return (
-      <Dialog open={grid.isSettingsOpen} onClose={() => grid.closeSettings()}>
+      <Dialog open={grid.isSettingsShown} onClose={() => grid.closeSettings()}>
         <Modal darkMode={darkMode} className="w-[520px] max-w-full">
           <ModalHeader>
             <div className="modal__title">Group rows</div>

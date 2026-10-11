@@ -144,6 +144,15 @@ const getCubeExportItem = <Row extends CubeAnyRow>(
         action: () =>
           params.api.exportDataAsExcel({
             fileName: getCubeExportFileName(editorState.document.name, 'xlsx'),
+            // a group row's key as the grid shows it, not ag-grid's ' -> key'
+            processRowGroupCallback: ({ node }) => {
+              const data = node.data as CubeAnyRow | undefined;
+              if (data && !Array.isArray(data)) {
+                const key = (data as CubeGridRowData).keys.at(-1) ?? null;
+                return key === null ? NULL_CELL_TEXT : String(key);
+              }
+              return node.key ?? NULL_CELL_TEXT;
+            },
           }),
       },
     ],
@@ -180,7 +189,11 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
     return common;
   }
   const position = Number(colId.slice(COLUMN_ID_PREFIX.length));
-  const [cell, kind] = cellOf(editorState, params.node?.data, position);
+  // local mode's group rows hold ag-grid's totals, not a row (review of M7)
+  const [cell, kind] =
+    params.node?.group && !params.node.data
+      ? [null, CubeGridCellKind.EMPTY]
+      : cellOf(editorState, params.node?.data, position);
   const actions = getCubeGridQuickActions(editorState, position, cell, kind);
   const column = editorState.execution.result?.schema.columns[position];
   if (!actions.length || !column) {
@@ -236,7 +249,7 @@ export const CubeCell: React.FC<
      */
     countOnGroupRows?: boolean | undefined;
     /** The column's name and the drill-down's levels, to tell a group row's key */
-    column?: string | undefined;
+    columnName?: string | undefined;
     levels?: readonly string[] | undefined;
   }
 > = (props) => {
@@ -250,14 +263,18 @@ export const CubeCell: React.FC<
   }
   const exact = String(props.value);
   const row = props.data;
+  // local mode's group row totalling the column by ag-grid's own count
+  const isLocalCount =
+    props.node.group === true && props.column?.getAggFunc() === 'count';
   const isCount =
-    props.countOnGroupRows === true &&
-    row !== undefined &&
-    !Array.isArray(row) &&
-    (row as CubeGridRowData).isGroup &&
-    !(props.levels ?? [])
-      .slice(0, (row as CubeGridRowData).keys.length)
-      .includes(props.column ?? '');
+    isLocalCount ||
+    (props.countOnGroupRows === true &&
+      row !== undefined &&
+      !Array.isArray(row) &&
+      (row as CubeGridRowData).isGroup &&
+      !(props.levels ?? [])
+        .slice(0, (row as CubeGridRowData).keys.length)
+        .includes(props.columnName ?? ''));
   const formatted =
     props.format && !isCount
       ? formatColumnValue(props.value, props.format)
@@ -332,7 +349,7 @@ export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
               drilldown.aggregationOf(column.name) as AggregationFunction,
             )
           : false,
-        column: column.name,
+        columnName: column.name,
         levels: drilldown?.columns ?? [],
       },
       ...(width === undefined ? {} : { width }),

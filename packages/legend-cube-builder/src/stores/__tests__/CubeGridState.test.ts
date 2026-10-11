@@ -281,13 +281,63 @@ describe('Grid state', () => {
     expect(state.execution.isStale).toBe(false);
   });
 
-  test('Counts the settings dialog among the open dialogs, which stop the shortcuts', async () => {
-    await setUp();
+  test('Counts the settings dialog among the open dialogs, which stop the shortcuts, only while it shows', async () => {
+    await setUp({ columns: ['SHIP_COUNTRY'], aggregations: [] });
     expect(state.isDialogOpen).toBe(false);
     state.grid.openSettings();
     expect(state.isDialogOpen).toBe(true);
     state.grid.closeSettings();
     expect(state.isDialogOpen).toBe(false);
+    // Clear closes it: with no drill-down, it doesn't show (review of M7)
+    state.grid.openSettings();
+    state.grid.clearDrilldown();
+    expect(state.grid.isSettingsOpen).toBe(false);
+    expect(state.isDialogOpen).toBe(false);
+    // a drill-down undone under it hides it too
+    state.grid.addLevel('SHIP_COUNTRY');
+    state.grid.openSettings();
+    state.undo();
+    expect(state.isDialogOpen).toBe(false);
+  });
+
+  test("Leaves alone an earlier grid's answers, which say nothing on the grid shown now", async () => {
+    const result = await setUp({ columns: ['SHIP_COUNTRY'], aggregations: [] });
+    const first = state.grid.beginGrid();
+    let answer: (value: CubeResult) => void = () => undefined;
+    fake.execute.mockReturnValueOnce(
+      new Promise<CubeResult>((resolve) => {
+        answer = resolve;
+      }),
+    );
+    const loading = state.grid.loadRows(result, [], [], first);
+    // a new grid, e.g. for a drill-down edited meanwhile
+    state.grid.beginGrid();
+    answer({
+      columns: [
+        'SHIP_COUNTRY',
+        'ORDER_ID Sum',
+        'EMPLOYEE_ID Sum',
+        'SHIP_VIA Sum',
+        'FREIGHT Sum',
+        'Count Rows',
+      ],
+      rows: [['France', '1', null, null, null, '3']],
+      sql: [],
+      durationMs: 1,
+    });
+    expect(await loading).toBeUndefined();
+    expect(state.grid.hasLimitedLevel).toBe(false);
+  });
+
+  test('Keeps the widths set since an edit when that edit is undone, but not across an import', async () => {
+    await setUp();
+    state.grid.addLevel('SHIP_COUNTRY');
+    state.setColumnWidth('FREIGHT', 150);
+    state.undo();
+    expect(state.document.meta.drilldown).toBeUndefined();
+    expect(state.document.meta.presentation.columnWidths).toEqual([
+      { column: 'FREIGHT', width: 150 },
+    ]);
   });
 
   test("Sets a column's format, or every number column's, as undo steps, and keeps widths with no step", async () => {

@@ -701,6 +701,24 @@ describe('Grid context menu', () => {
     });
   });
 
+  test("Gives a local mode group row, ag-grid's own, no Filter by: it holds totals, not a row (review of M7)", async () => {
+    const { state } = await setUp();
+    const items = getCubeGridContextMenuItems(state, {
+      column: { getColId: () => 'c1' },
+      node: { group: true, data: undefined },
+      defaultItems: [],
+    } as unknown as DataGridGetContextMenuItemsParams<
+      readonly CubeResultValue[]
+    >);
+    expect(items[3]).toMatchObject({
+      name: 'Filter by "SHIP_COUNTRY"',
+      disabled: true,
+      tooltip: CUBE_QUICK_ACTION_DISABLED_REASON.NO_VALUE,
+    });
+    // Sort by and Group by still work there
+    expect(items[1]).toMatchObject({ disabled: false });
+  });
+
   test('Gives the curated items only outside a cell', async () => {
     const { state } = await setUp();
     const items = getCubeGridContextMenuItems(state, params(undefined));
@@ -750,6 +768,27 @@ describe('Grid context menu', () => {
       '->sort(~FREIGHT->descending())',
     );
     excel?.action();
-    expect(exportDataAsExcel).toHaveBeenCalledWith({ fileName: 'cube.xlsx' });
+    expect(exportDataAsExcel).toHaveBeenCalledWith(
+      expect.objectContaining({ fileName: 'cube.xlsx' }),
+    );
+    // a group row's key as the grid shows it, an empty one as (null)
+    const { processRowGroupCallback } = exportDataAsExcel.mock
+      .calls[0]?.[0] as {
+      processRowGroupCallback: (params: { node: unknown }) => string;
+    };
+    expect(
+      processRowGroupCallback({
+        node: { data: { id: '[13]', keys: [13], isGroup: true, cells: [] } },
+      }),
+    ).toBe('13');
+    expect(
+      processRowGroupCallback({
+        node: {
+          data: { id: '[null]', keys: [null], isGroup: true, cells: [] },
+        },
+      }),
+    ).toBe('(null)');
+    // local mode's own groups
+    expect(processRowGroupCallback({ node: { key: 'France' } })).toBe('France');
   });
 });

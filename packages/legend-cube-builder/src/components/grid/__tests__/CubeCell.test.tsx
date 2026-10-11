@@ -35,6 +35,9 @@ import {
 
 const RED = 'text-[var(--color-status-error)]';
 
+/** ag-grid's node of a row that isn't one of its own groups */
+const RUN_ROW_NODE = { group: false };
+
 const cellOf = (value: string, format?: ColumnFormat): HTMLElement =>
   render(
     <CubeCell
@@ -42,6 +45,7 @@ const cellOf = (value: string, format?: ColumnFormat): HTMLElement =>
         value,
         family: TypeFamily.DECIMAL,
         format,
+        node: RUN_ROW_NODE,
       } as unknown as Parameters<typeof CubeCell>[0])}
     />,
   ).container;
@@ -109,9 +113,10 @@ describe('Cube cell formats', () => {
             family: TypeFamily.DECIMAL,
             format: usd,
             data,
-            column,
+            columnName: column,
             levels: ['DESK'],
             countOnGroupRows,
+            node: RUN_ROW_NODE,
           } as unknown as Parameters<typeof CubeCell>[0])}
         />,
       ).container.textContent;
@@ -177,5 +182,23 @@ describe('Cube cell formats', () => {
     // nothing to total
     expect(LOCAL_AGGREGATIONS.avg(params([null]))).toBeNull();
     expect(LOCAL_AGGREGATIONS.max(params([]))).toBeNull();
+  });
+
+  test("Leaves local mode's count of a group unformatted, and its sums formatted", () => {
+    const usd = format({ style: ColumnFormatStyle.CURRENCY, currency: 'USD' });
+    const total = (aggregation: string): string | null =>
+      render(
+        <CubeCell
+          {...({
+            value: 4,
+            family: TypeFamily.DECIMAL,
+            format: usd,
+            node: { group: true },
+            column: { getAggFunc: () => aggregation },
+          } as unknown as Parameters<typeof CubeCell>[0])}
+        />,
+      ).container.textContent;
+    expect(total('count')).toBe('4');
+    expect(total('sum')).toBe('$4.00');
   });
 });

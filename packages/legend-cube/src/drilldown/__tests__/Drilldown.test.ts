@@ -27,6 +27,7 @@ import {
   getDefaultDrilldownAggregation,
   getDrilldownAggregations,
   isDrilldownAggregation,
+  isDrilldownLevelType,
   isEmptyDrilldown,
   removeDrilldownLevel,
   setDrilldownAggregation,
@@ -45,6 +46,7 @@ const ORDERS = new Schema([
   column('PRICE', 'Numeric', false, [10, 2]),
   column('SHIPPED', 'Boolean', true),
   column('PAYLOAD', 'Variant', true),
+  column('SHIPPED_AT', 'StrictTime', true),
 ]);
 
 const drilldown = (init: Partial<Drilldown>): Drilldown => ({
@@ -77,6 +79,7 @@ describe(unitTest('Drill-down defaults'), () => {
       ['PRICE', SUM],
       ['SHIPPED', null],
       ['PAYLOAD', null],
+      ['SHIPPED_AT', null],
     ]);
   });
 
@@ -157,6 +160,17 @@ describe(unitTest('Drill-down checked against the run'), () => {
       'Drill-down column "PAYLOAD" of type Variant cannot be grouped.',
       'Drill-down column "Ship_Country" is listed more than once.',
     ]);
+  });
+
+  test('Refuses a StrictTime level, whose groups Equal could never find again', () => {
+    expect(
+      checkDrilldown(drilldown({ columns: ['SHIPPED_AT'] }), ORDERS).problems,
+    ).toEqual([
+      'Drill-down column "SHIPPED_AT" of type StrictTime cannot be grouped.',
+    ]);
+    expect(isDrilldownLevelType(type('SHIPPED_AT'))).toBe(false);
+    expect(isDrilldownLevelType(type('ORDER_DATE'))).toBe(true);
+    expect(isDrilldownLevelType(type('PAYLOAD'))).toBe(false);
   });
 
   test("Leaves out each aggregation it can't use, says why, and falls back to the default", () => {

@@ -205,4 +205,40 @@ describe('Cube grid values', () => {
       expect.arrayContaining(['USD', 'EUR', 'GBP', 'JPY', 'CHF']),
     );
   });
+
+  test("With no places set, keeps the value's own digits, a currency at least its cents (review of M7)", () => {
+    const usd = format({ style: ColumnFormatStyle.CURRENCY, currency: 'USD' });
+    expect(formatColumnValue('20.20', usd)?.text).toBe('$20.20');
+    expect(formatColumnValue('20', usd)?.text).toBe('$20.00');
+    expect(formatColumnValue('20.125', usd)?.text).toBe('$20.125');
+    expect(formatColumnValue('2.5000', format({}))?.text).toBe('2.5000');
+    expect(
+      formatColumnValue(
+        '1',
+        format({ style: ColumnFormatStyle.CURRENCY, currency: 'JPY' }),
+      )?.text,
+    ).toBe('¥1');
+  });
+
+  test('Shows a negative that rounds to zero as zero: no sign, not red, no parentheses (review of M7)', () => {
+    const noCents = format({
+      style: ColumnFormatStyle.CURRENCY,
+      currency: 'USD',
+      decimalPlaces: 0,
+      redIfNegative: true,
+      parenthesesIfNegative: true,
+    });
+    expect(formatColumnValue('-0.4', noCents)).toEqual({
+      text: '$0',
+      negative: false,
+    });
+    expect(formatColumnValue('-1.4', noCents)).toEqual({
+      text: '($1)',
+      negative: true,
+    });
+    expect(formatColumnValue('-0', format({}))).toEqual({
+      text: '0',
+      negative: false,
+    });
+  });
 });

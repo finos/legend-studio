@@ -299,6 +299,43 @@ describe(unitTest('Drill-down levels'), () => {
     expect(derived.query.selected).toBe('sort101');
   });
 
+  test("Ends a group level's sort with its own column, after a sort that leaves ties: a constant outer key, an aggregation", () => {
+    // France's cities, sorted by the country, which the filter makes constant
+    expect(
+      pureOf(
+        level(
+          BY_COUNTRY_AND_CITY,
+          ['France'],
+          [{ column: 'SHIP_COUNTRY', direction: DESC }],
+        ),
+      ),
+    ).toContain(
+      `->sort([~SHIP_COUNTRY->descending(), ~SHIP_CITY->ascending()])`,
+    );
+    // the countries by their Sums, equal ones by name
+    expect(
+      pureOf(
+        level(
+          { columns: ['SHIP_COUNTRY'] },
+          [],
+          [{ column: 'FREIGHT', direction: DESC }],
+        ),
+      ),
+    ).toContain(
+      `->sort([~'FREIGHT Sum'->descending(), ~SHIP_COUNTRY->ascending()])`,
+    );
+    // the grid's own sort on the level's column is kept as it is
+    expect(
+      pureOf(
+        level(
+          { columns: ['SHIP_COUNTRY'] },
+          [],
+          [{ column: 'SHIP_COUNTRY', direction: DESC }],
+        ),
+      ),
+    ).toContain(`->sort(~SHIP_COUNTRY->descending())`);
+  });
+
   test("The leaf keeps the run's own sort: alone when the grid has none, else after the grid's, breaking its ties", () => {
     const nodes: QueryNode[] = [
       resolvedTable('relational101', 'ORDERS', COLUMNS),
