@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                         |
-| ------ | ----------------------------------------------------------------------------- |
-| Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev` |
-| Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6b.4: the editor, registered; next on the engine                             |
-| Tests  | 2913 core, 1714 builder (core group)                                          |
+| Item   | State                                                                                           |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev`                   |
+| Engine | Local legend-engine on `localhost:6300`                                                         |
+| Step   | M6b.5: on the engine; next the guides and the changeset                                         |
+| Tests  | 2913 core, 1714 builder (core group); engine suites 900 of 904 (the 4 local setup-SQL timeouts) |
 
 ## Steps
 
@@ -23,7 +23,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 - [x] **M6b.2** The core
 - [x] **M6b.3** The builder's engine-checked nodes
 - [x] **M6b.4** The editor, registered
-- [ ] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
+- [x] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [ ] **M6b.6** Guides, READMEs, testing.md and the changeset
 - [ ] **M6b.7** Verification and the browser rehearsal
 - [ ] **M6b.8** A demo video (PLAN §11.3)
@@ -38,7 +38,9 @@ Filled in as steps land.
 | M6b.1 | `3d3eda4a1` | docs: settle Legend Cube M6b (Filter by expression)                           |
 | M6b.2 | `8f09f9163` | feat: add Filter by Expression to Legend Cube's core                          |
 | M6b.3 | `a96473c74` | feat: check Legend Cube's filter conditions with the engine in the background |
-| M6b.4 | (this one)  | feat: add the Filter by Expression editor to Legend Cube                      |
+| M6b.4 | `3311c02c5` | feat: add the Filter by Expression editor to Legend Cube                      |
+| M6b.5 | `258bf2a5e` | test: run Legend Cube's Filter by Expression on the engine and every database |
+| M6b.5 | (this one)  | docs: record Legend Cube M6b.5                                                |
 
 ## Notes
 
@@ -86,3 +88,17 @@ Filled in as steps land.
   closed meanwhile stays open, saying why. A refused `and`, `or` or `not` gets the parentheses hint; arithmetic on a
   column that can be empty, Extend's `->toOne()` hint. `findColumnOrigins` passes a column through (tested). The
   lists that name every node type (registry, palette, Add Items, context menu, titles, icons, help) name it.
+- **M6b.5** (2026-10-11). On the engine (`CubeExpressionFilter.engine-roundtrip-test.ts`, through
+  `V1_LegendCubeEngine`): conditions checked (two columns, a string function, a nullable comparison without
+  `->toOne()`, `isEmpty()`, the cube model's own function, any parameter name), refused with their type (`Integer`,
+  `String`, `Boolean[0..1]`), an unknown column located in the text, `&&` without parentheses refused and with them
+  checked; run on H2: 37 late orders of 830, the empty values (507 without a region, 34 RJ, 796 not RJ, 772 not late
+  after `->toOne()`), each country's first order after a Partition, and an Extend's column. Around the databases
+  (`LegendCubeDialects`): the condition in the `WHERE` on the 20 planned types, and a window column's filter after the
+  window, never `QUALIFY`, on the 17 window types. On a direct connection, H2 and DuckDB: an empty quantity kept by a
+  negation compared directly and by neither after `->toOne()`, and each country's first order. A conformance case
+  (`expression-filter`), which the suite's "a case for every registered node type" needed, and a checked sample in
+  `operations.cube.json` that the engine corpus test types. `TEST__checkedExpressionFilter` builds a filter checked
+  for its input. A browser probe (`demo/probe-m6b-editor.mjs`) passed 7 of 7 on the dev server: the editor, Validate,
+  37 rows, a number refused, the parentheses hint. The dev server needed `extensions.core.NonProductionFeatureFlag` in
+  its own `dev/config.json` since #5666, and #5666 renamed Import (dev) to Import.

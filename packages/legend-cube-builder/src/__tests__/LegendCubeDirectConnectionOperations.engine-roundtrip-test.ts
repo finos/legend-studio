@@ -420,30 +420,34 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
         }),
       );
     };
-    const { lambda, call, column, integer } = TEST__expression;
+    const pure = TEST__expression;
 
     test('Keeps an empty quantity in a negation when compared directly, and in neither after toOne() (M6b)', async () => {
       const named = (name: string): string =>
         databaseType === CubeDirectDatabaseType.H2 ? name.toUpperCase() : name;
       const itemsKept = async (condition: JsonObject): Promise<string[]> =>
         TEST__columnValues(
-          await runExpressionFilter('stock_last', [], lambda(condition)),
+          await runExpressionFilter('stock_last', [], pure.lambda(condition)),
           named('item'),
         )
           .map(String)
           .sort();
-      const moreThan15 = call('greaterThan', column(named('qty')), integer(15));
+      const moreThan15 = pure.call(
+        'greaterThan',
+        pure.column(named('qty')),
+        pure.integer(15),
+      );
       // last month: 1 has 10, 2 has 20, 3 has none
       expect(await itemsKept(moreThan15)).toEqual(['2']);
-      expect(await itemsKept(call('not', moreThan15))).toEqual(['1', '3']);
+      expect(await itemsKept(pure.call('not', moreThan15))).toEqual(['1', '3']);
       expect(
         await itemsKept(
-          call(
+          pure.call(
             'not',
-            call(
+            pure.call(
               'greaterThan',
-              call('toOne', column(named('qty'))),
-              integer(15),
+              pure.call('toOne', pure.column(named('qty'))),
+              pure.integer(15),
             ),
           ),
         ),
@@ -460,7 +464,9 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
             'rn',
           ]),
         ],
-        lambda(call('lessThanEqual', column('rn'), integer(1))),
+        pure.lambda(
+          pure.call('lessThanEqual', pure.column('rn'), pure.integer(1)),
+        ),
       );
       expect(TEST__columnValues(result, orderId).map(String).sort()).toEqual([
         '1',
