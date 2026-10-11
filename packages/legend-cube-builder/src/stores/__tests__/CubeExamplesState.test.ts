@@ -88,7 +88,7 @@ const sports = () => {
 };
 
 describe('Examples', () => {
-  test('Lists three datasets, Northwind first, each with two example cubes', () => {
+  test('Lists three datasets, Northwind first, each with its example cubes', () => {
     const { examples } = setUp().state;
     expect(
       examples.datasets.map((dataset) => [
@@ -98,7 +98,14 @@ describe('Examples', () => {
     ).toEqual([
       ['northwind', ['northwind-top-customers', 'northwind-stock-by-category']],
       ['sports', ['sports-top-watched', 'sports-europe-finals']],
-      ['trades', ['trades-notional-by-desk', 'trades-largest-buys']],
+      [
+        'trades',
+        [
+          'trades-notional-by-desk',
+          'trades-desk-league',
+          'trades-largest-buys',
+        ],
+      ],
     ]);
     expect(examples.isOpen).toBe(false);
   });

@@ -28,8 +28,10 @@ import {
 } from '@finos/legend-application';
 import {
   ColumnComparisonFilter,
+  Connection,
   CubeDocument,
   FilterOperator,
+  Limit,
   printIR,
   Query,
   QueryEmitter,
@@ -67,7 +69,7 @@ import { CubeEditor } from '../CubeEditor.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const PURE = `|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.ORDERS}#
-  ->limit(1001)`;
+  ->slice(10, 20)`;
 
 const sliceDocument = (): CubeDocument =>
   new CubeDocument({ context: CONTEXT, query: sliceQuery() });
@@ -130,12 +132,11 @@ describe('Show Pure', () => {
     const dialog = await screen.findByRole('dialog');
     const pure = await within(dialog).findByLabelText('Pure query');
     expect(pure.textContent).toBe(PURE);
-    // the capture node's execution lambda, with the row limit
+    // the capture node's execution lambda, without Execute's row limit
     expect(fake.renderPure).toHaveBeenCalledTimes(1);
     expect(printIR(fake.renderPure.mock.calls[0]?.[0] as never)).toBe(
       printIR(
         new QueryEmitter(sliceQuery()).emitExecutionLambda({
-          rowLimit: 1000,
           runtime: NORTHWIND_RUNTIME,
         }),
       ),
@@ -300,7 +301,7 @@ describe('Show Pure state', () => {
     expect(state.showPure.isRendering).toBe(false);
   });
 
-  test('Shows the query with the row limit the user set, as Execute runs it', async () => {
+  test("Leaves out the row limit Execute adds to see if there are more rows, whatever it is, and keeps the user's own steps", async () => {
     const { host, fake } = TEST__createCubeHost();
     const state = new CubeEditorState(host, sliceDocument());
     expect(state.setRowLimit(50)).toBe(true);
@@ -312,13 +313,36 @@ describe('Show Pure state', () => {
     expect(shown).toBe(
       printIR(
         new QueryEmitter(sliceQuery()).emitExecutionLambda({
-          rowLimit: 50,
           runtime: NORTHWIND_RUNTIME,
         }),
       ),
     );
-    // Execute's lambda is its second argument
-    expect(shown).toBe(printIR(fake.execute.mock.calls[0]?.[1] as never));
+    // Execute's lambda, its second argument, fetches one more than the limit
+    const run = printIR(fake.execute.mock.calls[0]?.[1] as never);
+    expect(run).toContain('limit(51)');
+    expect(shown).not.toContain('limit');
+  });
+
+  test('Shows a Take first <x> rows the user added, as its own limit', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const state = new CubeEditorState(
+      host,
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Limit('limit101', 7),
+          ],
+          [new Connection('relational101', 'limit101', 'tds')],
+          'limit101',
+        ),
+      }),
+    );
+    await flowResult(state.showPure.open());
+    const shown = printIR(fake.renderPure.mock.calls[0]?.[0] as never);
+    expect(shown).toContain('limit(7)');
+    expect(shown).not.toContain('limit(1001)');
   });
 
   test('Words an unexpected failure by its message', async () => {

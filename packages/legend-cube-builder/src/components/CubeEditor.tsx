@@ -143,13 +143,13 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
             }
           }}
         >
-          Export (dev)
+          Export
         </CubeButton>
         <CubeButton
           title="Open a cube from its spec, in place of this one"
           onClick={() => editorState.specTransfer.openImport()}
         >
-          Import (dev)
+          Import
         </CubeButton>
         <CubeButton
           title={

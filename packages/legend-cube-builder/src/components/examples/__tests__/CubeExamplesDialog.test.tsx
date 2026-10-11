@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('Examples dialog', () => {
-  test('Shows each dataset, then its two example cubes, in one grid, each example with its steps', async () => {
+  test('Shows each dataset, then its example cubes, in one grid, each example with its steps', async () => {
     await renderPage();
     const dialog = await openExamples();
     const grid = within(dialog).getByLabelText('Examples');
@@ -66,11 +66,17 @@ describe('Examples dialog', () => {
       'Most watched finals in Europe',
       'Trades',
       'Notional by desk and asset class',
+      'Desk league table',
       'Largest buys',
     ]);
     expect(
       within(grid).getByLabelText(
         'Steps: Relational Database Table, Filter by Column, Sort by Column, Take first <x> rows',
+      ),
+    ).toBeDefined();
+    expect(
+      within(grid).getByLabelText(
+        'Steps: Relational Database Table, Relational Database Table, Join Another Input, Group by Column, Apply Window Functions, Sort by Column',
       ),
     ).toBeDefined();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
