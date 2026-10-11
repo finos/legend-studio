@@ -17,26 +17,18 @@
 import {
   type CubeContext,
   isSchemasError,
-  needsDatabaseType,
   type Query,
   type Schema,
 } from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
-import {
-  action,
-  computed,
-  flow,
-  flowResult,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
-  type CubeResult,
   type CubeResultValue,
 } from '../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from './CubeEditorState.js';
+import { type CubeQueryRunResult, runCubeQuery } from './CubeQueryRun.js';
 
 /** What the grid shows of a run: the rows within the limit, under the schema the run was made with */
 export interface CubeExecutionResult {
@@ -176,7 +168,7 @@ export class CubeExecutionState {
     if (this.isRunning || !this.canExecute) {
       return;
     }
-    const { document, emitter, analysis, rowLimit, host } = this.editorState;
+    const { document, analysis, rowLimit } = this.editorState;
     const { query, context } = document;
     const warehouse = this.editorState.dataProductRuntime.effectiveWarehouse;
     // checked by canExecute
@@ -193,63 +185,29 @@ export class CubeExecutionState {
     this.error = undefined;
     this.editorState.clearHostIssues();
     try {
-      // a Drop, Slice, Limit or Distinct is written for the database it runs on
-      // (PLAN §11.4), which the model's outline gives: loaded once, waited
-      // for only then; the query, model and runtime are the ones captured
-      let databaseType: string | undefined;
-      if (needsDatabaseType(query, captureId)) {
-        yield flowResult(this.editorState.loadModelOutline(model));
-        if (this.runController !== controller || controller.signal.aborted) {
-          return;
-        }
-        databaseType = this.editorState.getRunDatabaseType(
-          query,
-          captureId,
-          model,
-          runtime,
-        );
-      }
-      const lambda = emitter.emitExecutionLambda({
-        rowLimit,
+      // the query, model and runtime are the ones captured
+      const run = (yield runCubeQuery(this.editorState, {
+        query,
+        model,
         runtime,
-        databaseType,
-      });
-      const response = (yield host.engine.execute(model, lambda, {
+        schema,
+        rowLimit,
         abortController: controller,
-      })) as CubeResult;
+      })) as CubeQueryRunResult;
       if (this.runController !== controller) {
         return;
       }
-      // rows are read by position, so the engine's columns must be the query's
-      if (response.columns.length !== schema.columns.length) {
-        throw new CubeEngineError(
-          CubeEngineErrorKind.EXECUTION,
-          `The engine returned ${response.columns.length} columns, but the query has ${schema.columns.length}`,
-          captureId,
-        );
-      }
-      const misplaced = schema.columns.findIndex(
-        (column, position) => response.columns[position] !== column.name,
-      );
-      if (misplaced !== -1) {
-        throw new CubeEngineError(
-          CubeEngineErrorKind.EXECUTION,
-          `The engine returned the column "${response.columns[misplaced]}" at position ${misplaced + 1}, but the query has "${schema.columns[misplaced]?.name}" there`,
-          captureId,
-        );
-      }
-      const limited = response.rows.length > rowLimit;
       this.result = {
         id: ++this.runCount,
         query,
         context,
         warehouse,
         schema,
-        rows: limited ? response.rows.slice(0, rowLimit) : response.rows,
+        rows: run.rows,
         rowLimit,
-        limited,
-        sql: response.sql,
-        durationMs: response.durationMs,
+        limited: run.limited,
+        sql: run.sql,
+        durationMs: run.durationMs,
       };
     } catch (error) {
       // a stopped or replaced run shows nothing

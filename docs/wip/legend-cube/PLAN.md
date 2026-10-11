@@ -4106,6 +4106,10 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 **Decided without asking** (each has a precedent or a probe; for review):
 
+- **Execute stays the flat run.** Execute runs the capture node as today: its rows, errors on nodes, staleness and
+  the quick actions are unchanged, and local mode shows them. In server-side mode the grid's fetcher serves every
+  level from the run on screen, the top one included whenever a drill-down or a header sort is set, at the cost of one
+  more engine call after such an Execute. The run path is shared (`runCubeQuery`, M7.5).
 - **Derived from the run, never the live cube.** An expansion or a sort uses the query, the context and the warehouse
   of the run on screen (`CubeExecutionResult`), so a stale grid never runs an edited cube under the old rows. The
   query is cloned and Cube's own nodes appended after its capture node: a Filter per expanded level, a Group for the
