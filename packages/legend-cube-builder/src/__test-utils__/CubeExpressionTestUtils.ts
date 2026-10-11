@@ -57,6 +57,7 @@ export const TEST__expression = {
     _type: 'integer',
     value: String(value),
   }),
+  string: (value: string): JsonObject => ({ _type: 'string', value }),
 };
 
 /** A new column: its name, its lambda, and the type the engine gives it */

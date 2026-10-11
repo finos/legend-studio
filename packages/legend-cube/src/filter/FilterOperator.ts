@@ -126,6 +126,20 @@ export const hasUnescapedPatternCharacter = (
   value: string,
 ): boolean => PATTERN_OPERATORS.includes(operator) && value.includes('\\');
 
+/** Whether a text has `%` or `_`, which a SQL `LIKE` pattern reads as wildcards */
+export const hasLikeWildcard = (value: string): boolean => /[%_]/u.test(value);
+
+/**
+ * Whether a value gives `%` or `_` to a pattern: the engine escapes them with
+ * `\` but writes no `ESCAPE` clause, so a database with no default escape
+ * character (`hasNoLikeEscape`) matches them as wildcards after a backslash
+ * (PLAN §11.11, Appendix B)
+ */
+export const hasPatternWildcard = (
+  operator: FilterOperator,
+  value: string,
+): boolean => PATTERN_OPERATORS.includes(operator) && hasLikeWildcard(value);
+
 /** What an operator takes: no value, one value or a non-empty list of values */
 export type FilterValueShape = 'none' | 'single' | 'list';
 

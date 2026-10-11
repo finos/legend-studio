@@ -349,7 +349,7 @@ export const EXPRESSION_FILTER_EDITOR_NOTES = [
   'Put each comparison in parentheses when you combine them: ($x.A > 1) && ($x.B > 3). In Pure, &&, || and ! bind as tightly as >, <, >= and <=; == binds tighter.',
   'A column that can be empty, compared directly ($x.A > 6), fails the condition when it is empty and passes its negation. After ->toOne(), an empty value fails both.',
   "Validate (F10) checks the condition with the engine and plans it for the cube's database.",
-  "startsWith, endsWith and contains can't take a value with a backslash (\\) yet.",
+  "startsWith, endsWith and contains can't take a value with a backslash (\\) yet, nor, on DuckDB, one with % or _.",
 ] as const;
 
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */

@@ -25,6 +25,8 @@ import {
 import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import {
   EMPTY_OPERATORS,
+  hasLikeWildcard,
+  hasPatternWildcard,
   hasUnescapedPatternCharacter,
   PATTERN_OPERATORS,
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -173,6 +175,22 @@ describe(unitTest('Filter operators'), () => {
     ).forEach((operator) =>
       expect(hasUnescapedPatternCharacter(operator, 'CORP\\')).toBe(false),
     );
+  });
+
+  test('Know which values give a pattern a wildcard, which a database with no LIKE escape misreads', () => {
+    PATTERN_OPERATORS.forEach((operator) => {
+      expect(hasPatternWildcard(operator, '50%')).toBe(true);
+      expect(hasPatternWildcard(operator, 'a_b')).toBe(true);
+      expect(hasPatternWildcard(operator, `O'Brien\\`)).toBe(false);
+    });
+    FILTER_OPERATORS.filter(
+      (operator) => !PATTERN_OPERATORS.includes(operator),
+    ).forEach((operator) =>
+      expect(hasPatternWildcard(operator, '50%_')).toBe(false),
+    );
+    expect(hasLikeWildcard('%')).toBe(true);
+    expect(hasLikeWildcard('_')).toBe(true);
+    expect(hasLikeWildcard('*?')).toBe(false);
   });
 
   test('Take no value, one value or a list of values', () => {

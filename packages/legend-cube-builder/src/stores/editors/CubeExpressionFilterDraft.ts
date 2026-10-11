@@ -17,6 +17,7 @@
 import {
   type ExpressionCheck,
   ExpressionFilter,
+  givesPatternWildcard,
   type IR,
   type JsonObject,
   MESSAGE_CONDITION_NOT_BOOLEAN,
@@ -226,9 +227,10 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
 
   /**
    * Checks the condition with the engine (F10): parses the code when it
-   * changed since the last Validate, checks Cube's own rules, then, when the
-   * input is valid, checks the condition after the input, located in the
-   * code, and plans the query up to this node for the cube's database
+   * changed since the last Validate, checks Cube's own rules and the
+   * database's, then, when the input is valid, checks the condition after
+   * the input, located in the code, and plans the query up to this node for
+   * the cube's database
    */
   *validate(): GeneratorFn<void> {
     const { editorState } = this;
@@ -264,9 +266,18 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       if (!input) {
         return;
       }
-      // 2. Cube's own checks, which need no engine
+      // 2. Cube's own checks, which need no engine, then the database's:
+      // a pattern given % or _ on DuckDB, which the model's outline tells
       const candidate = this.original.withCondition(code, parsed.lambda);
-      const cubeProblem = candidate.getConditionProblem();
+      if (givesPatternWildcard(candidate)) {
+        yield flowResult(editorState.loadModelOutline(context.model));
+      }
+      const cubeProblem =
+        candidate.getConditionProblem() ??
+        editorState.getNodeDatabaseProblems(
+          editorState.document.query,
+          candidate,
+        )[0];
       if (cubeProblem !== undefined) {
         this.problem = { message: cubeProblem };
         this.check = UNCHECKED;

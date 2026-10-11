@@ -16,12 +16,20 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  ColumnComparisonFilter,
+  CompositeFilter,
+  CompositeFilterOperator,
   Connection,
   CubeDocument,
   DataProductAccessPointSource,
   Distinct,
   Drop,
+  type ExpressionFilter,
+  Filter,
+  FilterOperator,
   Limit,
+  MESSAGE_CONDITION_WILDCARD,
+  MESSAGE_FILTER_VALUE_WILDCARD,
   printIR,
   Query,
   RelationalTableSource,
@@ -32,6 +40,10 @@ import {
   SortDirection,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
+import {
+  TEST__checkedExpressionFilter,
+  TEST__expression,
+} from '../../__test-utils__/CubeExpressionTestUtils.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import { FAKE_DAILY_ORDERS_SCHEMA } from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
@@ -41,6 +53,7 @@ import {
   ORDERS_COLUMNS,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
+  createFakeNorthwindOutline,
   FAKE_NORTHWIND_OUTLINE,
   type FakeCubeEngine,
 } from '../../__test-utils__/FakeCubeEngine.js';
@@ -62,16 +75,7 @@ import { CubeEditorState } from '../CubeEditorState.js';
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
 /** The Northwind outline, its runtime's connection of this database type */
-const outlineOn = (databaseType: string): CubeModelOutline => ({
-  ...FAKE_NORTHWIND_OUTLINE,
-  runtimes: [
-    {
-      path: NORTHWIND_RUNTIME,
-      storePaths: [NORTHWIND_DATABASE],
-      connections: [{ storePath: NORTHWIND_DATABASE, databaseType }],
-    },
-  ],
-});
+const outlineOn = createFakeNorthwindOutline;
 
 const OTHER_DATABASE = 'test::Other';
 
@@ -429,5 +433,111 @@ describe('Cube execution: while the outline loads', () => {
     expect(state.showPure.isOpen).toBe(false);
     expect(state.showPure.text).toBeUndefined();
     expect(state.showPure.isRendering).toBe(false);
+  });
+});
+
+describe('Cube on DuckDB: patterns given % or _', () => {
+  /** A Filter of SHIP_COUNTRY with this operator and value */
+  const filterOf = (operator: FilterOperator, value: string): Filter =>
+    new Filter(
+      'filter101',
+      new ColumnComparisonFilter('SHIP_COUNTRY', operator, {
+        kind: 'string',
+        value,
+      }),
+    );
+  /** `x | $x.SHIP_NAME->toOne()->endsWith(<value>)`, checked for ORDERS */
+  const endsWithOf = (value: string): ExpressionFilter =>
+    TEST__checkedExpressionFilter(
+      'expressionFilter101',
+      ordersThen().query,
+      `x | $x.SHIP_NAME->toOne()->endsWith('${value}')`,
+      TEST__expression.lambda(
+        TEST__expression.call(
+          'endsWith',
+          TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+          TEST__expression.string(value),
+        ),
+      ),
+    );
+  /** Lets the outline the cube loads by itself arrive */
+  const settle = async (): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+
+  test("Refuses a column Filter's pattern given % or _, negated or not, once the outline it loads by itself names DuckDB, and runs nothing", async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.DOES_NOT_CONTAIN, '50%')),
+      outlineOn('DuckDB'),
+    );
+    await settle();
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    expect(state.getNodeErrors('filter101')).toEqual([
+      MESSAGE_FILTER_VALUE_WILDCARD('does not contain', 'DuckDB'),
+    ]);
+    await flowResult(state.execution.execute());
+    expect(fake.execute).not.toHaveBeenCalled();
+  });
+
+  test("Refuses a Filter by Expression's endsWith given _ on DuckDB", async () => {
+    const { state } = setUp(ordersThen(endsWithOf('a_b')), outlineOn('DuckDB'));
+    await settle();
+    expect(state.getNodeErrors('expressionFilter101')).toEqual([
+      MESSAGE_CONDITION_WILDCARD('endsWith', 'DuckDB'),
+    ]);
+  });
+
+  test('Runs them on H2, with the value as it is', async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.STARTS_WITH, '50%')),
+      outlineOn('H2'),
+    );
+    await settle();
+    expect(state.getNodeErrors('filter101')).toEqual([]);
+    await flowResult(state.execution.execute());
+    expect(ranLambda(fake)).toContain("$row.SHIP_COUNTRY->startsWith('50%')");
+  });
+
+  test('Loads no outline for a filter with no % or _ in a pattern, nor for one in an Equal', async () => {
+    const { state, fake } = setUp(
+      ordersThen(
+        new Filter(
+          'filter101',
+          new CompositeFilter(CompositeFilterOperator.AND, [
+            new ColumnComparisonFilter(
+              'SHIP_COUNTRY',
+              FilterOperator.CONTAINS,
+              { kind: 'string', value: 'ance' },
+            ),
+            new ColumnComparisonFilter('SHIP_NAME', FilterOperator.EQUAL, {
+              kind: 'string',
+              value: '50%',
+            }),
+          ]),
+        ),
+      ),
+      outlineOn('DuckDB'),
+    );
+    await settle();
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).not.toHaveBeenCalled();
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+  });
+
+  test('Refuses a run started before the outline names DuckDB, with the message, and asks the engine nothing', async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.CONTAINS, '_')),
+      outlineOn('DuckDB'),
+    );
+    // the run starts while the outline the cube asked for is on its way:
+    // the filter is valid then, so the run itself refuses it, for DuckDB
+    expect(state.execution.canExecute).toBe(true);
+    await flowResult(state.execution.execute());
+    expect(fake.execute).not.toHaveBeenCalled();
+    expect(state.execution.error?.message ?? '').toContain(
+      MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB'),
+    );
+    // and the filter is refused from then on
+    expect(state.execution.canExecute).toBe(false);
   });
 });

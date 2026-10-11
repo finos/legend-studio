@@ -34,6 +34,7 @@ import {
   type FilterRule,
   type FilterValue,
   type FilterValueItem,
+  findPatternWildcardOperator,
   isFilterRule,
   isFilterValueList,
   NotFilter,
@@ -431,6 +432,42 @@ describe(unitTest('Filter comparisons'), () => {
     expect(errorsOf(compare('ORDER_ID', O.EQUAL, invalid('1\\2')))).toEqual([
       'Filter value "1\\2" is not a valid SmallInt.',
     ]);
+  });
+
+  test('Find the first comparison giving a pattern % or _, under a negation or in a group, for the databases that misread them', () => {
+    expect(
+      findPatternWildcardOperator(
+        compare('SHIP_COUNTRY', O.STARTS_WITH, string('50%')),
+      ),
+    ).toBe(O.STARTS_WITH);
+    expect(
+      findPatternWildcardOperator(
+        and(
+          compare('ORDER_ID', O.EQUAL, integer('1')),
+          or(
+            compare('SHIP_COUNTRY', O.EQUAL, string('a_b')),
+            new NotFilter(
+              compare('SHIP_COUNTRY', O.DOES_NOT_CONTAIN, string('a_b')),
+            ),
+          ),
+        ),
+      ),
+    ).toBe(O.DOES_NOT_CONTAIN);
+    // Equal and In compare the value as it is; no value, no wildcard
+    [
+      compare('SHIP_COUNTRY', O.EQUAL, string('50%')),
+      compare('SHIP_COUNTRY', O.IN, [string('50%'), string('a_b')]),
+      compare('SHIP_COUNTRY', O.CONTAINS),
+      compare('SHIP_COUNTRY', O.CONTAINS, string('no wildcard')),
+      new UnsupportedFilter({ op: 'contains', value: '%' }),
+      undefined,
+    ].forEach((rule) =>
+      expect(findPatternWildcardOperator(rule)).toBeUndefined(),
+    );
+    // a valid filter everywhere: only a database without a LIKE escape refuses it
+    expect(
+      errorsOf(compare('SHIP_COUNTRY', O.CONTAINS, string('50%_'))),
+    ).toEqual([]);
   });
 
   test('Check every item of a list, reporting each bad one', () => {

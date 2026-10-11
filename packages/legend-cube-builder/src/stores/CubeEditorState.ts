@@ -22,6 +22,8 @@ import {
   CubeDocument,
   diffSchemas,
   findLostSortOrders,
+  getDatabaseProblems,
+  givesPatternWildcard,
   isTypingError,
   MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
@@ -152,6 +154,12 @@ export class CubeEditorState implements CommandRegistrar {
    * §11.7, §11.11)
    */
   private readonly staleEngineChecks: QueryRule;
+  /**
+   * The editor's query rule for the database a node runs on: `%` or `_`
+   * given to a pattern on DuckDB (PLAN §11.11), once the model's outline
+   * tells the database
+   */
+  private readonly databaseRefusals: QueryRule;
   readonly execution: CubeExecutionState;
   /** The latest runs, fetches and exports (spec §12.6) */
   readonly runStats: CubeRunStatsState;
@@ -192,6 +200,8 @@ export class CubeEditorState implements CommandRegistrar {
   private checkingNodes: ReadonlySet<QueryNode> = new Set();
   /** Checks the nodes that wait for the engine, whenever one does (PLAN §11.7 Q4) */
   private readonly rechecking: IReactionDisposer;
+  /** Loads the model's outline once a filter gives a pattern `%` or `_`, which some databases refuse (PLAN §11.11) */
+  private readonly outlineLoading: IReactionDisposer;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /** The palette shows icons only; kept per user, never in the cube */
@@ -261,6 +271,15 @@ export class CubeEditorState implements CommandRegistrar {
       this.registry,
       () => this.document.context?.model,
     );
+    this.databaseRefusals = (query) =>
+      new Map(
+        query.nodes
+          .map((node): [string, string[]] => [
+            node.id,
+            this.getNodeDatabaseProblems(query, node),
+          ])
+          .filter(([, problems]) => problems.length > 0),
+      );
     this.document = document;
     const storedLimit = host.applicationStore.userDataService.getNumericValue(
       LEGEND_CUBE_USER_DATA_KEY.ROW_LIMIT,
@@ -294,17 +313,30 @@ export class CubeEditorState implements CommandRegistrar {
       },
       { fireImmediately: true },
     );
+    this.outlineLoading = reaction(
+      () => this.document.query.nodes.some(givesPatternWildcard),
+      (needed) => {
+        if (needed) {
+          flowResult(this.loadModelOutline()).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      { fireImmediately: true },
+    );
   }
 
   /**
    * Each node's schema and errors, query-level rules included, as the
-   * emitter sees them, and an Extend or a Filter by Expression checked for
-   * another input than its own waiting, which only the editor can tell
+   * emitter sees them; an Extend or a Filter by Expression checked for
+   * another input than its own waiting, and a filter its database would
+   * misread refused, which only the editor can tell
    */
   get analysis(): SchemaInferenceResult {
     return buildSchemasAndValidity(this.document.query, [
       ...this.registry.queryRules,
       this.staleEngineChecks,
+      this.databaseRefusals,
     ]);
   }
 
@@ -562,9 +594,29 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
+   * A node's problems on the database the query up to it runs on, with the
+   * cube's runtime (PLAN §11.11): a filter giving `%` or `_` to a pattern on
+   * DuckDB, which would match them as wildcards. None until the model's
+   * outline is loaded (`loadModelOutline`), or when it doesn't tell the
+   * database.
+   */
+  getNodeDatabaseProblems(query: Query, node: QueryNode): string[] {
+    const { context } = this.document;
+    const runtime = context?.runtime;
+    if (!context || runtime === undefined || !givesPatternWildcard(node)) {
+      return [];
+    }
+    return getDatabaseProblems(
+      node,
+      this.getRunDatabaseType(query, node.id, context.model, runtime),
+    );
+  }
+
+  /**
    * Loads the outline of a model, the cube's by default, once per model. It
-   * only adds warnings and database types, so a model that fails to load
-   * shows none and runs every operation the native way.
+   * only adds warnings, database types and a database's refusals (PLAN
+   * §11.11), so a model that fails to load shows none and runs every
+   * operation the native way.
    */
   *loadModelOutline(
     model: ModelContext | undefined = this.document.context?.model,
@@ -1287,6 +1339,7 @@ export class CubeEditorState implements CommandRegistrar {
   /** Stops any run; call when the page closes */
   dispose(): void {
     this.rechecking();
+    this.outlineLoading();
     this.execution.stop();
     this.nodeEditor.dispose();
   }

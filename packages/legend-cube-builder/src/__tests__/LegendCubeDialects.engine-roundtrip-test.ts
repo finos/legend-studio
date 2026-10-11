@@ -210,12 +210,19 @@ const SORTED_BY_BOTH_KEYS =
 /** Numbered by the two keys, in order */
 const BY_CUSTOMER_THEN_ORDER = /customer_id[^,]*,[^,]*order_id[^,]* desc/u;
 
-/** The SQL a run of the query would send to a database of the type */
-const planSql = async (query: Query, databaseType: string): Promise<string> => {
+/**
+ * The SQL a run of the query would send to a database of the type, written
+ * for that type, or in the native forms, as for no type known
+ */
+const planSql = async (
+  query: Query,
+  databaseType: string,
+  { native = false }: { native?: boolean } = {},
+): Promise<string> => {
   const lambda = new QueryEmitter(query).emitExecutionLambda({
     rowLimit: 1000,
     runtime: `test::plan::${databaseType}Runtime`,
-    databaseType,
+    databaseType: native ? undefined : databaseType,
   });
   const sql = await CUBE_ENGINE_TEST__generatePlanSql(
     stringifyLosslessJSON({
@@ -1533,6 +1540,66 @@ describe('Filter by Expression, as each database plans it', () => {
       const condition = sql.search(/["`]?rn["`]?\s*<=\s*1/u);
       expect(window).toBeGreaterThanOrEqual(0);
       expect(condition).toBeGreaterThan(window);
+    },
+  );
+});
+
+// The engine escapes `%` and `_` in a pattern with `\` and writes no ESCAPE
+// clause (PLAN §11.11): H2 reads `\` as its escape character, DuckDB has none,
+// so Cube refuses them on DuckDB. When the engine writes an ESCAPE clause,
+// these fail, and the refusal can go.
+describe('Patterns given % or _, as H2 and DuckDB plan them', () => {
+  /** `x | $x.SHIP_NAME->toOne()->contains('50%')`, as the engine's JSON */
+  const CONTAINS_FIFTY_PERCENT = TEST__expression.lambda(
+    TEST__expression.call(
+      'contains',
+      TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+      TEST__expression.string('50%'),
+    ),
+  );
+  const filters: [string, () => Query][] = [
+    [
+      "a column Filter's Contains",
+      () =>
+        ordersThen(
+          new Filter(
+            'filter101',
+            new ColumnComparisonFilter('SHIP_NAME', FilterOperator.CONTAINS, {
+              kind: 'string',
+              value: '50%',
+            }),
+          ),
+        ),
+    ],
+    [
+      "a Filter by Expression's contains",
+      () => expressionFilterThen([], CONTAINS_FIFTY_PERCENT),
+    ],
+  ];
+
+  test.each(filters)(
+    'Escapes them with a backslash, with no ESCAPE clause, on both, for %s',
+    async (_, query) => {
+      for (const databaseType of ['H2', 'DuckDB']) {
+        // written natively, as Cube would without the refusal
+        const sql = await planSql(query(), databaseType, { native: true });
+        expect(sql).toMatch(/ship_name["`]? like '%50\\%%'/u);
+        expect(sql).not.toMatch(/\bescape\b/u);
+      }
+    },
+  );
+
+  test.each(filters)(
+    'Is refused by Cube on DuckDB only, for %s',
+    async (_, query) => {
+      expect(() =>
+        new QueryEmitter(query()).emitExecutionLambda({
+          rowLimit: 1000,
+          runtime: 'test::plan::DuckDBRuntime',
+          databaseType: 'DuckDB',
+        }),
+      ).toThrow('On DuckDB, ');
+      expect(await planSql(query(), 'H2')).toContain("like '%50\\%%'");
     },
   );
 });

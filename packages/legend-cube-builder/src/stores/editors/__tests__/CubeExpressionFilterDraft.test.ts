@@ -23,6 +23,7 @@ import {
   type JsonObject,
   MESSAGE_CONDITION_BACKSLASH,
   MESSAGE_CONDITION_NOT_BOOLEAN,
+  MESSAGE_CONDITION_WILDCARD,
   PrimitiveType,
   Query,
   Schema,
@@ -35,7 +36,11 @@ import {
   ORDERS_COLUMNS,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
-import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
+import { TEST__expression } from '../../../__test-utils__/CubeExpressionTestUtils.js';
+import {
+  createFakeNorthwindOutline,
+  type FakeCubeEngine,
+} from '../../../__test-utils__/FakeCubeEngine.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -253,6 +258,41 @@ describe('Filter by Expression draft', () => {
     });
     expect(fake.typeLambdas).not.toHaveBeenCalled();
   });
+
+  test.each([
+    ['DuckDB', true],
+    ['H2', false],
+  ])(
+    "Refuses %% or _ in a LIKE function's literal before asking the engine, on DuckDB only: on %s, %s",
+    async (databaseType, refused) => {
+      const { fake, draft } = open();
+      fake.loadModel.mockResolvedValue(
+        createFakeNorthwindOutline(databaseType),
+      );
+      const like = TEST__expression.lambda(
+        TEST__expression.call(
+          'contains',
+          TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+          TEST__expression.string('50%'),
+        ),
+      );
+      fake.parseExpression.mockResolvedValueOnce({
+        lambda: like,
+        located: like,
+      });
+      draft.setCode("x | $x.SHIP_NAME->toOne()->contains('50%')");
+      await flowResult(draft.validate());
+      if (refused) {
+        expect(draft.problem).toEqual({
+          message: MESSAGE_CONDITION_WILDCARD('contains', 'DuckDB'),
+        });
+        expect(fake.typeLambdas).not.toHaveBeenCalled();
+      } else {
+        expect(draft.problem).toBeUndefined();
+        expect(fake.typeLambdas).toHaveBeenCalledTimes(1);
+      }
+    },
+  );
 
   test("Names the condition's type when it isn't one Boolean, and plans nothing", async () => {
     const { fake, draft } = open();

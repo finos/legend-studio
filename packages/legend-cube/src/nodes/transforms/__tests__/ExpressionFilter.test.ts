@@ -33,6 +33,7 @@ import {
   type ExpressionCheck,
   ExpressionFilter,
   findLikeFunctionWithBackslash,
+  findLikeFunctionWithWildcard,
   getExpressionFilterSignature,
   UNCHECKED,
 } from '../ExpressionFilter.js';
@@ -225,6 +226,39 @@ describe(unitTest('Filter by Expression node'), () => {
       }),
     ).toBeUndefined();
     expect(findLikeFunctionWithBackslash(LATER)).toBeUndefined();
+  });
+
+  test('Finds a LIKE function given % or _ in a literal, which only a database with no LIKE escape refuses', () => {
+    const nested = lambdaOf({
+      _type: 'func',
+      function: 'or',
+      parameters: [likeBody('startsWith', 'ab'), likeBody('contains', '50%')],
+    });
+    expect(findLikeFunctionWithWildcard(nested)).toBe('contains');
+    expect(findLikeFunctionWithWildcard(like('endsWith', 'a_b'))).toBe(
+      'endsWith',
+    );
+    expect(
+      findLikeFunctionWithWildcard({
+        _type: 'func',
+        function: 'startsWith',
+        parameters: [
+          property('SHIP_COUNTRY'),
+          { _type: 'string', values: ['_'] },
+        ],
+      }),
+    ).toBe('startsWith');
+    // a function that isn't a LIKE, or the string searched, isn't a pattern
+    expect(findLikeFunctionWithWildcard(like('equal', '50%'))).toBeUndefined();
+    expect(
+      findLikeFunctionWithWildcard({
+        _type: 'func',
+        function: 'contains',
+        parameters: [string('50%'), property('SHIP_COUNTRY')],
+      }),
+    ).toBeUndefined();
+    // valid everywhere: the database's rule refuses it
+    expect(validationErrors(checked(like('contains', '50%')))).toEqual([]);
   });
 
   test('Waits for the engine to check its condition, and for this input', () => {

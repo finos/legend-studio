@@ -14,22 +14,29 @@
  * limitations under the License.
  */
 
-import type { ExpressionFilter } from '../../nodes/transforms/ExpressionFilter.js';
+import { MESSAGE_CONDITION_WILDCARD } from '../../messages/CubeMessages.js';
+import {
+  type ExpressionFilter,
+  findLikeFunctionWithWildcard,
+} from '../../nodes/transforms/ExpressionFilter.js';
+import { hasNoLikeEscape } from '../CubeDialects.js';
 import { EmitRole, func, lambdaJson, type RelationExpr } from '../CubeIR.js';
-import { originOf } from '../EmitContext.js';
+import { type EmitContext, originOf } from '../EmitContext.js';
 
 /**
  * Emits a Filter by Expression as `->filter(<lambda>)` (PLAN §11.11), the
  * lambda the engine's JSON, marked with the node, so an engine error inside
  * it lands on the node. After a Partition it reads the `let` the run binds
  * the window with (§8.6), so a condition on a window column runs after the
- * window.
+ * window. On a database with no default `LIKE` escape character, a `%` or
+ * `_` given to a pattern is refused, as the editor refuses it (§11.11).
  *
  * The filter must be valid for its input schema.
  */
 export const emitExpressionFilter = (
   node: ExpressionFilter,
   inputs: readonly RelationExpr[],
+  context: EmitContext,
 ): RelationExpr => {
   const [input] = inputs;
   if (!input) {
@@ -40,6 +47,13 @@ export const emitExpressionFilter = (
   const { lambda } = node;
   if (!lambda) {
     throw new Error(`Filter by expression "${node.id}" has no condition`);
+  }
+  const { databaseType } = context;
+  if (hasNoLikeEscape(databaseType)) {
+    const wildcard = findLikeFunctionWithWildcard(lambda);
+    if (wildcard !== undefined) {
+      throw new Error(MESSAGE_CONDITION_WILDCARD(wildcard, databaseType));
+    }
   }
   return func(
     'filter',

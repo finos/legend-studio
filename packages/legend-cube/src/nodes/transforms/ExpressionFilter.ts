@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { hasLikeWildcard } from '../../filter/FilterOperator.js';
 import { UnaryNode } from '../../graph/QueryNode.js';
 import { keepInputOrder, type RowOrder } from '../../inference/RowOrder.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
@@ -103,17 +104,15 @@ const stringLiteralText = (json: JsonObject): string | undefined => {
 
 /**
  * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON given a
- * string literal holding a backslash, which the engine doesn't escape in its
- * `LIKE` pattern, so the rows would be wrong (PLAN §11.11, §8.2); `undefined`
- * when there is none. Only literals are read: a pattern built from columns
- * isn't checked.
+ * string literal whose text matches; `undefined` when there is none
  */
-export const findLikeFunctionWithBackslash = (
+const findLikeFunction = (
   json: unknown,
+  matches: (text: string) => boolean,
 ): string | undefined => {
   if (Array.isArray(json)) {
     return json.reduce<string | undefined>(
-      (found, item) => found ?? findLikeFunctionWithBackslash(item),
+      (found, item) => found ?? findLikeFunction(item, matches),
       undefined,
     );
   }
@@ -126,21 +125,41 @@ export const findLikeFunctionWithBackslash = (
     typeof name === 'string' &&
     LIKE_FUNCTIONS.has(name) &&
     Array.isArray(parameters) &&
-    parameters
-      .slice(1)
-      .some(
-        (parameter) =>
-          isJsonObject(parameter) &&
-          (stringLiteralText(parameter) ?? '').includes('\\'),
-      )
+    parameters.slice(1).some((parameter) => {
+      const text = isJsonObject(parameter)
+        ? stringLiteralText(parameter)
+        : undefined;
+      return text !== undefined && matches(text);
+    })
   ) {
     return name;
   }
   return Object.values(json).reduce<string | undefined>(
-    (found, value) => found ?? findLikeFunctionWithBackslash(value),
+    (found, value) => found ?? findLikeFunction(value, matches),
     undefined,
   );
 };
+
+/**
+ * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON given a
+ * string literal holding a backslash, which the engine doesn't escape in its
+ * `LIKE` pattern, so the rows would be wrong (PLAN §11.11, §8.2); `undefined`
+ * when there is none. Only literals are read: a pattern built from columns
+ * isn't checked.
+ */
+export const findLikeFunctionWithBackslash = (
+  json: unknown,
+): string | undefined => findLikeFunction(json, (text) => text.includes('\\'));
+
+/**
+ * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON given a
+ * string literal holding `%` or `_`, which a database with no default `LIKE`
+ * escape character matches as wildcards (`hasNoLikeEscape`, PLAN §11.11);
+ * `undefined` when there is none. Only literals are read.
+ */
+export const findLikeFunctionWithWildcard = (
+  json: unknown,
+): string | undefined => findLikeFunction(json, hasLikeWildcard);
 
 /**
  * Keeps the rows of its input for which a condition is true (PLAN §11.11): a

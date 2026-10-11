@@ -71,6 +71,20 @@ export const FAKE_NORTHWIND_OUTLINE: CubeModelOutline = {
   ],
 };
 
+/** The Northwind outline, its runtime's connection of this database type */
+export const createFakeNorthwindOutline = (
+  databaseType: string,
+): CubeModelOutline => ({
+  ...FAKE_NORTHWIND_OUTLINE,
+  runtimes: [
+    {
+      path: NORTHWIND_RUNTIME,
+      storePaths: [NORTHWIND_DATABASE],
+      connections: [{ storePath: NORTHWIND_DATABASE, databaseType }],
+    },
+  ],
+});
+
 /** The schemas the fake gives, keyed by `<schema>.<table>` as the outline names them */
 export const FAKE_NORTHWIND_SCHEMAS: ReadonlyMap<string, Schema> = new Map([
   ['NORTHWIND.ORDERS', new Schema(ORDERS_COLUMNS)],

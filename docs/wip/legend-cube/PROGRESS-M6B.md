@@ -138,6 +138,15 @@ Filled in as steps land.
 - **After M6b.9** (2026-10-11). Two checks a final review asked for. ISSUES.md's DuckDB entry claimed the column Filter
   shares the `%` and `_` problem; now shown: its Contains `%` and `_` on a DuckDB direct connection each returned the
   backslash's row (H2 the right ones), with a temporary test not kept. And M7's server-side grid over a Filter by
-  Expression (`demo/probe-m6b-grid.mjs`): the late orders run, a drill-down by CUSTOMER*ID whose groups each count
+  Expression (`demo/probe-m6b-grid.mjs`): the late orders run, a drill-down by `CUSTOMER_ID` whose groups each count
   their customer's late orders as the whole-query CSV has them (24 shown of 28), and the CSV export, a header and 37
-  rows. Whether to refuse `%` and `*` for DuckDB cubes, in both filters, is the user's choice.
+  rows. Whether to refuse `%` and `_` for DuckDB cubes, in both filters, is the user's choice.
+- **DuckDB's `%` and `_` refused** (2026-10-11, the user's choice). For a cube whose database is DuckDB, both filters
+  refuse `%` and `_` given to a pattern, saying why (PLAN §8.2): core's `hasNoLikeEscape`, `givesPatternWildcard` and
+  `getDatabaseProblems` (`CubeDialects.ts`), over `hasPatternWildcard`, `findPatternWildcardOperator` and
+  `findLikeFunctionWithWildcard`; the two messages; `needsDatabaseType` widened, and both emitters throwing for DuckDB.
+  The editor's `getNodeDatabaseProblems`, a query rule in `analysis` and the panel's problems; the outline loaded
+  once the cube, or the Filter editor's draft, gives a pattern `%` or `_`; Validate refusing before the engine; the
+  Filter by Expression note. Tests: the core helpers, rule and backstop; the store (refused on DuckDB, run on H2, no
+  outline without them, a run started before the outline refused by the emitter); the Filter editor's panel and
+  Validate, each on DuckDB and H2; and a plan-only engine test pinning the missing `ESCAPE` clause on H2 and DuckDB.

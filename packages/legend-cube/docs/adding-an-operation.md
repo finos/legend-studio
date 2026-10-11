@@ -137,7 +137,10 @@ Databases (PLAN §11.4): a run is written for the database it runs on, `context.
 gets a flag in `CUBE_DIALECT_WORKAROUNDS` (`src/ir/CubeDialects.ts`, a `Map`: the type comes from the model) and reads
 `getDialectWorkarounds(context.databaseType)` in its emitter, as Drop, Slice, Limit and Distinct do; add its type to
 `needsDatabaseType` too, so the builder loads the model's connections before such a run. Without a type, or for an
-unknown one, write the native form. A column an emitter adds and drops again takes `getTemporaryColumnName`
+unknown one, write the native form. A value a database would misread with no error is refused instead: a filter that
+gives `%` or `_` to a pattern on DuckDB (`hasNoLikeEscape`, `getDatabaseProblems`), which the builder adds to the
+node's errors once the model's outline names the database, and which the emitter throws on as a backstop (PLAN §8.2).
+A column an emitter adds and drops again takes `getTemporaryColumnName`
 (`src/ir/TemporaryColumns.ts`), so it never takes an input column's name; several at once take one name after another
 under the same rule (names compared folded), as Concat's `cube_cast`, `cube_cast2`, … do. A type the output must have
 that its input hasn't is a type-only `cast(@<T>)` in an `extend`, which the engine writes as no SQL cast; never a
