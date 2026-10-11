@@ -9,8 +9,9 @@ the icon name the node's definition gives. Join and Filter are the examples to f
 (`CubeGroupEditor`, `CubeGroupDraft`), Concat for a two-input editor with fixes and one setting
 (`CubeConcatEditor`, `CubeConcatDraft`), Partition for an editor made of the shared rows
 (`CubePartitionEditor`, `CubePartitionDraft`), Difference for a two-input editor sharing Join's key rows
-(`CubeDifferenceEditor`, `CubeDifferenceDraft`), and Extend for an editor that asks the engine before Apply
-(`CubeExtendEditor`, `CubeExtendDraft`).
+(`CubeDifferenceEditor`, `CubeDifferenceDraft`), Extend for an editor that asks the engine before Apply
+(`CubeExtendEditor`, `CubeExtendDraft`), and Filter by Expression for one condition the engine checks
+(`CubeExpressionFilterEditor`, `CubeExpressionFilterDraft`).
 
 ## 1. A draft
 
@@ -98,28 +99,34 @@ text (§17.9) where it has one.
 
 Map the icon name of the node's definition to a legend-art icon in `NODE_ICONS` (`src/components/CubeNodeIcon.tsx`).
 
-## A node the engine types
+## A node the engine types or checks
 
-Extend's types come from the engine (the core guide). `CubeEditorState` types every Extend that waits on `ERR_TYPING`
-through a reaction (`extendsToType`, `retypeExtends`), in one `typeLambdas` call, outside the undo history: the
+Extend's types come from the engine (the core guide), and so does the word that a Filter by Expression's condition is
+one Boolean of a row (PLAN §11.11). `CubeEditorState` checks every such node that waits on `ERR_TYPING` or
+`ERR_CHECKING` through a reaction (`nodesToCheck`, `checkExpressions`), in one `typeLambdas` call, outside the undo
+history, through one path for both kinds (`src/stores/CubeEngineChecks.ts`): each kind gives a request, its lambdas
+and how to read the engine's answers into the node to store. The
 answer replaces the very nodes sent, in the cube shown and in the undo snapshots that give the engine the same input
 (`replaceOutsideHistory` takes a predicate per snapshot), and an answer for a node changed meanwhile is dropped. Each
 node is typed as a chain after its input's relation, one chain per first k columns (`src/stores/CubeExtendTyping.ts`),
-so a failure names its column.
+so a failure names its column. A condition is checked as its input's relation filtered with it, and typed alone as an
+extend column under a name no input column has, which names its type when it isn't one Boolean
+(`src/stores/CubeExpressionFilterCheck.ts`).
 
 A chain's types depend on what the engine sees of the input, which Cube's schema doesn't fully show (an Extend's
 columns are nullable to Cube, `[1]` to the engine after `toOne()`). So each typing records `upstream`, a digest of the
 input's emitted relation and the model (`getCubeExtendUpstream`), and the editor adds its own query rule to
-`analysis` (`createStaleCubeExtendTypingRule`): an Extend whose digest differs waits on `ERR_TYPING` and is typed
-again. Execute reads that validity as well as the emitter's `canEmit`, since the emitter doesn't know the rule. The
+`analysis` (`createStaleCubeEngineCheckRule`): a node whose digest differs waits on `ERR_TYPING` or `ERR_CHECKING`
+and is checked again. Execute reads that validity as well as the emitter's `canEmit`, since the emitter doesn't know the rule. The
 digest covers the whole relation, filter values included, so any edit above an Extend has it typed again. A typing
 without a digest, as one loaded, is used as it is; on import every Extend is typed once more, as sources are checked
 again, which records one. When the engine can't be reached, a typing still current for its input is kept, with a
-warning. Every way out of `retypeExtends` leaves the node not stale, or the reaction would loop.
+warning. Every way out of `checkExpressions` leaves the node not stale, or the reaction would loop.
 
-The canvas shows a waiting node as resolving (`isTypingNode`), the header says so, and the panel leaves `ERR_TYPING`
-out of its problems. A new node type the engine types needs the same: today the reaction, the rule and the typing
-are Extend's.
+The canvas shows a waiting node as resolving (`isTypingNode`), the header says so ("checking expressions"), and the
+panel leaves the waiting marker out of its problems. A new node type the engine types or checks joins
+`CubeEngineCheckedNode` and gives `buildCubeEngineCheckRequest` its request, so the reaction, the stale rule, the undo
+snapshots, the kept check offline and the import serve it too; its draft joins F10 in `CubeEditorState`.
 
 ## Warnings
 

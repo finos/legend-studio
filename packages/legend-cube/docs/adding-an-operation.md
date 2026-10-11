@@ -9,8 +9,9 @@ The UI half (a draft, an editor, help text and an icon) is in
 Join (`src/nodes/transforms/Join.ts`) and Filter (`Filter.ts`) are the examples to follow; Group (`Group.ts`) for a
 node whose settings are rows, Concat (`Concat.ts`) for a plain two-input node with a setting that changes its
 output types, Partition (`Partition.ts`) for a window, which a run must isolate from what follows it, Difference
-(`Difference.ts`) for a node built from another's parts (Join's key checks and join relation), and Extend
-(`Extend.ts`) for a node whose output types only the engine knows.
+(`Difference.ts`) for a node built from another's parts (Join's key checks and join relation), Extend
+(`Extend.ts`) for a node whose output types only the engine knows, and Filter by Expression (`ExpressionFilter.ts`)
+for one whose setting only the engine can check.
 
 ## 1. The node
 
@@ -97,6 +98,13 @@ since the engine sees more of the input than Cube's schema shows. Give the node 
 before asking the engine (Extend's `getColumnProblems` and `getTypeProblems`), so a problem Cube can tell lands on its
 row.
 
+Filter by Expression (PLAN §11.11) needs the engine for less: its columns are its input's, but only the engine can say
+its condition is one Boolean of a row. Its check is its own (`unresolved`, `checked`, or `failed` with the engine's
+message and the condition's type when it types alone but isn't one Boolean), signed by the input and the lambda, and
+pending as `ERR_CHECKING`, which `isTypingError` reads too: until checked, the node and the nodes below it wait, as
+below an Extend, since Execute and the canvas read validity and schema together. Its `getConditionProblem` holds the
+checks Cube can make itself, a backslash in a `LIKE` function's literal among them (§8.2's rule for the column Filter).
+
 The expression itself is the engine's JSON for its text, without source information, its number literals as their
 digit strings (a saved spec is read with `JSON.parse`), and the text as the user typed it, so the cube shows it
 without an engine call. It is emitted as the IR `lambdaJson`, whose serializer writes the numbers digit for digit and
@@ -173,7 +181,8 @@ After an import types the sources again, only Filter's invalid values are read a
 A `TransformDefinition` in `src/nodes/NodeRegistry.ts`: `kind: 'transform'`, `type`, `label` (the palette's text),
 `icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`,
 and `isolationBoundary` for a window (see 3). Add it to `createNodeRegistry()` in menu order (Sort, Group, Filter,
-Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, Extend; spec §7.0), and export
+Filter by Expression, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, Extend;
+spec §7.0, with Cube's own beside the spec's), and export
 the new modules from `src/index.ts`.
 
 ## Tests
@@ -191,7 +200,8 @@ the new modules from `src/index.ts`.
   `src/ir/__tests__/QueryEmitter.test.ts` ('Names each part of a node with a distinct role, without a colon').
 - A node the engine types is tested with typings built in the test (`getExtendSignature` for the input), as
   `Extend.test.ts` does: pending until typed, pending again once the input or a setting changes, the engine's
-  failure on its column, and a type that isn't a primitive or an enumeration refused.
+  failure on its column, and a type that isn't a primitive or an enumeration refused; a node the engine checks, as
+  `ExpressionFilter.test.ts` does, with checks built in the test (`getExpressionFilterSignature`).
 - A window's lets are tested with a test-only window node in `src/ir/__tests__/QueryEmitterIsolation.test.ts`, and
   Partition's own in `PartitionEmitter.test.ts`: a Partition at the capture binds nothing, one followed by a node is
   bound, and the capture's sort comes after `from()`.

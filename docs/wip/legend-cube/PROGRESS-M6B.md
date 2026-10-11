@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev`                   |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6b.5: on the engine; next the guides and the changeset                                         |
-| Tests  | 2913 core, 1714 builder (core group); engine suites 900 of 904 (the 4 local setup-SQL timeouts) |
+| Step   | M6b.6: guides and the changeset; next verification and the rehearsal                            |
+| Tests  | 2930 core, 1714 builder (core group); engine suites 900 of 904 (the 4 local setup-SQL timeouts) |
 
 ## Steps
 
@@ -24,7 +24,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 - [x] **M6b.3** The builder's engine-checked nodes
 - [x] **M6b.4** The editor, registered
 - [x] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
-- [ ] **M6b.6** Guides, READMEs, testing.md and the changeset
+- [x] **M6b.6** Guides, READMEs, testing.md and the changeset
 - [ ] **M6b.7** Verification and the browser rehearsal
 - [ ] **M6b.8** A demo video (PLAN §11.3)
 - [ ] **M6b.9** Fold PLAN §11.11's supersessions in; the PR ready for `cube-dev`
@@ -40,7 +40,8 @@ Filled in as steps land.
 | M6b.3 | `a96473c74` | feat: check Legend Cube's filter conditions with the engine in the background |
 | M6b.4 | `3311c02c5` | feat: add the Filter by Expression editor to Legend Cube                      |
 | M6b.5 | `258bf2a5e` | test: run Legend Cube's Filter by Expression on the engine and every database |
-| M6b.5 | (this one)  | docs: record Legend Cube M6b.5                                                |
+| M6b.5 | `a041aea3e` | docs: record Legend Cube M6b.5                                                |
+| M6b.6 | (this one)  | docs: cover Legend Cube's Filter by Expression in its guides                  |
 
 ## Notes
 
@@ -102,3 +103,10 @@ Filled in as steps land.
   for its input. A browser probe (`demo/probe-m6b-editor.mjs`) passed 7 of 7 on the dev server: the editor, Validate,
   37 rows, a number refused, the parentheses hint. The dev server needed `extensions.core.NonProductionFeatureFlag` in
   its own `dev/config.json` since #5666, and #5666 renamed Import (dev) to Import.
+- **M6b.6** (2026-10-11). Both adding-an-operation guides cover a node the engine checks (the core's check state and
+  `ERR_CHECKING`; the builder's one path, `CubeEngineChecks.ts`, and what a new kind joins), the menu order names
+  Filter by Expression, `testing.md` its engine tests, both READMEs list it, and the patch changeset names both
+  packages. Following the core guide's list, the saved-spec suites gained the new kind: decode cases (a baseline and
+  five refusals), forward compatibility (an older registry reads it as an Unknown node and re-saves it verbatim; this
+  version keeps its unknown keys) and validity through inference (checked, waiting, for another input, no lambda, two
+  parameters, a backslash). `yarn check:ci` passes.
