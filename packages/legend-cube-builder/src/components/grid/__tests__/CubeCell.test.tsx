@@ -16,12 +16,22 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  checkDrilldown,
   type ColumnFormat,
   ColumnFormatStyle,
+  PrimitiveType,
+  Schema,
+  SchemaColumn,
   TypeFamily,
 } from '@finos/legend-cube';
 import { render } from '@testing-library/react';
-import { CubeCell } from '../CubeResultGrid.js';
+import type { CubeExecutionResult } from '../../../stores/CubeExecutionState.js';
+import {
+  buildCubeColumnDefs,
+  CubeCell,
+  LOCAL_AGGREGATIONS,
+} from '../CubeResultGrid.js';
 
 const RED = 'text-[var(--color-status-error)]';
 
@@ -72,5 +82,100 @@ describe('Cube cell formats', () => {
       cellOf('1234.5', format({ style: 'currency', currency: 'XYZ' }))
         .textContent,
     ).toBe('1,234.5');
+  });
+
+  const groupRow = (keys: string[]) => ({
+    id: JSON.stringify(keys),
+    keys,
+    isGroup: true,
+    cells: [],
+  });
+
+  test("Leaves a group row's count unformatted, a count not being money, but formats its key and run rows (spec §13.1)", () => {
+    const usd = format({
+      style: ColumnFormatStyle.CURRENCY,
+      currency: 'USD',
+      decimalPlaces: 0,
+    });
+    const cell = (
+      data: unknown,
+      column: string,
+      countOnGroupRows: boolean,
+    ): string | null =>
+      render(
+        <CubeCell
+          {...({
+            value: '4',
+            family: TypeFamily.DECIMAL,
+            format: usd,
+            data,
+            column,
+            levels: ['DESK'],
+            countOnGroupRows,
+          } as unknown as Parameters<typeof CubeCell>[0])}
+        />,
+      ).container.textContent;
+    expect(cell(groupRow(['Rates']), 'NOTIONAL', true)).toBe('4');
+    expect(cell(groupRow(['Rates']), 'NOTIONAL', false)).toBe('$4');
+    // the group's own key is a value, formatted
+    expect(cell(groupRow(['Rates']), 'DESK', true)).toBe('$4');
+    // a run row's value is never a count
+    expect(
+      cell(
+        { id: 'r', keys: ['Rates'], isGroup: false, cells: [] },
+        'NOTIONAL',
+        true,
+      ),
+    ).toBe('$4');
+    expect(cell(['4'], 'NOTIONAL', true)).toBe('$4');
+  });
+
+  test('Marks a column as counted on group rows where the drill-down counts it, and number columns as numbers for Excel', () => {
+    const schema = new Schema([
+      new SchemaColumn('DESK', PrimitiveType.get('String'), false),
+      new SchemaColumn('NOTIONAL', PrimitiveType.get('Decimal'), false),
+      new SchemaColumn('PRICE', PrimitiveType.get('Float'), false),
+    ]);
+    const columns = buildCubeColumnDefs(
+      { schema } as unknown as CubeExecutionResult,
+      () => null,
+      undefined,
+      checkDrilldown(
+        {
+          columns: ['DESK'],
+          aggregations: [
+            { column: 'NOTIONAL', function: AggregationFunction.COUNT },
+          ],
+        },
+        schema,
+      ),
+    );
+    expect(
+      columns.map((column) => [
+        column.headerName,
+        (column.cellRendererParams as { countOnGroupRows: boolean })
+          .countOnGroupRows,
+        column.cellClass,
+      ]),
+    ).toEqual([
+      ['DESK', false, undefined],
+      ['NOTIONAL', true, 'cube-excel-number'],
+      ['PRICE', false, 'cube-excel-number'],
+    ]);
+  });
+
+  test("Totals local mode's groups as numbers, though the engine writes integers and decimals as text", () => {
+    const params = (values: unknown[]) =>
+      ({ values }) as unknown as Parameters<typeof LOCAL_AGGREGATIONS.sum>[0];
+    // ag-grid's own sum would join the texts: '10' + '2.5' + …
+    expect(LOCAL_AGGREGATIONS.sum(params(['10', '2.5', null, 1]))).toBe(13.5);
+    expect(LOCAL_AGGREGATIONS.avg(params(['10', '2', null]))).toBe(6);
+    expect(LOCAL_AGGREGATIONS.min(params(['10', '-2.5', 'x']))).toBe(-2.5);
+    expect(LOCAL_AGGREGATIONS.max(params(['10', '9007199254740993']))).toBe(
+      9007199254740992,
+    );
+    // nothing to total
+    expect(LOCAL_AGGREGATIONS.avg(params([null]))).toBeNull();
+    expect(LOCAL_AGGREGATIONS.max(params([]))).toBeNull();
   });
 });

@@ -16,6 +16,8 @@
 
 import { clsx } from '@finos/legend-art';
 import {
+  AggregationFunction,
+  type CheckedDrilldown,
   type ColumnFormat,
   DEFAULT_PRESENTATION,
   foldColumnName,
@@ -228,6 +230,14 @@ export const CubeCell: React.FC<
     family: TypeFamily;
     /** The column's format (PLAN §11.10), on a number column that has one */
     format?: ColumnFormat | undefined;
+    /**
+     * A group row shows a count in this column, which is never formatted (a
+     * count is not money, spec §13.1), but where the column is the group's key
+     */
+    countOnGroupRows?: boolean | undefined;
+    /** The column's name and the drill-down's levels, to tell a group row's key */
+    column?: string | undefined;
+    levels?: readonly string[] | undefined;
   }
 > = (props) => {
   if (props.value === undefined) {
@@ -239,9 +249,19 @@ export const CubeCell: React.FC<
     );
   }
   const exact = String(props.value);
-  const formatted = props.format
-    ? formatColumnValue(props.value, props.format)
-    : undefined;
+  const row = props.data;
+  const isCount =
+    props.countOnGroupRows === true &&
+    row !== undefined &&
+    !Array.isArray(row) &&
+    (row as CubeGridRowData).isGroup &&
+    !(props.levels ?? [])
+      .slice(0, (row as CubeGridRowData).keys.length)
+      .includes(props.column ?? '');
+  const formatted =
+    props.format && !isCount
+      ? formatColumnValue(props.value, props.format)
+      : undefined;
   if (formatted) {
     return (
       <span
@@ -259,6 +279,23 @@ export const CubeCell: React.FC<
   return shown === exact ? <>{exact}</> : <span title={exact}>{shown}</span>;
 };
 
+/** The class of a number column's cells, which Excel exports as numbers (`CUBE_EXCEL_STYLES`) */
+const CUBE_EXCEL_NUMBER_CLASS = 'cube-excel-number';
+
+/**
+ * The grid's Excel styles: a number column's cells are numbers in the
+ * workbook, where ag-grid would write the exact text it holds as text
+ */
+export const CUBE_EXCEL_STYLES = [
+  { id: CUBE_EXCEL_NUMBER_CLASS, dataType: 'Number' as const },
+];
+
+/** The group-row aggregations that count, whose cells keep no format */
+const COUNT_AGGREGATIONS: readonly AggregationFunction[] = [
+  AggregationFunction.COUNT,
+  AggregationFunction.DISTINCT_COUNT,
+];
+
 /**
  * The grid's columns: the run's, from Cube's own schema of the node that ran,
  * by position, so any column name works, with the type in the header's
@@ -271,6 +308,7 @@ export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
     position: number,
   ) => CubeResultValue | undefined,
   presentation: Presentation = DEFAULT_PRESENTATION,
+  drilldown?: CheckedDrilldown | undefined,
 ): DataGridColumnDefinition<Row, CubeResultValue | undefined>[] =>
   result.schema.columns.map((column, position) => {
     const numeric = isNumericFamily(column.type.family);
@@ -289,10 +327,22 @@ export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
         format: numeric
           ? getColumnFormat(presentation.columnHints ?? [], column.name)
           : undefined,
+        countOnGroupRows: drilldown
+          ? COUNT_AGGREGATIONS.includes(
+              drilldown.aggregationOf(column.name) as AggregationFunction,
+            )
+          : false,
+        column: column.name,
+        levels: drilldown?.columns ?? [],
       },
       ...(width === undefined ? {} : { width }),
       ...(numeric
-        ? { type: 'rightAligned', comparator: compareCellValues }
+        ? {
+            type: 'rightAligned',
+            comparator: compareCellValues,
+            // a number in Excel, though it reaches the grid as exact text
+            cellClass: CUBE_EXCEL_NUMBER_CLASS,
+          }
         : {}),
     };
   });
@@ -349,7 +399,7 @@ const numbersOf = (params: DataGridIAggFuncParams): number[] =>
  * as text; a total past a double's precision is rounded, as local mode works
  * on the fetched rows in the browser
  */
-const LOCAL_AGGREGATIONS = {
+export const LOCAL_AGGREGATIONS = {
   sum: (params: DataGridIAggFuncParams) =>
     numbersOf(params).reduce((total, value) => total + value, 0),
   avg: (params: DataGridIAggFuncParams) => {
@@ -452,6 +502,7 @@ export const CubeResultGrid = memo(
           sideBar={LOCAL_SIDE_BAR}
           statusBar={LOCAL_STATUS_BAR}
           cellSelection={true}
+          excelStyles={CUBE_EXCEL_STYLES}
           onColumnResized={(event) =>
             keepCubeColumnWidths(editorState, result, event)
           }

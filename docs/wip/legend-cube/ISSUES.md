@@ -423,7 +423,9 @@ deployment (PLAN §11.2 Part B2).
   user's choice over paging); a level with more groups or rows says so above the grid, and the user raises the limit
   or adds a Filter.
 - **Excel holds the rows shown, unformatted.** 'Excel (rows shown)' is ag-grid's export of the loaded rows: collapsed
-  groups' rows aren't in it, and column formats aren't carried into the workbook (ag-grid's Excel styles would).
+  groups' rows aren't in it, and column formats aren't carried into the workbook (ag-grid's Excel styles would). Number
+  columns are numbers there (an Excel style with `dataType: 'Number'`), as doubles, so a value past a double's
+  precision is rounded in the workbook.
 - **Local mode's totals are JS numbers.** Its Sum, Average, Min and Max read the exact text as doubles, so a total past
   a double's precision is rounded; server-side mode's are the database's.
 - **Two float groups can merge.** A float key is matched by `In [v, fround(v)]`; on a 64-bit column that holds both a

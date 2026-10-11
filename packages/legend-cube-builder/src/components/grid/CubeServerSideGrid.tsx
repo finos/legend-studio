@@ -36,6 +36,7 @@ import type {
 import { formatCellValue } from './CubeGridValues.js';
 import {
   buildCubeColumnDefs,
+  CUBE_EXCEL_STYLES,
   getCubeGridContextMenuItems,
   keepCubeColumnWidths,
 } from './CubeResultGrid.js';
@@ -84,6 +85,7 @@ export const CubeServerSideGrid = memo(
     useEffect(() => {
       grid.resetLevels();
     }, [grid]);
+    const { drilldown } = grid;
     const getContextMenuItems = useCallback(
       (params: DataGridGetContextMenuItemsParams<CubeGridRowData>) =>
         getCubeGridContextMenuItems(editorState, params),
@@ -95,8 +97,9 @@ export const CubeServerSideGrid = memo(
           result,
           (row, position) => row?.cells[position],
           presentation,
+          drilldown,
         ),
-      [result, presentation],
+      [result, presentation, drilldown],
     );
     const families = useMemo(
       () =>
@@ -145,6 +148,7 @@ export const CubeServerSideGrid = memo(
           tooltipShowDelay={500}
           getContextMenuItems={getContextMenuItems}
           serverSideSortAllLevels={true}
+          excelStyles={CUBE_EXCEL_STYLES}
           onColumnResized={(event) =>
             keepCubeColumnWidths(editorState, result, event)
           }

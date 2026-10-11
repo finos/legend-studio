@@ -193,3 +193,12 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   `Top_customers_by_orders.csv` (`text/csv`, a header and the 10 rows, flat; the save intercepted, no file written);
   Undo removes the drill-down and the grid shows the run's rows; no console error. Earlier checks: Largest buys sorted
   on the engine, drilled down two levels, the group rows' settings, Format Column to USD, local mode's panels.
+- **M7.14, fixes from the review of the rehearsal** (2026-10-11, advisor): every suite run again (builder with its
+  engine tests: only the four known setup-SQL timeouts; Legend Query's tests pass; lint clean but for two old
+  warnings in a Query test helper this branch doesn't touch). Spec §13.1's rule that a group row's count is never
+  formatted: `CubeCell` skips the format on a group row's column the drill-down counts (Count, Distinct Count), not on
+  the group's key. Excel wrote integers and decimals as text (they reach the grid as exact text): number columns now
+  carry an Excel style with `dataType: 'Number'`; the intercepted workbook of Largest buys, drilled down with a group
+  expanded, has `t="n"` number cells and its group rows. Local mode's totals, unit-tested (`LOCAL_AGGREGATIONS`). In
+  the browser, a resize and a format applied with a group expanded kept it expanded and fetched nothing (Runs (3)
+  before and after), with no console error.
