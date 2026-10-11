@@ -354,6 +354,26 @@ describe('Grid fetcher', () => {
     expect(fake.execute).toHaveBeenCalledTimes(4);
   });
 
+  test('Keeps a level used again over one used less lately', async () => {
+    const result = await setUp();
+    // room for two levels of two rows
+    const fetcher = new CubeGridFetcher(state, 5);
+    fake.execute.mockResolvedValue(COUNTRY_GROUPS());
+    const sorted = (column: string) => [
+      { column, direction: SortDirection.ASC },
+    ];
+    await fetcher.fetchLevel(result, [], sorted('SHIP_COUNTRY'));
+    await fetcher.fetchLevel(result, [], sorted('FREIGHT'));
+    // used again: the FREIGHT level is now the least recently used
+    await fetcher.fetchLevel(result, [], sorted('SHIP_COUNTRY'));
+    await fetcher.fetchLevel(result, [], sorted('ORDER_ID'));
+    expect(fake.execute).toHaveBeenCalledTimes(4);
+    await fetcher.fetchLevel(result, [], sorted('SHIP_COUNTRY'));
+    expect(fake.execute).toHaveBeenCalledTimes(4);
+    await fetcher.fetchLevel(result, [], sorted('FREIGHT'));
+    expect(fake.execute).toHaveBeenCalledTimes(5);
+  });
+
   test("Uses the cube's drill-down as it is now, which is presentation and not the run", async () => {
     const result = await setUp('none');
     fake.execute.mockResolvedValueOnce(ORDERS_RESULT);
