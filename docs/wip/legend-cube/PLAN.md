@@ -4181,7 +4181,9 @@ decimalPlaces?, currency? (an ISO 4217 code), grouping, redIfNegative, parenthes
   with CRLF line ends, quotes and doubled quotes, an empty field for an empty value, a header even with no rows, every
   digit (`9007199254740993`, `2.5000`), timestamps as `2024-01-02 03:04:05.678` ✅; it answers `application/json` as
   its content type, so Cube sets `text/csv` itself, and a failure is a JSON error with status 500 ✅
-  (`p2-csv-decimal.out`). An "Exporting…" note shows while it runs; Stop aborts it.
+  (`p2-csv-decimal.out`). Studio's client asks for the engine's `CSV_TRANSFORMED`, which writes timestamps as the grid
+  shows them (`2024-01-02T03:04:05.678000000+0000`) ✅ (`p6-csv-formats.out`). An "Exporting…" note shows while it
+  runs; Stop aborts it. The engine test client now sends the format the client asks for (it always sent `DEFAULT`).
 
 **Engine facts** (probes under `m7-requirements/`):
 

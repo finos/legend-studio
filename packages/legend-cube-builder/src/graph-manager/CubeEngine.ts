@@ -192,6 +192,16 @@ export interface CubeEngine {
     lambda: IR,
     options?: { abortController?: AbortController | undefined },
   ): Promise<CubeResult>;
+  /**
+   * Runs an execution lambda and gives its rows as CSV text (PLAN §11.10):
+   * the engine's own, a header row first, every value as the engine writes
+   * it; rejects with a `CubeEngineError`
+   */
+  exportCsv(
+    model: ModelContext,
+    lambda: IR,
+    options?: { abortController?: AbortController | undefined },
+  ): Promise<string>;
   /** The Pure text of a lambda, for display only: never parsed back */
   renderPure(lambda: IR): Promise<string>;
   /**

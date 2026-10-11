@@ -117,13 +117,14 @@ export const CUBE_ENGINE_TEST__jsonToGrammar_lambda = async (
  */
 export const CUBE_ENGINE_TEST__execute = async (
   input: object | string,
+  serializationFormat = 'DEFAULT',
 ): Promise<{ ok: boolean; status: number; text: () => Promise<string> }> => {
   const response = await axios.post<unknown, AxiosResponse<string>>(
     `${PURE_API}/execution/execute`,
     input,
     {
       headers: JSON_HEADERS,
-      params: { serializationFormat: 'DEFAULT' },
+      params: { serializationFormat },
       responseType: 'text',
       transformResponse: (data: string) => data,
       validateStatus: () => true,

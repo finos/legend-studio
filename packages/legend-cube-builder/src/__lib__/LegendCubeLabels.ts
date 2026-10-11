@@ -57,6 +57,7 @@ export enum CUBE_PENDING_LABEL {
   RESOLVING_SOURCE = 'resolving source',
   EXECUTING_QUERY = 'executing query',
   FETCHING_ROWS = 'fetching rows',
+  EXPORTING_CSV = 'exporting CSV',
   RENDERING_QUERY = 'rendering query',
   REFRESHING_SOURCE = 'refreshing source',
   TYPING_COLUMNS = 'typing new columns',

@@ -25,12 +25,14 @@ import {
   type DataGridIAggFuncParams,
   type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
+import { flowResult } from 'mobx';
 import { memo, useCallback, useMemo } from 'react';
 import { NULL_CELL_TEXT } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
+import { getCubeExportFileName } from '../../stores/CubeExportState.js';
 import {
   CubeGridCellKind,
   getCubeGridQuickActions,
@@ -87,11 +89,66 @@ const cellOf = (
  * curates; elsewhere ag-grid's only. Read when the menu opens, so it reflects
  * the cube and the run as they are then.
  */
+/**
+ * The menu's Export (spec §12.5, PLAN §11.10), in place of ag-grid's export of
+ * the fetched rows: CSV of the whole query, run on the engine with no row
+ * limit and sorted as the grid is; Excel of the rows the grid shows
+ */
+const getCubeExportItem = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  params: DataGridGetContextMenuItemsParams<Row>,
+): DataGridMenuItemDef<Row> => {
+  const { result } = editorState.execution;
+  const { isExporting } = editorState.export;
+  return {
+    name: 'Export',
+    subMenu: [
+      {
+        name: 'CSV (whole query)',
+        disabled: !result || isExporting,
+        tooltip:
+          'Runs the whole query on the engine, with no row limit, sorted as the grid is',
+        action: () => {
+          if (result) {
+            const sortModel = params.api
+              .getColumnState()
+              .filter((column) => column.sort)
+              .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0))
+              .map((column) => ({
+                colId: column.colId,
+                sort: column.sort as 'asc' | 'desc',
+              }));
+            const depth = editorState.grid.drilldown?.columns.length ?? 0;
+            flowResult(
+              editorState.export.exportCsv(
+                result,
+                editorState.grid.toSorts(result, sortModel, depth),
+              ),
+            ).catch(editorState.host.applicationStore.alertUnhandledError);
+          }
+        },
+      },
+      {
+        name: 'Excel (rows shown)',
+        tooltip:
+          'The rows the grid has loaded, expanded groups included, as the grid shows them',
+        action: () =>
+          params.api.exportDataAsExcel({
+            fileName: getCubeExportFileName(editorState.document.name, 'xlsx'),
+          }),
+      },
+    ],
+  };
+};
+
 export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
   params: DataGridGetContextMenuItemsParams<Row>,
 ): (DataGridDefaultMenuItem | DataGridMenuItemDef<Row>)[] => {
-  const defaultItems = params.defaultItems ?? [];
+  const defaultItems = (params.defaultItems ?? []).map(
+    (item): DataGridDefaultMenuItem | DataGridMenuItemDef<Row> =>
+      item === 'export' ? getCubeExportItem(editorState, params) : item,
+  );
   const colId = params.column?.getColId();
   if (!colId?.startsWith(COLUMN_ID_PREFIX)) {
     return defaultItems;

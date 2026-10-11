@@ -199,6 +199,19 @@ const CubeGridToolbar = observer(
                   {getLevelTruncationMessage(result.rowLimit)}
                 </span>
               )}
+            {editorState.export.isExporting && (
+              <>
+                <span className="text-base text-[var(--color-text-secondary)]">
+                  {CUBE_PENDING_LABEL.EXPORTING_CSV}
+                </span>
+                <CubeButton
+                  title="Stop the export"
+                  onClick={() => editorState.export.stop()}
+                >
+                  Stop export
+                </CubeButton>
+              </>
+            )}
             {editorState.grid.isServerSide && editorState.grid.fetching > 0 && (
               <span className="text-base text-[var(--color-text-secondary)]">
                 {CUBE_PENDING_LABEL.FETCHING_ROWS}
@@ -336,20 +349,32 @@ const CubeRunGrid = observer(
   }) => {
     const { editorState, result, darkMode } = props;
     const { grid } = editorState;
+    const exportError = editorState.export.error && (
+      <CubeExecutionError
+        editorState={editorState}
+        error={editorState.export.error}
+      />
+    );
     if (!grid.isServerSide) {
       return (
-        <CubeResultGrid
-          key={result.id}
-          editorState={editorState}
-          result={result}
-          darkMode={darkMode}
-        />
+        <div className="flex h-full flex-col">
+          {exportError}
+          <div className="min-h-0 flex-1">
+            <CubeResultGrid
+              key={result.id}
+              editorState={editorState}
+              result={result}
+              darkMode={darkMode}
+            />
+          </div>
+        </div>
       );
     }
     const drilldown = editorState.document.meta.drilldown;
     return (
       <div className="flex h-full flex-col">
         <CubeDrilldownBar editorState={editorState} />
+        {exportError}
         {grid.fetchError && (
           <CubeExecutionError
             editorState={editorState}

@@ -86,6 +86,7 @@ import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
+import { CubeExportState } from './CubeExportState.js';
 import { CubeGridFetcher } from './CubeGridFetcher.js';
 import { CubeGridState } from './CubeGridState.js';
 import { CubeRunStatsState } from './CubeRunStatsState.js';
@@ -156,6 +157,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly gridFetcher: CubeGridFetcher;
   /** The grid's mode and its server-side levels (PLAN §11.10) */
   readonly grid: CubeGridState;
+  /** The results' export (spec §12.5) */
+  readonly export: CubeExportState;
   /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
@@ -270,6 +273,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.runStats = new CubeRunStatsState();
     this.gridFetcher = new CubeGridFetcher(this);
     this.grid = new CubeGridState(this);
+    this.export = new CubeExportState(this);
     this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);

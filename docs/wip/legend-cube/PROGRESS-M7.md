@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.7 done                                                       |
+| Step   | M7.1–M7.8 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -26,7 +26,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.5** The builder's row fetcher
 - [x] **M7.6** The grid's server-side row model and the mode toggle
 - [x] **M7.7** The drill-down in the UI
-- [ ] **M7.8** Export
+- [x] **M7.8** Export
 - [ ] **M7.9** The curated context menu
 - [ ] **M7.10** The stats popover
 - [ ] **M7.11** Column formatting and widths
@@ -50,7 +50,8 @@ Filled in as steps land.
 | M7.5 | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
 | M7.5 | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
 | M7.6 | `0db3cccd1` | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
-| M7.7 | (this one)  | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
+| M7.7 | `1c2f36dc3` | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
+| M7.8 | (this one)  | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
 
 ## Notes
 
@@ -138,3 +139,13 @@ Filled in as steps land.
   key, never on an aggregate or an empty cell), the grid state's edits as undo steps, the bar and dialog in the
   region (an Average re-fetches). Browser: Largest buys, Drilldown by INSTRUMENT_ID from a cell, TRADE_ID set to
   Nothing and PRICE to Average, 13 expanded to its 10 trades.
+- **M7.8** (2026-10-11). `CubeEngine.exportCsv` (the port, `V1_LegendCubeEngine`, the fakes): the execution request
+  with the client's CSV format, read as text. `CubeExportState` (`editorState.export`): the run's whole query, sorted
+  as the grid is, no row limit (the run's own Limit kept), saved as `<cube name>.csv`; a failure kept for the grid
+  region, Stop aborts and saves nothing, a run made in another context refused (the warehouse is the page's); recorded
+  in the run stats. The menu's Export replaces ag-grid's: 'CSV (whole query)' and 'Excel (rows shown)' (ag-grid's
+  `exportDataAsExcel` of the loaded rows, `<cube name>.xlsx`). Found: Studio's client asks for `CSV_TRANSFORMED` (ISO
+  timestamps), and the engine test client always sent `DEFAULT`, so it now passes the client's format
+  (`p6-csv-formats.out`). Tests: export store (6), menu (Export items, the grid's sort into the CSV's), engine (830
+  orders sorted with a header, empty values and exact digits, a refused query). Browser: Largest buys, CSV (whole
+  query) gave `Largest_buys.csv`, `text/csv`, a header and 20 rows (the save was intercepted, no file written).

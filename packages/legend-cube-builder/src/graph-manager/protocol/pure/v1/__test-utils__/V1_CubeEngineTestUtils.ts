@@ -15,6 +15,7 @@
  */
 
 import { jest } from '@jest/globals';
+import { V1_getEngineSerializationFormat } from '@finos/legend-graph';
 import {
   ENGINE_TEST_SUPPORT__grammarToJSON_model,
   ENGINE_TEST_SUPPORT_API_URL,
@@ -105,9 +106,13 @@ export const V1_createEngineBackedCubeEngine = (): {
     );
   const runQuery = jest
     .spyOn(client, 'runQuery')
-    .mockImplementation(async (input) => {
+    .mockImplementation(async (input, options) => {
+      // the format as the client sends it, e.g. CSV (PLAN §11.10)
       const response = await CUBE_ENGINE_TEST__execute(
         input as unknown as string,
+        options?.serializationFormat
+          ? V1_getEngineSerializationFormat(options.serializationFormat)
+          : undefined,
       );
       if (!response.ok) {
         throw clientError(response.status, parseOrText(await response.text()));

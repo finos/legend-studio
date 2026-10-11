@@ -261,6 +261,7 @@ export class CubeExecutionState {
   reset(): void {
     this.stop();
     this.editorState.gridFetcher.purge();
+    this.editorState.export.stop();
     this.result = undefined;
     this.error = undefined;
   }

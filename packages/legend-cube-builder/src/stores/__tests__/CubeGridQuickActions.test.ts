@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
+import { waitFor } from '@testing-library/react';
 import {
   AggregationFunction,
   ColumnComparisonFilter,
@@ -31,6 +32,8 @@ import {
   SchemaColumn,
   Sort,
   SortDirection,
+  type IR,
+  printIR,
 } from '@finos/legend-cube';
 import type { DataGridGetContextMenuItemsParams } from '@finos/legend-lego/data-grid';
 import { flowResult, runInAction } from 'mobx';
@@ -578,7 +581,7 @@ describe('Grid context menu', () => {
       'Filter by "SHIP_COUNTRY"',
       'separator',
       'copy',
-      'export',
+      'Export',
     ]);
     const filterBy = items[3];
     expect(typeof filterBy === 'object' && filterBy.disabled).toBe(false);
@@ -693,11 +696,47 @@ describe('Grid context menu', () => {
     });
   });
 
-  test("Gives ag-grid's own items only outside a cell", async () => {
+  test("Gives ag-grid's own items only outside a cell, Export as Cube's", async () => {
     const { state } = await setUp();
-    expect(getCubeGridContextMenuItems(state, params(undefined))).toEqual([
-      'copy',
-      'export',
+    const items = getCubeGridContextMenuItems(state, params(undefined));
+    expect(items[0]).toBe('copy');
+    expect(items[1]).toMatchObject({ name: 'Export' });
+  });
+
+  test("Exports CSV of the whole query through the engine and Excel of the rows the grid shows, in place of ag-grid's export", async () => {
+    const { state, fake } = await setUp();
+    const exportDataAsExcel = jest.fn();
+    const withApi = {
+      ...params('c1'),
+      api: {
+        getColumnState: () => [
+          { colId: 'c2', sort: 'desc', sortIndex: 0 },
+          { colId: 'c1', sort: null },
+        ],
+        exportDataAsExcel,
+      },
+    } as unknown as DataGridGetContextMenuItemsParams<
+      readonly CubeResultValue[]
+    >;
+    const exportItem = getCubeGridContextMenuItems(state, withApi).at(-1);
+    const [csv, excel] = (
+      typeof exportItem === 'object' ? exportItem.subMenu : undefined
+    ) as {
+      name: string;
+      action: () => void;
+    }[];
+    expect([csv?.name, excel?.name]).toEqual([
+      'CSV (whole query)',
+      'Excel (rows shown)',
     ]);
+    // jsdom has no object URLs to save the file with
+    URL.createObjectURL = jest.fn(() => 'blob:cube');
+    csv?.action();
+    await waitFor(() => expect(fake.exportCsv).toHaveBeenCalledTimes(1));
+    expect(printIR(fake.exportCsv.mock.calls[0]?.[1] as IR)).toContain(
+      '->sort(~FREIGHT->descending())',
+    );
+    excel?.action();
+    expect(exportDataAsExcel).toHaveBeenCalledWith({ fileName: 'cube.xlsx' });
   });
 });
