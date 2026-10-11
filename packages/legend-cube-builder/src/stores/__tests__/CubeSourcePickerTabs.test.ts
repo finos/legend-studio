@@ -261,7 +261,7 @@ describe('Source dialog tabs', () => {
     ]);
     expect(state.canAddNode('relational')).toBe(false);
     expect(state.canAddNode('dataProductAccessPoint')).toBe(false);
-    // the toolbar's Add table is disabled, says why, and opens nothing
+    // Add Items' source items are disabled, says why, and opens nothing
     expect(state.sourcePicker.disabledReason).toBe(UNSERVED_SOURCE_KIND_TITLE);
     state.sourcePicker.open();
     expect(state.sourcePicker.isOpen).toBe(false);

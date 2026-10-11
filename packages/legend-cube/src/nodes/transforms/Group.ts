@@ -34,27 +34,13 @@ import { isStringList } from '../../utils/AssertionUtils.js';
 import type { JsonObject } from '../../utils/Json.js';
 import {
   type ColumnAggregation,
+  freezeColumnAggregation,
   getAggregationResultType,
   isAggregationFunction,
+  isColumnAggregation,
   isAggregationNullable,
   validateColumnAggregation,
 } from './Aggregation.js';
-
-const isColumnAggregation = (value: unknown): value is ColumnAggregation => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const {
-    column,
-    function: fn,
-    name,
-  } = value as Partial<Record<keyof ColumnAggregation, unknown>>;
-  return (
-    (column === undefined || typeof column === 'string') &&
-    typeof fn === 'string' &&
-    typeof name === 'string'
-  );
-};
 
 /**
  * Checks one key of a group against the input schema, stopping at its first
@@ -123,9 +109,7 @@ export class Group extends UnaryNode {
     }
     this.columns = Object.freeze([...columns]);
     this.aggregations = Object.freeze(
-      aggregations.map(({ column, function: fn, name }) =>
-        Object.freeze({ column, function: fn, name }),
-      ),
+      aggregations.map(freezeColumnAggregation),
     );
   }
 

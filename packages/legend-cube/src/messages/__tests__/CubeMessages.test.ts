@@ -178,6 +178,32 @@ test(unitTest('Messages added by Cube'), () => {
   expect(
     MESSAGES.MESSAGE_GROUP_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
   ).toBe('Group column "PAYLOAD" of type Variant cannot be grouped.');
+  expect(
+    MESSAGES.MESSAGE_PARTITION_COLUMN_NOT_PARTITIONABLE('PAYLOAD', 'Variant'),
+  ).toBe('Partition column "PAYLOAD" of type Variant cannot be partitioned.');
+  expect(MESSAGES.MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('DenseRank')).toBe(
+    'Aggregation function "DenseRank" requires at least one sort column.',
+  );
+  expect(MESSAGES.MESSAGE_DIFFERENCE_COLUMN_IS_JOIN_COLUMN('FREIGHT')).toBe(
+    'Difference column "FREIGHT" cannot be a join column.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DIFFERENCE_OUTPUT_NAME_INVALID('x_valueDifference'),
+  ).toBe(
+    'Difference output column "x_valueDifference" is not valid column name.',
+  );
+  expect(MESSAGES.MESSAGE_EXPRESSION_NOT_A_LAMBDA('margin')).toBe(
+    '"margin" must be a lambda with one parameter, such as x | $x.PRICE.',
+  );
+  expect(
+    MESSAGES.MESSAGE_EXPRESSION_NOT_TYPED('margin', "Can't find a match"),
+  ).toBe(`"margin" can't be typed: Can't find a match`);
+  expect(MESSAGES.MESSAGE_EXPRESSIONS_NOT_TYPED('No such function')).toBe(
+    "The new columns can't be typed: No such function",
+  );
+  expect(MESSAGES.ERR_TYPING).toBe(
+    'Waiting for the engine to type the new columns.',
+  );
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );

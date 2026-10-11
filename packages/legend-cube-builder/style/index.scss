@@ -21,3 +21,16 @@
   height: 100%;
   width: 100%;
 }
+
+// Legend Query's legacy themes give every input its border color with a rule
+// more specific than a utility class, so a field Cube marks as invalid kept
+// the theme's border: mark it here, where Cube's rule wins, focused or not.
+// The floating node editor is portalled out of `.legend-cube`, into a layer
+// of its own (PLAN §11.8), so the rule names that layer too.
+.legend-cube,
+.legend-cube__node-editor-layer {
+  input[aria-invalid='true'],
+  input[aria-invalid='true']:focus {
+    border-color: var(--color-status-error);
+  }
+}

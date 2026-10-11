@@ -26,96 +26,18 @@ import {
   type CubeInlineModelTabState,
   isTableSelectable,
 } from '../../stores/source-picker/CubeInlineModelTabState.js';
-import { CubeButton } from '../CubeButton.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
-/** The Model option that offers a text box for Pure text */
-const PASTE_MODEL_OPTION = 'paste';
-
 /**
- * The source dialog's Model tab (PLAN §6.2.7): a model, then a database, a
- * runtime keyed by it, a schema and a table. The dialog's Add adds the table.
+ * The steps after a model is picked, shared by the Sample Data and Project
+ * Database tabs: its loading, then a database, a runtime keyed by it, a schema
+ * and a table, and why the last step failed
  */
-export const CubeInlineModelTab = observer(
+export const CubeOutlineSteps = observer(
   (props: { tab: CubeInlineModelTabState }) => {
     const { tab } = props;
-    const { applicationStore } = tab.editorState.host;
-    const isFixed = tab.fixedContext !== undefined;
-    const fixedModelLabel =
-      tab.models.find(
-        (model) =>
-          JSON.stringify(model.model) ===
-          JSON.stringify(tab.fixedContext?.model),
-      )?.label ?? "The cube's model";
     return (
-      <div className="flex flex-col gap-2">
-        <CubePickerStep
-          label="Model"
-          value={
-            isFixed
-              ? 'fixed'
-              : tab.isPastingModel
-                ? PASTE_MODEL_OPTION
-                : tab.models.find((model) => model.model === tab.model)?.id
-          }
-          options={
-            isFixed
-              ? [{ value: 'fixed', label: fixedModelLabel }]
-              : [
-                  ...tab.models.map((model) => ({
-                    value: model.id,
-                    label: model.label,
-                  })),
-                  {
-                    value: PASTE_MODEL_OPTION,
-                    label: 'Paste Pure model…',
-                  },
-                ]
-          }
-          disabled={isFixed}
-          onChange={(id) => {
-            if (id === PASTE_MODEL_OPTION) {
-              tab.startPastingModel();
-              return;
-            }
-            const model = tab.models.find((candidate) => candidate.id === id);
-            if (model) {
-              flowResult(tab.selectModel(model.model)).catch(
-                applicationStore.alertUnhandledError,
-              );
-            }
-          }}
-        />
-        {tab.isPastingModel && !isFixed && (
-          <div className="flex flex-col gap-1">
-            <textarea
-              className="h-40 w-full resize-y rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] p-1 font-mono text-sm text-[var(--color-text-primary)]"
-              aria-label="Pure model"
-              placeholder={
-                '###Relational\nDatabase my::Database ( … )\n\n###Runtime\nRuntime my::Runtime { … }'
-              }
-              spellCheck={false}
-              value={tab.pastedModelText}
-              onChange={(event) => tab.setPastedModelText(event.target.value)}
-            />
-            <div className="flex items-center gap-2">
-              <CubeButton
-                disabled={!tab.pastedModelText.trim() || tab.isLoadingModel}
-                onClick={() => {
-                  flowResult(tab.loadPastedModel()).catch(
-                    applicationStore.alertUnhandledError,
-                  );
-                }}
-              >
-                Load model
-              </CubeButton>
-              <span className="text-sm text-[var(--color-text-muted)]">
-                The cube keeps the model&apos;s text, which counts towards the 1
-                MiB a cube spec can hold.
-              </span>
-            </div>
-          </div>
-        )}
+      <>
         {tab.isLoadingModel && (
           <div className="text-base text-[var(--color-text-secondary)]">
             {CUBE_PENDING_LABEL.LOADING_MODEL}
@@ -213,6 +135,56 @@ export const CubeInlineModelTab = observer(
             {tab.error}
           </div>
         )}
+      </>
+    );
+  },
+);
+
+/**
+ * The source dialog's Sample Data tab (PLAN §6.2.7, §6.9): a bundled dataset,
+ * then a database, a runtime keyed by it, a schema and a table. The dialog's
+ * Add adds the table.
+ */
+export const CubeInlineModelTab = observer(
+  (props: { tab: CubeInlineModelTabState }) => {
+    const { tab } = props;
+    const { applicationStore } = tab.editorState.host;
+    const isFixed = tab.fixedContext !== undefined;
+    const fixedModel = JSON.stringify(tab.fixedContext?.model);
+    const fixedModelLabel =
+      tab.models.find((model) =>
+        [model.model, ...(model.earlierModels ?? [])].some(
+          (candidate) => JSON.stringify(candidate) === fixedModel,
+        ),
+      )?.label ?? "The cube's model";
+    return (
+      <div className="flex flex-col gap-2">
+        <CubePickerStep
+          label="Dataset"
+          value={
+            isFixed
+              ? 'fixed'
+              : tab.models.find((model) => model.model === tab.model)?.id
+          }
+          options={
+            isFixed
+              ? [{ value: 'fixed', label: fixedModelLabel }]
+              : tab.models.map((model) => ({
+                  value: model.id,
+                  label: model.label,
+                }))
+          }
+          disabled={isFixed}
+          onChange={(id) => {
+            const model = tab.models.find((candidate) => candidate.id === id);
+            if (model) {
+              flowResult(tab.selectModel(model.model)).catch(
+                applicationStore.alertUnhandledError,
+              );
+            }
+          }}
+        />
+        <CubeOutlineSteps tab={tab} />
       </div>
     );
   },

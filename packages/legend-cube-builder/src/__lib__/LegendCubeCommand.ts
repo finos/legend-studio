@@ -24,6 +24,7 @@ import type { CommandConfigData } from '@finos/legend-application';
 export enum LEGEND_CUBE_COMMAND_KEY {
   EXECUTE = 'legend-cube.execute',
   UNDO = 'legend-cube.undo',
+  VALIDATE_EXPRESSIONS = 'legend-cube.validate-expressions',
 }
 
 /** Keys as `KeyboardEvent.code` names */
@@ -36,6 +37,10 @@ export const LEGEND_CUBE_COMMAND_CONFIG: CommandConfigData = {
     title: 'Undo the last change',
     defaultKeyboardShortcut: 'Control+KeyZ',
     additionalKeyboardShortcuts: ['Meta+KeyZ'],
+  },
+  [LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS]: {
+    title: "Validate the Extend's expressions",
+    defaultKeyboardShortcut: 'F10',
   },
 };
 

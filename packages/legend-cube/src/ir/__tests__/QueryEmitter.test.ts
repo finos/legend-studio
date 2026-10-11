@@ -697,7 +697,9 @@ describe(unitTest('Query emission'), () => {
       'distinct',
       'group',
       'aggregation',
+      'window',
       'concat',
+      'difference',
       'convert',
       'sort',
       'sortKey',
@@ -706,6 +708,9 @@ describe(unitTest('Query emission'), () => {
       'captureSort',
       'limit',
       'from',
+      'let',
+      'extend',
+      'expression',
     ]);
     expect(new Set(roles).size).toBe(roles.length);
     roles.forEach((role) => expect(role).not.toContain(':'));

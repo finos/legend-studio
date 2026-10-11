@@ -56,6 +56,7 @@ export enum CUBE_PENDING_LABEL {
   EXECUTING_QUERY = 'executing query',
   RENDERING_QUERY = 'rendering query',
   REFRESHING_SOURCE = 'refreshing source',
+  TYPING_COLUMNS = 'typing new columns',
 }
 
 export const getRowLimitError = (text: string): string | undefined => {
@@ -132,6 +133,8 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   STALE_ROWS:
     'Execute again: these rows are from an earlier version of the query.',
   RUNNING: 'Wait for the run to finish.',
+  EDITING:
+    "Close the node editor first: these rows don't show the changes in it.",
   UNREADABLE_VALUE: "This value can't be used in a filter.",
   notSortable: (typeName: string): string =>
     `Values of type ${typeName} can't be sorted.`,
@@ -158,6 +161,7 @@ export enum CUBE_EDITOR_CLOSED_REASON {
   NODE_CHANGED = 'nodeChanged',
   NODE_REMOVED = 'nodeRemoved',
   CUBE_REPLACED = 'cubeReplaced',
+  CANNOT_APPLY = 'cannotApply',
 }
 
 /** The notice of a node editor that closed by itself, dropping its edits (M1.8b) */
@@ -170,7 +174,9 @@ export const getEditorClosedNotice = (
       ? `${nodeId} changed`
       : reason === CUBE_EDITOR_CLOSED_REASON.NODE_REMOVED
         ? `${nodeId} was removed`
-        : 'Another cube was opened';
+        : reason === CUBE_EDITOR_CLOSED_REASON.CANNOT_APPLY
+          ? `The query can't take the changes to ${nodeId}`
+          : 'Another cube was opened';
   return `${cause}, so the editor of ${nodeId} closed without applying its changes.`;
 };
 
@@ -193,6 +199,10 @@ export const CONCAT_EDITOR_TEXT =
 /** What the Concat editor's Convert types setting does (PLAN §11.5, Q5) */
 export const CONCAT_CONVERT_TYPES_HINT =
   'Converts types that differ within numbers, strings or dates to the type they share, e.g. Varchar(15) and Varchar(40) to String.';
+
+/** What the Concat editor says when a fix would make its inputs match only with Convert types ticked (PLAN §11.5) */
+export const CONCAT_FIX_NEEDS_CONVERT_TEXT =
+  'With Convert types ticked, Cube can rename or drop columns to make the inputs match.';
 
 /** What the Concat editor says when Convert types would make its inputs match (PLAN §11.5, Q5) */
 export const CONCAT_CONVERT_FIX_TEXT =
@@ -231,6 +241,89 @@ export const GROUP_EDITOR_NOTES = [
   'With no group column, the result is one row, even when there are no rows.',
 ];
 
+/** Why the Partition editor won't tick a column that can't be compared (PLAN §11.6) */
+export const CUBE_PARTITION_COLUMN_DISABLED_REASON = "can't be partitioned by";
+
+/** What a Partition row shows in the column's place for a function that takes none (PLAN §11.6) */
+export const getPartitionNoColumnText = (fn: string): string =>
+  fn === 'CountRows' ? 'Every row' : 'By the sort columns';
+
+/** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3; §11.9) */
+export const PARTITION_EDITOR_NOTES = [
+  'With sort columns, the aggregations (Count to Max, and Count Rows) run from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
+  "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",
+  'NTile, Percent Rank and Cumulative Distribution need a sort column too. NTile splits each partition into buckets of near-equal size, numbered from 1 in the sort order; Percent Rank and Cumulative Distribution give each row its place in its partition, from 0 to 1.',
+  "Lag and Lead read a column from the row so many rows before or after in the sort order, and are empty at the partition's edges. First and Last read it from the partition's first and last rows, the same on every row. They need a sort column, and rows tied on it may give any of them.",
+  "On ClickHouse, First and Last skip empty values, and Lag and Lead show a column's default, such as 0, at the partition's edges instead of empty, unless the column can be empty there.",
+  "Their sort columns also make this node's other functions run. For totals over the whole partition, add another Apply Window Functions without sort columns.",
+  'Empty sort values come last when ascending and first when descending on H2; other databases may differ.',
+  "A Sort before this node doesn't order the window: its sort columns do. The rows keep the order they came in.",
+  'Count counts the values that are not empty; Count Rows counts every row.',
+  'Some databases, such as Postgres, SQL Server, Databricks and Trino, refuse Distinct Count and Distinct Value in a window.',
+];
+
+/** Why a column of the Left input can't be a difference column (PLAN §11.7) */
+export const CUBE_DIFFERENCE_COLUMN_REASONS = Object.freeze({
+  JOIN_COLUMN: 'a join column',
+  NOT_NUMERIC: 'not a number',
+  NOT_IN_RIGHT: 'not in the Right input',
+  TYPE_DIFFERS: (rightType: string): string =>
+    `${rightType} in the Right input`,
+});
+
+/** What the Difference editor says about its output (spec §7.12, PLAN §11.7) */
+export const DIFFERENCE_EDITOR_NOTES = [
+  "For each difference column x, the output has x_1, the Left input's value, x_2, the Right input's value, and x_valueDifference, x_1 minus x_2.",
+  'Rows only one input has are kept, with empty values for the other input, and an empty value counts as 0 in the difference.',
+  'A difference column needs the same number type in both inputs; the difference of integers is an Integer, of floats a Float, and of decimals a Number.',
+];
+
+/** What the Extend editor says about its expressions (PLAN §11.7) */
+export const EXTEND_EDITOR_NOTES = [
+  'Write each expression as a lambda of one row, such as x | $x.PRICE * $x.QTY: $x.PRICE reads the column PRICE. A column can use the new columns above it.',
+  'A column that can be empty needs ->toOne() before arithmetic, such as $x.QTY->toOne() * 2; an empty value still gives an empty result. Every new column can be empty.',
+  "Validate (F10) checks the expressions with the engine, types them, and plans them for this cube's database: some functions type, but not every database runs them.",
+];
+
+/** Why the Extend editor's Apply waits (PLAN §11.7) */
+export const EXTEND_APPLY_DISABLED_REASON = Object.freeze({
+  NOT_VALIDATED: 'Validate the expressions first (F10)',
+  VALIDATING: 'Validating the expressions',
+});
+
+/** The warning on an Extend whose saved types the engine couldn't check again, e.g. offline (PLAN §11.7) */
+export const getExtendRetypeWarning = (firstLine: string): string =>
+  `Could not check these columns' types again, so they keep their saved ones: ${firstLine}`;
+
+/** The notice of a node editor kept open, since its changes can't be applied yet, e.g. an Extend's expressions not validated */
+export const getEditorKeptOpenNotice = (
+  nodeId: string,
+  waiting: string,
+): string =>
+  `The editor of ${nodeId} stays open, since its changes can't be applied yet: ${waiting}, or Cancel to drop them.`;
+
+/** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
+export const EXTEND_TO_ONE_HINT =
+  'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.';
+
+/** The problem a database refusing an Extend's plan gives (PLAN §11.7) */
+export const getExtendPlanProblem = (
+  databaseType: string | undefined,
+  detail: string,
+): string =>
+  `${databaseType ? `${databaseType} can't run it` : "The database can't run it"}: ${detail}`;
+
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';
+
+/**
+ * A node type's label as the node editor's title shows it, each word
+ * capitalised (QUESTIONS.md U1(a)), e.g. 'Take First <x> Rows'; the registry
+ * keeps its own wording
+ */
+export const toEditorTitle = (label: string): string =>
+  label.replace(/(?<=^|\s)[a-z]/gu, (letter) => letter.toUpperCase());
+
+/** The source dialog's body until a tab is chosen, opened from the empty canvas (spec §17.8, U4(b)) */
+export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';

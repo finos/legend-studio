@@ -25,16 +25,30 @@ import {
   PrimitiveType,
 } from '../../../types/CubeType.js';
 import {
+  AGGREGATION_SETTING_DEFAULTS,
   AggregationFunction,
+  AggregationSetting,
+  type AggregationUse,
   type ColumnAggregation,
   getAggregationAutoName,
   getAggregationDisplayName,
   getAggregationResultType,
+  getAggregationSetting,
   getAvailableAggregations,
+  GROUP_AGGREGATION_USE,
   isAggregationFunction,
+  isAggregationFunctionOf,
   isAggregationNullable,
+  isWindowFunction,
+  isWindowRankFunction,
+  isWindowRowFunction,
+  needsWindowSort,
   takesAggregationColumn,
   validateColumnAggregation,
+  WINDOW_RANK_FUNCTIONS,
+  WINDOW_ROW_FUNCTIONS,
+  WindowRankFunction,
+  WindowRowFunction,
 } from '../Aggregation.js';
 
 const P = 'meta::pure::precisePrimitives::';
@@ -270,13 +284,34 @@ const agg = (
 ): ColumnAggregation => ({ column: aggregationColumn, function: fn, name });
 
 /** The errors of each aggregation of the list, row by row */
-const errorsOf = (aggregations: readonly ColumnAggregation[]): string[][] =>
+const errorsOf = (
+  aggregations: readonly ColumnAggregation[],
+  use?: AggregationUse,
+): string[][] =>
   aggregations.map((_, index) => {
     const errors: string[] = [];
-    const valid = validateColumnAggregation(aggregations, index, INPUT, errors);
+    const valid = validateColumnAggregation(
+      aggregations,
+      index,
+      INPUT,
+      errors,
+      use,
+    );
     expect(valid).toBe(errors.length === 0);
     return errors;
   });
+
+const SORTED_WINDOW: AggregationUse = { kind: 'window', sorted: true };
+const UNSORTED_WINDOW: AggregationUse = { kind: 'window', sorted: false };
+const {
+  RANK,
+  DENSE_RANK,
+  ROW_NUMBER,
+  NTILE,
+  PERCENT_RANK,
+  CUMULATIVE_DISTRIBUTION,
+} = WindowRankFunction;
+const { LAG, LEAD, FIRST, LAST } = WindowRowFunction;
 
 describe('Aggregation validation', () => {
   test(
@@ -534,4 +569,494 @@ describe('Aggregation validation', () => {
       );
     },
   );
+});
+
+describe('Window functions', () => {
+  test(
+    unitTest('Knows the rank functions as saved, apart from the others'),
+    () => {
+      expect(Object.values(WindowRankFunction)).toEqual([
+        'Rank',
+        'DenseRank',
+        'RowNumber',
+        'NTile',
+        'PercentRank',
+        'CumulativeDistribution',
+      ]);
+      expect(WINDOW_RANK_FUNCTIONS).toEqual([
+        RANK,
+        DENSE_RANK,
+        ROW_NUMBER,
+        NTILE,
+        PERCENT_RANK,
+        CUMULATIVE_DISTRIBUTION,
+      ]);
+      expect(Object.isFrozen(WINDOW_RANK_FUNCTIONS)).toBe(true);
+      WINDOW_RANK_FUNCTIONS.forEach((fn) => {
+        expect(isWindowRankFunction(fn)).toBe(true);
+        expect(isWindowFunction(fn)).toBe(true);
+        expect(isAggregationFunction(fn)).toBe(false);
+      });
+      Object.values(AggregationFunction).forEach((fn) => {
+        expect(isWindowRankFunction(fn)).toBe(false);
+        expect(isWindowFunction(fn)).toBe(true);
+      });
+      ['rank', 'Denserank', 'Ntile', 'lag', 'Nth', ''].forEach((text) => {
+        expect(isWindowRankFunction(text)).toBe(false);
+        expect(isWindowRowFunction(text)).toBe(false);
+        expect(isWindowFunction(text)).toBe(false);
+      });
+    },
+  );
+
+  test(
+    unitTest('Knows the rank functions in a window, never in a Group'),
+    () => {
+      WINDOW_RANK_FUNCTIONS.forEach((fn) => {
+        expect(isAggregationFunctionOf(fn, GROUP_AGGREGATION_USE)).toBe(false);
+        expect(isAggregationFunctionOf(fn, UNSORTED_WINDOW)).toBe(true);
+      });
+      [SUM, COUNT_ROWS].forEach((fn) => {
+        expect(isAggregationFunctionOf(fn, GROUP_AGGREGATION_USE)).toBe(true);
+        expect(isAggregationFunctionOf(fn, SORTED_WINDOW)).toBe(true);
+      });
+      expect(isAggregationFunctionOf('Median', SORTED_WINDOW)).toBe(false);
+      expect(GROUP_AGGREGATION_USE).toEqual({ kind: 'group' });
+      expect(Object.isFrozen(GROUP_AGGREGATION_USE)).toBe(true);
+    },
+  );
+
+  test(
+    unitTest(
+      'Shows Dense Rank and Row Number with a space, and gives the rank functions no column, Integer and never empty',
+    ),
+    () => {
+      expect(WINDOW_RANK_FUNCTIONS.map(getAggregationDisplayName)).toEqual([
+        'Rank',
+        'Dense Rank',
+        'Row Number',
+        'NTile',
+        'Percent Rank',
+        'Cumulative Distribution',
+      ]);
+      WINDOW_RANK_FUNCTIONS.forEach((fn) => {
+        const expected =
+          fn === PERCENT_RANK || fn === CUMULATIVE_DISTRIBUTION
+            ? 'Float'
+            : 'Integer';
+        expect(takesAggregationColumn(fn)).toBe(false);
+        expect(isAggregationNullable(fn)).toBe(false);
+        expect(needsWindowSort(fn)).toBe(true);
+        expect(getAggregationResultType(fn, undefined)?.fullName).toBe(
+          expected,
+        );
+        // a column given anyway changes nothing
+        expect(
+          getAggregationResultType(fn, PrimitiveType.get('String'))?.fullName,
+        ).toBe(expected);
+      });
+    },
+  );
+
+  test(
+    unitTest(
+      'Names a rank function as shown in a window, and gives it no name in a Group',
+    ),
+    () => {
+      expect(
+        WINDOW_RANK_FUNCTIONS.map((fn) =>
+          getAggregationAutoName(fn, undefined, UNSORTED_WINDOW),
+        ),
+      ).toEqual([
+        'Rank',
+        'Dense Rank',
+        'Row Number',
+        'NTile',
+        'Percent Rank',
+        'Cumulative Distribution',
+      ]);
+      expect(getAggregationAutoName(RANK, 'ID', SORTED_WINDOW)).toBe('Rank');
+      WINDOW_RANK_FUNCTIONS.forEach((fn) => {
+        expect(getAggregationAutoName(fn, undefined)).toBeUndefined();
+        expect(getAggregationAutoName(fn, 'ID')).toBeUndefined();
+        expect(
+          getAggregationAutoName(fn, undefined, GROUP_AGGREGATION_USE),
+        ).toBeUndefined();
+      });
+      // the other functions are named the same way in both
+      expect(getAggregationAutoName(SUM, 'FREIGHT', SORTED_WINDOW)).toBe(
+        'FREIGHT Sum',
+      );
+      expect(getAggregationAutoName(SUM, undefined, SORTED_WINDOW)).toBe(
+        undefined,
+      );
+      expect(getAggregationAutoName(COUNT_ROWS, undefined, SORTED_WINDOW)).toBe(
+        'Count Rows',
+      );
+      expect(
+        getAggregationAutoName('Median', 'ID', SORTED_WINDOW),
+      ).toBeUndefined();
+    },
+  );
+});
+
+describe('Window row functions', () => {
+  test(
+    unitTest(
+      'Knows the row functions as saved, in a window only, each taking a column and a sort',
+    ),
+    () => {
+      expect(Object.values(WindowRowFunction)).toEqual([
+        'Lag',
+        'Lead',
+        'First',
+        'Last',
+      ]);
+      expect(WINDOW_ROW_FUNCTIONS).toEqual([LAG, LEAD, FIRST, LAST]);
+      expect(Object.isFrozen(WINDOW_ROW_FUNCTIONS)).toBe(true);
+      WINDOW_ROW_FUNCTIONS.forEach((fn) => {
+        expect(isWindowRowFunction(fn)).toBe(true);
+        expect(isWindowRankFunction(fn)).toBe(false);
+        expect(isWindowFunction(fn)).toBe(true);
+        expect(isAggregationFunction(fn)).toBe(false);
+        expect(isAggregationFunctionOf(fn, GROUP_AGGREGATION_USE)).toBe(false);
+        expect(isAggregationFunctionOf(fn, UNSORTED_WINDOW)).toBe(true);
+        expect(takesAggregationColumn(fn)).toBe(true);
+        expect(needsWindowSort(fn)).toBe(true);
+        expect(isAggregationNullable(fn)).toBe(true);
+        expect(getAggregationDisplayName(fn)).toBe(fn);
+        expect(getAggregationAutoName(fn, 'FREIGHT', SORTED_WINDOW)).toBe(
+          `FREIGHT ${fn}`,
+        );
+        expect(
+          getAggregationAutoName(fn, undefined, SORTED_WINDOW),
+        ).toBeUndefined();
+        expect(getAggregationAutoName(fn, 'FREIGHT')).toBeUndefined();
+      });
+      [SUM, COUNT_ROWS].forEach((fn) =>
+        expect(needsWindowSort(fn)).toBe(false),
+      );
+    },
+  );
+
+  test(
+    unitTest(
+      "Gives a row function its column's own type, on any type a window can partition by",
+    ),
+    () => {
+      const varchar = type(`${P}Varchar`, [15]);
+      const region = new EnumType('test::Region', ['EMEA', 'APAC']);
+      [
+        type(`${P}Double`),
+        varchar,
+        type('StrictDate'),
+        type('Boolean'),
+        region,
+      ].forEach((columnType) =>
+        WINDOW_ROW_FUNCTIONS.forEach((fn) =>
+          expect(
+            getAggregationResultType(fn, columnType)?.equals(columnType),
+          ).toBe(true),
+        ),
+      );
+      [
+        type('meta::pure::metamodel::variant::Variant'),
+        OpaqueType.get('test::Geography'),
+      ].forEach((columnType) =>
+        expect(getAggregationResultType(LAG, columnType)).toBeUndefined(),
+      );
+      expect(getAggregationResultType(FIRST, undefined)).toBeUndefined();
+    },
+  );
+
+  test(
+    unitTest(
+      "Knows Lag's and Lead's offset and NTile's bucket count, one row and four buckets by default",
+    ),
+    () => {
+      expect(getAggregationSetting(LAG)).toBe(AggregationSetting.OFFSET);
+      expect(getAggregationSetting(LEAD)).toBe(AggregationSetting.OFFSET);
+      expect(getAggregationSetting(NTILE)).toBe(AggregationSetting.BUCKETS);
+      [FIRST, LAST, RANK, PERCENT_RANK, SUM, 'Median'].forEach((fn) =>
+        expect(getAggregationSetting(fn)).toBeUndefined(),
+      );
+      expect(AGGREGATION_SETTING_DEFAULTS).toEqual({ offset: 1, buckets: 4 });
+      expect(Object.isFrozen(AGGREGATION_SETTING_DEFAULTS)).toBe(true);
+    },
+  );
+});
+
+describe('Window function validation', () => {
+  test(
+    unitTest(
+      'Accepts the rank functions with no column in a sorted window, and every Group aggregation',
+    ),
+    () => {
+      expect(
+        errorsOf(
+          [
+            agg(RANK, undefined, 'Rank'),
+            agg(DENSE_RANK, undefined, 'Dense Rank'),
+            agg(ROW_NUMBER, undefined, 'Row Number'),
+            agg(SUM, 'AMOUNT', 'AMOUNT Sum'),
+            agg(COUNT_ROWS, undefined, 'Count Rows'),
+          ],
+          SORTED_WINDOW,
+        ),
+      ).toEqual([[], [], [], [], []]);
+      // Count rows and the column functions need no sort
+      expect(
+        errorsOf(
+          [agg(COUNT_ROWS, undefined, 'n'), agg(MAX, 'DT', 'DT Max')],
+          UNSORTED_WINDOW,
+        ),
+      ).toEqual([[], []]);
+    },
+  );
+
+  test(
+    unitTest('Refuses a rank function in an unsorted window, on its row'),
+    () => {
+      expect(
+        errorsOf(
+          [
+            agg(RANK, undefined, 'Rank'),
+            agg(DENSE_RANK, undefined, 'Dense Rank'),
+            agg(ROW_NUMBER, undefined, 'Row Number'),
+          ],
+          UNSORTED_WINDOW,
+        ),
+      ).toEqual([
+        ['Aggregation function "Rank" requires at least one sort column.'],
+        ['Aggregation function "DenseRank" requires at least one sort column.'],
+        ['Aggregation function "RowNumber" requires at least one sort column.'],
+      ]);
+    },
+  );
+
+  test(
+    unitTest(
+      'Checks a rank function: known, then no column, then a sort, then its name',
+    ),
+    () => {
+      expect(
+        errorsOf(
+          [
+            // a column comes before the sort
+            agg(RANK, 'ID', 'Rank'),
+            // the sort before the name
+            agg(DENSE_RANK, undefined, ''),
+            agg(ROW_NUMBER, undefined, 'ID'),
+            agg('rank', undefined, 'r'),
+          ],
+          UNSORTED_WINDOW,
+        ),
+      ).toEqual([
+        ['Aggregation function "Rank" does not allow column.'],
+        ['Aggregation function "DenseRank" requires at least one sort column.'],
+        ['Aggregation function "RowNumber" requires at least one sort column.'],
+        ['Aggregation function "rank" is unknown.'],
+      ]);
+      expect(
+        errorsOf(
+          [
+            agg(RANK, '', 'Rank'),
+            agg(DENSE_RANK, undefined, ''),
+            agg(ROW_NUMBER, undefined, 'id'),
+            agg(RANK, undefined, 'n'),
+            agg(ROW_NUMBER, undefined, 'N'),
+          ],
+          SORTED_WINDOW,
+        ),
+      ).toEqual([
+        ['Aggregation function "Rank" does not allow column.'],
+        ['Aggregation output name cannot be empty.'],
+        [
+          'Aggregation output name "id" cannot be the same as input column name.',
+        ],
+        [
+          'Aggregation output name "n" is already present in the output schema.',
+        ],
+        [
+          'Aggregation output name "N" is already present in the output schema.',
+        ],
+      ]);
+    },
+  );
+
+  test(
+    unitTest(
+      'Keeps a Group refusing the rank functions as unknown, sorted or not',
+    ),
+    () => {
+      expect(
+        errorsOf([
+          agg(RANK, undefined, 'Rank'),
+          agg(ROW_NUMBER, 'ID', 'Row Number'),
+        ]),
+      ).toEqual([
+        ['Aggregation function "Rank" is unknown.'],
+        ['Aggregation function "RowNumber" is unknown.'],
+      ]);
+      expect(
+        errorsOf([agg(DENSE_RANK, undefined, 'x')], GROUP_AGGREGATION_USE),
+      ).toEqual([['Aggregation function "DenseRank" is unknown.']]);
+    },
+  );
+
+  test(
+    unitTest(
+      'Accepts the new functions in a sorted window, with their settings, and refuses them unsorted',
+    ),
+    () => {
+      const functions = [
+        { ...agg(LAG, 'AMOUNT', 'AMOUNT Lag'), offset: 1 },
+        { ...agg(LEAD, 'NAME', 'NAME Lead'), offset: 3 },
+        agg(FIRST, 'DT', 'DT First'),
+        agg(LAST, 'REGION', 'REGION Last'),
+        { ...agg(NTILE, undefined, 'NTile'), buckets: 4 },
+        agg(PERCENT_RANK, undefined, 'Percent Rank'),
+        agg(CUMULATIVE_DISTRIBUTION, undefined, 'Cumulative Distribution'),
+      ];
+      expect(errorsOf(functions, SORTED_WINDOW)).toEqual(
+        functions.map(() => []),
+      );
+      expect(errorsOf(functions, UNSORTED_WINDOW)).toEqual(
+        functions.map(({ function: fn }) => [
+          `Aggregation function "${fn}" requires at least one sort column.`,
+        ]),
+      );
+    },
+  );
+
+  test(
+    unitTest(
+      'Refuses an offset or a bucket count that is missing or not a whole number of at least 1, or on a function that takes none',
+    ),
+    () => {
+      expect(
+        errorsOf(
+          [
+            agg(LAG, 'AMOUNT', 'a'),
+            { ...agg(LEAD, 'AMOUNT', 'b'), offset: 0 },
+            { ...agg(LAG, 'AMOUNT', 'c'), offset: 1.5 },
+            { ...agg(NTILE, undefined, 'd'), buckets: -2 },
+            agg(NTILE, undefined, 'e'),
+            { ...agg(NTILE, undefined, 'f'), buckets: 2, offset: 1 },
+            { ...agg(SUM, 'AMOUNT', 'g'), offset: 1 },
+            { ...agg(FIRST, 'AMOUNT', 'h'), buckets: 4 },
+            { ...agg(LAG, 'AMOUNT', 'i'), offset: Number.MAX_SAFE_INTEGER },
+          ],
+          SORTED_WINDOW,
+        ),
+      ).toEqual([
+        [
+          'Aggregation function "Lag" needs an offset that is a whole number of at least 1.',
+        ],
+        [
+          'Aggregation function "Lead" needs an offset that is a whole number of at least 1.',
+        ],
+        [
+          'Aggregation function "Lag" needs an offset that is a whole number of at least 1.',
+        ],
+        [
+          'Aggregation function "NTile" needs a bucket count that is a whole number of at least 1.',
+        ],
+        [
+          'Aggregation function "NTile" needs a bucket count that is a whole number of at least 1.',
+        ],
+        ['Aggregation function "NTile" does not take an offset.'],
+        ['Aggregation function "Sum" does not take an offset.'],
+        ['Aggregation function "First" does not take a bucket count.'],
+        [],
+      ]);
+    },
+  );
+
+  test(
+    unitTest(
+      'Reports only the first problem of a row: its column, then its sort, then its setting',
+    ),
+    () => {
+      expect(
+        errorsOf(
+          [
+            // no column, and an offset of 0
+            { ...agg(LAG, '', 'a'), offset: 0 },
+            // no sort, and an offset of 0
+            { ...agg(LEAD, 'AMOUNT', 'b'), offset: 0 },
+            // no sort, and no bucket count
+            agg(NTILE, undefined, 'c'),
+          ],
+          UNSORTED_WINDOW,
+        ),
+      ).toEqual([
+        ['Aggregation column does not have a name.'],
+        ['Aggregation function "Lead" requires at least one sort column.'],
+        ['Aggregation function "NTile" requires at least one sort column.'],
+      ]);
+      // a Group: the function is unknown, whatever its settings
+      expect(errorsOf([{ ...agg(SUM, 'NOPE', 'd'), offset: 0 }])).toEqual([
+        ['Aggregation column "NOPE" is not present in the input schema.'],
+      ]);
+    },
+  );
+
+  test(
+    unitTest(
+      'Checks a row function: a column of a type it can take, then a sort',
+    ),
+    () => {
+      const withVariant = new Schema([
+        ...INPUT.columns,
+        column('V', 'meta::pure::metamodel::variant::Variant', true),
+      ]);
+      const errors: string[] = [];
+      expect(
+        validateColumnAggregation(
+          [agg(LAST, 'V', 'v')],
+          0,
+          withVariant,
+          errors,
+          SORTED_WINDOW,
+        ),
+      ).toBe(false);
+      expect(errors).toEqual([
+        'Aggregation function "Last" is incompatible with column "V".',
+      ]);
+      expect(
+        errorsOf(
+          [
+            { ...agg(LAG, undefined, 'a'), offset: 1 },
+            agg(FIRST, 'NOPE', 'b'),
+            agg(LAST, '', 'c'),
+          ],
+          UNSORTED_WINDOW,
+        ),
+      ).toEqual([
+        ['Aggregation column does not have a name.'],
+        ['Aggregation column "NOPE" is not present in the input schema.'],
+        ['Aggregation column does not have a name.'],
+      ]);
+    },
+  );
+
+  test(unitTest("Checks a window's column functions as a Group's"), () => {
+    expect(
+      errorsOf(
+        [
+          agg(SUM, 'NAME', 'x'),
+          agg(COUNT, undefined, 'y'),
+          agg(COUNT_ROWS, 'ID', 'z'),
+          agg(AVERAGE, 'NOPE', 'w'),
+        ],
+        SORTED_WINDOW,
+      ),
+    ).toEqual([
+      ['Aggregation function "Sum" is incompatible with column "NAME".'],
+      ['Aggregation column does not have a name.'],
+      ['Aggregation function "CountRows" does not allow column.'],
+      ['Aggregation column "NOPE" is not present in the input schema.'],
+    ]);
+  });
 });

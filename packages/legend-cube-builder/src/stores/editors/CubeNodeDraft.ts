@@ -17,14 +17,15 @@
 import type { QueryNode } from '@finos/legend-cube';
 
 /**
- * The edits of one node in the side panel, kept until Apply (PLAN §7.4,
- * spec §17.5). A node type's editor edits its draft, never the document:
- * only the panel's Apply stores `build()`, as one undo step. A draft is
- * made once each time the panel opens on a node, and again after an Apply.
+ * The edits of one node in the node editor, kept until Apply or closing it
+ * (PLAN §7.4, §11.8, spec §17.5). A node type's editor edits its draft,
+ * never the document: only Apply, or closing the editor any way but Cancel,
+ * stores `build()`, as one undo step. A draft is made once each time the
+ * editor opens on a node, and again after an Apply.
  */
 export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
-  /** The node the draft was made from */
-  readonly original: N;
+  /** The node the draft was made from; `follow` may move it on */
+  original: N;
 
   constructor(original: N) {
     this.original = original;
@@ -36,6 +37,25 @@ export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
    * as no change.
    */
   abstract build(): N;
+
+  /**
+   * Why Apply waits, if it does: the panel disables it with this reason and
+   * shows it in place of the problems, e.g. an Extend whose expressions
+   * aren't validated yet (PLAN §11.7)
+   */
+  get applyDisabledReason(): string | undefined {
+    return undefined;
+  }
+
+  /**
+   * Whether the draft goes on, made from this node, when the node it was
+   * made from is replaced underneath it by one that differs in nothing the
+   * draft edits, e.g. an Extend the engine typed in the background; else
+   * the panel drops the edits (PLAN §7.4)
+   */
+  follow(node: QueryNode): boolean {
+    return false;
+  }
 }
 
 /** A node with nothing to edit in the panel, such as a source or an Unknown node */

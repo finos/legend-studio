@@ -67,7 +67,8 @@ export interface ColumnDirection {
   readonly direction: SortDirection;
 }
 
-const isColumnDirection = (value: unknown): value is ColumnDirection =>
+/** Whether a value has a `ColumnDirection`'s shape: a column text and a known direction */
+export const isColumnDirection = (value: unknown): value is ColumnDirection =>
   typeof value === 'object' &&
   value !== null &&
   typeof (value as Partial<Record<keyof ColumnDirection, unknown>>).column ===

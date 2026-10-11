@@ -60,7 +60,6 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -90,7 +89,6 @@ const render = async (query: Query): Promise<CubeEditorState> => {
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -184,6 +182,43 @@ describe('Filter editor', () => {
     expect(editorState.history).toHaveLength(1);
     expect(editorState.analysis.validity.get('filter101')).toEqual([]);
   });
+
+  test.each([
+    [
+      'F9 and Execute finish it',
+      (state: CubeEditorState): void => {
+        state.nodeEditor.finish();
+      },
+    ],
+    [
+      'its close button is clicked',
+      (): void => {
+        fireEvent.click(
+          within(panel()).getByRole('button', { name: 'Close the editor' }),
+        );
+      },
+    ],
+  ])(
+    'Keeps a value still being typed when the editor closes, as when %s',
+    async (_, close) => {
+      const editorState = await render(slice());
+      pickColumn(condition(0), 'SHIP_COUNTRY');
+      fireEvent.click(
+        within(condition(0)).getByRole('button', { name: 'Filter value' }),
+      );
+      const input = within(condition(0)).getByRole<HTMLInputElement>(
+        'textbox',
+        { name: 'Filter value' },
+      );
+      input.focus();
+      fireEvent.change(input, { target: { value: 'France' } });
+      act(() => close(editorState));
+      const stored = editorState.document.query.getNode('filter101') as Filter;
+      expect(stored.filter?.toString()).toContain('France');
+      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(editorState.history).toHaveLength(1);
+    },
+  );
 
   test('Stores nothing for an untouched blank condition: no undo step, and the filter still says it is empty', async () => {
     const editorState = await render(slice());

@@ -21,12 +21,17 @@ import {
   ColumnComparisonFilter,
   Concat,
   Connection,
+  Difference,
+  CUBE_DIALECT_WORKAROUNDS,
   Distinct,
   Drop,
   Filter,
   FilterOperator,
   Group,
+  Join,
+  JoinType,
   Limit,
+  Partition,
   printIR,
   Query,
   QueryEmitter,
@@ -36,6 +41,8 @@ import {
   Slice,
   Sort,
   SortDirection,
+  WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import { stringifyLosslessJSON } from '@finos/legend-shared';
 import {
@@ -43,6 +50,11 @@ import {
   CUBE_ENGINE_TEST__getCommit,
 } from '../__test-utils__/CubeEngineTestSupport.js';
 import {
+  TEST__ORDER_ID_EXTEND_COLUMNS,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
+import {
+  CUSTOMERS_COLUMNS,
   northwindTable,
   ORDERS_COLUMNS,
 } from '../__test-utils__/CubeNorthwindTestQueries.js';
@@ -62,7 +74,8 @@ import {
  * (Databricks is its Spark dialect). Not DuckDB, whose plans fail to
  * serialize with a static connection (`Match failure` in
  * DevPlanTransformer), nor Aurora, whose plans fail with an HTTP 500: both
- * before any SQL, whatever the query.
+ * before any SQL, whatever the query. The model gives DuckDB its own
+ * specification for the window shapes (`WINDOW_DATABASE_TYPES`).
  */
 const DATABASE_TYPES = [
   'H2',
@@ -86,27 +99,54 @@ const DATABASE_TYPES = [
   'Composite',
 ];
 
-const PLAN_MODEL = {
-  _type: 'text',
-  code: `${CUBE_NORTHWIND_MODEL_CODE}
-###Connection
-${DATABASE_TYPES.map(
-  (type) => `RelationalDatabaseConnection test::plan::${type}Connection
-{
-  store: ${CUBE_NORTHWIND_DATABASE};
-  type: ${type};
-  specification: Static
+/** The database types that refuse any window column (PLAN §11.6) */
+const WINDOW_REFUSING_DATABASE_TYPES = ['Spanner', 'Presto', 'Composite'];
+
+/**
+ * The database types that plan window columns: the others, and DuckDB, whose
+ * plans serialize with its own specification, an in-memory database. DuckDB
+ * plans every shape above too, but isn't among DATABASE_TYPES, as the Group
+ * after two Renames would need a pin of its own.
+ */
+const WINDOW_DATABASE_TYPES = [
+  ...DATABASE_TYPES.filter(
+    (type) => !WINDOW_REFUSING_DATABASE_TYPES.includes(type),
+  ),
+  'DuckDB',
+];
+
+/** A connection's specification: DuckDB's own, every other a static one */
+const specificationOf = (type: string): string =>
+  type === 'DuckDB'
+    ? `DuckDB
+  {
+    path: '';
+  }`
+    : `Static
   {
     name: 'db';
     host: 'host';
     port: 1234;
-  };
+  }`;
+
+const PLANNED_DATABASE_TYPES = [...DATABASE_TYPES, 'DuckDB'];
+
+const PLAN_MODEL = {
+  _type: 'text',
+  code: `${CUBE_NORTHWIND_MODEL_CODE}
+###Connection
+${PLANNED_DATABASE_TYPES.map(
+  (type) => `RelationalDatabaseConnection test::plan::${type}Connection
+{
+  store: ${CUBE_NORTHWIND_DATABASE};
+  type: ${type};
+  specification: ${specificationOf(type)};
   auth: Test;
 }`,
 ).join('\n')}
 
 ###Runtime
-${DATABASE_TYPES.map(
+${PLANNED_DATABASE_TYPES.map(
   (type) => `Runtime test::plan::${type}Runtime
 {
   mappings:
@@ -156,6 +196,10 @@ const byCustomerThenOrder = (): Sort =>
 /** The order the rows are numbered in, `row_number() over (<this>)`, if they are */
 const numberingOrder = (sql: string): string | undefined =>
   /row_number\(\) over \((?<order>[^)]*)\)/u.exec(sql)?.groups?.order;
+
+/** An ORDER BY by the two keys, in order: a sort's, or the over clause of row numbers */
+const SORTED_BY_BOTH_KEYS =
+  /order by [^,)]*customer_id[^,]*,[^,)]*order_id[^,)]* desc/u;
 
 /** Numbered by the two keys, in order */
 const BY_CUSTOMER_THEN_ORDER = /customer_id[^,]*,[^,]*order_id[^,]* desc/u;
@@ -254,6 +298,73 @@ const concatThenWith = (
     ],
     nodes.at(-1)?.id,
   );
+};
+
+/**
+ * ORDERS through the first nodes and a second ORDERS through the second,
+ * compared by difference101 (its Left and Right) on ORDER_ID by SHIP_VIA, an
+ * integer, and FREIGHT, a float, then the nodes after it, the last captured
+ */
+const differenceThen = (...after: QueryNode[]): Query => {
+  const compared = ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'];
+  const arms = [
+    [
+      northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+      new Restrict('restrict101', compared),
+    ],
+    [
+      northwindTable('relational102', 'ORDERS', ORDERS_COLUMNS),
+      new Restrict('restrict102', compared),
+    ],
+  ];
+  const difference = new Difference('difference101', {
+    leftColumns: ['ORDER_ID'],
+    rightColumns: ['ORDER_ID'],
+    differenceColumns: ['SHIP_VIA', 'FREIGHT'],
+  });
+  const nodes = [difference, ...after];
+  const chain = (chained: readonly QueryNode[]): Connection[] =>
+    chained
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection(
+            (chained[index] as QueryNode).id,
+            node.id,
+            node.ports[0] as string,
+          ),
+      );
+  return new Query(
+    [...arms.flat(), ...nodes],
+    [
+      ...arms.flatMap(chain),
+      ...arms.map(
+        (arm, side) =>
+          new Connection(
+            (arm.at(-1) as QueryNode).id,
+            difference.id,
+            difference.ports[side] as string,
+          ),
+      ),
+      ...chain(nodes),
+    ],
+    nodes.at(-1)?.id,
+  );
+};
+
+/**
+ * ORDERS, then extend101 adding `a: x | $x.ORDER_ID + 1` and `b: x | $x.a *
+ * 2`, typed (the engine tests check those types), then the nodes after it,
+ * the last captured
+ */
+const extendThen = (...after: QueryNode[]): Query => {
+  const input = ordersThen();
+  const extend = TEST__typedExtend(
+    'extend101',
+    input,
+    TEST__ORDER_ID_EXTEND_COLUMNS,
+  );
+  return ordersThen(extend, ...after);
 };
 
 /** Types must match */
@@ -499,6 +610,25 @@ const SHAPES: [string, () => Query][] = [
         ],
       ),
   ],
+  ['a Difference', () => differenceThen()],
+  ['an Extend', () => extendThen()],
+  [
+    'a sorted Limit after an Extend',
+    () => extendThen(byCustomerThenOrder(), new Limit('limit101', 5)),
+  ],
+  [
+    'a Limit after a Difference',
+    () => differenceThen(new Limit('limit101', 5)),
+  ],
+  [
+    'a Sort after a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+        byCustomerThenOrder(),
+      ),
+  ],
 ];
 
 beforeAll(async () => {
@@ -560,6 +690,11 @@ describe('Database workarounds, as each database plans them', () => {
         const sql = await planSql(shape(), databaseType);
         // the engine's numbering, or Cube's: either way by both keys
         if (name.includes('sorted')) {
+          // the sort is there, by both keys: an ORDER BY, or the over
+          // clause of Cube's row numbers
+          if (!SORTED_BY_BOTH_KEYS.test(sql)) {
+            problems.push(`${name}: no ORDER BY by both keys`);
+          }
           for (const match of sql.matchAll(
             /row_number\(\) over \((?<order>[^)]*)\)/gu,
           )) {
@@ -786,6 +921,23 @@ describe('Database workarounds, as each database plans them', () => {
         }
       });
       expect(unionOf(sql)).not.toContain('order by');
+      // each input still sorted by its keys
+      expect(
+        sql.match(new RegExp(SORTED_BY_BOTH_KEYS.source, 'gu')),
+      ).toHaveLength(2);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Orders the rows of a Sort after a Concat outside the union, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Sort after a Concat'),
+        databaseType,
+      );
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(unionOf(sql)).not.toContain('order by');
+      expect(sql).toMatch(SORTED_BY_BOTH_KEYS);
     },
   );
 
@@ -833,6 +985,971 @@ describe('Database workarounds, as each database plans them', () => {
         databaseType,
         CASTS_A_CONVERTED_COLUMN.includes(databaseType),
       ]);
+    },
+  );
+});
+
+// Partition around the databases (PLAN §11.6, M5.10): Cube's window shapes,
+// in their own list, as Spanner, Presto and Composite refuse any window and
+// every loop over SHAPES runs on them. A Partition that isn't the capture is
+// bound with a let, so its rows go through a WITH.
+
+/** A window function: a column's, or a rank's, which takes none */
+const windowFunction = (
+  fn: string,
+  column: string | undefined,
+  name: string,
+): ColumnAggregation => ({ column, function: fn, name });
+
+/** A window's sort key, ascending unless told */
+const by = (
+  column: string,
+  direction = SortDirection.ASC,
+): { column: string; direction: SortDirection } => ({ column, direction });
+
+/** Each country's rows, counted on each of them as `n` */
+const countByCountry = (): Partition =>
+  new Partition(
+    'partition101',
+    ['SHIP_COUNTRY'],
+    [],
+    [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+  );
+
+/** Each customer's rows, counted on each of them as `n` */
+const countByCustomer = (): Partition =>
+  new Partition(
+    'partition101',
+    ['CUSTOMER_ID'],
+    [],
+    [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+  );
+
+const greaterThan = (column: string, value: string): Filter =>
+  new Filter(
+    'filter101',
+    new ColumnComparisonFilter(column, FilterOperator.GREATER_THAN, {
+      kind: 'integer',
+      value,
+    }),
+  );
+
+/** Distinct Count of CUSTOMER_ID and Distinct Value of SHIP_REGION by country, by ORDER_DATE or not */
+const distinctByCountry = (
+  sorts: { column: string; direction: SortDirection }[],
+): Partition =>
+  new Partition('partition101', ['SHIP_COUNTRY'], sorts, [
+    windowFunction(AggregationFunction.DISTINCT_COUNT, 'CUSTOMER_ID', 'dc'),
+    windowFunction(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'dv'),
+  ]);
+
+const WINDOW_SHAPES: [string, () => Query][] = [
+  [
+    "a Partition with M5b's functions",
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [by('ORDER_DATE')],
+          [
+            {
+              ...windowFunction(WindowRowFunction.LAG, 'FREIGHT', 'lg'),
+              offset: 1,
+            },
+            {
+              ...windowFunction(WindowRowFunction.LEAD, 'ORDER_DATE', 'ld'),
+              offset: 2,
+            },
+            windowFunction(WindowRowFunction.FIRST, 'FREIGHT', 'f'),
+            windowFunction(WindowRowFunction.LAST, 'FREIGHT', 'l'),
+            {
+              ...windowFunction(WindowRankFunction.NTILE, undefined, 'nt'),
+              buckets: 4,
+            },
+            windowFunction(WindowRankFunction.PERCENT_RANK, undefined, 'pr'),
+            windowFunction(
+              WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+              undefined,
+              'cd',
+            ),
+          ],
+        ),
+      ),
+  ],
+  [
+    'a sorted Partition with a Sum and an Average',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [by('ORDER_DATE')],
+          [
+            windowFunction(AggregationFunction.SUM, 'EMPLOYEE_ID', 's'),
+            windowFunction(AggregationFunction.AVERAGE, 'EMPLOYEE_ID', 'a'),
+          ],
+        ),
+      ),
+  ],
+  [
+    'a Partition with a Rank, a Dense Rank and a Row Number',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [by('ORDER_DATE')],
+          [
+            windowFunction(WindowRankFunction.RANK, undefined, 'rk'),
+            windowFunction(WindowRankFunction.DENSE_RANK, undefined, 'drk'),
+            windowFunction(WindowRankFunction.ROW_NUMBER, undefined, 'rn'),
+          ],
+        ),
+      ),
+  ],
+  [
+    'a Partition with a Count and a Count Rows',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [],
+          [
+            windowFunction(AggregationFunction.COUNT, 'SHIP_REGION', 'c'),
+            windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n'),
+          ],
+        ),
+      ),
+  ],
+  [
+    'a sorted Partition with a Distinct Count and a Distinct Value',
+    () => ordersThen(distinctByCountry([by('ORDER_DATE')])),
+  ],
+  [
+    'a Partition with a Distinct Count and a Distinct Value',
+    () => ordersThen(distinctByCountry([])),
+  ],
+  [
+    'a Partition with no partition column',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          [],
+          [by('ORDER_DATE')],
+          [windowFunction(AggregationFunction.SUM, 'EMPLOYEE_ID', 's')],
+        ),
+      ),
+  ],
+  [
+    'a Partition with no partition column and no sort',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          [],
+          [],
+          [windowFunction(AggregationFunction.SUM, 'EMPLOYEE_ID', 's')],
+        ),
+      ),
+  ],
+  [
+    'a Filter on a window column after a Partition',
+    () => ordersThen(countByCountry(), greaterThan('n', '100')),
+  ],
+  [
+    'a Filter on an input column after a Partition',
+    () =>
+      ordersThen(
+        countByCountry(),
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+            kind: 'string',
+            value: 'France',
+          }),
+        ),
+      ),
+  ],
+  [
+    'a Group by a window column after a Partition',
+    () =>
+      ordersThen(
+        countByCountry(),
+        new Group(
+          'group101',
+          ['n'],
+          [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'orders')],
+        ),
+      ),
+  ],
+  [
+    // the first window, bound with a let, has two columns
+    'a Partition of a Partition',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [],
+          [
+            windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n'),
+            windowFunction(AggregationFunction.SUM, 'EMPLOYEE_ID', 's'),
+          ],
+        ),
+        new Partition(
+          'partition102',
+          [],
+          [by('n', SortDirection.DESC)],
+          [windowFunction(WindowRankFunction.DENSE_RANK, undefined, 'drk')],
+        ),
+      ),
+  ],
+  [
+    // the Filter makes the Partition, and the Limit before it, a let
+    'a Partition after a sorted Limit, then a Filter',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        new Limit('limit101', 5),
+        countByCustomer(),
+        greaterThan('n', '1'),
+      ),
+  ],
+  [
+    'a sorted Limit after a Partition',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        countByCustomer(),
+        new Limit('limit101', 5),
+      ),
+  ],
+  [
+    'a Sort after a Partition',
+    () =>
+      ordersThen(
+        countByCountry(),
+        new Sort('sort101', [by('n', SortDirection.DESC), by('ORDER_ID')]),
+      ),
+  ],
+  [
+    'a sorted Drop after a Partition',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        countByCountry(),
+        new Drop('drop101', 10),
+      ),
+  ],
+  [
+    'a Partition after a sorted Drop',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        new Drop('drop101', 10),
+        countByCountry(),
+      ),
+  ],
+  [
+    'a Partition with a Rank listed before a Count Rows',
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [by('ORDER_DATE')],
+          [
+            windowFunction(WindowRankFunction.RANK, undefined, 'ranked'),
+            windowFunction(
+              AggregationFunction.COUNT_ROWS,
+              undefined,
+              'counted',
+            ),
+          ],
+        ),
+      ),
+  ],
+  [
+    'a Partition on both inputs of a Join',
+    () => {
+      const nodes: QueryNode[] = [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Partition(
+          'partition101',
+          ['CUSTOMER_ID'],
+          [],
+          [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+        ),
+        new Partition(
+          'partition102',
+          ['COUNTRY'],
+          [],
+          [
+            windowFunction(
+              AggregationFunction.COUNT_ROWS,
+              undefined,
+              'perCountry',
+            ),
+          ],
+        ),
+        new Join('join101', {
+          leftColumns: ['CUSTOMER_ID'],
+          rightColumns: ['CUSTOMER_ID'],
+          joinType: JoinType.INNER,
+        }),
+      ];
+      return new Query(
+        nodes,
+        [
+          new Connection('relational101', 'partition101', 'tds'),
+          new Connection('relational102', 'partition102', 'tds'),
+          new Connection('partition101', 'join101', 'leftTds'),
+          new Connection('partition102', 'join101', 'rightTds'),
+        ],
+        'join101',
+      );
+    },
+  ],
+  [
+    'a Concat of two Partitions',
+    () =>
+      concatThenWith(
+        false,
+        [
+          new Restrict('restrict101', [
+            'ORDER_ID',
+            'CUSTOMER_ID',
+            'SHIP_COUNTRY',
+          ]),
+          new Partition(
+            'partition101',
+            ['CUSTOMER_ID'],
+            [],
+            [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+          ),
+        ],
+        [
+          new Restrict('restrict102', [
+            'ORDER_ID',
+            'CUSTOMER_ID',
+            'SHIP_COUNTRY',
+          ]),
+          new Partition(
+            'partition102',
+            ['SHIP_COUNTRY'],
+            [],
+            [windowFunction(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+          ),
+        ],
+      ),
+  ],
+];
+
+const windowShapeNamed = (label: string): Query =>
+  (WINDOW_SHAPES.find(([name]) => name === label)?.[1] as () => Query)();
+
+/** Plans already made, by shape and database type: each pin reads the same few */
+const windowPlans = new Map<string, Promise<string>>();
+
+/** The SQL of a window shape on a database type, planned once */
+const windowPlanSql = (
+  label: string,
+  databaseType: string,
+): Promise<string> => {
+  const key = `${label}\u0000${databaseType}`;
+  const planned =
+    windowPlans.get(key) ?? planSql(windowShapeNamed(label), databaseType);
+  windowPlans.set(key, planned);
+  return planned;
+};
+
+/** The engine's error for a plan it refuses, or undefined when it plans the query */
+const planError = (
+  query: Query,
+  databaseType: string,
+): Promise<string | undefined> =>
+  planSql(query, databaseType).then(
+    () => undefined,
+    (error: unknown) => {
+      const text = (error as { response?: { data?: unknown } }).response?.data;
+      if (typeof text !== 'string') {
+        return String(error);
+      }
+      try {
+        const { message } = JSON.parse(text) as { message?: unknown };
+        return typeof message === 'string' ? message : text;
+      } catch {
+        return text;
+      }
+    },
+  );
+
+/** The outermost query of some SQL, each parenthesised part shown as (…) */
+const outermost = (sql: string): string => {
+  let depth = 0;
+  let text = '';
+  for (const char of sql) {
+    if (char === '(') {
+      text += depth === 0 ? '(…)' : '';
+      depth += 1;
+    } else if (char === ')') {
+      depth -= 1;
+    } else if (depth === 0) {
+      text += char;
+    }
+  }
+  return text;
+};
+
+/** The query a WITH names, `with <name> as (<this>)`, if there is one */
+const withQuery = (sql: string, name: string): string | undefined => {
+  const open = sql.indexOf(`with ${name} as (`);
+  if (open < 0) {
+    return undefined;
+  }
+  const start = open + `with ${name} as (`.length;
+  let depth = 1;
+  for (let index = start; index < sql.length; index += 1) {
+    depth += sql[index] === '(' ? 1 : sql[index] === ')' ? -1 : 0;
+    if (depth === 0) {
+      return sql.slice(start, index);
+    }
+  }
+  return undefined;
+};
+
+/** The selects that compute a window column, each without its subqueries */
+const windowSelects = (sql: string): string[] =>
+  [...subqueries(sql), outermost(sql)].filter((select) =>
+    select.includes(' over (…)'),
+  );
+
+/** A frame clause: `rows between …`, `range unbounded preceding`, … */
+const FRAME_CLAUSE = /\b(?:rows|range)\s+(?:between|unbounded|current|\d)/u;
+
+/** The run's own limit, as each database takes it */
+const RUN_LIMIT = /\btop 1001\b|\blimit 1001\b|fetch first 1001 rows only/u;
+
+/** The window functions of a query's Partitions */
+const windowFunctionCount = (query: Query): number =>
+  query.nodes
+    .filter((node): node is Partition => node instanceof Partition)
+    .reduce((count, node) => count + node.aggregations.length, 0);
+
+/** A float's 0: `0.0`, Oracle's `0.0d`, or H2's cast */
+const FLOAT_ZERO = String.raw`(?:0\.0d?|cast\(0\.0 as float\))`;
+
+describe('Extend, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Writes each new column as an expression, the second over the first, on %s',
+    async (databaseType) => {
+      const sql = await planSql(extendThen(), databaseType);
+      // `a` as ORDER_ID + 1, and `b` as twice it: in place or by its name
+      expect(sql).toMatch(/order_id[^,]*\+ 1/u);
+      expect(sql).toMatch(/\* 2/u);
+      // aliased with `as`, or by a space after the expression (Oracle)
+      expect(sql).toMatch(/(?:\bas |\) )["`]?a["`]?(?:[ ,]|$)/u);
+      expect(sql).toMatch(/(?:\bas |\) )["`]?b["`]?(?:[ ,]|$)/u);
+    },
+  );
+});
+
+describe('Difference, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Joins FULL, natively but on H2, and subtracts the values with an empty one as 0, never cast to a float, on %s',
+    async (databaseType) => {
+      const sql = await planSql(differenceThen(), databaseType);
+      if (databaseType === 'H2') {
+        // the engine's emulation: matched and left rows, then the right's
+        expect(sql).toContain('left outer join');
+        expect(sql).toContain('right outer join');
+        expect(sql).toContain('union all');
+      } else {
+        expect(sql.match(/full outer join/gu)).toHaveLength(1);
+        expect(sql).not.toContain('union');
+      }
+      expect(sql).toMatch(
+        /coalesce\([^()]*ship_via_1[^()]*, 0\) - coalesce\([^()]*ship_via_2[^()]*, 0\)/u,
+      );
+      expect(sql).toMatch(
+        new RegExp(
+          `coalesce\\([^()]*freight_1[^()]*, ${FLOAT_ZERO}\\) - coalesce\\([^()]*freight_2[^()]*, ${FLOAT_ZERO}\\)`,
+          'u',
+        ),
+      );
+      // toFloat() fails to plan on 7 types (PLAN §11.7 Q5)
+      expect(sql).not.toMatch(
+        /cast\([^()]*ship_via[^()]* as (?:float|double)/u,
+      );
+    },
+  );
+});
+
+describe('Window functions, as each database plans them', () => {
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Writes every window with an OVER clause and no ROWS or RANGE frame, on %s',
+    async (databaseType) => {
+      const problems: string[] = [];
+      for (const [name] of WINDOW_SHAPES) {
+        const sql = await windowPlanSql(name, databaseType);
+        if (!sql.includes(' over (')) {
+          problems.push(`${name}: no over clause`);
+        }
+        // ClickHouse's own Lag and Lead read over the whole partition, as
+        // its lagInFrame and leadInFrame need (PLAN §11.9)
+        if (
+          FRAME_CLAUSE.test(
+            sql.replace(
+              /\b(?:lag|lead)inframe\([^()]*\) over \([^()]*\)/gu,
+              '',
+            ),
+          )
+        ) {
+          problems.push(`${name}: a frame clause`);
+        }
+      }
+      expect(problems).toEqual([]);
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Writes M5b's functions over the window: NTile, Percent Rank, Cumulative Distribution, Lag and Lead by offset, First, and Last as First over the reversed sort, on %s",
+    async (databaseType) => {
+      const sql = await windowPlanSql(
+        "a Partition with M5b's functions",
+        databaseType,
+      );
+      const window = `over \\(partition by [^()]*ship_country[^()]* order by [^()]*order_date[^()]*`;
+      ['ntile\\(4\\)', 'percent_rank\\(\\)', 'cume_dist\\(\\)'].forEach((fn) =>
+        expect(sql).toMatch(
+          new RegExp(`\\b${fn} ${window}\\basc(?: nulls last)?\\)`, 'u'),
+        ),
+      );
+      // ClickHouse's own forms, over the whole partition
+      const [lag, lead] =
+        databaseType === 'ClickHouse'
+          ? ['laginframe', 'leadinframe']
+          : ['lag', 'lead'];
+      expect(sql).toMatch(
+        new RegExp(`\\b${lag}\\([^()]*freight[\`"]?, 1\\) ${window}`, 'u'),
+      );
+      expect(sql).toMatch(
+        new RegExp(`\\b${lead}\\([^()]*order_date[\`"]?, 2\\) ${window}`, 'u'),
+      );
+      // DuckDB's first() is first_value()
+      const first = databaseType === 'DuckDB' ? 'first' : 'first_value';
+      expect(sql).toMatch(
+        new RegExp(
+          `\\b${first}\\([^()]*freight[\`"]?\\) ${window}\\basc(?: nulls last)?\\)`,
+          'u',
+        ),
+      );
+      expect(sql).toMatch(
+        new RegExp(
+          `\\b${first}\\([^()]*freight[\`"]?\\) ${window}\\bdesc(?: nulls first)?\\)`,
+          'u',
+        ),
+      );
+      expect(sql).not.toMatch(/\blast_value\(|\bnth_value\(/u);
+      // reversed, the sort puts empty values at the other end too: where
+      // the database's own default wouldn't, the engine writes it
+      const ascending =
+        /\border by [^()]*order_date[`"]? asc(?<nulls> nulls last)?\)/u.exec(
+          sql,
+        );
+      const descending =
+        /\border by [^()]*order_date[`"]? desc(?<nulls> nulls first)?\)/u.exec(
+          sql,
+        );
+      expect(Boolean(ascending?.groups?.nulls)).toBe(
+        ['MemSQL', 'Databricks', 'Hive', 'BigQuery'].includes(databaseType),
+      );
+      expect(Boolean(descending?.groups?.nulls)).toBe(
+        ![
+          'H2',
+          'Postgres',
+          'SqlServer',
+          'Sybase',
+          'SybaseIQ',
+          'DB2',
+          'Snowflake',
+          'Oracle',
+          'Redshift',
+        ].includes(databaseType),
+      );
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Writes a Count as count(column), a Count Rows as count(1), a Sum as sum(…) and an Average as avg(1.0 * …), each over the window, on %s',
+    async (databaseType) => {
+      const counts = await windowPlanSql(
+        'a Partition with a Count and a Count Rows',
+        databaseType,
+      );
+      expect(counts).toMatch(/count\([^()]*ship_region[`"]?\) over \(/u);
+      expect(counts).toMatch(/count\(1\) over \(/u);
+      const sums = await windowPlanSql(
+        'a sorted Partition with a Sum and an Average',
+        databaseType,
+      );
+      expect(sums).toMatch(/sum\([^()]*employee_id[`"]?\) over \(/u);
+      expect(sums).toMatch(/avg\(1\.0 \* [^()]*employee_id[`"]?\) over \(/u);
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Writes a Rank, a Dense Rank and a Row Number as rank(), dense_rank() and row_number(), over the window's sort, on %s",
+    async (databaseType) => {
+      const sql = await windowPlanSql(
+        'a Partition with a Rank, a Dense Rank and a Row Number',
+        databaseType,
+      );
+      ['rank', 'dense_rank', 'row_number'].forEach((fn) =>
+        expect(sql).toMatch(
+          new RegExp(
+            `\\b${fn}\\(\\) over \\(partition by [^()]*ship_country[^()]* order by [^()]*order_date`,
+            'u',
+          ),
+        ),
+      );
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Counts with an OVER clause, never with a bare count( outside a Group's GROUP BY, on %s",
+    async (databaseType) => {
+      const problems: string[] = [];
+      for (const [name] of WINDOW_SHAPES) {
+        const sql = await windowPlanSql(name, databaseType);
+        [...subqueries(sql), outermost(sql)].forEach((select) => {
+          // each parenthesised part, over clause included, is shown as (…)
+          if (
+            /\bcount\(…\)(?! over \(…\))/u.test(select) &&
+            !select.includes('group by')
+          ) {
+            problems.push(`${name}: a count with no over clause`);
+          }
+        });
+      }
+      expect(problems).toEqual([]);
+    },
+  );
+
+  /** Each Filter after a Partition, by its predicate as written (Postgres writes text'france') */
+  const FILTERS_AFTER_A_PARTITION: [string, RegExp][] = [
+    ['a Filter on a window column after a Partition', /[`"]n[`"] > 100\b/u],
+    [
+      'a Filter on an input column after a Partition',
+      /[`"]ship_country[`"] = (?:text)?'france'/u,
+    ],
+    ['a Partition after a sorted Limit, then a Filter', /[`"]n[`"] > 1\b/u],
+  ];
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Filters a Partition's rows in a WHERE outside its window, reading it from a WITH, never with QUALIFY, on %s",
+    async (databaseType) => {
+      for (const [name, predicate] of FILTERS_AFTER_A_PARTITION) {
+        const sql = await windowPlanSql(name, databaseType);
+        expect([name, sql]).toEqual([
+          name,
+          expect.stringMatching(/^with n_partition101 as \(/u),
+        ]);
+        expect(sql).not.toContain('qualify');
+        const root = outermost(sql);
+        expect([name, root]).toEqual([
+          name,
+          expect.stringMatching(
+            new RegExp(`\\bwhere [^()]*${predicate.source}`, 'u'),
+          ),
+        ]);
+        expect(
+          windowSelects(sql).filter((select) => predicate.test(select)),
+        ).toEqual([]);
+      }
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Binds the windows of both inputs of a Join or a Concat in one WITH, on %s',
+    async (databaseType) => {
+      for (const name of [
+        'a Partition on both inputs of a Join',
+        'a Concat of two Partitions',
+      ]) {
+        const sql = await windowPlanSql(name, databaseType);
+        expect([name, sql]).toEqual([
+          name,
+          expect.stringMatching(/^with n_partition101 as \(/u),
+        ]);
+        expect([
+          name,
+          withQuery(sql, 'n_partition101') !== undefined,
+          /\bn_partition102 as \(/u.test(sql),
+        ]).toEqual([name, true, true]);
+      }
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Orders and limits the capture's rows at the root, after the WITH, on %s",
+    async (databaseType) => {
+      const byWindowColumn = outermost(
+        await windowPlanSql('a Sort after a Partition', databaseType),
+      );
+      expect(byWindowColumn).toMatch(/^with n_partition101 as \(…\)/u);
+      expect(byWindowColumn).toMatch(
+        /order by [`"]n[`"] desc[^,]*, ?[^,]*order_id/u,
+      );
+      expect(byWindowColumn).toMatch(RUN_LIMIT);
+      for (const name of [
+        'a Partition after a sorted Limit, then a Filter',
+        'a sorted Limit after a Partition',
+        'a sorted Drop after a Partition',
+      ]) {
+        const root = outermost(await windowPlanSql(name, databaseType));
+        expect([
+          name,
+          SORTED_BY_BOTH_KEYS.test(root),
+          RUN_LIMIT.test(root),
+        ]).toEqual([name, true, true]);
+      }
+    },
+  );
+
+  test("Takes no window shape's rows by the engine's own row numbers on Sybase IQ", async () => {
+    for (const [name] of WINDOW_SHAPES) {
+      expect([
+        name,
+        (await windowPlanSql(name, 'SybaseIQ')).includes(
+          'limitoffset_via_window_subquery',
+        ),
+      ]).toEqual([name, false]);
+    }
+  });
+
+  test.each(['SqlServer', 'Sybase'])(
+    'Writes no ORDER BY in a subquery or a WITH without TOP or OFFSET, for every window shape, on %s',
+    async (databaseType) => {
+      const problems: string[] = [];
+      for (const [name] of WINDOW_SHAPES) {
+        // an over clause's order by is inside its own (…)
+        subqueries(await windowPlanSql(name, databaseType)).forEach(
+          (subquery) => {
+            if (
+              subquery.includes('order by') &&
+              !/\btop\b|\boffset\b/u.test(subquery)
+            ) {
+              problems.push(`${name}: ${subquery.slice(0, 80)}`);
+            }
+          },
+        );
+      }
+      expect(problems).toEqual([]);
+    },
+  );
+
+  test.each(['SqlServer', 'Sybase'])(
+    "Takes a sorted Limit's rows inside a Partition's WITH by TOP and its ORDER BY, on %s",
+    async (databaseType) => {
+      const bound = withQuery(
+        await windowPlanSql(
+          'a Partition after a sorted Limit, then a Filter',
+          databaseType,
+        ),
+        'n_partition101',
+      );
+      expect(bound).toBeDefined();
+      expect(
+        subqueries(bound as string).filter(
+          (subquery) =>
+            /\btop 5\b/u.test(subquery) && SORTED_BY_BOTH_KEYS.test(subquery),
+        ),
+      ).toHaveLength(1);
+    },
+  );
+
+  test.each(['SqlServer', 'Sybase'])(
+    "Takes a sorted Limit's rows after a Partition by TOP and its ORDER BY, on %s",
+    async (databaseType) => {
+      const sql = await windowPlanSql(
+        'a sorted Limit after a Partition',
+        databaseType,
+      );
+      expect(
+        subqueries(sql).filter(
+          (subquery) =>
+            /\btop 5\b/u.test(subquery) && SORTED_BY_BOTH_KEYS.test(subquery),
+        ),
+      ).toHaveLength(1);
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Writes a rank and an aggregate in selects of their own, then lists them in the order the Partition lists them, on %s',
+    async (databaseType) => {
+      const sql = await windowPlanSql(
+        'a Partition with a Rank listed before a Count Rows',
+        databaseType,
+      );
+      // one extend holding both fails on the engine (PLAN §11.6); each
+      // parenthesised part of a select is shown as (…)
+      const selects = [...subqueries(sql), outermost(sql)];
+      const ranks = selects.filter((select) =>
+        /\brank\(…\) over/u.test(select),
+      );
+      const counts = selects.filter((select) =>
+        /\bcount\(…\) over/u.test(select),
+      );
+      expect(ranks.length).toBeGreaterThan(0);
+      expect(counts.length).toBeGreaterThan(0);
+      expect(ranks.filter((select) => counts.includes(select))).toEqual([]);
+      const root = outermost(sql);
+      expect(root.indexOf('ranked')).toBeGreaterThanOrEqual(0);
+      expect(root.indexOf('ranked')).toBeLessThan(root.indexOf('counted'));
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Writes a window with no partition column as over (order by …), and as over () with no sort either, on %s',
+    async (databaseType) => {
+      const sorted = await windowPlanSql(
+        'a Partition with no partition column',
+        databaseType,
+      );
+      expect(sorted).toMatch(/ over \(order by [^()]*order_date/u);
+      expect(sorted).not.toContain('partition by');
+      const unsorted = await windowPlanSql(
+        'a Partition with no partition column and no sort',
+        databaseType,
+      );
+      expect(unsorted).toContain(' over ()');
+      expect(unsorted).not.toContain('partition by');
+    },
+  );
+
+  // A window's Distinct Count and Distinct Value (PLAN §11.6, Q3): every
+  // window database plans them natively, as count(distinct(x)) over (…) and
+  // case when count(distinct(x)) over (…) = 1 then max(x) over (…) else null
+  // end, sorted or not (a sort is written with the database's null order).
+  // Postgres, SQL Server, Databricks and Trino are expected to refuse them
+  // when run, and Oracle and BigQuery with a sort (vendor documentation,
+  // never run here). Pinned so a change in the engine shows.
+  const WINDOWED_DISTINCT: Readonly<Record<string, string>> = {
+    H2: 'native',
+    Postgres: 'native',
+    SqlServer: 'native',
+    Sybase: 'native',
+    SybaseIQ: 'native',
+    DB2: 'native',
+    MemSQL: 'native',
+    Snowflake: 'native',
+    Databricks: 'native',
+    Oracle: 'native',
+    Trino: 'native',
+    Redshift: 'native',
+    Hive: 'native',
+    BigQuery: 'native',
+    Athena: 'native',
+    ClickHouse: 'native',
+    DuckDB: 'native',
+  };
+
+  /** A window, `over (…)`, over SHIP_COUNTRY, by ORDER_DATE or not */
+  const OVER_COUNTRY = 'over \\(partition by [^()]*ship_country[^()]*\\)';
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Writes a Distinct Count and a Distinct Value in a window as the engine writes them for %s',
+    async (databaseType) => {
+      const forms = new Set<string>();
+      for (const name of [
+        'a sorted Partition with a Distinct Count and a Distinct Value',
+        'a Partition with a Distinct Count and a Distinct Value',
+      ]) {
+        const sql = await windowPlanSql(name, databaseType);
+        const distinctCount = new RegExp(
+          `count\\(distinct\\(?[^()]*customer_id[\`"]?\\)?\\) ${OVER_COUNTRY}`,
+          'u',
+        );
+        const distinctValue = new RegExp(
+          `case when count\\(distinct\\(?[^()]*ship_region[\`"]?\\)?\\) ${OVER_COUNTRY} = 1 then max\\([^()]*ship_region[\`"]?\\) ${OVER_COUNTRY} else null end`,
+          'u',
+        );
+        forms.add(
+          distinctCount.test(sql) && distinctValue.test(sql)
+            ? 'native'
+            : `${name}: another form`,
+        );
+      }
+      expect([databaseType, [...forms]]).toEqual([
+        databaseType,
+        [WINDOWED_DISTINCT[databaseType]],
+      ]);
+    },
+  );
+
+  test("Nests one subselect per window column on H2, even for a Partition's functions over one window", async () => {
+    const problems: string[] = [];
+    for (const [name, shape] of WINDOW_SHAPES) {
+      const selects = windowSelects(await windowPlanSql(name, 'H2')).length;
+      if (selects !== windowFunctionCount(shape())) {
+        problems.push(
+          `${name}: ${selects} selects for ${windowFunctionCount(shape())} window columns`,
+        );
+      }
+    }
+    expect(problems).toEqual([]);
+    // three functions over one window: three selects, one inside another
+    expect(
+      subqueries(
+        await windowPlanSql(
+          'a Partition with a Rank, a Dense Rank and a Row Number',
+          'H2',
+        ),
+      ).map((subquery) => subquery.match(/ over \(…\)/gu)?.length ?? 0),
+    ).toEqual([1, 1, 1]);
+  });
+
+  test.each(WINDOW_REFUSING_DATABASE_TYPES)(
+    'Refuses every window shape on %s: no window columns there',
+    async (databaseType) => {
+      for (const [name, shape] of WINDOW_SHAPES) {
+        expect([name, await planError(shape(), databaseType)]).toEqual([
+          name,
+          expect.stringContaining(
+            `Window Columns not supported for Database Type: ${databaseType}`,
+          ),
+        ]);
+      }
+    },
+  );
+
+  test.each(
+    [...CUBE_DIALECT_WORKAROUNDS]
+      .filter(([, workarounds]) => workarounds.drop)
+      .map(([databaseType]) => databaseType),
+  )(
+    "Keeps the cube_rn predicate of a Drop before or after a Partition, numbered in the Sort's order, never QUALIFY, on %s",
+    async (databaseType) => {
+      for (const name of [
+        'a sorted Drop after a Partition',
+        'a Partition after a sorted Drop',
+      ]) {
+        const sql = await windowPlanSql(name, databaseType);
+        expect([name, sql]).toEqual([
+          name,
+          expect.stringMatching(/cube_rn[`"]? > 10\b/u),
+        ]);
+        expect(sql).not.toContain('qualify');
+        expect([name, numberingOrder(sql)]).toEqual([
+          name,
+          expect.stringMatching(BY_CUSTOMER_THEN_ORDER),
+        ]);
+      }
     },
   );
 });

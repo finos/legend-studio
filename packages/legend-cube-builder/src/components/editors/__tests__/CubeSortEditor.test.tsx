@@ -30,6 +30,7 @@ import {
   SortDirection,
 } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { READ_ONLY_CUBE_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -48,7 +49,6 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const { ASC, DESC } = SortDirection;
@@ -79,7 +79,6 @@ const render = async (query: Query): Promise<CubeEditorState> => {
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -138,10 +137,10 @@ describe('Sort editor', () => {
     const editorState = await render(ordersSorted([]));
     await openSort();
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Sorts')]);
-    // the rows scroll on their own, so the editor fits wherever it is shown
+    // the editor's body is its one scroller (PLAN §11.8)
     expect(
       within(panel()).getByRole('list', { name: 'Sort columns' }).className,
-    ).toContain('overflow-auto');
+    ).not.toMatch(/\b(?:max-h-|overflow-(?:[xy]-)?(?:auto|scroll))/u);
     expect(columnPicker(1).value).toBe('');
     expect(
       Array.from(directionPicker(1).options).map(({ text }) => text),
@@ -268,6 +267,7 @@ describe('Sort editor', () => {
     expect(button('Move sort column 2 up').disabled).toBe(true);
     expect(button('Remove sort column 1').disabled).toBe(true);
     expect(button('Add sort column').disabled).toBe(true);
+    expect(button('Add sort column').title).toBe(READ_ONLY_CUBE_TITLE);
     expect(button('Apply').disabled).toBe(true);
   });
 });

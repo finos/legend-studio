@@ -16,13 +16,16 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  aggregationColSpec,
   colSpec,
   colSpecArray,
+  collection,
   columnAccess,
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
   Connection,
+  elementPtr,
   EmitRole,
   Filter,
   FilterOperator,
@@ -31,6 +34,8 @@ import {
   Join,
   JoinType,
   lambda,
+  letBinding,
+  literal,
   NotFilter,
   PrimitiveType,
   printIR,
@@ -39,6 +44,7 @@ import {
   RelationalTableSource,
   Schema,
   SchemaColumn,
+  storeAccessor,
   variable,
 } from '@finos/legend-cube';
 import {
@@ -141,6 +147,79 @@ describe('Cube lambda serializer, against the engine parser', () => {
     };
     await expectAsParsed(lambda([], [total]));
     await expectAsParsed(lambda([], [colSpecArray([colSpec('A'), total])]));
+  });
+
+  test('Writes the let form that isolates a window, with what follows it, as the engine parses it', async () => {
+    const integer = (value: string): IR => literal({ kind: 'integer', value });
+    const window = (name: string, fn1: IR, fn2?: IR): IR =>
+      colSpecArray([
+        fn2 ? aggregationColSpec(name, fn1, fn2) : colSpec(name, fn1),
+      ]);
+    const over = func('over', [
+      colSpecArray([colSpec('SHIP_COUNTRY')]),
+      collection([func('descending', [colSpec('ORDER_ID')])]),
+    ]);
+    // ORDERS' window columns, bound by a let, then filtered and sorted
+    const windowed = func('extend', [
+      func('extend', [
+        func('select', [
+          storeAccessor([
+            'showcase::northwind::store::NorthwindDatabase',
+            'NORTHWIND',
+            'ORDERS',
+          ]),
+          colSpecArray([colSpec('ORDER_ID'), colSpec('SHIP_COUNTRY')]),
+        ]),
+        over,
+        window(
+          'c',
+          lambda(['p', 'w', 'r'], [integer('1')]),
+          lambda(['y'], [func('size', [variable('y')])]),
+        ),
+      ]),
+      over,
+      window(
+        'rk',
+        lambda(
+          ['p', 'w', 'r'],
+          [func('rank', [variable('p'), variable('w'), variable('r')])],
+        ),
+      ),
+    ]);
+    await expectAsParsed(
+      lambda(
+        [],
+        [
+          func('limit', [
+            func('sort', [
+              func('from', [
+                lambda(
+                  [],
+                  [
+                    letBinding('n_partition101', windowed),
+                    func('filter', [
+                      variable('n_partition101'),
+                      lambda(
+                        ['row'],
+                        [
+                          func('lessThanEqual', [
+                            columnAccess('row', 'rk'),
+                            integer('3'),
+                          ]),
+                        ],
+                      ),
+                    ]),
+                  ],
+                ),
+                elementPtr(NORTHWIND_RUNTIME),
+              ]),
+              collection([func('ascending', [colSpec('rk')])]),
+            ]),
+            integer('11'),
+          ]),
+        ],
+      ),
+    );
   });
 });
 

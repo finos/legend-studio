@@ -17,6 +17,7 @@
 import {
   isIncompleteError,
   isSchemasError,
+  isTypingError,
   type Query,
   type QueryNode,
 } from '@finos/legend-cube';
@@ -134,12 +135,17 @@ export const getCubeCanvasNodeStatus = (
   return {
     isCapture: editorState.document.query.selected === node.id,
     isInvalid: (ownErrors ?? []).some(
-      (error) => !isIncompleteError(error) && !isSchemasError(error),
+      (error) =>
+        !isIncompleteError(error) &&
+        !isSchemasError(error) &&
+        !isTypingError(error),
     ),
     isIncomplete: (ownErrors ?? []).some(
       (error) => isIncompleteError(error) || isSchemasError(error),
     ),
-    isResolving: editorState.isPendingSource(node),
+    // a source typed again, or an Extend waiting for its columns' types
+    isResolving:
+      editorState.isPendingSource(node) || editorState.isTypingNode(node),
     hasEngineError: editorState.hostIssues.has(node.id),
     hasWarnings: warnings.length > 0,
     tooltip: [

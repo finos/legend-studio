@@ -263,7 +263,40 @@ const validateKeyPair = (
   );
 };
 
-const validateNoDuplicateColumns = (
+/**
+ * Checks a join's key columns, in order, stopping at the first failing step:
+ * 1–2. there are left and right key columns;
+ * 3. as many on each side;
+ * 4. each pair's columns exist in their inputs and have compatible types,
+ *    reported for every pair at once.
+ * Shared with Difference, which joins its inputs the same way.
+ */
+export const validateJoinKeys = (
+  leftSchema: Schema,
+  rightSchema: Schema,
+  leftColumns: readonly string[],
+  rightColumns: readonly string[],
+  errors?: string[],
+): boolean =>
+  validate(leftColumns.length > 0, MESSAGE_LEFT_JOIN_COLUMNS_EMPTY, errors) &&
+  validate(rightColumns.length > 0, MESSAGE_RIGHT_JOIN_COLUMNS_EMPTY, errors) &&
+  validate(
+    leftColumns.length === rightColumns.length,
+    MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
+    errors,
+  ) &&
+  validateAllItems(leftColumns, (leftName, index) =>
+    validateKeyPair(
+      leftSchema,
+      rightSchema,
+      leftName,
+      rightColumns[index] ?? '',
+      errors,
+    ),
+  );
+
+/** No column name, but the given ones, in both inputs (`getDuplicateJoinColumns`) */
+export const validateNoDuplicateColumns = (
   duplicates: readonly string[],
   errors?: string[],
 ): boolean =>
@@ -352,29 +385,12 @@ export class Join extends BinaryNode {
       this.ports,
     ) as [Schema, Schema];
     return (
-      validate(
-        this.leftColumns.length > 0,
-        MESSAGE_LEFT_JOIN_COLUMNS_EMPTY,
+      validateJoinKeys(
+        leftSchema,
+        rightSchema,
+        this.leftColumns,
+        this.rightColumns,
         errors,
-      ) &&
-      validate(
-        this.rightColumns.length > 0,
-        MESSAGE_RIGHT_JOIN_COLUMNS_EMPTY,
-        errors,
-      ) &&
-      validate(
-        this.leftColumns.length === this.rightColumns.length,
-        MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
-        errors,
-      ) &&
-      validateAllItems(this.leftColumns, (leftName, index) =>
-        validateKeyPair(
-          leftSchema,
-          rightSchema,
-          leftName,
-          this.rightColumns[index] ?? '',
-          errors,
-        ),
       ) &&
       validateNoDuplicateColumns(
         getDuplicateJoinColumns(

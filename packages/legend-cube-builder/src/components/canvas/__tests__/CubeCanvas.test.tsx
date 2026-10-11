@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals';
 import {
   Core_LegendApplicationPlugin,
   LEGEND_APPLICATION_COLOR_THEME,
@@ -25,6 +32,7 @@ import {
   CubeDocument,
   Filter,
   Join,
+  Limit,
   Query,
   type Schema,
   UnknownNode,
@@ -37,6 +45,7 @@ import {
   within,
 } from '@testing-library/react';
 import { runInAction } from 'mobx';
+import { READ_ONLY_CUBE_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -57,10 +66,17 @@ import {
 } from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
+  createCubeDirectModel,
+  CUBE_DIRECT_RUNTIME_PATH,
+} from '../../../graph-manager/CubeDirectConnection.js';
+import {
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import type { CubeHost } from '../../../stores/CubeHost.js';
+import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
 import {
@@ -74,9 +90,11 @@ const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const renderCanvas = async (
   document?: CubeDocument,
   prepare?: (fake: FakeCubeEngine) => void,
+  adaptHost: (host: CubeHost) => CubeHost = (host) => host,
 ): Promise<CubeEditorState> => {
-  const { host, fake } = TEST__createCubeHost();
-  prepare?.(fake);
+  const created = TEST__createCubeHost();
+  prepare?.(created.fake);
+  const host = adaptHost(created.host);
   const editorState = new CubeEditorState(host, document);
   await TEST__renderInCubeApplication(
     <div style={{ width: 800, height: 400 }}>
@@ -466,60 +484,101 @@ describe('Cube canvas', () => {
     ).toBe(false);
   });
 
-  test('Offers to add a table when the cube is empty', async () => {
+  test('Offers to connect to a source, or open an example, when the cube is empty, opening the dialog with no tab chosen', async () => {
     const state = await renderCanvas();
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     const canvas = screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS);
-    expect(canvas.textContent).toBe('No tables yet: add a table to start.');
-    fireEvent.click(within(canvas).getByText('add a table'));
+    expect(canvas.textContent).toBe(
+      'Connect to a source to start a new one, or open an example.',
+    );
+    fireEvent.click(within(canvas).getByText('Connect to a source'));
     expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.isChoosingTab).toBe(true);
+    act(() => state.sourcePicker.close());
+    fireEvent.click(within(canvas).getByText('open an example'));
+    expect(state.examples.isOpen).toBe(true);
   });
 
-  test('Offers no table to add when an empty cube is read-only', async () => {
+  test('Opens an empty cube with a fixed context on its own tab from the link', async () => {
+    const state = await renderCanvas(
+      new CubeDocument().withContext({
+        model: createCubeDirectModel({ _type: 'saved' }),
+        runtime: CUBE_DIRECT_RUNTIME_PATH,
+      }),
+    );
+    fireEvent.click(screen.getByText('Connect to a source'));
+    expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.isChoosingTab).toBe(false);
+    expect(state.sourcePicker.activeTab.key).toBe(
+      CubeSourcePickerTabKey.DIRECT_CONNECTION,
+    );
+  });
+
+  test('Opens on the only tab from the link when the host offers only models', async () => {
+    const state = await renderCanvas(undefined, undefined, (host) => ({
+      ...host,
+      connectionExplorer: undefined,
+      dataProductCatalog: undefined,
+    }));
+    fireEvent.click(screen.getByText('Connect to a source'));
+    expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.sourcePicker.isChoosingTab).toBe(false);
+    expect(state.sourcePicker.activeTab.key).toBe(CubeSourcePickerTabKey.MODEL);
+  });
+
+  test('Offers no source to connect to when an empty cube is read-only, but still its examples', async () => {
     const state = await renderCanvas();
     act(() => state.importDocument(new CubeDocument(), true));
     const link = within(
       screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
-    ).getByText<HTMLButtonElement>('add a table');
+    ).getByText<HTMLButtonElement>('Connect to a source');
     expect(link.disabled).toBe(true);
+    expect(link.title).toBe(READ_ONLY_CUBE_TITLE);
+    fireEvent.click(link);
+    expect(state.sourcePicker.isOpen).toBe(false);
+    expect(
+      within(
+        screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
+      ).getByText<HTMLButtonElement>('open an example').disabled,
+    ).toBe(false);
   });
 });
 
-describe('Cube canvas, more', () => {
-  /**
-   * Runs `run` with what React Flow's click-to-connect needs and jsdom
-   * lacks: with nothing laid out, React Flow then takes the clicked handle
-   */
-  const withClickConnect = async (run: () => Promise<void>): Promise<void> => {
-    const added: [object, string][] = [];
-    const stub = (target: object, name: string, value: unknown): void => {
-      if (!(name in target)) {
-        Object.defineProperty(target, name, {
-          configurable: true,
-          writable: true,
-          value,
-        });
-        added.push([target, name]);
-      }
-    };
-    stub(document, 'elementFromPoint', (): Element | null => null);
-    stub(globalThis, 'structuredClone', (value: unknown): unknown =>
-      JSON.parse(JSON.stringify(value)),
-    );
-    try {
-      await run();
-    } finally {
-      added.forEach(([target, name]) => {
-        delete (target as Record<string, unknown>)[name];
+/**
+ * Runs `run` with what React Flow's click-to-connect needs and jsdom
+ * lacks: with nothing laid out, React Flow then takes the clicked handle
+ */
+const withClickConnect = async (run: () => Promise<void>): Promise<void> => {
+  const added: [object, string][] = [];
+  const stub = (target: object, name: string, value: unknown): void => {
+    if (!(name in target)) {
+      Object.defineProperty(target, name, {
+        configurable: true,
+        writable: true,
+        value,
       });
+      added.push([target, name]);
     }
   };
+  stub(document, 'elementFromPoint', (): Element | null => null);
+  stub(globalThis, 'structuredClone', (value: unknown): unknown =>
+    JSON.parse(JSON.stringify(value)),
+  );
+  try {
+    await run();
+  } finally {
+    added.forEach(([target, name]) => {
+      delete (target as Record<string, unknown>)[name];
+    });
+  }
+};
 
-  const handle = (nodeId: string, handleId: string): Element =>
-    document.querySelector(
-      `.react-flow__node[data-id="${nodeId}"] .react-flow__handle[data-handleid="${handleId}"]`,
-    ) as Element;
+const handle = (nodeId: string, handleId: string): Element =>
+  document.querySelector(
+    `.react-flow__node[data-id="${nodeId}"] .react-flow__handle[data-handleid="${handleId}"]`,
+  ) as Element;
 
+describe('Cube canvas, more', () => {
   test('Leaves the mouse on a node body to the HTML drag, so React Flow neither moves the node nor pans', async () => {
     await renderCanvas(new CubeDocument({ query: sliceQuery() }));
     await TEST__findCanvasNode('join101');
@@ -598,7 +657,8 @@ describe('Cube canvas, more', () => {
     ) as HTMLElement;
     fireEvent.keyDown(filter, { key: ' ', ctrlKey: true });
     expect(state.document.query.selected).toBe('relational101');
-    expect(state.nodeEditor.nodeId).toBe('join101');
+    // which closes the open editor, opening none
+    expect(state.nodeEditor.nodeId).toBeUndefined();
     // other keys do nothing
     fireEvent.keyDown(filter, { key: 'Delete' });
     expect(state.document.query.getNode('relational101')).toBeDefined();
@@ -660,6 +720,128 @@ describe('Cube canvas, more', () => {
   });
 });
 
+describe('Finishing the node editor from the canvas', () => {
+  /** ORDERS, then a Limit of 10, which Execute runs, and CUSTOMERS on its own */
+  const limitDocument = (): CubeDocument =>
+    new CubeDocument({
+      context: CONTEXT,
+      query: new Query(
+        [
+          northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+          new Limit('limit101', 10),
+          northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        ],
+        [new Connection('relational101', 'limit101', 'tds')],
+        'limit101',
+      ),
+    });
+
+  /** Opens the Limit's editor and types a size, without applying it */
+  const typeSize = async (state: CubeEditorState, text: string) => {
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    act(() =>
+      (state.nodeEditor.draft as CubeRowCountDraft<Limit>).setSizeText(text),
+    );
+  };
+
+  const storedSize = (state: CubeEditorState): number | undefined =>
+    (state.document.query.getNode('limit101') as Limit).size;
+
+  const nodeWrapper = (nodeId: string): HTMLElement =>
+    document.querySelector<HTMLElement>(
+      `.react-flow__node[data-id="${nodeId}"]`,
+    ) as HTMLElement;
+
+  test('Applies the open editor on Ctrl-click on another node, as its own undo step, then selects that node, opening no editor', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    fireEvent.click(await TEST__findCanvasNode('relational102'), {
+      ctrlKey: true,
+    });
+    expect(storedSize(state)).toBe(5);
+    expect(state.document.query.selected).toBe('relational102');
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.notice).toBeUndefined();
+    expect(state.history).toHaveLength(2);
+    act(() => state.undo());
+    expect(state.document.query.selected).toBe('limit101');
+    expect(storedSize(state)).toBe(5);
+  });
+
+  test('Applies the open editor on Ctrl+Enter on a focused node, then selects that node, opening no editor', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    const customers = nodeWrapper('relational102');
+    customers.focus();
+    fireEvent.keyDown(customers, { key: 'Enter', ctrlKey: true });
+    expect(storedSize(state)).toBe(5);
+    expect(state.document.query.selected).toBe('relational102');
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.history).toHaveLength(2);
+  });
+
+  test('Does nothing on Ctrl-click or Ctrl+Enter while something opened from the node editor holds it open', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    act(() => {
+      state.nodeEditor.holdOpen();
+    });
+    fireEvent.click(await TEST__findCanvasNode('relational102'), {
+      ctrlKey: true,
+    });
+    fireEvent.keyDown(nodeWrapper('relational102'), {
+      key: 'Enter',
+      ctrlKey: true,
+    });
+    expect(state.document.query.selected).toBe('limit101');
+    expect(state.nodeEditor.nodeId).toBe('limit101');
+    expect(state.nodeEditor.hasChanges).toBe(true);
+    expect(storedSize(state)).toBe(10);
+    expect(state.history).toHaveLength(0);
+  });
+
+  test('Applies the open editor when a node starts being dragged', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    const customers = await TEST__findCanvasNode('relational102');
+    fireEvent.dragStart(customers);
+    expect(storedSize(state)).toBe(5);
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.notice).toBeUndefined();
+    fireEvent.dragEnd(customers);
+    expect(state.history).toHaveLength(1);
+  });
+
+  test('Applies the open editor when two handles are clicked to connect them, the edits first', () =>
+    withClickConnect(async () => {
+      const state = await renderCanvas(
+        new CubeDocument({
+          context: CONTEXT,
+          query: new Query(
+            [
+              northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+              new Limit('limit101', 10),
+              northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+              new Join('join101'),
+            ],
+            [new Connection('relational101', 'limit101', 'tds')],
+            'limit101',
+          ),
+        }),
+      );
+      await typeSize(state, '5');
+      fireEvent.click(handle('relational102', CUBE_OUTPUT_HANDLE_ID));
+      fireEvent.click(handle('join101', 'rightTds'));
+      expect(storedSize(state)).toBe(5);
+      expect(state.nodeEditor.nodeId).toBeUndefined();
+      expect(state.nodeEditor.notice).toBeUndefined();
+      expect(state.document.query.connections).toContainEqual(
+        new Connection('relational102', 'join101', 'rightTds'),
+      );
+      expect(state.history).toHaveLength(2);
+    }));
+});
+
 describe('Connecting by dragging between handles', () => {
   const query = (): Query =>
     new Query(
@@ -711,5 +893,131 @@ describe('Connecting by dragging between handles', () => {
         connection('relational102', 'join101', 'rightTds', 'leftTds'),
       ),
     ).toBe(false);
+  });
+});
+
+describe('The node tooltip', () => {
+  afterEach(() => {
+    // MUI remembers a tooltip was open for 800 ms after it closes, across
+    // tests (and jest's retries): let that lapse, so each test starts afresh
+    TEST__getCanvasNodes().forEach((node) => fireEvent.mouseLeave(node));
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    jest.useRealTimers();
+  });
+
+  /** The Join of `keylessJoin`, drawn, with an error of its own */
+  const renderInvalidJoin = async (): Promise<HTMLElement> => {
+    await renderCanvas(
+      new CubeDocument({ context: CONTEXT, query: keylessJoin() }),
+    );
+    const join = await TEST__findCanvasNode('join101');
+    // the timers the tooltip starts from here on are the test's to run
+    jest.useFakeTimers();
+    return join;
+  };
+
+  const wait = (ms: number): void =>
+    act(() => {
+      jest.advanceTimersByTime(ms);
+    });
+
+  test('Gives the node body no native title', async () => {
+    const join = await renderInvalidJoin();
+    expect(join.hasAttribute('title')).toBe(false);
+    expect(join.getAttribute('aria-description')).toBeTruthy();
+  });
+
+  test('Shows the tooltip only once the mouse has rested on the node for 500 ms', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(250);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    wait(249);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    wait(1);
+    expect(screen.getByRole('tooltip')).toBeDefined();
+  });
+
+  test('Places the tooltip above the node', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip.getAttribute('data-popper-placement')).toBe('top');
+    expect(
+      tooltip.querySelector('.MuiTooltip-tooltipPlacementTop'),
+    ).not.toBeNull();
+    expect(
+      tooltip.querySelector('.MuiTooltip-tooltipPlacementBottom'),
+    ).toBeNull();
+  });
+
+  test('Shows one message a line in the tooltip, the same text as the node description', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const text = screen
+      .getByRole('tooltip')
+      .querySelector<HTMLElement>('.whitespace-pre-line');
+    expect(text).not.toBeNull();
+    expect(text?.textContent).toBe(join.getAttribute('aria-description'));
+    expect(text?.textContent?.split('\n')).toEqual([
+      'Left join columns cannot be empty.',
+      'Join additional input',
+      'join101',
+    ]);
+  });
+
+  test('Hides the tooltip when the mouse leaves the node', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    expect(screen.getByRole('tooltip')).toBeDefined();
+    fireEvent.mouseLeave(join);
+    // closing, then the closing transition
+    wait(0);
+    wait(1000);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  test('Describes the node while open, keeping its name', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const tooltip = screen.getByRole('tooltip');
+    expect(join.getAttribute('aria-describedby')).toBe(tooltip.id);
+    expect(join.getAttribute('aria-labelledby')).toBeNull();
+  });
+
+  test('Closes the tooltip when the mouse moves from the node onto the tooltip', async () => {
+    const join = await renderInvalidJoin();
+    fireEvent.mouseOver(join);
+    wait(500);
+    const tooltip = screen.getByRole('tooltip');
+    fireEvent.mouseLeave(join);
+    fireEvent.mouseOver(tooltip);
+    wait(0);
+    wait(1000);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  test('Waits 500 ms again when the mouse moves on to another node just after a tooltip closes', async () => {
+    const join = await renderInvalidJoin();
+    const filter = await TEST__findCanvasNode('filter101');
+    const shown = (nodeId: string): boolean =>
+      screen
+        .queryAllByRole('tooltip')
+        .some((tooltip) => tooltip.textContent?.includes(nodeId));
+    fireEvent.mouseOver(join);
+    wait(500);
+    fireEvent.mouseLeave(join);
+    wait(0);
+    fireEvent.mouseOver(filter);
+    wait(250);
+    expect(shown('filter101')).toBe(false);
+    wait(250);
+    expect(shown('filter101')).toBe(true);
   });
 });

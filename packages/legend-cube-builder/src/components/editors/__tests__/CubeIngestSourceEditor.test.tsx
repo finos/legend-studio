@@ -59,7 +59,6 @@ import { getCubeRememberedWarehouse } from '../../../stores/CubeDataProductWareh
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 import { CubeGridRegion } from '../../grid/CubeGridRegion.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 /** An ingest cube of one data set, TRADES, saved with an older column */
 const ingestCube = (): CubeDocument =>
@@ -117,7 +116,6 @@ describe("An ingest data set's panel", () => {
         <div style={{ width: 800, height: 400 }}>
           <CubeCanvas editorState={editorState} />
         </div>
-        <CubeNodeEditorPanel editorState={editorState} />
       </div>,
       host.applicationStore,
       LEGEND_CUBE_TEST_ID.CANVAS,
@@ -186,7 +184,6 @@ describe("An ingest data set's panel", () => {
         <div style={{ width: 800, height: 400 }}>
           <CubeCanvas editorState={editorState} />
         </div>
-        <CubeNodeEditorPanel editorState={editorState} />
         <CubeGridRegion editorState={editorState} />
       </div>,
       host.applicationStore,

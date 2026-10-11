@@ -36,6 +36,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import { canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   buildCubeCanvasEdges,
@@ -56,6 +57,7 @@ import {
 import { CubeCanvasEdge } from './CubeCanvasEdge.js';
 import { layoutCubeQuery } from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
+import { CubeNodeEditorPopper } from '../editors/CubeNodeEditorPopper.js';
 
 // React Flow re-renders every node when these change identity
 const NODE_TYPES = { [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode };
@@ -93,9 +95,8 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   );
   const edges = useMemo(() => buildCubeCanvasEdges(query), [query]);
   // the view fits the graph again whenever the layout moves a node, or the
-  // canvas changes size (e.g. the node editor opens beside it, or the
-  // splitter above the grid moves), once React Flow has measured every node:
-  // it fits only measured ones
+  // canvas changes size (e.g. the splitter above the grid moves), once React
+  // Flow has measured every node: it fits only measured ones
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
     [positions],
@@ -135,7 +136,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           return;
         }
         if (event.ctrlKey || event.metaKey) {
-          editorState.select(flowNode.id);
+          // applies and closes the open editor first, opening none (spec §17.5)
+          if (editorState.nodeEditor.finish()) {
+            editorState.select(flowNode.id);
+          }
         } else {
           editorState.nodeEditor.open(flowNode.id);
         }
@@ -160,14 +164,31 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
         }
         event.preventDefault();
         if (event.ctrlKey || event.metaKey) {
-          editorState.select(nodeId);
+          if (editorState.nodeEditor.finish()) {
+            editorState.select(nodeId);
+          }
         } else {
           editorState.nodeEditor.open(nodeId);
+          // the keyboard goes on in the editor, once it is shown
+          window.setTimeout(() =>
+            document
+              .querySelector<HTMLElement>(
+                `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
+              )
+              ?.focus(),
+          );
         }
       }}
       isValidConnection={(connection) =>
         !readOnly && isCubeCanvasConnectionValid(query, connection)
       }
+      // a connection changes the query, so the open editor applies first,
+      // whether the handles are dragged or clicked
+      onConnectStart={() => editorState.nodeEditor.finish()}
+      // a click on the canvas's background closes the floating editor; a
+      // press there that pans leaves it open
+      onPaneClick={() => editorState.nodeEditor.finish()}
+      onClickConnectStart={() => editorState.nodeEditor.finish()}
       onConnect={(connection) => {
         if (connection.targetHandle) {
           editorState.connect(
@@ -192,6 +213,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       <Background />
       <Controls showInteractive={false} />
       <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
+      <CubeNodeEditorPopper editorState={editorState} positions={positions} />
     </ReactFlow>
   );
 });
@@ -199,9 +221,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
 /**
  * The query as a graph, laid out left to right (spec §17.3). Click a node to
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
- * output to another node's input to connect them. A palette item dropped
- * around the nodes is added unconnected. Right-click it, or a node, for the
- * context menu.
+ * output to another node's input to connect them. A transform dropped
+ * around the nodes goes after the selected node; a source, dropped anywhere,
+ * opens the source dialog on its tab (PLAN §11.8). Right-click it, or a
+ * node, for the context menu.
  */
 export const CubeCanvas = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -211,7 +234,7 @@ export const CubeCanvas = observer(
       () => ({
         accept: [CUBE_DND_TYPE.PALETTE_ITEM],
         canDrop: (item) =>
-          !editorState.readOnly && editorState.canAddNode(item.nodeType),
+          !editorState.readOnly && canAddCubeNode(editorState, item.nodeType),
         // a node under the pointer, whether it took the drop or refused it,
         // keeps it from the canvas
         drop: (item, monitor) =>
@@ -232,24 +255,32 @@ export const CubeCanvas = observer(
       >
         <ContextMenu
           className="h-full w-full"
+          // an empty query has no menu: there is nothing to add after (U3)
+          disabled={editorState.document.query.isEmpty}
           content={<CubeCanvasContextMenu editorState={editorState} />}
           menuProps={{ elevation: 7 }}
         >
           {editorState.document.query.isEmpty ? (
             <div className="flex h-full items-center justify-center p-4 text-base text-[var(--color-text-secondary)]">
               <span>
-                No tables yet:{' '}
                 <button
                   className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
                   title={editorState.sourcePicker.disabledReason}
                   disabled={
                     editorState.sourcePicker.disabledReason !== undefined
                   }
-                  onClick={() => editorState.sourcePicker.open()}
+                  onClick={() => editorState.sourcePicker.openToChoose()}
                 >
-                  add a table
+                  Connect to a source
                 </button>{' '}
-                to start.
+                to start a new one, or{' '}
+                <button
+                  className="text-[var(--color-accent)] underline"
+                  onClick={() => editorState.examples.open()}
+                >
+                  open an example
+                </button>
+                .
               </span>
             </div>
           ) : (

@@ -20,6 +20,8 @@ import {
   AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
+  CalculatorIcon,
+  CompareIcon,
   CompressIcon,
   DataCubeIcon,
   DatabaseImportIcon,
@@ -28,6 +30,7 @@ import {
   PackageIcon,
   PencilIcon,
   QuestionSquareIcon,
+  SigmaIcon,
   SortIcon,
   TableIcon,
 } from '@finos/legend-art';
@@ -51,6 +54,9 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   group: DataCubeIcon.TableGroupBy,
   rename: PencilIcon,
   sort: SortIcon,
+  difference: CompareIcon,
+  extend: CalculatorIcon,
+  partition: SigmaIcon,
 };
 
 /** The markup an icon draws */

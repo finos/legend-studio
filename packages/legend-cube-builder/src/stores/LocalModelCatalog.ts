@@ -19,7 +19,12 @@ import type {
   CubeEngine,
   CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
-import { CUBE_NORTHWIND_MODEL } from './fixtures/CubeNorthwindModel.js';
+import {
+  CUBE_NORTHWIND_MODEL,
+  CUBE_NORTHWIND_SAMPLE_MODEL,
+} from './fixtures/CubeNorthwindModel.js';
+import { CUBE_SPORTS_MODEL } from './fixtures/CubeSportsModel.js';
+import { CUBE_TRADES_MODEL } from './fixtures/CubeTradesModel.js';
 
 // The models of the slice (PLAN §6.2.3): Pure text bundled with Cube, or
 // pasted by the user. Picking one gives the model context the cube saves, the
@@ -29,13 +34,27 @@ export interface BundledModel {
   readonly id: string;
   readonly label: string;
   readonly model: ModelContext;
+  /** Earlier texts of the model, which cubes saved before may hold: shown by its label too */
+  readonly earlierModels?: readonly ModelContext[];
 }
 
 export const BUNDLED_MODELS: readonly BundledModel[] = Object.freeze([
   {
     id: 'cube-northwind',
-    label: 'Northwind (Cube fixture)',
-    model: CUBE_NORTHWIND_MODEL,
+    label: 'Northwind',
+    model: CUBE_NORTHWIND_SAMPLE_MODEL,
+    // the fixture with Cube's test tables, offered until the samples came
+    earlierModels: [CUBE_NORTHWIND_MODEL],
+  },
+  {
+    id: 'cube-sample-sports',
+    label: 'Sports',
+    model: CUBE_SPORTS_MODEL,
+  },
+  {
+    id: 'cube-sample-trades',
+    label: 'Trades',
+    model: CUBE_TRADES_MODEL,
   },
 ]);
 

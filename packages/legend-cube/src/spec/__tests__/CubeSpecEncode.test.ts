@@ -52,24 +52,31 @@ import {
 import {
   CONCAT_DEFINITION,
   createNodeRegistry,
+  DIFFERENCE_DEFINITION,
   DROP_DEFINITION,
+  EXTEND_DEFINITION,
   GROUP_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
+  PARTITION_DEFINITION,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import {
   AggregationFunction,
   type ColumnAggregation,
+  WindowRankFunction,
 } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
+import { Difference } from '../../nodes/transforms/Difference.js';
+import { Extend, UNTYPED } from '../../nodes/transforms/Extend.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
@@ -2008,6 +2015,440 @@ describe(unitTest('Saved spec encoding: groups'), () => {
   );
 });
 
+describe(unitTest('Saved spec encoding: partitions'), () => {
+  const REGISTRY = createNodeRegistry();
+
+  /** The saved spec of one unconnected partition, `partition101`, with these fields of its own */
+  const partitionSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'partition101',
+      nodes: [
+        { kind: 'partition', id: 'partition101', inputs: [null], ...own },
+      ],
+    },
+  });
+
+  /** A document with this one unconnected partition */
+  const partitionDocument = (partition: Partition): CubeDocument =>
+    documentOf([partition], [], partition.id);
+
+  /** The document a saved spec holds, its `partition101` checked to be read as a Partition */
+  const decodePartitionSpec = (json: JsonObject): CubeDocument => {
+    const { document } = decodeCubeSpec(json, { registry: REGISTRY });
+    expect(document.query.getNode('partition101')).toBeInstanceOf(Partition);
+    return document;
+  };
+
+  const aggregationsOf = (
+    document: CubeDocument,
+  ): readonly ColumnAggregation[] =>
+    (document.query.getNode('partition101') as Partition).aggregations;
+
+  test('Always writes its partition columns, sorts and aggregations, empty lists included', () => {
+    expectEncoded(
+      partitionDocument(PARTITION_DEFINITION.create('partition101')),
+      partitionSpec({ columns: [], sorts: [], aggregations: [] }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes its columns, then its sorts as column, then direction, then its aggregations as column, function, then name, the rank functions and Count rows without a column', () => {
+    expectEncoded(
+      partitionDocument(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY', 'SHIP_REGION'],
+          [
+            { column: 'ORDER_DATE', direction: SortDirection.ASC },
+            { column: 'ORDER_ID', direction: SortDirection.DESC },
+          ],
+          [
+            {
+              column: 'FREIGHT',
+              function: AggregationFunction.SUM,
+              name: 'Running freight',
+            },
+            {
+              column: undefined,
+              function: WindowRankFunction.RANK,
+              name: 'Rank',
+            },
+            {
+              column: undefined,
+              function: WindowRankFunction.DENSE_RANK,
+              name: 'Dense Rank',
+            },
+            {
+              column: undefined,
+              function: WindowRankFunction.ROW_NUMBER,
+              name: 'Row Number',
+            },
+            {
+              column: undefined,
+              function: AggregationFunction.COUNT_ROWS,
+              name: 'Count Rows',
+            },
+          ],
+        ),
+      ),
+      partitionSpec({
+        columns: ['SHIP_COUNTRY', 'SHIP_REGION'],
+        sorts: [
+          { column: 'ORDER_DATE', direction: 'ASC' },
+          { column: 'ORDER_ID', direction: 'DESC' },
+        ],
+        aggregations: [
+          { column: 'FREIGHT', function: 'Sum', name: 'Running freight' },
+          { function: 'Rank', name: 'Rank' },
+          { function: 'DenseRank', name: 'Dense Rank' },
+          { function: 'RowNumber', name: 'Row Number' },
+          { function: 'CountRows', name: 'Count Rows' },
+        ],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes columns, sorts and aggregations exactly as held: order, repeats, blanks, functions it does not know, and a rank function on a column', () => {
+    // validation judges them (PLAN §11.6, as M4 Q4 does for a Group); a blank
+    // column is kept apart from none
+    expectEncoded(
+      partitionDocument(
+        new Partition(
+          'partition101',
+          ['SHIP_REGION', 'SHIP_COUNTRY', 'SHIP_COUNTRY', ''],
+          [
+            { column: 'ORDER_ID', direction: SortDirection.DESC },
+            { column: '', direction: SortDirection.ASC },
+            { column: 'ORDER_ID', direction: SortDirection.ASC },
+          ],
+          [
+            { column: '', function: 'Count', name: '' },
+            { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+            { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
+            { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
+            { column: '', function: 'RowNumber', name: 'Row Number' },
+            { column: undefined, function: 'Ntile', name: 'Ntile' },
+          ],
+        ),
+      ),
+      partitionSpec({
+        columns: ['SHIP_REGION', 'SHIP_COUNTRY', 'SHIP_COUNTRY', ''],
+        sorts: [
+          { column: 'ORDER_ID', direction: 'DESC' },
+          { column: '', direction: 'ASC' },
+          { column: 'ORDER_ID', direction: 'ASC' },
+        ],
+        aggregations: [
+          { column: '', function: 'Count', name: '' },
+          { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+          { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
+          { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
+          { column: '', function: 'RowNumber', name: 'Row Number' },
+          { function: 'Ntile', name: 'Ntile' },
+        ],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes the columns, sorts and aggregations from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        partitionDocument(
+          new Partition(
+            'partition101',
+            ['A'],
+            [{ column: 'B', direction: SortDirection.ASC }],
+            [{ column: undefined, function: 'Rank', name: 'Rank' }],
+            { columns: ['Z'], sorts: [], aggregations: [], note: 'n' },
+          ),
+        ),
+        REGISTRY,
+      ),
+    ).toStrictEqual(
+      partitionSpec({
+        columns: ['A'],
+        sorts: [{ column: 'B', direction: 'ASC' }],
+        aggregations: [{ function: 'Rank', name: 'Rank' }],
+        note: 'n',
+      }),
+    );
+  });
+
+  test('Reads back its rest, written after its own keys', () => {
+    expectEncoded(
+      partitionDocument(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [{ column: 'ORDER_DATE', direction: SortDirection.ASC }],
+          [{ column: undefined, function: 'RowNumber', name: 'Row Number' }],
+          { note: 'kept', zeta: [null, { flag: false }] },
+        ),
+      ),
+      partitionSpec({
+        columns: ['SHIP_COUNTRY'],
+        sorts: [{ column: 'ORDER_DATE', direction: 'ASC' }],
+        aggregations: [{ function: 'RowNumber', name: 'Row Number' }],
+        note: 'kept',
+        zeta: [null, { flag: false }],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Reads back a partition fed by a source, with its input, settings and rest', () => {
+    expectReadBack(
+      documentOf(
+        [
+          ORDERS,
+          new Partition(
+            'partition101',
+            ['CUSTOMER_ID'],
+            [
+              { column: 'ORDER_DATE', direction: SortDirection.DESC },
+              { column: 'ORDER_ID', direction: SortDirection.ASC },
+            ],
+            [
+              { column: undefined, function: 'DenseRank', name: 'Dense Rank' },
+              { column: 'ORDER_ID', function: 'Max', name: 'Last order' },
+            ],
+            { note: 'kept' },
+          ),
+        ],
+        [edge('relational101', 'partition101', 'tds')],
+        'partition101',
+      ),
+      REGISTRY,
+    );
+  });
+
+  test.each<[string, JsonObject[]]>([
+    ['a sorted', [{ column: 'ORDER_DATE', direction: 'ASC' }]],
+    // the auto-name doesn't wait for the sort a rank needs to be valid
+    ['an unsorted', []],
+  ])(
+    'Reads aggregations saved without a name in %s partition with their window auto-names, and writes the names',
+    (_, sorts) => {
+      // PLAN §11.6: auto-names as in a Group, and names always stored (M4 Q3)
+      const document = decodePartitionSpec(
+        partitionSpec({
+          columns: ['SHIP_COUNTRY'],
+          sorts,
+          aggregations: [
+            { function: 'Rank' },
+            { function: 'DenseRank' },
+            { function: 'RowNumber' },
+            { function: 'CountRows' },
+            { column: 'ORDER_ID', function: 'Sum' },
+            { column: 'ORDER_ID', function: 'Rank' },
+          ],
+        }),
+      );
+      expect(aggregationsOf(document)).toStrictEqual([
+        { column: undefined, function: 'Rank', name: 'Rank' },
+        { column: undefined, function: 'DenseRank', name: 'Dense Rank' },
+        { column: undefined, function: 'RowNumber', name: 'Row Number' },
+        { column: undefined, function: 'CountRows', name: 'Count Rows' },
+        { column: 'ORDER_ID', function: 'Sum', name: 'ORDER_ID Sum' },
+        { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
+      ]);
+      const saved = encodeCubeSpec(document, REGISTRY);
+      const expected = partitionSpec({
+        columns: ['SHIP_COUNTRY'],
+        sorts,
+        aggregations: [
+          { function: 'Rank', name: 'Rank' },
+          { function: 'DenseRank', name: 'Dense Rank' },
+          { function: 'RowNumber', name: 'Row Number' },
+          { function: 'CountRows', name: 'Count Rows' },
+          { column: 'ORDER_ID', function: 'Sum', name: 'ORDER_ID Sum' },
+          { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
+        ],
+      });
+      expect(saved).toStrictEqual(expected);
+      expect(JSON.stringify(saved)).toBe(JSON.stringify(expected));
+      // once written with its names, it saves the same again
+      expect(
+        JSON.stringify(encodeCubeSpec(decodePartitionSpec(saved), REGISTRY)),
+      ).toBe(JSON.stringify(saved));
+    },
+  );
+
+  test('Keeps an empty name as written, never giving it the auto-name', () => {
+    const json = partitionSpec({
+      columns: [],
+      sorts: [{ column: 'ORDER_ID', direction: 'ASC' }],
+      aggregations: [{ function: 'Rank', name: '' }],
+    });
+    const document = decodePartitionSpec(json);
+    expect(aggregationsOf(document)).toStrictEqual([
+      { column: undefined, function: 'Rank', name: '' },
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+      JSON.stringify(json),
+    );
+  });
+
+  test.each<[string, JsonObject, JsonObject]>([
+    [
+      'an unknown function',
+      { column: 'ORDER_ID', function: 'Median' },
+      { column: 'ORDER_ID', function: 'Median', name: '' },
+    ],
+    [
+      'a rank function spelled in another case',
+      { function: 'rank' },
+      { function: 'rank', name: '' },
+    ],
+    [
+      'an empty function',
+      { column: 'ORDER_ID', function: '' },
+      { column: 'ORDER_ID', function: '', name: '' },
+    ],
+    [
+      'a column function without a column',
+      { function: 'Sum' },
+      { function: 'Sum', name: '' },
+    ],
+    [
+      'a column function on a blank column',
+      { column: '', function: 'Count' },
+      { column: '', function: 'Count', name: '' },
+    ],
+  ])(
+    'Reads an aggregation saved without a name, with %s and so no auto-name, as an empty name, and writes it',
+    (_, aggregation, written) => {
+      const sorts = [{ column: 'ORDER_ID', direction: 'ASC' }];
+      const document = decodePartitionSpec(
+        partitionSpec({ columns: [], sorts, aggregations: [aggregation] }),
+      );
+      expect(aggregationsOf(document).map(({ name }) => name)).toEqual(['']);
+      expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+        JSON.stringify(
+          partitionSpec({ columns: [], sorts, aggregations: [written] }),
+        ),
+      );
+    },
+  );
+
+  test('Gives the rank functions saved without a name their auto-names in a partition only, a group reading them with an empty name', () => {
+    // PLAN §11.6: Group is unchanged, and doesn't know the rank functions
+    const aggregations = [{ function: 'Rank' }, { function: 'RowNumber' }];
+    const { query } = decodeCubeSpec(
+      {
+        formatVersion: 1,
+        query: {
+          selected: 'partition101',
+          nodes: [
+            {
+              kind: 'group',
+              id: 'group101',
+              inputs: [null],
+              columns: [],
+              aggregations,
+            },
+            {
+              kind: 'partition',
+              id: 'partition101',
+              inputs: [null],
+              columns: [],
+              sorts: [{ column: 'ORDER_ID', direction: 'ASC' }],
+              aggregations,
+            },
+          ],
+        },
+      },
+      { registry: REGISTRY },
+    ).document;
+    const group = query.getNode('group101');
+    const partition = query.getNode('partition101');
+    expect(group).toBeInstanceOf(Group);
+    expect(partition).toBeInstanceOf(Partition);
+    expect((group as Group).aggregations.map(({ name }) => name)).toEqual([
+      '',
+      '',
+    ]);
+    expect(
+      (partition as Partition).aggregations.map(({ name }) => name),
+    ).toEqual(['Rank', 'Row Number']);
+  });
+  test("Writes Lag's and Lead's offset and NTile's bucket count after the name, and reads one left out as missing, never its default", () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 2 },
+      { column: 'FREIGHT', function: 'Lead', name: 'n', offset: 1 },
+      { function: 'NTile', name: 'q', buckets: 10 },
+      { column: 'FREIGHT', function: 'Last', name: 'l' },
+    ];
+    const sorts = [{ column: 'ORDER_ID', direction: 'ASC' }];
+    const document = decodePartitionSpec(
+      partitionSpec({ columns: [], sorts, aggregations }),
+    );
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(
+      document,
+      partitionSpec({ columns: [], sorts, aggregations }),
+      REGISTRY,
+    );
+    const defaulted = decodePartitionSpec(
+      partitionSpec({
+        columns: [],
+        sorts,
+        aggregations: [
+          { column: 'FREIGHT', function: 'Lead' },
+          { function: 'NTile' },
+        ],
+      }),
+    );
+    // missing, as a Limit's cleared size: validation reports it, so an
+    // invalid setting is never read back as a valid one
+    expect(aggregationsOf(defaulted)).toEqual([
+      { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead' },
+      { column: undefined, function: 'NTile', name: 'NTile' },
+    ]);
+    expect(encodeCubeSpec(defaulted, REGISTRY)).toEqual(
+      partitionSpec({
+        columns: [],
+        sorts,
+        aggregations: [
+          { column: 'FREIGHT', function: 'Lead', name: 'FREIGHT Lead' },
+          { function: 'NTile', name: 'NTile' },
+        ],
+      }),
+    );
+  });
+
+  test('Keeps an offset or a bucket count out of range, or on a function that takes none, for validation to report', () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Lag', name: 'p', offset: 0 },
+      { function: 'NTile', name: 'q', buckets: 2.5 },
+      { column: 'FREIGHT', function: 'Sum', name: 's', offset: 3 },
+    ];
+    const document = decodePartitionSpec(
+      partitionSpec({ columns: [], sorts: [], aggregations }),
+    );
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(
+      document,
+      partitionSpec({ columns: [], sorts: [], aggregations }),
+      REGISTRY,
+    );
+    // a setting that isn't a number can't be read
+    expect(() =>
+      decodeCubeSpec(
+        partitionSpec({
+          columns: [],
+          sorts: [],
+          aggregations: [{ function: 'NTile', name: 'q', buckets: '4' }],
+        }),
+        { registry: REGISTRY },
+      ),
+    ).toThrow();
+  });
+});
+
 describe(unitTest('Saved spec encoding: distincts'), () => {
   test('Writes no field of its own, only its rest', () => {
     expectEncoded(
@@ -2750,5 +3191,232 @@ describe(unitTest('Cube document'), () => {
     expect(changed.meta).toBe(DEFAULT_META);
     expectKept(changed, ['name', 'context', 'query', 'queryRest', 'rest']);
     expect(BASE.meta).toBe(META);
+  });
+});
+
+describe(unitTest('Saved spec encoding: differences'), () => {
+  const REGISTRY = createNodeRegistry();
+
+  /** The saved spec of one unconnected difference, `difference101`, with these fields of its own */
+  const differenceSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'difference101',
+      nodes: [
+        {
+          kind: 'difference',
+          id: 'difference101',
+          inputs: [null, null],
+          ...own,
+        },
+      ],
+    },
+  });
+
+  /** A document with this one unconnected difference */
+  const differenceDocument = (difference: Difference): CubeDocument =>
+    documentOf([difference], [], difference.id);
+
+  test('Always writes its key and difference columns, empty lists included', () => {
+    expectEncoded(
+      differenceDocument(DIFFERENCE_DEFINITION.create('difference101')),
+      differenceSpec({
+        leftColumns: [],
+        rightColumns: [],
+        differenceColumns: [],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Keeps its lists exactly, even when they differ in length, repeat or hold a blank', () => {
+    expectEncoded(
+      differenceDocument(
+        new Difference('difference101', {
+          leftColumns: ['BOOK', 'BOOK', ''],
+          rightColumns: ['BOOK_ID'],
+          differenceColumns: ['QTY', '', 'QTY'],
+        }),
+      ),
+      differenceSpec({
+        leftColumns: ['BOOK', 'BOOK', ''],
+        rightColumns: ['BOOK_ID'],
+        differenceColumns: ['QTY', '', 'QTY'],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes a swapped difference as it stands, with no swapped flag', () => {
+    const swapped = new Difference('difference101', {
+      leftColumns: ['BOOK'],
+      rightColumns: ['BOOK_ID'],
+      differenceColumns: ['QTY'],
+    }).withSwappedInputs();
+    expectEncoded(
+      differenceDocument(swapped),
+      differenceSpec({
+        leftColumns: ['BOOK_ID'],
+        rightColumns: ['BOOK'],
+        differenceColumns: ['QTY'],
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Reads a difference back, and an older Cube keeps one it does not know', () => {
+    const json = differenceSpec({
+      leftColumns: ['BOOK'],
+      rightColumns: ['BOOK'],
+      differenceColumns: ['QTY'],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: REGISTRY,
+    }).document.query.getNode('difference101');
+    expect(node).toBeInstanceOf(Difference);
+    expect((node as Difference).differenceColumns).toEqual(['QTY']);
+    // without Difference registered, it is an Unknown node, written back as it was
+    const older = new NodeRegistry(
+      createNodeRegistry().transforms.filter(
+        (definition) => definition.type !== DIFFERENCE_DEFINITION.type,
+      ),
+    );
+    const unknown = decodeCubeSpec(json, { registry: older }).document;
+    expect(unknown.query.getNode('difference101')).toBeInstanceOf(UnknownNode);
+    expect(encodeCubeSpec(unknown, older)).toStrictEqual(json);
+  });
+});
+
+describe(unitTest('Saved spec encoding: extends'), () => {
+  const REGISTRY = createNodeRegistry();
+
+  /** The saved spec of one unconnected extend, `extend101`, with these fields of its own */
+  const extendSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'extend101',
+      nodes: [{ kind: 'extend', id: 'extend101', inputs: [null], ...own }],
+    },
+  });
+  const extendDocument = (extend: Extend): CubeDocument =>
+    documentOf([extend], [], extend.id);
+  /** `x | $x.QTY * 2`, a number literal as its digits */
+  const LAMBDA: JsonObject = {
+    _type: 'lambda',
+    parameters: [{ _type: 'var', name: 'x' }],
+    body: [
+      {
+        _type: 'func',
+        function: 'times',
+        parameters: [
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'property',
+                property: 'QTY',
+                parameters: [{ _type: 'var', name: 'x' }],
+              },
+              { _type: 'integer', value: '9007199254740993' },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  test('Writes a new extend as an empty list of columns, and nothing typed', () => {
+    expectEncoded(
+      extendDocument(EXTEND_DEFINITION.create('extend101')),
+      extendSpec({ columns: [] }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes each column with its code, its lambda once checked, and the types the engine gave', () => {
+    const extend = new Extend(
+      'extend101',
+      [
+        { name: 'big', code: 'x | $x.QTY * 9007199254740993', lambda: LAMBDA },
+        { name: 'draft', code: 'x | $x.', lambda: undefined },
+      ],
+      {
+        kind: 'typed',
+        signature: '1a2b3c',
+        types: [
+          PrimitiveType.get('Integer'),
+          PrimitiveType.get(`${PRECISE}Varchar`, [10]),
+        ],
+      },
+    );
+    expectEncoded(
+      extendDocument(extend),
+      extendSpec({
+        columns: [
+          {
+            name: 'big',
+            code: 'x | $x.QTY * 9007199254740993',
+            lambda: LAMBDA,
+          },
+          { name: 'draft', code: 'x | $x.' },
+        ],
+        typed: {
+          signature: '1a2b3c',
+          types: [
+            { path: 'Integer' },
+            { path: `${PRECISE}Varchar`, params: [10] },
+          ],
+        },
+      }),
+      REGISTRY,
+    );
+  });
+
+  test('Saves no failed typing: it is typed again on load', () => {
+    const extend = new Extend(
+      'extend101',
+      [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+      { kind: 'failed', signature: '1a2b3c', message: 'No such column' },
+    );
+    expect(encodeCubeSpec(extendDocument(extend), REGISTRY)).toStrictEqual(
+      extendSpec({ columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }] }),
+    );
+  });
+
+  test('Reads a typing without a type per column as nothing typed yet', () => {
+    const { document } = decodeCubeSpec(
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: { signature: '1a2b3c', types: [] },
+      }),
+      { registry: REGISTRY },
+    );
+    const node = document.query.getNode('extend101') as Extend;
+    expect(node).toBeInstanceOf(Extend);
+    expect(node.typing === UNTYPED).toBe(true);
+  });
+
+  test("Keeps a column, a typing or a typed column's type with a key this version doesn't know as an Unknown node", () => {
+    [
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA, window: true }],
+      }),
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: { signature: '1a2b3c', types: [{ path: 'Integer' }], at: 1 },
+      }),
+      // a key in a typed column's type
+      extendSpec({
+        columns: [{ name: 'a', code: 'x | 1', lambda: LAMBDA }],
+        typed: {
+          signature: '1a2b3c',
+          types: [{ path: 'Integer', unit: 'kg' }],
+        },
+      }),
+    ].forEach((json) => {
+      const { document } = decodeCubeSpec(json, { registry: REGISTRY });
+      expect(document.query.getNode('extend101')).toBeInstanceOf(UnknownNode);
+      expect(encodeCubeSpec(document, REGISTRY)).toStrictEqual(json);
+    });
   });
 });

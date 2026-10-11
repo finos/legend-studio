@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { JsonObject } from '../utils/Json.js';
 import type { LiteralValue } from '../values/LiteralValue.js';
 
 /**
@@ -109,11 +110,30 @@ export type IR =
       readonly value: string;
       readonly origin?: Origin;
     }
-  /** For window isolation (from M5) */
-  | { readonly k: 'let'; readonly name: string; readonly value: IR }
-  | { readonly k: 'block'; readonly statements: readonly IR[] }
-  /** Protocol JSON passed through as is (Extend expressions, from M6) */
-  | { readonly k: 'raw'; readonly json: unknown };
+  /**
+   * `let <name> = <value>`, a statement of a lambda with several, which the
+   * last one reads as `$<name>`: how a window is isolated from what follows
+   * it (window isolation, PLAN §8.6)
+   */
+  | {
+      readonly k: 'let';
+      readonly name: string;
+      readonly value: IR;
+      readonly origin?: Origin;
+    }
+  /** Protocol JSON passed through as is */
+  | { readonly k: 'raw'; readonly json: unknown }
+  /**
+   * A lambda Cube holds as the engine's JSON, an Extend column's expression
+   * (PLAN §11.7): without source information, its number literals as their
+   * digit strings; written with its numbers digit for digit and the origin on
+   * each value specification
+   */
+  | {
+      readonly k: 'lambdaJson';
+      readonly json: JsonObject;
+      readonly origin?: Origin;
+    };
 
 /** An IR expression whose value is a relation */
 export type RelationExpr = IR;
@@ -145,7 +165,7 @@ export enum EmitRole {
   COALESCE = 'coalesce',
   /** a FULL Join: `cast` of the merged key to the keys' common type; a Concat that converts types: `cast` of a column to the type both inputs share */
   CAST = 'cast',
-  /** a select: a Join's last, a Restrict's, and the one that drops a temporary column */
+  /** a select: a Join's last, a Restrict's, the one that drops a temporary column, and a Partition's that lists its columns in order */
   SELECT = 'select',
   /** a Filter: the filter call */
   FILTER = 'filter',
@@ -165,10 +185,14 @@ export enum EmitRole {
   DISTINCT = 'distinct',
   /** a Group: its groupBy call, or with no key its aggregate call */
   GROUP = 'group',
-  /** a Group: an aggregation's column read or `1` (Count rows), and its reduce */
+  /** a Group or a Partition: an aggregation's column read or `1` (Count rows), and its reduce; a Partition's rank function */
   AGGREGATION = 'aggregation',
+  /** a Partition: its extends, their window and its sort keys (PLAN §11.6) */
+  WINDOW = 'window',
   /** a Concat: its concatenate call */
   CONCAT = 'concat',
+  /** a Difference: the extend of its differences, and each `coalesce` and `minus` in them (PLAN §11.7) */
+  DIFFERENCE = 'difference',
   /** a Concat that converts types: the extend of an input's converted columns, and the column each reads */
   CONVERT = 'convert',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
@@ -189,6 +213,12 @@ export enum EmitRole {
   LIMIT = 'limit',
   /** the capture node: `from(runtime)` */
   FROM = 'from',
+  /** a window node that isn't the capture: the `let` that binds it (PLAN §8.6) */
+  LET = 'let',
+  /** an Extend: the extend of each new column (PLAN §11.7) */
+  EXTEND = 'extend',
+  /** an Extend: a new column's expression, every value specification in it */
+  EXPRESSION = 'expression',
 }
 
 // -------------------- constructors --------------------
@@ -211,6 +241,12 @@ export const columnAccess = (
     ? { k: 'property', name, receiver, origin }
     : { k: 'property', name, receiver };
 };
+
+/** `<receiver>.<column>`, e.g. a column of the row a window function gives (`$p->lag($r, 1).c`) */
+export const property = (receiver: IR, name: string, origin?: Origin): IR =>
+  origin
+    ? { k: 'property', name, receiver, origin }
+    : { k: 'property', name, receiver };
 
 export const variable = (name: string): IR => ({ k: 'var', name });
 
@@ -271,6 +307,14 @@ export const ingestAccessor = (
 });
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
+
+/** An expression's lambda, as the engine's JSON (an Extend column's, PLAN §11.7) */
+export const lambdaJson = (json: JsonObject, origin?: Origin): IR =>
+  origin ? { k: 'lambdaJson', json, origin } : { k: 'lambdaJson', json };
+
+/** `let <name> = <value>`; `variable(name)` reads it */
+export const letBinding = (name: string, value: IR, origin?: Origin): IR =>
+  origin ? { k: 'let', name, value, origin } : { k: 'let', name, value };
 
 export const genericType = (
   path: string,

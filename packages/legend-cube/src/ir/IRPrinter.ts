@@ -15,6 +15,7 @@
  */
 
 import { assertUnreachable } from '../utils/AssertionUtils.js';
+import { isJsonObject, type JsonValue } from '../utils/Json.js';
 import type { LiteralValue } from '../values/LiteralValue.js';
 import { EmitRole, type IR } from './CubeIR.js';
 
@@ -37,6 +38,35 @@ const INFIX_OPERATORS: Readonly<Record<string, string>> = Object.freeze({
 });
 
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/u;
+
+/** The engine's JSON types of a literal in a lambda, whose `value` the user typed */
+const LAMBDA_LITERAL_TYPES = new Set([
+  'boolean',
+  'dateTime',
+  'decimal',
+  'float',
+  'integer',
+  'strictDate',
+  'strictTime',
+  'string',
+]);
+
+/** A lambda's JSON with every literal's value as `?` */
+const redactLambdaLiterals = (json: JsonValue): JsonValue =>
+  Array.isArray(json)
+    ? json.map(redactLambdaLiterals)
+    : isJsonObject(json)
+      ? Object.fromEntries(
+          Object.entries(json).map(([key, value]) => [
+            key,
+            key === 'value' &&
+            typeof json._type === 'string' &&
+            LAMBDA_LITERAL_TYPES.has(json._type)
+              ? '?'
+              : redactLambdaLiterals(value),
+          ]),
+        )
+      : json;
 
 /**
  * Words Pure does not read as a name where Cube prints names: `true` and
@@ -193,10 +223,10 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
         : `${ir.enumPath}.${printName(ir.value)}`;
     case 'let':
       return `let ${ir.name} = ${print(ir.value)}`;
-    case 'block':
-      return `{${statements(ir.statements)}}`;
     case 'raw':
       return `<raw ${JSON.stringify(ir.json)}>`;
+    case 'lambdaJson':
+      return `<lambda ${JSON.stringify(options.redactLiterals ? redactLambdaLiterals(ir.json) : ir.json)}>`;
     default:
       return assertUnreachable(ir);
   }

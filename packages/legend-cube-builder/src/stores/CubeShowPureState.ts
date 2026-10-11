@@ -25,8 +25,11 @@ import type { CubeEditorState } from './CubeEditorState.js';
 
 /**
  * Show Pure: the Pure text of what Execute would run, the capture node's
- * execution lambda with the row limit, as the engine renders it. For display
- * only: the text is never parsed back (PLAN §8.7).
+ * execution lambda, as the engine renders it. It leaves out the row limit
+ * Execute adds (`limit(rowLimit + 1)`, how the grid knows there are more
+ * rows), as Legend Query's own Show Pure does: only a Take or Drop the user
+ * added shows (user, 2026-10-10). For display only: the text is never parsed
+ * back (PLAN §8.7).
  */
 export class CubeShowPureState {
   readonly editorState: CubeEditorState;
@@ -56,7 +59,7 @@ export class CubeShowPureState {
    * on, as Execute writes it; does nothing when Execute can't run
    */
   *open(): GeneratorFn<void> {
-    const { execution, document, emitter, rowLimit, host } = this.editorState;
+    const { execution, document, emitter, host } = this.editorState;
     const { query, context } = document;
     const runtime = context?.runtime;
     const model = context?.model;
@@ -86,7 +89,7 @@ export class CubeShowPureState {
         );
       }
       const text = (yield host.engine.renderPure(
-        emitter.emitExecutionLambda({ rowLimit, runtime, databaseType }),
+        emitter.emitExecutionLambda({ runtime, databaseType }),
       )) as string;
       if (request === this.request) {
         this.text = text;

@@ -15,7 +15,11 @@
  */
 
 import { CubeEditor } from '@finos/legend-cube-builder';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  readLegendQueryCubeEntry,
+  stripLegendQueryCubeEntry,
+} from '../../stores/cube/LegendQueryCubeEntry.js';
 import { LegendQueryCubeHost } from '../../stores/cube/LegendQueryCubeHost.js';
 import { useLegendQueryApplicationStore } from '../LegendQueryFrameworkProvider.js';
 
@@ -23,5 +27,14 @@ import { useLegendQueryApplicationStore } from '../LegendQueryFrameworkProvider.
 export const LegendQueryCubePage: React.FC = () => {
   const applicationStore = useLegendQueryApplicationStore();
   const [host] = useState(() => new LegendQueryCubeHost(applicationStore));
-  return <CubeEditor host={host} />;
+  // read once, as the page opens; the address loses it once shown
+  const [initialSource] = useState(() =>
+    readLegendQueryCubeEntry(applicationStore.navigationService.navigator),
+  );
+  useEffect(
+    () =>
+      stripLegendQueryCubeEntry(applicationStore.navigationService.navigator),
+    [applicationStore],
+  );
+  return <CubeEditor host={host} initialSource={initialSource} />;
 };

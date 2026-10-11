@@ -89,13 +89,17 @@ describe('Legend Query as the Cube host', () => {
       typeLambdas: jest.fn<CubeEngine['typeLambdas']>(),
       execute: jest.fn<CubeEngine['execute']>(),
       renderPure: jest.fn<CubeEngine['renderPure']>(),
+      parseExpression: jest.fn<CubeEngine['parseExpression']>(),
+      planLambda: jest.fn<CubeEngine['planLambda']>(),
     };
     const host = new LegendQueryCubeHost(applicationStore, engine);
     expect(host.applicationStore).toBe(applicationStore);
     expect(host.engine).toBe(engine);
     expect(host.modelCatalog.models).toBe(BUNDLED_MODELS);
     expect(host.modelCatalog.models.map((model) => model.label)).toEqual([
-      'Northwind (Cube fixture)',
+      'Northwind',
+      'Sports',
+      'Trades',
     ]);
     // the catalog reads models through the host's engine
     const [northwind] = host.modelCatalog.models;

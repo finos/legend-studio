@@ -13,6 +13,8 @@ interface CubeHost {
   readonly modelCatalog: LocalModelCatalog;
   readonly connectionExplorer?: CubeConnectionExplorer | undefined;
   readonly dataProductCatalog?: CubeDataProductCatalog | undefined;
+  readonly ingestCatalog?: CubeIngestCatalog | undefined;
+  readonly projectCatalog?: CubeProjectCatalog | undefined;
 }
 ```
 
@@ -21,7 +23,7 @@ interface CubeHost {
 - **The engine:** `buildCubeEngine(config, tracerService)` builds Legend's implementation of the `CubeEngine` port.
   `config` is the engine client's configuration (`CubeEngineConfig`); Legend Query passes its own engine server URL
   and options, so Cube talks to the engine its query editor uses.
-- **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the "Northwind (Cube fixture)" model)
+- **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the Northwind, Sports and Trades datasets of the Sample Data tab)
   and caches each model's outline: its tables, for the source picker, and its runtimes' connections with their
   database types, which Drop, Slice, Limit and Distinct need on some databases (PLAN §11.4). Users can also paste a Pure
   model.
@@ -50,6 +52,17 @@ interface CubeHost {
   `services.ingestServerClient` (an ingest client with no server of its own: each call names one), and gives none
   without them. Pass it to `buildCubeEngine` as `ingestCatalog` too, so ingest cubes type and run. Legend Query builds
   both clients only when `lakehouse.platformUrl` is set.
+
+- **Published projects (optional):** `buildCubeProjectCatalog(depotServerClient)` lists the depot's projects, their
+  released versions, and a version's own Databases with the runtimes of it and its dependencies, for the source
+  dialog's Project tab (PLAN §6.3). It reads nothing until the tab opens. Project cubes save the engine's pointer, so
+  the engine must fetch from the same depot. Legend Query builds it from `depot.url`.
+
+Legend Query mounts the Cube page at `/query/cube` only where its config turns on non-production features,
+since Cube is still a proof of concept: `"extensions": { "core": { "NonProductionFeatureFlag": true } }`. Without
+it, as in production, the address shows nothing. To see it locally, add it to the deployment's
+`dev/config.json`, which is ignored by git. `yarn setup` writes that file without the flag, since turning it on also
+changes the rest of Query (its data space selector lists data products too), which Query's end-to-end tests check.
 
 In Legend Query's config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
 `lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Two keys are optional:
@@ -81,7 +94,14 @@ stereotype Studio and Marketplace use for groups open to everyone.
 }
 ```
 
-Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
+Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, or
+`initialSource` to start an empty cube with one data product access point, as a link to Legend Query's Cube page does:
+`?sourceType=dataProductAccessPoint&sourceId=<id>`. The id is `<class>/<data product id>/<deployment id>/<access point
+group>/<access point>`, each part URI-encoded (`formatCubeAccessPointEntryId` writes it), where `<class>` is
+`PRODUCTION` or `PRODUCTION_PARALLEL` (`CubeDataProductEnvironmentType`), and the link encodes the
+whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`). Legend Query reads the
+two parameters and takes them out of the address, keeping the others; a `?queryId=` wins and stays, for when Cube
+saves queries (M8). The page's state
 lives as long as the page; Legend Query makes a new host on each visit.
 
 **The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an

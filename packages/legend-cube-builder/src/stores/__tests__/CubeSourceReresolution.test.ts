@@ -113,14 +113,14 @@ const settle = async (): Promise<void> =>
     setTimeout(resolve, 0);
   });
 
-/** Imports the spec `text`, as Import (dev) does, which types its tables again */
+/** Imports the spec `text`, as Import does, which types its tables again */
 const importText = (state: CubeEditorState, text: string): void => {
   state.specTransfer.openImport();
   state.specTransfer.setImportText(text);
   expect(state.specTransfer.importSpec()).toBe(true);
 };
 
-/** Imports `document`, as Import (dev) does, which types its tables again */
+/** Imports `document`, as Import does, which types its tables again */
 const importDocument = (state: CubeEditorState, document: CubeDocument): void =>
   importText(state, serializeCubeSpec(document));
 

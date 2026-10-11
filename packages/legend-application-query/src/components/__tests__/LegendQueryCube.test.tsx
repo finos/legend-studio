@@ -53,5 +53,39 @@ test('Opens the Cube page at /cube, empty', async () => {
   // the page loads lazily
   const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
   expect(page.textContent).toContain('Unsaved Query');
-  expect(page.textContent).toContain('No tables yet');
+  expect(page.textContent).toContain(
+    'Connect to a source to start a new one, or open an example.',
+  );
+});
+
+test('Says why a linked source could not be added, leaving the cube empty', async () => {
+  const applicationStore = new ApplicationStore(
+    TEST__getTestLegendQueryApplicationConfig(),
+    LegendQueryPluginManager.create(),
+  );
+  const { findByTestId } = render(
+    <ApplicationStoreProvider store={applicationStore}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[LEGEND_QUERY_ROUTE_PATTERN.CUBE]}
+        // the test navigator reads the parameters from its base URL
+        baseUrl="/cube?sourceType=dataProductAccessPoint&sourceId=bad"
+      >
+        <LegendQueryFrameworkProvider>
+          <Routes>
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
+              element={<LegendQueryCubeRoute />}
+            />
+          </Routes>
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+  const banner = await findByTestId(LEGEND_CUBE_TEST_ID.ENTRY_SOURCE_ERROR);
+  expect(banner.textContent).toContain('Error resolving source!');
+  expect(banner.textContent).toContain(`"bad" doesn't name an access point`);
+  const page = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
+  expect(page.textContent).toContain(
+    'Connect to a source to start a new one, or open an example.',
+  );
 });

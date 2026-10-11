@@ -53,8 +53,8 @@ export const getCubeSpecFileName = (name: string | undefined): string => {
 
 /**
  * Export and import of the saved spec (PLAN §10.3), the only way to keep a
- * cube until the Cube store (M8). Both are developer tools for now, labelled
- * "(dev)" (Settled before M1.8).
+ * cube until the Cube store (M8). Labelled "(dev)" until 2026-10-10, when the
+ * user dropped the label for the demo (PLAN §7.8).
  */
 export class CubeSpecTransferState {
   readonly editorState: CubeEditorState;
