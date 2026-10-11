@@ -206,7 +206,7 @@ describe('Canvas context menu', () => {
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
   });
 
-  test('Adds a transform after the node the menu was opened on, or after the selected node around the nodes, without opening its editor', async () => {
+  test('Adds a transform after the node the menu was opened on, or after the selected node around the nodes, opening its editor', async () => {
     const editorState = await render(slice());
     let items = await openMenu(await TEST__findCanvasNode('join101'));
     fireEvent.click(items.get('Filter by Column') as HTMLButtonElement);
@@ -217,7 +217,7 @@ describe('Canvas context menu', () => {
     expect(query.getInputIds('filter101')).toEqual(['filter102']);
     // the join wasn't the capture node, so the capture node stays
     expect(query.selected).toBe('filter101');
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('filter102');
     expect(editorState.history).toHaveLength(1);
 
     act(() => editorState.select('join101'));
@@ -230,7 +230,7 @@ describe('Canvas context menu', () => {
     expect(query.getInputIds('filter102')).toEqual(['join102']);
     // added after the capture node, it becomes the capture node
     expect(query.selected).toBe('join102');
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('join102');
     expect(editorState.history).toHaveLength(historyLength + 1);
   });
 
@@ -330,7 +330,9 @@ describe('Canvas context menu, with the node editor open', () => {
       fireEvent.click(items.get(label) as HTMLButtonElement);
       expect(storedSize(editorState)).toBe(5);
       expectDone(editorState.document.query);
-      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(editorState.nodeEditor.nodeId).toBe(
+        label === 'Filter by Column' ? 'filter102' : undefined,
+      );
       expect(editorState.nodeEditor.notice).toBeUndefined();
       expect(editorState.history).toHaveLength(2);
     },
@@ -422,7 +424,7 @@ describe('Adding a concat', () => {
       undefined,
     ]);
     expect(editorState.document.query.selected).toBe('concat101');
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('concat101');
     expect(editorState.history).toHaveLength(1);
 
     // the menu of a node adds one after it, the node feeding its First input
@@ -451,7 +453,7 @@ describe('Adding a concat', () => {
       undefined,
     ]);
     expect(editorState.document.query.selected).toBe('concat103');
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('concat103');
     expect(editorState.history).toHaveLength(3);
   });
 });

@@ -15,11 +15,15 @@
  */
 
 import {
+  DataProductAccessPointSource,
+  getRelationalDisplayName,
+  IngestDatasetSource,
   isIncompleteError,
   isSchemasError,
   isTypingError,
   type Query,
   type QueryNode,
+  RelationalTableSource,
 } from '@finos/legend-cube';
 import { type Edge, MarkerType, type Node, Position } from '@xyflow/react';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
@@ -120,7 +124,10 @@ export interface CubeCanvasNodeStatus {
   readonly hasEngineError: boolean;
   /** It has a warning, stored (a table that changed) or derived (a lost sort order) */
   readonly hasWarnings: boolean;
-  /** Its errors, then its warnings, its description and its id, one a line */
+  /**
+   * Its errors, then its warnings and its description, one a line; not its
+   * id, which is internal (UX audit A5, 2026-10-11)
+   */
   readonly tooltip: string;
 }
 
@@ -153,7 +160,38 @@ export const getCubeCanvasNodeStatus = (
       ...errors,
       ...warnings,
       node.describe(),
-      node.id,
     ].join('\n'),
   };
+};
+
+/**
+ * What a node shows on the canvas: a source shows its name, with where it
+ * comes from as a muted second line (`TRADES`, from `TRADES_SAMPLE`); every
+ * other node, and a source not resolved yet, its description. The tooltip
+ * keeps the full description (UX audit B9, 2026-10-11).
+ */
+export const getCubeCanvasNodeLabel = (
+  node: QueryNode,
+): { title: string; detail?: string | undefined } => {
+  if (
+    (node instanceof RelationalTableSource ||
+      node instanceof DataProductAccessPointSource ||
+      node instanceof IngestDatasetSource) &&
+    node.resolution.kind === 'unresolved'
+  ) {
+    return { title: node.describe() };
+  }
+  if (node instanceof RelationalTableSource) {
+    return {
+      title: getRelationalDisplayName(node.table),
+      detail: getRelationalDisplayName(node.schema),
+    };
+  }
+  if (node instanceof DataProductAccessPointSource) {
+    return { title: node.accessPoint, detail: node.dataProductName };
+  }
+  if (node instanceof IngestDatasetSource) {
+    return { title: node.dataSet, detail: node.ingestDefinitionName };
+  }
+  return { title: node.describe() };
 };

@@ -21,7 +21,7 @@ import type { Connection, Query } from '@finos/legend-cube';
 export const CUBE_CANVAS_NODE_WIDTH = 200;
 export const CUBE_CANVAS_NODE_HEIGHT = 72;
 
-const RANK_SEPARATION = 80;
+const RANK_SEPARATION = 56;
 const NODE_SEPARATION = 32;
 
 /** A node's top-left corner on the canvas */

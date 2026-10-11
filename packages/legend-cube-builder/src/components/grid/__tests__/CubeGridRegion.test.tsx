@@ -168,9 +168,9 @@ const rowLimitInput = (): HTMLInputElement =>
 const selectNode = async (nodeId: string): Promise<void> => {
   fireEvent.click(await TEST__findCanvasNode(nodeId), { ctrlKey: true });
 };
-/** The node's errors and warnings, from its tooltip, which ends with its description and id */
+/** The node's errors and warnings, from its tooltip, which ends with its description */
 const nodeProblems = async (nodeId: string): Promise<string[]> =>
-  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -2);
+  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -1);
 
 const grid = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.RESULT_GRID);

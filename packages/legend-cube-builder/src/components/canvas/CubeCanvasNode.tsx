@@ -24,6 +24,7 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import {
   CUBE_OUTPUT_HANDLE_ID,
   type CubeCanvasFlowNode,
+  getCubeCanvasNodeLabel,
   getCubeCanvasNodeStatus,
   getInputHandleOffset,
 } from './CubeCanvasElements.js';
@@ -50,6 +51,7 @@ export const CubeCanvasNode = observer(
     const { node } = props.data;
     const editorState = useCubeCanvasEditorState();
     const status = getCubeCanvasNodeStatus(editorState, node);
+    const label = getCubeCanvasNodeLabel(node);
     const connectable = !editorState.readOnly && node.acceptsNewInputs;
     const ref = useRef<HTMLDivElement>(null);
     const [, dragConnector] = useDrag<CubeNodeDragItem>(
@@ -143,8 +145,20 @@ export const CubeCanvasNode = observer(
               icon={editorState.registry.get(node.type)?.icon}
               className="shrink-0 text-lg text-[var(--color-text-secondary)]"
             />
-            <span className="line-clamp-2 min-w-0 break-words leading-tight">
-              {node.describe()}
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span
+                className={clsx(
+                  'break-words',
+                  label.detail === undefined ? 'line-clamp-2' : 'line-clamp-1',
+                )}
+              >
+                {label.title}
+              </span>
+              {label.detail !== undefined && (
+                <span className="truncate text-sm text-[var(--color-text-muted)]">
+                  {label.detail}
+                </span>
+              )}
             </span>
             {status.hasWarnings && (
               // the warning's text is in the node's tooltip

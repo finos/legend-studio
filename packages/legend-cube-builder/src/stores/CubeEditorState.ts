@@ -1139,19 +1139,19 @@ export class CubeEditorState implements CommandRegistrar {
    * after `afterId`; a source opens the source picker, which adds it once
    * the engine has typed it. Does nothing `canAddNode` refuses.
    */
-  addNode(type: string, afterId?: string): void {
+  addNode(type: string, afterId?: string): string | undefined {
     const definition = this.registry.get(type);
     if (!definition || !this.canAddNode(type, afterId)) {
-      return;
+      return undefined;
     }
     if (definition.kind === 'source') {
       this.sourcePicker.open(this.sourcePicker.tabForSourceType(type)?.key);
-      return;
+      return undefined;
     }
     const { query } = this.document;
-    this.applyQuery(
-      query.add(definition.create(query.generateId(type)), afterId),
-    );
+    const id = query.generateId(type);
+    this.applyQuery(query.add(definition.create(id), afterId));
+    return id;
   }
 
   /**

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-art';
+import {
+  CUBE_PICKER_LIST_CLASS,
+  CubePickerListItem,
+} from './CubePickerListItem.js';
 import { getRelationalDisplayName } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -82,41 +85,36 @@ export const CubeOutlineSteps = observer(
               onChange={(event) => tab.setTableSearch(event.target.value)}
             />
             <ul
-              className="h-56 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+              className={`h-56 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
               aria-label="Tables"
             >
               {tab.tables.map((table) => {
                 const selectable = isTableSelectable(table);
                 const isPicked = tab.tableName === table.name;
                 return (
-                  <li key={table.name}>
-                    <button
-                      type="button"
-                      className={clsx(
-                        'flex w-full items-center gap-2 px-2 py-1 text-left text-base enabled:hover:bg-[var(--color-bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]',
-                        { 'bg-[var(--color-bg-selected)]': isPicked },
-                      )}
-                      aria-pressed={isPicked}
-                      disabled={!selectable}
-                      onClick={() => tab.selectTable(table.name)}
-                    >
-                      <span className="min-w-0 flex-1 truncate">
-                        {getRelationalDisplayName(table.name)}
+                  <CubePickerListItem
+                    key={table.name}
+                    picked={isPicked}
+                    disabled={!selectable}
+                    adds={true}
+                    onPick={() => tab.selectTable(table.name)}
+                  >
+                    <span className="min-w-0 flex-1 truncate">
+                      {getRelationalDisplayName(table.name)}
+                    </span>
+                    {table.flags.map((flag) => (
+                      <span
+                        key={flag}
+                        className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-sm text-[var(--color-status-warn)]"
+                        title={CUBE_TABLE_FLAG_LABELS[flag].description}
+                      >
+                        {CUBE_TABLE_FLAG_LABELS[flag].label}
                       </span>
-                      {table.flags.map((flag) => (
-                        <span
-                          key={flag}
-                          className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-sm text-[var(--color-status-warn)]"
-                          title={CUBE_TABLE_FLAG_LABELS[flag].description}
-                        >
-                          {CUBE_TABLE_FLAG_LABELS[flag].label}
-                        </span>
-                      ))}
-                      <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                        {table.columnCount} columns
-                      </span>
-                    </button>
-                  </li>
+                    ))}
+                    <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                      {table.columnCount} columns
+                    </span>
+                  </CubePickerListItem>
                 );
               })}
             </ul>

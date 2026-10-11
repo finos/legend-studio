@@ -106,6 +106,9 @@ is a decision, not a parity question.
 of closing applies: the ×, an outside click, another node, Ctrl+click, Execute or F9, Undo, and Escape (Escape decided
 without asking, as the original's).
 
+_(2026-10-11, the user, after a UX audit of the demo: **Apply now closes the editor** too, as the other ways out do;
+it used to apply and stay open.)_
+
 ### U3. Where an added step lands
 
 When the user adds a transform without dragging it, where does it go, and can they fill it in at once?
@@ -145,6 +148,9 @@ Drop or Slice works immediately because it starts at 10.
 
 **Settled in M3b** (user, 2026-10-09, PLAN §11.8): §7.3's row now reads "after the selected node" for transforms.
 Cube's palette click stays and follows the same rule; an 'Add Items ▾' drop-down replaces 'Add table'.
+
+_(2026-10-11, the user, after a UX audit of the demo: an added transform now **opens its editor**, unless it has
+nothing to set (Distinct), since it can't run until it is set up. A source still opens the source dialog.)_
 
 ### U4. Opening the source dialog
 

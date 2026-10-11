@@ -310,6 +310,9 @@ describe('Cube page', () => {
     };
     pickKeys('CUSTOMER_ID', 'CUSTOMER_ID');
     fireEvent.click(within(editor).getByText('Apply'));
+    // Apply closes the editor (UX audit B4): open it again for more edits
+    fireEvent.click(await TEST__findCanvasNode('join101'));
+    editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
     pickKeys('SHIP_CITY', 'CITY');
     const graph = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
     // Undo applies the edits, then undoes them: nothing is dropped, so no notice
@@ -374,9 +377,9 @@ describe('Cube page', () => {
     expect(filter.getAttribute('aria-current')).toBe('true');
     const orders = await TEST__findCanvasNode('relational101');
     expect(orders.getAttribute('aria-current')).toBe('false');
-    expect(
-      within(orders).getByText('Table "ORDERS" from schema "NORTHWIND"'),
-    ).toBeDefined();
+    // the canvas shows the table, then its schema (UX audit B9)
+    expect(within(orders).getByText('ORDERS')).toBeDefined();
+    expect(within(orders).getByText('NORTHWIND')).toBeDefined();
   });
 
   test('Moves the run to another node with Ctrl-click', async () => {
@@ -427,7 +430,7 @@ describe('Cube page', () => {
     );
     expect(
       TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('relational101')),
-    ).toEqual(['Table "ORDERS" from schema "NORTHWIND"', 'relational101']);
+    ).toEqual(['Table "ORDERS" from schema "NORTHWIND"']);
     const other = await TEST__findCanvasNode('relational102');
     expect(other.classList.contains('legend-cube__node--invalid')).toBe(true);
     expect(TEST__getCanvasNodeTooltip(other)[0]).toContain(
@@ -453,7 +456,6 @@ describe('Cube page', () => {
     ).toEqual([
       'Filter value is required.',
       'Filter by ORDER_ID is (blank) and SHIP_CITY is (blank)',
-      'filter101',
     ]);
   });
 
@@ -480,11 +482,10 @@ describe('Cube page', () => {
     fireEvent.click(within(tables).getByText('CUSTOMERS'));
     fireEvent.click(within(dialog).getByText('Add'));
     await waitFor(() => expect(TEST__getCanvasNodes()).toHaveLength(2));
-    expect(
-      within(await TEST__findCanvasNode('relational102')).getByText(
-        'Table "CUSTOMERS" from schema "NORTHWIND"',
-      ),
-    ).toBeDefined();
+    const added = await TEST__findCanvasNode('relational102');
+    // the canvas shows the table, then its schema (UX audit B9)
+    expect(within(added).getByText('CUSTOMERS')).toBeDefined();
+    expect(within(added).getByText('NORTHWIND')).toBeDefined();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
@@ -511,11 +512,10 @@ describe('Cube page', () => {
     fireEvent.click(within(tables).getByText('ORDERS'));
     fireEvent.click(add);
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(
-      within(await TEST__findCanvasNode('relational101')).getByText(
-        'Table "ORDERS" from schema "NORTHWIND"',
-      ),
-    ).toBeDefined();
+    const added = await TEST__findCanvasNode('relational101');
+    // the canvas shows the table, then its schema (UX audit B9)
+    expect(within(added).getByText('ORDERS')).toBeDefined();
+    expect(within(added).getByText('NORTHWIND')).toBeDefined();
   });
 
   test("Opens 'Add Items' Relational Database Table straight on the table tab used last, after the link was left without a choice", async () => {
@@ -760,13 +760,14 @@ describe('Header actions with the node editor open', () => {
     const editorState = await renderEditor();
     await editLimit();
     await TEST__chooseAddItem('Sort by Column');
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('sort101');
     expect(storedSize(editorState)).toBe(5);
     expect(historySizes(editorState)).toEqual([10, 5]);
     const { query } = editorState.document;
     expect(query.getInputIds('sort101')).toEqual(['limit101']);
     expect(query.selected).toBe('sort101');
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    // its editor opens, to set it up (UX audit B3)
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeDefined();
   });
 
   test('Applies the floating editor before a palette item adds its node', async () => {
@@ -779,7 +780,7 @@ describe('Header actions with the node editor open', () => {
           item.textContent?.includes('Sort by Column'),
         ) as HTMLElement,
     );
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('sort101');
     expect(historySizes(editorState)).toEqual([10, 5]);
     expect(
       editorState.document.query.nodes.some((node) => node.type === 'sort'),
@@ -1038,7 +1039,7 @@ describe("The header's Add Items", () => {
     await TEST__closeAddItems();
   });
 
-  test('Adds a transform after the selected node, spliced in, as one undo step, the new node becoming the selected one, opening no editor', async () => {
+  test('Adds a transform after the selected node, spliced in, as one undo step, the new node becoming the selected one, opening its editor', async () => {
     const editorState = await renderEditor(slice());
     fireEvent.click(await TEST__findCanvasNode('join101'), { ctrlKey: true });
     expect(editorState.document.query.selected).toBe('join101');
@@ -1054,9 +1055,11 @@ describe("The header's Add Items", () => {
     ]);
     expect(query.selected).toBe('filter102');
     expect(editorState.history).toHaveLength(historyLength + 1);
-    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('filter102');
     await TEST__findCanvasNode('filter102');
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(
+      await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),
+    ).toBeDefined();
   });
 
   test.each<[string, () => CubeDocument | undefined]>([

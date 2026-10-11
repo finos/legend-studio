@@ -21,6 +21,7 @@ import {
   validateAllItems,
 } from '../../inference/ValidationUtils.js';
 import {
+  BLANK_PLACEHOLDER,
   MESSAGE_DOES_NOT_HAVE_A_NAME,
   MESSAGE_DUPLICATE_COLUMNS_BETWEEN_INPUTS,
   MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
@@ -421,8 +422,23 @@ export class Join extends BinaryNode {
     );
   }
 
-  /** Deliberately generic, as in the spec */
+  /**
+   * The join type and its key pairs, e.g. `Left Outer join on "DESK_ID" =
+   * "ID"`, as the other nodes describe themselves; the spec's generic text
+   * until a pair is set (UX audit A4, user, 2026-10-11)
+   */
   describe(): string {
-    return 'Join additional input';
+    const pairs = Math.max(this.leftColumns.length, this.rightColumns.length);
+    if (!pairs) {
+      return 'Join additional input';
+    }
+    const name = (column: string | undefined): string =>
+      column ? `"${column}"` : BLANK_PLACEHOLDER;
+    const keys = Array.from(
+      { length: pairs },
+      (_, index) =>
+        `${name(this.leftColumns[index])} = ${name(this.rightColumns[index])}`,
+    );
+    return `${JOIN_TYPE_LABELS[this.joinType]} join on ${keys.join(', ')}`;
   }
 }
