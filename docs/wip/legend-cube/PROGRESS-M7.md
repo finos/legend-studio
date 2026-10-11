@@ -12,8 +12,8 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.15 done                                                      |
-| Tests  | Unchanged from `cube-dev`                                            |
+| Step   | M7.1–M7.16 done; the PR ready for `cube-dev`                         |
+| Tests  | Core and builder 4,213 pass; engine grid suites 555                  |
 
 ## Steps
 
@@ -28,13 +28,13 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.7** The drill-down in the UI
 - [x] **M7.8** Export
 - [x] **M7.9** The curated context menu
-- [x] **M7.10** The stats popover
+- [x] **M7.10** The runs panel
 - [x] **M7.11** Column formatting and widths
 - [x] **M7.12** Around the databases
 - [x] **M7.13** Guides, testing.md and the changeset
 - [x] **M7.14** Verification and the browser rehearsal
 - [x] **M7.15** A demo video of M7 (PLAN §11.3)
-- [ ] **M7.16** Fold PLAN §11.10's supersessions in; the PR ready for `cube-dev`
+- [x] **M7.16** Fold PLAN §11.10's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -43,9 +43,11 @@ Filled in as steps land.
 | Step  | Commit      | Subject                                                                                                  |
 | ----- | ----------- | -------------------------------------------------------------------------------------------------------- |
 | M7.1  | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
-| M7.2  | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
+| M7.2  | `44eb8bd46` | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
 | M7.3  | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
+| M7.3  | `235e10064` | chore: list Legend Cube's core in M7's changeset                                                         |
 | M7.4  | `6bf07c65f` | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
+| M7.4  | `ec8bea234` | docs: record Legend Cube M7.4's mutation check                                                           |
 | M7.5  | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
 | M7.5  | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
 | M7.5  | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
@@ -53,7 +55,17 @@ Filled in as steps land.
 | M7.7  | `1c2f36dc3` | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
 | M7.8  | `29464faf8` | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
 | M7.9  | `08aef4d00` | feat: curate Legend Cube's grid menu: the cell's actions, columns, copy and Export                       |
-| M7.10 | (this one)  | feat: list Legend Cube's latest runs, fetches and exports, with their SQL                                |
+| M7.10 | `7bc7773ba` | feat: list Legend Cube's latest runs, fetches and exports, with their SQL                                |
+| M7.11 | `7645ad93b` | feat: format Legend Cube's number columns, from their exact values, and keep column widths               |
+| M7.12 | `75416978b` | test: plan Legend Cube's drill-down levels on every database, and conform their types to the engine's    |
+| M7.13 | `59756481f` | docs: cover Legend Cube's results grid in its READMEs, testing guide and known issues                    |
+| M7.13 | `075a55c82` | chore: list Legend Query in Legend Cube M7's changeset, for its host test's fake engine                  |
+| M7.14 | `6cce83ade` | docs: record Legend Cube M7.14's browser rehearsal                                                       |
+| M7.14 | `cfb4bdceb` | fix: leave Legend Cube's group-row counts unformatted, and export number columns to Excel as numbers     |
+| M7.14 | `fdcd7e657` | fix: keep Legend Cube's number cells right-aligned with their Excel style, and satisfy the CI lint       |
+| M7.14 | `711c9fc56` | fix: address the review of Legend Cube M7's results grid                                                 |
+| M7.15 | `82943e04b` | feat: pin Legend Cube's drill-down groups on the left of the grid, and record M7's demo video            |
+| M7.16 | (this one)  | docs: fold Legend Cube M7 into its plan                                                                  |
 
 ## Notes
 
@@ -226,3 +238,8 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   trades); local mode's panels. Ten checks pass, no page error; the twelve frames were read against their captions,
   which led to two changes: the groups column is pinned on the left, so the groups stay in view beside the numbers
   (a product change), and the export's caption names the saved file.
+- **M7.16** (2026-10-11). PLAN §11.10 folded into the sections it changes: §7.8 (the new state, formats and widths
+  on the grid display), §9 (the slice's grid is local mode; "Later (M7)" replaced by what M7 built), §10.3 (the
+  saved `meta.drilldown` and `meta.presentation.columnHints`), §11.3's M7 row, and Appendix A (§12.1–12.6, §13.1).
+  §11.10 itself now says the Runs panel and the 'Group rows…' dialog where it planned popovers, and that Excel gets
+  numbers, unformatted. The PR is marked ready for `cube-dev` on the user's word.
