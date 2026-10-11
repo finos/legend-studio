@@ -4127,11 +4127,13 @@ This subsection overrides the sections it names until they are updated (see "Sup
   is `Math.fround` of its value, in the shared quick-filter rule, which fixes M2's 'Filter by' on a REAL cell too (it
   found nothing). Other databases are reasoned only 💭: a REAL compared with a double literal is widened to double
   there too; Snowflake has no 32-bit float.
-- **A group's aggregations are named after their columns**, so a group row's `FREIGHT` cell is the Sum of `FREIGHT`
-  and group and leaf rows share the grid's columns: `groupBy(~[SHIP_COUNTRY], ~[FREIGHT: x|$x.FREIGHT : y|$y->sum()])`
-  types, runs and sorts by the Sum ✅ (`p4-names.out`). `Count Rows` takes the M4 rule's next free name. Sorting a
-  group level by a column sorts by its aggregation, and a column with none isn't sortable at that level; at the leaf
-  level the same sort is the column's own (spec §12.2's remapping, made trivial by the names).
+- **A group's aggregations are mapped back to their columns.** A level's Group names each aggregation as any Group
+  does (`FREIGHT Sum`, M4's auto-name, numbered past a name the input has), since Cube's Group refuses an output
+  named as an input column (§11.5), though the engine would take it ✅ (`p4-names.out`). The derivation returns, with
+  the query, which output column holds each grid column's value, so a group row's `FREIGHT` cell shows the Sum and
+  group and leaf rows share the grid's columns. `Count Rows` takes the M4 rule's next free name. Sorting a group
+  level by a column sorts by its aggregation, and a column with none isn't sortable at that level; at the leaf level
+  the same sort is the column's own (spec §12.2's remapping).
 - **The Sum's nullability:** the engine types a Sum `[1]` but returns empty for a group of empty values ✅
   (`p1-drill.out` G); Cube's own types say nullable, as M4 settled (§11.5, `widerNullable`).
 - **Drill-down settings are saved in the cube** (spec §13 `Meta.drilldown`), as `meta.drilldown: {columns,

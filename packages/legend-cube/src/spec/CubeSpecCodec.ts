@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import {
+  type Drilldown,
+  type DrilldownAggregation,
+  isEmptyDrilldown,
+} from '../drilldown/Drilldown.js';
 import { Connection } from '../graph/Connection.js';
 import {
   type ColumnWidth,
@@ -48,6 +53,7 @@ import {
   readObject,
   readOptionalString,
   readString,
+  readStringList,
   UnreadableContent,
 } from './SpecReader.js';
 
@@ -87,7 +93,9 @@ const TOP_LEVEL_KEYS = ['formatVersion', 'name', 'context', 'query', 'meta'];
 const CONTEXT_KEYS = ['model', 'runtime'];
 const QUERY_KEYS = ['selected', 'nodes'];
 const NODE_KEYS = ['kind', 'id', 'inputs'];
-const META_KEYS = ['presentation'];
+const META_KEYS = ['presentation', 'drilldown'];
+const DRILLDOWN_KEYS = ['columns', 'aggregations'];
+const DRILLDOWN_AGGREGATION_KEYS = ['column', 'function'];
 const PRESENTATION_KEYS = ['showGraph', 'columnWidths'];
 const COLUMN_WIDTH_KEYS = ['column', 'width'];
 
@@ -188,10 +196,32 @@ const encodePresentation = (
   return Object.keys(json).length ? json : undefined;
 };
 
+/** The drill-down, or nothing for none: no levels, no aggregation and no unknown key */
+const encodeDrilldown = (
+  drilldown: Drilldown | undefined,
+): JsonObject | undefined =>
+  !drilldown || isEmptyDrilldown(drilldown)
+    ? undefined
+    : {
+        columns: [...drilldown.columns],
+        ...(drilldown.aggregations.length
+          ? {
+              aggregations: drilldown.aggregations.map((aggregation) => ({
+                column: aggregation.column,
+                function: aggregation.function,
+                ...restOf(aggregation.rest, DRILLDOWN_AGGREGATION_KEYS),
+              })),
+            }
+          : {}),
+        ...restOf(drilldown.rest, DRILLDOWN_KEYS),
+      };
+
 const encodeMeta = (meta: CubeMeta): JsonObject | undefined => {
   const presentation = encodePresentation(meta.presentation);
+  const drilldown = encodeDrilldown(meta.drilldown);
   const json: JsonObject = {
     ...(presentation ? { presentation } : {}),
+    ...(drilldown ? { drilldown } : {}),
     ...restOf(meta.rest, META_KEYS),
   };
   return Object.keys(json).length ? json : undefined;
@@ -429,6 +459,44 @@ const decodePresentation = (value: unknown, path: string): Presentation => {
   };
 };
 
+const decodeDrilldownAggregation = (
+  value: unknown,
+  path: string,
+): DrilldownAggregation => {
+  const json = readObject(value, path);
+  const fn = json.function;
+  if (fn === undefined) {
+    return fail(pathTo(path, 'function'), 'is required');
+  }
+  if (fn !== null && typeof fn !== 'string') {
+    return fail(pathTo(path, 'function'), 'must be a string or null');
+  }
+  return {
+    column: readString(json, 'column', path),
+    // kept as saved, a function this version doesn't know included:
+    // `checkDrilldown` reports it
+    function: fn,
+    ...readRest(json, DRILLDOWN_AGGREGATION_KEYS),
+  };
+};
+
+const decodeDrilldown = (value: unknown, path: string): Drilldown => {
+  const json = readObject(value, path);
+  const aggregationsPath = pathTo(path, 'aggregations');
+  return {
+    // kept as saved, a column the query no longer has included:
+    // `checkDrilldown` reports it
+    columns: readStringList(json, 'columns', path),
+    aggregations:
+      json.aggregations === undefined
+        ? []
+        : readArray(json.aggregations, aggregationsPath).map((item, index) =>
+            decodeDrilldownAggregation(item, pathTo(aggregationsPath, index)),
+          ),
+    ...readRest(json, DRILLDOWN_KEYS),
+  };
+};
+
 const decodeMeta = (value: unknown, path: string): CubeMeta => {
   const json = readObject(value, path);
   return {
@@ -436,6 +504,11 @@ const decodeMeta = (value: unknown, path: string): CubeMeta => {
       json.presentation === undefined
         ? DEFAULT_META.presentation
         : decodePresentation(json.presentation, pathTo(path, 'presentation')),
+    ...(json.drilldown === undefined
+      ? {}
+      : {
+          drilldown: decodeDrilldown(json.drilldown, pathTo(path, 'drilldown')),
+        }),
     ...readRest(json, META_KEYS),
   };
 };

@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.2 done                                                       |
+| Step   | M7.1–M7.3 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -21,7 +21,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 
 - [x] **M7.1** The settled decisions (PLAN §11.10) and this file
 - [x] **M7.2** Decimal literals sent as strings
-- [ ] **M7.3** The drill-down in the core
+- [x] **M7.3** The drill-down in the core
 - [ ] **M7.4** Query derivation in the core
 - [ ] **M7.5** The builder's row fetcher
 - [ ] **M7.6** The grid's server-side row model and the mode toggle
@@ -40,10 +40,11 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit      | Subject                                                                    |
-| ---- | ----------- | -------------------------------------------------------------------------- |
-| M7.1 | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                    |
-| M7.2 | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit |
+| Step | Commit      | Subject                                                                                                  |
+| ---- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| M7.1 | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
+| M7.2 | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
+| M7.3 | (this one)  | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
 
 ## Notes
 
@@ -65,3 +66,13 @@ Filled in as steps land.
   gives none; as a JSON number the literal was read as `1.2345`. The ISSUES entry is gone; one patch changeset for M7
   is started. Jest reads `@finos/legend-cube` from its `lib/`, which must be rebuilt after a rebase
   (`yarn workspace @finos/legend-cube build`), or the builder's tests fail on code the build lacks.
+- **M7.3** (2026-10-11). `drilldown/Drilldown.ts` in the core: `Drilldown {columns, aggregations}` with an
+  aggregation per column only where it differs from the default (a number's Sum, nothing for any other column), `null`
+  for an empty cell; `checkDrilldown` against the run's schema gives the usable levels (in order, as the schema names
+  them, in any case), each column's aggregation, and a message for each level or aggregation left out (not in the
+  output, not groupable, listed twice, unknown, incompatible); edits add a level innermost, remove one, and set an
+  aggregation. `CubeMeta.drilldown`, saved as `meta.drilldown` (levels required, aggregations left out when none, unknown
+  keys kept at both levels), none written for an empty one. A plan correction: Cube's Group refuses an output named as
+  an input column, so a level's aggregations keep a Group's names and the derivation maps them back to the grid's
+  columns (PLAN §11.10). The forward-compatibility tests used a `drilldown` key as the example of one a newer Cube
+  adds; they use `pivot` now.

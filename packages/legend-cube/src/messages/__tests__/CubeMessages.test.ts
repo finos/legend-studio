@@ -261,6 +261,30 @@ test(unitTest('Messages added by Cube'), () => {
   ).toBe(
     `Column "REGION" is a::Region in the first input and b::Region in the second, which can't be converted to one type.`,
   );
+  // the grid's drill-down (PLAN §11.10)
+  expect(MESSAGES.MESSAGE_DRILLDOWN_COLUMN_NOT_IN_OUTPUT('CITY')).toBe(
+    `Drill-down column "CITY" is not in the query's output.`,
+  );
+  expect(MESSAGES.MESSAGE_DRILLDOWN_COLUMN_NOT_GROUPABLE('V', 'Variant')).toBe(
+    'Drill-down column "V" of type Variant cannot be grouped.',
+  );
+  expect(MESSAGES.MESSAGE_DRILLDOWN_COLUMN_LISTED_TWICE('CITY')).toBe(
+    'Drill-down column "CITY" is listed more than once.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_COLUMN_NOT_IN_OUTPUT('FREIGHT'),
+  ).toBe(
+    `Drill-down aggregation column "FREIGHT" is not in the query's output.`,
+  );
+  expect(MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_LISTED_TWICE('FREIGHT')).toBe(
+    'Drill-down aggregation column "FREIGHT" is listed more than once.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_UNKNOWN('Median', 'FREIGHT'),
+  ).toBe('Drill-down aggregation "Median" of column "FREIGHT" is unknown.');
+  expect(
+    MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_INCOMPATIBLE('Sum', 'CITY'),
+  ).toBe('Drill-down aggregation "Sum" is incompatible with column "CITY".');
 });
 
 test(

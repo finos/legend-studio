@@ -834,7 +834,7 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       description: 'A field this version does not know',
     });
     expect(again.meta.rest).toEqual({
-      drilldown: { levels: ['SHIP_COUNTRY', 'SHIP_CITY'] },
+      pivot: { levels: ['SHIP_COUNTRY', 'SHIP_CITY'] },
     });
     expect(JSON.stringify(encodeCubeSpec(again))).toBe(JSON.stringify(saved));
 
@@ -1013,7 +1013,7 @@ const INTERLEAVED = {
       showGraph: false,
       alphaPresentation: {},
     },
-    drilldown: { levels: ['COUNTRY'] },
+    pivot: { levels: ['COUNTRY'] },
   },
 };
 
@@ -1102,7 +1102,7 @@ const CANONICAL = {
       alphaPresentation: {},
     },
     zetaMeta: 'z',
-    drilldown: { levels: ['COUNTRY'] },
+    pivot: { levels: ['COUNTRY'] },
   },
   zetaTop: 'z',
   alphaTop: { nested: [1, null] },
@@ -1148,7 +1148,7 @@ describe(unitTest('Saved spec: unknown keys'), () => {
 
     expect(meta.rest).toEqual({
       zetaMeta: 'z',
-      drilldown: { levels: ['COUNTRY'] },
+      pivot: { levels: ['COUNTRY'] },
     });
     expect(meta.presentation.rest).toEqual({
       zetaPresentation: 'z',
