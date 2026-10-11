@@ -12,7 +12,7 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev`                   |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6b.8: the demo video, sent; next the plan folded                                               |
+| Step   | M6b.1–M6b.9 done: M6b is complete, in draft #5670 for `cube-dev`                                |
 | Tests  | 2930 core, 1714 builder (core group); engine suites 900 of 904 (the 4 local setup-SQL timeouts) |
 
 ## Steps
@@ -27,7 +27,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 - [x] **M6b.6** Guides, READMEs, testing.md and the changeset
 - [x] **M6b.7** Verification and the browser rehearsal
 - [x] **M6b.8** A demo video (PLAN §11.3)
-- [ ] **M6b.9** Fold PLAN §11.11's supersessions in; the PR ready for `cube-dev`
+- [x] **M6b.9** Fold PLAN §11.11's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -43,7 +43,8 @@ Filled in as steps land.
 | M6b.5 | `a041aea3e` | docs: record Legend Cube M6b.5                                                |
 | M6b.6 | `1d09b22dd` | docs: cover Legend Cube's Filter by Expression in its guides                  |
 | M6b.7 | `088cdbf24` | docs: record Legend Cube M6b.7                                                |
-| M6b.8 | (this one)  | docs: record Legend Cube M6b's demo video                                     |
+| M6b.8 | `1e7a04f31` | docs: record Legend Cube M6b's demo video                                     |
+| M6b.9 | (this one)  | docs: fold Legend Cube M6b's changes into its plan                            |
 
 ## Notes
 
@@ -128,3 +129,9 @@ Filled in as steps land.
   rows, each 1); Show Pure's filter after the `let`. 12 checks pass; each of the 10 frames was read against its caption,
   and four were re-shot so each caption claims only what shows: "of the 830", the region counts, SHIP_VIA and an
   employee range were off screen or wrong.
+- **M6b.9** (2026-10-11). PLAN §11.11's supersessions folded into the sections they change: §4.8 (Filter by
+  Expression beside the column Filter: its check, `ERR_CHECKING`, its own refusals), §8.8 (its Transforms row: the
+  `filter` lambda, the window's `let`, the engine's check, the plans and runs, empty values, precedence and `LIKE`),
+  §10.3 (`expressionFilter`'s saved shape), and Appendix A (a row for the node beside §7.x, §16's messages, §17.6's
+  editor). §11.3's row was written in M6b.1. M6b is complete; marking #5670 ready, and merging it into `cube-dev`,
+  are the user's.
