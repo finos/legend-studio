@@ -30,6 +30,7 @@ export enum LEGEND_CUBE_TEST_ID {
   RESULT_GRID = 'legend-cube__result-grid',
   DRILLDOWN_BAR = 'legend-cube__drilldown-bar',
   RUN_STATS = 'legend-cube__run-stats',
+  COLUMN_FORMAT = 'legend-cube__column-format',
   DRILLDOWN_SETTINGS = 'legend-cube__drilldown-settings',
   GRID_TOOLBAR = 'legend-cube__grid-toolbar',
   EXECUTION_ERROR = 'legend-cube__execution-error',

@@ -17,6 +17,7 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   AggregationFunction,
+  ColumnFormatStyle,
   CubeDocument,
   DEFAULT_META,
   type Drilldown,
@@ -286,6 +287,43 @@ describe('Grid state', () => {
     state.grid.openSettings();
     expect(state.isDialogOpen).toBe(true);
     state.grid.closeSettings();
+    expect(state.isDialogOpen).toBe(false);
+  });
+
+  test("Sets a column's format, or every number column's, as undo steps, and keeps widths with no step", async () => {
+    await setUp();
+    const usd = {
+      style: ColumnFormatStyle.CURRENCY,
+      currency: 'USD',
+      grouping: true,
+      redIfNegative: true,
+      parenthesesIfNegative: false,
+    };
+    state.grid.setColumnFormat('FREIGHT', usd);
+    expect(state.document.meta.presentation.columnHints).toEqual([
+      { column: 'FREIGHT', format: usd },
+    ]);
+    const steps = state.history.length;
+    state.setColumnWidth('freight', 123.4);
+    state.setColumnWidth('FREIGHT', 150);
+    state.setColumnWidth('FREIGHT', 0);
+    expect(state.document.meta.presentation.columnWidths).toEqual([
+      { column: 'FREIGHT', width: 150 },
+    ]);
+    // a width is no step
+    expect(state.history).toHaveLength(steps);
+    state.grid.setColumnFormat(undefined, { ...usd, currency: 'EUR' });
+    expect(state.document.meta.presentation.columnHints).toEqual([
+      { format: { ...usd, currency: 'EUR' } },
+    ]);
+    state.undo();
+    expect(state.document.meta.presentation.columnHints).toEqual([
+      { column: 'FREIGHT', format: usd },
+    ]);
+    expect(state.execution.isStale).toBe(false);
+    state.grid.openFormat('FREIGHT');
+    expect(state.isDialogOpen).toBe(true);
+    state.grid.closeFormat();
     expect(state.isDialogOpen).toBe(false);
   });
 });

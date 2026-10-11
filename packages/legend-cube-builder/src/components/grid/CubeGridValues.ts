@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { TypeFamily } from '@finos/legend-cube';
+import {
+  type ColumnFormat,
+  ColumnFormatStyle,
+  isColumnFormatStyle,
+  TypeFamily,
+} from '@finos/legend-cube';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 
 // How the grid shows and sorts values (PLAN §9, Settled before M1.8).
@@ -177,4 +182,73 @@ export const formatCellValue = (
     default:
       return text;
   }
+};
+
+/** The ISO 4217 codes the browser formats (PLAN §11.10: codes, not symbols, §21) */
+export const getCubeCurrencyCodes = (): readonly string[] => {
+  const supportedValuesOf = (
+    Intl as unknown as {
+      supportedValuesOf?: (key: string) => string[];
+    }
+  ).supportedValuesOf;
+  return supportedValuesOf?.('currency') ?? ['EUR', 'GBP', 'JPY', 'USD'];
+};
+
+/** Why a format can't be used, if it can't: a style or a currency this browser doesn't know */
+export const getColumnFormatProblem = (
+  format: ColumnFormat,
+): string | undefined => {
+  if (!isColumnFormatStyle(format.style)) {
+    return `The format "${format.style}" is unknown, so the column shows its values as they are.`;
+  }
+  if (
+    format.style === ColumnFormatStyle.CURRENCY &&
+    !getCubeCurrencyCodes().includes(format.currency ?? '')
+  ) {
+    return `The currency "${format.currency ?? ''}" is unknown, so the column shows its values as they are.`;
+  }
+  return undefined;
+};
+
+/**
+ * A number formatted as the column's format says (spec §13.1, PLAN §11.10),
+ * from its exact text, so no digit is lost (`Intl.NumberFormat` reads a
+ * decimal string exactly); `undefined` for a value that isn't a number or a
+ * format that can't be used (`getColumnFormatProblem`), which shows as if
+ * none were set
+ */
+export const formatColumnValue = (
+  value: Exclude<CubeResultValue, null>,
+  format: ColumnFormat,
+): { readonly text: string; readonly negative: boolean } | undefined => {
+  const text = String(value).trim();
+  if (
+    typeof value === 'boolean' ||
+    !parseNumberText(text) ||
+    getColumnFormatProblem(format) !== undefined
+  ) {
+    return undefined;
+  }
+  const negative = Boolean(parseNumberText(text)?.negative);
+  const places = format.decimalPlaces;
+  const formatter = new Intl.NumberFormat('en-US', {
+    style:
+      format.style === ColumnFormatStyle.CURRENCY
+        ? 'currency'
+        : format.style === ColumnFormatStyle.PERCENT
+          ? 'percent'
+          : 'decimal',
+    ...(format.style === ColumnFormatStyle.CURRENCY
+      ? { currency: format.currency }
+      : {}),
+    useGrouping: format.grouping,
+    minimumFractionDigits: places ?? 0,
+    maximumFractionDigits: places ?? 20,
+  });
+  // a decimal string keeps every digit, where a JS number would round
+  const shown = (number: string): string =>
+    formatter.format(number as unknown as number);
+  return format.parenthesesIfNegative && negative
+    ? { text: `(${shown(text.replace(/^-/u, ''))})`, negative }
+    : { text: shown(text), negative };
 };

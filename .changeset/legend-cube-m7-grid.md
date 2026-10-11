@@ -3,4 +3,4 @@
 '@finos/legend-cube-builder': patch
 ---
 
-Legend Cube sends decimal literals as text, so a filter on a Decimal column keeps every digit, and saves a drill-down for its results grid with the cube.
+Legend Cube's results grid works server-side by default, with drill-down levels, CSV and Excel export, a curated menu, run stats and column formats; decimal literals are sent as text, so they keep every digit.

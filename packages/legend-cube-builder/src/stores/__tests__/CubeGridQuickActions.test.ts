@@ -580,6 +580,7 @@ describe('Grid context menu', () => {
       'Group by "SHIP_COUNTRY"',
       'Filter by "SHIP_COUNTRY"',
       'separator',
+      'Format Column…',
       'autoSizeAll',
       'resetColumns',
       'separator',

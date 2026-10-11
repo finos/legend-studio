@@ -39,6 +39,7 @@ import {
   type Schema,
   type SchemaInferenceResult,
   type SourceDefinition,
+  foldColumnName,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -251,6 +252,7 @@ export class CubeEditorState implements CommandRegistrar {
       setHostIssue: action,
       clearHostIssues: action,
       setRowLimit: action,
+      setColumnWidth: action,
     });
     this.host = host;
     this.registry = createNodeRegistry();
@@ -605,6 +607,7 @@ export class CubeEditorState implements CommandRegistrar {
       this.sourcePicker.isOpen ||
       this.examples.isOpen ||
       this.grid.isSettingsOpen ||
+      this.grid.formatColumn !== undefined ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen
     );
@@ -1226,6 +1229,31 @@ export class CubeEditorState implements CommandRegistrar {
         }),
       );
     }
+  }
+
+  /**
+   * Keeps a grid column's width, which the cube saves (PLAN §11.10): by the
+   * column's name, in any case. Presentation the user sets by dragging, so
+   * no undo step, and the rows stay current.
+   */
+  setColumnWidth(column: string, width: number): void {
+    if (!Number.isFinite(width) || width <= 0) {
+      return;
+    }
+    const { meta } = this.document;
+    const { presentation } = meta;
+    const others = presentation.columnWidths.filter(
+      (each) => foldColumnName(each.column) !== foldColumnName(column),
+    );
+    this.replaceDocument(
+      this.document.withMeta({
+        ...meta,
+        presentation: {
+          ...presentation,
+          columnWidths: [...others, { column, width: Math.round(width) }],
+        },
+      }),
+    );
   }
 
   setHostIssue(nodeId: string, error: CubeEngineError): void {

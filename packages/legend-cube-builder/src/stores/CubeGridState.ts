@@ -19,6 +19,7 @@ import {
   type AggregationFunction,
   type CheckedDrilldown,
   checkDrilldown,
+  type ColumnFormat,
   type ColumnDirection,
   type Drilldown,
   type DrilldownCell,
@@ -26,6 +27,7 @@ import {
   isEmptyDrilldown,
   isSortableType,
   removeDrilldownLevel,
+  setColumnFormat,
   setDrilldownAggregation,
   SortDirection,
 } from '@finos/legend-cube';
@@ -102,6 +104,8 @@ export class CubeGridState {
   fetching = 0;
   /** The drill-down's settings dialog is open */
   isSettingsOpen = false;
+  /** The column whose format the Format Column dialog edits, while it is open */
+  formatColumn: string | undefined;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
@@ -118,6 +122,10 @@ export class CubeGridState {
       openSettings: action,
       closeSettings: action,
       isSettingsOpen: observable,
+      formatColumn: observable,
+      openFormat: action,
+      closeFormat: action,
+      setColumnFormat: action,
       clearFetchError: action,
       resetLevels: action,
     });
@@ -244,6 +252,43 @@ export class CubeGridState {
 
   closeSettings(): void {
     this.isSettingsOpen = false;
+  }
+
+  openFormat(column: string): void {
+    this.formatColumn = column;
+  }
+
+  closeFormat(): void {
+    this.formatColumn = undefined;
+  }
+
+  /**
+   * Sets a number column's format, or removes it with `undefined`; with no
+   * column, the format of every number column (spec §13.1). An undo step
+   * that leaves the rows current.
+   */
+  setColumnFormat(
+    column: string | undefined,
+    format: ColumnFormat | undefined,
+  ): void {
+    const { editorState } = this;
+    if (editorState.readOnly) {
+      return;
+    }
+    const { meta } = editorState.document;
+    editorState.applyDocument(
+      editorState.document.withMeta({
+        ...meta,
+        presentation: {
+          ...meta.presentation,
+          columnHints: setColumnFormat(
+            meta.presentation.columnHints ?? [],
+            column,
+            format,
+          ),
+        },
+      }),
+    );
   }
 
   clearFetchError(): void {

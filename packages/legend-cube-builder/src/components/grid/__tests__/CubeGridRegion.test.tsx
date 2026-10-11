@@ -621,6 +621,63 @@ describe('Cube results', () => {
     expect(copy).toHaveBeenCalledWith('select … order by "ID"');
   });
 
+  test("Shows a number column as its saved format, sets one from the cell's menu, and keeps a saved width", async () => {
+    await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          presentation: {
+            ...DEFAULT_META.presentation,
+            columnWidths: [{ column: 'NAME', width: 321 }],
+            columnHints: [
+              {
+                column: 'ID',
+                format: {
+                  style: 'currency',
+                  currency: 'USD',
+                  decimalPlaces: 2,
+                  grouping: true,
+                  redIfNegative: false,
+                  parenthesesIfNegative: false,
+                },
+              },
+            ],
+          },
+        },
+      }),
+    );
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual([
+      '$10.00',
+      '$9,007,199,254,740,993.00',
+      '$9.00',
+    ]);
+    // the exact value on hover
+    expect(cell(1, 0).querySelector('span')?.title).toBe('9007199254740993');
+    expect(headerCell(1).style.width).toBe('321px');
+    // the menu's Format Column, on the ID column: a percent with no places
+    fireEvent.contextMenu(cell(0, 0));
+    fireEvent.click(await screen.findByText('Format Column…'));
+    const form = await screen.findByTestId(LEGEND_CUBE_TEST_ID.COLUMN_FORMAT);
+    fireEvent.change(within(form).getByLabelText('Style'), {
+      target: { value: 'percent' },
+    });
+    fireEvent.change(within(form).getByLabelText('Decimal places'), {
+      target: { value: '' },
+    });
+    expect(within(form).getByLabelText('Preview').textContent).toContain('25%');
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual([
+        '1,000%',
+        '900,719,925,474,099,300%',
+        '900%',
+      ]),
+    );
+  });
+
   test("Shows the limit, says when the run returned more rows, and keeps naming the run's limit after an edit", async () => {
     const fake = await renderPage();
     const limit = rowLimitInput();

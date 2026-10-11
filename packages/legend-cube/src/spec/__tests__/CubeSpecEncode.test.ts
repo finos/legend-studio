@@ -2817,7 +2817,7 @@ describe(unitTest('Saved spec encoding: rest'), () => {
           rest: {
             showGraph: false,
             columnWidths: [],
-            columnHints: [{ field: 'CITY' }],
+            columnStyles: [{ field: 'CITY' }],
           },
         },
         rest: { presentation: {}, pivot: { levels: ['CITY'] } },
@@ -2842,7 +2842,7 @@ describe(unitTest('Saved spec encoding: rest'), () => {
       meta: {
         presentation: {
           columnWidths: [{ column: 'CITY', width: 90, unit: 'px' }],
-          columnHints: [{ field: 'CITY' }],
+          columnStyles: [{ field: 'CITY' }],
         },
         pivot: { levels: ['CITY'] },
       },

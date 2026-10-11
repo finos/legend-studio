@@ -15,7 +15,7 @@
  */
 
 import { clsx } from '@finos/legend-art';
-import type { TypeFamily } from '@finos/legend-cube';
+import type { Presentation, TypeFamily } from '@finos/legend-cube';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -37,6 +37,7 @@ import { formatCellValue } from './CubeGridValues.js';
 import {
   buildCubeColumnDefs,
   getCubeGridContextMenuItems,
+  keepCubeColumnWidths,
 } from './CubeResultGrid.js';
 
 /** A group's key in the groups' column, as its level's column shows a value */
@@ -74,9 +75,10 @@ export const CubeServerSideGrid = memo(
     result: CubeExecutionResult;
     /** The drill-down's levels, as the run names them: the grid is built anew when they change */
     levels: readonly string[];
+    presentation: Presentation;
     darkMode: boolean;
   }) => {
-    const { editorState, result, levels, darkMode } = props;
+    const { editorState, result, levels, presentation, darkMode } = props;
     const { grid } = editorState;
     // a new grid for each run and drill-down (its key), whose levels say anew
     useEffect(() => {
@@ -92,8 +94,9 @@ export const CubeServerSideGrid = memo(
         buildCubeColumnDefs<CubeGridRowData>(
           result,
           (row, position) => row?.cells[position],
+          presentation,
         ),
-      [result],
+      [result, presentation],
     );
     const families = useMemo(
       () =>
@@ -142,6 +145,9 @@ export const CubeServerSideGrid = memo(
           tooltipShowDelay={500}
           getContextMenuItems={getContextMenuItems}
           serverSideSortAllLevels={true}
+          onColumnResized={(event) =>
+            keepCubeColumnWidths(editorState, result, event)
+          }
           {...(hasLevels
             ? {
                 treeData: true,

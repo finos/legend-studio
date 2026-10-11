@@ -20,6 +20,7 @@ import {
   isEmptyDrilldown,
 } from '../drilldown/Drilldown.js';
 import { Connection } from '../graph/Connection.js';
+import type { ColumnFormat, ColumnHint } from '../presentation/ColumnFormat.js';
 import {
   type ColumnWidth,
   type CubeContext,
@@ -51,6 +52,7 @@ import {
   readArray,
   readBoolean,
   readObject,
+  readOptionalFiniteNumber,
   readOptionalString,
   readString,
   readStringList,
@@ -96,7 +98,16 @@ const NODE_KEYS = ['kind', 'id', 'inputs'];
 const META_KEYS = ['presentation', 'drilldown'];
 const DRILLDOWN_KEYS = ['columns', 'aggregations'];
 const DRILLDOWN_AGGREGATION_KEYS = ['column', 'function'];
-const PRESENTATION_KEYS = ['showGraph', 'columnWidths'];
+const PRESENTATION_KEYS = ['showGraph', 'columnWidths', 'columnHints'];
+const COLUMN_HINT_KEYS = ['column', 'format'];
+const COLUMN_FORMAT_KEYS = [
+  'style',
+  'decimalPlaces',
+  'currency',
+  'grouping',
+  'redIfNegative',
+  'parenthesesIfNegative',
+];
 const COLUMN_WIDTH_KEYS = ['column', 'width'];
 
 /** Unknown keys to write back, never over a known one */
@@ -177,6 +188,19 @@ const encodeNode = (
   };
 };
 
+/** A format, its flags written only when on and its numbers only when given */
+const encodeColumnFormat = (format: ColumnFormat): JsonObject => ({
+  style: format.style,
+  ...(format.decimalPlaces !== undefined
+    ? { decimalPlaces: format.decimalPlaces }
+    : {}),
+  ...(format.currency !== undefined ? { currency: format.currency } : {}),
+  ...(format.grouping ? { grouping: true } : {}),
+  ...(format.redIfNegative ? { redIfNegative: true } : {}),
+  ...(format.parenthesesIfNegative ? { parenthesesIfNegative: true } : {}),
+  ...restOf(format.rest, COLUMN_FORMAT_KEYS),
+});
+
 const encodePresentation = (
   presentation: Presentation,
 ): JsonObject | undefined => {
@@ -188,6 +212,15 @@ const encodePresentation = (
             column: width.column,
             width: width.width,
             ...restOf(width.rest, COLUMN_WIDTH_KEYS),
+          })),
+        }
+      : {}),
+    ...(presentation.columnHints?.length
+      ? {
+          columnHints: presentation.columnHints.map((hint) => ({
+            ...(hint.column !== undefined ? { column: hint.column } : {}),
+            format: encodeColumnFormat(hint.format),
+            ...restOf(hint.rest, COLUMN_HINT_KEYS),
           })),
         }
       : {}),
@@ -441,9 +474,62 @@ const decodeColumnWidth = (value: unknown, path: string): ColumnWidth => {
   };
 };
 
+const readOptionalFlag = (
+  json: JsonObject,
+  key: string,
+  path: string,
+): boolean => (json[key] === undefined ? false : readBoolean(json, key, path));
+
+const decodeColumnFormat = (value: unknown, path: string): ColumnFormat => {
+  const json = readObject(value, path);
+  const decimalPlaces = readOptionalFiniteNumber(json, 'decimalPlaces', path);
+  if (
+    decimalPlaces !== undefined &&
+    (!Number.isInteger(decimalPlaces) ||
+      decimalPlaces < 0 ||
+      decimalPlaces > 20)
+  ) {
+    return fail(
+      pathTo(path, 'decimalPlaces'),
+      'must be a whole number from 0 to 20',
+    );
+  }
+  return {
+    // kept as saved, a style a newer Cube adds included
+    style: readString(json, 'style', path),
+    ...(decimalPlaces !== undefined ? { decimalPlaces } : {}),
+    ...(json.currency !== undefined
+      ? { currency: readString(json, 'currency', path) }
+      : {}),
+    grouping: readOptionalFlag(json, 'grouping', path),
+    redIfNegative: readOptionalFlag(json, 'redIfNegative', path),
+    parenthesesIfNegative: readOptionalFlag(
+      json,
+      'parenthesesIfNegative',
+      path,
+    ),
+    ...readRest(json, COLUMN_FORMAT_KEYS),
+  };
+};
+
+const decodeColumnHint = (value: unknown, path: string): ColumnHint => {
+  const json = readObject(value, path);
+  return {
+    ...(json.column !== undefined
+      ? { column: readString(json, 'column', path) }
+      : {}),
+    format: decodeColumnFormat(
+      json.format ?? fail(pathTo(path, 'format'), 'is required'),
+      pathTo(path, 'format'),
+    ),
+    ...readRest(json, COLUMN_HINT_KEYS),
+  };
+};
+
 const decodePresentation = (value: unknown, path: string): Presentation => {
   const json = readObject(value, path);
   const widthsPath = pathTo(path, 'columnWidths');
+  const hintsPath = pathTo(path, 'columnHints');
   return {
     showGraph:
       json.showGraph === undefined
@@ -455,6 +541,13 @@ const decodePresentation = (value: unknown, path: string): Presentation => {
         : readArray(json.columnWidths, widthsPath).map((item, index) =>
             decodeColumnWidth(item, pathTo(widthsPath, index)),
           ),
+    ...(json.columnHints === undefined
+      ? {}
+      : {
+          columnHints: readArray(json.columnHints, hintsPath).map(
+            (item, index) => decodeColumnHint(item, pathTo(hintsPath, index)),
+          ),
+        }),
     ...readRest(json, PRESENTATION_KEYS),
   };
 };

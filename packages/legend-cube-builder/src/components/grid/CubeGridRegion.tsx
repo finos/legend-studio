@@ -38,6 +38,7 @@ import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeGridMode } from '../../stores/CubeGridState.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
+import { CubeColumnFormatDialog } from './CubeColumnFormatDialog.js';
 import { CubeDrilldownBar } from './CubeDrilldownBar.js';
 import { CubeRunStatsPanel } from './CubeRunStatsPanel.js';
 import { CubeServerSideGrid } from './CubeServerSideGrid.js';
@@ -375,6 +376,7 @@ const CubeRunGrid = observer(
               key={result.id}
               editorState={editorState}
               result={result}
+              presentation={editorState.document.meta.presentation}
               darkMode={darkMode}
             />
           </div>
@@ -398,6 +400,7 @@ const CubeRunGrid = observer(
             editorState={editorState}
             result={result}
             levels={grid.drilldown?.columns ?? []}
+            presentation={editorState.document.meta.presentation}
             darkMode={darkMode}
           />
         </div>
@@ -429,6 +432,7 @@ export const CubeGridRegion = observer(
           onToggleRuns={() => setShowRuns(!showRuns)}
         />
         {showRuns && <CubeRunStatsPanel editorState={editorState} />}
+        <CubeColumnFormatDialog editorState={editorState} />
         {showSql && !execution.isRunning && (
           <CubeSqlPanel editorState={editorState} />
         )}

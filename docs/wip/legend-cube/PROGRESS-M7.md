@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.10 done                                                      |
+| Step   | M7.1–M7.11 done                                                      |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -29,7 +29,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.8** Export
 - [x] **M7.9** The curated context menu
 - [x] **M7.10** The stats popover
-- [ ] **M7.11** Column formatting and widths
+- [x] **M7.11** Column formatting and widths
 - [ ] **M7.12** Around the databases
 - [ ] **M7.13** Guides, testing.md and the changeset
 - [ ] **M7.14** Verification and the browser rehearsal
@@ -159,3 +159,17 @@ Filled in as steps land.
   15 latest runs, newest first (Execute, each fetch, each export), with the time each finished, its duration, its SQL
   folded, and Copy SQL. A panel rather than a popover, as Show SQL is. Tests: the store's cap and order; the panel after
   an Execute and a header sort, copying the sort's SQL.
+- **M7.11** (2026-10-11). The core: `presentation/ColumnFormat.ts` (`ColumnFormat {style, decimalPlaces?, currency?,
+grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`, a column's own format else the one
+  for every number column, in any case), `Presentation.columnHints` (optional, as the drill-down), saved as
+  `meta.presentation.columnHints` with defaults left out and unknown keys and styles kept; 0 to 20 places. The builder:
+  `formatColumnValue` formats the exact text with `Intl.NumberFormat` (no digit lost), parentheses on the absolute
+  value, `negative` for red; an unknown style or currency falls back to the default display and the dialog says why
+  (§21: ISO codes, `Intl.supportedValuesOf('currency')`); only number columns. `CubeCell` takes the column's format,
+  red only with red if negative (§21's swapped flag fixed), the exact value on hover. 'Format Column…' in the cell menu
+  (disabled off number columns and on a read-only cube) opens `CubeColumnFormatDialog`: style, currency, places,
+  the three flags, apply to every number column, a preview, Remove Format; an undo step. Widths: read from and written
+  to `columnWidths` on a user resize or autosize, by name, no undo step. The forward-compatibility test's unknown
+  presentation key became `columnStyles`. Tests: core (format lookup and edits, the codec), the formatter, the cell's
+  red and fallback, the grid state's edits, the region (a saved currency format, the dialog from the cell's menu to a
+  percent, a saved width). Browser: Largest buys, NOTIONAL_USD as USD with no places, `$2,206,337`.

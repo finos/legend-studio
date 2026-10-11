@@ -157,6 +157,9 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
     `Values of type ${typeName} can't be compared.`,
 };
 
+/** Why 'Format Column' can't be used on a column (spec §13.1) */
+export const CUBE_FORMAT_NOT_A_NUMBER = 'Only number columns can be formatted.';
+
 /** Why 'Drilldown by' can't be used on a column (PLAN §11.10) */
 export const CUBE_DRILLDOWN_BLOCKER = {
   ALREADY_A_LEVEL: 'The results already drill down by this column.',

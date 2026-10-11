@@ -15,10 +15,18 @@
  */
 
 import { clsx } from '@finos/legend-art';
-import type { TypeFamily } from '@finos/legend-cube';
+import {
+  type ColumnFormat,
+  DEFAULT_PRESENTATION,
+  foldColumnName,
+  getColumnFormat,
+  type Presentation,
+  type TypeFamily,
+} from '@finos/legend-cube';
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumn,
   type DataGridColumnDefinition,
   type DataGridDefaultMenuItem,
   type DataGridGetContextMenuItemsParams,
@@ -27,7 +35,11 @@ import {
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { memo, useCallback, useMemo } from 'react';
-import { NULL_CELL_TEXT } from '../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_FORMAT_NOT_A_NUMBER,
+  NULL_CELL_TEXT,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
@@ -44,6 +56,7 @@ import {
 import {
   compareCellValues,
   formatCellValue,
+  formatColumnValue,
   isNumericFamily,
 } from './CubeGridValues.js';
 
@@ -172,6 +185,12 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
     return common;
   }
   const drilldownBlocker = editorState.grid.getAddLevelBlocker(column.name);
+  // only number columns are formatted (spec §13.1)
+  const formatBlocker = editorState.readOnly
+    ? READ_ONLY_CUBE_TITLE
+    : isNumericFamily(column.type.family)
+      ? undefined
+      : CUBE_FORMAT_NOT_A_NUMBER;
   return [
     {
       name: `Drilldown by "${column.name}"`,
@@ -189,6 +208,12 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
       };
     }),
     'separator',
+    {
+      name: 'Format Column…',
+      disabled: formatBlocker !== undefined,
+      ...(formatBlocker === undefined ? {} : { tooltip: formatBlocker }),
+      action: () => editorState.grid.openFormat(column.name),
+    },
     ...common,
   ];
 };
@@ -201,6 +226,8 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
 export const CubeCell: React.FC<
   DataGridCellRendererParams<CubeAnyRow, CubeResultValue | undefined> & {
     family: TypeFamily;
+    /** The column's format (PLAN §11.10), on a number column that has one */
+    format?: ColumnFormat | undefined;
   }
 > = (props) => {
   if (props.value === undefined) {
@@ -212,6 +239,22 @@ export const CubeCell: React.FC<
     );
   }
   const exact = String(props.value);
+  const formatted = props.format
+    ? formatColumnValue(props.value, props.format)
+    : undefined;
+  if (formatted) {
+    return (
+      <span
+        title={exact}
+        className={clsx({
+          'text-[var(--color-status-error)]':
+            props.format?.redIfNegative && formatted.negative,
+        })}
+      >
+        {formatted.text}
+      </span>
+    );
+  }
   const shown = formatCellValue(props.value, props.family);
   return shown === exact ? <>{exact}</> : <span title={exact}>{shown}</span>;
 };
@@ -227,21 +270,63 @@ export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
     row: Row | undefined,
     position: number,
   ) => CubeResultValue | undefined,
+  presentation: Presentation = DEFAULT_PRESENTATION,
 ): DataGridColumnDefinition<Row, CubeResultValue | undefined>[] =>
   result.schema.columns.map((column, position) => {
     const numeric = isNumericFamily(column.type.family);
+    const width = presentation.columnWidths.find(
+      (each) => foldColumnName(each.column) === foldColumnName(column.name),
+    )?.width;
     return {
       colId: `${COLUMN_ID_PREFIX}${position}`,
       headerName: column.name,
       headerTooltip: `${column.type.displayName}${column.nullable ? '?' : ''} (${column.type.fullName})`,
       valueGetter: (params) => valueAt(params.data, position),
       cellRenderer: CubeCell,
-      cellRendererParams: { family: column.type.family },
+      cellRendererParams: {
+        family: column.type.family,
+        // only number columns are formatted (spec §13.1)
+        format: numeric
+          ? getColumnFormat(presentation.columnHints ?? [], column.name)
+          : undefined,
+      },
+      ...(width === undefined ? {} : { width }),
       ...(numeric
         ? { type: 'rightAligned', comparator: compareCellValues }
         : {}),
     };
   });
+
+/**
+ * Keeps a column's width when the user resizes it, by dragging or from the
+ * menu (PLAN §11.10): the cube saves it, with no undo step
+ */
+export const keepCubeColumnWidths = (
+  editorState: CubeEditorState,
+  result: CubeExecutionResult,
+  event: {
+    readonly finished: boolean;
+    readonly source: string;
+    readonly columns?: readonly DataGridColumn[] | null | undefined;
+  },
+): void => {
+  if (
+    !event.finished ||
+    (event.source !== 'uiColumnResized' && event.source !== 'autosizeColumns')
+  ) {
+    return;
+  }
+  (event.columns ?? []).forEach((column) => {
+    const colId = column.getColId();
+    const name = colId.startsWith(COLUMN_ID_PREFIX)
+      ? result.schema.columns[Number(colId.slice(COLUMN_ID_PREFIX.length))]
+          ?.name
+      : undefined;
+    if (name !== undefined) {
+      editorState.setColumnWidth(name, column.getActualWidth());
+    }
+  });
+};
 
 /** A value as a JS number, for local mode's filters and totals; `null` for none or text that isn't one */
 const toNumber = (value: CubeResultValue | undefined): number | null => {
@@ -311,9 +396,10 @@ export const CubeResultGrid = memo(
   (props: {
     editorState: CubeEditorState;
     result: CubeExecutionResult;
+    presentation: Presentation;
     darkMode: boolean;
   }) => {
-    const { editorState, result, darkMode } = props;
+    const { editorState, result, presentation, darkMode } = props;
     const getContextMenuItems = useCallback(
       (params: DataGridGetContextMenuItemsParams<CubeRow>) =>
         getCubeGridContextMenuItems(editorState, params),
@@ -324,6 +410,7 @@ export const CubeResultGrid = memo(
         buildCubeColumnDefs<CubeRow>(
           result,
           (row, position) => row?.[position] ?? null,
+          presentation,
         ).map(
           (
             column,
@@ -341,7 +428,7 @@ export const CubeResultGrid = memo(
                 }
               : { ...column, allowedAggFuncs: ['count'] },
         ),
-      [result],
+      [result, presentation],
     );
     return (
       <div
@@ -365,6 +452,9 @@ export const CubeResultGrid = memo(
           sideBar={LOCAL_SIDE_BAR}
           statusBar={LOCAL_STATUS_BAR}
           cellSelection={true}
+          onColumnResized={(event) =>
+            keepCubeColumnWidths(editorState, result, event)
+          }
         />
       </div>
     );
