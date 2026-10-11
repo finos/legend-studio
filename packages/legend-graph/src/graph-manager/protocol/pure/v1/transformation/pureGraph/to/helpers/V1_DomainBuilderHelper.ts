@@ -45,7 +45,10 @@ import {
   type V1_GraphBuilderContext,
 } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type { V1_Constraint } from '../../../../model/packageableElements/domain/V1_Constraint.js';
-import type { V1_RawVariable } from '../../../../model/rawValueSpecification/V1_RawVariable.js';
+import type {
+  V1_RawGenericType,
+  V1_RawVariable,
+} from '../../../../model/rawValueSpecification/V1_RawVariable.js';
 import type { V1_Property } from '../../../../model/packageableElements/domain/V1_Property.js';
 import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty.js';
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure.js';
@@ -76,6 +79,7 @@ import { V1_getGenericTypeFullPath } from '../../../../helpers/V1_DomainHelper.j
 import type { V1_GenericType } from '../../../../model/packageableElements/type/V1_GenericType.js';
 import type { GenericTypeReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { V1_buildValueSpecification } from './V1_ValueSpecificationBuilderHelper.js';
+import type { ValueSpecification } from '../../../../../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -124,6 +128,20 @@ export const V1_buildConstraint = (
   return pureConstraint;
 };
 
+/**
+ * Builds the type variable values of the generic type of a (raw) variable, e.g. the
+ * `10` in `Varchar(10)`, or returns `undefined` when there are none.
+ */
+export const V1_buildRawGenericTypeVariableValues = (
+  genericType: V1_RawGenericType,
+  context: V1_GraphBuilderContext,
+): ValueSpecification[] | undefined =>
+  genericType.typeVariableValues.length
+    ? genericType.typeVariableValues.map((value) =>
+        V1_buildValueSpecification(value as V1_ValueSpecification, context),
+      )
+    : undefined;
+
 export const V1_buildVariable = (
   variable: V1_RawVariable,
   context: V1_GraphBuilderContext,
@@ -153,6 +171,9 @@ export const V1_buildVariable = (
     multiplicity,
     type,
     typeArguments,
+    // NOTE: the raw type is still resolved from its path only, so it keeps its input
+    // spelling and the function path (which only depends on the raw types) is unchanged
+    V1_buildRawGenericTypeVariableValues(variable.genericType, context),
   );
 };
 

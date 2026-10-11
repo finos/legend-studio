@@ -21,6 +21,7 @@ import {
   V1_RawValueSpecification,
 } from '../../model/rawValueSpecification/V1_RawValueSpecification.js';
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_ValueSpecification } from '../../model/valueSpecification/V1_ValueSpecification.js';
 
 export class V1_RawRawType {
   fullPath!: string;
@@ -58,6 +59,13 @@ export class V1_RawVariable
       this.name,
       this.multiplicity,
       hashArray(this.genericType.typeArguments.map((t) => t.rawType.fullPath)),
+      // NOTE: type variable values (e.g. the `10` in `Varchar(10)`) are only hashed
+      // when present so the hash of every other variable stays unchanged
+      this.genericType.typeVariableValues.length
+        ? hashArray(
+            this.genericType.typeVariableValues as V1_ValueSpecification[],
+          )
+        : undefined,
     ]);
   }
 
