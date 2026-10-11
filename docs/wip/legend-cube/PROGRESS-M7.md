@@ -89,4 +89,6 @@ Filled in as steps land.
   derived query valid by Cube's own checks, its Pure printed), and `CubeDrilldown.engine-roundtrip-test.ts`, which
   runs each level on H2 and compares it with groups counted and summed from the run's rows: countries, France's
   cities, Lyon's orders sorted, the 507 orders with no region, a sort by an aggregation, set aggregations, a sample of
-  `FREIGHT` keys each expanded to its rows, and a key of each `ALLTYPES` type.
+  `FREIGHT` keys each expanded to its rows, and a key of each `ALLTYPES` type. Mutants: float keys by
+  Equal only (caught by the unit test and the engine's `FREIGHT` sample), no default sort at a group level (caught by
+  the unit test; H2 happens to return groups in key order), grouping by the new level alone (caught).
