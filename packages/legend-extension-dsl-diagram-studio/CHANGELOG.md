@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-diagram-studio
 
+## 0.0.101
+
 ## 0.0.100
 
 ### Patch Changes
