@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.5.6
+
+### Patch Changes
+
+- [#5651](https://github.com/finos/legend-studio/pull/5651) [`c3618c1`](https://github.com/finos/legend-studio/commit/c3618c1c0adb70d18d262d51b2a09e5dd887116b) ([@jackp5150](https://github.com/jackp5150)) - Adds logic to redirect users in marketplace to the correct url for user-defined related dataspaces from a studio model.
+
+- [#5647](https://github.com/finos/legend-studio/pull/5647) [`fef7cd5`](https://github.com/finos/legend-studio/commit/fef7cd5578c679550dc7c70665c6e490d8861edc) ([@eradityash](https://github.com/eradityash)) - refactor: search recommended add-ons client-side instead of calling the search API
+
 ## 0.5.5
 
 ### Patch Changes
