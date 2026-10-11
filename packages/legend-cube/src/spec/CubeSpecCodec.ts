@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
+import {
+  type Drilldown,
+  type DrilldownAggregation,
+  isEmptyDrilldown,
+} from '../drilldown/Drilldown.js';
 import { Connection } from '../graph/Connection.js';
+import type { ColumnFormat, ColumnHint } from '../presentation/ColumnFormat.js';
 import {
   type ColumnWidth,
   type CubeContext,
@@ -46,8 +52,10 @@ import {
   readArray,
   readBoolean,
   readObject,
+  readOptionalFiniteNumber,
   readOptionalString,
   readString,
+  readStringList,
   UnreadableContent,
 } from './SpecReader.js';
 
@@ -87,8 +95,19 @@ const TOP_LEVEL_KEYS = ['formatVersion', 'name', 'context', 'query', 'meta'];
 const CONTEXT_KEYS = ['model', 'runtime'];
 const QUERY_KEYS = ['selected', 'nodes'];
 const NODE_KEYS = ['kind', 'id', 'inputs'];
-const META_KEYS = ['presentation'];
-const PRESENTATION_KEYS = ['showGraph', 'columnWidths'];
+const META_KEYS = ['presentation', 'drilldown'];
+const DRILLDOWN_KEYS = ['columns', 'aggregations'];
+const DRILLDOWN_AGGREGATION_KEYS = ['column', 'function'];
+const PRESENTATION_KEYS = ['showGraph', 'columnWidths', 'columnHints'];
+const COLUMN_HINT_KEYS = ['column', 'format'];
+const COLUMN_FORMAT_KEYS = [
+  'style',
+  'decimalPlaces',
+  'currency',
+  'grouping',
+  'redIfNegative',
+  'parenthesesIfNegative',
+];
 const COLUMN_WIDTH_KEYS = ['column', 'width'];
 
 /** Unknown keys to write back, never over a known one */
@@ -169,6 +188,19 @@ const encodeNode = (
   };
 };
 
+/** A format, its flags written only when on and its numbers only when given */
+const encodeColumnFormat = (format: ColumnFormat): JsonObject => ({
+  style: format.style,
+  ...(format.decimalPlaces !== undefined
+    ? { decimalPlaces: format.decimalPlaces }
+    : {}),
+  ...(format.currency !== undefined ? { currency: format.currency } : {}),
+  ...(format.grouping ? { grouping: true } : {}),
+  ...(format.redIfNegative ? { redIfNegative: true } : {}),
+  ...(format.parenthesesIfNegative ? { parenthesesIfNegative: true } : {}),
+  ...restOf(format.rest, COLUMN_FORMAT_KEYS),
+});
+
 const encodePresentation = (
   presentation: Presentation,
 ): JsonObject | undefined => {
@@ -183,15 +215,46 @@ const encodePresentation = (
           })),
         }
       : {}),
+    ...(presentation.columnHints?.length
+      ? {
+          columnHints: presentation.columnHints.map((hint) => ({
+            ...(hint.column !== undefined ? { column: hint.column } : {}),
+            format: encodeColumnFormat(hint.format),
+            ...restOf(hint.rest, COLUMN_HINT_KEYS),
+          })),
+        }
+      : {}),
     ...restOf(presentation.rest, PRESENTATION_KEYS),
   };
   return Object.keys(json).length ? json : undefined;
 };
 
+/** The drill-down, or nothing for none: no levels, no aggregation and no unknown key */
+const encodeDrilldown = (
+  drilldown: Drilldown | undefined,
+): JsonObject | undefined =>
+  !drilldown || isEmptyDrilldown(drilldown)
+    ? undefined
+    : {
+        columns: [...drilldown.columns],
+        ...(drilldown.aggregations.length
+          ? {
+              aggregations: drilldown.aggregations.map((aggregation) => ({
+                column: aggregation.column,
+                function: aggregation.function,
+                ...restOf(aggregation.rest, DRILLDOWN_AGGREGATION_KEYS),
+              })),
+            }
+          : {}),
+        ...restOf(drilldown.rest, DRILLDOWN_KEYS),
+      };
+
 const encodeMeta = (meta: CubeMeta): JsonObject | undefined => {
   const presentation = encodePresentation(meta.presentation);
+  const drilldown = encodeDrilldown(meta.drilldown);
   const json: JsonObject = {
     ...(presentation ? { presentation } : {}),
+    ...(drilldown ? { drilldown } : {}),
     ...restOf(meta.rest, META_KEYS),
   };
   return Object.keys(json).length ? json : undefined;
@@ -411,9 +474,62 @@ const decodeColumnWidth = (value: unknown, path: string): ColumnWidth => {
   };
 };
 
+const readOptionalFlag = (
+  json: JsonObject,
+  key: string,
+  path: string,
+): boolean => (json[key] === undefined ? false : readBoolean(json, key, path));
+
+const decodeColumnFormat = (value: unknown, path: string): ColumnFormat => {
+  const json = readObject(value, path);
+  const decimalPlaces = readOptionalFiniteNumber(json, 'decimalPlaces', path);
+  if (
+    decimalPlaces !== undefined &&
+    (!Number.isInteger(decimalPlaces) ||
+      decimalPlaces < 0 ||
+      decimalPlaces > 20)
+  ) {
+    return fail(
+      pathTo(path, 'decimalPlaces'),
+      'must be a whole number from 0 to 20',
+    );
+  }
+  return {
+    // kept as saved, a style a newer Cube adds included
+    style: readString(json, 'style', path),
+    ...(decimalPlaces !== undefined ? { decimalPlaces } : {}),
+    ...(json.currency !== undefined
+      ? { currency: readString(json, 'currency', path) }
+      : {}),
+    grouping: readOptionalFlag(json, 'grouping', path),
+    redIfNegative: readOptionalFlag(json, 'redIfNegative', path),
+    parenthesesIfNegative: readOptionalFlag(
+      json,
+      'parenthesesIfNegative',
+      path,
+    ),
+    ...readRest(json, COLUMN_FORMAT_KEYS),
+  };
+};
+
+const decodeColumnHint = (value: unknown, path: string): ColumnHint => {
+  const json = readObject(value, path);
+  return {
+    ...(json.column !== undefined
+      ? { column: readString(json, 'column', path) }
+      : {}),
+    format: decodeColumnFormat(
+      json.format ?? fail(pathTo(path, 'format'), 'is required'),
+      pathTo(path, 'format'),
+    ),
+    ...readRest(json, COLUMN_HINT_KEYS),
+  };
+};
+
 const decodePresentation = (value: unknown, path: string): Presentation => {
   const json = readObject(value, path);
   const widthsPath = pathTo(path, 'columnWidths');
+  const hintsPath = pathTo(path, 'columnHints');
   return {
     showGraph:
       json.showGraph === undefined
@@ -425,7 +541,52 @@ const decodePresentation = (value: unknown, path: string): Presentation => {
         : readArray(json.columnWidths, widthsPath).map((item, index) =>
             decodeColumnWidth(item, pathTo(widthsPath, index)),
           ),
+    ...(json.columnHints === undefined
+      ? {}
+      : {
+          columnHints: readArray(json.columnHints, hintsPath).map(
+            (item, index) => decodeColumnHint(item, pathTo(hintsPath, index)),
+          ),
+        }),
     ...readRest(json, PRESENTATION_KEYS),
+  };
+};
+
+const decodeDrilldownAggregation = (
+  value: unknown,
+  path: string,
+): DrilldownAggregation => {
+  const json = readObject(value, path);
+  const fn = json.function;
+  if (fn === undefined) {
+    return fail(pathTo(path, 'function'), 'is required');
+  }
+  if (fn !== null && typeof fn !== 'string') {
+    return fail(pathTo(path, 'function'), 'must be a string or null');
+  }
+  return {
+    column: readString(json, 'column', path),
+    // kept as saved, a function this version doesn't know included:
+    // `checkDrilldown` reports it
+    function: fn,
+    ...readRest(json, DRILLDOWN_AGGREGATION_KEYS),
+  };
+};
+
+const decodeDrilldown = (value: unknown, path: string): Drilldown => {
+  const json = readObject(value, path);
+  const aggregationsPath = pathTo(path, 'aggregations');
+  return {
+    // kept as saved, a column the query no longer has included:
+    // `checkDrilldown` reports it
+    columns: readStringList(json, 'columns', path),
+    aggregations:
+      json.aggregations === undefined
+        ? []
+        : readArray(json.aggregations, aggregationsPath).map((item, index) =>
+            decodeDrilldownAggregation(item, pathTo(aggregationsPath, index)),
+          ),
+    ...readRest(json, DRILLDOWN_KEYS),
   };
 };
 
@@ -436,6 +597,11 @@ const decodeMeta = (value: unknown, path: string): CubeMeta => {
       json.presentation === undefined
         ? DEFAULT_META.presentation
         : decodePresentation(json.presentation, pathTo(path, 'presentation')),
+    ...(json.drilldown === undefined
+      ? {}
+      : {
+          drilldown: decodeDrilldown(json.drilldown, pathTo(path, 'drilldown')),
+        }),
     ...readRest(json, META_KEYS),
   };
 };

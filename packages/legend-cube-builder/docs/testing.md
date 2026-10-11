@@ -186,3 +186,17 @@ The engine tests in `src/__tests__/` import `V1_*` classes there, as an exceptio
 - **Changing the sample projects:** edit `fixtures/legend-mock-server/scripts/generate-cube-depot.mjs` and run it with
   the engine up (`node scripts/generate-cube-depot.mjs`). The engine caches a pointer's project per version, so restart
   it after changing a version it has fetched.
+
+### The results grid
+
+- **Server-side mode in jsdom.** ag-grid's server-side row model renders in jsdom, group rows and their expansion
+  included, so the region's tests drive it as a user would (`CubeGridRegion.test.tsx`). The logic sits below it, in
+  `CubeGridFetcher` and `CubeGridState` (store tests on the fake engine) and the core's `deriveDrilldownLevel`.
+- **Each level on the engine:** `src/__tests__/CubeDrilldown.engine-roundtrip-test.ts` runs drill-down levels on H2
+  and compares their groups with groups counted and summed from the run's own rows, keys of every type included (a
+  32-bit `REAL` key needs `In [v, fround(v)]`), and over a Partition and a Limit run.
+- **Around the databases:** the plan-only dialect test plans each level shape on every database type, and the
+  conformance suite checks the derived Groups' types against the engine's.
+- **Export:** `src/__tests__/CubeExport.engine-roundtrip-test.ts` reads the engine's CSV. The engine test client sends
+  the serialization format the client asks for (Studio's CSV is the engine's `CSV_TRANSFORMED`). jsdom has no
+  `URL.createObjectURL`, so a test that saves a file stubs it (`CubeExportState.test.ts`).

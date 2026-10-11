@@ -54,6 +54,10 @@ import {
   SortDirection,
   WindowRankFunction,
   WindowRowFunction,
+  checkDrilldown,
+  deriveDrilldownLevel,
+  type DrilldownAggregation,
+  type DrilldownCell,
 } from '@finos/legend-cube';
 import {
   TEST__chainOf,
@@ -531,6 +535,43 @@ const partitionOfConverted =
       ]),
     )(sources);
   };
+
+/**
+ * A level of the grid's drill-down (PLAN §11.10), derived from a run of the
+ * case's first table: the Filter, Group and Sort Cube appends
+ */
+const drilledDown =
+  (
+    columns: readonly string[],
+    keys: readonly DrilldownCell[],
+    aggregations: readonly DrilldownAggregation[] = [],
+  ) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const table = source(sources, 'relational101');
+    // listing the node types, untyped: the run alone
+    if (table.resolution.kind !== 'resolved') {
+      return chain()(sources);
+    }
+    return deriveDrilldownLevel({
+      query: chain()(sources),
+      captureId: table.id,
+      schema: table.resolution.schema,
+      drilldown: checkDrilldown(
+        { columns, aggregations },
+        table.resolution.schema,
+      ),
+      keys,
+      sorts: [],
+    }).query;
+  };
+
+/** The Sums a drill-down of ORDERS gives each group by default, which the engine types as never null */
+const ORDERS_DRILLDOWN_SUMS = [
+  'ORDER_ID Sum',
+  'EMPLOYEE_ID Sum',
+  'SHIP_VIA Sum',
+  'FREIGHT Sum',
+];
 
 const CASES: readonly ConformanceCase[] = [
   { name: 'orders', tables: [ORDERS], build: chain() },
@@ -1733,6 +1774,69 @@ const CASES: readonly ConformanceCase[] = [
       partition101: ['freight so far'],
       filter101: ['freight so far'],
       group101: ['row total'],
+    },
+  },
+  {
+    // the grid's drill-down (PLAN §11.10): the top level, each number summed
+    name: 'drilldown-top-level',
+    tables: [ORDERS],
+    build: drilledDown(['SHIP_COUNTRY', 'SHIP_CITY'], []),
+    widerNullable: {
+      group101: ORDERS_DRILLDOWN_SUMS,
+      sort101: ORDERS_DRILLDOWN_SUMS,
+    },
+  },
+  {
+    // a level below, by a key, with an Average, a Distinct Count and nothing
+    name: 'drilldown-level-below',
+    tables: [ORDERS],
+    build: drilledDown(
+      ['SHIP_COUNTRY', 'SHIP_CITY'],
+      ['France'],
+      [
+        { column: 'FREIGHT', function: AggregationFunction.AVERAGE },
+        { column: 'SHIP_NAME', function: AggregationFunction.DISTINCT_COUNT },
+        { column: 'ORDER_ID', function: null },
+      ],
+    ),
+    widerNullable: {
+      group101: ['EMPLOYEE_ID Sum', 'SHIP_VIA Sum', 'FREIGHT Average'],
+      sort101: ['EMPLOYEE_ID Sum', 'SHIP_VIA Sum', 'FREIGHT Average'],
+    },
+  },
+  {
+    // the rows under an empty key and a float key: Is Empty, then In of the
+    // float and its 32-bit neighbour
+    name: 'drilldown-rows-by-empty-and-float-keys',
+    tables: [ORDERS],
+    build: drilledDown(['SHIP_REGION', 'FREIGHT'], [null, 32.38]),
+  },
+  {
+    // ALLTYPES by its Boolean: every number type summed
+    name: 'drilldown-alltypes-sums',
+    tables: [ALLTYPES],
+    build: drilledDown(['B'], []),
+    widerNullable: {
+      group101: [
+        'ID Sum',
+        'TI Sum',
+        'SI Sum',
+        'BI Sum',
+        'F Sum',
+        'D Sum',
+        'DEC Sum',
+        'NUM Sum',
+      ],
+      sort101: [
+        'ID Sum',
+        'TI Sum',
+        'SI Sum',
+        'BI Sum',
+        'F Sum',
+        'D Sum',
+        'DEC Sum',
+        'NUM Sum',
+      ],
     },
   },
 ];

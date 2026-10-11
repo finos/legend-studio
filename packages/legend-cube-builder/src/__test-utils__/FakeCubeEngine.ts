@@ -89,6 +89,7 @@ export interface FakeCubeEngineAnswers {
   /** keyed by `<schema>.<table>`; a table not in it gets a compile error */
   readonly schemas?: ReadonlyMap<string, Schema>;
   readonly result?: CubeResult;
+  readonly csv?: string;
   readonly pure?: string;
 }
 
@@ -98,6 +99,7 @@ export interface FakeCubeEngine {
   readonly resolveSchemas: jest.Mock<CubeEngine['resolveSchemas']>;
   readonly typeLambdas: jest.Mock<CubeEngine['typeLambdas']>;
   readonly execute: jest.Mock<CubeEngine['execute']>;
+  readonly exportCsv: jest.Mock<CubeEngine['exportCsv']>;
   readonly renderPure: jest.Mock<CubeEngine['renderPure']>;
   readonly parseExpression: jest.Mock<CubeEngine['parseExpression']>;
   readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
@@ -133,6 +135,9 @@ export const createFakeCubeEngine = (
   const execute = jest.fn<CubeEngine['execute']>(async () =>
     Promise.resolve(answers.result ?? EMPTY_CUBE_RESULT),
   );
+  const exportCsv = jest.fn<CubeEngine['exportCsv']>(async () =>
+    Promise.resolve(answers.csv ?? ''),
+  );
   const renderPure = jest.fn<CubeEngine['renderPure']>(async () =>
     Promise.resolve(answers.pure ?? ''),
   );
@@ -154,6 +159,7 @@ export const createFakeCubeEngine = (
       resolveSchemas,
       typeLambdas,
       execute,
+      exportCsv,
       renderPure,
       parseExpression,
       planLambda,
@@ -162,6 +168,7 @@ export const createFakeCubeEngine = (
     resolveSchemas,
     typeLambdas,
     execute,
+    exportCsv,
     renderPure,
     parseExpression,
     planLambda,

@@ -30,6 +30,7 @@ import {
 import {
   ColumnComparisonFilter,
   CubeDocument,
+  DEFAULT_META,
   FilterOperator,
   type IR,
   PrimitiveType,
@@ -203,6 +204,11 @@ const cellTexts = async (column: number): Promise<string[]> => {
 };
 
 /** Sorts by a column, as a click on its header does */
+/** Shows the grid in local mode: the run's rows sorted, grouped and filtered in the browser */
+const useLocalMode = (): void => {
+  fireEvent.click(within(toolbar()).getByRole('button', { name: 'Local' }));
+};
+
 const clickHeader = (column: number): void => {
   fireEvent.click(
     headerCell(column).querySelector('.ag-header-cell-label') as Element,
@@ -364,6 +370,7 @@ describe('Cube results', () => {
         ['7', '512.00', 0.5, '2025'],
       ]),
     });
+    useLocalMode();
     fireEvent.click(executeButton());
     expect(await cellTexts(0)).toEqual(['10692', '5', '7']);
     expect(await cellTexts(1)).toEqual(['31,102,024.71', '-1,234.5', '512.00']);
@@ -399,6 +406,7 @@ describe('Cube results', () => {
         ]),
       ),
     );
+    useLocalMode();
     fireEvent.click(executeButton());
     await cellTexts(0);
     clickHeader(0);
@@ -414,6 +422,7 @@ describe('Cube results', () => {
 
   test("Shows a new run's rows in the engine's order, not under the last run's sort", async () => {
     const fake = await renderPage();
+    useLocalMode();
     fireEvent.click(executeButton());
     await cellTexts(0);
     clickHeader(0);
@@ -432,6 +441,239 @@ describe('Cube results', () => {
       expect(new Set(await cellTexts(0))).toEqual(new Set(['1', '2', '3'])),
     );
     expect(await cellTexts(0)).toEqual(['3', '1', '2']);
+  });
+
+  test("Sorts by a header on the engine in server-side mode, over all the query's rows, and shows the engine's order", async () => {
+    const fake = await renderPage();
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']);
+    fake.execute.mockResolvedValueOnce(
+      result([
+        ['9007199254740993', 'b'],
+        ['10', 'a'],
+        ['9', null],
+      ]),
+    );
+    clickHeader(0);
+    // the engine's order, whatever the browser would make of it
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['9007199254740993', '10', '9']),
+    );
+    const sorted = printIR(fake.execute.mock.calls[1]?.[1] as IR);
+    expect(sorted).toContain('->sort(~ID->ascending())');
+    // descending, then cleared: the run's own rows again, with no new run
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    clickHeader(0);
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
+    );
+    expect(fake.execute.mock.calls.map((call) => printIR(call[1]))).toEqual([
+      expect.not.stringContaining('->sort('),
+      expect.stringContaining('->sort(~ID->ascending())'),
+      expect.stringContaining('->sort(~ID->descending())'),
+    ]);
+  });
+
+  test("Shows a drill-down's groups with their counts, each number summed, and a group's rows on expanding it", async () => {
+    const fake = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          drilldown: { columns: ['NAME'], aggregations: [] },
+        },
+      }),
+    );
+    fake.execute.mockResolvedValueOnce(result(ROWS));
+    fake.execute.mockResolvedValueOnce({
+      columns: ['NAME', 'ID Sum', 'Count Rows'],
+      rows: [
+        ['nine', '9', '1'],
+        [null, '9007199254740993', '1'],
+        ['ten', '10', '1'],
+      ],
+      sql: [],
+      durationMs: 1,
+    });
+    fireEvent.click(executeButton());
+    const groupCell = (row: number): HTMLElement =>
+      grid().querySelector(
+        `.ag-row[row-index="${row}"] [col-id="ag-Grid-AutoColumn"]`,
+      ) as HTMLElement;
+    await waitFor(() => expect(groupCell(0).textContent).toContain('nine'));
+    expect(
+      grid().querySelector('.ag-header-cell[col-id="ag-Grid-AutoColumn"]')
+        ?.textContent,
+    ).toContain('NAME');
+    // the key, and the group's count
+    expect(groupCell(0).textContent).toContain('(1)');
+    expect(groupCell(1).textContent).toContain(NULL_CELL_TEXT);
+    // the ID column holds each group's Sum, digit for digit
+    expect(await cellTexts(0)).toEqual(['9', '9007199254740993', '10']);
+    const groups = printIR(fake.execute.mock.calls[1]?.[1] as IR);
+    expect(groups).toContain(`->groupBy(~[NAME], ~['ID Sum'`);
+    // the group with no name, expanded: its rows, by Is Empty
+    fake.execute.mockResolvedValueOnce(result([['9007199254740993', null]]));
+    fireEvent.click(
+      groupCell(1).querySelector('.ag-group-contracted') as HTMLElement,
+    );
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    expect(printIR(fake.execute.mock.calls[2]?.[1] as IR)).toContain(
+      '$row.NAME->isEmpty()',
+    );
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual([
+        '9',
+        '9007199254740993',
+        '9007199254740993',
+        '10',
+      ]),
+    );
+  });
+
+  test("Lists the drill-down's levels above the grid, sets what group rows show, and removes a level or all", async () => {
+    const fake = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          drilldown: { columns: ['NAME', 'MISSING'], aggregations: [] },
+        },
+      }),
+    );
+    const groups = (sumName: string) => ({
+      columns: ['NAME', sumName, 'Count Rows'],
+      rows: [['ten', '10', '1']],
+      sql: [],
+      durationMs: 1,
+    });
+    fake.execute.mockResolvedValueOnce(result(ROWS));
+    fake.execute.mockResolvedValueOnce(groups('ID Sum'));
+    fireEvent.click(executeButton());
+    const bar = await screen.findByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR);
+    expect(bar.textContent).toContain('NAME');
+    // a level the run lacks is said, and left out
+    expect(within(bar).getByRole('status').textContent).toBe(
+      `Drill-down column "MISSING" is not in the query's output.`,
+    );
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    // the group rows' ID: its Average instead of its Sum
+    fireEvent.click(within(bar).getByText('Group rows…'));
+    const settings = await screen.findByTestId(
+      LEGEND_CUBE_TEST_ID.DRILLDOWN_SETTINGS,
+    );
+    const id =
+      within(settings).getByLabelText<HTMLSelectElement>("Group rows' ID");
+    expect(id.value).toBe('Sum');
+    expect([...id.options].map((option) => option.textContent)).toContain(
+      'Sum (default)',
+    );
+    // NAME is a level: it has no setting
+    expect(within(settings).queryByLabelText("Group rows' NAME")).toBeNull();
+    fake.execute.mockResolvedValueOnce(groups('ID Average'));
+    fireEvent.change(id, { target: { value: 'Average' } });
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    expect(printIR(fake.execute.mock.calls[2]?.[1] as IR)).toContain(
+      `'ID Average': x | $x.ID : y | $y->average()`,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    // removing the only usable level shows the run's rows again
+    fireEvent.click(within(bar).getByLabelText('Stop drilling down by NAME'));
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
+    );
+    fireEvent.click(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR)).getByText(
+        'Clear',
+      ),
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR)).toBeNull();
+    expect(fake.execute).toHaveBeenCalledTimes(3);
+  });
+
+  test('Lists the latest runs, newest first, with their SQL to copy', async () => {
+    const applicationStore = TEST__createCubeApplicationStore();
+    const copy = jest
+      .spyOn(applicationStore.clipboardService, 'copyTextToClipboard')
+      .mockResolvedValue(undefined);
+    const { fake } = await renderCube({ applicationStore });
+    fireEvent.click(executeButton());
+    await cellTexts(0);
+    fake.execute.mockResolvedValueOnce({
+      ...result(ROWS),
+      sql: ['select … order by "ID"'],
+    });
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    fireEvent.click(within(toolbar()).getByText('Runs (2)'));
+    const runs = screen.getByTestId(LEGEND_CUBE_TEST_ID.RUN_STATS);
+    const entries = within(runs).getAllByRole('listitem');
+    expect(entries.map((entry) => entry.textContent)).toEqual([
+      expect.stringContaining('Rows, sorted by ID ascending'),
+      expect.stringContaining('Execute'),
+    ]);
+    fireEvent.click(within(entries[0] as HTMLElement).getByText('Copy SQL'));
+    expect(copy).toHaveBeenCalledWith('select … order by "ID"');
+  });
+
+  test("Shows a number column as its saved format, sets one from the cell's menu, and keeps a saved width", async () => {
+    await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          presentation: {
+            ...DEFAULT_META.presentation,
+            columnWidths: [{ column: 'NAME', width: 321 }],
+            columnHints: [
+              {
+                column: 'ID',
+                format: {
+                  style: 'currency',
+                  currency: 'USD',
+                  decimalPlaces: 2,
+                  grouping: true,
+                  redIfNegative: false,
+                  parenthesesIfNegative: false,
+                },
+              },
+            ],
+          },
+        },
+      }),
+    );
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual([
+      '$10.00',
+      '$9,007,199,254,740,993.00',
+      '$9.00',
+    ]);
+    // the exact value on hover
+    expect(cell(1, 0).querySelector('span')?.title).toBe('9007199254740993');
+    expect(headerCell(1).style.width).toBe('321px');
+    // the menu's Format Column, on the ID column: a percent with no places
+    fireEvent.contextMenu(cell(0, 0));
+    fireEvent.click(await screen.findByText('Format Column…'));
+    const form = await screen.findByTestId(LEGEND_CUBE_TEST_ID.COLUMN_FORMAT);
+    fireEvent.change(within(form).getByLabelText('Style'), {
+      target: { value: 'percent' },
+    });
+    fireEvent.change(within(form).getByLabelText('Decimal places'), {
+      target: { value: '' },
+    });
+    expect(within(form).getByLabelText('Preview').textContent).toContain('25%');
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual([
+        '1,000%',
+        '900,719,925,474,099,300%',
+        '900%',
+      ]),
+    );
   });
 
   test("Shows the limit, says when the run returned more rows, and keeps naming the run's limit after an edit", async () => {

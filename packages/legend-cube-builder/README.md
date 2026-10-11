@@ -11,7 +11,10 @@ stores, the engine port with its `v1/` adapter, and the bundled model catalog. L
 or DuckDB), the access points of deployed data products and the data sets of deployed ingest definitions (both beta),
 Join, Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Compare Column Values (Difference),
 window functions (Apply Window Functions) and computed columns (Extend Columns, whose expressions the engine checks), with one model, one runtime and one database, data product project or producer deployment per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
-the Cube store exists. A pasted model is kept in the cube. Nothing links to the page yet, there is no redo, and Cube sends no telemetry.
+the Cube store exists. A pasted model is kept in the cube. The results grid works server-side by default: a header's
+sort and each drill-down level run on the engine, from the run on screen; local mode groups, pivots and filters the
+run's rows in the browser. The grid exports the whole query as CSV through the engine and the rows shown as Excel, lists
+the latest runs with their SQL, and formats number columns (a number, an ISO currency or a percent). Nothing links to the page yet, there is no redo, and Cube sends no telemetry.
 
 ## Layout
 

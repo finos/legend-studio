@@ -19,8 +19,10 @@ import { parseLosslessJSON, type PlainObject } from '@finos/legend-shared';
 
 // Cube IR → V1 protocol lambda JSON (PLAN §8.3, §8.5), built as plain JSON,
 // never through legend-graph's value-specification classes, whose serializer
-// drops `sourceInformation`. Numbers are lossless number values, so the
-// request body must be written with `stringifyLosslessJSON`.
+// drops `sourceInformation`. Integers and floats are lossless number values,
+// so the request body must be written with `stringifyLosslessJSON`; decimals
+// are strings, which the engine reads as `BigDecimal` with every digit, where
+// a JSON number goes through a double (PLAN §11.10, ISSUES.md).
 
 /** The prefix of the source ids Cube stamps, `cube:<nodeId>:<role>` */
 export const V1_CUBE_SOURCE_ID_PREFIX = 'cube:';
@@ -58,13 +60,25 @@ const stamped = (json: PlainObject, origin: Origin | undefined): PlainObject =>
       }
     : json;
 
-/** A lossless JSON number for a numeric literal's text, written digit for digit */
-const numberToken = (text: string): unknown => {
+/** A numeric literal's text, checked to be a JSON number */
+const checkNumberText = (text: string): string => {
   if (!NUMBER_TOKEN.test(text)) {
     throw new Error(`"${text}" is not a number Cube can send`);
   }
-  return parseLosslessJSON(text);
+  return text;
 };
+
+/** A lossless JSON number for a numeric literal's text, written digit for digit */
+const numberToken = (text: string): unknown =>
+  parseLosslessJSON(checkNumberText(text));
+
+/**
+ * A numeric literal's value as the engine reads it without loss: a decimal's
+ * as its text, which the engine reads as a `BigDecimal` (a JSON number loses
+ * the digits past a double's), an integer's or a float's as a JSON number
+ */
+const numberValue = (type: 'integer' | 'float' | 'decimal', text: string) =>
+  type === 'decimal' ? checkNumberText(text) : numberToken(text);
 
 /** The literal types whose value is a number, which Cube keeps as its digit string in an expression's JSON */
 const NUMBER_LITERAL_TYPES: readonly unknown[] = [
@@ -99,7 +113,10 @@ const serializeLambdaJson = (
     NUMBER_LITERAL_TYPES.includes(object._type) &&
     typeof object.value === 'string'
   ) {
-    object.value = numberToken(object.value);
+    object.value = numberValue(
+      object._type as 'integer' | 'float' | 'decimal',
+      object.value,
+    );
   }
   return typeof object._type === 'string' ? stamped(object, origin) : object;
 };
@@ -114,7 +131,7 @@ const serializeLiteral = (value: LiteralValue): PlainObject => {
     case 'integer':
     case 'float':
     case 'decimal':
-      return { _type: value.kind, value: numberToken(value.value) };
+      return { _type: value.kind, value: numberValue(value.kind, value.value) };
     case 'enum':
       // enumeration values are emitted as `enumValue`, with their enumeration
       throw new Error(
