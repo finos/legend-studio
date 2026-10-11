@@ -15,6 +15,7 @@
  */
 
 import type { CubeEditorState } from './CubeEditorState.js';
+import { CUBE_NODE_TYPES_WITHOUT_SETTINGS } from './editors/CubeNodeDraftRegistry.js';
 
 // Where a node added from the palette, the canvas's context menu or 'Add
 // Items' goes (PLAN §11.8, QUESTIONS.md U3 and U4): one rule for all of them.
@@ -47,8 +48,10 @@ export const canAddCubeNode = (
 
 /**
  * Adds a node of the type where the rule puts it, after the node editor's
- * edits are applied: a transform with its defaults, no editor opened; a
- * source through the source dialog, on its tab
+ * edits are applied: a transform with its defaults, its editor opened when
+ * it has settings to set, since it can't run until they are (UX audit B3,
+ * user, 2026-10-11, in place of U3's "no add opens the editor"); a source
+ * through the source dialog, on its tab
  */
 export const addCubeNode = (
   editorState: CubeEditorState,
@@ -59,9 +62,12 @@ export const addCubeNode = (
     canAddCubeNode(editorState, type, targetNodeId) &&
     editorState.nodeEditor.finishApplied()
   ) {
-    editorState.addNode(
+    const id = editorState.addNode(
       type,
       getCubeAddAfterId(editorState, type, targetNodeId),
     );
+    if (id !== undefined && !CUBE_NODE_TYPES_WITHOUT_SETTINGS.includes(type)) {
+      editorState.nodeEditor.open(id);
+    }
   }
 };

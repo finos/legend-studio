@@ -26,7 +26,10 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { SELECT_SOURCE_TYPE_PROMPT } from '../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_PICK_TO_ADD_TITLE,
+  SELECT_SOURCE_TYPE_PROMPT,
+} from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeDataProductTab } from './CubeDataProductTab.js';
@@ -34,6 +37,7 @@ import { CubeIngestTab } from './CubeIngestTab.js';
 import { CubeProjectTab } from './CubeProjectTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
+import { CubePickerConfirmContext } from './CubePickerListItem.js';
 
 /**
  * Adds a source to the cube (PLAN §6.1, §6.2.7, §6.8): a tab per way to find
@@ -99,21 +103,24 @@ export const CubeSourcePicker = observer(
                   : undefined
               }
             >
-              {picker.isChoosingTab ? (
-                <div className="py-4 text-center text-base text-[var(--color-text-secondary)]">
-                  {SELECT_SOURCE_TYPE_PROMPT}
-                </div>
-              ) : activeTab.key === CubeSourcePickerTabKey.DIRECT_CONNECTION ? (
-                <CubeDirectConnectionTab tab={picker.directTab} />
-              ) : activeTab.key === CubeSourcePickerTabKey.DATA_PRODUCT ? (
-                <CubeDataProductTab tab={picker.dataProductTab} />
-              ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
-                <CubeIngestTab tab={picker.ingestTab} />
-              ) : activeTab.key === CubeSourcePickerTabKey.PROJECT ? (
-                <CubeProjectTab tab={picker.projectTab} />
-              ) : (
-                <CubeInlineModelTab tab={picker.modelTab} />
-              )}
+              <CubePickerConfirmContext.Provider value={confirm}>
+                {picker.isChoosingTab ? (
+                  <div className="py-4 text-center text-base text-[var(--color-text-secondary)]">
+                    {SELECT_SOURCE_TYPE_PROMPT}
+                  </div>
+                ) : activeTab.key ===
+                  CubeSourcePickerTabKey.DIRECT_CONNECTION ? (
+                  <CubeDirectConnectionTab tab={picker.directTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.DATA_PRODUCT ? (
+                  <CubeDataProductTab tab={picker.dataProductTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
+                  <CubeIngestTab tab={picker.ingestTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.PROJECT ? (
+                  <CubeProjectTab tab={picker.projectTab} />
+                ) : (
+                  <CubeInlineModelTab tab={picker.modelTab} />
+                )}
+              </CubePickerConfirmContext.Provider>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -121,6 +128,13 @@ export const CubeSourcePicker = observer(
               darkMode={darkMode}
               formatText={false}
               text="Add"
+              // the legacy footer button looks the same disabled
+              className="disabled:cursor-not-allowed disabled:opacity-50"
+              title={
+                picker.canConfirm
+                  ? 'Add it to the cube'
+                  : CUBE_PICK_TO_ADD_TITLE
+              }
               disabled={!picker.canConfirm}
               onClick={confirm}
             />

@@ -162,7 +162,7 @@ describe('Floating node editor', () => {
     expect(body.classList.contains('flex-1')).toBe(false);
   });
 
-  test('Applies its edits as one undo step, staying open', async () => {
+  test('Applies its edits as one undo step, and closes', async () => {
     const editorState = await render();
     await openEditor('join101');
     editJoinKeys();
@@ -170,8 +170,9 @@ describe('Floating node editor', () => {
     expect(storedJoin(editorState).leftColumns).toEqual(['CUSTOMER_ID']);
     expect(storedJoin(editorState).rightColumns).toEqual(['CUSTOMER_ID']);
     expect(editorState.history).toHaveLength(1);
-    expect(editorState.nodeEditor.nodeId).toBe('join101');
-    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeDefined();
+    // Apply closes, as every way out but Cancel does (UX audit B4)
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
   });
 
   test('Drops its edits and closes on Cancel', async () => {
@@ -290,10 +291,10 @@ describe('Placing the floating node editor', () => {
   test('Places the editor 8px below its node, centred, following the node opened next', async () => {
     await render();
     stubLayout({ left: 100, top: 50, width: 800, height: 400 });
-    // join101 at (280, 52) in the layout, at zoom 1 with no pan: 380..580 x 102..174
+    // join101 at (256, 52) in the layout, at zoom 1 with no pan: 356..556 x 102..174
     const root = popperRoot(await openEditor('join101'));
     expect(root?.getAttribute('data-popper-placement')).toBe('bottom');
-    expect(root?.style.transform).toBe('translate(480px, 182px)');
+    expect(root?.style.transform).toBe('translate(456px, 182px)');
     // relational102 at (0, 104): 100..300 x 154..226
     fireEvent.click(await TEST__findCanvasNode('relational102'));
     await act(async () => {
@@ -308,12 +309,12 @@ describe('Placing the floating node editor', () => {
     await render();
     stubLayout({ left: 100, top: 50, width: 800, height: 400 });
     const root = popperRoot(await openEditor('join101'));
-    expect(root?.style.transform).toBe('translate(480px, 182px)');
+    expect(root?.style.transform).toBe('translate(456px, 182px)');
     fireEvent.click(screen.getByRole('button', { name: /zoom in/iu }));
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 400));
     });
-    expect(root?.style.transform).not.toBe('translate(480px, 182px)');
+    expect(root?.style.transform).not.toBe('translate(456px, 182px)');
   });
 
   test('Hides the editor while its node is out of the canvas, keeping it open', async () => {
@@ -361,7 +362,7 @@ describe('Placing the floating node editor', () => {
     stubLayout({ left: 100, top: 50, width: 800, height: 400 });
     const opened = await openEditor('join101');
     const root = popperRoot(opened);
-    expect(root?.style.transform).toBe('translate(480px, 182px)');
+    expect(root?.style.transform).toBe('translate(456px, 182px)');
     const watching = observers.find(({ observed }) =>
       observed.includes(opened.parentElement as Element),
     );
@@ -383,13 +384,13 @@ describe('Placing the floating node editor', () => {
         bottom: 450,
         toJSON: () => undefined,
       } as DOMRect);
-    expect(root?.style.transform).toBe('translate(480px, 182px)');
+    expect(root?.style.transform).toBe('translate(456px, 182px)');
     await act(async () => {
       watching?.callback([], {} as ResizeObserver);
       await Promise.resolve();
     });
     await waitFor(() =>
-      expect(root?.style.transform).toBe('translate(680px, 182px)'),
+      expect(root?.style.transform).toBe('translate(656px, 182px)'),
     );
     expect(watching?.disconnect).not.toHaveBeenCalled();
     fireEvent.click(

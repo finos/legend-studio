@@ -30,11 +30,14 @@ import {
   Concat,
   Connection,
   CubeDocument,
+  DataProductAccessPointSource,
   Filter,
+  IngestDatasetSource,
   Join,
   Limit,
   Query,
-  type Schema,
+  RelationalTableSource,
+  Schema,
   UnknownNode,
 } from '@finos/legend-cube';
 import {
@@ -82,6 +85,7 @@ import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
 import {
   buildCubeCanvasEdges,
   CUBE_OUTPUT_HANDLE_ID,
+  getCubeCanvasNodeLabel,
   getCubeCanvasNodeStatus,
 } from '../CubeCanvasElements.js';
 
@@ -359,7 +363,7 @@ describe('Cube canvas', () => {
     await waitFor(() => expect(hasState(orders, 'resolving')).toBe(false));
   });
 
-  test('Puts errors first in a node tooltip, each once, then warnings, its description and its id', async () => {
+  test('Puts errors first in a node tooltip, each once, then warnings and its description, not its id', async () => {
     const state = await renderCanvas(
       new CubeDocument({ context: CONTEXT, query: keylessJoin() }),
     );
@@ -384,7 +388,6 @@ describe('Cube canvas', () => {
       ).toEqual([
         'Left join columns cannot be empty.',
         'Join additional input',
-        'join101',
       ]),
     );
     expect(
@@ -392,7 +395,6 @@ describe('Cube canvas', () => {
     ).toEqual([
       'This table changed since the cube was saved',
       'Table "ORDERS" from schema "NORTHWIND"',
-      'relational101',
     ]);
     // the upstream error, in words, on the node after the join
     expect(
@@ -578,6 +580,61 @@ const handle = (nodeId: string, handleId: string): Element =>
     `.react-flow__node[data-id="${nodeId}"] .react-flow__handle[data-handleid="${handleId}"]`,
   ) as Element;
 
+describe('Node labels on the canvas', () => {
+  const RESOLVED = { kind: 'resolved', schema: new Schema([]) } as const;
+
+  test('Shows a source by its name, with where it comes from below, and every other node by its description', () => {
+    expect(
+      getCubeCanvasNodeLabel(
+        new RelationalTableSource(
+          'relational101',
+          { database: 'db::Db', schema: '"QUOTED.SCHEMA"', table: 'ORDERS' },
+          RESOLVED,
+        ),
+      ),
+    ).toEqual({ title: 'ORDERS', detail: 'QUOTED.SCHEMA' });
+    expect(
+      getCubeCanvasNodeLabel(
+        new DataProductAccessPointSource(
+          'dataProductAccessPoint101',
+          {
+            dataProduct: 'sales::products::OrdersProduct',
+            accessPointGroup: 'g',
+            accessPoint: 'daily',
+            dataProductId: 'ORDERS_PRODUCT',
+            deploymentId: '1234',
+          },
+          RESOLVED,
+        ),
+      ),
+    ).toEqual({ title: 'daily', detail: 'OrdersProduct' });
+    expect(
+      getCubeCanvasNodeLabel(
+        new IngestDatasetSource(
+          'ingestDataset101',
+          {
+            ingestDefinitionUrn: 'urn',
+            ingestDefinition: 'my::ingest::Orders',
+            dataSet: 'TRADES',
+          },
+          RESOLVED,
+        ),
+      ),
+    ).toEqual({ title: 'TRADES', detail: 'Orders' });
+    // not resolved yet, a source shows its description, as the tooltip does
+    const unresolved = new RelationalTableSource('relational102', {
+      database: 'db::Db',
+      schema: 'S',
+      table: 'T',
+    });
+    expect(getCubeCanvasNodeLabel(unresolved)).toEqual({
+      title: unresolved.describe(),
+    });
+    const join = new Join('join101');
+    expect(getCubeCanvasNodeLabel(join)).toEqual({ title: join.describe() });
+  });
+});
+
 describe('Cube canvas, more', () => {
   test('Leaves the mouse on a node body to the HTML drag, so React Flow neither moves the node nor pans', async () => {
     await renderCanvas(new CubeDocument({ query: sliceQuery() }));
@@ -715,7 +772,6 @@ describe('Cube canvas, more', () => {
     expect(getCubeCanvasNodeStatus(state, ghost).tooltip.split('\n')).toEqual([
       'This node depends on some invalid inputs.',
       ghost.describe(),
-      'filter999',
     ]);
   });
 });
@@ -966,7 +1022,6 @@ describe('The node tooltip', () => {
     expect(text?.textContent?.split('\n')).toEqual([
       'Left join columns cannot be empty.',
       'Join additional input',
-      'join101',
     ]);
   });
 
@@ -1006,18 +1061,22 @@ describe('The node tooltip', () => {
   test('Waits 500 ms again when the mouse moves on to another node just after a tooltip closes', async () => {
     const join = await renderInvalidJoin();
     const filter = await TEST__findCanvasNode('filter101');
-    const shown = (nodeId: string): boolean =>
+    // a node's tooltip shows its description, the node's aria-description
+    const shown = (node: HTMLElement): boolean =>
       screen
         .queryAllByRole('tooltip')
-        .some((tooltip) => tooltip.textContent?.includes(nodeId));
+        .some(
+          (tooltip) =>
+            tooltip.textContent === node.getAttribute('aria-description'),
+        );
     fireEvent.mouseOver(join);
     wait(500);
     fireEvent.mouseLeave(join);
     wait(0);
     fireEvent.mouseOver(filter);
     wait(250);
-    expect(shown('filter101')).toBe(false);
+    expect(shown(filter)).toBe(false);
     wait(250);
-    expect(shown('filter101')).toBe(true);
+    expect(shown(filter)).toBe(true);
   });
 });

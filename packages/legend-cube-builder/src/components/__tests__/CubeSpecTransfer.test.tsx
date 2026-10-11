@@ -157,9 +157,9 @@ const nodeIds = (): string[] =>
   Array.from(document.querySelectorAll('.react-flow__node')).map(
     (node) => node.getAttribute('data-id') ?? '',
   );
-/** The node's errors and warnings, from its tooltip, which ends with its description and id */
+/** The node's errors and warnings, from its tooltip, which ends with its description */
 const nodeProblems = async (nodeId: string): Promise<string[]> =>
-  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -2);
+  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -1);
 const executeButton = (): HTMLButtonElement =>
   within(
     screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),

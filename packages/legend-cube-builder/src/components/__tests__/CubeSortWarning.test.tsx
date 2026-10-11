@@ -106,7 +106,6 @@ describe('Sort warning', () => {
     expect(TEST__getCanvasNodeTooltip(sort)).toEqual([
       LOST,
       'Sort by "ORDER_ID" Desc',
-      'sort101',
     ]);
     const join = await TEST__findCanvasNode('join101');
     expect(join.classList.contains('legend-cube__node--warning')).toBe(false);
@@ -131,6 +130,6 @@ describe('Sort warning', () => {
     );
     expect(
       TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('sort101')),
-    ).toEqual(['Sort by "ORDER_ID" Desc', 'sort101']);
+    ).toEqual(['Sort by "ORDER_ID" Desc']);
   });
 });

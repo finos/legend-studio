@@ -65,7 +65,8 @@ const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
 /** Small, so it covers little of a short canvas */
 const MINI_MAP_STYLE = { width: 120, height: 80 };
-const FIT_VIEW_OPTIONS = { padding: 0.2, maxZoom: 1 };
+// little padding, so a long flow keeps its text as large as it can
+const FIT_VIEW_OPTIONS = { padding: 0.1, maxZoom: 1 };
 
 /**
  * Whether dragging from one handle to another may connect the two nodes: out
