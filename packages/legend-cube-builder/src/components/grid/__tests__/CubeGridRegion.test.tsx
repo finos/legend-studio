@@ -468,9 +468,7 @@ describe('Cube results', () => {
     await waitFor(async () =>
       expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
     );
-    expect(
-      fake.execute.mock.calls.map((call) => printIR(call[1] as IR)),
-    ).toEqual([
+    expect(fake.execute.mock.calls.map((call) => printIR(call[1]))).toEqual([
       expect.not.stringContaining('->sort('),
       expect.stringContaining('->sort(~ID->ascending())'),
       expect.stringContaining('->sort(~ID->descending())'),
@@ -504,7 +502,7 @@ describe('Cube results', () => {
       grid().querySelector(
         `.ag-row[row-index="${row}"] [col-id="ag-Grid-AutoColumn"]`,
       ) as HTMLElement;
-    await waitFor(() => expect(groupCell(0)?.textContent).toContain('nine'));
+    await waitFor(() => expect(groupCell(0).textContent).toContain('nine'));
     expect(
       grid().querySelector('.ag-header-cell[col-id="ag-Grid-AutoColumn"]')
         ?.textContent,

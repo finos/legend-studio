@@ -159,8 +159,8 @@ describe('Cube cell formats', () => {
       ]),
     ).toEqual([
       ['DESK', false, undefined],
-      ['NOTIONAL', true, 'cube-excel-number'],
-      ['PRICE', false, 'cube-excel-number'],
+      ['NOTIONAL', true, ['ag-right-aligned-cell', 'cube-excel-number']],
+      ['PRICE', false, ['ag-right-aligned-cell', 'cube-excel-number']],
     ]);
   });
 

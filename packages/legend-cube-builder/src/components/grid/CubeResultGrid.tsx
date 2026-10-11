@@ -340,8 +340,10 @@ export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
         ? {
             type: 'rightAligned',
             comparator: compareCellValues,
-            // a number in Excel, though it reaches the grid as exact text
-            cellClass: CUBE_EXCEL_NUMBER_CLASS,
+            // a number in Excel, though it reaches the grid as exact text; a
+            // column's own cell class replaces its type's, so the type's is
+            // kept too
+            cellClass: ['ag-right-aligned-cell', CUBE_EXCEL_NUMBER_CLASS],
           }
         : {}),
     };

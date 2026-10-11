@@ -202,3 +202,9 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   expanded, has `t="n"` number cells and its group rows. Local mode's totals, unit-tested (`LOCAL_AGGREGATIONS`). In
   the browser, a resize and a format applied with a group expanded kept it expanded and fetched nothing (Runs (3)
   before and after), with no console error.
+- **CI on #5667** (2026-10-11): two jobs failed on `cfb4bdceb`. Code checks: three errors from the CI lint's
+  type-aware rules (`yarn workspace @finos/legend-cube-builder lint:js`, `NODE_ENV=production` with the project's
+  types), which the plain eslint run didn't apply: two needless guards in a test, and `CubeExportState` checking an abort
+  TypeScript had narrowed away (it now checks that it is still the export in flight). Core tests: the Excel cell class
+  replaced the right-aligned column type's own, so number cells were no longer right-aligned; both classes are set now.
+  The CI lint is the one to run before a push.

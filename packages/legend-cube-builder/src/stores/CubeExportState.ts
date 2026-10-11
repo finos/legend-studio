@@ -144,7 +144,8 @@ export class CubeExportState {
         }),
         { abortController: controller },
       )) as string;
-      if (controller.signal.aborted) {
+      // stopped while it ran: `stop()` lets go of it
+      if (this.controller !== controller) {
         return;
       }
       downloadFileUsingDataURI(
