@@ -135,3 +135,9 @@ Filled in as steps land.
   §10.3 (`expressionFilter`'s saved shape), and Appendix A (a row for the node beside §7.x, §16's messages, §17.6's
   editor). §11.3's row was written in M6b.1. M6b is complete; marking #5670 ready, and merging it into `cube-dev`,
   are the user's.
+- **After M6b.9** (2026-10-11). Two checks a final review asked for. ISSUES.md's DuckDB entry claimed the column Filter
+  shares the `%` and `_` problem; now shown: its Contains `%` and `_` on a DuckDB direct connection each returned the
+  backslash's row (H2 the right ones), with a temporary test not kept. And M7's server-side grid over a Filter by
+  Expression (`demo/probe-m6b-grid.mjs`): the late orders run, a drill-down by CUSTOMER*ID whose groups each count
+  their customer's late orders as the whole-query CSV has them (24 shown of 28), and the CSV export, a header and 37
+  rows. Whether to refuse `%` and `*` for DuckDB cubes, in both filters, is the user's choice.

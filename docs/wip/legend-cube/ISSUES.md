@@ -351,7 +351,9 @@ F9, F10 in the evidence folder). The engine escapes `%` and `_` in these functio
 (`escapeLikeExprDefault`, Appendix B) and writes no `ESCAPE` clause. H2 reads `\` as LIKE's escape character; DuckDB
 has none by default, so `contains('%')` becomes `like '%\%%'`, a backslash followed by anything: the row `a\b`
 matched and the row `a%b` didn't. Wrong rows with no error, on a DuckDB direct connection, for the column Filter's
-StartsWith, EndsWith and Contains (and their negations) as for a Filter by Expression. Cube can't write an `ESCAPE`
+StartsWith, EndsWith and Contains (and their negations) as for a Filter by Expression: the column Filter's Contains
+`%` and `_` were run on a DuckDB direct connection (M6b) and each returned the backslash's row; H2 returned the right
+ones. Cube can't write an `ESCAPE`
 clause through Pure; it could refuse `%` and `_` in these values for DuckDB cubes, as it refuses `\` everywhere
 (PLAN §8.2), until the engine is fixed. Draft issue for finos/legend-engine:
 
