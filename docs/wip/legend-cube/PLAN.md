@@ -4120,13 +4120,16 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - **Decimal literals become strings first** (M7.2, ISSUES.md "Decimal literals lose precision"). An Equal on a
   Decimal group key would otherwise reach the known bug: the engine reads a JSON number through a double, so
   `1.23450000000000000001` matches `1.2345`, and a string keeps every digit ✅ (`p2-csv-decimal.out`).
-- **Float4 keys are sent as their 32-bit value.** A REAL column's key comes back as its shortest text (`0.02`), and
-  `Equal` with that double finds no row: 0 of 25 `FREIGHT` keys, 2 of 11 `DISCOUNT` keys ✅ (`p3-float-keys.out`).
-  Written at full double precision as the float it is (`Math.fround`, `0.019999999552965164`), every key is found
-  again ✅ (`p3b-fround.out`). Double, date and timestamp keys are found as returned ✅. So a Float4 column's literal
-  is `Math.fround` of its value, in the shared quick-filter rule, which fixes M2's 'Filter by' on a REAL cell too (it
-  found nothing). Other databases are reasoned only 💭: a REAL compared with a double literal is widened to double
-  there too; Snowflake has no 32-bit float.
+- **A float key is matched as either width.** A 32-bit column's key comes back as its shortest text (`0.02`), and
+  `Equal` with that double finds no row: 0 of 25 `FREIGHT` keys, 2 of 11 `DISCOUNT` keys ✅ (`p3-float-keys.out`). Cube
+  can't tell a 32-bit column from its type: the engine types H2's `REAL` (32 bits) as `Double` and H2's `FLOAT` (64
+  bits) as `Float4` ✅ (`CubeNorthwindModel.ts`, `p1-drill.out` E and I), so writing every `Float4` value as a 32-bit
+  float would break `FLOAT` columns. A float key is matched by `In [v, fround(v)]`, the value as returned and the
+  32-bit float nearest it written in full (`0.019999999552965164`), or by `Equal` when the two are the same; every
+  `REAL`, `FLOAT` and `DOUBLE` key is then found again ✅ (`p3c-in-both.out`). Two groups merge only if one's key is
+  exactly the other's 32-bit neighbour, which a 64-bit column can hold but the engine would then return with its own
+  text 💭. Double, date and timestamp keys are found as returned ✅. M2's 'Filter by' on a `REAL` cell finds nothing
+  for the same reason; it is an ISSUES entry, as its filter is the user's to read.
 - **A group's aggregations are mapped back to their columns.** A level's Group names each aggregation as any Group
   does (`FREIGHT Sum`, M4's auto-name, numbered past a name the input has), since Cube's Group refuses an output
   named as an input column (§11.5), though the engine would take it ✅ (`p4-names.out`). The derivation returns, with

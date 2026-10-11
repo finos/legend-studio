@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.3 done                                                       |
+| Step   | M7.1–M7.4 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -22,7 +22,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.1** The settled decisions (PLAN §11.10) and this file
 - [x] **M7.2** Decimal literals sent as strings
 - [x] **M7.3** The drill-down in the core
-- [ ] **M7.4** Query derivation in the core
+- [x] **M7.4** Query derivation in the core
 - [ ] **M7.5** The builder's row fetcher
 - [ ] **M7.6** The grid's server-side row model and the mode toggle
 - [ ] **M7.7** The drill-down in the UI
@@ -44,7 +44,8 @@ Filled in as steps land.
 | ---- | ----------- | -------------------------------------------------------------------------------------------------------- |
 | M7.1 | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
 | M7.2 | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
-| M7.3 | (this one)  | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
+| M7.3 | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
+| M7.4 | (this one)  | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
 
 ## Notes
 
@@ -55,10 +56,10 @@ Filled in as steps land.
   XLSX of the loaded rows; a group row's numeric cells summed, other cells empty, with a `Count Rows` column. The
   probes (`m7-requirements/` in the evidence folder): the drill-down's queries on H2 (null keys, sums, names), the
   engine's CSV, decimal literals as numbers and strings, and whether each key found by a `groupBy` is found again by
-  `Equal`. One finding changes M2's code too: a
-  REAL (Float4) key isn't found again by `Equal` with the text the engine returns (0 of 25 `FREIGHT` keys), but is at
-  its 32-bit value written in full (`Math.fround`), so the shared quick-filter rule will write it that way, which also
-  fixes 'Filter by' on a REAL cell.
+  `Equal`. One finding: a 32-bit
+  (REAL) key isn't found again by `Equal` with the text the engine returns (0 of 25 `FREIGHT` keys), and Cube can't
+  tell a 32-bit column by its type (the engine types `REAL` as Double and `FLOAT` as Float4), so a float key is matched
+  by `In` of the value and its 32-bit neighbour (PLAN §11.10).
 - **M7.2** (2026-10-11). `V1_CubeLambdaSerializer` writes a decimal literal's value as its text, in a filter and in
   an Extend's expression; integers and floats stay lossless JSON numbers. The engine reads the text as a `BigDecimal`
   in every call Cube makes: rendering, typing and running (`p5-decimal-string.out`). Two engine cases on
@@ -76,3 +77,16 @@ Filled in as steps land.
   an input column, so a level's aggregations keep a Group's names and the derivation maps them back to the grid's
   columns (PLAN §11.10). The forward-compatibility tests used a `drilldown` key as the example of one a newer Cube
   adds; they use `pivot` now.
+- **M7.4** (2026-10-11). `drilldown/DrilldownQuery.ts`: `deriveDrilldownLevel` appends, after the run's node, a
+  Filter of the expanded keys (And), at a group level a Group by the levels down to it with each other column's
+  aggregation under a Group's own name (`FREIGHT Sum`, numbered past a taken name, `cube_value` past the length limit)
+  and a Count rows, then a Sort: the grid's on a group column, by the aggregation on another, left out on a column
+  with none, by the new level's column when none is left; at the leaf the grid's sort as is. It returns the query,
+  the output column of each run column, and the count column. `buildDrilldownKeyRule`: Is Empty for an empty key,
+  `In [v, fround(v)]` for a float the two differ on, else the grid's Filter by rule. A first try wrote every `Float4`
+  value at 32 bits in the Filter emitter; reverted when the fixture showed the engine types H2's 32-bit `REAL` as
+  Double and its 64-bit `FLOAT` as Float4 (`p3c-in-both.out`, PLAN §11.10). Tests: unit tests of every shape (each
+  derived query valid by Cube's own checks, its Pure printed), and `CubeDrilldown.engine-roundtrip-test.ts`, which
+  runs each level on H2 and compares it with groups counted and summed from the run's rows: countries, France's
+  cities, Lyon's orders sorted, the 507 orders with no region, a sort by an aggregation, set aggregations, a sample of
+  `FREIGHT` keys each expanded to its rows, and a key of each `ALLTYPES` type.

@@ -9,6 +9,16 @@
 
 ## Bugs
 
+### 'Filter by' on a REAL cell finds nothing
+
+- **Found:** M7's requirements (2026-10-11, `m7-requirements/p3-float-keys.out` in the evidence folder).
+- **What:** a 32-bit `REAL` value comes back as its shortest text (`0.02`), and the quick action's `Equal` sends that
+  double, which the database's widened `0.019999999552965164` never equals: 0 of 25 `FREIGHT` values are found. The
+  editor already shows the floating-point hint on Equal over a float. Cube can't tell a 32-bit column by its type
+  (the engine types `REAL` as Double and `FLOAT` as Float4).
+- **Suggested fix:** as M7's drill-down does, `In [v, fround(v)]` when the two differ, perhaps shown in the editor as
+  the value with a note; or a tolerance operator. The user reads and edits this filter, so the shape is theirs to pick.
+
 ### The row limit accepts hexadecimal and exponent text
 
 - **Found:** M2's requirements and its first verification (2026-10-08). M1 page code, so not fixed in M2's Limit
