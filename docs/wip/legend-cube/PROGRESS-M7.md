@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.12 done                                                      |
+| Step   | M7.1–M7.13 done                                                      |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -31,7 +31,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.10** The stats popover
 - [x] **M7.11** Column formatting and widths
 - [x] **M7.12** Around the databases
-- [ ] **M7.13** Guides, testing.md and the changeset
+- [x] **M7.13** Guides, testing.md and the changeset
 - [ ] **M7.14** Verification and the browser rehearsal
 - [ ] **M7.15** A demo video of M7 (PLAN §11.3)
 - [ ] **M7.16** Fold PLAN §11.10's supersessions in; the PR ready for `cube-dev`
@@ -180,3 +180,9 @@ grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`
   drill-down cases (the top level, a level below with an Average, a Distinct Count and nothing, the rows under an empty
   and a float key, ALLTYPES by its Boolean): Cube's types are the engine's but for the Sums and Averages, which the
   engine types never null (declared wider, as M4's); dropping one declaration fails the suite.
+- **M7.13** (2026-10-11). The builder's README describes the grid (server-side by default, drill-down, local mode,
+  export, runs, formats); the core's names `drilldown/` and `presentation/` and the presentation settings;
+  `testing.md` has "The results grid" (server-side mode in jsdom, the drill-down and export engine tests, the test
+  client's format, the object-URL stub); ISSUES.md lists the grid's gaps (a level cut at the row limit, Excel
+  unformatted and of the rows shown, local totals as doubles, two float groups that can merge, no server-side pivot).
+  The changeset covers both packages. `check:pkg`, `check:ts`, `check:format` and `check:copyright` pass.
