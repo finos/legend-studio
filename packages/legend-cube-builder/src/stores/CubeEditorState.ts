@@ -21,7 +21,10 @@ import {
   createNodeRegistry,
   CubeDocument,
   diffSchemas,
+  Extend,
   findLostSortOrders,
+  isTypingError,
+  type JsonObject,
   MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
   MESSAGE_SORT_ORDER_LOST,
@@ -30,6 +33,7 @@ import {
   type Query,
   QueryEmitter,
   type QueryNode,
+  type QueryRule,
   RelationalTableSource,
   rereadQueryFilterValues,
   type Schema,
@@ -43,8 +47,10 @@ import {
   computed,
   flow,
   flowResult,
+  type IReactionDisposer,
   makeObservable,
   observable,
+  reaction,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
@@ -52,6 +58,7 @@ import {
   CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
   getSchemaDriftWarning,
+  getExtendRetypeWarning,
   getSourceRecheckWarning,
   LEGEND_CUBE_USER_DATA_KEY,
   MAX_UNDO_STEPS,
@@ -72,6 +79,7 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeModelOutline,
+  type NodeId,
 } from '../graph-manager/CubeEngine.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
@@ -79,6 +87,16 @@ import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
+import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
+import {
+  buildCubeExtendTypingLambdas,
+  createStaleCubeExtendTypingRule,
+  getCubeExtendTypingUpstream,
+  getCubeExtendUpstream,
+  isCubeExtendTypingCurrent,
+  isSameCubeExtendTyping,
+  readCubeExtendTyping,
+} from './CubeExtendTyping.js';
 import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
@@ -126,6 +144,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly host: CubeHost;
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
+  /** The editor's own query rule: an Extend typed for another input than its own waits to be typed again (PLAN §11.7) */
+  private readonly staleExtendTyping: QueryRule;
   readonly execution: CubeExecutionState;
   /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
@@ -154,6 +174,10 @@ export class CubeEditorState implements CommandRegistrar {
     new Map();
   /** Sources sent to the engine to be typed again, until it answers */
   private pendingSources: ReadonlySet<QueryNode> = new Set();
+  /** Extends sent to the engine to be typed, until it answers (PLAN §11.7) */
+  private typingExtends: ReadonlySet<QueryNode> = new Set();
+  /** Types the Extends that wait for it, whenever one does (PLAN §11.7 Q4) */
+  private readonly retyping: IReactionDisposer;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /** The palette shows icons only; kept per user, never in the cube */
@@ -169,8 +193,15 @@ export class CubeEditorState implements CommandRegistrar {
   private readonly importedOver = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
-    makeObservable<CubeEditorState, 'pendingSources' | 'modelOutlines'>(this, {
+    makeObservable<
+      CubeEditorState,
+      'pendingSources' | 'modelOutlines' | 'typingExtends'
+    >(this, {
       pendingSources: observable.ref,
+      typingExtends: observable.ref,
+      extendsToType: computed,
+      isTypingExtends: computed,
+      retypeExtends: flow,
       modelOutlines: observable.ref,
       modelOutline: computed,
       loadModelOutline: flow,
@@ -211,6 +242,10 @@ export class CubeEditorState implements CommandRegistrar {
     });
     this.host = host;
     this.registry = createNodeRegistry();
+    this.staleExtendTyping = createStaleCubeExtendTypingRule(
+      this.registry,
+      () => this.document.context?.model,
+    );
     this.document = document;
     const storedLimit = host.applicationStore.userDataService.getNumericValue(
       LEGEND_CUBE_USER_DATA_KEY.ROW_LIMIT,
@@ -229,14 +264,29 @@ export class CubeEditorState implements CommandRegistrar {
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
+    this.retyping = reaction(
+      () => this.extendsToType,
+      (waiting) => {
+        if (waiting.length) {
+          flowResult(this.retypeExtends(waiting)).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      { fireImmediately: true },
+    );
   }
 
-  /** Each node's schema and errors, query-level rules included, as the emitter sees them */
+  /**
+   * Each node's schema and errors, query-level rules included, as the
+   * emitter sees them, and an Extend typed for another input than its own
+   * waiting (`ERR_TYPING`), which only the editor can tell
+   */
   get analysis(): SchemaInferenceResult {
-    return buildSchemasAndValidity(
-      this.document.query,
-      this.registry.queryRules,
-    );
+    return buildSchemasAndValidity(this.document.query, [
+      ...this.registry.queryRules,
+      this.staleExtendTyping,
+    ]);
   }
 
   get emitter(): QueryEmitter {
@@ -253,6 +303,160 @@ export class CubeEditorState implements CommandRegistrar {
   /** The source is being typed again by the engine, e.g. after an import */
   isPendingSource(node: QueryNode): boolean {
     return this.pendingSources.has(node);
+  }
+
+  /**
+   * The Extends of the cube shown that wait for the engine to type their
+   * columns, their input valid, and that aren't being typed (PLAN §11.7):
+   * new expressions, or an input that changed
+   */
+  get extendsToType(): readonly Extend[] {
+    const { validity } = this.analysis;
+    return this.document.query.nodes.filter(
+      (node): node is Extend =>
+        node instanceof Extend &&
+        !this.typingExtends.has(node) &&
+        (validity.get(node.id) ?? []).some(isTypingError),
+    );
+  }
+
+  /** The cube shown has Extends the engine is typing */
+  get isTypingExtends(): boolean {
+    return this.document.query.nodes.some((node) =>
+      this.typingExtends.has(node),
+    );
+  }
+
+  /** The node waits for the engine to type it, or is being typed: an Extend (PLAN §11.7) */
+  isTypingNode(node: QueryNode): boolean {
+    return (
+      this.typingExtends.has(node) ||
+      (this.analysis.validity.get(node.id) ?? []).some(isTypingError)
+    );
+  }
+
+  /**
+   * Types Extends' columns with the engine, in one call, outside the undo
+   * history (PLAN §11.7 Q4): each for the input it has now, its columns
+   * after its input's relation, as typing types any node. The typing goes in
+   * place of the very nodes sent, in the cube shown and the undo snapshots
+   * that give the engine the same input; one the user changed meanwhile is
+   * left to type again. Each typing records the input as the engine was given
+   * it (`upstream`). A typing the engine couldn't give names the column it
+   * failed on; when the engine can't be reached, a typing still current for
+   * the input is kept, with a warning, as a source's saved columns are.
+   */
+  *retypeExtends(nodes: readonly Extend[]): GeneratorFn<void> {
+    const { context, query } = this.document;
+    if (!context) {
+      return;
+    }
+    const { schemas } = this.analysis;
+    const emitter = new QueryEmitter(query, this.registry);
+    const requests = nodes.flatMap((node) => {
+      const [inputId] = query.getInputIds(node.id);
+      const input = inputId === undefined ? undefined : schemas.get(inputId);
+      if (
+        query.getNode(node.id) !== node ||
+        this.typingExtends.has(node) ||
+        !input ||
+        node.columns.some(({ lambda }) => lambda === undefined)
+      ) {
+        return [];
+      }
+      const columns = node.columns.map(({ name, lambda }) => ({
+        name,
+        lambda: lambda as JsonObject,
+      }));
+      return [
+        {
+          node,
+          input,
+          columns,
+          upstream: getCubeExtendUpstream(emitter, node.id, context.model),
+          lambdas: buildCubeExtendTypingLambdas(
+            query,
+            node,
+            columns,
+            this.registry,
+            false,
+          ),
+        },
+      ];
+    });
+    if (!requests.length) {
+      return;
+    }
+    const sent = requests.map(({ node }) => node);
+    this.typingExtends = new Set([...this.typingExtends, ...sent]);
+    let answers: ReadonlyMap<NodeId, Schema | CubeEngineError>;
+    try {
+      answers = (yield this.host.engine.typeLambdas(
+        context.model,
+        new Map(requests.flatMap(({ lambdas }) => [...lambdas])),
+      )) as ReadonlyMap<NodeId, Schema | CubeEngineError>;
+    } catch (error) {
+      const failure =
+        error instanceof CubeEngineError
+          ? error
+          : new CubeEngineError(
+              CubeEngineErrorKind.NETWORK,
+              error instanceof Error ? error.message : String(error),
+            );
+      answers = new Map(
+        requests.flatMap(({ lambdas }) =>
+          [...lambdas.keys()].map((key) => [key, failure] as const),
+        ),
+      );
+    } finally {
+      this.typingExtends = new Set(
+        [...this.typingExtends].filter(
+          (node) => !sent.includes(node as Extend),
+        ),
+      );
+    }
+    // a typing that comes back the same leaves its node, and the query, alone
+    const warnings = new Map(this.warnings);
+    const replacements = new Map<QueryNode, QueryNode>(
+      requests.flatMap(({ node, input, columns, upstream }) => {
+        const { typing, error } = readCubeExtendTyping(
+          answers,
+          node,
+          input,
+          columns,
+          upstream,
+        );
+        if (
+          error?.kind === CubeEngineErrorKind.NETWORK &&
+          isCubeExtendTypingCurrent(node, input, upstream)
+        ) {
+          warnings.set(node.key, [getExtendRetypeWarning(error.firstLine)]);
+          return [];
+        }
+        warnings.delete(node.key);
+        return isSameCubeExtendTyping(typing, node.typing)
+          ? []
+          : [[node, node.withTyping(typing)] as const];
+      }),
+    );
+    this.warnings = warnings;
+    // an undo snapshot whose input differs keeps the typing it had
+    const emitters = new Map<Query, QueryEmitter>([[query, emitter]]);
+    this.replaceOutsideHistory(replacements, (snapshot, resolved) => {
+      const upstream = getCubeExtendTypingUpstream((resolved as Extend).typing);
+      if (upstream === undefined) {
+        return true;
+      }
+      let snapshotEmitter = emitters.get(snapshot);
+      if (!snapshotEmitter) {
+        snapshotEmitter = new QueryEmitter(snapshot, this.registry);
+        emitters.set(snapshot, snapshotEmitter);
+      }
+      return (
+        getCubeExtendUpstream(snapshotEmitter, resolved.id, context.model) ===
+        upstream
+      );
+    });
   }
 
   /**
@@ -413,6 +617,27 @@ export class CubeEditorState implements CommandRegistrar {
           isFocusInNodeEditor(),
         ),
     });
+    // F10 in the Extend editor (PLAN §11.7)
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS,
+      trigger: () => {
+        const { draft } = this.nodeEditor;
+        return (
+          !this.isDialogOpen &&
+          !this.readOnly &&
+          draft instanceof CubeExtendDraft &&
+          !draft.validating
+        );
+      },
+      action: () => {
+        const { draft } = this.nodeEditor;
+        if (draft instanceof CubeExtendDraft) {
+          flowResult(draft.validate()).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+    });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
       trigger: () =>
@@ -498,6 +723,15 @@ export class CubeEditorState implements CommandRegistrar {
     flowResult(this.reresolveSources()).catch(
       this.host.applicationStore.alertUnhandledError,
     );
+    // typed once on load too, as sources are checked again: the model may
+    // have changed the types of its functions (PLAN §11.7)
+    flowResult(
+      this.retypeExtends(
+        next.query.nodes.filter(
+          (node): node is Extend => node instanceof Extend,
+        ),
+      ),
+    ).catch(this.host.applicationStore.alertUnhandledError);
   }
 
   /**
@@ -679,6 +913,20 @@ export class CubeEditorState implements CommandRegistrar {
       replacements.set(source, resolved);
     });
     this.warnings = warnings;
+    this.replaceOutsideHistory(replacements);
+  }
+
+  /**
+   * Puts nodes the engine checked in place of the very objects that were
+   * sent, outside the undo history: in the cube shown and in the undo
+   * snapshots taken meanwhile, so undoing an edit made meanwhile keeps them.
+   * A node the user changed meanwhile is a new object, and is left alone.
+   * Filter values saved as invalid text are read again against the columns.
+   */
+  private replaceOutsideHistory(
+    replacements: ReadonlyMap<QueryNode, QueryNode>,
+    accepts?: (query: Query, resolved: QueryNode) => boolean,
+  ): void {
     if (!replacements.size) {
       return;
     }
@@ -690,7 +938,10 @@ export class CubeEditorState implements CommandRegistrar {
       if (checked === undefined) {
         let replaced = document.query;
         replacements.forEach((resolved, source) => {
-          if (replaced.getNode(source.id) === source) {
+          if (
+            replaced.getNode(source.id) === source &&
+            (accepts?.(document.query, resolved) ?? true)
+          ) {
             replaced = replaced.replace(resolved);
           }
         });
@@ -997,6 +1248,7 @@ export class CubeEditorState implements CommandRegistrar {
 
   /** Stops any run; call when the page closes */
   dispose(): void {
+    this.retyping();
     this.execution.stop();
     this.nodeEditor.dispose();
   }

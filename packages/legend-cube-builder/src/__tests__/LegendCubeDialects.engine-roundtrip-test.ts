@@ -21,6 +21,7 @@ import {
   ColumnComparisonFilter,
   Concat,
   Connection,
+  Difference,
   CUBE_DIALECT_WORKAROUNDS,
   Distinct,
   Drop,
@@ -41,12 +42,17 @@ import {
   Sort,
   SortDirection,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import { stringifyLosslessJSON } from '@finos/legend-shared';
 import {
   CUBE_ENGINE_TEST__generatePlanSql,
   CUBE_ENGINE_TEST__getCommit,
 } from '../__test-utils__/CubeEngineTestSupport.js';
+import {
+  TEST__ORDER_ID_EXTEND_COLUMNS,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
 import {
   CUSTOMERS_COLUMNS,
   northwindTable,
@@ -294,6 +300,73 @@ const concatThenWith = (
   );
 };
 
+/**
+ * ORDERS through the first nodes and a second ORDERS through the second,
+ * compared by difference101 (its Left and Right) on ORDER_ID by SHIP_VIA, an
+ * integer, and FREIGHT, a float, then the nodes after it, the last captured
+ */
+const differenceThen = (...after: QueryNode[]): Query => {
+  const compared = ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'];
+  const arms = [
+    [
+      northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+      new Restrict('restrict101', compared),
+    ],
+    [
+      northwindTable('relational102', 'ORDERS', ORDERS_COLUMNS),
+      new Restrict('restrict102', compared),
+    ],
+  ];
+  const difference = new Difference('difference101', {
+    leftColumns: ['ORDER_ID'],
+    rightColumns: ['ORDER_ID'],
+    differenceColumns: ['SHIP_VIA', 'FREIGHT'],
+  });
+  const nodes = [difference, ...after];
+  const chain = (chained: readonly QueryNode[]): Connection[] =>
+    chained
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection(
+            (chained[index] as QueryNode).id,
+            node.id,
+            node.ports[0] as string,
+          ),
+      );
+  return new Query(
+    [...arms.flat(), ...nodes],
+    [
+      ...arms.flatMap(chain),
+      ...arms.map(
+        (arm, side) =>
+          new Connection(
+            (arm.at(-1) as QueryNode).id,
+            difference.id,
+            difference.ports[side] as string,
+          ),
+      ),
+      ...chain(nodes),
+    ],
+    nodes.at(-1)?.id,
+  );
+};
+
+/**
+ * ORDERS, then extend101 adding `a: x | $x.ORDER_ID + 1` and `b: x | $x.a *
+ * 2`, typed (the engine tests check those types), then the nodes after it,
+ * the last captured
+ */
+const extendThen = (...after: QueryNode[]): Query => {
+  const input = ordersThen();
+  const extend = TEST__typedExtend(
+    'extend101',
+    input,
+    TEST__ORDER_ID_EXTEND_COLUMNS,
+  );
+  return ordersThen(extend, ...after);
+};
+
 /** Types must match */
 const concatThen = (
   first: readonly QueryNode[],
@@ -536,6 +609,16 @@ const SHAPES: [string, () => Query][] = [
           ]),
         ],
       ),
+  ],
+  ['a Difference', () => differenceThen()],
+  ['an Extend', () => extendThen()],
+  [
+    'a sorted Limit after an Extend',
+    () => extendThen(byCustomerThenOrder(), new Limit('limit101', 5)),
+  ],
+  [
+    'a Limit after a Difference',
+    () => differenceThen(new Limit('limit101', 5)),
   ],
   [
     'a Sort after a Concat',
@@ -962,6 +1045,39 @@ const distinctByCountry = (
 
 const WINDOW_SHAPES: [string, () => Query][] = [
   [
+    "a Partition with M5b's functions",
+    () =>
+      ordersThen(
+        new Partition(
+          'partition101',
+          ['SHIP_COUNTRY'],
+          [by('ORDER_DATE')],
+          [
+            {
+              ...windowFunction(WindowRowFunction.LAG, 'FREIGHT', 'lg'),
+              offset: 1,
+            },
+            {
+              ...windowFunction(WindowRowFunction.LEAD, 'ORDER_DATE', 'ld'),
+              offset: 2,
+            },
+            windowFunction(WindowRowFunction.FIRST, 'FREIGHT', 'f'),
+            windowFunction(WindowRowFunction.LAST, 'FREIGHT', 'l'),
+            {
+              ...windowFunction(WindowRankFunction.NTILE, undefined, 'nt'),
+              buckets: 4,
+            },
+            windowFunction(WindowRankFunction.PERCENT_RANK, undefined, 'pr'),
+            windowFunction(
+              WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+              undefined,
+              'cd',
+            ),
+          ],
+        ),
+      ),
+  ],
+  [
     'a sorted Partition with a Sum and an Average',
     () =>
       ordersThen(
@@ -1324,6 +1440,55 @@ const windowFunctionCount = (query: Query): number =>
     .filter((node): node is Partition => node instanceof Partition)
     .reduce((count, node) => count + node.aggregations.length, 0);
 
+/** A float's 0: `0.0`, Oracle's `0.0d`, or H2's cast */
+const FLOAT_ZERO = String.raw`(?:0\.0d?|cast\(0\.0 as float\))`;
+
+describe('Extend, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Writes each new column as an expression, the second over the first, on %s',
+    async (databaseType) => {
+      const sql = await planSql(extendThen(), databaseType);
+      // `a` as ORDER_ID + 1, and `b` as twice it: in place or by its name
+      expect(sql).toMatch(/order_id[^,]*\+ 1/u);
+      expect(sql).toMatch(/\* 2/u);
+      // aliased with `as`, or by a space after the expression (Oracle)
+      expect(sql).toMatch(/(?:\bas |\) )["`]?a["`]?(?:[ ,]|$)/u);
+      expect(sql).toMatch(/(?:\bas |\) )["`]?b["`]?(?:[ ,]|$)/u);
+    },
+  );
+});
+
+describe('Difference, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Joins FULL, natively but on H2, and subtracts the values with an empty one as 0, never cast to a float, on %s',
+    async (databaseType) => {
+      const sql = await planSql(differenceThen(), databaseType);
+      if (databaseType === 'H2') {
+        // the engine's emulation: matched and left rows, then the right's
+        expect(sql).toContain('left outer join');
+        expect(sql).toContain('right outer join');
+        expect(sql).toContain('union all');
+      } else {
+        expect(sql.match(/full outer join/gu)).toHaveLength(1);
+        expect(sql).not.toContain('union');
+      }
+      expect(sql).toMatch(
+        /coalesce\([^()]*ship_via_1[^()]*, 0\) - coalesce\([^()]*ship_via_2[^()]*, 0\)/u,
+      );
+      expect(sql).toMatch(
+        new RegExp(
+          `coalesce\\([^()]*freight_1[^()]*, ${FLOAT_ZERO}\\) - coalesce\\([^()]*freight_2[^()]*, ${FLOAT_ZERO}\\)`,
+          'u',
+        ),
+      );
+      // toFloat() fails to plan on 7 types (PLAN §11.7 Q5)
+      expect(sql).not.toMatch(
+        /cast\([^()]*ship_via[^()]* as (?:float|double)/u,
+      );
+    },
+  );
+});
+
 describe('Window functions, as each database plans them', () => {
   test.each(WINDOW_DATABASE_TYPES)(
     'Writes every window with an OVER clause and no ROWS or RANGE frame, on %s',
@@ -1334,11 +1499,88 @@ describe('Window functions, as each database plans them', () => {
         if (!sql.includes(' over (')) {
           problems.push(`${name}: no over clause`);
         }
-        if (FRAME_CLAUSE.test(sql)) {
+        // ClickHouse's own Lag and Lead read over the whole partition, as
+        // its lagInFrame and leadInFrame need (PLAN §11.9)
+        if (
+          FRAME_CLAUSE.test(
+            sql.replace(
+              /\b(?:lag|lead)inframe\([^()]*\) over \([^()]*\)/gu,
+              '',
+            ),
+          )
+        ) {
           problems.push(`${name}: a frame clause`);
         }
       }
       expect(problems).toEqual([]);
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Writes M5b's functions over the window: NTile, Percent Rank, Cumulative Distribution, Lag and Lead by offset, First, and Last as First over the reversed sort, on %s",
+    async (databaseType) => {
+      const sql = await windowPlanSql(
+        "a Partition with M5b's functions",
+        databaseType,
+      );
+      const window = `over \\(partition by [^()]*ship_country[^()]* order by [^()]*order_date[^()]*`;
+      ['ntile\\(4\\)', 'percent_rank\\(\\)', 'cume_dist\\(\\)'].forEach((fn) =>
+        expect(sql).toMatch(
+          new RegExp(`\\b${fn} ${window}\\basc(?: nulls last)?\\)`, 'u'),
+        ),
+      );
+      // ClickHouse's own forms, over the whole partition
+      const [lag, lead] =
+        databaseType === 'ClickHouse'
+          ? ['laginframe', 'leadinframe']
+          : ['lag', 'lead'];
+      expect(sql).toMatch(
+        new RegExp(`\\b${lag}\\([^()]*freight[\`"]?, 1\\) ${window}`, 'u'),
+      );
+      expect(sql).toMatch(
+        new RegExp(`\\b${lead}\\([^()]*order_date[\`"]?, 2\\) ${window}`, 'u'),
+      );
+      // DuckDB's first() is first_value()
+      const first = databaseType === 'DuckDB' ? 'first' : 'first_value';
+      expect(sql).toMatch(
+        new RegExp(
+          `\\b${first}\\([^()]*freight[\`"]?\\) ${window}\\basc(?: nulls last)?\\)`,
+          'u',
+        ),
+      );
+      expect(sql).toMatch(
+        new RegExp(
+          `\\b${first}\\([^()]*freight[\`"]?\\) ${window}\\bdesc(?: nulls first)?\\)`,
+          'u',
+        ),
+      );
+      expect(sql).not.toMatch(/\blast_value\(|\bnth_value\(/u);
+      // reversed, the sort puts empty values at the other end too: where
+      // the database's own default wouldn't, the engine writes it
+      const ascending =
+        /\border by [^()]*order_date[`"]? asc(?<nulls> nulls last)?\)/u.exec(
+          sql,
+        );
+      const descending =
+        /\border by [^()]*order_date[`"]? desc(?<nulls> nulls first)?\)/u.exec(
+          sql,
+        );
+      expect(Boolean(ascending?.groups?.nulls)).toBe(
+        ['MemSQL', 'Databricks', 'Hive', 'BigQuery'].includes(databaseType),
+      );
+      expect(Boolean(descending?.groups?.nulls)).toBe(
+        ![
+          'H2',
+          'Postgres',
+          'SqlServer',
+          'Sybase',
+          'SybaseIQ',
+          'DB2',
+          'Snowflake',
+          'Oracle',
+          'Redshift',
+        ].includes(databaseType),
+      );
     },
   );
 

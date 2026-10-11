@@ -32,6 +32,7 @@ import {
   ingestAccessor,
   type IR,
   lambda,
+  lambdaJson,
   letBinding,
   literal,
   storeAccessor,
@@ -476,6 +477,55 @@ describe(unitTest('IR printer'), () => {
     expect(printIR(filter)).toBe(
       "#>{a::Db.SCH.T}#->filter({row | ($row.NAME == 'secret') && $row.ID->in([1, 2])})",
     );
+  });
+
+  test("Prints an Extend's lambda as the engine's JSON, every literal the user typed redacted for logs", () => {
+    const json = {
+      _type: 'lambda',
+      parameters: [{ _type: 'var', name: 'x' }],
+      body: [
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  property: 'NAME',
+                  parameters: [{ _type: 'var', name: 'x' }],
+                },
+                { _type: 'string', value: 'Acme secret' },
+              ],
+            },
+            {
+              _type: 'collection',
+              values: [
+                { _type: 'integer', value: '9007199254740993' },
+                { _type: 'float', value: '1.5' },
+                { _type: 'boolean', value: true },
+                { _type: 'strictDate', value: '2026-10-10' },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const ir = lambdaJson(json, {
+      nodeId: 'extend101',
+      role: EmitRole.EXPRESSION,
+    });
+    expect(printIR(ir)).toBe(`<lambda ${JSON.stringify(json)}>`);
+    const redacted = printIR(ir, { redactLiterals: true });
+    ['Acme secret', '9007199254740993', '1.5', 'true', '2026-10-10'].forEach(
+      (value) => expect(redacted).not.toContain(value),
+    );
+    // the names and functions stay
+    expect(redacted).toContain('"property":"NAME"');
+    expect(redacted).toContain('{"_type":"string","value":"?"}');
+    expect(redacted).toContain('{"_type":"boolean","value":"?"}');
   });
 
   test('Redacts the enumeration values of a filter, and no other enumeration value', () => {

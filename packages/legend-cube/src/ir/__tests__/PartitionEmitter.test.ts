@@ -27,6 +27,7 @@ import {
   AggregationFunction,
   type ColumnAggregation,
   WindowRankFunction,
+  WindowRowFunction,
 } from '../../nodes/transforms/Aggregation.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
@@ -330,6 +331,102 @@ describe(unitTest('Partition emission'), () => {
       expect(
         windowedOrders(['SHIP_COUNTRY'], BY_ORDER_DATE, aggregations),
       ).not.toContain('select'),
+    );
+  });
+
+  test('Writes NTile, Percent Rank, Cumulative Distribution, Lag, Lead and First beside the ranks, and Last as First over the reversed sort, in a third extend', () => {
+    const bothWays: readonly ColumnDirection[] = [
+      { column: 'ORDER_DATE', direction: SortDirection.ASC },
+      { column: 'ORDER_ID', direction: SortDirection.DESC },
+    ];
+    expect(
+      windowedOrders(['SHIP_COUNTRY'], bothWays, [
+        SUM_OF_FREIGHT,
+        RANK_FUNCTION,
+        { ...rankFunction(WindowRankFunction.NTILE, 'nt'), buckets: 4 },
+        rankFunction(WindowRankFunction.PERCENT_RANK, 'pr'),
+        rankFunction(WindowRankFunction.CUMULATIVE_DISTRIBUTION, 'cd'),
+        {
+          column: 'FREIGHT',
+          function: WindowRowFunction.LAG,
+          name: 'prev',
+          offset: 1,
+        },
+        {
+          column: 'ORDER_DATE',
+          function: WindowRowFunction.LEAD,
+          name: 'next2',
+          offset: 2,
+        },
+        { column: 'FREIGHT', function: WindowRowFunction.FIRST, name: 'f' },
+        { column: 'CUSTOMER_ID', function: WindowRowFunction.LAST, name: 'l' },
+      ]),
+    ).toBe(
+      `${ORDERS}->extend(~[SHIP_COUNTRY]->over([~ORDER_DATE->ascending(), ~ORDER_ID->descending()]), ~[${SUM_TEXT}])` +
+        `->extend(~[SHIP_COUNTRY]->over([~ORDER_DATE->ascending(), ~ORDER_ID->descending()]), ~[${RANK_TEXT}, nt: {p, w, r | $p->ntile($r, 4)}, pr: {p, w, r | $p->percentRank($w, $r)}, cd: {p, w, r | $p->cumulativeDistribution($w, $r)}, prev: {p, w, r | $p->lag($r, 1).FREIGHT}, next2: {p, w, r | $p->lead($r, 2).ORDER_DATE}, f: {p, w, r | $p->first($w, $r).FREIGHT}])` +
+        `->extend(~[SHIP_COUNTRY]->over([~ORDER_DATE->descending(), ~ORDER_ID->ascending()]), ~[l: {p, w, r | $p->first($w, $r).CUSTOMER_ID}])`,
+    );
+  });
+
+  test('Writes Last over the reversed sort with no partition column too, and selects the order listed when it comes first', () => {
+    const last: ColumnAggregation = {
+      column: 'FREIGHT',
+      function: WindowRowFunction.LAST,
+      name: 'l',
+    };
+    expect(windowedOrders([], BY_ORDER_DATE, [last])).toBe(
+      `${ORDERS}->extend([~ORDER_DATE->descending()]->over(), ~[l: {p, w, r | $p->first($w, $r).FREIGHT}])`,
+    );
+    expect(
+      windowedOrders(['SHIP_COUNTRY'], BY_ORDER_DATE, [last, SUM_OF_FREIGHT]),
+    ).toBe(
+      `${ORDERS}->extend(${OVER_COUNTRY_BY_DATE}, ~[${SUM_TEXT}])->extend(~[SHIP_COUNTRY]->over([~ORDER_DATE->descending()]), ~[l: {p, w, r | $p->first($w, $r).FREIGHT}])->select(~[${INPUT}, l, s])`,
+    );
+  });
+
+  test('Refuses to emit a Lag without a whole offset, or an NTile without a bucket count', () => {
+    // the emitter's own check, past the query's validation
+    const lag = partition(['SHIP_COUNTRY'], BY_ORDER_DATE, [
+      { column: 'FREIGHT', function: WindowRowFunction.LAG, name: 'p' },
+    ]);
+    [undefined, 0, 1.5].forEach((offset) =>
+      expect(() =>
+        emitPartition(
+          lag.withAggregations([
+            {
+              column: 'FREIGHT',
+              function: WindowRowFunction.LAG,
+              name: 'p',
+              ...(offset === undefined ? {} : { offset }),
+            },
+          ]),
+          [ACCESSOR],
+          {
+            inputSchemas: [new Schema(COLUMNS)],
+            schema: new Schema([...COLUMNS, column('p', 'Float')]),
+          } as never,
+        ),
+      ).toThrow(
+        `Can't emit window function "p": its setting isn't a whole number of at least 1`,
+      ),
+    );
+    const query = ordersThen(
+      partition(['SHIP_COUNTRY'], BY_ORDER_DATE, [
+        { ...rankFunction(WindowRankFunction.NTILE, 'nt'), buckets: 4 },
+      ]),
+    );
+    const node = query.getNode('partition101') as Partition;
+    expect(() =>
+      emitPartition(
+        node.withAggregations([rankFunction(WindowRankFunction.NTILE, 'nt')]),
+        [ACCESSOR],
+        {
+          inputSchemas: [new Schema(COLUMNS)],
+          schema: new Schema([...COLUMNS, column('nt')]),
+        } as never,
+      ),
+    ).toThrow(
+      `Can't emit window function "nt": its setting isn't a whole number of at least 1`,
     );
   });
 

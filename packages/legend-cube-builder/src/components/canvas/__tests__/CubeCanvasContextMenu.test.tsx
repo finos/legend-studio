@@ -69,7 +69,9 @@ const TRANSFORMS = [
   'Take rows <x> to <y>',
   'Concatenate Another Input',
   'Join Another Input',
+  'Compare Column Values',
   'Apply Window Functions',
+  'Extend Columns',
 ];
 const TABLE = 'Relational Database Table';
 const PALETTE = [TABLE, 'Data Product (BETA)', ...TRANSFORMS];

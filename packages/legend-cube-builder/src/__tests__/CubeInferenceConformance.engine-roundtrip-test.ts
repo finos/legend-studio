@@ -26,6 +26,7 @@ import {
   Concat,
   Connection,
   createNodeRegistry,
+  Difference,
   DataProductAccessPointSource,
   Distinct,
   Drop,
@@ -52,6 +53,7 @@ import {
   Sort,
   SortDirection,
   WindowRankFunction,
+  WindowRowFunction,
 } from '@finos/legend-cube';
 import {
   TEST__chainOf,
@@ -60,6 +62,11 @@ import {
   TEST__northwindTable,
   TEST__typingDifferences,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
+import {
+  TEST__expression,
+  type TEST__ExtendColumn,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
 import { CUBE_NORTHWIND_MODEL } from '../stores/fixtures/CubeNorthwindModel.js';
@@ -148,6 +155,21 @@ const joined =
     );
   };
 
+/**
+ * relational101, then the nodes, then extend101 adding these columns, typed
+ * as given for the input Cube infers: the suite checks the types against the
+ * engine's
+ */
+const extended =
+  (before: readonly QueryNode[], columns: readonly TEST__ExtendColumn[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const nodes = [source(sources, 'relational101'), ...before];
+    return TEST__chainOf([
+      ...nodes,
+      TEST__typedExtend('extend101', TEST__chainOf(nodes), columns),
+    ]);
+  };
+
 /** Each arm's nodes, each feeding the next */
 const armConnections = (arm: readonly QueryNode[]): Connection[] =>
   arm
@@ -160,6 +182,45 @@ const armConnections = (arm: readonly QueryNode[]): Connection[] =>
           node.ports[0] as string,
         ),
     );
+
+/**
+ * relational101 through the first nodes and relational102 through the second,
+ * compared by difference101 (its Left and Right) on the keys by the difference
+ * columns, captured
+ */
+const differenced =
+  (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+    keys: readonly (readonly [string, string])[],
+    differenceColumns: readonly string[],
+  ) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const difference = new Difference('difference101', {
+      leftColumns: keys.map(([left]) => left),
+      rightColumns: keys.map(([, right]) => right),
+      differenceColumns,
+    });
+    const arms = [
+      [source(sources, 'relational101'), ...first],
+      [source(sources, 'relational102'), ...second],
+    ];
+    return new Query(
+      [...arms.flat(), difference],
+      [
+        ...arms.flatMap(armConnections),
+        ...arms.map(
+          (arm, index) =>
+            new Connection(
+              (arm.at(-1) as QueryNode).id,
+              difference.id,
+              difference.ports[index] as string,
+            ),
+        ),
+      ],
+      difference.id,
+    );
+  };
 
 /**
  * relational101 through the first nodes and relational102 through the second,
@@ -291,7 +352,7 @@ const sumsAndAverages = (
     .map(({ name }) => name);
 
 const aggregation = (
-  fn: AggregationFunction,
+  fn: AggregationFunction | WindowRankFunction | WindowRowFunction,
   column: string | undefined,
   name: string,
 ): ColumnAggregation => ({ column, function: fn, name });
@@ -1163,6 +1224,190 @@ const CASES: readonly ConformanceCase[] = [
       ),
     ),
   },
+  // Difference (M6, PLAN §11.7): a full outer join, then the differences
+  {
+    // integer and float differences, on a merged key
+    name: 'difference-orders',
+    tables: [ORDERS, ['relational102', 'ORDERS']],
+    build: differenced(
+      [new Restrict('restrict101', ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'])],
+      [new Restrict('restrict102', ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'])],
+      [['ORDER_ID', 'ORDER_ID']],
+      ['SHIP_VIA', 'FREIGHT'],
+    ),
+  },
+  {
+    // every numeric family of ALLTYPES, by the family's difference type
+    name: 'difference-every-alltypes-number',
+    tables: [ALLTYPES, ['relational102', 'ALLTYPES', 'CUBETEST']],
+    build: differenced(
+      [
+        new Restrict('restrict101', [
+          'ID',
+          'TI',
+          'SI',
+          'BI',
+          'F',
+          'D',
+          'DEC',
+          'NUM',
+        ]),
+      ],
+      [
+        new Restrict('restrict102', [
+          'ID',
+          'TI',
+          'SI',
+          'BI',
+          'F',
+          'D',
+          'DEC',
+          'NUM',
+        ]),
+      ],
+      [['ID', 'ID']],
+      ['TI', 'SI', 'BI', 'F', 'D', 'DEC', 'NUM'],
+    ),
+  },
+  {
+    // keys whose names differ, both kept, and a column of each input
+    name: 'difference-keys-named-apart',
+    tables: [ORDERS, ['relational102', 'ORDERS']],
+    build: differenced(
+      [new Restrict('restrict101', ['ORDER_ID', 'SHIP_CITY', 'SHIP_VIA'])],
+      [
+        new Restrict('restrict102', ['ORDER_ID', 'CUSTOMER_ID', 'SHIP_VIA']),
+        new Rename('rename102', [{ from: 'ORDER_ID', to: 'ORDER_REF' }]),
+      ],
+      [['ORDER_ID', 'ORDER_REF']],
+      ['SHIP_VIA'],
+    ),
+    // the engine types a full join's keys as never empty, yet each is empty
+    // on the rows only the other input has (LegendCubeOperations' Difference)
+    widerNullable: { difference101: ['ORDER_ID', 'ORDER_REF'] },
+  },
+  // Extend (M6, PLAN §11.7): the engine types each column `[1]` after
+  // toOne(), though an empty value gives an empty result, so every new
+  // column is declared wider
+  {
+    // arithmetic, a column using the one before, and a float times an integer
+    name: 'extend-arithmetic',
+    tables: [ORDERS],
+    build: extended(
+      [],
+      [
+        [
+          'a',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'plus',
+              TEST__expression.pair(
+                TEST__expression.column('ORDER_ID'),
+                TEST__expression.integer(1),
+              ),
+            ),
+          ),
+          'Integer',
+        ],
+        [
+          'b',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'times',
+              TEST__expression.pair(
+                TEST__expression.column('a'),
+                TEST__expression.integer(2),
+              ),
+            ),
+          ),
+          'Integer',
+        ],
+        [
+          'c',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'times',
+              TEST__expression.pair(
+                TEST__expression.call(
+                  'toOne',
+                  TEST__expression.column('FREIGHT'),
+                ),
+                TEST__expression.integer(2),
+              ),
+            ),
+          ),
+          'Number',
+        ],
+      ],
+    ),
+    widerNullable: { extend101: ['a', 'b', 'c'] },
+  },
+  {
+    // text, a comparison and a date, after a Restrict
+    name: 'extend-text-boolean-date',
+    tables: [ORDERS],
+    build: extended(
+      [
+        new Restrict('restrict101', [
+          'ORDER_ID',
+          'SHIP_CITY',
+          'SHIP_VIA',
+          'ORDER_DATE',
+        ]),
+      ],
+      [
+        [
+          'city',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'toUpper',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('SHIP_CITY'),
+              ),
+            ),
+          ),
+          'String',
+        ],
+        [
+          'fast',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'greaterThan',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('SHIP_VIA'),
+              ),
+              TEST__expression.integer(1),
+            ),
+          ),
+          'Boolean',
+        ],
+        [
+          'due',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'adjust',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('ORDER_DATE'),
+              ),
+              TEST__expression.integer(1),
+              {
+                _type: 'property',
+                property: 'DAYS',
+                parameters: [
+                  { _type: 'packageableElementPtr', fullPath: 'DurationUnit' },
+                ],
+              },
+            ),
+          ),
+          'Date',
+        ],
+      ],
+    ),
+    widerNullable: { extend101: ['city', 'fast', 'due'] },
+  },
   // Partition (M5, PLAN §11.6): typed as a plain chain, as every case is
   {
     // every window function, partitioned and sorted: over(~[p], [sorts])
@@ -1257,6 +1502,37 @@ const CASES: readonly ConformanceCase[] = [
           ...RANKS,
         ],
       ),
+    ),
+  },
+  {
+    // M5b (PLAN §11.9): the row functions of a number, a text and a date,
+    // nullable, and the new rank functions, never empty; Last as First over
+    // the reversed sort, in a third extend
+    name: 'partition-m5b-functions',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', ['SHIP_COUNTRY'], LATEST_FIRST, [
+        {
+          ...aggregation(WindowRowFunction.LAG, 'FREIGHT', 'previous freight'),
+          offset: 1,
+        },
+        {
+          ...aggregation(WindowRowFunction.LEAD, 'SHIP_CITY', 'next city'),
+          offset: 3,
+        },
+        aggregation(WindowRowFunction.FIRST, 'ORDER_DATE', 'first date'),
+        aggregation(WindowRowFunction.LAST, 'SHIP_REGION', 'last region'),
+        {
+          ...aggregation(WindowRankFunction.NTILE, undefined, 'quartile'),
+          buckets: 4,
+        },
+        aggregation(WindowRankFunction.PERCENT_RANK, undefined, 'percent'),
+        aggregation(
+          WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+          undefined,
+          'cumulative',
+        ),
+      ]),
     ),
   },
   {

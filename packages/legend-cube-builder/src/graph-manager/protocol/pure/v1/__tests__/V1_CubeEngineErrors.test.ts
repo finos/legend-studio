@@ -65,6 +65,46 @@ describe('Cube engine errors', () => {
     expect(error?.message).toBe("Can't find the column 'NOPE'");
   });
 
+  test('Keeps where a located error is in its text: the source id and every line and column, or nothing when one is missing', () => {
+    const located = V1_buildCubeEngineError(
+      {
+        errorType: 'COMPILATION',
+        message: "The column 'NOPE' can't be found",
+        sourceInformation: {
+          sourceId: 'extend101:1',
+          startLine: 1,
+          startColumn: 8,
+          endLine: 1,
+          endColumn: 11,
+        },
+      },
+      'extend101#2',
+      CubeEngineErrorKind.COMPILE,
+    );
+    expect(located?.location).toEqual({
+      sourceId: 'extend101:1',
+      startLine: 1,
+      startColumn: 8,
+      endLine: 1,
+      endColumn: 11,
+    });
+    // not one of Cube's stamps, so on the fallback node
+    expect(located?.nodeId).toBe('extend101#2');
+    expect(
+      V1_buildCubeEngineError(
+        {
+          message: 'x',
+          sourceInformation: {
+            sourceId: 'cube:filter101:column',
+            startLine: 1,
+          },
+        },
+        undefined,
+        CubeEngineErrorKind.COMPILE,
+      )?.location,
+    ).toBeUndefined();
+  });
+
   test('Reads a stamp whose node id has a colon', () => {
     expect(
       V1_buildCubeEngineError(

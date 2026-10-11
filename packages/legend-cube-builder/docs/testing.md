@@ -86,7 +86,8 @@ would serve it.
 - `src/__tests__/CubeInferenceConformance.engine-roundtrip-test.ts` holds Cube's inference to the engine's (PLAN
   §11.5): it types every node of every case in one batch and compares names, positions, precise types with their
   parameters, and nullability exactly (`TEST__typingDifferences`). Where the engine misreports nullability (an outer
-  join's padded columns, the FULL merged key), a case lists the columns in `widerNullable`, and Cube must say nullable
+  join's padded columns, the FULL merged key, a Difference's keys named apart, an Extend's columns after `toOne()`), a
+  case lists the columns in `widerNullable`, and Cube must say nullable
   there. Every registered node type needs a case, or the coverage test fails, but a data product's access point
   (`NOT_TYPED_BY_THE_ENGINE`: the open-source engine reads no data product; `CubeDataProduct.engine-roundtrip-test.ts`
   types its stand-in). A case whose Concat converts types names the types it converts (`converted`), so a case that
@@ -105,16 +106,27 @@ would serve it.
   a missing workaround must fail without it: run it once with the workaround off before relying on it.
 - **Windows** (PLAN §11.6) are planned in `WINDOW_SHAPES` over `WINDOW_DATABASE_TYPES`, since Spanner, Presto and
   Composite refuse any window (pinned): an OVER clause with no frame, `count(col)` and `count(1)` for the counts,
-  `rank()`, `dense_rank()` and `row_number()`, a Filter after a Partition as a `WITH n_…` and a `WHERE` outside the
+  `rank()`, `dense_rank()` and `row_number()`, M5b's `ntile`, `percent_rank`, `cume_dist`, `lag`, `lead` and
+  `first_value`, Last's over the reversed sort (ClickHouse's own `lagInFrame` and `leadInFrame` over a whole-partition
+  frame, DuckDB's `first`), with the reversed sort putting empty values at the other end on every type, a Filter after a Partition as a `WITH n_…` and a `WHERE` outside the
   window, never QUALIFY, and the capture's ORDER BY at the root. Run, they are checked three ways: the operations
   tests ("Partition on the engine"), with values worked out on the fixture (rows tied on the sort share a running
   value and a rank); `LegendCubeDirectConnectionOperations.engine-roundtrip-test.ts` on H2 and DuckDB, a second
   database that runs them, windowed Distinct Count included; and `CubeWindowComposition.engine-roundtrip-test.ts`,
   which runs pairs and triples of nodes with a Partition against a small JavaScript reference with SQL's null rules
-  and default frame, checks every Partition is written in the array form, and shows (its negative control) that the
+  and default frame (and M5b's functions, refusing a tie for the ones that depend on a row's place), checks every Partition is written in the array form, and shows (its negative control) that the
   single form, unbound, gives wrong rows. The core's `PartitionEmitter.test.ts` pins the emitted text.
   `CubeWindowIsolation.engine-roundtrip-test.ts` checks the lets themselves through the adapter, with a test-only
   window: they run, type, show in Show Pure, and put an error inside a let on its window.
+- **Difference and Extend** (PLAN §11.7). The operations tests run a Difference against a reference computed from its
+  inputs' own rows, every numeric family included; the plan-only test pins its join (a native `full outer join` on
+  every type but H2, where the engine emulates it) and its `coalesce(…, 0) - coalesce(…, 0)`, never a cast, and an
+  Extend's columns written as their expressions; both run on H2 and DuckDB through the direct connection.
+  `CubeExpressions.engine-roundtrip-test.ts` covers Extend's engine calls: an expression parsed with its digits and
+  locations, typed as a chain after its input over the cube's model (its own enumerations and functions too), the
+  failing column found and located, a plan that fails, and a run. A test that needs a typed Extend without the engine
+  builds one with `TEST__typedExtend` (`src/__test-utils__/CubeExpressionTestUtils.ts`), whose types the conformance
+  cases check against the engine.
 - `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
   example cube (PLAN §6.9) as the Examples dialog does: it types its tables, checks every node types as Cube infers it
   (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.

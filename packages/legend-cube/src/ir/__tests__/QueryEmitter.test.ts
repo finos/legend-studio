@@ -699,6 +699,7 @@ describe(unitTest('Query emission'), () => {
       'aggregation',
       'window',
       'concat',
+      'difference',
       'convert',
       'sort',
       'sortKey',
@@ -708,6 +709,8 @@ describe(unitTest('Query emission'), () => {
       'limit',
       'from',
       'let',
+      'extend',
+      'expression',
     ]);
     expect(new Set(roles).size).toBe(roles.length);
     roles.forEach((role) => expect(role).not.toContain(':'));

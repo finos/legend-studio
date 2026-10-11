@@ -15,6 +15,7 @@
  */
 
 import type {
+  AggregationSetting,
   AggregationUse,
   ColumnAggregation,
   ColumnDirection,
@@ -35,6 +36,7 @@ import {
   withRowColumn,
   withRowFunction,
   withRowName,
+  withRowSetting,
 } from './CubeAggregationRows.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 import {
@@ -53,7 +55,9 @@ import {
  * saved order until the picks change (M4's Q2), and sort rows, as a Sort's
  * (none to start). A row's name follows its column and function until typed.
  * Picking a column first sets Count; Count rows and the rank functions clear
- * the column, which they can't hold. Until something changes, `build()`
+ * the column, which they can't hold. Lag and Lead take an offset, NTile a
+ * bucket count, typed as text and given their defaults when picked (PLAN
+ * §11.9). Until something changes, `build()`
  * gives the original back, a saved sort key without a column included.
  */
 export class CubePartitionDraft extends CubeNodeDraft<Partition> {
@@ -84,6 +88,7 @@ export class CubePartitionDraft extends CubeNodeDraft<Partition> {
       removeRow: action,
       setColumn: action,
       setFunction: action,
+      setSetting: action,
       setName: action,
     });
     this.columns = original.columns;
@@ -182,6 +187,11 @@ export class CubePartitionDraft extends CubeNodeDraft<Partition> {
   /** Picks the row's function: Count rows and the rank functions take no column, the others one */
   setFunction(key: number, fn: string): void {
     this.update(key, (row) => withRowFunction(row, fn, this.aggregationUse));
+  }
+
+  /** Types the row's setting, Lag's and Lead's offset or NTile's bucket count, kept as text (PLAN §11.9) */
+  setSetting(key: number, setting: AggregationSetting, text: string): void {
+    this.update(key, (row) => withRowSetting(row, setting, text));
   }
 
   /** Types the row's name, kept exactly; the auto-name itself follows again */

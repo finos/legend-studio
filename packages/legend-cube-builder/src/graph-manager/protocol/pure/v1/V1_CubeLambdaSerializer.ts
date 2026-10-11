@@ -66,6 +66,44 @@ const numberToken = (text: string): unknown => {
   return parseLosslessJSON(text);
 };
 
+/** The literal types whose value is a number, which Cube keeps as its digit string in an expression's JSON */
+const NUMBER_LITERAL_TYPES: readonly unknown[] = [
+  'integer',
+  'float',
+  'decimal',
+];
+
+/**
+ * An expression's lambda as the engine reads it (PLAN §11.7): each number
+ * literal written digit for digit from the string Cube keeps, and with an
+ * origin, any source information replaced by it on every value
+ * specification; with none, the JSON's own source information kept, so a
+ * lambda parsed with its locations is typed with them (the editor's Validate)
+ */
+const serializeLambdaJson = (
+  json: unknown,
+  origin: Origin | undefined,
+): unknown => {
+  if (Array.isArray(json)) {
+    return json.map((item) => serializeLambdaJson(item, origin));
+  }
+  if (typeof json !== 'object' || json === null) {
+    return json;
+  }
+  const object: PlainObject = Object.fromEntries(
+    Object.entries(json)
+      .filter(([key]) => !origin || key !== 'sourceInformation')
+      .map(([key, value]) => [key, serializeLambdaJson(value, origin)]),
+  );
+  if (
+    NUMBER_LITERAL_TYPES.includes(object._type) &&
+    typeof object.value === 'string'
+  ) {
+    object.value = numberToken(object.value);
+  }
+  return typeof object._type === 'string' ? stamped(object, origin) : object;
+};
+
 const serializeLiteral = (value: LiteralValue): PlainObject => {
   switch (value.kind) {
     case 'string':
@@ -275,6 +313,11 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
     }
     case 'raw':
       return ir.json as PlainObject;
+    case 'lambdaJson':
+      return serializeLambdaJson(
+        ir.json,
+        ir.origin ?? inherited,
+      ) as PlainObject;
     default: {
       const unknown: never = ir;
       throw new Error(`Unknown IR ${JSON.stringify(unknown)}`);

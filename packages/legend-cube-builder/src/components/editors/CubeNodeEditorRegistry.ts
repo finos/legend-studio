@@ -17,9 +17,11 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  Difference,
   IngestDatasetSource,
   Distinct,
   Drop,
+  Extend,
   Filter,
   Group,
   Join,
@@ -36,8 +38,10 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeConcatEditor } from './CubeConcatEditor.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
+import { CubeDifferenceEditor } from './CubeDifferenceEditor.js';
 import { CubeIngestSourceEditor } from './CubeIngestSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
+import { CubeExtendEditor } from './CubeExtendEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeGroupEditor } from './CubeGroupEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
@@ -92,5 +96,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Limit.TYPE, CubeRowCountEditor],
   [Slice.TYPE, CubeSliceEditor],
   [Concat.TYPE, CubeConcatEditor],
+  [Difference.TYPE, CubeDifferenceEditor],
   [Partition.TYPE, CubePartitionEditor],
+  [Extend.TYPE, CubeExtendEditor],
 ]);
