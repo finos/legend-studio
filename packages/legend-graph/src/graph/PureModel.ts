@@ -18,7 +18,7 @@ import {
   type PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
   AUTO_IMPORTS,
-  PRECISE_PRIMITIVE_TYPE,
+  PRECISE_PRIMITIVE_TYPE_PATHS,
 } from '../graph/MetaModelConst.js';
 import {
   type Clazz,
@@ -111,7 +111,10 @@ export class CoreModel extends BasicModel {
 
   override getOwnNullableType(path: string): Type | undefined {
     let resolvedPath = path;
-    if ((Object.values(PRECISE_PRIMITIVE_TYPE) as string[]).includes(path)) {
+    // NOTE: only the paths of the precise primitive types the engine defines
+    // are handled here, so, as in the engine, other paths in their package,
+    // e.g. `meta::pure::precisePrimitives::Date`, do not resolve (to `Date`)
+    if ((PRECISE_PRIMITIVE_TYPE_PATHS as readonly string[]).includes(path)) {
       // for precise primitive types, we use the name as the path
       resolvedPath = extractElementNameFromPath(path);
     }
