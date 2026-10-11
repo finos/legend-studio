@@ -160,9 +160,8 @@ describe('Join editor', () => {
     expect(stored.leftColumns).toEqual(['CUSTOMER_ID']);
     expect(editorState.analysis.validity.get('join101')).toEqual([]);
     expect(editorState.history).toHaveLength(1);
-    // the panel goes on, on the stored join, with nothing left to apply
-    expect(editorState.nodeEditor.draft?.original).toBe(stored);
-    expect(button('Apply').disabled).toBe(true);
+    // Apply closes the editor (UX audit B4)
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
     await waitFor(async () =>
       expect(
         (await TEST__findCanvasNode('join101')).classList.contains(

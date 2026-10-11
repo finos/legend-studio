@@ -259,14 +259,16 @@ export const CubeNodeEditorPanel = observer(
                 readOnly
                   ? READ_ONLY_CUBE_TITLE
                   : (draft.applyDisabledReason ??
-                    'Store the changes, as one step to undo')
+                    'Store the changes as one step to undo, and close')
               }
               disabled={
                 readOnly ||
                 !nodeEditor.hasChanges ||
                 draft.applyDisabledReason !== undefined
               }
-              onClick={() => nodeEditor.apply()}
+              // Apply closes, as the other ways out but Cancel do (UX
+              // audit B4, user, 2026-10-11)
+              onClick={() => closing(() => nodeEditor.finish())}
             >
               Apply
             </CubeButton>

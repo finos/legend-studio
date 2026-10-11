@@ -151,7 +151,7 @@ const expectSplicedAfterJoin = (editorState: CubeEditorState): void => {
   ]);
   expect(query.selected).toBe('filter102');
   expect(editorState.history).toHaveLength(1);
-  expect(editorState.nodeEditor.nodeId).toBeUndefined();
+  expect(editorState.nodeEditor.nodeId).toBe('filter102');
 };
 
 beforeEach(() => {
@@ -261,7 +261,9 @@ describe('Cube palette', () => {
   test('Hints at dragging while the cube is empty, and only then', async () => {
     const editorState = await render();
     expect(screen.getByText(PALETTE_EMPTY_HINT)).toBeDefined();
-    act(() => editorState.addNode('filter'));
+    act(() => {
+      editorState.addNode('filter');
+    });
     expect(screen.queryByText(PALETTE_EMPTY_HINT)).toBeNull();
   });
 
@@ -329,7 +331,7 @@ describe('Cube palette', () => {
     await TEST__findCanvasNode('join101');
   });
 
-  test('Splices a transform clicked in after the selected node, which captures it, opening no editor', async () => {
+  test('Splices a transform clicked in after the selected node, which captures it, opening its editor', async () => {
     const editorState = await render(
       new CubeDocument({ query: joinSelectedQuery() }),
     );
@@ -382,7 +384,7 @@ describe('Cube palette', () => {
       expect(
         (editorState.document.query.getNode('limit101') as Limit).size,
       ).toBe(5);
-      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(editorState.nodeEditor.nodeId).toBe('filter101');
       expect(editorState.document.query.getInputIds('filter101')).toEqual([
         'limit101',
       ]);

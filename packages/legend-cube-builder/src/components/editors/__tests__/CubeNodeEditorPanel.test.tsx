@@ -385,7 +385,8 @@ describe('Node editor panel', () => {
     const editorState = await render(keylessJoin());
     await openPanel('join101');
     editJoinKeys();
-    fireEvent.click(within(panel()).getByText('Apply'));
+    // stores the edits keeping the editor open, as Apply did before it closed
+    act(() => editorState.nodeEditor.apply());
     editJoinKeys('SHIP_CITY', 'CITY');
     act(() => editorState.undo());
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
@@ -403,7 +404,8 @@ describe('Node editor panel', () => {
     const editorState = await render(keylessJoin());
     await openPanel('join101');
     editJoinKeys();
-    fireEvent.click(within(panel()).getByText('Apply'));
+    // stores the edits keeping the editor open, as Apply did before it closed
+    act(() => editorState.nodeEditor.apply());
     act(() => editorState.undo());
     expect(editorState.nodeEditor.notice).toBeUndefined();
     expect(editorState.nodeEditor.draft?.original).toBe(

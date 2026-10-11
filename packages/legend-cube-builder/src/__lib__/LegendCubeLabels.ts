@@ -350,3 +350,6 @@ export const toEditorTitle = (label: string): string =>
 
 /** The source dialog's body until a tab is chosen, opened from the empty canvas (spec §17.8, U4(b)) */
 export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';
+
+/** Why the source dialog's Add is disabled: nothing picked yet, or not ready */
+export const CUBE_PICK_TO_ADD_TITLE = 'Pick what to add first';

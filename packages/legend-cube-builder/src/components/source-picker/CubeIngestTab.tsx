@@ -28,15 +28,16 @@ import type {
   CubeIngestTabError,
   CubeIngestTabState,
 } from '../../stores/source-picker/CubeIngestTabState.js';
+import {
+  CUBE_PICKER_LIST_CLASS,
+  CubePickerListItem,
+} from './CubePickerListItem.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
 const INPUT_CLASS =
   'h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)] disabled:text-[var(--color-text-secondary)]';
-
-const LIST_ITEM_CLASS =
-  'flex w-full items-center gap-2 px-2 py-1 text-left text-base enabled:hover:bg-[var(--color-bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]';
 
 /** An error as the tab shows it: its first line, the rest on demand, and an action when it has one */
 const CubeIngestTabAlert: React.FC<{
@@ -125,30 +126,25 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
       )}
       {tab.definitionList && (
         <ul
-          className="max-h-40 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
           aria-label="Ingest definitions"
         >
           {tab.shownDefinitions.map((candidate) => {
             const isPicked = tab.definition?.urn === candidate.urn;
             return (
-              <li key={candidate.urn}>
-                <button
-                  type="button"
-                  className={clsx(LIST_ITEM_CLASS, {
-                    'bg-[var(--color-bg-selected)]': isPicked,
-                  })}
-                  aria-pressed={isPicked}
-                  title={candidate.definition}
-                  onClick={() => tab.selectDefinition(candidate)}
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    {candidate.name}
-                  </span>
-                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                    {`${candidate.groupId}:${candidate.artifactId}`}
-                  </span>
-                </button>
-              </li>
+              <CubePickerListItem
+                key={candidate.urn}
+                picked={isPicked}
+                title={candidate.definition}
+                onPick={() => tab.selectDefinition(candidate)}
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {candidate.name}
+                </span>
+                <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                  {`${candidate.groupId}:${candidate.artifactId}`}
+                </span>
+              </CubePickerListItem>
             );
           })}
         </ul>
@@ -165,33 +161,27 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
       )}
       {tab.dataSets && (
         <ul
-          className="max-h-40 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
           aria-label="Data sets"
         >
           {tab.dataSets.map((dataSet) => {
             const isPicked = tab.dataSetName === dataSet.name;
             return (
-              <li key={dataSet.name}>
-                <button
-                  type="button"
-                  className={clsx(LIST_ITEM_CLASS, {
-                    'bg-[var(--color-bg-selected)]': isPicked,
-                  })}
-                  aria-pressed={isPicked}
-                  disabled={!dataSet.isPickable}
-                  title={dataSet.disabledReason}
-                  onClick={() => tab.selectDataSet(dataSet.name)}
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    {dataSet.name}
-                  </span>
-                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                    {dataSet.isPickable
-                      ? `${dataSet.schema?.columns.length ?? 0} columns`
-                      : dataSet.disabledReason}
-                  </span>
-                </button>
-              </li>
+              <CubePickerListItem
+                key={dataSet.name}
+                picked={isPicked}
+                disabled={!dataSet.isPickable}
+                title={dataSet.disabledReason}
+                adds={true}
+                onPick={() => tab.selectDataSet(dataSet.name)}
+              >
+                <span className="min-w-0 flex-1 truncate">{dataSet.name}</span>
+                <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                  {dataSet.isPickable
+                    ? `${dataSet.schema?.columns.length ?? 0} columns`
+                    : dataSet.disabledReason}
+                </span>
+              </CubePickerListItem>
             );
           })}
         </ul>

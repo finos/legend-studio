@@ -127,11 +127,8 @@ describe('Limit editor', () => {
     fireEvent.click(button('Apply'));
     expect(storedSize(editorState)).toBe(5);
     expect(editorState.history).toHaveLength(1);
-    // the panel goes on, on the stored node, with nothing left to apply
-    expect(editorState.nodeEditor.draft?.original).toBe(
-      editorState.document.query.getNode('limit101'),
-    );
-    expect(button('Apply').disabled).toBe(true);
+    // Apply closes the editor (UX audit B4)
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
     await waitFor(async () =>
       expect(
         TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('limit101')),

@@ -28,7 +28,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { SELECT_SOURCE_TYPE_PROMPT } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_PICK_TO_ADD_TITLE,
+  SELECT_SOURCE_TYPE_PROMPT,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   NORTHWIND_DATABASE,
@@ -321,15 +324,64 @@ describe('Cube source picker', () => {
     fireEvent.click(within(tables).getByText('ORDER.LINES'));
     fireEvent.click(within(dialog).getByText('Add'));
     const node = await TEST__findCanvasNode('relational101');
-    expect(
-      within(node).getByText('Table "ORDER.LINES" from schema "QUOTED.SCHEMA"'),
-    ).toBeDefined();
+    // the canvas shows the table, then its schema (UX audit B9)
+    expect(within(node).getByText('ORDER.LINES')).toBeDefined();
+    expect(within(node).getByText('QUOTED.SCHEMA')).toBeDefined();
     expect([...(fake.resolveSchemas.mock.calls[0]?.[1] ?? [])]).toEqual([
       [
         'relational101',
         [NORTHWIND_DATABASE, '"QUOTED.SCHEMA"', '"ORDER.LINES"'],
       ],
     ]);
+  });
+
+  test('Marks the picked table with an accent bar and a check, keeps Add looking disabled until a table is picked, and says why', async () => {
+    await renderPage();
+    const dialog = await openPicker();
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    const add = within(dialog).getByText<HTMLButtonElement>('Add');
+    expect(add.disabled).toBe(true);
+    expect(add.className).toContain('disabled:opacity-50');
+    expect(add.title).toBe(CUBE_PICK_TO_ADD_TITLE);
+    const row = (name: string): HTMLButtonElement =>
+      within(tables).getByText(name).closest('button') as HTMLButtonElement;
+    // the list is on the input background, so hovering a row shows
+    expect(tables.className).toContain('bg-[var(--color-bg-input)]');
+    expect(row('ORDERS').querySelector('svg')).toBeNull();
+    fireEvent.click(row('ORDERS'));
+    expect(row('ORDERS').getAttribute('aria-pressed')).toBe('true');
+    expect(row('ORDERS').className).toContain('border-[var(--color-accent)]');
+    expect(row('ORDERS').className).toContain('bg-[var(--color-bg-selected)]');
+    // a hover doesn't hide the pick: no hover background on the picked row
+    expect(row('ORDERS').className).not.toContain('hover:bg');
+    expect(row('ORDERS').querySelector('svg')).not.toBeNull();
+    expect(row('CUSTOMERS').getAttribute('aria-pressed')).toBe('false');
+    expect(row('CUSTOMERS').querySelector('svg')).toBeNull();
+    expect(add.disabled).toBe(false);
+    expect(add.title).toBe('Add it to the cube');
+  });
+
+  test('Adds a table on a double-click, or on Enter once it is picked', async () => {
+    const { fake } = await renderPage();
+    let dialog = await openPicker();
+    let tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    fake.resolveSchemas.mockReturnValueOnce(typeOrders(fake));
+    fireEvent.doubleClick(within(tables).getByText('ORDERS'));
+    await TEST__findCanvasNode('relational101');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    dialog = await openPicker();
+    tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    const customers = within(tables)
+      .getByText('CUSTOMERS')
+      .closest('button') as HTMLButtonElement;
+    // Enter on a row not picked yet does nothing more than a click would
+    fireEvent.keyDown(customers, { key: 'Enter' });
+    expect(screen.getByRole('dialog')).toBeDefined();
+    fireEvent.click(customers);
+    fireEvent.keyDown(customers, { key: 'Enter' });
+    await TEST__findCanvasNode('relational102');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   test('Adds the picked table once the engine has typed it, lists it, and runs nothing', async () => {
@@ -350,9 +402,9 @@ describe('Cube source picker', () => {
     expect(isBarLoading(loadingBar(dialog))).toBe(true);
     held.resolve(typed);
     const node = await TEST__findCanvasNode('relational101');
-    expect(
-      within(node).getByText('Table "ORDERS" from schema "NORTHWIND"'),
-    ).toBeDefined();
+    // the canvas shows the table, then its schema (UX audit B9)
+    expect(within(node).getByText('ORDERS')).toBeDefined();
+    expect(within(node).getByText('NORTHWIND')).toBeDefined();
     expect(node.getAttribute('aria-current')).toBe('true');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     // adding a table runs nothing: only Execute does
