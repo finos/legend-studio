@@ -157,7 +157,7 @@
     "presentation": {
       "showGraph": false
     },
-    "drilldown": {
+    "pivot": {
       "levels": ["SHIP_COUNTRY", "SHIP_CITY"]
     }
   },

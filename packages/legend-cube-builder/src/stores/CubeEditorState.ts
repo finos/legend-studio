@@ -39,6 +39,7 @@ import {
   type Schema,
   type SchemaInferenceResult,
   type SourceDefinition,
+  foldColumnName,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -86,6 +87,10 @@ import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
+import { CubeExportState } from './CubeExportState.js';
+import { CubeGridFetcher } from './CubeGridFetcher.js';
+import { CubeGridState } from './CubeGridState.js';
+import { CubeRunStatsState } from './CubeRunStatsState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
 import {
@@ -147,6 +152,14 @@ export class CubeEditorState implements CommandRegistrar {
   /** The editor's own query rule: an Extend typed for another input than its own waits to be typed again (PLAN §11.7) */
   private readonly staleExtendTyping: QueryRule;
   readonly execution: CubeExecutionState;
+  /** The latest runs, fetches and exports (spec §12.6) */
+  readonly runStats: CubeRunStatsState;
+  /** The grid's server-side levels (PLAN §11.10) */
+  readonly gridFetcher: CubeGridFetcher;
+  /** The grid's mode and its server-side levels (PLAN §11.10) */
+  readonly grid: CubeGridState;
+  /** The results' export (spec §12.5) */
+  readonly export: CubeExportState;
   /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
@@ -239,6 +252,7 @@ export class CubeEditorState implements CommandRegistrar {
       setHostIssue: action,
       clearHostIssues: action,
       setRowLimit: action,
+      setColumnWidth: action,
     });
     this.host = host;
     this.registry = createNodeRegistry();
@@ -258,6 +272,10 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
+    this.runStats = new CubeRunStatsState();
+    this.gridFetcher = new CubeGridFetcher(this);
+    this.grid = new CubeGridState(this);
+    this.export = new CubeExportState(this);
     this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
@@ -583,11 +601,13 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
-  /** One of Cube's dialogs is open: the source picker, Import or Export, Show Pure */
+  /** One of Cube's dialogs is open: the source picker, Examples, the group rows' settings, Import or Export, Show Pure */
   get isDialogOpen(): boolean {
     return (
       this.sourcePicker.isOpen ||
       this.examples.isOpen ||
+      this.grid.isSettingsShown ||
+      this.grid.formatColumn !== undefined ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen
     );
@@ -1009,11 +1029,22 @@ export class CubeEditorState implements CommandRegistrar {
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
     }
-    const { query } = this.document;
+    const { query, meta } = this.document;
+    const restored = previous.withQuery(
+      previous.query === query ? query : previous.query.clone(),
+    );
+    // widths take no undo step, so the same cube keeps the ones set since
+    // (review of M7); the cube before an import keeps its own
     this.replaceDocument(
-      previous.withQuery(
-        previous.query === query ? query : previous.query.clone(),
-      ),
+      this.importedOver.has(previous)
+        ? restored
+        : restored.withMeta({
+            ...restored.meta,
+            presentation: {
+              ...restored.meta.presentation,
+              columnWidths: meta.presentation.columnWidths,
+            },
+          }),
     );
   }
 
@@ -1209,6 +1240,31 @@ export class CubeEditorState implements CommandRegistrar {
         }),
       );
     }
+  }
+
+  /**
+   * Keeps a grid column's width, which the cube saves (PLAN §11.10): by the
+   * column's name, in any case. Presentation the user sets by dragging, so
+   * no undo step, and the rows stay current.
+   */
+  setColumnWidth(column: string, width: number): void {
+    if (!Number.isFinite(width) || width <= 0) {
+      return;
+    }
+    const { meta } = this.document;
+    const { presentation } = meta;
+    const others = presentation.columnWidths.filter(
+      (each) => foldColumnName(each.column) !== foldColumnName(column),
+    );
+    this.replaceDocument(
+      this.document.withMeta({
+        ...meta,
+        presentation: {
+          ...presentation,
+          columnWidths: [...others, { column, width: Math.round(width) }],
+        },
+      }),
+    );
   }
 
   setHostIssue(nodeId: string, error: CubeEngineError): void {

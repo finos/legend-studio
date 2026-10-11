@@ -218,7 +218,8 @@ describe('Cube lambda serializer: shapes', () => {
     ['a boolean', { kind: 'boolean', value: false }, false],
     ['an integer', { kind: 'integer', value: '-3' }, -3],
     ['a float', { kind: 'float', value: '1.5' }, 1.5],
-    ['a decimal', { kind: 'decimal', value: '12.30' }, 12.3],
+    // as its text, which the engine reads as a BigDecimal (a number loses digits)
+    ['a decimal', { kind: 'decimal', value: '12.30' }, '12.30'],
     ['a date', { kind: 'strictDate', value: '1997-01-01' }, '1997-01-01'],
     [
       'a date and time',
@@ -232,26 +233,38 @@ describe('Cube lambda serializer: shapes', () => {
     });
   });
 
-  test.each([
-    '9007199254740993',
-    '-9223372036854775808',
-    '0.10000000000000000001',
-    '12.30',
-    '-1.5e3',
-  ])('Writes the number %s digit for digit, as one token', (value) => {
-    const kind =
-      value.includes('.') || value.includes('e') ? 'decimal' : 'integer';
+  test.each<['integer' | 'float', string]>([
+    ['integer', '9007199254740993'],
+    ['integer', '-9223372036854775808'],
+    ['float', '0.10000000000000000001'],
+    ['float', '12.30'],
+    ['float', '-1.5e3'],
+  ])('Writes the %s %s digit for digit, as one token', (kind, value) => {
     expect(text(lambda([], [literal({ kind, value })]))).toBe(
       `{"_type":"lambda","parameters":[],"body":[{"_type":"${kind}","value":${value}}]}`,
     );
   });
 
-  test('Refuses a number literal that is not a JSON number', () => {
+  test.each([
+    '0.10000000000000000001',
+    '12.30',
+    '-1.5e3',
+    '123456789012345678901234567890',
+  ])('Writes the decimal %s as its text, every digit kept', (value) => {
+    expect(text(lambda([], [literal({ kind: 'decimal', value })]))).toBe(
+      `{"_type":"lambda","parameters":[],"body":[{"_type":"decimal","value":"${value}"}]}`,
+    );
+  });
+
+  test.each<['integer' | 'decimal', string]>([
+    ['integer', '+5'],
+    // a decimal is sent as text, but must still be a number
+    ['decimal', '1,5'],
+    ['decimal', 'NaN'],
+  ])('Refuses the %s literal %s, not a JSON number', (kind, value) => {
     expect(() =>
-      V1_serializeCubeLambda(
-        lambda([], [literal({ kind: 'integer', value: '+5' })]),
-      ),
-    ).toThrow(`"+5" is not a number Cube can send`);
+      V1_serializeCubeLambda(lambda([], [literal({ kind, value })])),
+    ).toThrow(`"${value}" is not a number Cube can send`);
   });
 
   test('Refuses an enumeration value given as a literal', () => {
@@ -519,9 +532,10 @@ describe('Cube lambda serializer: shapes', () => {
         ],
       ),
     );
-    // digit for digit, a decimal's trailing zero too; a string stays a string
+    // an integer digit for digit; a decimal as its text, its trailing zero
+    // too; a string stays a string
     expect(written).toContain('"value":9007199254740993');
-    expect(written).toContain('"value":1.10');
+    expect(written).toContain('"value":"1.10"');
     expect(written).toContain('"value":"12"');
     expect(written).not.toContain('extend101:0');
     const stamps = written.match(/"sourceId":"cube:extend101:expression"/gu);

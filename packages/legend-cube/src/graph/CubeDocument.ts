@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { Drilldown } from '../drilldown/Drilldown.js';
+import type { ColumnHint } from '../presentation/ColumnFormat.js';
 import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
 import { Query } from './Query.js';
 
@@ -52,11 +54,15 @@ export interface Presentation {
   /** Whether the graph panel is shown */
   readonly showGraph: boolean;
   readonly columnWidths: readonly ColumnWidth[];
+  /** How number columns are shown (PLAN §11.10): none until a format is set */
+  readonly columnHints?: readonly ColumnHint[] | undefined;
   readonly rest?: JsonObject;
 }
 
 export interface CubeMeta {
   readonly presentation: Presentation;
+  /** The grid's drill-down (PLAN §11.10): none until a level is added */
+  readonly drilldown?: Drilldown | undefined;
   readonly rest?: JsonObject;
 }
 

@@ -22,7 +22,11 @@ import {
   type Schema,
   storeAccessor,
 } from '@finos/legend-cube';
-import { V1_EngineServerClient, V1_RenderStyle } from '@finos/legend-graph';
+import {
+  EXECUTION_SERIALIZATION_FORMAT,
+  V1_EngineServerClient,
+  V1_RenderStyle,
+} from '@finos/legend-graph';
 import {
   ContentType,
   HttpHeader,
@@ -935,6 +939,39 @@ export class V1_LegendCubeEngine implements CubeEngine {
         );
       }
       throw error;
+    }
+  }
+
+  async exportCsv(
+    model: ModelContext,
+    executionLambda: IR,
+    options?: { abortController?: AbortController | undefined },
+  ): Promise<string> {
+    const captureId = captureNodeOf(executionLambda);
+    const context = await this.executionContextOf(
+      model,
+      executionLambda,
+      captureId,
+      options?.abortController,
+    );
+    try {
+      const body = this.executionBodyOf(model, context, executionLambda);
+      // the engine answers CSV under a JSON content type, and a failure as JSON with status 500 (PLAN §11.10)
+      const response = (await this.client.runQuery(
+        body as unknown as PlainObject,
+        {
+          returnAsResponse: true,
+          serializationFormat: EXECUTION_SERIALIZATION_FORMAT.CSV,
+          abortController: options?.abortController,
+        },
+      )) as Response;
+      return await response.text();
+    } catch (error) {
+      throw V1_toCubeEngineError(
+        error,
+        captureId,
+        CubeEngineErrorKind.EXECUTION,
+      );
     }
   }
 

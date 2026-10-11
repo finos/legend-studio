@@ -367,3 +367,47 @@ export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
 
 /** The placeholder for any missing value anywhere in the UI */
 export const BLANK_PLACEHOLDER = '(blank)';
+
+// ---------------------------------------- Drill-down (PLAN §11.10) ----------------------------------------
+
+/** Added by Cube: a drill-down level is a column of the run it expands */
+export const MESSAGE_DRILLDOWN_COLUMN_NOT_IN_OUTPUT = (
+  column: string,
+): string => `Drill-down column ${quote(column)} is not in the query's output.`;
+
+/** Added by Cube: VARIANT and a type Cube doesn't know can't be grouped, so not drilled down by either */
+export const MESSAGE_DRILLDOWN_COLUMN_NOT_GROUPABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Drill-down column ${quote(column)} of type ${typeName} cannot be grouped.`;
+
+/** Added by Cube: a column is a drill-down level once */
+export const MESSAGE_DRILLDOWN_COLUMN_LISTED_TWICE = (column: string): string =>
+  `Drill-down column ${quote(column)} is listed more than once.`;
+
+/** Added by Cube: a drill-down aggregation is of a column of the run it expands */
+export const MESSAGE_DRILLDOWN_AGGREGATION_COLUMN_NOT_IN_OUTPUT = (
+  column: string,
+): string =>
+  `Drill-down aggregation column ${quote(column)} is not in the query's output.`;
+
+/** Added by Cube: a column has one drill-down aggregation */
+export const MESSAGE_DRILLDOWN_AGGREGATION_LISTED_TWICE = (
+  column: string,
+): string =>
+  `Drill-down aggregation column ${quote(column)} is listed more than once.`;
+
+/** Added by Cube: a saved function this version doesn't know */
+export const MESSAGE_DRILLDOWN_AGGREGATION_UNKNOWN = (
+  aggregation: string,
+  column: string,
+): string =>
+  `Drill-down aggregation ${quote(aggregation)} of column ${quote(column)} is unknown.`;
+
+/** Added by Cube: a function the column's type doesn't offer */
+export const MESSAGE_DRILLDOWN_AGGREGATION_INCOMPATIBLE = (
+  aggregation: string,
+  column: string,
+): string =>
+  `Drill-down aggregation ${quote(aggregation)} is incompatible with column ${quote(column)}.`;

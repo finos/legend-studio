@@ -66,12 +66,23 @@ export interface CubeGridQuickAction {
   readonly apply: () => void;
 }
 
+/** What a cell of the grid holds */
+export enum CubeGridCellKind {
+  /** A run row's value, or a group row's key */
+  VALUE = 'value',
+  /** A group row's aggregation of its rows' values (PLAN §11.10) */
+  AGGREGATE = 'aggregate',
+  /** A group row's column with no aggregation: nothing */
+  EMPTY = 'empty',
+}
+
 /**
- * The quick actions on a cell of the shown rows (spec §12.4, PLAN §11.4 and
- * §11.5): "Sort by" adds an ascending Sort on the cell's column, "Group by" a
- * Group by it with Count rows, and "Filter by" an Equal on its value (Is
- * Empty on a null), after the node that runs, which they replace as the node
- * that runs. All need the rows to be from the current query, no run in
+ * The quick actions on a cell of the shown rows (spec §12.4, PLAN §11.4,
+ * §11.5 and §11.10): "Sort by" adds an ascending Sort on the cell's column,
+ * "Group by" a Group by it with Count rows, and "Filter by" an Equal on its
+ * value (Is Empty on a null), after the node that runs, which they replace as
+ * the node that runs; a group row's cell other than its key has no value of a
+ * row, so "Filter by" is disabled there. All need the rows to be from the current query, no run in
  * flight, and a cube that can change; "Sort by" and "Group by" a type that
  * compares, and "Filter by" a value its column's type can compare.
  * Read when the menu opens; `[]` when the position is not a column of the
@@ -81,6 +92,7 @@ export const getCubeGridQuickActions = (
   editorState: CubeEditorState,
   position: number,
   cell: CubeResultValue,
+  cellKind = CubeGridCellKind.VALUE,
 ): CubeGridQuickAction[] => {
   const { execution, document } = editorState;
   const { result } = execution;
@@ -91,7 +103,10 @@ export const getCubeGridQuickActions = (
   const { query } = document;
   const afterId = query.selected;
   const typeName = column.type.displayName;
-  const rule = buildQuickFilterRule(column.name, column.type, cell);
+  const rule =
+    cellKind === CubeGridCellKind.VALUE
+      ? buildQuickFilterRule(column.name, column.type, cell)
+      : undefined;
   // what keeps both from being used, in order
   const blocked =
     result.query !== query || execution.isStale
@@ -118,9 +133,13 @@ export const getCubeGridQuickActions = (
     blocked ??
     (rule
       ? undefined
-      : isOperatorAvailable(FilterOperator.EQUAL, column.type)
-        ? CUBE_QUICK_ACTION_DISABLED_REASON.UNREADABLE_VALUE
-        : CUBE_QUICK_ACTION_DISABLED_REASON.notComparable(typeName));
+      : cellKind === CubeGridCellKind.AGGREGATE
+        ? CUBE_QUICK_ACTION_DISABLED_REASON.AGGREGATE_VALUE
+        : cellKind === CubeGridCellKind.EMPTY
+          ? CUBE_QUICK_ACTION_DISABLED_REASON.NO_VALUE
+          : isOperatorAvailable(FilterOperator.EQUAL, column.type)
+            ? CUBE_QUICK_ACTION_DISABLED_REASON.UNREADABLE_VALUE
+            : CUBE_QUICK_ACTION_DISABLED_REASON.notComparable(typeName));
   return [
     {
       label: `Sort by "${column.name}"`,

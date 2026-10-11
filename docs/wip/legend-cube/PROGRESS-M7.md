@@ -1,0 +1,245 @@
+# Legend Cube — M7 Progress Log
+
+> **What this file is:** the "where are we" ledger for M7, the grid and presentation (PLAN §11.3 and §11.10). It is
+> kept apart from [PROGRESS.md](PROGRESS.md) and the other milestone logs, so the lines of work merge cleanly.
+> [PLAN.md](PLAN.md) §11.10 holds what M7 settled; [ISSUES.md](ISSUES.md) the known issues later PRs fix.
+>
+> **Upkeep:** update it whenever a step lands, and commit it with that step.
+
+## Current state
+
+| Item   | State                                                                |
+| ------ | -------------------------------------------------------------------- |
+| Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
+| Engine | Local legend-engine on `localhost:6300`                              |
+| Step   | M7.1–M7.16 done; the PR ready for `cube-dev`                         |
+| Tests  | Core and builder 4,213 pass; engine grid suites 555                  |
+
+## Steps
+
+See PLAN §11.10 for each step's deliverable, its effort and when it is done.
+
+- [x] **M7.1** The settled decisions (PLAN §11.10) and this file
+- [x] **M7.2** Decimal literals sent as strings
+- [x] **M7.3** The drill-down in the core
+- [x] **M7.4** Query derivation in the core
+- [x] **M7.5** The builder's row fetcher
+- [x] **M7.6** The grid's server-side row model and the mode toggle
+- [x] **M7.7** The drill-down in the UI
+- [x] **M7.8** Export
+- [x] **M7.9** The curated context menu
+- [x] **M7.10** The runs panel
+- [x] **M7.11** Column formatting and widths
+- [x] **M7.12** Around the databases
+- [x] **M7.13** Guides, testing.md and the changeset
+- [x] **M7.14** Verification and the browser rehearsal
+- [x] **M7.15** A demo video of M7 (PLAN §11.3)
+- [x] **M7.16** Fold PLAN §11.10's supersessions in; the PR ready for `cube-dev`
+
+## Commits
+
+Filled in as steps land.
+
+| Step  | Commit      | Subject                                                                                                  |
+| ----- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| M7.1  | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
+| M7.2  | `44eb8bd46` | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
+| M7.3  | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
+| M7.3  | `235e10064` | chore: list Legend Cube's core in M7's changeset                                                         |
+| M7.4  | `6bf07c65f` | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
+| M7.4  | `ec8bea234` | docs: record Legend Cube M7.4's mutation check                                                           |
+| M7.5  | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
+| M7.5  | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
+| M7.5  | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
+| M7.6  | `0db3cccd1` | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
+| M7.7  | `1c2f36dc3` | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
+| M7.8  | `29464faf8` | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
+| M7.9  | `08aef4d00` | feat: curate Legend Cube's grid menu: the cell's actions, columns, copy and Export                       |
+| M7.10 | `7bc7773ba` | feat: list Legend Cube's latest runs, fetches and exports, with their SQL                                |
+| M7.11 | `7645ad93b` | feat: format Legend Cube's number columns, from their exact values, and keep column widths               |
+| M7.12 | `75416978b` | test: plan Legend Cube's drill-down levels on every database, and conform their types to the engine's    |
+| M7.13 | `59756481f` | docs: cover Legend Cube's results grid in its READMEs, testing guide and known issues                    |
+| M7.13 | `075a55c82` | chore: list Legend Query in Legend Cube M7's changeset, for its host test's fake engine                  |
+| M7.14 | `6cce83ade` | docs: record Legend Cube M7.14's browser rehearsal                                                       |
+| M7.14 | `cfb4bdceb` | fix: leave Legend Cube's group-row counts unformatted, and export number columns to Excel as numbers     |
+| M7.14 | `fdcd7e657` | fix: keep Legend Cube's number cells right-aligned with their Excel style, and satisfy the CI lint       |
+| M7.14 | `711c9fc56` | fix: address the review of Legend Cube M7's results grid                                                 |
+| M7.15 | `82943e04b` | feat: pin Legend Cube's drill-down groups on the left of the grid, and record M7's demo video            |
+| M7.16 | (this one)  | docs: fold Legend Cube M7 into its plan                                                                  |
+
+## Notes
+
+- **M7.1** (2026-10-11). `cube-dev` had been squash-merged into master (#5659) with everything through #5666; it was
+  reset to master (`b10f82d0c`, the same tree as `cube-dev`'s head `8adb7a2c0` plus the release bump) and M7 branches
+  from it. The user's four answers, all on the recommendation: server-side mode by default with local mode as a
+  toggle; each level fetched whole, bounded by the row limit, not paged; CSV of the whole query through the engine and
+  XLSX of the loaded rows; a group row's numeric cells summed, other cells empty, with a `Count Rows` column. The
+  probes (`m7-requirements/` in the evidence folder): the drill-down's queries on H2 (null keys, sums, names), the
+  engine's CSV, decimal literals as numbers and strings, and whether each key found by a `groupBy` is found again by
+  `Equal`. One finding: a 32-bit
+  (REAL) key isn't found again by `Equal` with the text the engine returns (0 of 25 `FREIGHT` keys), and Cube can't
+  tell a 32-bit column by its type (the engine types `REAL` as Double and `FLOAT` as Float4), so a float key is matched
+  by `In` of the value and its 32-bit neighbour (PLAN §11.10).
+- **M7.2** (2026-10-11). `V1_CubeLambdaSerializer` writes a decimal literal's value as its text, in a filter and in
+  an Extend's expression; integers and floats stay lossless JSON numbers. The engine reads the text as a `BigDecimal`
+  in every call Cube makes: rendering, typing and running (`p5-decimal-string.out`). Two engine cases on
+  `ALLTYPES.NUM` (`1.2345`) fail before the fix and pass after: `> 1.2344999999999999` gives rows 1 and 2, and `==`
+  gives none; as a JSON number the literal was read as `1.2345`. The ISSUES entry is gone; one patch changeset for M7
+  is started. Jest reads `@finos/legend-cube` from its `lib/`, which must be rebuilt after a rebase
+  (`yarn workspace @finos/legend-cube build`), or the builder's tests fail on code the build lacks.
+- **M7.3** (2026-10-11). `drilldown/Drilldown.ts` in the core: `Drilldown {columns, aggregations}` with an
+  aggregation per column only where it differs from the default (a number's Sum, nothing for any other column), `null`
+  for an empty cell; `checkDrilldown` against the run's schema gives the usable levels (in order, as the schema names
+  them, in any case), each column's aggregation, and a message for each level or aggregation left out (not in the
+  output, not groupable, listed twice, unknown, incompatible); edits add a level innermost, remove one, and set an
+  aggregation. `CubeMeta.drilldown`, saved as `meta.drilldown` (levels required, aggregations left out when none, unknown
+  keys kept at both levels), none written for an empty one. A plan correction: Cube's Group refuses an output named as
+  an input column, so a level's aggregations keep a Group's names and the derivation maps them back to the grid's
+  columns (PLAN §11.10). The forward-compatibility tests used a `drilldown` key as the example of one a newer Cube
+  adds; they use `pivot` now.
+- **M7.4** (2026-10-11). `drilldown/DrilldownQuery.ts`: `deriveDrilldownLevel` appends, after the run's node, a
+  Filter of the expanded keys (And), at a group level a Group by the levels down to it with each other column's
+  aggregation under a Group's own name (`FREIGHT Sum`, numbered past a taken name, `cube_value` past the length limit)
+  and a Count rows, then a Sort: the grid's on a group column, by the aggregation on another, left out on a column
+  with none, by the new level's column when none is left; at the leaf the grid's sort as is. It returns the query,
+  the output column of each run column, and the count column. `buildDrilldownKeyRule`: Is Empty for an empty key,
+  `In [v, fround(v)]` for a float the two differ on, else the grid's Filter by rule. A first try wrote every `Float4`
+  value at 32 bits in the Filter emitter; reverted when the fixture showed the engine types H2's 32-bit `REAL` as
+  Double and its 64-bit `FLOAT` as Float4 (`p3c-in-both.out`, PLAN §11.10). Tests: unit tests of every shape (each
+  derived query valid by Cube's own checks, its Pure printed), and `CubeDrilldown.engine-roundtrip-test.ts`, which
+  runs each level on H2 and compares it with groups counted and summed from the run's rows: countries, France's
+  cities, Lyon's orders sorted, the 507 orders with no region, a sort by an aggregation, set aggregations, a sample of
+  `FREIGHT` keys each expanded to its rows, and a key of each `ALLTYPES` type. Mutants: float keys by
+  Equal only (caught by the unit test and the engine's `FREIGHT` sample), no default sort at a group level (caught by
+  the unit test; H2 happens to return groups in key order), grouping by the new level alone (caught).
+- **M7.5** (2026-10-11). Asked first (advisor): Execute stays the flat run of the capture node, so its rows, node
+  errors, staleness and quick actions are unchanged; the fetcher serves every server-side level, the top one included
+  when a drill-down or a header sort is set (PLAN §11.10). `runCubeQuery` (`CubeQueryRun.ts`) is the run path both use:
+  outline and database type when needed, emit, engine, column check, truncation; committed alone, the whole builder
+  suite green after it. `CubeGridFetcher` derives a level from the run on screen (its query, context, schema and row
+  limit, never the live cube's) with the cube's drill-down as it is now, checks it with Cube's own rules before the
+  engine sees it, maps each row to the run's column positions (`undefined` where a group row has no aggregation, the
+  group's count beside), and caches each level by its whole run lambda, the least recently used dropped past 200,000
+  rows (never the one just answered). A purge (a new run, a reset) aborts the fetches in flight and drops their
+  answers by a generation number; a failed fetch leaves the cache, so a retry runs again. It refuses a run made in
+  another context, since the engine reads the warehouse from the page. `CubeRunStatsState` keeps the 15 latest runs
+  (Execute and each fetch, labelled e.g. `Groups by SHIP_COUNTRY, sorted by FREIGHT descending`). Tests: 13 store
+  tests on the fake engine; a unit test that the leaf keeps the run's own sort (after the grid's, as a tie-breaker);
+  two more engine cases: a Partition run expanded to Lyon keeps France's running sum and row numbers (M5's `let`
+  isolation applies), and a Limit run's groups hold its 100 rows.
+- **M7.5, mutants** (2026-10-11): no generation check, the live row limit, failed levels kept, no eviction, no LRU
+  touch on a hit; the last survived, so a test now uses a level again before the budget is reached (`e27cfeb77`).
+- **M7.6** (2026-10-11). `CubeGridState` (`editorState.grid`): the mode, remembered for the user (server-side by
+  default); `toSorts` maps ag-grid's sort model to the run's columns (the groups' column to the level's own, nothing at
+  the leaf); `loadRows` gives a request its rows: the run's own when nothing is derived, else a fetched level, groups
+  with their typed keys (`JSON` ids, so an empty key and the text `null` differ) and counts; a fetch's error and a
+  level cut at the row limit are shown above the grid. `CubeServerSideGrid`: ag-grid's server-side row model, tree data
+  when the cube has drill-down levels (the groups' column shows each key as its column shows a value, with the count),
+  blocks taken from the whole level; rebuilt for each run and drill-down. `CubeResultGrid` is local mode: ag-grid's
+  row groups, pivot, filters, side panels, status bar and cell selection, its totals read as numbers. Column defs and
+  the context menu are shared; on a group row, Filter by is disabled on an aggregated or empty cell. The toolbar has
+  the mode toggle and a "fetching rows" note. Tests: grid state (7), the region in both modes (a header sort on the
+  engine, a drill-down's groups and a group expanded to its rows, the browser sorts in local mode); ag-grid's
+  server-side model renders in jsdom. Browser on :9004 (with `NonProductionFeatureFlag`): Largest buys sorted by a
+  header on the engine; imported with `meta.drilldown` [INSTRUMENT_ID, TRADE_DATE]: groups 5 (4), 12 (6), 13 (10),
+  13 expanded by date, a date to its trade; local mode's panels; no console error on a fresh run.
+- **M7.7** (2026-10-11). 'Drilldown by "X"' heads a cell's menu (spec §12.4), in both modes: it adds X as the
+  innermost level, switching local mode to server-side; disabled on a type that can't be grouped, a column that is a
+  level already, or a read-only cube. Drill-down edits (`CubeGridState`: add, remove, an aggregation, clear) are undo
+  steps of the cube's meta that run nothing and keep the rows current; the grid is rebuilt for the new drill-down.
+  `CubeDrilldownBar` above the server-side grid lists the levels (each removable), what the drill-down can't use and
+  why, 'Group rows…' and Clear; the dialog sets, per column that isn't a level, a function its type offers or Nothing,
+  the default marked. Tests: the menu (Drilldown by first, its blockers, an undoable add; Filter by on a group row's
+  key, never on an aggregate or an empty cell), the grid state's edits as undo steps, the bar and dialog in the
+  region (an Average re-fetches). Browser: Largest buys, Drilldown by INSTRUMENT_ID from a cell, TRADE_ID set to
+  Nothing and PRICE to Average, 13 expanded to its 10 trades.
+- **M7.8** (2026-10-11). `CubeEngine.exportCsv` (the port, `V1_LegendCubeEngine`, the fakes): the execution request
+  with the client's CSV format, read as text. `CubeExportState` (`editorState.export`): the run's whole query, sorted
+  as the grid is, no row limit (the run's own Limit kept), saved as `<cube name>.csv`; a failure kept for the grid
+  region, Stop aborts and saves nothing, a run made in another context refused (the warehouse is the page's); recorded
+  in the run stats. The menu's Export replaces ag-grid's: 'CSV (whole query)' and 'Excel (rows shown)' (ag-grid's
+  `exportDataAsExcel` of the loaded rows, `<cube name>.xlsx`). Found: Studio's client asks for `CSV_TRANSFORMED` (ISO
+  timestamps), and the engine test client always sent `DEFAULT`, so it now passes the client's format
+  (`p6-csv-formats.out`). Tests: export store (6), menu (Export items, the grid's sort into the CSV's), engine (830
+  orders sorted with a header, empty values and exact digits, a refused query). Browser: Largest buys, CSV (whole
+  query) gave `Largest_buys.csv`, `text/csv`, a header and 20 rows (the save was intercepted, no file written).
+- **M7.9** (2026-10-11). The menu no longer passes ag-grid's own items through: on a cell, 'Drilldown by' and the
+  quick actions, then a separator; anywhere, 'Autosize All Columns', 'Reset Columns', 'Copy', 'Copy with Headers' and
+  Cube's Export. Gone: cut and paste (the grid isn't editable), 'Copy with Group Headers', ag-grid's export of the
+  fetched rows. 'Format Column' joins it in M7.11.
+- **M7.10** (2026-10-11). 'Runs (n)' at the right of the grid's toolbar opens `CubeRunStatsPanel` under it: the page's
+  15 latest runs, newest first (Execute, each fetch, each export), with the time each finished, its duration, its SQL
+  folded, and Copy SQL. A panel rather than a popover, as Show SQL is. Tests: the store's cap and order; the panel after
+  an Execute and a header sort, copying the sort's SQL.
+- **M7.11** (2026-10-11). The core: `presentation/ColumnFormat.ts` (`ColumnFormat {style, decimalPlaces?, currency?,
+grouping, redIfNegative, parenthesesIfNegative}`, `ColumnHint {column?, format}`, a column's own format else the one
+  for every number column, in any case), `Presentation.columnHints` (optional, as the drill-down), saved as
+  `meta.presentation.columnHints` with defaults left out and unknown keys and styles kept; 0 to 20 places. The builder:
+  `formatColumnValue` formats the exact text with `Intl.NumberFormat` (no digit lost), parentheses on the absolute
+  value, `negative` for red; an unknown style or currency falls back to the default display and the dialog says why
+  (§21: ISO codes, `Intl.supportedValuesOf('currency')`); only number columns. `CubeCell` takes the column's format,
+  red only with red if negative (§21's swapped flag fixed), the exact value on hover. 'Format Column…' in the cell menu
+  (disabled off number columns and on a read-only cube) opens `CubeColumnFormatDialog`: style, currency, places,
+  the three flags, apply to every number column, a preview, Remove Format; an undo step. Widths: read from and written
+  to `columnWidths` on a user resize or autosize, by name, no undo step. The forward-compatibility test's unknown
+  presentation key became `columnStyles`. Tests: core (format lookup and edits, the codec), the formatter, the cell's
+  red and fallback, the grid state's edits, the region (a saved currency format, the dialog from the cell's menu to a
+  percent, a saved width). Browser: Largest buys, NOTIONAL_USD as USD with no places, `$2,206,337`.
+- **M7.12** (2026-10-11). The plan-only dialect test plans five drill-down shapes (the top level sorted by a Sum, a
+  country's cities, the cities with no country, a city's orders, the top level of a run with a Limit) on the 19
+  database types and DuckDB: every one plans, groups, and names its Sum; a run's Limit stays before the groups
+  everywhere (Sybase IQ by Cube's row numbers, `cube_rn <= 100` ahead of the GROUP BY). The conformance suite gains four
+  drill-down cases (the top level, a level below with an Average, a Distinct Count and nothing, the rows under an empty
+  and a float key, ALLTYPES by its Boolean): Cube's types are the engine's but for the Sums and Averages, which the
+  engine types never null (declared wider, as M4's); dropping one declaration fails the suite.
+- **M7.13** (2026-10-11). The builder's README describes the grid (server-side by default, drill-down, local mode,
+  export, runs, formats); the core's names `drilldown/` and `presentation/` and the presentation settings;
+  `testing.md` has "The results grid" (server-side mode in jsdom, the drill-down and export engine tests, the test
+  client's format, the object-URL stub); ISSUES.md lists the grid's gaps (a level cut at the row limit, Excel
+  unformatted and of the rows shown, local totals as doubles, two float groups that can merge, no server-side pivot).
+  The changeset covers both packages. `check:pkg`, `check:ts`, `check:format` and `check:copyright` pass.
+- **M7.14, the browser rehearsal** (2026-10-11, :9004 with the engine on :6300): Top customers by orders; 'Drilldown by
+  "COUNTRY"' from a cell gives seven groups whose ORDER_COUNT sums are right (Germany 28 + 15 = 43, Sweden 37, USA 49);
+  the header sorts the groups by their sum, both ways, on the engine; Germany expands to its two customers; Runs (5)
+  lists the Execute, three group fetches and the rows of Germany with their SQL; Export ▸ CSV saves
+  `Top_customers_by_orders.csv` (`text/csv`, a header and the 10 rows, flat; the save intercepted, no file written);
+  Undo removes the drill-down and the grid shows the run's rows; no console error. Earlier checks: Largest buys sorted
+  on the engine, drilled down two levels, the group rows' settings, Format Column to USD, local mode's panels.
+- **M7.14, fixes from the review of the rehearsal** (2026-10-11, advisor): every suite run again (builder with its
+  engine tests: only the four known setup-SQL timeouts; Legend Query's tests pass; lint clean but for two old
+  warnings in a Query test helper this branch doesn't touch). Spec §13.1's rule that a group row's count is never
+  formatted: `CubeCell` skips the format on a group row's column the drill-down counts (Count, Distinct Count), not on
+  the group's key. Excel wrote integers and decimals as text (they reach the grid as exact text): number columns now
+  carry an Excel style with `dataType: 'Number'`; the intercepted workbook of Largest buys, drilled down with a group
+  expanded, has `t="n"` number cells and its group rows. Local mode's totals, unit-tested (`LOCAL_AGGREGATIONS`). In
+  the browser, a resize and a format applied with a group expanded kept it expanded and fetched nothing (Runs (3)
+  before and after), with no console error.
+- **CI on #5667** (2026-10-11): two jobs failed on `cfb4bdceb`. Code checks: three errors from the CI lint's
+  type-aware rules (`yarn workspace @finos/legend-cube-builder lint:js`, `NODE_ENV=production` with the project's
+  types), which the plain eslint run didn't apply: two needless guards in a test, and `CubeExportState` checking an abort
+  TypeScript had narrowed away (it now checks that it is still the export in flight). Core tests: the Excel cell class
+  replaced the right-aligned column type's own, so number cells were no longer right-aligned; both classes are set now.
+  The CI lint is the one to run before a push.
+- **M7.14, the reviewers** (2026-10-11, user's go; workflow `wf_3daf0acf-9a0`, 18 agents: four reviewers by area,
+  derivation and keys, run path and fetcher, grid wiring, formats, then a skeptic per finding with probes in the
+  scratchpad). 14 findings, all confirmed (12 distinct), none refuted, all fixed: StrictTime accepted as a level whose
+  groups couldn't expand; no tie-breaking sort at a group level; late answers from an earlier grid still noted on the
+  new one (twice); an export's error kept across reset and a new run; widths lost on an undo (twice); a blank
+  places format dropping a value's trailing zeros (`$20.2`); a negative rounding to zero keeping its sign, red and
+  parentheses; local mode's count total formatted (`$3`); no way to remove the every-number-column format; the group
+  rows dialog flag left on when its dialog unmounted; the groups column exporting the row's JSON id (and ag-grid's
+  `->` prefix, then fixed with `processRowGroupCallback`; the workbook now has `5`, `12`, `13` as numbers); a local
+  group row's Filter by adding an unrelated Is Empty. Each has a test.
+- **M7.15** (2026-10-11). `demo/demo-m7.mjs` in the evidence folder (Playwright, against :9004 and the engine on
+  :6300) records `out-demo-m7/legend-cube-m7-results-grid.webm`: the Trades example's join made the node that runs
+  (its menu's Select; Ctrl+click is a right-click on macOS Chromium) and run (400 rows); a header sort on the engine,
+  twice; Drilldown by REGION then DESK from cells; Group rows… (ids Nothing, PRICE Average); a region and a desk
+  expanded; Format Column on NOTIONAL_USD (USD, no cents); the runs; Export ▸ CSV (the file saved, a header and 400
+  trades); local mode's panels. Ten checks pass, no page error; the twelve frames were read against their captions,
+  which led to two changes: the groups column is pinned on the left, so the groups stay in view beside the numbers
+  (a product change), and the export's caption names the saved file.
+- **M7.16** (2026-10-11). PLAN §11.10 folded into the sections it changes: §7.8 (the new state, formats and widths
+  on the grid display), §9 (the slice's grid is local mode; "Later (M7)" replaced by what M7 built), §10.3 (the
+  saved `meta.drilldown` and `meta.presentation.columnHints`), §11.3's M7 row, and Appendix A (§12.1–12.6, §13.1).
+  §11.10 itself now says the Runs panel and the 'Group rows…' dialog where it planned popovers, and that Excel gets
+  numbers, unformatted. The PR is marked ready for `cube-dev` on the user's word.

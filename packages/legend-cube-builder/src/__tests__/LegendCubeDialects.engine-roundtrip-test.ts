@@ -17,13 +17,16 @@
 import { beforeAll, describe, expect, test } from '@jest/globals';
 import {
   AggregationFunction,
+  checkDrilldown,
   type ColumnAggregation,
   ColumnComparisonFilter,
   Concat,
   Connection,
   Difference,
   CUBE_DIALECT_WORKAROUNDS,
+  deriveDrilldownLevel,
   Distinct,
+  type DrilldownCell,
   Drop,
   Filter,
   FilterOperator,
@@ -38,6 +41,7 @@ import {
   type QueryNode,
   Rename,
   Restrict,
+  Schema,
   Slice,
   Sort,
   SortDirection,
@@ -1950,6 +1954,74 @@ describe('Window functions, as each database plans them', () => {
           expect.stringMatching(BY_CUSTOMER_THEN_ORDER),
         ]);
       }
+    },
+  );
+});
+
+// -------------------------------- the grid's drill-down (PLAN §11.10) --------------------------------
+
+const ORDERS_SCHEMA = new Schema(ORDERS_COLUMNS);
+
+/** A level of the drill-down by country then city, over a run of ORDERS through the nodes */
+const drilldownLevel = (
+  keys: DrilldownCell[],
+  run: QueryNode[] = [],
+): Query => {
+  const query = ordersThen(...run);
+  return deriveDrilldownLevel({
+    query,
+    captureId: query.selected as string,
+    schema: ORDERS_SCHEMA,
+    drilldown: checkDrilldown(
+      { columns: ['SHIP_COUNTRY', 'SHIP_CITY'], aggregations: [] },
+      ORDERS_SCHEMA,
+    ),
+    keys,
+    sorts: [{ column: 'FREIGHT', direction: SortDirection.DESC }],
+  }).query;
+};
+
+const DRILLDOWN_SHAPES: [string, () => Query][] = [
+  ['the top level, sorted by a Sum', () => drilldownLevel([])],
+  ["a country's cities", () => drilldownLevel(['France'])],
+  ['the cities with no country', () => drilldownLevel([null])],
+  ["a city's orders", () => drilldownLevel(['France', 'Lyon'])],
+  [
+    'the top level of a run with a Limit',
+    () => drilldownLevel([], [new Limit('limit101', 100)]),
+  ],
+];
+
+describe("The grid's drill-down, as each database plans it", () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Plans every level on %s: groups by the levels down to its own, sums under their own names, sorts by the aggregation',
+    async (databaseType) => {
+      for (const [name, shape] of DRILLDOWN_SHAPES) {
+        const sql = await planSql(shape(), databaseType).catch(
+          (error: unknown) => `failed: ${String(error)}`,
+        );
+        expect([name, sql.startsWith('failed')]).toEqual([name, false]);
+        if (name !== "a city's orders") {
+          expect([name, /group by/u.test(sql)]).toEqual([name, true]);
+          expect([name, sql.includes('freight sum')]).toEqual([name, true]);
+        }
+      }
+    },
+    60_000,
+  );
+
+  test.each(PLANNED_DATABASE_TYPES)(
+    "Keeps a run's Limit before the groups on %s",
+    async (databaseType) => {
+      const sql = await planSql(
+        drilldownLevel([], [new Limit('limit101', 100)]),
+        databaseType,
+      );
+      // the groups are of the 100 rows: the limit comes before the GROUP BY,
+      // in a subquery the group reads, or Cube's row numbers (Sybase IQ)
+      const limit = /(?<!\d)100(?!\d)/u.exec(sql)?.index ?? -1;
+      expect(limit).toBeGreaterThan(-1);
+      expect(limit).toBeLessThan(sql.lastIndexOf('group by'));
     },
   );
 });
