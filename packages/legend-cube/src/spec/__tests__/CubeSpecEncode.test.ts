@@ -432,12 +432,12 @@ describe(unitTest('Saved spec encoding: document'), () => {
     presentations.forEach((presentation) => {
       expectEncoded(
         new CubeDocument({
-          meta: { presentation, rest: { drilldown: { levels: ['CITY'] } } },
+          meta: { presentation, rest: { pivot: { levels: ['CITY'] } } },
         }),
         {
           formatVersion: 1,
           query: { nodes: [] },
-          meta: { drilldown: { levels: ['CITY'] } },
+          meta: { pivot: { levels: ['CITY'] } },
         },
       );
     });
@@ -448,7 +448,7 @@ describe(unitTest('Saved spec encoding: document'), () => {
     const json: JsonObject = {
       formatVersion: 1,
       query: { nodes: [] },
-      meta: { drilldown: { levels: ['CITY'] } },
+      meta: { pivot: { levels: ['CITY'] } },
     };
     const { document } = decodeCubeSpec(json);
     expect(document.meta.presentation).toStrictEqual({
@@ -456,7 +456,7 @@ describe(unitTest('Saved spec encoding: document'), () => {
       columnWidths: [],
     });
     expect(document.meta.rest).toStrictEqual({
-      drilldown: { levels: ['CITY'] },
+      pivot: { levels: ['CITY'] },
     });
     expect(JSON.stringify(encodeCubeSpec(document))).toBe(JSON.stringify(json));
   });
@@ -2817,10 +2817,10 @@ describe(unitTest('Saved spec encoding: rest'), () => {
           rest: {
             showGraph: false,
             columnWidths: [],
-            columnHints: [{ field: 'CITY' }],
+            columnStyles: [{ field: 'CITY' }],
           },
         },
-        rest: { presentation: {}, drilldown: { levels: ['CITY'] } },
+        rest: { presentation: {}, pivot: { levels: ['CITY'] } },
       },
       rest: {
         formatVersion: 7,
@@ -2842,9 +2842,9 @@ describe(unitTest('Saved spec encoding: rest'), () => {
       meta: {
         presentation: {
           columnWidths: [{ column: 'CITY', width: 90, unit: 'px' }],
-          columnHints: [{ field: 'CITY' }],
+          columnStyles: [{ field: 'CITY' }],
         },
-        drilldown: { levels: ['CITY'] },
+        pivot: { levels: ['CITY'] },
       },
       zeta: 1,
       alpha: [null, { b: 2 }],

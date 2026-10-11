@@ -1588,6 +1588,10 @@ an earlier warning on that table cleared once it re-checks clean (M1.8b S17).
 | `pendingSources` (private, `observable.ref`)      | sources sent to the engine to be typed again; read through `isResolvingSources` and `isPendingSource(node)`                                                 |
 | `modelOutlines` (private, by model)               | outlines loaded on demand by `loadModelOutline`, read through `modelOutline`, e.g. for the Join's 'type unknown' warning                                    |
 | `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                                                            |
+| `gridFetcher` (`CubeGridFetcher`, M7)             | the server-side levels, derived from the run on screen; an LRU cache of 200,000 rows keyed by the run lambda; a generation number drops purged answers      |
+| `grid` (`CubeGridState`, M7)                      | the grid's mode (kept per user), `loadRows` for each grid by its token, drill-down, format and width edits, the open dialogs                                |
+| `export` (`CubeExportState`, M7)                  | the CSV export in flight, Stop, its error                                                                                                                   |
+| `runStats` (`CubeRunStatsState`, M7)              | the page's 15 latest runs, fetches and exports, with their SQL                                                                                              |
 | `nodeEditor` (`CubeNodeEditorState`)              | the open node editor: `nodeId`, `draft`, `notice`; `finish()`, `holdOpen()` and `addFlusher()` (M3b); ephemeral, not saved                                  |
 | `isPaletteCollapsed`                              | kept per user in user data, never in the cube                                                                                                               |
 
@@ -1620,7 +1624,9 @@ start of M1.8b.
   booleans as true/false. Column widths pass through unchanged until M7. _(2026-10-10, the user, for the demo:
   Decimal and Number values show their thousands grouped, every digit kept; Float values are rounded to 2 places and
   grouped; Integer values stay plain, so ids and years get no commas. Copying a cell copies its exact value, which
-  also shows on hover where the two differ; §9.)_
+  also shows on hover where the two differ; §9.)_ _(M7, §11.10: a number column takes the format saved in
+  `meta.presentation.columnHints`, else the display above; widths are read from and written to `columnWidths`, as
+  presentation: no undo step, and an undo keeps them.)_
 - **Running:** while a query runs, Execute becomes **Stop**, which aborts it; leaving the page or importing aborts it
   too. Only the latest run's result is applied.
 - **Telemetry:** the host passes telemetry through; Cube sends no events in M1.8. Events are designed with M3's entry
@@ -2171,7 +2177,8 @@ Every engine defect is listed in Appendix B.
 
 **Slice:**
 
-- `@finos/legend-lego/data-grid` `DataGrid` (enterprise, D3), client-side row model.
+- `@finos/legend-lego/data-grid` `DataGrid` (enterprise, D3), client-side row model. _(M7: now local mode; server-side
+  mode is the default, below.)_
 - Columns come from Cube's **inferred** schema, not from the result builder, which is lossy.
 - Column ids are positional (`c0…cN`) with `headerName = column name`. ag-grid treats dots in `field` as nested
   paths, and column names may contain dots or spaces.
@@ -2181,7 +2188,7 @@ Every engine defect is listed in Appendix B.
 - **Execution is explicit:** Execute or F9. Edits mark results **stale** (§12.1).
 - **Row limit:** user-settable, kept in local storage, default 1,000. Cube emits `->limit(limit + 1)` to detect
   truncation and warn. The original fetched everything and truncated client-side (§12.7).
-- **Stats:** duration and SQL, with a copy button.
+- **Stats:** duration and SQL, with a copy button. _(M7: the Runs panel, below.)_
 - **Errors** render inside the grid region, with the first line of the message and expandable detail (§17.13).
 
 **M2 (§11.4):**
@@ -2190,7 +2197,7 @@ Every engine defect is listed in Appendix B.
   ag-grid's own items (`getCubeGridContextMenuItems`); outside a cell, only ag-grid's. Sort by adds an ascending Sort
   on the column, Filter by an Equal on the clicked value (IsEmpty on a null cell; a timestamp's trailing `+0000`
   dropped). The node goes after the selected node, as one undo step that selects it. Nothing runs: the rows turn
-  stale. Group by joins them in M4 (below).
+  stale. Group by joins them in M4 (below). _(M7: the curated menu, below.)_
 - **When they can be used** (`getCubeGridQuickActions`, read when the menu opens): only while the rows shown are from
   the current query, no run is in progress and the cube can be changed (not read-only). Sort by is also disabled on a
   type that can't be sorted (`isSortableType`); Filter by on a non-null value whose column type has no Equal, or that
@@ -2204,16 +2211,39 @@ Every engine defect is listed in Appendix B.
   added and enabled as the others are, and also disabled on a type that can't be grouped (VARIANT, OPAQUE). It changes
   the schema, so later nodes may turn invalid (visible, undoable).
 
-**Later (M7):**
+**M7 (§11.10):**
 
-- Server-side mode on the enterprise SSRM, with drill-down (§12.2) **derived as lambdas**: filter by the expanded
-  keys, `groupBy` the next level, sort, slice. The user's graph is never touched.
-- A bounded LRU cache keyed by the derived lambda (fixes §21's unbounded cache).
-- Typed group keys with an out-of-band null marker instead of the `"(null)"` string sentinel.
-- Export: CSV through the engine (`serializationFormat=CSV`), XLSX through ag-grid's enterprise `ExcelExportModule`.
-  The engine has no XLSX format ✅.
-- The context menu, curated (spec §12.4): until then ag-grid's own items follow the quick actions.
-- Column formatting (§13) with the §21 fixes: red-if-negative wiring, ISO currency codes.
+- **Two modes,** server-side by default, the mode kept per user. Execute stays the flat run of the capture node in
+  both. **Server-side mode** is ag-grid's server-side row model: a header sort or a drill-down re-derives the query
+  from the run on screen (its query, context and row limit, never the live cube) and runs it on the engine.
+  **Local mode** is the slice's grid: ag-grid's grouping, pivot, filters, side panels and status bar on the fetched
+  rows, its totals read as numbers. Switching runs nothing again.
+- **Drill-down** (spec §12.2), saved as `meta.drilldown`: each level is derived in the core (`DrilldownQuery.ts`) as
+  Cube's own nodes after the capture node: a Filter of the expanded keys, a Group by the levels down to the new one
+  with each other column's aggregation (a number's Sum by default, settable, or Nothing) and Count rows, a Sort that
+  ends with the level's own column; the leaf is the Filter and the grid's sort. Each level is fetched whole, cut at
+  the row limit (not paged), and cached in a bounded LRU keyed by the derived lambda. Keys are typed, read from the
+  parent rows (an empty key is IsEmpty, a float key `In [v, fround(v)]`); a level's type needs Equal as well as
+  group. The groups column is pinned on the left.
+- **Entering it:** 'Drilldown by "X"' heads a cell's menu (switching local mode to server-side); a bar above the grid
+  lists the levels, each removable, what can't be used and why, 'Group rows…' (a dialog of each column's
+  aggregation) and Clear. Each change is an undo step that runs nothing.
+- **The menu, curated** (spec §12.4): on a cell, 'Drilldown by', 'Sort by', 'Group by', 'Filter by' (Filter by
+  only on a group row's key, never an aggregate or an empty cell, and not on a local-mode group row), 'Format
+  Column…'; anywhere, 'Autosize All Columns', 'Reset Columns', 'Copy', 'Copy with Headers' and Export. Cut, paste and
+  ag-grid's own export are gone.
+- **Export** (spec §12.5): 'CSV (whole query)' runs the run's query, sorted as the grid is, without the grid's row
+  limit, through the engine (`CubeEngine.exportCsv`, the client's `CSV_TRANSFORMED`), saved as `<cube name>.csv`;
+  Stop aborts it. 'Excel (rows shown)' is ag-grid's export of the loaded rows, expanded groups included, number
+  columns as numbers but unformatted, each group by its key.
+- **Runs** (spec §12.6): 'Runs (n)' opens a panel under the toolbar with the page's 15 latest runs, fetches and
+  exports, each with its time, duration, SQL and Copy SQL. No trace link.
+- **Formats** (spec §13.1, with the §21 fixes): 'Format Column…' sets a number, currency (ISO 4217 codes from
+  `Intl.supportedValuesOf('currency')`) or percent format, its places, separators, red and parentheses for
+  negatives, for the column or every number column, saved as `meta.presentation.columnHints`. The exact text is
+  formatted, every digit kept; a group row's count never is.
+- **Late answers** for an earlier run, mode, cube or grid are dropped (the run id, the fetcher's generation, a token
+  per grid). A fetch's error shows in the grid region and fails only its level.
 
 ---
 
@@ -2374,6 +2404,12 @@ value}`. **Negations are stored as negated operators** (`NotEqual`, `NotIn`, …
   information and with number literals as their digits, the lambda left out until the text is checked; and the last
   typing `{signature, types}`, never a failure. A typing without a type per column reads as nothing typed, and an
   unknown key on a column, the typing or a typed column's type makes an Unknown node. A loaded Extend is typed again.
+- **M7's grid settings** (§11.10), in `meta`: `drilldown: {columns, aggregations: [{column, function}]}`, an
+  aggregation only where it differs from the default (a number's Sum, nothing for other columns), `null` for Nothing,
+  none written for an empty drill-down; `presentation.columnHints: [{column?, format: {style, decimalPlaces?,
+currency?, grouping, redIfNegative, parenthesesIfNegative}}]`, a hint with no column being the format of every
+  number column, defaults left out; `presentation.columnWidths`, now applied. Unknown keys are kept at each level, and
+  an unknown style is kept and shown as no format.
 - **Schema snapshots** on sources make offline inference possible on load (§1: no server round trip for editing).
   On load the host re-resolves the schema and diffs it. Drift becomes a node warning, and the fresh schema wins.
 - **Forward compatibility:**
@@ -2464,7 +2500,7 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
 | Canvas node positions                                       | No: derived | Pure function of the query (§7.2)            |
 | Capture node                                                | Yes         | `query.selected`                             |
 | Graph panel collapsed (`showGraph`)                         | Yes         | `meta.presentation` (§17.1 [why])            |
-| Grid column widths, and later formats and drill-down        | Yes         | `meta.presentation` / `meta.drilldown` (§13) |
+| Grid column widths, formats and drill-down (M7)             | Yes         | `meta.presentation` / `meta.drilldown` (§13) |
 | Open editor, panel sizes, zoom and pan, selection highlight | No          | ephemeral                                    |
 | Sidebar collapsed, row limit                                | Per user    | local storage (§17.1, §12.7)                 |
 | Undo history                                                | No          | session                                      |
@@ -2847,7 +2883,7 @@ project with a Database and a runtime.
 | M5   | Partition (windows)                        | Partition (`Apply Window Functions`): the functions a Group offers, Count rows included, plus Rank, Dense Rank and Row Number, which need a sort; D5's default frame, with no frame setting; windowed Distinct Count and Distinct Value natively; the array form, aggregates and ranks in separate extends, and `size()` counts; §8.6 `let` isolation of every Partition that isn't the capture; the **dialect harness**: plans pinned on the 17 window database types (`WINDOW_SHAPES`); runs on H2 and DuckDB, and a composition suite against a reference (§11.6) |
 | M5b  | More window functions                      | Lag and Lead (an offset), NTile (buckets), Percent Rank, Cumulative Distribution, First and Last (the partition's, Last over the reversed sort), all needing a sort; planned on the 17 window types (§11.9)                                                                                                                                                                                                                                                                                                                                                          |
 | M6   | Difference and Extend                      | Difference (`Compare Column Values`) with the spec's rows and native types, a FULL join; Extend (`Extend Columns`) edited inline, a row per column with a Monaco editor, its text a full lambda (`x \| …`), each column able to use the ones above; JSON-canonical storage with the text; typing by the engine over the cube's model, in the background, again when the input the engine sees changes; Validate (F10) with plan-time checks (§11.7)                                                                                                                  |
-| M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                            |
+| M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -4077,6 +4113,180 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - §10.3: the Partition shape (`offset`, `buckets`). §11.3: the M5b row.
 - Appendix A: §10 (the functions beyond the spec), §16 (the two messages), §17.6 (the Partition editor's fields).
 
+### 11.10 M7: Grid and presentation
+
+M7 is built on the branch `cube-m7`, from `cube-dev` (`b10f82d0c`, which is finos master with every Cube PR through
+#5666), and lands in a PR into `cube-dev`. Its status is in [PROGRESS-M7.md](PROGRESS-M7.md). Requirements: the
+probes under `m7-requirements/` in the local evidence folder, run on the local engine against Cube's Northwind fixture
+with its `CUBETEST` tables: ✅ where a probe ran, 💭 where only a plan was made or it is reasoned.
+
+This subsection overrode the sections it names until M7.16 folded it into them (see "Supersessions" at its end).
+
+**Settled at the start of M7** (user, 2026-10-11, all on the recommendation):
+
+1. **Server-side mode is the default** (spec §12.1). A column header's sort and a drill-down re-derive the query and
+   run it on the engine; today's grid sorts only the rows it fetched, which can mislead. **Local mode** stays as a
+   toggle: one run, then ag-grid's own grouping, pivot, filters, tool panels and status bar on the fetched rows. Adding
+   a drill-down level in local mode switches back to server-side (spec §12.1). _(M7.6: switching modes runs nothing
+   again and keeps the rows current, where the spec resets the run, since Execute is the same flat run in both modes;
+   the mode is remembered for the user.)_
+2. **Each level is fetched whole**, bounded by the row limit (spec §12.3): the top level, and each expanded group's
+   children, is one query with `limit(rowLimit + 1)`, its truncation shown. Not paging with Slice, which needs a total
+   order to keep blocks from repeating or skipping rows (§11.4's row order). Answers are kept in a bounded LRU cache
+   keyed by the derived query (§21's unbounded cache).
+3. **Export:** CSV runs the whole query (the capture node, with the grid's sort, and no row limit) on the engine, as
+   Legend DataCube does; XLSX is ag-grid's export of the rows the grid has loaded, expanded groups included, and its
+   menu item says so. The engine has no XLSX format ✅.
+4. **A group row's cells:** each numeric column shows its Sum, other columns are left empty, and a `Count Rows` column
+   counts the group's rows; the drill-down's settings change any column's aggregation (supersedes spec §12.2's
+   `fullSchema`, which counts every column).
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **Execute stays the flat run.** Execute runs the capture node as today: its rows, errors on nodes, staleness and
+  the quick actions are unchanged, and local mode shows them. In server-side mode the grid's fetcher serves every
+  level from the run on screen, the top one included whenever a drill-down or a header sort is set, at the cost of one
+  more engine call after such an Execute. The run path is shared (`runCubeQuery`, M7.5).
+- **Derived from the run, never the live cube.** An expansion or a sort uses the query, the context and the warehouse
+  of the run on screen (`CubeExecutionResult`), so a stale grid never runs an edited cube under the old rows. The
+  query is cloned and Cube's own nodes appended after its capture node: a Filter per expanded level, a Group for the
+  next level, a Sort; the row limit is the emitter's. So every database workaround of §11.4 (row numbers, the padded
+  Distinct, the runtime's database type) applies unchanged, and the outline is loaded before each derived run, as
+  `needsDatabaseType` asks. The derivation is pure and lives in the core, unit- and engine-tested; the grid adapter
+  stays thin, since ag-grid's server-side model can hardly be tested in jsdom.
+- **Typed group keys.** A child request reads its keys from its parent rows' data, the values as the engine returned
+  them, never ag-grid's string key, so no `"(null)"` sentinel exists (spec §12.2's `convertValueToKey`). An empty key
+  becomes `IsEmpty`, any other `Equal`. A key's literal is the quick action's (`buildQuickFilterRule`), so a
+  timestamp drops its `+0000` as Filter by does.
+- **Decimal literals become strings first** (M7.2, ISSUES.md "Decimal literals lose precision"). An Equal on a
+  Decimal group key would otherwise reach the known bug: the engine reads a JSON number through a double, so
+  `1.23450000000000000001` matches `1.2345`, and a string keeps every digit ✅ (`p2-csv-decimal.out`).
+- **A float key is matched as either width.** A 32-bit column's key comes back as its shortest text (`0.02`), and
+  `Equal` with that double finds no row: 0 of 25 `FREIGHT` keys, 2 of 11 `DISCOUNT` keys ✅ (`p3-float-keys.out`). Cube
+  can't tell a 32-bit column from its type: the engine types H2's `REAL` (32 bits) as `Double` and H2's `FLOAT` (64
+  bits) as `Float4` ✅ (`CubeNorthwindModel.ts`, `p1-drill.out` E and I), so writing every `Float4` value as a 32-bit
+  float would break `FLOAT` columns. A float key is matched by `In [v, fround(v)]`, the value as returned and the
+  32-bit float nearest it written in full (`0.019999999552965164`), or by `Equal` when the two are the same; every
+  `REAL`, `FLOAT` and `DOUBLE` key is then found again ✅ (`p3c-in-both.out`). Two groups merge only if one's key is
+  exactly the other's 32-bit neighbour, which a 64-bit column can hold but the engine would then return with its own
+  text 💭. Double, date and timestamp keys are found as returned ✅. M2's 'Filter by' on a `REAL` cell finds nothing
+  for the same reason; it is an ISSUES entry, as its filter is the user's to read.
+- **A group's aggregations are mapped back to their columns.** A level's Group names each aggregation as any Group
+  does (`FREIGHT Sum`, M4's auto-name, numbered past a name the input has), since Cube's Group refuses an output
+  named as an input column (§11.5), though the engine would take it ✅ (`p4-names.out`). The derivation returns, with
+  the query, which output column holds each grid column's value, so a group row's `FREIGHT` cell shows the Sum and
+  group and leaf rows share the grid's columns. `Count Rows` takes the M4 rule's next free name. Sorting a group
+  level by a column sorts by its aggregation, and a column with none isn't sortable at that level; at the leaf level
+  the same sort is the column's own (spec §12.2's remapping).
+- **The Sum's nullability:** the engine types a Sum `[1]` but returns empty for a group of empty values ✅
+  (`p1-drill.out` G); Cube's own types say nullable, as M4 settled (§11.5, `widerNullable`).
+- **Drill-down settings are saved in the cube** (spec §13 `Meta.drilldown`), as `meta.drilldown: {columns,
+aggregations}`, an aggregation per column only where it differs from the default; a cube without a drill-down writes
+  nothing. An older Cube keeps the key in `meta`'s rest and writes it back (§10.3). A level whose column the capture
+  node no longer has, or can't group (`isSortableType`), is reported in the grid and left out of the run; the cube
+  still runs.
+- **Entering a drill-down:** the cell menu's 'Drilldown by "X"' adds X as the next level (server-side mode only, spec
+  §12.4). A bar above the grid lists the levels (`SHIP_COUNTRY › SHIP_CITY`), each removable, with the aggregation
+  settings in a dialog ('Group rows…', a dialog rather than the popover first planned); changing it re-fetches,
+  without an Execute.
+- **The quick actions on a group row** filter by the cell's group key (Filter by) or its column (Sort by, Group by), as
+  on a leaf row; on an aggregated cell Filter by is disabled, since the value isn't a row's.
+- **Local mode's totals** (M7.6) read a column's values as JS numbers: the engine writes integers and decimals as
+  exact text, which ag-grid's own Sum would join as text. A total past a double's precision is rounded there; local
+  mode works on the fetched rows in the browser, and the exact totals are server-side mode's.
+- **From the review of M7** (M7.14): a level's type must have Equal as well as group (`isDrilldownLevelType`), so
+  StrictTime, whose groups Equal could never find again, isn't one; every group level's sort ends with the level's own
+  column, so a sort that leaves ties (a constant outer key, equal aggregations) still cuts a level the same way; each
+  server-side grid takes a token as it renders, and an answer for an earlier grid says nothing on the one shown now;
+  widths set since an edit survive its undo (not across an import); a format with no places keeps the value's own
+  digits (a currency at least its cents), and a negative that rounds to zero shows as zero; local mode's count totals
+  and the drill-down's count aggregations aren't formatted; the groups column exports and copies its key; a local
+  group row offers no Filter by; the shared format has its own Remove.
+- **Late answers are dropped:** a fetch started before an Execute, a mode switch, a new cube or the grid's destruction
+  is never applied, by the run id `execute()` already keeps, the fetcher's generation number and a token per grid.
+- **Errors of a fetch** show in the grid region, as a run's, and fail only that level (`params.fail()`); they don't
+  mark a node, since the user's nodes ran.
+- **Stats (spec §12.6):** every run, fetch and export records `{label, time, durationMs, sql}`, the 15 latest kept,
+  shown in a Runs panel under the grid's toolbar (M7.10: a panel rather than the popover first planned, as Show SQL
+  is) with a copy button per SQL. No trace link: Cube has no trace id to show.
+- **The context menu (spec §12.4)**, curated: on a cell, 'Drilldown by', 'Sort by', 'Group by', 'Filter by' (the last
+  three as M2 and M4 built them, in both modes); then 'Format Column' (number columns); 'Autosize Columns', 'Reset
+  Columns'; 'Copy', 'Copy With Headers'; 'Export ▸ CSV (whole query)', 'Excel (rows shown)'. Cut and paste, and
+  ag-grid's own client CSV export of the fetched rows, are gone.
+- **Column formatting (spec §13.1) with the §21 fixes:** a column format `{type: number | currency | percent,
+decimalPlaces?, currency? (an ISO 4217 code), grouping, redIfNegative, parenthesesIfNegative}` saved as
+  `meta.presentation.columnHints` (by column name, or for every column of a type when 'apply to all'); red-if-negative
+  wired to its own flag; ISO codes from `Intl.supportedValuesOf('currency')` in place of four symbols, so none falls
+  back silently. Formatting reads the exact text: `Intl.NumberFormat` formats a decimal string with every digit
+  (`$12,345,678,901,234,567,890.13` 💭, Node 20 and current browsers). Only number columns are formatted; a group
+  row's `Count Rows` never is. Today's defaults (§7.8, 2026-10-10) apply where a column has no format.
+- **Column widths** are read from and written to `meta.presentation.columnWidths` (decoded since M1, never applied).
+  A width change is presentation, not a query edit: no undo step, and it doesn't make the rows stale.
+- **CSV through the engine:** a new `CubeEngine.exportCsv(model, lambda, {abortController})`, the same execution
+  request with `serializationFormat=CSV`, saved by the browser as `<cube name>.csv`. The engine writes RFC 4180 CSV
+  with CRLF line ends, quotes and doubled quotes, an empty field for an empty value, a header even with no rows, every
+  digit (`9007199254740993`, `2.5000`), timestamps as `2024-01-02 03:04:05.678` ✅; it answers `application/json` as
+  its content type, so Cube sets `text/csv` itself, and a failure is a JSON error with status 500 ✅
+  (`p2-csv-decimal.out`). Studio's client asks for the engine's `CSV_TRANSFORMED`, which writes timestamps as the grid
+  shows them (`2024-01-02T03:04:05.678000000+0000`) ✅ (`p6-csv-formats.out`). An "Exporting…" note shows while it
+  runs; Stop aborts it. The engine test client now sends the format the client asks for (it always sent `DEFAULT`).
+
+**Engine facts** (probes under `m7-requirements/`):
+
+| Fact                                                                                                                                          |     | Probe                |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | --- | -------------------- |
+| A level: `groupBy` on the next key with a Sum and a count, sorted, limited; one and two keys; by a Decimal, a Boolean, a date and a timestamp | ✅  | `p1-drill.out` A–K   |
+| An empty key is a group of its own (507 orders with no region); `isEmpty()` on the key finds its rows                                         | ✅  | `p1-drill.out` B, D  |
+| A level below: one `filter` per expanded key, then the next `groupBy`; the leaf: the filters, a sort, the limit                               | ✅  | `p1-drill.out` C, E  |
+| A Sum of only empty values is empty, though typed `[1]`                                                                                       | ✅  | `p1-drill.out` G     |
+| An aggregation named after its column types, runs, and sorts by the aggregate                                                                 | ✅  | `p4-names.out` A, B  |
+| A decimal literal as a JSON number loses digits past a double's; as a string it keeps them                                                    | ✅  | `p2-csv-decimal.out` |
+| CSV: header, CRLF, quoting, empty values, every digit, an empty result, a failure                                                             | ✅  | `p2-csv-decimal.out` |
+| Float, date and timestamp keys, as returned, found again by `Equal`                                                                           | ✅  | `p3-float-keys.out`  |
+
+**Steps** (effort: high for the server-side work, medium for the rest, as agreed on 2026-10-10):
+
+| Step  | Effort | Deliverable                                                                                                                                                                                     | Done when                                                                                      |
+| ----- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| M7.1  | –      | This subsection and PROGRESS-M7.md (docs only)                                                                                                                                                  | Committed and pushed; a draft PR into `cube-dev`                                               |
+| M7.2  | medium | Decimal literals sent as strings (ISSUES.md), with an engine test that a 20-digit decimal filter keeps its digits                                                                               | The engine test fails before the fix and passes after                                          |
+| M7.3  | high   | The drill-down in the core: `Drilldown {columns, aggregations}` in `CubeMeta`, the codec's `meta.drilldown`, validation against the capture node's schema, the effective aggregations, messages | Codec round trips (rest kept); every message tested                                            |
+| M7.4  | high   | Query derivation in the core: a level's query from the run's query, the expanded typed keys, the drill-down and the grid's sort; the leaf; sort remapping                                       | Unit tests on every shape; engine tests compare each level with a reference over the leaf rows |
+| M7.5  | high   | The builder's row fetcher: one run path shared with Execute (outline, database type, abort, run id), the LRU cache, stats entries                                                               | Store tests: cache hits and eviction, late answers dropped, errors per level                   |
+| M7.6  | high   | The grid: ag-grid's server-side row model on the fetcher, typed group rows, Execute filling the top level, header sorts re-deriving, per-level truncation; the mode toggle and local mode       | Grid tests on the datasource; the browser check of both modes                                  |
+| M7.7  | high   | The drill-down in the UI: 'Drilldown by', the levels bar, the aggregation dialog, quick actions on group rows                                                                                   | Component tests; the browser check                                                             |
+| M7.8  | medium | Export: `exportCsv` on the port and the engine, the download, XLSX of the loaded rows, the note, stats entries                                                                                  | Engine test of the CSV; component tests                                                        |
+| M7.9  | medium | The curated context menu                                                                                                                                                                        | Menu tests per mode and cell kind                                                              |
+| M7.10 | medium | The runs panel                                                                                                                                                                                  | Component tests                                                                                |
+| M7.11 | medium | Column formatting and widths: `columnHints` in the core and codec, the Format Column dialog, rendering from exact text, the §21 fixes                                                           | Codec, formatter and dialog tests                                                              |
+| M7.12 | medium | Around the databases: the derived shapes planned on every database type (plan-only test), the drill-down's conformance cases                                                                    | Plan-only and conformance tests pass                                                           |
+| M7.13 | medium | Guides (hosting, testing.md), README lists, ISSUES drafts, the patch changeset                                                                                                                  | `yarn check:ci` passes                                                                         |
+| M7.14 | high   | Verification (reviewers and a skeptic per finding) and a browser rehearsal                                                                                                                      | Every finding fixed or recorded; the rehearsal passes                                          |
+| M7.15 | medium | A demo video of M7 (§11.3), key frames checked against their captions                                                                                                                           | Every caption true on screen; sent                                                             |
+| M7.16 | –      | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                                                                                                    | The plan consistent; the PR ready                                                              |
+
+**Risks and open gaps:**
+
+- ag-grid's server-side row model can't be checked well in jsdom; the derivation and the fetcher carry the logic and
+  the tests, and the browser checks (M7.6, M7.7, M7.14) cover the wiring.
+- A level of many groups is cut at the row limit, like a flat run; a user who needs them all raises the limit or adds
+  a Filter. Paging stays out (settled 2).
+- XLSX holds only the loaded rows; number columns go as numbers, but their formats are not carried into it
+  (ag-grid's Excel number formats are a follow-up).
+- Pivot in server-side mode stays out, as in the spec (§12.3: asserted, not degraded); local mode offers ag-grid's.
+
+**Supersessions** (folded in at M7.16, 2026-10-11; kept here as the record of what M7 changed):
+
+- §7.8 (grid display): formats and widths applied. §9: the slice's client-side model becomes local mode; the M2 and
+  M4 menus become the curated menu; "Later (M7)" moves here. §10.3: `meta.drilldown` and
+  `meta.presentation.columnHints`. §11.3: the M7 row.
+- Appendix A: §12.1 (server-side default kept, local mode kept), §12.2 (typed keys, named aggregations, Sum by
+  default, no `CUBE AUTO COUNT`), §12.3 (bounded cache, whole levels), §12.4 (the curated menu), §12.5 (CSV through
+  the engine, XLSX of loaded rows), §12.6 (no trace link), §13.1 (ISO codes, the red-if-negative fix, exact text).
+- As built (M7.2–M7.15, folded in M7.16 with the above): §7.8's state (`gridFetcher`, `grid`, `export`,
+  `runStats`); the Runs panel and the 'Group rows…' dialog in place of popovers; the review's fixes (StrictTime, the
+  level's tie-break sort, the grid token); the groups column pinned on the left.
+
 ---
 
 ## 12. G. Risks and open questions
@@ -4175,8 +4385,14 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 | §11.1                   | Idea kept        | `CubeEngine` port (§8.7)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | §11.2–11.3              | Superseded       | –                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | §11.4                   | Superseded       | Host HTTP client; keep "truncate and show trace link" behaviour via host                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| §12–13                  | Idea kept        | §9 of this plan; lambda-derived drill-down; `limit + 1`; typed group keys; §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| §12.4 (M2, M4)          | Changed          | Client-side grid (spec: server-side mode only): Sort by, Group by (M4, §9) and Filter by, then ag-grid's items until M7; no icons; Drilldown in M7. They add a node after the selected one, never run, and are disabled on stale rows, during a run, read-only, or on a type or value they can't use                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| §12–13                  | Idea kept        | §9 of this plan; a drill-down derived as Cube's own nodes; `limit + 1`; typed group keys; §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| §12.1 (M7)              | Kept + changed   | Server-side mode is the default, and the spec's local mode is kept as a toggle, remembered per user; switching runs nothing again and keeps the rows current, since Execute is the same flat run in both modes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| §12.2 (M7)              | Changed          | Keys typed from the parent rows, no `"(null)"` sentinel (an empty key is IsEmpty, a float key `In [v, fround(v)]`); a level's aggregations named as a Group's and mapped back to their columns; a number's Sum by default, other columns empty, and a `Count Rows` column in place of `fullSchema`'s count of every column and `CUBE AUTO COUNT`; a level's sort ends with its own column                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| §12.3 (M7)              | Changed          | Each level fetched whole, cut at the row limit, not paged; a bounded LRU cache (200,000 rows) keyed by the derived lambda; pivot stays out of server-side mode                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| §12.4 (M2, M4, M7)      | Changed          | Sort by, Group by (M4, §9) and Filter by add a node after the selected one, never run, and are disabled on stale rows, during a run, read-only, or on a type or value they can't use; no icons. M7 curates the menu: 'Drilldown by' first, the quick actions, 'Format Column…', then columns, copy and Export; cut, paste and ag-grid's export gone; Filter by on a group row only on its key                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| §12.5 (M7)              | Changed          | CSV of the whole query through the engine (`CSV_TRANSFORMED`), no row limit, Stop aborts; XLSX is ag-grid's export of the rows shown, numbers as numbers, unformatted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| §12.6 (M7)              | Changed          | A Runs panel of the 15 latest runs, fetches and exports, with their SQL and Copy SQL; no trace link, as Cube has no trace id                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| §13.1 (M7)              | Changed          | Saved as `meta.presentation.columnHints`; ISO 4217 codes from `Intl.supportedValuesOf('currency')` in place of four symbols; red if negative on its own flag; the exact text formatted, every digit kept; a group row's count never formatted; a format for every number column with its own Remove                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | §14, §15                | Superseded / out | §10; publishing out of scope. §14.4 "Save disabled while invalid": Export spec is allowed for invalid queries; server Save gating decided in M8 (§10.3)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | §16                     | Kept + additions | §4.11; M5 adds `Partition column "<c>" of type <T> cannot be partitioned.` and `Aggregation function "<a>" requires at least one sort column.` (§11.6); M6 adds Difference's `Difference column "<c>" cannot be a join column.` and `Difference output column "<c>" is not valid column name.`, and Extend's one-parameter lambda (`"<c>" must be a lambda with one parameter, such as x \| $x.PRICE.`), the engine's failure on a column or on all, and the pending marker `ERR_TYPING` (§11.7); M5b adds `Aggregation function "<a>" needs an offset that is a whole number of at least 1.` (or `a bucket count`) and `Aggregation function "<a>" does not take an offset.` (or `a bucket count`) (§11.9)                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | §17                     | Guidance         | §7; a floating editor below the node, as the popover (M3b); visible Left/Right, First/Second; xyflow + dagre; deep links as path params (M3/M8). §17.11: Execute needs only the capture subtree to be valid (§10.3). §17.7: uncoercible text is kept as an invalid value with a type message (§4.9), and STRING values are not trimmed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |

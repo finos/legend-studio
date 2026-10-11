@@ -9,14 +9,15 @@
 
 ## Bugs
 
-### Decimal literals lose precision
+### 'Filter by' on a REAL cell finds nothing
 
-- **Found:** M1.7 verification. **Deferred** by the user on 2026-10-07, until after the main end-to-end.
-- **What:** the engine reads a `decimal` literal sent as a JSON number through a double. Digits past double precision
-  are lost (e.g. `0.10000000000000000001`), so a filter can return the wrong rows.
-- **Reachable:** only once a filter on a Decimal column can be built or imported (S7 import, M1.8b Filter editor).
-- **Suggested fix:** in `V1_CubeLambdaSerializer`, write a decimal literal's value as a JSON string (the engine's
-  `CDecimal` reads it with `new BigDecimal`). Verify it on the engine and add an engine-roundtrip test.
+- **Found:** M7's requirements (2026-10-11, `m7-requirements/p3-float-keys.out` in the evidence folder).
+- **What:** a 32-bit `REAL` value comes back as its shortest text (`0.02`), and the quick action's `Equal` sends that
+  double, which the database's widened `0.019999999552965164` never equals: 0 of 25 `FREIGHT` values are found. The
+  editor already shows the floating-point hint on Equal over a float. Cube can't tell a 32-bit column by its type
+  (the engine types `REAL` as Double and `FLOAT` as Float4).
+- **Suggested fix:** as M7's drill-down does, `In [v, fround(v)]` when the two differ, perhaps shown in the editor as
+  the value with a note; or a tolerance operator. The user reads and edits this filter, so the shape is theirs to pick.
 
 ### The row limit accepts hexadecimal and exponent text
 
@@ -415,6 +416,22 @@ deployment (PLAN §11.2 Part B2).
 - **No CI test sends a pointer:** CI runs no depot. The `cube-local` group does, by hand.
 - **The engine caches a pointer's project per version,** so a sample project changed under the same version needs an
   engine restart (local only: a published release doesn't change).
+
+## The results grid (M7)
+
+- **A level is cut at the row limit.** Each level is fetched whole, up to the run's row limit (PLAN §11.10, the
+  user's choice over paging); a level with more groups or rows says so above the grid, and the user raises the limit
+  or adds a Filter.
+- **Excel holds the rows shown, unformatted.** 'Excel (rows shown)' is ag-grid's export of the loaded rows: collapsed
+  groups' rows aren't in it, and column formats aren't carried into the workbook (ag-grid's Excel styles would). Number
+  columns are numbers there (an Excel style with `dataType: 'Number'`), as doubles, so a value past a double's
+  precision is rounded in the workbook.
+- **Local mode's totals are JS numbers.** Its Sum, Average, Min and Max read the exact text as doubles, so a total past
+  a double's precision is rounded; server-side mode's are the database's.
+- **Two float groups can merge.** A float key is matched by `In [v, fround(v)]`; on a 64-bit column that holds both a
+  value and its 32-bit neighbour, expanding either shows both groups' rows. The engine returns each with its own text,
+  so it would take data stored at 32 bits and widened.
+- **No pivot server-side**, as in the spec (§12.3); local mode has ag-grid's.
 
 ## Test gaps
 

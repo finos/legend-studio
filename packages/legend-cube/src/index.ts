@@ -31,6 +31,9 @@ export * from './graph/Connection.js';
 export * from './graph/QueryNode.js';
 export * from './graph/Query.js';
 export * from './graph/CubeDocument.js';
+export * from './drilldown/Drilldown.js';
+export * from './drilldown/DrilldownQuery.js';
+export * from './presentation/ColumnFormat.js';
 
 export * from './inference/ValidationUtils.js';
 export * from './inference/SchemaInference.js';
