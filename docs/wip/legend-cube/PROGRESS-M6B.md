@@ -12,7 +12,7 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev`                   |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6b.6: guides and the changeset; next verification and the rehearsal                            |
+| Step   | M6b.7: verification and the rehearsal; next the demo video                                      |
 | Tests  | 2930 core, 1714 builder (core group); engine suites 900 of 904 (the 4 local setup-SQL timeouts) |
 
 ## Steps
@@ -25,7 +25,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 - [x] **M6b.4** The editor, registered
 - [x] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [x] **M6b.6** Guides, READMEs, testing.md and the changeset
-- [ ] **M6b.7** Verification and the browser rehearsal
+- [x] **M6b.7** Verification and the browser rehearsal
 - [ ] **M6b.8** A demo video (PLAN §11.3)
 - [ ] **M6b.9** Fold PLAN §11.11's supersessions in; the PR ready for `cube-dev`
 
@@ -41,7 +41,8 @@ Filled in as steps land.
 | M6b.4 | `3311c02c5` | feat: add the Filter by Expression editor to Legend Cube                      |
 | M6b.5 | `258bf2a5e` | test: run Legend Cube's Filter by Expression on the engine and every database |
 | M6b.5 | `a041aea3e` | docs: record Legend Cube M6b.5                                                |
-| M6b.6 | (this one)  | docs: cover Legend Cube's Filter by Expression in its guides                  |
+| M6b.6 | `1d09b22dd` | docs: cover Legend Cube's Filter by Expression in its guides                  |
+| M6b.7 | (this one)  | docs: record Legend Cube M6b.7                                                |
 
 ## Notes
 
@@ -110,3 +111,11 @@ Filled in as steps land.
   five refusals), forward compatibility (an older registry reads it as an Unknown node and re-saves it verbatim; this
   version keeps its unknown keys) and validity through inference (checked, waiting, for another input, no lambda, two
   parameters, a backslash). `yarn check:ci` passes.
+- **M6b.7** (2026-10-11). A review of the branch's diff, done in this session (earlier milestones ran reviewers and
+  a skeptic per finding as a multi-agent workflow, which this session wasn't asked to run): every place that tells a
+  node waits now reads `isTypingError`, so a filter waiting on `ERR_CHECKING` shows as pending on the canvas and in
+  the panel, never as a problem; nothing else still names Extend alone but the stale rule's choice of marker and
+  Extend's own draft. One comment fixed. In the browser, on the dev server with the branch's libs: the M6b probe 7 of
+  7, the Extend check 13 of 13, the Difference check 12 of 12, and the rehearsal 57 of 57. The scripts were updated
+  for what landed on `cube-dev` meanwhile: Import and Export lost "(dev)" (#5666), the palette lists Filter by
+  Expression, and M7's curated grid menu puts Drilldown by first.

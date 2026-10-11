@@ -48,7 +48,8 @@ const validateEdited = (
 ): string[] => {
   const errors: string[] = [];
   node.validate(inputSchemas, errors);
-  // waiting for the engine to type an Extend is no problem (PLAN §11.7)
+  // waiting for the engine to type an Extend, or check a filter's condition,
+  // is no problem (PLAN §11.7, §11.11)
   return [...new Set(errors)].filter((error) => !isTypingError(error));
 };
 
