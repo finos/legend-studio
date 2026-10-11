@@ -9,13 +9,13 @@
 
 ## Current state (2026-10-09)
 
-| Item        | State                                                                                                                                                                                                                                                           |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch      | Work goes to finos master through one PR per milestone or source, each from its own branch of the fork. Open: ingest data sets on `cube-ingest` (finos/legend-studio#5654); Depot databases on `cube-depot`                                                     |
-| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **On master:** M1 (#5591, #5634), M2 (#5644), the direct connection and data products (#5641, #5652), M4 Group and Concat (#5649), a CSV as a DuckDB table (#5656). **In progress:** ingest data sets (#5654), Depot databases (requirements)                   |
-| Decisions   | PLAN.md §0, D1–D13. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
-| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
+| Item        | State                                                                                                                                                                                                                                                                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch      | Work goes to finos master through one PR per milestone or source, each from its own branch of the fork. Since 2026-10-10 Cube's PRs are squash-merged into finos `cube-dev`, which reaches master in one PR (#5659 brought everything through #5666; `cube-dev` was then reset to master `b10f82d0c`, 2026-10-11). Open: M7 on `cube-m7` |
+| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                                                                                    |
+| Code        | **On master:** M1 (#5591, #5634), M2 (#5644), the direct connection and data products (#5641, #5652), M4 Group and Concat (#5649), a CSV as a DuckDB table (#5656). **In progress:** ingest data sets (#5654), Depot databases (requirements)                                                                                            |
+| Decisions   | PLAN.md §0, D1–D13. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not                                                                          |
+| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                                                                                           |
 
 ## Milestone checklist
 
@@ -58,16 +58,16 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
   - Depot databases (PLAN §6.3; released versions only, no dependency Databases, one PR, user 2026-10-10),
     finos/legend-studio#5663, merged into `cube-dev` (`b23afd19f`): the mock depot's sample projects, the pointer model,
     the project catalog, the Project tab, the Source panel rows, tests (CI and the manual `cube-local` group) and docs.
-- [ ] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.8, [PROGRESS-M3b.md](PROGRESS-M3b.md))
+- [x] M3b Canvas and layout: the floating node editor, add placement, Add Items, entry links (PLAN §11.8, [PROGRESS-M3b.md](PROGRESS-M3b.md)), merged into `cube-dev` as #5657
 - [x] M4 Group, Concat (merged as #5649, `d847e6721`; follow-ups in #5653)
 - [x] M5 Partition (windows), built in #5653 with M4's follow-ups, squash-merged into `cube-dev` as `9e692a313`
       ([PROGRESS-M5.md](PROGRESS-M5.md), PLAN §11.6). `cube-dev` reaches master through the draft #5659 (user,
       2026-10-10: no approver over the weekend)
-- [x] M6 Difference and Extend, built on `cube-m6` in draft #5662 for `cube-dev`, rebased onto it with #5657, not
-      merged yet ([PROGRESS-M6.md](PROGRESS-M6.md), PLAN §11.7)
-- [x] M5b More window functions, built on `cube-m5b`, stacked on `cube-m6`, in draft #5665 for `cube-dev`, not merged
-      yet ([PROGRESS-M5B.md](PROGRESS-M5B.md), PLAN §11.9)
-- [ ] M7 Grid and presentation
+- [x] M6 Difference and Extend, built on `cube-m6` (#5662) and merged into `cube-dev` with M5b's #5665, which was
+      stacked on it ([PROGRESS-M6.md](PROGRESS-M6.md), PLAN §11.7)
+- [x] M5b More window functions, built on `cube-m5b`, stacked on `cube-m6`, merged into `cube-dev` as #5665
+      ([PROGRESS-M5B.md](PROGRESS-M5B.md), PLAN §11.9)
+- [ ] M7 Grid and presentation, on `cube-m7` ([PROGRESS-M7.md](PROGRESS-M7.md), PLAN §11.10)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
