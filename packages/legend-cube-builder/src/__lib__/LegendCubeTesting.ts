@@ -29,6 +29,7 @@ export enum LEGEND_CUBE_TEST_ID {
   FILTER_CONDITION = 'legend-cube__filter-condition',
   RESULT_GRID = 'legend-cube__result-grid',
   DRILLDOWN_BAR = 'legend-cube__drilldown-bar',
+  RUN_STATS = 'legend-cube__run-stats',
   DRILLDOWN_SETTINGS = 'legend-cube__drilldown-settings',
   GRID_TOOLBAR = 'legend-cube__grid-toolbar',
   EXECUTION_ERROR = 'legend-cube__execution-error',

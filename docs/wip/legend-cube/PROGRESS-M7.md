@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.9 done                                                       |
+| Step   | M7.1–M7.10 done                                                      |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -28,7 +28,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.7** The drill-down in the UI
 - [x] **M7.8** Export
 - [x] **M7.9** The curated context menu
-- [ ] **M7.10** The stats popover
+- [x] **M7.10** The stats popover
 - [ ] **M7.11** Column formatting and widths
 - [ ] **M7.12** Around the databases
 - [ ] **M7.13** Guides, testing.md and the changeset
@@ -40,19 +40,20 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit      | Subject                                                                                                  |
-| ---- | ----------- | -------------------------------------------------------------------------------------------------------- |
-| M7.1 | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
-| M7.2 | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
-| M7.3 | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
-| M7.4 | `6bf07c65f` | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
-| M7.5 | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
-| M7.5 | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
-| M7.5 | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
-| M7.6 | `0db3cccd1` | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
-| M7.7 | `1c2f36dc3` | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
-| M7.8 | `29464faf8` | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
-| M7.9 | (this one)  | feat: curate Legend Cube's grid menu: the cell's actions, columns, copy and Export                       |
+| Step  | Commit      | Subject                                                                                                  |
+| ----- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| M7.1  | `026541662` | docs: settle Legend Cube M7 (the grid and presentation)                                                  |
+| M7.2  | (this one)  | fix: send Legend Cube's decimal literals as text, so they keep every digit                               |
+| M7.3  | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
+| M7.4  | `6bf07c65f` | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
+| M7.5  | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
+| M7.5  | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
+| M7.5  | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
+| M7.6  | `0db3cccd1` | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
+| M7.7  | `1c2f36dc3` | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
+| M7.8  | `29464faf8` | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
+| M7.9  | `08aef4d00` | feat: curate Legend Cube's grid menu: the cell's actions, columns, copy and Export                       |
+| M7.10 | (this one)  | feat: list Legend Cube's latest runs, fetches and exports, with their SQL                                |
 
 ## Notes
 
@@ -154,3 +155,7 @@ Filled in as steps land.
   quick actions, then a separator; anywhere, 'Autosize All Columns', 'Reset Columns', 'Copy', 'Copy with Headers' and
   Cube's Export. Gone: cut and paste (the grid isn't editable), 'Copy with Group Headers', ag-grid's export of the
   fetched rows. 'Format Column' joins it in M7.11.
+- **M7.10** (2026-10-11). 'Runs (n)' at the right of the grid's toolbar opens `CubeRunStatsPanel` under it: the page's
+  15 latest runs, newest first (Execute, each fetch, each export), with the time each finished, its duration, its SQL
+  folded, and Copy SQL. A panel rather than a popover, as Show SQL is. Tests: the store's cap and order; the panel after
+  an Execute and a header sort, copying the sort's SQL.

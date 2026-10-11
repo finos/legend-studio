@@ -596,6 +596,31 @@ describe('Cube results', () => {
     expect(fake.execute).toHaveBeenCalledTimes(3);
   });
 
+  test('Lists the latest runs, newest first, with their SQL to copy', async () => {
+    const applicationStore = TEST__createCubeApplicationStore();
+    const copy = jest
+      .spyOn(applicationStore.clipboardService, 'copyTextToClipboard')
+      .mockResolvedValue(undefined);
+    const { fake } = await renderCube({ applicationStore });
+    fireEvent.click(executeButton());
+    await cellTexts(0);
+    fake.execute.mockResolvedValueOnce({
+      ...result(ROWS),
+      sql: ['select … order by "ID"'],
+    });
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    fireEvent.click(within(toolbar()).getByText('Runs (2)'));
+    const runs = screen.getByTestId(LEGEND_CUBE_TEST_ID.RUN_STATS);
+    const entries = within(runs).getAllByRole('listitem');
+    expect(entries.map((entry) => entry.textContent)).toEqual([
+      expect.stringContaining('Rows, sorted by ID ascending'),
+      expect.stringContaining('Execute'),
+    ]);
+    fireEvent.click(within(entries[0] as HTMLElement).getByText('Copy SQL'));
+    expect(copy).toHaveBeenCalledWith('select … order by "ID"');
+  });
+
   test("Shows the limit, says when the run returned more rows, and keeps naming the run's limit after an edit", async () => {
     const fake = await renderPage();
     const limit = rowLimitInput();

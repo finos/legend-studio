@@ -39,6 +39,7 @@ import { CubeButton } from '../CubeButton.js';
 import { CubeGridMode } from '../../stores/CubeGridState.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
 import { CubeDrilldownBar } from './CubeDrilldownBar.js';
+import { CubeRunStatsPanel } from './CubeRunStatsPanel.js';
 import { CubeServerSideGrid } from './CubeServerSideGrid.js';
 import { formatDuration } from './CubeGridValues.js';
 
@@ -139,8 +140,10 @@ const CubeGridToolbar = observer(
     editorState: CubeEditorState;
     showSql: boolean;
     onToggleSql: () => void;
+    showRuns: boolean;
+    onToggleRuns: () => void;
   }) => {
-    const { editorState, showSql, onToggleSql } = props;
+    const { editorState, showSql, onToggleSql, showRuns, onToggleRuns } = props;
     const { execution } = editorState;
     const { result } = execution;
     const disabledReasons = execution.disabledReasons;
@@ -224,6 +227,14 @@ const CubeGridToolbar = observer(
             )}
           </>
         )}
+        <span className="flex-1" />
+        <CubeButton
+          aria-expanded={showRuns}
+          title="The latest runs, fetches and exports, with their SQL"
+          onClick={onToggleRuns}
+        >
+          {`Runs (${editorState.runStats.entries.length})`}
+        </CubeButton>
       </div>
     );
   },
@@ -401,6 +412,7 @@ export const CubeGridRegion = observer(
     const { editorState } = props;
     const { execution, host } = editorState;
     const [showSql, setShowSql] = useState(false);
+    const [showRuns, setShowRuns] = useState(false);
     const darkMode =
       !host.applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     return (
@@ -413,7 +425,10 @@ export const CubeGridRegion = observer(
           editorState={editorState}
           showSql={showSql}
           onToggleSql={() => setShowSql(!showSql)}
+          showRuns={showRuns}
+          onToggleRuns={() => setShowRuns(!showRuns)}
         />
+        {showRuns && <CubeRunStatsPanel editorState={editorState} />}
         {showSql && !execution.isRunning && (
           <CubeSqlPanel editorState={editorState} />
         )}
