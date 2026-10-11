@@ -55,6 +55,8 @@ import {
 } from '../__test-utils__/CubeEngineTestSupport.js';
 import {
   TEST__ORDER_ID_EXTEND_COLUMNS,
+  TEST__checkedExpressionFilter,
+  TEST__expression,
   TEST__typedExtend,
 } from '../__test-utils__/CubeExpressionTestUtils.js';
 import {
@@ -1458,6 +1460,79 @@ describe('Extend, as each database plans it', () => {
       // aliased with `as`, or by a space after the expression (Oracle)
       expect(sql).toMatch(/(?:\bas |\) )["`]?a["`]?(?:[ ,]|$)/u);
       expect(sql).toMatch(/(?:\bas |\) )["`]?b["`]?(?:[ ,]|$)/u);
+    },
+  );
+});
+
+/** `x | $x.SHIPPED_DATE->toOne() > $x.REQUIRED_DATE->toOne()`, as the engine's JSON */
+const LATE = TEST__expression.lambda(
+  TEST__expression.call(
+    'greaterThan',
+    TEST__expression.call('toOne', TEST__expression.column('SHIPPED_DATE')),
+    TEST__expression.call('toOne', TEST__expression.column('REQUIRED_DATE')),
+  ),
+);
+
+/** `x | $x.rn <= 1`, as the engine's JSON */
+const FIRST_IN_WINDOW = TEST__expression.lambda(
+  TEST__expression.call(
+    'lessThanEqual',
+    TEST__expression.column('rn'),
+    TEST__expression.integer(1),
+  ),
+);
+
+/** ORDERS, the nodes, then a Filter by Expression of the condition, checked for its input (PLAN §11.11) */
+const expressionFilterThen = (
+  before: readonly QueryNode[],
+  condition: ReturnType<typeof TEST__expression.lambda>,
+): Query =>
+  ordersThen(
+    ...before,
+    TEST__checkedExpressionFilter(
+      'expressionFilter101',
+      ordersThen(...before),
+      'x | …',
+      condition,
+    ),
+  );
+
+describe('Filter by Expression, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Writes the condition in the WHERE clause, on %s',
+    async (databaseType) => {
+      const sql = await planSql(expressionFilterThen([], LATE), databaseType);
+      expect(sql).toMatch(
+        /\bwhere\b[^()]*shipped_date["`]?\s*>\s*[^()]*required_date/u,
+      );
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Filters on a window column after the window, reading the Partition's let, never with QUALIFY, on %s",
+    async (databaseType) => {
+      const numbered = new Partition(
+        'partition101',
+        ['SHIP_COUNTRY'],
+        [{ column: 'ORDER_ID', direction: SortDirection.ASC }],
+        [
+          {
+            column: undefined,
+            function: WindowRankFunction.ROW_NUMBER,
+            name: 'rn',
+          },
+        ],
+      );
+      const sql = await planSql(
+        expressionFilterThen([numbered], FIRST_IN_WINDOW),
+        databaseType,
+      );
+      expect(sql).not.toContain('qualify');
+      // the condition, after the window's own select
+      const window = sql.indexOf(' over (');
+      const condition = sql.search(/["`]?rn["`]?\s*<=\s*1/u);
+      expect(window).toBeGreaterThanOrEqual(0);
+      expect(condition).toBeGreaterThan(window);
     },
   );
 });

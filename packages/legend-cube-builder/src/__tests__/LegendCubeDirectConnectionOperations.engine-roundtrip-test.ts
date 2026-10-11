@@ -26,6 +26,7 @@ import {
   FilterOperator,
   Limit,
   Partition,
+  type JsonObject,
   type QueryNode,
   Query,
   QueryEmitter,
@@ -45,6 +46,7 @@ import {
   TEST__expectValidQuery,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
 import {
+  TEST__checkedExpressionFilter,
   TEST__expression,
   TEST__typedExtend,
 } from '../__test-utils__/CubeExpressionTestUtils.js';
@@ -369,6 +371,101 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
       expect(numbers(`${qty}_valueDifference`)).toEqual([10, -5, -5, -7]);
       expect(numbers(`${price}_valueDifference`)).toEqual([
         1.5, 0.5, 3.5, -4.25,
+      ]);
+    });
+
+    // Filter by Expression (PLAN §11.11): Pure's meaning for an empty value
+    // compared directly, SQL's after toOne(); a window column after the window
+
+    /** The table, the nodes, then a Filter by Expression of the condition, checked for its input; run */
+    const runExpressionFilter = async (
+      tableName: string,
+      before: QueryNode[],
+      condition: JsonObject,
+    ): Promise<CubeResult> => {
+      const { engine } = V1_createEngineBackedCubeEngine();
+      const outline = await engine.loadModel(model);
+      const path: [string, string, string] = [
+        CUBE_DIRECT_DATABASE_PATH,
+        `"${schema}"`,
+        `"${databaseType === CubeDirectDatabaseType.H2 ? tableName.toUpperCase() : tableName}"`,
+      ];
+      const typed = (
+        await engine.resolveSchemas(model, new Map([['relational101', path]]))
+      ).get('relational101');
+      const source = new RelationalTableSource(
+        'relational101',
+        { database: path[0], schema: path[1], table: path[2] },
+        { kind: 'resolved', schema: typed as Schema },
+      );
+      const query = TEST__chainOf([
+        source,
+        ...before,
+        TEST__checkedExpressionFilter(
+          'expressionFilter101',
+          TEST__chainOf([source, ...before]),
+          'x | …',
+          condition,
+        ),
+      ]);
+      TEST__expectValidQuery(query);
+      return engine.execute(
+        model,
+        new QueryEmitter(query).emitExecutionLambda({
+          rowLimit: 100,
+          runtime: CUBE_DIRECT_RUNTIME_PATH,
+          databaseType: getDatabaseType(outline, CUBE_DIRECT_RUNTIME_PATH, [
+            CUBE_DIRECT_DATABASE_PATH,
+          ]),
+        }),
+      );
+    };
+    const { lambda, call, column, integer } = TEST__expression;
+
+    test('Keeps an empty quantity in a negation when compared directly, and in neither after toOne() (M6b)', async () => {
+      const named = (name: string): string =>
+        databaseType === CubeDirectDatabaseType.H2 ? name.toUpperCase() : name;
+      const itemsKept = async (condition: JsonObject): Promise<string[]> =>
+        TEST__columnValues(
+          await runExpressionFilter('stock_last', [], lambda(condition)),
+          named('item'),
+        )
+          .map(String)
+          .sort();
+      const moreThan15 = call('greaterThan', column(named('qty')), integer(15));
+      // last month: 1 has 10, 2 has 20, 3 has none
+      expect(await itemsKept(moreThan15)).toEqual(['2']);
+      expect(await itemsKept(call('not', moreThan15))).toEqual(['1', '3']);
+      expect(
+        await itemsKept(
+          call(
+            'not',
+            call(
+              'greaterThan',
+              call('toOne', column(named('qty'))),
+              integer(15),
+            ),
+          ),
+        ),
+      ).toEqual(['1']);
+    });
+
+    test("Filters on each country's row number after the window: each country's first order (M6b)", async () => {
+      const result = await runExpressionFilter(
+        'orders_table',
+        [
+          window([country], true, [
+            WindowRankFunction.ROW_NUMBER,
+            undefined,
+            'rn',
+          ]),
+        ],
+        lambda(call('lessThanEqual', column('rn'), integer(1))),
+      );
+      expect(TEST__columnValues(result, orderId).map(String).sort()).toEqual([
+        '1',
+        '2',
+        '4',
       ]);
     });
 
