@@ -29,6 +29,7 @@ import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitDifference } from '../ir/emitters/DifferenceEmitter.js';
 import { emitExtend } from '../ir/emitters/ExtendEmitter.js';
+import { emitExpressionFilter } from '../ir/emitters/ExpressionFilterEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitPartition } from '../ir/emitters/PartitionEmitter.js';
@@ -46,6 +47,7 @@ import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { DIFFERENCE_CODEC } from '../spec/codecs/DifferenceCodec.js';
 import { EXTEND_CODEC } from '../spec/codecs/ExtendCodec.js';
+import { EXPRESSION_FILTER_CODEC } from '../spec/codecs/ExpressionFilterCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { PARTITION_CODEC } from '../spec/codecs/PartitionCodec.js';
@@ -71,6 +73,7 @@ import { Filter } from './transforms/Filter.js';
 import { Group } from './transforms/Group.js';
 import { Difference } from './transforms/Difference.js';
 import { Extend } from './transforms/Extend.js';
+import { ExpressionFilter } from './transforms/ExpressionFilter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
 import { Partition } from './transforms/Partition.js';
@@ -332,6 +335,22 @@ export const EXTEND_DEFINITION: TransformDefinition<Extend> = {
   emit: emitExtend,
   spec: EXTEND_CODEC,
 };
+
+/**
+ * Filter by Expression (PLAN §11.11): a condition of one row, beyond the
+ * spec; registered by `createNodeRegistry` once its editor exists
+ */
+export const EXPRESSION_FILTER_DEFINITION: TransformDefinition<ExpressionFilter> =
+  {
+    kind: 'transform',
+    type: ExpressionFilter.TYPE,
+    label: 'Filter by Expression',
+    icon: 'expressionFilter',
+    beta: false,
+    create: (id) => new ExpressionFilter(id),
+    emit: emitExpressionFilter,
+    spec: EXPRESSION_FILTER_CODEC,
+  };
 
 /** Difference, "Compare Column Values" (spec §7.12, PLAN §11.7) */
 export const DIFFERENCE_DEFINITION: TransformDefinition<Difference> = {

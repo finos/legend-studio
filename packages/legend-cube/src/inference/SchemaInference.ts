@@ -17,6 +17,7 @@
 import type { Query } from '../graph/Query.js';
 import type { QueryNode } from '../graph/QueryNode.js';
 import {
+  ERR_CHECKING,
   ERR_INCOMPLETE,
   ERR_OTHER,
   ERR_SCHEMAS,
@@ -42,8 +43,12 @@ export interface SchemaInferenceResult {
 /** Whether the error says that the problem is upstream of the node, so the UI can style it differently */
 export const isSchemasError = (error: string): boolean => error === ERR_SCHEMAS;
 
-/** Whether the error says that the node waits for the engine to type it, so the UI shows it pending (PLAN §11.7) */
-export const isTypingError = (error: string): boolean => error === ERR_TYPING;
+/**
+ * Whether the error says that the node waits for the engine to type it, or
+ * to check its condition, so the UI shows it pending (PLAN §11.7, §11.11)
+ */
+export const isTypingError = (error: string): boolean =>
+  error === ERR_TYPING || error === ERR_CHECKING;
 
 /** Whether the error says that an input port of the node is empty */
 export const isIncompleteError = (error: string): boolean =>

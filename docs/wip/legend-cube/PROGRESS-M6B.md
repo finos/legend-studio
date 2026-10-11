@@ -12,15 +12,15 @@
 | ------ | ----------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6b.1: the settled decisions                                                  |
-| Tests  | As on `cube-dev`                                                              |
+| Step   | M6b.2: the core; next the builder's engine-checked nodes                      |
+| Tests  | 2913 core (core group)                                                        |
 
 ## Steps
 
 See PLAN §11.11 for each step's deliverable and when it is done.
 
 - [x] **M6b.1** The settled decisions (PLAN §11.11) and this file
-- [ ] **M6b.2** The core
+- [x] **M6b.2** The core
 - [ ] **M6b.3** The builder's engine-checked nodes
 - [ ] **M6b.4** The editor, registered
 - [ ] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
@@ -33,9 +33,10 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit     | Subject                                             |
-| ----- | ---------- | --------------------------------------------------- |
-| M6b.1 | (this one) | docs: settle Legend Cube M6b (Filter by expression) |
+| Step  | Commit      | Subject                                              |
+| ----- | ----------- | ---------------------------------------------------- |
+| M6b.1 | `3d3eda4a1` | docs: settle Legend Cube M6b (Filter by expression)  |
+| M6b.2 | (this one)  | feat: add Filter by Expression to Legend Cube's core |
 
 ## Notes
 
@@ -51,3 +52,13 @@ Filled in as steps land.
   window; and that the engine's LIKE escaping gives wrong rows on H2 for `\` (which Cube refuses, as the column Filter
   does) and on DuckDB for `%` and `_`, for the column Filter too (ISSUES.md, new). Built on `cube-dev` after #5667
   (M7) merged, which took PLAN §11.10, so M6b is §11.11.
+- **M6b.2** (2026-10-11). `ExpressionFilter` (`nodes/transforms/ExpressionFilter.ts`, saved as `expressionFilter`):
+  the code, the lambda and its own check (`unresolved`, `checked` or `failed`, each failure with the engine's message
+  and, when the condition types but isn't one Boolean, its type), signed by the input schema and the lambda. Checks
+  in order: a condition, a lambda of one parameter, no backslash in a `startsWith`, `endsWith` or `contains` literal
+  (`findLikeFunctionWithBackslash`, nested or in the older `values` form), then the check, pending as
+  `ERR_CHECKING`, which `isTypingError` reads as it reads an Extend's `ERR_TYPING`. Four messages. The emitter writes
+  `->filter(<lambda>)` marked with the node; after a Partition it reads the `let`. The codec saves
+  `{code, lambda?, checked?: {signature}}`, never a failure or the upstream digest; an unknown key in the check makes
+  an Unknown node, one on the node goes to its `rest`. `EXPRESSION_FILTER_DEFINITION` is defined but not registered
+  until the editor exists (M6b.4), as M6.2 did with Difference.
