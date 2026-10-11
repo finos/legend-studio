@@ -2886,6 +2886,7 @@ project with a Database and a runtime.
 | M5   | Partition (windows)                        | Partition (`Apply Window Functions`): the functions a Group offers, Count rows included, plus Rank, Dense Rank and Row Number, which need a sort; D5's default frame, with no frame setting; windowed Distinct Count and Distinct Value natively; the array form, aggregates and ranks in separate extends, and `size()` counts; §8.6 `let` isolation of every Partition that isn't the capture; the **dialect harness**: plans pinned on the 17 window database types (`WINDOW_SHAPES`); runs on H2 and DuckDB, and a composition suite against a reference (§11.6) |
 | M5b  | More window functions                      | Lag and Lead (an offset), NTile (buckets), Percent Rank, Cumulative Distribution, First and Last (the partition's, Last over the reversed sort), all needing a sort; planned on the 17 window types (§11.9)                                                                                                                                                                                                                                                                                                                                                          |
 | M6   | Difference and Extend                      | Difference (`Compare Column Values`) with the spec's rows and native types, a FULL join; Extend (`Extend Columns`) edited inline, a row per column with a Monaco editor, its text a full lambda (`x \| …`), each column able to use the ones above; JSON-canonical storage with the text; typing by the engine over the cube's model, in the background, again when the input the engine sees changes; Validate (F10) with plan-time checks (§11.7)                                                                                                                  |
+| M6b  | Filter by expression                       | A node, `Filter by Expression`, keeping the rows for which one Pure condition (a full lambda) is true; checked by the engine over the cube's model as an Extend is typed, and planned for the cube's database on Validate (§11.11)                                                                                                                                                                                                                                                                                                                                   |
 | M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -4290,6 +4291,111 @@ decimalPlaces?, currency? (an ISO 4217 code), grouping, redIfNegative, parenthes
 - As built (M7.2–M7.15, folded in M7.16 with the above): §7.8's state (`gridFetcher`, `grid`, `export`,
   `runStats`); the Runs panel and the 'Group rows…' dialog in place of popovers; the review's fixes (StrictTime, the
   level's tie-break sort, the grid token); the groups column pinned on the left.
+
+### 11.11 M6b: Filter by expression
+
+M6b adds **Filter by Expression**: a node that keeps the rows for which a Pure condition, written as in Query's text
+mode, is true. It reaches what the column Filter (§4.8) can't: two columns compared, functions, conditions on a
+window's or an Extend's column. It reuses M6's Extend machinery (§11.7). It is built on the branch `cube-filter-expr`,
+from `cube-dev` (`be232b8e2`), and lands in a PR into `cube-dev`. Its status is in [PROGRESS-M6B.md](PROGRESS-M6B.md).
+Requirements: the probes under `filter-expr-requirements/` in the local evidence folder, run on the local engine: ✅
+where a probe ran, 💭 where only a plan was made or it is reasoned.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M6b** (user, 2026-10-11, all on the recommendation):
+
+1. **Its own node**, `Filter by Expression`, after `Filter by Column` in the palette, with its own editor. The column
+   Filter's saved shape and its offline validation stay as they are.
+2. **One expression** per node; several conditions are combined in it with `&&` and `||`.
+3. **A full lambda**, `x | $x.SHIPPED_DATE > $x.REQUIRED_DATE`, as in Extend and Query's text mode; any parameter
+   name works ✅.
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **The node:** `ExpressionFilter`, saved as `expressionFilter`, holding the text as typed and the engine's JSON for
+  it, as an Extend column does (`{code, lambda}`, §11.7), and a check. Its output is its input: the same columns,
+  rows dropped, order kept. Its help: "Keeps the rows for which the expression is true." `describeRedacted` leaves the
+  code out; the canvas shows the code.
+- **Checked by the engine,** over the cube's model, as an Extend is typed: the input's relation as emitted, then
+  `->filter(<lambda>)`. A condition that isn't one Boolean fails there with "Can't find a match for function
+  'filter(…)'" and the whole relation type ✅, so the same call also types the condition alone, as an extend column
+  under a generated name no input column has, which gives its type ✅ (`Integer[1]`, `String[1]`, `Boolean[2]`,
+  `Boolean[0..1]`) for Cube's message: `Condition must give one Boolean, such as x | $x.PRICE > 10.` An error the
+  engine locates in the text is underlined there ✅ (an unknown column, a parse error).
+- **The check's state** is its own, not an Extend's typing: nothing yet; checked, with its signature (a digest of the
+  input schema and the lambda) and what the engine was given for the input (`upstream`, §11.7); or failed, with the
+  engine's message. Until the condition is checked for this input, the node waits (`ERR_TYPING`) and the nodes below
+  it wait too, as below an Extend: no "columns known, node invalid" state, since Execute and the canvas read validity
+  and schema together. Saved: `checked: {signature}` once checked, so a loaded cube is valid at once; it is checked
+  again in the background, as a loaded Extend is typed again.
+- **The builder generalises Extend's machinery, not a copy of it** (M6.11's review fixed 14 problems there): the
+  background typing reaction and its in-flight set, the stale-input rule, the digest check in
+  `replaceOutsideHistory`, the warning that keeps a current check when the engine can't be reached, checking again on
+  import, F10, `applyDisabledReason` and the kept-open editor, and the pending label, worded for both ("Checking
+  expressions…"). Each of these works for any engine-checked node: an Extend or a Filter by Expression.
+- **Validate (F10)** parses the text, checks Cube's rules (a lambda of one parameter; no backslash in a LIKE function's
+  literal, below), checks the condition with the engine, then plans the whole query up to the node for the cube's
+  database, as Extend's Validate does: `year()` plans on 18 of 20 database types (Hive and Composite refuse) ✅.
+- **Parentheses:** Pure's `<`, `>`, `<=` and `>=` bind no tighter than `&&`, `||` and `!` ✅, so
+  `$x.A > 1 && $x.B > 3` reads `(($x.A > 1) && $x.B) > 3` and `!$x.A > 1` reads `not($x.A) > 1`; `==` binds tighter
+  ✅. When the engine refuses `and`, `or` or `not` of something that isn't a Boolean, the editor adds:
+  `Put each comparison in parentheses: ($x.A > 1) && ($x.B > 3).` Never for `==`.
+- **Empty values:** compared directly, a column that can be empty keeps Pure's meaning: `$x.A > 6` drops the rows
+  where it is empty, and `!($x.A > 6)` keeps them (`is not null and …`, `is distinct from`) ✅ on H2 and DuckDB. After
+  `->toOne()`, neither the condition nor its negation keeps them (`not A > 6`) ✅. A comparison types without
+  `->toOne()` ✅, unlike an Extend's arithmetic. The editor notes both; the engine tests pin both.
+- **Backslashes:** the engine escapes `%` and `_` in `startsWith`, `endsWith` and `contains` with `\` and writes no
+  `ESCAPE` clause (Appendix B). On H2, where `\` is the escape character, a backslash in the pattern gives wrong rows
+  ✅ (`contains('\\')` finds none; `endsWith('\\b')` finds 4 of 6). So, as the column Filter does (§8.2), a string
+  literal with a backslash given to one of those functions is refused: `A startsWith, endsWith or contains value
+cannot contain a backslash (\) yet.` On DuckDB, where `\` is no escape character, `%` and `_` match wrongly instead
+  ✅ (`contains('%')` finds the backslash's row), for the column Filter too: recorded in ISSUES.md, not refused here.
+- **After a window:** a Partition is bound with a `let` and read by name (§8.6), so a condition on a window column
+  runs after the window: the first row per country on H2 and DuckDB ✅, and the filter after the window on the 17
+  window types' plans ✅. On an Extend's column too ✅.
+- **Registration:** the palette, the editor and draft registries, help text, an icon; `findColumnOrigins` passes a
+  column through; the samples in `operations.cube.json`, the spec corpus and a conformance case.
+
+**Engine facts** (probes under `filter-expr-requirements/`):
+
+| Fact                                                                                                                    |     | Probe                    |
+| ----------------------------------------------------------------------------------------------------------------------- | --- | ------------------------ |
+| `filter` types a condition of one row over the input, the columns unchanged; a nullable comparison needs no `->toOne()` | ✅  | `p1-filter.out` A        |
+| A condition that isn't one Boolean fails with the whole relation type and no location; typed alone, it gives its type   | ✅  | `p1-filter.out` A, A2    |
+| An unknown column and a parse error are located in the text                                                             | ✅  | `p1-filter.out` A18, A19 |
+| `<`, `>`, `<=`, `>=` bind no tighter than `&&`, `\|\|` and `!`; `==` binds tighter                                      | ✅  | `p2-precedence.out`      |
+| Compared directly, an empty value fails the condition and passes its negation; after `->toOne()` it fails both          | ✅  | `p1-filter.out` B, `p3`  |
+| A backslash in a LIKE function's literal gives wrong rows on H2; `%` and `_` do on DuckDB                               | ✅  | `p3-values.out` F6–F10   |
+| A condition on a window column after the `let` runs after the window (H2, DuckDB) and plans so on the 17 window types   | ✅  | `p3-values.out` W1–W3    |
+| Most conditions plan on all 20 database types; `year()` on 18 (not Hive or Composite)                                   | ✅  | `p1-filter.out` C        |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                            | Done when                                                         |
+| ----- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| M6b.1 | This subsection, PROGRESS-M6B.md and ISSUES.md's DuckDB entry (docs only)                                              | Committed and pushed; a draft PR into `cube-dev`                  |
+| M6b.2 | The core: the node, its check, validation and messages, the emitter, the codec, the samples                            | Every message tested; codec round trips; `printIR` shows `filter` |
+| M6b.3 | The builder's engine-checked nodes: Extend's typing machinery generalised, the condition's check and its message       | Extend's tests still pass; the new checks tested                  |
+| M6b.4 | The editor, registered: the code editor, Validate (F10), the input's columns, the hints and notes                      | Editor and draft tests pass                                       |
+| M6b.5 | On the engine: values on H2 and DuckDB (empty values, after a window, after an Extend), plans, conformance, the corpus | Engine, plan-only and conformance tests pass                      |
+| M6b.6 | Guides, READMEs, testing.md, the patch changeset                                                                       | `yarn check:ci` passes                                            |
+| M6b.7 | Verification (reviewers and a skeptic per finding) and a browser rehearsal                                             | Every finding fixed or recorded; the rehearsal passes             |
+| M6b.8 | A demo video (§11.3), key frames checked against their captions                                                        | Each caption true on screen; sent                                 |
+| M6b.9 | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                           | The plan consistent; the PR ready                                 |
+
+**Risks and open gaps:**
+
+- An expression is arbitrary Pure on the user's model, as an Extend's is (§11.7): a function that types may still fail
+  on the database, which only the plan check (on Validate) or a run shows.
+- The backslash rule reads literals only: a pattern built at run time, such as `'a' + $x.B`, isn't checked.
+- DuckDB's `%` and `_` in LIKE functions (ISSUES.md) stay wrong for both filters until the engine writes an `ESCAPE`
+  clause, or Cube refuses them for DuckDB cubes.
+
+**Supersessions** (applied in M6b.9 to the sections they change; kept here as the record of what M6b changed):
+
+- §4 (a node type), §8.8 (the Filter by Expression row), §10.3 (`expressionFilter`'s shape), §11.3 (the M6b row).
+- Appendix A: a node beyond the spec (beside §7.x), §16 (the new messages), §17.6 (the editor).
 
 ---
 

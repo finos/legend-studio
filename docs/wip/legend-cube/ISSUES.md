@@ -344,6 +344,26 @@ give empty. The ClickHouse dialect could write `first_value(X) RESPECT NULLS` an
 `lagInFrame(toNullable(X), n)`.
 ```
 
+### DuckDB: `%` and `_` in `startsWith`, `endsWith` and `contains` match anything
+
+Found in M6b's probes (PLAN §11.11), run on DuckDB through the engine ✅ (`filter-expr-requirements/p3-values.out`
+F9, F10 in the evidence folder). The engine escapes `%` and `_` in these functions' LIKE patterns with `\`
+(`escapeLikeExprDefault`, Appendix B) and writes no `ESCAPE` clause. H2 reads `\` as LIKE's escape character; DuckDB
+has none by default, so `contains('%')` becomes `like '%\%%'`, a backslash followed by anything: the row `a\b`
+matched and the row `a%b` didn't. Wrong rows with no error, on a DuckDB direct connection, for the column Filter's
+StartsWith, EndsWith and Contains (and their negations) as for a Filter by Expression. Cube can't write an `ESCAPE`
+clause through Pure; it could refuse `%` and `_` in these values for DuckDB cubes, as it refuses `\` everywhere
+(PLAN §8.2), until the engine is fixed. Draft issue for finos/legend-engine:
+
+```text
+Title: LIKE patterns from startsWith/endsWith/contains need an ESCAPE clause (DuckDB matches wrongly)
+
+`->filter(x|$x.NAME->toOne()->contains('%'))` plans `"t_0".name like '%\%%'` on DuckDB. The pattern escapes
+`%` and `_` with `\`, but DuckDB has no default LIKE escape character, so `\%` matches a backslash followed
+by anything. Writing `like '%\%%' escape '\'` (and escaping `\` itself, which H2 also needs) would fix both
+dialects.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns

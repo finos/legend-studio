@@ -67,6 +67,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       stacked on it ([PROGRESS-M6.md](PROGRESS-M6.md), PLAN §11.7)
 - [x] M5b More window functions, built on `cube-m5b`, stacked on `cube-m6`, merged into `cube-dev` as #5665
       ([PROGRESS-M5B.md](PROGRESS-M5B.md), PLAN §11.9)
+- [ ] M6b Filter by expression, started on `cube-filter-expr` for `cube-dev` ([PROGRESS-M6B.md](PROGRESS-M6B.md),
+      PLAN §11.11)
 - [ ] M7 Grid and presentation, on `cube-m7` ([PROGRESS-M7.md](PROGRESS-M7.md), PLAN §11.10)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
