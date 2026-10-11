@@ -88,9 +88,9 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
             {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
           </span>
         )}
-        {editorState.isTypingExtends && (
+        {editorState.isCheckingExpressions && (
           <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
-            {CUBE_PENDING_LABEL.TYPING_COLUMNS}
+            {CUBE_PENDING_LABEL.CHECKING_EXPRESSIONS}
           </span>
         )}
         <CubeAddItemsMenu editorState={editorState} />
@@ -169,7 +169,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
       </div>
       <PanelLoadingIndicator
         isLoading={
-          editorState.isResolvingSources || editorState.isTypingExtends
+          editorState.isResolvingSources || editorState.isCheckingExpressions
         }
       />
       {readOnly && (

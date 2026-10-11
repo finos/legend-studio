@@ -59,27 +59,31 @@ const lambdaOf = (body: JsonObject): JsonObject => ({
   body: [body],
 });
 
-/** `x | $x.ORDER_ID > 10300`, as the engine's JSON */
-const LATER = lambdaOf({
+/** `$x.ORDER_ID > 10300`, as the engine's JSON */
+const LATER_BODY: JsonObject = {
   _type: 'func',
   function: 'greaterThan',
   parameters: [property('ORDER_ID'), { _type: 'integer', value: '10300' }],
-});
+};
+/** `x | $x.ORDER_ID > 10300` */
+const LATER = lambdaOf(LATER_BODY);
 
+/** `$x.SHIP_COUNTRY->toOne()-><fn>(<literal>)` */
+const likeBody = (fn: string, literal: string): JsonObject => ({
+  _type: 'func',
+  function: fn,
+  parameters: [
+    {
+      _type: 'func',
+      function: 'toOne',
+      parameters: [property('SHIP_COUNTRY')],
+    },
+    string(literal),
+  ],
+});
 /** `x | $x.SHIP_COUNTRY->toOne()-><fn>(<literal>)` */
 const like = (fn: string, literal: string): JsonObject =>
-  lambdaOf({
-    _type: 'func',
-    function: fn,
-    parameters: [
-      {
-        _type: 'func',
-        function: 'toOne',
-        parameters: [property('SHIP_COUNTRY')],
-      },
-      string(literal),
-    ],
-  });
+  lambdaOf(likeBody(fn, literal));
 
 /** The filter, checked by the engine for this input */
 const checked = (
@@ -156,7 +160,7 @@ describe(unitTest('Filter by Expression node'), () => {
     const twoParameters = {
       _type: 'lambda',
       parameters: [X, { _type: 'var', name: 'y' }],
-      body: LATER.body,
+      body: [LATER_BODY],
     };
     expect(
       validationErrors(
@@ -192,11 +196,11 @@ describe(unitTest('Filter by Expression node'), () => {
       _type: 'func',
       function: 'and',
       parameters: [
-        LATER.body[0] as JsonObject,
+        LATER_BODY,
         {
           _type: 'func',
           function: 'not',
-          parameters: [like('endsWith', '\\').body[0] as JsonObject],
+          parameters: [likeBody('endsWith', '\\')],
         },
       ],
     });

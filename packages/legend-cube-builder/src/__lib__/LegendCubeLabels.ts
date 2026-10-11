@@ -60,7 +60,7 @@ export enum CUBE_PENDING_LABEL {
   EXPORTING_CSV = 'exporting CSV',
   RENDERING_QUERY = 'rendering query',
   REFRESHING_SOURCE = 'refreshing source',
-  TYPING_COLUMNS = 'typing new columns',
+  CHECKING_EXPRESSIONS = 'checking expressions',
 }
 
 export const getRowLimitError = (text: string): string | undefined => {
@@ -317,6 +317,10 @@ export const EXTEND_APPLY_DISABLED_REASON = Object.freeze({
 /** The warning on an Extend whose saved types the engine couldn't check again, e.g. offline (PLAN §11.7) */
 export const getExtendRetypeWarning = (firstLine: string): string =>
   `Could not check these columns' types again, so they keep their saved ones: ${firstLine}`;
+
+/** The warning on a Filter by Expression whose condition the engine couldn't check again, e.g. offline (PLAN §11.11) */
+export const getConditionRecheckWarning = (firstLine: string): string =>
+  `Could not check this condition again, so it keeps its last check: ${firstLine}`;
 
 /** The notice of a node editor kept open, since its changes can't be applied yet, e.g. an Extend's expressions not validated */
 export const getEditorKeptOpenNotice = (

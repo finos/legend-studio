@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6b.2: the core; next the builder's engine-checked nodes                      |
-| Tests  | 2913 core (core group)                                                        |
+| Step   | M6b.3: the builder's engine-checked nodes; next the editor                    |
+| Tests  | 2913 core, 1695 builder (core group)                                          |
 
 ## Steps
 
@@ -21,7 +21,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 
 - [x] **M6b.1** The settled decisions (PLAN §11.11) and this file
 - [x] **M6b.2** The core
-- [ ] **M6b.3** The builder's engine-checked nodes
+- [x] **M6b.3** The builder's engine-checked nodes
 - [ ] **M6b.4** The editor, registered
 - [ ] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [ ] **M6b.6** Guides, READMEs, testing.md and the changeset
@@ -33,10 +33,11 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit      | Subject                                              |
-| ----- | ----------- | ---------------------------------------------------- |
-| M6b.1 | `3d3eda4a1` | docs: settle Legend Cube M6b (Filter by expression)  |
-| M6b.2 | (this one)  | feat: add Filter by Expression to Legend Cube's core |
+| Step  | Commit      | Subject                                                                       |
+| ----- | ----------- | ----------------------------------------------------------------------------- |
+| M6b.1 | `3d3eda4a1` | docs: settle Legend Cube M6b (Filter by expression)                           |
+| M6b.2 | `8f09f9163` | feat: add Filter by Expression to Legend Cube's core                          |
+| M6b.3 | (this one)  | feat: check Legend Cube's filter conditions with the engine in the background |
 
 ## Notes
 
@@ -62,3 +63,15 @@ Filled in as steps land.
   `{code, lambda?, checked?: {signature}}`, never a failure or the upstream digest; an unknown key in the check makes
   an Unknown node, one on the node goes to its `rest`. `EXPRESSION_FILTER_DEFINITION` is defined but not registered
   until the editor exists (M6b.4), as M6.2 did with Difference.
+- **M6b.3** (2026-10-11). The engine checks a Filter by Expression's condition as it types an Extend, through one
+  path: `CubeEngineChecks.ts` gives each kind of node a request (its lambdas, and how to read the answers into the
+  node to store, or a warning that keeps a current check when the engine can't be reached), and
+  `createStaleCubeEngineCheckRule` makes either kind wait when its input as the engine is given it changed
+  (`ERR_TYPING` or `ERR_CHECKING`). `CubeEditorState`'s `checkExpressions` (was `retypeExtends`), `nodesToCheck`,
+  `isCheckingExpressions` and the in-flight set serve both; the header's pending label reads "checking expressions".
+  `CubeExpressionFilterCheck.ts` builds a condition's two lambdas (the input filtered, and the condition typed alone
+  under a name no input column has, `cube_condition`, then `cube_condition_2`…) and reads the answers: checked when
+  the filter types; else the condition's own error when it fails alone, or the filter's, and its type when it types
+  but isn't one Boolean (`Integer`, `Boolean[0..1]`). Tests: the lambdas and answers, and the background checks
+  (one call, a failure named, a kept check offline, a node changed meanwhile, a changed input, a change only the
+  engine sees). Extend's tests pass unchanged but for the renames.
