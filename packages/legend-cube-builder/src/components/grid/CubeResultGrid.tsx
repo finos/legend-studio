@@ -82,9 +82,10 @@ const cellOf = (
 };
 
 /**
- * The grid's context menu (spec §12.4): on a cell, its quick actions, then
- * ag-grid's own items, which M7 curates; elsewhere ag-grid's only. Read when
- * the menu opens, so it reflects the cube and the run as they are then.
+ * The grid's context menu (spec §12.4): on a cell, 'Drilldown by' its column
+ * (PLAN §11.10), then its quick actions, then ag-grid's own items, which M7
+ * curates; elsewhere ag-grid's only. Read when the menu opens, so it reflects
+ * the cube and the run as they are then.
  */
 export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
@@ -98,10 +99,18 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   const position = Number(colId.slice(COLUMN_ID_PREFIX.length));
   const [cell, kind] = cellOf(editorState, params.node?.data, position);
   const actions = getCubeGridQuickActions(editorState, position, cell, kind);
-  if (!actions.length) {
+  const column = editorState.execution.result?.schema.columns[position];
+  if (!actions.length || !column) {
     return defaultItems;
   }
+  const drilldownBlocker = editorState.grid.getAddLevelBlocker(column.name);
   return [
+    {
+      name: `Drilldown by "${column.name}"`,
+      disabled: drilldownBlocker !== undefined,
+      ...(drilldownBlocker === undefined ? {} : { tooltip: drilldownBlocker }),
+      action: () => editorState.grid.addLevel(column.name),
+    },
     ...actions.map((quickAction): DataGridMenuItemDef<Row> => {
       const tooltip = quickAction.disabledReason ?? quickAction.hint;
       return {

@@ -595,11 +595,12 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
-  /** One of Cube's dialogs is open: the source picker, Import or Export, Show Pure */
+  /** One of Cube's dialogs is open: the source picker, Examples, the group rows' settings, Import or Export, Show Pure */
   get isDialogOpen(): boolean {
     return (
       this.sourcePicker.isOpen ||
       this.examples.isOpen ||
+      this.grid.isSettingsOpen ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen
     );

@@ -38,6 +38,7 @@ import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeGridMode } from '../../stores/CubeGridState.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
+import { CubeDrilldownBar } from './CubeDrilldownBar.js';
 import { CubeServerSideGrid } from './CubeServerSideGrid.js';
 import { formatDuration } from './CubeGridValues.js';
 
@@ -348,6 +349,7 @@ const CubeRunGrid = observer(
     const drilldown = editorState.document.meta.drilldown;
     return (
       <div className="flex h-full flex-col">
+        <CubeDrilldownBar editorState={editorState} />
         {grid.fetchError && (
           <CubeExecutionError
             editorState={editorState}

@@ -535,6 +535,67 @@ describe('Cube results', () => {
     );
   });
 
+  test("Lists the drill-down's levels above the grid, sets what group rows show, and removes a level or all", async () => {
+    const fake = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          drilldown: { columns: ['NAME', 'MISSING'], aggregations: [] },
+        },
+      }),
+    );
+    const groups = (sumName: string) => ({
+      columns: ['NAME', sumName, 'Count Rows'],
+      rows: [['ten', '10', '1']],
+      sql: [],
+      durationMs: 1,
+    });
+    fake.execute.mockResolvedValueOnce(result(ROWS));
+    fake.execute.mockResolvedValueOnce(groups('ID Sum'));
+    fireEvent.click(executeButton());
+    const bar = await screen.findByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR);
+    expect(bar.textContent).toContain('NAME');
+    // a level the run lacks is said, and left out
+    expect(within(bar).getByRole('status').textContent).toBe(
+      `Drill-down column "MISSING" is not in the query's output.`,
+    );
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    // the group rows' ID: its Average instead of its Sum
+    fireEvent.click(within(bar).getByText('Group rows…'));
+    const settings = await screen.findByTestId(
+      LEGEND_CUBE_TEST_ID.DRILLDOWN_SETTINGS,
+    );
+    const id =
+      within(settings).getByLabelText<HTMLSelectElement>("Group rows' ID");
+    expect(id.value).toBe('Sum');
+    expect([...id.options].map((option) => option.textContent)).toContain(
+      'Sum (default)',
+    );
+    // NAME is a level: it has no setting
+    expect(within(settings).queryByLabelText("Group rows' NAME")).toBeNull();
+    fake.execute.mockResolvedValueOnce(groups('ID Average'));
+    fireEvent.change(id, { target: { value: 'Average' } });
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    expect(printIR(fake.execute.mock.calls[2]?.[1] as IR)).toContain(
+      `'ID Average': x | $x.ID : y | $y->average()`,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    // removing the only usable level shows the run's rows again
+    fireEvent.click(within(bar).getByLabelText('Stop drilling down by NAME'));
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
+    );
+    fireEvent.click(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR)).getByText(
+        'Clear',
+      ),
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR)).toBeNull();
+    expect(fake.execute).toHaveBeenCalledTimes(3);
+  });
+
   test("Shows the limit, says when the run returned more rows, and keeps naming the run's limit after an edit", async () => {
     const fake = await renderPage();
     const limit = rowLimitInput();

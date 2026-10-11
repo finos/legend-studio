@@ -16,6 +16,7 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
   CubeDocument,
   DEFAULT_META,
   type Drilldown,
@@ -245,5 +246,46 @@ describe('Grid state', () => {
     answer(ORDERS_RESULT);
     expect(await loading).toBeUndefined();
     expect(state.grid.fetchError).toBeUndefined();
+  });
+
+  test("Edits the drill-down as undo steps, saving an aggregation only where it isn't the default", async () => {
+    await setUp();
+    state.grid.addLevel('SHIP_COUNTRY');
+    state.grid.addLevel('SHIP_CITY');
+    state.grid.setAggregation('FREIGHT', AggregationFunction.MAX);
+    state.grid.setAggregation('ORDER_ID', null);
+    expect(state.document.meta.drilldown).toEqual({
+      columns: ['SHIP_COUNTRY', 'SHIP_CITY'],
+      aggregations: [
+        { column: 'FREIGHT', function: AggregationFunction.MAX },
+        { column: 'ORDER_ID', function: null },
+      ],
+    });
+    expect(state.grid.drilldown?.aggregationOf('FREIGHT')).toBe(
+      AggregationFunction.MAX,
+    );
+    state.grid.setAggregation('FREIGHT', AggregationFunction.SUM);
+    expect(state.document.meta.drilldown?.aggregations).toEqual([
+      { column: 'ORDER_ID', function: null },
+    ]);
+    state.grid.removeLevel(0);
+    expect(state.document.meta.drilldown?.columns).toEqual(['SHIP_CITY']);
+    state.grid.clearDrilldown();
+    expect(state.document.meta.drilldown).toBeUndefined();
+    expect(state.document.meta.presentation).toBe(DEFAULT_META.presentation);
+    // every edit was a step, and none ran anything
+    state.undo();
+    expect(state.document.meta.drilldown?.columns).toEqual(['SHIP_CITY']);
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+    expect(state.execution.isStale).toBe(false);
+  });
+
+  test('Counts the settings dialog among the open dialogs, which stop the shortcuts', async () => {
+    await setUp();
+    expect(state.isDialogOpen).toBe(false);
+    state.grid.openSettings();
+    expect(state.isDialogOpen).toBe(true);
+    state.grid.closeSettings();
+    expect(state.isDialogOpen).toBe(false);
   });
 });

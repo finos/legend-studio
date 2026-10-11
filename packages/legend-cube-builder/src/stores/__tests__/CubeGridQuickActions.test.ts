@@ -35,6 +35,7 @@ import {
 import type { DataGridGetContextMenuItemsParams } from '@finos/legend-lego/data-grid';
 import { flowResult, runInAction } from 'mobx';
 import {
+  CUBE_DRILLDOWN_BLOCKER,
   CUBE_QUICK_ACTION_DISABLED_REASON,
   FILTER_FLOAT_COMPARISON_HINT,
   READ_ONLY_CUBE_TITLE,
@@ -53,6 +54,7 @@ import type {
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import type { CubeRowCountDraft } from '../editors/CubeRowCountDraft.js';
+import { CubeGridMode, type CubeGridRowData } from '../CubeGridState.js';
 import {
   getCubeGridQuickActions,
   getGroupByCountName,
@@ -564,12 +566,13 @@ describe('Grid context menu', () => {
       readonly CubeResultValue[]
     >;
 
-  test("Puts the quick actions first on a cell, then a separator and ag-grid's own items", async () => {
+  test("Puts Drilldown by first on a cell, then the quick actions, a separator and ag-grid's own items", async () => {
     const { state } = await setUp();
     const items = getCubeGridContextMenuItems(state, params('c1'));
     expect(
       items.map((item) => (typeof item === 'string' ? item : item.name)),
     ).toEqual([
+      'Drilldown by "SHIP_COUNTRY"',
       'Sort by "SHIP_COUNTRY"',
       'Group by "SHIP_COUNTRY"',
       'Filter by "SHIP_COUNTRY"',
@@ -577,29 +580,116 @@ describe('Grid context menu', () => {
       'copy',
       'export',
     ]);
-    const filterBy = items[2];
+    const filterBy = items[3];
     expect(typeof filterBy === 'object' && filterBy.disabled).toBe(false);
   });
 
   test("Shows an enabled item's note as its tooltip, and none without a note", async () => {
     const { state } = await setUp();
-    const [, , filterBy] = getCubeGridContextMenuItems(state, params('c2'));
+    const [, , , filterBy] = getCubeGridContextMenuItems(state, params('c2'));
     expect(filterBy).toMatchObject({
       name: 'Filter by "FREIGHT"',
       disabled: false,
       tooltip: FILTER_FLOAT_COMPARISON_HINT,
     });
-    const [sortBy] = getCubeGridContextMenuItems(state, params('c1'));
+    const [, sortBy] = getCubeGridContextMenuItems(state, params('c1'));
     expect(typeof sortBy === 'object' && 'tooltip' in sortBy).toBe(false);
   });
 
   test('Shows a disabled item with its reason as the tooltip', async () => {
     const { state } = await setUp();
-    const [sortBy] = getCubeGridContextMenuItems(state, params('c5'));
+    const [, sortBy] = getCubeGridContextMenuItems(state, params('c5'));
     expect(sortBy).toMatchObject({
       name: 'Sort by "PAYLOAD"',
       disabled: true,
       tooltip: CUBE_QUICK_ACTION_DISABLED_REASON.notSortable('Variant'),
+    });
+  });
+
+  test('Adds a drill-down level from a cell, as an undo step that runs nothing and leaves the rows current', async () => {
+    const { state, fake } = await setUp();
+    state.grid.setMode(CubeGridMode.LOCAL);
+    const [drilldownBy] = getCubeGridContextMenuItems(state, params('c1'));
+    expect(drilldownBy).toMatchObject({ disabled: false });
+    if (typeof drilldownBy === 'object') {
+      drilldownBy.action?.({} as never);
+    }
+    expect(state.document.meta.drilldown).toEqual({
+      columns: ['SHIP_COUNTRY'],
+      aggregations: [],
+    });
+    // levels are server-side mode's
+    expect(state.grid.mode).toBe(CubeGridMode.SERVER_SIDE);
+    expect(state.execution.isStale).toBe(false);
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+    // a level once only
+    expect(getCubeGridContextMenuItems(state, params('c1'))[0]).toMatchObject({
+      name: 'Drilldown by "SHIP_COUNTRY"',
+      disabled: true,
+      tooltip: CUBE_DRILLDOWN_BLOCKER.ALREADY_A_LEVEL,
+    });
+    state.undo();
+    expect(state.document.meta.drilldown).toBeUndefined();
+  });
+
+  test("Can't drill down by a type that can't be grouped, or in a read-only cube", async () => {
+    const { state } = await setUp();
+    expect(getCubeGridContextMenuItems(state, params('c5'))[0]).toMatchObject({
+      name: 'Drilldown by "PAYLOAD"',
+      disabled: true,
+      tooltip: CUBE_DRILLDOWN_BLOCKER.notGroupable('Variant'),
+    });
+    runInAction(() => {
+      state.readOnly = true;
+    });
+    expect(getCubeGridContextMenuItems(state, params('c1'))[0]).toMatchObject({
+      disabled: true,
+      tooltip: READ_ONLY_CUBE_TITLE,
+    });
+    state.grid.addLevel('SHIP_COUNTRY');
+    expect(state.document.meta.drilldown).toBeUndefined();
+  });
+
+  test('On a group row, filters by its key, never by an aggregation or an empty cell', async () => {
+    const { state } = await setUp();
+    state.grid.addLevel('SHIP_COUNTRY');
+    const groupParams = (
+      colId: string,
+    ): DataGridGetContextMenuItemsParams<CubeGridRowData> =>
+      ({
+        column: { getColId: () => colId },
+        node: {
+          data: {
+            id: '["France"]',
+            keys: ['France'],
+            isGroup: true,
+            cells: COLUMNS.map(({ name }) =>
+              name === 'SHIP_COUNTRY'
+                ? 'France'
+                : name === 'FREIGHT'
+                  ? 1234.5
+                  : undefined,
+            ),
+            count: 77,
+          },
+        },
+        defaultItems: [],
+      }) as unknown as DataGridGetContextMenuItemsParams<CubeGridRowData>;
+    const filterBy = (colId: string) =>
+      getCubeGridContextMenuItems(state, groupParams(colId))[3];
+    expect(filterBy('c1')).toMatchObject({
+      name: 'Filter by "SHIP_COUNTRY"',
+      disabled: false,
+    });
+    expect(filterBy('c2')).toMatchObject({
+      name: 'Filter by "FREIGHT"',
+      disabled: true,
+      tooltip: CUBE_QUICK_ACTION_DISABLED_REASON.AGGREGATE_VALUE,
+    });
+    expect(filterBy('c4')).toMatchObject({
+      name: 'Filter by "SHIPPED_AT"',
+      disabled: true,
+      tooltip: CUBE_QUICK_ACTION_DISABLED_REASON.NO_VALUE,
     });
   });
 

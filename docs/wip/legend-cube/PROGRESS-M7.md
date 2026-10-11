@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.6 done                                                       |
+| Step   | M7.1–M7.7 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -25,7 +25,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.4** Query derivation in the core
 - [x] **M7.5** The builder's row fetcher
 - [x] **M7.6** The grid's server-side row model and the mode toggle
-- [ ] **M7.7** The drill-down in the UI
+- [x] **M7.7** The drill-down in the UI
 - [ ] **M7.8** Export
 - [ ] **M7.9** The curated context menu
 - [ ] **M7.10** The stats popover
@@ -49,7 +49,8 @@ Filled in as steps land.
 | M7.5 | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
 | M7.5 | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
 | M7.5 | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
-| M7.6 | (this one)  | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
+| M7.6 | `0db3cccd1` | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
+| M7.7 | (this one)  | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
 
 ## Notes
 
@@ -127,3 +128,13 @@ Filled in as steps land.
   server-side model renders in jsdom. Browser on :9004 (with `NonProductionFeatureFlag`): Largest buys sorted by a
   header on the engine; imported with `meta.drilldown` [INSTRUMENT_ID, TRADE_DATE]: groups 5 (4), 12 (6), 13 (10),
   13 expanded by date, a date to its trade; local mode's panels; no console error on a fresh run.
+- **M7.7** (2026-10-11). 'Drilldown by "X"' heads a cell's menu (spec §12.4), in both modes: it adds X as the
+  innermost level, switching local mode to server-side; disabled on a type that can't be grouped, a column that is a
+  level already, or a read-only cube. Drill-down edits (`CubeGridState`: add, remove, an aggregation, clear) are undo
+  steps of the cube's meta that run nothing and keep the rows current; the grid is rebuilt for the new drill-down.
+  `CubeDrilldownBar` above the server-side grid lists the levels (each removable), what the drill-down can't use and
+  why, 'Group rows…' and Clear; the dialog sets, per column that isn't a level, a function its type offers or Nothing,
+  the default marked. Tests: the menu (Drilldown by first, its blockers, an undoable add; Filter by on a group row's
+  key, never on an aggregate or an empty cell), the grid state's edits as undo steps, the bar and dialog in the
+  region (an Average re-fetches). Browser: Largest buys, Drilldown by INSTRUMENT_ID from a cell, TRADE_ID set to
+  Nothing and PRICE to Average, 13 expanded to its 10 trades.

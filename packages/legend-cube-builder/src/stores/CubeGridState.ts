@@ -15,10 +15,18 @@
  */
 
 import {
+  addDrilldownLevel,
+  type AggregationFunction,
   type CheckedDrilldown,
   checkDrilldown,
   type ColumnDirection,
+  type Drilldown,
   type DrilldownCell,
+  foldColumnName,
+  isEmptyDrilldown,
+  isSortableType,
+  removeDrilldownLevel,
+  setDrilldownAggregation,
   SortDirection,
 } from '@finos/legend-cube';
 import {
@@ -28,7 +36,11 @@ import {
   observable,
   runInAction,
 } from 'mobx';
-import { LEGEND_CUBE_USER_DATA_KEY } from '../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_DRILLDOWN_BLOCKER,
+  LEGEND_CUBE_USER_DATA_KEY,
+  READ_ONLY_CUBE_TITLE,
+} from '../__lib__/LegendCubeLabels.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -88,6 +100,8 @@ export class CubeGridState {
   hasLimitedLevel = false;
   /** Fetches in flight */
   fetching = 0;
+  /** The drill-down's settings dialog is open */
+  isSettingsOpen = false;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
@@ -97,6 +111,13 @@ export class CubeGridState {
       fetching: observable,
       drilldown: computed,
       setMode: action,
+      addLevel: action,
+      removeLevel: action,
+      setAggregation: action,
+      clearDrilldown: action,
+      openSettings: action,
+      closeSettings: action,
+      isSettingsOpen: observable,
       clearFetchError: action,
       resetLevels: action,
     });
@@ -136,6 +157,93 @@ export class CubeGridState {
       LEGEND_CUBE_USER_DATA_KEY.GRID_MODE,
       mode,
     );
+  }
+
+  /**
+   * Why 'Drilldown by' can't be used on the run's column, if it can't: a
+   * type that can't be grouped, a column that is a level already, a cube
+   * saved by a newer version
+   */
+  getAddLevelBlocker(column: string): string | undefined {
+    const { editorState } = this;
+    const type = editorState.execution.result?.schema.type(column);
+    if (editorState.readOnly) {
+      return READ_ONLY_CUBE_TITLE;
+    }
+    if (!type || !isSortableType(type)) {
+      return CUBE_DRILLDOWN_BLOCKER.notGroupable(type?.displayName ?? '');
+    }
+    return (editorState.document.meta.drilldown?.columns ?? []).some(
+      (level) => foldColumnName(level) === foldColumnName(column),
+    )
+      ? CUBE_DRILLDOWN_BLOCKER.ALREADY_A_LEVEL
+      : undefined;
+  }
+
+  private setDrilldown(drilldown: Drilldown | undefined): void {
+    const { editorState } = this;
+    const { meta } = editorState.document;
+    const { drilldown: _, ...others } = meta;
+    editorState.applyDocument(
+      editorState.document.withMeta(
+        isEmptyDrilldown(drilldown) ? others : { ...meta, drilldown },
+      ),
+    );
+  }
+
+  /**
+   * Adds the column as the drill-down's innermost level, an undo step that
+   * leaves the rows current (spec §12.4); the grid shows it server-side,
+   * the only mode with levels (spec §12.1)
+   */
+  addLevel(column: string): void {
+    if (this.getAddLevelBlocker(column) !== undefined) {
+      return;
+    }
+    this.setDrilldown(
+      addDrilldownLevel(this.editorState.document.meta.drilldown, column),
+    );
+    if (!this.isServerSide) {
+      this.setMode(CubeGridMode.SERVER_SIDE);
+    }
+  }
+
+  /** Removes the level at the position: the ones inside it move out */
+  removeLevel(index: number): void {
+    const { drilldown } = this.editorState.document.meta;
+    if (drilldown && !this.editorState.readOnly) {
+      this.setDrilldown(removeDrilldownLevel(drilldown, index));
+    }
+  }
+
+  /** Sets how a group row shows the run's column: a function, or nothing */
+  setAggregation(column: string, fn: AggregationFunction | null): void {
+    const type = this.editorState.execution.result?.schema.type(column);
+    if (type && !this.editorState.readOnly) {
+      this.setDrilldown(
+        setDrilldownAggregation(
+          this.editorState.document.meta.drilldown,
+          column,
+          type,
+          fn,
+        ),
+      );
+    }
+  }
+
+  /** Removes the drill-down: its levels and its aggregations */
+  clearDrilldown(): void {
+    if (!this.editorState.readOnly) {
+      this.setDrilldown(undefined);
+    }
+  }
+
+  openSettings(): void {
+    this.isSettingsOpen = true;
+  }
+
+  closeSettings(): void {
+    this.isSettingsOpen = false;
   }
 
   clearFetchError(): void {

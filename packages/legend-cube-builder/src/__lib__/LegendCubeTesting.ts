@@ -28,6 +28,8 @@ export enum LEGEND_CUBE_TEST_ID {
   ENTRY_SOURCE_ERROR = 'legend-cube__entry-source-error',
   FILTER_CONDITION = 'legend-cube__filter-condition',
   RESULT_GRID = 'legend-cube__result-grid',
+  DRILLDOWN_BAR = 'legend-cube__drilldown-bar',
+  DRILLDOWN_SETTINGS = 'legend-cube__drilldown-settings',
   GRID_TOOLBAR = 'legend-cube__grid-toolbar',
   EXECUTION_ERROR = 'legend-cube__execution-error',
   SQL_PANEL = 'legend-cube__sql-panel',

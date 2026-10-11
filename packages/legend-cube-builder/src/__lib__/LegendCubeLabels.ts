@@ -156,6 +156,13 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
     `Values of type ${typeName} can't be compared.`,
 };
 
+/** Why 'Drilldown by' can't be used on a column (PLAN §11.10) */
+export const CUBE_DRILLDOWN_BLOCKER = {
+  ALREADY_A_LEVEL: 'The results already drill down by this column.',
+  notGroupable: (typeName: string): string =>
+    `Values of type ${typeName} can't be grouped.`,
+};
+
 /** Beside a condition comparing a floating-point column for equality (R133) */
 export const FILTER_FLOAT_COMPARISON_HINT =
   'exact comparison on floating-point columns may not match';
