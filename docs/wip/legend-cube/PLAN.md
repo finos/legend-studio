@@ -4090,9 +4090,10 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 1. **Server-side mode is the default** (spec §12.1). A column header's sort and a drill-down re-derive the query and
    run it on the engine; today's grid sorts only the rows it fetched, which can mislead. **Local mode** stays as a
-   toggle: one run, then ag-grid's own grouping, pivot, filters, tool panels and status bar on the fetched rows.
-   Switching modes keeps the rows stale until the next Execute, and adding a drill-down level in local mode switches
-   back to server-side (spec §12.1).
+   toggle: one run, then ag-grid's own grouping, pivot, filters, tool panels and status bar on the fetched rows. Adding
+   a drill-down level in local mode switches back to server-side (spec §12.1). _(M7.6: switching modes runs nothing
+   again and keeps the rows current, where the spec resets the run, since Execute is the same flat run in both modes;
+   the mode is remembered for the user.)_
 2. **Each level is fetched whole**, bounded by the row limit (spec §12.3): the top level, and each expanded group's
    children, is one query with `limit(rowLimit + 1)`, its truncation shown. Not paging with Slice, which needs a total
    order to keep blocks from repeating or skipping rows (§11.4's row order). Answers are kept in a bounded LRU cache
@@ -4153,6 +4154,9 @@ aggregations}`, an aggregation per column only where it differs from the default
   settings in a popover; changing it re-fetches, without an Execute.
 - **The quick actions on a group row** filter by the cell's group key (Filter by) or its column (Sort by, Group by), as
   on a leaf row; on an aggregated cell Filter by is disabled, since the value isn't a row's.
+- **Local mode's totals** (M7.6) read a column's values as JS numbers: the engine writes integers and decimals as
+  exact text, which ag-grid's own Sum would join as text. A total past a double's precision is rounded there; local
+  mode works on the fetched rows in the browser, and the exact totals are server-side mode's.
 - **Late answers are dropped:** a fetch started before an Execute, a mode switch, a new cube or the grid's destruction
   is never applied, by the run id `execute()` already keeps.
 - **Errors of a fetch** show in the grid region, as a run's, and fail only that level (`params.fail()`); they don't

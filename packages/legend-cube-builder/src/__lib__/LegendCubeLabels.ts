@@ -32,6 +32,8 @@ export enum LEGEND_CUBE_USER_DATA_KEY {
   PALETTE_COLLAPSED = 'legend-cube.palette-collapsed',
   /** The warehouse the viewer last picked for a data product cube (PLAN §6.8) */
   DATA_PRODUCT_WAREHOUSE = 'legend-cube.data-product-warehouse',
+  /** Server-side or local (PLAN §11.10) */
+  GRID_MODE = 'legend-cube.grid-mode',
 }
 
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
@@ -54,6 +56,7 @@ export enum CUBE_PENDING_LABEL {
   LOADING_MODEL = 'loading model',
   RESOLVING_SOURCE = 'resolving source',
   EXECUTING_QUERY = 'executing query',
+  FETCHING_ROWS = 'fetching rows',
   RENDERING_QUERY = 'rendering query',
   REFRESHING_SOURCE = 'refreshing source',
   TYPING_COLUMNS = 'typing new columns',
@@ -68,6 +71,10 @@ export const getRowLimitError = (text: string): string | undefined => {
 
 export const getTruncationMessage = (rowLimit: number): string =>
   `Showing the first ${rowLimit.toLocaleString('en-US')} rows; the query returned more.`;
+
+/** In server-side mode, when a drill-down level or a sorted level was cut at the row limit (PLAN §11.10) */
+export const getLevelTruncationMessage = (rowLimit: number): string =>
+  `Some levels show only their first ${rowLimit.toLocaleString('en-US')} rows or groups.`;
 
 /** How the picker shows a table's problem, and why (PLAN §6.2.6) */
 export const CUBE_TABLE_FLAG_LABELS: Readonly<
@@ -136,6 +143,11 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   EDITING:
     "Close the node editor first: these rows don't show the changes in it.",
   UNREADABLE_VALUE: "This value can't be used in a filter.",
+  /** On a group row's cell that holds its aggregation (PLAN §11.10) */
+  AGGREGATE_VALUE:
+    "This cell holds its group's aggregation, not a row's value, so it can't be used in a filter.",
+  /** On a group row's cell that shows nothing */
+  NO_VALUE: 'This cell has no value to filter by.',
   notSortable: (typeName: string): string =>
     `Values of type ${typeName} can't be sorted.`,
   notGroupable: (typeName: string): string =>

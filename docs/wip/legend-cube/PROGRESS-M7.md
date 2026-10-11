@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.5 done                                                       |
+| Step   | M7.1–M7.6 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -24,7 +24,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.3** The drill-down in the core
 - [x] **M7.4** Query derivation in the core
 - [x] **M7.5** The builder's row fetcher
-- [ ] **M7.6** The grid's server-side row model and the mode toggle
+- [x] **M7.6** The grid's server-side row model and the mode toggle
 - [ ] **M7.7** The drill-down in the UI
 - [ ] **M7.8** Export
 - [ ] **M7.9** The curated context menu
@@ -47,7 +47,9 @@ Filled in as steps land.
 | M7.3 | `e493765ef` | feat: add the drill-down to Legend Cube's core: the saved levels and aggregations, checked against a run |
 | M7.4 | `6bf07c65f` | feat: derive each level of Legend Cube's drill-down as a query of Cube's own nodes                       |
 | M7.5 | `f33fe7723` | refactor: run Legend Cube's queries through one path, shared by Execute and the grid's fetches           |
-| M7.5 | (this one)  | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
+| M7.5 | `dcdcfe2bb` | feat: fetch the levels of Legend Cube's grid from the run on screen, cached, with run stats              |
+| M7.5 | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
+| M7.6 | (this one)  | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
 
 ## Notes
 
@@ -109,3 +111,19 @@ Filled in as steps land.
   tests on the fake engine; a unit test that the leaf keeps the run's own sort (after the grid's, as a tie-breaker);
   two more engine cases: a Partition run expanded to Lyon keeps France's running sum and row numbers (M5's `let`
   isolation applies), and a Limit run's groups hold its 100 rows.
+- **M7.5, mutants** (2026-10-11): no generation check, the live row limit, failed levels kept, no eviction, no LRU
+  touch on a hit; the last survived, so a test now uses a level again before the budget is reached (`e27cfeb77`).
+- **M7.6** (2026-10-11). `CubeGridState` (`editorState.grid`): the mode, remembered for the user (server-side by
+  default); `toSorts` maps ag-grid's sort model to the run's columns (the groups' column to the level's own, nothing at
+  the leaf); `loadRows` gives a request its rows: the run's own when nothing is derived, else a fetched level, groups
+  with their typed keys (`JSON` ids, so an empty key and the text `null` differ) and counts; a fetch's error and a
+  level cut at the row limit are shown above the grid. `CubeServerSideGrid`: ag-grid's server-side row model, tree data
+  when the cube has drill-down levels (the groups' column shows each key as its column shows a value, with the count),
+  blocks taken from the whole level; rebuilt for each run and drill-down. `CubeResultGrid` is local mode: ag-grid's
+  row groups, pivot, filters, side panels, status bar and cell selection, its totals read as numbers. Column defs and
+  the context menu are shared; on a group row, Filter by is disabled on an aggregated or empty cell. The toolbar has
+  the mode toggle and a "fetching rows" note. Tests: grid state (7), the region in both modes (a header sort on the
+  engine, a drill-down's groups and a group expanded to its rows, the browser sorts in local mode); ag-grid's
+  server-side model renders in jsdom. Browser on :9004 (with `NonProductionFeatureFlag`): Largest buys sorted by a
+  header on the engine; imported with `meta.drilldown` [INSTRUMENT_ID, TRADE_DATE]: groups 5 (4), 12 (6), 13 (10),
+  13 expanded by date, a date to its trade; local mode's panels; no console error on a fresh run.

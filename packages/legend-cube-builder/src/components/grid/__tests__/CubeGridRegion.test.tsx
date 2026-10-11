@@ -30,6 +30,7 @@ import {
 import {
   ColumnComparisonFilter,
   CubeDocument,
+  DEFAULT_META,
   FilterOperator,
   type IR,
   PrimitiveType,
@@ -203,6 +204,11 @@ const cellTexts = async (column: number): Promise<string[]> => {
 };
 
 /** Sorts by a column, as a click on its header does */
+/** Shows the grid in local mode: the run's rows sorted, grouped and filtered in the browser */
+const useLocalMode = (): void => {
+  fireEvent.click(within(toolbar()).getByRole('button', { name: 'Local' }));
+};
+
 const clickHeader = (column: number): void => {
   fireEvent.click(
     headerCell(column).querySelector('.ag-header-cell-label') as Element,
@@ -364,6 +370,7 @@ describe('Cube results', () => {
         ['7', '512.00', 0.5, '2025'],
       ]),
     });
+    useLocalMode();
     fireEvent.click(executeButton());
     expect(await cellTexts(0)).toEqual(['10692', '5', '7']);
     expect(await cellTexts(1)).toEqual(['31,102,024.71', '-1,234.5', '512.00']);
@@ -399,6 +406,7 @@ describe('Cube results', () => {
         ]),
       ),
     );
+    useLocalMode();
     fireEvent.click(executeButton());
     await cellTexts(0);
     clickHeader(0);
@@ -414,6 +422,7 @@ describe('Cube results', () => {
 
   test("Shows a new run's rows in the engine's order, not under the last run's sort", async () => {
     const fake = await renderPage();
+    useLocalMode();
     fireEvent.click(executeButton());
     await cellTexts(0);
     clickHeader(0);
@@ -432,6 +441,98 @@ describe('Cube results', () => {
       expect(new Set(await cellTexts(0))).toEqual(new Set(['1', '2', '3'])),
     );
     expect(await cellTexts(0)).toEqual(['3', '1', '2']);
+  });
+
+  test("Sorts by a header on the engine in server-side mode, over all the query's rows, and shows the engine's order", async () => {
+    const fake = await renderPage();
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']);
+    fake.execute.mockResolvedValueOnce(
+      result([
+        ['9007199254740993', 'b'],
+        ['10', 'a'],
+        ['9', null],
+      ]),
+    );
+    clickHeader(0);
+    // the engine's order, whatever the browser would make of it
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['9007199254740993', '10', '9']),
+    );
+    const sorted = printIR(fake.execute.mock.calls[1]?.[1] as IR);
+    expect(sorted).toContain('->sort(~ID->ascending())');
+    // descending, then cleared: the run's own rows again, with no new run
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    clickHeader(0);
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
+    );
+    expect(
+      fake.execute.mock.calls.map((call) => printIR(call[1] as IR)),
+    ).toEqual([
+      expect.not.stringContaining('->sort('),
+      expect.stringContaining('->sort(~ID->ascending())'),
+      expect.stringContaining('->sort(~ID->descending())'),
+    ]);
+  });
+
+  test("Shows a drill-down's groups with their counts, each number summed, and a group's rows on expanding it", async () => {
+    const fake = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          drilldown: { columns: ['NAME'], aggregations: [] },
+        },
+      }),
+    );
+    fake.execute.mockResolvedValueOnce(result(ROWS));
+    fake.execute.mockResolvedValueOnce({
+      columns: ['NAME', 'ID Sum', 'Count Rows'],
+      rows: [
+        ['nine', '9', '1'],
+        [null, '9007199254740993', '1'],
+        ['ten', '10', '1'],
+      ],
+      sql: [],
+      durationMs: 1,
+    });
+    fireEvent.click(executeButton());
+    const groupCell = (row: number): HTMLElement =>
+      grid().querySelector(
+        `.ag-row[row-index="${row}"] [col-id="ag-Grid-AutoColumn"]`,
+      ) as HTMLElement;
+    await waitFor(() => expect(groupCell(0)?.textContent).toContain('nine'));
+    expect(
+      grid().querySelector('.ag-header-cell[col-id="ag-Grid-AutoColumn"]')
+        ?.textContent,
+    ).toContain('NAME');
+    // the key, and the group's count
+    expect(groupCell(0).textContent).toContain('(1)');
+    expect(groupCell(1).textContent).toContain(NULL_CELL_TEXT);
+    // the ID column holds each group's Sum, digit for digit
+    expect(await cellTexts(0)).toEqual(['9', '9007199254740993', '10']);
+    const groups = printIR(fake.execute.mock.calls[1]?.[1] as IR);
+    expect(groups).toContain(`->groupBy(~[NAME], ~['ID Sum'`);
+    // the group with no name, expanded: its rows, by Is Empty
+    fake.execute.mockResolvedValueOnce(result([['9007199254740993', null]]));
+    fireEvent.click(
+      groupCell(1).querySelector('.ag-group-contracted') as HTMLElement,
+    );
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    expect(printIR(fake.execute.mock.calls[2]?.[1] as IR)).toContain(
+      '$row.NAME->isEmpty()',
+    );
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual([
+        '9',
+        '9007199254740993',
+        '9007199254740993',
+        '10',
+      ]),
+    );
   });
 
   test("Shows the limit, says when the run returned more rows, and keeps naming the run's limit after an edit", async () => {

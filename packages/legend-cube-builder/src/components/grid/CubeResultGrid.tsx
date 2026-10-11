@@ -22,6 +22,7 @@ import {
   type DataGridColumnDefinition,
   type DataGridDefaultMenuItem,
   type DataGridGetContextMenuItemsParams,
+  type DataGridIAggFuncParams,
   type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
 import { memo, useCallback, useMemo } from 'react';
@@ -30,7 +31,14 @@ import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
-import { getCubeGridQuickActions } from '../../stores/CubeGridQuickActions.js';
+import {
+  CubeGridCellKind,
+  getCubeGridQuickActions,
+} from '../../stores/CubeGridQuickActions.js';
+import {
+  CUBE_GRID_COLUMN_ID_PREFIX,
+  type CubeGridRowData,
+} from '../../stores/CubeGridState.js';
 import {
   compareCellValues,
   formatCellValue,
@@ -39,31 +47,62 @@ import {
 
 type CubeRow = readonly CubeResultValue[];
 
-/** A column's id in the grid: its position, as `c<position>` */
-const COLUMN_ID_PREFIX = 'c';
+/** A row of either mode: a run's row in local mode, a level's row in server-side mode */
+export type CubeAnyRow = CubeRow | CubeGridRowData;
+
+const COLUMN_ID_PREFIX = CUBE_GRID_COLUMN_ID_PREFIX;
+
+/**
+ * A cell of a row, and what it holds: a run row's value; on a group row, its
+ * key in a group column, else its aggregation, or nothing
+ */
+const cellOf = (
+  editorState: CubeEditorState,
+  row: CubeAnyRow | undefined,
+  position: number,
+): [CubeResultValue, CubeGridCellKind] => {
+  if (!row || Array.isArray(row)) {
+    return [
+      (row as CubeRow | undefined)?.[position] ?? null,
+      CubeGridCellKind.VALUE,
+    ];
+  }
+  const data = row as CubeGridRowData;
+  const value = data.cells[position];
+  if (!data.isGroup) {
+    return [value ?? null, CubeGridCellKind.VALUE];
+  }
+  const name = editorState.execution.result?.schema.columns[position]?.name;
+  const keys = editorState.grid.drilldown?.columns.slice(0, data.keys.length);
+  return name !== undefined && keys?.includes(name)
+    ? [value ?? null, CubeGridCellKind.VALUE]
+    : value === undefined
+      ? [null, CubeGridCellKind.EMPTY]
+      : [value, CubeGridCellKind.AGGREGATE];
+};
 
 /**
  * The grid's context menu (spec §12.4): on a cell, its quick actions, then
  * ag-grid's own items, which M7 curates; elsewhere ag-grid's only. Read when
  * the menu opens, so it reflects the cube and the run as they are then.
  */
-export const getCubeGridContextMenuItems = (
+export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
-  params: DataGridGetContextMenuItemsParams<CubeRow>,
-): (DataGridDefaultMenuItem | DataGridMenuItemDef<CubeRow>)[] => {
+  params: DataGridGetContextMenuItemsParams<Row>,
+): (DataGridDefaultMenuItem | DataGridMenuItemDef<Row>)[] => {
   const defaultItems = params.defaultItems ?? [];
   const colId = params.column?.getColId();
   if (!colId?.startsWith(COLUMN_ID_PREFIX)) {
     return defaultItems;
   }
   const position = Number(colId.slice(COLUMN_ID_PREFIX.length));
-  const cell = params.node?.data?.[position] ?? null;
-  const actions = getCubeGridQuickActions(editorState, position, cell);
+  const [cell, kind] = cellOf(editorState, params.node?.data, position);
+  const actions = getCubeGridQuickActions(editorState, position, cell, kind);
   if (!actions.length) {
     return defaultItems;
   }
   return [
-    ...actions.map((quickAction): DataGridMenuItemDef<CubeRow> => {
+    ...actions.map((quickAction): DataGridMenuItemDef<Row> => {
       const tooltip = quickAction.disabledReason ?? quickAction.hint;
       return {
         name: quickAction.label,
@@ -79,14 +118,18 @@ export const getCubeGridContextMenuItems = (
 
 /**
  * A cell: its value as the column's family shows it (`formatCellValue`), with
- * the exact value on hover when the two differ
+ * the exact value on hover when the two differ; nothing for a group row's
+ * column with no aggregation (`undefined`)
  */
-const CubeCell: React.FC<
-  DataGridCellRendererParams<CubeRow, CubeResultValue> & {
+export const CubeCell: React.FC<
+  DataGridCellRendererParams<CubeAnyRow, CubeResultValue | undefined> & {
     family: TypeFamily;
   }
 > = (props) => {
-  if (props.value === null || props.value === undefined) {
+  if (props.value === undefined) {
+    return null;
+  }
+  if (props.value === null) {
     return (
       <span className="text-[var(--color-text-muted)]">{NULL_CELL_TEXT}</span>
     );
@@ -94,6 +137,91 @@ const CubeCell: React.FC<
   const exact = String(props.value);
   const shown = formatCellValue(props.value, props.family);
   return shown === exact ? <>{exact}</> : <span title={exact}>{shown}</span>;
+};
+
+/**
+ * The grid's columns: the run's, from Cube's own schema of the node that ran,
+ * by position, so any column name works, with the type in the header's
+ * tooltip; numbers right-aligned and sorted exactly as the engine wrote them
+ */
+export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
+  result: CubeExecutionResult,
+  valueAt: (
+    row: Row | undefined,
+    position: number,
+  ) => CubeResultValue | undefined,
+): DataGridColumnDefinition<Row, CubeResultValue | undefined>[] =>
+  result.schema.columns.map((column, position) => {
+    const numeric = isNumericFamily(column.type.family);
+    return {
+      colId: `${COLUMN_ID_PREFIX}${position}`,
+      headerName: column.name,
+      headerTooltip: `${column.type.displayName}${column.nullable ? '?' : ''} (${column.type.fullName})`,
+      valueGetter: (params) => valueAt(params.data, position),
+      cellRenderer: CubeCell,
+      cellRendererParams: { family: column.type.family },
+      ...(numeric
+        ? { type: 'rightAligned', comparator: compareCellValues }
+        : {}),
+    };
+  });
+
+/** A value as a JS number, for local mode's filters and totals; `null` for none or text that isn't one */
+const toNumber = (value: CubeResultValue | undefined): number | null => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+/** The numbers among a group's values, for local mode's totals */
+const numbersOf = (params: DataGridIAggFuncParams): number[] =>
+  params.values
+    .map((value: unknown) => toNumber(value as CubeResultValue))
+    .filter((value): value is number => value !== null);
+
+/**
+ * Local mode's totals over a group's values, read as JS numbers: the engine
+ * writes integers and decimals as exact text, which ag-grid's own would join
+ * as text; a total past a double's precision is rounded, as local mode works
+ * on the fetched rows in the browser
+ */
+const LOCAL_AGGREGATIONS = {
+  sum: (params: DataGridIAggFuncParams) =>
+    numbersOf(params).reduce((total, value) => total + value, 0),
+  avg: (params: DataGridIAggFuncParams) => {
+    const numbers = numbersOf(params);
+    return numbers.length
+      ? numbers.reduce((total, value) => total + value, 0) / numbers.length
+      : null;
+  },
+  min: (params: DataGridIAggFuncParams) => {
+    const numbers = numbersOf(params);
+    return numbers.length ? Math.min(...numbers) : null;
+  },
+  max: (params: DataGridIAggFuncParams) => {
+    const numbers = numbersOf(params);
+    return numbers.length ? Math.max(...numbers) : null;
+  },
+};
+
+const LOCAL_COLUMN_DEFAULTS: DataGridColumnDefinition<CubeRow> = {
+  enableRowGroup: true,
+  enablePivot: true,
+  enableValue: true,
+  filter: 'agTextColumnFilter',
+};
+
+const LOCAL_SIDE_BAR = {
+  toolPanels: ['columns', 'filters'],
+};
+
+const LOCAL_STATUS_BAR = {
+  statusPanels: [
+    { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+    { statusPanel: 'agAggregationComponent', align: 'right' },
+  ],
 };
 
 /**
@@ -115,21 +243,27 @@ export const CubeResultGrid = memo(
       [editorState],
     );
     const columnDefs = useMemo(
-      (): DataGridColumnDefinition<CubeRow, CubeResultValue>[] =>
-        result.schema.columns.map((column, position) => {
-          const numeric = isNumericFamily(column.type.family);
-          return {
-            colId: `${COLUMN_ID_PREFIX}${position}`,
-            headerName: column.name,
-            headerTooltip: `${column.type.displayName}${column.nullable ? '?' : ''} (${column.type.fullName})`,
-            valueGetter: (params) => params.data?.[position] ?? null,
-            cellRenderer: CubeCell,
-            cellRendererParams: { family: column.type.family },
-            ...(numeric
-              ? { type: 'rightAligned', comparator: compareCellValues }
-              : {}),
-          };
-        }),
+      () =>
+        buildCubeColumnDefs<CubeRow>(
+          result,
+          (row, position) => row?.[position] ?? null,
+        ).map(
+          (
+            column,
+            position,
+          ): DataGridColumnDefinition<CubeRow, CubeResultValue | undefined> =>
+            isNumericFamily(
+              result.schema.columns[position]?.type.family as TypeFamily,
+            )
+              ? {
+                  ...column,
+                  filter: 'agNumberColumnFilter',
+                  filterValueGetter: (params: { data: CubeRow | undefined }) =>
+                    toNumber(params.data?.[position] ?? null),
+                  allowedAggFuncs: ['sum', 'avg', 'min', 'max', 'count'],
+                }
+              : { ...column, allowedAggFuncs: ['count'] },
+        ),
       [result],
     );
     return (
@@ -146,6 +280,14 @@ export const CubeResultGrid = memo(
           suppressFieldDotNotation={true}
           tooltipShowDelay={500}
           getContextMenuItems={getContextMenuItems}
+          // local mode (spec §12.1): ag-grid's own grouping, pivot and
+          // filters on the run's rows, with their panels and totals
+          defaultColDef={LOCAL_COLUMN_DEFAULTS}
+          aggFuncs={LOCAL_AGGREGATIONS}
+          rowGroupPanelShow="always"
+          sideBar={LOCAL_SIDE_BAR}
+          statusBar={LOCAL_STATUS_BAR}
+          cellSelection={true}
         />
       </div>
     );
