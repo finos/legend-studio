@@ -12,7 +12,7 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev`                   |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6b.7: verification and the rehearsal; next the demo video                                      |
+| Step   | M6b.8: the demo video, sent; next the plan folded                                               |
 | Tests  | 2930 core, 1714 builder (core group); engine suites 900 of 904 (the 4 local setup-SQL timeouts) |
 
 ## Steps
@@ -26,7 +26,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 - [x] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [x] **M6b.6** Guides, READMEs, testing.md and the changeset
 - [x] **M6b.7** Verification and the browser rehearsal
-- [ ] **M6b.8** A demo video (PLAN §11.3)
+- [x] **M6b.8** A demo video (PLAN §11.3)
 - [ ] **M6b.9** Fold PLAN §11.11's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
@@ -42,7 +42,8 @@ Filled in as steps land.
 | M6b.5 | `258bf2a5e` | test: run Legend Cube's Filter by Expression on the engine and every database |
 | M6b.5 | `a041aea3e` | docs: record Legend Cube M6b.5                                                |
 | M6b.6 | `1d09b22dd` | docs: cover Legend Cube's Filter by Expression in its guides                  |
-| M6b.7 | (this one)  | docs: record Legend Cube M6b.7                                                |
+| M6b.7 | `088cdbf24` | docs: record Legend Cube M6b.7                                                |
+| M6b.8 | (this one)  | docs: record Legend Cube M6b's demo video                                     |
 
 ## Notes
 
@@ -119,3 +120,11 @@ Filled in as steps land.
   7, the Extend check 13 of 13, the Difference check 12 of 12, and the rehearsal 57 of 57. The scripts were updated
   for what landed on `cube-dev` meanwhile: Import and Export lost "(dev)" (#5666), the palette lists Filter by
   Expression, and M7's curated grid menu puts Drilldown by first.
+- **M6b.8** (2026-10-11). The demo video (`legend-cube-m6b-filter-by-expression.webm`, 2.5 min, in the evidence
+  folder's `demo/out-demo-m6b/`; `demo/demo-m6b.mjs` records it from `demo/m6b-specs/`): a condition typed into the
+  editor, validated and run (37 late orders); a negation compared directly (796 rows, the orders with no region kept,
+  `(null)` in SHIP_REGION); a number refused with its type; `&&` without parentheses refused with the hint, then the
+  fixed condition run (48 orders); each country's latest order, a condition on a Partition's `rn` after the window (21
+  rows, each 1); Show Pure's filter after the `let`. 12 checks pass; each of the 10 frames was read against its caption,
+  and four were re-shot so each caption claims only what shows: "of the 830", the region counts, SHIP_VIA and an
+  employee range were off screen or wrong.
