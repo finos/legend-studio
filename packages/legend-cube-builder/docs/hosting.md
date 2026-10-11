@@ -60,7 +60,9 @@ interface CubeHost {
 
 Legend Query mounts the Cube page at `/query/cube` only where its config turns on non-production features,
 since Cube is still a proof of concept: `"extensions": { "core": { "NonProductionFeatureFlag": true } }`. Without
-it, as in production, the address shows nothing. The local dev config (`yarn setup`) sets it.
+it, as in production, the address shows nothing. To see it locally, add it to the deployment's
+`dev/config.json`, which is ignored by git. `yarn setup` writes that file without the flag, since turning it on also
+changes the rest of Query (its data space selector lists data products too), which Query's end-to-end tests check.
 
 In Legend Query's config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
 `lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Two keys are optional:

@@ -2,7 +2,6 @@
 '@finos/legend-cube': patch
 '@finos/legend-cube-builder': patch
 '@finos/legend-application-query': patch
-'@finos/legend-application-query-bootstrap': patch
 ---
 
 Legend Cube's cleanups for a demo:
@@ -11,4 +10,4 @@ Legend Cube's cleanups for a demo:
 - **Export and Import** lose their "(dev)" label.
 - **A desk league table example** over the Trades sample: trades joined to their desks, each desk's dollar notional added up, then ranked within its region with a window function.
 - **Show Pure** leaves out the row limit Execute adds to see if there are more rows, as Legend Query's own Show Pure does; a Take or Drop the user added still shows. `QueryEmitter.emitExecutionLambda`'s `rowLimit` is now optional.
-- **Behind the non-production flag.** Legend Query mounts the Cube page at `/query/cube` only when `extensions.core.NonProductionFeatureFlag` is set, since Cube is still a proof of concept. The local dev config sets it.
+- **Behind the non-production flag.** Legend Query mounts the Cube page at `/query/cube` only when `extensions.core.NonProductionFeatureFlag` is set, since Cube is still a proof of concept. To see it locally, add the flag to the deployment's `dev/config.json`.
