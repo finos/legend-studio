@@ -89,6 +89,7 @@ import { CubeGridFetcher } from './CubeGridFetcher.js';
 import { CubeGridState } from './CubeGridState.js';
 import { CubeRunStatsState } from './CubeRunStatsState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
+import { CubeExpressionFilterDraft } from './editors/CubeExpressionFilterDraft.js';
 import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
 import {
   buildCubeEngineCheckRequest,
@@ -618,7 +619,7 @@ export class CubeEditorState implements CommandRegistrar {
           isFocusInNodeEditor(),
         ),
     });
-    // F10 in the Extend editor (PLAN §11.7)
+    // F10 in the Extend and Filter by Expression editors (PLAN §11.7, §11.11)
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS,
       trigger: () => {
@@ -626,13 +627,17 @@ export class CubeEditorState implements CommandRegistrar {
         return (
           !this.isDialogOpen &&
           !this.readOnly &&
-          draft instanceof CubeExtendDraft &&
+          (draft instanceof CubeExtendDraft ||
+            draft instanceof CubeExpressionFilterDraft) &&
           !draft.validating
         );
       },
       action: () => {
         const { draft } = this.nodeEditor;
-        if (draft instanceof CubeExtendDraft) {
+        if (
+          draft instanceof CubeExtendDraft ||
+          draft instanceof CubeExpressionFilterDraft
+        ) {
           flowResult(draft.validate()).catch(
             this.host.applicationStore.alertUnhandledError,
           );

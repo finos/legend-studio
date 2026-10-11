@@ -24,6 +24,7 @@ import {
 import {
   Connection,
   CubeDocument,
+  ExpressionFilter,
   Extend,
   type IR,
   type JsonObject,
@@ -622,6 +623,38 @@ describe('Cube keyboard shortcuts', () => {
       expect(fake.parseExpression).toHaveBeenCalledWith(
         'x | ',
         expect.stringMatching(/^extend101:\d+$/u),
+      ),
+    );
+  });
+
+  test('Validates the condition of the Filter by Expression being edited on F10', async () => {
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    const { fake } = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new ExpressionFilter('expressionFilter101'),
+          ],
+          [new Connection('relational101', 'expressionFilter101', 'tds')],
+          'expressionFilter101',
+        ),
+      }),
+    );
+    const lambda: JsonObject = {
+      _type: 'lambda',
+      parameters: [{ _type: 'var', name: 'x' }],
+      body: [{ _type: 'boolean', value: true }],
+    };
+    fake.parseExpression.mockResolvedValue({ lambda, located: lambda });
+    fireEvent.click(await TEST__findCanvasNode('expressionFilter101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    pressF10();
+    await waitFor(() =>
+      expect(fake.parseExpression).toHaveBeenCalledWith(
+        'x | ',
+        'expressionFilter101:condition',
       ),
     );
   });

@@ -358,10 +358,11 @@ describe('Filter by Expression checking', () => {
     );
     calls[2]?.resolve(answerFor(calls[2].lambdas));
     await settle();
-    // the filter waits, and is checked again
+    // the filter waits, so Execute does too, and it is checked again
     expect(state.analysis.validity.get('expressionFilter101')).toEqual([
       ERR_CHECKING,
     ]);
+    expect(state.execution.canExecute).toBe(false);
     expect(keysOf(calls)[3]).toEqual([
       'expressionFilter101#filter',
       'expressionFilter101#condition',
@@ -369,6 +370,7 @@ describe('Filter by Expression checking', () => {
     calls[3]?.resolve(answerFor(calls[3].lambdas));
     await settle();
     expect(state.analysis.validity.get('expressionFilter101')).toEqual([]);
+    expect(state.execution.canExecute).toBe(true);
     await settle();
     expect(calls).toHaveLength(4);
   });

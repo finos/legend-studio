@@ -336,10 +336,7 @@ export const EXTEND_DEFINITION: TransformDefinition<Extend> = {
   spec: EXTEND_CODEC,
 };
 
-/**
- * Filter by Expression (PLAN §11.11): a condition of one row, beyond the
- * spec; registered by `createNodeRegistry` once its editor exists
- */
+/** Filter by Expression (PLAN §11.11): a condition of one row, beyond the spec, after Filter by Column */
 export const EXPRESSION_FILTER_DEFINITION: TransformDefinition<ExpressionFilter> =
   {
     kind: 'transform',
@@ -421,6 +418,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     SORT_DEFINITION,
     GROUP_DEFINITION,
     FILTER_DEFINITION,
+    EXPRESSION_FILTER_DEFINITION,
     RESTRICT_DEFINITION,
     RENAME_DEFINITION,
     DISTINCT_DEFINITION,

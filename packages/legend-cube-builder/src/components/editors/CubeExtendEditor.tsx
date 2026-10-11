@@ -46,7 +46,7 @@ import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 const PURE = 'pure';
 
 /** How an expression reads a column: `$x.NAME`, or `$x.'a name'` for one that isn't an identifier */
-const columnAccessOf = (name: string): string =>
+export const columnAccessOf = (name: string): string =>
   /^[A-Za-z_][A-Za-z0-9_]*$/u.test(name)
     ? `$x.${name}`
     : `$x.'${name.replace(/\\/gu, '\\\\').replace(/'/gu, "\\'")}'`;

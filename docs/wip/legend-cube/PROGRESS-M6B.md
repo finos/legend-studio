@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------- |
 | Branch | `cube-filter-expr`, from `cube-dev` (`be232b8e2`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6b.3: the builder's engine-checked nodes; next the editor                    |
-| Tests  | 2913 core, 1695 builder (core group)                                          |
+| Step   | M6b.4: the editor, registered; next on the engine                             |
+| Tests  | 2913 core, 1714 builder (core group)                                          |
 
 ## Steps
 
@@ -22,7 +22,7 @@ See PLAN §11.11 for each step's deliverable and when it is done.
 - [x] **M6b.1** The settled decisions (PLAN §11.11) and this file
 - [x] **M6b.2** The core
 - [x] **M6b.3** The builder's engine-checked nodes
-- [ ] **M6b.4** The editor, registered
+- [x] **M6b.4** The editor, registered
 - [ ] **M6b.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [ ] **M6b.6** Guides, READMEs, testing.md and the changeset
 - [ ] **M6b.7** Verification and the browser rehearsal
@@ -37,7 +37,8 @@ Filled in as steps land.
 | ----- | ----------- | ----------------------------------------------------------------------------- |
 | M6b.1 | `3d3eda4a1` | docs: settle Legend Cube M6b (Filter by expression)                           |
 | M6b.2 | `8f09f9163` | feat: add Filter by Expression to Legend Cube's core                          |
-| M6b.3 | (this one)  | feat: check Legend Cube's filter conditions with the engine in the background |
+| M6b.3 | `a96473c74` | feat: check Legend Cube's filter conditions with the engine in the background |
+| M6b.4 | (this one)  | feat: add the Filter by Expression editor to Legend Cube                      |
 
 ## Notes
 
@@ -75,3 +76,13 @@ Filled in as steps land.
   but isn't one Boolean (`Integer`, `Boolean[0..1]`). Tests: the lambdas and answers, and the background checks
   (one call, a failure named, a kept check offline, a node changed meanwhile, a changed input, a change only the
   engine sees). Extend's tests pass unchanged but for the renames.
+- **M6b.4** (2026-10-11). `Filter by Expression` is registered after `Filter by Column` (palette, Add Items, context
+  menu), with the `FunctionIcon`, its help text ("…keeping only rows for which the expression is true.") and its
+  editor: the condition in a code editor (96px, 240 expanded), its status (its problem and hint, "Not validated
+  yet", or that it is one Boolean of a row), Validate (F10, which now serves both editors), the input's columns, a
+  click writing `$x.NAME` at the end, and five notes (the form, parentheses, empty values, Validate, backslashes).
+  `CubeExpressionFilterDraft` parses the code when it changed, checks Cube's rules, checks the condition located in
+  the code, then plans the query up to the node for the cube's database; Apply waits for a Validate, and an editor
+  closed meanwhile stays open, saying why. A refused `and`, `or` or `not` gets the parentheses hint; arithmetic on a
+  column that can be empty, Extend's `->toOne()` hint. `findColumnOrigins` passes a column through (tested). The
+  lists that name every node type (registry, palette, Add Items, context menu, titles, icons, help) name it.
