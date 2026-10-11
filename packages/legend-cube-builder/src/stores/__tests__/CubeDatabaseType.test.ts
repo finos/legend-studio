@@ -66,7 +66,10 @@ import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CubeDataProductEnvironmentType,
 } from '../../graph-manager/CubeDataProduct.js';
-import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
+import {
+  CUBE_NORTHWIND_MODEL,
+  CUBE_NORTHWIND_MODEL_CODE,
+} from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 
 // The database type a run is written for (PLAN §11.4), from the runtime's
@@ -496,6 +499,33 @@ describe('Cube on DuckDB: patterns given % or _', () => {
     expect(state.getNodeErrors('filter101')).toEqual([]);
     await flowResult(state.execution.execute());
     expect(ranLambda(fake)).toContain("$row.SHIP_COUNTRY->startsWith('50%')");
+  });
+
+  test("Loads the new model's outline when an import changes the model under such a filter", async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.CONTAINS, '50%')),
+      outlineOn('H2'),
+    );
+    await settle();
+    expect(state.getNodeErrors('filter101')).toEqual([]);
+    // another model's text, as the catalog keeps outlines by it
+    const otherModel = {
+      _type: 'text',
+      code: `${CUBE_NORTHWIND_MODEL_CODE}\n`,
+    };
+    fake.loadModel.mockResolvedValueOnce(outlineOn('DuckDB'));
+    state.importDocument(
+      new CubeDocument({
+        context: { ...CONTEXT, model: otherModel },
+        query: state.document.query,
+      }),
+      false,
+    );
+    await settle();
+    expect(fake.loadModel.mock.calls.at(-1)?.[0] === otherModel).toBe(true);
+    expect(state.getNodeErrors('filter101')).toEqual([
+      MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB'),
+    ]);
   });
 
   test('Loads no outline for a filter with no % or _ in a pattern, nor for one in an Equal', async () => {

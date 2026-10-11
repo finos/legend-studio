@@ -313,11 +313,15 @@ export class CubeEditorState implements CommandRegistrar {
       },
       { fireImmediately: true },
     );
+    // the model, while a filter gives a pattern % or _: another model loads too
     this.outlineLoading = reaction(
-      () => this.document.query.nodes.some(givesPatternWildcard),
-      (needed) => {
-        if (needed) {
-          flowResult(this.loadModelOutline()).catch(
+      () =>
+        this.document.query.nodes.some(givesPatternWildcard)
+          ? this.document.context?.model
+          : undefined,
+      (model) => {
+        if (model !== undefined) {
+          flowResult(this.loadModelOutline(model)).catch(
             this.host.applicationStore.alertUnhandledError,
           );
         }
