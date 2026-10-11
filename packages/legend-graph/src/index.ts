@@ -491,6 +491,11 @@ export * from './graph/Core_HashUtils.js';
 export * from './graph/helpers/DomainHelper.js';
 export * from './graph/helpers/DSL_Mapping_Helper.js';
 export * from './graph/helpers/STO_Relational_Helper.js';
+export {
+  RELATIONAL_COLUMN_TYPE_NOTE,
+  type RelationalRelationTypeResult,
+  buildRelationTypeFromRelationalRelation,
+} from './graph/helpers/STO_Relational_RelationTypeHelper.js';
 export * from './graph/helpers/STO_FlatData_Helper.js';
 export * from './graph/helpers/DSL_Generation_Helper.js';
 export * from './graph/helpers/DSL_Service_Helper.js';
