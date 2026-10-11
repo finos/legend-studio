@@ -84,12 +84,6 @@ const cellOf = (
 };
 
 /**
- * The grid's context menu (spec §12.4): on a cell, 'Drilldown by' its column
- * (PLAN §11.10), then its quick actions, then ag-grid's own items, which M7
- * curates; elsewhere ag-grid's only. Read when the menu opens, so it reflects
- * the cube and the run as they are then.
- */
-/**
  * The menu's Export (spec §12.5, PLAN §11.10), in place of ag-grid's export of
  * the fetched rows: CSV of the whole query, run on the engine with no row
  * limit and sorted as the grid is; Excel of the rows the grid shows
@@ -141,24 +135,41 @@ const getCubeExportItem = <Row extends CubeAnyRow>(
   };
 };
 
+/** ag-grid's own items the menu keeps (spec §12.4), after the cell's */
+const CUBE_GRID_MENU_ITEMS: readonly DataGridDefaultMenuItem[] = [
+  'autoSizeAll',
+  'resetColumns',
+  'separator',
+  'copy',
+  'copyWithHeaders',
+];
+
+/**
+ * The grid's context menu (spec §12.4, PLAN §11.10), curated: on a cell,
+ * 'Drilldown by' its column and the quick actions, then a separator; then,
+ * anywhere, sizing and resetting the columns, copying, and Cube's Export. Not
+ * ag-grid's cut, paste or client export, which would export the fetched rows
+ * only. Read when the menu opens, so it reflects the cube and the run as they
+ * are then.
+ */
 export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
   params: DataGridGetContextMenuItemsParams<Row>,
 ): (DataGridDefaultMenuItem | DataGridMenuItemDef<Row>)[] => {
-  const defaultItems = (params.defaultItems ?? []).map(
-    (item): DataGridDefaultMenuItem | DataGridMenuItemDef<Row> =>
-      item === 'export' ? getCubeExportItem(editorState, params) : item,
-  );
+  const common: (DataGridDefaultMenuItem | DataGridMenuItemDef<Row>)[] = [
+    ...CUBE_GRID_MENU_ITEMS,
+    getCubeExportItem(editorState, params),
+  ];
   const colId = params.column?.getColId();
   if (!colId?.startsWith(COLUMN_ID_PREFIX)) {
-    return defaultItems;
+    return common;
   }
   const position = Number(colId.slice(COLUMN_ID_PREFIX.length));
   const [cell, kind] = cellOf(editorState, params.node?.data, position);
   const actions = getCubeGridQuickActions(editorState, position, cell, kind);
   const column = editorState.execution.result?.schema.columns[position];
   if (!actions.length || !column) {
-    return defaultItems;
+    return common;
   }
   const drilldownBlocker = editorState.grid.getAddLevelBlocker(column.name);
   return [
@@ -178,7 +189,7 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
       };
     }),
     'separator',
-    ...defaultItems,
+    ...common,
   ];
 };
 

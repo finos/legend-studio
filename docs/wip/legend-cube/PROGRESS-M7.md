@@ -12,7 +12,7 @@
 | ------ | -------------------------------------------------------------------- |
 | Branch | `cube-m7`, from `cube-dev` (`b10f82d0c`); a draft PR into `cube-dev` |
 | Engine | Local legend-engine on `localhost:6300`                              |
-| Step   | M7.1–M7.8 done                                                       |
+| Step   | M7.1–M7.9 done                                                       |
 | Tests  | Unchanged from `cube-dev`                                            |
 
 ## Steps
@@ -27,7 +27,7 @@ See PLAN §11.10 for each step's deliverable, its effort and when it is done.
 - [x] **M7.6** The grid's server-side row model and the mode toggle
 - [x] **M7.7** The drill-down in the UI
 - [x] **M7.8** Export
-- [ ] **M7.9** The curated context menu
+- [x] **M7.9** The curated context menu
 - [ ] **M7.10** The stats popover
 - [ ] **M7.11** Column formatting and widths
 - [ ] **M7.12** Around the databases
@@ -51,7 +51,8 @@ Filled in as steps land.
 | M7.5 | `e27cfeb77` | test: check that Legend Cube's grid cache keeps the levels used last                                     |
 | M7.6 | `0db3cccd1` | feat: show Legend Cube's results server-side by default, with drill-down levels, and a local mode        |
 | M7.7 | `1c2f36dc3` | feat: drill down Legend Cube's results from a cell, with a levels bar and the group rows' settings       |
-| M7.8 | (this one)  | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
+| M7.8 | `29464faf8` | feat: export Legend Cube's whole query as CSV through the engine, and the rows shown as Excel            |
+| M7.9 | (this one)  | feat: curate Legend Cube's grid menu: the cell's actions, columns, copy and Export                       |
 
 ## Notes
 
@@ -149,3 +150,7 @@ Filled in as steps land.
   (`p6-csv-formats.out`). Tests: export store (6), menu (Export items, the grid's sort into the CSV's), engine (830
   orders sorted with a header, empty values and exact digits, a refused query). Browser: Largest buys, CSV (whole
   query) gave `Largest_buys.csv`, `text/csv`, a header and 20 rows (the save was intercepted, no file written).
+- **M7.9** (2026-10-11). The menu no longer passes ag-grid's own items through: on a cell, 'Drilldown by' and the
+  quick actions, then a separator; anywhere, 'Autosize All Columns', 'Reset Columns', 'Copy', 'Copy with Headers' and
+  Cube's Export. Gone: cut and paste (the grid isn't editable), 'Copy with Group Headers', ag-grid's export of the
+  fetched rows. 'Format Column' joins it in M7.11.

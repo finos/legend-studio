@@ -569,7 +569,7 @@ describe('Grid context menu', () => {
       readonly CubeResultValue[]
     >;
 
-  test("Puts Drilldown by first on a cell, then the quick actions, a separator and ag-grid's own items", async () => {
+  test("Puts Drilldown by first on a cell, then the quick actions, a separator and the curated items, never ag-grid's cut, paste or export", async () => {
     const { state } = await setUp();
     const items = getCubeGridContextMenuItems(state, params('c1'));
     expect(
@@ -580,7 +580,11 @@ describe('Grid context menu', () => {
       'Group by "SHIP_COUNTRY"',
       'Filter by "SHIP_COUNTRY"',
       'separator',
+      'autoSizeAll',
+      'resetColumns',
+      'separator',
       'copy',
+      'copyWithHeaders',
       'Export',
     ]);
     const filterBy = items[3];
@@ -696,11 +700,19 @@ describe('Grid context menu', () => {
     });
   });
 
-  test("Gives ag-grid's own items only outside a cell, Export as Cube's", async () => {
+  test('Gives the curated items only outside a cell', async () => {
     const { state } = await setUp();
     const items = getCubeGridContextMenuItems(state, params(undefined));
-    expect(items[0]).toBe('copy');
-    expect(items[1]).toMatchObject({ name: 'Export' });
+    expect(
+      items.map((item) => (typeof item === 'string' ? item : item.name)),
+    ).toEqual([
+      'autoSizeAll',
+      'resetColumns',
+      'separator',
+      'copy',
+      'copyWithHeaders',
+      'Export',
+    ]);
   });
 
   test("Exports CSV of the whole query through the engine and Excel of the rows the grid shows, in place of ag-grid's export", async () => {
