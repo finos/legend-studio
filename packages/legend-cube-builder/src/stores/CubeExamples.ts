@@ -28,6 +28,7 @@ import {
   JoinType,
   Limit,
   type ModelContext,
+  Partition,
   Query,
   type QueryNode,
   Rename,
@@ -35,6 +36,7 @@ import {
   Restrict,
   Sort,
   SortDirection,
+  WindowRankFunction,
 } from '@finos/legend-cube';
 import {
   CUBE_NORTHWIND_DATABASE,
@@ -364,6 +366,60 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
         new Connection('join101', 'join102', 'leftTds'),
         new Connection('rename101', 'join102', 'rightTds'),
         ...chain(['join102', 'group101', 'sort101']),
+      ],
+    }),
+  ),
+  example(
+    TRADES,
+    'trades-desk-league',
+    'Desk league table',
+    'Joins trades to their desks, adds up each desk’s dollar notional, then ranks the desks within their region',
+    (table) => ({
+      nodes: [
+        table('relational101', 'TRADES'),
+        table('relational102', 'DESKS'),
+        new Join('join101', {
+          leftColumns: ['DESK_ID'],
+          rightColumns: ['ID'],
+          joinType: JoinType.INNER,
+        }),
+        new Group(
+          'group101',
+          ['DESK', 'REGION'],
+          [
+            {
+              column: 'NOTIONAL_USD',
+              function: AggregationFunction.SUM,
+              name: 'TOTAL_NOTIONAL_USD',
+            },
+            {
+              column: undefined,
+              function: AggregationFunction.COUNT_ROWS,
+              name: 'TRADE_COUNT',
+            },
+          ],
+        ),
+        new Partition(
+          'partition101',
+          ['REGION'],
+          [{ column: 'TOTAL_NOTIONAL_USD', direction: SortDirection.DESC }],
+          [
+            {
+              column: undefined,
+              function: WindowRankFunction.RANK,
+              name: 'RANK_IN_REGION',
+            },
+          ],
+        ),
+        new Sort('sort101', [
+          { column: 'REGION', direction: SortDirection.ASC },
+          { column: 'RANK_IN_REGION', direction: SortDirection.ASC },
+        ]),
+      ],
+      connections: [
+        new Connection('relational101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+        ...chain(['join101', 'group101', 'partition101', 'sort101']),
       ],
     }),
   ),

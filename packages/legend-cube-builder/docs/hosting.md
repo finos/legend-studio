@@ -58,6 +58,10 @@ interface CubeHost {
   dialog's Project tab (PLAN §6.3). It reads nothing until the tab opens. Project cubes save the engine's pointer, so
   the engine must fetch from the same depot. Legend Query builds it from `depot.url`.
 
+Legend Query mounts the Cube page at `/query/cube` only where its config turns on non-production features,
+since Cube is still a proof of concept: `"extensions": { "core": { "NonProductionFeatureFlag": true } }`. Without
+it, as in production, the address shows nothing. The local dev config (`yarn setup`) sets it.
+
 In Legend Query's config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
 `lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Two keys are optional:
 `marketplace.serverUrl`, for search on the marketplace server, takes the value Legend Marketplace's own config gives

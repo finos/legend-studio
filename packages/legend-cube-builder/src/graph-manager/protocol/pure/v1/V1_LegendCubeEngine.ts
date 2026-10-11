@@ -132,7 +132,8 @@ const GRAMMAR_TO_JSON_TRACE = 'transform Pure code to protocol';
  * The node an execution lambda runs: the one its outermost call is stamped
  * with, `from` in `{| <relation>->limit(…)->from(runtime)}` and `limit` in
  * the let form, `{| {| <lets>; <relation>}->from(runtime)->limit(…)}` (PLAN
- * §8.6), where errors without a stamp go
+ * §8.6), or the capture's sort or `from` when Show Pure leaves the limit out,
+ * where errors without a stamp go
  */
 const captureNodeOf = (executionLambda: IR): NodeId | undefined => {
   const from =

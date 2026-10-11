@@ -327,7 +327,7 @@ describe('Cube page', () => {
     ).toBe('CUSTOMER_ID');
     // opening another cube drops the edits
     pickKeys('SHIP_CITY', 'CITY');
-    fireEvent.click(within(graph).getByText('Import (dev)'));
+    fireEvent.click(within(graph).getByText('Import'));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByLabelText('Cube spec'), {
       target: { value: serializeCubeSpec(withOrders()) },
@@ -729,7 +729,7 @@ describe('Header actions with the node editor open', () => {
   test.each([
     ['Show Pure', (state: CubeEditorState): boolean => state.showPure.isOpen],
     [
-      'Export (dev)',
+      'Export',
       (state: CubeEditorState): boolean =>
         state.specTransfer.mode !== undefined,
     ],

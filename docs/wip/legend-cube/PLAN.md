@@ -24,7 +24,7 @@
 | D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                                                                                                                                                                                                                                                                                                       | user (default)                     |
 | D9  | Execution is a **Pure relation-function chain** over store accessors (`#>{db.schema.table}#`), built as **protocol JSON** (never Pure text). Legend SQL is only a possible future "SQL source" node.                                                                                                                                                                                                                                                                                                                                                                                                                  | recommendation (§8.1)              |
 | D10 | Precise primitives are modeled **inside the host-free domain**. The host adapts the engine's relation-type JSON at the boundary, in a package-local `v1/` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                     | recommendation (§5)                |
-| D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.)                                                                                                                                                                                                                                                                                                                                                                                                                                                       | user                               |
+| D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.) _(2026-10-10, reversed by the user: Cube is still a proof of concept, so `/query/cube` mounts only where the config sets `extensions.core.NonProductionFeatureFlag`, Query's option for features not ready for production; the local dev config sets it.)_                                                                                                                                                                                            | user                               |
 | D12 | **Types: Cube's own registry for the slice, legend-graph's types from M2.0**, for consistency with the rest of Legend. M2.0 first fixes legend-graph's precise primitives (own PR), then rebases `CubeType` on legend-graph's `GenericType` and narrows the core rule to "metamodel only, no `V1_*`, no UI or app packages" (a §2.2 departure). Until then the type seam stays narrow (§4.1) so the switch stays internal. Replaces D10 from M2.0.                                                                                                                                                                    | user + recommendation              |
 | D13 | **First merge after M1.8a, as one PR** (2026-10-07), so new sources and operations can then be built in parallel. M1.8b (canvas and editors) joined the same PR before it merged (user, 2026-10-07: it is on the critical path). Show Pure's "numbers as 0" bug is fixed before it. The working docs live in `docs/wip/legend-cube/` (PLAN, PROGRESS, and ISSUES for the known issues later PRs fix); the legend-graph issue list stays out of the repo.                                                                                                                                                              | user                               |
 
@@ -41,7 +41,7 @@ Thin vertical slice, working live on a developer machine:
 - **Types:** full precise-primitive support (`Varchar(n)`, `SmallInt`, `Numeric(p,s)`, `Timestamp`, …).
 - **Path:** pick tables → canvas → live schema inference and validation → lambda → live execution → results grid →
   saved-spec codec (export/import JSON as a dev affordance; no store).
-- **Hosting:** Legend Query route `/query/cube`, always mounted (no feature flag, D11).
+- **Hosting:** Legend Query route `/query/cube`, mounted only with `NonProductionFeatureFlag` (D11, since 2026-10-10).
 
 ### 1.2 Not in the slice
 
@@ -256,7 +256,8 @@ What the repo actually enforces:
   - Query's `baseUrl` is `/query/`, so the URL is **`/query/cube`** 📄.
   - Plugin page entries are not used: they force an `/extensions/` prefix 📄.
   - `/cube/:cubeId` is reserved for saved cubes (M8).
-- **No feature flag** (D11): the route is always mounted.
+- **No feature flag** (D11): the route is always mounted. _(2026-10-10: it now mounts only with
+  `extensions.core.NonProductionFeatureFlag`, D11.)_
 - **Keyboard shortcuts:** Legend binds keys only through plugins' `getExtraKeyedCommandConfigEntries()`, collected
   at app start 📄. F9 is already bound in Query to the query builder's compile command, which is only registered
   while the query builder is mounted.
@@ -1395,7 +1396,7 @@ To make Cube easy to demo and explore, it ships three small datasets and six exa
 The four regions of §17.1 are kept:
 
 - a **sidebar palette**, collapsible, with state in local storage;
-- a **graph toolbar**: name (`Unsaved Query`), **Add Items ▾**, Undo, Show Pure, Export spec / Import spec (dev);
+- a **graph toolbar**: name (`Unsaved Query`), **Add Items ▾**, Undo, Show Pure, Export / Import (labelled "(dev)" until 2026-10-10);
 - the **canvas**: collapsible, at most 60% of the viewport, with `presentation.showGraph` saved;
 - a **grid toolbar** + **results grid**.
 
@@ -1616,7 +1617,10 @@ start of M1.8b.
 - **Grid display (slice):** headers show the column name, with the type label, nullable marker and full path in the
   header tooltip. Nulls show a muted `(null)`. Integer and Decimal values show their exact text, right-aligned and
   sorted numerically, with no grouping (formatting is M7). Dates and timestamps show as the engine returns them;
-  booleans as true/false. Column widths pass through unchanged until M7.
+  booleans as true/false. Column widths pass through unchanged until M7. _(2026-10-10, the user, for the demo:
+  Decimal and Number values show their thousands grouped, every digit kept; Float values are rounded to 2 places and
+  grouped; Integer values stay plain, so ids and years get no commas. Copying a cell copies its exact value, which
+  also shows on hover where the two differ; §9.)_
 - **Running:** while a query runs, Execute becomes **Stop**, which aborts it; leaving the page or importing aborts it
   too. Only the latest run's result is applied.
 - **Telemetry:** the host passes telemetry through; Cube sends no events in M1.8. Events are designed with M3's entry
@@ -1624,7 +1628,8 @@ start of M1.8b.
 - **Undo:** `CubeDocument` snapshots, at most 100. Import is one undo step. Source re-resolution never pushes. No
   redo in the slice. A restored query is a new object (§4.3); an edit that left the query alone, such as a
   rename, keeps it, with its rows and engine errors (S6, 2026-10-07).
-- **Export/Import spec:** always visible, labelled "(dev)"; it is the only way to save until M8. Import asks no
+- **Export/Import spec:** always visible, labelled "(dev)" _(dropped by the user on 2026-10-10: Export and Import)_;
+  it is the only way to save until M8. Import asks no
   confirmation (it can be undone) and never executes; Part B step 8 reads "import it, press F9". The check is that
   `serializeCubeSpec` gives the same text before and after, since nodes get fresh keys on decode.
 - **Re-checking tables on import:** a source that fails to re-resolve keeps its saved snapshot and gets a warning
@@ -1639,7 +1644,8 @@ start of M1.8b.
 - **Spec without a model or runtime:** opens editable with Execute disabled and a tooltip naming what is missing; no
   fix-up UI in M1.8.
 - **Show Pure:** its own dialog with Copy, showing the engine's rendering of what Execute runs, row limit and
-  literals included (e.g. `->limit(1001)`). `renderPure` sends the lambda as lossless text (the "numbers as 0" bug,
+  literals included (e.g. `->limit(1001)`). _(2026-10-10, the user: the row limit is left out, as Legend Query's own
+  Show Pure does. It is how the grid runs the query, not part of it; a Take or Drop the user added still shows.)_ `renderPure` sends the lambda as lossless text (the "numbers as 0" bug,
   fixed in `dcaf0efdb`).
 - **Technical (decided without asking):** Query tests use a local fake engine (no `./test` export from the builder
   yet); the core gains small host-free helpers the UI needs (re-reading filter values against a schema, a schema
@@ -2170,6 +2176,8 @@ Every engine defect is listed in Appendix B.
 - Column ids are positional (`c0…cN`) with `headerName = column name`. ag-grid treats dots in `field` as nested
   paths, and column names may contain dots or spaces.
 - Alignment, sorting and formatting follow the type family. Integer and Decimal values arrive as exact text (§8.7).
+  Shown (2026-10-10): Decimal and Number values with their thousands grouped and every digit; Float values rounded
+  to 2 places and grouped; Integer values plain. Sorting and copying use the exact value.
 - **Execution is explicit:** Execute or F9. Edits mark results **stale** (§12.1).
 - **Row limit:** user-settable, kept in local storage, default 1,000. Cube emits `->limit(limit + 1)` to detect
   truncation and warn. The original fetched everything and truncated client-side (§12.7).
@@ -2384,7 +2392,8 @@ value}`. **Negations are stored as negated operators** (`NotEqual`, `NotIn`, …
   - A document newer than the reader opens **read-only** with a banner.
   - Until the Cube store exists (M8) the format is marked **draft**, so changes stay cheap, but every change still
     goes through the codec's tests. The marks (user, 2026-10-08): `@finos/legend-cube`'s README says so, and in the UI
-    the "(dev)" on Export and Import is the marker; the spec itself carries none.
+    the "(dev)" on Export and Import is the marker; the spec itself carries none. _(2026-10-10: the user dropped the
+    "(dev)" for the demo; the README stays the marker.)_
 - **Slice behaviour:**
   - The codec and round-trip tests ship in M1.6.
   - The UI has a dev-only **Export spec** (copy to clipboard or download `.cube.json`) and **Import spec** (paste or
@@ -2561,7 +2570,7 @@ incident on legend-studio's side.
 - **Browsers:** Chrome only, with its version recorded. Firefox and Safari are listed in ISSUES as untested.
 - **Docker CORS:** waived. There is no docker locally; the acceptance record says it is unchecked.
 - **Draft format marker:** the core README says the saved format is a draft until M8, and the "(dev)" labels on
-  Export and Import are its marker in the UI (§10.3).
+  Export and Import are its marker in the UI (§10.3). _(The labels were dropped on 2026-10-10.)_
 - **Undo after a run:** the rows stay marked stale, as §7.8 settles: a restored query is a new object.
 
 ### 11.2 Slice acceptance test
@@ -2686,10 +2695,10 @@ The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.
 7. Edit the filter (e.g. remove a rule) and **Apply**: the toolbar shows "Stale: execute again to refresh". Click
    **Undo** (or Cmd/Ctrl+Z with the focus outside a text field and no Cube dialog open): the three rules come back,
    and the rows stay marked stale, by design (§7.8: a restored query is a new object). **Show Pure** opens "Pure
-   query" with the lambda: it has `->limit(1001)`, one more than the default 1000 rows, and ends in
-   `->from(showcase::northwind::mapping::StoreRuntime)`.
-8. **Export (dev)**, then **Download** (`cube.cube.json`, since the cube has no name), and close. Reload the page:
-   the cube is gone. **Import (dev)**, click **Choose File** and pick the downloaded file (or paste its text into the
+   query" with the lambda. It ends in `->from(showcase::northwind::mapping::StoreRuntime)`, with no `->limit(…)`:
+   Execute fetches one more than the row limit to see if there are more rows, and Show Pure leaves that out.
+8. **Export**, then **Download** (`cube.cube.json`, since the cube has no name), and close. Reload the page:
+   the cube is gone. **Import**, click **Choose File** and pick the downloaded file (or paste its text into the
    "Cube spec" box), then **Import**. Import never executes:
    the same graph comes back (`relational101`, `relational102`, `join101`, `filter101`, with the Filter still
    selected), and **F9** gives the same 19 rows. A second Export gives the same text as the downloaded file.
@@ -2732,7 +2741,7 @@ Direct connection:
 4. On a new cube (reload), choose **DuckDB**, leave the file empty (in memory), give setup SQL such as
    `drop schema if exists s cascade; create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
    with `;`), **Test connection**, add `t` and press **F9**: 1 row.
-5. **Export (dev)** and **Import (dev)** the H2 cube: the same graph comes back, and **F9** gives the same rows.
+5. **Export** and **Import** the H2 cube: the same graph comes back, and **F9** gives the same rows.
 6. On a new cube, choose **DuckDB**, open **Load a CSV**, paste `id,city` / `1,Paris` / `2,Lima` (three lines), name
    the table `cities` and click **Add to setup SQL**: the setup SQL now creates `csv.cities`, and the tab says "Added
    table csv.cities: 2 rows, 2 columns". **Test connection**, pick schema `csv`, add `cities` and press **F9**: 2 rows.
@@ -2750,7 +2759,7 @@ Examples (§6.9):
    cube before it.
 4. Click the **Trades** dataset card: a new cube on the Trades model, with the source dialog's Sample Data tab open on it
    (DESKS, INSTRUMENTS, TRADES). Add **TRADES** and press **F9**: 400 rows. **Undo** brings back the cube before.
-5. **Export (dev)** an example and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
+5. **Export** an example and **Import** it: the same graph comes back, and **F9** gives the same rows.
 
 Data products:
 
@@ -2778,7 +2787,7 @@ Data products:
 7. Click **Refresh** in the Source panel: the access point's columns are read again from the deployed artifact (no
    warning when nothing changed).
 8. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
-9. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, its access points are re-checked
+9. **Export** and **Import** the first cube: the same graph comes back, its access points are re-checked
    against their deployed artifacts, and **F9** gives the same rows.
 
 Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows no Ingest Dataset item):
@@ -2801,7 +2810,7 @@ Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows
    old one back. Apply one that doesn't exist and press **F9**: the error says the run couldn't use it, beside the
    warehouse and in the run's error. Click **Refresh**: the columns are read again (no warning when nothing changed).
 6. On a new cube, choose Mode **Production (parallel)**, add a data set and press **F9**.
-7. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, its data sets are re-checked
+7. **Export** and **Import** the first cube: the same graph comes back, its data sets are re-checked
    against their definitions, and **F9** gives the same rows.
 
 Record the deployment, the products, access points and data sets used, whether the optional keys were set, and any
@@ -2822,7 +2831,7 @@ project with a Database and a runtime.
    dialog again: it reopens on the Project Database tab with the project and version fixed, the other tabs disabled.
 4. Click the table's node: the Source panel shows the project and version above the Database.
 5. On a new cube, pick version `1.0.0` and add `ORDERS`: no `STATUS` column; `RETURNS` is listed only from 1.10.0.
-6. **Export (dev)** the cube and **Import (dev)** it: the same graph comes back, and **F9** gives the same rows.
+6. **Export** the cube and **Import** it: the same graph comes back, and **F9** gives the same rows.
 7. Stop the mock depot, open a new page and pick the Project Database tab: it says it can't list the depot's projects, with
    **Retry**. Start the mock again and click **Retry**.
 

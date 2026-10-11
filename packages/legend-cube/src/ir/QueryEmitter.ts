@@ -43,9 +43,11 @@ import { emitRowOrder } from './emitters/SortEmitter.js';
 export interface ExecutionOptions {
   /**
    * The most rows to show. One more is fetched (`limit(rowLimit + 1)`), so a
-   * result that has more can be detected. A whole number, at least 1.
+   * result that has more can be detected. A whole number, at least 1. Left
+   * out, the lambda has no limit of its own, as Show Pure shows the query:
+   * the limit is how the grid runs it, not part of the user's query.
    */
-  readonly rowLimit: number;
+  readonly rowLimit?: number | undefined;
   /** The path of the runtime to run the query with */
   readonly runtime: string;
   /**
@@ -142,7 +144,8 @@ export class QueryEmitter {
 
   /**
    * The lambda that runs the query up to its capture node (the selected
-   * node): `{| <relation>->limit(rowLimit + 1)->from(runtime)}`. The relation
+   * node): `{| <relation>->limit(rowLimit + 1)->from(runtime)}`, with no
+   * `limit` when `rowLimit` is left out. The relation
    * is written with its rows' order where it is used, and the capture's own
    * order, if any, as a sort before the limit, so the rows shown are in it.
    *
@@ -156,7 +159,10 @@ export class QueryEmitter {
    */
   emitExecutionLambda(options: ExecutionOptions): IR {
     const { rowLimit, runtime, databaseType } = options;
-    if (!Number.isSafeInteger(rowLimit) || rowLimit < 1) {
+    if (
+      rowLimit !== undefined &&
+      (!Number.isSafeInteger(rowLimit) || rowLimit < 1)
+    ) {
       throw new Error(
         `The row limit must be a whole number of at least 1, but got ${rowLimit}`,
       );
@@ -188,6 +194,9 @@ export class QueryEmitter {
             originOf(captureId, EmitRole.CAPTURE_SORT),
           )
         : rows;
+      if (rowLimit === undefined) {
+        return sorted;
+      }
       const limitOrigin = originOf(captureId, EmitRole.LIMIT);
       return func(
         'limit',

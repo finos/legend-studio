@@ -64,6 +64,12 @@ export const setup = (outputDir) => {
             },
           ],
         },
+        extensions: {
+          core: {
+            // non-production features, e.g. Legend Cube at /query/cube
+            NonProductionFeatureFlag: true,
+          },
+        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [

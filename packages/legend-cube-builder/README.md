@@ -84,7 +84,7 @@ versions and outlines from its depot.
 
 The Sample Data tab bundles three datasets: Northwind (without Cube's test tables) and two made-up, seeded samples, Sports and Trades
 (`src/stores/fixtures/`), each an in-memory H2 database filled by its setup SQL. The Examples dialog (the header's
-Examples button) opens one of six example cubes over them (`src/stores/CubeExamples.ts`) in place of the cube, then
+Examples button) opens one of seven example cubes over them (`src/stores/CubeExamples.ts`) in place of the cube, then
 runs it, or starts a new cube on a dataset (PLAN §6.9). An
 example is built in code, so a new one needs no saved spec; add it to `CUBE_EXAMPLES`, and the engine test
 `CubeExamples.engine-roundtrip-test.ts` opens, types and runs it.
