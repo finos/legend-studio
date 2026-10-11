@@ -397,7 +397,9 @@ describe('Partition editor', () => {
     type(1, 'Place');
     fireEvent.click(button('Apply'));
     expect(stored(editorState).columns).toEqual(['SHIP_COUNTRY', 'ORDER_ID']);
-    // a column ticked: the columns follow the input's order
+    // a column ticked, in the editor opened again (Apply closed it): the
+    // columns follow the input's order
+    await openPartition();
     fireEvent.click(checkbox('EMPLOYEE_ID'));
     fireEvent.click(button('Apply'));
     expect(stored(editorState).columns).toEqual([

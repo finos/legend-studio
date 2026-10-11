@@ -54,7 +54,9 @@ const renderTab = (): CubeEditorState => {
     ...host,
     ingestCatalog: createFakeCubeIngestCatalog().catalog,
   });
-  act(() => state.addNode(IngestDatasetSource.TYPE));
+  act(() => {
+    state.addNode(IngestDatasetSource.TYPE);
+  });
   render(<CubeIngestTab tab={state.sourcePicker.ingestTab} />);
   return state;
 };

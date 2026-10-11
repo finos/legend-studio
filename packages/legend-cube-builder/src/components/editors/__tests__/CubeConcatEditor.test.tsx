@@ -1301,8 +1301,9 @@ describe('Concat editor, its Convert types setting (PLAN §11.5, Q5)', () => {
     expect(schema?.names()).toEqual(CONTACT_CITY_COUNTRY);
     expect(schema?.columns[0]?.type.fullName).toBe('String');
     expect(schema?.columns[0]?.nullable).toBe(true);
-    // the panel goes on, on the stored concat, with nothing left to apply
-    expect(editorState.nodeEditor.nodeId).toBe('concat101');
+    // Apply closes the editor (UX audit B4); opened again, it shows the stored concat
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    await openConcat();
     expect(
       editorState.nodeEditor.draft?.original === storedConcat(editorState),
     ).toBe(true);
@@ -1500,6 +1501,8 @@ describe('Concat editor, its Convert types setting (PLAN §11.5, Q5)', () => {
     expect(editorState.analysis.validity.get('concat101')).toEqual(
       notConvertible,
     );
+    // Apply closes the editor (UX audit B4); opened again, it shows them
+    await openConcat();
     expect(problems()).toEqual(notConvertible);
   });
 

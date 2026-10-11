@@ -114,7 +114,7 @@ describe('Placing a transform', () => {
     ]);
     expect(query.selected).toBe('filter101');
     expect(state.history).toHaveLength(1);
-    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.nodeId).toBe('filter102');
   });
 
   test('Splices it in after the selected node without a target, and captures it', () => {
@@ -131,7 +131,14 @@ describe('Placing a transform', () => {
     ]);
     expect(query.selected).toBe('filter102');
     expect(state.history).toHaveLength(1);
-    // added with its defaults: no editor opens on it
+    // its editor opens, to set it up (UX audit B3)
+    expect(state.nodeEditor.nodeId).toBe('filter102');
+  });
+
+  test('Opens no editor on a node with nothing to set, a Distinct', () => {
+    const state = setUp();
+    addCubeNode(state, 'distinct');
+    expect(state.document.query.selected).toBe('distinct101');
     expect(state.nodeEditor.nodeId).toBeUndefined();
   });
 
@@ -144,7 +151,7 @@ describe('Placing a transform', () => {
     expect(query.nodes.map((node) => node.id)).toEqual(['filter101']);
     expect(query.connections).toEqual([]);
     expect(query.selected).toBe('filter101');
-    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.nodeId).toBe('filter101');
   });
 
   test('Adds nothing after a node the query does not have', () => {
@@ -229,7 +236,7 @@ describe('Adding with the node editor open', () => {
     expect(query.selected).toBe('filter101');
     // the edits, then the new node
     expect(state.history).toHaveLength(2);
-    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.nodeId).toBe('filter101');
   });
 
   test('Adds nothing while the editor is held open, which keeps its edits', () => {

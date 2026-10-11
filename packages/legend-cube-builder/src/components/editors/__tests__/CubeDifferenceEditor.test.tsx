@@ -181,8 +181,8 @@ describe('Difference editor', () => {
       'SHIP_VIA_valueDifference',
       'FREIGHT_valueDifference',
     ]);
-    expect(editorState.nodeEditor.draft?.original).toBe(stored);
-    expect(button('Apply').disabled).toBe(true);
+    // Apply closes the editor (UX audit B4)
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
     await waitFor(async () =>
       expect(
         (await TEST__findCanvasNode('difference101')).classList.contains(

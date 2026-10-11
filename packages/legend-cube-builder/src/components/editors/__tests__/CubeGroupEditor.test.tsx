@@ -321,7 +321,9 @@ describe('Group editor', () => {
     expect(stored(editorState).aggregations).toEqual([
       { column: undefined, function: COUNT_ROWS, name: 'Orders' },
     ]);
-    // a key ticked: the keys follow the input's order
+    // a key ticked, in the editor opened again (Apply closed it): the
+    // keys follow the input's order
+    await openGroup();
     fireEvent.click(checkbox('EMPLOYEE_ID'));
     fireEvent.click(button('Apply'));
     expect(stored(editorState).columns).toEqual([
