@@ -40,6 +40,7 @@ import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { emitIngestDatasetSource } from '../ir/emitters/IngestDatasetSourceEmitter.js';
+import { emitServiceSource } from '../ir/emitters/ServiceSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
@@ -58,9 +59,11 @@ import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProductAccessPointSourceCodec.js';
 import { INGEST_DATASET_SOURCE_CODEC } from '../spec/codecs/IngestDatasetSourceCodec.js';
+import { SERVICE_SOURCE_CODEC } from '../spec/codecs/ServiceSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import { DataProductAccessPointSource } from './sources/DataProductAccessPointSource.js';
 import { IngestDatasetSource } from './sources/IngestDatasetSource.js';
+import { ServiceSource } from './sources/ServiceSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -184,6 +187,20 @@ export const INGEST_DATASET_SOURCE_DEFINITION: SourceDefinition<IngestDatasetSou
     emit: (node) => emitIngestDatasetSource(node),
     spec: INGEST_DATASET_SOURCE_CODEC,
   };
+
+/** A deployed service (PLAN §6.4), in progress: picked, not read yet */
+export const SERVICE_SOURCE_DEFINITION: SourceDefinition<ServiceSource> = {
+  kind: 'source',
+  type: ServiceSource.TYPE,
+  label: 'Service',
+  icon: 'service',
+  beta: true,
+  fromCoordinates: (id, coordinates) =>
+    ServiceSource.fromCoordinates(id, coordinates),
+  resolve: (node, resolution) => node.withResolution(resolution),
+  emit: (node) => emitServiceSource(node),
+  spec: SERVICE_SOURCE_CODEC,
+};
 
 export const SORT_DEFINITION: TransformDefinition<Sort> = {
   kind: 'transform',
@@ -415,6 +432,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     INGEST_DATASET_SOURCE_DEFINITION,
+    SERVICE_SOURCE_DEFINITION,
     SORT_DEFINITION,
     GROUP_DEFINITION,
     FILTER_DEFINITION,

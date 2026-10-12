@@ -94,6 +94,9 @@ export const MESSAGE_SOURCE_INFO_UNRESOLVED =
 export const MESSAGE_SOURCE_SCHEMA_UNRESOLVED =
   'Required schema of this source could not be resolved.';
 
+/** Added by Cube: services are picked but not read yet (PLAN §6.4) */
+export const MESSAGE_SERVICE_NOT_READABLE = `Cube can't read services yet`;
+
 export const MESSAGE_PARAMETER_WITHOUT_VALUE = (name: string): string =>
   `Required parameter ${quote(name)} does not have a value.`;
 

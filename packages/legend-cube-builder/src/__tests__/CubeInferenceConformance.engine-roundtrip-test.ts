@@ -48,6 +48,7 @@ import {
   Rename,
   renameConcatInput,
   Restrict,
+  ServiceSource,
   restrictConcatInput,
   Schema,
   Slice,
@@ -299,11 +300,13 @@ const converting = concatenatedWith(true);
  * data product's access point, which it doesn't read (PLAN §6.8), and an
  * ingest definition's data set, which needs a deployed definition (PLAN
  * §6.7); `CubeDataProduct.engine-roundtrip-test.ts` checks Cube's reading of
- * a data product's types against a stand-in function instead
+ * a data product's types against a stand-in function instead. A service
+ * isn't read yet (PLAN §6.4).
  */
 const NOT_TYPED_BY_THE_ENGINE: readonly string[] = [
   DataProductAccessPointSource.TYPE,
   IngestDatasetSource.TYPE,
+  ServiceSource.TYPE,
 ];
 
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];

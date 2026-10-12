@@ -39,6 +39,7 @@ import {
   RelationalTableSource,
   Schema,
   UnknownNode,
+  ServiceSource,
 } from '@finos/legend-cube';
 import {
   act,
@@ -621,6 +622,15 @@ describe('Node labels on the canvas', () => {
         ),
       ),
     ).toEqual({ title: 'TRADES', detail: 'Orders' });
+    expect(
+      getCubeCanvasNodeLabel(
+        new ServiceSource(
+          'service101',
+          { pattern: '/trades/byDesk', service: 'trading::TradesByDesk' },
+          { kind: 'failed', message: "Cube can't read services yet" },
+        ),
+      ),
+    ).toEqual({ title: 'TradesByDesk', detail: '/trades/byDesk' });
     // not resolved yet, a source shows its description, as the tooltip does
     const unresolved = new RelationalTableSource('relational102', {
       database: 'db::Db',

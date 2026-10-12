@@ -32,6 +32,7 @@ import {
   Rename,
   Restrict,
   type Schema,
+  ServiceSource,
   Slice,
   Sort,
 } from '@finos/legend-cube';
@@ -42,6 +43,7 @@ import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
 import { CubeExpressionFilterEditor } from './CubeExpressionFilterEditor.js';
 import { CubeDifferenceEditor } from './CubeDifferenceEditor.js';
 import { CubeIngestSourceEditor } from './CubeIngestSourceEditor.js';
+import { CubeServiceSourceEditor } from './CubeServiceSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeExtendEditor } from './CubeExtendEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
@@ -87,6 +89,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [RelationalTableSource.TYPE, CubeSourceEditor],
   [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [IngestDatasetSource.TYPE, CubeIngestSourceEditor],
+  [ServiceSource.TYPE, CubeServiceSourceEditor],
   [Sort.TYPE, CubeSortEditor],
   [Group.TYPE, CubeGroupEditor],
   [Filter.TYPE, CubeFilterEditor],

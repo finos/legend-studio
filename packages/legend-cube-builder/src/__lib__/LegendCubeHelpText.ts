@@ -31,6 +31,7 @@ import {
   RelationalTableSource,
   Rename,
   Restrict,
+  ServiceSource,
   Slice,
   Sort,
   UnknownNode,
@@ -49,6 +50,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   /** Added by Cube: the original has no ingest data set source (PLAN §6.7) */
   [IngestDatasetSource.TYPE]:
     'Sources data from a data set of a deployed ingest definition.',
+  /** Added by Cube: the original's service source is read another way, still to come (PLAN §6.4) */
+  [ServiceSource.TYPE]:
+    "Sources data from a deployed service. In progress: Cube can't read services yet.",
   [Concat.TYPE]:
     'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
   [Difference.TYPE]:

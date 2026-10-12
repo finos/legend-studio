@@ -23,6 +23,7 @@ export enum CubeSourcePickerTabKey {
   DATA_PRODUCT = 'dataProduct',
   INGEST = 'ingest',
   PROJECT = 'project',
+  SERVICE = 'service',
 }
 
 /**

@@ -31,6 +31,7 @@ import {
   isCubeProjectModel,
 } from '../graph-manager/CubeProject.js';
 import type { CubeProjectCatalog } from '../graph-manager/CubeProjectCatalog.js';
+import type { CubeServiceCatalog } from '../graph-manager/CubeServiceCatalog.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
 /**
@@ -64,6 +65,11 @@ export interface CubeHost {
    * source dialog offers no projects
    */
   readonly projectCatalog?: CubeProjectCatalog | undefined;
+  /**
+   * The deployed services (PLAN §6.4), in progress; without one, the source
+   * dialog offers no services
+   */
+  readonly serviceCatalog?: CubeServiceCatalog | undefined;
 }
 
 /** Why the host can't list a project model's Databases */

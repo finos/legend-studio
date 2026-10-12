@@ -18,6 +18,7 @@ import {
   DataProductAccessPointSource,
   IngestDatasetSource,
   RelationalTableSource,
+  ServiceSource,
 } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
@@ -38,6 +39,7 @@ import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnecti
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
 import { CubeProjectTabState } from './source-picker/CubeProjectTabState.js';
 import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
+import { CubeServiceTabState } from './source-picker/CubeServiceTabState.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
@@ -56,6 +58,7 @@ export class CubeSourcePickerState {
   readonly dataProductTab: CubeDataProductTabState;
   readonly ingestTab: CubeIngestTabState;
   readonly projectTab: CubeProjectTabState;
+  readonly serviceTab: CubeServiceTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -84,6 +87,7 @@ export class CubeSourcePickerState {
     this.dataProductTab = new CubeDataProductTabState(editorState);
     this.ingestTab = new CubeIngestTabState(editorState);
     this.projectTab = new CubeProjectTabState(editorState);
+    this.serviceTab = new CubeServiceTabState(editorState);
   }
 
   /** The tabs that add their own kind of source, each from its palette item */
@@ -91,6 +95,7 @@ export class CubeSourcePickerState {
     return new Map<string, CubeSourcePickerTab>([
       [DataProductAccessPointSource.TYPE, this.dataProductTab],
       [IngestDatasetSource.TYPE, this.ingestTab],
+      [ServiceSource.TYPE, this.serviceTab],
     ]);
   }
 
@@ -102,6 +107,7 @@ export class CubeSourcePickerState {
       this.directTab,
       this.dataProductTab,
       this.ingestTab,
+      this.serviceTab,
     ].filter((tab) => tab.isAvailable);
   }
 
@@ -117,6 +123,7 @@ export class CubeSourcePickerState {
           this.directTab,
           this.dataProductTab,
           this.ingestTab,
+          this.serviceTab,
         ].find((tab) => tab.ownsContext(context)) ?? this.modelTab)
       : undefined;
   }
@@ -128,8 +135,8 @@ export class CubeSourcePickerState {
   }
 
   /**
-   * The tab a palette item opens (DP-3): a data product's or an ingest data
-   * set's own tab, when the host serves it; for a table, the table tab the
+   * The tab a palette item opens (DP-3): a data product's, an ingest data
+   * set's or a service's own tab, when the host serves it; for a table, the table tab the
    * cube uses, else the table tab open last, else the Sample Data tab
    */
   tabForSourceType(type: string): CubeSourcePickerTab | undefined {
@@ -239,6 +246,7 @@ export class CubeSourcePickerState {
     this.dataProductTab.close();
     this.ingestTab.close();
     this.projectTab.close();
+    this.serviceTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

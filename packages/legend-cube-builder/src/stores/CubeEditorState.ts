@@ -38,6 +38,7 @@ import {
   rereadQueryFilterValues,
   type Schema,
   type SchemaInferenceResult,
+  ServiceSource,
   type SourceDefinition,
   foldColumnName,
 } from '@finos/legend-cube';
@@ -75,6 +76,7 @@ import {
 } from '../__lib__/LegendCubeIngestLabels.js';
 import { isCubeDataProductModel } from '../graph-manager/CubeDataProduct.js';
 import { isCubeIngestModel } from '../graph-manager/CubeIngest.js';
+import { isCubeServiceModel } from '../graph-manager/CubeService.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -84,6 +86,7 @@ import {
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
+import { recheckCubeServiceSources } from './CubeServiceRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExportState } from './CubeExportState.js';
@@ -132,11 +135,12 @@ const isFocusInNodeEditor = (): boolean =>
     `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
   ) !== null && document.activeElement !== null;
 
-/** A source Cube types again to see drift: a table, or a data product's access point */
+/** A source Cube types again to see drift: a table, an access point, an ingest data set or a service */
 type RecheckedSource =
   | RelationalTableSource
   | DataProductAccessPointSource
-  | IngestDatasetSource;
+  | IngestDatasetSource
+  | ServiceSource;
 
 /**
  * The state of one Cube page (PLAN §7.8). The document is immutable: every
@@ -842,10 +846,17 @@ export class CubeEditorState implements CommandRegistrar {
             node instanceof IngestDatasetSource,
         )
       : [];
+    // services are typed in one place, still to come (PLAN §6.4)
+    const services = isCubeServiceModel(context.model)
+      ? kept.filter(
+          (node): node is ServiceSource => node instanceof ServiceSource,
+        )
+      : [];
     const sources: readonly RecheckedSource[] = [
       ...tables,
       ...accessPoints,
       ...dataSets,
+      ...services,
     ];
     if (!sources.length) {
       return;
@@ -853,7 +864,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.pendingSources = new Set([...this.pendingSources, ...sources]);
     let answers: ReadonlyMap<string, Schema | CubeEngineError>;
     try {
-      const [tableAnswers, accessPointAnswers, dataSetAnswers] =
+      const [tableAnswers, accessPointAnswers, dataSetAnswers, serviceAnswers] =
         (yield Promise.all([
           tables.length
             ? this.host.engine
@@ -895,11 +906,19 @@ export class CubeEditorState implements CommandRegistrar {
                 fresh,
               )
             : new Map(),
+          services.length
+            ? recheckCubeServiceSources(
+                this.host.serviceCatalog,
+                context.model,
+                services,
+              )
+            : new Map(),
         ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
       answers = new Map([
         ...(tableAnswers ?? []),
         ...(accessPointAnswers ?? []),
         ...(dataSetAnswers ?? []),
+        ...(serviceAnswers ?? []),
       ]);
     } finally {
       this.pendingSources = new Set(
@@ -1039,7 +1058,8 @@ export class CubeEditorState implements CommandRegistrar {
     if (
       source instanceof RelationalTableSource ||
       source instanceof DataProductAccessPointSource ||
-      source instanceof IngestDatasetSource
+      source instanceof IngestDatasetSource ||
+      source instanceof ServiceSource
     ) {
       // a Refresh reads the deployed artifact or definition again
       yield flowResult(this.reresolveSources([source], true));
@@ -1132,8 +1152,8 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * The kinds of source the host serves: data products and ingest data sets
-   * only with their catalogs. The cube's kind may still disable one
+   * The kinds of source the host serves: data products, ingest data sets and
+   * services only with their catalogs. The cube's kind may still disable one
    * (`canAddNode`)
    */
   get offeredSources(): readonly SourceDefinition[] {
@@ -1142,7 +1162,9 @@ export class CubeEditorState implements CommandRegistrar {
         (definition.type !== DataProductAccessPointSource.TYPE ||
           this.sourcePicker.dataProductTab.isAvailable) &&
         (definition.type !== IngestDatasetSource.TYPE ||
-          this.sourcePicker.ingestTab.isAvailable),
+          this.sourcePicker.ingestTab.isAvailable) &&
+        (definition.type !== ServiceSource.TYPE ||
+          this.sourcePicker.serviceTab.isAvailable),
     );
   }
 
