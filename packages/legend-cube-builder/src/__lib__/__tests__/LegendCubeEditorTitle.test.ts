@@ -26,6 +26,7 @@ const TITLES: Record<string, string> = {
   sort: 'Sort By Column',
   group: 'Group By Column',
   filter: 'Filter By Column',
+  expressionFilter: 'Filter By Expression',
   restrict: 'Restrict Columns',
   rename: 'Rename Columns',
   distinct: 'Distinct Values',

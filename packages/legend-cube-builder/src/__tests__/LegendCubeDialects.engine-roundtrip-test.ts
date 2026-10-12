@@ -55,6 +55,8 @@ import {
 } from '../__test-utils__/CubeEngineTestSupport.js';
 import {
   TEST__ORDER_ID_EXTEND_COLUMNS,
+  TEST__checkedExpressionFilter,
+  TEST__expression,
   TEST__typedExtend,
 } from '../__test-utils__/CubeExpressionTestUtils.js';
 import {
@@ -208,12 +210,19 @@ const SORTED_BY_BOTH_KEYS =
 /** Numbered by the two keys, in order */
 const BY_CUSTOMER_THEN_ORDER = /customer_id[^,]*,[^,]*order_id[^,]* desc/u;
 
-/** The SQL a run of the query would send to a database of the type */
-const planSql = async (query: Query, databaseType: string): Promise<string> => {
+/**
+ * The SQL a run of the query would send to a database of the type, written
+ * for that type, or in the native forms, as for no type known
+ */
+const planSql = async (
+  query: Query,
+  databaseType: string,
+  { native = false }: { native?: boolean } = {},
+): Promise<string> => {
   const lambda = new QueryEmitter(query).emitExecutionLambda({
     rowLimit: 1000,
     runtime: `test::plan::${databaseType}Runtime`,
-    databaseType,
+    databaseType: native ? undefined : databaseType,
   });
   const sql = await CUBE_ENGINE_TEST__generatePlanSql(
     stringifyLosslessJSON({
@@ -1458,6 +1467,139 @@ describe('Extend, as each database plans it', () => {
       // aliased with `as`, or by a space after the expression (Oracle)
       expect(sql).toMatch(/(?:\bas |\) )["`]?a["`]?(?:[ ,]|$)/u);
       expect(sql).toMatch(/(?:\bas |\) )["`]?b["`]?(?:[ ,]|$)/u);
+    },
+  );
+});
+
+/** `x | $x.SHIPPED_DATE->toOne() > $x.REQUIRED_DATE->toOne()`, as the engine's JSON */
+const LATE = TEST__expression.lambda(
+  TEST__expression.call(
+    'greaterThan',
+    TEST__expression.call('toOne', TEST__expression.column('SHIPPED_DATE')),
+    TEST__expression.call('toOne', TEST__expression.column('REQUIRED_DATE')),
+  ),
+);
+
+/** `x | $x.rn <= 1`, as the engine's JSON */
+const FIRST_IN_WINDOW = TEST__expression.lambda(
+  TEST__expression.call(
+    'lessThanEqual',
+    TEST__expression.column('rn'),
+    TEST__expression.integer(1),
+  ),
+);
+
+/** ORDERS, the nodes, then a Filter by Expression of the condition, checked for its input (PLAN §11.11) */
+const expressionFilterThen = (
+  before: readonly QueryNode[],
+  condition: ReturnType<typeof TEST__expression.lambda>,
+): Query =>
+  ordersThen(
+    ...before,
+    TEST__checkedExpressionFilter(
+      'expressionFilter101',
+      ordersThen(...before),
+      'x | …',
+      condition,
+    ),
+  );
+
+describe('Filter by Expression, as each database plans it', () => {
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Writes the condition in the WHERE clause, on %s',
+    async (databaseType) => {
+      const sql = await planSql(expressionFilterThen([], LATE), databaseType);
+      expect(sql).toMatch(
+        /\bwhere\b[^()]*shipped_date["`]?\s*>\s*[^()]*required_date/u,
+      );
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    "Filters on a window column after the window, reading the Partition's let, never with QUALIFY, on %s",
+    async (databaseType) => {
+      const numbered = new Partition(
+        'partition101',
+        ['SHIP_COUNTRY'],
+        [{ column: 'ORDER_ID', direction: SortDirection.ASC }],
+        [
+          {
+            column: undefined,
+            function: WindowRankFunction.ROW_NUMBER,
+            name: 'rn',
+          },
+        ],
+      );
+      const sql = await planSql(
+        expressionFilterThen([numbered], FIRST_IN_WINDOW),
+        databaseType,
+      );
+      expect(sql).not.toContain('qualify');
+      // the condition, after the window's own select
+      const window = sql.indexOf(' over (');
+      const condition = sql.search(/["`]?rn["`]?\s*<=\s*1/u);
+      expect(window).toBeGreaterThanOrEqual(0);
+      expect(condition).toBeGreaterThan(window);
+    },
+  );
+});
+
+// The engine escapes `%` and `_` in a pattern with `\` and writes no ESCAPE
+// clause (PLAN §11.11): H2 reads `\` as its escape character, DuckDB has none,
+// so Cube refuses them on DuckDB. When the engine writes an ESCAPE clause,
+// these fail, and the refusal can go.
+describe('Patterns given % or _, as H2 and DuckDB plan them', () => {
+  /** `x | $x.SHIP_NAME->toOne()->contains('50%')`, as the engine's JSON */
+  const CONTAINS_FIFTY_PERCENT = TEST__expression.lambda(
+    TEST__expression.call(
+      'contains',
+      TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+      TEST__expression.string('50%'),
+    ),
+  );
+  const filters: [string, () => Query][] = [
+    [
+      "a column Filter's Contains",
+      () =>
+        ordersThen(
+          new Filter(
+            'filter101',
+            new ColumnComparisonFilter('SHIP_NAME', FilterOperator.CONTAINS, {
+              kind: 'string',
+              value: '50%',
+            }),
+          ),
+        ),
+    ],
+    [
+      "a Filter by Expression's contains",
+      () => expressionFilterThen([], CONTAINS_FIFTY_PERCENT),
+    ],
+  ];
+
+  test.each(filters)(
+    'Escapes them with a backslash, with no ESCAPE clause, on both, for %s',
+    async (_, query) => {
+      for (const databaseType of ['H2', 'DuckDB']) {
+        // written natively, as Cube would without the refusal
+        const sql = await planSql(query(), databaseType, { native: true });
+        expect(sql).toMatch(/ship_name["`]? like '%50\\%%'/u);
+        expect(sql).not.toMatch(/\bescape\b/u);
+      }
+    },
+  );
+
+  test.each(filters)(
+    'Is refused by Cube on DuckDB only, for %s',
+    async (_, query) => {
+      expect(() =>
+        new QueryEmitter(query()).emitExecutionLambda({
+          rowLimit: 1000,
+          runtime: 'test::plan::DuckDBRuntime',
+          databaseType: 'DuckDB',
+        }),
+      ).toThrow('On DuckDB, ');
+      expect(await planSql(query(), 'H2')).toContain("like '%50\\%%'");
     },
   );
 });

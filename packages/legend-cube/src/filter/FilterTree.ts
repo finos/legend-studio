@@ -41,6 +41,7 @@ import {
   FILTER_OPERATOR_DESCRIPTIONS,
   FilterOperator,
   getFilterValueShape,
+  hasPatternWildcard,
   hasUnescapedPatternCharacter,
   isFilterOperator,
   isOperatorAvailable,
@@ -499,3 +500,31 @@ export class UnsupportedFilter extends FilterRule {
     return UNSUPPORTED_FILTER_DESCRIPTION;
   }
 }
+
+/**
+ * The operator of the first comparison in a filter, negated or not, that
+ * gives `%` or `_` to a pattern (`hasPatternWildcard`, PLAN §11.11);
+ * `undefined` when none does
+ */
+export const findPatternWildcardOperator = (
+  rule: FilterRule | undefined,
+): FilterOperator | undefined => {
+  if (rule instanceof ColumnComparisonFilter) {
+    const { operator, value } = rule;
+    return value !== undefined &&
+      !isFilterValueList(value) &&
+      value.kind === 'string' &&
+      hasPatternWildcard(operator, value.value)
+      ? operator
+      : undefined;
+  }
+  if (rule instanceof CompositeFilter) {
+    return rule.rules.reduce<FilterOperator | undefined>(
+      (found, child) => found ?? findPatternWildcardOperator(child),
+      undefined,
+    );
+  }
+  return rule instanceof NotFilter
+    ? findPatternWildcardOperator(rule.rule)
+    : undefined;
+};

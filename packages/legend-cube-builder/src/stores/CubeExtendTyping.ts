@@ -15,18 +15,15 @@
  */
 
 import {
-  buildSchemasAndValidity,
   colSpec,
   colSpecArray,
   EmitRole,
-  ERR_TYPING,
-  Extend,
+  type Extend,
   type ExtendTyping,
   func,
   getExtendSignature,
   hashText,
   type IR,
-  isTypingError,
   type JsonObject,
   lambda,
   lambdaJson,
@@ -36,7 +33,6 @@ import {
   printIR,
   type Query,
   QueryEmitter,
-  type QueryRule,
   type Schema,
   stableJsonText,
 } from '@finos/legend-cube';
@@ -116,10 +112,11 @@ const digestModel = (model: ModelContext): string => {
 };
 
 /**
- * What the engine is given for an Extend's input when it types it, digested
- * (PLAN §11.7): the input's relation as emitted, and the model. A typing
- * records it (`upstream`), since the engine sees more than Cube's schema
- * does; `undefined` when the input can't be emitted, e.g. it is invalid.
+ * What the engine is given for a node's input when it types an Extend or
+ * checks a Filter by Expression, digested (PLAN §11.7, §11.11): the input's
+ * relation as emitted, and the model. A typing or a check records it
+ * (`upstream`), since the engine sees more than Cube's schema does;
+ * `undefined` when the input can't be emitted, e.g. it is invalid.
  */
 export const getCubeExtendUpstream = (
   emitter: QueryEmitter,
@@ -161,43 +158,6 @@ export const isCubeExtendTypingCurrent = (
     (recorded === undefined || recorded === upstream)
   );
 };
-
-/**
- * A query rule for the editor (PLAN §11.7): an Extend whose typing recorded
- * another input than the engine would be given now waits to be typed again
- * (`ERR_TYPING`), e.g. after an Extend above it gains `->toOne()`, which
- * Cube's schema doesn't show. A typing that recorded nothing, as one loaded,
- * is used as it is; an Extend that already waits, or whose input is invalid,
- * is left to its own checks.
- */
-export const createStaleCubeExtendTypingRule =
-  (
-    registry: NodeRegistry,
-    modelOf: () => ModelContext | undefined,
-  ): QueryRule =>
-  (query) => {
-    const stale = new Map<string, readonly string[]>();
-    const model = modelOf();
-    const recorded = query.nodes.filter(
-      (node): node is Extend =>
-        node instanceof Extend && upstreamOf(node.typing) !== undefined,
-    );
-    if (!model || !recorded.length) {
-      return stale;
-    }
-    const { validity } = buildSchemasAndValidity(query, registry.queryRules);
-    const emitter = new QueryEmitter(query, registry);
-    recorded.forEach((node) => {
-      if ((validity.get(node.id) ?? []).some(isTypingError)) {
-        return;
-      }
-      const upstream = getCubeExtendUpstream(emitter, node.id, model);
-      if (upstream !== undefined && upstream !== upstreamOf(node.typing)) {
-        stale.set(node.id, [ERR_TYPING]);
-      }
-    });
-    return stale;
-  };
 
 /** What typing an Extend gave: the typing to store, and the error the engine gave, if it failed */
 export interface CubeExtendTypingResult {

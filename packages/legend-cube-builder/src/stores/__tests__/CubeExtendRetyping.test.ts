@@ -190,12 +190,12 @@ describe('Extend retyping', () => {
     ]);
     // pending meanwhile: no error, and the node shows it is being typed
     expect(state.analysis.validity.get('extend101')).toEqual([ERR_TYPING]);
-    expect(state.isTypingExtends).toBe(true);
+    expect(state.isCheckingExpressions).toBe(true);
     const status = getCubeCanvasNodeStatus(state, extendOf(state));
     expect(status.isInvalid).toBe(false);
     expect(status.isResolving).toBe(true);
     // no second call while the first is out
-    expect(state.extendsToType).toEqual([]);
+    expect(state.nodesToCheck).toEqual([]);
     calls[0]?.resolve(answerFor(calls[0].lambdas));
     await settle();
     expect(extendOf(state).typing.kind).toBe('typed');
@@ -204,7 +204,7 @@ describe('Extend retyping', () => {
       'a',
       'b',
     ]);
-    expect(state.isTypingExtends).toBe(false);
+    expect(state.isCheckingExpressions).toBe(false);
     expect(state.history).toHaveLength(0);
     expect(calls).toHaveLength(1);
   });

@@ -21,9 +21,12 @@ import {
   Concat,
   Connection,
   Difference,
+  ExpressionFilter,
+  getExpressionFilterSignature,
   Group,
   Join,
   JoinType,
+  type JsonObject,
   MESSAGE_INPUT_SCHEMAS_DIFFER,
   Partition,
   PRIMITIVE_TYPE_PATH,
@@ -247,6 +250,40 @@ describe('Where a column comes from', () => {
         ({ column }) => column,
       ),
     ).toEqual(['SHIP_CITY']);
+  });
+
+  test("Follows a column back through a Filter by Expression, which keeps its input's columns", () => {
+    const lambda: JsonObject = {
+      _type: 'lambda',
+      parameters: [{ _type: 'var', name: 'x' }],
+      body: [{ _type: 'boolean', value: true }],
+    };
+    const filter = new ExpressionFilter(
+      'expressionFilter101',
+      'x | true',
+      lambda,
+    );
+    const query = new Query(
+      [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), filter],
+      [new Connection('relational101', filter.id, 'tds')],
+      filter.id,
+    ).replace(
+      filter.withCheck({
+        kind: 'checked',
+        signature: getExpressionFilterSignature(
+          new Schema(ORDERS_COLUMNS),
+          lambda,
+        ),
+      }),
+    );
+    expect(
+      findColumnOrigins(
+        query,
+        buildSchemasAndValidity(query),
+        'expressionFilter101',
+        'SHIP_CITY',
+      ).map(({ source, column }) => [source.id, column]),
+    ).toEqual([['relational101', 'SHIP_CITY']]);
   });
 
   test('Finds no table for a column a Restrict dropped', () => {

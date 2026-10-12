@@ -60,7 +60,7 @@ export enum CUBE_PENDING_LABEL {
   EXPORTING_CSV = 'exporting CSV',
   RENDERING_QUERY = 'rendering query',
   REFRESHING_SOURCE = 'refreshing source',
-  TYPING_COLUMNS = 'typing new columns',
+  CHECKING_EXPRESSIONS = 'checking expressions',
 }
 
 export const getRowLimitError = (text: string): string | undefined => {
@@ -318,6 +318,10 @@ export const EXTEND_APPLY_DISABLED_REASON = Object.freeze({
 export const getExtendRetypeWarning = (firstLine: string): string =>
   `Could not check these columns' types again, so they keep their saved ones: ${firstLine}`;
 
+/** The warning on a Filter by Expression whose condition the engine couldn't check again, e.g. offline (PLAN §11.11) */
+export const getConditionRecheckWarning = (firstLine: string): string =>
+  `Could not check this condition again, so it keeps its last check: ${firstLine}`;
+
 /** The notice of a node editor kept open, since its changes can't be applied yet, e.g. an Extend's expressions not validated */
 export const getEditorKeptOpenNotice = (
   nodeId: string,
@@ -325,11 +329,34 @@ export const getEditorKeptOpenNotice = (
 ): string =>
   `The editor of ${nodeId} stays open, since its changes can't be applied yet: ${waiting}, or Cancel to drop them.`;
 
+/** Why the Filter by Expression editor's Apply waits (PLAN §11.11) */
+export const EXPRESSION_FILTER_APPLY_DISABLED_REASON = Object.freeze({
+  NOT_VALIDATED: 'Validate the condition first (F10)',
+  VALIDATING: 'Validating the condition',
+});
+
+/**
+ * The hint after an engine error on `and`, `or` or `not` given something
+ * other than a Boolean, which Pure's precedence usually causes: comparisons
+ * bind no tighter than `&&`, `||` and `!` (PLAN §11.11)
+ */
+export const EXPRESSION_FILTER_PARENTHESES_HINT =
+  'Put each comparison in parentheses: ($x.A > 1) && ($x.B > 3).';
+
+/** What the Filter by Expression editor says about conditions (PLAN §11.11) */
+export const EXPRESSION_FILTER_EDITOR_NOTES = [
+  "A condition of one row, written as in Query's text mode: x | $x.SHIPPED_DATE > $x.REQUIRED_DATE. The rows for which it is true are kept, in their order.",
+  'Put each comparison in parentheses when you combine them: ($x.A > 1) && ($x.B > 3). In Pure, &&, || and ! bind as tightly as >, <, >= and <=; == binds tighter.',
+  'A column that can be empty, compared directly ($x.A > 6), fails the condition when it is empty and passes its negation. After ->toOne(), an empty value fails both.',
+  "Validate (F10) checks the condition with the engine and plans it for the cube's database.",
+  "startsWith, endsWith and contains can't take a value with a backslash (\\) yet, nor, on DuckDB, one with % or _.",
+] as const;
+
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
 export const EXTEND_TO_ONE_HINT =
   'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.';
 
-/** The problem a database refusing an Extend's plan gives (PLAN §11.7) */
+/** The problem a database refusing an Extend's or a Filter by Expression's plan gives (PLAN §11.7, §11.11) */
 export const getExtendPlanProblem = (
   databaseType: string | undefined,
   detail: string,

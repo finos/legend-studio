@@ -54,6 +54,7 @@ import {
   createNodeRegistry,
   DIFFERENCE_DEFINITION,
   DROP_DEFINITION,
+  EXPRESSION_FILTER_DEFINITION,
   EXTEND_DEFINITION,
   GROUP_DEFINITION,
   LIMIT_DEFINITION,
@@ -70,6 +71,10 @@ import {
 import { Concat } from '../../nodes/transforms/Concat.js';
 import { Difference } from '../../nodes/transforms/Difference.js';
 import { Extend, UNTYPED } from '../../nodes/transforms/Extend.js';
+import {
+  ExpressionFilter,
+  UNCHECKED,
+} from '../../nodes/transforms/ExpressionFilter.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -3418,5 +3423,149 @@ describe(unitTest('Saved spec encoding: extends'), () => {
       expect(document.query.getNode('extend101')).toBeInstanceOf(UnknownNode);
       expect(encodeCubeSpec(document, REGISTRY)).toStrictEqual(json);
     });
+  });
+});
+
+describe(unitTest('Saved spec encoding: filters by expression'), () => {
+  /** Cube's registry with Filter by Expression, which `createNodeRegistry` registers once its editor exists (M6b.4) */
+  const REGISTRY = createNodeRegistry();
+  if (!REGISTRY.get(EXPRESSION_FILTER_DEFINITION.type)) {
+    REGISTRY.register(EXPRESSION_FILTER_DEFINITION);
+  }
+
+  /** The saved spec of one unconnected filter, `expressionFilter101`, with these fields of its own */
+  const expressionFilterSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'expressionFilter101',
+      nodes: [
+        {
+          kind: 'expressionFilter',
+          id: 'expressionFilter101',
+          inputs: [null],
+          ...own,
+        },
+      ],
+    },
+  });
+  const expressionFilterDocument = (filter: ExpressionFilter): CubeDocument =>
+    documentOf([filter], [], filter.id);
+  /** `x | $x.QTY > 9007199254740993`, a number literal as its digits */
+  const LAMBDA: JsonObject = {
+    _type: 'lambda',
+    parameters: [{ _type: 'var', name: 'x' }],
+    body: [
+      {
+        _type: 'func',
+        function: 'greaterThan',
+        parameters: [
+          {
+            _type: 'property',
+            property: 'QTY',
+            parameters: [{ _type: 'var', name: 'x' }],
+          },
+          { _type: 'integer', value: '9007199254740993' },
+        ],
+      },
+    ],
+  };
+
+  test('Writes a new filter as an empty condition, and nothing checked', () => {
+    expectEncoded(
+      expressionFilterDocument(
+        EXPRESSION_FILTER_DEFINITION.create('expressionFilter101'),
+      ),
+      expressionFilterSpec({ code: '' }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes the code, its lambda once checked, and the signature the engine checked', () => {
+    const filter = new ExpressionFilter(
+      'expressionFilter101',
+      'x | $x.QTY > 9007199254740993',
+      LAMBDA,
+      { kind: 'checked', signature: '1a2b3c' },
+    );
+    expectEncoded(
+      expressionFilterDocument(filter),
+      expressionFilterSpec({
+        code: 'x | $x.QTY > 9007199254740993',
+        lambda: LAMBDA,
+        checked: { signature: '1a2b3c' },
+      }),
+      REGISTRY,
+    );
+    // what the engine was given for the input isn't saved: it is checked again on load
+    expect(
+      encodeCubeSpec(
+        expressionFilterDocument(
+          filter.withCheck({
+            kind: 'checked',
+            signature: '1a2b3c',
+            upstream: 'digest',
+          }),
+        ),
+        REGISTRY,
+      ),
+    ).toStrictEqual(encodeCubeSpec(expressionFilterDocument(filter), REGISTRY));
+    // a draft's text, not checked yet
+    expectEncoded(
+      expressionFilterDocument(
+        new ExpressionFilter('expressionFilter101', 'x | $x.'),
+      ),
+      expressionFilterSpec({ code: 'x | $x.' }),
+      REGISTRY,
+    );
+  });
+
+  test('Saves no failed check: it is checked again on load', () => {
+    const filter = new ExpressionFilter(
+      'expressionFilter101',
+      'x | 1',
+      LAMBDA,
+      {
+        kind: 'failed',
+        signature: '1a2b3c',
+        message: 'no match',
+        resultType: 'Integer[1]',
+      },
+    );
+    expect(
+      encodeCubeSpec(expressionFilterDocument(filter), REGISTRY),
+    ).toStrictEqual(expressionFilterSpec({ code: 'x | 1', lambda: LAMBDA }));
+    const { document } = decodeCubeSpec(
+      expressionFilterSpec({ code: 'x | 1', lambda: LAMBDA }),
+      { registry: REGISTRY },
+    );
+    const node = document.query.getNode('expressionFilter101');
+    expect(node).toBeInstanceOf(ExpressionFilter);
+    expect((node as ExpressionFilter).check === UNCHECKED).toBe(true);
+  });
+
+  test("Keeps a check with a key this version doesn't know as an Unknown node, and a key of the filter's own in it", () => {
+    const unknownCheck = expressionFilterSpec({
+      code: 'x | 1',
+      lambda: LAMBDA,
+      checked: { signature: '1a2b3c', at: 1 },
+    });
+    const unknown = decodeCubeSpec(unknownCheck, { registry: REGISTRY });
+    expect(
+      unknown.document.query.getNode('expressionFilter101'),
+    ).toBeInstanceOf(UnknownNode);
+    expect(encodeCubeSpec(unknown.document, REGISTRY)).toStrictEqual(
+      unknownCheck,
+    );
+    // as any node keeps a key it doesn't know, and saves it again
+    const extraKey = expressionFilterSpec({
+      code: 'x | 1',
+      lambda: LAMBDA,
+      negated: true,
+    });
+    const kept = decodeCubeSpec(extraKey, { registry: REGISTRY });
+    const node = kept.document.query.getNode('expressionFilter101');
+    expect(node).toBeInstanceOf(ExpressionFilter);
+    expect(node?.rest).toEqual({ negated: true });
+    expect(encodeCubeSpec(kept.document, REGISTRY)).toStrictEqual(extraKey);
   });
 });

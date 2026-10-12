@@ -41,6 +41,7 @@ import {
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DIFFERENCE_DEFINITION,
+  EXPRESSION_FILTER_DEFINITION,
   EXTEND_DEFINITION,
   INGEST_DATASET_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
@@ -214,6 +215,7 @@ describe(unitTest('Node registry'), () => {
       SORT_DEFINITION,
       GROUP_DEFINITION,
       FILTER_DEFINITION,
+      EXPRESSION_FILTER_DEFINITION,
       RESTRICT_DEFINITION,
       RENAME_DEFINITION,
       DISTINCT_DEFINITION,
@@ -229,6 +231,7 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('group')).toBe(GROUP_DEFINITION);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
+    expect(registry.get('expressionFilter')).toBe(EXPRESSION_FILTER_DEFINITION);
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('concat')).toBe(CONCAT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);

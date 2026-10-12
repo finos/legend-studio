@@ -21,6 +21,7 @@ import {
   IngestDatasetSource,
   Distinct,
   Drop,
+  ExpressionFilter,
   Extend,
   Filter,
   Group,
@@ -38,6 +39,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeConcatEditor } from './CubeConcatEditor.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
+import { CubeExpressionFilterEditor } from './CubeExpressionFilterEditor.js';
 import { CubeDifferenceEditor } from './CubeDifferenceEditor.js';
 import { CubeIngestSourceEditor } from './CubeIngestSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
@@ -88,6 +90,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Sort.TYPE, CubeSortEditor],
   [Group.TYPE, CubeGroupEditor],
   [Filter.TYPE, CubeFilterEditor],
+  [ExpressionFilter.TYPE, CubeExpressionFilterEditor],
   [Restrict.TYPE, CubeRestrictEditor],
   [Rename.TYPE, CubeRenameEditor],
   [Distinct.TYPE, CubeDistinctEditor],

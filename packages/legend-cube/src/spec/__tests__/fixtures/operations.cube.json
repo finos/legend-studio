@@ -1237,6 +1237,178 @@
         "leftColumns": ["ORDER_ID", "EMPLOYEE_ID"],
         "rightColumns": ["ORDER_ID", "EMPLOYEE_ID"],
         "differenceColumns": ["SHIP_VIA", "FREIGHT"]
+      },
+      {
+        "kind": "relational",
+        "id": "relational110",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "ORDERS",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": true
+          },
+          {
+            "name": "EMPLOYEE_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "ORDER_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "REQUIRED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIPPED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_VIA",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "FREIGHT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Double"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "expressionFilter",
+        "id": "expressionFilter101",
+        "inputs": ["relational110"],
+        "code": "x | $x.SHIPPED_DATE->toOne() > $x.REQUIRED_DATE->toOne()",
+        "lambda": {
+          "_type": "lambda",
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "x"
+            }
+          ],
+          "body": [
+            {
+              "_type": "func",
+              "function": "greaterThan",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "toOne",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "property": "SHIPPED_DATE",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "x"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "func",
+                  "function": "toOne",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "property": "REQUIRED_DATE",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "x"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "checked": {
+          "signature": "1de68f3a7f2d76"
+        }
       }
     ]
   }
