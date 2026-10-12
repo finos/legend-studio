@@ -32,6 +32,7 @@ import type { CubeType } from '../types/CubeType.js';
 import {
   getLiteralText,
   type InvalidValue,
+  isLiteralValue,
   type LiteralValue,
 } from '../values/LiteralValue.js';
 import { checkValue } from '../values/ValueEntry.js';
@@ -61,32 +62,12 @@ export type FilterValueItem = LiteralValue | InvalidValue;
 /** One value, or a list of values for the In and NotIn operators */
 export type FilterValue = FilterValueItem | readonly FilterValueItem[];
 
-const LITERAL_KINDS: readonly string[] = [
-  'string',
-  'boolean',
-  'integer',
-  'float',
-  'decimal',
-  'strictDate',
-  'dateTime',
-  'enum',
-];
-
 const isFilterValueItem = (value: unknown): value is FilterValueItem => {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
-  const { kind, value: literal, text } = value as Record<string, unknown>;
-  if (kind === 'invalid') {
-    return typeof text === 'string';
-  }
-  return (
-    typeof kind === 'string' &&
-    LITERAL_KINDS.includes(kind) &&
-    (kind === 'boolean'
-      ? typeof literal === 'boolean'
-      : typeof literal === 'string')
-  );
+  const { kind, text } = value as Record<string, unknown>;
+  return kind === 'invalid' ? typeof text === 'string' : isLiteralValue(value);
 };
 
 export const isFilterValueList = (

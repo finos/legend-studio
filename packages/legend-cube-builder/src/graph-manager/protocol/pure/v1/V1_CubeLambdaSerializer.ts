@@ -121,6 +121,20 @@ const serializeLambdaJson = (
   return typeof object._type === 'string' ? stamped(object, origin) : object;
 };
 
+/** A type's JSON: its path, and its parameters as integers, e.g. `Varchar(15)` */
+const genericTypeJson = (
+  path: string,
+  params: readonly number[] | undefined,
+  origin: Origin | undefined,
+): PlainObject => ({
+  rawType: { _type: 'packageableType', fullPath: path },
+  typeArguments: [],
+  multiplicityArguments: [],
+  typeVariableValues: (params ?? []).map((param) =>
+    stamped({ _type: 'integer', value: numberToken(String(param)) }, origin),
+  ),
+});
+
 const serializeLiteral = (value: LiteralValue): PlainObject => {
   switch (value.kind) {
     case 'string':
@@ -281,16 +295,37 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
       return stamped(
         {
           _type: 'genericTypeInstance',
+          genericType: genericTypeJson(ir.path, ir.params, inherited),
+        },
+        inherited,
+      );
+    case 'relationType':
+      return stamped(
+        {
+          _type: 'genericTypeInstance',
           genericType: {
-            rawType: { _type: 'packageableType', fullPath: ir.path },
-            typeArguments: [],
+            rawType: { _type: 'packageableType', fullPath: 'Relation' },
+            typeArguments: [
+              {
+                rawType: {
+                  _type: 'relationType',
+                  columns: ir.columns.map(({ name, type }) => ({
+                    name,
+                    genericType: genericTypeJson(
+                      type.path,
+                      type.params,
+                      inherited,
+                    ),
+                    multiplicity: { lowerBound: 0, upperBound: 1 },
+                  })),
+                },
+                typeArguments: [],
+                multiplicityArguments: [],
+                typeVariableValues: [],
+              },
+            ],
             multiplicityArguments: [],
-            typeVariableValues: (ir.params ?? []).map((param) =>
-              stamped(
-                { _type: 'integer', value: numberToken(String(param)) },
-                inherited,
-              ),
-            ),
+            typeVariableValues: [],
           },
         },
         inherited,

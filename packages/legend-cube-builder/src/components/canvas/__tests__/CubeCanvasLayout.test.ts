@@ -146,18 +146,18 @@ describe('layoutCubeQuery', () => {
     const query = new Query(
       [
         northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
-        new UnknownNode('pivot101', 1, { kind: 'pivot' }),
+        new UnknownNode('future101', 1, { kind: 'future' }),
         new Filter('filter101'),
       ],
       [
-        new Connection('relational101', 'pivot101', 'in0'),
-        new Connection('pivot101', 'filter101', 'tds'),
+        new Connection('relational101', 'future101', 'in0'),
+        new Connection('future101', 'filter101', 'tds'),
       ],
       'filter101',
     );
     const positions = layoutCubeQuery(query);
     const [sourceX] = centre(positions.get('relational101'));
-    const [unknownX] = centre(positions.get('pivot101'));
+    const [unknownX] = centre(positions.get('future101'));
     const [filterX] = centre(positions.get('filter101'));
     expect(unknownX).toBeGreaterThan(sourceX as number);
     expect(filterX).toBeGreaterThan(unknownX as number);

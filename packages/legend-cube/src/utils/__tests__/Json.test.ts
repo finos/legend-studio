@@ -67,7 +67,7 @@ describe(unitTest('Copying JSON'), () => {
     rows: { name: string; width: number | null }[];
     options: { nested: { flag: boolean } };
   } => ({
-    kind: 'pivot',
+    kind: 'future',
     rows: [
       { name: 'SHIP_COUNTRY', width: 120 },
       { name: 'FREIGHT', width: null },

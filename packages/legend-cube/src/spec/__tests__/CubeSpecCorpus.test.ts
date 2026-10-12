@@ -43,7 +43,7 @@ const INVALID_NODES: Record<string, string[]> = {
   'invalid-values.cube.json': ['filter101'],
   'join-autofix.cube.json': [],
   'left-join-negations.cube.json': [],
-  'newer-version.cube.json': ['pivot101'],
+  'newer-version.cube.json': ['future101'],
   'operations.cube.json': [],
   'slice.cube.json': [],
   'unfinished.cube.json': ['join101', 'filter101', 'relational102'],

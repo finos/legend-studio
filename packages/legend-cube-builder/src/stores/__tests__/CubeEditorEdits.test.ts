@@ -132,10 +132,10 @@ describe('Adding nodes', () => {
 
   test('Adds nothing of an unknown type, after a missing node, or while read-only', () => {
     const state = createState(new CubeDocument({ query: sliceQuery() }));
-    expect(state.canAddNode('pivot')).toBe(false);
+    expect(state.canAddNode('future')).toBe(false);
     expect(state.canAddNode('unknown')).toBe(false);
     expect(state.canAddNode('filter', 'nothing101')).toBe(false);
-    state.addNode('pivot');
+    state.addNode('future');
     state.addNode('filter', 'nothing101');
     expect(state.history).toHaveLength(0);
     state.importDocument(new CubeDocument({ query: sliceQuery() }), true);

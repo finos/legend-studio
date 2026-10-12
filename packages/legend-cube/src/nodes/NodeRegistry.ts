@@ -33,6 +33,7 @@ import { emitExpressionFilter } from '../ir/emitters/ExpressionFilterEmitter.js'
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitPartition } from '../ir/emitters/PartitionEmitter.js';
+import { emitPivot } from '../ir/emitters/PivotEmitter.js';
 import { emitRename } from '../ir/emitters/RenameEmitter.js';
 import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
@@ -51,6 +52,7 @@ import { EXPRESSION_FILTER_CODEC } from '../spec/codecs/ExpressionFilterCodec.js
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { PARTITION_CODEC } from '../spec/codecs/PartitionCodec.js';
+import { PIVOT_CODEC } from '../spec/codecs/PivotCodec.js';
 import { RENAME_CODEC } from '../spec/codecs/RenameCodec.js';
 import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
@@ -77,6 +79,7 @@ import { ExpressionFilter } from './transforms/ExpressionFilter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
 import { Partition } from './transforms/Partition.js';
+import { Pivot } from './transforms/Pivot.js';
 import { Rename } from './transforms/Rename.js';
 import { Restrict } from './transforms/Restrict.js';
 import { Slice } from './transforms/Slice.js';
@@ -206,6 +209,21 @@ export const GROUP_DEFINITION: TransformDefinition<Group> = {
   create: (id) => new Group(id),
   emit: emitGroup,
   spec: GROUP_CODEC,
+};
+
+/**
+ * Pivot (PLAN §11.12), after Group by Column in the menus once registered:
+ * the builder registers it with its editor (M6c.4)
+ */
+export const PIVOT_DEFINITION: TransformDefinition<Pivot> = {
+  kind: 'transform',
+  type: Pivot.TYPE,
+  label: 'Pivot by Column',
+  icon: 'pivot',
+  beta: false,
+  create: (id) => new Pivot(id),
+  emit: emitPivot,
+  spec: PIVOT_CODEC,
 };
 
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {

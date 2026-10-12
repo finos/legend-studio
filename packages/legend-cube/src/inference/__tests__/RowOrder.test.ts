@@ -141,7 +141,7 @@ describe(unitTest('Row order'), () => {
         new Slice('slice101', 0, 5),
         new Join('join101'),
         new Concat('concat101'),
-        new UnknownNode('pivot101', 1),
+        new UnknownNode('future101', 1),
       ]
         .filter((node) => node.consumesInputOrder)
         .map(({ type }) => type),
@@ -277,11 +277,11 @@ describe(unitTest('Row order'), () => {
     const query = chain(
       orders(),
       byCountryThenId(),
-      new UnknownNode('pivot101', 1),
+      new UnknownNode('future101', 1),
       new Limit('limit101', 5),
       new Sort('sort102', [{ column: 'ORDER_ID', direction: DESC }]),
     );
-    expect(orderOf(query, 'pivot101')).toBeUndefined();
+    expect(orderOf(query, 'future101')).toBeUndefined();
     expect(orderOf(query, 'limit101')).toBeUndefined();
     expect(orderOf(query, 'sort102')).toEqual([
       key('ORDER_ID', DESC, 'sort102', 0),
@@ -495,7 +495,7 @@ describe(unitTest('Lost sort orders'), () => {
       [new Sort('sort102', [{ column: 'C', direction: DESC }])],
     ],
     ['a later Sort on one of its two columns', [byA('sort102', DESC)]],
-    ['an Unknown node after it', [new UnknownNode('pivot101', 1)]],
+    ['an Unknown node after it', [new UnknownNode('future101', 1)]],
   ])('Reports nothing for %s', (_, after) => {
     expect(lossesOf(chain(ABC(), byAThenB(), ...after))).toEqual({});
   });

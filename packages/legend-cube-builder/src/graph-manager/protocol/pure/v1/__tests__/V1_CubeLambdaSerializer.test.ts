@@ -28,6 +28,7 @@ import {
   FilterOperator,
   func,
   genericType,
+  relationType,
   type IR,
   lambda,
   letBinding,
@@ -472,6 +473,62 @@ describe('Cube lambda serializer: shapes', () => {
       'genericType.typeVariableValues',
       [],
     );
+  });
+
+  test("Writes a relation type argument as the engine parses `@Relation<(…)>`: each column's type, and every column able to be empty", () => {
+    const column = (
+      name: string,
+      fullPath: string,
+      params: number[] = [],
+    ): unknown => ({
+      name,
+      genericType: {
+        rawType: { _type: 'packageableType', fullPath },
+        typeArguments: [],
+        multiplicityArguments: [],
+        typeVariableValues: params.map((value) => ({
+          _type: 'integer',
+          value,
+        })),
+      },
+      multiplicity: { lowerBound: 0, upperBound: 1 },
+    });
+    expect(
+      bodyOf(
+        relationType([
+          {
+            name: 'SHIP_COUNTRY',
+            type: genericType('meta::pure::precisePrimitives::Varchar', [15]),
+          },
+          { name: "'2000__|__cube_pivot'", type: genericType('Integer') },
+        ]),
+      ),
+    ).toEqual({
+      _type: 'genericTypeInstance',
+      genericType: {
+        rawType: { _type: 'packageableType', fullPath: 'Relation' },
+        typeArguments: [
+          {
+            rawType: {
+              _type: 'relationType',
+              columns: [
+                column(
+                  'SHIP_COUNTRY',
+                  'meta::pure::precisePrimitives::Varchar',
+                  [15],
+                ),
+                column("'2000__|__cube_pivot'", 'Integer'),
+              ],
+            },
+            typeArguments: [],
+            multiplicityArguments: [],
+            typeVariableValues: [],
+          },
+        ],
+        multiplicityArguments: [],
+        typeVariableValues: [],
+      },
+    });
   });
 
   test('Writes an enumeration value, a join kind included, as a property of its enumeration', () => {

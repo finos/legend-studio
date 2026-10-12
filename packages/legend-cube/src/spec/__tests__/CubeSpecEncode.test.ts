@@ -2763,7 +2763,7 @@ describe(unitTest('Saved spec encoding: rest'), () => {
           },
         ),
         new Filter('filter101', compare('A', O.IS_EMPTY), {
-          kind: 'pivot',
+          kind: 'future',
           filter: { op: 'xor', rules: [] },
           note: null,
         }),
@@ -3020,25 +3020,25 @@ describe(unitTest('Saved spec encoding: rest'), () => {
     const document = documentOf(
       [
         table('relational101', 'ORDERS'),
-        new UnknownNode('pivot101', 1, {
-          kind: 'pivot',
+        new UnknownNode('future101', 1, {
+          kind: 'future',
           id: 'stale',
           inputs: ['ghost'],
           rows: ['CITY'],
         }),
       ],
-      [edge('relational101', 'pivot101', 'in0')],
-      'pivot101',
+      [edge('relational101', 'future101', 'in0')],
+      'future101',
     );
     expect(encodeCubeSpec(document)).toStrictEqual({
       formatVersion: 1,
       query: {
-        selected: 'pivot101',
+        selected: 'future101',
         nodes: [
           tableSpec('relational101', 'ORDERS'),
           {
-            kind: 'pivot',
-            id: 'pivot101',
+            kind: 'future',
+            id: 'future101',
             inputs: ['relational101'],
             rows: ['CITY'],
           },
