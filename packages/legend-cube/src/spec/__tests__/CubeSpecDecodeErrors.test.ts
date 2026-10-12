@@ -23,6 +23,7 @@ import {
   NodeRegistry,
 } from '../../nodes/NodeRegistry.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
+import { ExpressionFilter } from '../../nodes/transforms/ExpressionFilter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Partition } from '../../nodes/transforms/Partition.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -2214,6 +2215,78 @@ describe(unitTest('Saved spec decode errors'), () => {
       'query.nodes[0]',
       'A filter node needs a filter rule',
     ]);
+  });
+
+  // Filter by Expression (PLAN §11.11)
+  const EXPRESSION_FILTER_101 = {
+    kind: 'expressionFilter',
+    id: 'expressionFilter101',
+    inputs: [null],
+    code: 'x | $x.ORDER_ID > 10300',
+    lambda: { _type: 'lambda', parameters: [{ _type: 'var', name: 'x' }] },
+    checked: { signature: '1a2b3c' },
+  };
+  const withExpressionFilter = (node: unknown): Record<string, unknown> =>
+    withNodes([node], 'expressionFilter101');
+
+  test.each<[string, unknown]>([
+    ['a filter by expression', withExpressionFilter(EXPRESSION_FILTER_101)],
+    [
+      'a filter by expression with its text only, not checked',
+      withExpressionFilter({
+        kind: 'expressionFilter',
+        id: 'expressionFilter101',
+        inputs: [null],
+        code: 'x | $x.',
+      }),
+    ],
+    [
+      'a filter by expression whose text is blank',
+      withExpressionFilter({ ...EXPRESSION_FILTER_101, code: '' }),
+    ],
+  ])('Reads %s, which the failing cases start from', (_, json) => {
+    expect(
+      decodeCubeSpec(json).document.query.getNode('expressionFilter101'),
+    ).toBeInstanceOf(ExpressionFilter);
+  });
+
+  test.each<[string, unknown, string, string]>([
+    [
+      'a filter by expression without its text',
+      withExpressionFilter({
+        kind: 'expressionFilter',
+        id: 'expressionFilter101',
+        inputs: [null],
+      }),
+      'query.nodes[0].code',
+      'is required',
+    ],
+    [
+      'a filter by expression whose text is a number',
+      withExpressionFilter({ ...EXPRESSION_FILTER_101, code: 1 }),
+      'query.nodes[0].code',
+      'must be a string',
+    ],
+    [
+      'a filter by expression whose lambda is its text',
+      withExpressionFilter({ ...EXPRESSION_FILTER_101, lambda: 'x | true' }),
+      'query.nodes[0].lambda',
+      'must be an object',
+    ],
+    [
+      'a filter by expression whose check is a text',
+      withExpressionFilter({ ...EXPRESSION_FILTER_101, checked: 'yes' }),
+      'query.nodes[0].checked',
+      'must be an object',
+    ],
+    [
+      'a filter by expression whose check has no signature',
+      withExpressionFilter({ ...EXPRESSION_FILTER_101, checked: {} }),
+      'query.nodes[0].checked.signature',
+      'is required',
+    ],
+  ])('Refuses %s', (_, json, path, detail) => {
+    expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
   });
 });
 

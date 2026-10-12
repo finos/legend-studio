@@ -25,6 +25,7 @@ import {
   EnumType,
   Filter,
   FilterOperator,
+  MESSAGE_FILTER_VALUE_WILDCARD,
   NotFilter,
   type FilterRule,
   PrimitiveType,
@@ -37,6 +38,7 @@ import {
   createEvent,
   fireEvent,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react';
 import {
@@ -57,6 +59,8 @@ import {
   TEST__renderInCubeApplication,
 } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
+import { createFakeNorthwindOutline } from '../../../__test-utils__/FakeCubeEngine.js';
+import type { CubeModelOutline } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
@@ -78,8 +82,11 @@ const ordersFiltered = (columns: SchemaColumn[], filter?: FilterRule): Query =>
     'filter101',
   );
 
-const render = async (query: Query): Promise<CubeEditorState> => {
-  const { host } = TEST__createCubeHost();
+const render = async (
+  query: Query,
+  outline?: CubeModelOutline,
+): Promise<CubeEditorState> => {
+  const { host } = TEST__createCubeHost(outline ? { outline } : {});
   const editorState = new CubeEditorState(
     host,
     new CubeDocument({ context: CONTEXT, query }),
@@ -149,6 +156,27 @@ beforeEach(() => {
 });
 
 describe('Filter editor', () => {
+  test.each([
+    ['DuckDB', true],
+    ['H2', false],
+  ])(
+    'Refuses %% or _ in a Contains value as it is typed, once the outline names DuckDB: on %s, %s',
+    async (databaseType, refused) => {
+      const editorState = await render(
+        slice(),
+        createFakeNorthwindOutline(databaseType),
+      );
+      pickColumn(condition(0), 'SHIP_COUNTRY');
+      pickOperator(condition(0), FilterOperator.CONTAINS);
+      typeValue(condition(0), 'Filter value', '50%');
+      // the editor loads the outline once a pattern is given % or _
+      await waitFor(() => expect(editorState.modelOutline).toBeDefined());
+      expect(problems()).toEqual(
+        refused ? [MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB')] : [],
+      );
+    },
+  );
+
   test('Builds the Part B rules, applied as one undo step, and the filter turns valid', async () => {
     const editorState = await render(slice());
     expect(problems()).toEqual(['Filter cannot be empty.']);

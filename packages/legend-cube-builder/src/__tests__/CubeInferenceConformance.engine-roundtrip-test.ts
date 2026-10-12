@@ -36,6 +36,7 @@ import {
   getAvailableAggregations,
   Group,
   IngestDatasetSource,
+  type JsonObject,
   Join,
   JoinType,
   Limit,
@@ -67,6 +68,7 @@ import {
   TEST__typingDifferences,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
 import {
+  TEST__checkedExpressionFilter,
   TEST__expression,
   type TEST__ExtendColumn,
   TEST__typedExtend,
@@ -171,6 +173,26 @@ const extended =
     return TEST__chainOf([
       ...nodes,
       TEST__typedExtend('extend101', TEST__chainOf(nodes), columns),
+    ]);
+  };
+
+/**
+ * relational101, then the nodes, then expressionFilter101 of the condition,
+ * checked for the input Cube infers: the suite checks its columns are the
+ * engine's (PLAN §11.11)
+ */
+const expressionFiltered =
+  (before: readonly QueryNode[], condition: JsonObject) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const nodes = [source(sources, 'relational101'), ...before];
+    return TEST__chainOf([
+      ...nodes,
+      TEST__checkedExpressionFilter(
+        'expressionFilter101',
+        TEST__chainOf(nodes),
+        'x | …',
+        condition,
+      ),
     ]);
   };
 
@@ -1542,6 +1564,38 @@ const CASES: readonly ConformanceCase[] = [
           ),
           ...RANKS,
         ],
+      ),
+    ),
+  },
+  // Filter by Expression (M6b, PLAN §11.11): its input's columns, as the
+  // engine types the filtered relation
+  {
+    // a comparison without toOne() or an isEmpty(), after a Restrict
+    name: 'expression-filter',
+    tables: [ORDERS],
+    build: expressionFiltered(
+      [
+        new Restrict('restrict101', [
+          'ORDER_ID',
+          'SHIP_VIA',
+          'SHIP_REGION',
+          'FREIGHT',
+          'ORDER_DATE',
+        ]),
+      ],
+      TEST__expression.lambda(
+        TEST__expression.call(
+          'or',
+          TEST__expression.call(
+            'greaterThan',
+            TEST__expression.column('SHIP_VIA'),
+            TEST__expression.integer(1),
+          ),
+          TEST__expression.call(
+            'isEmpty',
+            TEST__expression.column('SHIP_REGION'),
+          ),
+        ),
       ),
     ),
   },

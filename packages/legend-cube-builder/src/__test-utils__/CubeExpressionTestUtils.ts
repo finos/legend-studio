@@ -16,15 +16,18 @@
 
 import {
   buildSchemasAndValidity,
+  ExpressionFilter,
   Extend,
+  getExpressionFilterSignature,
   getExtendSignature,
   type JsonObject,
   PrimitiveType,
   type Query,
 } from '@finos/legend-cube';
 
-// Extend columns for tests (PLAN §11.7), written as the engine's JSON, as a
-// column stores it: number literals as their digits
+// Extend columns and filter conditions for tests (PLAN §11.7, §11.11),
+// written as the engine's JSON, as a node stores it: number literals as their
+// digits
 
 /** `x | <body>` and the pieces of a body */
 export const TEST__expression = {
@@ -54,6 +57,7 @@ export const TEST__expression = {
     _type: 'integer',
     value: String(value),
   }),
+  string: (value: string): JsonObject => ({ _type: 'string', value }),
 };
 
 /** A new column: its name, its lambda, and the type the engine gives it */
@@ -86,6 +90,29 @@ export const TEST__typedExtend = (
     signature: getExtendSignature(schema, extendColumns),
     types: columns.map(([, , type]) => PrimitiveType.get(type)),
   });
+};
+
+/**
+ * A Filter by Expression of this condition, checked for the input Cube infers
+ * for `input`'s selected node, so it is valid without the engine; the engine
+ * tests check the engine takes it. With an invalid input, not checked.
+ */
+export const TEST__checkedExpressionFilter = (
+  id: string,
+  input: Query,
+  code: string,
+  lambda: JsonObject,
+): ExpressionFilter => {
+  const filter = new ExpressionFilter(id, code, lambda);
+  const schema = buildSchemasAndValidity(input).schemas.get(
+    input.selected ?? '',
+  );
+  return schema
+    ? filter.withCheck({
+        kind: 'checked',
+        signature: getExpressionFilterSignature(schema, lambda),
+      })
+    : filter;
 };
 
 /** `a: x | $x.ORDER_ID + 1` and `b: x | $x.a * 2`, the second using the first, both Integer */

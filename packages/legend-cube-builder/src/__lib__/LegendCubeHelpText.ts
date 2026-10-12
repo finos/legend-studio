@@ -21,6 +21,7 @@ import {
   IngestDatasetSource,
   Distinct,
   Drop,
+  ExpressionFilter,
   Extend,
   Filter,
   Group,
@@ -59,6 +60,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Extends outgoing data set with new columns produced by expressions.',
   [Filter.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
+  /** Added by Cube: the original has no filter by expression (PLAN §11.11) */
+  [ExpressionFilter.TYPE]:
+    'Reduces the number of rows in the previous data set, keeping only rows for which the expression is true.',
   [Group.TYPE]:
     'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
   [Join.TYPE]:

@@ -45,12 +45,12 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import {
   buildCubeExtendTypingLambdas,
-  createStaleCubeExtendTypingRule,
   getCubeExtendUpstream,
   isCubeExtendTypingCurrent,
   isSameCubeExtendTyping,
   readCubeExtendTyping,
 } from '../CubeExtendTyping.js';
+import { createStaleCubeEngineCheckRule } from '../CubeEngineChecks.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 
 const registry = (): NodeRegistry => createNodeRegistry();
@@ -322,7 +322,7 @@ describe('Extend typing upstreams', () => {
 
   test('Makes an Extend typed for another input wait, but not one typed for this input or recorded without it', () => {
     let model = CUBE_NORTHWIND_MODEL;
-    const rule = createStaleCubeExtendTypingRule(registry(), () => model);
+    const rule = createStaleCubeEngineCheckRule(registry(), () => model);
     const typed = typedChain(chainOf(true), model);
     expect(rule(typed)).toEqual(new Map());
     // extend101 drops ->toOne(), and is typed again: extend102 is stale,

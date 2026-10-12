@@ -176,6 +176,7 @@ describe('Cube palette', () => {
       SORT,
       GROUP,
       FILTER,
+      'Filter by Expression',
       RESTRICT,
       RENAME,
       DISTINCT,

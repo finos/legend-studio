@@ -80,6 +80,12 @@ export const ERR_OTHER = 'This graph node is invalid.';
  */
 export const ERR_TYPING = 'Waiting for the engine to type the new columns.';
 
+/**
+ * Added by Cube: the node waits for the engine to check its condition (a
+ * Filter by Expression's, PLAN §11.11), shown as pending, not as a problem
+ */
+export const ERR_CHECKING = 'Waiting for the engine to check the condition.';
+
 // ---------------------------------------- Sources ----------------------------------------
 
 export const MESSAGE_SOURCE_INFO_UNRESOLVED =
@@ -287,6 +293,29 @@ export const MESSAGE_EXPRESSIONS_NOT_TYPED = (detail: string): string =>
 
 export const MESSAGE_FILTER_EMPTY = 'Filter cannot be empty.';
 
+/** Added by Cube: a Filter by Expression's condition is a lambda of one row, `x | …` (PLAN §11.11) */
+export const MESSAGE_CONDITION_NOT_A_LAMBDA =
+  'Condition must be a lambda with one parameter, such as x | $x.PRICE > 10.';
+
+/** Added by Cube: a condition gives something other than one Boolean, as the engine typed it (PLAN §11.11) */
+export const MESSAGE_CONDITION_NOT_BOOLEAN = (type: string): string =>
+  `Condition must give one Boolean, such as x | $x.PRICE > 10, not ${type}.`;
+
+/** Added by Cube: the engine could not check a condition, with its first line (PLAN §11.11) */
+export const MESSAGE_CONDITION_NOT_CHECKED = (detail: string): string =>
+  `Condition can't be checked: ${detail}`;
+
+/** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN §11.11, Appendix B) */
+export const MESSAGE_CONDITION_BACKSLASH = (fn: string): string =>
+  `The value given to ${quote(fn)} cannot contain a backslash (\\) yet.`;
+
+/** Added by Cube: on a database with no default `LIKE` escape character, the engine's patterns match `%` and `_` as wildcards (PLAN §11.11) */
+export const MESSAGE_CONDITION_WILDCARD = (
+  fn: string,
+  databaseType: string,
+): string =>
+  `On ${databaseType}, the value given to ${quote(fn)} cannot contain % or _ yet: ${databaseType} would match them as wildcards, so the rows would be wrong.`;
+
 /** Spec §8.5: a filter this version can't read, kept as it was saved */
 export const MESSAGE_FILTER_UNSUPPORTED = 'This filter is not supported yet.';
 
@@ -362,6 +391,13 @@ export const MESSAGE_SORT_COLUMNS_CUT = (columns: readonly string[]): string =>
 /** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN Appendix B) */
 export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
   `Filter values for ${quote(operator)} cannot contain a backslash (\\) yet.`;
+
+/** Added by Cube: on a database with no default `LIKE` escape character, the engine's patterns match `%` and `_` as wildcards (PLAN §11.11) */
+export const MESSAGE_FILTER_VALUE_WILDCARD = (
+  operator: string,
+  databaseType: string,
+): string =>
+  `On ${databaseType}, filter values for ${quote(operator)} cannot contain % or _ yet: ${databaseType} would match them as wildcards, so the rows would be wrong.`;
 
 // ---------------------------------------- Display ----------------------------------------
 

@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
+import { FILTER_OPERATOR_DESCRIPTIONS } from '../filter/FilterOperator.js';
+import { findPatternWildcardOperator } from '../filter/FilterTree.js';
 import type { Query } from '../graph/Query.js';
+import type { QueryNode } from '../graph/QueryNode.js';
+import {
+  MESSAGE_CONDITION_WILDCARD,
+  MESSAGE_FILTER_VALUE_WILDCARD,
+} from '../messages/CubeMessages.js';
 import { Distinct } from '../nodes/transforms/Distinct.js';
 import { Drop } from '../nodes/transforms/Drop.js';
+import {
+  ExpressionFilter,
+  findLikeFunctionWithWildcard,
+} from '../nodes/transforms/ExpressionFilter.js';
+import { Filter } from '../nodes/transforms/Filter.js';
 import { Limit } from '../nodes/transforms/Limit.js';
 import { Slice } from '../nodes/transforms/Slice.js';
 
@@ -107,6 +119,71 @@ export const getDialectWorkarounds = (
     ? undefined
     : CUBE_DIALECT_WORKAROUNDS.get(databaseType)) ?? NO_WORKAROUNDS;
 
+/**
+ * The database types with no default `LIKE` escape character (PLAN §11.11):
+ * the engine escapes `%` and `_` in the patterns of StartsWith, EndsWith and
+ * Contains with `\` but writes no `ESCAPE` clause, so these read `\%` as a
+ * backslash then any text, and the rows are wrong, with no error. Found on
+ * DuckDB; H2 reads `\` as its escape character.
+ */
+const NO_LIKE_ESCAPE_TYPES: ReadonlySet<string> = new Set(['DuckDB']);
+
+/** Whether a database type has no default `LIKE` escape character, so a pattern can't be given `%` or `_` */
+export const hasNoLikeEscape = (
+  databaseType: string | undefined,
+): databaseType is string =>
+  databaseType !== undefined && NO_LIKE_ESCAPE_TYPES.has(databaseType);
+
+/**
+ * What in a node gives `%` or `_` to a pattern, as its message for a
+ * database type: a Filter's StartsWith, EndsWith or Contains value, negated
+ * or not, or a Filter by Expression's literal given to `startsWith`,
+ * `endsWith` or `contains`; `undefined` when nothing does. Only literals are
+ * read.
+ */
+const findPatternWildcard = (
+  node: QueryNode,
+): ((databaseType: string) => string) | undefined => {
+  if (node instanceof Filter) {
+    const operator = findPatternWildcardOperator(node.filter);
+    return operator === undefined
+      ? undefined
+      : (databaseType) =>
+          MESSAGE_FILTER_VALUE_WILDCARD(
+            FILTER_OPERATOR_DESCRIPTIONS[operator],
+            databaseType,
+          );
+  }
+  if (node instanceof ExpressionFilter) {
+    const fn = findLikeFunctionWithWildcard(node.lambda);
+    return fn === undefined
+      ? undefined
+      : (databaseType) => MESSAGE_CONDITION_WILDCARD(fn, databaseType);
+  }
+  return undefined;
+};
+
+/** Whether a node gives `%` or `_` to a pattern, so whether it can run depends on the database type */
+export const givesPatternWildcard = (node: QueryNode): boolean =>
+  findPatternWildcard(node) !== undefined;
+
+/**
+ * A node's problems on a database type (PLAN §11.11): `%` or `_` given to a
+ * pattern, on a database with no default `LIKE` escape character
+ * (`hasNoLikeEscape`), as `\` is refused everywhere. None for another type,
+ * or none known.
+ */
+export const getDatabaseProblems = (
+  node: QueryNode,
+  databaseType: string | undefined,
+): string[] => {
+  if (!hasNoLikeEscape(databaseType)) {
+    return [];
+  }
+  const problem = findPatternWildcard(node);
+  return problem ? [problem(databaseType)] : [];
+};
+
 const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
   Drop.TYPE,
   Slice.TYPE,
@@ -116,7 +193,8 @@ const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
 
 /**
  * Whether running the query up to a node can depend on the database type: it
- * or a node upstream of it is a Drop, a Slice, a Limit or a Distinct. Only
+ * or a node upstream of it is a Drop, a Slice, a Limit or a Distinct, or a
+ * filter that gives `%` or `_` to a pattern (`givesPatternWildcard`). Only
  * then does a run need the model's connections.
  */
 export const needsDatabaseType = (query: Query, nodeId: string): boolean => {
@@ -130,6 +208,7 @@ export const needsDatabaseType = (query: Query, nodeId: string): boolean => {
     return (
       node !== undefined &&
       (WORKAROUND_TYPES.has(node.type) ||
+        givesPatternWildcard(node) ||
         query
           .getInputIds(id)
           .some((inputId) => inputId !== undefined && visit(inputId)))

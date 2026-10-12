@@ -127,6 +127,13 @@ would serve it.
   failing column found and located, a plan that fails, and a run. A test that needs a typed Extend without the engine
   builds one with `TEST__typedExtend` (`src/__test-utils__/CubeExpressionTestUtils.ts`), whose types the conformance
   cases check against the engine.
+- **Filter by Expression** (PLAN §11.11). `CubeExpressionFilter.engine-roundtrip-test.ts` checks conditions through the
+  adapter (the cube model's function, a nullable comparison without `->toOne()`, a condition's type named when it
+  isn't one Boolean, an unknown column located, `&&` without parentheses refused) and runs them on H2: the late
+  orders, an empty value kept by a negation compared directly and by neither after `->toOne()`, a window column after
+  a Partition, an Extend's column. The plan-only test pins the condition in the `WHERE` on every type, and a window
+  column's filter after the window, never `QUALIFY`; the direct connection runs the empty values and the window on H2
+  and DuckDB. A test that needs a checked filter without the engine builds one with `TEST__checkedExpressionFilter`.
 - `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
   example cube (PLAN §6.9) as the Examples dialog does: it types its tables, checks every node types as Cube infers it
   (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.

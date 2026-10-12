@@ -887,6 +887,7 @@ describe("The header's Add Items", () => {
     'Sort by Column',
     'Group by Column',
     'Filter by Column',
+    'Filter by Expression',
     'Restrict Columns',
     'Rename Columns',
     'Distinct Values',

@@ -26,6 +26,7 @@ import type { Query } from '../../graph/Query.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
   ERR_INCOMPLETE,
+  ERR_CHECKING,
   ERR_SCHEMAS,
   MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN,
   MESSAGE_AGGREGATION_FUNCTION_EMPTY,
@@ -37,6 +38,8 @@ import {
   MESSAGE_ALREADY_IN_INPUT_SCHEMA,
   MESSAGE_ALREADY_IN_OUTPUT_SCHEMA,
   MESSAGE_CANNOT_BE_EMPTY,
+  MESSAGE_CONDITION_BACKSLASH,
+  MESSAGE_CONDITION_NOT_A_LAMBDA,
   MESSAGE_CANNOT_HAVE_DUPLICATES,
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_CONCAT_COLUMN_COUNT,
@@ -65,9 +68,11 @@ import {
 } from '../../nodes/NodeRegistry.js';
 import type { ColumnAggregation } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
+import { getExpressionFilterSignature } from '../../nodes/transforms/ExpressionFilter.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Partition } from '../../nodes/transforms/Partition.js';
+import type { Schema } from '../../schema/Schema.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
 import {
   decodeCubeSpec,
@@ -1833,6 +1838,120 @@ describe(unitTest('Saved spec validity: concats'), () => {
         MESSAGE_DIFFERENT_DATABASES(OTHER_DATABASE, TEST_DATABASE),
       ],
       concat101: [ERR_SCHEMAS],
+    });
+  });
+});
+
+describe(unitTest('Saved spec validity: filters by expression'), () => {
+  // PLAN §11.11: a filter is valid once the engine checked its condition for
+  // its input; a saved check for another input waits, as a loaded one is
+  // checked again
+  const X = { _type: 'var', name: 'x' };
+  /** `x | $x.<name>-><fn>(<literal>)`, or `x | $x.QTY > 1` */
+  const condition = (
+    fn = 'greaterThan',
+    literal: JsonValue = 1,
+  ): JsonObject => ({
+    _type: 'lambda',
+    parameters: [X],
+    body: [
+      {
+        _type: 'func',
+        function: fn,
+        parameters: [
+          {
+            _type: 'property',
+            property: fn === 'greaterThan' ? 'QTY' : 'COUNTRY',
+            parameters: [X],
+          },
+          typeof literal === 'string'
+            ? { _type: 'string', value: literal }
+            : { _type: 'integer', value: String(literal) },
+        ],
+      },
+    ],
+  });
+  /** A saved spec: `relational101` feeding `expressionFilter101`, with these fields of its own */
+  const expressionFilterSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'expressionFilter101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'expressionFilter',
+          id: 'expressionFilter101',
+          inputs: ['relational101'],
+          ...own,
+        },
+      ],
+    },
+  });
+  /** The signature of a check for RELATIONAL's columns, as Cube reads them */
+  const signatureFor = (lambda: JsonObject): string => {
+    const { document } = decodeCubeSpec(
+      expressionFilterSpec({ code: 'x', lambda }),
+    );
+    const { schemas } = buildSchemasAndValidity(document.query);
+    return getExpressionFilterSignature(
+      schemas.get('relational101') as Schema,
+      lambda,
+    );
+  };
+
+  test.each<[string, JsonObject, string[]]>([
+    [
+      'a condition checked for this input',
+      {
+        code: 'x | $x.QTY > 1',
+        lambda: condition(),
+        checked: { signature: signatureFor(condition()) },
+      },
+      [],
+    ],
+    [
+      'a condition not checked yet',
+      { code: 'x | $x.QTY > 1', lambda: condition() },
+      [ERR_CHECKING],
+    ],
+    [
+      'a condition checked for another input',
+      {
+        code: 'x | $x.QTY > 1',
+        lambda: condition(),
+        checked: { signature: '1a2b3c' },
+      },
+      [ERR_CHECKING],
+    ],
+    [
+      'a text without its lambda',
+      { code: 'x | $x.QTY >' },
+      [MESSAGE_CANNOT_BE_EMPTY('Condition')],
+    ],
+    [
+      'a lambda of two parameters',
+      {
+        code: 'x, y | true',
+        lambda: {
+          ...condition(),
+          parameters: [X, { _type: 'var', name: 'y' }],
+        },
+      },
+      [MESSAGE_CONDITION_NOT_A_LAMBDA],
+    ],
+    [
+      'a backslash in a contains literal, even checked',
+      {
+        code: "x | $x.COUNTRY->contains('\\\\')",
+        lambda: condition('contains', '\\'),
+        checked: { signature: signatureFor(condition('contains', '\\')) },
+      },
+      [MESSAGE_CONDITION_BACKSLASH('contains')],
+    ],
+  ])('Reads %s, and reports it through inference', (_, own, errors) => {
+    expect(errorsOf(expressionFilterSpec(own))).toStrictEqual({
+      relational101: [],
+      expressionFilter101: errors,
     });
   });
 });

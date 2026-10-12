@@ -48,6 +48,7 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { ExpressionFilter } from '../../nodes/transforms/ExpressionFilter.js';
 import { Partition } from '../../nodes/transforms/Partition.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
@@ -2463,5 +2464,88 @@ describe(unitTest('Saved spec: partitions, added in M5'), () => {
         aggregations: [],
       }),
     );
+  });
+});
+
+describe(unitTest('Saved spec: filters by expression, added in M6b'), () => {
+  const REGISTRY = createNodeRegistry();
+  /** The registry of the version before M6b: every operation, but no Filter by Expression */
+  const M7_REGISTRY = new NodeRegistry(
+    [...REGISTRY.sources, ...REGISTRY.transforms].filter(
+      (definition) => definition.type !== ExpressionFilter.TYPE,
+    ),
+  );
+
+  /** A saved spec: `relational101` feeding `expressionFilter101`, with these fields of its own */
+  const expressionFilterSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'expressionFilter101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'expressionFilter',
+          id: 'expressionFilter101',
+          inputs: ['relational101'],
+          ...own,
+        },
+      ],
+    },
+  });
+  const LAMBDA: JsonObject = {
+    _type: 'lambda',
+    parameters: [{ _type: 'var', name: 'x' }],
+    body: [{ _type: 'boolean', value: true }],
+  };
+
+  test.each<[string, JsonObject]>([
+    [
+      'a filter by expression',
+      {
+        code: 'x | true',
+        lambda: LAMBDA,
+        checked: { signature: '1a2b3c' },
+        note: 'kept',
+      },
+    ],
+    // an error only where Filter by Expression is known
+    ['a filter by expression without its text', { lambda: LAMBDA }],
+  ])(
+    'Reads %s as an Unknown node in a version without Filter by Expression, editable, and re-saves it verbatim',
+    (_, own) => {
+      const json = expressionFilterSpec(own);
+      const { document, readOnly } = decodeCubeSpec(json, {
+        registry: M7_REGISTRY,
+      });
+      expect(readOnly).toBe(false);
+      const node = document.query.getNode('expressionFilter101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('expressionFilter');
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> expressionFilter101.in0',
+      ]);
+      expect(JSON.stringify(encodeCubeSpec(document, M7_REGISTRY))).toBe(
+        JSON.stringify(json),
+      );
+      // a new node would not take the saved node's id
+      expect(document.query.generateId(ExpressionFilter.TYPE)).not.toBe(
+        'expressionFilter101',
+      );
+    },
+  );
+
+  test('Reads a filter by expression in this version, its unknown keys kept', () => {
+    const json = expressionFilterSpec({
+      code: 'x | true',
+      lambda: LAMBDA,
+      note: 'kept',
+      zeta: [null, { flag: false }],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: REGISTRY,
+    }).document.query.getNode('expressionFilter101');
+    expect(node).toBeInstanceOf(ExpressionFilter);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(reSave(json, REGISTRY)).toBe(JSON.stringify(json));
   });
 });

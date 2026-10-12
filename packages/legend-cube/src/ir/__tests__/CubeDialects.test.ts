@@ -18,21 +18,34 @@ import { describe, expect, test } from '@jest/globals';
 import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
+import { FilterOperator } from '../../filter/FilterOperator.js';
+import { ColumnComparisonFilter, NotFilter } from '../../filter/FilterTree.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import type { QueryNode } from '../../graph/QueryNode.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
+import {
+  MESSAGE_CONDITION_WILDCARD,
+  MESSAGE_FILTER_VALUE_WILDCARD,
+} from '../../messages/CubeMessages.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
+import {
+  ExpressionFilter,
+  getExpressionFilterSignature,
+} from '../../nodes/transforms/ExpressionFilter.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join } from '../../nodes/transforms/Join.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
-import { SchemaColumn } from '../../schema/Schema.js';
+import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { OpaqueType } from '../../types/CubeType.js';
 import {
   CUBE_DIALECT_WORKAROUNDS,
+  getDatabaseProblems,
   getDialectWorkarounds,
+  givesPatternWildcard,
+  hasNoLikeEscape,
   needsDatabaseType,
 } from '../CubeDialects.js';
 import { printIR } from '../IRPrinter.js';
@@ -161,6 +174,121 @@ describe(unitTest('Dialect workarounds'), () => {
     );
     expect(needsDatabaseType(join, 'join101')).toBe(true);
     expect(needsDatabaseType(join, 'relational101')).toBe(false);
+  });
+});
+
+describe(unitTest('Patterns on a database with no LIKE escape'), () => {
+  const contains = (value: string): Filter =>
+    new Filter(
+      'filter101',
+      new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.CONTAINS, {
+        kind: 'string',
+        value,
+      }),
+    );
+  /** `x | $x.SHIP_COUNTRY->toOne()->endsWith(<value>)`, as the engine's JSON, checked for ORDERS */
+  const endsWith = (value: string): ExpressionFilter => {
+    const node = new ExpressionFilter('expressionFilter101', 'x | …', {
+      _type: 'lambda',
+      parameters: [{ _type: 'var', name: 'x' }],
+      body: [
+        {
+          _type: 'func',
+          function: 'endsWith',
+          parameters: [
+            {
+              _type: 'property',
+              property: 'SHIP_COUNTRY',
+              parameters: [{ _type: 'var', name: 'x' }],
+            },
+            { _type: 'string', value },
+          ],
+        },
+      ],
+    });
+    return node.withCheck({
+      kind: 'checked',
+      signature: getExpressionFilterSignature(new Schema(COLUMNS), node.lambda),
+    });
+  };
+
+  test('Knows DuckDB has none; H2, any other type and none known have one', () => {
+    expect(hasNoLikeEscape('DuckDB')).toBe(true);
+    ['H2', 'Postgres', 'duckdb', 'constructor', undefined].forEach(
+      (databaseType) => expect(hasNoLikeEscape(databaseType)).toBe(false),
+    );
+  });
+
+  test('Refuses % and _ in either filter on DuckDB only, naming the operator or function', () => {
+    expect(getDatabaseProblems(contains('50%'), 'DuckDB')).toEqual([
+      MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB'),
+    ]);
+    expect(getDatabaseProblems(endsWith('a_b'), 'DuckDB')).toEqual([
+      MESSAGE_CONDITION_WILDCARD('endsWith', 'DuckDB'),
+    ]);
+    expect(MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB')).toBe(
+      'On DuckDB, filter values for "contains" cannot contain % or _ yet: DuckDB would match them as wildcards, so the rows would be wrong.',
+    );
+    expect(MESSAGE_CONDITION_WILDCARD('endsWith', 'DuckDB')).toBe(
+      'On DuckDB, the value given to "endsWith" cannot contain % or _ yet: DuckDB would match them as wildcards, so the rows would be wrong.',
+    );
+    [
+      [contains('50%'), 'H2'],
+      [contains('50%'), undefined],
+      [contains('fifty'), 'DuckDB'],
+      [endsWith('ab'), 'DuckDB'],
+      [new Drop('drop101', 5), 'DuckDB'],
+    ].forEach(([node, databaseType]) =>
+      expect(
+        getDatabaseProblems(node as QueryNode, databaseType as string),
+      ).toEqual([]),
+    );
+    expect(givesPatternWildcard(contains('_'))).toBe(true);
+    expect(givesPatternWildcard(endsWith('%'))).toBe(true);
+    expect(givesPatternWildcard(contains('ab'))).toBe(false);
+  });
+
+  test('Needs the database type when a filter gives a pattern % or _, so a run can refuse it', () => {
+    expect(needsDatabaseType(ordersThen([contains('50%')]), 'filter101')).toBe(
+      true,
+    );
+    expect(
+      needsDatabaseType(
+        ordersThen([endsWith('_'), byOrderIdDesc()]),
+        'sort101',
+      ),
+    ).toBe(true);
+    expect(needsDatabaseType(ordersThen([contains('ab')]), 'filter101')).toBe(
+      false,
+    );
+  });
+
+  test('Never emits one for DuckDB, and emits it for any other database or to type', () => {
+    [
+      [contains('50%'), MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB')],
+      [
+        new Filter(
+          'filter101',
+          new NotFilter(
+            new ColumnComparisonFilter(
+              'SHIP_COUNTRY',
+              FilterOperator.DOES_NOT_START_WITH,
+              { kind: 'string', value: 'a_' },
+            ),
+          ),
+        ),
+        MESSAGE_FILTER_VALUE_WILDCARD('does not start with', 'DuckDB'),
+      ],
+      [endsWith('a_b'), MESSAGE_CONDITION_WILDCARD('endsWith', 'DuckDB')],
+    ].forEach(([node, message]) => {
+      const query = ordersThen([node as QueryNode]);
+      expect(() => run(query, 'DuckDB')).toThrow(message as string);
+      expect(run(query, 'H2')).toMatch(/startsWith|endsWith|contains/u);
+      expect(run(query)).toMatch(/startsWith|endsWith|contains/u);
+      expect(() =>
+        new QueryEmitter(query).emitRelation((node as QueryNode).id),
+      ).not.toThrow();
+    });
   });
 });
 
