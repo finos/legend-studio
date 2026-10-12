@@ -71,7 +71,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       PLAN §11.11)
 - [x] M7 Grid and presentation, built on `cube-m7`, merged into `cube-dev` as #5667 ([PROGRESS-M7.md](PROGRESS-M7.md),
       PLAN §11.10). `cube-dev` was rebased onto master on 2026-10-12 (`c1b40a480`) and reaches it through #5669
-- [ ] M6c Pivot, built on `cube-pivot` ([PROGRESS-M6C.md](PROGRESS-M6C.md), PLAN §11.12)
+- [ ] M6c Pivot, complete on `cube-pivot`, in draft #5674 into `cube-dev`, ready on the user's word
+      ([PROGRESS-M6C.md](PROGRESS-M6C.md), PLAN §11.12)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
