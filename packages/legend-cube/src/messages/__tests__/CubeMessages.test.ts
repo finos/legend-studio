@@ -203,6 +203,9 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED('DistinctValue')).toBe(
     'Aggregation function "DistinctValue" cannot be used in a pivot.',
   );
+  expect(MESSAGES.MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2')).toBe(
+    'Pivot is not supported on H2.',
+  );
   expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN('YEAR')).toBe(
     'Aggregation column "YEAR" cannot be a row column or the pivot column.',
   );

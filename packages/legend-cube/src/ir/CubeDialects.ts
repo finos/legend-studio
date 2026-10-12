@@ -21,6 +21,7 @@ import type { QueryNode } from '../graph/QueryNode.js';
 import {
   MESSAGE_CONDITION_WILDCARD,
   MESSAGE_FILTER_VALUE_WILDCARD,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '../messages/CubeMessages.js';
 import { Distinct } from '../nodes/transforms/Distinct.js';
 import { Drop } from '../nodes/transforms/Drop.js';
@@ -30,6 +31,7 @@ import {
 } from '../nodes/transforms/ExpressionFilter.js';
 import { Filter } from '../nodes/transforms/Filter.js';
 import { Limit } from '../nodes/transforms/Limit.js';
+import { Pivot } from '../nodes/transforms/Pivot.js';
 import { Slice } from '../nodes/transforms/Slice.js';
 
 /**
@@ -168,20 +170,72 @@ export const givesPatternWildcard = (node: QueryNode): boolean =>
   findPatternWildcard(node) !== undefined;
 
 /**
- * A node's problems on a database type (PLAN §11.11): `%` or `_` given to a
- * pattern, on a database with no default `LIKE` escape character
- * (`hasNoLikeEscape`), as `\` is refused everywhere. None for another type,
- * or none known.
+ * The database types known not to run the engine's static `pivot()` (PLAN
+ * §11.12): H2 can't translate it, 13 types assert "pivot is not supported",
+ * and Trino and Athena plan it with no PIVOT. Snowflake, Databricks, MemSQL
+ * (SingleStore) and DuckDB run it; a type in neither list is allowed, for
+ * the engine to judge. A `Set`: the type comes from the model.
+ */
+export const PIVOT_UNSUPPORTED_DATABASE_TYPES: ReadonlySet<string> = new Set([
+  'H2',
+  'Postgres',
+  'SqlServer',
+  'Sybase',
+  'SybaseIQ',
+  'DB2',
+  'Spanner',
+  'Oracle',
+  'Trino',
+  'Presto',
+  'Redshift',
+  'Hive',
+  'BigQuery',
+  'Athena',
+  'ClickHouse',
+  'Composite',
+]);
+
+/** Whether a node of the type can run on the database type: a Pivot only where it isn't known to fail; any type when none is known */
+const getTypeProblem = (
+  type: string,
+  databaseType: string,
+): string | undefined =>
+  type === Pivot.TYPE && PIVOT_UNSUPPORTED_DATABASE_TYPES.has(databaseType)
+    ? MESSAGE_PIVOT_UNSUPPORTED_DATABASE(databaseType)
+    : undefined;
+
+/**
+ * Why a node of the type can't be added on the database type, before it
+ * exists (PLAN §11.12): a Pivot on a database known not to run it.
+ * `undefined` when it can, or no type is known.
+ */
+export const getDatabaseProblemOfType = (
+  type: string,
+  databaseType: string | undefined,
+): string | undefined =>
+  databaseType === undefined ? undefined : getTypeProblem(type, databaseType);
+
+/**
+ * A node's problems on a database type: a Pivot where it can't run (PLAN
+ * §11.12); `%` or `_` given to a pattern, on a database with no default
+ * `LIKE` escape character (`hasNoLikeEscape`, PLAN §11.11), as `\` is
+ * refused everywhere. None for another type, or none known.
  */
 export const getDatabaseProblems = (
   node: QueryNode,
   databaseType: string | undefined,
 ): string[] => {
-  if (!hasNoLikeEscape(databaseType)) {
+  if (databaseType === undefined) {
     return [];
   }
-  const problem = findPatternWildcard(node);
-  return problem ? [problem(databaseType)] : [];
+  const typeProblem = getTypeProblem(node.type, databaseType);
+  const pattern = hasNoLikeEscape(databaseType)
+    ? findPatternWildcard(node)
+    : undefined;
+  return [
+    ...(typeProblem === undefined ? [] : [typeProblem]),
+    ...(pattern ? [pattern(databaseType)] : []),
+  ];
 };
 
 const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
@@ -192,10 +246,21 @@ const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Whether how a node runs depends on the database type: a Drop, a Slice, a
+ * Limit or a Distinct, which some databases take another way (PLAN §11.4); a
+ * Pivot, which some can't run (§11.12); a filter that gives `%` or `_` to a
+ * pattern (`givesPatternWildcard`, §11.11). The one rule for when Cube needs
+ * the database type.
+ */
+export const dependsOnDatabaseType = (node: QueryNode): boolean =>
+  WORKAROUND_TYPES.has(node.type) ||
+  node.type === Pivot.TYPE ||
+  givesPatternWildcard(node);
+
+/**
  * Whether running the query up to a node can depend on the database type: it
- * or a node upstream of it is a Drop, a Slice, a Limit or a Distinct, or a
- * filter that gives `%` or `_` to a pattern (`givesPatternWildcard`). Only
- * then does a run need the model's connections.
+ * or a node upstream of it does (`dependsOnDatabaseType`). Only then does a
+ * run need the model's connections.
  */
 export const needsDatabaseType = (query: Query, nodeId: string): boolean => {
   const seen = new Set<string>();
@@ -207,8 +272,7 @@ export const needsDatabaseType = (query: Query, nodeId: string): boolean => {
     const node = query.getNode(id);
     return (
       node !== undefined &&
-      (WORKAROUND_TYPES.has(node.type) ||
-        givesPatternWildcard(node) ||
+      (dependsOnDatabaseType(node) ||
         query
           .getInputIds(id)
           .some((inputId) => inputId !== undefined && visit(inputId)))

@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`       |
 | Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6c.2 done: the core; next M6c.3, databases                                   |
-| Tests  | 2960 core, 1729 builder (core group); the pivot engine test on DuckDB, 4 of 4 |
+| Step   | M6c.3 done: databases; next M6c.4, the editor                                 |
+| Tests  | 2964 core, 1732 builder (core group); the pivot engine test on DuckDB, 4 of 4 |
 
 ## Steps
 
@@ -21,7 +21,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 
 - [x] **M6c.1** The settled decisions (PLAN §11.12), this file, ISSUES.md's Trino and Athena entry
 - [x] **M6c.2** The core
-- [ ] **M6c.3** Databases: the one predicate, the guard, the lakehouse runtime table, the outline on open
+- [x] **M6c.3** Databases: the one predicate, the guard, the lakehouse runtime table, the outline on open
 - [ ] **M6c.4** The editor, registered, and the palette greyed
 - [ ] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [ ] **M6c.6** Guides, READMEs, testing.md and the changeset
@@ -33,10 +33,11 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit      | Subject                               |
-| ----- | ----------- | ------------------------------------- |
-| M6c.1 | `9c02931dc` | docs: settle Legend Cube M6c (Pivot)  |
-| M6c.2 | `25b370c4d` | feat: add Pivot to Legend Cube's core |
+| Step  | Commit      | Subject                                                          |
+| ----- | ----------- | ---------------------------------------------------------------- |
+| M6c.1 | `9c02931dc` | docs: settle Legend Cube M6c (Pivot)                             |
+| M6c.2 | `25b370c4d` | feat: add Pivot to Legend Cube's core                            |
+| M6c.3 | –           | feat: refuse Legend Cube's Pivot where its database can't run it |
 
 ## Notes
 
@@ -58,3 +59,16 @@ Filled in as steps land.
   `p4-cast.mjs` showed the cast takes Cube's precise types. A first engine test (`CubePivot.engine-roundtrip-test.ts`)
   runs Cube's pivot on a DuckDB direct connection: sums, counts with 0, no row column, string values with a space, a
   quote and a bar, then a Filter and a Sort on the value columns.
+- **M6c.3** (2026-10-12). Core: `PIVOT_UNSUPPORTED_DATABASE_TYPES` (the 16 types that refuse it or plan it with no
+  PIVOT; a type in neither list, or none, is allowed), `getDatabaseProblems` refusing a Pivot there
+  (`Pivot is not supported on H2.`), `getDatabaseProblemOfType` for a node not added yet, the emitter's backstop,
+  and one predicate, `dependsOnDatabaseType` (Drop, Slice, Limit, Distinct, Pivot, a pattern given `%` or `_`), which
+  `needsDatabaseType` and the editor's rule read. Builder: `CubeLakehouseRuntime.ts`, the one table from a lakehouse
+  runtime's kind to its database (`LakehouseRuntime` → Snowflake for now, `LakehouseSingleStoreRuntime` → MemSQL),
+  which the data product and ingest models now write their runtime from; data product and ingest cubes report
+  Snowflake. The outline loads as a cube with a table opens (and when an import changes its model); outlines are
+  kept by the model's content, so a cube imported on the same model loads none, and a load already on its way is
+  waited for, not started again (a run while the cube's opening load is out made two). `getAddDatabaseProblem` and
+  the add placement grey a node type its database can't run, with the reason, in the palette and the Add menus
+  (shown for Pivot once it is registered, M6c.4). Tests that asserted no outline without a Drop now assert it loads
+  once, as the cube opens.

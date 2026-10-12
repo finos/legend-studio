@@ -439,6 +439,11 @@ export const MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED = (
 ): string =>
   `Aggregation function ${quote(aggregation)} cannot be used in a pivot.`;
 
+/** Added by Cube: the database is known not to run the engine's pivot (PLAN §11.12) */
+export const MESSAGE_PIVOT_UNSUPPORTED_DATABASE = (
+  databaseType: string,
+): string => `Pivot is not supported on ${databaseType}.`;
+
 /** Added by Cube: the aggregated column is consumed by the pivot, so it can't make rows or columns (PLAN §11.12) */
 export const MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN = (
   column: string,

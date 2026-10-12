@@ -32,6 +32,7 @@ import {
   type RelationExpr,
   relationType,
 } from '../CubeIR.js';
+import { getDatabaseProblemOfType } from '../CubeDialects.js';
 import { type EmitContext, originOf } from '../EmitContext.js';
 import { emitAggregation } from './GroupEmitter.js';
 
@@ -70,6 +71,11 @@ export const emitPivot = (
   const [input] = inputs;
   if (input === undefined) {
     throw new Error(`Can't emit pivot "${node.id}": it needs one input`);
+  }
+  // as the editor refuses it, once it knows the database (PLAN §11.12)
+  const problem = getDatabaseProblemOfType(node.type, context.databaseType);
+  if (problem !== undefined) {
+    throw new Error(problem);
   }
   const { rows, column, values, aggregation } = node;
   const names = node.columnNames;

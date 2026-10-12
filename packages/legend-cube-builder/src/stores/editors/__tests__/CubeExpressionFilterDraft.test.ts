@@ -44,6 +44,7 @@ import {
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeModelOutline,
   type NodeId,
 } from '../../../graph-manager/CubeEngine.js';
 import {
@@ -107,12 +108,14 @@ afterEach(() => {
 /** ORDERS, then the filter, captured, in an editor whose fake engine answers by default */
 const open = (
   filter = new ExpressionFilter('expressionFilter101'),
+  outline?: CubeModelOutline,
 ): {
   state: CubeEditorState;
   fake: FakeCubeEngine;
   draft: CubeExpressionFilterDraft;
 } => {
-  const { host, fake } = TEST__createCubeHost();
+  // the cube loads its model's outline as it opens
+  const { host, fake } = TEST__createCubeHost(outline ? { outline } : {});
   fake.parseExpression.mockImplementation(async (code, sourceId) => ({
     lambda: lambdaOf(code),
     located: lambdaOf(code, sourceId),
@@ -265,8 +268,8 @@ describe('Filter by Expression draft', () => {
   ])(
     "Refuses %% or _ in a LIKE function's literal before asking the engine, on DuckDB only: on %s, %s",
     async (databaseType, refused) => {
-      const { fake, draft } = open();
-      fake.loadModel.mockResolvedValue(
+      const { fake, draft } = open(
+        undefined,
         createFakeNorthwindOutline(databaseType),
       );
       const like = TEST__expression.lambda(
