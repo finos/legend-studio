@@ -367,6 +367,22 @@ by anything. Writing `like '%\%%' escape '\'` (and escaping `\` itself, which H2
 dialects.
 ```
 
+### Trino and Athena: `pivot()` plans with no PIVOT
+
+Found in M6c's probes (PLAN §11.12), planned through the engine ✅ (`pivot-requirements/p3-static.out` A in the
+evidence folder). A static `pivot(~SHIP_VIA, [1, 2, 3], …)` with its `cast` plans on Trino and Athena, but the SQL has
+no `PIVOT`: the outer select reads `"'1__|__f'"` from a subquery that only has `SHIP_COUNTRY`, `SHIP_VIA` and
+`FREIGHT`, so the database would refuse it. The other 12 types without pivot assert "pivot is not supported"; these
+two should too, or write the pivot. Cube refuses a Pivot on both (PLAN §11.12). Draft issue for finos/legend-engine:
+
+```text
+Title: pivot() on Trino and Athena plans SQL without the PIVOT
+
+`->pivot(~SHIP_VIA, [1, 2, 3], ~f: x|$x.FREIGHT : y|$y->plus())->cast(@Relation<(…)>)` plans on Trino and Athena,
+but the SQL selects the pivoted columns ("'1__|__f'", …) from a subquery that never pivots. Other dialects without
+pivot support fail with "pivot is not supported"; Trino and Athena should fail the same way, or write the pivot.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns

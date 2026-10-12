@@ -2911,6 +2911,7 @@ project with a Database and a runtime.
 | M5b  | More window functions                      | Lag and Lead (an offset), NTile (buckets), Percent Rank, Cumulative Distribution, First and Last (the partition's, Last over the reversed sort), all needing a sort; planned on the 17 window types (§11.9)                                                                                                                                                                                                                                                                                                                                                          |
 | M6   | Difference and Extend                      | Difference (`Compare Column Values`) with the spec's rows and native types, a FULL join; Extend (`Extend Columns`) edited inline, a row per column with a Monaco editor, its text a full lambda (`x \| …`), each column able to use the ones above; JSON-canonical storage with the text; typing by the engine over the cube's model, in the background, again when the input the engine sees changes; Validate (F10) with plan-time checks (§11.7)                                                                                                                  |
 | M6b  | Filter by expression                       | A node, `Filter by Expression`, keeping the rows for which one Pure condition (a full lambda) is true; checked by the engine over the cube's model as an Extend is typed, and planned for the cube's database on Validate (§11.11)                                                                                                                                                                                                                                                                                                                                   |
+| M6c  | Pivot                                      | A node, `Pivot by Column`, through the engine's static `pivot()`: one pivot column, values loaded from the engine and picked, one aggregation, columns named by the value; refused, and greyed in the palette, on databases that can't run it (H2 and most others; Snowflake, Databricks, SingleStore and DuckDB can); data product cubes report Snowflake. PLAN §11.12                                                                                                                                                                                              |
 | M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -4426,6 +4427,128 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - Appendix A: a node beyond the spec (beside §7.x), §16 (the new messages), §17.6 (the editor).
 
 ---
+
+### 11.12 M6c: Pivot
+
+M6c adds **Pivot**: a node that turns the values of a column into columns, through the engine's `pivot()`. Each
+picked value becomes a column holding one aggregate, and each combination of the row columns becomes a row. The spec
+has pivot only as ag-Grid's local mode (§12.1), which pivots the fetched rows in the browser; local mode keeps it. M6c
+is built on the branch `cube-pivot`, from `cube-dev` (`c1b40a480`), and lands in a PR into `cube-dev`. Its status is
+in [PROGRESS-M6C.md](PROGRESS-M6C.md). Requirements: the probes under `pivot-requirements/` in the local evidence
+folder, run on the local engine: ✅ where a probe ran, 💭 where only a plan was made or it is reasoned. Nothing runs
+on Snowflake, Databricks or SingleStore locally: for those, ✅ means planned.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M6c** (user, 2026-10-12):
+
+1. **The engine's `pivot()`**, disabled wherever the database is known not to run it, such as H2 connections
+   (user's direction), in its **static form** (on the recommendation): one pivot column, its values listed, one
+   aggregation. Cube knows the columns without a run, and the form plans on Snowflake, Databricks and SingleStore.
+   The dynamic form (columns from the data) plans on Snowflake and DuckDB only, and needs a run to learn its columns.
+2. **Values loaded and picked:** Cube asks the engine for the column's distinct values and the user ticks the ones
+   to pivot, up to a cap. A value the data gains later shows only once picked.
+3. **Columns named by the value** (`2000`, `2011`), renamed after the pivot; a name a row column takes gets a suffix.
+4. **Disabled in the palette and on the node:** where Cube knows the database and it can't pivot, `Pivot by Column`
+   is greyed with the reason, in the palette and the menus, and a Pivot already there is refused with a message.
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **The node:** `Pivot`, saved as `pivot`, `Pivot by Column` after `Group by Column` in the palette, one `tds` input:
+  `{rows, column, values, aggregation}`. `rows` are the row columns in input order, as Group's keys (none gives one
+  row ✅); `column` the pivot column; `values` typed literals, in the order picked; `aggregation` one of Group's
+  (`{function, column}`, §11.5), with no name. Help: "Turns the values of a column into columns: a row for each
+  combination of the row columns, and a column for each picked value, holding its aggregate." The tests' example of
+  a kind Cube doesn't know, `pivot`, becomes `future`.
+- **Pivot columns:** a String, an integer (Integer, SmallInt, TinyInt, BigInt), a StrictDate or a Boolean ✅. Other
+  types are refused (`Pivot column "<c>" of type <T> cannot be pivoted.`): a float matches its values inexactly, as
+  M7 found for `REAL`; DateTime, Decimal and enumerations aren't probed yet.
+- **Values:** one to 100, each of the column's type, none twice. A value whose text can't name a column (empty, or
+  holding `"`, `\` or a control character, or longer than 128 code points; `isValidColumnName`, §7.5) is refused: the
+  engine drops `"` from the names it generates ✅. The editor loads them as
+  `<input>->select(~c)->distinct()->sort(~c->ascending())->limit(101)` on the cube's runtime; an empty value can't be
+  listed in Pure, so it isn't offered.
+- **The aggregation:** Sum, Count, Count rows, Distinct Count, Average, Min or Max ✅, on a column that is neither the
+  pivot column nor a row column, offered per family as in a Group (§10). Distinct Value is left out: DuckDB refuses
+  its pivot ("Pivot expression must contain exactly one aggregate") ✅.
+- **Output schema:** the row columns, as in the input, then one column per value, in the values' order, named by
+  the value's text (`2024-01-31`, `true`); a name a row column or an earlier value already has, compared folded,
+  takes `_2`, `_3`, … (§7.11's rule). Each value column is typed as the aggregation is in a Group (§5.7): Count,
+  Distinct Count and Count rows are Integer and never empty, a combination with no rows giving 0 ✅; the others can
+  be empty, and are where the combination has no rows ✅. No row order, as a Group.
+- **Emission:** a `select` of the row, pivot and aggregated columns; then
+  `pivot(~column, [values…], ~cube_pivot: x|… : y|…)`; then a `cast` naming each column,
+  `(rows…, '<v>__|__cube_pivot': T, …)`; then a `rename` of each value column to its name ✅ on DuckDB. The `select`
+  is needed: every column the pivot doesn't consume becomes a row column ✅. The cast must name exactly the listed
+  values: a value it names that isn't listed types but doesn't run ✅. Later steps (Filter, Sort, Extend, Rename) use
+  the renamed columns ✅. The cast's column types: 💭 the precise types Cube infers, probed in M6c.2.
+- **Which databases:** the static pivot plans, with the outer select reading the names the `PIVOT` gives, on
+  **Snowflake, Databricks, SingleStore (`MemSQL`) and DuckDB** ✅, and runs on DuckDB ✅. It is refused on H2, which
+  can't translate it ✅, and on the 12 types that assert "pivot is not supported" ✅. Trino and Athena plan it with no
+  `PIVOT` at all, reading columns nothing produces ✅ (ISSUES.md): refused too. A missing type (no outline, or
+  databases of different types) allows it; the engine's plan or run says the rest. Databricks needs an engine with
+  legend-engine#5142 (2026-09-10).
+- **Which database a cube runs on:** data product and ingest cubes run on a lakehouse runtime Cube writes, and today
+  report none (§11.4). One table maps the runtime's kind to the engine's type: `LakehouseRuntime` → `Snowflake` (every
+  lakehouse runtime routes there for now, user 2026-10-11), `LakehouseSingleStoreRuntime` → `MemSQL`; a Databricks
+  runtime will be another subtype of the base lakehouse runtime. Nothing else changes for them: Snowflake has no
+  workaround (§11.4).
+- **One predicate** in core says whether a node's run depends on the database type: a Drop, Slice, Limit or
+  Distinct, a filter giving a pattern `%` or `_` (§8.2), a Pivot. `needsDatabaseType`, the editor's outline loading
+  and its database rule read it, rather than a list per feature.
+- **The guard:** core's `getDatabaseProblems` refuses a Pivot on a type that can't run it, saying
+  `Pivot isn't supported on H2.`, which the editor's rule shows on the node and the emitter throws on, as for
+  DuckDB's `%` and `_` (§8.2). The palette and the canvas and grid menus grey `Pivot by Column` with the same reason
+  when the selected node's database is known and refuses it; the model's outline is loaded when a cube with a table
+  opens, so the reason is there before any run.
+- **The grid:** server-side mode runs a Pivot as any node, and drills down by its row columns; local mode's ag-Grid
+  pivot stays, for quick looks at the fetched rows.
+
+**Engine facts** (probes under `pivot-requirements/`):
+
+| Fact                                                                                                                 |     | Probe             |
+| -------------------------------------------------------------------------------------------------------------------- | --- | ----------------- |
+| `pivot()` types as `Relation<Any>` with no columns; after a `cast`, the cast's columns                               | ✅  | `p1`, `p2`        |
+| H2 runs neither form ("Dialect translation for node of type PivotedRelation not implemented")                        | ✅  | `p1-pivot.out`    |
+| The static form takes one pivot column and one aggregation; two of either doesn't compile                            | ✅  | `p2-native.out` A |
+| Every column not pivoted or aggregated becomes a row column                                                          | ✅  | `p2`, `p3` B      |
+| Static + cast + rename plans on Snowflake, Databricks, MemSQL and DuckDB, the outer select reading the PIVOT's names | ✅  | `p3-static.out` A |
+| Trino and Athena plan it with no PIVOT; the 12 others assert "pivot is not supported"                                | ✅  | `p3-static.out` A |
+| Sum, Count, Count rows, Distinct Count, Average, Min, Max run; Count and Distinct Count give 0 where no rows are     | ✅  | `p3-static.out` B |
+| Distinct Value's pivot fails on DuckDB                                                                               | ✅  | `p3-static.out` B |
+| Strings with a space, `'`, `\|`, `\`, dates and booleans make names; `"` is dropped from them                        | ✅  | `p3-static.out` C |
+| A cast naming an unlisted value types but returns fewer columns; one missing a value the data has drops it silently  | ✅  | `p2-native.out` C |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                          | Done when                                                        |
+| ----- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| M6c.1 | This subsection, PROGRESS-M6C.md, ISSUES.md's Trino and Athena entry (docs only)                                     | Committed and pushed; a draft PR into `cube-dev`                 |
+| M6c.2 | The core: `pivot` freed in the tests; the node, its schema, validation and messages, the emitter, the codec, samples | Every message tested; codec round trips; `printIR` shows `pivot` |
+| M6c.3 | Databases: the one predicate, the guard and its message, the lakehouse runtime table, the outline loaded on open     | The guard tested per type; data product cubes report Snowflake   |
+| M6c.4 | The editor, registered: rows, the pivot column, values loaded and picked, the aggregation; the palette greyed        | Editor and draft tests pass                                      |
+| M6c.5 | On the engine: DuckDB direct connections, plans on the 20 types with a canary for the refusals, conformance, corpus  | Engine, plan-only and conformance tests pass                     |
+| M6c.6 | Guides, READMEs, testing.md, the patch changeset                                                                     | `yarn check:ci` passes                                           |
+| M6c.7 | Verification and a browser rehearsal on a DuckDB direct connection                                                   | Every finding fixed or recorded; the rehearsal passes            |
+| M6c.8 | A demo video (§11.3) on DuckDB, with H2's refusal shown                                                              | Each caption true on screen; sent                                |
+| M6c.9 | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                         | The plan consistent; the PR ready                                |
+
+**Risks and open gaps:**
+
+- Snowflake, Databricks and SingleStore are checked by plans only: data products can't run on the open-source engine
+  (ISSUES.md). A cube on them is first run in GS.
+- One pivot column and one aggregation; several would need the dynamic form, its discovery run, and Snowflake.
+- A value the data gains after it was picked is left out, with no warning.
+- `LakehouseRuntime` → Snowflake holds while lakehouse runtimes route there; the table is the one place to change.
+
+**Supersessions** (applied in M6c.9 to the sections they change; kept here as the record of what M6c changed):
+
+- §4 and §7: Pivot, Cube's own node, beside the spec's Group.
+- §8.8: a Transforms row for Pivot's emission.
+- §10.3: `pivot`'s saved shape, `{rows, column, values, aggregation}`.
+- §11.4: data product and ingest cubes report their lakehouse runtime's database type.
+- §12.1: pivot also as a node, which server-side mode runs; ag-Grid's local pivot unchanged.
+- Appendix A: a row for the node; Appendix B: Trino and Athena planning `pivot()` without a PIVOT.
 
 ## 12. G. Risks and open questions
 
