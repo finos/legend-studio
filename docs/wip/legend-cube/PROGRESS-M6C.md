@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6c.6 done: the guides; next M6c.7, verification                                                |
-| Tests  | 2964 core, 1748 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
+| Step   | M6c.7 done: verification and the browser rehearsal; next M6c.8, the demo video                  |
+| Tests  | 2964 core, 1750 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
 
 ## Steps
 
@@ -25,7 +25,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 - [x] **M6c.4** The editor, registered, and the palette greyed
 - [x] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [x] **M6c.6** Guides, READMEs, testing.md and the changeset
-- [ ] **M6c.7** Verification and the browser rehearsal
+- [x] **M6c.7** Verification and the browser rehearsal
 - [ ] **M6c.8** A demo video (PLAN §11.3)
 - [ ] **M6c.9** Fold PLAN §11.12's supersessions in; the PR ready for `cube-dev`
 
@@ -41,6 +41,7 @@ Filled in as steps land.
 | M6c.4 | `7c0ab3ad1` | feat: add the Pivot editor to Legend Cube                        |
 | M6c.5 | `a744de5be` | test: run Legend Cube's Pivot on the engine and every database   |
 | M6c.6 | `1dc2ab611` | docs: cover Legend Cube's Pivot in its guides                    |
+| M6c.7 | `ce102873d` | fix: refuse Legend Cube Pivot values that differ only in case    |
 
 ## Notes
 
@@ -94,3 +95,13 @@ Filled in as steps land.
   databases can't run and whose function types as `Relation<Any>`; `dependsOnDatabaseType` the one rule;
   `getCubeAddDatabaseProblem`), testing.md (the Pivot suites), hosting.md (where Pivot runs; the lakehouse runtime
   table), and a patch changeset for both packages. `yarn check:ci` passes.
+- **M6c.7** (2026-10-12). An inline review of the branch's diff (the node, its checks and schema, the emitter, the
+  codec, the database guard, the outline on open, the draft and the editor) found one bug, probed in `p6-case.mjs`:
+  DuckDB compares names without case, so a pivot of `'a'` and `'A'` gave both columns `a`'s numbers, with no error.
+  Pivot now refuses two values that differ only in case (`foldColumnName`, the rule for Cube's other names); the
+  editor greys such a value with why, and All skips it (`ce102873d`). PLAN §11.12: the values in the engine's order,
+  the cast's types and `[1]` probed, the guard's message as written. Browser rehearsal on `:9002`, a DuckDB direct
+  connection: Pivot in the palette; the editor disables the right columns; Load values gives 2000, 2011, 2012; Sum of
+  amount by country over 2000 and 2012 gives DE 7 and 4, US 3 and 9, FR 10 and empty; on the H2 example "Top
+  customers by orders", Pivot is greyed with "Pivot is not supported on H2.". No new console errors. The multi-agent
+  review wasn't run: it needs the user's word.
