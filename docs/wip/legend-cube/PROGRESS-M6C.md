@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                         |
-| ------ | ----------------------------------------------------------------------------- |
-| Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`       |
-| Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6c.4 done: the editor; next M6c.5, the engine                                |
-| Tests  | 2964 core, 1748 builder (core group); the pivot engine test on DuckDB, 4 of 4 |
+| Item   | State                                                                                           |
+| ------ | ----------------------------------------------------------------------------------------------- |
+| Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
+| Engine | Local legend-engine on `localhost:6300`                                                         |
+| Step   | M6c.5 done: the engine; next M6c.6, the guides                                                  |
+| Tests  | 2964 core, 1748 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
 
 ## Steps
 
@@ -23,7 +23,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 - [x] **M6c.2** The core
 - [x] **M6c.3** Databases: the one predicate, the guard, the lakehouse runtime table, the outline on open
 - [x] **M6c.4** The editor, registered, and the palette greyed
-- [ ] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
+- [x] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [ ] **M6c.6** Guides, READMEs, testing.md and the changeset
 - [ ] **M6c.7** Verification and the browser rehearsal
 - [ ] **M6c.8** A demo video (PLAN §11.3)
@@ -39,6 +39,7 @@ Filled in as steps land.
 | M6c.2 | `25b370c4d` | feat: add Pivot to Legend Cube's core                            |
 | M6c.3 | `f341d3892` | feat: refuse Legend Cube's Pivot where its database can't run it |
 | M6c.4 | `7c0ab3ad1` | feat: add the Pivot editor to Legend Cube                        |
+| M6c.5 | `a744de5be` | test: run Legend Cube's Pivot on the engine and every database   |
 
 ## Notes
 
@@ -81,3 +82,10 @@ Filled in as steps land.
   values ticked in the engine's order (All, None; one that can't name a column disabled), and the aggregation (its
   function, never Distinct Value, and its column, or "Every row"). Help text, the `TablePivot` icon, three notes. The
   palette and Add menus grey Pivot with "Pivot is not supported on H2." on an H2 cube; the menu tests now say so.
+- **M6c.5** (2026-10-12). `p5-multiplicity.mjs` showed a cast can say `[1]`: the `relationType` IR now carries each
+  column's emptiness, so the engine types a pivot exactly as Cube infers it (counts and required row columns never
+  empty), and the nodes after it too; two conformance cases pin it. `CubePivot.engine-roundtrip-test.ts` on a DuckDB
+  direct connection: 7 tests, a date and a Boolean pivot column, Average and Min, a Group summing count columns, and
+  Cube refusing H2 and Trino. `LegendCubeDialects`: a PIVOT on Snowflake, Databricks, MemSQL and DuckDB whose names
+  the outer select reads as the values; Trino and Athena planning none (a canary); the 14 others refusing it. The
+  corpus's operations sample has a pivot. Engine suites: 919 of 923 (the 4 known local setup-SQL timeouts).
