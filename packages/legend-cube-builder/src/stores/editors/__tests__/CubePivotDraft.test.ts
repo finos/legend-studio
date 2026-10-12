@@ -46,6 +46,7 @@ import { CubeEditorState } from '../../CubeEditorState.js';
 import { PIVOT_VALUE_DISABLED_REASON } from '../../../__lib__/LegendCubeLabels.js';
 import { CUBE_NORTHWIND_MODEL } from '../../fixtures/CubeNorthwindModel.js';
 import { CubePivotDraft, toPivotValue } from '../CubePivotDraft.js';
+import type { CubeResult } from '../../../graph-manager/CubeEngine.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const integer = (value: string): LiteralValue => ({ kind: 'integer', value });
@@ -139,7 +140,13 @@ describe('Pivot draft', () => {
     const { draft } = open(new Pivot('pivot101', [], 'SHIP_COUNTRY'));
     draft.loaded = {
       column: 'SHIP_COUNTRY',
-      values: [string('A'), string('a'), string('b'), string('q"t')],
+      values: [
+        string('A'),
+        string('a'),
+        string('b'),
+        string('q"t'),
+        string('q`t'),
+      ],
       more: false,
     };
     draft.toggleValue(string('a'));
@@ -150,11 +157,111 @@ describe('Pivot draft', () => {
     expect(draft.untickableReason(string('q"t'))).toBe(
       PIVOT_VALUE_DISABLED_REASON.NOT_A_COLUMN_NAME,
     );
+    // Databricks and MemSQL quote names with backticks
+    expect(draft.untickableReason(string('q`t'))).toBe(
+      PIVOT_VALUE_DISABLED_REASON.NOT_A_COLUMN_NAME,
+    );
     draft.pickAllValues();
     expect(draft.values).toEqual([string('a'), string('b')]);
     draft.clearValues();
     draft.pickAllValues();
     expect(draft.values).toEqual([string('A'), string('b')]);
+  });
+
+  test('Ticks at most 100 values: All stops there, keeping those ticked, and the rest say why', () => {
+    const { draft } = open(
+      new Pivot('pivot101', [], 'EMPLOYEE_ID', [integer('5000')]),
+    );
+    draft.loaded = {
+      column: 'EMPLOYEE_ID',
+      values: Array.from({ length: 100 }, (_, index) => integer(String(index))),
+      more: true,
+    };
+    draft.pickAllValues();
+    expect(draft.values).toHaveLength(100);
+    expect(draft.values).toContainEqual(integer('5000'));
+    expect(draft.untickableReason(integer('99'))).toBe(
+      PIVOT_VALUE_DISABLED_REASON.TOO_MANY,
+    );
+    // one ticked can still be unticked
+    expect(draft.untickableReason(integer('5000'))).toBeUndefined();
+    expect(draft.build().validate([ORDERS])).toBe(true);
+  });
+
+  test('Builds a new pivot when only the aggregation column, or one value of as many, changes', () => {
+    const pivot = new Pivot(
+      'pivot101',
+      ['SHIP_COUNTRY'],
+      'SHIP_VIA',
+      [integer('1'), integer('3')],
+      { function: AggregationFunction.SUM, column: 'FREIGHT' },
+    );
+    const { draft } = open(pivot);
+    draft.setAggregationColumn('ORDER_ID');
+    const byOrder = draft.build();
+    expect(byOrder === pivot).toBe(false);
+    expect(byOrder.aggregation).toEqual({
+      function: 'Sum',
+      column: 'ORDER_ID',
+    });
+    draft.setAggregationColumn('FREIGHT');
+    expect(draft.build() === pivot).toBe(true);
+    draft.loaded = {
+      column: 'SHIP_VIA',
+      values: [integer('1'), integer('2'), integer('3')],
+      more: false,
+    };
+    draft.toggleValue(integer('1'));
+    draft.toggleValue(integer('2'));
+    const swapped = draft.build();
+    expect(swapped === pivot).toBe(false);
+    expect(swapped.values).toEqual([integer('2'), integer('3')]);
+  });
+
+  test('Drops the answer of a load still on its way when another pivot column is picked, and loads that one', async () => {
+    const { fake, draft } = open(new Pivot('pivot101', [], 'SHIP_VIA'));
+    let answer: (result: CubeResult) => void = () => undefined;
+    fake.execute.mockImplementationOnce(
+      () =>
+        new Promise<CubeResult>((resolve) => {
+          answer = resolve;
+        }),
+    );
+    const stale = flowResult(draft.loadValues());
+    for (
+      let tries = 0;
+      !fake.execute.mock.calls.length && tries < 50;
+      tries++
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+    draft.setColumn('EMPLOYEE_ID');
+    expect(draft.loading).toBe(false);
+    answer({
+      columns: ['SHIP_VIA'],
+      rows: [['1'], ['2']],
+      sql: [],
+      durationMs: 1,
+    });
+    await stale.catch(() => undefined);
+    expect(draft.loaded).toBeUndefined();
+    expect(draft.loadError).toBeUndefined();
+    expect(draft.loading).toBe(false);
+    draft.pickAllValues();
+    expect(draft.values).toEqual([]);
+    fake.execute.mockResolvedValueOnce({
+      columns: ['EMPLOYEE_ID'],
+      rows: [['5'], ['6']],
+      sql: [],
+      durationMs: 1,
+    });
+    await flowResult(draft.loadValues());
+    expect(draft.loaded).toEqual({
+      column: 'EMPLOYEE_ID',
+      values: [integer('5'), integer('6')],
+      more: false,
+    });
   });
 
   test('Takes no column for Count rows, and one to pick for the others, keeping the one it had', () => {
@@ -175,7 +282,7 @@ describe('Pivot draft', () => {
     });
   });
 
-  test("Loads the pivot column's values from the engine: once each, ascending, at most 100, leaving out empty ones", async () => {
+  test("Loads the pivot column's non-empty values from the engine: once each, ascending, at most 100", async () => {
     const { fake, draft } = open(new Pivot('pivot101', [], 'SHIP_VIA'));
     fake.execute.mockResolvedValueOnce({
       columns: ['SHIP_VIA'],
@@ -192,8 +299,10 @@ describe('Pivot draft', () => {
     });
     expect(draft.loading).toBe(false);
     const ran = printIR(fake.execute.mock.calls[0]?.[1] as never);
+    // empty values are filtered out before the 101 rows that tell whether
+    // there are more are taken
     expect(ran).toContain(
-      '->select(~[SHIP_VIA])->distinct()->sort(~SHIP_VIA->ascending())->limit(101)',
+      '->select(~[SHIP_VIA])->filter({row | !($row.SHIP_VIA->isEmpty())})->distinct()->sort(~SHIP_VIA->ascending())->limit(101)',
     );
     // the pivot isn't in the query that loads them
     expect(ran).not.toContain('pivot');

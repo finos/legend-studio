@@ -33,6 +33,7 @@ import {
   getPivotValuesCutNotice,
   PIVOT_COLUMN_DISABLED_REASON,
   PIVOT_EDITOR_NOTES,
+  PIVOT_NO_VALUES_NOTICE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { CubePivotDraft } from '../../stores/editors/CubePivotDraft.js';
 import { CubeButton } from '../CubeButton.js';
@@ -156,6 +157,7 @@ export const CubePivotEditor = observer((props: CubeNodeEditorProps) => {
         </CubeButton>
         <CubeButton
           title="Untick every value"
+          aria-label="None of the values"
           disabled={readOnly || !draft.values.length}
           onClick={() => draft.clearValues()}
         >
@@ -196,6 +198,11 @@ export const CubePivotEditor = observer((props: CubeNodeEditorProps) => {
                   <span className="min-w-0 truncate">
                     {text === '' ? '(empty text)' : text}
                   </span>
+                  {reason !== undefined && !picked && (
+                    <span className="shrink-0 text-sm text-[var(--color-text-secondary)]">
+                      {`(${reason})`}
+                    </span>
+                  )}
                   {picked && name !== undefined && name !== text && (
                     <span className="text-sm text-[var(--color-text-secondary)]">
                       {`as ${name}`}
@@ -206,6 +213,11 @@ export const CubePivotEditor = observer((props: CubeNodeEditorProps) => {
             );
           })}
         </ul>
+      )}
+      {draft.loaded?.values.length === 0 && (
+        <div className="text-sm text-[var(--color-text-secondary)]">
+          {PIVOT_NO_VALUES_NOTICE}
+        </div>
       )}
       {draft.loaded?.more && (
         <div className="text-sm text-[var(--color-text-secondary)]">

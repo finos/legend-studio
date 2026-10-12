@@ -55,6 +55,7 @@ const ORDERS = new Schema([
   column('ORDER_DATE', 'StrictDate', true),
   column('SHIPPED', 'Boolean', true),
   column('FREIGHT', `${P}Double`, true),
+  column('PRICE', `${P}Numeric`, true, [10, 2]),
   column('REQUIRED_AT', `${P}Timestamp`, true),
   enumColumn('REGION', 'test::Region', ['EMEA', 'APAC'], true),
   column('PAYLOAD', 'Variant', true),
@@ -173,15 +174,18 @@ describe(unitTest('Pivot'), () => {
       ),
     ).toEqual([true, true, true, true, true]);
     expect(
-      ['FREIGHT', 'REQUIRED_AT', 'REGION', 'PAYLOAD'].map((name) =>
+      ['FREIGHT', 'PRICE', 'REQUIRED_AT', 'REGION', 'PAYLOAD'].map((name) =>
         isPivotableType(ORDERS.type(name) as never),
       ),
-    ).toEqual([false, false, false, false]);
+    ).toEqual([false, false, false, false, false]);
     expect(errorsOf(pivot({ pivotColumn: 'NOPE' }))).toEqual([
       MESSAGE_NOT_IN_INPUT_SCHEMA('Pivot column', 'NOPE'),
     ]);
     expect(errorsOf(pivot({ pivotColumn: 'FREIGHT' }))).toEqual([
       MESSAGE_PIVOT_COLUMN_NOT_PIVOTABLE('FREIGHT', 'Double'),
+    ]);
+    expect(errorsOf(pivot({ pivotColumn: 'PRICE' }))).toEqual([
+      MESSAGE_PIVOT_COLUMN_NOT_PIVOTABLE('PRICE', 'Numeric(10,2)'),
     ]);
     expect(
       errorsOf(
@@ -228,7 +232,15 @@ describe(unitTest('Pivot'), () => {
         pivot({
           pivotColumn: 'SHIP_COUNTRY',
           rows: [],
-          values: [string(''), string('q"t'), string('b\\s'), string(' x')],
+          values: [
+            string(''),
+            string('q"t'),
+            string('b\\s'),
+            string(' x'),
+            // Databricks and MemSQL quote names with backticks, which the
+            // engine doesn't escape in the pivot's own column name
+            string('q`t'),
+          ],
         }),
       ),
     ).toEqual([
@@ -236,6 +248,7 @@ describe(unitTest('Pivot'), () => {
       MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME('q"t'),
       MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME('b\\s'),
       MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME(' x'),
+      MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME('q`t'),
     ]);
     // a space, a quote and a bar inside a value are fine
     expect(

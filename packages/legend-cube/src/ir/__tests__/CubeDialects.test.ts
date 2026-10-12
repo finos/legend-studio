@@ -551,10 +551,11 @@ describe(unitTest('Pivot on each database'), () => {
       DEFAULT_PIVOT_AGGREGATION,
     );
 
-  test('Knows the 16 database types that refuse it, or plan it with no PIVOT', () => {
+  test('Knows the 17 database types that refuse it, or plan it with no PIVOT', () => {
     expect([...PIVOT_UNSUPPORTED_DATABASE_TYPES].sort()).toEqual(
       [
         'Athena',
+        'Aurora',
         'BigQuery',
         'ClickHouse',
         'Composite',

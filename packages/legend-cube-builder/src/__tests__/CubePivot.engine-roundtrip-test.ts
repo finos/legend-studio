@@ -166,6 +166,21 @@ describe('Pivot on a DuckDB direct connection', () => {
     expect(rowsOf(all)).toEqual([[10, null]]);
   });
 
+  test('Leaves out a combination whose rows hold only values not picked: the pivot first keeps the rows with a picked value', async () => {
+    const result = await run(
+      new Pivot(
+        'pivot101',
+        ['country'],
+        'year',
+        [year('2011')],
+        DEFAULT_PIVOT_AGGREGATION,
+      ),
+    );
+    expect(result.columns).toEqual(['country', '2011']);
+    // DE and the empty country have rows, but none in 2011
+    expect(sortedRows(result)).toEqual([['FR', 2]]);
+  });
+
   test('Names columns by string values with a space, a quote and a bar', async () => {
     const result = await run(
       new Pivot(

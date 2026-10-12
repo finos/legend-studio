@@ -172,12 +172,15 @@ export const givesPatternWildcard = (node: QueryNode): boolean =>
 /**
  * The database types known not to run the engine's static `pivot()` (PLAN
  * §11.12): H2 can't translate it, 13 types assert "pivot is not supported",
- * and Trino and Athena plan it with no PIVOT. Snowflake, Databricks, MemSQL
- * (SingleStore) and DuckDB run it; a type in neither list is allowed, for
- * the engine to judge. A `Set`: the type comes from the model.
+ * Aurora asserts it too (the engine writes Aurora's SQL as Postgres's: read
+ * from its source, since the open-source engine loads no Aurora extension to
+ * plan with), and Trino and Athena plan it with no PIVOT. Snowflake,
+ * Databricks, MemSQL (SingleStore) and DuckDB run it; a type in neither list
+ * is allowed, for the engine to judge. A `Set`: the type comes from the model.
  */
 export const PIVOT_UNSUPPORTED_DATABASE_TYPES: ReadonlySet<string> = new Set([
   'H2',
+  'Aurora',
   'Postgres',
   'SqlServer',
   'Sybase',

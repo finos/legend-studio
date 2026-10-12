@@ -303,6 +303,23 @@ describe('Cube execution: the database type', () => {
     expect(state.execution.error).toBeUndefined();
   });
 
+  test('Loads the outline again on the next run after it failed to load, and writes that run for its database', async () => {
+    const { state, fake } = setUp(sortedDrop(), outlineOn('SqlServer'), (f) =>
+      f.loadModel.mockRejectedValueOnce(new Error('The engine is down')),
+    );
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    expect(printIR(fake.execute.mock.calls[0]?.[1] as never)).toContain(
+      '->drop(10)',
+    );
+    // the failed load isn't kept: the next run loads the outline again
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalledTimes(2);
+    expect(printIR(fake.execute.mock.calls[1]?.[1] as never)).toContain(
+      '$row.cube_rn > 10',
+    );
+  });
+
   test('Loads the outline once, as a cube with a table opens, and a run that needs no database type loads it no more', async () => {
     const { state, fake } = setUp(
       ordersThen(

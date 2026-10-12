@@ -27,6 +27,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   PIVOT_COLUMN_DISABLED_REASON,
   PIVOT_EDITOR_NOTES,
+  PIVOT_NO_VALUES_NOTICE,
   PIVOT_VALUE_DISABLED_REASON,
 } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
@@ -96,6 +97,11 @@ const pick = (label: string, value: string): void => {
     target: { value },
   });
 };
+
+const optionValues = (label: string): string[] =>
+  Array.from(
+    within(panel()).getByLabelText<HTMLSelectElement>(label).options,
+  ).map((option) => option.value);
 
 const optionText = (label: string, value: string): string | undefined =>
   Array.from(
@@ -185,11 +191,56 @@ describe('Pivot editor', () => {
     ];
     fireEvent.click(fr);
     expect(mixed.disabled).toBe(true);
-    expect(mixed.closest('label')?.title).toBe(
-      PIVOT_VALUE_DISABLED_REASON.DIFFERS_ONLY_IN_CASE,
-    );
+    // shown, not only on hover, so it is read with the value
+    expect(
+      within(values).getByRole('checkbox', {
+        name: `Fr (${PIVOT_VALUE_DISABLED_REASON.DIFFERS_ONLY_IN_CASE})`,
+      }) === mixed,
+    ).toBe(true);
     fireEvent.click(fr);
     expect(mixed.disabled).toBe(false);
+  });
+
+  test('Says when Load values found no value to list', async () => {
+    const { fake } = await render();
+    pick('Pivot column', 'SHIP_REGION');
+    fake.execute.mockResolvedValueOnce({
+      columns: ['SHIP_REGION'],
+      rows: [[null]],
+      sql: [],
+      durationMs: 1,
+    });
+    expect(within(panel()).queryByText(PIVOT_NO_VALUES_NOTICE)).toBeNull();
+    fireEvent.click(
+      within(panel()).getByRole('button', { name: 'Load values' }),
+    );
+    expect(
+      await within(panel()).findByText(PIVOT_NO_VALUES_NOTICE),
+    ).toBeDefined();
+    pick('Pivot column', 'SHIP_VIA');
+    expect(within(panel()).queryByText(PIVOT_NO_VALUES_NOTICE)).toBeNull();
+  });
+
+  test("Offers the aggregation's functions but Distinct Value, then Count rows", async () => {
+    await render();
+    // no column picked: every column function
+    expect(optionValues('Aggregation function')).toEqual([
+      'Count',
+      'DistinctCount',
+      'Sum',
+      'Average',
+      'Min',
+      'Max',
+      'CountRows',
+    ]);
+    pick('Aggregation function', 'Count');
+    pick('Aggregation column', 'SHIP_COUNTRY');
+    // a String column: its family's
+    expect(optionValues('Aggregation function')).toEqual([
+      'Count',
+      'DistinctCount',
+      'CountRows',
+    ]);
   });
 
   test('Says why loading failed, and shows its notes', async () => {

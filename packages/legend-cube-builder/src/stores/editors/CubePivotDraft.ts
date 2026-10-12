@@ -16,10 +16,13 @@
 
 import {
   AggregationFunction,
+  ColumnComparisonFilter,
   Distinct,
+  Filter,
+  FilterOperator,
   foldColumnName,
   getLiteralText,
-  isValidColumnName,
+  isPivotValueText,
   type LiteralValue,
   parseValue,
   Pivot,
@@ -97,6 +100,10 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
   loading = false;
   /** Why the values couldn't be loaded */
   loadError: string | undefined;
+  /** The load on its way, for this pivot column; picking another abandons it */
+  private load:
+    | { readonly column: string; readonly abortController: AbortController }
+    | undefined;
   /** Anything was changed; until then, `build()` gives the original back */
   private touched = false;
 
@@ -138,7 +145,11 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
     this.touched = true;
   }
 
-  /** Picks the pivot column; another column's values, picked or loaded, are dropped */
+  /**
+   * Picks the pivot column; another column's values, picked or loaded, are
+   * dropped, and a load on its way for it is abandoned, so its values never
+   * show under this one
+   */
   setColumn(column: string): void {
     if (column === this.column) {
       return;
@@ -147,6 +158,9 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
     this.values = [];
     this.loaded = undefined;
     this.loadError = undefined;
+    this.load?.abortController.abort();
+    this.load = undefined;
+    this.loading = false;
     this.touched = true;
   }
 
@@ -171,15 +185,16 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
 
   /**
    * Why a value can't be ticked, given those ticked: its text can't name a
-   * column, or another ticked value differs from it only in case (the core
-   * refuses both, PLAN §11.12); `undefined` when it can
+   * column (`isPivotValueText`), another ticked value differs from it only in
+   * case, or `PIVOT_MAX_VALUES` are ticked already (the core refuses each,
+   * PLAN §11.12); `undefined` when it can, or is ticked
    */
   untickableReason(
     value: LiteralValue,
     ticked: readonly LiteralValue[] = this.values,
   ): string | undefined {
     const text = getLiteralText(value);
-    return !isValidColumnName(text)
+    return !isPivotValueText(text)
       ? PIVOT_VALUE_DISABLED_REASON.NOT_A_COLUMN_NAME
       : ticked.some(
             (other) =>
@@ -187,7 +202,10 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
               foldColumnName(getLiteralText(other)) === foldColumnName(text),
           )
         ? PIVOT_VALUE_DISABLED_REASON.DIFFERS_ONLY_IN_CASE
-        : undefined;
+        : ticked.length >= PIVOT_MAX_VALUES &&
+            !ticked.some((other) => sameValue(other, value))
+          ? PIVOT_VALUE_DISABLED_REASON.TOO_MANY
+          : undefined;
   }
 
   /** Ticks every value loaded that can be, in the engine's order, keeping those picked */
@@ -228,9 +246,11 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
 
   /**
    * Asks the engine for the pivot column's values (PLAN §11.12): the input's
-   * relation, the column alone, each value once, ascending, at most
-   * `PIVOT_MAX_VALUES`, run on the cube's runtime as a run is, written for its
-   * database. Empty values can't be listed, so they are left out.
+   * relation, the column alone, its non-empty values (an empty value can't be
+   * listed, and would take the row that tells whether there are more), each
+   * once, ascending, at most `PIVOT_MAX_VALUES`, run on the cube's runtime as a
+   * run is, written for its database. A load abandoned for another pivot
+   * column (`setColumn`) leaves the draft alone.
    */
   *loadValues(): GeneratorFn<void> {
     const { editorState, column } = this;
@@ -250,17 +270,23 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
     ) {
       return;
     }
+    const load = { column, abortController: new AbortController() };
+    this.load = load;
     this.loading = true;
     this.loadError = undefined;
     try {
       const restrict = new Restrict(query.generateId(Restrict.TYPE), [column]);
+      const nonEmpty = new Filter(
+        query.generateId(Filter.TYPE),
+        new ColumnComparisonFilter(column, FilterOperator.IS_NOT_EMPTY),
+      );
       const distinct = new Distinct(query.generateId(Distinct.TYPE));
       const sort = new Sort(query.generateId(Sort.TYPE), [
         { column, direction: SortDirection.ASC },
       ]);
       // each after the one before, off the pivot's input, the last selected
       // (an add after the selected node selects it); the query isn't kept
-      const values = [restrict, distinct, sort].reduce(
+      const values = [restrict, nonEmpty, distinct, sort].reduce(
         (built, node) => built.add(node, built.selected),
         query.selected === inputId ? query : query.select(inputId),
       );
@@ -270,8 +296,11 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
         runtime: context.runtime,
         schema: new Schema([pivotColumn]),
         rowLimit: PIVOT_MAX_VALUES,
-        abortController: new AbortController(),
+        abortController: load.abortController,
       })) as CubeQueryRunResult;
+      if (this.load !== load) {
+        return;
+      }
       this.loaded = {
         column,
         values: result.rows
@@ -280,14 +309,19 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
         more: result.limited,
       };
     } catch (error) {
-      this.loadError =
-        error instanceof CubeEngineError
-          ? error.firstLine
-          : error instanceof Error
-            ? error.message
-            : String(error);
+      if (this.load === load) {
+        this.loadError =
+          error instanceof CubeEngineError
+            ? error.firstLine
+            : error instanceof Error
+              ? error.message
+              : String(error);
+      }
     } finally {
-      this.loading = false;
+      if (this.load === load) {
+        this.load = undefined;
+        this.loading = false;
+      }
     }
   }
 

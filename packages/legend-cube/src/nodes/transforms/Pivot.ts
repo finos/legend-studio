@@ -101,6 +101,16 @@ export const isPivotableType = (type: CubeType): boolean =>
   type.family === TypeFamily.BOOLEAN;
 
 /**
+ * Whether a value's text can name its column (PLAN §11.12): a valid column
+ * name (`isValidColumnName`, which refuses `"` and `\`), with no backtick
+ * either. The engine names the pivot's column `'<value>__|__<aggregation>'`
+ * before Cube renames it, escaping neither, and Databricks and MemSQL quote
+ * names with backticks, so a backtick would end that name early.
+ */
+export const isPivotValueText = (text: string): boolean =>
+  isValidColumnName(text) && !text.includes('`');
+
+/**
  * The output column of each value, in order: the value's text, else with
  * `_2`, `_3`, … until no row column and no earlier value's column has it in
  * any case (`foldColumnName`, as Cube's other generated names)
@@ -129,10 +139,11 @@ const sameValue = (a: LiteralValue, b: LiteralValue): boolean =>
 
 /**
  * Turns the values of a column into columns (PLAN §11.12): one row per
- * combination of the row columns, and one column per listed value, holding
- * the aggregation of that combination's rows with that value. Written with the
- * engine's static `pivot()`; values not listed are left out. No row order is
- * kept, as in a Group.
+ * combination of the row columns that has a listed value, and one column per
+ * listed value, holding the aggregation of that combination's rows with that
+ * value. Written with the engine's static `pivot()`, which first keeps only
+ * the rows with a listed value, so values not listed, and combinations holding
+ * only them, are left out. No row order is kept, as in a Group.
  */
 export class Pivot extends UnaryNode {
   static readonly TYPE = 'pivot';
@@ -362,7 +373,7 @@ export class Pivot extends UnaryNode {
       }) &&
       validateAllItems(values, (value, index) =>
         validate(
-          isValidColumnName(getLiteralText(value)) &&
+          isPivotValueText(getLiteralText(value)) &&
             isValidColumnName(names[index] ?? ''),
           MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME(getLiteralText(value)),
           errors,
