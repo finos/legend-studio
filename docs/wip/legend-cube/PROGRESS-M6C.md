@@ -12,7 +12,7 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6c.7 done: verification and the browser rehearsal; next M6c.8, the demo video                  |
+| Step   | M6c.8 done: the demo video; next M6c.9, the supersessions folded in                             |
 | Tests  | 2964 core, 1750 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
 
 ## Steps
@@ -26,7 +26,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 - [x] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [x] **M6c.6** Guides, READMEs, testing.md and the changeset
 - [x] **M6c.7** Verification and the browser rehearsal
-- [ ] **M6c.8** A demo video (PLAN §11.3)
+- [x] **M6c.8** A demo video (PLAN §11.3)
 - [ ] **M6c.9** Fold PLAN §11.12's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
@@ -42,6 +42,7 @@ Filled in as steps land.
 | M6c.5 | `a744de5be` | test: run Legend Cube's Pivot on the engine and every database   |
 | M6c.6 | `1dc2ab611` | docs: cover Legend Cube's Pivot in its guides                    |
 | M6c.7 | `ce102873d` | fix: refuse Legend Cube Pivot values that differ only in case    |
+| M6c.8 | –           | the video, in the evidence folder                                |
 
 ## Notes
 
@@ -105,3 +106,10 @@ Filled in as steps land.
   amount by country over 2000 and 2012 gives DE 7 and 4, US 3 and 9, FR 10 and empty; on the H2 example "Top
   customers by orders", Pivot is greyed with "Pivot is not supported on H2.". No new console errors. The multi-agent
   review wasn't run: it needs the user's word.
+- **M6c.8** (2026-10-12). `demo/demo-m6c.mjs` in the evidence folder, on `:9002` and the engine on `:6300`: a DuckDB
+  direct connection with a sales table; Pivot by Column from the palette; year picked (price, a Double, disabled),
+  its values loaded, all ticked, country as the rows, Sum of amount; the grid by country and year, empty where none;
+  a Sort on 2024 after it (empty values first, as descending sorts put them); Show Pure (`select`, `pivot`, `cast`,
+  three `rename`s); Count rows, 0 where none; then an H2 cube, Pivot greyed in the palette with its reason and refused
+  on a Pivot already there. 15 checks pass and the 13 frames match their captions. `videos/16-m6c-pivot.webm` (97 s),
+  sent.
