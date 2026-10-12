@@ -12,7 +12,7 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6c.5 done: the engine; next M6c.6, the guides                                                  |
+| Step   | M6c.6 done: the guides; next M6c.7, verification                                                |
 | Tests  | 2964 core, 1748 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
 
 ## Steps
@@ -24,7 +24,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 - [x] **M6c.3** Databases: the one predicate, the guard, the lakehouse runtime table, the outline on open
 - [x] **M6c.4** The editor, registered, and the palette greyed
 - [x] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
-- [ ] **M6c.6** Guides, READMEs, testing.md and the changeset
+- [x] **M6c.6** Guides, READMEs, testing.md and the changeset
 - [ ] **M6c.7** Verification and the browser rehearsal
 - [ ] **M6c.8** A demo video (PLAN §11.3)
 - [ ] **M6c.9** Fold PLAN §11.12's supersessions in; the PR ready for `cube-dev`
@@ -40,6 +40,7 @@ Filled in as steps land.
 | M6c.3 | `f341d3892` | feat: refuse Legend Cube's Pivot where its database can't run it |
 | M6c.4 | `7c0ab3ad1` | feat: add the Pivot editor to Legend Cube                        |
 | M6c.5 | `a744de5be` | test: run Legend Cube's Pivot on the engine and every database   |
+| M6c.6 | `1dc2ab611` | docs: cover Legend Cube's Pivot in its guides                    |
 
 ## Notes
 
@@ -89,3 +90,7 @@ Filled in as steps land.
   Cube refusing H2 and Trino. `LegendCubeDialects`: a PIVOT on Snowflake, Databricks, MemSQL and DuckDB whose names
   the outer select reads as the values; Trino and Athena planning none (a canary); the 14 others refusing it. The
   corpus's operations sample has a pivot. Engine suites: 919 of 923 (the 4 known local setup-SQL timeouts).
+- **M6c.6** (2026-10-12). Both READMEs, both adding-an-operation guides (Pivot as the example of a node some
+  databases can't run and whose function types as `Relation<Any>`; `dependsOnDatabaseType` the one rule;
+  `getCubeAddDatabaseProblem`), testing.md (the Pivot suites), hosting.md (where Pivot runs; the lakehouse runtime
+  table), and a patch changeset for both packages. `yarn check:ci` passes.
