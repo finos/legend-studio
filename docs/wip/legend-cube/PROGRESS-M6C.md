@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6c.9 done: the supersessions folded in; the PR ready for `cube-dev` on the user's word         |
-| Tests  | 2964 core, 1750 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
+| Step   | M6c done, reviewed by the multi-agent review and its fixes in; the PR ready for review          |
+| Tests  | 2964 core, 1756 builder (core group); engine suites 920 of 924 (the 4 local setup-SQL timeouts) |
 
 ## Steps
 
@@ -33,17 +33,17 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit      | Subject                                                          |
-| ----- | ----------- | ---------------------------------------------------------------- |
-| M6c.1 | `9c02931dc` | docs: settle Legend Cube M6c (Pivot)                             |
-| M6c.2 | `25b370c4d` | feat: add Pivot to Legend Cube's core                            |
-| M6c.3 | `f341d3892` | feat: refuse Legend Cube's Pivot where its database can't run it |
-| M6c.4 | `7c0ab3ad1` | feat: add the Pivot editor to Legend Cube                        |
-| M6c.5 | `a744de5be` | test: run Legend Cube's Pivot on the engine and every database   |
-| M6c.6 | `1dc2ab611` | docs: cover Legend Cube's Pivot in its guides                    |
-| M6c.7 | `ce102873d` | fix: refuse Legend Cube Pivot values that differ only in case    |
-| M6c.8 | –           | the video, in the evidence folder                                |
-| M6c.9 | –           | this commit: docs: fold Legend Cube M6c into the plan            |
+| Step  | M6c done, reviewed by the multi-agent review and its fixes in; the PR ready for review |
+| ----- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| M6c.1 | `9c02931dc`                                                                            | docs: settle Legend Cube M6c (Pivot)                             |
+| M6c.2 | `25b370c4d`                                                                            | feat: add Pivot to Legend Cube's core                            |
+| M6c.3 | `f341d3892`                                                                            | feat: refuse Legend Cube's Pivot where its database can't run it |
+| M6c.4 | `7c0ab3ad1`                                                                            | feat: add the Pivot editor to Legend Cube                        |
+| M6c.5 | `a744de5be`                                                                            | test: run Legend Cube's Pivot on the engine and every database   |
+| M6c.6 | `1dc2ab611`                                                                            | docs: cover Legend Cube's Pivot in its guides                    |
+| M6c.7 | `ce102873d`                                                                            | fix: refuse Legend Cube Pivot values that differ only in case    |
+| M6c.8 | –                                                                                      | the video, in the evidence folder                                |
+| M6c.9 | –                                                                                      | this commit: docs: fold Legend Cube M6c into the plan            |
 
 ## Notes
 
@@ -124,3 +124,18 @@ Filled in as steps land.
   country and product gives a group per country with its count, each summing its products' year columns (4 checks),
   as PLAN §9 says. The video was re-recorded with two wordings fixed: a descending sort puts empty values first, and
   Snowflake, Databricks and SingleStore are planned, not run.
+- **The multi-agent review** (2026-10-12, at the user's word): four reviewers (the core, the builder's state, the
+  editor, tests and docs), then a skeptic per finding trying to refute it, all read-only on the worktree, test gaps
+  proven by mutating isolated copies. 16 findings, 15 held, 1 refuted (dragging Pivot from the palette is gated on the
+  selected node: a cube can't mix databases, so it can't matter). Fixed (`3a155029a`): Aurora refused too, its SQL
+  the engine's Postgres's (17 types); a backtick refused in a value (Databricks and MemSQL quote names with them, and
+  the engine escapes none: drafted in ISSUES.md, with Rename's and Extend's same gap from before M6c); a values load
+  answering after another pivot column was picked dropped, so one column's values never list under another (found by
+  two reviewers); a value greyed once 100 are ticked, so All stops there; empty values filtered out before the limit,
+  so an empty one no longer says values were cut; a notice when a load finds no value; the reason a value is greyed
+  shown beside it; the docs and help text saying a combination of the row columns holding only values not picked has
+  no row (the engine's static pivot first keeps the rows with a listed value), pinned on DuckDB; three PLAN §11.12
+  wordings the code contradicted. Pinned with no change: Apply after an aggregation column change or a value swap of
+  as many, a failed outline load loaded again on the next run, a Decimal pivot column refused, the functions offered
+  without Distinct Value. Recorded (ISSUES.md): redacted printing shows a Pivot's values, as the names of its columns.
+  Browser: `demo/check-m6c-review.mjs` (the greyed values with their reasons; the empty value not listed).

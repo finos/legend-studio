@@ -2131,9 +2131,9 @@ lakehouse runtime Cube writes, whose database its kind gives (`CubeLakehouseRunt
 passes no type. Every other database, an unknown type and a model whose outline fails to load keep the native forms.
 
 **Pivot's databases (M6c, §11.12).** The engine's static `pivot()` runs on Snowflake, Databricks, MemSQL
-(SingleStore) and DuckDB. Core's `PIVOT_UNSUPPORTED_DATABASE_TYPES` lists the 16 types that can't run it: H2, which
-can't translate it; 13 that assert "pivot is not supported"; Trino and Athena, which plan it with no `PIVOT`
-(Appendix B). There, `getDatabaseProblems` refuses a Pivot (`Pivot is not supported on H2.`), the editor shows it on
+(SingleStore) and DuckDB. Core's `PIVOT_UNSUPPORTED_DATABASE_TYPES` lists the 17 types that can't run it: H2, which
+can't translate it; 13 that assert "pivot is not supported", and Aurora, whose SQL the engine writes as Postgres's;
+Trino and Athena, which plan it with no `PIVOT` (Appendix B). There, `getDatabaseProblems` refuses a Pivot (`Pivot is not supported on H2.`), the editor shows it on
 the node, the palette and the Add menus grey `Pivot by Column` with the reason (`getCubeAddDatabaseProblem`), and the
 emitter throws as a backstop. A type in neither list, or none known, allows it, for the engine to judge.
 
@@ -4463,7 +4463,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
 ### 11.12 M6c: Pivot
 
 M6c adds **Pivot**: a node that turns the values of a column into columns, through the engine's `pivot()`. Each
-picked value becomes a column holding one aggregate, and each combination of the row columns becomes a row. The spec
+picked value becomes a column holding one aggregate, and each combination of the row columns that has a picked value
+becomes a row. The spec
 has pivot only as ag-Grid's local mode (§12.1), which pivots the fetched rows in the browser; local mode keeps it. M6c
 is built on the branch `cube-pivot`, from `cube-dev` (`c1b40a480`), and lands in a PR into `cube-dev`. Its status is
 in [PROGRESS-M6C.md](PROGRESS-M6C.md). Requirements: the probes under `pivot-requirements/` in the local evidence
@@ -4489,26 +4490,34 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - **The node:** `Pivot`, saved as `pivot`, `Pivot by Column` after `Group by Column` in the palette, one `tds` input:
   `{rows, column, values, aggregation}`. `rows` are the row columns in input order, as Group's keys (none gives one
   row ✅); `column` the pivot column; `values` typed literals, in the engine's order; `aggregation` one of Group's
-  (`{function, column}`, §11.5), with no name. Help: "Turns the values of a column into columns: a row for each
-  combination of the row columns, and a column for each picked value, holding its aggregate." The tests' example of
+  (`{function, column}`, §11.5), with no name. Help: "Turns the values of a column of the previous data set into
+  columns: a row for each combination of the row columns that has a picked value, and a column for each picked value,
+  holding its aggregate." The tests' example of
   a kind Cube doesn't know, `pivot`, becomes `future`.
 - **Pivot columns:** a String, an integer (Integer, SmallInt, TinyInt, BigInt), a StrictDate or a Boolean ✅. Other
   types are refused (`Pivot column "<c>" of type <T> cannot be pivoted.`): a float matches its values inexactly, as
-  M7 found for `REAL`; DateTime, Decimal and enumerations aren't probed yet.
+  M7 found for `REAL`; DateTime, Decimal and enumerations aren't probed yet (a Decimal's refusal is pinned, M6c.7's
+  review).
 - **Values:** one to 100, each of the column's type, none twice, and no two differing only in case (`foldColumnName`):
   DuckDB gives both the first one's numbers ✅ (`p6`, found in M6c.7). A value whose text can't name a column (empty, or
-  holding `"`, `\` or a control character, or longer than 128 code points; `isValidColumnName`, §7.5) is refused: the
-  engine drops `"` from the names it generates ✅. The editor loads them as
-  `<input>->select(~c)->distinct()->sort(~c->ascending())->limit(101)` on the cube's runtime; an empty value can't be
-  listed in Pure, so it isn't offered.
+  holding `"`, `\` or a control character, or longer than 128 code points; `isValidColumnName`, §7.5), or holding a
+  backtick (`isPivotValueText`), is refused: the engine drops `"` from the names it generates ✅, and writes the
+  pivot's own name `'<v>__|__cube_pivot'` unescaped, so a backtick ends it early where names are quoted with
+  backticks, on Databricks and MemSQL ✅ (plans, M6c.7's review; Appendix B). The editor loads them as
+  `<input>->select(~c)->filter(c is not empty)->distinct()->sort(~c->ascending())->limit(101)` on the cube's runtime:
+  an empty value can't be listed in Pure, and would take the row that tells whether there are more. A load the user
+  leaves by picking another pivot column is dropped. The editor greys a value it can't tick, saying why: one that
+  can't name a column, one differing only in case from one ticked, or any once 100 are ticked; All skips them.
 - **The aggregation:** Sum, Count, Count rows, Distinct Count, Average, Min or Max ✅, on a column that is neither the
   pivot column nor a row column, offered per family as in a Group (§10). Distinct Value is left out: DuckDB refuses
   its pivot ("Pivot expression must contain exactly one aggregate") ✅.
 - **Output schema:** the row columns, as in the input, then one column per value, in the values' order, named by
   the value's text (`2024-01-31`, `true`); a name a row column or an earlier value already has, compared folded,
   takes `_2`, `_3`, … (§7.11's rule). Each value column is typed as the aggregation is in a Group (§5.7): Count,
-  Distinct Count and Count rows are Integer and never empty, a combination with no rows giving 0 ✅; the others can
-  be empty, and are where the combination has no rows ✅. No row order, as a Group.
+  Distinct Count and Count rows are Integer and never empty, 0 where a combination has rows but none with that value
+  ✅; the others can be empty, and are there ✅. The static pivot first keeps only the rows with a listed value
+  (`where c in (…)`, `processStaticPivot` in the engine, on every dialect), so a combination whose rows hold only
+  values not listed has no row ✅ (pinned on DuckDB, M6c.7's review). No row order, as a Group.
 - **Emission:** a `select` of the row, pivot and aggregated columns; then
   `pivot(~column, [values…], ~cube_pivot: x|… : y|…)`; then a `cast` naming each column,
   `(rows…, '<v>__|__cube_pivot': T, …)`; then a `rename` of each value column to its name ✅ on DuckDB. The `select`
@@ -4518,8 +4527,10 @@ This subsection overrides the sections it names until they are updated (see "Sup
   where Cube infers so (`[1]`) ✅ (`p4`, `p5`).
 - **Which databases:** the static pivot plans, with the outer select reading the names the `PIVOT` gives, on
   **Snowflake, Databricks, SingleStore (`MemSQL`) and DuckDB** ✅, and runs on DuckDB ✅. It is refused on H2, which
-  can't translate it ✅, and on the 13 types that assert "pivot is not supported" ✅. Trino and Athena plan it with no
-  `PIVOT` at all, reading columns nothing produces ✅ (ISSUES.md): refused too. A missing type (no outline, or
+  can't translate it ✅, and on the 13 types that assert "pivot is not supported" ✅, and on Aurora, whose SQL the
+  engine writes as Postgres's, asserting the same (read from its source: the open-source engine loads no Aurora
+  extension to plan with, M6c.7's review). Trino and Athena plan it with no `PIVOT` at all, reading columns nothing
+  produces ✅ (ISSUES.md): refused too. 17 types in all. A missing type (no outline, or
   databases of different types) allows it; the engine's plan or run says the rest. Databricks needs an engine with
   legend-engine#5142 (2026-09-10).
 - **Which database a cube runs on:** data product and ingest cubes run on a lakehouse runtime Cube writes, and today
@@ -4528,11 +4539,13 @@ This subsection overrides the sections it names until they are updated (see "Sup
   runtime will be another subtype of the base lakehouse runtime. Nothing else changes for them: Snowflake has no
   workaround (§11.4).
 - **One predicate** in core says whether a node's run depends on the database type: a Drop, Slice, Limit or
-  Distinct, a filter giving a pattern `%` or `_` (§8.2), a Pivot. `needsDatabaseType`, the editor's outline loading
-  and its database rule read it, rather than a list per feature.
+  Distinct, a filter giving a pattern `%` or `_` (§8.2), a Pivot. `needsDatabaseType` (which makes a run, an export
+  or Show Pure wait for the outline) and the editor's database rule read it, rather than a list per feature. The
+  outline also loads whenever the cube reads a table (`outlineLoading`), so the type is known before any run.
 - **The guard:** core's `getDatabaseProblems` refuses a Pivot on a type that can't run it, saying
   `Pivot is not supported on H2.`, which the editor's rule shows on the node and the emitter throws on, as for
-  DuckDB's `%` and `_` (§8.2). The palette and the canvas and grid menus grey `Pivot by Column` with the same reason
+  DuckDB's `%` and `_` (§8.2). The palette and the Add menus (the canvas's context menu and the header's Add Items)
+  grey `Pivot by Column` with the same reason
   when the selected node's database is known and refuses it; the model's outline is loaded when a cube with a table
   opens, so the reason is there before any run.
 - **The grid:** server-side mode runs a Pivot as any node, and drills down by its row columns; local mode's ag-Grid
@@ -4540,20 +4553,23 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 **Engine facts** (probes under `pivot-requirements/`):
 
-| Fact                                                                                                                 |     | Probe             |
-| -------------------------------------------------------------------------------------------------------------------- | --- | ----------------- |
-| `pivot()` types as `Relation<Any>` with no columns; after a `cast`, the cast's columns                               | ✅  | `p1`, `p2`        |
-| H2 runs neither form ("Dialect translation for node of type PivotedRelation not implemented")                        | ✅  | `p1-pivot.out`    |
-| The static form takes one pivot column and one aggregation; two of either doesn't compile                            | ✅  | `p2-native.out` A |
-| Every column not pivoted or aggregated becomes a row column                                                          | ✅  | `p2`, `p3` B      |
-| Static + cast + rename plans on Snowflake, Databricks, MemSQL and DuckDB, the outer select reading the PIVOT's names | ✅  | `p3-static.out` A |
-| Trino and Athena plan it with no PIVOT; the 13 others assert "pivot is not supported"                                | ✅  | `p3-static.out` A |
-| Sum, Count, Count rows, Distinct Count, Average, Min, Max run; Count and Distinct Count give 0 where no rows are     | ✅  | `p3-static.out` B |
-| Distinct Value's pivot fails on DuckDB                                                                               | ✅  | `p3-static.out` B |
-| Strings with a space, `'`, `\|`, `\`, dates and booleans make names; `"` is dropped from them                        | ✅  | `p3-static.out` C |
-| A cast naming an unlisted value types but returns fewer columns; one missing a value the data has drops it silently  | ✅  | `p2-native.out` C |
-| A cast can give Cube's precise types, and `[1]` for a column never empty                                             | ✅  | `p4`, `p5`        |
-| Two values differing only in case (`'a'`, `'A'`): DuckDB gives both columns the first one's numbers                  | ✅  | `p6-case.out`     |
+| Fact                                                                                                                  |     | Probe                                 |
+| --------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------------- |
+| `pivot()` types as `Relation<Any>` with no columns; after a `cast`, the cast's columns                                | ✅  | `p1`, `p2`                            |
+| H2 runs neither form ("Dialect translation for node of type PivotedRelation not implemented")                         | ✅  | `p1-pivot.out`                        |
+| The static form takes one pivot column and one aggregation; two of either doesn't compile                             | ✅  | `p2-native.out` A                     |
+| Every column not pivoted or aggregated becomes a row column                                                           | ✅  | `p2`, `p3` B                          |
+| Static + cast + rename plans on Snowflake, Databricks, MemSQL and DuckDB, the outer select reading the PIVOT's names  | ✅  | `p3-static.out` A                     |
+| Trino and Athena plan it with no PIVOT; the 13 others assert "pivot is not supported"                                 | ✅  | `p3-static.out` A                     |
+| Sum, Count, Count rows, Distinct Count, Average, Min, Max run; Count and Distinct Count give 0 where no rows are      | ✅  | `p3-static.out` B                     |
+| Distinct Value's pivot fails on DuckDB                                                                                | ✅  | `p3-static.out` B                     |
+| Strings with a space, `'`, `\|`, `\`, dates and booleans make names; `"` is dropped from them                         | ✅  | `p3-static.out` C                     |
+| A cast naming an unlisted value types but returns fewer columns; one missing a value the data has drops it silently   | ✅  | `p2-native.out` C                     |
+| A cast can give Cube's precise types, and `[1]` for a column never empty                                              | ✅  | `p4`, `p5`                            |
+| Two values differing only in case (`'a'`, `'A'`): DuckDB gives both columns the first one's numbers                   | ✅  | `p6-case.out`                         |
+| The static pivot first keeps only the rows with a listed value (`where c in (…)`): a combination with none has no row | ✅  | M6c.7 review, `CubePivot` engine test |
+| Databricks and MemSQL quote names with backticks, and the engine escapes none in the pivot's own column name          | ✅  | M6c.7 review, plans                   |
+| Aurora's SQL is Postgres's, which asserts "pivot is not supported" (read from source: no Aurora extension locally)    | 💭  | M6c.7 review                          |
 
 **Steps:**
 
@@ -4793,6 +4809,11 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 - A static `pivot()` with its `cast` plans on Trino and Athena with no `PIVOT`: the outer select reads the pivoted
   columns from a subquery that never pivots ✅ (plans, M6c). The 13 other types without pivot assert "pivot is not
   supported". Cube refuses a Pivot on both (§8.8, §11.12). Drafted in ISSUES.md for the user to file; not filed yet.
+- `processIdentifierWithQuoteChar` (`extensionDefaults.pure:677`) wraps a name in the dialect's quote character and
+  strips only `"`, so a backtick inside a name ends it early on Databricks and MemSQL, which quote with backticks ✅
+  (plans, M6c.7). A pivot's own column name holds the value's text, so Cube refuses a backtick in a pivot value
+  (§11.12); a Rename or an Extend to such a name has the same defect, from before M6c. Drafted in ISSUES.md for the
+  user to file; not filed yet.
 - Enum equality after `project` compares the source value. Dotted quoted table names split into four path parts and
   resolve the wrong table. A literal one past the long range silently wraps.
 - `BaseStoredVersionedAssetDao`: no version check, non-atomic updates, `GET` rewrites the document, and id reuse

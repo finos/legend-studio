@@ -57,6 +57,22 @@ Cube runs (the framework decodes the parameters as it loads). And the linked pro
 `search` for its id: a full-text search that ranks or cuts its answers could miss it, though the id is exact. Fixes:
 a `replace` option on the navigator port; a lookup by id on the catalog port (`CubeDataProductCatalog`).
 
+### A Rename or an Extend to a name with a backtick fails on Databricks and MemSQL
+
+Found in M6c.7's review (PLAN §11.12, Appendix B). `isValidColumnName` allows a backtick, and the engine writes names
+on Databricks and MemSQL (SingleStore) in backticks without escaping one inside, so a Rename or an Extend to a name
+holding a backtick plans SQL the database rejects. Pivot refuses a backtick in its values (`isPivotValueText`); Rename,
+Extend and Group's output names don't yet. Fix: refuse a backtick in every name Cube gives a column, or once the engine
+escapes it (below), nothing.
+
+### Redacted printing shows a Pivot's values, as column names
+
+Found in M6c.7's review. `printIR(…, {redactLiterals: true})` prints the values in `pivot(~c, [?], …)` as `?`, but the
+`cast` and each `rename` name the value's columns by the values, and names are never redacted (PLAN §8.3), so the
+values show there; and once a Pivot runs they are column names, which every later node's IR and `describeRedacted()`
+show too. Nothing in the builder prints redacted yet. If it starts to, carry an origin on a name made from a value
+and redact it, or document that a Pivot makes values into names.
+
 ## Engine issues to file
 
 Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.
@@ -381,6 +397,22 @@ Title: pivot() on Trino and Athena plans SQL without the PIVOT
 `->pivot(~SHIP_VIA, [1, 2, 3], ~f: x|$x.FREIGHT : y|$y->plus())->cast(@Relation<(…)>)` plans on Trino and Athena,
 but the SQL selects the pivoted columns ("'1__|__f'", …) from a subquery that never pivots. Other dialects without
 pivot support fail with "pivot is not supported"; Trino and Athena should fail the same way, or write the pivot.
+```
+
+### Databricks and MemSQL: a backtick inside a name ends it early
+
+Found in M6c.7's review, planned on the local engine ✅. `processIdentifierWithQuoteChar` (`extensionDefaults.pure:677`)
+wraps a name in the dialect's quote character and strips only `"`. Databricks and MemSQL quote with backticks, so a
+name holding one ends early and the SQL fails to parse: for one, a static pivot's own column name, which holds the
+value's text, for a value with a backtick. Cube refuses a backtick in a pivot value (PLAN §11.12) and has the same gap
+for Rename and Extend (above). Draft issue for finos/legend-engine:
+
+```text
+Title: Identifiers holding the dialect's quote character aren't escaped (Databricks, MemSQL)
+
+processIdentifierWithQuoteChar (extensionDefaults.pure) wraps an identifier in the quote character and strips only
+'"'. On Databricks and MemSQL, which quote with backticks, a column named q`t (from rename, extend or a static
+pivot's value) gives `q`t`, which ends the identifier early. The quote character inside should be doubled.
 ```
 
 ## Direct connections, data products and ingest data sets
