@@ -372,7 +372,7 @@ dialects.
 Found in M6c's probes (PLAN §11.12), planned through the engine ✅ (`pivot-requirements/p3-static.out` A in the
 evidence folder). A static `pivot(~SHIP_VIA, [1, 2, 3], …)` with its `cast` plans on Trino and Athena, but the SQL has
 no `PIVOT`: the outer select reads `"'1__|__f'"` from a subquery that only has `SHIP_COUNTRY`, `SHIP_VIA` and
-`FREIGHT`, so the database would refuse it. The other 12 types without pivot assert "pivot is not supported"; these
+`FREIGHT`, so the database would refuse it. The other 13 types without pivot assert "pivot is not supported"; these
 two should too, or write the pivot. Cube refuses a Pivot on both (PLAN §11.12). Draft issue for finos/legend-engine:
 
 ```text

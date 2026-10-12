@@ -12,7 +12,7 @@
 | ------ | ----------------------------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
 | Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6c.8 done: the demo video; next M6c.9, the supersessions folded in                             |
+| Step   | M6c.9 done: the supersessions folded in; the PR ready for `cube-dev` on the user's word         |
 | Tests  | 2964 core, 1750 builder (core group); engine suites 919 of 923 (the 4 local setup-SQL timeouts) |
 
 ## Steps
@@ -27,7 +27,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 - [x] **M6c.6** Guides, READMEs, testing.md and the changeset
 - [x] **M6c.7** Verification and the browser rehearsal
 - [x] **M6c.8** A demo video (PLAN §11.3)
-- [ ] **M6c.9** Fold PLAN §11.12's supersessions in; the PR ready for `cube-dev`
+- [x] **M6c.9** Fold PLAN §11.12's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -43,6 +43,7 @@ Filled in as steps land.
 | M6c.6 | `1dc2ab611` | docs: cover Legend Cube's Pivot in its guides                    |
 | M6c.7 | `ce102873d` | fix: refuse Legend Cube Pivot values that differ only in case    |
 | M6c.8 | –           | the video, in the evidence folder                                |
+| M6c.9 | –           | this commit: docs: fold Legend Cube M6c into the plan            |
 
 ## Notes
 
@@ -113,3 +114,8 @@ Filled in as steps land.
   three `rename`s); Count rows, 0 where none; then an H2 cube, Pivot greyed in the palette with its reason and refused
   on a Pivot already there. 15 checks pass and the 13 frames match their captions. `videos/16-m6c-pivot.webm` (97 s),
   sent.
+- **M6c.9** (2026-10-12). PLAN §11.12's supersessions folded in: §4.5 (the node), §8.8 (the Pivot row; the
+  database type, from a lakehouse runtime's kind too, the outline loaded on open, and which databases run Pivot), §9
+  (a Pivot node beside local mode's pivot), §10.3 (`pivot`'s shape), §12.1 (a risk), Appendix A (beside §7.2, §16's
+  messages, §17.6's editor) and Appendix B (Trino and Athena). Counted again from `p3-static.out`, 13 types assert
+  "pivot is not supported", not 12: PLAN and ISSUES.md corrected.
