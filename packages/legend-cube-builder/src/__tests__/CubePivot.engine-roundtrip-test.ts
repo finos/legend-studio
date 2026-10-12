@@ -22,9 +22,12 @@ import {
   DEFAULT_PIVOT_AGGREGATION,
   Filter,
   FilterOperator,
+  Group,
   type LiteralValue,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
   Pivot,
   type PivotAggregation,
+  type Query,
   type QueryNode,
   QueryEmitter,
   RelationalTableSource,
@@ -54,8 +57,8 @@ const connection: PlainObject = V1_buildCubeDirectConnection({
   setupSqls: [
     'drop schema if exists cube_pivot cascade',
     'create schema cube_pivot',
-    'create table cube_pivot.sales (id INTEGER PRIMARY KEY, country VARCHAR(10), year INTEGER, amount INTEGER, customer VARCHAR(10))',
-    "insert into cube_pivot.sales values (1, 'FR', 2000, 10, 'a b'), (2, 'FR', 2011, 20, 'O''Brien'), (3, 'FR', 2011, 5, 'x|y'), (4, 'DE', 2000, 7, 'a b'), (5, 'DE', 2012, null, 'O''Brien'), (6, null, 2000, 3, 'a b')",
+    'create table cube_pivot.sales (id INTEGER PRIMARY KEY, country VARCHAR(10), year INTEGER, amount INTEGER, customer VARCHAR(10), day DATE, shipped BOOLEAN)',
+    "insert into cube_pivot.sales values (1, 'FR', 2000, 10, 'a b', '2024-01-31', true), (2, 'FR', 2011, 20, 'O''Brien', '2024-02-29', false), (3, 'FR', 2011, 5, 'x|y', '2024-01-31', true), (4, 'DE', 2000, 7, 'a b', '2024-02-29', false), (5, 'DE', 2012, null, 'O''Brien', '2024-01-31', null), (6, null, 2000, 3, 'a b', '2024-02-29', true)",
   ],
   path: '',
 });
@@ -67,8 +70,8 @@ const SUM_OF_AMOUNT: PivotAggregation = {
   column: 'amount',
 };
 
-/** Runs the sales table, then the nodes, the last captured, on DuckDB */
-const run = async (...nodes: QueryNode[]): Promise<CubeResult> => {
+/** The sales table, then the nodes, the last captured, as the engine types the table */
+const salesThen = async (...nodes: QueryNode[]): Promise<Query> => {
   const { engine } = V1_createEngineBackedCubeEngine();
   const path: [string, string, string] = [
     CUBE_DIRECT_DATABASE_PATH,
@@ -89,15 +92,19 @@ const run = async (...nodes: QueryNode[]): Promise<CubeResult> => {
   ]);
   const { validity } = buildSchemasAndValidity(query);
   expect([...validity].filter(([, errors]) => errors.length)).toEqual([]);
-  return engine.execute(
+  return query;
+};
+
+/** Runs the sales table, then the nodes, the last captured, on DuckDB */
+const run = async (...nodes: QueryNode[]): Promise<CubeResult> =>
+  V1_createEngineBackedCubeEngine().engine.execute(
     model,
-    new QueryEmitter(query).emitExecutionLambda({
+    new QueryEmitter(await salesThen(...nodes)).emitExecutionLambda({
       rowLimit: 100,
       runtime: CUBE_DIRECT_RUNTIME_PATH,
       databaseType: 'DuckDB',
     }),
   );
-};
 
 /** The rows, their whole numbers as numbers (the engine gives their digits) */
 const rowsOf = (result: CubeResult): unknown[][] =>
@@ -203,5 +210,92 @@ describe('Pivot on a DuckDB direct connection', () => {
       ['FR', 10, 25],
       ['DE', 7, null],
     ]);
+  });
+
+  test('Pivots a date and a Boolean column, averaging, and taking the least', async () => {
+    const byDay = await run(
+      new Pivot(
+        'pivot101',
+        ['country'],
+        'day',
+        [
+          { kind: 'strictDate', value: '2024-01-31' },
+          { kind: 'strictDate', value: '2024-02-29' },
+        ],
+        { function: AggregationFunction.AVERAGE, column: 'amount' },
+      ),
+    );
+    expect(byDay.columns).toEqual(['country', '2024-01-31', '2024-02-29']);
+    expect(sortedRows(byDay)).toEqual([
+      [null, null, 3],
+      ['DE', null, 7],
+      ['FR', 7.5, 20],
+    ]);
+    const byShipped = await run(
+      new Pivot(
+        'pivot101',
+        [],
+        'shipped',
+        [
+          { kind: 'boolean', value: true },
+          { kind: 'boolean', value: false },
+        ],
+        { function: AggregationFunction.MIN, column: 'amount' },
+      ),
+    );
+    expect(byShipped.columns).toEqual(['true', 'false']);
+    expect(rowsOf(byShipped)).toEqual([[3, 7]]);
+  });
+
+  test('Gives later steps the value columns as never empty for a count, so a Group can sum them', async () => {
+    const result = await run(
+      new Pivot(
+        'pivot101',
+        ['country'],
+        'year',
+        [year('2000'), year('2011')],
+        DEFAULT_PIVOT_AGGREGATION,
+      ),
+      new Group(
+        'group101',
+        [],
+        [
+          {
+            column: '2000',
+            function: AggregationFunction.SUM,
+            name: 'in 2000',
+          },
+          {
+            column: '2011',
+            function: AggregationFunction.SUM,
+            name: 'in 2011',
+          },
+        ],
+      ),
+    );
+    expect(rowsOf(result)).toEqual([[3, 2]]);
+  });
+});
+
+describe("Pivot where the database can't run it", () => {
+  test('Is never written for H2, whose engine dialect has no pivot, nor for Trino', async () => {
+    const query = await salesThen(
+      new Pivot(
+        'pivot101',
+        [],
+        'year',
+        [year('2000')],
+        DEFAULT_PIVOT_AGGREGATION,
+      ),
+    );
+    ['H2', 'Trino'].forEach((databaseType) =>
+      expect(() =>
+        new QueryEmitter(query).emitExecutionLambda({
+          rowLimit: 100,
+          runtime: CUBE_DIRECT_RUNTIME_PATH,
+          databaseType,
+        }),
+      ).toThrow(MESSAGE_PIVOT_UNSUPPORTED_DATABASE(databaseType)),
+    );
   });
 });

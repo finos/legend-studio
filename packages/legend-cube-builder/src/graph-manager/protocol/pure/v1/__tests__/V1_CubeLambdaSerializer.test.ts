@@ -475,10 +475,11 @@ describe('Cube lambda serializer: shapes', () => {
     );
   });
 
-  test("Writes a relation type argument as the engine parses `@Relation<(…)>`: each column's type, and every column able to be empty", () => {
+  test("Writes a relation type argument as the engine parses `@Relation<(…)>`: each column's type, and whether it can be empty", () => {
     const column = (
       name: string,
       fullPath: string,
+      lowerBound: number,
       params: number[] = [],
     ): unknown => ({
       name,
@@ -491,7 +492,7 @@ describe('Cube lambda serializer: shapes', () => {
           value,
         })),
       },
-      multiplicity: { lowerBound: 0, upperBound: 1 },
+      multiplicity: { lowerBound, upperBound: 1 },
     });
     expect(
       bodyOf(
@@ -499,8 +500,13 @@ describe('Cube lambda serializer: shapes', () => {
           {
             name: 'SHIP_COUNTRY',
             type: genericType('meta::pure::precisePrimitives::Varchar', [15]),
+            nullable: true,
           },
-          { name: "'2000__|__cube_pivot'", type: genericType('Integer') },
+          {
+            name: "'2000__|__cube_pivot'",
+            type: genericType('Integer'),
+            nullable: false,
+          },
         ]),
       ),
     ).toEqual({
@@ -515,9 +521,10 @@ describe('Cube lambda serializer: shapes', () => {
                 column(
                   'SHIP_COUNTRY',
                   'meta::pure::precisePrimitives::Varchar',
+                  0,
                   [15],
                 ),
-                column("'2000__|__cube_pivot'", 'Integer'),
+                column("'2000__|__cube_pivot'", 'Integer', 1),
               ],
             },
             typeArguments: [],

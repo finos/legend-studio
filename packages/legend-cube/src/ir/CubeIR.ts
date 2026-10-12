@@ -143,10 +143,11 @@ export type IR =
       readonly origin?: Origin;
     };
 
-/** A column of a relation type: its name and its type, a `genericType` */
+/** A column of a relation type: its name, its type, a `genericType`, and whether it can be empty (`[0..1]`, else `[1]`) */
 export interface RelationTypeColumn {
   readonly name: string;
   readonly type: Extract<IR, { readonly k: 'genericType' }>;
+  readonly nullable: boolean;
 }
 
 /** An IR expression whose value is a relation */

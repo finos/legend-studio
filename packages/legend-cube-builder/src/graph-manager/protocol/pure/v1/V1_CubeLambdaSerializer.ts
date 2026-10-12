@@ -309,14 +309,17 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
               {
                 rawType: {
                   _type: 'relationType',
-                  columns: ir.columns.map(({ name, type }) => ({
+                  columns: ir.columns.map(({ name, type, nullable }) => ({
                     name,
                     genericType: genericTypeJson(
                       type.path,
                       type.params,
                       inherited,
                     ),
-                    multiplicity: { lowerBound: 0, upperBound: 1 },
+                    multiplicity: {
+                      lowerBound: nullable ? 0 : 1,
+                      upperBound: 1,
+                    },
                   })),
                 },
                 typeArguments: [],

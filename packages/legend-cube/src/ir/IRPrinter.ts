@@ -219,7 +219,10 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return `@${ir.path}${ir.params?.length ? `(${ir.params.join(', ')})` : ''}`;
     case 'relationType':
       return `@Relation<(${ir.columns
-        .map(({ name, type }) => `${printName(name)}:${print(type).slice(1)}`)
+        .map(
+          ({ name, type, nullable }) =>
+            `${printName(name)}:${print(type).slice(1)}${nullable ? '' : '[1]'}`,
+        )
         .join(', ')})>`;
     case 'enumValue':
       return options.redactLiterals && ir.origin?.role === EmitRole.VALUE

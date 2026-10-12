@@ -92,7 +92,7 @@ describe(unitTest('Pivot emission'), () => {
     );
   });
 
-  test('Counts rows with no aggregated column, and pivots with no row column', () => {
+  test('Counts rows with no aggregated column, a count never empty in the cast, and pivots with no row column', () => {
     expect(
       pivoted(
         new Pivot(
@@ -106,7 +106,7 @@ describe(unitTest('Pivot emission'), () => {
     ).toBe(
       `${ORDERS}->select(~[ORDER_DATE])` +
         `->pivot(~ORDER_DATE, [%1997-01-02], ~cube_pivot: x | 1 : y | $y->count())` +
-        `->cast(@Relation<('\\'1997-01-02__|__cube_pivot\\'':Integer)>)` +
+        `->cast(@Relation<('\\'1997-01-02__|__cube_pivot\\'':Integer[1])>)` +
         `->rename(~'\\'1997-01-02__|__cube_pivot\\'', ~'1997-01-02')`,
     );
   });

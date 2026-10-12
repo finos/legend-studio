@@ -133,6 +133,7 @@ export const emitPivot = (
                 ? output.name
                 : getEnginePivotColumnName(value),
             type: typeOf(output),
+            nullable: output.nullable,
           };
         }),
       ),
