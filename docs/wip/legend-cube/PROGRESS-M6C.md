@@ -8,19 +8,19 @@
 
 ## Current state
 
-| Item   | State                                                                                           |
-| ------ | ----------------------------------------------------------------------------------------------- |
-| Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`                         |
-| Engine | Local legend-engine on `localhost:6300`                                                         |
-| Step   | M6c.1 done: the plan                                                                            |
-| Tests  | 2938 core, 1728 builder (core group); engine suites 892 of 896 (the 4 local setup-SQL timeouts) |
+| Item   | State                                                                         |
+| ------ | ----------------------------------------------------------------------------- |
+| Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`       |
+| Engine | Local legend-engine on `localhost:6300`                                       |
+| Step   | M6c.2 done: the core; next M6c.3, databases                                   |
+| Tests  | 2960 core, 1729 builder (core group); the pivot engine test on DuckDB, 4 of 4 |
 
 ## Steps
 
 See PLAN §11.12 for each step's deliverable and when it is done.
 
 - [x] **M6c.1** The settled decisions (PLAN §11.12), this file, ISSUES.md's Trino and Athena entry
-- [ ] **M6c.2** The core
+- [x] **M6c.2** The core
 - [ ] **M6c.3** Databases: the one predicate, the guard, the lakehouse runtime table, the outline on open
 - [ ] **M6c.4** The editor, registered, and the palette greyed
 - [ ] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
@@ -33,9 +33,10 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit | Subject                              |
-| ----- | ------ | ------------------------------------ |
-| M6c.1 | –      | docs: settle Legend Cube M6c (Pivot) |
+| Step  | Commit      | Subject                               |
+| ----- | ----------- | ------------------------------------- |
+| M6c.1 | `9c02931dc` | docs: settle Legend Cube M6c (Pivot)  |
+| M6c.2 | `25b370c4d` | feat: add Pivot to Legend Cube's core |
 
 ## Notes
 
@@ -46,3 +47,14 @@ Filled in as steps land.
   values loaded and picked, columns named by the value, greyed in the palette and refused on the node. `p3` found
   that Trino and Athena plan it with no `PIVOT` (ISSUES.md), so four types run it: Snowflake, Databricks, SingleStore
   and DuckDB.
+- **M6c.2** (2026-10-12). `pivot` freed: the tests' example of a kind Cube doesn't know is now `future` (18 files, the
+  newer-version fixture included; saved `meta` keys named `pivot` kept). The core: `Pivot` (`rows`, `column`,
+  `values`, `aggregation`), its checks and eight messages, `getPivotColumnNames` (the value's text, `_2`, `_3` when
+  taken, compared folded), its schema (the row columns, then a column per value, typed as in a Group); a
+  `relationType` IR for the `cast`, printed and serialized as the engine parses `@Relation<(…)>`; `emitPivot`
+  (`select`, `pivot`, `cast`, a `rename` per value; a `pivot` emit role); `PIVOT_CODEC`; `PIVOT_DEFINITION`, not in
+  the default registry until the editor (M6c.4). Shared with Group: `validateAggregationFunctionAndColumn` (split out
+  of `validateColumnAggregation`) and `emitAggregation`; `isLiteralValue` moved from FilterTree to `LiteralValue.ts`.
+  `p4-cast.mjs` showed the cast takes Cube's precise types. A first engine test (`CubePivot.engine-roundtrip-test.ts`)
+  runs Cube's pivot on a DuckDB direct connection: sums, counts with 0, no row column, string values with a space, a
+  quote and a bar, then a Filter and a Sort on the value columns.
