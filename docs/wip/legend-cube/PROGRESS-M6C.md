@@ -119,3 +119,8 @@ Filled in as steps land.
   (a Pivot node beside local mode's pivot), §10.3 (`pivot`'s shape), §12.1 (a risk), Appendix A (beside §7.2, §16's
   messages, §17.6's editor) and Appendix B (Trino and Athena). Counted again from `p3-static.out`, 13 types assert
   "pivot is not supported", not 12: PLAN and ISSUES.md corrected.
+- **After M6c.9** (2026-10-12). Checked after the case fix: the engine suites give 919 of 923 again (the 4 known local
+  setup-SQL timeouts). `demo/check-m6c-drilldown.mjs`: in server-side mode, Drilldown by country after a Pivot by
+  country and product gives a group per country with its count, each summing its products' year columns (4 checks),
+  as PLAN §9 says. The video was re-recorded with two wordings fixed: a descending sort puts empty values first, and
+  Snowflake, Databricks and SingleStore are planned, not run.
