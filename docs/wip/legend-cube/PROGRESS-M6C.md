@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------- |
 | Branch | `cube-pivot`, from `cube-dev` (`c1b40a480`); a draft PR into `cube-dev`       |
 | Engine | Local legend-engine on `localhost:6300`                                       |
-| Step   | M6c.3 done: databases; next M6c.4, the editor                                 |
-| Tests  | 2964 core, 1732 builder (core group); the pivot engine test on DuckDB, 4 of 4 |
+| Step   | M6c.4 done: the editor; next M6c.5, the engine                                |
+| Tests  | 2964 core, 1748 builder (core group); the pivot engine test on DuckDB, 4 of 4 |
 
 ## Steps
 
@@ -22,7 +22,7 @@ See PLAN §11.12 for each step's deliverable and when it is done.
 - [x] **M6c.1** The settled decisions (PLAN §11.12), this file, ISSUES.md's Trino and Athena entry
 - [x] **M6c.2** The core
 - [x] **M6c.3** Databases: the one predicate, the guard, the lakehouse runtime table, the outline on open
-- [ ] **M6c.4** The editor, registered, and the palette greyed
+- [x] **M6c.4** The editor, registered, and the palette greyed
 - [ ] **M6c.5** On the engine, around the databases, and in the conformance suite and the corpus
 - [ ] **M6c.6** Guides, READMEs, testing.md and the changeset
 - [ ] **M6c.7** Verification and the browser rehearsal
@@ -37,7 +37,8 @@ Filled in as steps land.
 | ----- | ----------- | ---------------------------------------------------------------- |
 | M6c.1 | `9c02931dc` | docs: settle Legend Cube M6c (Pivot)                             |
 | M6c.2 | `25b370c4d` | feat: add Pivot to Legend Cube's core                            |
-| M6c.3 | –           | feat: refuse Legend Cube's Pivot where its database can't run it |
+| M6c.3 | `f341d3892` | feat: refuse Legend Cube's Pivot where its database can't run it |
+| M6c.4 | `7c0ab3ad1` | feat: add the Pivot editor to Legend Cube                        |
 
 ## Notes
 
@@ -72,3 +73,11 @@ Filled in as steps land.
   the add placement grey a node type its database can't run, with the reason, in the palette and the Add menus
   (shown for Pivot once it is registered, M6c.4). Tests that asserted no outline without a Drop now assert it loads
   once, as the cube opens.
+- **M6c.4** (2026-10-12). Pivot registered after Group (`createNodeRegistry`; the test registry dropped), with
+  `CubePivotDraft` and `CubePivotEditor`: the row columns ticked (the pivot and aggregated columns can't be), the
+  pivot column (one that can't be pivoted, or is a row or the aggregated column, shown but disabled, with why),
+  Load values (`select`, `distinct`, `sort`, at most 100, through `runCubeQuery`, so written for the cube's database;
+  empty values left out; "Only the first 100 values are listed." when there are more; why loading failed), the
+  values ticked in the engine's order (All, None; one that can't name a column disabled), and the aggregation (its
+  function, never Distinct Value, and its column, or "Every row"). Help text, the `TablePivot` icon, three notes. The
+  palette and Add menus grey Pivot with "Pivot is not supported on H2." on an H2 cube; the menu tests now say so.
