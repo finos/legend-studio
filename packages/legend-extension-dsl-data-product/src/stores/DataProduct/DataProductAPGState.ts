@@ -143,7 +143,7 @@ export class DataProductAPGState {
     undefined;
 
   associatedSystemAccountContractsAndApprovedUsers: {
-    contract: V1_DataContract;
+    contract: V1_LiteDataContract;
     approvedUsers: V1_User[];
   }[] = [];
 
@@ -330,25 +330,23 @@ export class DataProductAPGState {
   ): GeneratorFn<void> {
     this.fetchingApprovedContractsState.inProgress();
     try {
+      if (systemAccountContracts.length === 0) {
+        this.associatedSystemAccountContractsAndApprovedUsers = [];
+        return;
+      }
+      const rawApprovedUsersByContractId =
+        (yield lakehouseContractServerClient.getApprovedUsersForDataContracts(
+          systemAccountContracts.map((contract) => contract.guid),
+          token,
+        )) as Record<string, PlainObject<V1_User>[]>;
       this.associatedSystemAccountContractsAndApprovedUsers =
-        (yield Promise.all(
-          systemAccountContracts.map(async (contract) => {
-            const rawApprovedUsers =
-              await lakehouseContractServerClient.getApprovedUsersForDataContract(
-                contract.guid,
-                token,
-              );
-            const approvedUsers =
-              deserialize(
-                V1_DataContractApprovedUsersResponseModelSchema,
-                rawApprovedUsers,
-              ).approvedUsers ?? [];
-            return {
-              contract,
-              approvedUsers,
-            };
-          }),
-        )) as { contract: V1_DataContract; approvedUsers: V1_User[] }[];
+        systemAccountContracts.map((contract) => ({
+          contract,
+          approvedUsers:
+            deserialize(V1_DataContractApprovedUsersResponseModelSchema, {
+              approvedUsers: rawApprovedUsersByContractId[contract.guid] ?? [],
+            }).approvedUsers ?? [],
+        }));
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

@@ -95,6 +95,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
+  getApprovedUsersForDataContracts = (
+    ids: string[],
+    token: string | undefined,
+  ): Promise<Record<string, PlainObject<V1_User>[]>> =>
+    this.post(
+      `${this._dataContracts()}/approvedUsers`,
+      ids,
+      undefined,
+      this._token(token),
+    );
+
   getApprovedWorkforceUsersForAPG = (
     resource: string,
     did: number,
