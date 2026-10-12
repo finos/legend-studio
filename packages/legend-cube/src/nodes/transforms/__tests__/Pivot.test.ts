@@ -32,6 +32,7 @@ import {
   MESSAGE_PIVOT_ROW_COLUMN_NOT_GROUPABLE,
   MESSAGE_PIVOT_VALUE_INVALID,
   MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME,
+  MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE,
   MESSAGE_PIVOT_VALUES_TOO_MANY,
 } from '../../../messages/CubeMessages.js';
 import { Schema } from '../../../schema/Schema.js';
@@ -189,7 +190,7 @@ describe(unitTest('Pivot'), () => {
     ).toEqual([MESSAGE_PIVOT_COLUMN_IS_ROW_COLUMN('SHIP_VIA')]);
   });
 
-  test('Checks its values: some, at most 100, of the column type, none twice, each naming a column', () => {
+  test('Checks its values: some, at most 100, of the column type, none twice, none differing only in case, each naming a column', () => {
     expect(errorsOf(pivot({ values: [] }))).toEqual([
       MESSAGE_CANNOT_BE_EMPTY('Pivot values'),
     ]);
@@ -208,6 +209,19 @@ describe(unitTest('Pivot'), () => {
     ]);
     expect(errorsOf(pivot({ values: [integer('1'), integer('1')] }))).toEqual([
       MESSAGE_CANNOT_HAVE_DUPLICATES('Pivot values'),
+    ]);
+    // DuckDB gives both the first one's column (p6-case in the evidence folder)
+    expect(
+      errorsOf(
+        pivot({
+          pivotColumn: 'SHIP_COUNTRY',
+          rows: [],
+          values: [string('fr'), string('DE'), string('FR'), string('de')],
+        }),
+      ),
+    ).toEqual([
+      MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE('FR', 'fr'),
+      MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE('de', 'DE'),
     ]);
     expect(
       errorsOf(

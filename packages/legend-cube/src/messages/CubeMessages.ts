@@ -429,6 +429,13 @@ export const MESSAGE_PIVOT_VALUE_INVALID = (
   type: string,
 ): string => `Pivot value ${quote(value)} is not a valid ${type}.`;
 
+/** Added by Cube: on databases that compare names without case, the engine's columns for the two values are one (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE = (
+  value: string,
+  other: string,
+): string =>
+  `Pivot values ${quote(other)} and ${quote(value)} differ only in case, so some databases would mix up their columns.`;
+
 /** Added by Cube: a value names its column, so its text must be a valid column name (PLAN §11.12) */
 export const MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME = (value: string): string =>
   `Pivot value ${quote(value)} cannot name a column.`;

@@ -27,6 +27,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   PIVOT_COLUMN_DISABLED_REASON,
   PIVOT_EDITOR_NOTES,
+  PIVOT_VALUE_DISABLED_REASON,
 } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
@@ -163,6 +164,32 @@ describe('Pivot editor', () => {
         'Pivot "SHIP_VIA" into 1, 3',
       ),
     ).toBeDefined();
+  });
+
+  test('Greys a value differing only in case from one ticked, saying why', async () => {
+    const { fake } = await render();
+    pick('Pivot column', 'SHIP_COUNTRY');
+    fake.execute.mockResolvedValueOnce({
+      columns: ['SHIP_COUNTRY'],
+      rows: [['FR'], ['Fr']],
+      sql: [],
+      durationMs: 1,
+    });
+    fireEvent.click(
+      within(panel()).getByRole('button', { name: 'Load values' }),
+    );
+    const values = await within(panel()).findByRole('list', { name: 'Values' });
+    const [fr, mixed] = within(values).getAllByRole('checkbox') as [
+      HTMLInputElement,
+      HTMLInputElement,
+    ];
+    fireEvent.click(fr);
+    expect(mixed.disabled).toBe(true);
+    expect(mixed.closest('label')?.title).toBe(
+      PIVOT_VALUE_DISABLED_REASON.DIFFERS_ONLY_IN_CASE,
+    );
+    fireEvent.click(fr);
+    expect(mixed.disabled).toBe(false);
   });
 
   test('Says why loading failed, and shows its notes', async () => {

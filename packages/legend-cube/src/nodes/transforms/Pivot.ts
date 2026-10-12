@@ -33,6 +33,7 @@ import {
   MESSAGE_PIVOT_ROW_COLUMN_NOT_GROUPABLE,
   MESSAGE_PIVOT_VALUE_INVALID,
   MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME,
+  MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE,
   MESSAGE_PIVOT_VALUES_TOO_MANY,
 } from '../../messages/CubeMessages.js';
 import { foldColumnName, isValidColumnName } from '../../schema/ColumnName.js';
@@ -242,7 +243,8 @@ export class Pivot extends UnaryNode {
    * part reported: the row columns, none twice, each named, in the input and
    * groupable; the pivot column, picked, in the input, pivotable and no row
    * column; its values, one to `PIVOT_MAX_VALUES`, each of its type, none
-   * twice, each naming a column; then the aggregation, its function and column
+   * twice, no two differing only in case (`foldColumnName`: DuckDB, for one,
+   * gives both the first one's column), each naming a column; then the aggregation, its function and column
    * as a Group's (Distinct Value refused: the database fails its pivot), the
    * column neither a row column nor the pivot column.
    */
@@ -346,6 +348,18 @@ export class Pivot extends UnaryNode {
         MESSAGE_CANNOT_HAVE_DUPLICATES('Pivot values'),
         errors,
       ) &&
+      validateAllItems(values, (value, index) => {
+        const text = getLiteralText(value);
+        const earlier = values
+          .slice(0, index)
+          .map(getLiteralText)
+          .find((other) => foldColumnName(other) === foldColumnName(text));
+        return validate(
+          earlier === undefined,
+          MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE(text, earlier ?? ''),
+          errors,
+        );
+      }) &&
       validateAllItems(values, (value, index) =>
         validate(
           isValidColumnName(getLiteralText(value)) &&

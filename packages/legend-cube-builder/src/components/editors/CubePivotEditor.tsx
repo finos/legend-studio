@@ -23,7 +23,6 @@ import {
   getPivotColumnNames,
   isPivotableType,
   isSortableType,
-  isValidColumnName,
   type LiteralValue,
   type Schema,
 } from '@finos/legend-cube';
@@ -149,7 +148,7 @@ export const CubePivotEditor = observer((props: CubeNodeEditorProps) => {
           {draft.loading ? 'Loading…' : 'Load values'}
         </CubeButton>
         <CubeButton
-          title="Tick every value listed"
+          title="Tick every value listed that can be"
           disabled={readOnly || !draft.loaded?.values.length}
           onClick={() => draft.pickAllValues()}
         >
@@ -176,7 +175,7 @@ export const CubePivotEditor = observer((props: CubeNodeEditorProps) => {
           {values.map((value) => {
             const text = getLiteralText(value);
             const picked = draft.values.some((each) => sameValue(each, value));
-            const nameable = isValidColumnName(text);
+            const reason = draft.untickableReason(value);
             const name =
               names[draft.values.findIndex((each) => sameValue(each, value))];
             return (
@@ -184,16 +183,14 @@ export const CubePivotEditor = observer((props: CubeNodeEditorProps) => {
                 <label
                   className={clsx(
                     'flex items-center gap-2 px-2',
-                    !nameable && 'text-[var(--color-text-disabled)]',
+                    reason !== undefined && 'text-[var(--color-text-disabled)]',
                   )}
-                  title={
-                    nameable ? undefined : "This value can't name a column"
-                  }
+                  title={reason}
                 >
                   <input
                     type="checkbox"
                     checked={picked}
-                    disabled={readOnly || (!nameable && !picked)}
+                    disabled={readOnly || (reason !== undefined && !picked)}
                     onChange={() => draft.toggleValue(value)}
                   />
                   <span className="min-w-0 truncate">

@@ -17,6 +17,9 @@
 import {
   AggregationFunction,
   Distinct,
+  foldColumnName,
+  getLiteralText,
+  isValidColumnName,
   type LiteralValue,
   parseValue,
   Pivot,
@@ -36,6 +39,7 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { type CubeQueryRunResult, runCubeQuery } from '../CubeQueryRun.js';
+import { PIVOT_VALUE_DISABLED_REASON } from '../../__lib__/LegendCubeLabels.js';
 import { isSameList, toggledColumns } from './CubeAggregationRows.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
@@ -165,14 +169,39 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
     this.touched = true;
   }
 
-  /** Ticks every value loaded, keeping those picked that weren't */
+  /**
+   * Why a value can't be ticked, given those ticked: its text can't name a
+   * column, or another ticked value differs from it only in case (the core
+   * refuses both, PLAN §11.12); `undefined` when it can
+   */
+  untickableReason(
+    value: LiteralValue,
+    ticked: readonly LiteralValue[] = this.values,
+  ): string | undefined {
+    const text = getLiteralText(value);
+    return !isValidColumnName(text)
+      ? PIVOT_VALUE_DISABLED_REASON.NOT_A_COLUMN_NAME
+      : ticked.some(
+            (other) =>
+              !sameValue(other, value) &&
+              foldColumnName(getLiteralText(other)) === foldColumnName(text),
+          )
+        ? PIVOT_VALUE_DISABLED_REASON.DIFFERS_ONLY_IN_CASE
+        : undefined;
+  }
+
+  /** Ticks every value loaded that can be, in the engine's order, keeping those picked */
   pickAllValues(): void {
-    this.values = this.ordered([
-      ...this.values,
-      ...(this.loaded?.values ?? []).filter(
-        (value) => !this.values.some((picked) => sameValue(picked, value)),
+    this.values = this.ordered(
+      (this.loaded?.values ?? []).reduce<readonly LiteralValue[]>(
+        (ticked, value) =>
+          ticked.some((picked) => sameValue(picked, value)) ||
+          this.untickableReason(value, ticked) !== undefined
+            ? ticked
+            : [...ticked, value],
+        this.values,
       ),
-    ]);
+    );
     this.touched = true;
   }
 

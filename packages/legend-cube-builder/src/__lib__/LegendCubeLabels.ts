@@ -276,6 +276,14 @@ export const PIVOT_COLUMN_DISABLED_REASON = {
   AGGREGATED: 'the aggregated column',
 } as const;
 
+/** Why the Pivot editor won't tick a value (PLAN §11.12) */
+export const PIVOT_VALUE_DISABLED_REASON = {
+  NOT_A_COLUMN_NAME: "This value can't name a column",
+  /** another value ticked has the same text in another case */
+  DIFFERS_ONLY_IN_CASE:
+    'A value differing from this one only in case is ticked: some databases would mix up their columns',
+} as const;
+
 /** What the Pivot editor says (PLAN §11.12) */
 export const PIVOT_EDITOR_NOTES = [
   'Each picked value becomes a column, named by the value, holding the aggregation of its rows; each combination of the row columns becomes a row. Values not picked are left out.',

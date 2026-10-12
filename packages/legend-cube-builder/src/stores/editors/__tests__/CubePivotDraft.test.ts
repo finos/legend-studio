@@ -43,11 +43,13 @@ import {
   CubeEngineErrorKind,
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../CubeEditorState.js';
+import { PIVOT_VALUE_DISABLED_REASON } from '../../../__lib__/LegendCubeLabels.js';
 import { CUBE_NORTHWIND_MODEL } from '../../fixtures/CubeNorthwindModel.js';
 import { CubePivotDraft, toPivotValue } from '../CubePivotDraft.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const integer = (value: string): LiteralValue => ({ kind: 'integer', value });
+const string = (value: string): LiteralValue => ({ kind: 'string', value });
 
 const states: CubeEditorState[] = [];
 afterEach(() => {
@@ -131,6 +133,28 @@ describe('Pivot draft', () => {
     expect(draft.values).toEqual([integer('1'), integer('2'), integer('3')]);
     draft.clearValues();
     expect(draft.build().values).toEqual([]);
+  });
+
+  test("Won't tick a value that can't name a column, or differs only in case from one ticked, and All skips them", () => {
+    const { draft } = open(new Pivot('pivot101', [], 'SHIP_COUNTRY'));
+    draft.loaded = {
+      column: 'SHIP_COUNTRY',
+      values: [string('A'), string('a'), string('b'), string('q"t')],
+      more: false,
+    };
+    draft.toggleValue(string('a'));
+    expect(draft.untickableReason(string('A'))).toBe(
+      PIVOT_VALUE_DISABLED_REASON.DIFFERS_ONLY_IN_CASE,
+    );
+    expect(draft.untickableReason(string('a'))).toBeUndefined();
+    expect(draft.untickableReason(string('q"t'))).toBe(
+      PIVOT_VALUE_DISABLED_REASON.NOT_A_COLUMN_NAME,
+    );
+    draft.pickAllValues();
+    expect(draft.values).toEqual([string('a'), string('b')]);
+    draft.clearValues();
+    draft.pickAllValues();
+    expect(draft.values).toEqual([string('A'), string('b')]);
   });
 
   test('Takes no column for Count rows, and one to pick for the others, keeping the one it had', () => {

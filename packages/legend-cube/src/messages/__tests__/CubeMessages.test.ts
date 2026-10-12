@@ -197,6 +197,9 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_PIVOT_VALUE_INVALID('x', 'Int')).toBe(
     'Pivot value "x" is not a valid Int.',
   );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE('A', 'a')).toBe(
+    'Pivot values "a" and "A" differ only in case, so some databases would mix up their columns.',
+  );
   expect(MESSAGES.MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME('q"t')).toBe(
     'Pivot value "q"t" cannot name a column.',
   );

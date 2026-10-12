@@ -4456,14 +4456,15 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 - **The node:** `Pivot`, saved as `pivot`, `Pivot by Column` after `Group by Column` in the palette, one `tds` input:
   `{rows, column, values, aggregation}`. `rows` are the row columns in input order, as Group's keys (none gives one
-  row ✅); `column` the pivot column; `values` typed literals, in the order picked; `aggregation` one of Group's
+  row ✅); `column` the pivot column; `values` typed literals, in the engine's order; `aggregation` one of Group's
   (`{function, column}`, §11.5), with no name. Help: "Turns the values of a column into columns: a row for each
   combination of the row columns, and a column for each picked value, holding its aggregate." The tests' example of
   a kind Cube doesn't know, `pivot`, becomes `future`.
 - **Pivot columns:** a String, an integer (Integer, SmallInt, TinyInt, BigInt), a StrictDate or a Boolean ✅. Other
   types are refused (`Pivot column "<c>" of type <T> cannot be pivoted.`): a float matches its values inexactly, as
   M7 found for `REAL`; DateTime, Decimal and enumerations aren't probed yet.
-- **Values:** one to 100, each of the column's type, none twice. A value whose text can't name a column (empty, or
+- **Values:** one to 100, each of the column's type, none twice, and no two differing only in case (`foldColumnName`):
+  DuckDB gives both the first one's numbers ✅ (`p6`, found in M6c.7). A value whose text can't name a column (empty, or
   holding `"`, `\` or a control character, or longer than 128 code points; `isValidColumnName`, §7.5) is refused: the
   engine drops `"` from the names it generates ✅. The editor loads them as
   `<input>->select(~c)->distinct()->sort(~c->ascending())->limit(101)` on the cube's runtime; an empty value can't be
@@ -4481,7 +4482,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
   `(rows…, '<v>__|__cube_pivot': T, …)`; then a `rename` of each value column to its name ✅ on DuckDB. The `select`
   is needed: every column the pivot doesn't consume becomes a row column ✅. The cast must name exactly the listed
   values: a value it names that isn't listed types but doesn't run ✅. Later steps (Filter, Sort, Extend, Rename) use
-  the renamed columns ✅. The cast's column types: 💭 the precise types Cube infers, probed in M6c.2.
+  the renamed columns ✅. The cast's column types: the precise types Cube infers (`Varchar(10)`), each never empty
+  where Cube infers so (`[1]`) ✅ (`p4`, `p5`).
 - **Which databases:** the static pivot plans, with the outer select reading the names the `PIVOT` gives, on
   **Snowflake, Databricks, SingleStore (`MemSQL`) and DuckDB** ✅, and runs on DuckDB ✅. It is refused on H2, which
   can't translate it ✅, and on the 12 types that assert "pivot is not supported" ✅. Trino and Athena plan it with no
@@ -4497,7 +4499,7 @@ This subsection overrides the sections it names until they are updated (see "Sup
   Distinct, a filter giving a pattern `%` or `_` (§8.2), a Pivot. `needsDatabaseType`, the editor's outline loading
   and its database rule read it, rather than a list per feature.
 - **The guard:** core's `getDatabaseProblems` refuses a Pivot on a type that can't run it, saying
-  `Pivot isn't supported on H2.`, which the editor's rule shows on the node and the emitter throws on, as for
+  `Pivot is not supported on H2.`, which the editor's rule shows on the node and the emitter throws on, as for
   DuckDB's `%` and `_` (§8.2). The palette and the canvas and grid menus grey `Pivot by Column` with the same reason
   when the selected node's database is known and refuses it; the model's outline is loaded when a cube with a table
   opens, so the reason is there before any run.
@@ -4518,6 +4520,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
 | Distinct Value's pivot fails on DuckDB                                                                               | ✅  | `p3-static.out` B |
 | Strings with a space, `'`, `\|`, `\`, dates and booleans make names; `"` is dropped from them                        | ✅  | `p3-static.out` C |
 | A cast naming an unlisted value types but returns fewer columns; one missing a value the data has drops it silently  | ✅  | `p2-native.out` C |
+| A cast can give Cube's precise types, and `[1]` for a column never empty                                             | ✅  | `p4`, `p5`        |
+| Two values differing only in case (`'a'`, `'A'`): DuckDB gives both columns the first one's numbers                  | ✅  | `p6-case.out`     |
 
 **Steps:**
 
