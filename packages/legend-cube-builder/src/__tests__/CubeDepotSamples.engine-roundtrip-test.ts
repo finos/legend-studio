@@ -123,4 +123,62 @@ describe("The mock depot's sample projects, on the engine", () => {
       );
     },
   );
+
+  test('Lists the functions of cube-sales 1.10.0, typed by the engine, the bound one with its runtime (PLAN §6.5)', async () => {
+    const sales = CASES.find((each) => each.name === 'cube-sales 1.10.0');
+    if (!sales) {
+      throw new Error('No cube-sales 1.10.0');
+    }
+    const functions =
+      V1_buildCubeModelOutline(sales.model).functions?.filter((fn) =>
+        fn.path.startsWith('cube::samples::sales::'),
+      ) ?? [];
+    expect(functions.map((fn) => [fn.path, fn.runtime, fn.problem])).toEqual([
+      ['cube::samples::sales::ordersAbove', undefined, undefined],
+      [
+        'cube::samples::sales::shippedOrders',
+        'cube::samples::sales::SalesRuntime',
+        undefined,
+      ],
+    ]);
+    const response = await CUBE_ENGINE_TEST__lambdaRelationTypeBatch({
+      model: sales.model,
+      lambdas: {
+        ordersAbove: {
+          _type: 'lambda',
+          parameters: [],
+          body: [
+            {
+              _type: 'func',
+              function: 'cube::samples::sales::ordersAbove',
+              parameters: [
+                { _type: 'float', value: 0 },
+                {
+                  _type: 'collection',
+                  multiplicity: { lowerBound: 0, upperBound: 0 },
+                  values: [],
+                },
+              ],
+            },
+          ],
+        },
+        shippedOrders: {
+          _type: 'lambda',
+          parameters: [],
+          body: [
+            {
+              _type: 'func',
+              function: 'cube::samples::sales::shippedOrders',
+              parameters: [],
+            },
+          ],
+        },
+      },
+    });
+    expect(response.errors ?? {}).toEqual({});
+    expect(Object.keys((response.result ?? {}) as PlainObject).sort()).toEqual([
+      'ordersAbove',
+      'shippedOrders',
+    ]);
+  });
 });

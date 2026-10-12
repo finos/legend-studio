@@ -44,13 +44,13 @@ export const V1_compareCubeProjectVersionsNewestFirst = (
   return 0;
 };
 
-/** The paths of a model's Databases */
-const databasePathsOf = (modelData: PlainObject): Set<string> =>
+/** The paths of a model's elements of a type: its Databases, or its functions by full name */
+const elementPathsOf = (modelData: PlainObject, type: string): Set<string> =>
   new Set(
     (Array.isArray(modelData.elements) ? modelData.elements : [])
       .filter(
         (element: PlainObject) =>
-          element._type === 'relational' &&
+          element._type === type &&
           typeof element.package === 'string' &&
           typeof element.name === 'string',
       )
@@ -135,12 +135,17 @@ export class V1_LegendCubeProjectCatalog implements CubeProjectCatalog {
         true,
       ),
     ]);
-    const ownDatabases = databasePathsOf(own);
+    const ownDatabases = elementPathsOf(own, 'relational');
+    const ownFunctions = elementPathsOf(own, 'function');
+    // a function's runtime is read through its dependencies' functions too
     const outline = V1_buildCubeModelOutline(withDependencies);
     return {
       ...outline,
       databases: outline.databases.filter((database) =>
         ownDatabases.has(database.path),
+      ),
+      functions: (outline.functions ?? []).filter((fn) =>
+        ownFunctions.has(fn.signature),
       ),
     };
   }

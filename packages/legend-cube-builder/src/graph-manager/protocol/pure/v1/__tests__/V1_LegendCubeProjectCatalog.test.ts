@@ -77,17 +77,66 @@ const runtime = (path: string, store: string): PlainObject => {
   };
 };
 
+/** A function of no parameter that returns a relation, with this body */
+const relationFunction = (path: string, body: PlainObject): PlainObject => {
+  const index = path.lastIndexOf('::');
+  return {
+    _type: 'function',
+    package: path.slice(0, index),
+    name: `${path.slice(index + 2)}__Relation_1_`,
+    parameters: [],
+    returnGenericType: {
+      rawType: { _type: 'packageableType', fullPath: 'Relation' },
+      typeArguments: [
+        {
+          rawType: {
+            _type: 'relationType',
+            columns: [
+              {
+                name: 'ID',
+                genericType: {
+                  rawType: { _type: 'packageableType', fullPath: 'Integer' },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+    body: [body],
+  };
+};
+
 const OWN = {
   _type: 'data',
   elements: [
     database('sales::SalesDb', 'ORDERS'),
     runtime('sales::SalesRuntime', 'sales::SalesDb'),
+    // calls a dependency's function, which reads through its own runtime
+    relationFunction('sales::sharedOrders', {
+      _type: 'func',
+      function: 'reference::orders',
+      parameters: [],
+    }),
   ],
 };
 const DEPENDENCY_ELEMENTS = [
   database('reference::CurrencyDb', 'CURRENCIES'),
   // a dependency's runtime keyed by the project's Database
   runtime('reference::SharedRuntime', 'sales::SalesDb'),
+  relationFunction('reference::orders', {
+    _type: 'func',
+    function: 'from',
+    parameters: [
+      {
+        _type: 'classInstance',
+        type: '>',
+        value: { path: ['sales::SalesDb', 'SALES', 'ORDERS'] },
+      },
+      { _type: 'packageableElementPtr', fullPath: 'reference::SharedRuntime' },
+    ],
+  }),
 ];
 
 const setUp = () => {
@@ -167,6 +216,18 @@ describe('Project catalog', () => {
       'sales::SalesRuntime',
       'reference::SharedRuntime',
     ]);
+  });
+
+  test("Gives a version's own functions, their runtimes read through its dependencies' functions too (PLAN §6.5)", async () => {
+    const { catalog } = setUp();
+    const outline = await catalog.loadOutline({
+      groupId: 'com.example',
+      artifactId: 'sales',
+      versionId: '1.10.0',
+    });
+    expect(outline.functions?.map((each) => [each.path, each.runtime])).toEqual(
+      [['sales::sharedOrders', 'reference::SharedRuntime']],
+    );
   });
 
   test('Reads a release once, and again after a failure', async () => {

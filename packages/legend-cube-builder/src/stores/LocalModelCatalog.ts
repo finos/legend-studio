@@ -24,7 +24,10 @@ import {
   CUBE_NORTHWIND_SAMPLE_MODEL,
 } from './fixtures/CubeNorthwindModel.js';
 import { CUBE_SPORTS_MODEL } from './fixtures/CubeSportsModel.js';
-import { CUBE_TRADES_MODEL } from './fixtures/CubeTradesModel.js';
+import {
+  CUBE_TRADES_MODEL,
+  CUBE_TRADES_MODEL_BEFORE_FUNCTIONS,
+} from './fixtures/CubeTradesModel.js';
 
 // The models of the slice (PLAN §6.2.3): Pure text bundled with Cube, or
 // pasted by the user. Picking one gives the model context the cube saves, the
@@ -55,6 +58,8 @@ export const BUNDLED_MODELS: readonly BundledModel[] = Object.freeze([
     id: 'cube-sample-trades',
     label: 'Trades',
     model: CUBE_TRADES_MODEL,
+    // before its functions (PLAN §6.5)
+    earlierModels: [CUBE_TRADES_MODEL_BEFORE_FUNCTIONS],
   },
 ]);
 

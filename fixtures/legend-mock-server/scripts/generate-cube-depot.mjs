@@ -27,6 +27,9 @@
 //   ArchiveDb two (the user picks), PlannedDb none (shown disabled).
 // - cube-reference is a dependency of cube-sales: its Database is in the
 //   model the engine fetches, but not one Cube lists for cube-sales.
+// - cube-sales 1.10.0 has two functions that return a relation (PLAN §6.5):
+//   ordersAbove, which leaves the runtime to the cube, and shippedOrders,
+//   which reads through its own from(SalesRuntime).
 // Every table has a few rows, set up in an in-memory H2 database by its
 // connection, in a schema of its own.
 
@@ -43,6 +46,7 @@ const CLASSIFIERS = {
   relational: 'meta::relational::metamodel::Database',
   connection: 'meta::pure::runtime::PackageableConnection',
   runtime: 'meta::pure::runtime::PackageableRuntime',
+  function: 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
 };
 
 const pureString = (text) =>
@@ -234,7 +238,27 @@ ${runtime(
   'cube::samples::sales::ArchiveReplicaRuntime',
   ARCHIVE_DB,
   'cube::samples::sales::ArchiveReplicaConnection',
-)}`;
+)}${
+    withReturns
+      ? `
+###Pure
+function cube::samples::sales::ordersAbove(minAmount: Float[1], status: String[0..1]): Relation<(ID:Integer, CUSTOMER_ID:Integer, AMOUNT:Decimal, STATUS:String)>[1]
+{
+  #>{${SALES_DB}.SALES.ORDERS}#
+    ->filter(o|($o.AMOUNT > $minAmount) && ($status->isEmpty() || ($o.STATUS == $status->toOne())))
+    ->select(~[ID, CUSTOMER_ID, AMOUNT, STATUS])
+}
+
+function cube::samples::sales::shippedOrders(): Relation<(ID:Integer, CUSTOMER_ID:Integer, AMOUNT:Decimal)>[1]
+{
+  #>{${SALES_DB}.SALES.ORDERS}#
+    ->filter(o|$o.STATUS == 'SHIPPED')
+    ->select(~[ID, CUSTOMER_ID, AMOUNT])
+    ->from(cube::samples::sales::SalesRuntime)
+}
+`
+      : ''
+  }`;
 };
 
 // ---------------------------------------------------------------- generation
@@ -286,7 +310,11 @@ const toEntities = async (code) => {
   });
 };
 
-const REFERENCE = { groupId: GROUP, artifactId: 'cube-reference', versionId: '1.0.0' };
+const REFERENCE = {
+  groupId: GROUP,
+  artifactId: 'cube-reference',
+  versionId: '1.0.0',
+};
 
 const projects = [
   {
@@ -336,6 +364,9 @@ fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, `${JSON.stringify(result, null, 1)}\n`);
 console.log(
   `Wrote ${OUT}: ${result
-    .map((project) => `${project.artifactId} (${project.versions.map((version) => version.versionId).join(', ')})`)
+    .map(
+      (project) =>
+        `${project.artifactId} (${project.versions.map((version) => version.versionId).join(', ')})`,
+    )
     .join('; ')}`,
 );

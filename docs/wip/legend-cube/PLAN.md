@@ -1235,7 +1235,7 @@ service is read is still to be written (user, 2026-10-12).
   `POST /api/pure/v1/compilation/autofix/transformTdsToRelation/lambda` ✅, binding parameters with `let`, and
   saving `{gav, servicePath, executionKey?, parameterValues}` with a hash) is set aside for the SQL route.
 
-### 6.5 Pure functions returning a Relation (designed 2026-10-12)
+### 6.5 Pure functions returning a Relation (built 2026-10-12)
 
 A cube can read a function of a published project that returns a relation, through the source dialog's **Project
 Function** tab. A `function f(…):Relation<(…)>[1]` is called in the cube's lambda (`p::f(1.0)`), composes with
@@ -1262,27 +1262,41 @@ runtimes on different data:
   can't be added, with the reason.
 - **Two PRs:** the services WIP (§6.4) first, then the function source as its own milestone with a demo video.
 
-**The tab:** the Project Database tab's project and version steps, then the version's functions that return a
-`Relation<…>`, read from the depot's own-project model with no engine call: name, parameters and declared
-columns. Then:
+**The tab (as built):** not a tab of its own, but a **Read: Tables | Functions** choice in the tabs that read a
+model: Sample Data (and a pasted model) and Project Database. A function then comes from the same project and
+version as the cube's tables, picked once, which is what mixing them needs; the palette's **Function** item opens
+the tab on functions, its **Relational Database Table** item on tables. A connection's tab reads no functions.
 
-- **its runtime:** Cube walks the function's body for a `from(<runtime>)`, following calls to the project's
-  functions (with its dependencies). Found: that runtime is the cube's, shown read-only ("Runs on `p::Rt`, set by
-  the function"). Not found: the user picks one of the project's runtimes, as for a table. A runtime that isn't an
-  element (`from($rt)`), two different runtimes, or a cube already on another runtime: the function can't be added,
-  with the reason;
-- **its parameters:** a form of the parameter values, which the source's editor changes later.
+- **The list:** the model's functions that return a `Relation<…>[1]`, from its outline with no engine call
+  (`V1_CubeFunctionOutlineBuilder`): the path the lambda calls, the full name, the parameters and the declared
+  columns. A project lists its own functions only (§6.3), read with its dependencies for their runtimes. One that
+  can't be added is listed disabled with why: a parameter of another type or of `[*]`, a runtime given by an
+  expression, or two runtimes.
+- **Its runtime:** Cube walks the function's body for `from(<runtime>)`, following calls to the model's functions
+  (by path, or by name when one function has it). Found, it is the cube's runtime, shown read-only ("Runs on …, set
+  by the function"); a cube already on another runtime refuses it. Not found, the user picks one of the model's
+  runtimes, or the cube's once it has one. The table steps then take the cube's runtime too.
+- **Its parameters:** a field per parameter, checked against its type as it is typed. Empty text is no value: an
+  optional one passes `[]` (an optional String is never `''`), a required one is missing. Add needs a valid value
+  for each required one; the source's editor changes them later (Apply, one undo step).
+- **Adding it:** the engine types the call (`{| f(…)}`), with placeholders for values that aren't valid yet: the
+  columns don't depend on them. The first source sets the cube's model and runtime.
+- **Runs:** the call is a source like a table, `f(…)->…->from(runtime)`, and a window's `let` form works on it
+  (engine test). A run's database type, for §11.4's workarounds, is that of the runtime's connections, which a
+  function may read any of.
+- **On the canvas:** the function's name, with its values as the muted line. Show Pure prints a call with
+  arguments in the engine's arrow form (`'Rates'->deskBook([])`), as the engine's grammar composer writes it.
+- **Samples:** the Trades sample has two functions, `tradesAbove(minNotionalUsd)`, which leaves the runtime to the
+  cube, and `deskBook(desk, side?)`, which reads through its own; its text before them stays an earlier model, so
+  cubes saved on it open on the same dataset. The mock depot's `cube-sales` 1.10.0 has `ordersAbove(minAmount,
+status?)` and `shippedOrders()`, bound to `SalesRuntime`.
+- **Not yet:** enum and class parameters; `[*]` parameters; a dependency's functions; a function returning a TDS;
+  data product function access points.
 
-**What it saves:** `{type: 'function', function, signature, parameterValues}` and the schema snapshot. `function`
-is the path the lambda calls; `signature` is the engine's full name (`p::withParam_Float_1__Relation_1_`), which
-tells overloads apart. The model is the project pointer (§6.3) and the runtime the cube's.
-
-**Typing** goes through the engine (`typeLambdas` on `{| p::f(…)}`), as other sources, so drift checks work
-unchanged; the declared columns are only what the tab shows.
-
-**Tests:** unit and page tests with the fake catalog; an engine test of a function with and without a `from()`,
-with a parameter, joined with a table, and through a window's `let`; and a bound and an unbound function in the
-mock depot's `cube-sales` for the `cube-local` group.
+**Tests:** unit tests of the node, its codec and the outline builder (on the engine's JSON of a model with
+functions); the picker's and the editor's state and components on the fake engine; an engine test of the Trades
+functions with and without a `from()`, with a parameter and an empty optional one, joined with a table, and
+through a window's `let`; and the mock depot's functions compile and type on the engine.
 
 ### 6.6 Data products (M9, outline)
 

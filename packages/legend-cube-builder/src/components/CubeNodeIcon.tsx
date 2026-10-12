@@ -20,6 +20,7 @@ import {
   AlignTopIcon,
   ArrowsJoinIcon,
   CalculatorIcon,
+  CodeIcon,
   CompareIcon,
   CompressIcon,
   DataCubeIcon,
@@ -42,6 +43,7 @@ const NODE_ICONS: Readonly<
   Record<string, React.FC<{ className?: string; title?: string }>>
 > = {
   table: TableIcon,
+  function: CodeIcon,
   dataProduct: PackageIcon,
   ingest: DatabaseImportIcon,
   service: RobotIcon,

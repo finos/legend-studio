@@ -24,6 +24,7 @@ import {
   ExpressionFilter,
   Extend,
   Filter,
+  FunctionSource,
   Group,
   Join,
   Limit,
@@ -45,6 +46,9 @@ import {
 
 export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [RelationalTableSource.TYPE]: 'Sources data from relational database table.',
+  /** Added by Cube: the original's PURE Native Function source (PLAN §6.5) */
+  [FunctionSource.TYPE]:
+    'Sources data from a function of the model that returns a relation, called with a value for each parameter.',
   /** Added by Cube: the original has no data product source (PLAN §6.8) */
   [DataProductAccessPointSource.TYPE]:
     'Sources data from an access point of a deployed data product.',

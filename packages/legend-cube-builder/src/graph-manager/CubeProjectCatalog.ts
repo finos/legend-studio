@@ -32,9 +32,9 @@ export interface CubeProjectCatalog {
   /** The project's released versions, newest first: never a SNAPSHOT or an alias */
   listVersions(project: CubeProjectSummary): Promise<readonly string[]>;
   /**
-   * The project's own Databases at the version, and the runtimes of the
-   * project and its dependencies; a dependency's Databases are not offered
-   * (user, 2026-10-09)
+   * The project's own Databases and functions at the version, and the
+   * runtimes of the project and its dependencies; a dependency's Databases
+   * and functions are not offered (user, 2026-10-09, 2026-10-12)
    */
   loadOutline(project: CubeProjectCoordinates): Promise<CubeModelOutline>;
 }

@@ -122,6 +122,8 @@ export class CubeProjectTabState extends CubeInlineModelTabState {
         flowResult(this.selectModel(fixedModel)).catch(
           this.editorState.host.applicationStore.alertUnhandledError,
         );
+      } else {
+        this.followFixedRuntime();
       }
       return;
     }

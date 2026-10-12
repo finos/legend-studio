@@ -64,6 +64,8 @@ describe('Node editor registries', () => {
   test("Carries the help text and the Select tooltip verbatim (spec §17.9; Concat's per PLAN §11.5, Q8)", () => {
     expect(CUBE_NODE_HELP_TEXT).toEqual({
       relational: 'Sources data from relational database table.',
+      function:
+        'Sources data from a function of the model that returns a relation, called with a value for each parameter.',
       dataProductAccessPoint:
         'Sources data from an access point of a deployed data product.',
       ingestDataset:

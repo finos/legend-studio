@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  FunctionSource,
   IngestDatasetSource,
   RelationalTableSource,
   ServiceSource,
@@ -38,7 +39,10 @@ import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
 import { CubeProjectTabState } from './source-picker/CubeProjectTabState.js';
-import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
+import {
+  CubeInlineModelTabState,
+  CubeModelReadKind,
+} from './source-picker/CubeInlineModelTabState.js';
 import { CubeServiceTabState } from './source-picker/CubeServiceTabState.js';
 import {
   type CubeSourcePickerTab,
@@ -77,6 +81,7 @@ export class CubeSourcePickerState {
       canConfirm: computed,
       open: action,
       openToChoose: action,
+      openForSourceType: action,
       selectTab: action,
       close: action,
       confirm: flow,
@@ -144,15 +149,37 @@ export class CubeSourcePickerState {
     if (dedicated) {
       return dedicated.isAvailable ? dedicated : undefined;
     }
-    if (type !== RelationalTableSource.TYPE) {
+    if (type !== RelationalTableSource.TYPE && type !== FunctionSource.TYPE) {
       return undefined;
     }
     const dedicatedTabs = [...this.dedicatedTabs.values()];
-    const tableTabs = this.tabs.filter((tab) => !dedicatedTabs.includes(tab));
+    // a function comes from a model, as a table does, but not from a connection
+    const tableTabs = this.tabs.filter(
+      (tab) =>
+        !dedicatedTabs.includes(tab) &&
+        (type !== FunctionSource.TYPE ||
+          tab instanceof CubeInlineModelTabState),
+    );
     const { fixedTab } = this;
     return fixedTab
       ? tableTabs.find((tab) => tab === fixedTab)
       : (tableTabs.find((tab) => tab === this.activeTab) ?? this.modelTab);
+  }
+
+  /**
+   * Opens the dialog on the tab a palette item's type opens; a model's tab
+   * reads tables or functions as the item asks
+   */
+  openForSourceType(type: string): void {
+    const tab = this.tabForSourceType(type);
+    if (tab instanceof CubeInlineModelTabState) {
+      tab.setReadKind(
+        type === FunctionSource.TYPE
+          ? CubeModelReadKind.FUNCTION
+          : CubeModelReadKind.TABLE,
+      );
+    }
+    this.open(tab?.key);
   }
 
   /**
