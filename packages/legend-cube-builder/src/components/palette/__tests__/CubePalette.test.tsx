@@ -447,6 +447,9 @@ describe('Cube palette', () => {
     expect(paletteItem(TABLE).title).toBe(
       'Click, or drop it on the canvas, to pick a table',
     );
+    expect(paletteItem('Function (BETA)').title).toBe(
+      'Click, or drop it on the canvas, to pick a function',
+    );
     expect(paletteItem('Data Product (BETA)').title).toBe(
       'Click, or drop it on the canvas, to pick an access point',
     );

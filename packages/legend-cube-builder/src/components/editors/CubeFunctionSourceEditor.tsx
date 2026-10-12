@@ -47,7 +47,11 @@ const CubeFunctionValueInput = observer(
     return (
       <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-2">
-          <label className="w-24 shrink-0 truncate text-base" htmlFor={id}>
+          <label
+            className="w-32 shrink-0 truncate text-base"
+            htmlFor={id}
+            title={parameter.name}
+          >
             {parameter.name}
           </label>
           <input
@@ -61,7 +65,7 @@ const CubeFunctionValueInput = observer(
           />
         </div>
         {error !== undefined && (
-          <span className="pl-[6.5rem] text-sm text-[var(--color-status-error)]">
+          <span className="pl-[8.5rem] text-sm text-[var(--color-status-error)]">
             {error}
           </span>
         )}

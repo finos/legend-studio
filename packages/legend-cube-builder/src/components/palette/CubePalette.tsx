@@ -18,6 +18,9 @@ import { ChevronLeftIcon, ChevronRightIcon, clsx } from '@finos/legend-art';
 import {
   type AnyNodeDefinition,
   DataProductAccessPointSource,
+  FunctionSource,
+  IngestDatasetSource,
+  ServiceSource,
 } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
@@ -42,10 +45,18 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 /** Shown in the palette while the cube has no node yet (spec §17.2, worded for the canvas) */
 export const PALETTE_EMPTY_HINT = 'Drag items onto the canvas.';
 
+/** What a source item picks, for its tooltip: a table, unless its type says otherwise */
+const SOURCE_PICKS: Readonly<Record<string, string>> = {
+  [FunctionSource.TYPE]: 'a function',
+  [DataProductAccessPointSource.TYPE]: 'an access point',
+  [IngestDatasetSource.TYPE]: 'a data set',
+  [ServiceSource.TYPE]: 'a service',
+};
+
 /** What an item does, for its tooltip */
 const describeItem = (definition: AnyNodeDefinition): string =>
   definition.kind === 'source'
-    ? `Click, or drop it on the canvas, to pick ${definition.type === DataProductAccessPointSource.TYPE ? 'an access point' : 'a table'}`
+    ? `Click, or drop it on the canvas, to pick ${SOURCE_PICKS[definition.type] ?? 'a table'}`
     : 'Click, or drop it on the canvas, to add it after the selected node; drop it on a node to add it after that node';
 
 const CubePaletteItem = observer(
