@@ -45,7 +45,6 @@ import { Slice } from '../../nodes/transforms/Slice.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { OpaqueType } from '../../types/CubeType.js';
-import { TEST__registryWithPivot } from '../../__test-utils__/CubeTestRegistry.js';
 import {
   CUBE_DIALECT_WORKAROUNDS,
   dependsOnDatabaseType,
@@ -604,10 +603,7 @@ describe(unitTest('Pivot on each database'), () => {
   });
 
   test('Never emits one for a database that refuses it, and emits it for the others or to type', () => {
-    const emitter = new QueryEmitter(
-      ordersThen([pivot()]),
-      TEST__registryWithPivot(),
-    );
+    const emitter = new QueryEmitter(ordersThen([pivot()]));
     const lambda = (databaseType?: string): unknown =>
       emitter.emitExecutionLambda({
         rowLimit: 1000,

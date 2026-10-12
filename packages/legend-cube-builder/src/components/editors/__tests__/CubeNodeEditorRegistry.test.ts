@@ -82,6 +82,8 @@ describe('Node editor registries', () => {
         'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
       group:
         'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
+      pivot:
+        'Turns the values of a column of the previous data set into columns: a row for each combination of the row columns, and a column for each picked value, holding its aggregate.',
       join: 'Joins two previous data sets using specified columns as join keys.',
       limit:
         'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',

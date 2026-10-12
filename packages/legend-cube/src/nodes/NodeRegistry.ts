@@ -211,10 +211,7 @@ export const GROUP_DEFINITION: TransformDefinition<Group> = {
   spec: GROUP_CODEC,
 };
 
-/**
- * Pivot (PLAN §11.12), after Group by Column in the menus once registered:
- * the builder registers it with its editor (M6c.4)
- */
+/** Pivot (PLAN §11.12), after Group by Column in the menus */
 export const PIVOT_DEFINITION: TransformDefinition<Pivot> = {
   kind: 'transform',
   type: Pivot.TYPE,
@@ -435,6 +432,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     INGEST_DATASET_SOURCE_DEFINITION,
     SORT_DEFINITION,
     GROUP_DEFINITION,
+    PIVOT_DEFINITION,
     FILTER_DEFINITION,
     EXPRESSION_FILTER_DEFINITION,
     RESTRICT_DEFINITION,

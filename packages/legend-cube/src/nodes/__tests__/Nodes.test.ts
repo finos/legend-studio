@@ -211,10 +211,11 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend
+    // transforms in the spec's menu order (§7): Sort, Group, Pivot (Cube's), Filter, Filter by Expression (Cube's), Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
+      PIVOT_DEFINITION,
       FILTER_DEFINITION,
       EXPRESSION_FILTER_DEFINITION,
       RESTRICT_DEFINITION,
@@ -239,8 +240,7 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('difference')).toBe(DIFFERENCE_DEFINITION);
     expect(registry.get('partition')).toBe(PARTITION_DEFINITION);
     expect(registry.get('extend')).toBe(EXTEND_DEFINITION);
-    // Pivot waits for its editor (PLAN §11.12, M6c.4)
-    expect(registry.get('pivot')).toBeUndefined();
+    expect(registry.get('pivot')).toBe(PIVOT_DEFINITION);
     expect(PIVOT_DEFINITION).toMatchObject({
       kind: 'transform',
       type: 'pivot',

@@ -19,13 +19,10 @@ import {
   AggregationFunction,
   buildSchemasAndValidity,
   ColumnComparisonFilter,
-  createNodeRegistry,
   DEFAULT_PIVOT_AGGREGATION,
   Filter,
   FilterOperator,
   type LiteralValue,
-  type NodeRegistry,
-  PIVOT_DEFINITION,
   Pivot,
   type PivotAggregation,
   type QueryNode,
@@ -51,15 +48,6 @@ import { V1_buildCubeDirectConnection } from '../graph-manager/protocol/pure/v1/
 // DuckDB direct connection, with values as the probes found them
 // (pivot-requirements/ in the evidence folder). Its own schema, so it can run
 // beside the other engine tests.
-
-/** Cube's registry with Pivot, which the default registry leaves out until its editor exists (M6c.4) */
-const registry = (): NodeRegistry => {
-  const created = createNodeRegistry();
-  if (!created.get(PIVOT_DEFINITION.type)) {
-    created.register(PIVOT_DEFINITION);
-  }
-  return created;
-};
 
 const connection: PlainObject = V1_buildCubeDirectConnection({
   databaseType: CubeDirectDatabaseType.DUCKDB,
@@ -103,7 +91,7 @@ const run = async (...nodes: QueryNode[]): Promise<CubeResult> => {
   expect([...validity].filter(([, errors]) => errors.length)).toEqual([]);
   return engine.execute(
     model,
-    new QueryEmitter(query, registry()).emitExecutionLambda({
+    new QueryEmitter(query).emitExecutionLambda({
       rowLimit: 100,
       runtime: CUBE_DIRECT_RUNTIME_PATH,
       databaseType: 'DuckDB',

@@ -264,6 +264,29 @@ export const GROUP_EDITOR_NOTES = [
   'With no group column, the result is one row, even when there are no rows.',
 ];
 
+/** Why the Pivot editor won't take a column (PLAN §11.12), shown after the column's type */
+export const PIVOT_COLUMN_DISABLED_REASON = {
+  /** a row column that can't be compared */
+  NOT_GROUPABLE: "can't be grouped",
+  /** a pivot column of another type than a String, an integer, a StrictDate or a Boolean */
+  NOT_PIVOTABLE: "can't be pivoted",
+  /** a column the pivot uses for another part */
+  PIVOT_COLUMN: 'the pivot column',
+  ROW_COLUMN: 'a row column',
+  AGGREGATED: 'the aggregated column',
+} as const;
+
+/** What the Pivot editor says (PLAN §11.12) */
+export const PIVOT_EDITOR_NOTES = [
+  'Each picked value becomes a column, named by the value, holding the aggregation of its rows; each combination of the row columns becomes a row. Values not picked are left out.',
+  "Load values lists the pivot column's values, each once, up to 100. An empty value can't be pivoted.",
+  "Pivot runs on Snowflake, Databricks, SingleStore and DuckDB; other databases, such as H2 and Postgres, can't run it.",
+] as const;
+
+/** Says that the engine has more values than the Pivot editor lists (PLAN §11.12) */
+export const getPivotValuesCutNotice = (shown: number): string =>
+  `Only the first ${shown} values are listed.`;
+
 /** Why the Partition editor won't tick a column that can't be compared (PLAN §11.6) */
 export const CUBE_PARTITION_COLUMN_DISABLED_REASON = "can't be partitioned by";
 

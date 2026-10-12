@@ -27,6 +27,7 @@ import {
   type Join,
   Limit,
   Query,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '@finos/legend-cube';
 import {
   act,
@@ -60,6 +61,7 @@ const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const TRANSFORMS = [
   'Sort by Column',
   'Group by Column',
+  'Pivot by Column',
   'Filter by Column',
   'Filter by Expression',
   'Restrict Columns',
@@ -75,6 +77,10 @@ const TRANSFORMS = [
   'Extend Columns',
 ];
 const TABLE = 'Relational Database Table';
+/** The transforms its database runs: the test cube is on H2, which can't pivot (PLAN §11.12) */
+const H2_TRANSFORMS = TRANSFORMS.filter(
+  (transform) => transform !== 'Pivot by Column',
+);
 const PALETTE = [TABLE, 'Data Product (BETA)', ...TRANSFORMS];
 const ITEMS = [...PALETTE, 'Select', 'Remove', 'Swap Inputs'];
 
@@ -134,22 +140,26 @@ describe('Canvas context menu', () => {
     // product; a Join can be selected, removed and swapped
     expect(enabledItems(items)).toEqual([
       TABLE,
-      ...TRANSFORMS,
+      ...H2_TRANSFORMS,
       'Select',
       'Remove',
       'Swap Inputs',
     ]);
+    // Pivot is shown, disabled, with why
+    expect(items.get('Pivot by Column')?.title).toBe(
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'),
+    );
     await closeMenu();
 
     // the node Execute runs, with one input
     items = await openMenu(await TEST__findCanvasNode('filter101'));
-    expect(enabledItems(items)).toEqual([TABLE, ...TRANSFORMS, 'Remove']);
+    expect(enabledItems(items)).toEqual([TABLE, ...H2_TRANSFORMS, 'Remove']);
     await closeMenu();
 
     items = await openMenu(await TEST__findCanvasNode('relational101'));
     expect(enabledItems(items)).toEqual([
       TABLE,
-      ...TRANSFORMS,
+      ...H2_TRANSFORMS,
       'Select',
       'Remove',
     ]);
@@ -160,8 +170,8 @@ describe('Canvas context menu', () => {
     await TEST__findCanvasNode('join101');
     const items = await openMenu(canvasPane());
     expect([...items.keys()]).toEqual(ITEMS);
-    // a cube of tables takes no data product
-    expect(enabledItems(items)).toEqual([TABLE, ...TRANSFORMS]);
+    // a cube of tables takes no data product; H2 can't pivot
+    expect(enabledItems(items)).toEqual([TABLE, ...H2_TRANSFORMS]);
     await closeMenu();
 
     // nothing to add after

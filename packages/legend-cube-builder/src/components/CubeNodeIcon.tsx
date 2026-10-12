@@ -55,6 +55,7 @@ const NODE_ICONS: Readonly<
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
   group: DataCubeIcon.TableGroupBy,
+  pivot: DataCubeIcon.TablePivot,
   partition: SigmaIcon,
   rename: PencilIcon,
   sort: SortIcon,

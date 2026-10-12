@@ -16,11 +16,13 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
-import { TEST__registryWithPivot } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { CubeDocument } from '../../graph/CubeDocument.js';
 import { Query } from '../../graph/Query.js';
-import { PIVOT_DEFINITION } from '../../nodes/NodeRegistry.js';
+import {
+  createNodeRegistry,
+  PIVOT_DEFINITION,
+} from '../../nodes/NodeRegistry.js';
 import { AggregationFunction } from '../../nodes/transforms/Aggregation.js';
 import { Pivot } from '../../nodes/transforms/Pivot.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -28,7 +30,7 @@ import type { JsonObject } from '../../utils/Json.js';
 import { decodeCubeSpec, encodeCubeSpec } from '../CubeSpecCodec.js';
 import { CubeSpecDecodeError } from '../SpecReader.js';
 
-const REGISTRY = TEST__registryWithPivot();
+const REGISTRY = createNodeRegistry();
 
 /** The saved spec of one unconnected pivot, `pivot101`, with these fields of its own */
 const pivotSpec = (own: JsonObject): JsonObject => ({

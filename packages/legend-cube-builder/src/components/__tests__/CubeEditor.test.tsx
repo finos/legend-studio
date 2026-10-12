@@ -28,6 +28,7 @@ import {
   RelationalTableSource,
   Schema,
   serializeCubeSpec,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '@finos/legend-cube';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
@@ -886,6 +887,7 @@ describe("The header's Add Items", () => {
   const TRANSFORMS = [
     'Sort by Column',
     'Group by Column',
+    'Pivot by Column',
     'Filter by Column',
     'Filter by Expression',
     'Restrict Columns',
@@ -932,11 +934,15 @@ describe("The header's Add Items", () => {
     );
     expect(enabled.map((item) => item.textContent)).toEqual([
       TABLE,
-      ...TRANSFORMS,
+      ...TRANSFORMS.filter((transform) => transform !== 'Pivot by Column'),
     ]);
     expect(
       items.find((item) => item.textContent === 'Data Product (BETA)')?.title,
     ).toBe(OTHER_SOURCE_KIND_TITLE);
+    // the cube is on H2, which can't pivot, and says so (PLAN §11.12)
+    expect(
+      items.find((item) => item.textContent === 'Pivot by Column')?.title,
+    ).toBe(MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'));
     expect(enabled.every((item) => item.title === '')).toBe(true);
     await TEST__closeAddItems();
     // in place of 'Add table'

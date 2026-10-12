@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithPivot } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -68,8 +67,7 @@ const ordersThen = (...nodes: QueryNode[]): Query => {
   );
 };
 
-const emitterOf = (query: Query): QueryEmitter =>
-  new QueryEmitter(query, TEST__registryWithPivot());
+const emitterOf = (query: Query): QueryEmitter => new QueryEmitter(query);
 
 const pivoted = (node: Pivot): string =>
   printIR(emitterOf(ordersThen(node)).emitRelation(node.id));
