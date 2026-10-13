@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                     |
-| ------ | ----------------------------------------------------------------------------------------- |
-| Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`)        |
-| Engine | Local legend-engine on `localhost:6300`                                                   |
-| Step   | M6d.7 done: verification and the demo video; next M6d.8, the supersessions folded in      |
-| Tests  | 2971 core, 1769 builder (core group); engine suites 951 of 954, 3 skipped on H2 by design |
+| Item   | State                                                                                              |
+| ------ | -------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`)                 |
+| Engine | Local legend-engine on `localhost:6300`                                                            |
+| Step   | M6d done: the supersessions folded in; the PR ready for `cube-dev` on the user's word, after #5674 |
+| Tests  | 2971 core, 1769 builder (core group); engine suites 951 of 954, 3 skipped on H2 by design          |
 
 ## Steps
 
@@ -26,7 +26,7 @@ See PLAN §11.14 for each step's deliverable and when it is done.
 - [x] **M6d.5** Guides, READMEs, testing.md and the changeset
 - [x] **M6d.6** Verification and the browser rehearsal
 - [x] **M6d.7** A demo video (PLAN §11.3)
-- [ ] **M6d.8** Fold PLAN §11.14's supersessions in; the PR ready for `cube-dev`
+- [x] **M6d.8** Fold PLAN §11.14's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
@@ -41,6 +41,7 @@ Filled in as steps land.
 | M6d.5 | `92fd6fdd6` | docs: cover Legend Cube's operations cleanup in its guides  |
 | M6d.6 | `9282e0997` | fix: address the review of Legend Cube's operations cleanup |
 | M6d.7 | –           | the video, in the evidence folder                           |
+| M6d.8 | –           | this commit: docs: fold Legend Cube M6d into the plan       |
 
 ## Notes
 
@@ -105,3 +106,8 @@ Filled in as steps land.
   quantities); the row limit refusing `1e3`; then Northwind's ORDERS on H2, the grid's Filter by on a FREIGHT cell
   writing `is in list of` 32.38 and 32.380001068115234, which finds order 10248. 10 checks pass and the 12 frames match
   their captions. `videos/17-m6d-operations-cleanup.webm` (117 s), sent.
+- **M6d.8** (2026-10-13). PLAN §11.14's supersessions folded in: §4.2 (no backtick), §4.7 (step 5 in any case, the
+  autofix), §4.8 (the grid's float rule), §5.7 and §11.5's aggregation table (Min and Max on strings and Booleans,
+  the distinct ones on enumerations), §8.8 (a patterns paragraph: the three rules, Filter by Expression and Extend,
+  a list's `contains` left alone), §9 (the grid's Filter by), §11.11 (its literal-only gap closed), Appendix A (§10.1,
+  §16) and Appendix B (column patterns written as text).

@@ -73,8 +73,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       PLAN §11.10). `cube-dev` was rebased onto master on 2026-10-12 (`c1b40a480`) and reaches it through #5669
 - [ ] M6c Pivot, complete and reviewed on `cube-pivot`, #5674 ready for review into `cube-dev`
       ([PROGRESS-M6C.md](PROGRESS-M6C.md), PLAN §11.12)
-- [ ] M6d Operations cleanup, built on `cube-ops-cleanup`, stacked on `cube-pivot` ([PROGRESS-M6D.md](PROGRESS-M6D.md),
-      PLAN §11.14)
+- [ ] M6d Operations cleanup, complete on `cube-ops-cleanup`, draft #5677 into `cube-dev`, stacked on #5674
+      ([PROGRESS-M6D.md](PROGRESS-M6D.md), PLAN §11.14)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
