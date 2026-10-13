@@ -320,9 +320,10 @@ export const CubeDataProductTab = observer(
                 </div>
                 <ul aria-label={`Access points of ${group.title ?? group.id}`}>
                   {group.accessPoints.map((point) => {
-                    const isPicked =
-                      tab.accessPointKey?.group === group.id &&
-                      tab.accessPointKey.id === point.id;
+                    const isPicked = tab.isAccessPointPicked(
+                      group.id,
+                      point.id,
+                    );
                     return (
                       <CubePickerListItem
                         key={point.id}
@@ -331,6 +332,10 @@ export const CubeDataProductTab = observer(
                         title={point.disabledReason ?? point.description}
                         adds={true}
                         onPick={() => tab.selectAccessPoint(group.id, point.id)}
+                        onToggle={() =>
+                          tab.toggleAccessPoint(group.id, point.id)
+                        }
+                        toggleLabel={point.title ?? point.id}
                       >
                         <span className="min-w-0 flex-1 truncate">
                           {point.title ?? point.id}
