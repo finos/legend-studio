@@ -274,6 +274,10 @@ export class Partition extends UnaryNode {
     return keepInputOrder(inputOrders);
   }
 
+  override isUnset(): boolean {
+    return !this.aggregations.length;
+  }
+
   describe(): string {
     const count = this.aggregations.length;
     return `Apply ${count} Window Function${count === 1 ? '' : 's'}`;

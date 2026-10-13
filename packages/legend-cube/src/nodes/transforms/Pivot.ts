@@ -423,6 +423,10 @@ export class Pivot extends UnaryNode {
   }
 
   /** `Pivot "YEAR" into 2000, 2011, 2012`, the values after the third counted */
+  override isUnset(): boolean {
+    return !this.column;
+  }
+
   describe(): string {
     const { values } = this;
     const shown = values.slice(0, DESCRIBED_VALUES).map(getLiteralText);

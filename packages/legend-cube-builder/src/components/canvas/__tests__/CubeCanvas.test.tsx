@@ -387,8 +387,8 @@ describe('Cube canvas', () => {
       expect(
         TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('join101')),
       ).toEqual([
+        // a Join not set yet adds no description (the review of the demo)
         'Left join columns cannot be empty.',
-        'Join additional input',
       ]),
     );
     expect(
@@ -583,6 +583,23 @@ const handle = (nodeId: string, handleId: string): Element =>
 
 describe('Node labels on the canvas', () => {
   const RESOLVED = { kind: 'resolved', schema: new Schema([]) } as const;
+
+  test("Shows a node not set yet by its type's name and a muted Not set, and a set one by its description", () => {
+    expect(
+      getCubeCanvasNodeLabel(new Join('join101'), 'Join Another Input'),
+    ).toEqual({ title: 'Join Another Input', detail: 'Not set' });
+    expect(
+      getCubeCanvasNodeLabel(
+        new Join('join101', { leftColumns: ['A'], rightColumns: ['B'] }),
+        'Join Another Input',
+      ).title,
+    ).toBe('Left Outer join on "A" = "B"');
+    expect(
+      getCubeCanvasNodeLabel(new Limit('limit101', 5), 'Take first rows'),
+    ).toEqual({
+      title: 'Take first 5 row(s)',
+    });
+  });
 
   test('Shows a source by its name, with where it comes from below, and every other node by its description', () => {
     expect(
@@ -781,7 +798,12 @@ describe('Cube canvas, more', () => {
     const ghost = new Filter('filter999');
     expect(getCubeCanvasNodeStatus(state, ghost).tooltip.split('\n')).toEqual([
       'This node depends on some invalid inputs.',
-      ghost.describe(),
+    ]);
+    // a set one adds its description
+    const set = new Limit('limit998', 5);
+    expect(getCubeCanvasNodeStatus(state, set).tooltip.split('\n')).toEqual([
+      'This node depends on some invalid inputs.',
+      set.describe(),
     ]);
   });
 });
@@ -1031,7 +1053,6 @@ describe('The node tooltip', () => {
     expect(text?.textContent).toBe(join.getAttribute('aria-description'));
     expect(text?.textContent?.split('\n')).toEqual([
       'Left join columns cannot be empty.',
-      'Join additional input',
     ]);
   });
 

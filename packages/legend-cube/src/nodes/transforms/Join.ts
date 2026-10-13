@@ -443,6 +443,10 @@ export class Join extends BinaryNode {
     );
   }
 
+  override isUnset(): boolean {
+    return !this.leftColumns.length && !this.rightColumns.length;
+  }
+
   /**
    * The join type and its key pairs, e.g. `Left Outer join on "DESK_ID" =
    * "ID"`, as the other nodes describe themselves; the spec's generic text

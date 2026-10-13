@@ -957,3 +957,31 @@ describe(unitTest('Saved-spec hooks of the registry'), () => {
     },
   );
 });
+
+describe('Nodes not set yet', () => {
+  test('A node with none of the settings it needs is not set; a node with any, or with none to need, is', () => {
+    expect(new Join('join101').isUnset()).toBe(true);
+    expect(
+      new Join('join101', { leftColumns: ['A'], rightColumns: [] }).isUnset(),
+    ).toBe(false);
+    expect(new Group('group101').isUnset()).toBe(true);
+    // no keys but an aggregation: every row aggregated, which is set
+    expect(
+      new Group(
+        'group101',
+        [],
+        [{ column: undefined, function: 'CountRows', name: 'N' }],
+      ).isUnset(),
+    ).toBe(false);
+    expect(new Filter('filter101').isUnset()).toBe(true);
+    expect(new Sort('sort101').isUnset()).toBe(true);
+    expect(new Restrict('restrict101').isUnset()).toBe(true);
+    expect(new Rename('rename101').isUnset()).toBe(true);
+    expect(new Extend('extend101').isUnset()).toBe(true);
+    expect(new Partition('partition101').isUnset()).toBe(true);
+    expect(new Difference('difference101').isUnset()).toBe(true);
+    expect(new Distinct('distinct101').isUnset()).toBe(false);
+    expect(new Concat('concat101').isUnset()).toBe(false);
+    expect(new Limit('limit101', 5).isUnset()).toBe(false);
+  });
+});

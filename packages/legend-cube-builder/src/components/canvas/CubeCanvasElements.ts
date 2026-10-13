@@ -162,10 +162,14 @@ export const getCubeCanvasNodeStatus = (
       ...(ownErrors ? [] : [MISSING_VALIDITY_TOOLTIP]),
       ...errors,
       ...warnings,
-      node.describe(),
+      // a node not set yet has no description to add (the review of the demo)
+      ...(node.isUnset() ? [] : [node.describe()]),
     ].join('\n'),
   };
 };
+
+/** What a node not set yet shows under its type's name */
+export const CUBE_NODE_NOT_SET_LABEL = 'Not set';
 
 /**
  * What a node shows on the canvas: a source shows its name, with where it
@@ -175,7 +179,13 @@ export const getCubeCanvasNodeStatus = (
  */
 export const getCubeCanvasNodeLabel = (
   node: QueryNode,
+  /** The node type's name, e.g. "Join Another Input", shown on a node not set yet */
+  typeLabel?: string | undefined,
 ): { title: string; detail?: string | undefined } => {
+  if (node.isUnset() && typeLabel !== undefined) {
+    // "Join Another Input", then a muted "Not set", in place of "Join additional input"
+    return { title: typeLabel, detail: CUBE_NODE_NOT_SET_LABEL };
+  }
   if (
     (node instanceof RelationalTableSource ||
       node instanceof DataProductAccessPointSource ||

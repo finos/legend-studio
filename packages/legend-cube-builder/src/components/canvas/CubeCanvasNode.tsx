@@ -51,7 +51,10 @@ export const CubeCanvasNode = observer(
     const { node } = props.data;
     const editorState = useCubeCanvasEditorState();
     const status = getCubeCanvasNodeStatus(editorState, node);
-    const label = getCubeCanvasNodeLabel(node);
+    const label = getCubeCanvasNodeLabel(
+      node,
+      editorState.registry.get(node.type)?.label,
+    );
     const connectable = !editorState.readOnly && node.acceptsNewInputs;
     const ref = useRef<HTMLDivElement>(null);
     const [, dragConnector] = useDrag<CubeNodeDragItem>(
