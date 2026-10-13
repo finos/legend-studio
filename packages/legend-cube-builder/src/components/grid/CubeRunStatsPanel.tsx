@@ -20,6 +20,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { MAX_CUBE_RUN_STATS } from '../../stores/CubeRunStatsState.js';
 import { CubeButton } from '../CubeButton.js';
 import { formatDuration } from './CubeGridValues.js';
+import { formatCubeSql, formatCubeSqlStatement } from './CubeSqlFormat.js';
 
 /** A run's time of day, as the viewer's clock shows it */
 const formatTime = (finishedAt: number): string =>
@@ -37,7 +38,7 @@ export const CubeRunStatsPanel = observer(
     const { entries } = editorState.runStats;
     const copy = (sql: readonly string[]): void => {
       applicationStore.clipboardService
-        .copyTextToClipboard(sql.join('\n\n'))
+        .copyTextToClipboard(formatCubeSql(sql))
         .catch(applicationStore.alertUnhandledError);
     };
     return (
@@ -87,7 +88,7 @@ export const CubeRunStatsPanel = observer(
                         key={index}
                         className="whitespace-pre-wrap font-mono text-sm"
                       >
-                        {statement}
+                        {formatCubeSqlStatement(statement)}
                       </pre>
                     ))}
                   </details>

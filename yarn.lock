@@ -3037,6 +3037,7 @@ __metadata:
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
+    sql-formatter: "npm:15.4.11"
     typescript: "npm:5.8.2"
   peerDependencies:
     react: ^19.0.1
