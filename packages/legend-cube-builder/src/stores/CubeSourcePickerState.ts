@@ -72,12 +72,15 @@ export class CubeSourcePickerState {
   activeTabKey = CubeSourcePickerTabKey.MODEL;
   /** Open with no tab chosen yet, from the empty canvas's link (U4(b)) */
   isChoosingTab = false;
+  /** Opened from the Examples dialog's dataset, so it offers a way back to it */
+  isFromExamples = false;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
       isOpen: observable,
       activeTabKey: observable,
       isChoosingTab: observable,
+      isFromExamples: observable,
       tabs: computed,
       fixedTab: computed,
       activeTab: computed,
@@ -86,6 +89,8 @@ export class CubeSourcePickerState {
       open: action,
       openToChoose: action,
       openForSourceType: action,
+      openFromExamples: action,
+      backToExamples: action,
       selectTab: action,
       close: action,
       confirm: flow,
@@ -243,6 +248,7 @@ export class CubeSourcePickerState {
     const { fixedTab } = this;
     this.isOpen = true;
     this.isChoosingTab = false;
+    this.isFromExamples = false;
     const tab =
       fixedTab ??
       this.tabs.find((candidate) => candidate.key === tabKey) ??
@@ -282,9 +288,22 @@ export class CubeSourcePickerState {
     }
   }
 
+  /** Opens on a tab, as `open` does, offering a way back to the Examples dialog */
+  openFromExamples(tabKey: CubeSourcePickerTabKey): void {
+    this.open(tabKey);
+    this.isFromExamples = this.isOpen;
+  }
+
+  /** Closes the dialog and reopens the Examples dialog it came from */
+  backToExamples(): void {
+    this.close();
+    this.editorState.examples.open();
+  }
+
   /** Closes the dialog; a source still being typed is not added */
   close(): void {
     this.isOpen = false;
+    this.isFromExamples = false;
     this.isChoosingTab = false;
     this.modelTab.close();
     this.directTab.close();

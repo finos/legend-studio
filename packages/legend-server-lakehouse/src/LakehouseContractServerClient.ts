@@ -18,7 +18,8 @@ import type {
   V1_ContractUserStatusResponse,
   V1_CreateContractPayload,
   V1_CreateDataAccessRequestPayload,
-  V1_CreateSubscriptionInput,
+  V1_CreateDataRequestSubscriptionInput,
+  V1_CreateContractSubscriptionInput,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataProductLitePaginatedResponse,
@@ -432,10 +433,31 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     );
 
   createSubscription = (
-    input: PlainObject<V1_CreateSubscriptionInput>,
+    input: PlainObject<V1_CreateContractSubscriptionInput>,
     token: string | undefined,
   ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
     this.post(this._subscriptions(), input, {}, this._token(token));
+
+  getSubscriptionsForDataRequest = (
+    dataRequestId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
+    this.get(
+      `${this._dataAccessRequests()}/subscriptions/query/${encodeURIComponent(dataRequestId)}`,
+      {},
+      this._token(token),
+    );
+
+  createDataRequestSubscription = (
+    input: PlainObject<V1_CreateDataRequestSubscriptionInput>,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
+    this.post(
+      `${this._dataAccessRequests()}/subscription`,
+      input,
+      {},
+      this._token(token),
+    );
 
   getSubscriptionTargets = (
     token: string | undefined,

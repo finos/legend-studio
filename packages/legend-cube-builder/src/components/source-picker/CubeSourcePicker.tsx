@@ -130,10 +130,25 @@ export const CubeSourcePicker = observer(
             </div>
           </ModalBody>
           <ModalFooter>
+            {picker.isFromExamples && (
+              <ModalFooterButton
+                darkMode={darkMode}
+                formatText={false}
+                type="secondary"
+                className="mr-auto"
+                text="← Examples"
+                title="Back to the examples, to open an example cube instead"
+                onClick={() => picker.backToExamples()}
+              />
+            )}
             <ModalFooterButton
               darkMode={darkMode}
               formatText={false}
-              text="Add"
+              text={
+                (picker.activeTab.pickedCount ?? 1) > 1
+                  ? `Add ${picker.activeTab.pickedCount}`
+                  : 'Add'
+              }
               // the legacy footer button looks the same disabled
               className="disabled:cursor-not-allowed disabled:opacity-50"
               title={

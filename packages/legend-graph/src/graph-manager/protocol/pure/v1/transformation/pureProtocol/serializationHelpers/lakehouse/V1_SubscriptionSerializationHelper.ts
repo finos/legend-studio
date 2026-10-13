@@ -32,7 +32,8 @@ import {
 import {
   type V1_DataSubscriptionTarget,
   V1_BigQueryTarget,
-  V1_CreateSubscriptionInput,
+  V1_CreateDataRequestSubscriptionInput,
+  V1_CreateContractSubscriptionInput,
   V1_DatabricksTarget,
   V1_DataSubscription,
   V1_DataSubscriptionResponse,
@@ -142,16 +143,26 @@ export const V1_dataSubscriptionsPaginatedResponseModelSchema =
     ),
   });
 
-export const V1_CreateSubscriptionInputModelSchema = createModelSchema(
-  V1_CreateSubscriptionInput,
+const V1_createSubscriptionInputBaseProps = {
+  target: custom(
+    V1_seralizeDataSubscriptionTarget,
+    V1_deserializeDataSubscriptionTarget,
+  ),
+};
+
+export const V1_CreateContractSubscriptionInputModelSchema = createModelSchema(
+  V1_CreateContractSubscriptionInput,
   {
     contractId: primitive(),
-    target: custom(
-      V1_seralizeDataSubscriptionTarget,
-      V1_deserializeDataSubscriptionTarget,
-    ),
+    ...V1_createSubscriptionInputBaseProps,
   },
 );
+
+export const V1_CreateDataRequestSubscriptionInputModelSchema =
+  createModelSchema(V1_CreateDataRequestSubscriptionInput, {
+    dataRequestId: primitive(),
+    ...V1_createSubscriptionInputBaseProps,
+  });
 
 export const V1_dataSubscriptionTargetsResponseModelSchema = createModelSchema(
   V1_DataSubscriptionTargetsResponse,

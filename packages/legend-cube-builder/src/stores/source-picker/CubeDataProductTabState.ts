@@ -55,6 +55,7 @@ import type { CubeEditorState } from '../CubeEditorState.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
+  generateCubeNodeIds,
 } from './CubeSourcePickerTab.js';
 
 /** An error as the tab shows it: its first line, with the rest on demand */
@@ -146,8 +147,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   description: CubeDataProductDescription | undefined;
   /** The viewer's access to each group of the picked product; none until read, or when it can't be */
   access: ReadonlyMap<string, CubeAccessPointGroupAccess> | undefined;
-  /** The picked access point, by group and id */
-  accessPointKey: { readonly group: string; readonly id: string } | undefined;
+  /** The picked access points, by group and id, in the order picked; several are added at once */
+  accessPointKeys: readonly {
+    readonly group: string;
+    readonly id: string;
+  }[] = [];
   warehouse = CUBE_DEFAULT_CONSUMER_WAREHOUSE;
   isListing = false;
   isDescribing = false;
@@ -191,7 +195,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       candidate: observable.ref,
       description: observable.ref,
       access: observable.ref,
-      accessPointKey: observable.ref,
+      accessPointKeys: observable.ref,
+      accessPointKey: computed,
+      pickedAccessPoints: computed,
       warehouse: observable,
       isListing: observable,
       isDescribing: observable,
@@ -206,6 +212,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       visibleCandidates: computed,
       isTruncated: computed,
       accessPoint: computed,
+      toggleAccessPoint: action,
       isBusy: computed,
       canConfirm: computed,
       setEnvironmentType: action,
@@ -364,13 +371,48 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     return this.listedCutShort;
   }
 
+  /** The access point picked last, the one previewed */
+  get accessPointKey():
+    | { readonly group: string; readonly id: string }
+    | undefined {
+    return this.accessPointKeys.at(-1);
+  }
+
+  /** The access point picked last, the one previewed */
   get accessPoint(): CubeAccessPoint | undefined {
     const key = this.accessPointKey;
-    return key
-      ? this.description?.groups
-          .find((group) => group.id === key.group)
-          ?.accessPoints.find((point) => point.id === key.id)
-      : undefined;
+    return key ? this.findAccessPoint(key.group, key.id) : undefined;
+  }
+
+  /** The picked access points, in the order picked, with their groups */
+  get pickedAccessPoints(): readonly {
+    readonly group: string;
+    readonly point: CubeAccessPoint | undefined;
+  }[] {
+    return this.accessPointKeys.map((key) => ({
+      group: key.group,
+      point: this.findAccessPoint(key.group, key.id),
+    }));
+  }
+
+  /** How many access points Add adds */
+  get pickedCount(): number {
+    return this.accessPointKeys.length;
+  }
+
+  isAccessPointPicked(group: string, id: string): boolean {
+    return this.accessPointKeys.some(
+      (key) => key.group === group && key.id === id,
+    );
+  }
+
+  private findAccessPoint(
+    group: string,
+    id: string,
+  ): CubeAccessPoint | undefined {
+    return this.description?.groups
+      .find((each) => each.id === group)
+      ?.accessPoints.find((point) => point.id === id);
   }
 
   get isBusy(): boolean {
@@ -387,7 +429,10 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       !this.isAdding &&
       (context === undefined || this.fixedProject !== undefined) &&
       this.candidate !== undefined &&
-      this.accessPoint?.isPickable === true &&
+      this.pickedAccessPoints.length > 0 &&
+      this.pickedAccessPoints.every(
+        ({ point }) => point?.isPickable === true,
+      ) &&
       this.warehouse.trim().length > 0
     );
   }
@@ -434,8 +479,19 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
   }
 
+  /** Picks the access point alone, in place of any picked */
   selectAccessPoint(group: string, id: string): void {
-    this.accessPointKey = { group, id };
+    this.accessPointKeys = [{ group, id }];
+    this.error = undefined;
+  }
+
+  /** Adds the access point to the picked ones, or takes it out */
+  toggleAccessPoint(group: string, id: string): void {
+    this.accessPointKeys = this.isAccessPointPicked(group, id)
+      ? this.accessPointKeys.filter(
+          (key) => key.group !== group || key.id !== id,
+        )
+      : [...this.accessPointKeys, { group, id }];
     this.error = undefined;
   }
 
@@ -661,8 +717,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   }
 
   /**
-   * Adds the picked access point, typed by the product's deployed artifact.
-   * The first saves the product's project, version and class and the
+   * Adds the picked access points, typed by the product's deployed artifact,
+   * in one undo step. The first saves the product's project, version and class and the
    * warehouse as the cube's model, in the same undo step, and remembers the
    * warehouse for the viewer's next cubes. Gives whether it was added
    */
@@ -672,8 +728,10 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
     const { editorState } = this;
     const candidate = this.candidate as CubeDataProductCandidate;
-    const accessPoint = this.accessPoint as CubeAccessPoint;
-    const group = this.accessPointKey?.group as string;
+    const picked = this.pickedAccessPoints.map(({ group, point }) => ({
+      group,
+      accessPoint: point as CubeAccessPoint,
+    }));
     const warehouse = this.warehouse.trim();
     const request = ++this.confirmRequest;
     this.isAdding = true;
@@ -685,29 +743,47 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         return false;
       }
       const { document } = editorState;
-      const id = document.query.generateId(DataProductAccessPointSource.TYPE);
-      const node = DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION.resolve(
-        DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION.fromCoordinates(id, {
-          dataProduct: candidate.dataProductPath,
-          accessPointGroup: group,
-          accessPoint: accessPoint.id,
-          dataProductId: candidate.id,
-          deploymentId: candidate.deploymentId,
-        }),
-        {
-          kind: 'resolved',
-          schema: accessPoint.schema as NonNullable<CubeAccessPoint['schema']>,
-        },
+      const ids = generateCubeNodeIds(
+        document.query,
+        DataProductAccessPointSource.TYPE,
+        picked.length,
+      );
+      const nodes = picked.map(({ group, accessPoint }, index) =>
+        DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION.resolve(
+          DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION.fromCoordinates(
+            ids[index] as string,
+            {
+              dataProduct: candidate.dataProductPath,
+              accessPointGroup: group,
+              accessPoint: accessPoint.id,
+              dataProductId: candidate.id,
+              deploymentId: candidate.deploymentId,
+            },
+          ),
+          {
+            kind: 'resolved',
+            schema: accessPoint.schema as NonNullable<
+              CubeAccessPoint['schema']
+            >,
+          },
+        ),
       );
       const project = this.fixedProject;
+      // each access point is added in the order picked; the first one picked
+      // is the one that runs on an empty cube, as a single one would be
+      let query = document.query;
+      for (const node of nodes) {
+        if (!query.canAdd(node)) {
+          throw new Error(CUBE_DATA_PRODUCT_TAB_MESSAGE.CUBE_CHANGED);
+        }
+        query = query.add(node);
+      }
       if (
-        (document.context !== undefined &&
-          (!project || !isFromProject(candidate, project))) ||
-        !document.query.canAdd(node)
+        document.context !== undefined &&
+        (!project || !isFromProject(candidate, project))
       ) {
         throw new Error(CUBE_DATA_PRODUCT_TAB_MESSAGE.CUBE_CHANGED);
       }
-      const query = document.query.add(node);
       editorState.applyDocument(
         document.context
           ? document.withQuery(query)
@@ -728,7 +804,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         editorState.dataProductRuntime.remember(warehouse);
       }
       // the product stays expanded, to add another of its access points
-      this.accessPointKey = undefined;
+      this.accessPointKeys = [];
       return true;
     } catch (error) {
       if (request === this.confirmRequest) {
@@ -834,6 +910,6 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     this.candidate = undefined;
     this.description = undefined;
     this.access = undefined;
-    this.accessPointKey = undefined;
+    this.accessPointKeys = [];
   }
 }
