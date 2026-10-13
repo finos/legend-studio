@@ -15,6 +15,7 @@ interface CubeHost {
   readonly dataProductCatalog?: CubeDataProductCatalog | undefined;
   readonly ingestCatalog?: CubeIngestCatalog | undefined;
   readonly projectCatalog?: CubeProjectCatalog | undefined;
+  readonly store?: CubeStore | undefined;
 }
 ```
 
@@ -59,6 +60,17 @@ interface CubeHost {
   dialog's Project tab (PLAN §6.3). It reads nothing until the tab opens. Project cubes save the engine's pointer, so
   the engine must fetch from the same depot. Legend Query builds it from `depot.url`.
 
+- **Saved cubes (optional):** `buildCubeStore(config, tracerService)` builds Legend's implementation of the
+  `CubeStore` port over the engine's Cube store (`pure/v1/query/cube`, legend-engine's
+  `legend-engine-application-query`), on `config.queryBaseUrl`, else `config.baseUrl`: the server Legend Query keeps
+  its own queries on (`engine.queryUrl`, else `engine.url`). With it, the page offers Save, Save as, Load and Delete
+  (PLAN §11.13); without it, those are disabled, saying why, and Export and Import remain. The engine's store needs a
+  Mongo and three Vault keys beside the Data Cube store's, in `query.mongo.database`:
+  `query.mongo.collection.cube`, `query.mongo.collection.cubeVersion` and `query.mongo.collection.cubeEvent`. An
+  engine without the store, or without its Mongo, makes every call fail with the engine's message. Ownership is
+  checked against the application store's current user (Legend Query reads it from the engine), and the store checks
+  it again.
+
 Legend Query mounts the Cube page at `/query/cube` only where its config turns on non-production features,
 since Cube is still a proof of concept: `"extensions": { "core": { "NonProductionFeatureFlag": true } }`. Without
 it, as in production, the address shows nothing. To see it locally, add it to the deployment's
@@ -95,14 +107,19 @@ stereotype Studio and Marketplace use for groups open to everyone.
 }
 ```
 
-Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, or
+Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, `initialCubeId`
+to open a saved cube from the store as the page opens (a failure shows "Error loading query!" in the graph area), or
 `initialSource` to start an empty cube with one data product access point, as a link to Legend Query's Cube page does:
 `?sourceType=dataProductAccessPoint&sourceId=<id>`. The id is `<class>/<data product id>/<deployment id>/<access point
 group>/<access point>`, each part URI-encoded (`formatCubeAccessPointEntryId` writes it), where `<class>` is
 `PRODUCTION` or `PRODUCTION_PARALLEL` (`CubeDataProductEnvironmentType`), and the link encodes the
 whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`). Legend Query reads the
-two parameters and takes them out of the address, keeping the others; a `?queryId=` wins and stays, for when Cube
-saves queries (M8). The page's state
+two parameters and takes them out of the address, keeping the others. A saved cube wins over a source:
+`/query/cube/<id>`, or `?queryId=<id>`, which the page then moves into the path. `onSavedCubeChange` tells the host
+when the saved cube shown changes (on Load and Save, and to none on New, Paste, Import and an example): Legend Query
+replaces the address with `/query/cube/<id>`, or `/query/cube`, adding no history entry, so the address always links
+to the cube shown. While the cube has unsaved changes, the page blocks leaving it through the navigator
+(`blockNavigation`: the browser's `beforeunload`, and Legend's own navigation, which asks first). The page's state
 lives as long as the page; Legend Query makes a new host on each visit.
 
 **The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an
@@ -120,7 +137,9 @@ override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
 }
 ```
 
-The page registers the commands while it is open: F9 runs the query, and Ctrl+Z or Cmd+Z undoes.
+The page registers the commands while it is open: F9 runs the query, Ctrl+Z or Cmd+Z undoes, F10 validates an
+expression, and Alt+N, Alt+L, Alt+S, Alt+C and Alt+V start a new cube, load, save, copy and paste one (Option on a
+Mac: the keys are `KeyboardEvent.code` names).
 
 ## The stylesheet
 

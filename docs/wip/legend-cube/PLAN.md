@@ -4546,11 +4546,15 @@ cube '…': its current version is 2.`) to save a copy instead; nothing is overw
   the saved cube follows the cube undo returns to, at the latest version the page knows (a deleted one doesn't come
   back).
 - **Shortcuts** (§17.12): Alt+N, Alt+L, Alt+S, Alt+C and Alt+V through Cube's command config (`KeyboardEvent.code`
-  names, so Option on a Mac), no-ops when their action is unavailable; each has a button or menu item whose tooltip
-  names it.
-- **The address** (Settled 2): two routes, `/cube` and `/cube/:cubeId`, render the same page, kept mounted. The page
-  is told when the open cube changes and replaces the address, adding no history entry. The navigator gets a
-  `replace` option, which also fixes the entry link's history entry (ISSUES.md).
+  names, so Option on a Mac), no-ops when their action is unavailable; each has a button whose tooltip names it.
+- **The header** (M8.6): New, Load, Save (highlighted while there are unsaved changes; its tooltip names the version
+  it will save), Save as and, for a saved cube, Delete, after the name; Copy and Paste beside Export and Import. The
+  dialogs are Cube's own (Save, Load, and the question), as Export and Import are.
+- **The address** (Settled 2): one route with an optional segment, `/cube/:cubeId?` (React Router 7), so the page
+  stays mounted as the address follows the cube; `/cube` still opens a new one. The page is told when the saved cube
+  shown changes (`onSavedCubeChange`) and replaces the address, adding no history entry; `?queryId=` becomes the path
+  once read, other parameters kept. The navigator's `updateCurrentLocation` takes `{replace}`, which also fixes the
+  entry link's history entry (ISSUES.md).
 - **The format's draft mark** (§10.3): the README keeps it until a deployment stores cubes, i.e. the engine PR merged
   and released; from then on a format change needs a migration.
 
