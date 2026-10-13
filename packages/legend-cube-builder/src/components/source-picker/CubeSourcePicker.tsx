@@ -144,7 +144,11 @@ export const CubeSourcePicker = observer(
             <ModalFooterButton
               darkMode={darkMode}
               formatText={false}
-              text="Add"
+              text={
+                (picker.activeTab.pickedCount ?? 1) > 1
+                  ? `Add ${picker.activeTab.pickedCount}`
+                  : 'Add'
+              }
               // the legacy footer button looks the same disabled
               className="disabled:cursor-not-allowed disabled:opacity-50"
               title={

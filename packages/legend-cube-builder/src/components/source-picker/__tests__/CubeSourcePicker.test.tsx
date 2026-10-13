@@ -570,6 +570,37 @@ describe('Cube source picker', () => {
     );
   });
 
+  test('Picks several tables with their checkboxes, or a Cmd click, and adds them all', async () => {
+    await renderPage();
+    const dialog = await openPicker();
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.click(within(tables).getByLabelText('Pick ORDERS'));
+    fireEvent.click(within(tables).getByText('CUSTOMERS'), { metaKey: true });
+    expect(
+      within(tables)
+        .getAllByRole('checkbox')
+        .map((box) => (box as HTMLInputElement).checked),
+    ).toEqual([true, true]);
+    fireEvent.click(within(dialog).getByText('Add 2'));
+    await waitFor(() => expect(TEST__getCanvasNodes()).toHaveLength(2));
+  });
+
+  test('A plain click on a row picks it alone', async () => {
+    await renderPage();
+    const dialog = await openPicker();
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.click(within(tables).getByLabelText('Pick ORDERS'));
+    fireEvent.click(within(tables).getByLabelText('Pick CUSTOMERS'));
+    fireEvent.click(within(tables).getByText('ORDERS'));
+    expect(
+      within(tables).getByLabelText<HTMLInputElement>('Pick ORDERS').checked,
+    ).toBe(true);
+    expect(
+      within(tables).getByLabelText<HTMLInputElement>('Pick CUSTOMERS').checked,
+    ).toBe(false);
+    expect(within(dialog).getByText('Add')).toBeDefined();
+  });
+
   test("Shows in the dialog why a table couldn't be added", async () => {
     await renderPage({ schemas: new Map() });
     const dialog = await openPicker();

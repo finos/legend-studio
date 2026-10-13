@@ -82,7 +82,7 @@ const CubeTableSteps = observer((props: { tab: CubeInlineModelTabState }) => {
           >
             {tab.tables.map((table) => {
               const selectable = isTableSelectable(table);
-              const isPicked = tab.tableName === table.name;
+              const isPicked = tab.tableNames.includes(table.name);
               return (
                 <CubePickerListItem
                   key={table.name}
@@ -90,6 +90,8 @@ const CubeTableSteps = observer((props: { tab: CubeInlineModelTabState }) => {
                   disabled={!selectable}
                   adds={true}
                   onPick={() => tab.selectTable(table.name)}
+                  onToggle={() => tab.toggleTable(table.name)}
+                  toggleLabel={getRelationalDisplayName(table.name)}
                 >
                   <span className="min-w-0 flex-1 truncate">
                     {getRelationalDisplayName(table.name)}

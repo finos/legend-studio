@@ -877,3 +877,75 @@ describe('Cube source picker: a pasted model', () => {
     expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_SAMPLE_MODEL);
   });
 });
+
+describe('Cube source picker: several tables at once', () => {
+  test('Adds every picked table in one undo step, with ids of their own, the first picked running', async () => {
+    const { state, fake } = setUp();
+    await openPicker(state);
+    const tab = state.sourcePicker.modelTab;
+    tab.selectSchema('NORTHWIND');
+    tab.toggleTable('CUSTOMERS');
+    tab.toggleTable('ORDERS');
+    expect(tab.tableName).toBeUndefined();
+    expect(tab.pickedCount).toBe(2);
+    // a picked table hidden by the search still counts
+    tab.setTableSearch('ORD');
+    expect(state.sourcePicker.canConfirm).toBe(true);
+    await flowResult(state.sourcePicker.confirm());
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    const { query } = state.document;
+    expect(
+      query.nodes.map((node) => [
+        node.id,
+        (node as RelationalTableSource).table,
+      ]),
+    ).toEqual([
+      ['relational101', 'CUSTOMERS'],
+      ['relational102', 'ORDERS'],
+    ]);
+    expect(query.selected).toBe('relational101');
+    expect(state.history).toHaveLength(1);
+    expect(state.sourcePicker.isOpen).toBe(false);
+  });
+
+  test('A plain pick replaces the picked tables; a toggle takes one out', () => {
+    const { state } = setUp();
+    const tab = state.sourcePicker.modelTab;
+    tab.toggleTable('ORDERS');
+    tab.toggleTable('CUSTOMERS');
+    tab.toggleTable('ORDERS');
+    expect(tab.tableNames).toEqual(['CUSTOMERS']);
+    tab.toggleTable('ORDERS');
+    tab.selectTable('ORDERS');
+    expect(tab.tableNames).toEqual(['ORDERS']);
+  });
+
+  test("Adds the tables the engine typed, keeps the others picked with each one's error, and adds only those again", async () => {
+    const { state, fake } = setUp({
+      schemas: new Map([
+        ['NORTHWIND.ORDERS', FAKE_NORTHWIND_SCHEMAS.get('NORTHWIND.ORDERS')],
+      ]) as ReadonlyMap<string, Schema>,
+    });
+    await openPicker(state);
+    const tab = state.sourcePicker.modelTab;
+    tab.selectSchema('NORTHWIND');
+    tab.toggleTable('ORDERS');
+    tab.toggleTable('CUSTOMERS');
+    await flowResult(state.sourcePicker.confirm());
+    expect(state.document.query.nodes.map((node) => node.id)).toEqual([
+      'relational101',
+    ]);
+    expect(state.sourcePicker.isOpen).toBe(true);
+    expect(tab.tableNames).toEqual(['CUSTOMERS']);
+    expect(tab.error).toBe(
+      `CUSTOMERS: The table "NORTHWIND.CUSTOMERS" can't be found`,
+    );
+    fake.resolveSchemas.mockClear();
+    await flowResult(state.sourcePicker.confirm());
+    // only CUSTOMERS is asked for again
+    expect([...(fake.resolveSchemas.mock.calls[0]?.[1]?.keys() ?? [])]).toEqual(
+      ['relational102'],
+    );
+    expect(state.document.query.nodes).toHaveLength(1);
+  });
+});
