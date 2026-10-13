@@ -100,6 +100,36 @@ describe('Examples dialog', () => {
     expect(screen.getByText('open an example')).toBeDefined();
   });
 
+  test('Leaves an example for a new, empty cube with New, which Undo takes back', async () => {
+    const { fake } = await renderPage();
+    const newButton = screen.getByText<HTMLButtonElement>('New');
+    // the page's cube is new already
+    expect(newButton.disabled).toBe(true);
+    fireEvent.click(screen.getByText('open an example'));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: /^Top customers by orders/u }),
+    );
+    await screen.findByText('Top customers by orders');
+    expect(TEST__getCanvasNodes()).toHaveLength(7);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText('Execute the query to see its rows.')).toBeNull();
+
+    fireEvent.click(screen.getByText('New'));
+    expect(TEST__getCanvasNodes()).toHaveLength(0);
+    expect(screen.getByText('open an example')).toBeDefined();
+    expect(screen.queryByText('Top customers by orders')).toBeNull();
+    // the example's run is gone with it
+    expect(
+      screen.getByText('Execute the query to see its rows.'),
+    ).toBeDefined();
+    expect(screen.getByText<HTMLButtonElement>('New').disabled).toBe(true);
+
+    fireEvent.click(screen.getByText('Undo'));
+    expect(TEST__getCanvasNodes()).toHaveLength(7);
+    expect(screen.getByText('Top customers by orders')).toBeDefined();
+  });
+
   test("Starts a new cube on a dataset, in the source dialog's Sample Data tab on it", async () => {
     await renderPage();
     const dialog = await openExamples();

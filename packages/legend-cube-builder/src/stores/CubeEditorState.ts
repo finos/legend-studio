@@ -276,6 +276,8 @@ export class CubeEditorState implements CommandRegistrar {
       applyDocument: action,
       undo: action,
       importDocument: action,
+      startNewCube: action,
+      isEmptyCube: computed,
       reresolveSources: flow,
       refreshSource: flow,
       applyQuery: action,
@@ -854,6 +856,26 @@ export class CubeEditorState implements CommandRegistrar {
    * without applying its edits, and drops the last run's rows and errors,
    * which belong to the cube before. Never runs the cube.
    */
+  /** Whether the cube is a new one: no name, no context, no node */
+  get isEmptyCube(): boolean {
+    const { document } = this;
+    return (
+      document.name === undefined &&
+      document.context === undefined &&
+      document.query.nodes.length === 0
+    );
+  }
+
+  /**
+   * Replaces the cube with a new, empty one, as an import does (one undo
+   * step, so Undo brings the cube back); a cube already new is left as it is
+   */
+  startNewCube(): void {
+    if (!this.isEmptyCube) {
+      this.importDocument(new CubeDocument(), false);
+    }
+  }
+
   importDocument(next: CubeDocument, readOnly: boolean): void {
     this.pushHistory();
     this.importedOver.add(this.document);
