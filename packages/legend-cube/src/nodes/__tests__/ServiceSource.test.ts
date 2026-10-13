@@ -128,14 +128,15 @@ describe(unitTest('Service source'), () => {
     ).toThrow(`${MESSAGE_SERVICE_NOT_READABLE}: /trades/byDesk`);
   });
 
-  test('Is a source the host resolves, in beta in the registry', () => {
+  test('Is a source the host resolves, a work in progress in the registry', () => {
     expect(
       isResolvableSource(new ServiceSource('service101', COORDINATES)),
     ).toBe(true);
     const definition = createNodeRegistry().get(ServiceSource.TYPE);
     expect(definition?.kind).toBe('source');
     expect(definition?.label).toBe('Service');
-    expect(definition?.beta).toBe(true);
+    expect(definition?.beta).toBe(false);
+    expect(definition?.wip).toBe(true);
   });
 });
 

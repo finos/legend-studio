@@ -38,6 +38,7 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
+import { createFakeCubeServiceCatalog } from '../../../__test-utils__/FakeCubeServiceCatalog.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
@@ -239,6 +240,16 @@ describe('Cube palette', () => {
         { name: 'Data Product (BETA)' },
       ),
     ).toBeNull();
+  });
+
+  test('Marks the Service item WIP, not BETA, on a host with a service catalog (PLAN §6.4)', async () => {
+    const { host } = TEST__createCubeHost();
+    await render(undefined, {
+      host: { ...host, serviceCatalog: createFakeCubeServiceCatalog().catalog },
+    });
+    const service = paletteItem('Service (WIP)');
+    expect(within(service).getByText('WIP')).toBeDefined();
+    expect(within(service).queryByText('BETA')).toBeNull();
   });
 
   test('Collapses to icons, with the label in the tooltip, and remembers it for the user', async () => {

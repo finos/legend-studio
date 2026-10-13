@@ -23,6 +23,7 @@ import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import {
+  getCubeNodeBadge,
   OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -71,7 +72,8 @@ const CubePaletteItem = observer(
       [editorState, definition.type, definition.kind],
     );
     dragConnector(ref);
-    const label = `${definition.label}${definition.beta ? ' (BETA)' : ''}`;
+    const badge = getCubeNodeBadge(definition);
+    const label = `${definition.label}${badge ? ` (${badge})` : ''}`;
     const add = (): void => {
       if (!disabled) {
         addCubeNode(editorState, definition.type);
@@ -116,9 +118,9 @@ const CubePaletteItem = observer(
         {!collapsed && (
           <span className="min-w-0 flex-1 truncate">{definition.label}</span>
         )}
-        {!collapsed && definition.beta && (
+        {!collapsed && badge && (
           <span className="shrink-0 rounded-sm bg-[var(--color-accent)] px-1 text-xs font-medium text-[var(--color-text-on-accent)]">
-            BETA
+            {badge}
           </span>
         )}
       </div>

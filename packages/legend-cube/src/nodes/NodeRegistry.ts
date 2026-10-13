@@ -94,6 +94,11 @@ export interface NodeDefinition {
   readonly icon: string;
   /** Shows a BETA badge */
   readonly beta: boolean;
+  /**
+   * Shows a WIP badge, in place of BETA: picked and saved, but not working
+   * yet, e.g. a service (PLAN §6.4)
+   */
+  readonly wip?: boolean;
 }
 
 export interface TransformDefinition<N extends QueryNode = QueryNode>
@@ -194,7 +199,8 @@ export const SERVICE_SOURCE_DEFINITION: SourceDefinition<ServiceSource> = {
   type: ServiceSource.TYPE,
   label: 'Service',
   icon: 'service',
-  beta: true,
+  beta: false,
+  wip: true,
   fromCoordinates: (id, coordinates) =>
     ServiceSource.fromCoordinates(id, coordinates),
   resolve: (node, resolution) => node.withResolution(resolution),

@@ -1204,6 +1204,7 @@ service is read is still to be written (user, 2026-10-12).
 - **The list:** the engine's service registry, `GET /api/service/v1/list/detailsFromCache` (legend-graph's
   `getServicesInfo()`, which Marketplace's Data APIs page reads): each service's name, title, URL pattern,
   documentation and owners. The tab searches it by name, title and pattern.
+- **Its badge:** WIP, not BETA, in the palette, Add Items and its editor (user, 2026-10-13).
 - **Hosts:** `CubeHost.serviceCatalog` (optional), built with `buildCubeServiceCatalog(engineServerClient)`. The
   endpoint isn't in the open-source engine, so a host without one offers no Service tab or palette item, as with
   the depot. Legend Query builds one from its engine.
