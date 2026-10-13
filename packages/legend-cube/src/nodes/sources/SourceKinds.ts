@@ -21,6 +21,7 @@ import { DataProductAccessPointSource } from './DataProductAccessPointSource.js'
 import { IngestDatasetSource } from './IngestDatasetSource.js';
 import { RelationalTableSource } from './RelationalTableSource.js';
 import { ServiceSource } from './ServiceSource.js';
+import { FunctionSource } from './FunctionSource.js';
 
 /**
  * The kinds of source a query reads, one per query (PLAN §6.8): each kind's
@@ -31,7 +32,11 @@ const SOURCE_KINDS: readonly {
   readonly name: string;
   readonly types: readonly string[];
 }[] = [
-  { name: 'database tables', types: [RelationalTableSource.TYPE] },
+  // a function joins the tables of its model (PLAN §6.5)
+  {
+    name: 'database tables',
+    types: [RelationalTableSource.TYPE, FunctionSource.TYPE],
+  },
   { name: 'data products', types: [DataProductAccessPointSource.TYPE] },
   { name: 'ingest data sets', types: [IngestDatasetSource.TYPE] },
   { name: 'services', types: [ServiceSource.TYPE] },

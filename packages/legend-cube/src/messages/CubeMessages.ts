@@ -100,6 +100,22 @@ export const MESSAGE_SERVICE_NOT_READABLE = `Cube can't read services yet`;
 export const MESSAGE_PARAMETER_WITHOUT_VALUE = (name: string): string =>
   `Required parameter ${quote(name)} does not have a value.`;
 
+/** Added by Cube: a function's parameter values are checked against their types (PLAN §6.5) */
+export const MESSAGE_PARAMETER_VALUE_INVALID = (
+  name: string,
+  value: string,
+  type: string,
+): string =>
+  `Parameter ${quote(name)} value ${quote(value)} is not a valid ${type}.`;
+
+/** Added by Cube: a function's parameter values are checked against their types (PLAN §6.5) */
+export const MESSAGE_PARAMETER_VALUE_OUT_OF_RANGE = (
+  name: string,
+  value: string,
+  type: string,
+): string =>
+  `Parameter ${quote(name)} value ${quote(value)} is out of range for ${type}.`;
+
 /** Added by Cube: v1 queries read from one Database element */
 export const MESSAGE_DIFFERENT_DATABASES = (
   database: string,

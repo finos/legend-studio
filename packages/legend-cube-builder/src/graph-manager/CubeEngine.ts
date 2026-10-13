@@ -84,10 +84,45 @@ export interface CubeOutlineRuntime {
   readonly connections?: readonly CubeOutlineConnection[];
 }
 
-/** What a model offers the source picker: its databases and runtimes, as plain data */
+/** A parameter of a function, as its signature declares it */
+export interface CubeOutlineFunctionParameter {
+  readonly name: string;
+  /** Its type's path, as written, e.g. `Float` */
+  readonly type: string;
+  /** Its multiplicity, as written, e.g. `[1]`, `[0..1]` or `[*]` */
+  readonly multiplicity: string;
+}
+
+/** A column a function declares it returns, e.g. `ID:Integer` */
+export interface CubeOutlineFunctionColumn {
+  readonly name: string;
+  readonly type: string;
+}
+
+/** A function of a model that returns a relation (PLAN §6.5), as plain data */
+export interface CubeOutlineFunction {
+  /** The path the lambda calls it by, e.g. `sales::ordersAbove` */
+  readonly path: string;
+  /** The engine's full name, e.g. `sales::ordersAbove_Float_1__Relation_1_` */
+  readonly signature: string;
+  readonly parameters: readonly CubeOutlineFunctionParameter[];
+  readonly columns: readonly CubeOutlineFunctionColumn[];
+  /**
+   * The runtime it reads through, as its body's `from()` names it, directly
+   * or through a function it calls; none when it leaves the runtime to its
+   * caller
+   */
+  readonly runtime?: string | undefined;
+  /** Why it can't be added, e.g. a parameter Cube can't take a value for */
+  readonly problem?: string | undefined;
+}
+
+/** What a model offers the source picker: its databases, runtimes and functions, as plain data */
 export interface CubeModelOutline {
   readonly databases: readonly CubeOutlineDatabase[];
   readonly runtimes: readonly CubeOutlineRuntime[];
+  /** Its functions that return a relation; optional, as an outline from before them has none */
+  readonly functions?: readonly CubeOutlineFunction[] | undefined;
 }
 
 export enum CubeEngineErrorKind {

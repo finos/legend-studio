@@ -118,6 +118,9 @@ export const CubeSourcePicker = observer(
                   <CubeIngestTab tab={picker.ingestTab} />
                 ) : activeTab.key === CubeSourcePickerTabKey.PROJECT ? (
                   <CubeProjectTab tab={picker.projectTab} />
+                ) : activeTab.key ===
+                  CubeSourcePickerTabKey.PROJECT_FUNCTION ? (
+                  <CubeProjectTab tab={picker.projectFunctionTab} />
                 ) : activeTab.key === CubeSourcePickerTabKey.SERVICE ? (
                   <CubeServiceTab tab={picker.serviceTab} />
                 ) : (

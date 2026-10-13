@@ -25,6 +25,7 @@ import {
   type CubeOutlineSchema,
   type CubeOutlineTable,
 } from '../../../CubeEngine.js';
+import { V1_buildCubeFunctionOutlines } from './V1_CubeFunctionOutlineBuilder.js';
 
 // The databases and runtimes of a parsed model (`{_type: 'data', elements}`),
 // for the source picker (PLAN §6.2.3-§6.2.6). Read as plain JSON: only names,
@@ -212,7 +213,7 @@ const buildRuntime = (
   };
 };
 
-/** The outline of a parsed model: its Database elements and its readable runtimes, in model order */
+/** The outline of a parsed model: its Database elements, its readable runtimes and its functions that return a relation, in model order */
 export const V1_buildCubeModelOutline = (
   modelData: PlainObject,
 ): CubeModelOutline => {
@@ -239,5 +240,6 @@ export const V1_buildCubeModelOutline = (
       .filter(
         (runtime): runtime is CubeOutlineRuntime => runtime !== undefined,
       ),
+    functions: V1_buildCubeFunctionOutlines(elements),
   };
 };

@@ -42,6 +42,7 @@ import {
   ServiceSource,
   type SourceDefinition,
   foldColumnName,
+  FunctionSource,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -92,6 +93,12 @@ import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
 import { recheckCubeServiceSources } from './CubeServiceRecheck.js';
+import {
+  CUBE_FUNCTION_MESSAGE,
+  getFunctionDriftWarning,
+  getFunctionRecheckWarning,
+} from '../__lib__/LegendCubeFunctionLabels.js';
+import { recheckCubeFunctionSources } from './CubeFunctionRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExportState } from './CubeExportState.js';
@@ -140,9 +147,10 @@ const isFocusInNodeEditor = (): boolean =>
     `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
   ) !== null && document.activeElement !== null;
 
-/** A source Cube types again to see drift: a table, an access point, an ingest data set or a service */
+/** A source Cube types again to see drift: a table, a function, an access point, an ingest data set or a service */
 type RecheckedSource =
   | RelationalTableSource
+  | FunctionSource
   | DataProductAccessPointSource
   | IngestDatasetSource
   | ServiceSource;
@@ -627,6 +635,11 @@ export class CubeEditorState implements CommandRegistrar {
       const node = query.getNode(id);
       if (node instanceof RelationalTableSource) {
         databases.add(node.database);
+      } else if (node instanceof FunctionSource) {
+        // a function reads what Cube can't see: any database of the runtime
+        outline.runtimes
+          .find(({ path }) => path === runtime)
+          ?.connections?.forEach(({ storePath }) => databases.add(storePath));
       }
       query
         .getInputIds(id)
@@ -912,6 +925,15 @@ export class CubeEditorState implements CommandRegistrar {
             node instanceof IngestDatasetSource,
         )
       : [];
+    // a function on another kind of cube is the no-mix rule's to flag
+    const functions =
+      isCubeDataProductModel(context.model) ||
+      isCubeIngestModel(context.model) ||
+      isCubeServiceModel(context.model)
+        ? []
+        : kept.filter(
+            (node): node is FunctionSource => node instanceof FunctionSource,
+          );
     // services are typed in one place, still to come (PLAN §6.4)
     const services = isCubeServiceModel(context.model)
       ? kept.filter(
@@ -920,6 +942,7 @@ export class CubeEditorState implements CommandRegistrar {
       : [];
     const sources: readonly RecheckedSource[] = [
       ...tables,
+      ...functions,
       ...accessPoints,
       ...dataSets,
       ...services,
@@ -930,61 +953,72 @@ export class CubeEditorState implements CommandRegistrar {
     this.pendingSources = new Set([...this.pendingSources, ...sources]);
     let answers: ReadonlyMap<string, Schema | CubeEngineError>;
     try {
-      const [tableAnswers, accessPointAnswers, dataSetAnswers, serviceAnswers] =
-        (yield Promise.all([
-          tables.length
-            ? this.host.engine
-                .resolveSchemas(
-                  context.model,
-                  new Map(
-                    tables.map((source) => [
-                      source.id,
-                      [source.database, source.schema, source.table],
-                    ]),
-                  ),
-                )
-                .catch((error: unknown) => {
-                  const failure =
-                    error instanceof CubeEngineError
-                      ? error
-                      : new CubeEngineError(
-                          CubeEngineErrorKind.NETWORK,
-                          error instanceof Error
-                            ? error.message
-                            : String(error),
-                        );
-                  return new Map(tables.map((source) => [source.id, failure]));
-                })
-            : new Map(),
-          accessPoints.length
-            ? recheckCubeDataProductSources(
-                this.host.dataProductCatalog,
+      const [
+        tableAnswers,
+        accessPointAnswers,
+        dataSetAnswers,
+        serviceAnswers,
+        functionAnswers,
+      ] = (yield Promise.all([
+        tables.length
+          ? this.host.engine
+              .resolveSchemas(
                 context.model,
-                accessPoints,
-                fresh,
+                new Map(
+                  tables.map((source) => [
+                    source.id,
+                    [source.database, source.schema, source.table],
+                  ]),
+                ),
               )
-            : new Map(),
-          dataSets.length
-            ? recheckCubeIngestSources(
-                this.host.ingestCatalog,
-                context.model,
-                dataSets,
-                fresh,
-              )
-            : new Map(),
-          services.length
-            ? recheckCubeServiceSources(
-                this.host.serviceCatalog,
-                context.model,
-                services,
-              )
-            : new Map(),
-        ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
+              .catch((error: unknown) => {
+                const failure =
+                  error instanceof CubeEngineError
+                    ? error
+                    : new CubeEngineError(
+                        CubeEngineErrorKind.NETWORK,
+                        error instanceof Error ? error.message : String(error),
+                      );
+                return new Map(tables.map((source) => [source.id, failure]));
+              })
+          : new Map(),
+        accessPoints.length
+          ? recheckCubeDataProductSources(
+              this.host.dataProductCatalog,
+              context.model,
+              accessPoints,
+              fresh,
+            )
+          : new Map(),
+        dataSets.length
+          ? recheckCubeIngestSources(
+              this.host.ingestCatalog,
+              context.model,
+              dataSets,
+              fresh,
+            )
+          : new Map(),
+        services.length
+          ? recheckCubeServiceSources(
+              this.host.serviceCatalog,
+              context.model,
+              services,
+            )
+          : new Map(),
+        functions.length
+          ? recheckCubeFunctionSources(
+              this.host.engine,
+              context.model,
+              functions,
+            )
+          : new Map(),
+      ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
       answers = new Map([
         ...(tableAnswers ?? []),
         ...(accessPointAnswers ?? []),
         ...(dataSetAnswers ?? []),
         ...(serviceAnswers ?? []),
+        ...(functionAnswers ?? []),
       ]);
     } finally {
       this.pendingSources = new Set(
@@ -999,6 +1033,7 @@ export class CubeEditorState implements CommandRegistrar {
     sources.forEach((source) => {
       const isAccessPoint = source instanceof DataProductAccessPointSource;
       const isDataSet = source instanceof IngestDatasetSource;
+      const isFunction = source instanceof FunctionSource;
       const answer =
         answers.get(source.id) ??
         new CubeEngineError(
@@ -1007,7 +1042,9 @@ export class CubeEditorState implements CommandRegistrar {
             ? CUBE_DATA_PRODUCT_RECHECK_MESSAGE.NO_ANSWER
             : isDataSet
               ? CUBE_INGEST_RECHECK_MESSAGE.NO_ANSWER
-              : 'The engine gave no schema for this table',
+              : isFunction
+                ? CUBE_FUNCTION_MESSAGE.NO_ANSWER
+                : 'The engine gave no schema for this table',
           source.id,
         );
       const saved =
@@ -1021,7 +1058,9 @@ export class CubeEditorState implements CommandRegistrar {
               ? getAccessPointRecheckWarning(answer.firstLine)
               : isDataSet
                 ? getDataSetRecheckWarning(answer.firstLine)
-                : getSourceRecheckWarning(answer.firstLine),
+                : isFunction
+                  ? getFunctionRecheckWarning(answer.firstLine)
+                  : getSourceRecheckWarning(answer.firstLine),
           ]);
         } else if (
           source.resolution.kind !== 'failed' ||
@@ -1050,7 +1089,9 @@ export class CubeEditorState implements CommandRegistrar {
             ? getAccessPointDriftWarning(diff)
             : isDataSet
               ? getDataSetDriftWarning(diff)
-              : getSchemaDriftWarning(diff),
+              : isFunction
+                ? getFunctionDriftWarning(diff)
+                : getSchemaDriftWarning(diff),
         ]);
       }
       replacements.set(source, resolved);
@@ -1125,7 +1166,8 @@ export class CubeEditorState implements CommandRegistrar {
       source instanceof RelationalTableSource ||
       source instanceof DataProductAccessPointSource ||
       source instanceof IngestDatasetSource ||
-      source instanceof ServiceSource
+      source instanceof ServiceSource ||
+      source instanceof FunctionSource
     ) {
       // a Refresh reads the deployed artifact or definition again
       yield flowResult(this.reresolveSources([source], true));
@@ -1271,7 +1313,7 @@ export class CubeEditorState implements CommandRegistrar {
       return undefined;
     }
     if (definition.kind === 'source') {
-      this.sourcePicker.open(this.sourcePicker.tabForSourceType(type)?.key);
+      this.sourcePicker.openForSourceType(type);
       return undefined;
     }
     const { query } = this.document;

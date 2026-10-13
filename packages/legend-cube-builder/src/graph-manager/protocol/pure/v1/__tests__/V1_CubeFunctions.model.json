@@ -1,0 +1,1065 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "SalesDb",
+      "package": "sales::store",
+      "schemas": [
+        {
+          "name": "SALES",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "AMOUNT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Double"
+                  }
+                },
+                {
+                  "name": "STATUS",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 10
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "ORDERS",
+              "primaryKey": ["ID"]
+            }
+          ],
+          "tabularFunctions": [],
+          "views": []
+        }
+      ],
+      "stereotypes": []
+    },
+    {
+      "_type": "Enumeration",
+      "name": "Status",
+      "package": "sales",
+      "stereotypes": [],
+      "taggedValues": [],
+      "values": [
+        {
+          "stereotypes": [],
+          "taggedValues": [],
+          "value": "OPEN"
+        },
+        {
+          "stereotypes": [],
+          "taggedValues": [],
+          "value": "SHIPPED"
+        }
+      ]
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "classInstance",
+          "type": ">",
+          "value": {
+            "path": ["sales::store::SalesDb", "SALES", "ORDERS"]
+          }
+        }
+      ],
+      "name": "allOrders__Relation_1_",
+      "package": "sales",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "filter",
+          "parameters": [
+            {
+              "_type": "classInstance",
+              "type": ">",
+              "value": {
+                "path": ["sales::store::SalesDb", "SALES", "ORDERS"]
+              }
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "greaterThan",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "r"
+                        }
+                      ],
+                      "property": "AMOUNT"
+                    },
+                    {
+                      "_type": "var",
+                      "name": "min"
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "r"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "ordersAbove_Float_1__String_$0_1$__Relation_1_",
+      "package": "sales",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Float"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "min"
+        },
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "status"
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "from",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "filter",
+              "parameters": [
+                {
+                  "_type": "classInstance",
+                  "type": ">",
+                  "value": {
+                    "path": ["sales::store::SalesDb", "SALES", "ORDERS"]
+                  }
+                },
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "func",
+                      "function": "equal",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "r"
+                            }
+                          ],
+                          "property": "STATUS"
+                        },
+                        {
+                          "_type": "string",
+                          "value": "SHIPPED"
+                        }
+                      ]
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "r"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "packageableElementPtr",
+              "fullPath": "sales::SalesRuntime"
+            }
+          ]
+        }
+      ],
+      "name": "shippedOrders__Relation_1_",
+      "package": "sales",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "filter",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "sales::shippedOrders",
+              "parameters": []
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "greaterThan",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "r"
+                        }
+                      ],
+                      "property": "AMOUNT"
+                    },
+                    {
+                      "_type": "float",
+                      "value": 100
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "r"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "bigShippedOrders__Relation_1_",
+      "package": "sales",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "concatenate",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "sales::shippedOrders",
+              "parameters": []
+            },
+            {
+              "_type": "func",
+              "function": "from",
+              "parameters": [
+                {
+                  "_type": "classInstance",
+                  "type": ">",
+                  "value": {
+                    "path": ["sales::store::SalesDb", "SALES", "ORDERS"]
+                  }
+                },
+                {
+                  "_type": "packageableElementPtr",
+                  "fullPath": "sales::ArchiveRuntime"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "mixedOrders__Relation_1_",
+      "package": "sales",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "filter",
+          "parameters": [
+            {
+              "_type": "classInstance",
+              "type": ">",
+              "value": {
+                "path": ["sales::store::SalesDb", "SALES", "ORDERS"]
+              }
+            },
+            {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "in",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "r"
+                        }
+                      ],
+                      "property": "ID"
+                    },
+                    {
+                      "_type": "var",
+                      "name": "ids"
+                    }
+                  ]
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "r"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "ordersOf_Integer_MANY__Relation_1_",
+      "package": "sales",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "ids"
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "classInstance",
+          "type": ">",
+          "value": {
+            "path": ["sales::store::SalesDb", "SALES", "ORDERS"]
+          }
+        }
+      ],
+      "name": "ordersIn_Status_1__Relation_1_",
+      "package": "sales",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "sales::Status"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "status"
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Relation"
+        },
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ID"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Float"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "AMOUNT"
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "STATUS"
+                }
+              ]
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
+        ],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "integer",
+          "value": 1
+        }
+      ],
+      "name": "order_count__Integer_1_",
+      "package": "sales",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Integer"
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+          "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+          "_type": "h2Local",
+          "testDataSetupSqls": []
+        },
+        "element": "sales::store::SalesDb",
+        "postProcessorWithParameter": [],
+        "type": "H2"
+      },
+      "name": "SalesConnection",
+      "package": "sales"
+    },
+    {
+      "_type": "runtime",
+      "name": "SalesRuntime",
+      "package": "sales",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+          {
+            "store": {
+              "path": "sales::store::SalesDb",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "sales::SalesConnection"
+                },
+                "id": "c"
+              }
+            ]
+          }
+        ],
+        "mappings": []
+      }
+    },
+    {
+      "_type": "runtime",
+      "name": "ArchiveRuntime",
+      "package": "sales",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+          {
+            "store": {
+              "path": "sales::store::SalesDb",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "sales::SalesConnection"
+                },
+                "id": "c"
+              }
+            ]
+          }
+        ],
+        "mappings": []
+      }
+    }
+  ]
+}

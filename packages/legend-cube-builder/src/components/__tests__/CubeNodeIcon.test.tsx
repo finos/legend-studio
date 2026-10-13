@@ -21,6 +21,7 @@ import {
   AlignTopIcon,
   ArrowsJoinIcon,
   CalculatorIcon,
+  CodeIcon,
   CompareIcon,
   CompressIcon,
   DataCubeIcon,
@@ -43,6 +44,7 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 /** The icon each node type's icon name draws (PLAN §11.4) */
 const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   table: TableIcon,
+  function: CodeIcon,
   dataProduct: PackageIcon,
   ingest: DatabaseImportIcon,
   service: RobotIcon,

@@ -32,7 +32,10 @@ import {
 } from '../../graph-manager/CubeProject.js';
 import type { CubeProjectSummary } from '../../graph-manager/CubeProjectCatalog.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
-import { CubeInlineModelTabState } from './CubeInlineModelTabState.js';
+import {
+  CubeInlineModelTabState,
+  CubeModelReadKind,
+} from './CubeInlineModelTabState.js';
 import { CubeSourcePickerTabKey } from './CubeSourcePickerTab.js';
 
 /** A project as the tab keys it: `group:artifact` */
@@ -52,8 +55,9 @@ const toMessage = (error: unknown): string => {
  * version as the cube's model; every later table comes from it.
  */
 export class CubeProjectTabState extends CubeInlineModelTabState {
-  override readonly key = CubeSourcePickerTabKey.PROJECT;
-  override readonly label = 'Project Database';
+  override readonly key: CubeSourcePickerTabKey =
+    CubeSourcePickerTabKey.PROJECT;
+  override readonly label: string = 'Project Database';
 
   projects: readonly CubeProjectSummary[] | undefined;
   isLoadingProjects = false;
@@ -85,6 +89,11 @@ export class CubeProjectTabState extends CubeInlineModelTabState {
 
   override get isAvailable(): boolean {
     return this.editorState.host.projectCatalog !== undefined;
+  }
+
+  /** A project's tables; its functions have the Project Function tab */
+  override get readKinds(): readonly CubeModelReadKind[] {
+    return [CubeModelReadKind.TABLE];
   }
 
   override get isBusy(): boolean {
@@ -122,6 +131,8 @@ export class CubeProjectTabState extends CubeInlineModelTabState {
         flowResult(this.selectModel(fixedModel)).catch(
           this.editorState.host.applicationStore.alertUnhandledError,
         );
+      } else {
+        this.followFixedRuntime();
       }
       return;
     }
@@ -214,5 +225,26 @@ export class CubeProjectTabState extends CubeInlineModelTabState {
         }),
       ),
     ).catch(this.editorState.host.applicationStore.alertUnhandledError);
+  }
+}
+
+/**
+ * The source dialog's Project Function tab (PLAN §6.5): as the Project
+ * Database tab, a published project and one of its released versions, then
+ * one of the project's own functions that return a relation, its runtime and
+ * its values. Its own tab (user, 2026-10-13); a function and the tables of
+ * the same project and version still join in one cube, each from its tab.
+ */
+export class CubeProjectFunctionTabState extends CubeProjectTabState {
+  override readonly key = CubeSourcePickerTabKey.PROJECT_FUNCTION;
+  override readonly label = 'Project Function';
+
+  constructor(editorState: CubeEditorState) {
+    super(editorState);
+    this.readKind = CubeModelReadKind.FUNCTION;
+  }
+
+  override get readKinds(): readonly CubeModelReadKind[] {
+    return [CubeModelReadKind.FUNCTION];
   }
 }

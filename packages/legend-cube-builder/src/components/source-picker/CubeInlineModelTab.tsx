@@ -27,18 +27,105 @@ import {
 } from '../../__lib__/LegendCubeLabels.js';
 import {
   type CubeInlineModelTabState,
+  CubeModelReadKind,
   isTableSelectable,
 } from '../../stores/source-picker/CubeInlineModelTabState.js';
+import { CubeFunctionSteps, CubeReadKindToggle } from './CubeFunctionSteps.js';
 import { CubePickerStep } from './CubePickerStep.js';
+
+/** A model's table steps: a database, a runtime keyed by it, a schema and a table */
+const CubeTableSteps = observer((props: { tab: CubeInlineModelTabState }) => {
+  const { tab } = props;
+  return (
+    <>
+      <CubePickerStep
+        label="Database"
+        value={tab.databasePath}
+        options={tab.databases.map((database) => ({
+          value: database.path,
+          label: database.path,
+        }))}
+        disabled={tab.fixedDatabasePath !== undefined}
+        onChange={(path) => tab.selectDatabase(path)}
+      />
+      <CubePickerStep
+        label="Runtime"
+        value={tab.runtimePath}
+        options={tab.runtimes.map((runtime) => ({
+          value: runtime.path,
+          label: runtime.path,
+        }))}
+        disabled={tab.fixedContext?.runtime !== undefined}
+        onChange={(path) => tab.selectRuntime(path)}
+      />
+      <CubePickerStep
+        label="Schema"
+        value={tab.schemaName}
+        options={tab.schemas.map((schema) => ({
+          value: schema.name,
+          label: getRelationalDisplayName(schema.name),
+        }))}
+        onChange={(name) => tab.selectSchema(name)}
+      />
+      {tab.schemaName !== undefined && (
+        <div className="flex flex-col gap-1">
+          <input
+            className="h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)]"
+            placeholder="Search tables"
+            aria-label="Search tables"
+            value={tab.tableSearch}
+            onChange={(event) => tab.setTableSearch(event.target.value)}
+          />
+          <ul
+            className={`h-56 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
+            aria-label="Tables"
+          >
+            {tab.tables.map((table) => {
+              const selectable = isTableSelectable(table);
+              const isPicked = tab.tableName === table.name;
+              return (
+                <CubePickerListItem
+                  key={table.name}
+                  picked={isPicked}
+                  disabled={!selectable}
+                  adds={true}
+                  onPick={() => tab.selectTable(table.name)}
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {getRelationalDisplayName(table.name)}
+                  </span>
+                  {table.flags.map((flag) => (
+                    <span
+                      key={flag}
+                      className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-sm text-[var(--color-status-warn)]"
+                      title={CUBE_TABLE_FLAG_LABELS[flag].description}
+                    >
+                      {CUBE_TABLE_FLAG_LABELS[flag].label}
+                    </span>
+                  ))}
+                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                    {table.columnCount} columns
+                  </span>
+                </CubePickerListItem>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+});
 
 /**
  * The steps after a model is picked, shared by the Sample Data and Project
- * Database tabs: its loading, then a database, a runtime keyed by it, a schema
- * and a table, and why the last step failed
+ * Database tabs: its loading, then tables or functions (shown when the
+ * model has functions, PLAN §6.5), the steps to one, and why the last step
+ * failed
  */
 export const CubeOutlineSteps = observer(
   (props: { tab: CubeInlineModelTabState }) => {
     const { tab } = props;
+    const readsFunctions = tab.readKind === CubeModelReadKind.FUNCTION;
     return (
       <>
         {tab.isLoadingModel && (
@@ -46,79 +133,14 @@ export const CubeOutlineSteps = observer(
             {CUBE_PENDING_LABEL.LOADING_MODEL}
           </div>
         )}
-        <CubePickerStep
-          label="Database"
-          value={tab.databasePath}
-          options={tab.databases.map((database) => ({
-            value: database.path,
-            label: database.path,
-          }))}
-          disabled={tab.fixedDatabasePath !== undefined}
-          onChange={(path) => tab.selectDatabase(path)}
-        />
-        <CubePickerStep
-          label="Runtime"
-          value={tab.runtimePath}
-          options={tab.runtimes.map((runtime) => ({
-            value: runtime.path,
-            label: runtime.path,
-          }))}
-          disabled={tab.fixedContext?.runtime !== undefined}
-          onChange={(path) => tab.selectRuntime(path)}
-        />
-        <CubePickerStep
-          label="Schema"
-          value={tab.schemaName}
-          options={tab.schemas.map((schema) => ({
-            value: schema.name,
-            label: getRelationalDisplayName(schema.name),
-          }))}
-          onChange={(name) => tab.selectSchema(name)}
-        />
-        {tab.schemaName !== undefined && (
-          <div className="flex flex-col gap-1">
-            <input
-              className="h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)]"
-              placeholder="Search tables"
-              aria-label="Search tables"
-              value={tab.tableSearch}
-              onChange={(event) => tab.setTableSearch(event.target.value)}
-            />
-            <ul
-              className={`h-56 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
-              aria-label="Tables"
-            >
-              {tab.tables.map((table) => {
-                const selectable = isTableSelectable(table);
-                const isPicked = tab.tableName === table.name;
-                return (
-                  <CubePickerListItem
-                    key={table.name}
-                    picked={isPicked}
-                    disabled={!selectable}
-                    adds={true}
-                    onPick={() => tab.selectTable(table.name)}
-                  >
-                    <span className="min-w-0 flex-1 truncate">
-                      {getRelationalDisplayName(table.name)}
-                    </span>
-                    {table.flags.map((flag) => (
-                      <span
-                        key={flag}
-                        className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-sm text-[var(--color-status-warn)]"
-                        title={CUBE_TABLE_FLAG_LABELS[flag].description}
-                      >
-                        {CUBE_TABLE_FLAG_LABELS[flag].label}
-                      </span>
-                    ))}
-                    <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                      {table.columnCount} columns
-                    </span>
-                  </CubePickerListItem>
-                );
-              })}
-            </ul>
-          </div>
+        {tab.readKinds.length > 1 &&
+          (readsFunctions || Boolean(tab.outline?.functions?.length)) && (
+            <CubeReadKindToggle tab={tab} />
+          )}
+        {readsFunctions ? (
+          <CubeFunctionSteps tab={tab} />
+        ) : (
+          <CubeTableSteps tab={tab} />
         )}
         {tab.isResolving && (
           <div className="text-base text-[var(--color-text-secondary)]">

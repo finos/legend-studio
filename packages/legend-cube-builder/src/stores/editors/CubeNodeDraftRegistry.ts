@@ -23,6 +23,7 @@ import {
   Pivot,
   Extend,
   Filter,
+  FunctionSource,
   Group,
   Join,
   Limit,
@@ -41,6 +42,7 @@ import { CubeExpressionFilterDraft } from './CubeExpressionFilterDraft.js';
 import { CubePivotDraft } from './CubePivotDraft.js';
 import { CubeExtendDraft } from './CubeExtendDraft.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
+import { CubeFunctionDraft } from './CubeFunctionDraft.js';
 import { CubeGroupDraft } from './CubeGroupDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
@@ -59,13 +61,19 @@ export type CubeNodeDraftFactory = (
 
 /**
  * The draft of each node type the panel edits, by type (PLAN §7.4). A
- * transform with an editor in `CUBE_NODE_EDITORS` has its factory here; a
- * source, which has nothing to edit, has none, and so no Apply or Cancel.
+ * transform with an editor in `CUBE_NODE_EDITORS` has its factory here, as
+ * has a function source, whose parameter values are edited (PLAN §6.5);
+ * another source, which has nothing to edit, has none, and so no Apply or
+ * Cancel.
  */
 export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   string,
   CubeNodeDraftFactory
 > = new Map<string, CubeNodeDraftFactory>([
+  [
+    FunctionSource.TYPE,
+    (node) => new CubeFunctionDraft(guaranteeType(node, FunctionSource)),
+  ],
   [Sort.TYPE, (node) => new CubeSortDraft(guaranteeType(node, Sort))],
   [Group.TYPE, (node) => new CubeGroupDraft(guaranteeType(node, Group))],
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],

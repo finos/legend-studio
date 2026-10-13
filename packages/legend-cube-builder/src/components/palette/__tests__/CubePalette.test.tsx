@@ -174,6 +174,7 @@ describe('Cube palette', () => {
       ),
     ).toEqual([
       TABLE,
+      'Function (BETA)',
       'Data Product (BETA)',
       'separator',
       SORT,
@@ -195,8 +196,8 @@ describe('Cube palette', () => {
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();
     expect(paletteItem(FILTER).querySelector('svg')).not.toBeNull();
-    // only the data product source is in beta
-    expect(within(list).getAllByText('BETA')).toHaveLength(1);
+    // only the function and data product sources are in beta
+    expect(within(list).getAllByText('BETA')).toHaveLength(2);
     expect(
       within(paletteItem('Data Product (BETA)')).getByText('BETA'),
     ).toBeDefined();
@@ -445,6 +446,9 @@ describe('Cube palette', () => {
     );
     expect(paletteItem(TABLE).title).toBe(
       'Click, or drop it on the canvas, to pick a table',
+    );
+    expect(paletteItem('Function (BETA)').title).toBe(
+      'Click, or drop it on the canvas, to pick a function',
     );
     expect(paletteItem('Data Product (BETA)').title).toBe(
       'Click, or drop it on the canvas, to pick an access point',

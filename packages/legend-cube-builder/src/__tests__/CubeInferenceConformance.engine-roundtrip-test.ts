@@ -32,6 +32,7 @@ import {
   Drop,
   Filter,
   FilterOperator,
+  FunctionSource,
   fixJoinDuplicates,
   getAvailableAggregations,
   Group,
@@ -309,6 +310,13 @@ const NOT_TYPED_BY_THE_ENGINE: readonly string[] = [
   IngestDatasetSource.TYPE,
   ServiceSource.TYPE,
 ];
+
+/**
+ * The registered types typed against the engine elsewhere, on a model of
+ * their own: a function, which the Northwind fixture has none of
+ * (`CubeFunctionSource.engine-roundtrip-test.ts`, on the Trades sample)
+ */
+const TYPED_ELSEWHERE: readonly string[] = [FunctionSource.TYPE];
 
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];
 const CUSTOMERS: CaseTable = ['relational102', 'CUSTOMERS'];
@@ -1994,7 +2002,9 @@ describe('Cube inference against the engine', () => {
         .map((definition) => definition.type)
         .filter(
           (type) =>
-            !covered.has(type) && !NOT_TYPED_BY_THE_ENGINE.includes(type),
+            !covered.has(type) &&
+            !NOT_TYPED_BY_THE_ENGINE.includes(type) &&
+            !TYPED_ELSEWHERE.includes(type),
         ),
     ).toEqual([]);
   });
