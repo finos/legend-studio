@@ -41,12 +41,12 @@ import {
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeResult,
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../CubeEditorState.js';
 import { PIVOT_VALUE_DISABLED_REASON } from '../../../__lib__/LegendCubeLabels.js';
 import { CUBE_NORTHWIND_MODEL } from '../../fixtures/CubeNorthwindModel.js';
 import { CubePivotDraft, toPivotValue } from '../CubePivotDraft.js';
-import type { CubeResult } from '../../../graph-manager/CubeEngine.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const integer = (value: string): LiteralValue => ({ kind: 'integer', value });
