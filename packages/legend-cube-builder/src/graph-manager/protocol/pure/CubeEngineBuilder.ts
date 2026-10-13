@@ -32,11 +32,13 @@ import type { CubeEngine } from '../../CubeEngine.js';
 import type { CubeIngestCatalog } from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
 import type { CubeProjectCatalog } from '../../CubeProjectCatalog.js';
+import type { CubeStore } from '../../CubeStore.js';
 import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnvironmentResolver.js';
 import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
 import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCatalog.js';
 import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
 import { V1_LegendCubeProjectCatalog } from './v1/V1_LegendCubeProjectCatalog.js';
+import { V1_LegendCubeStore } from './v1/V1_LegendCubeStore.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -133,6 +135,15 @@ export const buildCubeDataProductCatalog = (
 export const buildCubeProjectCatalog = (
   depotServerClient: DepotServerClient,
 ): CubeProjectCatalog => new V1_LegendCubeProjectCatalog(depotServerClient);
+
+/**
+ * The saved cubes of a host (PLAN §11.13): the engine's Cube store, on the
+ * server the host keeps its queries on (`queryBaseUrl`, else `baseUrl`)
+ */
+export const buildCubeStore = (
+  config: CubeEngineConfig,
+  tracerService: TracerService,
+): CubeStore => new V1_LegendCubeStore(config, tracerService);
 
 /** The viewer's lakehouse environment, which the engine needs to run data product cubes */
 export const buildCubeLakehouseEnvironment = (

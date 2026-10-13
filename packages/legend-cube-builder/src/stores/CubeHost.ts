@@ -31,6 +31,7 @@ import {
   isCubeProjectModel,
 } from '../graph-manager/CubeProject.js';
 import type { CubeProjectCatalog } from '../graph-manager/CubeProjectCatalog.js';
+import type { CubeStore } from '../graph-manager/CubeStore.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
 /**
@@ -64,6 +65,11 @@ export interface CubeHost {
    * source dialog offers no projects
    */
   readonly projectCatalog?: CubeProjectCatalog | undefined;
+  /**
+   * Where cubes are saved (PLAN §11.13); without one, the page offers no
+   * Save, Load or Delete, and Export and Import remain
+   */
+  readonly store?: CubeStore | undefined;
 }
 
 /** Why the host can't list a project model's Databases */
