@@ -25,6 +25,12 @@ export enum LEGEND_CUBE_COMMAND_KEY {
   EXECUTE = 'legend-cube.execute',
   UNDO = 'legend-cube.undo',
   VALIDATE_EXPRESSIONS = 'legend-cube.validate-expressions',
+  // saving and loading (spec §17.12, PLAN §11.13)
+  NEW = 'legend-cube.new',
+  LOAD = 'legend-cube.load',
+  SAVE = 'legend-cube.save',
+  COPY = 'legend-cube.copy',
+  PASTE = 'legend-cube.paste',
 }
 
 /** Keys as `KeyboardEvent.code` names */
@@ -41,6 +47,26 @@ export const LEGEND_CUBE_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS]: {
     title: "Validate the Extend's expressions",
     defaultKeyboardShortcut: 'F10',
+  },
+  [LEGEND_CUBE_COMMAND_KEY.NEW]: {
+    title: 'Start a new cube',
+    defaultKeyboardShortcut: 'Alt+KeyN',
+  },
+  [LEGEND_CUBE_COMMAND_KEY.LOAD]: {
+    title: 'Load a saved cube',
+    defaultKeyboardShortcut: 'Alt+KeyL',
+  },
+  [LEGEND_CUBE_COMMAND_KEY.SAVE]: {
+    title: 'Save the cube',
+    defaultKeyboardShortcut: 'Alt+KeyS',
+  },
+  [LEGEND_CUBE_COMMAND_KEY.COPY]: {
+    title: "Copy the cube's spec",
+    defaultKeyboardShortcut: 'Alt+KeyC',
+  },
+  [LEGEND_CUBE_COMMAND_KEY.PASTE]: {
+    title: 'Paste a cube spec',
+    defaultKeyboardShortcut: 'Alt+KeyV',
   },
 };
 
