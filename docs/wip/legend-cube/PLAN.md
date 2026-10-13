@@ -4517,26 +4517,34 @@ createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epo
   and then the cube is modified, since Save would write the new one.
 - **The name's hover** shows the name, the id, the version and the owners, or "Not saved yet".
 - **Save gating** (§14.4, "server Save gating is decided in M8", §10.3): Save and Save as need a store, a cube that
-  isn't read-only, at least one node, every node valid in the local analysis and no engine check pending; Save also
-  needs the caller among the owners of a saved cube (else only Save as). Host issues (an engine that can't type a
-  source now) don't block it. Export stays allowed for an invalid cube (Appendix A). Each disabled button says why.
+  isn't read-only, at least one node, every node valid in the local analysis and no engine check pending (a waiting
+  Extend or Filter by Expression is invalid there, `ERR_TYPING`); Save also needs the viewer among the owners of a
+  saved cube (else only Save as). The viewer is the host's current user, which Legend Query reads from the engine
+  (`anonymous` locally); a host that doesn't know its user leaves ownership to the store. Host issues (an engine that
+  can't type a source now) don't block it. Export stays allowed for an invalid cube (Appendix A). Each disabled
+  button says why, naming the first step with a problem as Execute does.
 - **Save and Save as:** Save on a new cube opens the Save dialog (its name); on a saved one it saves at once. Save as
-  always opens it, with the name, and makes a new cube with the caller as its owner. A 409 says the cube was saved
-  elsewhere since it was opened, at version N, and offers Save as; nothing is overwritten.
-- **Load:** a dialog with a search box (the server's search, debounced) over id, name and owners, and "Only mine";
-  each row shows the name, the owners and when and by whom it was saved last. Opening one never runs it and opens no
-  editor (U9 (a)). An address that names a cube loads it behind a "loading cube" overlay; a cube that can't be loaded
-  shows "Error loading query!" with the server's message in the graph area, the address kept (U9 (b)).
+  always opens it, with the name, and makes a new cube with the viewer as its owner. The name typed becomes the
+  cube's (one undo step). A 409, or a 403, opens the Save dialog with the store's message (`Cannot change version 1 of
+cube '…': its current version is 2.`) to save a copy instead; nothing is overwritten. A save the store refuses
+  otherwise keeps the dialog open, saying why. Edits made while a save runs stay modified.
+- **Load:** a dialog with a search box (the store's search, 300 ms after the last keystroke, at most 100) over id,
+  name and owners, and "Only mine"; each row shows the name, the owners, who saved it last and when, the version and
+  the id. Opening one never runs it and opens no editor (U9 (a)); the store's name wins over the spec's, which a
+  rename elsewhere may have left. An address that names a cube loads it behind a "loading cube" overlay; a cube that
+  can't be loaded shows "Error loading query!" with the server's message in the graph area, the address kept (U9 (b)).
 - **Delete:** from the Load dialog's rows and from the header for the open cube, owners only, after a confirmation;
   soft only (permanent deletion stays the API's). Deleting the open cube keeps its content as an unsaved cube.
 - **New, Copy and Paste** (§14.4): New empties the page. Copy puts the spec's JSON on the clipboard, as Export does
   (invalid cubes included, read-only ones refused). Paste reads the clipboard and opens the spec as Import does; when
   the browser won't read the clipboard, the Import dialog opens to paste into.
-- **Confirmation** (§17.14): New, Load, Paste and Import ask `Unsaved changes to your query will be lost if you
-continue. Are you sure?` when the cube is modified; the same guards leaving the page, through the navigator's
-  `blockNavigation` (`beforeunload` and in-app navigation).
-- **Undo:** opening another cube (New, Load, Paste, Import) stays one undo step, as Import is today (§7.8); the saved
-  identity follows the cube undo returns to, at the latest version the page knows.
+- **Confirmation** (§17.14): New, Load, Paste, Import and opening an example or a dataset from Examples ask
+  `Unsaved changes to your query will be lost if you continue. Are you sure?` when the cube is modified, in a dialog
+  of Cube's own; the same guards leaving the page, through the navigator's `blockNavigation` (`beforeunload` and
+  in-app navigation). Each of these, and Save, Copy and Delete, first finishes the node editor, so its edits count.
+- **Undo:** opening another cube (New, Load, Paste, Import, an example) stays one undo step, as Import is today (§7.8);
+  the saved cube follows the cube undo returns to, at the latest version the page knows (a deleted one doesn't come
+  back).
 - **Shortcuts** (§17.12): Alt+N, Alt+L, Alt+S, Alt+C and Alt+V through Cube's command config (`KeyboardEvent.code`
   names, so Option on a Mac), no-ops when their action is unavailable; each has a button or menu item whose tooltip
   names it.

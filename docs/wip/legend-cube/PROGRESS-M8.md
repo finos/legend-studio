@@ -12,8 +12,8 @@
 | ------ | ------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m8`, from `cube-dev` (`4a0bfe3e0`); a draft PR into `cube-dev`. Engine: `cube-store` of the fork, from finos master |
 | Engine | Local legend-engine on `localhost:6300` (IntelliJ, no Mongo); the development store on `:6301` from M8.3                  |
-| Step   | M8.1–M8.3 done                                                                                                            |
-| Tests  | Engine module 147 (20 new), checkstyle clean                                                                              |
+| Step   | M8.1–M8.5 done                                                                                                            |
+| Tests  | Engine module 147; builder core 1764; store contract on :6301                                                             |
 
 ## Steps
 
@@ -22,8 +22,8 @@ See PLAN §11.13 for each step's deliverable and when it is done.
 - [x] **M8.1** The settled decisions (PLAN §11.13) and this file
 - [x] **M8.2** The engine store, its tests, a draft PR into finos/legend-engine (#5355)
 - [x] **M8.3** A development store, every endpoint probed live
-- [ ] **M8.4** The builder's port and adapter
-- [ ] **M8.5** The page's state
+- [x] **M8.4** The builder's port and adapter
+- [x] **M8.5** The page's state
 - [ ] **M8.6** The UI
 - [ ] **M8.7** Legend Query: the host's store, the address, `blockNavigation`
 - [ ] **M8.8** Guides, READMEs, testing.md, hosting.md and the changesets
@@ -41,7 +41,10 @@ Filled in as steps land.
 | M8.2 | `487875402ed` (legend-engine `cube-store`) | Add a Cube store to the application query module, for Legend Cube        |
 | M8.2 | `0df8496cc`                                | docs: record Legend Cube M8.2 (the engine store)                         |
 | M8.3 | `063030ed940` (legend-engine `cube-store`) | Allow PATCH through the engine's CORS filter, for the Cube store's PATCH |
-| M8.3 | (this one)                                 | docs: record Legend Cube M8.3 (a development store)                      |
+| M8.3 | `c7512bd8f`                                | docs: record Legend Cube M8.3 (a development store)                      |
+| M8.4 | `156e7b82a`                                | feat: add a Cube store port to Legend Cube, over the engine's Cube store |
+| M8.5 | `409f93db5`                                | feat: save, load, copy and paste cubes in Legend Cube's page state       |
+| M8.5 | (this one)                                 | docs: record Legend Cube M8.4 and M8.5                                   |
 
 ## Notes
 
@@ -85,3 +88,31 @@ Filled in as steps land.
   refused for `content`, owners given to another user and then a 403, an escaped message for an id with `"` and `\`,
   the preflight, soft then permanent delete, a delete without a version, searches by term and owner. Legend Query's
   `dev/config.json` in the worktree has `engine.queryUrl` on `:6301` and `NonProductionFeatureFlag`.
+- **M8.4** (2026-10-13). The port, `graph-manager/CubeStore.ts`: `CubeStore` (create, save over the version read,
+  get, search, soft delete), its classes (`SavedCubeSummary`, `SavedCube`, `CubeDraft`, `CubeSourceRef`) and
+  `CubeStoreError` with five kinds; `CubeHost.store`, optional. `getCubeSourceRefs` (`graph-manager/CubeSourceRefs.ts`)
+  lists a cube's tables (with the Depot project, none for a direct connection), data product access points and ingest
+  data sets, each once. The v1 seam: `V1_StoredCube` and its parts as `serializr` classes, and `V1_LegendCubeStore`
+  over `V1_EngineServerClient`'s public `get`, `post`, `put` and `delete`, on `${queryBaseUrl ?? baseUrl}`; statuses
+  become kinds (409 conflict, 401 and 403 forbidden, 404 with the store's message not found, 404 without it an engine
+  with no store, 400 invalid, the rest unavailable, with the engine's message); `buildCubeStore` builds it, so hosts
+  name no `V1_*` symbol. The legend-graph client is left alone (D8). The in-memory store (`__test-utils__`) has the
+  engine's refusals and messages, `asUser`, `failNext` and `hold`; `runCubeStoreContract` checks both: in the core
+  group for the in-memory one, and by hand (`cube-local`, `CubeStore.cube-local-test.ts`) for the engine's on `:6301`,
+  6 tests passing (the owners case needs a second user, so it runs on the in-memory store only). 20 new core tests.
+  Running the whole package's tests with no group runs the engine-roundtrip suites too, all at once against the local
+  engine: several time out in their `beforeAll` (30 s) under that load, as the known setup-SQL ones do; the core group
+  is the gate, the engine suites run at the verification step.
+- **M8.5** (2026-10-13). `CubePersistenceState` (`editorState.persistence`), with `CubeSaveDialogState` and
+  `CubeLoadDialogState`. The saved cube shown is an id and what the page last loaded or saved of each cube (its
+  summary and the spec halves); `getCubeSpecHalves` encodes the spec and splits off `meta`. `importDocument` tells it
+  another cube replaced the document (remembering which saved cube that one showed), and `undo` back over an import
+  tells it to show that cube again, if still known. Save gating names the first step with a problem, as Execute does.
+  Save on a saved cube saves at once; on a 409 or 403 the Save dialog opens with the store's message, to save a copy.
+  Load reads the spec with the codec, the store's name winning, never runs; from the address a failure is the graph
+  area's (`loadError`), else the dialog's. Delete asks, then deletes softly, the content kept unsaved. Copy writes
+  the spec; Paste reads `navigator.clipboard`, opening the Import dialog with the text (or empty when the browser
+  refuses). The question before losing changes is Cube's own (`confirmation`). Alt+N, Alt+L, Alt+S, Alt+C and Alt+V
+  are new `LEGEND_CUBE_COMMAND_KEY`s, run through `runPersistenceAction`, which finishes the node editor first. 16
+  state tests. A test's `when` must read an observable before anything else: one that read the store's call list
+  first short-circuited and never ran again.
