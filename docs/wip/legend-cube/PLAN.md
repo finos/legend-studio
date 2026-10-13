@@ -3012,6 +3012,7 @@ project with a Database and a runtime.
 | M6   | Difference and Extend                      | Difference (`Compare Column Values`) with the spec's rows and native types, a FULL join; Extend (`Extend Columns`) edited inline, a row per column with a Monaco editor, its text a full lambda (`x \| …`), each column able to use the ones above; JSON-canonical storage with the text; typing by the engine over the cube's model, in the background, again when the input the engine sees changes; Validate (F10) with plan-time checks (§11.7)                                                                                                                  |
 | M6b  | Filter by expression                       | A node, `Filter by Expression`, keeping the rows for which one Pure condition (a full lambda) is true; checked by the engine over the cube's model as an Extend is typed, and planned for the cube's database on Validate (§11.11)                                                                                                                                                                                                                                                                                                                                   |
 | M6c  | Pivot                                      | A node, `Pivot by Column`, through the engine's static `pivot()`: one pivot column, values loaded from the engine and picked, one aggregation, columns named by the value; refused, and greyed in the palette, on databases that can't run it (H2 and most others; Snowflake, Databricks, SingleStore and DuckDB can); data product cubes report Snowflake. PLAN §11.12                                                                                                                                                                                              |
+| M6d  | Operations cleanup                         | The small bugs (row limit text, a Join's shared columns in any case, the grid's Filter by on a 32-bit float), no backtick in names, Min and Max on strings and Booleans, Distinct Count and Distinct Value on enumerations, `startsWith`/`endsWith`/`contains` given a non-literal pattern refused unless on Snowflake (§11.14)                                                                                                                                                                                                                                      |
 | M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -4668,6 +4669,88 @@ This subsection overrides the sections it names until they are updated (see "Sup
   pivot, the spec's §12.1), §10.3 (`pivot`'s shape), §12.1 (a risk).
 - Appendix A: a node beyond the spec (beside §7.2), §16 (the new messages), §17.6 (the editor); Appendix B: Trino and
   Athena planning `pivot()` without a PIVOT.
+
+### 11.14 M6d: Operations cleanup
+
+M6d gathers what was left in the built operations (asked 2026-10-13, after M6c): the small bugs ISSUES.md listed, a
+name rule found in M6c's review, aggregations the engine supports that Cube didn't offer, and Filter by Expression's
+gaps. It is built on the branch `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), and lands in a PR into
+`cube-dev` once #5674 is in. Its status is in [PROGRESS-M6D.md](PROGRESS-M6D.md). Requirements: the probes under
+`cleanup-requirements/` in the local evidence folder (`c1`–`c4`), run on the local engine: ✅ where a probe ran, 💭
+where only a plan was made or it is reasoned. (M8's section is §11.13, written on another computer.)
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M6d** (user, 2026-10-13):
+
+1. **The scope**, on the recommendation: the row limit's text, a Join's shared columns in any case, the grid's
+   Filter by on a 32-bit float, no backtick in the names Cube gives columns, Min and Max on strings and Booleans,
+   Distinct Count and Distinct Value on enumerations, and Filter by Expression's two gaps.
+2. **The grid's Filter by on a float** writes `In [the value shown, its 32-bit value]` when the two differ, as M7's
+   drill-down keys do (`buildDrilldownKeyRule`), so a `REAL` value is found ✅ (M7's probe).
+3. **A `startsWith`, `endsWith` or `contains` given a pattern that isn't a literal** (a column, or texts joined) is
+   refused, in Filter by Expression and in Extend, unless the cube's database is known to be Snowflake: the engine
+   writes it right only there ✅ (`c2`, plans), and wrong rows or a failure on the other 19 types ✅ (`c1`, `c2`).
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **Names:** `isValidColumnName` refuses a backtick, so no name Cube gives a column (a Rename's, an Extend's, a
+  Group's and a Partition's outputs, a Difference's, the Join autofix's, a drill-down's, a Pivot's value columns)
+  holds one: Databricks and MemSQL quote names with backticks and the engine escapes none ✅ (M6c.7's review,
+  Appendix B). `isPivotValueText` becomes `isValidColumnName`. A source column holding one is read as it is.
+- **A Join's shared columns in any case:** `getDuplicateJoinColumns` compares names folded (`foldColumnName`), as
+  Rename, the autofix and Cube's temporary columns do (M2.16), so a left `ID` and a right `id` are reported; the
+  autofix renames each side's own name (`ID_1`, `id_2`). A key pair whose names differ only in case is two columns,
+  so a duplicate too. Difference shares the rule.
+- **Aggregations** (`getAvailableAggregations`, so Group, Partition, Pivot and the drill-down offer them alike):
+  - Min and Max on a String: typed as the column (`Varchar(10)`), may be empty ✅ (H2, DuckDB, `c3`); they follow
+    the database's collation (`Zed` before `fig` on both) ✅; planned on the 20 types, as windows on the 17 ✅.
+  - Min and Max on a Boolean: typed Boolean, may be empty ✅ (H2, DuckDB). The engine writes `max(b)` over a
+    Boolean column on SQL Server, Sybase and Postgres, which reject it 💭 (vendor documentation), as for Distinct
+    Value of a Boolean, which Cube already offers (ISSUES.md's draft widened to Min and Max).
+  - Distinct Count and Distinct Value on an enumeration: typed by the engine (M4's `n2-enum`), not run (no source
+    Cube reads gives an enumeration column yet) 💭.
+- **The row limit** is read with `parseWholeNumberText`, as the operations' size fields are: `0x10`, `1e3`, `0b11`
+  and `1.0` are refused.
+- **Filter by Expression's refusals shown once:** a refusal Cube makes before the engine (a backslash, `%` or `_` on
+  DuckDB, a non-literal pattern) shows once, in the panel's problems, not also under the code.
+- **Extend gets Filter by Expression's literal rules too:** no backslash in a `startsWith`, `endsWith` or `contains`
+  literal, and no `%` or `_` on DuckDB (§11.11), since an Extend's Boolean column is written the same way.
+
+**Engine facts** (probes under `cleanup-requirements/`):
+
+| Fact                                                                                                                            |     | Probe               |
+| ------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------- |
+| A column pattern in `contains`: DuckDB writes the column's SQL as the pattern's text and finds nothing; H2 matches its `%`, `_` | ✅  | `c1-patterns.out`   |
+| On the other 17 types the column's SQL is written as the pattern's text too; Snowflake writes `contains(a, b)` right            | ✅  | `c2-plan-patterns`  |
+| `startsWith`/`endsWith` with a column pattern fail on H2; texts joined with `+` fail on H2 and DuckDB                           | ✅  | `c1`, `c2`          |
+| Min and Max on a String and a Boolean, in a groupBy, an aggregate, a window and a static pivot, run on H2 and DuckDB            | ✅  | `c3-aggregates.out` |
+| A Boolean column's Min and Max are `max(b)` on SQL Server, Sybase and Postgres; MemSQL and Oracle compare `'true'`/`'false'`    | ✅  | `c4-boolean-column` |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                          | Done when                                             |
+| ----- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| M6d.1 | This subsection, PROGRESS-M6D.md, ISSUES.md (docs only)                                                              | Committed and pushed; a draft PR into `cube-dev`      |
+| M6d.2 | Core: names, a Join's shared columns in any case, the aggregations, the pattern rules (Filter by Expression, Extend) | Every rule and message tested                         |
+| M6d.3 | Builder: the row limit, the grid's Filter by on a float, refusals shown once, the editors' function lists            | Editor, draft and grid tests pass                     |
+| M6d.4 | On the engine: the aggregations, the pattern refusal's canary, the float filter, the Join in any case on DuckDB      | Engine, plan-only and conformance tests pass          |
+| M6d.5 | Guides, READMEs, testing.md, the patch changeset                                                                     | `yarn check:ci` passes                                |
+| M6d.6 | Verification and a browser rehearsal                                                                                 | Every finding fixed or recorded; the rehearsal passes |
+| M6d.7 | A demo video (§11.3)                                                                                                 | Each caption true on screen; sent                     |
+| M6d.8 | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                         | The plan consistent; the PR ready                     |
+
+**Risks and open gaps:**
+
+- Refusing a non-literal pattern unless on Snowflake blocks a column pattern on Databricks and SingleStore until the
+  engine writes it right there (an engine issue drafted in ISSUES.md).
+- A Boolean's Min and Max fail on SQL Server, Sybase and Postgres, as Distinct Value does; not refused yet.
+
+**Supersessions** (applied in M6d.8 to the sections they change):
+
+- §4.2 (the column-name rule), §4.7 (the Join's duplicate rule), §5.7 and §11.5's aggregation table (availability),
+  §8.8 (the pattern rule), §9 (the grid's Filter by), §11.7 and §11.11 (Extend's and Filter by Expression's rules).
+- Appendix A: §10.1 (availability), §16 (the new messages); Appendix B: column patterns written as text.
 
 ## 12. G. Risks and open questions
 

@@ -186,16 +186,18 @@ expression and Postgres and Snowflake the position, which are unambiguous; every
 could do the same.
 ```
 
-### Distinct Value of a Boolean writes `max()` over a bit or boolean
+### Distinct Value, Min and Max of a Boolean write `max()` over a bit or boolean
 
-Found in M4's requirements (plans only). `uniqueValueOnly()` is written
+Found in M4's requirements (plans only); Min and Max in M6d's (`c4-boolean-column`, plans). Min and Max of a Boolean
+column are written `min(b)` and `max(b)` on SQL Server, Sybase and Postgres, and `uniqueValueOnly()` is written
 `case when count(distinct(x)) = 1 then max(x) else null end`; on a Boolean column that is `max()` over a `bit`
 (SQL Server, Sybase), which they reject, or over a `boolean` (Postgres), which has no `max`. MemSQL and Oracle convert
-the Boolean to text first. Cube offers Distinct Value on Boolean, as the spec does (PLAN §11.5), so such a Group plans
-but would fail on those databases (inferred, not run). Draft issue for finos/legend-engine:
+the Boolean to text first. Cube offers Distinct Value on Boolean, as the spec does (PLAN §11.5), and Min and Max from
+M6d (§11.14), so such a Group plans but would fail on those databases (inferred, not run). Draft issue for
+finos/legend-engine:
 
 ```text
-Title: uniqueValueOnly() over a Boolean writes max() that SQL Server, Sybase and Postgres reject
+Title: min(), max() and uniqueValueOnly() over a Boolean write max() that SQL Server, Sybase and Postgres reject
 
 `->groupBy(~[K], ~[u: x|$x.B : y|$y->uniqueValueOnly()])` with a Boolean `B` is written
 `case when count(distinct("t_0".B)) = 1 then max("t_0".B) else null end`. SQL Server and
@@ -397,6 +399,24 @@ Title: pivot() on Trino and Athena plans SQL without the PIVOT
 `->pivot(~SHIP_VIA, [1, 2, 3], ~f: x|$x.FREIGHT : y|$y->plus())->cast(@Relation<(…)>)` plans on Trino and Athena,
 but the SQL selects the pivoted columns ("'1__|__f'", …) from a subquery that never pivots. Other dialects without
 pivot support fail with "pivot is not supported"; Trino and Athena should fail the same way, or write the pivot.
+```
+
+### `startsWith`, `endsWith` and `contains` given a column write the column's SQL as the pattern's text
+
+Found in M6d's requirements ✅ (`cleanup-requirements/c1-patterns`, `c2-plan-patterns` in the evidence folder). Given a
+pattern that isn't a literal, `$x.CITY->contains($x.REGION->toOne())` is written `like '%"orders\_0".SHIP\_REGIO%'` on
+18 types: the column's SQL, cut short, as the pattern's text, so DuckDB returned no rows. H2 writes
+`like concat('%%', b, '%%')`, matching the column's `%` and `_` as wildcards, and fails `startsWith` and `endsWith`.
+Only Snowflake writes it right (`contains(a, b)`). Texts joined with `+` fail on H2 and DuckDB. Cube refuses a
+non-literal pattern unless the database is Snowflake (PLAN §11.14). Draft issue for finos/legend-engine:
+
+```text
+Title: startsWith/endsWith/contains with a non-literal pattern write the pattern's SQL as text
+
+$x.A->contains($x.B->toOne()) plans as `a like '%"t_0".B%'` (the column's SQL, escaped and cut, inside the literal)
+on Postgres, SQL Server, DuckDB, Databricks, MemSQL and 13 more; H2 writes like concat('%%', b, '%%'), so B's
+own % and _ act as wildcards, and fails startsWith/endsWith. Snowflake writes contains(a, b). A non-literal pattern
+should be written as an expression with its wildcards escaped (or with strpos/position), or refused.
 ```
 
 ### Databricks and MemSQL: a backtick inside a name ends it early
