@@ -63,12 +63,17 @@ export enum CUBE_PENDING_LABEL {
   CHECKING_EXPRESSIONS = 'checking expressions',
 }
 
-export const getRowLimitError = (text: string): string | undefined => {
-  const value = Number(text.trim());
-  return text.trim() === '' || !Number.isSafeInteger(value) || value < 1
+/**
+ * Why a row limit can't be taken: the number its text holds
+ * (`parseWholeNumberText`, so `0x10`, `1e3` and `1.0` hold none, PLAN
+ * §11.14) isn't a safe whole number of at least 1
+ */
+export const getRowLimitError = (
+  value: number | undefined,
+): string | undefined =>
+  value === undefined || !Number.isSafeInteger(value) || value < 1
     ? 'The row limit must be a whole number of at least 1.'
     : undefined;
-};
 
 export const getTruncationMessage = (rowLimit: number): string =>
   `Showing the first ${rowLimit.toLocaleString('en-US')} rows; the query returned more.`;

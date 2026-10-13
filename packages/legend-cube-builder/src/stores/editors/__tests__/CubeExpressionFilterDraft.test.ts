@@ -24,6 +24,7 @@ import {
   MESSAGE_CONDITION_BACKSLASH,
   MESSAGE_CONDITION_NOT_BOOLEAN,
   MESSAGE_CONDITION_WILDCARD,
+  MESSAGE_PATTERN_NOT_LITERAL,
   PrimitiveType,
   Query,
   Schema,
@@ -258,6 +259,7 @@ describe('Filter by Expression draft', () => {
     await flowResult(draft.validate());
     expect(draft.problem).toEqual({
       message: MESSAGE_CONDITION_BACKSLASH('startsWith'),
+      refused: true,
     });
     expect(fake.typeLambdas).not.toHaveBeenCalled();
   });
@@ -288,6 +290,46 @@ describe('Filter by Expression draft', () => {
       if (refused) {
         expect(draft.problem).toEqual({
           message: MESSAGE_CONDITION_WILDCARD('contains', 'DuckDB'),
+          refused: true,
+        });
+        expect(fake.typeLambdas).not.toHaveBeenCalled();
+      } else {
+        expect(draft.problem).toBeUndefined();
+        expect(fake.typeLambdas).toHaveBeenCalledTimes(1);
+      }
+    },
+  );
+
+  test.each([
+    ['H2', true],
+    ['DuckDB', true],
+    ['Snowflake', false],
+  ])(
+    'Refuses a pattern that is not a literal before asking the engine, but on Snowflake: on %s, %s',
+    async (databaseType, refused) => {
+      const { fake, draft } = open(
+        undefined,
+        createFakeNorthwindOutline(databaseType),
+      );
+      const byColumn = TEST__expression.lambda(
+        TEST__expression.call(
+          'contains',
+          TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+          TEST__expression.call('toOne', TEST__expression.column('SHIP_CITY')),
+        ),
+      );
+      fake.parseExpression.mockResolvedValueOnce({
+        lambda: byColumn,
+        located: byColumn,
+      });
+      draft.setCode(
+        'x | $x.SHIP_NAME->toOne()->contains($x.SHIP_CITY->toOne())',
+      );
+      await flowResult(draft.validate());
+      if (refused) {
+        expect(draft.problem).toEqual({
+          message: MESSAGE_PATTERN_NOT_LITERAL('contains'),
+          refused: true,
         });
         expect(fake.typeLambdas).not.toHaveBeenCalled();
       } else {

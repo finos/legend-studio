@@ -58,11 +58,17 @@ const markerOf = (
   return error;
 };
 
-/** What the editor says under the code: its problem, that it is checked, or that it waits */
+/**
+ * What the editor says under the code: its problem, but one Cube refused,
+ * which the panel's problems show; that it is checked, or that it waits
+ */
 const CubeConditionStatus = observer(
   (props: { draft: CubeExpressionFilterDraft }) => {
     const { draft } = props;
     const { problem } = draft;
+    if (problem?.refused) {
+      return null;
+    }
     if (problem) {
       return (
         <div className="text-sm text-[var(--color-status-error)]">
