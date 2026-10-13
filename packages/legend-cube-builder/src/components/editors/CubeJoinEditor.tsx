@@ -15,10 +15,12 @@
  */
 
 import {
+  foldColumnName,
   getDuplicateJoinColumns,
   isJoinType,
   JOIN_TYPE_LABELS,
   JOIN_TYPES,
+  type JoinDuplicateFix,
   planJoinDuplicateFix,
   type Schema,
 } from '@finos/legend-cube';
@@ -31,6 +33,25 @@ import { CubeJoinDraft } from '../../stores/editors/CubeJoinDraft.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeJoinKeyRows } from './CubeJoinKeyRows.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
+
+/**
+ * What the autofix does to a shared column, as the Join editor lists it
+ * (PLAN §11.14): its Left rename, or that it keeps its name (a key both sides
+ * give as one column), then each Right column of its name in any case and
+ * its rename, the Right's name shown when it differs (`id → id_2`)
+ */
+const describeFix = (fix: JoinDuplicateFix, name: string): string => {
+  const left = fix.left.find(({ from }) => from === name);
+  const rights = fix.right.filter(
+    ({ from }) => foldColumnName(from) === foldColumnName(name),
+  );
+  return [
+    left ? `${name} → ${left.to} (Left)` : `${name} kept (Left)`,
+    ...rights.map(({ from, to }) =>
+      from === name ? `${to} (Right)` : `${from} → ${to} (Right)`,
+    ),
+  ].join(', ');
+};
 
 /**
  * The Join editor (spec §17.6): the join type, pairs of key columns
@@ -99,11 +120,9 @@ export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
             both:
           </div>
           <ul aria-label="Columns in both inputs">
-            {duplicates.map((name, index) => (
+            {duplicates.map((name) => (
               <li key={name} className="break-all font-mono">
-                {fix
-                  ? `${name} → ${fix.left[index]?.to} (Left), ${fix.right[index]?.to} (Right)`
-                  : name}
+                {fix ? describeFix(fix, name) : name}
               </li>
             ))}
           </ul>

@@ -229,6 +229,47 @@ describe('Join editor', () => {
     ]);
   });
 
+  test('Lists shared columns that differ only in case, each side its own rename, and a key both give as one kept', async () => {
+    const int = (name: string) =>
+      column(name, 'meta::pure::precisePrimitives::SmallInt');
+    await render(
+      new Query(
+        [
+          northwindTable('relational101', 'ORDER_DETAILS', [
+            int('PRODUCT_ID'),
+            int('QTY'),
+          ]),
+          northwindTable('relational102', 'PRODUCTS', [
+            int('PRODUCT_ID'),
+            int('qty'),
+            int('product_id'),
+          ]),
+          new Join('join101', {
+            leftColumns: ['PRODUCT_ID'],
+            rightColumns: ['PRODUCT_ID'],
+          }),
+        ],
+        [
+          new Connection('relational101', 'join101', 'leftTds'),
+          new Connection('relational102', 'join101', 'rightTds'),
+        ],
+        'join101',
+      ),
+    );
+    await openJoin();
+    // PLAN §11.14: SQL Server, MemSQL and DuckDB take ID and id for one column
+    expect(
+      within(
+        within(panel()).getByRole('list', { name: 'Columns in both inputs' }),
+      )
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual([
+      'PRODUCT_ID kept (Left), product_id → product_id_2 (Right)',
+      'QTY → QTY_1 (Left), qty → qty_2 (Right)',
+    ]);
+  });
+
   test('Lists the columns in both inputs that are not joined on', async () => {
     const orderDetails = [
       column('ORDER_ID', 'meta::pure::precisePrimitives::SmallInt'),

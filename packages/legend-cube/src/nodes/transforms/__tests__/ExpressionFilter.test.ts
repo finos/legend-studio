@@ -304,6 +304,31 @@ describe(unitTest('Filter by Expression node'), () => {
         parameters: [property('SHIP_CITY'), { _type: 'string', values: ['b'] }],
       }),
     ).toBeUndefined();
+    // a list's contains is an IN, which the engine writes right (c5)
+    expect(
+      findLikeFunctionWithNonLiteralPattern(
+        lambdaOf({
+          _type: 'func',
+          function: 'contains',
+          parameters: [
+            { _type: 'collection', values: [string('FR'), string('5%')] },
+            property('SHIP_COUNTRY'),
+          ],
+        }),
+      ),
+    ).toBeUndefined();
+    expect(
+      findLikeFunctionWithWildcard(
+        lambdaOf({
+          _type: 'func',
+          function: 'contains',
+          parameters: [
+            { _type: 'collection', values: [string('5%')] },
+            string('5%'),
+          ],
+        }),
+      ),
+    ).toBeUndefined();
     // the text searched may be anything; the database's rule refuses it
     expect(validationErrors(checked(byColumn))).toEqual([]);
   });

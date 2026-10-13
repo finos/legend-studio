@@ -38,9 +38,26 @@ const stringLiteralText = (json: JsonObject): string | undefined => {
 };
 
 /**
- * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON whose
- * pattern (the parameter after the text it looks in) matches; `undefined`
- * when there is none
+ * Whether a call is a `LIKE` one: `startsWith`, `endsWith`, or `contains` on
+ * a text; `contains` on a list (`['FR', 'DE']->contains($x.C)`) is an `IN`,
+ * which the engine writes right (PLAN §11.14)
+ */
+const isLikeCall = (name: string, parameters: readonly unknown[]): boolean => {
+  if (!LIKE_FUNCTIONS.has(name)) {
+    return false;
+  }
+  const [receiver] = parameters;
+  return !(
+    name === 'contains' &&
+    isJsonObject(receiver) &&
+    receiver._type === 'collection'
+  );
+};
+
+/**
+ * The first `startsWith`, `endsWith` or `contains` on a text in a lambda's
+ * JSON whose pattern (the parameter after the text it looks in) matches;
+ * `undefined` when there is none
  */
 const findLikeFunction = (
   json: unknown,
@@ -59,8 +76,8 @@ const findLikeFunction = (
   if (
     json._type === 'func' &&
     typeof name === 'string' &&
-    LIKE_FUNCTIONS.has(name) &&
     Array.isArray(parameters) &&
+    isLikeCall(name, parameters) &&
     parameters.slice(1).some(matches)
   ) {
     return name;
