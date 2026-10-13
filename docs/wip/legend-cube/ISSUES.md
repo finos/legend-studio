@@ -9,27 +9,6 @@
 
 ## Bugs
 
-### 'Filter by' on a REAL cell finds nothing
-
-- **Found:** M7's requirements (2026-10-11, `m7-requirements/p3-float-keys.out` in the evidence folder).
-- **What:** a 32-bit `REAL` value comes back as its shortest text (`0.02`), and the quick action's `Equal` sends that
-  double, which the database's widened `0.019999999552965164` never equals: 0 of 25 `FREIGHT` values are found. The
-  editor already shows the floating-point hint on Equal over a float. Cube can't tell a 32-bit column by its type
-  (the engine types `REAL` as Double and `FLOAT` as Float4).
-- **Suggested fix:** as M7's drill-down does, `In [v, fround(v)]` when the two differ, perhaps shown in the editor as
-  the value with a note; or a tolerance operator. The user reads and edits this filter, so the shape is theirs to pick.
-
-### The row limit accepts hexadecimal and exponent text
-
-- **Found:** M2's requirements and its first verification (2026-10-08). M1 page code, so not fixed in M2's Limit
-  step.
-- **What:** the grid toolbar's row limit is checked with `Number(text.trim())` (`getRowLimitError` in
-  `LegendCubeLabels.ts`) and set with `Number(draft.trim())` (`CubeGridRegion.tsx`), so `0x10` sets 16, `1e3` 1000,
-  `0b11` 3 and `1.0` 1, where a user typing them likely meant something else.
-- **Suggested fix:** read the text once with `parseWholeNumberText` (`stores/editors/CubeIntegerText.ts`, which the
-  operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
-  Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
-
 ### The node tooltip stays through a drag or a zoom
 
 M3b.11's tooltip (MUI) opens 500 ms after the pointer rests on a node. A native drag of the node fires no mouse leave, so

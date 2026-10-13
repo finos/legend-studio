@@ -12,8 +12,8 @@
 | ------ | ---------------------------------------------------------------------------------- |
 | Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`) |
 | Engine | Local legend-engine on `localhost:6300`                                            |
-| Step   | M6d.2 done: the core; next M6d.3, the builder                                      |
-| Tests  | 2971 core, 1756 builder (core group); engine suites 920 of 924 (as M6c)            |
+| Step   | M6d.3 done: the builder; next M6d.4, on the engine                                 |
+| Tests  | 2971 core, 1768 builder (core group); engine suites 920 of 924 (as M6c)            |
 
 ## Steps
 
@@ -21,7 +21,7 @@ See PLAN §11.14 for each step's deliverable and when it is done.
 
 - [x] **M6d.1** The settled decisions (PLAN §11.14), this file, ISSUES.md
 - [x] **M6d.2** Core: names, a Join's shared columns in any case, the aggregations, the pattern rules
-- [ ] **M6d.3** Builder: the row limit, the grid's Filter by on a float, refusals shown once, the function lists
+- [x] **M6d.3** Builder: the row limit, the grid's Filter by on a float, refusals shown once, the function lists
 - [ ] **M6d.4** On the engine
 - [ ] **M6d.5** Guides, READMEs, testing.md and the changeset
 - [ ] **M6d.6** Verification and the browser rehearsal
@@ -36,6 +36,7 @@ Filled in as steps land.
 | ----- | ----------- | -------------------------------------------------- |
 | M6d.1 | `4dc165228` | docs: settle Legend Cube M6d (operations cleanup)  |
 | M6d.2 | `120c55365` | feat: clean up Legend Cube's core operations (M6d) |
+| M6d.3 | `56e3e4d85` | fix: clean up Legend Cube's grid and editors (M6d) |
 
 ## Notes
 
@@ -62,3 +63,12 @@ Filled in as steps land.
   (only once the type is known: typing passes none). Extend refuses a backslash in a `LIKE` literal. ISSUES.md: the
   Join and backtick entries removed. Tests: the aggregation table, the Join and autofix in any case, the pattern rules
   per database, the Extend's backslash, a backtick name; the three editors' function lists.
+- **M6d.3** (2026-10-13). The row limit is read with `parseWholeNumberText` (`getRowLimitError` takes the number):
+  `0x10`, `1e3`, `0b11` and `1.0` are refused. The grid's Filter by builds its rule with `buildDrilldownKeyRule`, so a
+  float that differs from its 32-bit value gives `In [shown, 32-bit]`, as a drill-down key; the floating-point hint
+  shows on Equal and In, not Is Empty. A condition Cube refuses before the engine is marked `refused` and left out of
+  the status under the code, so it shows once, in the panel's problems; the draft loads the outline before deciding
+  whenever the condition depends on the database (`dependsOnDatabaseType`), so a pattern that isn't a literal is
+  judged with the cube's database. ISSUES.md: the row limit and REAL entries removed. Tests: the row limit's texts,
+  the float filter (In, Equal), a refusal shown once, a non-literal pattern on H2, DuckDB and Snowflake in the draft,
+  and in a Filter by Expression and an Extend through the editor's database rule (a refused one runs nothing).
