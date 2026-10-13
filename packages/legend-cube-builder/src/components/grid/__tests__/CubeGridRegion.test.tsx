@@ -22,6 +22,7 @@ import {
   jest,
   test,
 } from '@jest/globals';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
   Core_LegendApplicationPlugin,
   type GenericLegendApplicationStore,
@@ -240,6 +241,9 @@ const consoleError = console.error; // eslint-disable-line no-console
 
 beforeEach(() => {
   localStorage.clear();
+  // the mocked code editor holds no text of its own
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  MockedMonacoEditorInstance.setValue.mockClear();
 });
 
 afterEach(() => {
@@ -1073,7 +1077,7 @@ describe('Cube results', () => {
     expect(signal?.aborted).toBe(true);
   });
 
-  test("Shows each of the run's SQL statements on request, and copies them all", async () => {
+  test("Shows the run's SQL statements formatted in a dialog, numbered, and copies them all", async () => {
     const writeText = jest.fn(async (_text: string) => Promise.resolve());
     Object.assign(navigator, { clipboard: { writeText } });
     const { host, fake } = await renderCube({
@@ -1085,36 +1089,30 @@ describe('Cube results', () => {
     );
     fireEvent.click(executeButton());
     await cellTexts(0);
-    const showSql = within(toolbar()).getByText('Show SQL');
-    expect(showSql.getAttribute('aria-expanded')).toBe('false');
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
-    fireEvent.click(showSql);
+    fireEvent.click(within(toolbar()).getByText('Show SQL'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Executed SQL')).toBeDefined();
     expect(
-      within(toolbar()).getByText('Hide SQL').getAttribute('aria-expanded'),
-    ).toBe('true');
-    const panel = screen.getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL);
-    expect(
-      [...panel.querySelectorAll('pre')].map((pre) => pre.textContent),
-    ).toEqual(['select 1', 'select 2']);
-    fireEvent.click(within(panel).getByText('Copy SQL'));
+      within(dialog).getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL),
+    ).toBeDefined();
+    const formatted = '--QUERY #1\nselect\n  1\n\n--QUERY #2\nselect\n  2';
+    // the (mocked) code editor is given the formatted statements
+    expect(MockedMonacoEditorInstance.setValue.mock.calls.at(-1)?.[0]).toBe(
+      formatted,
+    );
+    fireEvent.click(within(dialog).getByText('Copy SQL'));
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
-    // through the application's clipboard service, every statement in order
-    expect(copyTextToClipboard).toHaveBeenCalledTimes(1);
-    expect(copyTextToClipboard.mock.calls[0]?.[0].split(/\n+/u)).toEqual([
-      'select 1',
-      'select 2',
-    ]);
-    // a run in flight hides the last run's SQL
+    // through the application's clipboard service, as shown
+    expect(copyTextToClipboard).toHaveBeenCalledWith(formatted);
+    fireEvent.click(within(dialog).getByText('Close'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    // a run in flight has no SQL to show
     fake.execute.mockImplementationOnce(
       async () => new Promise<CubeResult>(() => undefined),
     );
     fireEvent.click(executeButton());
     expect(await within(toolbar()).findByText('executing query')).toBeDefined();
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
-    expect(within(toolbar()).queryByText(/(?:Show|Hide) SQL/u)).toBeNull();
-    fireEvent.click(within(toolbar()).getByText('Stop'));
-    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeDefined();
-    fireEvent.click(within(toolbar()).getByText('Hide SQL'));
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
+    expect(within(toolbar()).queryByText('Show SQL')).toBeNull();
   });
 });

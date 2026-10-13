@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CubeContext } from '@finos/legend-cube';
+import type { CubeContext, Query } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
 
 export enum CubeSourcePickerTabKey {
@@ -47,6 +47,30 @@ export interface CubeSourcePickerTab {
   open(): void;
   /** When the dialog closes: answers still on their way are dropped */
   close(): void;
-  /** Adds the picked source; gives whether it was added */
+  /** How many sources Add adds, when the tab picks several at once; one when left out */
+  readonly pickedCount?: number;
+  /** Adds the picked sources; gives whether every one was added */
   confirm(): GeneratorFn<boolean>;
 }
+
+/**
+ * Ids for several new nodes of a type, none taken by the query nor by each
+ * other: `generateId` sees only the query's nodes, so asking it again gives
+ * the same id
+ */
+export const generateCubeNodeIds = (
+  query: Query,
+  type: string,
+  count: number,
+): string[] => {
+  const first = query.generateId(type);
+  const ids = [first];
+  const number = Number(first.slice(type.length));
+  for (let next = number + 1; ids.length < count; next += 1) {
+    const id = `${type}${next}`;
+    if (!query.getNode(id)) {
+      ids.push(id);
+    }
+  }
+  return ids;
+};

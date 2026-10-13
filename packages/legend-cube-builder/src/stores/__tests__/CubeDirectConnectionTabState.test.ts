@@ -338,6 +338,20 @@ describe('Database connection tab', () => {
     expect(nodeIds(state)).toEqual([]);
   });
 
+  test('Adds several tables picked at once with one engine call, in one undo step', async () => {
+    const { tab, state, fake } = setUp();
+    await testConnection(tab);
+    tab.toggleTable('"ORDERS"');
+    tab.toggleTable('"ORDER.LINES"');
+    expect(tab.pickedCount).toBe(2);
+    expect(await flowResult(tab.confirm())).toBe(true);
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(nodeIds(state)).toEqual(['relational101', 'relational102']);
+    expect(state.document.query.selected).toBe('relational101');
+    expect(state.history).toHaveLength(1);
+    expect(tab.tableNames).toEqual([]);
+  });
+
   test('Shows why a table could not be typed, and adds it on a retry', async () => {
     const { tab, fake, state } = setUp();
     await testConnection(tab);

@@ -100,6 +100,36 @@ describe('Examples dialog', () => {
     expect(screen.getByText('open an example')).toBeDefined();
   });
 
+  test('Leaves an example for a new, empty cube with New, which Undo takes back', async () => {
+    const { fake } = await renderPage();
+    const newButton = screen.getByText<HTMLButtonElement>('New');
+    // the page's cube is new already
+    expect(newButton.disabled).toBe(true);
+    fireEvent.click(screen.getByText('open an example'));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: /^Top customers by orders/u }),
+    );
+    await screen.findByText('Top customers by orders');
+    expect(TEST__getCanvasNodes()).toHaveLength(7);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText('Execute the query to see its rows.')).toBeNull();
+
+    fireEvent.click(screen.getByText('New'));
+    expect(TEST__getCanvasNodes()).toHaveLength(0);
+    expect(screen.getByText('open an example')).toBeDefined();
+    expect(screen.queryByText('Top customers by orders')).toBeNull();
+    // the example's run is gone with it
+    expect(
+      screen.getByText('Execute the query to see its rows.'),
+    ).toBeDefined();
+    expect(screen.getByText<HTMLButtonElement>('New').disabled).toBe(true);
+
+    fireEvent.click(screen.getByText('Undo'));
+    expect(TEST__getCanvasNodes()).toHaveLength(7);
+    expect(screen.getByText('Top customers by orders')).toBeDefined();
+  });
+
   test("Starts a new cube on a dataset, in the source dialog's Sample Data tab on it", async () => {
     await renderPage();
     const dialog = await openExamples();
@@ -110,5 +140,27 @@ describe('Examples dialog', () => {
     // the cube's model, fixed
     expect(model.disabled).toBe(true);
     expect(model.selectedOptions[0]?.textContent).toBe('Sports');
+  });
+
+  test('Goes back from the source dialog to the examples, only when it came from them', async () => {
+    await renderPage();
+    const dialog = await openExamples();
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Sports/u }));
+    const picker = await screen.findByRole('dialog');
+    fireEvent.click(within(picker).getByRole('button', { name: '← Examples' }));
+    // the source dialog fades out as the examples open
+    await waitFor(() => expect(screen.queryByText('Add a source')).toBeNull());
+    const examples = screen.getByRole('dialog');
+    expect(within(examples).getByText('Top customers by orders')).toBeDefined();
+    // opened another way, the dialog has no way back
+    fireEvent.click(within(examples).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Connect to a source' }),
+    );
+    const plain = await screen.findByRole('dialog');
+    expect(
+      within(plain).queryByRole('button', { name: '← Examples' }),
+    ).toBeNull();
   });
 });

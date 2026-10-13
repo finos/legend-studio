@@ -40,6 +40,7 @@ import { CubeGridMode } from '../../stores/CubeGridState.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
 import { CubeColumnFormatDialog } from './CubeColumnFormatDialog.js';
 import { CubeDrilldownBar } from './CubeDrilldownBar.js';
+import { CubeSqlDialog } from './CubeSqlDialog.js';
 import { CubeRunStatsPanel } from './CubeRunStatsPanel.js';
 import { CubeServerSideGrid } from './CubeServerSideGrid.js';
 import { formatDuration } from './CubeGridValues.js';
@@ -139,12 +140,11 @@ const CubeGridModeToggle = observer(
 const CubeGridToolbar = observer(
   (props: {
     editorState: CubeEditorState;
-    showSql: boolean;
-    onToggleSql: () => void;
+    onShowSql: () => void;
     showRuns: boolean;
     onToggleRuns: () => void;
   }) => {
-    const { editorState, showSql, onToggleSql, showRuns, onToggleRuns } = props;
+    const { editorState, onShowSql, showRuns, onToggleRuns } = props;
     const { execution } = editorState;
     const { result } = execution;
     const disabledReasons = execution.disabledReasons;
@@ -222,8 +222,8 @@ const CubeGridToolbar = observer(
               </span>
             )}
             {result.sql.length > 0 && (
-              <CubeButton aria-expanded={showSql} onClick={onToggleSql}>
-                {showSql ? 'Hide SQL' : 'Show SQL'}
+              <CubeButton aria-haspopup="dialog" onClick={onShowSql}>
+                Show SQL
               </CubeButton>
             )}
           </>
@@ -240,41 +240,6 @@ const CubeGridToolbar = observer(
     );
   },
 );
-
-/** The SQL the run's database ran, with Copy */
-const CubeSqlPanel = observer((props: { editorState: CubeEditorState }) => {
-  const { editorState } = props;
-  const { applicationStore } = editorState.host;
-  const sql = editorState.execution.result?.sql ?? [];
-  if (!sql.length) {
-    return null;
-  }
-  const copySql = (): void => {
-    applicationStore.clipboardService
-      .copyTextToClipboard(sql.join('\n\n'))
-      .catch(applicationStore.alertUnhandledError);
-  };
-  return (
-    <div
-      className="flex max-h-40 shrink-0 gap-2 overflow-auto border-b border-[var(--color-border-default)] p-2"
-      data-testid={LEGEND_CUBE_TEST_ID.SQL_PANEL}
-    >
-      <div className="min-w-0 flex-1">
-        {sql.map((statement, index) => (
-          <pre
-            // statements hold no state, and the same one may run twice
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            className="whitespace-pre-wrap font-mono text-sm"
-          >
-            {statement}
-          </pre>
-        ))}
-      </div>
-      <CubeButton onClick={copySql}>Copy SQL</CubeButton>
-    </div>
-  );
-});
 
 /**
  * On a data product cube, what to do about a run refused for its warehouse,
@@ -426,15 +391,17 @@ export const CubeGridRegion = observer(
         <PanelLoadingIndicator isLoading={execution.isRunning} />
         <CubeGridToolbar
           editorState={editorState}
-          showSql={showSql}
-          onToggleSql={() => setShowSql(!showSql)}
+          onShowSql={() => setShowSql(true)}
           showRuns={showRuns}
           onToggleRuns={() => setShowRuns(!showRuns)}
         />
         {showRuns && <CubeRunStatsPanel editorState={editorState} />}
         <CubeColumnFormatDialog editorState={editorState} />
         {showSql && !execution.isRunning && (
-          <CubeSqlPanel editorState={editorState} />
+          <CubeSqlDialog
+            editorState={editorState}
+            onClose={() => setShowSql(false)}
+          />
         )}
         <div className="min-h-0 flex-1">
           {execution.error ? (

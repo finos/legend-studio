@@ -74,7 +74,7 @@ export class CubeExamplesState {
   /**
    * Starts a new cube on the dataset's model, in place of the cube (one undo
    * step), and opens the source dialog's Sample Data tab on it to add a first
-   * table
+   * table, with a way back to the examples
    */
   startOnDataset(dataset: CubeExampleDataset): void {
     this.close();
@@ -84,7 +84,9 @@ export class CubeExamplesState {
       }),
       false,
     );
-    this.editorState.sourcePicker.open(CubeSourcePickerTabKey.MODEL);
+    this.editorState.sourcePicker.openFromExamples(
+      CubeSourcePickerTabKey.MODEL,
+    );
   }
 
   /** Opens the example in place of the cube, then runs it */

@@ -280,7 +280,7 @@ export const CubeDirectConnectionTab = observer(
             >
               {tab.tables.map((table) => {
                 const selectable = isExploredTableSelectable(table);
-                const isPicked = tab.tableName === table.storedName;
+                const isPicked = tab.tableNames.includes(table.storedName);
                 const hidden = getHiddenColumnsLabel(table.hiddenColumnCount);
                 return (
                   <CubePickerListItem
@@ -289,6 +289,8 @@ export const CubeDirectConnectionTab = observer(
                     disabled={!selectable}
                     adds={true}
                     onPick={() => tab.selectTable(table.storedName)}
+                    onToggle={() => tab.toggleTable(table.storedName)}
+                    toggleLabel={table.name}
                   >
                     <span className="min-w-0 flex-1 truncate">
                       {table.name}

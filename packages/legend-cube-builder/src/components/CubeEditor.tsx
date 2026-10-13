@@ -95,6 +95,17 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
         )}
         <CubeAddItemsMenu editorState={editorState} />
         <CubeButton
+          title={
+            editorState.isEmptyCube
+              ? 'This cube is new already'
+              : 'Start a new, empty cube in place of this one (Undo brings it back)'
+          }
+          disabled={editorState.isEmptyCube}
+          onClick={() => editorState.startNewCube()}
+        >
+          New
+        </CubeButton>
+        <CubeButton
           title="Open an example cube, or start one on sample data"
           onClick={() => editorState.examples.open()}
         >

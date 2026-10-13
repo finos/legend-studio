@@ -35,6 +35,10 @@ export const CUBE_PICKER_LIST_CLASS =
  * The picked row shows an accent bar, a check and a stronger background,
  * which hovering doesn't hide. A row that picks what Add adds (`adds`) adds
  * it on a double-click, or on Enter once picked (UX audit A1-A3, 2026-10-11).
+ * A row of a list that picks several (`onToggle`) has a checkbox beside it,
+ * which adds it to the picked rows or takes it out, as a Cmd or Ctrl click on
+ * the row does; a plain click picks the row alone, and a double-click adds it
+ * alone.
  */
 export const CubePickerListItem: React.FC<{
   picked: boolean;
@@ -43,12 +47,35 @@ export const CubePickerListItem: React.FC<{
   /** Whether picking this row is the last choice before Add */
   adds?: boolean | undefined;
   onPick: () => void;
+  /** Adds the row to the picked ones or takes it out, in a list that picks several */
+  onToggle?: (() => void) | undefined;
+  /** What the row's checkbox is called, e.g. the table's name */
+  toggleLabel?: string | undefined;
   children: React.ReactNode;
 }> = (props) => {
-  const { picked, disabled, title, adds, onPick, children } = props;
+  const {
+    picked,
+    disabled,
+    title,
+    adds,
+    onPick,
+    onToggle,
+    toggleLabel,
+    children,
+  } = props;
   const confirm = useContext(CubePickerConfirmContext);
   return (
-    <li>
+    <li className={onToggle ? 'flex items-center' : undefined}>
+      {onToggle && (
+        <input
+          type="checkbox"
+          className="ml-2 shrink-0"
+          aria-label={`Pick ${toggleLabel ?? 'this row'}`}
+          checked={picked}
+          disabled={disabled}
+          onChange={onToggle}
+        />
+      )}
       <button
         type="button"
         className={clsx(
@@ -60,7 +87,13 @@ export const CubePickerListItem: React.FC<{
         aria-pressed={picked}
         disabled={disabled}
         title={title}
-        onClick={onPick}
+        onClick={(event) => {
+          if (onToggle && (event.metaKey || event.ctrlKey)) {
+            onToggle();
+          } else {
+            onPick();
+          }
+        }}
         onDoubleClick={() => {
           if (adds && !disabled) {
             onPick();
