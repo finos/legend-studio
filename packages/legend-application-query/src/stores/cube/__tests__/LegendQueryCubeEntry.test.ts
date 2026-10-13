@@ -18,20 +18,26 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { NavigationService } from '@finos/legend-application';
 import {
   readLegendQueryCubeEntry,
+  readLegendQueryCubeId,
+  showLegendQueryCubeInAddress,
   stripLegendQueryCubeEntry,
 } from '../LegendQueryCubeEntry.js';
 
 /** A navigator on the Cube page at the address's search, which a link writes encoded */
 const createNavigator = (
   search: string,
+  location = '/cube',
 ): {
   navigator: NavigationService['navigator'];
-  updateCurrentLocation: jest.Mock<(location: string) => void>;
+  updateCurrentLocation: jest.Mock<
+    (location: string, options?: { replace?: boolean }) => void
+  >;
 } => {
-  const updateCurrentLocation = jest.fn<(location: string) => void>();
+  const updateCurrentLocation =
+    jest.fn<(location: string, options?: { replace?: boolean }) => void>();
   const navigator = {
-    getCurrentAddress: () => `http://localhost/query/cube${search}`,
-    getCurrentLocation: () => '/cube',
+    getCurrentAddress: () => `http://localhost/query${location}${search}`,
+    getCurrentLocation: () => location,
     updateCurrentLocation,
   } as unknown as NavigationService['navigator'];
   return { navigator, updateCurrentLocation };
@@ -51,7 +57,9 @@ describe("The Cube page's entry link", () => {
     expect(updateCurrentLocation).not.toHaveBeenCalled();
     stripLegendQueryCubeEntry(navigator);
     expect(updateCurrentLocation).toHaveBeenCalledTimes(1);
-    expect(updateCurrentLocation).toHaveBeenCalledWith('/cube');
+    expect(updateCurrentLocation).toHaveBeenCalledWith('/cube', {
+      replace: true,
+    });
   });
 
   test("Decodes the id once, so a part's own encoding reaches the cube", () => {
@@ -72,7 +80,9 @@ describe("The Cube page's entry link", () => {
       const { navigator, updateCurrentLocation } = createNavigator(search);
       expect(readLegendQueryCubeEntry(navigator)).toBeUndefined();
       stripLegendQueryCubeEntry(navigator);
-      expect(updateCurrentLocation).toHaveBeenCalledWith('/cube');
+      expect(updateCurrentLocation).toHaveBeenCalledWith('/cube', {
+        replace: true,
+      });
     },
   );
 
@@ -96,7 +106,9 @@ describe("The Cube page's entry link", () => {
       '?a=1&sourceType=x&sourceId=y#zone',
     );
     stripLegendQueryCubeEntry(navigator);
-    expect(updateCurrentLocation).toHaveBeenCalledWith('/cube?a=1#zone');
+    expect(updateCurrentLocation).toHaveBeenCalledWith('/cube?a=1#zone', {
+      replace: true,
+    });
   });
 
   test('Keeps a saved query among the other parameters it keeps', () => {
@@ -106,6 +118,7 @@ describe("The Cube page's entry link", () => {
     stripLegendQueryCubeEntry(navigator);
     expect(updateCurrentLocation).toHaveBeenCalledWith(
       '/cube?a=1&queryId=q&b=2#zone',
+      { replace: true },
     );
   });
 
@@ -116,6 +129,63 @@ describe("The Cube page's entry link", () => {
     const { navigator, updateCurrentLocation } = createNavigator(search);
     expect(readLegendQueryCubeEntry(navigator)).toBeUndefined();
     stripLegendQueryCubeEntry(navigator);
+    expect(updateCurrentLocation).not.toHaveBeenCalled();
+  });
+});
+
+describe("The Cube page's address for a saved cube (PLAN §11.13)", () => {
+  test('Reads the cube from the path, else from ?queryId=', () => {
+    expect(readLegendQueryCubeId(createNavigator('').navigator, 'cube-1')).toBe(
+      'cube-1',
+    );
+    expect(
+      readLegendQueryCubeId(
+        createNavigator('?queryId=cube-2').navigator,
+        'cube-1',
+      ),
+    ).toBe('cube-1');
+    expect(
+      readLegendQueryCubeId(
+        createNavigator(`?queryId=${encodeURIComponent('a b&c')}`).navigator,
+        undefined,
+      ),
+    ).toBe('a b&c');
+    expect(
+      readLegendQueryCubeId(createNavigator('?queryId=%20').navigator, ' '),
+    ).toBeUndefined();
+    expect(
+      readLegendQueryCubeId(createNavigator('').navigator, undefined),
+    ).toBeUndefined();
+  });
+
+  test('Shows the saved cube in the path, replacing the history entry, and drops ?queryId=', () => {
+    const fromQueryId = createNavigator('?queryId=cube-1&a=1#zone');
+    showLegendQueryCubeInAddress(fromQueryId.navigator, 'cube-1');
+    expect(fromQueryId.updateCurrentLocation).toHaveBeenCalledWith(
+      '/cube/cube-1?a=1#zone',
+      { replace: true },
+    );
+
+    const newCube = createNavigator('', '/cube/cube-1');
+    showLegendQueryCubeInAddress(newCube.navigator, undefined);
+    expect(newCube.updateCurrentLocation).toHaveBeenCalledWith('/cube', {
+      replace: true,
+    });
+
+    const encoded = createNavigator('');
+    showLegendQueryCubeInAddress(encoded.navigator, 'a/b c');
+    expect(encoded.updateCurrentLocation).toHaveBeenCalledWith(
+      '/cube/a%2Fb%20c',
+      { replace: true },
+    );
+  });
+
+  test('Leaves an address that already shows the cube alone', () => {
+    const { navigator, updateCurrentLocation } = createNavigator(
+      '?a=1',
+      '/cube/cube-1',
+    );
+    showLegendQueryCubeInAddress(navigator, 'cube-1');
     expect(updateCurrentLocation).not.toHaveBeenCalled();
   });
 });

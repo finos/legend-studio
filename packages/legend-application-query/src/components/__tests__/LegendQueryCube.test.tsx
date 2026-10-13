@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
 } from '@finos/legend-application';
-import { Route, Routes } from '@finos/legend-application/browser';
+import {
+  BrowserNavigator,
+  Route,
+  Routes,
+} from '@finos/legend-application/browser';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { LEGEND_CUBE_TEST_ID } from '@finos/legend-cube-builder';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../__lib__/LegendQueryNavigation.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../../stores/__test-utils__/LegendQueryApplicationTestUtils.js';
@@ -88,4 +92,86 @@ test('Says why a linked source could not be added, leaving the cube empty', asyn
   expect(page.textContent).toContain(
     'Connect to a source to start a new one, or open an example.',
   );
+});
+
+/** The Cube page mounted as Query mounts it, at an address */
+const renderCubePage = (
+  applicationStore: ApplicationStore<
+    ReturnType<typeof TEST__getTestLegendQueryApplicationConfig>,
+    ReturnType<typeof LegendQueryPluginManager.create>
+  >,
+  entry: string,
+  baseUrl?: string,
+): ReturnType<typeof render> =>
+  render(
+    <ApplicationStoreProvider store={applicationStore}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[entry]}
+        {...(baseUrl ? { baseUrl } : {})}
+      >
+        <LegendQueryFrameworkProvider>
+          <Routes>
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE_WITH_ID}
+              element={<LegendQueryCubeRoute />}
+            />
+          </Routes>
+        </LegendQueryFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+
+test('Opens the saved cube /cube/:cubeId names, and says why it could not, the address kept', async () => {
+  const applicationStore = new ApplicationStore(
+    TEST__getTestLegendQueryApplicationConfig(),
+    LegendQueryPluginManager.create(),
+  );
+  const update = jest.spyOn(
+    BrowserNavigator.prototype,
+    'updateCurrentLocation',
+  );
+  try {
+    const { findByTestId } = renderCubePage(applicationStore, '/cube/cube-1');
+    // the test environment refuses network calls: the store can't be reached
+    const banner = await findByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR);
+    expect(banner.textContent).toContain('Error loading query!');
+    expect(banner.textContent).toContain("The Cube store couldn't be reached");
+    // the address keeps naming the cube (the test navigator reads jsdom's
+    // address, not the router's entry, so it may write the same path again)
+    expect(
+      update.mock.calls.every(([location]) =>
+        String(location).startsWith('/cube/cube-1'),
+      ),
+    ).toBe(true);
+  } finally {
+    update.mockRestore();
+  }
+});
+
+test('Reads ?queryId= as the saved cube, and moves it into the path', async () => {
+  const applicationStore = new ApplicationStore(
+    TEST__getTestLegendQueryApplicationConfig(),
+    LegendQueryPluginManager.create(),
+  );
+  const update = jest.spyOn(
+    BrowserNavigator.prototype,
+    'updateCurrentLocation',
+  );
+  try {
+    const { findByTestId } = renderCubePage(
+      applicationStore,
+      LEGEND_QUERY_ROUTE_PATTERN.CUBE,
+      // the test navigator reads the parameters from its base URL
+      '/cube?queryId=cube-2',
+    );
+    await findByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR);
+    await waitFor(() =>
+      expect(update).toHaveBeenCalledWith(
+        expect.stringMatching(/^\/cube\/cube-2(?:[?#]|$)/u),
+        { replace: true },
+      ),
+    );
+  } finally {
+    update.mockRestore();
+  }
 });

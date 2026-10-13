@@ -21,6 +21,7 @@ import {
   buildCubeIngestCatalog,
   buildCubeLakehouseEnvironment,
   buildCubeProjectCatalog,
+  buildCubeStore,
   CubeDataProductEnvironmentType,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
@@ -29,6 +30,7 @@ import {
   type CubeIngestCatalog,
   type CubeLakehouseServices,
   type CubeProjectCatalog,
+  type CubeStore,
   type CubeEngineConfig,
   type CubeHost,
   LocalModelCatalog,
@@ -167,16 +169,19 @@ export class LegendQueryCubeHost implements CubeHost {
   readonly dataProductCatalog: CubeDataProductCatalog | undefined;
   readonly ingestCatalog: CubeIngestCatalog | undefined;
   readonly projectCatalog: CubeProjectCatalog | undefined;
+  /** The engine's Cube store, on the server Query keeps its queries on (PLAN §11.13) */
+  readonly store: CubeStore;
 
   /**
-   * Tests give an engine, an explorer and a project catalog; otherwise each
-   * is built from Query's config
+   * Tests give an engine, an explorer, a project catalog and a store;
+   * otherwise each is built from Query's config
    */
   constructor(
     applicationStore: LegendQueryApplicationStore,
     engine?: CubeEngine,
     connectionExplorer?: CubeConnectionExplorer,
     projectCatalog?: CubeProjectCatalog,
+    store?: CubeStore,
   ) {
     this.applicationStore = applicationStore;
     const config = buildLegendQueryCubeEngineConfig(applicationStore.config);
@@ -210,5 +215,8 @@ export class LegendQueryCubeHost implements CubeHost {
     // until the source dialog's Project tab opens
     this.projectCatalog =
       projectCatalog ?? buildLegendQueryCubeProjectCatalog(applicationStore);
+    // Query's own stores are on `engine.queryUrl`, else on the engine
+    this.store =
+      store ?? buildCubeStore(config, applicationStore.tracerService);
   }
 }

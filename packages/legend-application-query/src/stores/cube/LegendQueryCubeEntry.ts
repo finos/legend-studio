@@ -16,6 +16,7 @@
 
 import type { NavigationService } from '@finos/legend-application';
 import type { CubeEntrySource } from '@finos/legend-cube-builder';
+import { generateLegendQueryCubeRoute } from '../../__lib__/LegendQueryNavigation.js';
 
 /** The Cube page's address parameters (spec §17.15) */
 export enum LEGEND_QUERY_CUBE_PARAMETER {
@@ -68,7 +69,47 @@ export const stripLegendQueryCubeEntry = (
   parameters.delete(LEGEND_QUERY_CUBE_PARAMETER.SOURCE_TYPE);
   parameters.delete(LEGEND_QUERY_CUBE_PARAMETER.SOURCE_ID);
   const rest = parameters.toString();
+  // replaced, so Back doesn't return to the link
   navigator.updateCurrentLocation(
     `${navigator.getCurrentLocation()}${rest ? `?${rest}` : ''}${new URL(navigator.getCurrentAddress()).hash}`,
+    { replace: true },
   );
+};
+
+/**
+ * The saved cube the address names (PLAN §11.13): the path's `/cube/:cubeId`,
+ * else the spec's `?queryId=` (spec §17.15)
+ */
+export const readLegendQueryCubeId = (
+  navigator: NavigationService['navigator'],
+  pathCubeId: string | undefined,
+): string | undefined => {
+  if (pathCubeId?.trim()) {
+    return pathCubeId;
+  }
+  const queryId = readParameters(navigator)
+    .get(LEGEND_QUERY_CUBE_PARAMETER.QUERY_ID)
+    ?.trim();
+  return queryId ? queryId : undefined;
+};
+
+/**
+ * Shows the cube in the address: `/cube/<id>`, or `/cube` for a cube never
+ * saved, replacing the history entry. `?queryId=` goes, as the path holds the
+ * cube now; other parameters stay.
+ */
+export const showLegendQueryCubeInAddress = (
+  navigator: NavigationService['navigator'],
+  cubeId: string | undefined,
+): void => {
+  const parameters = readParameters(navigator);
+  parameters.delete(LEGEND_QUERY_CUBE_PARAMETER.QUERY_ID);
+  const rest = parameters.toString();
+  const location = `${generateLegendQueryCubeRoute(cubeId)}${rest ? `?${rest}` : ''}${new URL(navigator.getCurrentAddress()).hash}`;
+  if (
+    location !==
+    `${navigator.getCurrentLocation()}${new URL(navigator.getCurrentAddress()).search}${new URL(navigator.getCurrentAddress()).hash}`
+  ) {
+    navigator.updateCurrentLocation(location, { replace: true });
+  }
 };

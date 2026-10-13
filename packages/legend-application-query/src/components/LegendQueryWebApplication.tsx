@@ -146,7 +146,7 @@ const LegendQueryWebApplicationRouter = observer(() => {
           */}
           {applicationStore.config.options.NonProductionFeatureFlag && (
             <Route
-              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
+              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE_WITH_ID}
               element={<LegendQueryCubeRoute />}
             />
           )}

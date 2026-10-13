@@ -93,12 +93,23 @@ test("Says why a linked source couldn't be added, and takes the link out of the 
   expect(window.location.search).toBe('');
 });
 
-test('Opens no linked source when a saved query is named, keeping it in the address', async () => {
+test('Opens the saved cube ?queryId= names rather than a linked source, moving it into the path', async () => {
   const { findByTestId, queryByTestId } = renderAt(
     '/query/cube?queryId=my-query&sourceType=dataProductAccessPoint&sourceId=bad',
   );
-  await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
+  // the test environment refuses network calls: the store can't be reached
+  const banner = await findByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR);
+  expect(banner.textContent).toContain('Error loading query!');
   expect(queryByTestId(LEGEND_CUBE_TEST_ID.ENTRY_SOURCE_ERROR)).toBeNull();
-  expect(window.location.pathname).toBe('/query/cube');
-  expect(window.location.search).toBe('?queryId=my-query');
+  // the address names the cube in its path, and drops the link's parameters
+  expect(window.location.pathname).toBe('/query/cube/my-query');
+  expect(window.location.search).toBe('');
+});
+
+test('Opens the saved cube /query/cube/:cubeId names, keeping it in the address when it fails', async () => {
+  const { findByTestId } = renderAt('/query/cube/my-cube');
+  const banner = await findByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR);
+  expect(banner.textContent).toContain('Error loading query!');
+  expect(banner.textContent).toContain("The Cube store couldn't be reached");
+  expect(window.location.pathname).toBe('/query/cube/my-cube');
 });

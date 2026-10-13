@@ -29,6 +29,7 @@ import { DataProductAccessType } from '@finos/legend-graph';
 export enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
   GAV = 'gav',
   QUERY_ID = 'queryId',
+  CUBE_ID = 'cubeId',
   MAPPING_PATH = 'mappingPath',
   RUNTIME_PATH = 'runtimePath',
   SERVICE_PATH = 'servicePath',
@@ -67,7 +68,20 @@ export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   DEV_DATA_SPACE_INSPECTOR: '/dev/dataspace-inspector',
   // Legend Cube, the canvas query builder
   CUBE: '/cube',
+  // a saved cube, or none: one route, so the page stays as the address
+  // follows the cube shown (PLAN §11.13)
+  CUBE_WITH_ID: `/cube/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.CUBE_ID}?`,
 });
+
+export type LegendQueryCubePathParams = {
+  [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.CUBE_ID]?: string;
+};
+
+/** The address of the Cube page showing a saved cube, or a new one */
+export const generateLegendQueryCubeRoute = (cubeId?: string): string =>
+  cubeId === undefined
+    ? LEGEND_QUERY_ROUTE_PATTERN.CUBE
+    : `${LEGEND_QUERY_ROUTE_PATTERN.CUBE}/${encodeURIComponent(cubeId)}`;
 
 // DataProduct
 
