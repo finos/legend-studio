@@ -30,6 +30,7 @@ import {
   SELECT_NODE_TOOLTIP,
 } from '../../__lib__/LegendCubeHelpText.js';
 import {
+  getCubeNodeBadge,
   READ_ONLY_CUBE_TITLE,
   toEditorTitle,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -150,9 +151,9 @@ export const CubeNodeEditorPanel = observer(
           <span className="shrink-0 text-base text-[var(--color-text-muted)]">
             {node.id}
           </span>
-          {definition?.beta && (
+          {definition && getCubeNodeBadge(definition) && (
             <span className="shrink-0 rounded-sm bg-[var(--color-accent)] px-1 text-xs font-medium text-[var(--color-text-on-accent)]">
-              BETA
+              {getCubeNodeBadge(definition)}
             </span>
           )}
           <span

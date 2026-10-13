@@ -24,6 +24,7 @@ import {
   type Query,
   type QueryNode,
   RelationalTableSource,
+  ServiceSource,
 } from '@finos/legend-cube';
 import { type Edge, MarkerType, type Node, Position } from '@xyflow/react';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
@@ -176,7 +177,8 @@ export const getCubeCanvasNodeLabel = (
   if (
     (node instanceof RelationalTableSource ||
       node instanceof DataProductAccessPointSource ||
-      node instanceof IngestDatasetSource) &&
+      node instanceof IngestDatasetSource ||
+      node instanceof ServiceSource) &&
     node.resolution.kind === 'unresolved'
   ) {
     return { title: node.describe() };
@@ -192,6 +194,9 @@ export const getCubeCanvasNodeLabel = (
   }
   if (node instanceof IngestDatasetSource) {
     return { title: node.dataSet, detail: node.ingestDefinitionName };
+  }
+  if (node instanceof ServiceSource) {
+    return { title: node.serviceName, detail: node.pattern };
   }
   return { title: node.describe() };
 };

@@ -23,6 +23,7 @@ const TITLES: Record<string, string> = {
   relational: 'Relational Database Table',
   dataProductAccessPoint: 'Data Product',
   ingestDataset: 'Ingest Dataset',
+  service: 'Service',
   sort: 'Sort By Column',
   group: 'Group By Column',
   pivot: 'Pivot By Column',
