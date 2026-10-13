@@ -4547,16 +4547,17 @@ continue. Are you sure?` when the cube is modified; the same guards leaving the 
 
 **Engine facts** (probes under `m8-requirements/`):
 
-| Fact                                                                                                         |     | Probe            |
-| ------------------------------------------------------------------------------------------------------------ | --- | ---------------- |
-| The query-store endpoints fail locally: "DataCube Query MongoDB collection has not been configured properly" | ✅  | `p0-setup.md`    |
-| Every local caller is `anonymous` (pac4j's anonymous client)                                                 | ✅  | `p0-setup.md`    |
-| JAX-RS is 2.0.1: no `@PATCH` annotation                                                                      | ✅  | `p0-setup.md`    |
-| `ApplicationQuery` builds its store managers itself; `Server.java` needs no change                           | ✅  | `p0-setup.md`    |
-| The module's tests run here on the in-memory Mongo (31 Data Cube tests, ~15 s)                               | ✅  | `p0-setup.md`    |
-| `ApplicationQueryException` writes its message into JSON unescaped                                           | 📄  | `p0-setup.md`    |
-| `BaseStoredVersionedAssetDao`: no version check, a non-atomic update, a deleted id kept and reusable         | 📄  | `p0-setup.md`    |
-| `cube/…` routes don't collide with `GET {queryId}`; mongo-java-server keeps unique compound indexes          | 💭  | M8.2, M8.3 tests |
+| Fact                                                                                                                          |     | Probe                         |
+| ----------------------------------------------------------------------------------------------------------------------------- | --- | ----------------------------- |
+| The query-store endpoints fail locally: "DataCube Query MongoDB collection has not been configured properly"                  | ✅  | `p0-setup.md`                 |
+| Every local caller is `anonymous` (pac4j's anonymous client)                                                                  | ✅  | `p0-setup.md`                 |
+| JAX-RS is 2.0.1: no `@PATCH` annotation                                                                                       | ✅  | `p0-setup.md`                 |
+| `ApplicationQuery` builds its store managers itself; `Server.java` needs no change                                            | ✅  | `p0-setup.md`                 |
+| The module's tests run here on the in-memory Mongo (31 Data Cube tests, ~15 s)                                                | ✅  | `p0-setup.md`                 |
+| `ApplicationQueryException` writes its message into JSON unescaped                                                            | 📄  | `p0-setup.md`                 |
+| `BaseStoredVersionedAssetDao`: no version check, a non-atomic update, a deleted id kept and reusable                          | 📄  | `p0-setup.md`                 |
+| mongo-java-server keeps the unique indexes, `$elemMatch` and regexes over arrays; of 8 writers racing on one version one wins | ✅  | `TestCubeStoreManager` (M8.2) |
+| `cube/…` routes don't collide with Query's `GET {queryId}`                                                                    | 💭  | M8.3                          |
 
 **Steps:**
 
