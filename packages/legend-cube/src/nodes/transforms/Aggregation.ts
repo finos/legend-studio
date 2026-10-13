@@ -426,31 +426,23 @@ export const getAggregationAutoName = (
 };
 
 /**
- * Checks one aggregation against the input schema, stopping at its first
- * problem (spec §10.3, then Cube's checks, PLAN §11.5, §11.6 and §11.9): the
- * function is given and the use knows it; Count rows and the rank functions
- * have no column, any other function a column of the input whose type offers
- * it; a rank or row function's window sorts its rows (with none, the
- * database fails with no location); Lag's and Lead's offset and NTile's bucket
- * count are whole numbers of at least 1, and no other function has one; the
- * output name is given, is a valid column name
- * (`isValidColumnName`), is no input column's name, keys included, in any case
- * (`foldColumnName`), and no other aggregation's, in any case either: the
- * engine fails on a duplicate name with no location. Exported so an editor can
- * mark each row.
+ * Checks an aggregation's function and column against the input schema,
+ * stopping at the first problem (spec §10.3, then Cube's checks, PLAN §11.5,
+ * §11.6, §11.9 and §11.12): the function is given and the use knows it;
+ * Count rows and the rank functions have no column, any other function a
+ * column of the input whose type offers it; a rank or row function's window
+ * sorts its rows (with none, the database fails with no location); Lag's and
+ * Lead's offset and NTile's bucket count are whole numbers of at least 1, and
+ * no other function has one. Its name is the caller's to check. Exported so a
+ * Pivot, whose aggregation has no name, checks the same.
  */
-export const validateColumnAggregation = (
-  aggregations: readonly ColumnAggregation[],
-  index: number,
+export const validateAggregationFunctionAndColumn = (
+  aggregation: Omit<ColumnAggregation, 'name'>,
   schema: Schema,
   errors?: string[],
   use: AggregationUse = GROUP_AGGREGATION_USE,
 ): boolean => {
-  const aggregation = aggregations[index];
-  if (!aggregation) {
-    throw new Error(`An aggregation list has no aggregation ${index}`);
-  }
-  const { column, function: fn, name } = aggregation;
+  const { column, function: fn } = aggregation;
   if (!validate(fn !== '', MESSAGE_AGGREGATION_FUNCTION_EMPTY, errors)) {
     return false;
   }
@@ -504,7 +496,33 @@ export const validateColumnAggregation = (
       MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT(fn),
       errors,
     ) &&
-    settingValid() &&
+    settingValid()
+  );
+};
+
+/**
+ * Checks one aggregation against the input schema, stopping at its first
+ * problem: its function and column (`validateAggregationFunctionAndColumn`),
+ * then its output name, which is given, is a valid column name
+ * (`isValidColumnName`), is no input column's name, keys included, in any case
+ * (`foldColumnName`), and no other aggregation's, in any case either: the
+ * engine fails on a duplicate name with no location. Exported so an editor can
+ * mark each row.
+ */
+export const validateColumnAggregation = (
+  aggregations: readonly ColumnAggregation[],
+  index: number,
+  schema: Schema,
+  errors?: string[],
+  use: AggregationUse = GROUP_AGGREGATION_USE,
+): boolean => {
+  const aggregation = aggregations[index];
+  if (!aggregation) {
+    throw new Error(`An aggregation list has no aggregation ${index}`);
+  }
+  const { name } = aggregation;
+  return (
+    validateAggregationFunctionAndColumn(aggregation, schema, errors, use) &&
     validate(name !== '', MESSAGE_AGGREGATION_OUTPUT_NAME_EMPTY, errors) &&
     validate(
       isValidColumnName(name),

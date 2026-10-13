@@ -20,6 +20,7 @@ import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   type CubeDataProductProject,
 } from '../../../CubeDataProduct.js';
+import { CUBE_LAKEHOUSE_RUNTIME_KIND } from '../../../CubeLakehouseRuntime.js';
 
 // The models a data product cube's engine calls run on (PLAN §6.8), built for
 // each call and never saved: the project at its saved version, and for a run
@@ -87,7 +88,7 @@ export const V1_buildCubeDataProductExecutionContext = (
           _type: 'runtime',
           ...splitPath(CUBE_DATA_PRODUCT_RUNTIME_PATH),
           runtimeValue: {
-            _type: 'LakehouseRuntime',
+            _type: CUBE_LAKEHOUSE_RUNTIME_KIND,
             connectionStores: [],
             connections: [],
             mappings: [],

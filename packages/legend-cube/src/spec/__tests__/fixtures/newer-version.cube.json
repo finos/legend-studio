@@ -9,7 +9,7 @@
     "runtime": "showcase::northwind::mapping::StoreRuntime"
   },
   "query": {
-    "selected": "pivot101",
+    "selected": "future101",
     "nodes": [
       {
         "kind": "relational",
@@ -140,8 +140,8 @@
         "comment": "only French shipments"
       },
       {
-        "kind": "pivot",
-        "id": "pivot101",
+        "kind": "future",
+        "id": "future101",
         "inputs": ["filter101"],
         "rows": ["SHIP_CITY"],
         "values": [

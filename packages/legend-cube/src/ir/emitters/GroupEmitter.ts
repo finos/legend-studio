@@ -63,7 +63,7 @@ const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
  * `~name: x | $x.<column> : y | $y-><reduce>`, or for Count rows
  * `~name: x | 1 : y | $y->count()`, which counts every row
  */
-const emitAggregation = (
+export const emitAggregation = (
   { column, function: fn, name }: ColumnAggregation,
   groupId: string,
   origin: Origin,

@@ -20,6 +20,7 @@ import {
   Distinct,
   Drop,
   ExpressionFilter,
+  Pivot,
   Extend,
   Filter,
   Group,
@@ -37,6 +38,7 @@ import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeConcatDraft } from './CubeConcatDraft.js';
 import { CubeDifferenceDraft } from './CubeDifferenceDraft.js';
 import { CubeExpressionFilterDraft } from './CubeExpressionFilterDraft.js';
+import { CubePivotDraft } from './CubePivotDraft.js';
 import { CubeExtendDraft } from './CubeExtendDraft.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeGroupDraft } from './CubeGroupDraft.js';
@@ -97,6 +99,11 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
         guaranteeType(node, ExpressionFilter),
         editorState,
       ),
+  ],
+  [
+    Pivot.TYPE,
+    (node, editorState) =>
+      new CubePivotDraft(guaranteeType(node, Pivot), editorState),
   ],
 ]);
 

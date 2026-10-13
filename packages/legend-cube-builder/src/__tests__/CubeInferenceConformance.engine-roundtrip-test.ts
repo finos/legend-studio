@@ -42,6 +42,7 @@ import {
   Limit,
   NotFilter,
   Partition,
+  Pivot,
   Query,
   type QueryNode,
   type RelationalTableSource,
@@ -1597,6 +1598,37 @@ const CASES: readonly ConformanceCase[] = [
           ),
         ),
       ),
+    ),
+  },
+  // Pivot (M6c, PLAN §11.12): Cube writes a cast with the columns it infers,
+  // each value's emptiness included, so the engine types them as Cube does,
+  // and the nodes after it too
+  {
+    name: 'pivot',
+    tables: [ORDERS],
+    build: chain(
+      new Pivot(
+        'pivot101',
+        ['SHIP_COUNTRY', 'EMPLOYEE_ID'],
+        'SHIP_VIA',
+        ['1', '2', '3'].map((value) => ({ kind: 'integer', value })),
+        { function: AggregationFunction.SUM, column: 'FREIGHT' },
+      ),
+    ),
+  },
+  {
+    // counts are never empty; a string pivot column; a Restrict after it
+    name: 'pivot-counts-then-restrict',
+    tables: [ORDERS],
+    build: chain(
+      new Pivot(
+        'pivot101',
+        ['CUSTOMER_ID'],
+        'SHIP_COUNTRY',
+        ['France', 'Germany'].map((value) => ({ kind: 'string', value })),
+        { function: AggregationFunction.COUNT_ROWS, column: undefined },
+      ),
+      new Restrict('restrict101', ['Germany', 'CUSTOMER_ID']),
     ),
   },
   {

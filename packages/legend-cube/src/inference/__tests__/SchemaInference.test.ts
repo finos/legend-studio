@@ -211,24 +211,24 @@ describe(unitTest('Schema inference'), () => {
       [
         ORDERS,
         CUSTOMERS,
-        new UnknownNode('pivot101', 2),
+        new UnknownNode('future101', 2),
         new TestUnaryNode('n'),
       ],
       [
-        edge('orders', 'pivot101', 'in0'),
-        edge('customers', 'pivot101', 'in1'),
-        edge('pivot101', 'n'),
+        edge('orders', 'future101', 'in0'),
+        edge('customers', 'future101', 'in1'),
+        edge('future101', 'n'),
       ],
       'n',
     );
-    expect(query.getInputIds('pivot101')).toEqual(['orders', 'customers']);
+    expect(query.getInputIds('future101')).toEqual(['orders', 'customers']);
     const result = buildSchemasAndValidity(query);
-    expect(result.validity.get('pivot101')).toEqual([ERR_OTHER]);
+    expect(result.validity.get('future101')).toEqual([ERR_OTHER]);
     expect(result.validity.get('n')).toEqual([ERR_SCHEMAS]);
     // an empty synthetic port makes it incomplete, like any node
     expect(
       buildSchemasAndValidity(query.remove('customers')).validity.get(
-        'pivot101',
+        'future101',
       ),
     ).toEqual([ERR_INCOMPLETE]);
   });

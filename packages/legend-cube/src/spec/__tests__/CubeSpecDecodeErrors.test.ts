@@ -502,7 +502,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     ],
     [
       'a node of an unknown kind without an id',
-      withNodes([{ kind: 'pivot', rows: ['SHIP_CITY'] }]),
+      withNodes([{ kind: 'future', rows: ['SHIP_CITY'] }]),
       'query.nodes[0].id',
       'is required',
     ],
@@ -518,7 +518,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     [
       'a repeated id on a node of an unknown kind',
       withNodes(
-        [RELATIONAL_101, { kind: 'pivot', id: 'relational101' }],
+        [RELATIONAL_101, { kind: 'future', id: 'relational101' }],
         'relational101',
       ),
       'query.nodes[1].id',
@@ -585,15 +585,15 @@ describe(unitTest('Saved spec decode errors'), () => {
     ],
     [
       'inputs of a node of an unknown kind that are not a list',
-      withNodes([{ kind: 'pivot', id: 'pivot101', inputs: {} }], 'pivot101'),
+      withNodes([{ kind: 'future', id: 'future101', inputs: {} }], 'future101'),
       'query.nodes[0].inputs',
       'must be a list',
     ],
     [
       'an input of a node of an unknown kind that is a number',
       withNodes(
-        [{ kind: 'pivot', id: 'pivot101', inputs: [null, 1] }],
-        'pivot101',
+        [{ kind: 'future', id: 'future101', inputs: [null, 1] }],
+        'future101',
       ),
       'query.nodes[0].inputs[1]',
       'must be a node id or null',
@@ -2335,8 +2335,8 @@ describe(unitTest('Saved spec decode edge cases'), () => {
     const json = {
       formatVersion: 1,
       query: {
-        selected: 'pivot101',
-        nodes: [{ kind: 'pivot', id: 'pivot101', rows: null }],
+        selected: 'future101',
+        nodes: [{ kind: 'future', id: 'future101', rows: null }],
         layout: null,
       },
       description: null,
@@ -2534,12 +2534,12 @@ describe(unitTest('Saved spec versions'), () => {
       formatVersion: 2,
       name: 'Saved by a newer Cube',
       query: {
-        selected: 'pivot101',
+        selected: 'future101',
         nodes: [
           RELATIONAL_101,
           {
-            kind: 'pivot',
-            id: 'pivot101',
+            kind: 'future',
+            id: 'future101',
             inputs: ['relational101'],
             rows: ['SHIP_CITY'],
           },
@@ -2550,9 +2550,9 @@ describe(unitTest('Saved spec versions'), () => {
     const { document, formatVersion, readOnly } = decodeCubeSpec(json);
     expect(formatVersion).toBe(2);
     expect(readOnly).toBe(true);
-    const pivot = document.query.nodes[1];
-    expect(pivot).toBeInstanceOf(UnknownNode);
-    expect((pivot as UnknownNode).savedKind).toBe('pivot');
+    const future = document.query.nodes[1];
+    expect(future).toBeInstanceOf(UnknownNode);
+    expect((future as UnknownNode).savedKind).toBe('future');
 
     // saved again, it is written in the current format, without the flag
     expect(JSON.stringify(encodeCubeSpec(document))).toBe(

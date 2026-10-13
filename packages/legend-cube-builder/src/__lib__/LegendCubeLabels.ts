@@ -264,6 +264,42 @@ export const GROUP_EDITOR_NOTES = [
   'With no group column, the result is one row, even when there are no rows.',
 ];
 
+/** Why the Pivot editor won't take a column (PLAN §11.12), shown after the column's type */
+export const PIVOT_COLUMN_DISABLED_REASON = {
+  /** a row column that can't be compared */
+  NOT_GROUPABLE: "can't be grouped",
+  /** a pivot column of another type than a String, an integer, a StrictDate or a Boolean */
+  NOT_PIVOTABLE: "can't be pivoted",
+  /** a column the pivot uses for another part */
+  PIVOT_COLUMN: 'the pivot column',
+  ROW_COLUMN: 'a row column',
+  AGGREGATED: 'the aggregated column',
+} as const;
+
+/** Why the Pivot editor won't tick a value (PLAN §11.12) */
+export const PIVOT_VALUE_DISABLED_REASON = {
+  NOT_A_COLUMN_NAME: "can't name a column",
+  /** another value ticked has the same text in another case */
+  DIFFERS_ONLY_IN_CASE: 'only its case differs from a ticked value',
+  /** as many values are ticked as a Pivot takes */
+  TOO_MANY: 'as many values as a Pivot takes are ticked',
+} as const;
+
+/** What the Pivot editor says (PLAN §11.12) */
+export const PIVOT_EDITOR_NOTES = [
+  'Each picked value becomes a column, named by the value, holding the aggregation of its rows; each combination of the row columns with a picked value becomes a row. Values not picked, and combinations holding only them, are left out.',
+  "Load values lists the pivot column's values, each once, up to 100. An empty value can't be pivoted, nor one that can't name a column; of two values that differ only in case, one can be ticked, as some databases would mix up their columns.",
+  "Pivot runs on Snowflake, Databricks, SingleStore and DuckDB; other databases, such as H2 and Postgres, can't run it.",
+] as const;
+
+/** Says that Load values found no value to list (PLAN §11.12) */
+export const PIVOT_NO_VALUES_NOTICE =
+  'The pivot column has no value to list: its rows are all empty, or there are none.';
+
+/** Says that the engine has more values than the Pivot editor lists (PLAN §11.12) */
+export const getPivotValuesCutNotice = (shown: number): string =>
+  `Only the first ${shown} values are listed.`;
+
 /** Why the Partition editor won't tick a column that can't be compared (PLAN §11.6) */
 export const CUBE_PARTITION_COLUMN_DISABLED_REASON = "can't be partitioned by";
 

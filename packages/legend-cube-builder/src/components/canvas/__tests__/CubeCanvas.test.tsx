@@ -455,20 +455,20 @@ describe('Cube canvas', () => {
         query: new Query(
           [
             northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
-            new UnknownNode('pivot101', 1, { kind: 'pivot' }),
+            new UnknownNode('future101', 1, { kind: 'future' }),
             new Filter('filter101'),
           ],
           [
-            new Connection('relational101', 'pivot101', 'in0'),
-            new Connection('pivot101', 'filter101', 'tds'),
+            new Connection('relational101', 'future101', 'in0'),
+            new Connection('future101', 'filter101', 'tds'),
           ],
           'filter101',
         ),
       }),
     );
-    const unknown = await TEST__findCanvasNode('pivot101');
+    const unknown = await TEST__findCanvasNode('future101');
     expect(
-      within(unknown).getByText('Unknown Transform "pivot101"'),
+      within(unknown).getByText('Unknown Transform "future101"'),
     ).toBeDefined();
     await waitFor(() =>
       expect(document.querySelectorAll('.react-flow__edge')).toHaveLength(2),
@@ -480,7 +480,7 @@ describe('Cube canvas', () => {
     expect(
       document
         .querySelector(
-          '.react-flow__node[data-id="pivot101"] .react-flow__handle[data-handleid="in0"]',
+          '.react-flow__node[data-id="future101"] .react-flow__handle[data-handleid="in0"]',
         )
         ?.classList.contains('connectable'),
     ).toBe(false);
