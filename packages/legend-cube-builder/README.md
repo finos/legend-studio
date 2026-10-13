@@ -9,7 +9,7 @@ stores, the engine port with its `v1/` adapter, and the bundled model catalog. L
 
 **Status:** work in progress, version 0.0.x. This version has relational tables (from a model or a direct connection to H2
 or DuckDB), the access points of deployed data products and the data sets of deployed ingest definitions (both beta),
-Join, Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Compare Column Values (Difference),
+Join, Sort, Group, Pivot (on the databases that run it), Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Compare Column Values (Difference),
 window functions (Apply Window Functions), computed columns (Extend Columns, whose expressions the engine checks) and
 rows kept by a Pure condition (Filter by Expression, which the engine checks too), with one model, one runtime and one database, data product project or producer deployment per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
 the Cube store exists. A pasted model is kept in the cube. The results grid works server-side by default: a header's

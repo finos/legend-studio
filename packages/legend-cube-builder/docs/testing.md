@@ -134,6 +134,12 @@ would serve it.
   a Partition, an Extend's column. The plan-only test pins the condition in the `WHERE` on every type, and a window
   column's filter after the window, never `QUALIFY`; the direct connection runs the empty values and the window on H2
   and DuckDB. A test that needs a checked filter without the engine builds one with `TEST__checkedExpressionFilter`.
+- **Pivot** (PLAN §11.12). `CubePivot.engine-roundtrip-test.ts` runs Cube's pivot on a DuckDB direct connection
+  (H2 can't run it): sums, counts with 0 where no rows are, averages and minimums, no row column, string values with a
+  space, a quote and a bar, a date and a Boolean pivot column, and later steps over the value columns; and Cube
+  refusing H2 and Trino. The plan-only test pins a PIVOT on Snowflake, Databricks, MemSQL and DuckDB whose names the
+  outer select reads, Trino and Athena planning none, and the other 14 refusing it: when the engine changes, it fails,
+  and `PIVOT_UNSUPPORTED_DATABASE_TYPES` can change. Two conformance cases pin the cast's types and emptiness.
 - `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
   example cube (PLAN §6.9) as the Examples dialog does: it types its tables, checks every node types as Cube infers it
   (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.

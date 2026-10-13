@@ -28,7 +28,10 @@ import {
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
-import { addCubeNode } from '../../stores/CubeAddPlacement.js';
+import {
+  addCubeNode,
+  getCubeAddDatabaseProblem,
+} from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_DND_TYPE,
@@ -58,7 +61,12 @@ const CubePaletteItem = observer(
       !readOnly &&
       definition.kind === 'source' &&
       !editorState.canAddNode(definition.type);
-    const disabled = readOnly || otherKind;
+    // nor a transform its database can't run, after the selected node (PLAN §11.12)
+    const databaseProblem =
+      readOnly || definition.kind === 'source'
+        ? undefined
+        : getCubeAddDatabaseProblem(editorState, definition.type);
+    const disabled = readOnly || otherKind || databaseProblem !== undefined;
     const ref = useRef<HTMLDivElement>(null);
     const [, dragConnector] = useDrag<CubePaletteDragItem>(
       () => ({
@@ -66,8 +74,10 @@ const CubePaletteItem = observer(
         item: { nodeType: definition.type },
         canDrag: () =>
           !editorState.readOnly &&
-          (definition.kind !== 'source' ||
-            editorState.canAddNode(definition.type)),
+          (definition.kind === 'source'
+            ? editorState.canAddNode(definition.type)
+            : getCubeAddDatabaseProblem(editorState, definition.type) ===
+              undefined),
       }),
       [editorState, definition.type, definition.kind],
     );
@@ -98,9 +108,11 @@ const CubePaletteItem = observer(
             ? READ_ONLY_CUBE_TITLE
             : otherKind
               ? OTHER_SOURCE_KIND_TITLE
-              : collapsed
-                ? `${label}: ${describeItem(definition)}`
-                : describeItem(definition)
+              : databaseProblem !== undefined
+                ? databaseProblem
+                : collapsed
+                  ? `${label}: ${describeItem(definition)}`
+                  : describeItem(definition)
         }
         onClick={add}
         onKeyDown={(event) => {

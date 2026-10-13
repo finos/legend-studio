@@ -86,6 +86,32 @@ export const getLiteralKinds = (type: CubeType): readonly LiteralKind[] => {
   }
 };
 
+const LITERAL_KINDS: readonly string[] = [
+  'string',
+  'boolean',
+  'integer',
+  'float',
+  'decimal',
+  'strictDate',
+  'dateTime',
+  'enum',
+];
+
+/** Whether a value has a literal's shape: a known kind, and a Boolean for `boolean`, else its text */
+export const isLiteralValue = (value: unknown): value is LiteralValue => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const { kind, value: literal } = value as Record<string, unknown>;
+  return (
+    typeof kind === 'string' &&
+    LITERAL_KINDS.includes(kind) &&
+    (kind === 'boolean'
+      ? typeof literal === 'boolean'
+      : typeof literal === 'string')
+  );
+};
+
 /** The text form of a literal, as typed and shown */
 export const getLiteralText = (literal: LiteralValue): string =>
   literal.kind === 'boolean' ? String(literal.value) : literal.value;

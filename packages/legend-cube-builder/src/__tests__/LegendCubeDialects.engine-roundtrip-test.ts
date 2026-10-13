@@ -35,6 +35,7 @@ import {
   JoinType,
   Limit,
   Partition,
+  Pivot,
   printIR,
   Query,
   QueryEmitter,
@@ -1602,6 +1603,63 @@ describe('Patterns given % or _, as H2 and DuckDB plan them', () => {
       expect(await planSql(query(), 'H2')).toContain("like '%50\\%%'");
     },
   );
+});
+
+// Pivot (PLAN §11.12): the engine's static pivot(), which four types plan.
+// Trino and Athena plan it with no PIVOT (ISSUES.md), and every other type
+// refuses it: Cube refuses all 16, so these plan the native form to pin the
+// engine's behaviour. When it changes, these fail, and the list can change.
+describe('Pivot, as each database plans it', () => {
+  /** SHIP_VIA's 1, 2 and 3 by SHIP_COUNTRY, Sum of FREIGHT */
+  const pivotThen = (): Query =>
+    ordersThen(
+      new Pivot(
+        'pivot101',
+        ['SHIP_COUNTRY'],
+        'SHIP_VIA',
+        ['1', '2', '3'].map((value) => ({ kind: 'integer', value })),
+        { function: AggregationFunction.SUM, column: 'FREIGHT' },
+      ),
+    );
+  const PIVOTING = ['Snowflake', 'Databricks', 'MemSQL', 'DuckDB'];
+
+  test.each(PIVOTING)(
+    'Writes a PIVOT on %s, whose names the outer select reads and renames to the values',
+    async (databaseType) => {
+      const sql = await planSql(pivotThen(), databaseType);
+      expect(sql).toMatch(/\bpivot\b/u);
+      ['1', '2', '3'].forEach((value) => {
+        // the PIVOT names the column, and the outer select reads it as its value
+        expect(sql).toContain(`'${value}__|__cube_pivot'`);
+        expect(sql).toMatch(
+          new RegExp(
+            `'${value}__\\|__cube_pivot'["\`]? as ["\`]${value}["\`]`,
+            'u',
+          ),
+        );
+      });
+    },
+  );
+
+  test.each(['Trino', 'Athena'])(
+    'Plans it with no PIVOT on %s, reading columns nothing makes, which Cube refuses',
+    async (databaseType) => {
+      const sql = await planSql(pivotThen(), databaseType, { native: true });
+      expect(sql).not.toMatch(/\bpivot\b/u);
+      expect(sql).toContain("'1__|__cube_pivot'");
+    },
+  );
+
+  test.each(
+    PLANNED_DATABASE_TYPES.filter(
+      (type) =>
+        !PIVOTING.includes(type) && type !== 'Trino' && type !== 'Athena',
+    ),
+  )('Refuses it on %s', async (databaseType) => {
+    await expect(
+      planSql(pivotThen(), databaseType, { native: true }),
+    ).rejects.toThrow();
+  });
 });
 
 describe('Difference, as each database plans it', () => {

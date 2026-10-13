@@ -32,7 +32,11 @@ import {
   OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../__lib__/LegendCubeLabels.js';
-import { addCubeNode, canAddCubeNode } from '../stores/CubeAddPlacement.js';
+import {
+  addCubeNode,
+  canAddCubeNode,
+  getCubeAddDatabaseProblem,
+} from '../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../stores/CubeEditorState.js';
 import { CubeNodeIcon } from './CubeNodeIcon.js';
 
@@ -41,7 +45,7 @@ interface CubeAddItem {
   readonly definition: AnyNodeDefinition;
   readonly label: string;
   readonly disabled: boolean;
-  /** Why a source can't be added */
+  /** Why a source, or a transform its database can't run, can't be added */
   readonly title: string | undefined;
   readonly add: () => void;
 }
@@ -65,10 +69,11 @@ const getCubeAddItems = (
       definition,
       label: `${definition.label}${badge ? ` (${badge})` : ''}`,
       disabled,
-      title:
-        disabled && definition.kind === 'source'
+      title: !disabled
+        ? undefined
+        : definition.kind === 'source'
           ? (editorState.sourcePicker.disabledReason ?? OTHER_SOURCE_KIND_TITLE)
-          : undefined,
+          : getCubeAddDatabaseProblem(editorState, definition.type, nodeId),
       add: () => addCubeNode(editorState, definition.type, nodeId),
     };
   };

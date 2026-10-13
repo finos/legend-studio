@@ -10,8 +10,10 @@ Join (`src/nodes/transforms/Join.ts`) and Filter (`Filter.ts`) are the examples 
 node whose settings are rows, Concat (`Concat.ts`) for a plain two-input node with a setting that changes its
 output types, Partition (`Partition.ts`) for a window, which a run must isolate from what follows it, Difference
 (`Difference.ts`) for a node built from another's parts (Join's key checks and join relation), Extend
-(`Extend.ts`) for a node whose output types only the engine knows, and Filter by Expression (`ExpressionFilter.ts`)
-for one whose setting only the engine can check.
+(`Extend.ts`) for a node whose output types only the engine knows, Filter by Expression (`ExpressionFilter.ts`)
+for one whose setting only the engine can check, and Pivot (`Pivot.ts`) for one that some databases can't run, and
+whose engine function types as `Relation<Any>`, so its emitter writes a `cast` (a `relationType` IR) naming each column
+as its schema types it.
 
 ## 1. The node
 
@@ -137,9 +139,12 @@ Databases (PLAN §11.4): a run is written for the database it runs on, `context.
 gets a flag in `CUBE_DIALECT_WORKAROUNDS` (`src/ir/CubeDialects.ts`, a `Map`: the type comes from the model) and reads
 `getDialectWorkarounds(context.databaseType)` in its emitter, as Drop, Slice, Limit and Distinct do; add its type to
 `needsDatabaseType` too, so the builder loads the model's connections before such a run. Without a type, or for an
-unknown one, write the native form. A value a database would misread with no error is refused instead: a filter that
-gives `%` or `_` to a pattern on DuckDB (`hasNoLikeEscape`, `getDatabaseProblems`), which the builder adds to the
-node's errors once the model's outline names the database, and which the emitter throws on as a backstop (PLAN §8.2).
+unknown one, write the native form. A node a database can't run, or would run with wrong rows, is refused instead:
+a Pivot on a type in `PIVOT_UNSUPPORTED_DATABASE_TYPES` (PLAN §11.12), a filter that gives `%` or `_` to a pattern on
+DuckDB (`hasNoLikeEscape`, PLAN §8.2). `getDatabaseProblems` gives the node's message, which the builder adds to its
+errors once it knows the database, `getDatabaseProblemOfType` the reason the builder greys the node type with before
+it is added, and the emitter throws on it as a backstop. `dependsOnDatabaseType` is the one rule for which nodes need
+the database type: add to it, not beside it.
 A column an emitter adds and drops again takes `getTemporaryColumnName`
 (`src/ir/TemporaryColumns.ts`), so it never takes an input column's name; several at once take one name after another
 under the same rule (names compared folded), as Concat's `cube_cast`, `cube_cast2`, … do. A type the output must have
@@ -183,8 +188,8 @@ After an import types the sources again, only Filter's invalid values are read a
 
 A `TransformDefinition` in `src/nodes/NodeRegistry.ts`: `kind: 'transform'`, `type`, `label` (the palette's text),
 `icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`,
-and `isolationBoundary` for a window (see 3). Add it to `createNodeRegistry()` in menu order (Sort, Group, Filter,
-Filter by Expression, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, Extend;
+and `isolationBoundary` for a window (see 3). Add it to `createNodeRegistry()` in menu order (Sort, Group, Pivot,
+Filter, Filter by Expression, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, Extend;
 spec §7.0, with Cube's own beside the spec's), and export
 the new modules from `src/index.ts`.
 

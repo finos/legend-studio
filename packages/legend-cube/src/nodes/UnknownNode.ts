@@ -41,7 +41,7 @@ export class UnknownNode extends QueryNode {
   static readonly TYPE = 'unknown';
 
   private readonly inputPorts: readonly string[];
-  /** The saved JSON without `id` and `inputs`, `kind` included, e.g. `{kind: 'pivot', rows: […]}` */
+  /** The saved JSON without `id` and `inputs`, `kind` included, e.g. `{kind: 'future', rows: […]}` */
   readonly json: JsonObject;
   /** Whether the saved JSON had an `inputs` key, which re-saving then writes too */
   readonly hasInputs: boolean;
@@ -66,7 +66,7 @@ export class UnknownNode extends QueryNode {
     this.hasInputs = hasInputs || inputCount > 0;
   }
 
-  /** The type it was saved with, e.g. `pivot` */
+  /** The type it was saved with, e.g. `future` */
   get savedKind(): string | undefined {
     return typeof this.json.kind === 'string' ? this.json.kind : undefined;
   }

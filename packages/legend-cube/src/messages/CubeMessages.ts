@@ -402,6 +402,64 @@ export const MESSAGE_FILTER_VALUE_WILDCARD = (
 ): string =>
   `On ${databaseType}, filter values for ${quote(operator)} cannot contain % or _ yet: ${databaseType} would match them as wildcards, so the rows would be wrong.`;
 
+// ---------------------------------------- Pivot (PLAN §11.12) ----------------------------------------
+
+/** Added by Cube: a row column must be groupable, as a Group's key (PLAN §11.12) */
+export const MESSAGE_PIVOT_ROW_COLUMN_NOT_GROUPABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Row column ${quote(column)} of type ${typeName} cannot be grouped.`;
+
+/** Added by Cube: the pivot column must be a String, an integer, a StrictDate or a Boolean (PLAN §11.12) */
+export const MESSAGE_PIVOT_COLUMN_NOT_PIVOTABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Pivot column ${quote(column)} of type ${typeName} cannot be pivoted.`;
+
+/** Added by Cube: the pivot column makes the columns, so it can't also make the rows (PLAN §11.12) */
+export const MESSAGE_PIVOT_COLUMN_IS_ROW_COLUMN = (column: string): string =>
+  `Pivot column ${quote(column)} cannot also be a row column.`;
+
+/** Added by Cube: each value makes a column, so a Pivot takes a bounded number (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUES_TOO_MANY = (max: number): string =>
+  `Pivot values cannot be more than ${max}.`;
+
+/** Added by Cube: a value must be one of the pivot column's type (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUE_INVALID = (
+  value: string,
+  type: string,
+): string => `Pivot value ${quote(value)} is not a valid ${type}.`;
+
+/** Added by Cube: on databases that compare names without case, the engine's columns for the two values are one (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE = (
+  value: string,
+  other: string,
+): string =>
+  `Pivot values ${quote(other)} and ${quote(value)} differ only in case, so some databases would mix up their columns.`;
+
+/** Added by Cube: a value names its column, so its text must be a valid column name (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME = (value: string): string =>
+  `Pivot value ${quote(value)} cannot name a column.`;
+
+/** Added by Cube: the engine's pivot of Distinct Value fails on the database (PLAN §11.12) */
+export const MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED = (
+  aggregation: string,
+): string =>
+  `Aggregation function ${quote(aggregation)} cannot be used in a pivot.`;
+
+/** Added by Cube: the database is known not to run the engine's pivot (PLAN §11.12) */
+export const MESSAGE_PIVOT_UNSUPPORTED_DATABASE = (
+  databaseType: string,
+): string => `Pivot is not supported on ${databaseType}.`;
+
+/** Added by Cube: the aggregated column is consumed by the pivot, so it can't make rows or columns (PLAN §11.12) */
+export const MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN = (
+  column: string,
+): string =>
+  `Aggregation column ${quote(column)} cannot be a row column or the pivot column.`;
+
 // ---------------------------------------- Display ----------------------------------------
 
 /** The placeholder for any missing value anywhere in the UI */

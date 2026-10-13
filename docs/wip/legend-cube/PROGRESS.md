@@ -67,9 +67,12 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       stacked on it ([PROGRESS-M6.md](PROGRESS-M6.md), PLAN §11.7)
 - [x] M5b More window functions, built on `cube-m5b`, stacked on `cube-m6`, merged into `cube-dev` as #5665
       ([PROGRESS-M5B.md](PROGRESS-M5B.md), PLAN §11.9)
-- [x] M6b Filter by expression, built on `cube-filter-expr` in draft #5670 for `cube-dev`, not merged yet ([PROGRESS-M6B.md](PROGRESS-M6B.md),
+- [x] M6b Filter by expression, built on `cube-filter-expr`, merged into `cube-dev` as #5670 ([PROGRESS-M6B.md](PROGRESS-M6B.md),
       PLAN §11.11)
-- [ ] M7 Grid and presentation, on `cube-m7` ([PROGRESS-M7.md](PROGRESS-M7.md), PLAN §11.10)
+- [x] M7 Grid and presentation, built on `cube-m7`, merged into `cube-dev` as #5667 ([PROGRESS-M7.md](PROGRESS-M7.md),
+      PLAN §11.10). `cube-dev` was rebased onto master on 2026-10-12 (`c1b40a480`) and reaches it through #5669
+- [ ] M6c Pivot, complete and reviewed on `cube-pivot`, #5674 ready for review into `cube-dev`
+      ([PROGRESS-M6C.md](PROGRESS-M6C.md), PLAN §11.12)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action

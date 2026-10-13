@@ -28,6 +28,7 @@ import {
   Join,
   Limit,
   Partition,
+  Pivot,
   RelationalTableSource,
   Rename,
   Restrict,
@@ -69,6 +70,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Reduces the number of rows in the previous data set, keeping only rows for which the expression is true.',
   [Group.TYPE]:
     'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
+  /** Added by Cube: the original has pivot only in the grid (PLAN §11.12) */
+  [Pivot.TYPE]:
+    'Turns the values of a column of the previous data set into columns: a row for each combination of the row columns that has a picked value, and a column for each picked value, holding its aggregate.',
   [Join.TYPE]:
     'Joins two previous data sets using specified columns as join keys.',
   [Partition.TYPE]:

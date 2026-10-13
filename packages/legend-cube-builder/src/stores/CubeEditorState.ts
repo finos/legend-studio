@@ -21,9 +21,10 @@ import {
   createNodeRegistry,
   CubeDocument,
   diffSchemas,
+  dependsOnDatabaseType,
   findLostSortOrders,
+  getDatabaseProblemOfType,
   getDatabaseProblems,
-  givesPatternWildcard,
   isTypingError,
   MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
@@ -83,6 +84,10 @@ import {
   type CubeModelOutline,
   type NodeId,
 } from '../graph-manager/CubeEngine.js';
+import {
+  CUBE_LAKEHOUSE_RUNTIME_KIND,
+  getLakehouseDatabaseType,
+} from '../graph-manager/CubeLakehouseRuntime.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
@@ -192,19 +197,30 @@ export class CubeEditorState implements CommandRegistrar {
    */
   warnings: ReadonlyMap<number, readonly string[]> = new Map();
   /**
-   * The outline of each model the cube used, loaded when an editor needs it,
-   * e.g. for the Join's 'type unknown' warning; by reference, never observed
-   * deeply
+   * The outline of each model the cube used, by the model's JSON
+   * (`modelKey`): loaded when the cube reads a table, or an editor or a run
+   * needs it, e.g. for the Join's 'type unknown' warning or the database a
+   * node runs on (PLAN §11.12); by reference, never observed deeply
    */
-  private modelOutlines: ReadonlyMap<ModelContext, CubeModelOutline> =
-    new Map();
+  private modelOutlines: ReadonlyMap<string, CubeModelOutline> = new Map();
+  /** Each model's key in `modelOutlines`, its JSON, worked out once per model object */
+  private readonly modelKeys = new WeakMap<ModelContext, string>();
+  /** The outlines on their way, by model key, so a second load waits for the first */
+  private readonly loadingOutlines = new Map<
+    string,
+    Promise<CubeModelOutline>
+  >();
   /** Sources sent to the engine to be typed again, until it answers */
   private pendingSources: ReadonlySet<QueryNode> = new Set();
   /** Extends and Filters by Expression sent to the engine to be checked, until it answers (PLAN §11.7, §11.11) */
   private checkingNodes: ReadonlySet<QueryNode> = new Set();
   /** Checks the nodes that wait for the engine, whenever one does (PLAN §11.7 Q4) */
   private readonly rechecking: IReactionDisposer;
-  /** Loads the model's outline once a filter gives a pattern `%` or `_`, which some databases refuse (PLAN §11.11) */
+  /**
+   * Loads the model's outline once the cube reads a table, so the database it
+   * runs on is known before any run: some nodes are refused there, or written
+   * another way (PLAN §11.4, §11.11, §11.12)
+   */
   private readonly outlineLoading: IReactionDisposer;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
@@ -317,10 +333,12 @@ export class CubeEditorState implements CommandRegistrar {
       },
       { fireImmediately: true },
     );
-    // the model, while a filter gives a pattern % or _: another model loads too
+    // the model, while the cube reads a table: another model loads too
     this.outlineLoading = reaction(
       () =>
-        this.document.query.nodes.some(givesPatternWildcard)
+        this.document.query.nodes.some(
+          (node) => node instanceof RelationalTableSource,
+        )
           ? this.document.context?.model
           : undefined,
       (model) => {
@@ -565,17 +583,31 @@ export class CubeEditorState implements CommandRegistrar {
     return model === undefined ? undefined : this.getModelOutline(model);
   }
 
+  /**
+   * A model's key for its outline: its JSON, so a cube imported on the same
+   * model, a new object with the same content, shares the outline loaded
+   */
+  private modelKey(model: ModelContext): string {
+    let key = this.modelKeys.get(model);
+    if (key === undefined) {
+      key = JSON.stringify(model);
+      this.modelKeys.set(model, key);
+    }
+    return key;
+  }
+
   /** The outline of a model, once loaded */
   getModelOutline(model: ModelContext): CubeModelOutline | undefined {
-    return this.modelOutlines.get(model);
+    return this.modelOutlines.get(this.modelKey(model));
   }
 
   /**
    * The database type a run of the query up to the node needs, with the
-   * model's runtime (PLAN §11.4), from the model's outline once it is loaded
-   * (`loadModelOutline`): the type of the runtime's connections to the
-   * databases the node reads. None without an outline, which writes every
-   * operation the native way.
+   * model's runtime (PLAN §11.4): for a data product or ingest cube, the
+   * database its lakehouse runtime routes to (§11.12); else, from the model's
+   * outline once it is loaded (`loadModelOutline`), the type of the runtime's
+   * connections to the databases the node reads. None without an outline,
+   * which writes every operation the native way.
    */
   getRunDatabaseType(
     query: Query,
@@ -583,6 +615,9 @@ export class CubeEditorState implements CommandRegistrar {
     model: ModelContext,
     runtime: string,
   ): string | undefined {
+    if (isCubeDataProductModel(model) || isCubeIngestModel(model)) {
+      return getLakehouseDatabaseType(CUBE_LAKEHOUSE_RUNTIME_KIND);
+    }
     const outline = this.getModelOutline(model);
     if (!outline) {
       return undefined;
@@ -603,15 +638,14 @@ export class CubeEditorState implements CommandRegistrar {
 
   /**
    * A node's problems on the database the query up to it runs on, with the
-   * cube's runtime (PLAN §11.11): a filter giving `%` or `_` to a pattern on
-   * DuckDB, which would match them as wildcards. None until the model's
-   * outline is loaded (`loadModelOutline`), or when it doesn't tell the
-   * database.
+   * cube's runtime (`getRunDatabaseType`): a Pivot where it can't run (PLAN
+   * §11.12); a filter giving `%` or `_` to a pattern on DuckDB, which would
+   * match them as wildcards (§11.11). None when the database isn't known.
    */
   getNodeDatabaseProblems(query: Query, node: QueryNode): string[] {
     const { context } = this.document;
     const runtime = context?.runtime;
-    if (!context || runtime === undefined || !givesPatternWildcard(node)) {
+    if (!context || runtime === undefined || !dependsOnDatabaseType(node)) {
       return [];
     }
     return getDatabaseProblems(
@@ -621,25 +655,57 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Loads the outline of a model, the cube's by default, once per model. It
-   * only adds warnings, database types and a database's refusals (PLAN
-   * §11.11), so a model that fails to load shows none and runs every
-   * operation the native way.
+   * Why a node of the type can't be added after the node, on the database the
+   * query up to that node runs on (PLAN §11.12): a Pivot where it can't run.
+   * `undefined` when it can, or the database isn't known.
+   */
+  getAddDatabaseProblem(
+    type: string,
+    afterId: string | undefined,
+  ): string | undefined {
+    const { context, query } = this.document;
+    const runtime = context?.runtime;
+    if (!context || runtime === undefined || afterId === undefined) {
+      return undefined;
+    }
+    return getDatabaseProblemOfType(
+      type,
+      this.getRunDatabaseType(query, afterId, context.model, runtime),
+    );
+  }
+
+  /**
+   * Loads the outline of a model, the cube's by default, once per model: a
+   * load already on its way is waited for, not started again, e.g. a run's
+   * while the cube's opening load is still out. It only adds warnings,
+   * database types and a database's refusals (PLAN §11.11, §11.12), so a
+   * model that fails to load shows none and runs every operation the native
+   * way.
    */
   *loadModelOutline(
     model: ModelContext | undefined = this.document.context?.model,
   ): GeneratorFn<void> {
-    if (model === undefined || this.modelOutlines.has(model)) {
+    if (model === undefined) {
       return;
     }
+    const key = this.modelKey(model);
+    if (this.modelOutlines.has(key)) {
+      return;
+    }
+    let loading = this.loadingOutlines.get(key);
+    if (!loading) {
+      loading = loadCubeModelOutline(this.host, model);
+      this.loadingOutlines.set(key, loading);
+    }
     try {
-      const outline = (yield loadCubeModelOutline(
-        this.host,
-        model,
-      )) as CubeModelOutline;
-      this.modelOutlines = new Map([...this.modelOutlines, [model, outline]]);
+      const outline = (yield loading) as CubeModelOutline;
+      if (!this.modelOutlines.has(key)) {
+        this.modelOutlines = new Map([...this.modelOutlines, [key, outline]]);
+      }
     } catch {
       // no outline, no warning: nothing is blocked on it
+    } finally {
+      this.loadingOutlines.delete(key);
     }
   }
 

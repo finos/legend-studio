@@ -22,6 +22,7 @@ import {
   Filter,
   Join,
   Limit,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
   Query,
 } from '@finos/legend-cube';
 import { act, fireEvent, screen, within } from '@testing-library/react';
@@ -41,6 +42,7 @@ import {
 import { createFakeCubeServiceCatalog } from '../../../__test-utils__/FakeCubeServiceCatalog.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
+import { createFakeNorthwindOutline } from '../../../__test-utils__/FakeCubeEngine.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
@@ -176,6 +178,7 @@ describe('Cube palette', () => {
       'separator',
       SORT,
       GROUP,
+      'Pivot by Column',
       FILTER,
       'Filter by Expression',
       RESTRICT,
@@ -228,6 +231,37 @@ describe('Cube palette', () => {
       'Click, or drop it on the canvas, to pick a table',
     );
   });
+
+  test.each([
+    ['H2', true],
+    ['DuckDB', false],
+  ])(
+    "Greys Pivot, with the reason, after a node whose database can't pivot: on %s, %s",
+    async (databaseType, greyed) => {
+      const editorState = await render(
+        new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
+        {
+          host: TEST__createCubeHost({
+            outline: createFakeNorthwindOutline(databaseType),
+          }).host,
+        },
+      );
+      const pivot = paletteItem('Pivot by Column');
+      expect(pivot.getAttribute('aria-disabled')).toBe(String(greyed));
+      if (greyed) {
+        expect(pivot.title).toBe(MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'));
+        fireEvent.click(pivot);
+        expect(
+          editorState.document.query.nodes.some(
+            (node) => node.type === 'pivot',
+          ),
+        ).toBe(false);
+      } else {
+        fireEvent.click(pivot);
+        expect(editorState.document.query.selected).toBe('pivot101');
+      }
+    },
+  );
 
   test('Has no Data Product item on a host without a data product catalog', async () => {
     const { host } = TEST__createCubeHost();

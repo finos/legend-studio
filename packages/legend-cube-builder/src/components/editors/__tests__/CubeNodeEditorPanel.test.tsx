@@ -576,22 +576,22 @@ describe('Node editor panel', () => {
         query: new Query(
           [
             northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
-            new UnknownNode('pivot101', 1, { kind: 'pivot' }),
+            new UnknownNode('future101', 1, { kind: 'future' }),
             new Filter('filter101'),
           ],
           [
-            new Connection('relational101', 'pivot101', 'in0'),
-            new Connection('pivot101', 'filter101', 'tds'),
+            new Connection('relational101', 'future101', 'in0'),
+            new Connection('future101', 'filter101', 'tds'),
           ],
           'filter101',
         ),
       }),
     );
-    const editor = await openPanel('pivot101');
+    const editor = await openPanel('future101');
     expect(within(editor).getByText('Unknown')).toBeDefined();
     expect(
       within(editor).getByText(
-        'Unknown Transform "pivot101": this node can\'t be edited.',
+        'Unknown Transform "future101": this node can\'t be edited.',
       ),
     ).toBeDefined();
     expect(within(editor).getByRole('img', { name: 'Help' }).title).toBe(

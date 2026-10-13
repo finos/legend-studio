@@ -27,6 +27,7 @@ import { Distinct } from '../../nodes/transforms/Distinct.js';
 import {
   MESSAGE_CONDITION_WILDCARD,
   MESSAGE_FILTER_VALUE_WILDCARD,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '../../messages/CubeMessages.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import {
@@ -36,17 +37,24 @@ import {
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join } from '../../nodes/transforms/Join.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import {
+  DEFAULT_PIVOT_AGGREGATION,
+  Pivot,
+} from '../../nodes/transforms/Pivot.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { OpaqueType } from '../../types/CubeType.js';
 import {
   CUBE_DIALECT_WORKAROUNDS,
+  dependsOnDatabaseType,
+  getDatabaseProblemOfType,
   getDatabaseProblems,
   getDialectWorkarounds,
   givesPatternWildcard,
   hasNoLikeEscape,
   needsDatabaseType,
+  PIVOT_UNSUPPORTED_DATABASE_TYPES,
 } from '../CubeDialects.js';
 import { printIR } from '../IRPrinter.js';
 import { QueryEmitter } from '../QueryEmitter.js';
@@ -526,5 +534,91 @@ describe(unitTest('Distinct on SQL Server'), () => {
     ).toContain(
       '->distinct()->extend(~cube_d2: x | 1)->select(~[ORDER_ID, SHIP_COUNTRY, cube_d])',
     );
+  });
+});
+
+describe(unitTest('Pivot on each database'), () => {
+  /** SHIP_COUNTRY's FR and DE, counting rows */
+  const pivot = (): Pivot =>
+    new Pivot(
+      'pivot101',
+      [],
+      'SHIP_COUNTRY',
+      [
+        { kind: 'string', value: 'FR' },
+        { kind: 'string', value: 'DE' },
+      ],
+      DEFAULT_PIVOT_AGGREGATION,
+    );
+
+  test('Knows the 17 database types that refuse it, or plan it with no PIVOT', () => {
+    expect([...PIVOT_UNSUPPORTED_DATABASE_TYPES].sort()).toEqual(
+      [
+        'Athena',
+        'Aurora',
+        'BigQuery',
+        'ClickHouse',
+        'Composite',
+        'DB2',
+        'H2',
+        'Hive',
+        'Oracle',
+        'Postgres',
+        'Presto',
+        'Redshift',
+        'Spanner',
+        'SqlServer',
+        'Sybase',
+        'SybaseIQ',
+        'Trino',
+      ].sort(),
+    );
+  });
+
+  test('Refuses a Pivot on them, saying so, and allows it on the others, an unknown type and none', () => {
+    expect(getDatabaseProblems(pivot(), 'H2')).toEqual([
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'),
+    ]);
+    expect(MESSAGE_PIVOT_UNSUPPORTED_DATABASE('Trino')).toBe(
+      'Pivot is not supported on Trino.',
+    );
+    ['Snowflake', 'Databricks', 'MemSQL', 'DuckDB', 'NewDb', undefined].forEach(
+      (databaseType) =>
+        expect(getDatabaseProblems(pivot(), databaseType)).toEqual([]),
+    );
+    // before it exists, as the palette asks
+    expect(getDatabaseProblemOfType('pivot', 'Athena')).toBe(
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('Athena'),
+    );
+    expect(getDatabaseProblemOfType('pivot', 'Snowflake')).toBeUndefined();
+    expect(getDatabaseProblemOfType('pivot', undefined)).toBeUndefined();
+    expect(getDatabaseProblemOfType('group', 'H2')).toBeUndefined();
+  });
+
+  test('Depends on the database type, as Drop, Slice, Limit, Distinct and a pattern given % or _ do; a Group does not', () => {
+    expect(dependsOnDatabaseType(pivot())).toBe(true);
+    expect(dependsOnDatabaseType(new Drop('drop101', 5))).toBe(true);
+    expect(dependsOnDatabaseType(new Distinct('distinct101'))).toBe(true);
+    expect(dependsOnDatabaseType(new Filter('filter101'))).toBe(false);
+    expect(needsDatabaseType(ordersThen([pivot()]), 'pivot101')).toBe(true);
+  });
+
+  test('Never emits one for a database that refuses it, and emits it for the others or to type', () => {
+    const emitter = new QueryEmitter(ordersThen([pivot()]));
+    const lambda = (databaseType?: string): unknown =>
+      emitter.emitExecutionLambda({
+        rowLimit: 1000,
+        runtime: RUNTIME,
+        databaseType,
+      });
+    expect(() => lambda('H2')).toThrow(
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'),
+    );
+    expect(() => lambda('Trino')).toThrow(
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('Trino'),
+    );
+    expect(printIR(lambda('DuckDB') as never)).toContain('->pivot(');
+    expect(printIR(lambda() as never)).toContain('->pivot(');
+    expect(() => emitter.emitRelation('pivot101')).not.toThrow();
   });
 });

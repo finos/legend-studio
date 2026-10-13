@@ -103,6 +103,14 @@ export type IR =
       readonly path: string;
       readonly params?: readonly number[];
     }
+  /**
+   * A relation type argument, of `cast`: `@Relation<(COUNTRY:Varchar(15), '2000':Integer)>`,
+   * each column of the type a `genericType` (PLAN §11.12)
+   */
+  | {
+      readonly k: 'relationType';
+      readonly columns: readonly RelationTypeColumn[];
+    }
   /** An enumeration value, e.g. `JoinKind.INNER` */
   | {
       readonly k: 'enumValue';
@@ -134,6 +142,13 @@ export type IR =
       readonly json: JsonObject;
       readonly origin?: Origin;
     };
+
+/** A column of a relation type: its name, its type, a `genericType`, and whether it can be empty (`[0..1]`, else `[1]`) */
+export interface RelationTypeColumn {
+  readonly name: string;
+  readonly type: Extract<IR, { readonly k: 'genericType' }>;
+  readonly nullable: boolean;
+}
 
 /** An IR expression whose value is a relation */
 export type RelationExpr = IR;
@@ -185,10 +200,12 @@ export enum EmitRole {
   DISTINCT = 'distinct',
   /** a Group: its groupBy call, or with no key its aggregate call */
   GROUP = 'group',
-  /** a Group or a Partition: an aggregation's column read or `1` (Count rows), and its reduce; a Partition's rank function */
+  /** a Group, a Partition or a Pivot: an aggregation's column read or `1` (Count rows), and its reduce; a Partition's rank function */
   AGGREGATION = 'aggregation',
   /** a Partition: its extends, their window and its sort keys (PLAN §11.6) */
   WINDOW = 'window',
+  /** a Pivot: its pivot call and pivot column (PLAN §11.12) */
+  PIVOT = 'pivot',
   /** a Concat: its concatenate call */
   CONCAT = 'concat',
   /** a Difference: the extend of its differences, and each `coalesce` and `minus` in them (PLAN §11.7) */
@@ -319,10 +336,15 @@ export const letBinding = (name: string, value: IR, origin?: Origin): IR =>
 export const genericType = (
   path: string,
   params: readonly number[] = [],
-): IR =>
+): Extract<IR, { readonly k: 'genericType' }> =>
   params.length
     ? { k: 'genericType', path, params }
     : { k: 'genericType', path };
+
+export const relationType = (columns: readonly RelationTypeColumn[]): IR => ({
+  k: 'relationType',
+  columns,
+});
 
 export const enumValue = (
   enumPath: string,

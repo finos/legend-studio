@@ -26,7 +26,9 @@ interface CubeHost {
 - **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the Northwind, Sports and Trades datasets of the Sample Data tab)
   and caches each model's outline: its tables, for the source picker, and its runtimes' connections with their
   database types, which Drop, Slice, Limit and Distinct need on some databases (PLAN §11.4), and which tell DuckDB's
-  refusal of `%` and `_` in filter patterns (PLAN §8.2). Users can also paste a Pure
+  refusal of `%` and `_` in filter patterns (PLAN §8.2) and where Pivot can run (PLAN §11.12). A data product or
+  ingest cube's database is the one its lakehouse runtime routes to, from one table in `CubeLakehouseRuntime.ts`
+  (Snowflake for now). Users can also paste a Pure
   model.
 - **Direct database connections (optional):** `buildCubeConnectionExplorer(config, tracerService)` builds the explorer
   that reads the database behind a connection through the engine's schema exploration
