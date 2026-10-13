@@ -54,6 +54,7 @@ export * from './filter/QueryFilterValues.js';
 export * from './nodes/transforms/Difference.js';
 export * from './nodes/transforms/Extend.js';
 export * from './nodes/transforms/ExpressionFilter.js';
+export * from './nodes/transforms/LikeFunctions.js';
 export * from './nodes/transforms/Join.js';
 export * from './nodes/transforms/JoinAutofix.js';
 export * from './nodes/transforms/Filter.js';

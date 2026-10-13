@@ -435,10 +435,13 @@ describe('Group editor', () => {
       'Count Rows',
     ]);
     pick(1, 'SHIP_COUNTRY');
+    // Min and Max on a string from M6d (PLAN §11.14)
     expect(functions(1)).toEqual([
       'Count',
       'Distinct Count',
       'Distinct Value',
+      'Min',
+      'Max',
       'Count Rows',
     ]);
     pick(1, 'ORDER_ID');
@@ -468,6 +471,8 @@ describe('Group editor', () => {
       'Count',
       'Distinct Count',
       'Distinct Value',
+      'Min',
+      'Max',
       'Count Rows',
     ]);
     const incompatible = MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE(

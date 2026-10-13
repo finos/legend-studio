@@ -24,15 +24,17 @@ const CONTROL_CHARACTER = /\p{Cc}/u;
  * operations that make columns (PLAN §11.4, replacing the spec's
  * `/^[A-Za-z0-9_ ]{1,100}$/u`, Appendix A): not empty, no space at either
  * end, no `"` (which breaks the column's SQL alias), no `\` (the engine then
- * can't find the column again), no control character, and at most
- * `MAX_COLUMN_NAME_LENGTH` code points. Spaces, hyphens, quotes and
- * non-ASCII letters are fine.
+ * can't find the column again), no backtick (Databricks and MemSQL quote names
+ * with backticks, and the engine escapes none, PLAN §11.14), no control
+ * character, and at most `MAX_COLUMN_NAME_LENGTH` code points. Spaces,
+ * hyphens, single quotes and non-ASCII letters are fine.
  */
 export const isValidColumnName = (name: string): boolean =>
   name.length > 0 &&
   name === name.trim() &&
   !name.includes('"') &&
   !name.includes('\\') &&
+  !name.includes('`') &&
   !CONTROL_CHARACTER.test(name) &&
   Array.from(name).length <= MAX_COLUMN_NAME_LENGTH;
 

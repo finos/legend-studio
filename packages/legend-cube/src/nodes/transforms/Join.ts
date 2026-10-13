@@ -30,6 +30,7 @@ import {
   MESSAGE_NOT_IN_INPUT_SCHEMA,
   MESSAGE_RIGHT_JOIN_COLUMNS_EMPTY,
 } from '../../messages/CubeMessages.js';
+import { foldColumnName } from '../../schema/ColumnName.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import type { CubeType } from '../../types/CubeType.js';
 import {
@@ -95,10 +96,30 @@ export const getSameNamedJoinKeys = (
   );
 
 /**
- * The column names, in left schema order, that both inputs have but that are
- * neither a positionally identical key nor one of the `extra` names (which
- * Difference uses for its difference columns). Each one would be two columns
- * of the same name in the output, so a join with any is invalid.
+ * The names, on one side, of the columns the other side also has in any case
+ * (`foldColumnName`: SQL Server, MemSQL and DuckDB take `ID` and `id` for one
+ * column, PLAN §11.14), but for a name both give as one column, given exactly
+ * on both: a positionally identical key, or one of the `shared` names.
+ */
+export const getCollidingJoinColumns = (
+  names: readonly string[],
+  otherNames: readonly string[],
+  shared: ReadonlySet<string>,
+): string[] =>
+  names.filter((name) =>
+    otherNames.some(
+      (other) =>
+        foldColumnName(other) === foldColumnName(name) &&
+        !(other === name && shared.has(name)),
+    ),
+  );
+
+/**
+ * The column names, in left schema order, that both inputs have, in any case,
+ * but for a positionally identical key and the `extra` names, which
+ * Difference renames on both sides (its difference columns), so they never
+ * meet. Each one would be two columns of one name in the output, so a join
+ * with any is invalid.
  */
 export const getDuplicateJoinColumns = (
   leftSchema: Schema,
@@ -107,14 +128,14 @@ export const getDuplicateJoinColumns = (
   rightColumns: readonly string[],
   extra?: readonly string[],
 ): string[] => {
-  const applied = new Set([
-    ...(extra ?? []),
-    ...getSameNamedJoinKeys(leftColumns, rightColumns),
-  ]);
-  const rightNames = new Set(rightSchema.names());
-  return leftSchema
-    .names()
-    .filter((name) => rightNames.has(name) && !applied.has(name));
+  const renamed = new Set(extra ?? []);
+  const kept = (names: readonly string[]): string[] =>
+    names.filter((name) => !renamed.has(name));
+  return getCollidingJoinColumns(
+    kept(leftSchema.names()),
+    kept(rightSchema.names()),
+    new Set(getSameNamedJoinKeys(leftColumns, rightColumns)),
+  );
 };
 
 /**

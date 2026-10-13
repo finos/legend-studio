@@ -22,7 +22,12 @@ import {
   MAX_COLUMN_NAME_LENGTH,
 } from '../../schema/ColumnName.js';
 import type { Schema } from '../../schema/Schema.js';
-import { getDuplicateJoinColumns, Join } from './Join.js';
+import {
+  getCollidingJoinColumns,
+  getDuplicateJoinColumns,
+  getSameNamedJoinKeys,
+  Join,
+} from './Join.js';
 import { Rename, type RenameMapping } from './Rename.js';
 
 /**
@@ -42,10 +47,12 @@ export interface JoinDuplicateFix {
 }
 
 /**
- * Plans the fix: each column both inputs have but the join doesn't take as
- * the same key on both sides becomes `c_1` on the Left and `c_2` on the
- * Right, or `c_1_2`, `c_1_3`… when a name is taken, in any case, in either
- * input or already given by this fix (all Left names first). A name is cut to 128 code points.
+ * Plans the fix: each column both inputs have, in any case, but the join
+ * doesn't take as the same key on both sides becomes `c_1` on the Left and
+ * `c_2` on the Right, each side's own name renamed (`ID_1`, `id_2`, PLAN
+ * §11.14), or `c_1_2`, `c_1_3`… when a name is taken, in any case, in either
+ * input or already given by this fix (all Left names first); a key both sides
+ * give as one column keeps its name. A name is cut to 128 code points.
  * The key lists are rewritten through the same renames, so a shared column
  * that is a key at another position, or crossed keys, still join. Gives
  * `undefined` when nothing is shared, or a name would not be a valid column
@@ -82,8 +89,27 @@ export const planJoinDuplicateFix = (
     taken.add(foldColumnName(name));
     return name;
   };
-  const left = duplicates.map((from) => ({ from, to: nameFor(from, 1) }));
-  const right = duplicates.map((from) => ({ from, to: nameFor(from, 2) }));
+  const shared = new Set(
+    getSameNamedJoinKeys(join.leftColumns, join.rightColumns),
+  );
+  const left = duplicates
+    .filter((from) => !shared.has(from))
+    .map((from) => ({ from, to: nameFor(from, 1) }));
+  // in the order of the Left names they meet
+  const colliding = getCollidingJoinColumns(
+    rightSchema.names(),
+    leftSchema.names(),
+    shared,
+  ).filter((from) => !shared.has(from));
+  const right = Array.from(
+    new Set(
+      duplicates.flatMap((name) =>
+        colliding.filter(
+          (from) => foldColumnName(from) === foldColumnName(name),
+        ),
+      ),
+    ),
+  ).map((from) => ({ from, to: nameFor(from, 2) }));
   if (![...left, ...right].every(({ to }) => isValidColumnName(to))) {
     return undefined;
   }
@@ -159,7 +185,9 @@ export const canFixJoinDuplicates = (
 
 /**
  * Fixes the join as one change of the query: a Rename spliced in before each
- * input, on the same port, and the join's keys rewritten when a renamed
+ * input that has a column to rename (one side may have none: a key both
+ * sides give as one column keeps its name), on the same port, and the join's
+ * keys rewritten when a renamed
  * column was a key. The selection stays where it was. Throws when
  * `canFixJoinDuplicates` doesn't hold.
  */
@@ -174,11 +202,20 @@ export const fixJoinDuplicates = (
     throw new Error(`Can't fix the duplicate columns of join "${joinId}"`);
   }
   const { join, leftId, rightId, fix } = prepared;
-  const leftRename = new Rename(query.generateId(Rename.TYPE), fix.left);
-  let fixed = query.add(leftRename, leftId);
-  // a second id from the query that holds the first rename
-  const rightRename = new Rename(fixed.generateId(Rename.TYPE), fix.right);
-  fixed = fixed.add(rightRename, rightId);
+  // each id from the query that holds the renames before it
+  let fixed = [
+    { mappings: fix.left, inputId: leftId },
+    { mappings: fix.right, inputId: rightId },
+  ].reduce(
+    (current, { mappings, inputId }) =>
+      mappings.length
+        ? current.add(
+            new Rename(current.generateId(Rename.TYPE), mappings),
+            inputId,
+          )
+        : current,
+    query,
+  );
   const keysChanged =
     fix.leftColumns.some((key, index) => key !== join.leftColumns[index]) ||
     fix.rightColumns.some((key, index) => key !== join.rightColumns[index]);

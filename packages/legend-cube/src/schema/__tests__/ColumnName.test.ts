@@ -43,6 +43,8 @@ describe(unitTest('Column names'), () => {
     ['a trailing tab', 'NAME\t'],
     ['a double quote', 'say "hi"'],
     ['a backslash', 'a\\b'],
+    // Databricks and MemSQL quote names with backticks (PLAN §11.14)
+    ['a backtick', 'a`b'],
     ['a tab inside', 'a\tb'],
     ['a line break', 'a\nb'],
     ['a control character', 'a\u0001b'],

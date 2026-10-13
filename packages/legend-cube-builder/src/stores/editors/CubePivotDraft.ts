@@ -22,7 +22,7 @@ import {
   FilterOperator,
   foldColumnName,
   getLiteralText,
-  isPivotValueText,
+  isValidColumnName,
   type LiteralValue,
   parseValue,
   Pivot,
@@ -185,7 +185,7 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
 
   /**
    * Why a value can't be ticked, given those ticked: its text can't name a
-   * column (`isPivotValueText`), another ticked value differs from it only in
+   * column (`isValidColumnName`), another ticked value differs from it only in
    * case, or `PIVOT_MAX_VALUES` are ticked already (the core refuses each,
    * PLAN §11.12); `undefined` when it can, or is ticked
    */
@@ -194,7 +194,7 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
     ticked: readonly LiteralValue[] = this.values,
   ): string | undefined {
     const text = getLiteralText(value);
-    return !isPivotValueText(text)
+    return !isValidColumnName(text)
       ? PIVOT_VALUE_DISABLED_REASON.NOT_A_COLUMN_NAME
       : ticked.some(
             (other) =>

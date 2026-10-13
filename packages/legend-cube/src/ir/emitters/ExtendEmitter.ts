@@ -15,6 +15,7 @@
  */
 
 import type { Extend } from '../../nodes/transforms/Extend.js';
+import { getEmitPatternProblem } from '../CubeDialects.js';
 import {
   colSpec,
   colSpecArray,
@@ -30,7 +31,9 @@ import { type EmitContext, originOf } from '../EmitContext.js';
  * Emits an Extend as one `->extend(~[<name>: <lambda>])` per column, in listed
  * order, so a column can use the ones before it: one extend can't see its own
  * columns ✅ (PLAN §11.7 Q3). Each lambda is the engine's JSON, marked with the
- * Extend, so an engine error inside it lands on the node.
+ * Extend, so an engine error inside it lands on the node. Its patterns are
+ * refused where the editor refuses them (`getEmitPatternProblem`, PLAN
+ * §11.14).
  *
  * The extend must be valid for its input schema.
  */
@@ -42,6 +45,10 @@ export const emitExtend = (
   const [input] = inputs;
   if (!input) {
     throw new Error(`Extend "${node.id}" needs an input to be emitted`);
+  }
+  const problem = getEmitPatternProblem(node, context.databaseType);
+  if (problem !== undefined) {
+    throw new Error(problem);
   }
   const names = node.columns.map(({ name }) => name);
   const expected = context.schema.names().slice(-names.length);

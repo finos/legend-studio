@@ -27,6 +27,7 @@ import { Distinct } from '../../nodes/transforms/Distinct.js';
 import {
   MESSAGE_CONDITION_WILDCARD,
   MESSAGE_FILTER_VALUE_WILDCARD,
+  MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '../../messages/CubeMessages.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
@@ -34,6 +35,7 @@ import {
   ExpressionFilter,
   getExpressionFilterSignature,
 } from '../../nodes/transforms/ExpressionFilter.js';
+import { Extend } from '../../nodes/transforms/Extend.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join } from '../../nodes/transforms/Join.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
@@ -51,6 +53,8 @@ import {
   getDatabaseProblemOfType,
   getDatabaseProblems,
   getDialectWorkarounds,
+  getEmitPatternProblem,
+  givesNonLiteralPattern,
   givesPatternWildcard,
   hasNoLikeEscape,
   needsDatabaseType,
@@ -536,6 +540,115 @@ describe(unitTest('Distinct on SQL Server'), () => {
     );
   });
 });
+
+describe(
+  unitTest("Patterns that are not literals, and an Extend's patterns"),
+  () => {
+    const X = { _type: 'var', name: 'x' };
+    const property = (name: string) => ({
+      _type: 'property',
+      property: name,
+      parameters: [X],
+    });
+    const lambdaOf = (body: object) => ({
+      _type: 'lambda',
+      parameters: [X],
+      body: [body],
+    });
+    /** `x | $x.SHIP_COUNTRY->contains(<pattern>)`, the pattern a literal or a column */
+    const contains = (pattern: string | { column: string }) =>
+      lambdaOf({
+        _type: 'func',
+        function: 'contains',
+        parameters: [
+          property('SHIP_COUNTRY'),
+          typeof pattern === 'string'
+            ? { _type: 'string', value: pattern }
+            : {
+                _type: 'func',
+                function: 'toOne',
+                parameters: [property(pattern.column)],
+              },
+        ],
+      });
+    const filterBy = (pattern: string | { column: string }): ExpressionFilter =>
+      new ExpressionFilter('expressionFilter101', 'x | …', contains(pattern));
+    const extendBy = (pattern: string | { column: string }): Extend =>
+      new Extend('extend101', [
+        {
+          name: 'ok',
+          code: 'x | true',
+          lambda: lambdaOf({ _type: 'boolean', value: true }),
+        },
+        { name: 'hit', code: 'x | …', lambda: contains(pattern) },
+      ]);
+
+    test('Refuses a column pattern unless on Snowflake, a database none is known of included', () => {
+      [
+        filterBy({ column: 'SHIP_CITY' }),
+        extendBy({ column: 'SHIP_CITY' }),
+      ].forEach((node) => {
+        expect(givesNonLiteralPattern(node)).toBe(true);
+        expect(dependsOnDatabaseType(node)).toBe(true);
+        ['H2', 'DuckDB', 'Databricks', 'MemSQL', 'Postgres', undefined].forEach(
+          (databaseType) =>
+            expect(getDatabaseProblems(node, databaseType)).toEqual([
+              MESSAGE_PATTERN_NOT_LITERAL('contains'),
+            ]),
+        );
+        expect(getDatabaseProblems(node, 'Snowflake')).toEqual([]);
+        // the emitters refuse it once the type is known; typing passes none
+        expect(getEmitPatternProblem(node, 'Databricks')).toBe(
+          MESSAGE_PATTERN_NOT_LITERAL('contains'),
+        );
+        expect(getEmitPatternProblem(node, 'Snowflake')).toBeUndefined();
+        expect(getEmitPatternProblem(node, undefined)).toBeUndefined();
+      });
+      expect(MESSAGE_PATTERN_NOT_LITERAL('contains')).toBe(
+        'The value given to "contains" must be a text in quotes unless the cube runs on Snowflake: elsewhere the engine writes it wrong, so the rows would be wrong.',
+      );
+      // a literal is fine everywhere
+      expect(givesNonLiteralPattern(filterBy('ab'))).toBe(false);
+      expect(getDatabaseProblems(filterBy('ab'), undefined)).toEqual([]);
+    });
+
+    test('Writes a column pattern only on Snowflake, a checked Filter by Expression refused in the emitter elsewhere', () => {
+      const node = filterBy({ column: 'SHIP_CITY' });
+      const columns = [...COLUMNS, column('SHIP_CITY', 'String', true)];
+      const query = ordersThen(
+        [
+          node.withCheck({
+            kind: 'checked',
+            signature: getExpressionFilterSignature(
+              new Schema(columns),
+              node.lambda,
+            ),
+          }),
+        ],
+        columns,
+      );
+      expect(() => run(query, 'H2')).toThrow(
+        MESSAGE_PATTERN_NOT_LITERAL('contains'),
+      );
+      expect(run(query, 'Snowflake')).toMatch(/contains/u);
+      // none known: Show Pure and typing write it; the editor refuses the run
+      expect(run(query)).toMatch(/contains/u);
+    });
+
+    test("Refuses % and _ in an Extend's literal on DuckDB, as in a Filter by Expression", () => {
+      expect(givesPatternWildcard(extendBy('50%'))).toBe(true);
+      expect(getDatabaseProblems(extendBy('50%'), 'DuckDB')).toEqual([
+        MESSAGE_CONDITION_WILDCARD('contains', 'DuckDB'),
+      ]);
+      expect(getEmitPatternProblem(extendBy('50%'), 'DuckDB')).toBe(
+        MESSAGE_CONDITION_WILDCARD('contains', 'DuckDB'),
+      );
+      expect(getDatabaseProblems(extendBy('50%'), 'H2')).toEqual([]);
+      expect(getDatabaseProblems(extendBy('ab'), 'DuckDB')).toEqual([]);
+      expect(dependsOnDatabaseType(extendBy('ab'))).toBe(false);
+    });
+  },
+);
 
 describe(unitTest('Pivot on each database'), () => {
   /** SHIP_COUNTRY's FR and DE, counting rows */

@@ -486,10 +486,13 @@ describe('Partition editor', () => {
       ...NO_COLUMN_FUNCTIONS,
     ]);
     pick(1, 'SHIP_COUNTRY');
+    // Min and Max on a string from M6d (PLAN §11.14)
     expect(functions(1)).toEqual([
       'Count',
       'Distinct Count',
       'Distinct Value',
+      'Min',
+      'Max',
       ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
@@ -526,6 +529,8 @@ describe('Partition editor', () => {
       'Count',
       'Distinct Count',
       'Distinct Value',
+      'Min',
+      'Max',
       ...ROW_FUNCTIONS,
       ...NO_COLUMN_FUNCTIONS,
     ]);
