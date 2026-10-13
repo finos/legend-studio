@@ -40,6 +40,7 @@ import {
   UnknownNode,
   UnsupportedFilter,
 } from '@finos/legend-cube';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable, readFileAsText } from '@finos/legend-shared';
 import {
   act,
@@ -172,9 +173,11 @@ const barIn = (region: HTMLElement): Element | undefined =>
   Array.from(region.children).find((child) =>
     child.className.startsWith('panel-loading-indicator'),
   );
-/** The spec the Export dialog shows */
-const exportedText = (dialog: HTMLElement): string =>
-  within(dialog).getByLabelText<HTMLTextAreaElement>('Cube spec').value;
+/** The spec the Export dialog shows: the text its (mocked) code editor was given last */
+const exportedText = (dialog: HTMLElement): string => {
+  expect(within(dialog).getByLabelText('Cube spec')).toBeDefined();
+  return String(MockedMonacoEditorInstance.setValue.mock.calls.at(-1)?.[0]);
+};
 
 /**
  * Whether the dialog's frame and the named footer buttons are drawn dark,
@@ -226,6 +229,9 @@ const CREATE_OBJECT_URL = Object.getOwnPropertyDescriptor(
 
 beforeEach(() => {
   localStorage.clear();
+  // the mocked code editor holds no text of its own
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  MockedMonacoEditorInstance.setValue.mockClear();
 });
 
 afterEach(() => {

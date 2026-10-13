@@ -30,6 +30,7 @@ import {
   serializeCubeSpec,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '@finos/legend-cube';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   act,
@@ -172,6 +173,8 @@ const loadingBarIn = (element: HTMLElement): Element | null =>
   element.querySelector('.panel-loading-indicator');
 
 beforeEach(() => {
+  // the mocked code editor holds no text of its own
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
   localStorage.clear();
 });
 
