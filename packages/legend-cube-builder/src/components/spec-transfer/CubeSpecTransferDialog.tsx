@@ -139,7 +139,12 @@ export const CubeSpecTransferDialog = observer(
                 formatText={false}
                 text="Import"
                 disabled={!transfer.importText.trim() || transfer.isReadingFile}
-                onClick={() => transfer.importSpec()}
+                // the spec replaces the cube: unsaved changes are asked about first
+                onClick={() =>
+                  editorState.persistence.confirmDiscard(() =>
+                    transfer.importSpec(),
+                  )
+                }
               />
             )}
             <ModalFooterButton

@@ -33,7 +33,10 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { READ_ONLY_CUBE_TITLE } from '../__lib__/LegendCubeLabels.js';
+import {
+  READ_ONLY_CUBE_TITLE,
+  UNSAVED_CUBE_NAME,
+} from '../__lib__/LegendCubeLabels.js';
 import {
   CUBE_PERSISTENCE_PENDING_LABEL,
   EMPTY_CUBE_SAVE_TITLE,
@@ -290,6 +293,8 @@ export class CubePersistenceState {
     string | undefined
   >();
   pending: CUBE_PERSISTENCE_PENDING_LABEL | undefined;
+  /** The cube the page's address names is being opened: the page shows only that (U9 (a)) */
+  isOpeningFromAddress = false;
   /** Why the cube the page's address names couldn't be opened, shown in the graph area (QUESTIONS.md U9 (b)) */
   loadError: string | undefined;
   confirmation: CubeConfirmation | undefined;
@@ -299,6 +304,7 @@ export class CubePersistenceState {
       currentId: observable,
       known: observable.ref,
       pending: observable,
+      isOpeningFromAddress: observable,
       loadError: observable,
       confirmation: observable.ref,
       saved: computed,
@@ -307,6 +313,7 @@ export class CubePersistenceState {
       isQueryModified: computed,
       isPresentationModified: computed,
       isModified: computed,
+      titleDescription: computed,
       isOwner: computed,
       isPending: computed,
       saveAsDisabledReason: computed,
@@ -390,6 +397,29 @@ export class CubePersistenceState {
   /** Either half changed: the name shows an asterisk, and leaving asks first */
   get isModified(): boolean {
     return this.isQueryModified || this.isPresentationModified;
+  }
+
+  /** What hovering the cube's name says (spec §17.10): its name, id, version and owners, and what is unsaved */
+  get titleDescription(): string {
+    const cube = this.savedCube;
+    const lines = [
+      this.editorState.document.name ?? cube?.name ?? UNSAVED_CUBE_NAME,
+      ...(cube
+        ? [
+            `Id: ${cube.id}`,
+            `Version: ${cube.version}`,
+            `Owners: ${cube.owners.join(', ')}`,
+          ]
+        : ['Not saved yet']),
+    ];
+    const unsaved = [
+      ...(this.isQueryModified ? ['the query'] : []),
+      ...(this.isPresentationModified ? ['the presentation'] : []),
+    ];
+    if (unsaved.length) {
+      lines.push(`Unsaved changes to ${unsaved.join(' and ')}`);
+    }
+    return lines.join('\n');
   }
 
   /** The viewer may change the saved cube shown; true when the host doesn't know the viewer */
@@ -673,6 +703,7 @@ export class CubePersistenceState {
       return false;
     }
     this.pending = CUBE_PERSISTENCE_PENDING_LABEL.LOADING;
+    this.isOpeningFromAddress = fromAddress;
     this.loadError = undefined;
     try {
       const cube = (yield store.getCube(id)) as SavedCube;
@@ -707,6 +738,7 @@ export class CubePersistenceState {
       return false;
     } finally {
       this.pending = undefined;
+      this.isOpeningFromAddress = false;
     }
   }
 

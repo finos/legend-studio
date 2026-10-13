@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-art';
 import { useCommands } from '@finos/legend-application';
 import type { CubeDocument } from '@finos/legend-cube';
-import { flowResult } from 'mobx';
+import { flowResult, reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { UNDO_SHORTCUT_LABEL } from '../__lib__/LegendCubeCommand.js';
@@ -33,6 +33,11 @@ import {
   READ_ONLY_CUBE_TITLE,
   UNSAVED_CUBE_NAME,
 } from '../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_PERSISTENCE_PENDING_LABEL,
+  CUBE_PERSISTENCE_SHORTCUT_LABEL,
+  LOAD_ERROR_TITLE,
+} from '../__lib__/LegendCubePersistenceLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import {
@@ -50,6 +55,11 @@ import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
 import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
+import {
+  CubeConfirmDialog,
+  CubeLoadDialog,
+  CubeSaveDialog,
+} from './persistence/CubePersistenceDialogs.js';
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
@@ -72,17 +82,38 @@ const useMaxGraphHeight = (): number => {
  */
 const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
   const { editorState } = props;
-  const { readOnly } = editorState;
+  const { readOnly, persistence } = editorState;
   const { showGraph } = editorState.document.meta.presentation;
+  const { applicationStore } = editorState.host;
+  // the node editor finishes first, so its edits count (PLAN §11.13)
+  const run = (action: () => void) => (): void =>
+    editorState.runPersistenceAction(action);
   return (
     <div
       className="flex shrink-0 flex-col bg-[var(--color-bg-panel)]"
       data-testid={LEGEND_CUBE_TEST_ID.GRAPH_REGION}
     >
       <div className="flex min-h-8 shrink-0 flex-wrap items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2 py-1">
-        <span className="min-w-24 flex-1 truncate text-lg font-medium">
+        <span
+          className="min-w-24 flex-1 truncate text-lg font-medium"
+          title={persistence.titleDescription}
+          data-testid={LEGEND_CUBE_TEST_ID.CUBE_TITLE}
+        >
           {editorState.document.name ?? UNSAVED_CUBE_NAME}
+          {persistence.isModified && (
+            <span
+              className="text-[var(--color-text-secondary)]"
+              aria-label="unsaved changes"
+            >
+              {' *'}
+            </span>
+          )}
         </span>
+        {persistence.pending && (
+          <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
+            {persistence.pending}
+          </span>
+        )}
         {editorState.isResolvingSources && (
           <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
             {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
@@ -92,6 +123,65 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
             {CUBE_PENDING_LABEL.CHECKING_EXPRESSIONS}
           </span>
+        )}
+        <CubeButton
+          title={`Start a new cube, in place of this one (${CUBE_PERSISTENCE_SHORTCUT_LABEL.NEW})`}
+          disabled={persistence.isPending}
+          onClick={run(() => persistence.newCube())}
+        >
+          New
+        </CubeButton>
+        <CubeButton
+          title={
+            persistence.loadDisabledReason ??
+            `Open a saved cube, in place of this one (${CUBE_PERSISTENCE_SHORTCUT_LABEL.LOAD})`
+          }
+          disabled={persistence.loadDisabledReason !== undefined}
+          onClick={run(() => persistence.openLoadDialog())}
+        >
+          Load
+        </CubeButton>
+        <CubeButton
+          primary={persistence.isModified}
+          title={
+            persistence.saveDisabledReason ??
+            (persistence.savedCube
+              ? `Save the cube as version ${persistence.savedCube.version + 1} (${CUBE_PERSISTENCE_SHORTCUT_LABEL.SAVE})`
+              : `Save the cube (${CUBE_PERSISTENCE_SHORTCUT_LABEL.SAVE})`)
+          }
+          // edits the node editor would apply may make an invalid cube valid
+          disabled={
+            persistence.saveDisabledReason !== undefined &&
+            !editorState.hasEditsToApply
+          }
+          onClick={run(() => persistence.save())}
+        >
+          Save
+        </CubeButton>
+        <CubeButton
+          title={
+            persistence.saveAsDisabledReason ??
+            'Save a copy of the cube under a new name, as its owner'
+          }
+          disabled={
+            persistence.saveAsDisabledReason !== undefined &&
+            !editorState.hasEditsToApply
+          }
+          onClick={run(() => persistence.saveAs())}
+        >
+          Save as
+        </CubeButton>
+        {persistence.savedCube && (
+          <CubeButton
+            title={
+              persistence.deleteDisabledReason ??
+              `Delete "${persistence.savedCube.name}" from the store`
+            }
+            disabled={persistence.deleteDisabledReason !== undefined}
+            onClick={run(() => persistence.deleteCube())}
+          >
+            Delete
+          </CubeButton>
         )}
         <CubeAddItemsMenu editorState={editorState} />
         <CubeButton
@@ -153,6 +243,26 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
         </CubeButton>
         <CubeButton
           title={
+            readOnly
+              ? READ_ONLY_CUBE_TITLE
+              : `Copy the cube's spec to the clipboard (${CUBE_PERSISTENCE_SHORTCUT_LABEL.COPY})`
+          }
+          disabled={readOnly}
+          onClick={run(() => {
+            persistence.copy().catch(applicationStore.alertUnhandledError);
+          })}
+        >
+          Copy
+        </CubeButton>
+        <CubeButton
+          title={`Open the cube spec on the clipboard, in place of this one (${CUBE_PERSISTENCE_SHORTCUT_LABEL.PASTE})`}
+          disabled={persistence.isPending}
+          onClick={run(() => persistence.paste())}
+        >
+          Paste
+        </CubeButton>
+        <CubeButton
+          title={
             showGraph
               ? 'Hide the graph, leaving more room for the results'
               : 'Show the graph'
@@ -172,6 +282,21 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           editorState.isResolvingSources || editorState.isCheckingExpressions
         }
       />
+      {persistence.loadError !== undefined && (
+        <div
+          className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-status-error-bg)] px-2 py-1 text-base text-[var(--color-status-error)]"
+          role="alert"
+          data-testid={LEGEND_CUBE_TEST_ID.LOAD_ERROR}
+        >
+          <span className="min-w-0 flex-1 break-words">
+            <span className="font-medium">{LOAD_ERROR_TITLE}</span>{' '}
+            {persistence.loadError}
+          </span>
+          <CubeButton onClick={() => persistence.clearLoadError()}>
+            Dismiss
+          </CubeButton>
+        </div>
+      )}
       {readOnly && (
         <div
           className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
@@ -198,6 +323,9 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
       <CubeExamplesDialog editorState={editorState} />
       <CubeSpecTransferDialog editorState={editorState} />
       <CubeShowPureDialog editorState={editorState} />
+      <CubeSaveDialog editorState={editorState} />
+      <CubeLoadDialog editorState={editorState} />
+      <CubeConfirmDialog editorState={editorState} />
     </div>
   );
 });
@@ -216,6 +344,13 @@ export const CubeEditor = observer(
     initialDocument?: CubeDocument | undefined;
     /** A source a link asks the page to start with, on an empty cube (spec §17.15) */
     initialSource?: CubeEntrySource | undefined;
+    /** A saved cube the page's address names, opened as the page opens (PLAN §11.13) */
+    initialCubeId?: string | undefined;
+    /**
+     * Told when the saved cube shown changes, e.g. to put its id in the
+     * address (set on Load and Save, cleared on New, Paste and Import)
+     */
+    onSavedCubeChange?: ((cubeId: string | undefined) => void) | undefined;
   }) => {
     const [editorState] = useState(
       () => new CubeEditorState(props.host, props.initialDocument),
@@ -232,6 +367,33 @@ export const CubeEditor = observer(
       // only as the page opens
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+    const { initialCubeId, onSavedCubeChange } = props;
+    useEffect(() => {
+      if (initialCubeId !== undefined) {
+        flowResult(editorState.persistence.openCube(initialCubeId, true)).catch(
+          editorState.host.applicationStore.alertUnhandledError,
+        );
+      }
+      // only as the page opens
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    useEffect(
+      () =>
+        reaction(
+          () => editorState.persistence.currentId,
+          (cubeId) => onSavedCubeChange?.(cubeId),
+        ),
+      [editorState, onSavedCubeChange],
+    );
+    // unsaved changes are asked about before the page is left (spec §17.14)
+    useEffect(() => {
+      const { navigator } = editorState.host.applicationStore.navigationService;
+      navigator.blockNavigation(
+        [() => editorState.persistence.isModified],
+        (proceed) => editorState.persistence.confirmDiscard(proceed),
+      );
+      return () => navigator.unblockNavigation();
+    }, [editorState]);
     useCommands(editorState);
     const maxGraphHeight = useMaxGraphHeight();
     const { showGraph } = editorState.document.meta.presentation;
@@ -241,9 +403,17 @@ export const CubeEditor = observer(
 
     return (
       <div
-        className="legend-cube flex bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
+        className="legend-cube relative flex bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
         data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
       >
+        {editorState.persistence.isOpeningFromAddress && (
+          <div
+            className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-bg-app)] text-lg text-[var(--color-text-secondary)]"
+            role="status"
+          >
+            {CUBE_PERSISTENCE_PENDING_LABEL.LOADING}
+          </div>
+        )}
         <CubePalette editorState={editorState} />
         <div className="flex h-full min-w-0 flex-1 flex-col">
           <CubeGraphHeader editorState={editorState} />

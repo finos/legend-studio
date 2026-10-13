@@ -50,6 +50,7 @@ import {
   within,
 } from '@testing-library/react';
 import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
+import { UNSAVED_CHANGES_MESSAGE } from '../../__lib__/LegendCubePersistenceLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -215,6 +216,16 @@ const importText = async (text: string): Promise<HTMLElement> => {
     target: { value: text },
   });
   fireEvent.click(within(dialog).getByText('Import'));
+  // a cube with nodes, never saved, has unsaved changes: Import asks first (PLAN §11.13)
+  const question = screen.queryByText(UNSAVED_CHANGES_MESSAGE);
+  if (question) {
+    fireEvent.click(
+      within(question.closest('[role="dialog"]') as HTMLElement).getByRole(
+        'button',
+        { name: 'Continue' },
+      ),
+    );
+  }
   return dialog;
 };
 
@@ -419,7 +430,8 @@ describe('Cube spec export and import, on the page', () => {
     };
     spec.query.nodes[0] = { ...spec.query.nodes[0], table: 7 };
     const dialog = await importText(JSON.stringify(spec));
-    expect(within(dialog).getByRole('alert').textContent).toBe(
+    // the dialog is hidden from queries until the question has closed
+    expect((await within(dialog).findByRole('alert')).textContent).toBe(
       "Can't import the spec: query.nodes[0].table must be a string",
     );
     await waitFor(() => expect(nodeIds()).toEqual(['relational101']));

@@ -42,6 +42,7 @@ import {
   OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
+import { UNSAVED_CHANGES_MESSAGE } from '../../__lib__/LegendCubePersistenceLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   CUSTOMERS_COLUMNS,
@@ -336,6 +337,14 @@ describe('Cube page', () => {
       target: { value: serializeCubeSpec(withOrders()) },
     });
     fireEvent.click(within(dialog).getByText('Import'));
+    // the cube, never saved, has unsaved changes: Import asks first (PLAN §11.13)
+    fireEvent.click(
+      within(
+        (await screen.findByText(UNSAVED_CHANGES_MESSAGE)).closest(
+          '[role="dialog"]',
+        ) as HTMLElement,
+      ).getByRole('button', { name: 'Continue' }),
+    );
     await waitFor(() =>
       expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull(),
     );
