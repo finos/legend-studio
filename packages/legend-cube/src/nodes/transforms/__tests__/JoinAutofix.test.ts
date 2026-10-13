@@ -227,6 +227,28 @@ describe(unitTest('Join autofix'), () => {
     expect(buildSchemasAndValidity(fixed).validity.get('join101')).toEqual([]);
   });
 
+  test('Renames each side its own name when they differ only in case, and keeps a key both sides give as one column', () => {
+    const fixed = fix(
+      joined(
+        [int('K'), int('ID'), int('a')],
+        [int('K'), int('id'), int('A')],
+        ['K'],
+        ['K'],
+      ),
+    );
+    expect(mappingsOf(fixed, 'rename101')).toEqual(['ID->ID_1', 'a->a_1']);
+    expect(mappingsOf(fixed, 'rename102')).toEqual(['id->id_2', 'A->A_2']);
+    expect(buildSchemasAndValidity(fixed).validity.get('join101')).toEqual([]);
+    // the merged key keeps its name; the Right's other one in another case is renamed
+    const kept = fix(
+      joined([int('ID'), int('x')], [int('ID'), int('id')], ['ID'], ['ID']),
+    );
+    // no Rename on the Left, which has nothing to rename
+    expect(mappingsOf(kept, 'rename101')).toEqual(['id->id_2']);
+    expect(kept.getNode('rename102')).toBeUndefined();
+    expect(buildSchemasAndValidity(kept).validity.get('join101')).toEqual([]);
+  });
+
   test('Cuts a long name by code points, never through a surrogate pair', () => {
     const smiles = '\u{1F600}'.repeat(128);
     const fixed = fix(

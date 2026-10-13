@@ -9,38 +9,6 @@
 
 ## Bugs
 
-### 'Filter by' on a REAL cell finds nothing
-
-- **Found:** M7's requirements (2026-10-11, `m7-requirements/p3-float-keys.out` in the evidence folder).
-- **What:** a 32-bit `REAL` value comes back as its shortest text (`0.02`), and the quick action's `Equal` sends that
-  double, which the database's widened `0.019999999552965164` never equals: 0 of 25 `FREIGHT` values are found. The
-  editor already shows the floating-point hint on Equal over a float. Cube can't tell a 32-bit column by its type
-  (the engine types `REAL` as Double and `FLOAT` as Float4).
-- **Suggested fix:** as M7's drill-down does, `In [v, fround(v)]` when the two differ, perhaps shown in the editor as
-  the value with a note; or a tolerance operator. The user reads and edits this filter, so the shape is theirs to pick.
-
-### The row limit accepts hexadecimal and exponent text
-
-- **Found:** M2's requirements and its first verification (2026-10-08). M1 page code, so not fixed in M2's Limit
-  step.
-- **What:** the grid toolbar's row limit is checked with `Number(text.trim())` (`getRowLimitError` in
-  `LegendCubeLabels.ts`) and set with `Number(draft.trim())` (`CubeGridRegion.tsx`), so `0x10` sets 16, `1e3` 1000,
-  `0b11` 3 and `1.0` 1, where a user typing them likely meant something else.
-- **Suggested fix:** read the text once with `parseWholeNumberText` (`stores/editors/CubeIntegerText.ts`, which the
-  operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
-  Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
-
-### A Join doesn't see shared columns that differ only in case
-
-- **Found:** M2's second verification (M2.16). M1 Join code, so not fixed in M2.
-- **What:** the Join's duplicate check (`getDuplicateJoinColumns`, `Join.ts`) compares names exactly, so a left `ID`
-  and a right `id` pass. SQL Server, MemSQL and DuckDB take them for one column: the join's SQL fails there, or (DuckDB)
-  returns one column's values for both. M2.16 made Rename, the Join autofix and Cube's temporary columns compare names
-  in any case (`foldColumnName`).
-- **Suggested fix:** fold names in `getDuplicateJoinColumns` and in the Join's output-schema check, so the duplicate
-  rule and its autofix offer `ID_1`/`id_2`. Test: left `[ID, X]`, right `[id, X]` joined on X reports the duplicate,
-  and the autofix makes the join valid.
-
 ### The node tooltip stays through a drag or a zoom
 
 M3b.11's tooltip (MUI) opens 500 ms after the pointer rests on a node. A native drag of the node fires no mouse leave, so
@@ -56,14 +24,6 @@ read it again; a reload there opens it again). A parameter with a malformed `%` 
 Cube runs (the framework decodes the parameters as it loads). And the linked product is found with the catalog's
 `search` for its id: a full-text search that ranks or cuts its answers could miss it, though the id is exact. Fixes:
 a `replace` option on the navigator port; a lookup by id on the catalog port (`CubeDataProductCatalog`).
-
-### A Rename or an Extend to a name with a backtick fails on Databricks and MemSQL
-
-Found in M6c.7's review (PLAN §11.12, Appendix B). `isValidColumnName` allows a backtick, and the engine writes names
-on Databricks and MemSQL (SingleStore) in backticks without escaping one inside, so a Rename or an Extend to a name
-holding a backtick plans SQL the database rejects. Pivot refuses a backtick in its values (`isPivotValueText`); Rename,
-Extend and Group's output names don't yet. Fix: refuse a backtick in every name Cube gives a column, or once the engine
-escapes it (below), nothing.
 
 ### Redacted printing shows a Pivot's values, as column names
 
@@ -186,16 +146,18 @@ expression and Postgres and Snowflake the position, which are unambiguous; every
 could do the same.
 ```
 
-### Distinct Value of a Boolean writes `max()` over a bit or boolean
+### Distinct Value, Min and Max of a Boolean write `max()` over a bit or boolean
 
-Found in M4's requirements (plans only). `uniqueValueOnly()` is written
+Found in M4's requirements (plans only); Min and Max in M6d's (`c4-boolean-column`, plans). Min and Max of a Boolean
+column are written `min(b)` and `max(b)` on SQL Server, Sybase and Postgres, and `uniqueValueOnly()` is written
 `case when count(distinct(x)) = 1 then max(x) else null end`; on a Boolean column that is `max()` over a `bit`
 (SQL Server, Sybase), which they reject, or over a `boolean` (Postgres), which has no `max`. MemSQL and Oracle convert
-the Boolean to text first. Cube offers Distinct Value on Boolean, as the spec does (PLAN §11.5), so such a Group plans
-but would fail on those databases (inferred, not run). Draft issue for finos/legend-engine:
+the Boolean to text first. Cube offers Distinct Value on Boolean, as the spec does (PLAN §11.5), and Min and Max from
+M6d (§11.14), so such a Group plans but would fail on those databases (inferred, not run). Draft issue for
+finos/legend-engine:
 
 ```text
-Title: uniqueValueOnly() over a Boolean writes max() that SQL Server, Sybase and Postgres reject
+Title: min(), max() and uniqueValueOnly() over a Boolean write max() that SQL Server, Sybase and Postgres reject
 
 `->groupBy(~[K], ~[u: x|$x.B : y|$y->uniqueValueOnly()])` with a Boolean `B` is written
 `case when count(distinct("t_0".B)) = 1 then max("t_0".B) else null end`. SQL Server and
@@ -399,13 +361,31 @@ but the SQL selects the pivoted columns ("'1__|__f'", …) from a subquery that 
 pivot support fail with "pivot is not supported"; Trino and Athena should fail the same way, or write the pivot.
 ```
 
+### `startsWith`, `endsWith` and `contains` given a column write the column's SQL as the pattern's text
+
+Found in M6d's requirements ✅ (`cleanup-requirements/c1-patterns`, `c2-plan-patterns` in the evidence folder). Given a
+pattern that isn't a literal, `$x.CITY->contains($x.REGION->toOne())` is written `like '%"orders\_0".SHIP\_REGIO%'` on
+18 types: the column's SQL, cut short, as the pattern's text, so DuckDB returned no rows. H2 writes
+`like concat('%%', b, '%%')`, matching the column's `%` and `_` as wildcards, and fails `startsWith` and `endsWith`.
+Only Snowflake writes it right (`contains(a, b)`). Texts joined with `+` fail on H2 and DuckDB. Cube refuses a
+non-literal pattern unless the database is Snowflake (PLAN §11.14). Draft issue for finos/legend-engine:
+
+```text
+Title: startsWith/endsWith/contains with a non-literal pattern write the pattern's SQL as text
+
+$x.A->contains($x.B->toOne()) plans as `a like '%"t_0".B%'` (the column's SQL, escaped and cut, inside the literal)
+on Postgres, SQL Server, DuckDB, Databricks, MemSQL and 13 more; H2 writes like concat('%%', b, '%%'), so B's
+own % and _ act as wildcards, and fails startsWith/endsWith. Snowflake writes contains(a, b). A non-literal pattern
+should be written as an expression with its wildcards escaped (or with strpos/position), or refused.
+```
+
 ### Databricks and MemSQL: a backtick inside a name ends it early
 
 Found in M6c.7's review, planned on the local engine ✅. `processIdentifierWithQuoteChar` (`extensionDefaults.pure:677`)
 wraps a name in the dialect's quote character and strips only `"`. Databricks and MemSQL quote with backticks, so a
 name holding one ends early and the SQL fails to parse: for one, a static pivot's own column name, which holds the
-value's text, for a value with a backtick. Cube refuses a backtick in a pivot value (PLAN §11.12) and has the same gap
-for Rename and Extend (above). Draft issue for finos/legend-engine:
+value's text, for a value with a backtick. Cube refuses a backtick in every name it gives a column, a pivot's values
+included (PLAN §11.14). Draft issue for finos/legend-engine:
 
 ```text
 Title: Identifiers holding the dialect's quote character aren't escaped (Databricks, MemSQL)
@@ -419,7 +399,8 @@ pivot's value) gives `q`t`, which ends the identifier early. The quote character
 
 ### The engine's schema exploration mistypes some columns
 
-On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`. Cube keeps the
+On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`; on
+H2, `REAL` comes back as `Other`, so Cube leaves the column out of a direct connection's table (M6d.4's engine test). Cube keeps the
 engine's types (precision isn't enforced in Cube), and no test asserts them. An engine issue to file.
 
 ### The source dialog's lists show no hover, and hide the picked row under the pointer

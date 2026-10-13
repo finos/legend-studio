@@ -725,7 +725,20 @@ describe('Cube results', () => {
     expect(persistValue).toHaveBeenLastCalledWith('legend-cube.row-limit', 60);
   });
 
-  test.each(['0', '-1', '2.5', '1e400', 'abc', ''])(
+  // hexadecimal, exponent, binary and decimal text too (PLAN §11.14), which
+  // `Number()` would read as 16, 1000, 3 and 1
+  test.each([
+    '0',
+    '-1',
+    '2.5',
+    '1e400',
+    'abc',
+    '',
+    '0x10',
+    '1e3',
+    '0b11',
+    '1.0',
+  ])(
     "Refuses the row limit '%s', which is not a whole number of at least 1, and keeps the last one",
     async (text) => {
       const fake = await renderPage();

@@ -25,6 +25,7 @@ import {
   ERR_TYPING,
   MESSAGE_ALREADY_IN_INPUT_SCHEMA,
   MESSAGE_CANNOT_BE_EMPTY,
+  MESSAGE_CONDITION_BACKSLASH,
   MESSAGE_EXPRESSION_NOT_A_LAMBDA,
   MESSAGE_EXPRESSION_NOT_TYPED,
   MESSAGE_EXPRESSIONS_NOT_TYPED,
@@ -48,6 +49,7 @@ import {
   type JsonObject,
   stableJsonText,
 } from '../../utils/Json.js';
+import { findLikeFunctionWithBackslash } from './LikeFunctions.js';
 
 /**
  * A column an Extend adds (PLAN §11.7): its name, its expression's text as
@@ -113,6 +115,12 @@ export const getExtendSignature = (
       columns: columns.map(({ name, lambda }) => [name, lambda ?? null]),
     }),
   );
+
+/** A backslash given to a `startsWith`, `endsWith` or `contains` literal, which the engine doesn't escape (PLAN §11.11) */
+const backslashProblem = (lambda: JsonObject): string | undefined => {
+  const fn = findLikeFunctionWithBackslash(lambda);
+  return fn === undefined ? undefined : MESSAGE_CONDITION_BACKSLASH(fn);
+};
 
 /** Whether the JSON is a lambda of one parameter, as an expression must be (PLAN §11.7 Q2) */
 export const isOneParameterLambda = (json: JsonObject): boolean =>
@@ -228,8 +236,10 @@ export class Extend extends UnaryNode {
    * Each column's first problem that needs no engine, by index, `undefined`
    * for a column without one: a name, valid, no input column's and no earlier
    * column's (compared as databases that ignore case compare them), and an
-   * expression, a lambda of one row. The editor checks these before it asks
-   * the engine to type the columns.
+   * expression, a lambda of one row, with no backslash in a `startsWith`,
+   * `endsWith` or `contains` literal (as a Filter by Expression's, PLAN
+   * §11.14). The editor checks these before it asks the engine to type the
+   * columns.
    */
   getColumnProblems(input: Schema): (string | undefined)[] {
     const inputNames = new Set(input.names().map(foldColumnName));
@@ -248,7 +258,7 @@ export class Extend extends UnaryNode {
                 ? MESSAGE_NO_EXPRESSION(name)
                 : !isOneParameterLambda(lambda)
                   ? MESSAGE_EXPRESSION_NOT_A_LAMBDA(name)
-                  : undefined;
+                  : backslashProblem(lambda);
     });
   }
 

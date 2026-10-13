@@ -339,6 +339,20 @@ describe('Grid quick actions', () => {
     expect(filterBy?.hint).toBe(FILTER_FLOAT_COMPARISON_HINT);
   });
 
+  test('Filters a float by its value and its 32-bit value when they differ, so a REAL value is found', async () => {
+    const { state } = await setUp();
+    actionsOn(state, 'FREIGHT', 0.02)[2]?.apply();
+    expect(addedFilter(state).operator).toBe(FilterOperator.IN);
+    expect(addedFilter(state).value).toEqual([
+      { kind: 'float', value: '0.02' },
+      { kind: 'float', value: '0.019999999552965164' },
+    ]);
+    const { state: exact } = await setUp();
+    actionsOn(exact, 'FREIGHT', 0.5)[2]?.apply();
+    expect(addedFilter(exact).operator).toBe(FilterOperator.EQUAL);
+    expect(addedFilter(exact).value).toEqual({ kind: 'float', value: '0.5' });
+  });
+
   test("Can't sort a Variant column, or filter on a value its type can't compare", async () => {
     const { state } = await setUp();
     expect(reasons(state, 'PAYLOAD')).toEqual([

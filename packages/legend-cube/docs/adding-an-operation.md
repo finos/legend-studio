@@ -54,8 +54,11 @@ JavaScript default: a default parameter also replaces an explicit `undefined`, a
 refuses any setting of the wrong shape. Limit (`src/nodes/transforms/Limit.ts`, with `RowSettings.ts`) is the example.
 
 An operation that gives a column a name, as Rename does, checks it with `isValidColumnName`
-(`src/schema/ColumnName.ts`: not empty, no space at either end, no `"`, no `\`, no control character, at most 128
-code points) and refuses a name a column of its output already has (`MESSAGE_ALREADY_IN_INPUT_SCHEMA`). Export the
+(`src/schema/ColumnName.ts`: not empty, no space at either end, no `"`, no `\`, no backtick, no control character, at
+most 128 code points) and refuses a name a column of its output already has, compared folded
+(`foldColumnName`: `ID` and `id` are one column on SQL Server, MemSQL and DuckDB; `MESSAGE_ALREADY_IN_INPUT_SCHEMA`).
+A binary node whose inputs' columns meet in its output, as Join and Difference, reads `getDuplicateJoinColumns`,
+which compares them folded too (PLAN §11.14). Export the
 check of one item, as `validateRenameMapping` is, so an editor can mark each row with the node's own messages.
 
 A helper that changes several nodes at once, as the Join autofix does (`src/nodes/transforms/JoinAutofix.ts`), lives
@@ -106,6 +109,10 @@ message and the condition's type when it types alone but isn't one Boolean), sig
 pending as `ERR_CHECKING`, which `isTypingError` reads too: until checked, the node and the nodes below it wait, as
 below an Extend, since Execute and the canvas read validity and schema together. Its `getConditionProblem` holds the
 checks Cube can make itself, a backslash in a `LIKE` function's literal among them (§8.2's rule for the column Filter).
+The `startsWith`, `endsWith` and `contains` rules live in `src/nodes/transforms/LikeFunctions.ts` and apply to every
+lambda Cube is given, an Extend's columns too: a backslash in a literal everywhere, `%` or `_` on DuckDB, and a
+pattern that isn't a literal anywhere but Snowflake (PLAN §11.14), which the engine writes wrong elsewhere. A new
+node that holds a lambda joins them in `CubeDialects`' `findInLambdas`.
 
 The expression itself is the engine's JSON for its text, without source information, its number literals as their
 digit strings (a saved spec is read with `JSON.parse`), and the text as the user typed it, so the cube shows it
@@ -140,8 +147,10 @@ gets a flag in `CUBE_DIALECT_WORKAROUNDS` (`src/ir/CubeDialects.ts`, a `Map`: th
 `getDialectWorkarounds(context.databaseType)` in its emitter, as Drop, Slice, Limit and Distinct do; add its type to
 `needsDatabaseType` too, so the builder loads the model's connections before such a run. Without a type, or for an
 unknown one, write the native form. A node a database can't run, or would run with wrong rows, is refused instead:
-a Pivot on a type in `PIVOT_UNSUPPORTED_DATABASE_TYPES` (PLAN §11.12), a filter that gives `%` or `_` to a pattern on
-DuckDB (`hasNoLikeEscape`, PLAN §8.2). `getDatabaseProblems` gives the node's message, which the builder adds to its
+a Pivot on a type in `PIVOT_UNSUPPORTED_DATABASE_TYPES` (PLAN §11.12), a filter or an Extend that gives `%` or `_` to
+a pattern on DuckDB (`hasNoLikeEscape`, PLAN §8.2), or a pattern that isn't a literal unless on Snowflake, where none is
+known too (`getNonLiteralPatternProblem`, PLAN §11.14). `getEmitPatternProblem` is the pattern rules' backstop for
+an emitter; typing passes no type, so it writes them. `getDatabaseProblems` gives the node's message, which the builder adds to its
 errors once it knows the database, `getDatabaseProblemOfType` the reason the builder greys the node type with before
 it is added, and the emitter throws on it as a backstop. `dependsOnDatabaseType` is the one rule for which nodes need
 the database type: add to it, not beside it.

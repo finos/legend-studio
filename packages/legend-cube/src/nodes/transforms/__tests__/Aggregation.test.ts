@@ -130,18 +130,24 @@ const RESULT_TYPES: readonly [
     ['Timestamp', type(`${P}Timestamp`), dates('DateTime', `${P}Timestamp`)],
     ['Date', type('Date'), dates('Date', 'Date')],
     ['StrictTime', type('StrictTime'), distincts('StrictTime')],
-    ['Boolean', type('Boolean'), distincts('Boolean')],
-    ['String', type('String'), distincts('String')],
-    ['Varchar(15)', type(`${P}Varchar`, [15]), distincts(`${P}Varchar(15)`)],
+    // Min and Max typed as the column (PLAN §11.14)
+    ['Boolean', type('Boolean'), dates('Boolean', 'Boolean')],
+    ['String', type('String'), dates('String', 'String')],
+    [
+      'Varchar(15)',
+      type(`${P}Varchar`, [15]),
+      dates(`${P}Varchar(15)`, `${P}Varchar(15)`),
+    ],
     [
       'Variant',
       type('meta::pure::metamodel::variant::Variant'),
       { [COUNT]: 'Integer' },
     ],
+    // the distinct ones from M6d (PLAN §11.14)
     [
       'an enumeration',
       new EnumType('test::Region', ['EMEA', 'APAC']),
-      { [COUNT]: 'Integer' },
+      distincts('test::Region'),
     ],
     [
       'a type Cube does not know',
@@ -384,9 +390,9 @@ describe('Aggregation validation', () => {
       'Aggregation function "Sum" is incompatible with column "NAME".',
     ],
     [
-      'Min of a string',
-      agg(MIN, 'NAME', 'x'),
-      'Aggregation function "Min" is incompatible with column "NAME".',
+      'Average of a string',
+      agg(AVERAGE, 'NAME', 'x'),
+      'Aggregation function "Average" is incompatible with column "NAME".',
     ],
     [
       'Average of a date',
@@ -394,9 +400,9 @@ describe('Aggregation validation', () => {
       'Aggregation function "Average" is incompatible with column "DT".',
     ],
     [
-      'a distinct count of an enumeration',
-      agg(DISTINCT_COUNT, 'REGION', 'x'),
-      'Aggregation function "DistinctCount" is incompatible with column "REGION".',
+      'Min of an enumeration',
+      agg(MIN, 'REGION', 'x'),
+      'Aggregation function "Min" is incompatible with column "REGION".',
     ],
     [
       'Count rows of a column',

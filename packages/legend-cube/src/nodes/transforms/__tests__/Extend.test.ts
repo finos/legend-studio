@@ -193,6 +193,39 @@ describe(unitTest('Extend node'), () => {
     ]);
   });
 
+  test("Refuses a backslash in a LIKE function's literal, as a Filter by Expression does", () => {
+    const X = { _type: 'var', name: 'x' };
+    const node = new Extend('extend101', [
+      columnOf('a'),
+      {
+        name: 'b',
+        code: "x | $x.SHIP_COUNTRY->toOne()->contains('a\\\\b')",
+        lambda: {
+          _type: 'lambda',
+          parameters: [X],
+          body: [
+            {
+              _type: 'func',
+              function: 'contains',
+              parameters: [
+                {
+                  _type: 'property',
+                  property: 'SHIP_COUNTRY',
+                  parameters: [X],
+                },
+                { _type: 'string', value: 'a\\b' },
+              ],
+            },
+          ],
+        },
+      },
+    ]);
+    expect(node.getColumnProblems(ORDERS)).toEqual([
+      undefined,
+      'The value given to "contains" cannot contain a backslash (\\) yet.',
+    ]);
+  });
+
   test('Waits for the engine to type its columns, and for this input', () => {
     const columns = [columnOf('a')];
     expect(validationErrors(new Extend('extend101', columns))).toEqual([

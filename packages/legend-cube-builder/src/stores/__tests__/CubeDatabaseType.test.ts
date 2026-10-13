@@ -17,6 +17,7 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   DEFAULT_PIVOT_AGGREGATION,
+  MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
   Pivot,
   ColumnComparisonFilter,
@@ -28,6 +29,7 @@ import {
   Distinct,
   Drop,
   type ExpressionFilter,
+  Extend,
   Filter,
   FilterOperator,
   Limit,
@@ -481,6 +483,55 @@ describe('Cube execution: while the outline loads', () => {
     expect(state.showPure.text).toBeUndefined();
     expect(state.showPure.isRendering).toBe(false);
   });
+});
+
+describe('A pattern that is not a literal, refused but on Snowflake', () => {
+  /** `x | $x.SHIP_NAME->toOne()->contains($x.SHIP_CITY->toOne())` */
+  const byColumn = TEST__expression.lambda(
+    TEST__expression.call(
+      'contains',
+      TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+      TEST__expression.call('toOne', TEST__expression.column('SHIP_CITY')),
+    ),
+  );
+  const filterByColumn = (): ExpressionFilter =>
+    TEST__checkedExpressionFilter(
+      'expressionFilter101',
+      ordersThen().query,
+      'x | $x.SHIP_NAME->toOne()->contains($x.SHIP_CITY->toOne())',
+      byColumn,
+    );
+  const extendByColumn = (): Extend =>
+    new Extend('extend101', [{ name: 'hit', code: 'x | …', lambda: byColumn }]);
+  const settle = async (): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+
+  test.each([
+    ['H2', true],
+    ['DuckDB', true],
+    ['Snowflake', false],
+  ])(
+    'In a Filter by Expression and an Extend, on %s: refused, %s, and a refused one runs nothing',
+    async (databaseType, refused) => {
+      const { state, fake } = setUp(
+        ordersThen(filterByColumn()),
+        outlineOn(databaseType),
+      );
+      await settle();
+      expect(state.getNodeErrors('expressionFilter101')).toEqual(
+        refused ? [MESSAGE_PATTERN_NOT_LITERAL('contains')] : [],
+      );
+      if (refused) {
+        await flowResult(state.execution.execute());
+        expect(fake.execute).not.toHaveBeenCalled();
+      }
+      const extend = extendByColumn();
+      expect(
+        state.getNodeDatabaseProblems(ordersThen(extend).query, extend),
+      ).toEqual(refused ? [MESSAGE_PATTERN_NOT_LITERAL('contains')] : []);
+    },
+  );
 });
 
 describe('Cube on DuckDB: patterns given % or _', () => {
