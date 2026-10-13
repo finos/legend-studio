@@ -399,7 +399,8 @@ pivot's value) gives `q`t`, which ends the identifier early. The quote character
 
 ### The engine's schema exploration mistypes some columns
 
-On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`. Cube keeps the
+On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`; on
+H2, `REAL` comes back as `Other`, so Cube leaves the column out of a direct connection's table (M6d.4's engine test). Cube keeps the
 engine's types (precision isn't enforced in Cube), and no test asserts them. An engine issue to file.
 
 ### The source dialog's lists show no hover, and hide the picked row under the pointer

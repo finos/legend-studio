@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                              |
-| ------ | ---------------------------------------------------------------------------------- |
-| Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`) |
-| Engine | Local legend-engine on `localhost:6300`                                            |
-| Step   | M6d.3 done: the builder; next M6d.4, on the engine                                 |
-| Tests  | 2971 core, 1768 builder (core group); engine suites 920 of 924 (as M6c)            |
+| Item   | State                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------- |
+| Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`)        |
+| Engine | Local legend-engine on `localhost:6300`                                                   |
+| Step   | M6d.4 done: on the engine; next M6d.5, the guides and changeset                           |
+| Tests  | 2971 core, 1768 builder (core group); engine suites 951 of 954, 3 skipped on H2 by design |
 
 ## Steps
 
@@ -22,7 +22,7 @@ See PLAN §11.14 for each step's deliverable and when it is done.
 - [x] **M6d.1** The settled decisions (PLAN §11.14), this file, ISSUES.md
 - [x] **M6d.2** Core: names, a Join's shared columns in any case, the aggregations, the pattern rules
 - [x] **M6d.3** Builder: the row limit, the grid's Filter by on a float, refusals shown once, the function lists
-- [ ] **M6d.4** On the engine
+- [x] **M6d.4** On the engine
 - [ ] **M6d.5** Guides, READMEs, testing.md and the changeset
 - [ ] **M6d.6** Verification and the browser rehearsal
 - [ ] **M6d.7** A demo video (PLAN §11.3)
@@ -32,11 +32,12 @@ See PLAN §11.14 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step  | Commit      | Subject                                            |
-| ----- | ----------- | -------------------------------------------------- |
-| M6d.1 | `4dc165228` | docs: settle Legend Cube M6d (operations cleanup)  |
-| M6d.2 | `120c55365` | feat: clean up Legend Cube's core operations (M6d) |
-| M6d.3 | `56e3e4d85` | fix: clean up Legend Cube's grid and editors (M6d) |
+| Step  | Commit      | Subject                                              |
+| ----- | ----------- | ---------------------------------------------------- |
+| M6d.1 | `4dc165228` | docs: settle Legend Cube M6d (operations cleanup)    |
+| M6d.2 | `120c55365` | feat: clean up Legend Cube's core operations (M6d)   |
+| M6d.3 | `56e3e4d85` | fix: clean up Legend Cube's grid and editors (M6d)   |
+| M6d.4 | `6e482a9c2` | test: run Legend Cube's M6d operations on the engine |
 
 ## Notes
 
@@ -72,3 +73,12 @@ Filled in as steps land.
   judged with the cube's database. ISSUES.md: the row limit and REAL entries removed. Tests: the row limit's texts,
   the float filter (In, Equal), a refusal shown once, a non-literal pattern on H2, DuckDB and Snowflake in the draft,
   and in a Filter by Expression and an Extend through the editor's database rule (a refused one runs nothing).
+- **M6d.4** (2026-10-13). `CubeOperationsCleanup.engine-roundtrip-test.ts`, on H2 and DuckDB direct
+  connections: a String's and a Boolean's Min and Max in a Group (`Zed` before `fig` on both) and a window; a
+  String's Max in a Pivot (DuckDB); the grid's float rule finding a `REAL` value (DuckDB: on H2 a direct connection's
+  `REAL` is explored as `Other` and left out, now in ISSUES.md, and DuckDB's Equal finds it too, comparing in 32
+  bits; Northwind's `REAL` on H2 is CubeDrilldown's test); a Join of `ID` and `id` reported and its fix run (DuckDB,
+  which keeps a quoted name's case). `LegendCubeDialects`: a column pattern written `contains(a, b)` on Snowflake,
+  with `concat('%%', …)` on H2, and as the column's own SQL in the text on the 18 others, where Cube's emitter
+  refuses it (a canary). The conformance suite's every-function cases now type ALLTYPES' `VC` and `B` Min and Max
+  too. Engine suites: 951 of 954 (3 skipped on H2 by design; the 4 local setup-SQL timeouts passed this run).
