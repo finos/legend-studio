@@ -118,13 +118,13 @@ const unfinishedDocument = (): CubeDocument => {
     query: new Query(
       [
         ...slice.nodes,
-        new UnknownNode('pivot101', 2, {
-          kind: 'pivot',
+        new UnknownNode('future101', 2, {
+          kind: 'future',
           pivotColumns: ['SHIP_COUNTRY'],
         }),
       ],
-      [...slice.connections, new Connection('filter101', 'pivot101', 'in0')],
-      'pivot101',
+      [...slice.connections, new Connection('filter101', 'future101', 'in0')],
+      'future101',
     ),
     rest: { savedBy: 'a newer Cube' },
   });
@@ -303,7 +303,7 @@ describe('Cube spec export and import, on the page', () => {
     };
     expect(saved.savedBy).toBe('a newer Cube');
     expect(
-      saved.query.nodes.find((node) => node.id === 'pivot101')?.inputs,
+      saved.query.nodes.find((node) => node.id === 'future101')?.inputs,
     ).toEqual(['filter101', null]);
     fireEvent.click(within(dialog).getByText('Close'));
     await waitForElementToBeRemoved(dialog);
@@ -321,7 +321,7 @@ describe('Cube spec export and import, on the page', () => {
         'relational102',
         'join101',
         'filter101',
-        'pivot101',
+        'future101',
       ]),
     );
     fireEvent.click(headerButton('Export'));

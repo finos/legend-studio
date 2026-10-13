@@ -181,6 +181,37 @@ test(unitTest('Messages added by Cube'), () => {
   expect(
     MESSAGES.MESSAGE_PARTITION_COLUMN_NOT_PARTITIONABLE('PAYLOAD', 'Variant'),
   ).toBe('Partition column "PAYLOAD" of type Variant cannot be partitioned.');
+  // Pivot (PLAN §11.12)
+  expect(
+    MESSAGES.MESSAGE_PIVOT_ROW_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
+  ).toBe('Row column "PAYLOAD" of type Variant cannot be grouped.');
+  expect(MESSAGES.MESSAGE_PIVOT_COLUMN_NOT_PIVOTABLE('FREIGHT', 'Double')).toBe(
+    'Pivot column "FREIGHT" of type Double cannot be pivoted.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_COLUMN_IS_ROW_COLUMN('YEAR')).toBe(
+    'Pivot column "YEAR" cannot also be a row column.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUES_TOO_MANY(100)).toBe(
+    'Pivot values cannot be more than 100.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUE_INVALID('x', 'Int')).toBe(
+    'Pivot value "x" is not a valid Int.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE('A', 'a')).toBe(
+    'Pivot values "a" and "A" differ only in case, so some databases would mix up their columns.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME('q"t')).toBe(
+    'Pivot value "q"t" cannot name a column.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED('DistinctValue')).toBe(
+    'Aggregation function "DistinctValue" cannot be used in a pivot.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2')).toBe(
+    'Pivot is not supported on H2.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN('YEAR')).toBe(
+    'Aggregation column "YEAR" cannot be a row column or the pivot column.',
+  );
   expect(MESSAGES.MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('DenseRank')).toBe(
     'Aggregation function "DenseRank" requires at least one sort column.',
   );

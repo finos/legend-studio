@@ -507,12 +507,12 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     const json = {
       formatVersion: 1,
       query: {
-        selected: 'pivot101',
+        selected: 'future101',
         nodes: [
           RELATIONAL,
           {
-            kind: 'pivot',
-            id: 'pivot101',
+            kind: 'future',
+            id: 'future101',
             inputs: ['relational101'],
             rows: ['COUNTRY'],
             values: [
@@ -530,20 +530,20 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       },
     };
     const { document } = decodeCubeSpec(json);
-    const node = document.query.getNode('pivot101') as UnknownNode;
+    const node = document.query.getNode('future101') as UnknownNode;
     expect(node).toBeInstanceOf(UnknownNode);
     expect(node.type).toBe('unknown');
-    expect(node.savedKind).toBe('pivot');
-    expect(node.describe()).toBe('Unknown Transform "pivot101"');
+    expect(node.savedKind).toBe('future');
+    expect(node.describe()).toBe('Unknown Transform "future101"');
     expect(node.ports).toEqual(['in0']);
     expect(node.hasInputs).toBe(true);
     expect(describeConnections(document.query)).toEqual([
-      'relational101 -> pivot101.in0',
+      'relational101 -> future101.in0',
     ]);
     // `kind` included; `id` and `inputs` come from the query
     expect(JSON.stringify(node.json)).toBe(
       JSON.stringify({
-        kind: 'pivot',
+        kind: 'future',
         rows: ['COUNTRY'],
         values: [
           {
@@ -794,25 +794,25 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
   test('Re-opens a newer cube after its Unknown node lost its input, and refuses to rewire it', () => {
     const json = readFixture('newer-version.cube.json');
     const { document } = decodeCubeSpec(json);
-    expect(document.query.getNode('pivot101')).toBeInstanceOf(UnknownNode);
-    expect(document.query.getInputIds('pivot101')).toEqual(['filter101']);
+    expect(document.query.getNode('future101')).toBeInstanceOf(UnknownNode);
+    expect(document.query.getInputIds('future101')).toEqual(['filter101']);
 
     // removing the source first, so the filter has nothing to heal with
     const withoutSource = document.query.remove('relational101');
     expect(withoutSource.getInputIds('filter101')).toEqual([undefined]);
-    expect(withoutSource.getInputIds('pivot101')).toEqual(['filter101']);
+    expect(withoutSource.getInputIds('future101')).toEqual(['filter101']);
     const edited = withoutSource.remove('filter101');
-    expect(edited.getInputIds('pivot101')).toEqual([undefined]);
+    expect(edited.getInputIds('future101')).toEqual([undefined]);
     expect(edited.connections).toEqual([]);
 
     const saved = encodeCubeSpec(document.withQuery(edited));
     expect(JSON.stringify(saved.query)).toBe(
       JSON.stringify({
-        selected: 'pivot101',
+        selected: 'future101',
         nodes: [
           {
-            kind: 'pivot',
-            id: 'pivot101',
+            kind: 'future',
+            id: 'future101',
             inputs: [null],
             rows: ['SHIP_CITY'],
             values: [{ column: 'FREIGHT', aggregation: 'sum' }],
@@ -826,11 +826,11 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     expect(
       describeDocument(parseCubeSpec(JSON.stringify(saved)).document),
     ).toEqual(describeDocument(again));
-    const pivot = again.query.getNode('pivot101') as UnknownNode;
-    expect(pivot).toBeInstanceOf(UnknownNode);
-    expect(pivot.savedKind).toBe('pivot');
-    expect(pivot.ports).toEqual(['in0']);
-    expect(again.query.getInputIds('pivot101')).toEqual([undefined]);
+    const future = again.query.getNode('future101') as UnknownNode;
+    expect(future).toBeInstanceOf(UnknownNode);
+    expect(future.savedKind).toBe('future');
+    expect(future.ports).toEqual(['in0']);
+    expect(again.query.getInputIds('future101')).toEqual([undefined]);
     expect(again.rest).toEqual({
       description: 'A field this version does not know',
     });
@@ -843,18 +843,18 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     const query = again.query.add(
       resolvedTable('relational102', 'ORDERS', [column('ORDER_ID')]),
     );
-    expect(query.canConnect('relational102', 'pivot101')).toBe(false);
-    expect(query.canConnect('relational102', 'pivot101', 'in0')).toBe(false);
-    expect(() => query.connect('relational102', 'pivot101')).toThrow(
-      `Can't connect node "relational102" to node "pivot101"`,
+    expect(query.canConnect('relational102', 'future101')).toBe(false);
+    expect(query.canConnect('relational102', 'future101', 'in0')).toBe(false);
+    expect(() => query.connect('relational102', 'future101')).toThrow(
+      `Can't connect node "relational102" to node "future101"`,
     );
-    expect(() => query.connect('relational102', 'pivot101', 'in0')).toThrow(
-      `Can't connect node "relational102" to node "pivot101" on port "in0"`,
+    expect(() => query.connect('relational102', 'future101', 'in0')).toThrow(
+      `Can't connect node "relational102" to node "future101" on port "in0"`,
     );
-    expect(query.canMove('pivot101', 'relational102')).toBe(false);
-    expect(query.canSwapInputs('pivot101')).toBe(false);
-    expect(() => query.swapInputs('pivot101')).toThrow(
-      `Can't swap the inputs of node "pivot101"`,
+    expect(query.canMove('future101', 'relational102')).toBe(false);
+    expect(query.canSwapInputs('future101')).toBe(false);
+    expect(() => query.swapInputs('future101')).toThrow(
+      `Can't swap the inputs of node "future101"`,
     );
   });
 
@@ -901,15 +901,15 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       query: new Query(
         [
           resolvedTable('relational101', 'ORDERS', [column('QTY')]),
-          new UnknownNode('pivot101', 1, {
-            kind: 'pivot',
+          new UnknownNode('future101', 1, {
+            kind: 'future',
             id: 'stale',
             inputs: ['gone'],
             rows: ['QTY'],
           }),
         ],
-        [new Connection('relational101', 'pivot101', 'in0')],
-        'pivot101',
+        [new Connection('relational101', 'future101', 'in0')],
+        'future101',
       ),
     });
     // by position: the id written may not be the node's
@@ -917,8 +917,8 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       .nodes as readonly JsonValue[];
     expect(JSON.stringify(saved[1])).toBe(
       JSON.stringify({
-        kind: 'pivot',
-        id: 'pivot101',
+        kind: 'future',
+        id: 'future101',
         inputs: ['relational101'],
         rows: ['QTY'],
       }),

@@ -54,6 +54,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
   group: DataCubeIcon.TableGroupBy,
+  pivot: DataCubeIcon.TablePivot,
   rename: PencilIcon,
   sort: SortIcon,
   difference: CompareIcon,

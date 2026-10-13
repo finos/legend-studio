@@ -52,6 +52,7 @@ import {
   LIMIT_DEFINITION,
   NodeRegistry,
   PARTITION_DEFINITION,
+  PIVOT_DEFINITION,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   RENAME_DEFINITION,
   RESTRICT_DEFINITION,
@@ -172,11 +173,11 @@ describe(unitTest('Relational table source'), () => {
 
 describe(unitTest('Unknown node'), () => {
   test('Has one synthetic port per input, is never valid and never accepts new inputs', () => {
-    const node = new UnknownNode('pivot101', 2);
+    const node = new UnknownNode('future101', 2);
     expect(node.type).toBe('unknown');
     expect(node.ports).toEqual(['in0', 'in1']);
     expect(node.acceptsNewInputs).toBe(false);
-    expect(node.describe()).toBe('Unknown Transform "pivot101"');
+    expect(node.describe()).toBe('Unknown Transform "future101"');
     const errors: string[] = [];
     expect(node.validate([ORDERS_SCHEMA, ORDERS_SCHEMA], errors)).toBe(false);
     expect(errors).toEqual([]);
@@ -185,8 +186,8 @@ describe(unitTest('Unknown node'), () => {
   });
 
   test('Needs a whole, non-negative number of inputs', () => {
-    expect(() => new UnknownNode('pivot101', -1)).toThrow();
-    expect(() => new UnknownNode('pivot101', 1.5)).toThrow();
+    expect(() => new UnknownNode('future101', -1)).toThrow();
+    expect(() => new UnknownNode('future101', 1.5)).toThrow();
   });
 });
 
@@ -210,10 +211,11 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend
+    // transforms in the spec's menu order (§7): Sort, Group, Pivot (Cube's), Filter, Filter by Expression (Cube's), Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
+      PIVOT_DEFINITION,
       FILTER_DEFINITION,
       EXPRESSION_FILTER_DEFINITION,
       RESTRICT_DEFINITION,
@@ -238,6 +240,14 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('difference')).toBe(DIFFERENCE_DEFINITION);
     expect(registry.get('partition')).toBe(PARTITION_DEFINITION);
     expect(registry.get('extend')).toBe(EXTEND_DEFINITION);
+    expect(registry.get('pivot')).toBe(PIVOT_DEFINITION);
+    expect(PIVOT_DEFINITION).toMatchObject({
+      kind: 'transform',
+      type: 'pivot',
+      label: 'Pivot by Column',
+      icon: 'pivot',
+      beta: false,
+    });
     // a window is the only node a run binds with a let (PLAN §8.6)
     expect(
       registry.transforms
@@ -486,7 +496,7 @@ describe(unitTest('Node contracts'), () => {
         expect(() => source.schematize([ORDERS_SCHEMA])).toThrow(wrongCount);
       },
     );
-    const unknown = new UnknownNode('pivot101', 2);
+    const unknown = new UnknownNode('future101', 2);
     expect(() => unknown.validate([ORDERS_SCHEMA])).toThrow(wrongCount);
     expect(() => unknown.schematize([ORDERS_SCHEMA])).toThrow(wrongCount);
     expect(() => unknown.validate([null, null] as unknown as Schema[])).toThrow(
@@ -508,7 +518,7 @@ describe(unitTest('Node contracts'), () => {
     expect(binary.portLabels).toEqual(['Left', 'Right']);
     expect(new TestUnaryNode('unary101').ports).toEqual(['tds']);
     expect(new TestUnaryNode('unary101').portLabels).toEqual([]);
-    expect(new UnknownNode('pivot101', 2).portLabels).toEqual([]);
+    expect(new UnknownNode('future101', 2).portLabels).toEqual([]);
   });
 
   test('Keys increase with every new node, even with the same id', () => {
@@ -666,7 +676,7 @@ describe(unitTest('Unknown keys on nodes'), () => {
       new Filter('filter101'),
       new Join('join101'),
       new RelationalTableSource('relational101', COORDINATES),
-      new UnknownNode('pivot101', 1, { kind: 'pivot', color: 'blue' }),
+      new UnknownNode('future101', 1, { kind: 'future', color: 'blue' }),
       FILTER_DEFINITION.create('filter102'),
       JOIN_DEFINITION.create('join102'),
       // the source picker's extra keys are not unknown keys of a saved node
@@ -780,7 +790,7 @@ describe(unitTest('Unknown keys on nodes'), () => {
 
 describe(unitTest('Unknown node, as saved'), () => {
   test('Has no saved JSON by default', () => {
-    const node = new UnknownNode('pivot101', 1);
+    const node = new UnknownNode('future101', 1);
     expect(node.json).toEqual({});
     expect(Object.isFrozen(node.json)).toBe(true);
     expect(node.savedKind).toBeUndefined();
@@ -789,20 +799,20 @@ describe(unitTest('Unknown node, as saved'), () => {
 
   test('Keeps the JSON it was saved with, and reads the kind it was saved as', () => {
     const json: JsonObject = {
-      kind: 'pivot',
+      kind: 'future',
       rows: ['SHIP_COUNTRY'],
       note: null,
     };
-    const node = new UnknownNode('pivot101', 1, json);
+    const node = new UnknownNode('future101', 1, json);
     expect(node.json).toEqual({
-      kind: 'pivot',
+      kind: 'future',
       rows: ['SHIP_COUNTRY'],
       note: null,
     });
-    expect(node.savedKind).toBe('pivot');
+    expect(node.savedKind).toBe('future');
     // it is still of the reserved type, and describes itself by id
     expect(node.type).toBe('unknown');
-    expect(node.describe()).toBe('Unknown Transform "pivot101"');
+    expect(node.describe()).toBe('Unknown Transform "future101"');
     // what it was saved with is its JSON, not unknown keys of a known node
     expect(node.rest).toEqual({});
     // a node saved with the reserved kind itself
@@ -816,17 +826,17 @@ describe(unitTest('Unknown node, as saved'), () => {
     ['a number', { kind: 5 }],
     ['null', { kind: null }],
     ['a boolean', { kind: true }],
-    ['an object', { kind: { name: 'pivot' } }],
-    ['a list', { kind: ['pivot'] }],
+    ['an object', { kind: { name: 'future' } }],
+    ['a list', { kind: ['future'] }],
   ])('Has no saved kind when its JSON has %s for one', (_, json) => {
-    expect(new UnknownNode('pivot101', 1, json).savedKind).toBeUndefined();
+    expect(new UnknownNode('future101', 1, json).savedKind).toBeUndefined();
   });
 
   test('Has inputs when it has ports, or when told it was saved with an empty list', () => {
-    expect(new UnknownNode('pivot101', 2).hasInputs).toBe(true);
-    expect(new UnknownNode('pivot101', 1, {}).hasInputs).toBe(true);
+    expect(new UnknownNode('future101', 2).hasInputs).toBe(true);
+    expect(new UnknownNode('future101', 1, {}).hasInputs).toBe(true);
     // ports can't be without inputs
-    expect(new UnknownNode('pivot101', 2, {}, false).hasInputs).toBe(true);
+    expect(new UnknownNode('future101', 2, {}, false).hasInputs).toBe(true);
     expect(new UnknownNode('source101', 0).hasInputs).toBe(false);
     expect(new UnknownNode('source101', 0, {}, false).hasInputs).toBe(false);
     // saved with `inputs: []`

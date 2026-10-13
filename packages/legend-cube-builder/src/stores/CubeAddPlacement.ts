@@ -35,7 +35,21 @@ export const getCubeAddAfterId = (
     ? undefined
     : (targetNodeId ?? editorState.document.query.selected);
 
-/** Whether a node of the type can be added where the rule puts it */
+/**
+ * Why a node of the type can't be added where the rule puts it, on the
+ * database the query there runs on: a Pivot where it can't run (PLAN §11.12)
+ */
+export const getCubeAddDatabaseProblem = (
+  editorState: CubeEditorState,
+  type: string,
+  targetNodeId?: string,
+): string | undefined =>
+  editorState.getAddDatabaseProblem(
+    type,
+    getCubeAddAfterId(editorState, type, targetNodeId),
+  );
+
+/** Whether a node of the type can be added where the rule puts it, and run on its database */
 export const canAddCubeNode = (
   editorState: CubeEditorState,
   type: string,
@@ -44,7 +58,7 @@ export const canAddCubeNode = (
   editorState.canAddNode(
     type,
     getCubeAddAfterId(editorState, type, targetNodeId),
-  );
+  ) && getCubeAddDatabaseProblem(editorState, type, targetNodeId) === undefined;
 
 /**
  * Adds a node of the type where the rule puts it, after the node editor's
