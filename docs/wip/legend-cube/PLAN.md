@@ -4482,8 +4482,9 @@ createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epo
 - **Three collections**, named by new Vault keys beside the Data Cube store's, in `query.mongo.database`:
   `query.mongo.collection.cube` (the latest version, unique on `id`), `query.mongo.collection.cubeVersion` (every
   saved version, unique on `{id, version}`) and `query.mongo.collection.cubeEvent` (created, updated and deleted
-  events, as `dataCubeEvent`). The indexes are made when the store is first used. `Server.java` needs no change:
-  `ApplicationQuery` builds its store managers itself ✅.
+  events, as `dataCubeEvent`). The indexes are made when the store is first used. `ApplicationQuery` builds its
+  store managers itself ✅, so `Server.java` changes in one word only: its CORS filter allowed `GET`, `PUT`, `POST`,
+  `DELETE` and `OPTIONS`, so a browser's `PATCH` failed its preflight; it now allows `PATCH` ✅ (found in M8.3).
 - **Atomic saves:** a save is one `findOneAndUpdate` filtered on the id, the version read, not deleted and the caller
   among the owners, with `$set` and `$inc` on the version; when it matches nothing, a read says why: 404, 403 or 409.
   The new version is then added to `cubeVersion`, whose unique index refuses a version twice. Mongo here has no
@@ -4547,17 +4548,19 @@ continue. Are you sure?` when the cube is modified; the same guards leaving the 
 
 **Engine facts** (probes under `m8-requirements/`):
 
-| Fact                                                                                                                          |     | Probe                         |
-| ----------------------------------------------------------------------------------------------------------------------------- | --- | ----------------------------- |
-| The query-store endpoints fail locally: "DataCube Query MongoDB collection has not been configured properly"                  | ✅  | `p0-setup.md`                 |
-| Every local caller is `anonymous` (pac4j's anonymous client)                                                                  | ✅  | `p0-setup.md`                 |
-| JAX-RS is 2.0.1: no `@PATCH` annotation                                                                                       | ✅  | `p0-setup.md`                 |
-| `ApplicationQuery` builds its store managers itself; `Server.java` needs no change                                            | ✅  | `p0-setup.md`                 |
-| The module's tests run here on the in-memory Mongo (31 Data Cube tests, ~15 s)                                                | ✅  | `p0-setup.md`                 |
-| `ApplicationQueryException` writes its message into JSON unescaped                                                            | 📄  | `p0-setup.md`                 |
-| `BaseStoredVersionedAssetDao`: no version check, a non-atomic update, a deleted id kept and reusable                          | 📄  | `p0-setup.md`                 |
-| mongo-java-server keeps the unique indexes, `$elemMatch` and regexes over arrays; of 8 writers racing on one version one wins | ✅  | `TestCubeStoreManager` (M8.2) |
-| `cube/…` routes don't collide with Query's `GET {queryId}`                                                                    | 💭  | M8.3                          |
+| Fact                                                                                                                                                          |     | Probe                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ----------------------------- |
+| The query-store endpoints fail locally: "DataCube Query MongoDB collection has not been configured properly"                                                  | ✅  | `p0-setup.md`                 |
+| Every local caller is `anonymous` (pac4j's anonymous client)                                                                                                  | ✅  | `p0-setup.md`                 |
+| JAX-RS is 2.0.1: no `@PATCH` annotation                                                                                                                       | ✅  | `p0-setup.md`                 |
+| `ApplicationQuery` builds its store managers itself                                                                                                           | ✅  | `p0-setup.md`                 |
+| The module's tests run here on the in-memory Mongo (31 Data Cube tests, ~15 s)                                                                                | ✅  | `p0-setup.md`                 |
+| `ApplicationQueryException` writes its message into JSON unescaped                                                                                            | 📄  | `p0-setup.md`                 |
+| `BaseStoredVersionedAssetDao`: no version check, a non-atomic update, a deleted id kept and reusable                                                          | 📄  | `p0-setup.md`                 |
+| mongo-java-server keeps the unique indexes, `$elemMatch` and regexes over arrays; of 8 writers racing on one version one wins                                 | ✅  | `TestCubeStoreManager` (M8.2) |
+| `cube/…` routes don't collide with Query's `GET {queryId}`: `GET cube/abc` is the Cube store's 404, `GET someQuery` Query's                                   | ✅  | `p1-live-store.out` A1, A2    |
+| The CORS filter allowed no `PATCH`; with it, the preflight answers `GET,PUT,POST,PATCH,DELETE,OPTIONS`                                                        | ✅  | `p1-live-store.out` A13       |
+| Live, every endpoint answers as tested: a 409 on version 1 after a save, a 403 once the owners are another user, escaped messages, soft then permanent delete | ✅  | `p1-live-store.out`           |
 
 **Steps:**
 

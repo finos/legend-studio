@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m8`, from `cube-dev` (`4a0bfe3e0`); a draft PR into `cube-dev`. Engine: `cube-store` of the fork, from finos master |
 | Engine | Local legend-engine on `localhost:6300` (IntelliJ, no Mongo); the development store on `:6301` from M8.3                  |
-| Step   | M8.1–M8.2 done                                                                                                            |
+| Step   | M8.1–M8.3 done                                                                                                            |
 | Tests  | Engine module 147 (20 new), checkstyle clean                                                                              |
 
 ## Steps
@@ -21,7 +21,7 @@ See PLAN §11.13 for each step's deliverable and when it is done.
 
 - [x] **M8.1** The settled decisions (PLAN §11.13) and this file
 - [x] **M8.2** The engine store, its tests, a draft PR into finos/legend-engine (#5355)
-- [ ] **M8.3** A development store, every endpoint probed live
+- [x] **M8.3** A development store, every endpoint probed live
 - [ ] **M8.4** The builder's port and adapter
 - [ ] **M8.5** The page's state
 - [ ] **M8.6** The UI
@@ -35,11 +35,13 @@ See PLAN §11.13 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit                                     | Subject                                                           |
-| ---- | ------------------------------------------ | ----------------------------------------------------------------- |
-| M8.1 | `a039d1b01`                                | docs: settle Legend Cube M8 (persistence)                         |
-| M8.2 | `487875402ed` (legend-engine `cube-store`) | Add a Cube store to the application query module, for Legend Cube |
-| M8.2 | (this one)                                 | docs: record Legend Cube M8.2 (the engine store)                  |
+| Step | Commit                                     | Subject                                                                  |
+| ---- | ------------------------------------------ | ------------------------------------------------------------------------ |
+| M8.1 | `a039d1b01`                                | docs: settle Legend Cube M8 (persistence)                                |
+| M8.2 | `487875402ed` (legend-engine `cube-store`) | Add a Cube store to the application query module, for Legend Cube        |
+| M8.2 | `0df8496cc`                                | docs: record Legend Cube M8.2 (the engine store)                         |
+| M8.3 | `063030ed940` (legend-engine `cube-store`) | Allow PATCH through the engine's CORS filter, for the Cube store's PATCH |
+| M8.3 | (this one)                                 | docs: record Legend Cube M8.3 (a development store)                      |
 
 ## Notes
 
@@ -71,3 +73,15 @@ Filled in as steps land.
   template on `os.EOL` (`\r\n`) and flags every file; it is run with `os.EOL` forced to `\n`
   (`cube-evidence/tools/eol-lf.mjs`). The fork has no `cube-dev`, so a local `origin/cube-dev` points at finos
   `cube-dev` for `check:changeset`.
+- **M8.3** (2026-10-13). A development store, outside both repos (`cube-evidence/dev-store/`, with a README): an
+  in-memory Mongo (`DevMongo`, `mongo-java-server`'s memory backend) on `:27018`, and an engine on `:6301` run from
+  the `4.151.1-SNAPSHOT` jars in `~/.m2` with `cube-store`'s `legend-engine-application-query` classes first, on
+  `userTestConfig.json` with the port, the H2 test database moved to 9093 (9092 is the IntelliJ engine's) and a
+  property vault naming the `query.mongo.*` keys. It starts in seconds. Reading `Server.java` to run it showed that the
+  engine's CORS filter allows no `PATCH`, so a browser's `PATCH` would fail its preflight: `cube-store` now allows it
+  (`063030ed940`), and the PR says so. Probes, `m8-requirements/p1-live-store.out`: `GET cube/abc` reaches the Cube
+  store (404) while `GET someQuery` still reaches Query's; search, create (owners `["anonymous"]`, the content's `.`,
+  `$` and `null` kept), get (`lastOpenAt` moved alone), a save, a 409 on the old version, a version read, a `PATCH`
+  refused for `content`, owners given to another user and then a 403, an escaped message for an id with `"` and `\`,
+  the preflight, soft then permanent delete, a delete without a version, searches by term and owner. Legend Query's
+  `dev/config.json` in the worktree has `engine.queryUrl` on `:6301` and `NonProductionFeatureFlag`.
