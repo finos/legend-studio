@@ -35,6 +35,7 @@ import {
   JoinType,
   Limit,
   Partition,
+  MESSAGE_PATTERN_NOT_LITERAL,
   Pivot,
   printIR,
   Query,
@@ -1601,6 +1602,52 @@ describe('Patterns given % or _, as H2 and DuckDB plan them', () => {
         }),
       ).toThrow('On DuckDB, ');
       expect(await planSql(query(), 'H2')).toContain("like '%50\\%%'");
+    },
+  );
+});
+
+// A pattern that isn't a literal (PLAN §11.14): the engine writes it right on
+// Snowflake only. These plan the native form to pin its behaviour elsewhere:
+// when it changes, they fail, and Cube's refusal can change.
+describe('A pattern that is not a literal, as each database plans it', () => {
+  /** `x | $x.SHIP_NAME->toOne()->contains($x.SHIP_CITY->toOne())`, as the engine's JSON */
+  const BY_COLUMN = TEST__expression.lambda(
+    TEST__expression.call(
+      'contains',
+      TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+      TEST__expression.call('toOne', TEST__expression.column('SHIP_CITY')),
+    ),
+  );
+  const query = (): Query => expressionFilterThen([], BY_COLUMN);
+
+  test('Writes contains(a, b) on Snowflake, which Cube lets run', async () => {
+    const sql = await planSql(query(), 'Snowflake');
+    expect(sql).toMatch(
+      /contains\("[^"]+"\.ship_name\s*,\s*"[^"]+"\.ship_city\)/u,
+    );
+  });
+
+  test("Matches H2's own % and _ in the column's values, with concat", async () => {
+    const sql = await planSql(query(), 'H2', { native: true });
+    expect(sql).toContain("like concat('%%', ");
+  });
+
+  test.each(
+    PLANNED_DATABASE_TYPES.filter(
+      (type) => type !== 'Snowflake' && type !== 'H2',
+    ),
+  )(
+    "Writes the column's own SQL as the text to match on %s, which Cube refuses",
+    async (databaseType) => {
+      const sql = await planSql(query(), databaseType, { native: true });
+      expect(sql).toMatch(/like '%[^']*ship\\_cit/u);
+      expect(() =>
+        new QueryEmitter(query()).emitExecutionLambda({
+          rowLimit: 1000,
+          runtime: `test::plan::${databaseType}Runtime`,
+          databaseType,
+        }),
+      ).toThrow(MESSAGE_PATTERN_NOT_LITERAL('contains'));
     },
   );
 });
