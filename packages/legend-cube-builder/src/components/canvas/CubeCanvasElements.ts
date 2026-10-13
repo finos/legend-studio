@@ -16,6 +16,8 @@
 
 import {
   DataProductAccessPointSource,
+  FunctionSource,
+  getLiteralText,
   getRelationalDisplayName,
   IngestDatasetSource,
   isIncompleteError,
@@ -178,7 +180,8 @@ export const getCubeCanvasNodeLabel = (
     (node instanceof RelationalTableSource ||
       node instanceof DataProductAccessPointSource ||
       node instanceof IngestDatasetSource ||
-      node instanceof ServiceSource) &&
+      node instanceof ServiceSource ||
+      node instanceof FunctionSource) &&
     node.resolution.kind === 'unresolved'
   ) {
     return { title: node.describe() };
@@ -194,6 +197,23 @@ export const getCubeCanvasNodeLabel = (
   }
   if (node instanceof IngestDatasetSource) {
     return { title: node.dataSet, detail: node.ingestDefinitionName };
+  }
+  if (node instanceof FunctionSource) {
+    // its values, as the call takes them: `100000, (none)`
+    return {
+      title: node.functionName,
+      detail: node.values.length
+        ? node.values
+            .map((value) =>
+              value === undefined
+                ? '(none)'
+                : value.kind === 'invalid'
+                  ? value.text
+                  : getLiteralText(value),
+            )
+            .join(', ')
+        : undefined,
+    };
   }
   if (node instanceof ServiceSource) {
     return { title: node.serviceName, detail: node.pattern };

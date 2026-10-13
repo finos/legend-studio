@@ -21,6 +21,7 @@ import { toEditorTitle } from '../LegendCubeLabels.js';
 /** Every registered node type's editor title */
 const TITLES: Record<string, string> = {
   relational: 'Relational Database Table',
+  function: 'Function',
   dataProductAccessPoint: 'Data Product',
   ingestDataset: 'Ingest Dataset',
   service: 'Service',

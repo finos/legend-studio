@@ -919,7 +919,12 @@ describe("The header's Add Items", () => {
     const menu = await TEST__openAddItems();
     const items = menuItems(menu);
     const labels = items.map((item) => item.textContent);
-    expect(labels).toEqual([TABLE, 'Data Product (BETA)', ...TRANSFORMS]);
+    expect(labels).toEqual([
+      TABLE,
+      'Function (BETA)',
+      'Data Product (BETA)',
+      ...TRANSFORMS,
+    ]);
     expect(labels).toEqual(palette);
     // the sources, then the transforms, apart
     const divider = menu.querySelectorAll('.menu__divider');
@@ -934,6 +939,7 @@ describe("The header's Add Items", () => {
     );
     expect(enabled.map((item) => item.textContent)).toEqual([
       TABLE,
+      'Function (BETA)',
       ...TRANSFORMS.filter((transform) => transform !== 'Pivot by Column'),
     ]);
     expect(
@@ -1041,6 +1047,7 @@ describe("The header's Add Items", () => {
     const menu = await TEST__openAddItems();
     expect(menuItems(menu).map((item) => item.textContent)).toEqual([
       TABLE,
+      'Function (BETA)',
       ...TRANSFORMS,
     ]);
     await TEST__closeAddItems();

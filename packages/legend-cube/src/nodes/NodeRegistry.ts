@@ -42,6 +42,7 @@ import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceE
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { emitIngestDatasetSource } from '../ir/emitters/IngestDatasetSourceEmitter.js';
 import { emitServiceSource } from '../ir/emitters/ServiceSourceEmitter.js';
+import { emitFunctionSource } from '../ir/emitters/FunctionSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
@@ -62,10 +63,12 @@ import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSou
 import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProductAccessPointSourceCodec.js';
 import { INGEST_DATASET_SOURCE_CODEC } from '../spec/codecs/IngestDatasetSourceCodec.js';
 import { SERVICE_SOURCE_CODEC } from '../spec/codecs/ServiceSourceCodec.js';
+import { FUNCTION_SOURCE_CODEC } from '../spec/codecs/FunctionSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import { DataProductAccessPointSource } from './sources/DataProductAccessPointSource.js';
 import { IngestDatasetSource } from './sources/IngestDatasetSource.js';
 import { ServiceSource } from './sources/ServiceSource.js';
+import { FunctionSource } from './sources/FunctionSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -195,6 +198,20 @@ export const INGEST_DATASET_SOURCE_DEFINITION: SourceDefinition<IngestDatasetSou
     emit: (node) => emitIngestDatasetSource(node),
     spec: INGEST_DATASET_SOURCE_CODEC,
   };
+
+/** A function of the cube's model that returns a relation (PLAN §6.5), in beta */
+export const FUNCTION_SOURCE_DEFINITION: SourceDefinition<FunctionSource> = {
+  kind: 'source',
+  type: FunctionSource.TYPE,
+  label: 'Function',
+  icon: 'function',
+  beta: true,
+  fromCoordinates: (id, coordinates) =>
+    FunctionSource.fromCoordinates(id, coordinates),
+  resolve: (node, resolution) => node.withResolution(resolution),
+  emit: (node) => emitFunctionSource(node),
+  spec: FUNCTION_SOURCE_CODEC,
+};
 
 /** A deployed service (PLAN §6.4), in progress: picked, not read yet */
 export const SERVICE_SOURCE_DEFINITION: SourceDefinition<ServiceSource> = {
@@ -451,6 +468,7 @@ export class NodeRegistry {
 export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
+    FUNCTION_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     INGEST_DATASET_SOURCE_DEFINITION,
     SERVICE_SOURCE_DEFINITION,

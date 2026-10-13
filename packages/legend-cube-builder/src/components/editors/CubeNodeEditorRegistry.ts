@@ -25,6 +25,7 @@ import {
   Pivot,
   Extend,
   Filter,
+  FunctionSource,
   Group,
   Join,
   Limit,
@@ -46,6 +47,7 @@ import { CubePivotEditor } from './CubePivotEditor.js';
 import { CubeDifferenceEditor } from './CubeDifferenceEditor.js';
 import { CubeIngestSourceEditor } from './CubeIngestSourceEditor.js';
 import { CubeServiceSourceEditor } from './CubeServiceSourceEditor.js';
+import { CubeFunctionSourceEditor } from './CubeFunctionSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeExtendEditor } from './CubeExtendEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
@@ -89,6 +91,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   React.FC<CubeNodeEditorProps>
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
+  [FunctionSource.TYPE, CubeFunctionSourceEditor],
   [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [IngestDatasetSource.TYPE, CubeIngestSourceEditor],
   [ServiceSource.TYPE, CubeServiceSourceEditor],

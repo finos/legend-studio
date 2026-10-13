@@ -347,7 +347,7 @@ describe('Data product tab', () => {
     ).not.toContain(CubeSourcePickerTabKey.DATA_PRODUCT);
     expect(
       withoutCatalog.offeredSources.map((definition) => definition.type),
-    ).toEqual(['relational']);
+    ).toEqual(['relational', 'function']);
   });
 
   test("Drops a product's access points that arrive after another product was picked, or after the dialog closed", async () => {

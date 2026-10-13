@@ -166,7 +166,8 @@ export const CUBE_TRADES_SETUP_SQLS = [
   sampleInsert(`${CUBE_TRADES_SCHEMA}.TRADES`, createTrades()),
 ];
 
-export const CUBE_TRADES_MODEL_CODE = `###Relational
+/** The trades sample before its functions (PLAN §6.5), which cubes saved before may hold */
+const CUBE_TRADES_TABLES_CODE = `###Relational
 Database ${CUBE_TRADES_DATABASE}
 (
   Schema ${CUBE_TRADES_SCHEMA}
@@ -234,8 +235,42 @@ Runtime ${CUBE_TRADES_RUNTIME}
 }
 `;
 
+export const CUBE_TRADES_LARGE_TRADES_FUNCTION =
+  'cube::samples::trades::tradesAbove';
+export const CUBE_TRADES_DESK_BOOK_FUNCTION = 'cube::samples::trades::deskBook';
+
+// Two functions that return a relation (PLAN §6.5): one that leaves the
+// runtime to the cube, and one that reads through its own
+const CUBE_TRADES_FUNCTIONS_CODE = `###Pure
+function ${CUBE_TRADES_LARGE_TRADES_FUNCTION}(minNotionalUsd: Float[1]): Relation<(TRADE_ID:Integer, TRADE_DATE:StrictDate, DESK_ID:Integer, SIDE:String, NOTIONAL_USD:Decimal)>[1]
+{
+  #>{${CUBE_TRADES_DATABASE}.${CUBE_TRADES_SCHEMA}.TRADES}#
+    ->filter(t|$t.NOTIONAL_USD > $minNotionalUsd)
+    ->select(~[TRADE_ID, TRADE_DATE, DESK_ID, SIDE, NOTIONAL_USD])
+}
+
+function ${CUBE_TRADES_DESK_BOOK_FUNCTION}(desk: String[1], side: String[0..1]): Relation<(TRADE_ID:Integer, TRADE_DATE:StrictDate, DESK:String, REGION:String, SIDE:String, NOTIONAL_USD:Decimal)>[1]
+{
+  #>{${CUBE_TRADES_DATABASE}.${CUBE_TRADES_SCHEMA}.TRADES}#
+    ->join(#>{${CUBE_TRADES_DATABASE}.${CUBE_TRADES_SCHEMA}.DESKS}#, JoinKind.INNER, {t, d|$t.DESK_ID == $d.ID})
+    ->filter(r|($r.DESK == $desk) && ($side->isEmpty() || ($r.SIDE == $side->toOne())))
+    ->select(~[TRADE_ID, TRADE_DATE, DESK, REGION, SIDE, NOTIONAL_USD])
+    ->from(${CUBE_TRADES_RUNTIME})
+}
+`;
+
+export const CUBE_TRADES_MODEL_CODE = `${CUBE_TRADES_TABLES_CODE}
+
+${CUBE_TRADES_FUNCTIONS_CODE}`;
+
 /** The trades sample as a cube saves it (PLAN §6.2.2) */
 export const CUBE_TRADES_MODEL: ModelContext = Object.freeze({
   _type: 'text',
   code: CUBE_TRADES_MODEL_CODE,
+});
+
+/** The trades sample's text before its functions: cubes saved on it open on the same tables */
+export const CUBE_TRADES_MODEL_BEFORE_FUNCTIONS: ModelContext = Object.freeze({
+  _type: 'text',
+  code: CUBE_TRADES_TABLES_CODE,
 });

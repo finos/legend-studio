@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  FunctionSource,
   IngestDatasetSource,
   RelationalTableSource,
   ServiceSource,
@@ -37,8 +38,14 @@ import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
-import { CubeProjectTabState } from './source-picker/CubeProjectTabState.js';
-import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
+import {
+  CubeProjectFunctionTabState,
+  CubeProjectTabState,
+} from './source-picker/CubeProjectTabState.js';
+import {
+  CubeInlineModelTabState,
+  CubeModelReadKind,
+} from './source-picker/CubeInlineModelTabState.js';
 import { CubeServiceTabState } from './source-picker/CubeServiceTabState.js';
 import {
   type CubeSourcePickerTab,
@@ -58,6 +65,7 @@ export class CubeSourcePickerState {
   readonly dataProductTab: CubeDataProductTabState;
   readonly ingestTab: CubeIngestTabState;
   readonly projectTab: CubeProjectTabState;
+  readonly projectFunctionTab: CubeProjectFunctionTabState;
   readonly serviceTab: CubeServiceTabState;
 
   isOpen = false;
@@ -77,6 +85,7 @@ export class CubeSourcePickerState {
       canConfirm: computed,
       open: action,
       openToChoose: action,
+      openForSourceType: action,
       selectTab: action,
       close: action,
       confirm: flow,
@@ -87,6 +96,7 @@ export class CubeSourcePickerState {
     this.dataProductTab = new CubeDataProductTabState(editorState);
     this.ingestTab = new CubeIngestTabState(editorState);
     this.projectTab = new CubeProjectTabState(editorState);
+    this.projectFunctionTab = new CubeProjectFunctionTabState(editorState);
     this.serviceTab = new CubeServiceTabState(editorState);
   }
 
@@ -104,6 +114,7 @@ export class CubeSourcePickerState {
     return [
       this.modelTab,
       this.projectTab,
+      this.projectFunctionTab,
       this.directTab,
       this.dataProductTab,
       this.ingestTab,
@@ -120,6 +131,7 @@ export class CubeSourcePickerState {
     return context
       ? ([
           this.projectTab,
+          this.projectFunctionTab,
           this.directTab,
           this.dataProductTab,
           this.ingestTab,
@@ -144,24 +156,57 @@ export class CubeSourcePickerState {
     if (dedicated) {
       return dedicated.isAvailable ? dedicated : undefined;
     }
-    if (type !== RelationalTableSource.TYPE) {
+    if (type !== RelationalTableSource.TYPE && type !== FunctionSource.TYPE) {
       return undefined;
     }
     const dedicatedTabs = [...this.dedicatedTabs.values()];
-    const tableTabs = this.tabs.filter((tab) => !dedicatedTabs.includes(tab));
-    const { fixedTab } = this;
-    return fixedTab
-      ? tableTabs.find((tab) => tab === fixedTab)
-      : (tableTabs.find((tab) => tab === this.activeTab) ?? this.modelTab);
+    // a table comes from a model or a connection, a function from a model:
+    // a project's tables and functions each have their own tab
+    const readers = this.tabs.filter((tab) =>
+      type === FunctionSource.TYPE
+        ? tab instanceof CubeInlineModelTabState &&
+          tab.readKinds.includes(CubeModelReadKind.FUNCTION)
+        : !dedicatedTabs.includes(tab) &&
+          (!(tab instanceof CubeInlineModelTabState) ||
+            tab.readKinds.includes(CubeModelReadKind.TABLE)),
+    );
+    return this.fixedTab
+      ? readers.find((tab) => this.isTabEnabled(tab))
+      : (readers.find((tab) => tab === this.activeTab) ?? readers[0]);
+  }
+
+  /**
+   * Opens the dialog on the tab a palette item's type opens; a model's tab
+   * reads tables or functions as the item asks
+   */
+  openForSourceType(type: string): void {
+    const tab = this.tabForSourceType(type);
+    if (tab instanceof CubeInlineModelTabState) {
+      tab.setReadKind(
+        type === FunctionSource.TYPE
+          ? CubeModelReadKind.FUNCTION
+          : CubeModelReadKind.TABLE,
+      );
+    }
+    this.open(tab?.key);
   }
 
   /**
    * A cube with a fixed context takes sources from its own tab only, and
-   * none when the host doesn't serve that tab
+   * none when the host doesn't serve that tab; a project cube from both of
+   * its tabs, Project Database and Project Function (PLAN §6.5)
    */
   isTabEnabled(tab: CubeSourcePickerTab): boolean {
+    const { fixedTab } = this;
+    const { context } = this.editorState.document;
     return (
-      tab.isAvailable && (this.fixedTab === undefined || tab === this.fixedTab)
+      tab.isAvailable &&
+      (fixedTab === undefined ||
+        tab === fixedTab ||
+        // a project cube's tables and functions, each from its tab
+        (context !== undefined &&
+          tab !== this.modelTab &&
+          tab.ownsContext(context)))
     );
   }
 
@@ -246,6 +291,7 @@ export class CubeSourcePickerState {
     this.dataProductTab.close();
     this.ingestTab.close();
     this.projectTab.close();
+    this.projectFunctionTab.close();
     this.serviceTab.close();
   }
 
