@@ -1262,10 +1262,13 @@ runtimes on different data:
   can't be added, with the reason.
 - **Two PRs:** the services WIP (§6.4) first, then the function source as its own milestone with a demo video.
 
-**The tab (as built):** not a tab of its own, but a **Read: Tables | Functions** choice in the tabs that read a
-model: Sample Data (and a pasted model) and Project Database. A function then comes from the same project and
-version as the cube's tables, picked once, which is what mixing them needs; the palette's **Function** item opens
-the tab on functions, its **Relational Database Table** item on tables. A connection's tab reads no functions.
+**The tabs (as built):** a **Project Function** tab of its own (user, 2026-10-13), with the Project Database
+tab's steps: a published project, then one of its released versions (the newest picked), then the version's
+functions. Project Database reads tables only. Sample Data (and a pasted model) keeps a **Read: Tables |
+Functions** choice, shown when the model has functions. A project cube is served by both project tabs, so a
+function and the tables of the same project and version join in one cube, each added from its own tab; the
+palette's **Function** item opens Project Function on such a cube, Sample Data on a new one, and nothing on a
+connection's cube.
 
 - **The list:** the model's functions that return a `Relation<…>[1]`, from its outline with no engine call
   (`V1_CubeFunctionOutlineBuilder`): the path the lambda calls, the full name, the parameters and the declared

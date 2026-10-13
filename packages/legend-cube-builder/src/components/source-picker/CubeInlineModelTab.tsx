@@ -133,9 +133,10 @@ export const CubeOutlineSteps = observer(
             {CUBE_PENDING_LABEL.LOADING_MODEL}
           </div>
         )}
-        {(readsFunctions || Boolean(tab.outline?.functions?.length)) && (
-          <CubeReadKindToggle tab={tab} />
-        )}
+        {tab.readKinds.length > 1 &&
+          (readsFunctions || Boolean(tab.outline?.functions?.length)) && (
+            <CubeReadKindToggle tab={tab} />
+          )}
         {readsFunctions ? (
           <CubeFunctionSteps tab={tab} />
         ) : (

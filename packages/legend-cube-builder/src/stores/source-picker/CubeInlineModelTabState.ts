@@ -511,9 +511,20 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     this.tableSearch = search;
   }
 
+  /**
+   * What the tab reads: a model's tables or functions; a project's tables
+   * and functions each have a tab of their own (user, 2026-10-13)
+   */
+  get readKinds(): readonly CubeModelReadKind[] {
+    return [CubeModelReadKind.TABLE, CubeModelReadKind.FUNCTION];
+  }
+
+  /** Reads tables or functions, when the tab reads that kind */
   setReadKind(kind: CubeModelReadKind): void {
-    this.readKind = kind;
-    this.error = undefined;
+    if (this.readKinds.includes(kind)) {
+      this.readKind = kind;
+      this.error = undefined;
+    }
   }
 
   setFunctionSearch(search: string): void {

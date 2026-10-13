@@ -17,6 +17,7 @@
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { CUBE_PROJECT_LABEL } from '../../__lib__/LegendCubeProjectLabels.js';
+import { CubeModelReadKind } from '../../stores/source-picker/CubeInlineModelTabState.js';
 import {
   type CubeProjectTabState,
   getCubeProjectKey,
@@ -26,9 +27,10 @@ import { CubeOutlineSteps } from './CubeInlineModelTab.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
 /**
- * The source dialog's Project Database tab (PLAN §6.3): a published project,
- * one of its released versions, then, as in the Sample Data tab, one of its
- * own Databases, a runtime keyed by it, a schema and a table
+ * The source dialog's Project Database and Project Function tabs (PLAN
+ * §6.3, §6.5): a published project, one of its released versions, then, as
+ * in the Sample Data tab, one of its own Databases, a runtime keyed by it, a
+ * schema and a table; or one of its own functions, its runtime and values
  */
 export const CubeProjectTab = observer(
   (props: { tab: CubeProjectTabState }) => {
@@ -37,6 +39,7 @@ export const CubeProjectTab = observer(
     // the cube's model is fixed, even one Cube can't read as a project
     const isFixed = tab.fixedContext !== undefined;
     const noRuntime =
+      tab.readKind === CubeModelReadKind.TABLE &&
       tab.databasePath !== undefined &&
       !tab.isLoadingModel &&
       tab.runtimes.length === 0;
