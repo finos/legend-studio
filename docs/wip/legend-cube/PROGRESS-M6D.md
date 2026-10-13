@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                              |
-| ------ | -------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`)                 |
-| Engine | Local legend-engine on `localhost:6300`                                                            |
-| Step   | M6d done: the supersessions folded in; the PR ready for `cube-dev` on the user's word, after #5674 |
-| Tests  | 2971 core, 1769 builder (core group); engine suites 951 of 954, 3 skipped on H2 by design          |
+| Item   | State                                                                                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------ |
+| Branch | `cube-ops-cleanup`, from `cube-dev` (`589bff78d`, after #5674, #5675 and #5676 merged); a draft PR into `cube-dev` |
+| Engine | Local legend-engine on `localhost:6300`                                                                            |
+| Step   | M6d done: the supersessions folded in; the PR ready for `cube-dev` on the user's word, after #5674                 |
+| Tests  | 3004 core, 1813 builder (core group); engine suites 958 of 961, 3 skipped on H2 by design                          |
 
 ## Steps
 
@@ -111,3 +111,7 @@ Filled in as steps land.
   the distinct ones on enumerations), §8.8 (a patterns paragraph: the three rules, Filter by Expression and Extend,
   a list's `contains` left alone), §9 (the grid's Filter by), §11.11 (its literal-only gap closed), Appendix A (§10.1,
   §16) and Appendix B (column patterns written as text).
+- **Rebased** (2026-10-13). #5674 (Pivot), #5675 (services) and #5676 (functions) merged into `cube-dev`
+  (`589bff78d`), so M6d's 12 commits were rebased onto it, with no conflict (the Pivot squash equals the old
+  `cube-pivot`; backup branch `cube-ops-cleanup-before-rebase-2026-10-13`). Gates on the rebased branch: 3004 core,
+  1813 builder, engine suites 958 of 961 (3 skipped on H2 by design), lint (three packages) and `check:ci` clean.

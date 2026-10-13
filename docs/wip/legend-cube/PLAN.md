@@ -4690,8 +4690,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 M6d gathers what was left in the built operations (asked 2026-10-13, after M6c): the small bugs ISSUES.md listed, a
 name rule found in M6c's review, aggregations the engine supports that Cube didn't offer, and Filter by Expression's
-gaps. It is built on the branch `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), and lands in a PR into
-`cube-dev` once #5674 is in. Its status is in [PROGRESS-M6D.md](PROGRESS-M6D.md). Requirements: the probes under
+gaps. It is built on the branch `cube-ops-cleanup`, first stacked on `cube-pivot` (#5674), then rebased onto
+`cube-dev` once #5674 was in, and lands in a PR into `cube-dev`. Its status is in [PROGRESS-M6D.md](PROGRESS-M6D.md). Requirements: the probes under
 `cleanup-requirements/` in the local evidence folder (`c1`–`c4`), run on the local engine: ✅ where a probe ran, 💭
 where only a plan was made or it is reasoned. (M8's section is §11.13, written on another computer.)
 
