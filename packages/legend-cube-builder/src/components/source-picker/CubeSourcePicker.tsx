@@ -130,6 +130,17 @@ export const CubeSourcePicker = observer(
             </div>
           </ModalBody>
           <ModalFooter>
+            {picker.isFromExamples && (
+              <ModalFooterButton
+                darkMode={darkMode}
+                formatText={false}
+                type="secondary"
+                className="mr-auto"
+                text="← Examples"
+                title="Back to the examples, to open an example cube instead"
+                onClick={() => picker.backToExamples()}
+              />
+            )}
             <ModalFooterButton
               darkMode={darkMode}
               formatText={false}

@@ -111,4 +111,26 @@ describe('Examples dialog', () => {
     expect(model.disabled).toBe(true);
     expect(model.selectedOptions[0]?.textContent).toBe('Sports');
   });
+
+  test('Goes back from the source dialog to the examples, only when it came from them', async () => {
+    await renderPage();
+    const dialog = await openExamples();
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Sports/u }));
+    const picker = await screen.findByRole('dialog');
+    fireEvent.click(within(picker).getByRole('button', { name: '← Examples' }));
+    // the source dialog fades out as the examples open
+    await waitFor(() => expect(screen.queryByText('Add a source')).toBeNull());
+    const examples = screen.getByRole('dialog');
+    expect(within(examples).getByText('Top customers by orders')).toBeDefined();
+    // opened another way, the dialog has no way back
+    fireEvent.click(within(examples).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Connect to a source' }),
+    );
+    const plain = await screen.findByRole('dialog');
+    expect(
+      within(plain).queryByRole('button', { name: '← Examples' }),
+    ).toBeNull();
+  });
 });
