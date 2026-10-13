@@ -50,9 +50,13 @@ import {
   DataProductAccessType,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
+  V1_deserializeDataSubscriptionTarget,
   V1_EnrichedUserApprovalStatus,
   V1_OrganizationalScopeType,
+  V1_RequestState,
+  V1_RequestType,
   V1_ResourceType,
+  V1_UnknownOrganizationalScopeType,
   V1_UserType,
 } from '@finos/legend-graph';
 import {
@@ -3000,6 +3004,318 @@ describe('DataProductViewer', () => {
       expect(document.activeElement).toBe(searchInput);
       fireEvent.change(searchInput, { target: { value: 'oth' } });
       expect(document.activeElement).toBe(searchInput);
+    });
+
+    describe('data request subscriptions', () => {
+      const TEST_SNOWFLAKE_TARGET = {
+        _type: 'Snowflake',
+        snowflakeAccountId: 'TEST_SNOWFLAKE_ACCOUNT',
+        snowflakeRegion: 'TEST_REGION',
+        snowflakeNetwork: 'TEST_NETWORK',
+      };
+
+      const buildRawDataRequest = (
+        guid: string,
+        state: V1_RequestState,
+        accessPointGroup: string,
+        businessJustification: string,
+        consumer: object = {
+          _type: V1_OrganizationalScopeType.AdHocTeam,
+          users: [
+            { name: 'test-requester-id', type: V1_UserType.WORKFORCE_USER },
+          ],
+        },
+      ) => ({
+        _type: V1_RequestType.DataRequest,
+        businessJustification,
+        guid,
+        version: 0,
+        state,
+        resource: {
+          _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+          accessPointGroup,
+          dataProduct: {
+            name: 'MOCK_SDLC_DATAPRODUCT',
+            owner: { appDirId: 12345 },
+          },
+        },
+        resourceEnvType: 'prod',
+        members: [],
+        consumer,
+        createdBy: 'test-consumer-user-id',
+        userDigest: '',
+      });
+
+      const RAW_DATA_REQUESTS = {
+        dataRequests: [
+          buildRawDataRequest(
+            'approved-data-request-id',
+            V1_RequestState.COMPLETED,
+            'GROUP1',
+            'Approved data request',
+          ),
+          buildRawDataRequest(
+            'pending-data-request-id',
+            V1_RequestState.SUBMITTED_FOR_APPROVALS,
+            'GROUP1',
+            'Pending data request',
+          ),
+          buildRawDataRequest(
+            'other-group-data-request-id',
+            V1_RequestState.COMPLETED,
+            'OTHER_GROUP',
+            'Other group data request',
+          ),
+        ],
+      };
+
+      const RAW_DATA_REQUEST_SUBSCRIPTION = {
+        subscriptions: [
+          {
+            guid: 'data-request-subscription-id',
+            dataContractId: 'approved-data-request-id',
+            target: TEST_SNOWFLAKE_TARGET,
+            createdBy: 'test-consumer-user-id',
+          },
+        ],
+      };
+
+      const setupDataRequestSubscriptionTest = async () => {
+        const { dataProductDataAccessState } =
+          await setupLakehouseDataProductTest(
+            mockSDLCDataProduct,
+            mockEntitlementsSDLCDataProduct,
+            [],
+            [],
+          );
+        const client = guaranteeNonNullable(
+          dataProductDataAccessState,
+        ).lakehouseContractServerClient;
+        createSpy(client, 'getSubscriptionsForContract').mockResolvedValue([]);
+        createSpy(client, 'getDataRequestsForDataProduct').mockResolvedValue(
+          RAW_DATA_REQUESTS,
+        );
+        const getSubscriptionsForDataRequestSpy = createSpy(
+          client,
+          'getSubscriptionsForDataRequest',
+        ).mockResolvedValue(RAW_DATA_REQUEST_SUBSCRIPTION);
+        createSpy(client, 'getSubscriptionTargets').mockResolvedValue({
+          targets: [],
+        });
+        const createDataRequestSubscriptionSpy = createSpy(
+          client,
+          'createDataRequestSubscription',
+        ).mockResolvedValue(RAW_DATA_REQUEST_SUBSCRIPTION);
+        return {
+          dataProductDataAccessState: guaranteeNonNullable(
+            dataProductDataAccessState,
+          ),
+          getSubscriptionsForDataRequestSpy,
+          createDataRequestSubscriptionSpy,
+        };
+      };
+
+      const openSubscriptionsModal = async () => {
+        await screen.findByText('Main Group Test');
+        fireEvent.click(await screen.findByTitle('More options'));
+        fireEvent.click(await screen.findByText('Manage Subscriptions'));
+        await screen.findByText('Data Product Subscriptions');
+      };
+
+      test('marks the creating-subscription state as failed when creation fails and as succeeded otherwise', async () => {
+        const { dataProductDataAccessState, createDataRequestSubscriptionSpy } =
+          await setupDataRequestSubscriptionTest();
+        const apgState = guaranteeNonNullable(
+          dataProductDataAccessState.dataProductViewerState.apgStates[0],
+        );
+        const client = dataProductDataAccessState.lakehouseContractServerClient;
+        const target = V1_deserializeDataSubscriptionTarget(
+          TEST_SNOWFLAKE_TARGET,
+        );
+
+        createDataRequestSubscriptionSpy.mockRejectedValueOnce(
+          new Error('creation failed'),
+        );
+        await flowResult(
+          apgState.createDataRequestSubscription(
+            'approved-data-request-id',
+            target,
+            client,
+            undefined,
+          ),
+        );
+        expect(apgState.creatingSubscriptionState.hasFailed).toBe(true);
+
+        await flowResult(
+          apgState.createDataRequestSubscription(
+            'approved-data-request-id',
+            target,
+            client,
+            undefined,
+          ),
+        );
+        expect(apgState.creatingSubscriptionState.hasSucceeded).toBe(true);
+      });
+
+      test('createSubscription still sends the contract id and target for contracts', async () => {
+        const { dataProductDataAccessState } =
+          await setupDataRequestSubscriptionTest();
+        const apgState = guaranteeNonNullable(
+          dataProductDataAccessState.dataProductViewerState.apgStates[0],
+        );
+        const client = dataProductDataAccessState.lakehouseContractServerClient;
+        const createSubscriptionSpy = createSpy(
+          client,
+          'createSubscription',
+        ).mockResolvedValue(RAW_DATA_REQUEST_SUBSCRIPTION);
+        const target = V1_deserializeDataSubscriptionTarget(
+          TEST_SNOWFLAKE_TARGET,
+        );
+
+        await flowResult(
+          apgState.createSubscription(
+            'test-approved-contract-id',
+            target,
+            client,
+            undefined,
+          ),
+        );
+        expect(createSubscriptionSpy.mock.calls[0]?.[0]).toEqual({
+          contractId: 'test-approved-contract-id',
+          target: TEST_SNOWFLAKE_TARGET,
+        });
+      });
+
+      test('fetches subscriptions of approved data requests for the group only', async () => {
+        const {
+          dataProductDataAccessState,
+          getSubscriptionsForDataRequestSpy,
+        } = await setupDataRequestSubscriptionTest();
+
+        await openSubscriptionsModal();
+
+        await waitFor(() => {
+          expect(getSubscriptionsForDataRequestSpy).toHaveBeenCalledTimes(1);
+        });
+        expect(getSubscriptionsForDataRequestSpy.mock.calls[0]?.[0]).toBe(
+          'approved-data-request-id',
+        );
+        const apgState = guaranteeNonNullable(
+          dataProductDataAccessState.dataProductViewerState.apgStates[0],
+        );
+        await waitFor(() => {
+          expect(apgState.subscriptions.map((sub) => sub.guid)).toEqual([
+            'data-request-subscription-id',
+          ]);
+        });
+        expect(apgState.approvedDataRequests.map((req) => req.guid)).toEqual([
+          'approved-data-request-id',
+        ]);
+      });
+
+      test('Create New Subscription shows the plugin-provided org code for a non-adhoc data request consumer', async () => {
+        const { dataProductDataAccessState } =
+          await setupDataRequestSubscriptionTest();
+        createSpy(
+          dataProductDataAccessState.lakehouseContractServerClient,
+          'getDataRequestsForDataProduct',
+        ).mockResolvedValue({
+          dataRequests: [
+            buildRawDataRequest(
+              'approved-data-request-id',
+              V1_RequestState.COMPLETED,
+              'GROUP1',
+              'Approved data request',
+              { _type: 'CUSTOM_ORG', orgNode: 'TEST_ORG_NODE' },
+            ),
+          ],
+        });
+        // stand-in for an application plugin that understands this custom scope
+        const plugin = guaranteeNonNullable(
+          dataProductDataAccessState.dataAccessPlugins[0],
+        );
+        plugin.getOrganizationalNodeCode = (consumer) =>
+          consumer instanceof V1_UnknownOrganizationalScopeType &&
+          typeof consumer.content.orgNode === 'string'
+            ? consumer.content.orgNode
+            : undefined;
+
+        await openSubscriptionsModal();
+        const createButton = await screen.findByRole('button', {
+          name: 'Create New Subscription',
+        });
+        await waitFor(() => {
+          expect((createButton as HTMLButtonElement).disabled).toBe(false);
+        });
+        fireEvent.click(createButton);
+        fireEvent.mouseDown(
+          await waitFor(() =>
+            guaranteeNonNullable(document.getElementById('contract-select')),
+          ),
+        );
+        const listbox = await screen.findByRole('listbox');
+        within(listbox).getByText(/TEST_ORG_NODE/);
+        expect(within(listbox).queryByText(/^CUSTOM_ORG$/)).toBeNull();
+      });
+
+      test('Create New Subscription lists approved data requests and creates the subscription against the data request endpoint', async () => {
+        const {
+          createDataRequestSubscriptionSpy,
+          getSubscriptionsForDataRequestSpy,
+        } = await setupDataRequestSubscriptionTest();
+
+        await openSubscriptionsModal();
+        await waitFor(() => {
+          expect(getSubscriptionsForDataRequestSpy).toHaveBeenCalledTimes(1);
+        });
+
+        const createButton = await screen.findByRole('button', {
+          name: 'Create New Subscription',
+        });
+        await waitFor(() => {
+          expect((createButton as HTMLButtonElement).disabled).toBe(false);
+        });
+        fireEvent.click(createButton);
+
+        fireEvent.mouseDown(
+          await waitFor(() =>
+            guaranteeNonNullable(document.getElementById('contract-select')),
+          ),
+        );
+        const listbox = await screen.findByRole('listbox');
+        within(listbox).getByText(/Approved data request/);
+        expect(within(listbox).queryByText(/Pending data request/)).toBeNull();
+        expect(
+          within(listbox).queryByText(/Other group data request/),
+        ).toBeNull();
+        fireEvent.click(within(listbox).getByText(/Approved data request/));
+
+        const accountInput = screen.getByLabelText(/Snowflake Account ID/);
+        fireEvent.change(accountInput, {
+          target: { value: TEST_SNOWFLAKE_TARGET.snowflakeAccountId },
+        });
+        // freeSolo Autocomplete only commits the typed value on Enter/blur
+        fireEvent.keyDown(accountInput, { key: 'Enter' });
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'Create Subscription' }),
+        );
+
+        await waitFor(() => {
+          expect(createDataRequestSubscriptionSpy).toHaveBeenCalledTimes(1);
+        });
+        expect(createDataRequestSubscriptionSpy.mock.calls[0]?.[0]).toEqual({
+          dataRequestId: 'approved-data-request-id',
+          // region and network are fixed by the dialog and not under test here
+          target: expect.objectContaining({
+            _type: TEST_SNOWFLAKE_TARGET._type,
+            snowflakeAccountId: TEST_SNOWFLAKE_TARGET.snowflakeAccountId,
+          }),
+        });
+        // the subscription list is refetched after a successful creation
+        await waitFor(() => {
+          expect(getSubscriptionsForDataRequestSpy).toHaveBeenCalledTimes(2);
+        });
+      });
     });
   });
 

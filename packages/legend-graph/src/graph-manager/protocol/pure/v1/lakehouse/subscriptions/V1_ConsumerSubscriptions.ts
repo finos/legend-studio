@@ -70,9 +70,16 @@ export class V1_UnknownDataSubscriptionTarget extends V1_DataSubscriptionTarget 
   content!: PlainObject;
 }
 
-export class V1_CreateSubscriptionInput {
-  contractId!: string;
+export abstract class V1_DataSubScriptionBaseResponse {
   target!: V1_DataSubscriptionTarget;
+}
+
+export class V1_CreateContractSubscriptionInput extends V1_DataSubScriptionBaseResponse {
+  contractId!: string;
+}
+
+export class V1_CreateDataRequestSubscriptionInput extends V1_DataSubScriptionBaseResponse {
+  dataRequestId!: string;
 }
 
 export class V1_DataSubscriptionTargetsResponse {
