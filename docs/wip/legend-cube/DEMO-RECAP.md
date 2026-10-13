@@ -59,6 +59,7 @@
 4. **Entry points:** open Cube from the other Legend apps:
    - **Marketplace:** add a data product as a source, opening it in Cube.
    - **Studio:** embed Cube to help create and edit data products and materialized views, and to edit functions.
+5. **More direct connections:** support more databases in Direct Connection, starting with Snowflake.
 
 ## Discussion points
 
@@ -73,3 +74,8 @@
    - The user picks a data space; the node shows Legend Query's query builder inside it.
    - The query built there is folded into the cube's spec, as one step of the flow.
 3. **Other sources:** which additional sources do you want Cube to support?
+
+## How it was built
+
+- About 8 days, built with Claude Opus 5.5, in 8 milestones (M8, saving, is in progress).
+- It started with Claude Opus 5 writing down the spec of the internal app.
