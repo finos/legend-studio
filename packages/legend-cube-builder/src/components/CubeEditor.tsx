@@ -95,14 +95,18 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
     >
       <div className="flex min-h-8 shrink-0 flex-wrap items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2 py-1">
         <span
-          className="min-w-24 flex-1 truncate text-lg font-medium"
+          className="flex min-w-24 flex-1 overflow-hidden"
           title={persistence.titleDescription}
           data-testid={LEGEND_CUBE_TEST_ID.CUBE_TITLE}
         >
-          {editorState.document.name ?? UNSAVED_CUBE_NAME}
+          {/* Legend's base styles size every span, so each is sized here */}
+          <span className="truncate text-lg font-medium">
+            {editorState.document.name ?? UNSAVED_CUBE_NAME}
+          </span>
+          {/* outside the name, so a long name's ellipsis never hides it */}
           {persistence.isModified && (
             <span
-              className="text-[var(--color-text-secondary)]"
+              className="shrink-0 whitespace-pre text-lg font-medium text-[var(--color-text-secondary)]"
               aria-label="unsaved changes"
             >
               {' *'}
