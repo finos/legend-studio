@@ -21,6 +21,7 @@ import {
   buildCubeIngestCatalog,
   buildCubeLakehouseEnvironment,
   buildCubeProjectCatalog,
+  buildCubeServiceCatalog,
   CubeDataProductEnvironmentType,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
@@ -29,6 +30,7 @@ import {
   type CubeIngestCatalog,
   type CubeLakehouseServices,
   type CubeProjectCatalog,
+  type CubeServiceCatalog,
   type CubeEngineConfig,
   type CubeHost,
   LocalModelCatalog,
@@ -167,6 +169,7 @@ export class LegendQueryCubeHost implements CubeHost {
   readonly dataProductCatalog: CubeDataProductCatalog | undefined;
   readonly ingestCatalog: CubeIngestCatalog | undefined;
   readonly projectCatalog: CubeProjectCatalog | undefined;
+  readonly serviceCatalog: CubeServiceCatalog;
 
   /**
    * Tests give an engine, an explorer and a project catalog; otherwise each
@@ -210,5 +213,11 @@ export class LegendQueryCubeHost implements CubeHost {
     // until the source dialog's Project tab opens
     this.projectCatalog =
       projectCatalog ?? buildLegendQueryCubeProjectCatalog(applicationStore);
+    // the services in the registry of Query's engine (PLAN §6.4), in
+    // progress; it reads nothing until the source dialog's Service tab opens
+    this.serviceCatalog = buildCubeServiceCatalog(
+      config,
+      applicationStore.tracerService,
+    );
   }
 }

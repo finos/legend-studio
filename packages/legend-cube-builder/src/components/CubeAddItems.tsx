@@ -28,6 +28,7 @@ import {
 import type { AnyNodeDefinition } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import {
+  getCubeNodeBadge,
   OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../__lib__/LegendCubeLabels.js';
@@ -63,9 +64,10 @@ const getCubeAddItems = (
 ): { sources: CubeAddItem[]; transforms: CubeAddItem[] } => {
   const item = (definition: AnyNodeDefinition): CubeAddItem => {
     const disabled = !canAddCubeNode(editorState, definition.type, nodeId);
+    const badge = getCubeNodeBadge(definition);
     return {
       definition,
-      label: `${definition.label}${definition.beta ? ' (BETA)' : ''}`,
+      label: `${definition.label}${badge ? ` (${badge})` : ''}`,
       disabled,
       title: !disabled
         ? undefined

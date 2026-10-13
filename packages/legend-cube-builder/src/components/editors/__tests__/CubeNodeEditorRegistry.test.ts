@@ -68,6 +68,8 @@ describe('Node editor registries', () => {
         'Sources data from an access point of a deployed data product.',
       ingestDataset:
         'Sources data from a data set of a deployed ingest definition.',
+      service:
+        "Sources data from a deployed service. In progress: Cube can't read services yet.",
       concat:
         'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
       difference:

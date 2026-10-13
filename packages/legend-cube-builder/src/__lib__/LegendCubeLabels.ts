@@ -416,3 +416,13 @@ export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';
 
 /** Why the source dialog's Add is disabled: nothing picked yet, or not ready */
 export const CUBE_PICK_TO_ADD_TITLE = 'Pick what to add first';
+
+/**
+ * The badge a node type shows beside its name: WIP for one that doesn't
+ * work yet (a service, PLAN §6.4), else BETA for one in beta, else none
+ */
+export const getCubeNodeBadge = (definition: {
+  readonly beta: boolean;
+  readonly wip?: boolean | undefined;
+}): 'WIP' | 'BETA' | undefined =>
+  definition.wip ? 'WIP' : definition.beta ? 'BETA' : undefined;

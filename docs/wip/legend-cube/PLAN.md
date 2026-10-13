@@ -1209,29 +1209,80 @@ A cube can read tables of the Databases in a published project, through the sour
 - **Not yet:** moving a cube to another version; a search across projects' Databases; SNAPSHOT versions; Databases
   from dependencies; paging the project list (unmeasured at a real depot's size).
 
-### 6.4 Services (M9, outline)
+### 6.4 Services (work in progress, 2026-10-12)
 
-**Approach:** no Pure construct references a Service inside a lambda ✅. Cube copies the service's lambda:
+A cube can pick a deployed service through the source dialog's **Service** tab. It can't read one yet: how a
+service is read is still to be written (user, 2026-10-12).
 
-1. If it returns TDS, convert it via `POST /api/pure/v1/compilation/autofix/transformTdsToRelation/lambda` ✅.
-2. Compile-check the result, since conversion output can fail.
-3. Bind parameters with `let`.
-4. Rename variables apart so they don't clash with other sources.
-5. Add `from(mapping, runtime)` from the single or keyed execution.
+- **The list:** the engine's service registry, `GET /api/service/v1/list/detailsFromCache` (legend-graph's
+  `getServicesInfo()`, which Marketplace's Data APIs page reads): each service's name, title, URL pattern,
+  documentation and owners. The tab searches it by name, title and pattern.
+- **Its badge:** WIP, not BETA, in the palette, Add Items and its editor (user, 2026-10-13).
+- **Hosts:** `CubeHost.serviceCatalog` (optional), built with `buildCubeServiceCatalog(engineServerClient)`. The
+  endpoint isn't in the open-source engine, so a host without one offers no Service tab or palette item, as with
+  the depot. Legend Query builds one from its engine.
+- **What it saves:** the source `{type: 'service', pattern, service}` (the pattern, which the engine's SQL reads a
+  service by, and the service's name); the cube's model is `{_type: 'cubeService'}`, with no runtime.
+- **Not yet (TODO):**
+  - reading it, through the engine's SQL island: `#SQL{select * from service('/pattern')}#`, a relation the cube
+    goes on from (the engine's SQL reads `service('/…')` in a `FROM`, `testTranspile.pure`). The emitter
+    (`ServiceSourceEmitter.ts`) and the engine's model kind are the two places marked;
+  - typing it, which the editor asks for in one place (`CubeServiceRecheck.ts`); until then a service source is
+    invalid with "Cube can't read services yet", and nothing runs;
+  - its parameters, which SQL passes by name (`service('/pattern', name => 'value')`);
+  - what it runs on: the service's own execution, or a runtime the cube picks.
+- **The earlier outline** (copying the service's lambda, converting TDS with
+  `POST /api/pure/v1/compilation/autofix/transformTdsToRelation/lambda` ✅, binding parameters with `let`, and
+  saving `{gav, servicePath, executionKey?, parameterValues}` with a hash) is set aside for the SQL route.
 
-**Persist:** `{gav, servicePath, executionKey?, parameterValues}` plus a hash of the converted lambda (D6).
+### 6.5 Pure functions returning a Relation (designed 2026-10-12)
 
-**Unknowns:**
+A cube can read a function of a published project that returns a relation, through the source dialog's **Project
+Function** tab. A `function f(…):Relation<(…)>[1]` is called in the cube's lambda (`p::f(1.0)`), composes with
+tables and every operation, and pushes down into one SQL statement ✅. This covers spec §6.5 (PURE Native
+Function).
 
-- embedded (non-packageable) runtimes need a synthesized runtime element;
-- multi-execution key selection UX;
-- parameters with enum or class types.
+**Two kinds of function.** A function either reads its rows through a `from(runtime)` of its own, directly or
+through a function it calls, or leaves the runtime to its caller. Probed on an engine, 2026-10-12, with two
+runtimes on different data:
 
-### 6.5 Pure functions returning a Relation (M9, outline)
+- a function without a `from()` needs the cube's: alone, the engine refuses it ("RelationStoreAccessor should be
+  used with a from(Runtime) expression");
+- a function with its own `from(R1)`, run by a cube on `R2`, reads different databases depending on the query's
+  shape: a plain chain reads `R1`, but the `let` form Cube writes for windows (§8.6) reads `R2`, and so does a
+  join with a table, which then reads `R1` throughout. So **a cube on a function with its own runtime runs on that
+  runtime**: the same query reads the same rows whatever its shape. A `let` needs a `from()` outside it anyway.
 
-A `function f(…):Relation<(…)>[1]` is callable inside the lambda, composes with accessors, and pushes down into a
-single SQL statement ✅. Its type comes from the declared signature, and it has parameters. This covers spec §6.5
-(PURE Native Function), and probably data-product function access points. It is the cheapest new source.
+**Decisions (user, 2026-10-12):**
+
+- **Which functions:** the project's own, as with its Databases (§6.3), at a released version.
+- **Mixing:** a function joins the tables of the same project and version, in one cube: one model and one runtime.
+- **Parameters:** primitives (String, Integer, Float, Decimal, Boolean, StrictDate, DateTime, Date), `[1]` or
+  `[0..1]`, set in the source's editor. A function with an enum or class parameter, or one of `[*]`, is listed but
+  can't be added, with the reason.
+- **Two PRs:** the services WIP (§6.4) first, then the function source as its own milestone with a demo video.
+
+**The tab:** the Project Database tab's project and version steps, then the version's functions that return a
+`Relation<…>`, read from the depot's own-project model with no engine call: name, parameters and declared
+columns. Then:
+
+- **its runtime:** Cube walks the function's body for a `from(<runtime>)`, following calls to the project's
+  functions (with its dependencies). Found: that runtime is the cube's, shown read-only ("Runs on `p::Rt`, set by
+  the function"). Not found: the user picks one of the project's runtimes, as for a table. A runtime that isn't an
+  element (`from($rt)`), two different runtimes, or a cube already on another runtime: the function can't be added,
+  with the reason;
+- **its parameters:** a form of the parameter values, which the source's editor changes later.
+
+**What it saves:** `{type: 'function', function, signature, parameterValues}` and the schema snapshot. `function`
+is the path the lambda calls; `signature` is the engine's full name (`p::withParam_Float_1__Relation_1_`), which
+tells overloads apart. The model is the project pointer (§6.3) and the runtime the cube's.
+
+**Typing** goes through the engine (`typeLambdas` on `{| p::f(…)}`), as other sources, so drift checks work
+unchanged; the declared columns are only what the tab shows.
+
+**Tests:** unit and page tests with the fake catalog; an engine test of a function with and without a `from()`,
+with a parameter, joined with a table, and through a window's `let`; and a bound and an unbound function in the
+mock depot's `cube-sales` for the `cube-local` group.
 
 ### 6.6 Data products (M9, outline)
 
