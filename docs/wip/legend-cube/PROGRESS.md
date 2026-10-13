@@ -70,7 +70,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] M6b Filter by expression, built on `cube-filter-expr` in draft #5670 for `cube-dev`, not merged yet ([PROGRESS-M6B.md](PROGRESS-M6B.md),
       PLAN §11.11)
 - [ ] M7 Grid and presentation, on `cube-m7` ([PROGRESS-M7.md](PROGRESS-M7.md), PLAN §11.10)
-- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
+- [ ] M8 Persistence (engine Cube store), on `cube-m8` ([PROGRESS-M8.md](PROGRESS-M8.md), PLAN §11.13) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
 

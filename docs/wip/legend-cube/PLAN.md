@@ -2912,7 +2912,7 @@ project with a Database and a runtime.
 | M6   | Difference and Extend                      | Difference (`Compare Column Values`) with the spec's rows and native types, a FULL join; Extend (`Extend Columns`) edited inline, a row per column with a Monaco editor, its text a full lambda (`x \| …`), each column able to use the ones above; JSON-canonical storage with the text; typing by the engine over the cube's model, in the background, again when the input the engine sees changes; Validate (F10) with plan-time checks (§11.7)                                                                                                                  |
 | M6b  | Filter by expression                       | A node, `Filter by Expression`, keeping the rows for which one Pure condition (a full lambda) is true; checked by the engine over the cube's model as an Extend is typed, and planned for the cube's database on Validate (§11.11)                                                                                                                                                                                                                                                                                                                                   |
 | M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
-| M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| M8   | Persistence                                | The engine Cube store (its own PR to legend-engine, §10.6), Studio's client and `CubeStore` port, Save, Save as, Load, Delete, New, Copy and Paste, `/cube/:cubeId` and `?queryId=`, the modified state and its confirmation, `beforeunload`, the Alt shortcuts (§11.13)                                                                                                                                                                                                                                                                                             |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
@@ -4424,6 +4424,174 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 - §4 (a node type), §8.8 (the Filter by Expression row), §10.3 (`expressionFilter`'s shape), §11.3 (the M6b row).
 - Appendix A: a node beyond the spec (beside §7.x), §16 (the new messages), §17.6 (the editor).
+
+---
+
+### 11.13 M8: Persistence
+
+M8 saves cubes on a server. A **Cube store** in legend-engine's `legend-engine-application-query`, beside the Data
+Cube store (D1, §10.5, §10.6), keeps each cube's spec (§10.3) as a string, with its owners and every saved version;
+the page gets Save, Save as, Load, Delete, New, Copy and Paste, the modified-state asterisk, confirmation before
+unsaved changes are lost, and an address per saved cube. The engine part is built on the branch `cube-store` of the
+user's legend-engine fork, from finos master (`6283262a105`), and lands in a PR into finos/legend-engine. The Studio
+part is built on the branch `cube-m8`, from `cube-dev` (`4a0bfe3e0`), and lands in a PR into `cube-dev`. Its status is
+in [PROGRESS-M8.md](PROGRESS-M8.md). Requirements: the probes under `m8-requirements/` in the local evidence folder,
+run on this computer's engine: ✅ where a probe ran, 📄 where read in code, 💭 where reasoned.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M8** (user, 2026-10-13, all on the recommendation):
+
+1. **The engine PR:** written in a worktree of the user's fork, on `cube-store` from finos master, tested on the
+   in-memory Mongo (`mongo-java-server`, as the Data Cube store's tests are), and opened as a draft PR into
+   finos/legend-engine. The Studio part doesn't wait for it to merge: it is built against an engine run locally from
+   that branch.
+2. **The address:** `/query/cube/:cubeId` always shows the open cube: set on Load and on Save (Save as included),
+   cleared on New, Paste and Import, as U9 has it for `?queryId=` (QUESTIONS.md). `?queryId=` is read once and
+   replaced by the path.
+3. **Stores for tests and development:** an in-memory `CubeStore` in the builder's test utilities for unit tests; the
+   app uses only the engine's. For development and the demo, a second engine, run from the `cube-store` branch on
+   `:6301` against an in-memory Mongo, takes Query's `engineQueryServerUrl`; the IntelliJ engine on `:6300` is left
+   as it is.
+4. **Scope:** Save, Save as, Load and Delete. Owners are shown, on hover, not edited; tags aren't edited; there is no
+   history screen. The store keeps every saved version, so one can come later.
+
+**Decided without asking** (each has a precedent or a probe; for review):
+
+- **The endpoints**, under `pure/v1/query/cube` beside `dataCube` (§10.6; literal segments win over Query's
+  `{queryId}`, 💭, checked live in M8.3):
+  - `POST cube` creates a cube and answers it at version 1. The **server makes the id** (a UUID), so an id is never
+    reused, which is how `BaseStoredVersionedAssetDao` corrupts a history 📄.
+  - `GET cube/{id}` answers the latest version, 404 when there is none or it is deleted. It sets `lastOpenAt` in the
+    same atomic `findOneAndUpdate`, with `$set`, never by rewriting the document (§10.5).
+  - `GET cube/{id}/version/{version}` answers a saved version, for a history screen later.
+  - `PUT cube/{id}` saves new content (Save): the body carries the **version the client read**; the version goes up
+    by one. Another version is a **409**, with the current version in the message.
+  - `PATCH cube/{id}` changes `name`, `owners` or `tags` (validated: any other field, an empty owner list or a blank
+    entry is a 400), with the same version check. JAX-RS 2.0.1 has no `@PATCH` ✅, so the module adds one
+    (`@HttpMethod("PATCH")`). Studio doesn't call it in M8.
+  - `DELETE cube/{id}?version=&permanent=` deletes softly by default: the cube is marked deleted and no longer read,
+    searched or saved. `permanent=true` removes it and its versions, a soft-deleted one too.
+  - `POST cube/search` answers summaries, never the content, of cubes not deleted: `searchTerm` matches the id
+    exactly, the name and the owners in any case (spec §14.4's `[id, name, ...owners]`); `owner`, `creator`, `tags`
+    (all of them, `$all`) and `sourceRef` narrow it; at most 100, the latest saved first.
+- **The documents:** `{id, version, name, owners[], tags[], formatVersion, content, sourceRefs[], audit: {createdBy,
+createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epoch milliseconds, as the Data Cube
+  store writes them. `content` is the spec's JSON as a string, so no key of the user's reaches Mongo (§10.3, spec
+  §14.3).
+- **Three collections**, named by new Vault keys beside the Data Cube store's, in `query.mongo.database`:
+  `query.mongo.collection.cube` (the latest version, unique on `id`), `query.mongo.collection.cubeVersion` (every
+  saved version, unique on `{id, version}`) and `query.mongo.collection.cubeEvent` (created, updated and deleted
+  events, as `dataCubeEvent`). The indexes are made when the store is first used. `Server.java` needs no change:
+  `ApplicationQuery` builds its store managers itself ✅.
+- **Atomic saves:** a save is one `findOneAndUpdate` filtered on the id, the version read, not deleted and the caller
+  among the owners, with `$set` and `$inc` on the version; when it matches nothing, a read says why: 404, 403 or 409.
+  The new version is then added to `cubeVersion`, whose unique index refuses a version twice. Mongo here has no
+  transactions, so a crash between the two leaves the history a version short, never the latest lost.
+- **Owners only** change a cube: PUT, PATCH and DELETE need the caller among its owners, else 403
+  `Only current owners can change this cube. Current owners are <list>.` (spec §14.3, with 403 rather than its 401).
+  Anyone can read and search, as in Query's and Data Cube's stores. The creator is the first owner. A request with no
+  user can't change anything.
+- **Validation** (400): a name, trimmed, of 1 to 255 characters; `formatVersion` a whole number of at least 1;
+  `content` a JSON object of at most 1 MiB (UTF-8, §10.3's cap) whose own `formatVersion` is the document's; at most
+  100 owners and 100 tags, each 1 to 255 characters; at most 200 `sourceRefs`, each with a `type` and a `path`.
+- **Errors** are `{"message": …}` written by Jackson. `ApplicationQueryException.toResponse()` writes its message
+  unescaped ✅ (a name with `"` would break the JSON), and is fixed in the same PR.
+- **`sourceRefs`**, one per source node, deduplicated, written by the builder (it knows the model kinds): a table
+  `{type: 'table', path: <database>, element: '<schema>.<table>', project?: '<group>:<artifact>'}` (the project
+  for a Depot model), a data product's access point `{type: 'dataProductAccessPoint', path: <data product>, element:
+<access point>}`, an ingest data set `{type: 'ingestDataSet', path: <definition>, element: <data set>}`. A direct
+  connection's tables, a session's own database, have none.
+- **Studio's client** lives in Cube's own `v1/` seam (D8, §8.7), not in legend-graph: `V1_LegendCubeStore` calls
+  `${queryBaseUrl ?? baseUrl}/pure/v1/query/cube…` through `V1_EngineServerClient`'s public `get`, `post`, `put` and
+  `delete`, as its `_dataCube` methods do, and reads answers into `serializr` classes (`V1_StoredCube`, …), then into
+  the port's classes. The port, `CubeStore` (`graph-manager/CubeStore.ts`), has what M8 uses: create, save, get,
+  search and delete; its errors say conflict, forbidden, not found, invalid or unavailable. `CubeHost.store` is
+  optional: without one, the page offers no Save or Load. Query's host builds it from its engine config. An engine
+  without the store (a 404 on `cube/search`) or without Mongo (its 500) is _unavailable_, with the engine's message.
+- **The modified state** (§17.10): the cube is modified when Save would write something else than what was loaded or
+  saved last. The spec's two halves are compared apart, as JSON: the query (`name`, `context`, `query`, unknown
+  top-level keys) and the presentation (`meta`); either sets the asterisk, and the hover says which. A new cube is
+  modified once it has a node. Undoing back to the saved cube clears it. Typing a source again can change its snapshot,
+  and then the cube is modified, since Save would write the new one.
+- **The name's hover** shows the name, the id, the version and the owners, or "Not saved yet".
+- **Save gating** (§14.4, "server Save gating is decided in M8", §10.3): Save and Save as need a store, a cube that
+  isn't read-only, at least one node, every node valid in the local analysis and no engine check pending; Save also
+  needs the caller among the owners of a saved cube (else only Save as). Host issues (an engine that can't type a
+  source now) don't block it. Export stays allowed for an invalid cube (Appendix A). Each disabled button says why.
+- **Save and Save as:** Save on a new cube opens the Save dialog (its name); on a saved one it saves at once. Save as
+  always opens it, with the name, and makes a new cube with the caller as its owner. A 409 says the cube was saved
+  elsewhere since it was opened, at version N, and offers Save as; nothing is overwritten.
+- **Load:** a dialog with a search box (the server's search, debounced) over id, name and owners, and "Only mine";
+  each row shows the name, the owners and when and by whom it was saved last. Opening one never runs it and opens no
+  editor (U9 (a)). An address that names a cube loads it behind a "loading cube" overlay; a cube that can't be loaded
+  shows "Error loading query!" with the server's message in the graph area, the address kept (U9 (b)).
+- **Delete:** from the Load dialog's rows and from the header for the open cube, owners only, after a confirmation;
+  soft only (permanent deletion stays the API's). Deleting the open cube keeps its content as an unsaved cube.
+- **New, Copy and Paste** (§14.4): New empties the page. Copy puts the spec's JSON on the clipboard, as Export does
+  (invalid cubes included, read-only ones refused). Paste reads the clipboard and opens the spec as Import does; when
+  the browser won't read the clipboard, the Import dialog opens to paste into.
+- **Confirmation** (§17.14): New, Load, Paste and Import ask `Unsaved changes to your query will be lost if you
+continue. Are you sure?` when the cube is modified; the same guards leaving the page, through the navigator's
+  `blockNavigation` (`beforeunload` and in-app navigation).
+- **Undo:** opening another cube (New, Load, Paste, Import) stays one undo step, as Import is today (§7.8); the saved
+  identity follows the cube undo returns to, at the latest version the page knows.
+- **Shortcuts** (§17.12): Alt+N, Alt+L, Alt+S, Alt+C and Alt+V through Cube's command config (`KeyboardEvent.code`
+  names, so Option on a Mac), no-ops when their action is unavailable; each has a button or menu item whose tooltip
+  names it.
+- **The address** (Settled 2): two routes, `/cube` and `/cube/:cubeId`, render the same page, kept mounted. The page
+  is told when the open cube changes and replaces the address, adding no history entry. The navigator gets a
+  `replace` option, which also fixes the entry link's history entry (ISSUES.md).
+- **The format's draft mark** (§10.3): the README keeps it until a deployment stores cubes, i.e. the engine PR merged
+  and released; from then on a format change needs a migration.
+
+**Engine facts** (probes under `m8-requirements/`):
+
+| Fact                                                                                                         |     | Probe            |
+| ------------------------------------------------------------------------------------------------------------ | --- | ---------------- |
+| The query-store endpoints fail locally: "DataCube Query MongoDB collection has not been configured properly" | ✅  | `p0-setup.md`    |
+| Every local caller is `anonymous` (pac4j's anonymous client)                                                 | ✅  | `p0-setup.md`    |
+| JAX-RS is 2.0.1: no `@PATCH` annotation                                                                      | ✅  | `p0-setup.md`    |
+| `ApplicationQuery` builds its store managers itself; `Server.java` needs no change                           | ✅  | `p0-setup.md`    |
+| The module's tests run here on the in-memory Mongo (31 Data Cube tests, ~15 s)                               | ✅  | `p0-setup.md`    |
+| `ApplicationQueryException` writes its message into JSON unescaped                                           | 📄  | `p0-setup.md`    |
+| `BaseStoredVersionedAssetDao`: no version check, a non-atomic update, a deleted id kept and reusable         | 📄  | `p0-setup.md`    |
+| `cube/…` routes don't collide with `GET {queryId}`; mongo-java-server keeps unique compound indexes          | 💭  | M8.2, M8.3 tests |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                                       | Done when                                                                   |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| M8.1  | This subsection, PROGRESS-M8.md, the §11.3 row (docs only)                                                                        | Committed and pushed; a draft PR into `cube-dev`                            |
+| M8.2  | The engine store: `CubeStoreManager`, its model, the endpoints, the indexes, the error fix; tests on the in-memory Mongo          | The module's tests and checkstyle pass; a draft PR into finos/legend-engine |
+| M8.3  | A development store: an in-memory Mongo and an engine from `cube-store` on `:6301`; every endpoint probed live                    | The probes recorded; Query's dev config reaches it                          |
+| M8.4  | The builder's port and adapter: `CubeStore`, its classes and errors, the in-memory store, `V1_LegendCubeStore`, the `sourceRefs`  | Adapter, `sourceRefs` and in-memory store tests pass                        |
+| M8.5  | The page's state: the saved identity, the modified state, Save, Save as, Load, Delete, New, Copy, Paste, confirmation, shortcuts  | State tests pass on the in-memory store                                     |
+| M8.6  | The UI: the name with its asterisk and hover, the buttons and menu, the Save and Load dialogs, the loading overlay and the errors | Component tests pass                                                        |
+| M8.7  | Legend Query: the host's store, `/cube/:cubeId` and `?queryId=`, the address on Load and Save, `blockNavigation`, the `replace`   | Query tests pass                                                            |
+| M8.8  | Guides, READMEs, testing.md, hosting.md (the store and its keys), the patch changesets                                            | `yarn check:ci` passes                                                      |
+| M8.9  | Verification: an inline review of both diffs, and a browser rehearsal on the development store                                    | Every finding fixed or recorded; the rehearsal passes                       |
+| M8.10 | A demo video (§11.3), key frames checked against their captions                                                                   | Each caption true on screen; sent                                           |
+| M8.11 | Fold the supersessions below; the PR ready for `cube-dev` on the user's word                                                      | The plan consistent; the PR ready                                           |
+
+**Risks and open gaps:**
+
+- Nothing can be saved in a deployment until the engine PR merges and is released; until then the page says the store
+  is unavailable. Review may change the API: Studio's `v1/` adapter is the one place that knows it.
+- Locally every caller is `anonymous`, so a second owner, and the 403, are shown by unit tests, and in the rehearsal
+  by giving a cube another owner through `PATCH`.
+- CI's engine image has neither the store nor Mongo, so the adapter's tests against a live store are manual, run on the
+  development store.
+- No transactions: a crash between a save and its version record leaves the history a version short.
+- `mongo-java-server` is not Mongo: the engine tests run on it; a run against a real Mongo needs Docker, which this
+  computer has but doesn't run.
+
+**Supersessions** (applied in M8.11 to the sections they change; kept here as the record of what M8 changed):
+
+- §7.8 (the page's persistence state), §8.7 (the store port beside the engine port), §10.3 (Save's gating, the draft
+  mark), §10.6 (the store as built), §11.3 (the M8 row), §12.1 (the risks above).
+- Appendix A: §14 (the store's API, Save's gating, Copy and Paste), §17.10 (the modified state), §17.12 (the Alt
+  shortcuts), §17.14 (the confirmation), §17.15 (the path and `?queryId=`).
 
 ---
 
