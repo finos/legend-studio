@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------- |
 | Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`)        |
 | Engine | Local legend-engine on `localhost:6300`                                                   |
-| Step   | M6d.5 done: the guides and changeset; next M6d.6, verification                            |
-| Tests  | 2971 core, 1768 builder (core group); engine suites 951 of 954, 3 skipped on H2 by design |
+| Step   | M6d.7 done: verification and the demo video; next M6d.8, the supersessions folded in      |
+| Tests  | 2971 core, 1769 builder (core group); engine suites 951 of 954, 3 skipped on H2 by design |
 
 ## Steps
 
@@ -24,21 +24,23 @@ See PLAN §11.14 for each step's deliverable and when it is done.
 - [x] **M6d.3** Builder: the row limit, the grid's Filter by on a float, refusals shown once, the function lists
 - [x] **M6d.4** On the engine
 - [x] **M6d.5** Guides, READMEs, testing.md and the changeset
-- [ ] **M6d.6** Verification and the browser rehearsal
-- [ ] **M6d.7** A demo video (PLAN §11.3)
+- [x] **M6d.6** Verification and the browser rehearsal
+- [x] **M6d.7** A demo video (PLAN §11.3)
 - [ ] **M6d.8** Fold PLAN §11.14's supersessions in; the PR ready for `cube-dev`
 
 ## Commits
 
 Filled in as steps land.
 
-| Step  | Commit      | Subject                                                    |
-| ----- | ----------- | ---------------------------------------------------------- |
-| M6d.1 | `4dc165228` | docs: settle Legend Cube M6d (operations cleanup)          |
-| M6d.2 | `120c55365` | feat: clean up Legend Cube's core operations (M6d)         |
-| M6d.3 | `56e3e4d85` | fix: clean up Legend Cube's grid and editors (M6d)         |
-| M6d.4 | `6e482a9c2` | test: run Legend Cube's M6d operations on the engine       |
-| M6d.5 | `92fd6fdd6` | docs: cover Legend Cube's operations cleanup in its guides |
+| Step  | Commit      | Subject                                                     |
+| ----- | ----------- | ----------------------------------------------------------- |
+| M6d.1 | `4dc165228` | docs: settle Legend Cube M6d (operations cleanup)           |
+| M6d.2 | `120c55365` | feat: clean up Legend Cube's core operations (M6d)          |
+| M6d.3 | `56e3e4d85` | fix: clean up Legend Cube's grid and editors (M6d)          |
+| M6d.4 | `6e482a9c2` | test: run Legend Cube's M6d operations on the engine        |
+| M6d.5 | `92fd6fdd6` | docs: cover Legend Cube's operations cleanup in its guides  |
+| M6d.6 | `9282e0997` | fix: address the review of Legend Cube's operations cleanup |
+| M6d.7 | –           | the video, in the evidence folder                           |
 
 ## Notes
 
@@ -88,3 +90,18 @@ Filled in as steps land.
   pattern rules per database and `getEmitPatternProblem`. testing.md: the cleanup's engine test and the canary. A
   patch changeset for both packages. `GITHUB_BASE_REF=cube-dev yarn check:ci` passes (it caught the dialect test's
   untyped JSON helpers, now typed).
+- **M6d.6** (2026-10-13). An inline review of the branch's diff found two problems, both fixed (`9282e0997`). The
+  Join editor listed each shared column's renames by pairing the autofix's Left and Right lists by index, which a
+  kept key or a Right name in another case put out of line: they are now matched by name (`describeFix`, a test for
+  `PRODUCT_ID`/`product_id` and `QTY`/`qty`). A list's `contains` (`['FR', 'DE']->contains($x.C)`, an `IN` the
+  engine writes right on every type: probe `c5-list-contains`) was taken for a `LIKE`: the pattern rules now skip a
+  `contains` on a collection, which also stops M6b's literal rules refusing one. Checked and kept: the Extend draft's
+  plan step meets the new backstop and shows its message on the column's row; Filter by Expression refuses before
+  planning. Browser rehearsal: `demo/demo-m6d.mjs` on `:9002` (10 checks), its run the video's.
+- **M6d.7** (2026-10-13). `demo-m6d.mjs`: a DuckDB direct connection (a sales table, `stock_eu` with `Qty`,
+  `stock_us` with `qty`); a Filter by Expression given a column pattern refused once, in the problems, then a text
+  pattern checked and run (4 rows); a Group's Min and Max of `product` by country (France coffee and tea); the Join of
+  the two stock tables on `item`, listed `Qty → Qty_1 (Left), qty → qty_2 (Right)`, Rename them, run (both
+  quantities); the row limit refusing `1e3`; then Northwind's ORDERS on H2, the grid's Filter by on a FREIGHT cell
+  writing `is in list of` 32.38 and 32.380001068115234, which finds order 10248. 10 checks pass and the 12 frames match
+  their captions. `videos/17-m6d-operations-cleanup.webm` (117 s), sent.
