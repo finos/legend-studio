@@ -152,7 +152,10 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           // edits the node editor would apply may make an invalid cube valid
           disabled={
             persistence.saveDisabledReason !== undefined &&
-            !editorState.hasEditsToApply
+            !(
+              editorState.hasEditsToApply &&
+              persistence.isSaveBlockedOnlyByProblems
+            )
           }
           onClick={run(() => persistence.save())}
         >
@@ -165,7 +168,10 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           }
           disabled={
             persistence.saveAsDisabledReason !== undefined &&
-            !editorState.hasEditsToApply
+            !(
+              editorState.hasEditsToApply &&
+              persistence.isSaveAsBlockedOnlyByProblems
+            )
           }
           onClick={run(() => persistence.saveAs())}
         >

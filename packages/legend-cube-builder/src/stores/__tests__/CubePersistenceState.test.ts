@@ -515,4 +515,73 @@ describe('Shortcuts (spec §17.12)', () => {
       editorState.dispose();
     }
   });
+
+  test('Leave New, Copy and Paste to a text field that has the focus', () => {
+    const { editorState } = createPage(ordersDocument('Orders'));
+    const { commandService } = editorState.host.applicationStore;
+    const copy = jest
+      .spyOn(
+        editorState.host.applicationStore.clipboardService,
+        'copyTextToClipboard',
+      )
+      .mockResolvedValue();
+    const field = document.createElement('input');
+    document.body.appendChild(field);
+    editorState.registerCommands();
+    try {
+      field.focus();
+      // Alt+C is Match case in a code editor's find, for one
+      expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.COPY)).toBe(
+        false,
+      );
+      expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.PASTE)).toBe(
+        false,
+      );
+      expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.NEW)).toBe(
+        false,
+      );
+      // Save and Load still run
+      expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.SAVE)).toBe(
+        true,
+      );
+      editorState.persistence.saveDialog.close();
+      field.blur();
+      expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.COPY)).toBe(
+        true,
+      );
+      expect(copy).toHaveBeenCalledTimes(1);
+    } finally {
+      field.remove();
+      editorState.deregisterCommands();
+      editorState.dispose();
+    }
+  });
+});
+
+describe("Save while the node editor's edits may fix the cube", () => {
+  test('Lets the edits decide only when step problems are all that blocks Save', async () => {
+    const invalid = createPage(invalidDocument()).editorState.persistence;
+    expect(invalid.isSaveBlockedOnlyByProblems).toBe(true);
+    expect(invalid.isSaveAsBlockedOnlyByProblems).toBe(true);
+
+    const noStore = createPage(invalidDocument(), { withStore: false })
+      .editorState.persistence;
+    expect(noStore.isSaveBlockedOnlyByProblems).toBe(false);
+
+    const valid = createPage(ordersDocument()).editorState.persistence;
+    expect(valid.isSaveBlockedOnlyByProblems).toBe(false);
+
+    // someone else's cube: Save as only
+    const { editorState, store } = createPage();
+    const id = (
+      await store
+        .asUser('bob')
+        .createCube(
+          new CubeDraft('Bob', 1, serializeCubeSpec(invalidDocument()), []),
+        )
+    ).id;
+    await flowResult(editorState.persistence.openCube(id));
+    expect(editorState.persistence.isSaveAsBlockedOnlyByProblems).toBe(true);
+    expect(editorState.persistence.isSaveBlockedOnlyByProblems).toBe(false);
+  });
 });

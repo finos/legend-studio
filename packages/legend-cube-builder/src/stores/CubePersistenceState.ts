@@ -318,6 +318,8 @@ export class CubePersistenceState {
       isPending: computed,
       saveAsDisabledReason: computed,
       saveDisabledReason: computed,
+      isSaveAsBlockedOnlyByProblems: computed,
+      isSaveBlockedOnlyByProblems: computed,
       loadDisabledReason: computed,
       deleteDisabledReason: computed,
       isDialogOpen: computed,
@@ -464,6 +466,26 @@ export class CubePersistenceState {
     }
     const problem = this.firstProblem;
     return problem === undefined ? undefined : getInvalidCubeSaveTitle(problem);
+  }
+
+  /**
+   * Save as is unavailable only because a step has a problem, which the node
+   * editor's edits may fix: its button stays enabled while the editor has
+   * edits, and finishing it first decides
+   */
+  get isSaveAsBlockedOnlyByProblems(): boolean {
+    const problem = this.firstProblem;
+    return (
+      problem !== undefined &&
+      this.saveAsDisabledReason === getInvalidCubeSaveTitle(problem)
+    );
+  }
+
+  /** As Save as, on a cube the viewer may save over */
+  get isSaveBlockedOnlyByProblems(): boolean {
+    return (
+      this.isSaveAsBlockedOnlyByProblems && (!this.savedCube || this.isOwner)
+    );
   }
 
   /** Why Save can't be used: as Save as, and a saved cube must be the viewer's */

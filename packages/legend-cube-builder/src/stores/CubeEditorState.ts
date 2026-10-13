@@ -723,9 +723,11 @@ export class CubeEditorState implements CommandRegistrar {
             isFocusInNodeEditor(),
           ),
       });
+    // New, Copy and Paste leave the keys to a text field that has the focus,
+    // e.g. Alt+C, Match case in a code editor's find
     registerPersistenceCommand(
       LEGEND_CUBE_COMMAND_KEY.NEW,
-      () => !persistence.isPending,
+      () => !persistence.isPending && !isTypingText(),
       () => persistence.newCube(),
     );
     registerPersistenceCommand(
@@ -737,12 +739,13 @@ export class CubeEditorState implements CommandRegistrar {
       LEGEND_CUBE_COMMAND_KEY.SAVE,
       // edits the node editor would apply may make an invalid cube valid
       () =>
-        persistence.saveDisabledReason === undefined || this.hasEditsToApply,
+        persistence.saveDisabledReason === undefined ||
+        (this.hasEditsToApply && persistence.isSaveBlockedOnlyByProblems),
       () => persistence.save(),
     );
     registerPersistenceCommand(
       LEGEND_CUBE_COMMAND_KEY.COPY,
-      () => !this.readOnly,
+      () => !this.readOnly && !isTypingText(),
       () => {
         persistence
           .copy()
@@ -751,7 +754,7 @@ export class CubeEditorState implements CommandRegistrar {
     );
     registerPersistenceCommand(
       LEGEND_CUBE_COMMAND_KEY.PASTE,
-      () => !persistence.isPending,
+      () => !persistence.isPending && !isTypingText(),
       () => persistence.paste(),
     );
     commandService.registerCommand({
