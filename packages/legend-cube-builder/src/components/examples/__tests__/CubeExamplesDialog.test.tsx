@@ -147,7 +147,9 @@ describe('Examples dialog', () => {
     const dialog = await openExamples();
     fireEvent.click(within(dialog).getByRole('button', { name: /^Sports/u }));
     const picker = await screen.findByRole('dialog');
-    fireEvent.click(within(picker).getByRole('button', { name: '← Examples' }));
+    fireEvent.click(
+      within(picker).getByRole('button', { name: '← Back to Examples' }),
+    );
     // the source dialog fades out as the examples open
     await waitFor(() => expect(screen.queryByText('Add a source')).toBeNull());
     const examples = screen.getByRole('dialog');
@@ -160,7 +162,7 @@ describe('Examples dialog', () => {
     );
     const plain = await screen.findByRole('dialog');
     expect(
-      within(plain).queryByRole('button', { name: '← Examples' }),
+      within(plain).queryByRole('button', { name: '← Back to Examples' }),
     ).toBeNull();
   });
 });
