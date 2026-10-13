@@ -389,7 +389,7 @@ describe(unitTest('Node registry'), () => {
   test('Creates a drop of 10 rows', () => {
     expect(DROP_DEFINITION.kind).toBe('transform');
     expect(DROP_DEFINITION.type).toBe('drop');
-    expect(DROP_DEFINITION.label).toBe('Drop first <x> rows');
+    expect(DROP_DEFINITION.label).toBe('Drop first rows');
     expect(DROP_DEFINITION.icon).toBe('drop');
     expect(DROP_DEFINITION.beta).toBe(false);
     const drop = DROP_DEFINITION.create('drop101');
@@ -401,7 +401,7 @@ describe(unitTest('Node registry'), () => {
   test('Creates a limit of 10 rows', () => {
     expect(LIMIT_DEFINITION.kind).toBe('transform');
     expect(LIMIT_DEFINITION.type).toBe('limit');
-    expect(LIMIT_DEFINITION.label).toBe('Take first <x> rows');
+    expect(LIMIT_DEFINITION.label).toBe('Take first rows');
     expect(LIMIT_DEFINITION.icon).toBe('limit');
     expect(LIMIT_DEFINITION.beta).toBe(false);
     const limit = LIMIT_DEFINITION.create('limit101');
@@ -413,7 +413,7 @@ describe(unitTest('Node registry'), () => {
   test('Creates a slice of rows 10 to 20', () => {
     expect(SLICE_DEFINITION.kind).toBe('transform');
     expect(SLICE_DEFINITION.type).toBe('slice');
-    expect(SLICE_DEFINITION.label).toBe('Take rows <x> to <y>');
+    expect(SLICE_DEFINITION.label).toBe('Take a range of rows');
     expect(SLICE_DEFINITION.icon).toBe('slice');
     expect(SLICE_DEFINITION.beta).toBe(false);
     const slice = SLICE_DEFINITION.create('slice101');

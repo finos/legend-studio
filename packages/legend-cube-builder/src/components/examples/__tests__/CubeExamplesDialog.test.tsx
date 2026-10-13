@@ -71,7 +71,7 @@ describe('Examples dialog', () => {
     ]);
     expect(
       within(grid).getByLabelText(
-        'Steps: Relational Database Table, Filter by Column, Sort by Column, Take first <x> rows',
+        'Steps: Relational Database Table, Filter by Column, Sort by Column, Take first rows',
       ),
     ).toBeDefined();
     expect(

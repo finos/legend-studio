@@ -408,13 +408,20 @@ export const getExtendPlanProblem = (
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';
 
+/** Words a title leaves in lower case, but first */
+const TITLE_SMALL_WORDS = new Set(['a', 'an', 'of']);
+
 /**
  * A node type's label as the node editor's title shows it, each word
- * capitalised (QUESTIONS.md U1(a)), e.g. 'Take First <x> Rows'; the registry
- * keeps its own wording
+ * capitalised but `a`, `an` and `of` (QUESTIONS.md U1(a)), e.g. 'Take a Range
+ * of Rows'; the registry keeps its own wording
  */
 export const toEditorTitle = (label: string): string =>
-  label.replace(/(?<=^|\s)[a-z]/gu, (letter) => letter.toUpperCase());
+  label.replace(/(?<=^|\s)[a-z]+/gu, (word, offset: number) =>
+    offset > 0 && TITLE_SMALL_WORDS.has(word)
+      ? word
+      : `${word[0]?.toUpperCase() ?? ''}${word.slice(1)}`,
+  );
 
 /** The source dialog's body until a tab is chosen, opened from the empty canvas (spec §17.8, U4(b)) */
 export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';
