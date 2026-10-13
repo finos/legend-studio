@@ -4570,7 +4570,7 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - **Values:** one to 100, each of the column's type, none twice, and no two differing only in case (`foldColumnName`):
   DuckDB gives both the first one's numbers ✅ (`p6`, found in M6c.7). A value whose text can't name a column (empty, or
   holding `"`, `\` or a control character, or longer than 128 code points; `isValidColumnName`, §7.5), or holding a
-  backtick (`isPivotValueText`), is refused: the engine drops `"` from the names it generates ✅, and writes the
+  backtick (`isValidColumnName` from M6d, §11.14), is refused: the engine drops `"` from the names it generates ✅, and writes the
   pivot's own name `'<v>__|__cube_pivot'` unescaped, so a backtick ends it early where names are quoted with
   backticks, on Databricks and MemSQL ✅ (plans, M6c.7's review; Appendix B). The editor loads them as
   `<input>->select(~c)->filter(c is not empty)->distinct()->sort(~c->ascending())->limit(101)` on the cube's runtime:

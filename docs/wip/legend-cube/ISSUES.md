@@ -30,17 +30,6 @@
   operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
   Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
 
-### A Join doesn't see shared columns that differ only in case
-
-- **Found:** M2's second verification (M2.16). M1 Join code, so not fixed in M2.
-- **What:** the Join's duplicate check (`getDuplicateJoinColumns`, `Join.ts`) compares names exactly, so a left `ID`
-  and a right `id` pass. SQL Server, MemSQL and DuckDB take them for one column: the join's SQL fails there, or (DuckDB)
-  returns one column's values for both. M2.16 made Rename, the Join autofix and Cube's temporary columns compare names
-  in any case (`foldColumnName`).
-- **Suggested fix:** fold names in `getDuplicateJoinColumns` and in the Join's output-schema check, so the duplicate
-  rule and its autofix offer `ID_1`/`id_2`. Test: left `[ID, X]`, right `[id, X]` joined on X reports the duplicate,
-  and the autofix makes the join valid.
-
 ### The node tooltip stays through a drag or a zoom
 
 M3b.11's tooltip (MUI) opens 500 ms after the pointer rests on a node. A native drag of the node fires no mouse leave, so
@@ -56,14 +45,6 @@ read it again; a reload there opens it again). A parameter with a malformed `%` 
 Cube runs (the framework decodes the parameters as it loads). And the linked product is found with the catalog's
 `search` for its id: a full-text search that ranks or cuts its answers could miss it, though the id is exact. Fixes:
 a `replace` option on the navigator port; a lookup by id on the catalog port (`CubeDataProductCatalog`).
-
-### A Rename or an Extend to a name with a backtick fails on Databricks and MemSQL
-
-Found in M6c.7's review (PLAN §11.12, Appendix B). `isValidColumnName` allows a backtick, and the engine writes names
-on Databricks and MemSQL (SingleStore) in backticks without escaping one inside, so a Rename or an Extend to a name
-holding a backtick plans SQL the database rejects. Pivot refuses a backtick in its values (`isPivotValueText`); Rename,
-Extend and Group's output names don't yet. Fix: refuse a backtick in every name Cube gives a column, or once the engine
-escapes it (below), nothing.
 
 ### Redacted printing shows a Pivot's values, as column names
 
@@ -424,8 +405,8 @@ should be written as an expression with its wildcards escaped (or with strpos/po
 Found in M6c.7's review, planned on the local engine ✅. `processIdentifierWithQuoteChar` (`extensionDefaults.pure:677`)
 wraps a name in the dialect's quote character and strips only `"`. Databricks and MemSQL quote with backticks, so a
 name holding one ends early and the SQL fails to parse: for one, a static pivot's own column name, which holds the
-value's text, for a value with a backtick. Cube refuses a backtick in a pivot value (PLAN §11.12) and has the same gap
-for Rename and Extend (above). Draft issue for finos/legend-engine:
+value's text, for a value with a backtick. Cube refuses a backtick in every name it gives a column, a pivot's values
+included (PLAN §11.14). Draft issue for finos/legend-engine:
 
 ```text
 Title: Identifiers holding the dialect's quote character aren't escaped (Databricks, MemSQL)

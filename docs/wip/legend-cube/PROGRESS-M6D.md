@@ -12,15 +12,15 @@
 | ------ | ---------------------------------------------------------------------------------- |
 | Branch | `cube-ops-cleanup`, stacked on `cube-pivot` (#5674), from `cube-dev` (`4a0bfe3e0`) |
 | Engine | Local legend-engine on `localhost:6300`                                            |
-| Step   | M6d.1 done: the plan; next M6d.2, the core                                         |
-| Tests  | 2964 core, 1756 builder (core group); engine suites 920 of 924 (as M6c)            |
+| Step   | M6d.2 done: the core; next M6d.3, the builder                                      |
+| Tests  | 2971 core, 1756 builder (core group); engine suites 920 of 924 (as M6c)            |
 
 ## Steps
 
 See PLAN §11.14 for each step's deliverable and when it is done.
 
 - [x] **M6d.1** The settled decisions (PLAN §11.14), this file, ISSUES.md
-- [ ] **M6d.2** Core: names, a Join's shared columns in any case, the aggregations, the pattern rules
+- [x] **M6d.2** Core: names, a Join's shared columns in any case, the aggregations, the pattern rules
 - [ ] **M6d.3** Builder: the row limit, the grid's Filter by on a float, refusals shown once, the function lists
 - [ ] **M6d.4** On the engine
 - [ ] **M6d.5** Guides, READMEs, testing.md and the changeset
@@ -32,8 +32,10 @@ See PLAN §11.14 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit | Subject |
-| ---- | ------ | ------- |
+| Step  | Commit      | Subject                                            |
+| ----- | ----------- | -------------------------------------------------- |
+| M6d.1 | `4dc165228` | docs: settle Legend Cube M6d (operations cleanup)  |
+| M6d.2 | `120c55365` | feat: clean up Legend Cube's core operations (M6d) |
 
 ## Notes
 
@@ -47,3 +49,16 @@ Filled in as steps land.
   and a pivot on H2 and DuckDB; `c4` a Boolean column's Min and Max written `max(b)` on SQL Server, Sybase and
   Postgres. Earlier the same day, at the user's word, `cube-dev` was reset to master (`4a0bfe3e0`, #5669 had
   brought its three commits in) and `cube-pivot` rebased onto it, its tree unchanged.
+- **M6d.2** (2026-10-13). `isValidColumnName` refuses a backtick, so every name Cube gives a column does;
+  `isPivotValueText` is gone. `getDuplicateJoinColumns` compares names folded through `getCollidingJoinColumns`: a
+  same-named key is exempt only when exact, and Difference's compared columns, which it renames on both sides, are
+  left out of the check; the autofix renames each side's own name (`ID_1`, `id_2`), in the Left names' order, keeps a
+  merged key's name, and adds no Rename to a side with nothing to rename. `getAvailableAggregations`: dates, strings and
+  Booleans the distinct ones then Min and Max (`ORDERED`), Min and Max on strings and Booleans typed as the column;
+  StrictTime and enumerations the distinct ones. The pattern helpers moved to `LikeFunctions.ts`, with
+  `findLikeFunctionWithNonLiteralPattern`; `CubeDialects` reads a Filter by Expression's condition and an Extend's
+  columns alike (`findInLambdas`): `getNonLiteralPatternProblem` (refused unless Snowflake, none known included),
+  `givesNonLiteralPattern` in `dependsOnDatabaseType`, `getEmitPatternProblem` the emitters' backstop for both nodes
+  (only once the type is known: typing passes none). Extend refuses a backslash in a `LIKE` literal. ISSUES.md: the
+  Join and backtick entries removed. Tests: the aggregation table, the Join and autofix in any case, the pattern rules
+  per database, the Extend's backslash, a backtick name; the three editors' function lists.
