@@ -60,6 +60,7 @@ import {
   needsDatabaseType,
   PIVOT_UNSUPPORTED_DATABASE_TYPES,
 } from '../CubeDialects.js';
+import type { JsonObject } from '../../utils/Json.js';
 import { printIR } from '../IRPrinter.js';
 import { QueryEmitter } from '../QueryEmitter.js';
 
@@ -545,18 +546,18 @@ describe(
   unitTest("Patterns that are not literals, and an Extend's patterns"),
   () => {
     const X = { _type: 'var', name: 'x' };
-    const property = (name: string) => ({
+    const property = (name: string): JsonObject => ({
       _type: 'property',
       property: name,
       parameters: [X],
     });
-    const lambdaOf = (body: object) => ({
+    const lambdaOf = (body: JsonObject): JsonObject => ({
       _type: 'lambda',
       parameters: [X],
       body: [body],
     });
     /** `x | $x.SHIP_COUNTRY->contains(<pattern>)`, the pattern a literal or a column */
-    const contains = (pattern: string | { column: string }) =>
+    const contains = (pattern: string | { column: string }): JsonObject =>
       lambdaOf({
         _type: 'func',
         function: 'contains',
