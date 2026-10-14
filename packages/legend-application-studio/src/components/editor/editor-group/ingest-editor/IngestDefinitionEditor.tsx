@@ -34,6 +34,7 @@ import {
   SQLIcon,
   clsx,
   PanelLoadingIndicator,
+  CubeIcon,
 } from '@finos/legend-art';
 import {
   INGEST_DEFINITION_TAB,
@@ -301,6 +302,26 @@ export const IngestDefinitionEditor = observer(() => {
                                 .artifactGenerationState.isInProgress
                                 ? 'Generating...'
                                 : 'View SQL'}
+                            </div>
+                          </button>
+                        </div>
+                      )}
+                      {editorStore.applicationStore.config.options
+                        .NonProductionFeatureFlag && (
+                        // sized to its label, longer than the other buttons'
+                        <div className="btn__dropdown-combo btn__dropdown-combo--primary !w-auto">
+                          <button
+                            className="btn__dropdown-combo__label !w-auto"
+                            onClick={() =>
+                              editorStore.embeddedCubeState.open(ingestDef)
+                            }
+                            tabIndex={-1}
+                            disabled={ingestDefinitionEditorState.isReadOnly}
+                            title="Build a materialized view of the project's ingest data sets in Legend Cube"
+                          >
+                            <CubeIcon className="btn__dropdown-combo__label__icon" />
+                            <div className="btn__dropdown-combo__label__title whitespace-nowrap pr-2">
+                              Create MatView with Cube
                             </div>
                           </button>
                         </div>

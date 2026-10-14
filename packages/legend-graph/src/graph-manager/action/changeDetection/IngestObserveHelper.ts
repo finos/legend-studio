@@ -48,6 +48,9 @@ export const observe_IngestDefinition = skipObservedWithContext(
     observe_INTERNAL__UnknownPackageableElement(metamodel);
     makeObservable<IngestDefinition, '_elementHashCode'>(metamodel, {
       tests: observable,
+      // replaced when a materialized view is added, e.g. by Legend Cube in
+      // Studio, so the editor's Lineage and View SQL follow it
+      TEMPORARY_MATVIEW_FUNCTION_DATA_SETS: observable.ref,
       _elementHashCode: override,
     });
     metamodel.tests.forEach((suite) => observe_IngestTestSuite(suite, context));
