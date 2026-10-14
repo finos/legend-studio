@@ -79,7 +79,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       `master` as #5689 ([PROGRESS-DEBUG-RUNS.md](PROGRESS-DEBUG-RUNS.md), PLAN §11.16)
 - [ ] Variant (JSON) columns: a readable cell, Explore JSON, Parse as JSON, Explode Array, on `cube-variant` from
       `master` ([PROGRESS-VARIANT.md](PROGRESS-VARIANT.md), PLAN §11.20)
-- [ ] Legend Analytics: Cube as its own application, on `cube-analytics` from `master`
+- [ ] Legend Analytics: Cube as its own application, complete on `cube-analytics`, draft #5692 into `master`
       ([PROGRESS-ANALYTICS.md](PROGRESS-ANALYTICS.md), PLAN §11.19)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 

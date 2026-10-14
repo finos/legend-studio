@@ -4,7 +4,7 @@ PLAN §11.19. Built on `cube-analytics`, from `master` (`1cc69259a`, rebased on 
 
 ## Current state
 
-AN.4 done (2026-10-14): the inline review and the browser rehearsal. Next: AN.5, the demo video.
+Complete (2026-10-14): AN.1–AN.6 done, the video sent. The draft PR waits for the user's word to be marked ready.
 
 ## Steps
 
@@ -12,19 +12,30 @@ AN.4 done (2026-10-14): the inline review and the browser rehearsal. Next: AN.5,
 - [x] AN.2 The shared host: `LegendCubeHost` in the builder; Query's host built on it
 - [x] AN.3 The app: `legend-application-analytics`, its bootstrap and deployment, registered
 - [x] AN.4 Verification: an inline review, a browser rehearsal on :9009
-- [ ] AN.5 A demo video
-- [ ] AN.6 Fold the supersessions in
+- [x] AN.5 A demo video
+- [x] AN.6 Fold the supersessions in
 
 ## Commits
 
-| Step | Commit                   | What                                                              |
-| ---- | ------------------------ | ----------------------------------------------------------------- |
-| AN.1 | `86f684244`              | The plan                                                          |
-| AN.2 | `785a7ca98`              | The shared host                                                   |
-| AN.3 | `f3e080f49`, `68761e11e` | The app; the root build references and the deployment's changeset |
-| AN.4 | this commit              | The review's fixes                                                |
+| Step       | Commit                   | What                                                              |
+| ---------- | ------------------------ | ----------------------------------------------------------------- |
+| AN.1       | `86f684244`              | The plan                                                          |
+| AN.2       | `785a7ca98`              | The shared host                                                   |
+| AN.3       | `f3e080f49`, `68761e11e` | The app; the root build references and the deployment's changeset |
+| AN.4       | `9f0516885`              | The review's fixes                                                |
+| AN.5, AN.6 | this commit              | The video; the plan folded                                        |
 
 ## Notes
+
+- AN.6: folded into §3.5 (the hosts: Legend Query and Legend Analytics share `LegendCubeHost`; `LegendQueryCubeHost` is
+  its subclass), a §11.3 row (AN), and the builder's `docs/hosting.md` (both hosts, `LegendCubeHost` and its config,
+  Analytics' config and dev loop, the light theme a new host needs).
+- AN.5: `27-legend-analytics.webm` (0:50) in the evidence folder's `videos/`, script `demo/demo-analytics.mjs`. It has
+  8 checks, all passing: the address and title, the light dialog header, the example's rows, F9's second run, Dev
+  Settings on :6300, the pivot's columns, the CSV download's lines, and Query's `/query/cube`. All 9 frames were
+  checked against their captions; the first take's captions claimed what the screen doesn't show (no feature flag,
+  the shared host, the config naming the engine, DuckDB under the pivot), so they were reworded. A banner shows the
+  real address and tab title, and a panel shows the downloaded CSV, both drawn from the page and the download.
 
 - AN.4, the inline review of the diff against `master`: two fixes. Legend Query no longer uses
   `@finos/legend-server-marketplace`, which it gained for Cube's host (#5652), so the dependency and its references go.

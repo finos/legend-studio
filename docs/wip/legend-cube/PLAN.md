@@ -272,8 +272,15 @@ What the repo actually enforces:
   - The Cube page registers the commands with `applicationStore.commandService`, as the query builder's
     `useCommands` does.
   - The undo command's `trigger` returns `false` while focus is in an input, textarea or contenteditable.
+- **Hosts** (§11.19, folded in at AN.6): Legend Query (`/query/cube`) and Legend Analytics (`/analytics/`, its own
+  application, `@finos/legend-application-analytics`) host the page through one `LegendCubeHost` in the builder, built
+  from a plain `LegendCubeHostConfig` of the deployment's servers (the engine; the depot, lakehouse, platform and
+  marketplace where it has them), so both offer the same sources by the same rules. Each app keeps only its config,
+  its shell and its shortcuts' plugin; Analytics also copies the rules of Query's light mode that the page's
+  legend-art components use. Studio's embedded cube (#5690) keeps a host of its own.
 - **Host code:** `legend-application-query/src/components/cube/` and `src/stores/cube/` hold a thin
-  `LegendQueryCubeHost`. It implements `CubeHost` (defined in the builder) from Query's application store:
+  `LegendQueryCubeHost`, now a subclass of the builder's `LegendCubeHost` given Query's config
+  (`buildLegendQueryCubeHostConfig`). It implements `CubeHost` (defined in the builder) from Query's application store:
 
   - engine server client config (Query's `engineServerUrl`, as at
     [QueryEditorStore.ts:629](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L629));
@@ -3066,6 +3073,7 @@ project with a Database and a runtime.
 | M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| AN   | Legend Analytics                           | Cube as its own application (§11.19): `legend-application-analytics`, its bootstrap and deployment at `/analytics/`, one `LegendCubeHost` shared with Legend Query; later, saved cubes and deep links after M8, Data Cube's grid and the Legend Query node                                                                                                                                                                                                                                                                                                           |
 | —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points
@@ -5157,7 +5165,7 @@ This subsection overrides the sections it names until AN.6 folds it into them (s
 - **Two apps drifting apart:** the shared host keeps the sources and their rules in one place. Each app keeps only its
   config and its shell.
 
-**Supersessions** (to fold in at AN.6):
+**Supersessions** (folded in at AN.6, 2026-10-14):
 
 - §3.5: Cube has three hosts:
   - Legend Query (`/query/cube`) and Legend Analytics (`/analytics/`), which share `LegendCubeHost`;
