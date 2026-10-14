@@ -1335,7 +1335,10 @@ source for now; the user plans to improve it later.
   the project version it was deployed from, which also gives the SDLC pointer (a later improvement).
 - **Schema:** each data set's declared columns, with their type parameters and nullability, then the LAKE\_\* columns its
   write mode adds, as legend-graph types them for Legend Query; no engine call. Materialized views, many-valued columns
-  and types Cube doesn't know are listed disabled with the reason.
+  and types Cube doesn't know are listed disabled with the reason. The LAKE\_\* columns come in the order the engine
+  returns them, `LAKE_DIGEST`, `LAKE_IN_ID`, `LAKE_OUT_ID`, then `LAKE_FROM`, `LAKE_THRU` (2026-10-14: a run failed
+  with `LAKE_DIGEST` where Cube, following legend-graph's `LAKE_IN_ID` first, expected `LAKE_IN_ID`; a run's rows are
+  read by position).
 - **Accessor and run:** `#I{definition.dataSet}#` (`metadata: false`), run on a model of the definitions the cube reads
   plus a LakehouseRuntime at `cube::ingest::Runtime`. Its environment is the one of the ingest server that served the
   definition; the warehouse follows the data product rule (§6.8).
@@ -2982,7 +2985,7 @@ Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows
    with their project (`group:artifact`); search narrows them. Definitions deployed ad hoc, or to another environment,
    are counted below the list, not shown.
 2. Pick a definition: its data sets list with their column counts; a materialized view is disabled and says why. Pick
-   a data set: its columns show, the declared ones then `LAKE_IN_ID`, `LAKE_OUT_ID` and `LAKE_DIGEST` (and
+   a data set: its columns show, the declared ones then `LAKE_DIGEST`, `LAKE_IN_ID` and `LAKE_OUT_ID` (and
    `LAKE_FROM`, `LAKE_THRU` for a business-temporal one). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the
    one you last used); change it if needed.
 3. Add the data set. Open the dialog again: the Mode, producer deployment and warehouse are fixed, and the Model,
@@ -4902,7 +4905,12 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
   the project's first lakehouse runtime's environment, the cube's warehouse starting as the runtime's
   (`LegendStudioCubeWorkspace`, the engine's `ingestDefinitionSource` and `dataProductModelSource`).
 - **Add as MatView:** the step that runs, as a lambda with no runtime and no row limit, becomes a data set of the
-  definition: `{name, primaryKey: [], source: {_type: 'FunctionSource', function}}`, a local change in Studio.
+  definition: `{name, primaryKey, privacyClassification: {sensitivity}, source: {_type: 'FunctionSource', function}}`
+  with the empty lists the engine gives every data set it parses (`ingestPartitionColumns`, `preprocessors`,
+  `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`), a local change in Studio. The dialog asks for the
+  name, the data's classification (one of `dataProductConfig.classifications`, as a data product's access points
+  offer, or typed when the config gives none) and the primary key, any of the step's columns, kept in their order
+  (2026-10-14: a view without a classification failed with a NullPointerException).
 - **The light theme:** the demo is shown in Studio's light theme; Cube's dialogs draw their primary button as an
   accent button in every theme.
 

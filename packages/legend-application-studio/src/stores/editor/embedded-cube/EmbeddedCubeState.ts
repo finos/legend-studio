@@ -20,6 +20,7 @@ import { action, flowResult, makeObservable, observable } from 'mobx';
 import {
   getIngestDataSetNames,
   ingestDefinition_addMaterializedView,
+  type IngestMaterializedViewOptions,
 } from '../../graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { EditorStore } from '../EditorStore.js';
 import { IngestDefinitionEditorState } from '../editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
@@ -80,15 +81,54 @@ export class EmbeddedCubeState {
   }
 
   /**
-   * Adds the lambda to the ingest definition as a materialized view, closes
-   * the cube and shows the definition with it
+   * The classifications a materialized view's data can take: those a data
+   * product's access points offer; none when Studio's config gives none,
+   * and the classification is then typed
    */
-  addMaterializedView(name: string, lambda: PlainObject): void {
+  get classifications(): string[] {
+    return (
+      this.editorStore.applicationStore.config.options.dataProductConfig
+        ?.classifications ?? []
+    );
+  }
+
+  /** Why the classification can't be the new materialized view's; none when it can */
+  getMaterializedViewClassificationProblem(
+    sensitivity: string,
+  ): string | undefined {
+    const trimmed = sensitivity.trim();
+    if (!trimmed) {
+      return "Classify the materialized view's data.";
+    }
+    const { classifications } = this;
+    return classifications.length && !classifications.includes(trimmed)
+      ? `${trimmed} isn't one of the data classifications.`
+      : undefined;
+  }
+
+  /**
+   * Adds the lambda to the ingest definition as a materialized view, with
+   * its primary key and the classification of its data, closes the cube and
+   * shows the definition with it
+   */
+  addMaterializedView(
+    name: string,
+    lambda: PlainObject,
+    options: IngestMaterializedViewOptions,
+  ): void {
     const { ingest } = this;
-    if (!ingest || this.getMaterializedViewNameProblem(name) !== undefined) {
+    if (
+      !ingest ||
+      this.getMaterializedViewNameProblem(name) !== undefined ||
+      this.getMaterializedViewClassificationProblem(options.sensitivity) !==
+        undefined
+    ) {
       return;
     }
-    ingestDefinition_addMaterializedView(ingest, name.trim(), lambda);
+    ingestDefinition_addMaterializedView(ingest, name.trim(), lambda, {
+      primaryKey: options.primaryKey,
+      sensitivity: options.sensitivity.trim(),
+    });
     this.close();
     const editorState = this.editorStore.tabManagerState.tabs.find(
       (tab): tab is IngestDefinitionEditorState =>

@@ -19,6 +19,7 @@ import { PrimitiveType, type Schema } from '@finos/legend-cube';
 import {
   IngestDefinition,
   IngestionAccessor,
+  MILESTONE_INGEST_COLUMNS,
   PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
@@ -150,23 +151,24 @@ describe("An ingest definition's data sets", () => {
   test('Types declared columns by full path or name, parameters kept, then adds the columns of the write mode', () => {
     const trades = byName(dataSets, 'TRADES');
     expect(trades?.isPickable).toBe(true);
-    // the definition's write mode, batch milestoned
+    // the definition's write mode, batch milestoned: the digest, then the
+    // batch ids, in the order the engine returns them
     expect(describeSchema(trades?.schema)).toEqual([
       'TRADE_ID: meta::pure::precisePrimitives::BigInt',
       'DESK: meta::pure::precisePrimitives::Varchar(20)',
       'PRICE: meta::pure::precisePrimitives::Numeric(18,4)?',
       'QUANTITY: Integer',
       'TRADED_ON: StrictDate',
+      'LAKE_DIGEST: String',
       'LAKE_IN_ID: Integer',
       'LAKE_OUT_ID: Integer',
-      'LAKE_DIGEST: String',
     ]);
     // its own write mode first: business temporal adds the business dates
     expect(describeSchema(byName(dataSets, 'DESKS')?.schema)).toEqual([
       'DESK: String',
+      'LAKE_DIGEST: String',
       'LAKE_IN_ID: Integer',
       'LAKE_OUT_ID: Integer',
-      'LAKE_DIGEST: String',
       'LAKE_FROM: meta::pure::precisePrimitives::Timestamp',
       'LAKE_THRU: meta::pure::precisePrimitives::Timestamp',
     ]);
@@ -205,6 +207,23 @@ describe("An ingest definition's data sets", () => {
     ).toBe(`Column "COLOR" has a type Cube doesn't know: test::Color`);
   });
 
+  test('Puts LAKE_DIGEST right after the columns a data set declares, where the engine returns it', () => {
+    // a batch-milestoned data set of 19 columns, as the one whose run
+    // failed with LAKE_DIGEST at position 20 where Cube had LAKE_IN_ID
+    const declared = Array.from({ length: 19 }, (_, index) =>
+      column(`COLUMN_${index + 1}`, 'String'),
+    );
+    const [wide] = V1_readCubeIngestDataSets({
+      writeMode: { _type: 'batch_milestoned' },
+      datasets: [dataSet('WIDE', declared)],
+    });
+    expect(wide?.schema?.columns.slice(19).map((each) => each.name)).toEqual([
+      'LAKE_DIGEST',
+      'LAKE_IN_ID',
+      'LAKE_OUT_ID',
+    ]);
+  });
+
   test('Names an unknown type with its parameters', () => {
     const [unknown] = V1_readCubeIngestDataSets({
       datasets: [dataSet('ODD', [column('ODD', 'my::Decimal', [9, 2])])],
@@ -226,6 +245,14 @@ describe("An ingest definition's data sets", () => {
 const lastSegment = (path: string): string =>
   path.slice(path.lastIndexOf(':') + 1);
 
+/** Whether a column is one a write mode adds */
+const isMilestoningColumn = (each: { name: string }): boolean =>
+  (Object.values(MILESTONE_INGEST_COLUMNS) as string[]).includes(each.name);
+
+/** Columns sorted by name */
+const sortByName = <T extends { name: string }>(columns: T[]): T[] =>
+  [...columns].sort((a, b) => a.name.localeCompare(b.name));
+
 describe("An ingest definition's data sets, as legend-graph types them", () => {
   const graphManagerState = TEST__getTestGraphManagerState();
 
@@ -233,7 +260,7 @@ describe("An ingest definition's data sets, as legend-graph types them", () => {
     await TEST__buildGraphWithEntities(graphManagerState, []);
   });
 
-  test('Have the columns, types, parameters and nullability Legend Query gives them', async () => {
+  test('Have the columns, types, parameters and nullability Legend Query gives them, those of the write mode in the order the engine returns them', async () => {
     const definition = new IngestDefinition('OrdersIngest');
     definition.content = CONTENT;
     const cube = V1_readCubeIngestDataSets(CONTENT).filter(
@@ -262,17 +289,26 @@ describe("An ingest definition's data sets, as legend-graph types them", () => {
           nullable: graphColumn.multiplicity.lowerBound === 0,
         };
       });
-      expect(
-        (each.schema?.columns ?? []).map((cubeColumn) => ({
-          name: cubeColumn.name,
-          type: lastSegment(cubeColumn.type.path),
-          params:
-            cubeColumn.type instanceof PrimitiveType
-              ? [...cubeColumn.type.params]
-              : [],
-          nullable: cubeColumn.nullable,
-        })),
-      ).toEqual(graphColumns);
+      const cubeColumns = (each.schema?.columns ?? []).map((cubeColumn) => ({
+        name: cubeColumn.name,
+        type: lastSegment(cubeColumn.type.path),
+        params:
+          cubeColumn.type instanceof PrimitiveType
+            ? [...cubeColumn.type.params]
+            : [],
+        nullable: cubeColumn.nullable,
+      }));
+      // the data set's own columns first, in order
+      const own = graphColumns.filter(
+        (graphColumn) => !isMilestoningColumn(graphColumn),
+      );
+      expect(cubeColumns.slice(0, own.length)).toEqual(own);
+      // then the write mode's: legend-graph lists them LAKE_IN_ID first,
+      // which Legend Query, reading a result's columns by name, doesn't
+      // mind; Cube reads them by position, so in the engine's order
+      expect(sortByName(cubeColumns.slice(own.length))).toEqual(
+        sortByName(graphColumns.filter(isMilestoningColumn)),
+      );
     }
   });
 });

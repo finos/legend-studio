@@ -29,14 +29,30 @@ export const getIngestDataSetNames = (ingest: IngestDefinition): string[] =>
     )
     .filter(isString);
 
+/** What a materialized view's data set says besides its name and its query */
+export interface IngestMaterializedViewOptions {
+  /** The columns that identify a row, in the order of the view's columns; none for no key */
+  readonly primaryKey: readonly string[];
+  /** The classification of its data, e.g. `DP10`, as a data product's access points take one */
+  readonly sensitivity: string;
+}
+
 /**
- * Adds a materialized view to the ingest definition: a data set, with no
- * primary key, whose rows the lambda (protocol JSON) computes. The content is
- * replaced, so the change is seen, and the view is listed for Lineage and
- * View SQL as one read from the definition would be
+ * Adds a materialized view to the ingest definition: a data set whose rows
+ * the lambda (protocol JSON) computes, with its primary key and the
+ * classification of its data. It holds every key the engine gives a data
+ * set it parses, its lists empty, as the engine reads them all: a view
+ * without a `privacyClassification` failed with a NullPointerException.
+ * The content is replaced, so the change is seen, and the view is listed
+ * for Lineage and View SQL as one read from the definition would be
  */
 export const ingestDefinition_addMaterializedView = action(
-  (ingest: IngestDefinition, name: string, lambda: PlainObject): void => {
+  (
+    ingest: IngestDefinition,
+    name: string,
+    lambda: PlainObject,
+    options: IngestMaterializedViewOptions,
+  ): void => {
     const dataSets = Array.isArray(ingest.content.datasets)
       ? (ingest.content.datasets as unknown[])
       : [];
@@ -46,8 +62,13 @@ export const ingestDefinition_addMaterializedView = action(
         ...dataSets,
         {
           name,
-          primaryKey: [],
+          primaryKey: [...options.primaryKey],
+          privacyClassification: { sensitivity: options.sensitivity },
           source: { _type: MATERIALIZED_VIEW_SOURCE_TYPE, function: lambda },
+          ingestPartitionColumns: [],
+          preprocessors: [],
+          storageLayoutClusterColumns: [],
+          storageLayoutPartitionColumns: [],
         },
       ],
     };

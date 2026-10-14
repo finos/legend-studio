@@ -61,7 +61,10 @@ const CubeIngestTabAlert: React.FC<{
   </div>
 );
 
-/** A definition's or a data set's rows, as both Ingest screens list them */
+/**
+ * A definition's data sets, as both Ingest screens list them, each picked or
+ * ticked to add; the one picked last previewed
+ */
 const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
   return (
@@ -76,26 +79,25 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
           className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
           aria-label="Data sets"
         >
-          {tab.dataSets.map((dataSet) => {
-            const isPicked = tab.dataSetName === dataSet.name;
-            return (
-              <CubePickerListItem
-                key={dataSet.name}
-                picked={isPicked}
-                disabled={!dataSet.isPickable}
-                title={dataSet.disabledReason}
-                adds={true}
-                onPick={() => tab.selectDataSet(dataSet.name)}
-              >
-                <span className="min-w-0 flex-1 truncate">{dataSet.name}</span>
-                <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                  {dataSet.isPickable
-                    ? `${dataSet.schema?.columns.length ?? 0} columns`
-                    : dataSet.disabledReason}
-                </span>
-              </CubePickerListItem>
-            );
-          })}
+          {tab.dataSets.map((dataSet) => (
+            <CubePickerListItem
+              key={dataSet.name}
+              picked={tab.isDataSetPicked(dataSet.name)}
+              disabled={!dataSet.isPickable}
+              title={dataSet.disabledReason}
+              adds={true}
+              onPick={() => tab.selectDataSet(dataSet.name)}
+              onToggle={() => tab.toggleDataSet(dataSet.name)}
+              toggleLabel={dataSet.name}
+            >
+              <span className="min-w-0 flex-1 truncate">{dataSet.name}</span>
+              <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                {dataSet.isPickable
+                  ? `${dataSet.schema?.columns.length ?? 0} columns`
+                  : dataSet.disabledReason}
+              </span>
+            </CubePickerListItem>
+          ))}
         </ul>
       )}
       {tab.dataSet?.schema && (

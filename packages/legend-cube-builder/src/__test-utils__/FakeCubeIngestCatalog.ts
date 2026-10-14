@@ -84,6 +84,24 @@ const DATA_SETS: ReadonlyMap<string, readonly CubeIngestDataSet[]> = new Map([
   ],
 ]);
 
+export const FAKE_INGEST_FILLS_SCHEMA = new Schema([
+  new SchemaColumn('FILL_ID', PrimitiveType.get('Integer'), false),
+  new SchemaColumn('QUANTITY', PrimitiveType.get('Integer'), false),
+]);
+
+/**
+ * The orders definition's data sets with a second one that can be added,
+ * FILLS, for picking several at once: what `describe` gives when mocked so
+ */
+export const FAKE_INGEST_ORDERS_WITH_FILLS: readonly CubeIngestDataSet[] = [
+  ...(DATA_SETS.get(FAKE_INGEST_ORDERS) ?? []),
+  new CubeIngestDataSet({
+    name: 'FILLS',
+    schema: FAKE_INGEST_FILLS_SCHEMA,
+    primaryKey: ['FILL_ID'],
+  }),
+];
+
 const definitionOf = (urn: string): string =>
   urn.slice(urn.lastIndexOf('~') + 1);
 

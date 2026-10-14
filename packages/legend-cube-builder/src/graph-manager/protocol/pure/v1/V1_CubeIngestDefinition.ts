@@ -24,6 +24,7 @@ import {
   SchemaColumn,
 } from '@finos/legend-cube';
 import {
+  MILESTONE_INGEST_COLUMNS,
   V1_CInteger,
   type V1_IngestDataset,
   type V1_IngestDatasetSchema,
@@ -39,9 +40,9 @@ import { CubeIngestDataSet } from '../../../CubeIngestCatalog.js';
 
 // A deployed ingest definition's data sets, typed from what the definition
 // declares, with no engine call: each data set's columns, with their type
-// parameters, then the columns its write mode adds, as legend-graph types
-// them (#5598). A data set Cube can't read is listed with the reason, and
-// can't be picked
+// parameters, then the columns its write mode adds, typed as legend-graph
+// types them (#5598) and in the order the engine returns them. A data set
+// Cube can't read is listed with the reason, and can't be picked
 
 /** A data set whose rows come from a query over other data sets */
 const MATERIALIZED_VIEW_SOURCE = 'FunctionSource';
@@ -57,7 +58,16 @@ export const V1_CUBE_INGEST_DATA_SET_REASON = {
     `Column "${column}" has a type Cube doesn't know: ${type}`,
 } as const;
 
-/** The columns a batch-milestoned data set adds after its own, by write mode */
+/**
+ * The columns a batch-milestoned data set adds after its own, by write mode,
+ * in the order the engine returns them, since a run's rows are read by
+ * position: the digest, then the batches the row came in and went out with,
+ * then, business temporal, the dates it holds from and through. That is the
+ * order Legend's persistence components add them to a table in (digest,
+ * batch in and out, validity from and thru), and the engine gives
+ * LAKE_DIGEST right after a data set's own columns. legend-graph lists them
+ * LAKE_IN_ID first, which Legend Query doesn't mind: it reads them by name.
+ */
 const milestoningColumns = (
   writeMode: V1_WriteMode | undefined,
 ): SchemaColumn[] => {
@@ -70,19 +80,35 @@ const milestoningColumns = (
   }
   const integer = PrimitiveType.get(PRIMITIVE_TYPE_PATH.INTEGER);
   const columns = [
-    new SchemaColumn('LAKE_IN_ID', integer, false),
-    new SchemaColumn('LAKE_OUT_ID', integer, false),
     new SchemaColumn(
-      'LAKE_DIGEST',
+      MILESTONE_INGEST_COLUMNS.INGEST_LAKE_DIGEST,
       PrimitiveType.get(PRIMITIVE_TYPE_PATH.STRING),
+      false,
+    ),
+    new SchemaColumn(
+      MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
+      integer,
+      false,
+    ),
+    new SchemaColumn(
+      MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
+      integer,
       false,
     ),
   ];
   if (type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL) {
     const timestamp = PrimitiveType.get(PRIMITIVE_TYPE_PATH.TIMESTAMP);
     columns.push(
-      new SchemaColumn('LAKE_FROM', timestamp, false),
-      new SchemaColumn('LAKE_THRU', timestamp, false),
+      new SchemaColumn(
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_FROM,
+        timestamp,
+        false,
+      ),
+      new SchemaColumn(
+        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_THRU,
+        timestamp,
+        false,
+      ),
     );
   }
   return columns;

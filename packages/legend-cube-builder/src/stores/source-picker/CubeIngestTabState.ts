@@ -53,6 +53,7 @@ import type { CubeEditorState } from '../CubeEditorState.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
+  generateCubeNodeIds,
 } from './CubeSourcePickerTab.js';
 
 /** What failed in the tab: its first line, and the rest on demand */
@@ -79,10 +80,10 @@ const toError = (error: unknown): CubeIngestTabError => {
 /**
  * The source dialog's Ingest tab (PLAN §6.7), as Data Cube's producer
  * source picks: the Mode (class), the viewer's environment for it, a
- * producer deployment, one of its SDLC-deployed definitions, then a data
- * set, typed from what the definition declares. The first Add saves the
- * class, the producer deployment and the warehouse as the cube's model;
- * then the tab offers only that deployment's definitions.
+ * producer deployment, one of its SDLC-deployed definitions, then one or
+ * several of its data sets, typed from what the definition declares. The
+ * first Add saves the class, the producer deployment and the warehouse as
+ * the cube's model; then the tab offers only that deployment's definitions.
  */
 export class CubeIngestTabState implements CubeSourcePickerTab {
   readonly key = CubeSourcePickerTabKey.INGEST;
@@ -97,7 +98,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   definitionSearch = '';
   definition: CubeIngestDefinitionCandidate | undefined;
   dataSets: readonly CubeIngestDataSet[] | undefined;
-  dataSetName: string | undefined;
+  /** The picked data sets, by name, in the order picked; several are added at once */
+  dataSetNames: readonly string[] = [];
   /** The warehouse of a cube without one yet: the one the viewer last picked, else the default */
   warehouse = CUBE_DEFAULT_CONSUMER_WAREHOUSE;
   isLoadingEnvironment = false;
@@ -124,7 +126,9 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       definitionSearch: observable,
       definition: observable.ref,
       dataSets: observable.ref,
-      dataSetName: observable,
+      dataSetNames: observable.ref,
+      dataSetName: computed,
+      pickedDataSets: computed,
       warehouse: observable,
       isLoadingEnvironment: observable,
       isListingDefinitions: observable,
@@ -143,6 +147,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       setDefinitionSearch: action,
       selectDefinition: action,
       selectDataSet: action,
+      toggleDataSet: action,
       setWarehouse: action,
       retry: action,
       open: action,
@@ -194,8 +199,34 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     );
   }
 
+  /** The data set picked last, the one previewed */
+  get dataSetName(): string | undefined {
+    return this.dataSetNames.at(-1);
+  }
+
+  /** The data set picked last, the one previewed */
   get dataSet(): CubeIngestDataSet | undefined {
-    return this.dataSets?.find((each) => each.name === this.dataSetName);
+    return this.findDataSet(this.dataSetName);
+  }
+
+  /** The picked data sets, in the order picked */
+  get pickedDataSets(): readonly (CubeIngestDataSet | undefined)[] {
+    return this.dataSetNames.map((name) => this.findDataSet(name));
+  }
+
+  /** How many data sets Add adds */
+  get pickedCount(): number {
+    return this.dataSetNames.length;
+  }
+
+  isDataSetPicked(name: string): boolean {
+    return this.dataSetNames.includes(name);
+  }
+
+  private findDataSet(name: string | undefined): CubeIngestDataSet | undefined {
+    return name === undefined
+      ? undefined
+      : this.dataSets?.find((each) => each.name === name);
   }
 
   get canConfirm(): boolean {
@@ -206,7 +237,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       !this.isAdding &&
       this.producerDeploymentId !== undefined &&
       this.definition !== undefined &&
-      this.dataSet?.isPickable === true &&
+      this.pickedDataSets.length > 0 &&
+      this.pickedDataSets.every((each) => each?.isPickable === true) &&
       this.warehouse.trim() !== ''
     );
   }
@@ -255,10 +287,19 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     }
   }
 
-  /** Picks a data set that can be added */
+  /** Picks a data set that can be added, alone, in place of any picked */
   selectDataSet(name: string): void {
-    if (this.dataSets?.find((each) => each.name === name)?.isPickable) {
-      this.dataSetName = name;
+    if (this.findDataSet(name)?.isPickable) {
+      this.dataSetNames = [name];
+    }
+  }
+
+  /** Adds a data set that can be added to the picked ones, or takes it out */
+  toggleDataSet(name: string): void {
+    if (this.isDataSetPicked(name)) {
+      this.dataSetNames = this.dataSetNames.filter((each) => each !== name);
+    } else if (this.findDataSet(name)?.isPickable) {
+      this.dataSetNames = [...this.dataSetNames, name];
     }
   }
 
@@ -441,9 +482,11 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       if (request === this.describeRequest) {
         this.dataSets = dataSets;
         // the only data set that can be added is picked
-        const pickable = dataSets.filter((each) => each.isPickable);
-        this.dataSetName =
-          pickable.length === 1 ? pickable[0]?.name : undefined;
+        const [onlyPickable, ...otherPickable] = dataSets.filter(
+          (each) => each.isPickable,
+        );
+        this.dataSetNames =
+          onlyPickable && !otherPickable.length ? [onlyPickable.name] : [];
       }
     } catch (error) {
       if (request === this.describeRequest) {
@@ -457,9 +500,10 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   }
 
   /**
-   * Adds the data set, already typed; the first saves the class, the
-   * producer deployment and the warehouse as the cube's model, in the same
-   * undo step, and remembers the warehouse for the viewer's next cubes
+   * Adds the picked data sets, already typed, in one undo step; the first
+   * saves the class, the producer deployment and the warehouse as the cube's
+   * model, in the same undo step, and remembers the warehouse for the
+   * viewer's next cubes
    */
   *confirm(): GeneratorFn<boolean> {
     if (!this.canConfirm) {
@@ -467,7 +511,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     }
     const { editorState } = this;
     const definition = this.definition as CubeIngestDefinitionCandidate;
-    const dataSet = this.dataSet as CubeIngestDataSet;
+    const picked = this.pickedDataSets as readonly CubeIngestDataSet[];
     const producerDeploymentId = this.producerDeploymentId as string;
     const warehouse = this.warehouse.trim();
     const request = ++this.confirmRequest;
@@ -480,29 +524,45 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         return false;
       }
       const { document } = editorState;
-      const id = document.query.generateId(IngestDatasetSource.TYPE);
-      const node = INGEST_DATASET_SOURCE_DEFINITION.resolve(
-        INGEST_DATASET_SOURCE_DEFINITION.fromCoordinates(id, {
-          ingestDefinitionUrn: definition.urn,
-          ingestDefinition: definition.definition,
-          dataSet: dataSet.name,
-        }),
-        {
-          kind: 'resolved',
-          schema: dataSet.schema as NonNullable<CubeIngestDataSet['schema']>,
-        },
+      const ids = generateCubeNodeIds(
+        document.query,
+        IngestDatasetSource.TYPE,
+        picked.length,
+      );
+      const nodes = picked.map((dataSet, index) =>
+        INGEST_DATASET_SOURCE_DEFINITION.resolve(
+          INGEST_DATASET_SOURCE_DEFINITION.fromCoordinates(
+            ids[index] as string,
+            {
+              ingestDefinitionUrn: definition.urn,
+              ingestDefinition: definition.definition,
+              dataSet: dataSet.name,
+            },
+          ),
+          {
+            kind: 'resolved',
+            schema: dataSet.schema as NonNullable<CubeIngestDataSet['schema']>,
+          },
+        ),
       );
       const settings = this.fixedSettings;
       if (
-        (document.context !== undefined &&
-          (!settings ||
-            settings.environmentType !== this.environmentType ||
-            settings.producerDeploymentId !== producerDeploymentId)) ||
-        !document.query.canAdd(node)
+        document.context !== undefined &&
+        (!settings ||
+          settings.environmentType !== this.environmentType ||
+          settings.producerDeploymentId !== producerDeploymentId)
       ) {
         throw new Error(CUBE_INGEST_TAB_MESSAGE.CUBE_CHANGED);
       }
-      const query = document.query.add(node);
+      // each data set is added in the order picked; the first one picked is
+      // the one that runs on an empty cube, as a single one would be
+      let query = document.query;
+      for (const node of nodes) {
+        if (!query.canAdd(node)) {
+          throw new Error(CUBE_INGEST_TAB_MESSAGE.CUBE_CHANGED);
+        }
+        query = query.add(node);
+      }
       editorState.applyDocument(
         document.context
           ? document.withQuery(query)
@@ -520,8 +580,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       if (!settings) {
         editorState.dataProductRuntime.remember(warehouse);
       }
-      // the definition stays open, to add another of its data sets
-      this.dataSetName = undefined;
+      // the definition stays open, to add others of its data sets
+      this.dataSetNames = [];
       return true;
     } catch (error) {
       if (request === this.confirmRequest) {
@@ -560,6 +620,6 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     this.isDescribing = false;
     this.definition = undefined;
     this.dataSets = undefined;
-    this.dataSetName = undefined;
+    this.dataSetNames = [];
   }
 }
