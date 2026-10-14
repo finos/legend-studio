@@ -76,6 +76,13 @@
     {
       "path": "packages/legend-application-data-cube-bootstrap/tsconfig.build.json"
     },
+    // analytics
+    {
+      "path": "packages/legend-application-analytics/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-application-analytics-bootstrap/tsconfig.build.json"
+    },
     // marketplace
     {
       "path": "packages/legend-application-marketplace/tsconfig.build.json"
