@@ -528,6 +528,7 @@ export async function fetchDimensionalQueryRows(
       );
     } catch (error) {
       assertErrorThrown(error);
+      view.grid.notifyInitialDataFetched(error);
       if (error instanceof DataCubeExecutionError) {
         view.alertService.alertExecutionError(error, {
           message: `Data Fetch Failure: Can't execute query.`,
@@ -659,6 +660,7 @@ export class DataCubeGridClientServerSideDataSource
               });
             }
             // fail early since we can't proceed without the cast columns validated
+            this._grid.notifyInitialDataFetched(error);
             params.fail();
             this._view.taskService.endTask(task);
             return;
@@ -718,6 +720,7 @@ export class DataCubeGridClientServerSideDataSource
       rowData = buildRowData(result.result.result, newSnapshot);
     } catch (error) {
       assertErrorThrown(error);
+      this._grid.notifyInitialDataFetched(error);
       if (error instanceof DataCubeExecutionError) {
         this._view.alertService.alertExecutionError(error, {
           message: `Data Fetch Failure: Can't execute query.`,
@@ -765,6 +768,7 @@ export class DataCubeGridClientServerSideDataSource
       // toggle no-rows overlay
       if (isTopLevelRequest && request.startRow === 0 && rowData.length === 0) {
         this._grid.client.showNoRowsOverlay();
+        this._grid.notifyInitialDataFetched();
       } else {
         this._grid.client.hideOverlay();
       }
@@ -841,6 +845,7 @@ export class DataCubeGridClientServerSideDataSource
       // toggle no-rows overlay
       if (isTopLevelRequest && rowData.length === 0) {
         this._grid.client.showNoRowsOverlay();
+        this._grid.notifyInitialDataFetched();
       } else {
         this._grid.client.hideOverlay();
       }

@@ -44,6 +44,7 @@ import {
 import {
   _lambda,
   type DataCubeAlertService,
+  FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
   RawFreeformTDSExpressionDataCubeSource,
 } from '@finos/legend-data-cube';
 import { FreeformExpressionCodeEditorState } from './FreeformExpressionCodeEditorState.js';
@@ -161,6 +162,10 @@ export class FreeformTDSExpressionDataCubeSourceBuilderState extends LegendDataC
 
   override get label(): LegendDataCubeSourceBuilderType {
     return LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION;
+  }
+
+  override get sourceType(): string {
+    return FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE;
   }
 
   override get isValid(): boolean {

@@ -43,7 +43,10 @@ import {
 import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from './source/UserDefinedFunctionDataCubeSourceBuilderState.js';
-import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
+import {
+  DATA_CUBE_OPEN_KIND,
+  LEGEND_DATACUBE_APP_EVENT,
+} from '../../__lib__/LegendDataCubeEvent.js';
 import { LakehouseProducerDataCubeSourceBuilderState } from './source/LakehouseProducerDataCubeSourceBuilderState.js';
 import { LakehouseConsumerDataCubeSourceBuilderState } from './source/LakehouseConsumerDataCubeSourceBuilderState.js';
 
@@ -165,6 +168,7 @@ export class LegendDataCubeCreatorState {
     }
 
     this.finalizeState.inProgress();
+    this._store.markDataCubeLoadStart(DATA_CUBE_OPEN_KIND.NEW);
     const task = this._store.taskService.newTask('Creating DataCube...');
     try {
       sourceData = sourceData ?? (await sourceBuilder.generateSourceData());
@@ -190,16 +194,18 @@ export class LegendDataCubeCreatorState {
         this.changeSourceBuilder(DEFAULT_SOURCE_TYPE, true);
         this.display.close();
         this.finalizeState.pass();
-        this._engine.sendTelemetry(
+        this._engine.sendDeferredTelemetry(
           LEGEND_DATACUBE_APP_EVENT.NEW_DATACUBE__SUCCESS,
-          this._engine.getDataFromSource(source),
+          this._engine.getEnrichedDataFromSource(source),
         );
       } catch (error) {
         assertErrorThrown(error);
         const message = `DataCube Creation Failure: ${error.message}`;
-        this._engine.sendTelemetry(
+        this._engine.sendDeferredTelemetry(
           LEGEND_DATACUBE_APP_EVENT.NEW_DATACUBE__FAILURE,
-          { ...this._engine.getDataFromRawSource(sourceData), error: message },
+          this._engine
+            .getEnrichedDataFromRawSource(sourceData)
+            .then((data) => ({ ...data, error: message })),
         );
         this._alertService.alertError(error, {
           message: message,
@@ -211,7 +217,10 @@ export class LegendDataCubeCreatorState {
       const message = `DataCube Creation Failure: ${error.message}`;
       this._engine.sendTelemetry(
         LEGEND_DATACUBE_APP_EVENT.NEW_DATACUBE__FAILURE,
-        { error: message },
+        {
+          sourceType: sourceBuilder.sourceType,
+          error: message,
+        },
       );
       this._alertService.alertError(error, {
         message: message,

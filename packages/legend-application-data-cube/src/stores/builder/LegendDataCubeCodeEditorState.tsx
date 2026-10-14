@@ -37,6 +37,7 @@ export class LegendDataCubeCodeEditorState extends DataCubeCodeEditorState {
   readonly alertService: DataCubeAlertService;
 
   queryLambda: () => V1_Lambda;
+  initialCode: string | undefined;
 
   constructor(
     engine: DataCubeEngine,
@@ -68,7 +69,12 @@ export class LegendDataCubeCodeEditorState extends DataCubeCodeEditorState {
 
   initialize(query: string) {
     this.code = query;
+    this.initialCode = query;
     this.editorModel.setValue(this.code);
+  }
+
+  get isQueryChanged(): boolean {
+    return this.code !== this.initialCode;
   }
 
   setModel(val: PlainObject | undefined) {

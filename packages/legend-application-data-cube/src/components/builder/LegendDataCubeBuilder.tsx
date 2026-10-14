@@ -438,6 +438,9 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           onViewInitialized(event) {
             builder.setSource(event.source);
           },
+          onInitialDataFetched(event) {
+            store.markDataCubeDataLoaded(event.source, event.error);
+          },
           innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
           getHeaderMenuItems: () => generateMenuItems(store),
           settingsData: {

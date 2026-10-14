@@ -50,10 +50,13 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   //TODO: Add support to make changes to other tabs for dimensional grid mode
   const dimensionTabs = [DataCubeEditorTab.DIMENSIONS];
 
-  const logApplyChangesFromPropertiesEditor = (): void => {
+  const logSwitchTab = (tab: DataCubeEditorTab): void => {
     view.dataCube.telemetryService.sendTelemetry(
-      DataCubeEvent.APPLY_CHANGES_PROPERTIES,
-      view.engine.getDataFromSource(view.getInitialSource()),
+      DataCubeEvent.SWITCH_EDITOR_TAB,
+      {
+        ...view.engine.getDataFromSource(view.getInitialSource()),
+        currentTab: tab,
+      },
     );
   };
 
@@ -71,7 +74,12 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           {tabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => editor.setCurrentTab(tab)}
+              onClick={() => {
+                if (tab !== selectedTab) {
+                  logSwitchTab(tab);
+                }
+                editor.setCurrentTab(tab);
+              }}
               disabled={
                 isDimensionalGridMode(view.info.configuration.gridMode) &&
                 !dimensionTabs.includes(tab)
@@ -117,7 +125,6 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           className="ml-2"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
-            logApplyChangesFromPropertiesEditor();
             editor
               .applyChanges()
               .catch((error) => alertService.alertUnhandledError(error));
@@ -129,7 +136,6 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           className="ml-2"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
-            logApplyChangesFromPropertiesEditor();
             editor
               .applyChanges({ closeAfterApply: true })
               .catch((error) => alertService.alertUnhandledError(error));

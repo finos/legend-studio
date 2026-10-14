@@ -100,6 +100,7 @@
     "@mui/utils": "7.3.6",
     "@types/react": "19.0.10",
     "dagre-d3-es": "7.0.13",
+    "dompurify": "3.4.17",
     "flatted": "3.4.2",
     "glob-parent": "^6.0.1",
     "immutable": "5.1.5",

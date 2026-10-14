@@ -47,6 +47,30 @@ export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   userEnvironment!: string;
   paths!: string[];
   deploymentId?: number | undefined;
+
+  override getTelemetryData(dataProductDetails?: PlainObject): PlainObject {
+    return {
+      dataProduct: {
+        path: this.paths[0],
+        accessPoint: this.paths[1],
+        deploymentId: this.deploymentId,
+        origin: this.dpCoordinates
+          ? V1_DataProductOriginType.SDLC_DEPLOYMENT
+          : V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
+        project: this.dpCoordinates
+          ? {
+              groupId: this.dpCoordinates.groupId,
+              artifactId: this.dpCoordinates.artifactId,
+              versionId: this.dpCoordinates.versionId,
+            }
+          : undefined,
+        ...(dataProductDetails ?? {}),
+      },
+      environment: this.userEnvironment,
+      warehouse: this.warehouse,
+      sourceType: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
 }
 
 export abstract class RawLakehouseOrigin {}

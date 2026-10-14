@@ -42,7 +42,9 @@ import {
   assertErrorThrown,
   formatDate,
   isString,
+  type PlainObject,
   returnUndefOnError,
+  StopWatch,
   UnsupportedOperationError,
   uuid,
 } from '@finos/legend-shared';
@@ -68,7 +70,10 @@ import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataC
 import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
 import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
-import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
+import {
+  DATA_CUBE_OPEN_KIND,
+  LEGEND_DATACUBE_APP_EVENT,
+} from '../../__lib__/LegendDataCubeEvent.js';
 import { LegendDataCubeQueryEditor } from '../../components/builder/LegendDataCubeQueryEditor.js';
 import type {
   LakehouseContractServerClient,
@@ -178,6 +183,12 @@ export class LegendDataCubeBuilderStore {
   sourceLoader?: LegendDataCubeSourceLoaderState | undefined;
 
   private passedFirstLoad = false;
+  private loadTimer?:
+    | {
+        stopWatch: StopWatch;
+        openKind: DATA_CUBE_OPEN_KIND;
+      }
+    | undefined;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
     makeObservable(this, {
@@ -337,6 +348,36 @@ export class LegendDataCubeBuilderStore {
     }
   }
 
+  markDataCubeLoadStart(openKind: DATA_CUBE_OPEN_KIND): void {
+    this.loadTimer = {
+      stopWatch: new StopWatch(),
+      openKind,
+    };
+    this.engine.sendTelemetry(
+      LEGEND_DATACUBE_APP_EVENT.LOAD_DATACUBE_TO_DATA__LAUNCH,
+      { openKind },
+    );
+  }
+
+  markDataCubeDataLoaded(source: DataCubeSource, error?: Error): void {
+    const loadTimer = this.loadTimer;
+    if (!loadTimer) {
+      return;
+    }
+    this.loadTimer = undefined;
+    this.engine.sendTelemetry(
+      error
+        ? LEGEND_DATACUBE_APP_EVENT.LOAD_DATACUBE_TO_DATA__FAILURE
+        : LEGEND_DATACUBE_APP_EVENT.LOAD_DATACUBE_TO_DATA__SUCCESS,
+      {
+        ...this.engine.getDataFromSource(source),
+        openKind: loadTimer.openKind,
+        timings: this.engine.finalizeTimingRecord(loadTimer.stopWatch),
+        ...(error ? { error: error.message } : {}),
+      },
+    );
+  }
+
   private getSourceLoader(
     specification: DataCubeSpecification,
     persistentDataCube: PersistentDataCube,
@@ -411,7 +452,9 @@ export class LegendDataCubeBuilderStore {
       }
 
       this.loadState.inProgress();
+      this.markDataCubeLoadStart(DATA_CUBE_OPEN_KIND.SAVED_LOAD);
       const task = this.taskService.newTask('Loading DataCube...');
+      let specificationSource: PlainObject | undefined;
 
       try {
         const persistentDataCube =
@@ -419,6 +462,7 @@ export class LegendDataCubeBuilderStore {
         const specification = DataCubeSpecification.serialization.fromJson(
           persistentDataCube.content,
         );
+        specificationSource = specification.source;
 
         const sourceLoader = returnUndefOnError(() =>
           this.getSourceLoader(specification, persistentDataCube),
@@ -431,25 +475,24 @@ export class LegendDataCubeBuilderStore {
 
         this.finalizeLoad(specification, persistentDataCube, dataCubeId);
         this.loadState.pass();
-        this.engine.sendTelemetry(
+        this.engine.sendDeferredTelemetry(
           LEGEND_DATACUBE_APP_EVENT.LOAD_DATACUBE__SUCCESS,
-          {
-            ...this.engine.getDataFromRawSource(specification.source),
-            dataCubeId: dataCubeId,
-          },
+          this.engine
+            .getEnrichedDataFromRawSource(specification.source)
+            .then((data) => ({ ...data, dataCubeId: dataCubeId })),
         );
       } catch (error) {
         assertErrorThrown(error);
         const message = `DataCube Load Failure: ${error.message}`;
-        this.engine.sendTelemetry(
+        this.engine.sendDeferredTelemetry(
           LEGEND_DATACUBE_APP_EVENT.LOAD_DATACUBE__FAILURE,
-          {
-            ...this.engine.getDataFromRawSource(
-              this.builder?.initialSpecification.source,
-            ),
-            dataCubeId: dataCubeId,
-            error: message,
-          },
+          this.engine
+            .getEnrichedDataFromRawSource(specificationSource)
+            .then((data) => ({
+              ...data,
+              dataCubeId: dataCubeId,
+              error: message,
+            })),
         );
         this.alertService.alertError(error, {
           message: message,
@@ -565,9 +608,12 @@ export class LegendDataCubeBuilderStore {
       this.saveState.pass();
       this.engine.sendTelemetry(
         LEGEND_DATACUBE_APP_EVENT.CREATE_DATACUBE__SUCCESS,
-        this.engine.getDataFromSource(
-          this.builder.dataCube.getProcessedSource(),
-        ),
+        {
+          ...this.engine.getDataFromSource(
+            this.builder.dataCube.getProcessedSource(),
+          ),
+          autoEnableCache: Boolean(options?.autoEnableCache),
+        },
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -582,6 +628,7 @@ export class LegendDataCubeBuilderStore {
           ...this.engine.getDataFromSource(
             this.builder.dataCube.getProcessedSource(),
           ),
+          autoEnableCache: Boolean(options?.autoEnableCache),
           error: message,
         },
       );
@@ -645,7 +692,7 @@ export class LegendDataCubeBuilderStore {
           ...this.engine.getDataFromSource(
             this.builder.dataCube.getProcessedSource(),
           ),
-          autoEnableCache: !!options?.autoEnableCache,
+          autoEnableCache: Boolean(options?.autoEnableCache),
         },
       );
     } catch (error) {
@@ -659,7 +706,7 @@ export class LegendDataCubeBuilderStore {
           ...this.engine.getDataFromSource(
             this.builder.dataCube.getProcessedSource(),
           ),
-          autoEnableCache: !!options?.autoEnableCache,
+          autoEnableCache: Boolean(options?.autoEnableCache),
           error: message,
         },
       );
@@ -687,6 +734,7 @@ export class LegendDataCubeBuilderStore {
 
     this.queryEditorState.inProgress();
     const task = this.taskService.newTask('Updating source query...');
+    const stopWatch = new StopWatch();
 
     try {
       if (
@@ -731,6 +779,14 @@ export class LegendDataCubeBuilderStore {
       this.setBuilder(new LegendDataCubeBuilderState(this, newSpecification));
       this.queryEditorDisplay.close();
       this.queryEditorState.pass();
+      const queryChanged = state.isQueryChanged;
+      const timings = this.engine.finalizeTimingRecord(stopWatch);
+      this.engine.sendDeferredTelemetry(
+        LEGEND_DATACUBE_APP_EVENT.UPDATE_SOURCE_QUERY__SUCCESS,
+        this.engine
+          .getEnrichedDataFromSource(processedSource)
+          .then((data) => ({ ...data, queryChanged, timings })),
+      );
     } catch (error) {
       assertErrorThrown(error);
       const message = `DataCube reload Failure: ${error.message}`;
@@ -739,6 +795,14 @@ export class LegendDataCubeBuilderStore {
         message: message,
       });
       this.queryEditorState.fail();
+      this.engine.sendTelemetry(
+        LEGEND_DATACUBE_APP_EVENT.UPDATE_SOURCE_QUERY__FAILURE,
+        {
+          queryChanged: state.isQueryChanged,
+          timings: this.engine.finalizeTimingRecord(stopWatch),
+          error: message,
+        },
+      );
     } finally {
       this.taskService.endTask(task);
     }
@@ -752,6 +816,7 @@ export class LegendDataCubeBuilderStore {
 
     this.deleteState.inProgress();
     const task = this.taskService.newTask('Deleting DataCube...');
+    let specificationSource: PlainObject | undefined;
 
     try {
       const persistentDataCubeToDelete =
@@ -761,6 +826,7 @@ export class LegendDataCubeBuilderStore {
       const specification = DataCubeSpecification.serialization.fromJson(
         persistentDataCubeToDelete.content,
       );
+      specificationSource = specification.source;
       await this.baseStore.graphManager.deleteDataCube(dataCubeId);
 
       // update the list of stack of recently viewed DataCubes
@@ -789,19 +855,24 @@ export class LegendDataCubeBuilderStore {
       this.setDataCubeToDelete(undefined);
       this.deleteConfirmationDisplay.close();
       this.deleteState.pass();
-      this.engine.sendTelemetry(
+      this.engine.sendDeferredTelemetry(
         LEGEND_DATACUBE_APP_EVENT.DELETE_DATACUBE__SUCCESS,
-        {
-          ...this.engine.getDataFromRawSource(specification.source),
-          dataCubeDeletedId: dataCubeId,
-        },
+        this.engine
+          .getEnrichedDataFromRawSource(specificationSource)
+          .then((data) => ({ ...data, dataCubeDeletedId: dataCubeId })),
       );
     } catch (error) {
       assertErrorThrown(error);
       const message = `DataCube Delete Failure: ${error.message}`;
-      this.engine.sendTelemetry(
+      this.engine.sendDeferredTelemetry(
         LEGEND_DATACUBE_APP_EVENT.DELETE_DATACUBE__FAILURE,
-        { error: message, dataCubeFailedToDeleteId: this.dataCubeToDelete.id },
+        this.engine
+          .getEnrichedDataFromRawSource(specificationSource)
+          .then((data) => ({
+            ...data,
+            error: message,
+            dataCubeFailedToDeleteId: dataCubeId,
+          })),
       );
       this.alertService.alertError(error, {
         message: message,

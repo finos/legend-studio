@@ -31,6 +31,7 @@ import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseSto
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
   IcebergConfig,
+  LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
   RawLakehouseProducerDataCubeSource,
 } from '../../model/LakehouseProducerDataCubeSource.js';
 import {
@@ -516,6 +517,10 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
   override get label(): LegendDataCubeSourceBuilderType {
     return LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER;
+  }
+
+  override get sourceType(): string {
+    return LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE;
   }
 
   override get isValid(): boolean {

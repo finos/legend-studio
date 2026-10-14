@@ -77,6 +77,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
 
   readonly exportEngine: DataCubeGridClientExportEngine;
   private _client?: GridApi | undefined;
+  private _hasFetchedInitialData = false;
   clientDataSource: DataCubeGridClientServerSideDataSource;
 
   configuration: DataCubeConfiguration = new DataCubeConfiguration();
@@ -181,7 +182,6 @@ export class DataCubeGridState extends DataCubeSnapshotController {
 
     // enable caching
     const run = async () => {
-      const stopWatch = new StopWatch();
       await this._view.initializeCache();
 
       // only update value if cache processing succeeds
@@ -196,11 +196,6 @@ export class DataCubeGridState extends DataCubeSnapshotController {
           );
         });
       }
-
-      this._engine.sendTelemetry(DataCubeEvent.CACHING_ENABLE__SUCCESS, {
-        ...this._engine.getDataFromSource(this._view.getInitialSource()),
-        timings: this._engine.finalizeTimingRecord(stopWatch),
-      });
     };
 
     // TODO?: we might want to do a quick check here for the amount of data the cache
@@ -266,6 +261,19 @@ export class DataCubeGridState extends DataCubeSnapshotController {
 
   get client() {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
+  }
+
+  notifyInitialDataFetched(error?: Error) {
+    const source = this._view.getInitialSource();
+    if (this._hasFetchedInitialData || !source) {
+      return;
+    }
+    this._hasFetchedInitialData = true;
+    this._view.dataCube.options?.onInitialDataFetched?.({
+      api: this._view.dataCube.api,
+      source,
+      error,
+    });
   }
 
   async configureClient(val: GridApi | undefined) {
@@ -356,6 +364,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     );
     if (result.rowData.length === 0) {
       this._client?.showNoRowsOverlay();
+      this.notifyInitialDataFetched();
     }
     this._client?.setGridOption(DataCubeClientModelOption.LOADING, false);
     this.publishSnapshot(snapshot);

@@ -90,6 +90,7 @@ import {
   V1_AdHocDeploymentDataProductOrigin,
   V1_PureModelContextCombination,
   type V1_PureModelContext,
+  type V1_EntitlementsDataProductDetails,
   isExecutionAccessError,
 } from '@finos/legend-graph';
 import {
@@ -196,6 +197,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private _secondaryOauthClient?: SecondaryOAuthClient;
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
+  private readonly _dataProductDetails = new Map<
+    DataCubeSource,
+    V1_EntitlementsDataProductDetails
+  >();
+  private readonly _dataProductDetailsRequests = new Map<
+    DataCubeSource,
+    Promise<void>
+  >();
+
   constructor(
     application: LegendDataCubeApplicationStore,
     depotServerClient: DepotServerClient,
@@ -234,138 +244,108 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  override getDataFromSource(source?: DataCubeSource): PlainObject {
-    if (source instanceof LegendQueryDataCubeSource) {
-      const queryInfo = source.info;
-      return {
-        project: {
-          groupId: queryInfo.groupId,
-          artifactId: queryInfo.artifactId,
-          versionId: queryInfo.versionId,
-        },
-        query: {
-          id: queryInfo.id,
-          name: queryInfo.name,
-        },
-        sourceType: LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
-      };
-    } else if (source instanceof UserDefinedFunctionDataCubeSource) {
-      const deserializedModel = V1_deserializePureModelContext(source.model);
-
-      const sdlcInfo =
-        deserializedModel instanceof V1_PureModelContextPointer &&
-        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
-          ? deserializedModel.sdlcInfo
-          : undefined;
-      return {
-        project:
-          sdlcInfo !== undefined
-            ? {
-                groupId: sdlcInfo.groupId,
-                artifactId: sdlcInfo.artifactId,
-                versionId: sdlcInfo.version,
-              }
-            : undefined,
-        function: {
-          path: source.functionPath,
-          runtime: source.runtime,
-        },
-        sourceType: USER_FUNCTION_DATA_CUBE_SOURCE_TYPE,
-      };
-    } else if (source instanceof LocalFileDataCubeSource) {
-      const deserializedModel = V1_deserializePureModelContext(source.model);
-
-      const sdlcInfo =
-        deserializedModel instanceof V1_PureModelContextPointer &&
-        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
-          ? deserializedModel.sdlcInfo
-          : undefined;
-      return {
-        project:
-          sdlcInfo !== undefined
-            ? {
-                groupId: sdlcInfo.groupId,
-                artifactId: sdlcInfo.artifactId,
-                versionId: sdlcInfo.version,
-              }
-            : undefined,
-        file: {
-          name: source.fileName,
-          format: source.fileFormat,
-          runtime: source.runtime,
-          db: source.db,
-          schema: source.schema,
-          table: source.table,
-        },
-        sourceType: LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
-      };
-    } else if (source instanceof FreeformTDSExpressionDataCubeSource) {
-      const deserializedModel = V1_deserializePureModelContext(source.model);
-
-      const sdlcInfo =
-        deserializedModel instanceof V1_PureModelContextPointer &&
-        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
-          ? deserializedModel.sdlcInfo
-          : undefined;
-
-      return {
-        project:
-          sdlcInfo !== undefined
-            ? {
-                groupId: sdlcInfo.groupId,
-                artifactId: sdlcInfo.artifactId,
-                versionId: sdlcInfo.version,
-              }
-            : undefined,
-        adhocQuery: {
-          mapping: source.mapping,
-          runtime: source.runtime,
-        },
-        sourceType: FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
-      };
-    } else if (source instanceof LakehouseProducerDataCubeSource) {
-      if (source instanceof LakehouseProducerIcebergCachedDataCubeSource) {
-        return {
-          db: source.db,
-          schema: source.schema,
-          table: source.table,
-          ingestDefinition: {
-            path: source.paths[0],
-          },
-          sourceType: LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
-        };
-      } else {
-        return {
-          ingestDefinition: {
-            path: source.paths[0],
-            dataset: source.paths[1],
-          },
-          warehouse: source.warehouse,
-          sourceType: LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
-        };
-      }
-    } else if (source instanceof LakehouseConsumerDataCubeSource) {
-      return {
-        environment: source.userEnvironment,
-        warehouse: source.warehouse,
-        deploymentId: source.deploymentId,
-        project: source.dpCoordinates
-          ? {
-              groupId: source.dpCoordinates.groupId,
-              artifactId: source.dpCoordinates.artifactId,
-              versionId: source.dpCoordinates.versionId,
-            }
-          : undefined,
-        dataProduct: {
-          path: source.paths[0],
-          accessPoint: source.paths[1],
-        },
-      };
-    }
-    return {};
+  private _formatDataProductDetails(
+    details: V1_EntitlementsDataProductDetails,
+  ): PlainObject {
+    return {
+      id: details.id,
+      title: details.title,
+      fullPath: details.fullPath,
+      owner: {
+        appDirId: details.dataProduct.owner.appDirId,
+        level: details.dataProduct.owner.level,
+      },
+      environment: details.lakehouseEnvironment
+        ? {
+            name: details.lakehouseEnvironment.producerEnvironmentName,
+            type: details.lakehouseEnvironment.type,
+          }
+        : undefined,
+    };
   }
 
-  getDataFromRawSource(source?: PlainObject): PlainObject {
+  override getDataFromSource(source?: DataCubeSource): PlainObject {
+    if (!source) {
+      return {};
+    }
+    // NOTE: the data product details map is only populated for sources that
+    // resolve them (currently Lakehouse consumer); for all other sources the
+    // lookup returns `undefined` and is simply ignored by the source.
+    const dataProductDetails = this._dataProductDetails.get(source);
+    return source.getTelemetryData(
+      dataProductDetails
+        ? this._formatDataProductDetails(dataProductDetails)
+        : undefined,
+    );
+  }
+
+  async getEnrichedDataFromRawSource(
+    source?: PlainObject,
+  ): Promise<PlainObject> {
+    let data: PlainObject = {};
+    try {
+      data = this._getRawSourceTelemetryData(source);
+      if (source?._type === LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE) {
+        const rawSource =
+          RawLakehouseConsumerDataCubeSource.serialization.fromJson(source);
+        const details = await this._resolveConsumerDataProductDetails(
+          rawSource.paths[0],
+          isLakehouseEnvironmentType(rawSource.environment)
+            ? getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName(
+                rawSource.environment,
+              )
+            : rawSource.environment,
+        );
+        if (details && data.dataProduct) {
+          data.dataProduct = {
+            ...(data.dataProduct as PlainObject),
+            ...this._formatDataProductDetails(details),
+          };
+        }
+      }
+    } catch {
+      // ignore telemetry failure
+    }
+    return data;
+  }
+
+  async getEnrichedDataFromSource(
+    source?: DataCubeSource,
+  ): Promise<PlainObject> {
+    if (source) {
+      await this._dataProductDetailsRequests.get(source);
+    }
+    return this.getDataFromSource(source);
+  }
+
+  sendDeferredTelemetry(event: string, data: Promise<PlainObject>): void {
+    data
+      .then((resolvedData) => this.sendTelemetry(event, resolvedData))
+      .catch(() => {
+        // ignore telemetry failure
+      });
+  }
+
+  private async _resolveConsumerDataProductDetails(
+    path: string | undefined,
+    environmentType: string,
+  ): Promise<V1_EntitlementsDataProductDetails | undefined> {
+    if (!path) {
+      return undefined;
+    }
+    const dataProducts =
+      V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+        await this._lakehouseContractServerClient.getDataProduct(
+          extractEntityNameFromPath(path),
+          this._application.getAccessToken(),
+        ),
+      );
+    return dataProducts.find(
+      (dp) => dp.lakehouseEnvironment?.type === environmentType,
+    );
+  }
+
+  private _getRawSourceTelemetryData(source?: PlainObject): PlainObject {
     if (!source) {
       return {};
     }
@@ -443,7 +423,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         },
         sourceType: source._type,
       };
-    } else if (source.type === LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE) {
+    } else if (source._type === LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE) {
       const rawSource =
         RawLakehouseProducerDataCubeSource.serialization.fromJson(source);
 
@@ -457,7 +437,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         paths: rawSource.paths,
         sourceType: source._type,
       };
-    } else if (source.type === LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE) {
+    } else if (source._type === LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE) {
       const rawSource =
         RawLakehouseConsumerDataCubeSource.serialization.fromJson(source);
 
@@ -474,6 +454,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         dataProduct: {
           path: rawSource.paths[0],
           accessPoint: rawSource.paths[1],
+          deploymentId: rawSource.deploymentId,
+          origin: origin,
           project: sdlcInfo
             ? {
                 groupId: sdlcInfo.groupId,
@@ -481,8 +463,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                 versionId: sdlcInfo.versionId,
               }
             : undefined,
-          origin: origin,
-          deploymentId: rawSource.deploymentId,
         },
         environment: rawSource.environment,
         warehouse: rawSource.warehouse,
@@ -1956,6 +1936,24 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       const data = new V1_PureModelContextData();
       data.elements.push(packageableRuntime);
       pmcd = new V1_PureModelContextCombination([pointer, data]);
+
+      this._dataProductDetailsRequests.set(
+        source,
+        this._resolveConsumerDataProductDetails(
+          rawSource.paths[0],
+          getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName(
+            source.userEnvironment,
+          ),
+        )
+          .then((details) => {
+            if (details) {
+              this._dataProductDetails.set(source, details);
+            }
+          })
+          .catch(() => {
+            // ignore telemetry failure
+          }),
+      );
     } else {
       const dataProducts = rawSource.paths[0]
         ? V1_entitlementsDataProductDetailsResponseToDataProductDetails(
@@ -1978,6 +1976,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           )
         );
       });
+      if (dataProduct) {
+        this._dataProductDetails.set(source, dataProduct);
+      }
       const fullGraphGrammar = guaranteeType(
         guaranteeNonNullable(dataProduct, 'Unable to resolve  data product ')
           .origin,

@@ -55,7 +55,10 @@ import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
-import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSource.js';
+import {
+  LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
+  RawLegendQueryDataCubeSource,
+} from '../../model/LegendQueryDataCubeSource.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
@@ -241,6 +244,10 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
   override get label() {
     return LegendDataCubeSourceBuilderType.LEGEND_QUERY;
+  }
+
+  override get sourceType(): string {
+    return LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE;
   }
 
   override get isValid(): boolean {

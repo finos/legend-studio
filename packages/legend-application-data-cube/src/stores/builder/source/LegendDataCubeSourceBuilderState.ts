@@ -17,9 +17,9 @@
 import { type PlainObject } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
-import type {
-  DataCubeAlertService,
-  DataCubeConfiguration,
+import {
+  type DataCubeAlertService,
+  type DataCubeConfiguration,
 } from '@finos/legend-data-cube';
 
 export enum LegendDataCubeSourceBuilderType {
@@ -47,6 +47,7 @@ export abstract class LegendDataCubeSourceBuilderState {
   }
 
   abstract get label(): LegendDataCubeSourceBuilderType;
+  abstract get sourceType(): string;
   abstract get isValid(): boolean;
   abstract generateSourceData(): Promise<PlainObject>;
 

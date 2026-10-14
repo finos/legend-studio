@@ -397,6 +397,7 @@ const DataCubeStandardGridClient = observer(
           context={{
             view,
           }}
+          onFirstDataRendered={() => grid.notifyInitialDataFetched()}
           onGridReady={(params) => {
             grid
               .configureClient(params.api)

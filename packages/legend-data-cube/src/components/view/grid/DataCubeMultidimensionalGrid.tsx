@@ -55,6 +55,7 @@ const DataCubeMultidimensionalGridClient = observer(
               .retrieveDrilldownData(event)
               .catch((error) => view.alertService.alertUnhandledError(error));
           }}
+          onFirstDataRendered={() => grid.notifyInitialDataFetched()}
           onGridReady={(params) => {
             grid
               .configureDimensionGridClient(params.api)

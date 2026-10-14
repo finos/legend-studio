@@ -30,6 +30,10 @@ export type DataCubeInitializedEvent = DataCubeOptionsBaseEvent;
 export type DataCubeViewInitializedEvent = DataCubeOptionsBaseEvent & {
   source: DataCubeSource;
 };
+export type DataCubeInitialDataFetchedEvent = DataCubeOptionsBaseEvent & {
+  source: DataCubeSource;
+  error?: Error | undefined;
+};
 export type DataCubeNameChangedEvent = DataCubeOptionsBaseEvent & {
   name: string;
   source: DataCubeSource;
@@ -77,6 +81,9 @@ export type DataCubeOptions = {
    */
   onViewInitialized?:
     | ((event: DataCubeViewInitializedEvent) => void)
+    | undefined;
+  onInitialDataFetched?:
+    | ((event: DataCubeInitialDataFetchedEvent) => void)
     | undefined;
   /**
    * Enables caching to suppport local query execution.
