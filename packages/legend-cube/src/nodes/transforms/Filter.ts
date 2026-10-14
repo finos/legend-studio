@@ -73,6 +73,10 @@ export class Filter extends UnaryNode {
     return keepInputOrder(inputOrders);
   }
 
+  override isUnset(): boolean {
+    return this.filter === undefined;
+  }
+
   describe(): string {
     return `Filter by ${this.filter?.toString() ?? BLANK_PLACEHOLDER}`;
   }

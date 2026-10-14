@@ -60,6 +60,7 @@ import {
 } from '../../__test-utils__/CubeCanvasTestUtils.js';
 import {
   TEST__chooseAddItem,
+  TEST__chooseCubeMenuItem,
   TEST__closeAddItems,
   TEST__getAddItemsTrigger,
   TEST__importDocument,
@@ -334,7 +335,7 @@ describe('Cube page', () => {
     ).toBe('CUSTOMER_ID');
     // opening another cube drops the edits
     pickKeys('SHIP_CITY', 'CITY');
-    fireEvent.click(within(graph).getByText('Import'));
+    await TEST__chooseCubeMenuItem('Import');
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByLabelText('Cube spec'), {
       target: { value: serializeCubeSpec(withOrders()) },
@@ -742,7 +743,12 @@ describe('Header actions with the node editor open', () => {
     async (label, opened) => {
       const editorState = await renderEditor();
       await editLimit();
-      fireEvent.click(within(graph()).getByText(label));
+      if (label === 'Export') {
+        // Export is in the Cube menu
+        await TEST__chooseCubeMenuItem(label);
+      } else {
+        fireEvent.click(within(graph()).getByText(label));
+      }
       expect(editorState.nodeEditor.nodeId).toBeUndefined();
       expect(storedSize(editorState)).toBe(5);
       expect(historySizes(editorState)).toEqual([10]);
@@ -896,9 +902,9 @@ describe("The header's Add Items", () => {
     'Restrict Columns',
     'Rename Columns',
     'Distinct Values',
-    'Drop first <x> rows',
-    'Take first <x> rows',
-    'Take rows <x> to <y>',
+    'Drop first rows',
+    'Take first rows',
+    'Take a range of rows',
     'Concatenate Another Input',
     'Join Another Input',
     'Compare Column Values',

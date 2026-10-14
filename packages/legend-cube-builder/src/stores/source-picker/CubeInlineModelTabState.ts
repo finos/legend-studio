@@ -27,6 +27,7 @@ import {
   RelationalTableSource,
   resolveCubeType,
   getFunctionParameterValueError,
+  Schema,
 } from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import {
@@ -57,6 +58,7 @@ import { type BundledModel, createTextModel } from '../LocalModelCatalog.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
+  CUBE_TABLE_PREVIEW_DELAY_MS,
   generateCubeNodeIds,
 } from './CubeSourcePickerTab.js';
 
@@ -131,6 +133,18 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
   /** The runtime picked for a function that leaves it to its caller */
   functionRuntimePath: string | undefined;
   isResolving = false;
+  /** The table whose columns the tab shows under the list: the one picked last */
+  previewTableName: string | undefined;
+  /**
+   * The columns of each table previewed, or why they couldn't be read, by
+   * database, schema and table; Add takes them, so it asks the engine only
+   * for the others (the review of the demo, 2026-10-13)
+   */
+  previewSchemas: ReadonlyMap<string, Schema | string> = new Map();
+  /** Counts the model, database or runtime changes, so a late preview is dropped */
+  private previewGeneration = 0;
+  /** The preview waiting for the clicks to pause */
+  private previewTimer: ReturnType<typeof setTimeout> | undefined;
   /** Why the outline or the table couldn't be loaded, shown in the dialog */
   error: string | undefined;
   /** Counts Add presses: closing the dialog moves it on, so the pending Add is dropped */
@@ -155,6 +169,10 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       functionValueTexts: observable.ref,
       functionRuntimePath: observable,
       isResolving: observable,
+      previewTableName: observable,
+      previewSchemas: observable.ref,
+      previewedColumns: computed,
+      loadPreview: flow,
       functions: computed,
       pickedFunction: computed,
       functionParameters: computed,
@@ -438,6 +456,7 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
   close(): void {
     this.confirmRequest++;
     this.isResolving = false;
+    this.cancelPreview();
   }
 
   /** Offers a text box for a Pure model in place of the bundled ones */
@@ -522,18 +541,97 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     this.resetFrom('table');
   }
 
-  /** Picks the table alone, in place of any picked */
+  /** Picks the table alone, in place of any picked, and previews its columns */
   selectTable(name: string | undefined): void {
     this.tableNames = name === undefined ? [] : [name];
     this.error = undefined;
+    this.preview(name);
   }
 
-  /** Adds the table to the picked ones, or takes it out */
+  /** Adds the table to the picked ones, previewing it, or takes it out */
   toggleTable(name: string): void {
-    this.tableNames = this.tableNames.includes(name)
-      ? this.tableNames.filter((each) => each !== name)
-      : [...this.tableNames, name];
+    const adding = !this.tableNames.includes(name);
+    this.tableNames = adding
+      ? [...this.tableNames, name]
+      : this.tableNames.filter((each) => each !== name);
     this.error = undefined;
+    this.preview(adding ? name : this.tableNames.at(-1));
+  }
+
+  private previewKey(table: string): string {
+    return `${this.databasePath ?? ''}\u0000${this.schemaName ?? ''}\u0000${table}`;
+  }
+
+  /** The previewed table's columns, `undefined` while they load, or why they couldn't be read */
+  get previewedColumns(): Schema | string | undefined {
+    const name = this.previewTableName;
+    return name === undefined
+      ? undefined
+      : this.previewSchemas.get(this.previewKey(name));
+  }
+
+  /**
+   * Previews the table once the clicks pause, so picking several in a row
+   * asks the engine for the last only; Add, Close and another pick cancel it
+   */
+  private preview(name: string | undefined): void {
+    this.previewTableName = name;
+    this.cancelPreview();
+    if (name !== undefined) {
+      this.previewTimer = setTimeout(() => {
+        this.previewTimer = undefined;
+        flowResult(this.loadPreview(name)).catch(
+          this.editorState.host.applicationStore.alertUnhandledError,
+        );
+      }, CUBE_TABLE_PREVIEW_DELAY_MS);
+    }
+  }
+
+  private cancelPreview(): void {
+    if (this.previewTimer !== undefined) {
+      clearTimeout(this.previewTimer);
+      this.previewTimer = undefined;
+    }
+  }
+
+  /** Reads a table's columns from the engine, once a table and a model's database */
+  *loadPreview(name: string): GeneratorFn<void> {
+    const key = this.previewKey(name);
+    const model = this.model;
+    const database = this.databasePath;
+    const schemaName = this.schemaName;
+    if (
+      this.previewSchemas.has(key) ||
+      !model ||
+      database === undefined ||
+      schemaName === undefined
+    ) {
+      return;
+    }
+    const generation = this.previewGeneration;
+    // an id of its own, as the engine stamps the table's accessor with it
+    const id = this.editorState.document.query.generateId(
+      RelationalTableSource.TYPE,
+    );
+    let answer: Schema | string;
+    try {
+      const typed = (yield this.editorState.host.engine.resolveSchemas(
+        model,
+        new Map([[id, [database, schemaName, name]]]),
+      )) as Awaited<
+        ReturnType<typeof this.editorState.host.engine.resolveSchemas>
+      >;
+      const schema = typed.get(id);
+      answer =
+        schema instanceof Schema
+          ? schema
+          : (schema?.message ?? 'The engine gave no schema for this table');
+    } catch (error) {
+      answer = toMessage(error);
+    }
+    if (generation === this.previewGeneration) {
+      this.previewSchemas = new Map(this.previewSchemas).set(key, answer);
+    }
   }
 
   /** How many sources Add adds */
@@ -617,19 +715,34 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       RelationalTableSource.TYPE,
       names.length,
     );
+    this.cancelPreview();
     const request = ++this.confirmRequest;
     this.isResolving = true;
     this.error = undefined;
     try {
-      const typed = (yield editorState.host.engine.resolveSchemas(
-        model,
-        new Map(
-          names.map((table, index) => [
-            ids[index] as string,
-            [database, schemaName, table],
-          ]),
-        ),
-      )) as Awaited<ReturnType<typeof editorState.host.engine.resolveSchemas>>;
+      // a table previewed has its columns already: the engine types the others
+      const previewed = new Map<string, Schema>();
+      names.forEach((table, index) => {
+        const schema = this.previewSchemas.get(this.previewKey(table));
+        if (schema instanceof Schema) {
+          previewed.set(ids[index] as string, schema);
+        }
+      });
+      const toType = names
+        .map((table, index) => [ids[index] as string, table] as const)
+        .filter(([id]) => !previewed.has(id));
+      const typed = new Map<string, Schema | CubeEngineError>(previewed);
+      if (toType.length) {
+        const answer = (yield editorState.host.engine.resolveSchemas(
+          model,
+          new Map(
+            toType.map(([id, table]) => [id, [database, schemaName, table]]),
+          ),
+        )) as Awaited<
+          ReturnType<typeof editorState.host.engine.resolveSchemas>
+        >;
+        answer.forEach((schema, id) => typed.set(id, schema));
+      }
       if (request !== this.confirmRequest) {
         return false;
       }
@@ -803,8 +916,13 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     if (step === 'database' || step === 'runtime') {
       this.runtimePath = undefined;
       this.schemaName = undefined;
+      // another model or database: its previews go, and late ones are dropped
+      this.previewGeneration++;
+      this.previewSchemas = new Map();
     }
     this.tableNames = [];
     this.tableSearch = '';
+    this.previewTableName = undefined;
+    this.cancelPreview();
   }
 }

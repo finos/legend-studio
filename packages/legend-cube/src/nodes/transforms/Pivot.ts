@@ -101,16 +101,6 @@ export const isPivotableType = (type: CubeType): boolean =>
   type.family === TypeFamily.BOOLEAN;
 
 /**
- * Whether a value's text can name its column (PLAN §11.12): a valid column
- * name (`isValidColumnName`, which refuses `"` and `\`), with no backtick
- * either. The engine names the pivot's column `'<value>__|__<aggregation>'`
- * before Cube renames it, escaping neither, and Databricks and MemSQL quote
- * names with backticks, so a backtick would end that name early.
- */
-export const isPivotValueText = (text: string): boolean =>
-  isValidColumnName(text) && !text.includes('`');
-
-/**
  * The output column of each value, in order: the value's text, else with
  * `_2`, `_3`, … until no row column and no earlier value's column has it in
  * any case (`foldColumnName`, as Cube's other generated names)
@@ -373,7 +363,7 @@ export class Pivot extends UnaryNode {
       }) &&
       validateAllItems(values, (value, index) =>
         validate(
-          isPivotValueText(getLiteralText(value)) &&
+          isValidColumnName(getLiteralText(value)) &&
             isValidColumnName(names[index] ?? ''),
           MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME(getLiteralText(value)),
           errors,
@@ -433,6 +423,10 @@ export class Pivot extends UnaryNode {
   }
 
   /** `Pivot "YEAR" into 2000, 2011, 2012`, the values after the third counted */
+  override isUnset(): boolean {
+    return !this.column;
+  }
+
   describe(): string {
     const { values } = this;
     const shown = values.slice(0, DESCRIBED_VALUES).map(getLiteralText);

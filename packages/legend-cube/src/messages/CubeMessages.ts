@@ -335,6 +335,10 @@ export const MESSAGE_CONDITION_WILDCARD = (
 ): string =>
   `On ${databaseType}, the value given to ${quote(fn)} cannot contain % or _ yet: ${databaseType} would match them as wildcards, so the rows would be wrong.`;
 
+/** Added by Cube: the engine writes a pattern that isn't a text in quotes right only on Snowflake (PLAN §11.14) */
+export const MESSAGE_PATTERN_NOT_LITERAL = (fn: string): string =>
+  `The value given to ${quote(fn)} must be a text in quotes unless the cube runs on Snowflake: elsewhere the engine writes it wrong, so the rows would be wrong.`;
+
 /** Spec §8.5: a filter this version can't read, kept as it was saved */
 export const MESSAGE_FILTER_UNSUPPORTED = 'This filter is not supported yet.';
 

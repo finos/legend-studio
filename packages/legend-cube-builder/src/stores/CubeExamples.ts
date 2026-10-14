@@ -16,6 +16,7 @@
 
 import {
   AggregationFunction,
+  Pivot,
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
@@ -55,6 +56,12 @@ import {
   CUBE_TRADES_RUNTIME,
   CUBE_TRADES_SCHEMA,
 } from './fixtures/CubeTradesModel.js';
+import {
+  CUBE_SALES_DATABASE,
+  CUBE_SALES_MODEL,
+  CUBE_SALES_RUNTIME,
+  CUBE_SALES_SCHEMA,
+} from './fixtures/CubeSalesDuckDbModel.js';
 
 // The example cubes the source dialog opens (PLAN §6.9): two over each
 // bundled model. Each is built here rather than saved, so it has no schema
@@ -120,9 +127,21 @@ const TRADES: CubeExampleDataset = {
   schema: CUBE_TRADES_SCHEMA,
 };
 
+const SALES: CubeExampleDataset = {
+  id: 'sales',
+  name: 'Sales (DuckDB)',
+  description:
+    'Made-up sales of tea and coffee by country and year, on DuckDB, which runs Pivot',
+  tables: ['sales'],
+  model: CUBE_SALES_MODEL,
+  runtime: CUBE_SALES_RUNTIME,
+  database: CUBE_SALES_DATABASE,
+  schema: CUBE_SALES_SCHEMA,
+};
+
 /** The datasets, in the order the examples show them */
 export const CUBE_EXAMPLE_DATASETS: readonly CubeExampleDataset[] =
-  Object.freeze([NORTHWIND, SPORTS, TRADES]);
+  Object.freeze([NORTHWIND, SPORTS, TRADES, SALES]);
 
 /**
  * A cube over the model: the nodes in order, each after the one before it
@@ -452,6 +471,56 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
         'limit101',
         'restrict101',
       ]),
+    }),
+  ),
+  example(
+    SALES,
+    'sales-by-year',
+    'Sales by country and year',
+    'Pivots the sales by year: a row per country, a column per year summing the amounts',
+    (table) => ({
+      nodes: [
+        table('relational101', '"sales"'),
+        new Pivot(
+          'pivot101',
+          ['country'],
+          'year',
+          ['2022', '2023', '2024'].map((value) => ({
+            kind: 'integer' as const,
+            value,
+          })),
+          { column: 'amount', function: AggregationFunction.SUM },
+        ),
+        new Sort('sort101', [
+          { column: 'country', direction: SortDirection.ASC },
+        ]),
+      ],
+      connections: chain(['relational101', 'pivot101', 'sort101']),
+    }),
+  ),
+  example(
+    SALES,
+    'sales-by-product',
+    'Sales count by country and product',
+    'Pivots the sales by product: a row per country, a column per product counting its sales',
+    (table) => ({
+      nodes: [
+        table('relational101', '"sales"'),
+        new Pivot(
+          'pivot101',
+          ['country'],
+          'product',
+          ['Coffee', 'Tea'].map((value) => ({
+            kind: 'string' as const,
+            value,
+          })),
+          { column: undefined, function: AggregationFunction.COUNT_ROWS },
+        ),
+        new Sort('sort101', [
+          { column: 'country', direction: SortDirection.ASC },
+        ]),
+      ],
+      connections: chain(['relational101', 'pivot101', 'sort101']),
     }),
   ),
 ]);

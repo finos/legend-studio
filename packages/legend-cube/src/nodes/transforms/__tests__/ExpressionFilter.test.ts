@@ -32,11 +32,14 @@ import type { JsonObject } from '../../../utils/Json.js';
 import {
   type ExpressionCheck,
   ExpressionFilter,
-  findLikeFunctionWithBackslash,
-  findLikeFunctionWithWildcard,
   getExpressionFilterSignature,
   UNCHECKED,
 } from '../ExpressionFilter.js';
+import {
+  findLikeFunctionWithBackslash,
+  findLikeFunctionWithNonLiteralPattern,
+  findLikeFunctionWithWildcard,
+} from '../LikeFunctions.js';
 import { SortDirection } from '../Sort.js';
 
 const P = 'meta::pure::precisePrimitives::';
@@ -259,6 +262,75 @@ describe(unitTest('Filter by Expression node'), () => {
     ).toBeUndefined();
     // valid everywhere: the database's rule refuses it
     expect(validationErrors(checked(like('contains', '50%')))).toEqual([]);
+  });
+
+  test('Finds a LIKE function given a pattern that is not a literal: a column, or texts joined', () => {
+    const byColumn = lambdaOf({
+      _type: 'func',
+      function: 'contains',
+      parameters: [
+        property('SHIP_CITY'),
+        {
+          _type: 'func',
+          function: 'toOne',
+          parameters: [property('SHIP_REGION')],
+        },
+      ],
+    });
+    expect(findLikeFunctionWithNonLiteralPattern(byColumn)).toBe('contains');
+    const joined = lambdaOf({
+      _type: 'func',
+      function: 'startsWith',
+      parameters: [
+        property('SHIP_CITY'),
+        {
+          _type: 'func',
+          function: 'plus',
+          parameters: [
+            { _type: 'collection', values: [string('a'), string('%')] },
+          ],
+        },
+      ],
+    });
+    expect(findLikeFunctionWithNonLiteralPattern(joined)).toBe('startsWith');
+    // a literal, in either JSON form, is a pattern the engine writes right
+    expect(
+      findLikeFunctionWithNonLiteralPattern(like('contains', 'ab')),
+    ).toBeUndefined();
+    expect(
+      findLikeFunctionWithNonLiteralPattern({
+        _type: 'func',
+        function: 'endsWith',
+        parameters: [property('SHIP_CITY'), { _type: 'string', values: ['b'] }],
+      }),
+    ).toBeUndefined();
+    // a list's contains is an IN, which the engine writes right (c5)
+    expect(
+      findLikeFunctionWithNonLiteralPattern(
+        lambdaOf({
+          _type: 'func',
+          function: 'contains',
+          parameters: [
+            { _type: 'collection', values: [string('FR'), string('5%')] },
+            property('SHIP_COUNTRY'),
+          ],
+        }),
+      ),
+    ).toBeUndefined();
+    expect(
+      findLikeFunctionWithWildcard(
+        lambdaOf({
+          _type: 'func',
+          function: 'contains',
+          parameters: [
+            { _type: 'collection', values: [string('5%')] },
+            string('5%'),
+          ],
+        }),
+      ),
+    ).toBeUndefined();
+    // the text searched may be anything; the database's rule refuses it
+    expect(validationErrors(checked(byColumn))).toEqual([]);
   });
 
   test('Waits for the engine to check its condition, and for this input', () => {

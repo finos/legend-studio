@@ -201,11 +201,11 @@ describe('Difference editor', () => {
     );
     await openDifference();
     expect(listed()).toEqual([
-      'ORDER_IDSmallInt (a join column)',
-      'SHIP_VIASmallInt?',
-      'SHIP_CITYVarchar(15)? (not a number)',
-      'FREIGHTDouble?',
-      'DISCOUNTDouble? (Float4 in the Right input)',
+      'ORDER_IDWhole number (a join column)',
+      'SHIP_VIAWhole number, can be empty',
+      'SHIP_CITYText, can be empty (not a number)',
+      'FREIGHTNumber, can be empty',
+      'DISCOUNTNumber, can be empty (Float4 in the Right input)',
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(true);
     expect(checkbox('SHIP_VIA').disabled).toBe(false);
@@ -223,7 +223,9 @@ describe('Difference editor', () => {
       compared({ leftColumns: ['ORDER_ID'], rightColumns: ['ORDER_ID'] }),
     );
     await openDifference();
-    expect(listed()).toContain('DISCOUNTDouble? (not in the Right input)');
+    expect(listed()).toContain(
+      'DISCOUNTNumber, can be empty (not in the Right input)',
+    );
   });
 
   test('Keeps a saved difference column the Left input lacks listed until it is unticked', async () => {

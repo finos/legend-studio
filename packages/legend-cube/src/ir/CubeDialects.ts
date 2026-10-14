@@ -21,15 +21,18 @@ import type { QueryNode } from '../graph/QueryNode.js';
 import {
   MESSAGE_CONDITION_WILDCARD,
   MESSAGE_FILTER_VALUE_WILDCARD,
+  MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
 } from '../messages/CubeMessages.js';
 import { Distinct } from '../nodes/transforms/Distinct.js';
 import { Drop } from '../nodes/transforms/Drop.js';
-import {
-  ExpressionFilter,
-  findLikeFunctionWithWildcard,
-} from '../nodes/transforms/ExpressionFilter.js';
+import { ExpressionFilter } from '../nodes/transforms/ExpressionFilter.js';
+import { Extend } from '../nodes/transforms/Extend.js';
 import { Filter } from '../nodes/transforms/Filter.js';
+import {
+  findLikeFunctionWithNonLiteralPattern,
+  findLikeFunctionWithWildcard,
+} from '../nodes/transforms/LikeFunctions.js';
 import { Limit } from '../nodes/transforms/Limit.js';
 import { Pivot } from '../nodes/transforms/Pivot.js';
 import { Slice } from '../nodes/transforms/Slice.js';
@@ -137,6 +140,27 @@ export const hasNoLikeEscape = (
   databaseType !== undefined && NO_LIKE_ESCAPE_TYPES.has(databaseType);
 
 /**
+ * The first function `find` names in the lambdas a node gives the engine: a
+ * Filter by Expression's condition, an Extend's columns (PLAN §11.11, §11.14)
+ */
+const findInLambdas = (
+  node: QueryNode,
+  find: (json: unknown) => string | undefined,
+): string | undefined => {
+  const lambdas =
+    node instanceof ExpressionFilter
+      ? [node.lambda]
+      : node instanceof Extend
+        ? node.columns.map(({ lambda }) => lambda)
+        : [];
+  return lambdas.reduce<string | undefined>(
+    (found, lambda) =>
+      found ?? (lambda === undefined ? undefined : find(lambda)),
+    undefined,
+  );
+};
+
+/**
  * What in a node gives `%` or `_` to a pattern, as its message for a
  * database type: a Filter's StartsWith, EndsWith or Contains value, negated
  * or not, or a Filter by Expression's literal given to `startsWith`,
@@ -156,18 +180,41 @@ const findPatternWildcard = (
             databaseType,
           );
   }
-  if (node instanceof ExpressionFilter) {
-    const fn = findLikeFunctionWithWildcard(node.lambda);
-    return fn === undefined
-      ? undefined
-      : (databaseType) => MESSAGE_CONDITION_WILDCARD(fn, databaseType);
-  }
-  return undefined;
+  const fn = findInLambdas(node, findLikeFunctionWithWildcard);
+  return fn === undefined
+    ? undefined
+    : (databaseType) => MESSAGE_CONDITION_WILDCARD(fn, databaseType);
 };
 
 /** Whether a node gives `%` or `_` to a pattern, so whether it can run depends on the database type */
 export const givesPatternWildcard = (node: QueryNode): boolean =>
   findPatternWildcard(node) !== undefined;
+
+/** The one database type the engine writes a pattern that isn't a literal right on (PLAN §11.14) */
+export const NON_LITERAL_PATTERN_DATABASE_TYPE = 'Snowflake';
+
+/**
+ * Whether a node gives `startsWith`, `endsWith` or `contains` a pattern that
+ * isn't a literal (`findLikeFunctionWithNonLiteralPattern`), so whether it can
+ * run depends on the database type
+ */
+export const givesNonLiteralPattern = (node: QueryNode): boolean =>
+  findInLambdas(node, findLikeFunctionWithNonLiteralPattern) !== undefined;
+
+/**
+ * Why a node's pattern that isn't a literal can't run on the database type
+ * (PLAN §11.14): refused unless the type is known to be Snowflake, the one
+ * the engine writes it right on, so refused when none is known too
+ */
+export const getNonLiteralPatternProblem = (
+  node: QueryNode,
+  databaseType: string | undefined,
+): string | undefined => {
+  const fn = findInLambdas(node, findLikeFunctionWithNonLiteralPattern);
+  return fn === undefined || databaseType === NON_LITERAL_PATTERN_DATABASE_TYPE
+    ? undefined
+    : MESSAGE_PATTERN_NOT_LITERAL(fn);
+};
 
 /**
  * The database types known not to run the engine's static `pivot()` (PLAN
@@ -219,17 +266,41 @@ export const getDatabaseProblemOfType = (
   databaseType === undefined ? undefined : getTypeProblem(type, databaseType);
 
 /**
- * A node's problems on a database type: a Pivot where it can't run (PLAN
- * §11.12); `%` or `_` given to a pattern, on a database with no default
- * `LIKE` escape character (`hasNoLikeEscape`, PLAN §11.11), as `\` is
- * refused everywhere. None for another type, or none known.
+ * The emitters' backstop for a node's patterns, as the editor refuses them
+ * once it knows the database (PLAN §11.11, §11.14): `%` or `_` given to a
+ * pattern where they would be wildcards, a pattern that isn't a literal but
+ * on Snowflake. `undefined` when the node can be written, or no type is known:
+ * typing and checks pass none, and write no SQL.
+ */
+export const getEmitPatternProblem = (
+  node: QueryNode,
+  databaseType: string | undefined,
+): string | undefined => {
+  if (databaseType === undefined) {
+    return undefined;
+  }
+  const wildcard = hasNoLikeEscape(databaseType)
+    ? findPatternWildcard(node)
+    : undefined;
+  return wildcard
+    ? wildcard(databaseType)
+    : getNonLiteralPatternProblem(node, databaseType);
+};
+
+/**
+ * A node's problems on a database type: a pattern that isn't a literal unless
+ * on Snowflake, when no type is known too (PLAN §11.14); a Pivot where it
+ * can't run (§11.12); `%` or `_` given to a pattern, on a database with no
+ * default `LIKE` escape character (`hasNoLikeEscape`, §11.11), as `\` is
+ * refused everywhere. None for another type.
  */
 export const getDatabaseProblems = (
   node: QueryNode,
   databaseType: string | undefined,
 ): string[] => {
+  const nonLiteral = getNonLiteralPatternProblem(node, databaseType);
   if (databaseType === undefined) {
-    return [];
+    return nonLiteral === undefined ? [] : [nonLiteral];
   }
   const typeProblem = getTypeProblem(node.type, databaseType);
   const pattern = hasNoLikeEscape(databaseType)
@@ -238,6 +309,7 @@ export const getDatabaseProblems = (
   return [
     ...(typeProblem === undefined ? [] : [typeProblem]),
     ...(pattern ? [pattern(databaseType)] : []),
+    ...(nonLiteral === undefined ? [] : [nonLiteral]),
   ];
 };
 
@@ -251,14 +323,16 @@ const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
 /**
  * Whether how a node runs depends on the database type: a Drop, a Slice, a
  * Limit or a Distinct, which some databases take another way (PLAN §11.4); a
- * Pivot, which some can't run (§11.12); a filter that gives `%` or `_` to a
- * pattern (`givesPatternWildcard`, §11.11). The one rule for when Cube needs
- * the database type.
+ * Pivot, which some can't run (§11.12); a filter or an Extend that gives `%`
+ * or `_` to a pattern (`givesPatternWildcard`, §11.11), or a pattern that
+ * isn't a literal (`givesNonLiteralPattern`, §11.14). The one rule for when
+ * Cube needs the database type.
  */
 export const dependsOnDatabaseType = (node: QueryNode): boolean =>
   WORKAROUND_TYPES.has(node.type) ||
   node.type === Pivot.TYPE ||
-  givesPatternWildcard(node);
+  givesPatternWildcard(node) ||
+  givesNonLiteralPattern(node);
 
 /**
  * Whether running the query up to a node can depend on the database type: it

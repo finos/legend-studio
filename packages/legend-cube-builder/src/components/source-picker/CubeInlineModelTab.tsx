@@ -32,6 +32,7 @@ import {
 } from '../../stores/source-picker/CubeInlineModelTabState.js';
 import { CubeFunctionSteps, CubeReadKindToggle } from './CubeFunctionSteps.js';
 import { CubePickerStep } from './CubePickerStep.js';
+import { CubeTablePreview } from './CubeTablePreview.js';
 
 /** A model's table steps: a database, a runtime keyed by it, a schema and a table */
 const CubeTableSteps = observer((props: { tab: CubeInlineModelTabState }) => {
@@ -112,6 +113,12 @@ const CubeTableSteps = observer((props: { tab: CubeInlineModelTabState }) => {
               );
             })}
           </ul>
+          {tab.previewTableName !== undefined && (
+            <CubeTablePreview
+              name={getRelationalDisplayName(tab.previewTableName)}
+              columns={tab.previewedColumns}
+            />
+          )}
         </div>
       )}
     </>

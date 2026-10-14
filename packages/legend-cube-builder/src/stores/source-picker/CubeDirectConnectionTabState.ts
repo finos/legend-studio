@@ -20,6 +20,7 @@ import {
   type ModelContext,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   RelationalTableSource,
+  Schema,
 } from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import {
@@ -63,6 +64,7 @@ import {
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
+  CUBE_TABLE_PREVIEW_DELAY_MS,
   generateCubeNodeIds,
 } from './CubeSourcePickerTab.js';
 
@@ -154,6 +156,13 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
   isTesting = false;
   isListing = false;
   isResolving = false;
+  /** The table, by its stored name, whose columns the tab shows under the list: the one picked last */
+  previewTableName: string | undefined;
+  /** The columns of each table previewed, or why they couldn't be read, by schema and stored name */
+  previewSchemas: ReadonlyMap<string, Schema | string> = new Map();
+  /** Counts the connection's changes, so a late preview is dropped */
+  private previewGeneration = 0;
+  private previewTimer: ReturnType<typeof setTimeout> | undefined;
   error: CubeDirectConnectionError | undefined;
   /** DuckDB only: a CSV to add to the setup SQL as a table, pasted or read from a file */
   csvText = '';
@@ -184,6 +193,10 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
       isTesting: observable,
       isListing: observable,
       isResolving: observable,
+      previewTableName: observable,
+      previewSchemas: observable.ref,
+      previewedColumns: computed,
+      loadPreview: flow,
       error: observable.ref,
       csvText: observable,
       csvTableName: observable,
@@ -451,18 +464,101 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
     }
   }
 
-  /** Picks the table alone, in place of any picked */
+  /** Picks the table alone, in place of any picked, and previews its columns */
   selectTable(storedName: string | undefined): void {
     this.tableNames = storedName === undefined ? [] : [storedName];
     this.error = undefined;
+    this.preview(storedName);
   }
 
-  /** Adds the table to the picked ones, or takes it out */
+  /** Adds the table to the picked ones, previewing it, or takes it out */
   toggleTable(storedName: string): void {
-    this.tableNames = this.tableNames.includes(storedName)
-      ? this.tableNames.filter((each) => each !== storedName)
-      : [...this.tableNames, storedName];
+    const adding = !this.tableNames.includes(storedName);
+    this.tableNames = adding
+      ? [...this.tableNames, storedName]
+      : this.tableNames.filter((each) => each !== storedName);
     this.error = undefined;
+    this.preview(adding ? storedName : this.tableNames.at(-1));
+  }
+
+  private previewKey(storedName: string): string {
+    return `${this.schemaName ?? ''}\u0000${storedName}`;
+  }
+
+  /** The previewed table's columns, `undefined` while they load, or why they couldn't be read */
+  get previewedColumns(): Schema | string | undefined {
+    const name = this.previewTableName;
+    return name === undefined
+      ? undefined
+      : this.previewSchemas.get(this.previewKey(name));
+  }
+
+  /** Previews the table once the clicks pause (`CUBE_TABLE_PREVIEW_DELAY_MS`) */
+  private preview(storedName: string | undefined): void {
+    this.previewTableName = storedName;
+    this.cancelPreview();
+    if (storedName !== undefined) {
+      this.previewTimer = setTimeout(() => {
+        this.previewTimer = undefined;
+        flowResult(this.loadPreview(storedName)).catch(
+          this.editorState.host.applicationStore.alertUnhandledError,
+        );
+      }, CUBE_TABLE_PREVIEW_DELAY_MS);
+    }
+  }
+
+  private cancelPreview(): void {
+    if (this.previewTimer !== undefined) {
+      clearTimeout(this.previewTimer);
+      this.previewTimer = undefined;
+    }
+  }
+
+  /** Reads a table's columns from the engine, over the connection tested */
+  *loadPreview(storedName: string): GeneratorFn<void> {
+    const key = this.previewKey(storedName);
+    const table = this.schemaTables?.find(
+      (candidate) => candidate.storedName === storedName,
+    );
+    const connection = this.testedConnection;
+    const schemaName = this.schemaName;
+    if (
+      this.previewSchemas.has(key) ||
+      !table ||
+      !connection ||
+      schemaName === undefined
+    ) {
+      return;
+    }
+    const model =
+      this.editorState.document.context?.model ??
+      createCubeDirectModel(connection);
+    const coordinates = getCubeDirectTableCoordinates(schemaName, table);
+    const generation = this.previewGeneration;
+    const id = this.editorState.document.query.generateId(
+      RelationalTableSource.TYPE,
+    );
+    let answer: Schema | string;
+    try {
+      const typed = (yield this.editorState.host.engine.resolveSchemas(
+        model,
+        new Map([
+          [id, [coordinates.database, coordinates.schema, coordinates.table]],
+        ]),
+      )) as Awaited<
+        ReturnType<typeof this.editorState.host.engine.resolveSchemas>
+      >;
+      const schema = typed.get(id);
+      answer =
+        schema instanceof Schema
+          ? schema
+          : (schema?.message ?? CUBE_DIRECT_MESSAGE.NO_TABLE_SCHEMA);
+    } catch (error) {
+      answer = toError(error).message;
+    }
+    if (generation === this.previewGeneration) {
+      this.previewSchemas = new Map(this.previewSchemas).set(key, answer);
+    }
   }
 
   setTableSearch(search: string): void {
@@ -502,6 +598,7 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
     this.isTesting = false;
     this.isListing = false;
     this.isResolving = false;
+    this.cancelPreview();
   }
 
   /** Lists the connection's schemas; with a single one, lists its tables */
@@ -597,25 +694,39 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
       RelationalTableSource.TYPE,
       tables.length,
     );
+    this.cancelPreview();
     const request = ++this.confirmRequest;
     this.isResolving = true;
     this.error = undefined;
     try {
-      const typed = (yield editorState.host.engine.resolveSchemas(
-        model,
-        new Map(
-          tables.map((table, index) => {
-            const coordinates = getCubeDirectTableCoordinates(
-              schemaName,
-              table,
-            );
-            return [
-              ids[index] as string,
-              [coordinates.database, coordinates.schema, coordinates.table],
-            ];
-          }),
-        ),
-      )) as Awaited<ReturnType<typeof editorState.host.engine.resolveSchemas>>;
+      // a table previewed has its columns already: the engine types the others
+      const typed = new Map<string, Schema | CubeEngineError>();
+      const toType = new Map<string, readonly [string, string, string]>();
+      tables.forEach((table, index) => {
+        const id = ids[index] as string;
+        const schema = this.previewSchemas.get(
+          this.previewKey(table.storedName),
+        );
+        if (schema instanceof Schema) {
+          typed.set(id, schema);
+        } else {
+          const coordinates = getCubeDirectTableCoordinates(schemaName, table);
+          toType.set(id, [
+            coordinates.database,
+            coordinates.schema,
+            coordinates.table,
+          ]);
+        }
+      });
+      if (toType.size) {
+        const answer = (yield editorState.host.engine.resolveSchemas(
+          model,
+          toType,
+        )) as Awaited<
+          ReturnType<typeof editorState.host.engine.resolveSchemas>
+        >;
+        answer.forEach((schema, id) => typed.set(id, schema));
+      }
       if (request !== this.confirmRequest) {
         return false;
       }
@@ -710,6 +821,8 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
 
   /** Forgets what was read from the connection: it changed, or its answers are stale */
   private resetResults(): void {
+    this.previewGeneration++;
+    this.previewSchemas = new Map();
     this.testRequest++;
     this.listRequest++;
     this.confirmRequest++;
@@ -727,5 +840,7 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
   private resetTable(): void {
     this.tableNames = [];
     this.tableSearch = '';
+    this.previewTableName = undefined;
+    this.cancelPreview();
   }
 }

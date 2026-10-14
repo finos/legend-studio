@@ -63,7 +63,10 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__importDocument,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -387,8 +390,8 @@ describe('Cube canvas', () => {
       expect(
         TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('join101')),
       ).toEqual([
+        // a Join not set yet adds no description (the review of the demo)
         'Left join columns cannot be empty.',
-        'Join additional input',
       ]),
     );
     expect(
@@ -584,6 +587,23 @@ const handle = (nodeId: string, handleId: string): Element =>
 describe('Node labels on the canvas', () => {
   const RESOLVED = { kind: 'resolved', schema: new Schema([]) } as const;
 
+  test("Shows a node not set yet by its type's name and a muted Not set, and a set one by its description", () => {
+    expect(
+      getCubeCanvasNodeLabel(new Join('join101'), 'Join Another Input'),
+    ).toEqual({ title: 'Join Another Input', detail: 'Not set' });
+    expect(
+      getCubeCanvasNodeLabel(
+        new Join('join101', { leftColumns: ['A'], rightColumns: ['B'] }),
+        'Join Another Input',
+      ).title,
+    ).toBe('Left Outer join on "A" = "B"');
+    expect(
+      getCubeCanvasNodeLabel(new Limit('limit101', 5), 'Take first rows'),
+    ).toEqual({
+      title: 'Take first 5 row(s)',
+    });
+  });
+
   test('Shows a source by its name, with where it comes from below, and every other node by its description', () => {
     expect(
       getCubeCanvasNodeLabel(
@@ -726,9 +746,64 @@ describe('Cube canvas, more', () => {
     expect(state.document.query.selected).toBe('relational101');
     // which closes the open editor, opening none
     expect(state.nodeEditor.nodeId).toBeUndefined();
-    // other keys do nothing
-    fireEvent.keyDown(filter, { key: 'Delete' });
+    // other keys do nothing; Delete removes a step (its own test)
+    fireEvent.keyDown(filter, { key: 'a' });
     expect(state.document.query.getNode('relational101')).toBeDefined();
+  });
+
+  test('Removes the focused step with Delete or Backspace, copies and pastes it with Ctrl/Cmd+C and V, duplicates it with Ctrl/Cmd+D, each one undo step', async () => {
+    const state = await renderCanvas(new CubeDocument({ query: sliceQuery() }));
+    const nodeElement = async (id: string): Promise<HTMLElement> => {
+      await TEST__findCanvasNode(id);
+      return document.querySelector<HTMLElement>(
+        `.react-flow__node[data-id="${id}"]`,
+      ) as HTMLElement;
+    };
+    // Ctrl+C on the Filter, Ctrl+V on the Join: a copy after the Join
+    fireEvent.keyDown(await nodeElement('filter101'), {
+      key: 'c',
+      ctrlKey: true,
+    });
+    expect(state.copiedNode?.node.id).toBe('filter101');
+    expect(state.history).toHaveLength(0);
+    fireEvent.keyDown(await nodeElement('join101'), {
+      key: 'v',
+      metaKey: true,
+    });
+    expect(state.document.query.getInputIds('filter102')).toEqual(['join101']);
+    expect(state.history).toHaveLength(1);
+    // Ctrl+D: a copy of the Filter, after itself
+    fireEvent.keyDown(await nodeElement('filter102'), {
+      key: 'd',
+      ctrlKey: true,
+    });
+    expect(state.document.query.getInputIds('filter103')).toEqual([
+      'filter102',
+    ]);
+    expect(state.history).toHaveLength(2);
+    // Delete, then Backspace
+    fireEvent.keyDown(await nodeElement('filter103'), { key: 'Delete' });
+    expect(state.document.query.getNode('filter103')).toBeUndefined();
+    fireEvent.keyDown(await nodeElement('filter102'), { key: 'Backspace' });
+    expect(state.document.query.getNode('filter102')).toBeUndefined();
+    expect(state.history).toHaveLength(4);
+  });
+
+  test('Takes no step key in a read-only cube, but copies', async () => {
+    const state = await renderCanvas();
+    await TEST__importDocument(
+      state,
+      new CubeDocument({ query: sliceQuery() }),
+      true,
+    );
+    const filter = (await TEST__findCanvasNode('filter101')).closest(
+      '.react-flow__node',
+    ) as HTMLElement;
+    fireEvent.keyDown(filter, { key: 'Delete' });
+    fireEvent.keyDown(filter, { key: 'd', ctrlKey: true });
+    expect(state.document.query.nodes).toHaveLength(4);
+    fireEvent.keyDown(filter, { key: 'c', ctrlKey: true });
+    expect(state.copiedNode?.node.id).toBe('filter101');
   });
 
   test("Doesn't open a node's editor on a click on one of its handles", () =>
@@ -781,7 +856,12 @@ describe('Cube canvas, more', () => {
     const ghost = new Filter('filter999');
     expect(getCubeCanvasNodeStatus(state, ghost).tooltip.split('\n')).toEqual([
       'This node depends on some invalid inputs.',
-      ghost.describe(),
+    ]);
+    // a set one adds its description
+    const set = new Limit('limit998', 5);
+    expect(getCubeCanvasNodeStatus(state, set).tooltip.split('\n')).toEqual([
+      'This node depends on some invalid inputs.',
+      set.describe(),
     ]);
   });
 });
@@ -1031,7 +1111,6 @@ describe('The node tooltip', () => {
     expect(text?.textContent).toBe(join.getAttribute('aria-description'));
     expect(text?.textContent?.split('\n')).toEqual([
       'Left join columns cannot be empty.',
-      'Join additional input',
     ]);
   });
 

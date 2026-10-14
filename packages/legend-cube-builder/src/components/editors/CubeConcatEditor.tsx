@@ -37,7 +37,7 @@ import {
   CONCAT_RENAME_FIX_TEXT,
   CONCAT_RENAME_FIX_TITLE,
   CUBE_TABLE_FLAG_LABELS,
-  getColumnTypeLabel,
+  getExactColumnTypeLabel,
   getConcatRestrictFixText,
   getConcatRestrictFixTitle,
   getConcatUntypedWarning,
@@ -64,7 +64,7 @@ const typeLabel = (
   !column.type.equals(other.type) &&
   column.type.displayName === other.type.displayName
     ? `${column.type.fullName}${column.nullable ? '?' : ''}`
-    : getColumnTypeLabel(column);
+    : getExactColumnTypeLabel(column);
 
 /**
  * One input's column at a position, its name and type marked where they

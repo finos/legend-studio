@@ -35,7 +35,7 @@ import type { Schema } from '../../schema/Schema.js';
 import { type CubeType, PrimitiveType } from '../../types/CubeType.js';
 import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import { isSortableType } from '../../types/TypeCompatibility.js';
-import { TypeFamily } from '../../types/TypeFamily.js';
+import { isNumericFamily, TypeFamily } from '../../types/TypeFamily.js';
 
 // Aggregations (spec §10, PLAN §5.7, §11.5, §11.6 and §11.9), shared by Group
 // and Partition, whose windows also offer the rank and row functions
@@ -257,7 +257,8 @@ const COUNTS = [
   AggregationFunction.DISTINCT_COUNT,
 ] as const;
 const DISTINCTS = [...COUNTS, AggregationFunction.DISTINCT_VALUE] as const;
-const DATES = [
+/** The distinct ones, then Min and Max: dates, strings and Booleans (PLAN §11.14) */
+const ORDERED = [
   ...DISTINCTS,
   AggregationFunction.MIN,
   AggregationFunction.MAX,
@@ -272,10 +273,11 @@ const NUMBERS = [
 
 /**
  * The functions offered on a column of the type, in the spec's order
- * (§10.1): enumerations get Count only, as do VARIANT and a type Cube doesn't
- * know; dates add Min and Max to the distinct ones; numbers, DECIMAL included,
- * get all seven; any other type the distinct ones. Count rows takes no column,
- * so it is never in the list.
+ * (§10.1): dates, strings and Booleans add Min and Max to the distinct ones
+ * (strings and Booleans from M6d, §11.14); numbers, DECIMAL included, get all
+ * seven; StrictTime and enumerations the distinct ones (enumerations from
+ * M6d); VARIANT and a type Cube doesn't know Count only. Count rows takes no
+ * column, so it is never in the list.
  */
 export const getAvailableAggregations = (
   type: CubeType,
@@ -284,17 +286,18 @@ export const getAvailableAggregations = (
     case TypeFamily.DATE:
     case TypeFamily.STRICT_DATE:
     case TypeFamily.DATETIME:
-      return DATES;
+    case TypeFamily.BOOLEAN:
+    case TypeFamily.STRING:
+      return ORDERED;
     case TypeFamily.INTEGER:
     case TypeFamily.FLOAT:
     case TypeFamily.DECIMAL:
     case TypeFamily.NUMBER:
       return NUMBERS;
-    case TypeFamily.BOOLEAN:
-    case TypeFamily.STRING:
     case TypeFamily.STRICT_TIME:
+    case TypeFamily.ENUM:
       return DISTINCTS;
-    // enumerations, VARIANT, and a type Cube doesn't know
+    // VARIANT, OPAQUE, and a type Cube doesn't know
     default:
       return [AggregationFunction.COUNT];
   }
@@ -349,8 +352,9 @@ const dateResultType = (family: TypeFamily): PrimitiveType => {
  * for Distinct Value and the row functions;
  * for Sum, Integer, Float, or else Number; Float for Average; Min and Max as
  * Sum on numbers, StrictDate on a StrictDate, DateTime on a Timestamp or
- * DateTime. `undefined` for a function the column's type doesn't offer, or a
- * column function given no column.
+ * DateTime, the column's own precise type on a string or a Boolean
+ * (`Varchar(10)`, PLAN §11.14). `undefined` for a function the column's type
+ * doesn't offer, or a column function given no column.
  */
 export const getAggregationResultType = (
   aggregation: WindowFunction,
@@ -380,11 +384,12 @@ export const getAggregationResultType = (
       return primitive(PRIMITIVE_TYPE_PATH.FLOAT);
     case AggregationFunction.MIN:
     case AggregationFunction.MAX:
-      return getAvailableAggregations(columnType).includes(
-        AggregationFunction.SUM,
-      )
+      return isNumericFamily(columnType.family)
         ? numericResultType(columnType.family)
-        : dateResultType(columnType.family);
+        : columnType.family === TypeFamily.STRING ||
+            columnType.family === TypeFamily.BOOLEAN
+          ? columnType
+          : dateResultType(columnType.family);
     default:
       return undefined;
   }

@@ -15,9 +15,9 @@
  */
 
 import {
+  dependsOnDatabaseType,
   type ExpressionCheck,
   ExpressionFilter,
-  givesPatternWildcard,
   type IR,
   type JsonObject,
   MESSAGE_CONDITION_NOT_BOOLEAN,
@@ -72,6 +72,12 @@ export interface CubeConditionProblem {
   readonly message: string;
   readonly location?: CubeSourceLocation | undefined;
   readonly hint?: string | undefined;
+  /**
+   * Cube refused the condition before asking the engine (a backslash, `%` or
+   * `_` on DuckDB, a pattern that isn't a literal): the panel's problems show
+   * it, so the editor doesn't say it again (PLAN §11.14)
+   */
+  readonly refused?: true;
 }
 
 /** What a new condition's code starts as (PLAN §11.11) */
@@ -267,9 +273,10 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
         return;
       }
       // 2. Cube's own checks, which need no engine, then the database's:
-      // a pattern given % or _ on DuckDB, which the model's outline tells
+      // a pattern given % or _ on DuckDB, or one that isn't a literal but on
+      // Snowflake, which the model's outline tells
       const candidate = this.original.withCondition(code, parsed.lambda);
-      if (givesPatternWildcard(candidate)) {
+      if (dependsOnDatabaseType(candidate)) {
         yield flowResult(editorState.loadModelOutline(context.model));
       }
       const cubeProblem =
@@ -279,7 +286,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
           candidate,
         )[0];
       if (cubeProblem !== undefined) {
-        this.problem = { message: cubeProblem };
+        this.problem = { message: cubeProblem, refused: true };
         this.check = UNCHECKED;
         return;
       }

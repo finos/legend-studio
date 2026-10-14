@@ -20,6 +20,7 @@ import {
   CubeDocument,
   ExpressionFilter,
   type JsonObject,
+  MESSAGE_CONDITION_BACKSLASH,
   MESSAGE_CONDITION_NOT_BOOLEAN,
   PrimitiveType,
   Query,
@@ -225,6 +226,34 @@ describe('Filter by Expression editor', () => {
     act(() => draftOf(state).setCode('x | $x.ORDER_ID > 1 && $x.SHIP_VIA > 3'));
     fireEvent.click(button('Validate'));
     await within(panel()).findByText(EXPRESSION_FILTER_PARENTHESES_HINT);
+  });
+
+  test('Says a condition Cube refuses before the engine once, in the problems', async () => {
+    const { state, fake } = await render();
+    const X = { _type: 'var', name: 'x' };
+    const like: JsonObject = {
+      _type: 'lambda',
+      parameters: [X],
+      body: [
+        {
+          _type: 'func',
+          function: 'startsWith',
+          parameters: [
+            { _type: 'property', property: 'SHIP_NAME', parameters: [X] },
+            { _type: 'string', value: 'a\\' },
+          ],
+        },
+      ],
+    };
+    fake.parseExpression.mockResolvedValueOnce({ lambda: like, located: like });
+    act(() => draftOf(state).setCode("x | $x.SHIP_NAME->startsWith('a\\\\')"));
+    fireEvent.click(button('Validate'));
+    await waitFor(() =>
+      expect(
+        within(panel()).getAllByText(MESSAGE_CONDITION_BACKSLASH('startsWith')),
+      ).toHaveLength(1),
+    );
+    expect(fake.typeLambdas).not.toHaveBeenCalled();
   });
 
   test('Underlines a problem the engine located in its code', async () => {

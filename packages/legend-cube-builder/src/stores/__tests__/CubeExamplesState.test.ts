@@ -88,7 +88,7 @@ const sports = () => {
 };
 
 describe('Examples', () => {
-  test('Lists three datasets, Northwind first, each with its example cubes', () => {
+  test('Lists four datasets, Northwind first and the DuckDB Sales last, each with its example cubes', () => {
     const { examples } = setUp().state;
     expect(
       examples.datasets.map((dataset) => [
@@ -106,6 +106,7 @@ describe('Examples', () => {
           'trades-largest-buys',
         ],
       ],
+      ['sales', ['sales-by-year', 'sales-by-product']],
     ]);
     expect(examples.isOpen).toBe(false);
   });

@@ -15,6 +15,7 @@
  */
 
 export enum LEGEND_CUBE_TEST_ID {
+  RUNNING_NODE_BADGE = 'legend-cube__running-node-badge',
   EDITOR = 'legend-cube__editor',
   GRAPH_REGION = 'legend-cube__graph-region',
   GRID_REGION = 'legend-cube__grid-region',

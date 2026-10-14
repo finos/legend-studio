@@ -235,10 +235,12 @@ describe('Pivot editor', () => {
     ]);
     pick('Aggregation function', 'Count');
     pick('Aggregation column', 'SHIP_COUNTRY');
-    // a String column: its family's
+    // a String column: its family's, Min and Max included (PLAN §11.14)
     expect(optionValues('Aggregation function')).toEqual([
       'Count',
       'DistinctCount',
+      'Min',
+      'Max',
       'CountRows',
     ]);
   });

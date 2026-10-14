@@ -21,6 +21,10 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
+import {
+  RUN_THIS_STEP_LABEL,
+  SELECT_NODE_TOOLTIP,
+} from '../../__lib__/LegendCubeHelpText.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeAddMenuItems } from '../CubeAddItems.js';
 
@@ -54,13 +58,40 @@ export const CubeCanvasContextMenu = observer(
         <CubeAddMenuItems editorState={editorState} nodeId={nodeId} />
         <MenuContentDivider />
         <MenuContentItem
-          title="Execute runs the query up to this node"
+          title={SELECT_NODE_TOOLTIP}
           disabled={nodeId === undefined || !query.canSelect(nodeId)}
           onClick={finishing(
             () => nodeId !== undefined && editorState.select(nodeId),
           )}
         >
-          Select
+          {RUN_THIS_STEP_LABEL}
+        </MenuContentItem>
+        <MenuContentItem
+          title="Copy this step, to paste it after another (Ctrl/Cmd+C)"
+          disabled={nodeId === undefined || !editorState.canCopyNode(nodeId)}
+          onClick={finishing(
+            () => nodeId !== undefined && editorState.copyNode(nodeId),
+          )}
+        >
+          Copy
+        </MenuContentItem>
+        <MenuContentItem
+          title="Paste the step copied after this one (Ctrl/Cmd+V)"
+          disabled={!editorState.canPaste}
+          onClick={finishing(() => editorState.pasteNode(nodeId))}
+        >
+          Paste
+        </MenuContentItem>
+        <MenuContentItem
+          title="Add a copy of this step after it (Ctrl/Cmd+D)"
+          disabled={
+            nodeId === undefined || !editorState.canDuplicateNode(nodeId)
+          }
+          onClick={finishing(
+            () => nodeId !== undefined && editorState.duplicateNode(nodeId),
+          )}
+        >
+          Duplicate
         </MenuContentItem>
         <MenuContentItem
           disabled={nodeId === undefined || !editorState.canRemoveNode(nodeId)}

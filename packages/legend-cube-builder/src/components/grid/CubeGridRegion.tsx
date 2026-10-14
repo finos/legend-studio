@@ -37,6 +37,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeGridMode } from '../../stores/CubeGridState.js';
+import { parseWholeNumberText } from '../../stores/editors/CubeIntegerText.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
 import { CubeColumnFormatDialog } from './CubeColumnFormatDialog.js';
 import { CubeDrilldownBar } from './CubeDrilldownBar.js';
@@ -54,10 +55,11 @@ const CubeRowLimitInput = observer(
     const [draft, setDraft] = useState(String(editorState.rowLimit));
     const [error, setError] = useState<string | undefined>();
     const commit = (): void => {
-      const problem = getRowLimitError(draft);
+      const value = parseWholeNumberText(draft);
+      const problem = getRowLimitError(value);
       setError(problem);
-      if (!problem) {
-        editorState.setRowLimit(Number(draft.trim()));
+      if (!problem && value !== undefined) {
+        editorState.setRowLimit(value);
       }
     };
     return (

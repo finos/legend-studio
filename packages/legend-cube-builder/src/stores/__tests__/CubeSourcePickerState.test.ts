@@ -43,6 +43,7 @@ import {
   CubeTableFlag,
 } from '../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../CubeEditorState.js';
+import { CUBE_TABLE_PREVIEW_DELAY_MS } from '../source-picker/CubeSourcePickerTab.js';
 import { CUBE_NORTHWIND_SAMPLE_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { createTextModel } from '../LocalModelCatalog.js';
 
@@ -947,5 +948,66 @@ describe('Cube source picker: several tables at once', () => {
       ['relational102'],
     );
     expect(state.document.query.nodes).toHaveLength(1);
+  });
+});
+
+describe('Cube source picker: table preview', () => {
+  /** Waits past the pause before a preview, and for its answer */
+  const afterPreview = async (): Promise<void> => {
+    await new Promise((resolve) =>
+      setTimeout(resolve, CUBE_TABLE_PREVIEW_DELAY_MS + 50),
+    );
+    await Promise.resolve();
+  };
+
+  test('Previews the columns of the table picked last, once the clicks pause, and Add takes them with no engine call', async () => {
+    const { state, fake } = setUp();
+    await openPicker(state);
+    const tab = state.sourcePicker.modelTab;
+    tab.selectSchema('NORTHWIND');
+    tab.selectTable('ORDERS');
+    // the pause: nothing asked yet
+    expect(fake.resolveSchemas).not.toHaveBeenCalled();
+    expect(tab.previewTableName).toBe('ORDERS');
+    expect(tab.previewedColumns).toBeUndefined();
+    await afterPreview();
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(
+      (tab.previewedColumns as Schema).columns.map(({ name }) => name),
+    ).toEqual(ORDERS_COLUMNS.map(({ name }) => name));
+    await flowResult(state.sourcePicker.confirm());
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(state.document.query.nodes.map(({ id }) => id)).toEqual([
+      'relational101',
+    ]);
+  });
+
+  test('Previews only the last of tables picked in a row, and shows why a table could not be read', async () => {
+    const { state, fake } = setUp({ schemas: new Map() });
+    await openPicker(state);
+    const tab = state.sourcePicker.modelTab;
+    tab.selectSchema('NORTHWIND');
+    tab.toggleTable('ORDERS');
+    tab.toggleTable('CUSTOMERS');
+    await afterPreview();
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(tab.previewTableName).toBe('CUSTOMERS');
+    expect(tab.previewedColumns).toBe(
+      `The table "NORTHWIND.CUSTOMERS" can't be found`,
+    );
+    // taking it out previews the one picked before
+    tab.toggleTable('CUSTOMERS');
+    expect(tab.previewTableName).toBe('ORDERS');
+  });
+
+  test('Drops a preview that answers after the dialog closed', async () => {
+    const { state, fake } = setUp();
+    await openPicker(state);
+    const tab = state.sourcePicker.modelTab;
+    tab.selectSchema('NORTHWIND');
+    tab.selectTable('ORDERS');
+    state.sourcePicker.close();
+    await afterPreview();
+    expect(fake.resolveSchemas).not.toHaveBeenCalled();
   });
 });

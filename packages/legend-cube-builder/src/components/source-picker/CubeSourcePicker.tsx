@@ -68,6 +68,17 @@ export const CubeSourcePicker = observer(
             isLoading={!picker.isChoosingTab && activeTab.isBusy}
           />
           <ModalBody>
+            {picker.isFromExamples && (
+              // a link back, under the title, as the dialog came from Examples
+              <button
+                type="button"
+                className="mb-2 self-start text-base text-[var(--color-accent)] hover:underline"
+                title="Back to the examples, to open an example cube instead"
+                onClick={() => picker.backToExamples()}
+              >
+                ← Back to Examples
+              </button>
+            )}
             {tabs.length > 1 && (
               <div
                 className="mb-2 flex gap-1 border-b border-[var(--color-border-subtle)]"
@@ -130,17 +141,6 @@ export const CubeSourcePicker = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            {picker.isFromExamples && (
-              <ModalFooterButton
-                darkMode={darkMode}
-                formatText={false}
-                type="secondary"
-                className="mr-auto"
-                text="← Examples"
-                title="Back to the examples, to open an example cube instead"
-                onClick={() => picker.backToExamples()}
-              />
-            )}
             <ModalFooterButton
               darkMode={darkMode}
               formatText={false}

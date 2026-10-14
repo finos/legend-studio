@@ -514,8 +514,16 @@ describe('Cube results', () => {
     // the key, and the group's count
     expect(groupCell(0).textContent).toContain('(1)');
     expect(groupCell(1).textContent).toContain(NULL_CELL_TEXT);
-    // the ID column holds each group's Sum, digit for digit
-    expect(await cellTexts(0)).toEqual(['9', '9007199254740993', '10']);
+    // the ID column holds each group's Sum, digit for digit, its thousands
+    // grouped as a group row's aggregate is, with the exact value on hover
+    expect(await cellTexts(0)).toEqual(['9', '9,007,199,254,740,993', '10']);
+    expect(
+      grid()
+        .querySelector(
+          '.ag-center-cols-container .ag-row[row-index="1"] [title]',
+        )
+        ?.getAttribute('title'),
+    ).toBe('9007199254740993');
     const groups = printIR(fake.execute.mock.calls[1]?.[1] as IR);
     expect(groups).toContain(`->groupBy(~[NAME], ~['ID Sum'`);
     // the group with no name, expanded: its rows, by Is Empty
@@ -530,7 +538,8 @@ describe('Cube results', () => {
     await waitFor(async () =>
       expect(await cellTexts(0)).toEqual([
         '9',
-        '9007199254740993',
+        // the group row's Sum, grouped; its row below, as the column shows it
+        '9,007,199,254,740,993',
         '9007199254740993',
         '10',
       ]),
@@ -729,7 +738,20 @@ describe('Cube results', () => {
     expect(persistValue).toHaveBeenLastCalledWith('legend-cube.row-limit', 60);
   });
 
-  test.each(['0', '-1', '2.5', '1e400', 'abc', ''])(
+  // hexadecimal, exponent, binary and decimal text too (PLAN §11.14), which
+  // `Number()` would read as 16, 1000, 3 and 1
+  test.each([
+    '0',
+    '-1',
+    '2.5',
+    '1e400',
+    'abc',
+    '',
+    '0x10',
+    '1e3',
+    '0b11',
+    '1.0',
+  ])(
     "Refuses the row limit '%s', which is not a whole number of at least 1, and keeps the last one",
     async (text) => {
       const fake = await renderPage();

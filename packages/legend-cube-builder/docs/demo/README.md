@@ -1,8 +1,8 @@
 # Legend Cube demo kit
 
-What you need to run the full demo, as in the walkthrough video (`videos/20-walkthrough-v3.webm` in the evidence
-folder), on the `cube-demo-feedback` branch. Every number below is what the engine returned when these files were made
-(2026-10-13); the sample data is fixed, so they match on the day.
+A walkthrough of Legend Cube on its sample data, and the specs to fall back on. Every number below is what the
+engine returned when these files were made (2026-10-13); the sample data is fixed, so they match on the day. The
+short version is [DEMO-FAST-NOTES.md](./DEMO-FAST-NOTES.md).
 
 | File                                      | What it is                                                                   |
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
@@ -12,15 +12,13 @@ folder), on the `cube-demo-feedback` branch. Every number below is what the engi
 | `specs/trades-desks-4-extended.cube.json` | … then the calculated column `NOTIONAL_MM` (6 rows)                          |
 | `specs/trades-desks-5-final.cube.json`    | … then Filter by Expression `NOTIONAL_MM > 25`: the finished cube (4 rows)   |
 | `specs/duckdb-sales-pivot.cube.json`      | Act 4's DuckDB cube with the Pivot, its setup SQL inside (4 rows)            |
-| `duckdb-pivot-setup.sql`                  | The DuckDB setup SQL to paste in Direct Connection for Act 4                 |
 
 **Fallback:** if a live step goes wrong, **Import** the spec of the step before or after it and press **F9**. An
 imported cube opens without running.
 
 ## Before the demo
 
-- The local engine on `:6300` and the Query dev server (`yarn dev:query`) on this branch, with the Tailwind CSS built
-  (`yarn workspace @finos/legend-application-query-deployment build:tailwindcss`).
+- A local engine, and the Query dev server (`yarn dev:query`) with Cube enabled (see [hosting](../hosting.md)).
 - Open each example once to warm the engine up.
 - Browser at about 1440×900, 100% zoom, a fresh `/query/cube` page.
 
@@ -75,12 +73,21 @@ supported…"_: open it and click **Rename them**.
 ## 4. Pivot (about 1.5 min)
 
 1. On any sample cube (H2), point at **Pivot by Column** in the palette: greyed, _"Pivot is not supported on H2."_
-2. New page → **Connect to a source → Direct Connection**: Database **DuckDB**, paste `duckdb-pivot-setup.sql` into
+2. New page → **Connect to a source → Direct Connection**: Database **DuckDB**, paste the setup SQL below into
    **Setup SQL**, **Test connection**, schema **demo**, pick **sales**, **Add**, **F9**: 10 sales.
 3. Palette **Pivot by Column**: pivot column **year**, **Load values** (2022, 2023, 2024), **All**, row column
    **country**, aggregation **Sum** of **amount**. **Apply**, **F9**: a row per country, a column per year: France
    120, 80, 180; Germany 150, –, 110; Japan –, 200, 40; Spain 70, –, –.
 4. _(Fallback: Import `duckdb-sales-pivot.cube.json`, F9.)_
+
+The DuckDB setup SQL:
+
+```sql
+drop schema if exists demo cascade;
+create schema demo;
+create table demo.sales (id INTEGER PRIMARY KEY, country VARCHAR(10), product VARCHAR(10), year INTEGER, amount INTEGER, price DOUBLE);
+insert into demo.sales values (1, 'France', 'Tea', 2022, 120, 2.5), (2, 'France', 'Coffee', 2023, 80, 3.1), (3, 'France', 'Tea', 2024, 150, 2.7), (4, 'Germany', 'Tea', 2022, 90, 2.4), (5, 'Germany', 'Coffee', 2022, 60, 3.0), (6, 'Germany', 'Coffee', 2024, 110, 3.3), (7, 'Japan', 'Tea', 2023, 200, 2.9), (8, 'Japan', 'Tea', 2024, 40, 2.9), (9, 'France', 'Coffee', 2024, 30, 3.2), (10, 'Spain', 'Coffee', 2022, 70, 3.0);
+```
 
 ## 5. A function as a source (about 1 min)
 

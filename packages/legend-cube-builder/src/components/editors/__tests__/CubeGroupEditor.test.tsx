@@ -236,22 +236,22 @@ describe('Group editor', () => {
     // the blank row is left out, so there's no aggregation yet
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Aggregations')]);
     expect(keyItems().map((item) => item.textContent)).toEqual([
-      'ORDER_IDSmallInt',
-      'CUSTOMER_IDVarchar(5)?',
-      'EMPLOYEE_IDSmallInt?',
-      'ORDER_DATEStrictDate?',
-      'REQUIRED_DATEStrictDate?',
-      'SHIPPED_DATEStrictDate?',
-      'SHIP_VIASmallInt?',
-      'FREIGHTDouble?',
-      'SHIP_NAMEVarchar(40)?',
-      'SHIP_ADDRESSVarchar(60)?',
-      'SHIP_CITYVarchar(15)?',
-      'SHIP_REGIONVarchar(15)?',
-      'SHIP_POSTAL_CODEVarchar(10)?',
-      'SHIP_COUNTRYVarchar(15)?',
-      "PAYLOADVariant? (can't be grouped)",
-      "SHAPEShape? (can't be grouped)",
+      'ORDER_IDWhole number',
+      'CUSTOMER_IDText, can be empty',
+      'EMPLOYEE_IDWhole number, can be empty',
+      'ORDER_DATEDate, can be empty',
+      'REQUIRED_DATEDate, can be empty',
+      'SHIPPED_DATEDate, can be empty',
+      'SHIP_VIAWhole number, can be empty',
+      'FREIGHTNumber, can be empty',
+      'SHIP_NAMEText, can be empty',
+      'SHIP_ADDRESSText, can be empty',
+      'SHIP_CITYText, can be empty',
+      'SHIP_REGIONText, can be empty',
+      'SHIP_POSTAL_CODEText, can be empty',
+      'SHIP_COUNTRYText, can be empty',
+      "PAYLOADVariant, can be empty (can't be grouped)",
+      "SHAPEShape, can be empty (can't be grouped)",
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(false);
     expect(checkbox('PAYLOAD').disabled).toBe(true);
@@ -435,10 +435,13 @@ describe('Group editor', () => {
       'Count Rows',
     ]);
     pick(1, 'SHIP_COUNTRY');
+    // Min and Max on a string from M6d (PLAN §11.14)
     expect(functions(1)).toEqual([
       'Count',
       'Distinct Count',
       'Distinct Value',
+      'Min',
+      'Max',
       'Count Rows',
     ]);
     pick(1, 'ORDER_ID');
@@ -468,6 +471,8 @@ describe('Group editor', () => {
       'Count',
       'Distinct Count',
       'Distinct Value',
+      'Min',
+      'Max',
       'Count Rows',
     ]);
     const incompatible = MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE(

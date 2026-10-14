@@ -27,6 +27,8 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useId, useRef } from 'react';
 import {
   CUBE_NODE_HELP_TEXT,
+  RUN_THIS_STEP_LABEL,
+  RUNNING_NODE_LABEL,
   SELECT_NODE_TOOLTIP,
 } from '../../__lib__/LegendCubeHelpText.js';
 import {
@@ -170,10 +172,10 @@ export const CubeNodeEditorPanel = observer(
           <span className="flex-1" />
           {isCapture ? (
             <span
-              className="shrink-0 text-base text-[var(--color-text-secondary)]"
-              title={SELECT_NODE_TOOLTIP}
+              className="shrink-0 rounded-sm bg-[var(--color-accent)] px-1 text-sm font-medium text-[var(--color-text-on-accent)]"
+              title="This is the step that runs: Execute shows its rows"
             >
-              (Selected)
+              {`▶ ${RUNNING_NODE_LABEL}`}
             </span>
           ) : (
             <button
@@ -181,7 +183,7 @@ export const CubeNodeEditorPanel = observer(
               title={SELECT_NODE_TOOLTIP}
               onClick={() => editorState.select(node.id)}
             >
-              Select
+              {RUN_THIS_STEP_LABEL}
             </button>
           )}
           <button

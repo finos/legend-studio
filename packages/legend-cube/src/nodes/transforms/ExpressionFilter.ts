@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { hasLikeWildcard } from '../../filter/FilterOperator.js';
 import { UnaryNode } from '../../graph/QueryNode.js';
 import { keepInputOrder, type RowOrder } from '../../inference/RowOrder.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
@@ -36,6 +35,7 @@ import {
   stableJsonText,
 } from '../../utils/Json.js';
 import { isOneParameterLambda } from './Extend.js';
+import { findLikeFunctionWithBackslash } from './LikeFunctions.js';
 
 /**
  * What the engine said of a Filter by Expression's condition, for one input
@@ -85,81 +85,6 @@ export const getExpressionFilterSignature = (
       lambda: lambda ?? null,
     }),
   );
-
-/** The functions the engine writes as a `LIKE`, whose pattern it escapes with `\` but doesn't escape `\` in */
-const LIKE_FUNCTIONS = new Set(['startsWith', 'endsWith', 'contains']);
-
-/** A string literal's text, from the engine's JSON for it */
-const stringLiteralText = (json: JsonObject): string | undefined => {
-  if (json._type !== 'string') {
-    return undefined;
-  }
-  const { value, values } = json;
-  return typeof value === 'string'
-    ? value
-    : Array.isArray(values)
-      ? values.filter((item) => typeof item === 'string').join('')
-      : undefined;
-};
-
-/**
- * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON given a
- * string literal whose text matches; `undefined` when there is none
- */
-const findLikeFunction = (
-  json: unknown,
-  matches: (text: string) => boolean,
-): string | undefined => {
-  if (Array.isArray(json)) {
-    return json.reduce<string | undefined>(
-      (found, item) => found ?? findLikeFunction(item, matches),
-      undefined,
-    );
-  }
-  if (!isJsonObject(json)) {
-    return undefined;
-  }
-  const { function: name, parameters } = json;
-  if (
-    json._type === 'func' &&
-    typeof name === 'string' &&
-    LIKE_FUNCTIONS.has(name) &&
-    Array.isArray(parameters) &&
-    parameters.slice(1).some((parameter) => {
-      const text = isJsonObject(parameter)
-        ? stringLiteralText(parameter)
-        : undefined;
-      return text !== undefined && matches(text);
-    })
-  ) {
-    return name;
-  }
-  return Object.values(json).reduce<string | undefined>(
-    (found, value) => found ?? findLikeFunction(value, matches),
-    undefined,
-  );
-};
-
-/**
- * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON given a
- * string literal holding a backslash, which the engine doesn't escape in its
- * `LIKE` pattern, so the rows would be wrong (PLAN §11.11, §8.2); `undefined`
- * when there is none. Only literals are read: a pattern built from columns
- * isn't checked.
- */
-export const findLikeFunctionWithBackslash = (
-  json: unknown,
-): string | undefined => findLikeFunction(json, (text) => text.includes('\\'));
-
-/**
- * The first `startsWith`, `endsWith` or `contains` in a lambda's JSON given a
- * string literal holding `%` or `_`, which a database with no default `LIKE`
- * escape character matches as wildcards (`hasNoLikeEscape`, PLAN §11.11);
- * `undefined` when there is none. Only literals are read.
- */
-export const findLikeFunctionWithWildcard = (
-  json: unknown,
-): string | undefined => findLikeFunction(json, hasLikeWildcard);
 
 /**
  * Keeps the rows of its input for which a condition is true (PLAN §11.11): a
@@ -310,6 +235,10 @@ export class ExpressionFilter extends UnaryNode {
   }
 
   /** `Filter by x | $x.PRICE > 10`, on one line */
+  override isUnset(): boolean {
+    return !this.code.trim();
+  }
+
   describe(): string {
     const code = this.code.replace(/\s+/gu, ' ').trim();
     return `Filter by ${code || BLANK_PLACEHOLDER}`;

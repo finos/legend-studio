@@ -57,7 +57,9 @@ import {
   TEST__getCanvasNodeTooltip,
 } from '../../__test-utils__/CubeCanvasTestUtils.js';
 import {
+  TEST__chooseCubeMenuItem,
   TEST__getAddItemsTrigger,
+  TEST__isCubeMenuItemDisabled,
   TEST__renderInCubeApplication,
 } from '../../__test-utils__/CubePageTestUtils.js';
 import {
@@ -152,7 +154,7 @@ const headerButton = (text: string): HTMLButtonElement =>
  * buttons: the one that holds Import, which is never hidden
  */
 const headerStrip = (): HTMLElement =>
-  guaranteeNonNullable(headerButton('Import').parentElement);
+  guaranteeNonNullable(headerButton('Cube').parentElement);
 /** The ids of the nodes on the canvas, in the query's order */
 const nodeIds = (): string[] =>
   Array.from(document.querySelectorAll('.react-flow__node')).map(
@@ -212,7 +214,7 @@ function deferred<T>(): {
 
 /** Opens Import, pastes the text and presses Import */
 const importText = async (text: string): Promise<HTMLElement> => {
-  fireEvent.click(headerButton('Import'));
+  await TEST__chooseCubeMenuItem('Import');
   const dialog = await screen.findByRole('dialog');
   fireEvent.change(within(dialog).getByLabelText('Cube spec'), {
     target: { value: text },
@@ -266,7 +268,7 @@ describe('Cube spec export and import, on the page', () => {
         clicked.push(this);
       });
 
-    fireEvent.click(headerButton('Export'));
+    await TEST__chooseCubeMenuItem('Export');
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Export spec')).toBeDefined();
     const spec = serializeCubeSpec(sliceDocument());
@@ -296,9 +298,8 @@ describe('Cube spec export and import, on the page', () => {
     expect(executeButton().disabled).toBe(true);
     expect(headerButton('Show Pure').disabled).toBe(true);
 
-    const exportButton = headerButton('Export');
-    expect(exportButton.disabled).toBe(false);
-    fireEvent.click(exportButton);
+    expect(await TEST__isCubeMenuItemDisabled('Export')).toBe(false);
+    await TEST__chooseCubeMenuItem('Export');
     let dialog = await screen.findByRole('dialog');
     const spec = serializeCubeSpec(document);
     expect(exportedText(dialog)).toBe(spec);
@@ -330,14 +331,14 @@ describe('Cube spec export and import, on the page', () => {
         'future101',
       ]),
     );
-    fireEvent.click(headerButton('Export'));
+    await TEST__chooseCubeMenuItem('Export');
     dialog = await screen.findByRole('dialog');
     expect(exportedText(dialog)).toBe(spec);
   });
 
   test('Says why a cube too large to save is not exported, and offers nothing to copy or download', async () => {
     await renderPage(ordersDocument().withName('x'.repeat(MAX_SPEC_BYTES)));
-    fireEvent.click(headerButton('Export'));
+    await TEST__chooseCubeMenuItem('Export');
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('alert').textContent).toBe(
       `The cube is too large to save: its spec is over ${MAX_SPEC_BYTES} bytes`,
@@ -370,7 +371,7 @@ describe('Cube spec export and import, on the page', () => {
       expect(layoutService.currentColorTheme.key).toBe(theme);
       await renderPage(ordersDocument(), created);
 
-      fireEvent.click(headerButton('Export'));
+      await TEST__chooseCubeMenuItem('Export');
       let dialog = await screen.findByRole('dialog');
       expect(themeOf(dialog, ['Copy', 'Download', 'Close'])).toEqual([
         dark,
@@ -383,7 +384,7 @@ describe('Cube spec export and import, on the page', () => {
       fireEvent.click(within(dialog).getByText('Close'));
       await waitForElementToBeRemoved(dialog);
 
-      fireEvent.click(headerButton('Import'));
+      await TEST__chooseCubeMenuItem('Import');
       dialog = await screen.findByRole('dialog');
       expect(themeOf(dialog, ['Import', 'Cancel'])).toEqual([
         dark,
@@ -434,7 +435,7 @@ describe('Cube spec export and import, on the page', () => {
 
   test("Can't import before a spec is pasted or chosen", async () => {
     await renderPage();
-    fireEvent.click(headerButton('Import'));
+    await TEST__chooseCubeMenuItem('Import');
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText<HTMLButtonElement>('Import').disabled).toBe(
       true,
@@ -445,7 +446,7 @@ describe('Cube spec export and import, on the page', () => {
 
   test('Reads a chosen .cube.json file into the spec to import', async () => {
     await renderPage();
-    fireEvent.click(headerButton('Import'));
+    await TEST__chooseCubeMenuItem('Import');
     const dialog = await screen.findByRole('dialog');
     const spec = serializeCubeSpec(sliceDocument());
     fireEvent.change(within(dialog).getByLabelText('Spec file'), {
@@ -485,8 +486,8 @@ describe('Cube spec export and import, on the page', () => {
     fireEvent.click(addItems);
     expect(screen.queryByRole('menu')).toBeNull();
     expect(headerButton('Undo').disabled).toBe(true);
-    expect(headerButton('Export').disabled).toBe(true);
-    expect(headerButton('Import').disabled).toBe(false);
+    expect(await TEST__isCubeMenuItemDisabled('Export')).toBe(true);
+    expect(await TEST__isCubeMenuItemDisabled('Import')).toBe(false);
     expect(executeButton().disabled).toBe(false);
 
     // Show Pure works
@@ -513,7 +514,7 @@ describe('Cube spec export and import, on the page', () => {
     ).toBe('false');
     expect(within(graphRegion()).getByRole('status')).toBe(banner);
     expect(headerButton('Undo').disabled).toBe(true);
-    expect(headerButton('Export').disabled).toBe(true);
+    expect(await TEST__isCubeMenuItemDisabled('Export')).toBe(true);
     expect(executeButton().disabled).toBe(false);
   });
 

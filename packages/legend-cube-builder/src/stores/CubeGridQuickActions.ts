@@ -16,7 +16,7 @@
 
 import {
   AggregationFunction,
-  buildQuickFilterRule,
+  buildDrilldownKeyRule,
   FilterOperator,
   Filter,
   foldColumnName,
@@ -80,7 +80,9 @@ export enum CubeGridCellKind {
  * The quick actions on a cell of the shown rows (spec §12.4, PLAN §11.4,
  * §11.5 and §11.10): "Sort by" adds an ascending Sort on the cell's column,
  * "Group by" a Group by it with Count rows, and "Filter by" an Equal on its
- * value (Is Empty on a null), after the node that runs, which they replace as
+ * value (Is Empty on a null; on a float, In the value and its 32-bit value
+ * when they differ, so a `REAL` value is found, as a drill-down's key is,
+ * PLAN §11.14), after the node that runs, which they replace as
  * the node that runs; a group row's cell other than its key has no value of a
  * row, so "Filter by" is disabled there. All need the rows to be from the current query, no run in
  * flight, and a cube that can change; "Sort by" and "Group by" a type that
@@ -105,7 +107,7 @@ export const getCubeGridQuickActions = (
   const typeName = column.type.displayName;
   const rule =
     cellKind === CubeGridCellKind.VALUE
-      ? buildQuickFilterRule(column.name, column.type, cell)
+      ? buildDrilldownKeyRule(column.name, column.type, cell)
       : undefined;
   // what keeps both from being used, in order
   const blocked =
@@ -182,7 +184,8 @@ export const getCubeGridQuickActions = (
       label: `Filter by "${column.name}"`,
       disabledReason: filterReason,
       hint:
-        rule?.operator === FilterOperator.EQUAL &&
+        (rule?.operator === FilterOperator.EQUAL ||
+          rule?.operator === FilterOperator.IN) &&
         column.type.family === TypeFamily.FLOAT
           ? FILTER_FLOAT_COMPARISON_HINT
           : undefined,

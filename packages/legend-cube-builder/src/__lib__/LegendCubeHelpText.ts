@@ -95,4 +95,10 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
 
 /** The tooltip of the editor's Select link (spec §17.9) */
 export const SELECT_NODE_TOOLTIP =
-  'Selects this node as active and its output will be shown in the grid once query is executed.';
+  'Make this the step that runs: Execute shows its rows in the grid.';
+
+/** The marker on the step that runs, on the canvas and in its editor */
+export const RUNNING_NODE_LABEL = 'Runs';
+
+/** What a node's menu and editor call making it the step that runs */
+export const RUN_THIS_STEP_LABEL = 'Run this step';

@@ -15,7 +15,10 @@
  */
 
 import type { Schema } from '@finos/legend-cube';
-import { getColumnTypeLabel } from '../__lib__/LegendCubeLabels.js';
+import {
+  getColumnTypeLabel,
+  getExactColumnTypeLabel,
+} from '../__lib__/LegendCubeLabels.js';
 import { CubeColumnTypeIcon } from './editors/CubeColumnPicker.js';
 
 /** A source's columns, with their precise types and whether they can be empty */
@@ -33,7 +36,9 @@ export const CubeSchemaColumnsTable: React.FC<{ schema: Schema }> = ({
       {schema.columns.map((column) => (
         <tr key={column.name}>
           <td className="break-all pr-2">{column.name}</td>
-          <td title={column.type.fullName}>
+          <td
+            title={`${getExactColumnTypeLabel(column)} (${column.type.fullName})`}
+          >
             <span className="flex items-center gap-1">
               <CubeColumnTypeIcon
                 type={column.type}

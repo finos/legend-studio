@@ -140,6 +140,11 @@ would serve it.
   refusing H2 and Trino. The plan-only test pins a PIVOT on Snowflake, Databricks, MemSQL and DuckDB whose names the
   outer select reads, Trino and Athena planning none, and the other 14 refusing it: when the engine changes, it fails,
   and `PIVOT_UNSUPPORTED_DATABASE_TYPES` can change. Two conformance cases pin the cast's types and emptiness.
+- **The operations cleanup** (PLAN §11.14). `CubeOperationsCleanup.engine-roundtrip-test.ts` runs, on H2 and DuckDB
+  direct connections, a String's and a Boolean's Min and Max in a Group and a window, a String's Max in a Pivot
+  (DuckDB), the grid's float rule finding a `REAL` value (DuckDB; H2's is CubeDrilldown's), and a Join of `ID` and
+  `id` reported and fixed (DuckDB, which keeps their case). The plan-only test pins a pattern that isn't a literal:
+  `contains(a, b)` on Snowflake, the column's own SQL as the text on the others, which Cube refuses (a canary).
 - `src/__tests__/CubeExamples.engine-roundtrip-test.ts` compiles the Sports and Trades sample models and opens every
   example cube (PLAN §6.9) as the Examples dialog does: it types its tables, checks every node types as Cube infers it
   (Sum outputs nullable to Cube only, PLAN §5.7) and runs it, counting rows.

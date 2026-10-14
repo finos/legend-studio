@@ -445,24 +445,44 @@ describe(unitTest('Join validation'), () => {
     ).toEqual([message('C', 'B')]);
   });
 
-  test('Matches column names exactly, by case and spacing', () => {
+  test('Matches same-named keys exactly, and duplicate columns in any case but not by spacing', () => {
+    const message = (name: string): string =>
+      `Duplicate column names between inputs are not supported if they are not part of the join columns: "${name}"`;
     expect(getSameNamedJoinKeys(['ID'], ['id'])).toEqual([]);
     expect(getSameNamedJoinKeys([' a'], ['a'])).toEqual([]);
-    // `ID` and `id` are two columns, so neither is a duplicate
+    // `ID` and `id` are one column on SQL Server, MemSQL and DuckDB (PLAN
+    // §11.14): two keys whose names differ only in case are a duplicate
     expect(
-      outputOf(
+      validationErrors(
         join(['ID'], ['id']),
         schema(column('ID'), column('a')),
         schema(column('id'), column('b')),
-      ).map((c) => c.split(' ')[0]),
-    ).toEqual(['ID', 'id', 'a', 'b']);
+      ),
+    ).toEqual([message('ID')]);
     expect(
       validationErrors(
         join(['k'], ['k2']),
         schema(column('k'), column('Region'), column('x ')),
         schema(column('k2'), column('region'), column('x')),
       ),
+    ).toEqual([message('Region')]);
+    // spacing still makes two names
+    expect(
+      validationErrors(
+        join(['k'], ['k2']),
+        schema(column('k'), column('x ')),
+        schema(column('k2'), column('x')),
+      ),
     ).toEqual([]);
+    // a key both sides give as one column, and another column of its name in
+    // another case
+    expect(
+      validationErrors(
+        join(['ID'], ['ID']),
+        schema(column('ID'), column('a')),
+        schema(column('ID'), column('id')),
+      ),
+    ).toEqual([message('ID')]);
     expect(
       validationErrors(
         join(['ID'], ['id']),

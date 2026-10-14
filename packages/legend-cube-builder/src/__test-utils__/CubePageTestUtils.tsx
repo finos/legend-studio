@@ -129,3 +129,37 @@ export const TEST__closeAddItems = async (): Promise<void> => {
   fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
   await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
 };
+
+/** Opens 'Cube' (New, Import, Export) in the graph's header and returns its menu */
+export const TEST__openCubeMenu = async (): Promise<HTMLElement> => {
+  fireEvent.click(
+    within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByRole(
+      'button',
+      { name: 'Cube' },
+    ),
+  );
+  return screen.findByRole('menu');
+};
+
+/** Chooses an item of the 'Cube' menu (New, Import or Export), and waits for the menu to close */
+export const TEST__chooseCubeMenuItem = async (
+  label: string,
+): Promise<void> => {
+  const menu = await TEST__openCubeMenu();
+  fireEvent.click(within(menu).getByRole('menuitem', { name: label }));
+  await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+};
+
+/** Whether an item of the 'Cube' menu is disabled; the menu is closed again */
+export const TEST__isCubeMenuItemDisabled = async (
+  label: string,
+): Promise<boolean> => {
+  const menu = await TEST__openCubeMenu();
+  const disabled =
+    within(menu)
+      .getByRole('menuitem', { name: label })
+      .getAttribute('aria-disabled') === 'true';
+  fireEvent.keyDown(menu, { key: 'Escape' });
+  await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  return disabled;
+};
