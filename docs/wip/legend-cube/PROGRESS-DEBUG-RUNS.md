@@ -5,7 +5,7 @@ PLAN §11.16. Built on `cube-debug-runs`, from `cube-dev` (`afd8bdadd`, draft #5
 
 ## Current state
 
-Complete (2026-10-14): DR.1–DR.7 done, the video sent. The draft PR waits for the user's word to be marked ready.
+Complete (2026-10-14): DR.1–DR.7 done, the video sent; merged into `master` as #5689 (`1cc69259a`).
 
 ## Steps
 
