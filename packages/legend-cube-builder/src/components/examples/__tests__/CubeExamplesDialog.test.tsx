@@ -72,6 +72,9 @@ describe('Examples dialog', () => {
       'Notional by desk and asset class',
       'Desk league table',
       'Largest buys',
+      'Sales (DuckDB)',
+      'Sales by country and year',
+      'Sales count by country and product',
     ]);
     expect(
       within(grid).getByLabelText(
