@@ -138,7 +138,8 @@ screen over the editor, as the embedded query builder does, with `LegendStudioCu
   Cube's lakehouse runtime, in the project runtime's environment (`lakehouseEnvironment`), on the cube's warehouse,
   which starts as the runtime's.
 - **Add as MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
-  as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, and appends a
+  as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, a classification of
+  its data and a primary key among the step's columns (`analysis.schemas` of the selected step), and appends a
   `FunctionSource` data set to the definition. Studio sees it as a local change; Lineage and View SQL work on it.
 
 While the page is open, Studio's own shortcuts are off (its F9 compiles), and Cube's are on: Studio's core plugin

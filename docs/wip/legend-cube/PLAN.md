@@ -4905,7 +4905,12 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
   the project's first lakehouse runtime's environment, the cube's warehouse starting as the runtime's
   (`LegendStudioCubeWorkspace`, the engine's `ingestDefinitionSource` and `dataProductModelSource`).
 - **Add as MatView:** the step that runs, as a lambda with no runtime and no row limit, becomes a data set of the
-  definition: `{name, primaryKey: [], source: {_type: 'FunctionSource', function}}`, a local change in Studio.
+  definition: `{name, primaryKey, privacyClassification: {sensitivity}, source: {_type: 'FunctionSource', function}}`
+  with the empty lists the engine gives every data set it parses (`ingestPartitionColumns`, `preprocessors`,
+  `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`), a local change in Studio. The dialog asks for the
+  name, the data's classification (one of `dataProductConfig.classifications`, as a data product's access points
+  offer, or typed when the config gives none) and the primary key, any of the step's columns, kept in their order
+  (2026-10-14: a view without a classification failed with a NullPointerException).
 - **The light theme:** the demo is shown in Studio's light theme; Cube's dialogs draw their primary button as an
   accent button in every theme.
 

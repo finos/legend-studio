@@ -15,7 +15,13 @@
  */
 
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import { act, findByText, fireEvent, waitFor } from '@testing-library/react';
+import {
+  act,
+  findByText,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import {
   CubeDataProductEnvironmentType,
   CubeEngineError,
@@ -23,6 +29,7 @@ import {
   formatCubeIngestUrn,
   type CubeEngine,
 } from '@finos/legend-cube-builder';
+import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 import type { IngestDefinition } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -56,6 +63,7 @@ import {
 } from '../../../../stores/editor/embedded-cube/LegendStudioCubeWorkspace.js';
 import { getIngestDataSetNames } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { EMBEDDED_CUBE_TEST_ID } from '../EmbeddedCube.js';
 
 jest.mock('@finos/legend-lego/code-editor', () => ({
   CodeEditor: () => null,
@@ -397,11 +405,31 @@ describe('Legend Cube in Studio', () => {
       expect(
         embeddedCubeState.getMaterializedViewNameProblem('TRADES_VIEW'),
       ).toBeUndefined();
+      // its data must be classified: typed, as Studio's config gives no
+      // classifications to pick from
+      expect(embeddedCubeState.classifications).toEqual([]);
+      expect(
+        embeddedCubeState.getMaterializedViewClassificationProblem(' '),
+      ).toBe("Classify the materialized view's data.");
+      expect(
+        embeddedCubeState.getMaterializedViewClassificationProblem('DP10'),
+      ).toBeUndefined();
 
       const ingest = ingestOf(editorStore);
       const hashBefore = ingest.hashCode;
       act(() => {
-        embeddedCubeState.addMaterializedView('TRADES_VIEW', TRADES_LAMBDA);
+        embeddedCubeState.addMaterializedView('TRADES_VIEW', TRADES_LAMBDA, {
+          primaryKey: [],
+          sensitivity: '',
+        });
+      });
+      expect(embeddedCubeState.isOpen).toBe(true);
+      expect(getIngestDataSetNames(ingest)).toEqual(['TRADES', 'DESKS']);
+      act(() => {
+        embeddedCubeState.addMaterializedView('TRADES_VIEW', TRADES_LAMBDA, {
+          primaryKey: ['TRADE_ID'],
+          sensitivity: ' DP10 ',
+        });
       });
       expect(embeddedCubeState.isOpen).toBe(false);
       expect(getIngestDataSetNames(ingest)).toEqual([
@@ -409,11 +437,17 @@ describe('Legend Cube in Studio', () => {
         'DESKS',
         'TRADES_VIEW',
       ]);
+      // with every key the engine gives a data set it parses
       const added = (ingest.content.datasets as { name: string }[]).at(-1);
       expect(added).toEqual({
         name: 'TRADES_VIEW',
-        primaryKey: [],
+        primaryKey: ['TRADE_ID'],
+        privacyClassification: { sensitivity: 'DP10' },
         source: { _type: 'FunctionSource', function: TRADES_LAMBDA },
+        ingestPartitionColumns: [],
+        preprocessors: [],
+        storageLayoutClusterColumns: [],
+        storageLayoutPartitionColumns: [],
       });
       expect(
         ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map((each) => each.name),
@@ -423,6 +457,103 @@ describe('Legend Cube in Studio', () => {
       await renderResult.findByText(
         'Added materialized view TRADES_VIEW to TradesIngest',
       );
+    },
+  );
+
+  test(
+    integrationTest(
+      "Add as MatView asks for the view's name, a classification of its data, and a primary key among the columns of the step that runs",
+    ),
+    async () => {
+      const { editorStore, renderResult } = await setUp([
+        TRADES_INGEST,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      const dataProductConfig = new DataProductConfig();
+      dataProductConfig.classifications = ['DP00', 'DP10', 'DP20'];
+      editorStore.applicationStore.config.options.dataProductConfig =
+        dataProductConfig;
+      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      fireEvent.click(
+        await findByText(editorGroup, 'Create MatView with Cube'),
+      );
+      // the cube reads TRADES
+      fireEvent.click(
+        await renderResult.findByRole('button', { name: /^Ingest Dataset/u }),
+      );
+      fireEvent.click(
+        within(
+          await renderResult.findByRole('list', { name: 'Ingest definitions' }),
+        ).getByText('TradesIngest'),
+      );
+      const dataSets = await renderResult.findByRole('list', {
+        name: 'Data sets',
+      });
+      fireEvent.click(within(dataSets).getByText('TRADES'));
+      const sourceDialog = dataSets.closest('[role="dialog"]') as HTMLElement;
+      fireEvent.click(
+        within(sourceDialog).getByRole('button', { name: 'Add' }),
+      );
+      await waitFor(() =>
+        expect(
+          renderResult.queryByRole('list', { name: 'Data sets' }),
+        ).toBeNull(),
+      );
+
+      const addAsMatView = await renderResult.findByRole('button', {
+        name: 'Add as MatView',
+      });
+      await waitFor(() =>
+        expect((addAsMatView as HTMLButtonElement).disabled).toBe(false),
+      );
+      fireEvent.click(addAsMatView);
+      const form = await renderResult.findByTestId(
+        EMBEDDED_CUBE_TEST_ID.ADD_MATERIALIZED_VIEW,
+      );
+      const matViewDialog = form.closest('[role="dialog"]') as HTMLElement;
+      const add = within(matViewDialog).getByRole<HTMLButtonElement>('button', {
+        name: 'Add',
+      });
+      fireEvent.change(within(form).getByLabelText('Materialized view name'), {
+        target: { value: 'TRADES_VIEW' },
+      });
+      // a classification is needed: one of the data product's
+      const classification = within(form).getByLabelText<HTMLSelectElement>(
+        'Data classification',
+      );
+      expect([...classification.options].map((option) => option.value)).toEqual(
+        ['', 'DP00', 'DP10', 'DP20'],
+      );
+      expect(add.disabled).toBe(true);
+      fireEvent.change(classification, { target: { value: 'DP10' } });
+      expect(add.disabled).toBe(false);
+      // the key is any of the cube's columns, kept in their order
+      const keyColumns = within(form).getByRole('list', {
+        name: 'Primary key columns',
+      });
+      expect(
+        within(keyColumns)
+          .getAllByRole('checkbox')
+          .map((box) => box.closest('label')?.textContent),
+      ).toEqual(['TRADE_ID', 'DESK_ID', 'NOTIONAL_USD']);
+      fireEvent.click(within(keyColumns).getByLabelText('DESK_ID'));
+      fireEvent.click(within(keyColumns).getByLabelText('TRADE_ID'));
+      fireEvent.click(add);
+
+      const ingest = ingestOf(editorStore);
+      expect(editorStore.embeddedCubeState.isOpen).toBe(false);
+      expect((ingest.content.datasets as PlainObject[]).at(-1)).toMatchObject({
+        name: 'TRADES_VIEW',
+        primaryKey: ['TRADE_ID', 'DESK_ID'],
+        privacyClassification: { sensitivity: 'DP10' },
+        source: {
+          _type: 'FunctionSource',
+          function: { _type: 'lambda', parameters: [] },
+        },
+      });
     },
   );
 

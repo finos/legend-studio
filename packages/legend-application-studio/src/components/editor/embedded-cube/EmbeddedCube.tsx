@@ -41,24 +41,122 @@ export const EMBEDDED_CUBE_TEST_ID = {
   ADD_MATERIALIZED_VIEW: 'embedded-cube__add-materialized-view',
 };
 
-/** Names the materialized view, then adds it to the ingest definition */
+/**
+ * The classification of the view's data: one of the classifications a data
+ * product's access points offer, or typed when Studio's config gives none
+ */
+const MaterializedViewClassification = observer(
+  (props: {
+    embeddedCubeState: EmbeddedCubeState;
+    sensitivity: string;
+    setSensitivity: (sensitivity: string) => void;
+  }) => {
+    const { embeddedCubeState, sensitivity, setSensitivity } = props;
+    const { classifications } = embeddedCubeState;
+    return (
+      <label className="flex flex-col gap-1 text-base">
+        Data classification
+        {classifications.length ? (
+          <select
+            className="input--dark h-8 rounded-sm px-2"
+            aria-label="Data classification"
+            value={sensitivity}
+            onChange={(event) => setSensitivity(event.target.value)}
+          >
+            <option value="" disabled={true}>
+              Pick a classification
+            </option>
+            {classifications.map((classification) => (
+              <option key={classification} value={classification}>
+                {classification}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            className="input--dark h-8 rounded-sm px-2"
+            aria-label="Data classification"
+            placeholder="Classification"
+            spellCheck={false}
+            value={sensitivity}
+            onChange={(event) => setSensitivity(event.target.value)}
+          />
+        )}
+      </label>
+    );
+  },
+);
+
+/**
+ * The view's primary key: none or some of the columns of the step that
+ * runs, kept in the order of the columns
+ */
+const MaterializedViewPrimaryKey: React.FC<{
+  columns: readonly string[];
+  primaryKey: readonly string[];
+  setPrimaryKey: (primaryKey: string[]) => void;
+}> = ({ columns, primaryKey, setPrimaryKey }) => (
+  <fieldset className="flex min-w-0 flex-col gap-1 text-base">
+    <legend>Primary key</legend>
+    <span className="text-sm text-[var(--color-text-muted)]">
+      The columns that identify a row, if any
+    </span>
+    <ul className="max-h-40 overflow-auto" aria-label="Primary key columns">
+      {columns.map((column) => (
+        <li key={column}>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={primaryKey.includes(column)}
+              onChange={() =>
+                setPrimaryKey(
+                  primaryKey.includes(column)
+                    ? primaryKey.filter((each) => each !== column)
+                    : columns.filter(
+                        (each) => each === column || primaryKey.includes(each),
+                      ),
+                )
+              }
+            />
+            <span className="min-w-0 truncate">{column}</span>
+          </label>
+        </li>
+      ))}
+    </ul>
+  </fieldset>
+);
+
+/**
+ * Names the materialized view, classifies its data and picks its primary
+ * key, then adds it to the ingest definition
+ */
 const MaterializedViewNameDialog = observer(
   (props: {
     embeddedCubeState: EmbeddedCubeState;
     lambda: PlainObject;
+    /** The columns of the step that runs, the view's */
+    columns: readonly string[];
     close: () => void;
   }) => {
-    const { embeddedCubeState, lambda, close } = props;
+    const { embeddedCubeState, lambda, columns, close } = props;
     // as Cube's dialogs: the dialog follows the theme, and Add is an accent
     // button in every theme (legend-art's light Add is a legacy grey)
     const darkMode =
       !embeddedCubeState.editorStore.applicationStore.layoutService
         .TEMPORARY__isLightColorThemeEnabled;
     const [name, setName] = useState('');
-    const problem = embeddedCubeState.getMaterializedViewNameProblem(name);
+    const [sensitivity, setSensitivity] = useState('');
+    const [primaryKey, setPrimaryKey] = useState<string[]>([]);
+    const nameProblem = embeddedCubeState.getMaterializedViewNameProblem(name);
+    const problem =
+      nameProblem ??
+      embeddedCubeState.getMaterializedViewClassificationProblem(sensitivity);
     const add = (): void => {
       if (problem === undefined) {
-        embeddedCubeState.addMaterializedView(name, lambda);
+        embeddedCubeState.addMaterializedView(name, lambda, {
+          primaryKey,
+          sensitivity,
+        });
       }
     };
     return (
@@ -88,11 +186,21 @@ const MaterializedViewNameDialog = observer(
                   onChange={(event) => setName(event.target.value)}
                 />
               </label>
-              {name.trim() && problem && (
+              {name.trim() && nameProblem && (
                 <div className="text-sm text-[var(--color-status-error)]">
-                  {problem}
+                  {nameProblem}
                 </div>
               )}
+              <MaterializedViewClassification
+                embeddedCubeState={embeddedCubeState}
+                sensitivity={sensitivity}
+                setSensitivity={setSensitivity}
+              />
+              <MaterializedViewPrimaryKey
+                columns={columns}
+                primaryKey={primaryKey}
+                setPrimaryKey={setPrimaryKey}
+              />
             </form>
           </ModalBody>
           <ModalFooter>
@@ -100,6 +208,7 @@ const MaterializedViewNameDialog = observer(
               darkMode={true}
               formatText={false}
               text="Add"
+              title={problem ?? 'Add the materialized view'}
               disabled={problem !== undefined}
               onClick={add}
             />
@@ -128,16 +237,25 @@ const AddMaterializedViewButton = observer(
   }) => {
     const { embeddedCubeState, editorState } = props;
     const { execution } = editorState;
-    const [lambda, setLambda] = useState<PlainObject | undefined>();
+    const [view, setView] = useState<
+      { lambda: PlainObject; columns: readonly string[] } | undefined
+    >();
     const [isBuilding, setIsBuilding] = useState(false);
     const start = (): void => {
       // the open step editor's edits go in first, as for Execute
       if (!editorState.nodeEditor.finishApplied()) {
         return;
       }
+      // the columns of the step that runs, read with its lambda
+      const selected = editorState.document.query.selected;
+      const columns = (
+        selected === undefined
+          ? undefined
+          : editorState.analysis.schemas.get(selected)
+      )?.columns.map((column) => column.name);
       setIsBuilding(true);
       buildCubeRunningStepLambda(editorState)
-        .then(setLambda)
+        .then((lambda) => setView({ lambda, columns: columns ?? [] }))
         .catch(editorState.host.applicationStore.alertUnhandledError)
         .finally(() => setIsBuilding(false));
     };
@@ -155,11 +273,12 @@ const AddMaterializedViewButton = observer(
         >
           Add as MatView
         </CubeButton>
-        {lambda && (
+        {view && (
           <MaterializedViewNameDialog
             embeddedCubeState={embeddedCubeState}
-            lambda={lambda}
-            close={() => setLambda(undefined)}
+            lambda={view.lambda}
+            columns={view.columns}
+            close={() => setView(undefined)}
           />
         )}
       </>
