@@ -233,7 +233,9 @@ export const findCubeLambdaSources = (parts: CubeLambdaParts): IR[] => {
         visit(bound, new Set(lets).add(ir.name));
       }
     } else if (ir.k === 'func') {
-      const inputs = RELATION_INPUTS.get(getCubeFunctionName(ir.name)) ?? 0;
+      // a function Cube has no step for reads its first parameter, as the
+      // relation functions do, so its error names the function, not a source
+      const inputs = RELATION_INPUTS.get(getCubeFunctionName(ir.name)) ?? 1;
       ir.params.slice(0, inputs).forEach((input) => visit(input, lets));
     }
   };

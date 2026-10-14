@@ -34,6 +34,7 @@ import {
 } from '@finos/legend-cube';
 import {
   assertErrorThrown,
+  parseLosslessJSON,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -79,7 +80,13 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
     `Cube couldn't check that it writes ${label} back the same way, as a step isn't valid: review it before saving.`,
   GRID_LIMIT:
     "The limit beside from() is read as a Limit step: it may be the grid's row limit of the run the Pure was copied from.",
+  /** What the banner calls a lambda imported from the Import Pure dialog */
+  IMPORTED: 'the Pure imported',
+  NOT_JSON: (reason: string): string => `Can't read the JSON: ${reason}`,
 };
+
+/** The source id the engine's grammar gives what Import Pure parses, so its errors name it */
+export const CUBE_IMPORT_PURE_SOURCE_ID = 'cube:import-pure';
 
 export interface CubeLambdaImportError {
   readonly message: string;
@@ -260,6 +267,11 @@ export class CubeLambdaImportState {
   /** Whether Cube writes the cube back as the lambda; none until checked */
   fidelity: CubeLambdaFidelity | undefined;
   notes: readonly string[] = [];
+  /** Import Pure, from the Cube menu: the dialog, its text, why its last import failed */
+  isDialogOpen = false;
+  text = '';
+  isImporting = false;
+  dialogError: CubeLambdaImportError | undefined;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
@@ -268,8 +280,16 @@ export class CubeLambdaImportState {
       error: observable.ref,
       fidelity: observable,
       notes: observable.ref,
+      isDialogOpen: observable,
+      text: observable,
+      isImporting: observable,
+      dialogError: observable.ref,
       open: flow,
       dismiss: action,
+      openDialog: action,
+      closeDialog: action,
+      setText: action,
+      importText: flow,
     });
     this.editorState = editorState;
   }
@@ -304,6 +324,86 @@ export class CubeLambdaImportState {
       this.error = toImportError(error);
     } finally {
       this.isReading = false;
+    }
+  }
+
+  openDialog(): void {
+    this.isDialogOpen = true;
+    this.dialogError = undefined;
+  }
+
+  closeDialog(): void {
+    this.isDialogOpen = false;
+    this.isImporting = false;
+  }
+
+  setText(text: string): void {
+    this.text = text;
+    this.dialogError = undefined;
+  }
+
+  /**
+   * Import Pure (PLAN §11.18): the dialog's text, Pure or the engine's JSON
+   * of a lambda, read into a cube that replaces this one, as one undo step;
+   * then, once checked, whether Cube writes it back the same. A lambda that
+   * can't be read leaves the cube as it was, and says why in the dialog.
+   */
+  *importText(): GeneratorFn<void> {
+    const { editorState } = this;
+    const text = this.text.trim();
+    if (!text || this.isImporting) {
+      return;
+    }
+    this.isImporting = true;
+    this.dialogError = undefined;
+    try {
+      let json: unknown;
+      if (text.startsWith('{')) {
+        try {
+          json = parseLosslessJSON(text);
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new CubeLambdaReadError(
+            CUBE_LAMBDA_IMPORT_MESSAGE.NOT_JSON(error.message),
+          );
+        }
+      } else {
+        json = (
+          (yield editorState.host.engine.parseExpression(
+            text,
+            CUBE_IMPORT_PURE_SOURCE_ID,
+          )) as Awaited<
+            ReturnType<typeof editorState.host.engine.parseExpression>
+          >
+        ).lambda;
+      }
+      const reading = (yield readCubeLambdaDocument(
+        editorState,
+        json,
+      )) as CubeLambdaReading;
+      if (!this.isDialogOpen) {
+        // closed while it was read
+        return;
+      }
+      editorState.importDocument(reading.document, false);
+      this.isDialogOpen = false;
+      this.text = '';
+      this.label = CUBE_LAMBDA_IMPORT_MESSAGE.IMPORTED;
+      this.error = undefined;
+      this.fidelity = undefined;
+      this.notes = reading.notes;
+      this.isImporting = false;
+      yield when(
+        () =>
+          !editorState.isResolvingSources &&
+          !editorState.isCheckingExpressions &&
+          !editorState.nodesToCheck.length,
+      );
+      this.fidelity = getCubeLambdaFidelity(editorState, reading);
+    } catch (error) {
+      this.dialogError = toImportError(error);
+    } finally {
+      this.isImporting = false;
     }
   }
 

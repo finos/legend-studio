@@ -57,6 +57,7 @@ import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeFileMenu } from './CubeFileMenu.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
+import { CubeImportPureDialog } from './spec-transfer/CubeImportPureDialog.js';
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
@@ -203,6 +204,7 @@ const CubeGraphHeader = observer(
         <CubeSourcePicker editorState={editorState} />
         <CubeExamplesDialog editorState={editorState} />
         <CubeSpecTransferDialog editorState={editorState} />
+        <CubeImportPureDialog editorState={editorState} />
         <CubeShowPureDialog editorState={editorState} />
         <CubeDevSettingsDialog editorState={editorState} />
       </div>

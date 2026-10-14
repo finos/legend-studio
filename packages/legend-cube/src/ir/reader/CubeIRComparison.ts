@@ -116,6 +116,10 @@ const canonical = (ir: IR, options: CubeIRComparisonOptions): IR => {
   if (ir.k === 'lambdaJson' && options.readExpression) {
     return canonical(options.readExpression(ir.json), options);
   }
+  // `~[a]` is `~a`
+  if (ir.k === 'colSpecArray' && ir.specs.length === 1 && ir.specs[0]) {
+    return ir.specs[0];
+  }
   if (ir.k === 'func' && getCubeFunctionName(ir.name) === 'sort') {
     const [input, keys] = ir.params;
     if (
@@ -292,8 +296,9 @@ function same(
  * Whether the two IR expressions are the same Pure: origins aside, number
  * literals by value, bound variables and lets by position (`{x | $x.a}` is
  * `{row | $row.a}`), an expression's JSON as the IR it reads to, a sort's one
- * key alone or in a list, an enumeration's short path as its full one, and
- * the engine's own functions by their short names.
+ * key alone or in a list, one column alone or in a list (`~a`, `~[a]`), an
+ * enumeration's short path as its full one, and the engine's own functions by
+ * their short names.
  */
 export const isSameCubeIR = (
   a: IR,

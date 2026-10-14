@@ -5,7 +5,7 @@ PLAN §11.18. Built on `cube-import-pure`, branched from #5690's head, then move
 
 ## Current state
 
-In progress (2026-10-14): IP.1–IP.8 done; the draft PR is finos/legend-studio#5694.
+In progress (2026-10-14): IP.1–IP.9 done; the draft PR is finos/legend-studio#5694.
 
 ## Steps
 
@@ -21,7 +21,7 @@ In progress (2026-10-14): IP.1–IP.8 done; the draft PR is finos/legend-studio#
       read), Filter by Expression, Pivot, Concat
 - [x] IP.7 The steps Cube writes as several: Join, Difference, Concat that converts, Partition
 - [x] IP.8 The round-trip corpus: every emitter test's cube and the examples, written, read and written again
-- [ ] IP.9 Import Pure in the Cube ▾ menu, text or JSON; binding in Query
+- [x] IP.9 Import Pure in the Cube ▾ menu, text or JSON; binding in Query
 - [ ] IP.10 Verification: a review, a browser rehearsal
 - [ ] IP.11 A demo video
 - [ ] IP.12 Fold the plan in
@@ -36,9 +36,20 @@ In progress (2026-10-14): IP.1–IP.8 done; the draft PR is finos/legend-studio#
 | IP.4       | `6f9d92d0d` | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename           |
 | IP.5       | `aeb821c7e` | Studio: Edit MatView, Add MatView and Save MatView, the import banner                               |
 | IP.6       | `a51c3767f` | Extend (typed before reading), Pivot, Concat                                                        |
-| IP.7, IP.8 | this commit | Join, Difference, Concat that converts, Partition; the corpus on the engine's JSON and the examples |
+| IP.7, IP.8 | `5e1be847f` | Join, Difference, Concat that converts, Partition; the corpus on the engine's JSON and the examples |
+| IP.9       | this commit | Import Pure in the Cube ▾ menu                                                                      |
 
 ## Notes
+
+- IP.9: Import Pure in the Cube ▾ menu (`CubeImportPureDialog`): Pure text, parsed by the engine's grammar
+  (`parseExpression`, no new engine call), or the engine's JSON, read into steps that replace the cube as one undo
+  step; the banner then says when Cube writes it another way; an error stays in the dialog and leaves the cube as it
+  was. In Query, tables bind on the cube's own model (a new cube asks for a table first), data products and ingest
+  data sets through the host's catalogs as the source dialog finds them. A function Cube has no step for is named
+  in the error, not taken for a source. One column alone or in a list (`~a`, `~[a]`) compares as the same Pure.
+  Tested on the local engine (`CubeImportPure.engine-roundtrip-test.ts`): Pure text with a Filter, an Extend (typed
+  by the editor, its code from the grammar), a Group, a Sort and a Limit reads back exactly; a run's JSON keeps its
+  runtime and gets the grid-limit note; errors.
 
 - IP.7, IP.8: `StepPatterns.ts` reads the steps Cube writes as several functions: a Join's `join` (its keys from the
   condition, Cube's temporary renames of same-named keys peeled, a FULL join's merge), a Difference's `select` over

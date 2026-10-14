@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   colSpec,
   colSpecArray,
@@ -35,7 +35,10 @@ import {
   TEST__findCanvasNode,
   TEST__getCanvasNodes,
 } from '../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseCubeMenuItem,
+  TEST__renderInCubeApplication,
+} from '../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
   createFakeCubeIngestCatalog,
@@ -219,6 +222,45 @@ describe('Opening the page on a lambda', () => {
     );
     expect((await findBanner()).textContent).toContain(
       CUBE_LAMBDA_SOURCES_MESSAGE.MIXED,
+    );
+  });
+});
+
+describe('Import Pure, from the Cube menu', () => {
+  test('Opens from the menu, reads JSON into steps in place of the cube, and says why one it cannot read', async () => {
+    const host = ingestHost();
+    await TEST__renderInCubeApplication(
+      <CubeEditor host={host} />,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    await TEST__chooseCubeMenuItem('Import Pure');
+    const dialog = await screen.findByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE);
+    const text = within(dialog).getByLabelText('Pure query');
+
+    // a materialized view: never a source
+    fireEvent.change(text, {
+      target: {
+        value: JSON.stringify(
+          serializeCubeLambdaForHost(
+            lambda([], [ingestAccessor([FAKE_INGEST_ORDERS, 'DAILY'])]),
+          ),
+        ),
+      },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'It is a materialized view',
+    );
+
+    fireEvent.change(text, {
+      target: { value: JSON.stringify(BIG_TRADES) },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await TEST__findCanvasNode('limit101');
+    expect(TEST__getCanvasNodes()).toHaveLength(4);
+    await waitFor(() =>
+      expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE)).toBeNull(),
     );
   });
 });
