@@ -5,7 +5,7 @@ PLAN §11.18. Built on `cube-import-pure`, branched from #5690's head, then move
 
 ## Current state
 
-In progress (2026-10-14): IP.1–IP.5 done; the draft PR is finos/legend-studio#5694.
+In progress (2026-10-14): IP.1–IP.6 done; the draft PR is finos/legend-studio#5694.
 
 ## Steps
 
@@ -17,7 +17,7 @@ In progress (2026-10-14): IP.1–IP.5 done; the draft PR is finos/legend-studio#
       Limit; each step checked by writing it again
 - [x] IP.5 Studio, end to end on that slice: Edit MatView opens Cube on a view (not an undo step); Add MatView and
       Save MatView (in place); the note
-- [ ] IP.6 The other steps Cube writes as one function: Rename, Distinct, Drop, Slice, Extend (typed during the
+- [x] IP.6 The other steps Cube writes as one function: Rename, Distinct, Drop, Slice, Extend (typed during the
       read), Filter by Expression, Pivot, Concat
 - [ ] IP.7 The steps Cube writes as several: Join, Difference, Concat that converts, Partition
 - [ ] IP.8 The round-trip corpus: every emitter test's cube and the examples, written, read and written again
@@ -34,9 +34,17 @@ In progress (2026-10-14): IP.1–IP.5 done; the draft PR is finos/legend-studio#
 | IP.2 | `d1d9c4475` | The plan section, this file                                                               |
 | IP.3 | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison                                   |
 | IP.4 | `6f9d92d0d` | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename |
-| IP.5 | this commit | Studio: Edit MatView, Add MatView and Save MatView, the import banner                     |
+| IP.5 | `aeb821c7e` | Studio: Edit MatView, Add MatView and Save MatView, the import banner                     |
+| IP.6 | this commit | Extend (typed before reading), Pivot, Concat                                              |
 
 ## Notes
+
+- IP.6: a chain of `extend`s that aren't windows reads as one Extend; the host types each chain with the engine
+  before reading (`findCubeLambdaExtends`, one batch call), so the steps after it are checked, while the step
+  imported waits for the editor to type it, as any Extend. An expression the engine hasn't typed yet means unknown
+  columns, not an invalid step. Its columns' code is the engine's grammar of their lambdas. A Pivot is read whole
+  (select, pivot, cast, renames); a Concat as it is, or converting types where Cube would. The core samples' Pivot
+  and Concat now read back exactly (36 nodes in all).
 
 - IP.5: `CubeEditor`'s `initialLambda` reads a host's lambda after the page opens (`CubeLambdaImportState`): the
   sources bound (`bindCubeLambdaSources`: ingest data sets and data products through the host's catalogs, tables on

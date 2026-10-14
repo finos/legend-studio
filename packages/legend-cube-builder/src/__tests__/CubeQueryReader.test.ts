@@ -17,17 +17,26 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   buildSchemasAndValidity,
+  collection,
+  ColumnComparisonFilter,
   columnAccess,
+  Connection,
   CUBE_QUERY_READER_MESSAGE,
   CubeLambdaReadError,
   ExpressionFilter,
+  Extend,
   Filter,
+  FilterOperator,
+  findCubeLambdaExtends,
   findCubeLambdaSources,
   func,
   getExpressionFilterSignature,
+  getExtendSignature,
   isSameCubeIR,
   lambda,
   literal,
+  PrimitiveType,
+  Query,
   QueryEmitter,
   readCubeQuery,
   RelationalTableSource,
@@ -37,8 +46,8 @@ import {
   type CubeDocument,
   type CubeSourceStep,
   type IR,
-  type Query,
   type QueryNode,
+  type Schema,
 } from '@finos/legend-cube';
 import { TEST__cubeLambdaSamples } from '../__test-utils__/CubeLambdaCorpus.js';
 import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
@@ -46,9 +55,12 @@ import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeEngine
 // Import Pure's steps (PLAN §11.18): what Cube writes for each node of the
 // core's samples reads back into steps that Cube writes the same way again
 
-/** The steps the reader reads so far (IP.4) */
+/** The steps the reader reads so far (IP.4, IP.6) */
 const READ_STEPS = new Set([
   'relational',
+  'extend',
+  'pivot',
+  'concat',
   'filter',
   'expressionFilter',
   'group',
@@ -227,6 +239,101 @@ describe('Reading the steps of a lambda', () => {
     // `!(…)` keeps no empty rows; Cube's own NotEqual would, on a column that
     // can be empty, so it can't be read as one without knowing the column
     expect(read(func('not', [equal]))).toBeInstanceOf(ExpressionFilter);
+  });
+
+  test('Reads an Extend, typed by the host before reading, so the steps after it are checked', () => {
+    const sample = SAMPLES.find((each) =>
+      each.key.endsWith('operations.cube.json/relational101'),
+    ) as (typeof SAMPLES)[number];
+    const source = sample.document.query.getNode(
+      sample.nodeId,
+    ) as RelationalTableSource;
+    // FREIGHT doubled, then the rows where it is over 100
+    const doubled = new Extend('extend1', [
+      {
+        name: 'DOUBLE_FREIGHT',
+        code: 'x|$x.FREIGHT * 2',
+        lambda: CUBE_EXPRESSION_CODEC.write(
+          lambda(
+            ['x'],
+            [
+              func('times', [
+                collection([
+                  columnAccess('x', 'FREIGHT'),
+                  literal({ kind: 'integer', value: '2' }),
+                ]),
+              ]),
+            ],
+          ),
+        ),
+      },
+    ]);
+    const input = buildSchemasAndValidity(
+      new Query([source], [], source.id),
+    ).schemas.get(source.id) as Schema;
+    const typed = doubled.withTyping({
+      kind: 'typed',
+      signature: getExtendSignature(input, doubled.columns),
+      types: [PrimitiveType.get('Float')],
+    });
+    const over = new Filter(
+      'filter1',
+      new ColumnComparisonFilter(
+        'DOUBLE_FREIGHT',
+        FilterOperator.GREATER_THAN,
+        {
+          kind: 'float',
+          value: '100',
+        },
+      ),
+    );
+    const query = new Query(
+      [source, typed, over],
+      [
+        new Connection(source.id, typed.id, 'tds'),
+        new Connection(typed.id, over.id, 'tds'),
+      ],
+      over.id,
+    );
+    const written = lambda(
+      [],
+      [new QueryEmitter(query).emitRelation(over.id, { withRowOrder: true })],
+    );
+    const parts = splitCubeLambda(written);
+    const chains = findCubeLambdaExtends(parts);
+    expect(chains).toHaveLength(1);
+    const options = {
+      bindSource: bindSamplesSources(sample.document),
+      expressions: CUBE_EXPRESSION_CODEC,
+    };
+
+    // typed as the host types it: every step checked
+    const read = readCubeQuery(parts, {
+      ...options,
+      relationSchemas: new Map([
+        [
+          (chains[0] as { read: IR }).read,
+          buildSchemasAndValidity(query).schemas.get(typed.id) as Schema,
+        ],
+      ]),
+    });
+    expect(read.unchecked).toEqual([]);
+    expect(read.rewritten).toEqual([]);
+    expect(read.query.nodes.map((node) => node.type)).toEqual([
+      RelationalTableSource.TYPE,
+      Extend.TYPE,
+      Filter.TYPE,
+    ]);
+    const extend = read.query.nodes[1] as Extend;
+    expect(extend.columns.map(({ name }) => name)).toEqual(['DOUBLE_FREIGHT']);
+    // the step imported waits for the editor to type it, as any Extend does
+    expect(extend.typing.kind).toBe('unresolved');
+
+    // untyped, neither it nor the steps after it can be checked
+    expect(readCubeQuery(parts, options).unchecked).toEqual([
+      read.query.nodes[1]?.id,
+      read.query.nodes[2]?.id,
+    ]);
   });
 
   test('Names a function Cube has no step for', () => {

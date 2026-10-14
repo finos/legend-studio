@@ -18,7 +18,10 @@ import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import type { QueryNode, SourceNode } from '../../graph/QueryNode.js';
 import { computeRowOrders } from '../../inference/RowOrder.js';
-import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
+import {
+  buildSchemasAndValidity,
+  isTypingError,
+} from '../../inference/SchemaInference.js';
 import {
   createNodeRegistry,
   type NodeRegistry,
@@ -27,15 +30,22 @@ import {
   AggregationFunction,
   type ColumnAggregation,
 } from '../../nodes/transforms/Aggregation.js';
+import { Concat } from '../../nodes/transforms/Concat.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import {
   ExpressionFilter,
   getExpressionFilterSignature,
 } from '../../nodes/transforms/ExpressionFilter.js';
+import {
+  Extend,
+  getExtendSignature,
+  type ExtendColumn,
+} from '../../nodes/transforms/Extend.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Pivot } from '../../nodes/transforms/Pivot.js';
 import { Rename, type RenameMapping } from '../../nodes/transforms/Rename.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
@@ -45,8 +55,10 @@ import {
   SortDirection,
 } from '../../nodes/transforms/Sort.js';
 import type { Schema } from '../../schema/Schema.js';
+import type { LiteralValue } from '../../values/LiteralValue.js';
 import type { JsonObject } from '../../utils/Json.js';
 import type { IR } from '../CubeIR.js';
+import { PIVOT_AGGREGATION_NAME } from '../emitters/PivotEmitter.js';
 import { getCubeFunctionName, isSameCubeIR } from './CubeIRComparison.js';
 import type { CubeLambdaParts } from './CubeLambdaParts.js';
 import { CubeLambdaReadError } from './CubeLambdaReadError.js';
@@ -78,6 +90,10 @@ export const CUBE_QUERY_READER_MESSAGE = {
   AGGREGATION: (name: string): string =>
     `its column ~${name} isn't one Cube's Group writes (~name: x | $x.column : y | $y->sum(), …).`,
   RENAME: 'it renames ~a to ~b.',
+  EXTEND: 'each new column is ~name: x | <expression of the row x>.',
+  PIVOT:
+    'Cube reads a pivot as it writes one: a select of its columns, the pivot, a cast of its columns, then a rename of each.',
+  CAST: 'Cube reads a cast only after a pivot.',
 };
 
 /** The step a source of the lambda reads as, which the host binds before reading */
@@ -103,6 +119,12 @@ export interface CubeQueryReadOptions {
    */
   readonly bindSource: (source: IR) => CubeSourceStep;
   readonly expressions: CubeExpressionCodec;
+  /**
+   * The schemas the host typed relations of the lambda to before reading,
+   * by their IR (`findCubeLambdaExtends`): an Extend's new columns are typed
+   * by the engine, and the steps after one can only be checked with them
+   */
+  readonly relationSchemas?: ReadonlyMap<IR, Schema> | undefined;
   readonly registry?: NodeRegistry | undefined;
 }
 
@@ -144,6 +166,10 @@ interface Candidate {
    * just before it
    */
   readonly takenWhenDifferent?: boolean;
+  /** What inference reads in its place, given its input schemas, e.g. an Extend typed by the engine */
+  readonly assume?:
+    | ((inputSchemas: readonly Schema[]) => QueryNode)
+    | undefined;
 }
 
 /** The functions whose first parameters are relations, how many, so a source is anything else */
@@ -195,6 +221,68 @@ export const findCubeLambdaSources = (parts: CubeLambdaParts): IR[] => {
   };
   visit(parts.relation, new Set());
   return sources;
+};
+
+/** Whether the IR is an `extend` that isn't a window: `<rows>->extend(~[…])` */
+const isPlainExtend = (ir: IR): boolean =>
+  ir.k === 'func' &&
+  getCubeFunctionName(ir.name) === 'extend' &&
+  ir.params.length === 2;
+
+/**
+ * The relations of a lambda's chains of `extend`s that aren't windows, each
+ * the chain's last, with its lets put back: what the host types before the
+ * steps are read, as an Extend's new columns are typed by the engine
+ * (`CubeQueryReadOptions.relationSchemas`)
+ */
+export const findCubeLambdaExtends = (
+  parts: CubeLambdaParts,
+): { readonly read: IR; readonly typed: IR }[] => {
+  const found: { read: IR; typed: IR }[] = [];
+  /** The IR with each let it reads put back, to be typed alone */
+  const inlined = (ir: IR, seen: ReadonlySet<string>): IR => {
+    if (ir.k === 'var') {
+      const bound = parts.lets.get(ir.name);
+      return bound && !seen.has(ir.name)
+        ? inlined(bound, new Set(seen).add(ir.name))
+        : ir;
+    }
+    if (ir.k === 'func') {
+      const inputs = RELATION_INPUTS.get(getCubeFunctionName(ir.name)) ?? 0;
+      return {
+        ...ir,
+        params: ir.params.map((param, index) =>
+          index < inputs ? inlined(param, seen) : param,
+        ),
+      };
+    }
+    return ir;
+  };
+  const visit = (ir: IR, seen: ReadonlySet<string>): void => {
+    if (ir.k === 'var') {
+      const bound = parts.lets.get(ir.name);
+      if (bound && !seen.has(ir.name)) {
+        visit(bound, new Set(seen).add(ir.name));
+      }
+      return;
+    }
+    if (ir.k !== 'func') {
+      return;
+    }
+    let below: IR = ir;
+    if (isPlainExtend(ir)) {
+      found.push({ read: ir, typed: inlined(ir, seen) });
+      while (isPlainExtend(below)) {
+        below = (below as Extract<IR, { readonly k: 'func' }>).params[0] as IR;
+      }
+      visit(below, seen);
+      return;
+    }
+    const inputs = RELATION_INPUTS.get(getCubeFunctionName(ir.name)) ?? 0;
+    ir.params.slice(0, inputs).forEach((input) => visit(input, seen));
+  };
+  visit(parts.relation, new Set());
+  return found;
 };
 
 const integerOf = (ir: IR | undefined): number | undefined => {
@@ -430,6 +518,7 @@ class CubeQueryReader {
     node: QueryNode,
     inputs: readonly ReadStep[],
     read: IR,
+    assume?: (inputSchemas: readonly Schema[]) => QueryNode,
   ): { readonly result: CheckResult; readonly assumed: QueryNode } {
     const before = buildSchemasAndValidity(
       new Query(this.inferenceNodes, this.connections, this.nodes.at(-1)?.id),
@@ -439,7 +528,9 @@ class CubeQueryReader {
     if (inputSchemas.some((schema) => schema === undefined)) {
       return { result: 'unknown', assumed: node };
     }
-    const assumed = this.assume(node, inputSchemas as Schema[]);
+    const assumed =
+      assume?.(inputSchemas as Schema[]) ??
+      this.assume(node, inputSchemas as Schema[]);
     const query = new Query(
       [...this.inferenceNodes, assumed],
       [...this.connections, ...this.connectionsInto(assumed, inputs)],
@@ -451,7 +542,12 @@ class CubeQueryReader {
     );
     const schema = schemas.get(assumed.id);
     const definition = this.registry.get(assumed.type);
-    if (!schema || validity.get(assumed.id)?.length || !definition) {
+    const errors = validity.get(assumed.id) ?? [];
+    // an expression the engine hasn't typed yet: its columns aren't known
+    if (errors.length && errors.every(isTypingError)) {
+      return { result: 'unknown', assumed };
+    }
+    if (!schema || errors.length || !definition) {
       return { result: 'invalid', assumed };
     }
     const [input] = inputs;
@@ -497,7 +593,12 @@ class CubeQueryReader {
     refusal: string,
   ): ReadStep {
     for (const candidate of candidates) {
-      const { result, assumed } = this.check(candidate.node, inputs, read);
+      const { result, assumed } = this.check(
+        candidate.node,
+        inputs,
+        read,
+        candidate.assume,
+      );
       if (result === 'same') {
         return this.add(candidate.node, inputs, read, assumed);
       }
@@ -545,6 +646,12 @@ class CubeQueryReader {
     };
     if (name === 'rename') {
       return this.readRenames(ir, lets, refuse);
+    }
+    if (name === 'cast') {
+      return this.readPivot(ir, [], lets, refuse);
+    }
+    if (isPlainExtend(ir)) {
+      return this.readExtends(ir, lets, refuse);
     }
     const inputs = ir.params
       .slice(0, inputCount)
@@ -658,6 +765,28 @@ class CubeQueryReader {
           ir,
           CUBE_QUERY_READER_MESSAGE.NO_STEP(name),
         );
+      case 'concatenate':
+        // as it is, or, with columns of other types, converted as Cube
+        // converts them
+        return this.choose(
+          [
+            {
+              node: new Concat(this.nextId(Concat.TYPE)),
+              takenUnchecked: true,
+            },
+            {
+              node: new Concat(this.nextId(Concat.TYPE), true),
+              takenUnchecked: false,
+              takenWhenDifferent: true,
+            },
+          ],
+          inputs,
+          ir,
+          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+            name,
+            'both inputs need the same columns, in the same order.',
+          ),
+        );
       default:
         throw new CubeLambdaReadError(CUBE_QUERY_READER_MESSAGE.NOT_YET(name));
     }
@@ -763,6 +892,164 @@ class CubeQueryReader {
   }
 
   /**
+   * A chain of `extend`s that aren't windows, as `emitExtend` writes one
+   * Extend, a call for each column: one Extend of every column. Typed with
+   * the schema the host typed the chain to, when it did; the step imported
+   * waits for the editor to type it, as any Extend does.
+   */
+  private readExtends(
+    ir: IR,
+    lets: ReadonlySet<string>,
+    refuse: (why: string) => never,
+  ): ReadStep {
+    const columns: ExtendColumn[] = [];
+    let current: IR = ir;
+    while (isPlainExtend(current)) {
+      const [rows, specs] = (current as Extract<IR, { readonly k: 'func' }>)
+        .params as [IR, IR];
+      const list =
+        specs.k === 'colSpecArray'
+          ? specs.specs
+          : specs.k === 'colSpec'
+            ? [specs]
+            : [];
+      const read = list.map((spec): ExtendColumn => {
+        const condition =
+          spec.k === 'colSpec' && !spec.fn2 ? spec.fn1 : undefined;
+        const expression =
+          condition?.k === 'lambdaJson'
+            ? this.options.expressions.read(condition.json)
+            : condition;
+        if (
+          spec.k !== 'colSpec' ||
+          expression?.k !== 'lambda' ||
+          expression.params.length !== 1
+        ) {
+          return refuse(CUBE_QUERY_READER_MESSAGE.EXTEND);
+        }
+        return {
+          name: spec.name,
+          code: '',
+          lambda: this.options.expressions.write(expression),
+        };
+      });
+      if (!read.length) {
+        return refuse(CUBE_QUERY_READER_MESSAGE.EXTEND);
+      }
+      columns.unshift(...read);
+      current = rows;
+    }
+    const input = this.readRelation(current, lets);
+    const node = new Extend(this.nextId(Extend.TYPE), columns);
+    const typed = this.options.relationSchemas?.get(ir);
+    return this.choose(
+      [
+        {
+          node,
+          takenUnchecked: true,
+          takenWhenDifferent: true,
+          assume: ([inputSchema]) =>
+            typed && inputSchema
+              ? node.withTyping({
+                  kind: 'typed',
+                  signature: getExtendSignature(inputSchema, columns),
+                  types: typed.columns
+                    .slice(-columns.length)
+                    .map((column) => column.type),
+                })
+              : node,
+        },
+      ],
+      [input],
+      ir,
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'extend',
+        CUBE_QUERY_READER_MESSAGE.EXTEND,
+      ),
+    );
+  }
+
+  /**
+   * A pivot, as `emitPivot` writes one: `select` of its row, pivot and
+   * aggregated columns, `pivot`, `cast` of its columns, then a `rename` of
+   * each value's column (`renames`, innermost first)
+   */
+  private readPivot(
+    cast: IR,
+    renames: readonly IR[],
+    lets: ReadonlySet<string>,
+    refuse: (why: string) => never,
+  ): ReadStep {
+    const [pivoted, type] = cast.k === 'func' ? cast.params : [];
+    if (
+      pivoted?.k !== 'func' ||
+      getCubeFunctionName(pivoted.name) !== 'pivot' ||
+      pivoted.params.length !== 4 ||
+      type?.k !== 'relationType'
+    ) {
+      return refuse(
+        renames.length
+          ? CUBE_QUERY_READER_MESSAGE.PIVOT
+          : CUBE_QUERY_READER_MESSAGE.CAST,
+      );
+    }
+    const [selected, columnIr, valuesIr, aggregationIr] = pivoted.params as [
+      IR,
+      IR,
+      IR,
+      IR,
+    ];
+    const kept =
+      selected.k === 'func' ? columnNamesOf(selected.params[1]) : undefined;
+    const aggregation = readAggregation(aggregationIr);
+    const values =
+      valuesIr.k === 'collection'
+        ? valuesIr.values.map((value) =>
+            value.k === 'literal' ? value.value : undefined,
+          )
+        : [];
+    if (
+      selected.k !== 'func' ||
+      getCubeFunctionName(selected.name) !== 'select' ||
+      selected.params.length !== 2 ||
+      !kept ||
+      columnIr.k !== 'colSpec' ||
+      columnIr.fn1 ||
+      !aggregation ||
+      aggregation.name !== PIVOT_AGGREGATION_NAME ||
+      !values.length ||
+      values.some((value) => value === undefined)
+    ) {
+      return refuse(CUBE_QUERY_READER_MESSAGE.PIVOT);
+    }
+    const rows = kept.filter(
+      (name) => name !== columnIr.name && name !== aggregation.column,
+    );
+    const input = this.readRelation(selected.params[0] as IR, lets);
+    return this.choose(
+      [
+        {
+          node: new Pivot(
+            this.nextId(Pivot.TYPE),
+            rows,
+            columnIr.name,
+            values as LiteralValue[],
+            { function: aggregation.function, column: aggregation.column },
+          ),
+          takenUnchecked: true,
+          takenWhenDifferent: true,
+        },
+      ],
+      [input],
+      renames.at(-1) ?? cast,
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'pivot',
+        CUBE_QUERY_READER_MESSAGE.PIVOT,
+      ),
+    );
+  }
+
+  /**
    * A chain of `rename`s, as `emitRename` writes one Rename, a call for each
    * mapping: the chain is read as one Rename while no mapping names a column
    * another renames, and starts another step where one does
@@ -794,6 +1081,14 @@ class CubeQueryReader {
         mapping: { from: from.name, to: to.name },
       });
       current = rows;
+    }
+    if (current.k === 'func' && getCubeFunctionName(current.name) === 'cast') {
+      return this.readPivot(
+        current,
+        chain.map(({ call }) => call),
+        lets,
+        refuse,
+      );
     }
     let step = this.readRelation(current, lets);
     let group: (typeof chain)[number][] = [];

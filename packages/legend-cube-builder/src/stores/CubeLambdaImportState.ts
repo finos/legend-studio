@@ -18,13 +18,18 @@ import {
   CubeDocument,
   CubeLambdaReadError,
   ExpressionFilter,
+  Extend,
+  findCubeLambdaExtends,
   findCubeLambdaSources,
   isSameCubeIR,
   lambda,
   QueryEmitter,
   readCubeQuery,
   splitCubeLambda,
+  Schema,
+  type CubeContext,
   type IR,
+  type JsonObject,
   type Query,
 } from '@finos/legend-cube';
 import {
@@ -102,7 +107,18 @@ export interface CubeLambdaReading {
   readonly notes: readonly string[];
 }
 
-/** Each Filter by Expression's code, the engine's grammar of its lambda, as the editor shows it */
+/** The engine's grammar of an expression's lambda, as the editor shows it */
+const codeOf = async (
+  editorState: CubeEditorState,
+  expression: JsonObject,
+): Promise<string> =>
+  (
+    await editorState.host.engine.renderPure(
+      CUBE_EXPRESSION_CODEC.read(expression),
+    )
+  ).trim();
+
+/** Each Filter by Expression's and Extend column's code, the engine's grammar of its lambda */
 const withExpressionCode = async (
   editorState: CubeEditorState,
   query: Query,
@@ -110,13 +126,59 @@ const withExpressionCode = async (
   let next = query;
   for (const node of query.nodes) {
     if (node instanceof ExpressionFilter && node.lambda && !node.code) {
-      const code = await editorState.host.engine.renderPure(
-        CUBE_EXPRESSION_CODEC.read(node.lambda),
+      next = next.replace(
+        node.withCondition(await codeOf(editorState, node.lambda), node.lambda),
       );
-      next = next.replace(node.withCondition(code.trim(), node.lambda));
+    } else if (node instanceof Extend) {
+      const columns = [];
+      for (const column of node.columns) {
+        columns.push(
+          column.lambda && !column.code
+            ? { ...column, code: await codeOf(editorState, column.lambda) }
+            : column,
+        );
+      }
+      next = next.replace(node.withColumns(columns));
     }
   }
   return next;
+};
+
+/**
+ * The schema of each chain of extends of the lambda, typed by the engine in
+ * one call before the steps are read, so the steps after an Extend can be
+ * checked; none when the engine can't type them, as then the editor will
+ * say why
+ */
+const typeExtends = async (
+  editorState: CubeEditorState,
+  context: CubeContext,
+  chains: readonly { readonly read: IR; readonly typed: IR }[],
+): Promise<Map<IR, Schema>> => {
+  const schemas = new Map<IR, Schema>();
+  if (!chains.length) {
+    return schemas;
+  }
+  try {
+    const typed = await editorState.host.engine.typeLambdas(
+      context.model,
+      new Map(
+        chains.map(({ typed: relation }, index) => [
+          `extend${index}`,
+          lambda([], [relation]),
+        ]),
+      ),
+    );
+    chains.forEach(({ read }, index) => {
+      const schema = typed.get(`extend${index}`);
+      if (schema instanceof Schema) {
+        schemas.set(read, schema);
+      }
+    });
+  } catch {
+    // typed again by the editor, which says why it can't
+  }
+  return schemas;
 };
 
 /**
@@ -137,6 +199,11 @@ export const readCubeLambdaDocument = async (
   const { query } = readCubeQuery(parts, {
     bindSource: binding.bindSource,
     expressions: CUBE_EXPRESSION_CODEC,
+    relationSchemas: await typeExtends(
+      editorState,
+      binding.context,
+      findCubeLambdaExtends(parts),
+    ),
     registry: editorState.registry,
   });
   return {
