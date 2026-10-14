@@ -40,6 +40,21 @@ export class LegendQueryDataCubeSource extends DataCubeSource {
     variable: V1_Variable;
     valueSpec: V1_ValueSpecification;
   }[] = [];
+
+  override getTelemetryData(): PlainObject {
+    return {
+      project: {
+        groupId: this.info.groupId,
+        artifactId: this.info.artifactId,
+        versionId: this.info.versionId,
+      },
+      query: {
+        id: this.info.id,
+        name: this.info.name,
+      },
+      sourceType: LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
 }
 
 export class RawLegendQueryDataCubeSource {

@@ -30,8 +30,11 @@ import {
 import {
   ActionState,
   assertErrorThrown,
+  deepDiff,
   guaranteeNonNullable,
+  StopWatch,
 } from '@finos/legend-shared';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
@@ -44,6 +47,13 @@ import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayout
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
 import { DataCubeEditorDimensionsPanelState } from './DataCubeEditorDimensionsPanelState.js';
+
+function getChangedSnapshotSections(
+  baseSnapshot: DataCubeSnapshot,
+  newSnapshot: DataCubeSnapshot,
+): string[] {
+  return Object.keys(deepDiff(baseSnapshot.data, newSnapshot.data));
+}
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -150,6 +160,7 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
   //TODO: for dimensional grid, we need to reload the grid when we apply changes
   async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
     this.finalizationState.inProgress();
+    const stopWatch = new StopWatch();
 
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const newSnapshot = baseSnapshot.clone();
@@ -170,7 +181,14 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
 
     // finalize
     newSnapshot.finalize();
-    if (newSnapshot.hashCode !== baseSnapshot.hashCode) {
+
+    const changed = newSnapshot.hashCode !== baseSnapshot.hashCode;
+    const changedSections = getChangedSnapshotSections(
+      baseSnapshot,
+      newSnapshot,
+    );
+
+    if (changed) {
       const task = this.view.taskService.newTask('Validating query...');
       // NOTE: Compile the query to validate. This is a helpful check for a lot of different scenarios
       // where the consistency of the query might be thrown off by changes from various parts that the
@@ -229,6 +247,27 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
     } else {
       this.finalizationState.complete();
     }
+
+    this.view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.APPLY_CHANGES_PROPERTIES,
+      {
+        ...this.view.engine.getDataFromSource(this.view.getInitialSource()),
+        changed,
+        changedSections,
+        gridMode: this.generalProperties.configuration.gridMode,
+        dimensionCount: this.dimensions.dimensions.length,
+        selectedColumnCount: newSnapshot.data.selectColumns.length,
+        sourceColumnCount: newSnapshot.data.sourceColumns.length,
+        leafExtendedColumnCount: newSnapshot.data.leafExtendedColumns.length,
+        groupExtendedColumnCount: newSnapshot.data.groupExtendedColumns.length,
+        sortColumnCount: newSnapshot.data.sortColumns.length,
+        hasFilter: Boolean(newSnapshot.data.filter),
+        verticalPivotColumnCount: newSnapshot.data.groupBy?.columns.length ?? 0,
+        horizontalPivotColumnCount: newSnapshot.data.pivot?.columns.length ?? 0,
+        limit: newSnapshot.data.limit,
+        timings: this.view.engine.finalizeTimingRecord(stopWatch),
+      },
+    );
 
     if (options?.closeAfterApply) {
       this.display.close();

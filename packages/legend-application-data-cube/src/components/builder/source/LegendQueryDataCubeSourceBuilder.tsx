@@ -51,6 +51,7 @@ import {
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { LEGEND_DATACUBE_APP_EVENT } from '../../../__lib__/LegendDataCubeEvent.js';
 import {
   type V1_ValueSpecification,
   PRIMITIVE_TYPE,
@@ -78,6 +79,15 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
       }, 500),
     [store, state],
   );
+  const debouncedSearchTelemetry = useMemo(
+    () =>
+      debounce((input: string) => {
+        store.engine.sendTelemetry(LEGEND_DATACUBE_APP_EVENT.SEARCH_QUERIES, {
+          searchText: input,
+        });
+      }, 500),
+    [store],
+  );
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
@@ -85,12 +95,15 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
       state.setSearchText(event.target.value);
       debouncedLoader.cancel();
       debouncedLoader(event.target.value);
+      debouncedSearchTelemetry.cancel();
+      debouncedSearchTelemetry(event.target.value);
     }
   };
   const clearSearches = () => {
     state.setSearchText('');
     debouncedLoader.cancel();
     debouncedLoader('');
+    debouncedSearchTelemetry.cancel();
   };
 
   // filter and sort
@@ -110,6 +123,9 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   ] = useDropdownMenu();
   const applySort = (value: SORT_BY_OPTIONS) => {
     state.setSortBy(value);
+    store.engine.sendTelemetry(LEGEND_DATACUBE_APP_EVENT.CHANGE_SORT_BY, {
+      currentSortBy: value,
+    });
     debouncedLoader.cancel();
     debouncedLoader(state.searchText);
   };

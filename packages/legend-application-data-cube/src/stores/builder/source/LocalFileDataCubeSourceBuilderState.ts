@@ -31,6 +31,7 @@ import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseSto
 import { action, makeObservable, observable } from 'mobx';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
+  LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
 } from '../../model/LocalFileDataCubeSource.js';
@@ -151,6 +152,10 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
 
   override get label(): LegendDataCubeSourceBuilderType {
     return LegendDataCubeSourceBuilderType.LOCAL_FILE;
+  }
+
+  override get sourceType(): string {
+    return LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE;
   }
 
   override get isValid(): boolean {

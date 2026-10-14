@@ -14,12 +14,56 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecification } from '@finos/legend-graph';
+import {
+  V1_deserializePureModelContext,
+  V1_LegendSDLC,
+  V1_PureModelContextPointer,
+  type V1_ValueSpecification,
+} from '@finos/legend-graph';
+import type { PlainObject } from '@finos/legend-shared';
 import type { DataCubeColumn } from './DataCubeColumn.js';
+
+/**
+ * Extract the project (SDLC) coordinates from a serialized Pure model context,
+ * if the model is an SDLC-backed pointer. Shared by source telemetry builders.
+ */
+export function _extractProjectInfoFromModel(model: PlainObject):
+  | {
+      groupId: string;
+      artifactId: string;
+      versionId: string;
+    }
+  | undefined {
+  const deserializedModel = V1_deserializePureModelContext(model);
+  const sdlcInfo =
+    deserializedModel instanceof V1_PureModelContextPointer &&
+    deserializedModel.sdlcInfo instanceof V1_LegendSDLC
+      ? deserializedModel.sdlcInfo
+      : undefined;
+  return sdlcInfo !== undefined
+    ? {
+        groupId: sdlcInfo.groupId,
+        artifactId: sdlcInfo.artifactId,
+        versionId: sdlcInfo.version,
+      }
+    : undefined;
+}
 
 export abstract class DataCubeSource {
   columns: DataCubeColumn[] = [];
   query!: V1_ValueSpecification;
+
+  /**
+   * Build the telemetry payload describing this source. The base implementation
+   * returns an empty object; each concrete source overrides this to contribute
+   * its own metadata (source type, project, etc.).
+   *
+   * `dataProductDetails` is an optional, already-formatted enrichment payload
+   * (resolved asynchronously by the engine) that only certain sources consume.
+   */
+  getTelemetryData(_dataProductDetails?: PlainObject): PlainObject {
+    return {};
+  }
 }
 
 export class INTERNAL__DataCubeSource extends DataCubeSource {}

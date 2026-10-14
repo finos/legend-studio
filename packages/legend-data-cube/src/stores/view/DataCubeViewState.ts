@@ -19,8 +19,10 @@ import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import {
   ActionState,
   assertErrorThrown,
+  buildTelemetryErrorFields,
   deepEqual,
   IllegalStateError,
+  StopWatch,
 } from '@finos/legend-shared';
 import { DataCubeSnapshotService } from '../services/DataCubeSnapshotService.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
@@ -173,6 +175,7 @@ export class DataCubeViewState {
 
   async initializeCache() {
     this.processCacheState.inProgress();
+    const stopWatch = new StopWatch();
     const task = this.taskService.newTask('Initializing cache...');
 
     try {
@@ -190,6 +193,10 @@ export class DataCubeViewState {
         this._source = cachedSource;
       }
       this.processCacheState.pass();
+      this.engine.sendTelemetry(DataCubeEvent.CACHING_ENABLE__SUCCESS, {
+        ...this.engine.getDataFromSource(this._initialSource),
+        timings: this.engine.finalizeTimingRecord(stopWatch),
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.alertService.alertError(error, {
@@ -197,6 +204,11 @@ export class DataCubeViewState {
       });
       this._source = this._initialSource;
       this.processCacheState.fail();
+      this.engine.sendTelemetry(DataCubeEvent.CACHING_ENABLE__FAILURE, {
+        ...this.engine.getDataFromSource(this._initialSource),
+        timings: this.engine.finalizeTimingRecord(stopWatch),
+        ...buildTelemetryErrorFields(error),
+      });
     } finally {
       this.taskService.endTask(task);
     }

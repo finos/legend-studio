@@ -21,6 +21,7 @@ export enum DataCubeEvent {
   EMAIL_DATACUBE = 'data-cube.email-data-cube',
   EXPORT_DATACUBE = 'data-cube.export-data-cube',
   CACHING_ENABLE__SUCCESS = 'data-cube.enable-caching.success',
+  CACHING_ENABLE__FAILURE = 'data-cube.enable-caching.failure',
   CACHING_DISABLE__SUCCESS = 'data-cube.disable-caching.success',
   SELECT_ACTION_CACHE_LOAD_ALERT = 'data-cube.select-action-caching-load-alert',
   PAGINATION_ENABLE__SUCCESS = 'data-cube.enable-pagination.success',
@@ -33,4 +34,6 @@ export enum DataCubeEvent {
   OPEN_EDITOR_FILTER = 'data-cube.open-editor-filter',
   OPEN_EDITOR_PROPERTIES = 'data-cube.open-editor-properties',
   ADD_NEW_COLUMN = 'data-cube.add-new-column',
+  SWITCH_EDITOR_TAB = 'data-cube.switch-editor-tab',
+  TOGGLE_MULTIDIMENSIONAL_GRID_MODE = 'data-cube.toggle-multidimensional-grid-mode',
 }

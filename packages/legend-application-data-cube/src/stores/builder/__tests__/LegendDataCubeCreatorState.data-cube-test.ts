@@ -103,8 +103,12 @@ const buildHarness = (
       sendTelemetry: () => {
         // no-op
       },
+      sendDeferredTelemetry: () => {
+        // no-op
+      },
       getDataFromSource: () => ({}),
-      getDataFromRawSource: () => ({}),
+      getEnrichedDataFromSource: async () => ({}),
+      getEnrichedDataFromRawSource: async () => ({}),
     },
     alertService: {
       alertError: (error: Error) => {
@@ -131,6 +135,9 @@ const buildHarness = (
       },
     },
     setBuilder: () => {
+      // no-op
+    },
+    markDataCubeLoadStart: () => {
       // no-op
     },
   } as unknown as LegendDataCubeBuilderStore;

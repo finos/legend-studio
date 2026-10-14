@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { DataCubeSource } from '@finos/legend-data-cube';
+import {
+  DataCubeSource,
+  _extractProjectInfoFromModel,
+} from '@finos/legend-data-cube';
 import type { V1_PureModelContextData } from '@finos/legend-graph';
 import {
   SerializationFactory,
@@ -38,6 +41,21 @@ export class LocalFileDataCubeSource extends DataCubeSource {
   table!: string;
   fileName!: string;
   fileFormat!: LocalFileDataCubeSourceFormat;
+
+  override getTelemetryData(): PlainObject {
+    return {
+      project: _extractProjectInfoFromModel(this.model),
+      file: {
+        name: this.fileName,
+        format: this.fileFormat,
+        runtime: this.runtime,
+        db: this.db,
+        schema: this.schema,
+        table: this.table,
+      },
+      sourceType: LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
 }
 
 export class RawLocalFileQueryDataCubeSource {

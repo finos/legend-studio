@@ -336,26 +336,6 @@ export function generateMenuBuilder(
     );
   };
 
-  const logOpeningPropertiesEditor = () => {
-    view.dataCube.telemetryService.sendTelemetry(
-      DataCubeEvent.OPEN_EDITOR_PROPERTIES,
-      {
-        ...view.engine.getDataFromSource(view.getInitialSource()),
-        openedFrom: DataCubeOpenEditorSource.GRID_MENU,
-      },
-    );
-  };
-
-  const logOpeningFilterEditor = () => {
-    view.dataCube.telemetryService.sendTelemetry(
-      DataCubeEvent.OPEN_EDITOR_FILTER,
-      {
-        ...view.engine.getDataFromSource(view.getInitialSource()),
-        openedFrom: DataCubeOpenEditorSource.GRID_MENU,
-      },
-    );
-  };
-
   const logMenuItem = (menuName: string, subMenuName?: string) => {
     const menuItem =
       subMenuName === undefined
@@ -729,7 +709,13 @@ export function generateMenuBuilder(
             name: 'Filters...',
             action: () => {
               filter.display.open();
-              logOpeningFilterEditor();
+              view.dataCube.telemetryService.sendTelemetry(
+                DataCubeEvent.OPEN_EDITOR_FILTER,
+                {
+                  ...view.engine.getDataFromSource(view.getInitialSource()),
+                  openedFrom: DataCubeOpenEditorSource.GRID_MENU,
+                },
+              );
             },
           },
           {
@@ -1156,7 +1142,13 @@ export function generateMenuBuilder(
             );
           }
           editor.display.open();
-          logOpeningPropertiesEditor();
+          view.dataCube.telemetryService.sendTelemetry(
+            DataCubeEvent.OPEN_EDITOR_PROPERTIES,
+            {
+              ...view.engine.getDataFromSource(view.getInitialSource()),
+              openedFrom: DataCubeOpenEditorSource.GRID_MENU,
+            },
+          );
         },
       },
     ] satisfies (DefaultMenuItem | MenuItemDef)[];

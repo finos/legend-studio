@@ -32,6 +32,17 @@ export class LakehouseProducerDataCubeSource extends DataCubeSource {
   paths!: string[];
   warehouse!: string;
   deploymentId: number | undefined;
+
+  override getTelemetryData(): PlainObject {
+    return {
+      ingestDefinition: {
+        path: this.paths[0],
+        dataset: this.paths[1],
+      },
+      warehouse: this.warehouse,
+      sourceType: LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
 }
 
 export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource {
@@ -42,6 +53,18 @@ export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource
   table!: string;
   paths!: string[];
   deploymentId: number | undefined;
+
+  override getTelemetryData(): PlainObject {
+    return {
+      db: this.db,
+      schema: this.schema,
+      table: this.table,
+      ingestDefinition: {
+        path: this.paths[0],
+      },
+      sourceType: LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
 }
 
 export class IcebergConfig {

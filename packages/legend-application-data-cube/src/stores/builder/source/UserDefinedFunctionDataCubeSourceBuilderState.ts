@@ -40,6 +40,7 @@ import {
   type DataCubeAlertService,
   type DataCubeConfiguration,
   RawUserDefinedFunctionDataCubeSource,
+  USER_FUNCTION_DATA_CUBE_SOURCE_TYPE,
 } from '@finos/legend-data-cube';
 
 export class UserDefinedFunctionDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
@@ -129,6 +130,10 @@ export class UserDefinedFunctionDataCubeSourceBuilderState extends LegendDataCub
 
   override get label(): LegendDataCubeSourceBuilderType {
     return LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION;
+  }
+
+  override get sourceType(): string {
+    return USER_FUNCTION_DATA_CUBE_SOURCE_TYPE;
   }
 
   override get isValid(): boolean {

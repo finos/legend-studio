@@ -25,4 +25,16 @@ export enum LEGEND_DATACUBE_APP_EVENT {
   UPDATE_DATACUBE__FAILURE = 'data-cube.update.failure',
   DELETE_DATACUBE__SUCCESS = 'data-cube.delete.success',
   DELETE_DATACUBE__FAILURE = 'data-cube.delete.failure',
+  UPDATE_SOURCE_QUERY__SUCCESS = 'data-cube.update-source-query.success',
+  UPDATE_SOURCE_QUERY__FAILURE = 'data-cube.update-source-query.failure',
+  LOAD_DATACUBE_TO_DATA__LAUNCH = 'data-cube.load-to-data.launch',
+  LOAD_DATACUBE_TO_DATA__SUCCESS = 'data-cube.load-to-data.success',
+  LOAD_DATACUBE_TO_DATA__FAILURE = 'data-cube.load-to-data.failure',
+  SEARCH_QUERIES = 'data-cube.creator.search-queries',
+  CHANGE_SORT_BY = 'data-cube.creator.change-sort-by',
+}
+
+export enum DATA_CUBE_OPEN_KIND {
+  SAVED_LOAD = 'saved-load',
+  NEW = 'new',
 }

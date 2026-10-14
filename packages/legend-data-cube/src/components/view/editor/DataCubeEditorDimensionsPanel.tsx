@@ -55,6 +55,7 @@ import { TreeDataModule } from 'ag-grid-enterprise';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
 import { AlertType } from '../../../stores/services/DataCubeAlertService.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../../stores/services/DataCubeLayoutService.js';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -629,6 +630,16 @@ export const DataCubeEditorDimensionsPanel = observer(
                   DataCubeGridMode.MULTIDIMENSIONAL
                 }
                 onChange={() => {
+                  const enabling =
+                    editor.generalProperties.configuration.gridMode !==
+                    DataCubeGridMode.MULTIDIMENSIONAL;
+                  view.dataCube.telemetryService.sendTelemetry(
+                    DataCubeEvent.TOGGLE_MULTIDIMENSIONAL_GRID_MODE,
+                    {
+                      ...view.engine.getDataFromSource(view.getInitialSource()),
+                      enabled: enabling,
+                    },
+                  );
                   if (
                     editor.generalProperties.configuration.gridMode ===
                     DataCubeGridMode.MULTIDIMENSIONAL

@@ -19,25 +19,50 @@ import {
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { DataCubeSource } from './DataCubeSource.js';
+import {
+  DataCubeSource,
+  _extractProjectInfoFromModel,
+} from './DataCubeSource.js';
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 import type { V1_PureModelContext } from '@finos/legend-graph';
+
+export const FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE =
+  'freeformTDSExpression';
+export const USER_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
 
 export class FreeformTDSExpressionDataCubeSource extends DataCubeSource {
   runtime!: string;
   mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
+
+  override getTelemetryData(): PlainObject {
+    return {
+      project: _extractProjectInfoFromModel(this.model),
+      adhocQuery: {
+        mapping: this.mapping,
+        runtime: this.runtime,
+      },
+      sourceType: FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
 }
 
 export class UserDefinedFunctionDataCubeSource extends DataCubeSource {
   functionPath!: string;
   runtime!: string;
   model!: PlainObject<V1_PureModelContext>;
-}
 
-export const FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE =
-  'freeformTDSExpression';
-export const USER_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
+  override getTelemetryData(): PlainObject {
+    return {
+      project: _extractProjectInfoFromModel(this.model),
+      function: {
+        path: this.functionPath,
+        runtime: this.runtime,
+      },
+      sourceType: USER_FUNCTION_DATA_CUBE_SOURCE_TYPE,
+    };
+  }
+}
 
 export class RawFreeformTDSExpressionDataCubeSource {
   query!: string;

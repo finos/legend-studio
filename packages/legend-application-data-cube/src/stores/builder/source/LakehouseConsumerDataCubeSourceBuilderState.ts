@@ -65,6 +65,7 @@ import {
   V1_entitlementsDataProductLiteResponseToDataProductLite,
 } from '@finos/legend-graph';
 import {
+  LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
   RawLakehouseAdhocOrigin,
   RawLakehouseConsumerDataCubeSource,
   RawLakehouseSdlcOrigin,
@@ -333,6 +334,10 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
   override get label(): LegendDataCubeSourceBuilderType {
     return LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER;
+  }
+
+  override get sourceType(): string {
+    return LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE;
   }
 
   override get isValid(): boolean {
