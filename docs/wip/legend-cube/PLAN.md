@@ -4905,8 +4905,9 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
 - **Runs:** as Studio's own queries of an ingest definition or a data product run: the workspace as the model, on
   the project's first lakehouse runtime's environment, the cube's warehouse starting as the runtime's
   (`LegendStudioCubeWorkspace`, the engine's `ingestDefinitionSource` and `dataProductModelSource`).
-- **Add as MatView:** the step that runs, as a lambda with no runtime and no row limit, becomes a data set of the
-  definition: `{name, primaryKey, privacyClassification: {sensitivity}, source: {_type: 'FunctionSource', function}}`
+- **Add MatView** (named Add as MatView until §11.18): the step that runs, as a lambda with no runtime and no row
+  limit, becomes a data set of the definition:
+  `{name, primaryKey, privacyClassification: {sensitivity}, source: {_type: 'FunctionSource', function}}`
   with the empty lists the engine gives every data set it parses (`ingestPartitionColumns`, `preprocessors`,
   `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`), a local change in Studio. The dialog asks for the
   name, the data's classification (one of `dataProductConfig.classifications`, as a data product's access points
@@ -4974,7 +4975,14 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
 
 **Not in the first cut:** the per-database rewrites (SQL Server, Sybase, DB2, ClickHouse, SingleStore), refused with
 a message (Snowflake and Databricks have none); services, which Cube doesn't emit yet; a `select` that reorders
-columns outside a Join or a Partition, which no Cube step does.
+columns outside a Join or a Partition, which no Cube step does. The known gaps are in ISSUES.md, Import Pure.
+
+**Built** (2026-10-14, steps IP.1–IP.12 in `PROGRESS-IMPORT-PURE.md`): the reader (`V1_readCubeLambda`,
+`splitCubeLambda`, `readCubeQuery`, `StepPatterns.ts`, `isSameCubeIR`), the binding (`bindCubeLambdaSources`), the
+import (`CubeLambdaImportState`: `CubeEditor`'s `initialLambda`, and the Cube ▾ menu's Import Pure dialog), the banner,
+Studio's Edit MatView and Save MatView, and Cube loaded lazily in Studio. Every node of the core's samples and of the
+nine examples reads back into the steps that wrote it, written the same, from Cube's JSON and through the engine's
+grammar. Videos `28-edit-matview.webm` and `29-import-pure.webm`.
 
 ## 12. G. Risks and open questions
 

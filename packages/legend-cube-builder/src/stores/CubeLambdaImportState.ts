@@ -75,9 +75,9 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
   CANT_READ: (label: string): string => `Cube can't read ${label}`,
   NOT_NEW: 'Cube opens a lambda on a new cube only.',
   REWRITTEN: (label: string): string =>
-    `Cube writes ${label} another way: saving it writes Cube's Pure, which reads the same rows.`,
+    `Cube writes ${label} another way, which reads the same rows: what Cube shows and saves is its own Pure.`,
   UNCHECKED: (label: string): string =>
-    `Cube couldn't check that it writes ${label} back the same way, as a step isn't valid: review it before saving.`,
+    `Cube couldn't check that it writes ${label} back the same way, as a step isn't valid: review its steps.`,
   GRID_LIMIT:
     "The limit beside from() is read as a Limit step: it may be the grid's row limit of the run the Pure was copied from.",
   /** What the banner calls a lambda imported from the Import Pure dialog */
