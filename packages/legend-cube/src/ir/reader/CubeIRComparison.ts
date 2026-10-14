@@ -90,7 +90,7 @@ const sameLiteral = (a: LiteralValue, b: LiteralValue): boolean => {
 };
 
 /** A function's name as Cube writes it: the engine's own functions by their short name */
-const functionName = (name: string): string =>
+export const getCubeFunctionName = (name: string): string =>
   name.startsWith(FUNCTIONS_PACKAGE) ? (name.split('::').at(-1) ?? name) : name;
 
 const enumerationPath = (path: string): string =>
@@ -116,7 +116,7 @@ const canonical = (ir: IR, options: CubeIRComparisonOptions): IR => {
   if (ir.k === 'lambdaJson' && options.readExpression) {
     return canonical(options.readExpression(ir.json), options);
   }
-  if (ir.k === 'func' && functionName(ir.name) === 'sort') {
+  if (ir.k === 'func' && getCubeFunctionName(ir.name) === 'sort') {
     const [input, keys] = ir.params;
     if (
       input !== undefined &&
@@ -180,7 +180,7 @@ function same(
     case 'func':
       return (
         b.k === 'func' &&
-        functionName(a.name) === functionName(b.name) &&
+        getCubeFunctionName(a.name) === getCubeFunctionName(b.name) &&
         sameList(a.params, b.params, bindings, options)
       );
     case 'property':

@@ -5,7 +5,7 @@ PLAN §11.18. Built on `cube-import-pure`, branched from #5690's head, then move
 
 ## Current state
 
-In progress (2026-10-14): IP.1–IP.3 done; the draft PR is finos/legend-studio#5694.
+In progress (2026-10-14): IP.1–IP.4 done; the draft PR is finos/legend-studio#5694.
 
 ## Steps
 
@@ -13,7 +13,7 @@ In progress (2026-10-14): IP.1–IP.3 done; the draft PR is finos/legend-studio#
 - [x] IP.2 The plan section, this file, a draft PR
 - [x] IP.3 Protocol JSON to IR (`V1_readCubeLambda`) and the run's own parts, tested on Cube's JSON and on the
       engine's (JSON to grammar to JSON)
-- [ ] IP.4 IR to steps, a first slice: ingest and data product sources as bound; Filter, Group, Restrict, Sort,
+- [x] IP.4 IR to steps, a first slice: ingest and data product sources as bound; Filter, Group, Restrict, Sort,
       Limit; each step checked by writing it again
 - [ ] IP.5 Studio, end to end on that slice: Edit MatView opens Cube on a view (not an undo step); Add MatView and
       Save MatView (in place); the note
@@ -28,13 +28,23 @@ In progress (2026-10-14): IP.1–IP.3 done; the draft PR is finos/legend-studio#
 
 ## Commits
 
-| Step | Commit      | What                                                    |
-| ---- | ----------- | ------------------------------------------------------- |
-| IP.1 | `ed466c7de` | Cube loads lazily in Studio                             |
-| IP.2 | `d1d9c4475` | The plan section, this file                             |
-| IP.3 | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison |
+| Step | Commit      | What                                                                                      |
+| ---- | ----------- | ----------------------------------------------------------------------------------------- |
+| IP.1 | `ed466c7de` | Cube loads lazily in Studio                                                               |
+| IP.2 | `d1d9c4475` | The plan section, this file                                                               |
+| IP.3 | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison                                   |
+| IP.4 | this commit | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename |
 
 ## Notes
+
+- IP.4: `readCubeQuery` reads the relation from its sources up (`findCubeLambdaSources` lists them for the host to
+  bind first). Each step is written again by its emitter on the inferred schemas and kept only when it gives the same
+  Pure; with the columns unknown, a step is taken unchecked, except a Filter with a plain negation (`!(…)`), kept as a
+  Filter by Expression, since Cube's own negation keeps the empty rows of a column that can be empty. A sort that
+  restates the order flowing in (Cube writes it before each Limit, Drop and Slice) is no new step; a Sort that ends a
+  matview isn't in it. Inference reads a Filter by Expression as checked while reading; the step imported stays
+  unchecked for the editor to check. Every sample built from these steps reads back into as many steps, written the
+  same, as a matview and as Show Pure (34 nodes).
 
 - IP.3: `V1_readCubeLambda` reads Cube's JSON and the engine's (the grammar's `minus(5)` for `-5`, decimals as JSON
   numbers, `JoinKind` by its short path, a sort's one key in a list, a table of the default schema as `#>{db.T}#`);
