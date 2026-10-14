@@ -113,17 +113,20 @@ test('About Legend Query shows the servers the app talks to, and copies them', a
     );
 });
 
-/** The labels of the `Help...` menu's About items, as offered. */
-const getAboutMenuItems = async (page: Page): Promise<string[]> => {
+/** Expect the `Help...` menu to offer exactly the About items `labels`. */
+const expectAboutMenuItems = async (
+  page: Page,
+  labels: string[],
+): Promise<void> => {
   await page.getByTitle('See more options').click();
-  const labels = await page
-    .getByRole('menu')
-    .getByRole('button', { name: /^(?:About|Query History|Go to Project)/ })
-    .allTextContents();
+  await expect(
+    page
+      .getByRole('menu')
+      .getByRole('button', { name: /^(?:About|Query History|Go to Project)/ }),
+  ).toHaveText(labels);
   // the menu covers the page, and closes on a click anywhere (not on Escape)
   await page.mouse.click(1, 1);
   await expect(page.getByRole('menu')).toBeHidden();
-  return labels.map((label) => label.trim());
 };
 
 test('the Help menu only offers what applies to the query', async ({
@@ -131,14 +134,11 @@ test('the Help menu only offers what applies to the query', async ({
 }) => {
   // an unsaved data space query has no query info, history or project yet
   await openDataSpaceQuery(page);
-  expect(await getAboutMenuItems(page)).toEqual([
-    'About Legend Query',
-    'About Data Space',
-  ]);
+  await expectAboutMenuItems(page, ['About Legend Query', 'About Data Space']);
 
   // a saved one does
   await saveQuery(page, 'Menu Query');
-  expect(await getAboutMenuItems(page)).toEqual([
+  await expectAboutMenuItems(page, [
     'About Query Info',
     'Query History',
     'Go to Project',
