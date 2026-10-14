@@ -97,6 +97,8 @@ example is built in code, so a new one needs no saved spec; add it to `CUBE_EXAM
 
 - [Hosting the page](./docs/hosting.md): what a host gives the page, the shortcuts, the stylesheet, and the dev loop.
 - [Testing](./docs/testing.md): the test groups, the fake engine, and the tests against a real engine.
+- [Demo](./docs/demo/README.md): a walkthrough on the sample data, its [fast notes](./docs/demo/DEMO-FAST-NOTES.md), and
+  specs to import at each step.
 - [Adding an operation](./docs/adding-an-operation.md): the builder half of a new transform. The core half is in
   [`@finos/legend-cube`](../legend-cube/docs/adding-an-operation.md).
 - [The plan](../../docs/wip/legend-cube/PLAN.md) and [the known issues](../../docs/wip/legend-cube/ISSUES.md).
