@@ -521,18 +521,26 @@ New features suggested by the review:
 
 ## Legend Cube in Studio (2026-10-14)
 
-- **Runs in Studio are untested.** The local engine has no Lakehouse grammar, so a Studio cube's typing and runs, the
-  ingest editor's grammar text, and Lineage and View SQL on a new materialized view were never seen working; the
-  catalog, the source dialog, the canvas and Add as MatView were (video `25-studio-matview.webm`, with a mock SDLC
-  server, `demo/studio-matview/` in the evidence folder). Check on an engine that reads ingest definitions: a cube of
-  one data set should return the rows Studio's own query of it does.
+- **Runs in Studio are untested.** The local engine has no Lakehouse support, so a Studio cube's runs, the typing of a
+  data product's access points, the ingest editor's grammar text, and Lineage and View SQL on a new materialized
+  view were never seen working. The catalogs, the source dialog's screens, the canvas and Add as MatView were (videos
+  `25-studio-matview.webm` and `26-studio-matview-light.webm`, with a mock SDLC server and, for the access points'
+  types only, a stand-in for the engine: `demo/studio-matview/` in the evidence folder). Check on an engine with
+  Lakehouse support: a cube of one data set, or one access point, should return the rows Studio's own query of it
+  does.
+- **Does a workspace data product run?** Studio's own query of a data product sends the workspace as the model, as
+  Cube now does, but whether the lakehouse resolves `#P{…}#` for a product that was never deployed is the engine's to
+  say. If it can't, a data product cube in Studio types but doesn't run.
 - **The run's runtime is rebuilt from the project's.** A run takes only the environment and the warehouse of the
   project's first lakehouse runtime; anything else on it (a connection pointer) is left out, and a project with two
   lakehouse runtimes can't pick the other.
 - **A materialized view's windows aren't isolated.** The lambda Add as MatView saves is the typing lambda's shape: it
   binds no window with a `let` as a run does (§8.6), so a filter over a window, written by the lakehouse, may read
   differently from the cube's run.
-- **Data products in Studio** are a follow-up: a cube there reads ingest data sets only.
+- **The workspace is sent whole.** Each typing and run sends every element of the workspace and its dependencies, as
+  Studio's own queries do; a large project makes larger requests.
+- **Secondary buttons in a light theme** (Cancel, Close) keep legend-art's light look, grey: its theme-aware variant
+  would draw their text on a background of the same colour.
 
 ## Test gaps
 
