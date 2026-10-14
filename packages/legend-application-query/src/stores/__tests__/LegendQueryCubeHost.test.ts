@@ -89,6 +89,7 @@ describe('Legend Query as the Cube host', () => {
       typeLambdas: jest.fn<CubeEngine['typeLambdas']>(),
       execute: jest.fn<CubeEngine['execute']>(),
       renderPure: jest.fn<CubeEngine['renderPure']>(),
+      serializeLambda: jest.fn<CubeEngine['serializeLambda']>(),
       parseExpression: jest.fn<CubeEngine['parseExpression']>(),
       planLambda: jest.fn<CubeEngine['planLambda']>(),
       exportCsv: jest.fn<CubeEngine['exportCsv']>(),

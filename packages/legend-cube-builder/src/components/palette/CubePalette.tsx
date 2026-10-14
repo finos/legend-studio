@@ -41,6 +41,7 @@ import {
   type CubePaletteDragItem,
 } from '../canvas/CubeCanvasDnd.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
+import { CubePageMenu } from '../dev-settings/CubeDevSettings.js';
 
 /** Shown in the palette while the cube has no node yet (spec §17.2, worded for the canvas) */
 export const PALETTE_EMPTY_HINT = 'Drag items onto the canvas.';
@@ -169,7 +170,14 @@ export const CubePalette = observer(
         )}
         data-testid={LEGEND_CUBE_TEST_ID.PALETTE}
       >
-        <div className="flex h-8 shrink-0 items-center border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2">
+        <div
+          className={clsx(
+            'flex shrink-0 items-center border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2',
+            // collapsed, the menu sits above the button that expands it
+            collapsed ? 'flex-col py-1' : 'h-8 gap-1',
+          )}
+        >
+          <CubePageMenu editorState={editorState} />
           {!collapsed && (
             <span className="min-w-0 flex-1 truncate text-base font-medium">
               Add to the query

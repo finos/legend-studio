@@ -42,6 +42,7 @@ import {
 } from '../../../../../__test-utils__/CubeNorthwindTestQueries.js';
 import { V1_EngineServerClient } from '@finos/legend-graph';
 import { buildCubeEngine } from '../../CubeEngineBuilder.js';
+import { CubeEngineClientSettings } from '../../../../CubeEngineClientSettings.js';
 import { V1_LegendCubeEngine } from '../V1_LegendCubeEngine.js';
 import { V1_buildCubeSchema } from '../V1_CubeRelationTypeAdapter.js';
 
@@ -688,5 +689,31 @@ describe('Legend Cube engine: Pure text', () => {
     const body = render.mock.calls[0]?.[0] as unknown;
     expect(typeof body).toBe('string');
     expect(body as string).toMatch(/"value":9007199254740993[,}]/u);
+  });
+});
+
+describe('Debugging a run (PLAN §11.16)', () => {
+  test('Gives a lambda as the engine receives it, pretty-printed, its numbers exact', () => {
+    const text = newEngine().serializeLambda(
+      lambda([], [literal({ kind: 'integer', value: '9007199254740993' })]),
+    );
+    expect(text).toContain('\n  "_type": "lambda"');
+    expect(text).toMatch(/"value": 9007199254740993\n/u);
+  });
+
+  test("Registers its client with the host's engine client settings, which change its URL and compression", () => {
+    const clientSettings = new CubeEngineClientSettings({
+      baseUrl: 'http://localhost:6300/api',
+      enableCompression: true,
+    });
+    const engine = new V1_LegendCubeEngine(
+      { baseUrl: 'http://localhost:6300/api', enableCompression: true },
+      new TracerService(),
+      { clientSettings },
+    );
+    clientSettings.setRequestCompression(false);
+    expect(engine.client.enableCompression).toBe(false);
+    clientSettings.setBaseUrl('http://localhost:6301/api');
+    expect(engine.client.baseUrl).toBe('http://localhost:6301/api');
   });
 });

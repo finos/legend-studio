@@ -54,6 +54,7 @@ import {
   getCubeIngestSettings,
   isCubeIngestModel,
 } from '../../../CubeIngest.js';
+import type { CubeEngineClientSettings } from '../../../CubeEngineClientSettings.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
 import {
   checkCubeProjectModel,
@@ -299,11 +300,14 @@ export class V1_LegendCubeEngine implements CubeEngine {
       lakehouseEnvironment?: CubeLakehouseEnvironment | undefined;
       getRememberedWarehouse?: (() => string | undefined) | undefined;
       ingestDefinitions?: V1_CubeIngestDefinitionSource | undefined;
+      /** Dev Settings' engine URL and compression (PLAN §11.16) */
+      clientSettings?: CubeEngineClientSettings | undefined;
     },
   ) {
     this.client = new V1_EngineServerClient(config);
     // every call throws without one
     this.client.setTracerService(tracerService);
+    options?.clientSettings?.register(this.client);
     this.lakehouseEnvironment = options?.lakehouseEnvironment;
     this.getRememberedWarehouse =
       options?.getRememberedWarehouse ?? (() => undefined);
@@ -1239,6 +1243,14 @@ export class V1_LegendCubeEngine implements CubeEngine {
         (error as Error).message,
       );
     }
+  }
+
+  serializeLambda(lambdaIR: IR): string {
+    return stringifyLosslessJSON(
+      V1_serializeCubeLambda(lambdaIR),
+      undefined,
+      2,
+    );
   }
 
   async renderPure(lambdaIR: IR): Promise<string> {

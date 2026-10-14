@@ -18,6 +18,7 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { ModelContext } from '@finos/legend-cube';
 import type { CubeConnectionExplorer } from '../graph-manager/CubeConnectionExplorer.js';
 import type { CubeDataProductCatalog } from '../graph-manager/CubeDataProductCatalog.js';
+import type { CubeEngineClientSettings } from '../graph-manager/CubeEngineClientSettings.js';
 import type { CubeIngestCatalog } from '../graph-manager/CubeIngestCatalog.js';
 import {
   CubeEngineError,
@@ -70,6 +71,12 @@ export interface CubeHost {
    * dialog offers no services
    */
   readonly serviceCatalog?: CubeServiceCatalog | undefined;
+  /**
+   * The engine URL and request compression its engine clients share, which
+   * Dev Settings changes (PLAN §11.16); without them, Dev Settings can't
+   * change either
+   */
+  readonly engineClientSettings?: CubeEngineClientSettings | undefined;
 }
 
 /** Why the host can't list a project model's Databases */

@@ -49,6 +49,7 @@ import { CubeCanvas } from './canvas/CubeCanvas.js';
 import { CubeEntrySourceBanner } from './CubeEntrySourceBanner.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
+import { CubeDevSettingsDialog } from './dev-settings/CubeDevSettings.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
 import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeFileMenu } from './CubeFileMenu.js';
@@ -189,6 +190,7 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
       <CubeExamplesDialog editorState={editorState} />
       <CubeSpecTransferDialog editorState={editorState} />
       <CubeShowPureDialog editorState={editorState} />
+      <CubeDevSettingsDialog editorState={editorState} />
     </div>
   );
 });

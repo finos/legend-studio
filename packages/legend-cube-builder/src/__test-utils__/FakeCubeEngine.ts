@@ -115,6 +115,7 @@ export interface FakeCubeEngine {
   readonly execute: jest.Mock<CubeEngine['execute']>;
   readonly exportCsv: jest.Mock<CubeEngine['exportCsv']>;
   readonly renderPure: jest.Mock<CubeEngine['renderPure']>;
+  readonly serializeLambda: jest.Mock<CubeEngine['serializeLambda']>;
   readonly parseExpression: jest.Mock<CubeEngine['parseExpression']>;
   readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
 }
@@ -155,6 +156,9 @@ export const createFakeCubeEngine = (
   const renderPure = jest.fn<CubeEngine['renderPure']>(async () =>
     Promise.resolve(answers.pure ?? ''),
   );
+  const serializeLambda = jest.fn<CubeEngine['serializeLambda']>((lambda) =>
+    JSON.stringify(lambda, undefined, 2),
+  );
   // a test that types expressions says how; by default, each parses to nothing
   const parseExpression = jest.fn<CubeEngine['parseExpression']>(async () =>
     Promise.reject(
@@ -175,6 +179,7 @@ export const createFakeCubeEngine = (
       execute,
       exportCsv,
       renderPure,
+      serializeLambda,
       parseExpression,
       planLambda,
     },
@@ -184,6 +189,7 @@ export const createFakeCubeEngine = (
     execute,
     exportCsv,
     renderPure,
+    serializeLambda,
     parseExpression,
     planLambda,
   };

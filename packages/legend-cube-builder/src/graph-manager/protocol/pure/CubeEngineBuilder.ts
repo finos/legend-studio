@@ -29,6 +29,7 @@ import type {
   CubeMarketplaceLinkTarget,
 } from '../../CubeDataProductCatalog.js';
 import type { CubeEngine } from '../../CubeEngine.js';
+import type { CubeEngineClientSettings } from '../../CubeEngineClientSettings.js';
 import type { CubeIngestCatalog } from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
 import type { CubeProjectCatalog } from '../../CubeProjectCatalog.js';
@@ -61,9 +62,12 @@ export const buildCubeEngine = (
     getRememberedWarehouse?: (() => string | undefined) | undefined;
     /** Ingest cubes run only with one, built by `buildCubeIngestCatalog` */
     ingestCatalog?: CubeIngestCatalog | undefined;
+    /** Dev Settings' engine URL and compression, shared by the host's engine clients (PLAN §11.16) */
+    clientSettings?: CubeEngineClientSettings | undefined;
   },
 ): CubeEngine =>
   new V1_LegendCubeEngine(config, tracerService, {
+    clientSettings: options?.clientSettings,
     lakehouseEnvironment: options?.lakehouseEnvironment,
     getRememberedWarehouse: options?.getRememberedWarehouse,
     // the catalog reads the definitions the engine types and runs on
@@ -80,8 +84,9 @@ export const buildCubeEngine = (
 export const buildCubeConnectionExplorer = (
   config: CubeEngineConfig,
   tracerService: TracerService,
+  clientSettings?: CubeEngineClientSettings,
 ): CubeConnectionExplorer =>
-  new V1_LegendCubeConnectionExplorer(config, tracerService);
+  new V1_LegendCubeConnectionExplorer(config, tracerService, clientSettings);
 
 /** What a host gives Cube to read its deployed data products (PLAN §6.8) */
 export interface CubeLakehouseServices {
@@ -144,10 +149,12 @@ export const buildCubeProjectCatalog = (
 export const buildCubeServiceCatalog = (
   config: CubeEngineConfig,
   tracerService: TracerService,
+  clientSettings?: CubeEngineClientSettings,
 ): CubeServiceCatalog => {
   const engineClient = new V1_EngineServerClient(config);
   // every call throws without one
   engineClient.setTracerService(tracerService);
+  clientSettings?.register(engineClient);
   return new V1_LegendCubeServiceCatalog(() => engineClient.getServicesInfo());
 };
 
@@ -171,6 +178,7 @@ export const buildCubeIngestCatalog = (
   config: CubeEngineConfig,
   tracerService: TracerService,
   services: CubeLakehouseServices,
+  clientSettings?: CubeEngineClientSettings,
 ): CubeIngestCatalog | undefined => {
   const { platformServerClient, ingestServerClient } = services;
   if (!platformServerClient || !ingestServerClient) {
@@ -179,6 +187,7 @@ export const buildCubeIngestCatalog = (
   const engineClient = new V1_EngineServerClient(config);
   // every call throws without one
   engineClient.setTracerService(tracerService);
+  clientSettings?.register(engineClient);
   const environment = new V1_CubeLakehouseEnvironmentResolver(
     services.contractServerClient,
     services.getAccessToken,

@@ -71,7 +71,10 @@ import {
 } from '../../../graph-manager/CubeEngine.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
-import { NULL_CELL_TEXT } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_RUN_PURE_NOTE,
+  NULL_CELL_TEXT,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
 const P = 'meta::pure::precisePrimitives::';
@@ -630,6 +633,66 @@ describe('Cube results', () => {
     ]);
     fireEvent.click(within(entries[0] as HTMLElement).getByText('Copy SQL'));
     expect(copy).toHaveBeenCalledWith('select … order by "ID"');
+  });
+
+  test("Shows a run's Pure as it ran, copies its lambda's JSON, and shows why a run failed (PLAN §11.16)", async () => {
+    const applicationStore = TEST__createCubeApplicationStore();
+    const copy = jest
+      .spyOn(applicationStore.clipboardService, 'copyTextToClipboard')
+      .mockResolvedValue(undefined);
+    const { fake } = await renderCube({ applicationStore });
+    fireEvent.click(executeButton());
+    await cellTexts(0);
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    const sorted = fake.execute.mock.calls[1]?.[1] as IR;
+    fireEvent.click(within(toolbar()).getByText('Runs (2)'));
+    const runs = screen.getByTestId(LEGEND_CUBE_TEST_ID.RUN_STATS);
+    const entry = (): HTMLElement =>
+      within(runs).getAllByRole('listitem')[0] as HTMLElement;
+
+    fake.renderPure.mockResolvedValueOnce('|sorted->limit(1001)');
+    fireEvent.click(within(entry()).getByText('Show Pure'));
+    const dialog = await screen.findByRole('dialog');
+    expect(
+      within(dialog).getByText('Pure query of Rows, sorted by ID ascending'),
+    ).not.toBeNull();
+    expect(within(dialog).getByText(CUBE_RUN_PURE_NOTE)).not.toBeNull();
+    expect(
+      await within(dialog).findByText('|sorted->limit(1001)'),
+    ).not.toBeNull();
+    // the lambda the run sent, row limit and all
+    expect(fake.renderPure.mock.calls.at(-1)?.[0] === sorted).toBe(true);
+    fireEvent.click(within(dialog).getByText('Close'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    fireEvent.click(within(entry()).getByText('Copy JSON'));
+    expect(fake.serializeLambda.mock.calls.at(-1)?.[0] === sorted).toBe(true);
+    expect(copy).toHaveBeenLastCalledWith(
+      JSON.stringify(sorted, undefined, 2),
+      {
+        notifySuccessMessage: 'The lambda JSON was copied',
+      },
+    );
+
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Sorting failed\nat …',
+      ),
+    );
+    clickHeader(0);
+    await waitFor(() =>
+      expect(
+        within(entry()).getByText('Failed: Sorting failed'),
+      ).not.toBeNull(),
+    );
+    expect(
+      within(entry()).getByText<HTMLButtonElement>('Show Pure').disabled,
+    ).toBe(false);
+
+    // the compression switch is in Dev Settings, not in Runs
+    expect(within(runs).queryByText(/uncompressed|compress/u)).toBeNull();
   });
 
   test("Shows a number column as its saved format, sets one from the cell's menu, and keeps a saved width", async () => {

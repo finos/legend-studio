@@ -245,6 +245,7 @@ export class CubeGridFetcher {
         schema,
         rowLimit: result.rowLimit,
         abortController: controller,
+        label: describeFetch(level, keys, drilldown.columns, sorts),
       })
         .then((run: CubeQueryRunResult): CubeGridLevelRows => {
           if (generation !== this.generation) {
@@ -268,10 +269,6 @@ export class CubeGridFetcher {
               ),
               ...(countAt === -1 ? {} : { count: Number(row[countAt]) }),
             }),
-          );
-          editorState.runStats.record(
-            describeFetch(level, keys, drilldown.columns, sorts),
-            run,
           );
           entry.rows = rows.length;
           this.evict(key);

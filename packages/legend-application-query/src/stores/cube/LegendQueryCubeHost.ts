@@ -23,6 +23,7 @@ import {
   buildCubeProjectCatalog,
   buildCubeServiceCatalog,
   CubeDataProductEnvironmentType,
+  CubeEngineClientSettings,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
   type CubeDataProductCatalog,
@@ -170,6 +171,8 @@ export class LegendQueryCubeHost implements CubeHost {
   readonly ingestCatalog: CubeIngestCatalog | undefined;
   readonly projectCatalog: CubeProjectCatalog | undefined;
   readonly serviceCatalog: CubeServiceCatalog;
+  /** The engine URL and compression Cube's engine clients share, which Dev Settings changes */
+  readonly engineClientSettings: CubeEngineClientSettings;
 
   /**
    * Tests give an engine, an explorer and a project catalog; otherwise each
@@ -183,12 +186,14 @@ export class LegendQueryCubeHost implements CubeHost {
   ) {
     this.applicationStore = applicationStore;
     const config = buildLegendQueryCubeEngineConfig(applicationStore.config);
+    this.engineClientSettings = new CubeEngineClientSettings(config);
     const lakehouse = buildLegendQueryCubeLakehouseServices(applicationStore);
     this.ingestCatalog = lakehouse
       ? buildCubeIngestCatalog(
           config,
           applicationStore.tracerService,
           lakehouse,
+          this.engineClientSettings,
         )
       : undefined;
     this.engine =
@@ -200,6 +205,7 @@ export class LegendQueryCubeHost implements CubeHost {
           : undefined,
         getRememberedWarehouse: () =>
           getCubeRememberedWarehouse(applicationStore.userDataService),
+        clientSettings: this.engineClientSettings,
       });
     this.dataProductCatalog = lakehouse
       ? buildCubeDataProductCatalog(lakehouse)
@@ -208,7 +214,11 @@ export class LegendQueryCubeHost implements CubeHost {
     // its own client, configured as the engine's
     this.connectionExplorer =
       connectionExplorer ??
-      buildCubeConnectionExplorer(config, applicationStore.tracerService);
+      buildCubeConnectionExplorer(
+        config,
+        applicationStore.tracerService,
+        this.engineClientSettings,
+      );
     // the published projects in Query's depot (PLAN §6.3); it reads nothing
     // until the source dialog's Project tab opens
     this.projectCatalog =
@@ -218,6 +228,7 @@ export class LegendQueryCubeHost implements CubeHost {
     this.serviceCatalog = buildCubeServiceCatalog(
       config,
       applicationStore.tracerService,
+      this.engineClientSettings,
     );
   }
 }

@@ -240,6 +240,11 @@ export interface CubeEngine {
   /** The Pure text of a lambda, for display only: never parsed back */
   renderPure(lambda: IR): Promise<string>;
   /**
+   * A lambda as the engine receives it, pretty-printed, its numbers kept
+   * exact (PLAN §11.16): for a viewer to copy while debugging a run
+   */
+  serializeLambda(lambda: IR): string;
+  /**
    * An Extend column's expression as the engine's JSON (PLAN §11.7), located
    * under the source id; rejects with a `CubeEngineError` placed in the text
    */
