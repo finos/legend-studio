@@ -5,7 +5,7 @@ PLAN §11.18. Built on `cube-import-pure`, branched from #5690's head, then move
 
 ## Current state
 
-In progress (2026-10-14): IP.1–IP.9 done; the draft PR is finos/legend-studio#5694.
+Complete (2026-10-14): IP.1–IP.12 done; the draft PR, finos/legend-studio#5694, waits for the user's word to be marked ready.
 
 ## Steps
 
@@ -22,24 +22,33 @@ In progress (2026-10-14): IP.1–IP.9 done; the draft PR is finos/legend-studio#
 - [x] IP.7 The steps Cube writes as several: Join, Difference, Concat that converts, Partition
 - [x] IP.8 The round-trip corpus: every emitter test's cube and the examples, written, read and written again
 - [x] IP.9 Import Pure in the Cube ▾ menu, text or JSON; binding in Query
-- [ ] IP.10 Verification: a review, a browser rehearsal
-- [ ] IP.11 A demo video
-- [ ] IP.12 Fold the plan in
+- [x] IP.10 Verification: a review, a browser rehearsal
+- [x] IP.11 A demo video
+- [x] IP.12 Fold the plan in
 
 ## Commits
 
-| Step       | Commit      | What                                                                                                |
-| ---------- | ----------- | --------------------------------------------------------------------------------------------------- |
-| IP.1       | `ed466c7de` | Cube loads lazily in Studio                                                                         |
-| IP.2       | `d1d9c4475` | The plan section, this file                                                                         |
-| IP.3       | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison                                             |
-| IP.4       | `6f9d92d0d` | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename           |
-| IP.5       | `aeb821c7e` | Studio: Edit MatView, Add MatView and Save MatView, the import banner                               |
-| IP.6       | `a51c3767f` | Extend (typed before reading), Pivot, Concat                                                        |
-| IP.7, IP.8 | `5e1be847f` | Join, Difference, Concat that converts, Partition; the corpus on the engine's JSON and the examples |
-| IP.9       | this commit | Import Pure in the Cube ▾ menu                                                                      |
+| Step        | Commit                   | What                                                                                                |
+| ----------- | ------------------------ | --------------------------------------------------------------------------------------------------- |
+| IP.1        | `ed466c7de`              | Cube loads lazily in Studio                                                                         |
+| IP.2        | `d1d9c4475`              | The plan section, this file                                                                         |
+| IP.3        | `e258ad719`              | Protocol JSON to IR, the run's own parts, IR comparison                                             |
+| IP.4        | `6f9d92d0d`              | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename           |
+| IP.5        | `aeb821c7e`              | Studio: Edit MatView, Add MatView and Save MatView, the import banner                               |
+| IP.6        | `a51c3767f`              | Extend (typed before reading), Pivot, Concat                                                        |
+| IP.7, IP.8  | `5e1be847f`              | Join, Difference, Concat that converts, Partition; the corpus on the engine's JSON and the examples |
+| IP.9        | `03a9dabf2`              | Import Pure in the Cube ▾ menu                                                                      |
+| IP.10–IP.12 | `7296c5e18`, this commit | Verification, videos 28 and 29, the plan folded                                                     |
 
 ## Notes
+
+- IP.10–IP.12: headless checks on the dev servers, all passing: Query (`probe-import-pure-query.mjs`, 7 checks:
+  Import Pure on the Top customers example, five steps, no banner, 10 rows, Show Pure, one undo step, an unknown
+  function named) and Studio (`studio-matview/probe-edit-matview.mjs`, 9 checks). Videos `28-edit-matview.webm` (1:04,
+  `demo-edit-matview.mjs`) and `29-import-pure.webm` (0:54, `demo-import-pure.mjs`), every frame checked against its
+  caption. The banner's wording made host-neutral (what Cube shows and saves is its own Pure). Folded into PLAN
+  §11.18 (Built), §11.17 (Add MatView) and ISSUES.md (Import Pure). Query's dev server on :9004 was restarted: it
+  served a dompurify path from before `node_modules` changed.
 
 - IP.9: Import Pure in the Cube ▾ menu (`CubeImportPureDialog`): Pure text, parsed by the engine's grammar
   (`parseExpression`, no new engine call), or the engine's JSON, read into steps that replace the cube as one undo
