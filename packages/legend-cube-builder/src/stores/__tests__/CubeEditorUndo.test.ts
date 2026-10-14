@@ -164,3 +164,46 @@ describe('Cube undo', () => {
     expect(state.execution.error).toBeDefined();
   });
 });
+
+describe('Redo', () => {
+  test('Redoes what was undone, in order, and a new change drops what is left to redo', () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.applyDocument(twoTablesDocument());
+    const two = state.document;
+    state.select('relational102');
+    const selected = state.document;
+    expect(state.canRedo).toBe(false);
+    state.undo();
+    state.undo();
+    // undoing restores a copy of the query, so rows show as stale
+    expect(state.isEmptyCube).toBe(true);
+    expect(state.canRedo).toBe(true);
+    state.redo();
+    expect(state.document.query.nodes.map(({ id }) => id)).toEqual(
+      two.query.nodes.map(({ id }) => id),
+    );
+    state.redo();
+    expect(state.document.query.selected).toBe(selected.query.selected);
+    expect(state.canRedo).toBe(false);
+    // undo, then a new change: nothing left to redo
+    state.undo();
+    expect(state.canRedo).toBe(true);
+    state.select('relational102');
+    expect(state.canRedo).toBe(false);
+    expect(state.history).toHaveLength(2);
+  });
+
+  test('Redoing New leaves the cube again, as New did', () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.applyDocument(twoTablesDocument());
+    state.startNewCube();
+    expect(state.isEmptyCube).toBe(true);
+    state.undo();
+    expect(state.document.query.nodes).toHaveLength(2);
+    state.redo();
+    expect(state.isEmptyCube).toBe(true);
+    // and Undo brings the cube back again
+    state.undo();
+    expect(state.document.query.nodes).toHaveLength(2);
+  });
+});

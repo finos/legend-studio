@@ -197,6 +197,16 @@ export class CubeEditorState implements CommandRegistrar {
   document: CubeDocument;
   /** Earlier documents, oldest first */
   history: readonly CubeDocument[] = [];
+  /**
+   * The changes undone, the latest last, to redo; a new change clears them.
+   * Each keeps whether it was read-only and whether undoing it left another
+   * cube (an import), so a redo restores both
+   */
+  redoStack: readonly {
+    readonly document: CubeDocument;
+    readonly readOnly: boolean;
+    readonly opensAnotherCube: boolean;
+  }[] = [];
   /** Engine errors by node id: shown with the node's own errors, never part of inference */
   hostIssues: ReadonlyMap<string, CubeHostIssue> = new Map();
   /**
@@ -259,6 +269,9 @@ export class CubeEditorState implements CommandRegistrar {
       loadModelOutline: flow,
       document: observable.ref,
       history: observable.ref,
+      redoStack: observable.ref,
+      canRedo: computed,
+      redo: action,
       hostIssues: observable.ref,
       warnings: observable.ref,
       derivedWarnings: computed,
@@ -272,6 +285,7 @@ export class CubeEditorState implements CommandRegistrar {
       hasEditsToApply: computed,
       executeEdited: action,
       undoEdited: action,
+      redoEdited: action,
       isDialogOpen: computed,
       applyDocument: action,
       undo: action,
@@ -786,6 +800,19 @@ export class CubeEditorState implements CommandRegistrar {
       },
     });
     commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.REDO,
+      trigger: () =>
+        !this.isDialogOpen &&
+        !this.nodeEditor.isHeld &&
+        this.canRedo &&
+        !isTypingText(),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.redoEdited(),
+          isFocusInNodeEditor(),
+        ),
+    });
+    commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
       trigger: () =>
         !this.isDialogOpen &&
@@ -839,6 +866,10 @@ export class CubeEditorState implements CommandRegistrar {
 
   get canUndo(): boolean {
     return this.history.length > 0 && !this.readOnly;
+  }
+
+  get canRedo(): boolean {
+    return this.redoStack.length > 0;
   }
 
   /** The one way to change the cube; the document before goes to the undo history */
@@ -1170,6 +1201,11 @@ export class CubeEditorState implements CommandRegistrar {
       return next;
     };
     this.history = this.history.map(check);
+    // a change undone meanwhile is redone with the checked nodes too
+    this.redoStack = this.redoStack.map((entry) => ({
+      ...entry,
+      document: check(entry.document),
+    }));
     const next = check(this.document);
     if (next !== this.document) {
       this.replaceDocument(next);
@@ -1211,6 +1247,14 @@ export class CubeEditorState implements CommandRegistrar {
       return;
     }
     this.history = this.history.slice(0, -1);
+    this.redoStack = [
+      ...this.redoStack,
+      {
+        document: this.document,
+        readOnly: this.readOnly,
+        opensAnotherCube: this.importedOver.has(previous),
+      },
+    ];
     this.readOnly = this.readOnlyDocuments.has(previous);
     if (this.importedOver.has(previous)) {
       // the cube before an import is another cube, as the import was
@@ -1236,11 +1280,58 @@ export class CubeEditorState implements CommandRegistrar {
     );
   }
 
-  private pushHistory(): void {
+  /**
+   * Brings back the last change undone, as Ctrl+Shift+Z does: the cube shown
+   * goes back to the undo history, and a change that opened another cube
+   * (an import, New) closes the editor and the source dialog again
+   */
+  redo(): void {
+    const next = this.redoStack.at(-1);
+    if (!next) {
+      return;
+    }
+    this.redoStack = this.redoStack.slice(0, -1);
+    this.pushHistory(true);
+    if (next.opensAnotherCube) {
+      this.importedOver.add(this.history.at(-1) as CubeDocument);
+      this.sourcePicker.close();
+      this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    }
+    this.readOnly = next.readOnly;
+    const { query, meta } = this.document;
+    const restored = next.document.withQuery(
+      next.document.query === query ? query : next.document.query.clone(),
+    );
+    // widths take no undo step: the same cube keeps the ones set since
+    this.replaceDocument(
+      next.opensAnotherCube
+        ? restored
+        : restored.withMeta({
+            ...restored.meta,
+            presentation: {
+              ...restored.meta.presentation,
+              columnWidths: meta.presentation.columnWidths,
+            },
+          }),
+    );
+  }
+
+  /** Redo, as its button and Ctrl+Shift+Z do: finishes the node editor first */
+  redoEdited(): void {
+    if (this.nodeEditor.finishApplied() && this.canRedo) {
+      this.redo();
+    }
+  }
+
+  /** Keeps the cube shown for undo; a new change, not a redo, drops what was undone */
+  private pushHistory(keepRedo = false): void {
     if (this.readOnly) {
       this.readOnlyDocuments.add(this.document);
     }
     this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
+    if (!keepRedo) {
+      this.redoStack = [];
+    }
   }
 
   /**
