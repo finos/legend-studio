@@ -33,7 +33,7 @@ const DATA_SET_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/u;
 /**
  * Legend Cube, opened full screen from an ingest definition's editor to build
  * a materialized view of it from the project's ingest data sets (Create
- * MatView with Cube). Studio's own shortcuts are off while it is open. Cube
+ * MatView). Studio's own shortcuts are off while it is open. Cube
  * itself, and its host, are loaded with the dialog (`EmbeddedCube`), so
  * nothing here imports them.
  */

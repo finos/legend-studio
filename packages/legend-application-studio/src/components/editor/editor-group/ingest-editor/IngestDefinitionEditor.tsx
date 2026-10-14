@@ -328,7 +328,7 @@ export const IngestDefinitionEditor = observer(() => {
                           >
                             <CubeIcon className="btn__dropdown-combo__label__icon" />
                             <div className="btn__dropdown-combo__label__title whitespace-nowrap pr-2">
-                              Create MatView with Cube
+                              Create MatView
                             </div>
                           </button>
                           {materializedViews.length > 0 && (

@@ -298,7 +298,7 @@ const MaterializedViewButton = observer(
 
 /**
  * Legend Cube, full screen over the editor, building a materialized view of
- * the ingest definition it was opened from (Create MatView with Cube), or
+ * the ingest definition it was opened from (Create MatView), or
  * editing one of its views, read back into the cube (Edit MatView). Loaded
  * on the first opening, with Cube (`EmbeddedCube`)
  */

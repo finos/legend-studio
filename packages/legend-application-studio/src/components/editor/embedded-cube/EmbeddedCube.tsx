@@ -32,7 +32,7 @@ const LazyEmbeddedCubeEditor = lazy(() =>
 
 /**
  * Legend Cube, full screen over the editor, while it is open on an ingest
- * definition (Create MatView with Cube); nothing otherwise
+ * definition (Create MatView); nothing otherwise
  */
 export const EmbeddedCube = observer(() => {
   const { embeddedCubeState } = useEditorStore();

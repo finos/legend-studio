@@ -431,7 +431,7 @@ describe('Legend Cube in Studio', () => {
 
   test(
     integrationTest(
-      "Create MatView with Cube opens Cube on the definition, and Add MatView adds the cube's lambda to it as a data set",
+      "Create MatView opens Cube on the definition, and Add MatView adds the cube's lambda to it as a data set",
     ),
     async () => {
       const { editorStore, renderResult } = await setUp([
@@ -442,9 +442,7 @@ describe('Legend Cube in Studio', () => {
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-      fireEvent.click(
-        await findByText(editorGroup, 'Create MatView with Cube'),
-      );
+      fireEvent.click(await findByText(editorGroup, 'Create MatView'));
       const { embeddedCubeState } = editorStore;
       expect(embeddedCubeState.isOpen).toBe(true);
       await renderResult.findByText(
@@ -536,9 +534,7 @@ describe('Legend Cube in Studio', () => {
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-      fireEvent.click(
-        await findByText(editorGroup, 'Create MatView with Cube'),
-      );
+      fireEvent.click(await findByText(editorGroup, 'Create MatView'));
       // the cube reads TRADES
       fireEvent.click(
         await renderResult.findByRole('button', { name: /^Ingest Dataset/u }),

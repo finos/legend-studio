@@ -4887,16 +4887,16 @@ sends nothing.
 - §8.7 (Show Pure): a run's Pure shows its row limit.
 - Appendix A: §12.6 (failed runs recorded).
 
-### 11.17 Legend Cube in Studio: Create MatView with Cube
+### 11.17 Legend Cube in Studio: Create MatView
 
 Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/legend-studio#5690), for a demo (user,
 2026-10-14): an ingest definition's editor opens Cube to build a materialized view of the project's own sources.
 
 **Settled** (user, 2026-10-14):
 
-- **The button:** "Create MatView with Cube" in the ingest definition editor's header, beside Lineage and View SQL,
-  where `NonProductionFeatureFlag` is on. Cube opens full screen over the editor, as Studio's embedded query builder
-  does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
+- **The button:** "Create MatView" (first "Create MatView with Cube", shortened: user, 2026-10-14) in the ingest
+  definition editor's header, beside Lineage and View SQL, where `NonProductionFeatureFlag` is on. Cube opens full
+  screen over the editor, as Studio's embedded query builder does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
 - **Sources:** the ingest definitions and data products of the project being edited, as the workspace holds them,
   and nothing else (no sample data, examples, databases or services). One kind of source per cube, as in Legend Query.
 - **The source dialog in Studio:** a screen of its own for each: the project's definitions, or products, by name,

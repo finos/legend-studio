@@ -3,7 +3,7 @@
 A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Legend Query is the
 main host: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page (`src/components/cube/`) of
 `@finos/legend-application-query`. Legend Studio hosts it too, from an ingest definition's editor (see
-[Legend Studio](#legend-studio-create-matview-with-cube)).
+[Legend Studio](#legend-studio-create-matview)).
 
 ## The host
 
@@ -115,9 +115,9 @@ lives as long as the page; Legend Query makes a new host on each visit.
 in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
 run.
 
-## Legend Studio: Create MatView with Cube
+## Legend Studio: Create MatView
 
-An ingest definition's editor in Studio offers **Create MatView with Cube** where `NonProductionFeatureFlag` is on
+An ingest definition's editor in Studio offers **Create MatView** where `NonProductionFeatureFlag` is on
 (`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
 screen over the editor, as the embedded query builder does, with `LegendStudioCubeHost`:
 
