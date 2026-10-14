@@ -66,7 +66,10 @@ export enum CubeLambdaFidelity {
   EXACT = 'exact',
   /** Pure that reads the same rows, written Cube's way */
   REWRITTEN = 'rewritten',
-  /** Not known: a step isn't valid, or an expression couldn't be checked */
+  /**
+   * Not known: a step isn't valid, an expression couldn't be checked, or a
+   * step read with unknown columns is written another way
+   */
   UNCHECKED = 'unchecked',
 }
 
@@ -77,7 +80,7 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
   REWRITTEN: (label: string): string =>
     `Cube writes ${label} another way, which reads the same rows: what Cube shows and saves is its own Pure.`,
   UNCHECKED: (label: string): string =>
-    `Cube couldn't check that it writes ${label} back the same way, as a step isn't valid: review its steps.`,
+    `Cube couldn't check that its steps read the same rows as ${label}: review them.`,
   GRID_LIMIT:
     "The limit beside from() is read as a Limit step: it may be the grid's row limit of the run the Pure was copied from.",
   /** What the banner calls a lambda imported from the Import Pure dialog */
@@ -111,6 +114,12 @@ export interface CubeLambdaReading {
   readonly lambda: IR;
   /** Whether it was a run's lambda, with `from()`, rather than a matview's relation */
   readonly isRun: boolean;
+  /**
+   * The steps read without being checked, as the columns before them weren't
+   * known: read as Cube writes them, so the cube can't be vouched for unless
+   * it is written back the same
+   */
+  readonly unchecked: readonly string[];
   readonly notes: readonly string[];
 }
 
@@ -203,7 +212,7 @@ export const readCubeLambdaDocument = async (
     editorState,
     findCubeLambdaSources(parts),
   );
-  const { query } = readCubeQuery(parts, {
+  const { query, unchecked } = readCubeQuery(parts, {
     bindSource: binding.bindSource,
     expressions: CUBE_EXPRESSION_CODEC,
     relationSchemas: await typeExtends(
@@ -223,17 +232,21 @@ export const readCubeLambdaDocument = async (
     }),
     lambda: read,
     isRun: parts.runtime !== undefined,
+    unchecked,
     notes: parts.limitBesideFrom ? [CUBE_LAMBDA_IMPORT_MESSAGE.GRID_LIMIT] : [],
   };
 };
 
 /**
  * Whether the cube, written again as the lambda was written (a matview's
- * relation, or a run with no row limit), is the lambda it was read from
+ * relation, or a run with no row limit), is the lambda it was read from.
+ * Written another way, it reads the same rows only when every step was
+ * checked as it was read: a step read with unknown columns, e.g. a select
+ * taken for the one a Join writes, may not.
  */
 export const getCubeLambdaFidelity = (
   editorState: CubeEditorState,
-  reading: Pick<CubeLambdaReading, 'lambda' | 'isRun'>,
+  reading: Pick<CubeLambdaReading, 'lambda' | 'isRun' | 'unchecked'>,
 ): CubeLambdaFidelity => {
   const { query, context } = editorState.document;
   const selected = query.selected;
@@ -245,10 +258,15 @@ export const getCubeLambdaFidelity = (
     reading.isRun && context?.runtime !== undefined
       ? emitter.emitExecutionLambda({ runtime: context.runtime })
       : lambda([], [emitter.emitRelation(selected, { withRowOrder: true })]);
-  return isSameCubeIR(written, reading.lambda, {
-    readExpression: CUBE_EXPRESSION_CODEC.read,
-  })
-    ? CubeLambdaFidelity.EXACT
+  if (
+    isSameCubeIR(written, reading.lambda, {
+      readExpression: CUBE_EXPRESSION_CODEC.read,
+    })
+  ) {
+    return CubeLambdaFidelity.EXACT;
+  }
+  return reading.unchecked.length
+    ? CubeLambdaFidelity.UNCHECKED
     : CubeLambdaFidelity.REWRITTEN;
 };
 

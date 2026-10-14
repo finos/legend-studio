@@ -237,16 +237,22 @@ const bindDataProducts = async (
     const [dataProduct, accessPointId] = source.path;
     let candidate = products.get(dataProduct);
     if (!candidate) {
-      const found = (
-        await catalog.search({ text: dataProduct, environmentType })
-      ).filter(
-        (each) =>
-          each.dataProductPath === dataProduct &&
-          (!current ||
-            (each.groupId === current.groupId &&
-              each.artifactId === current.artifactId &&
-              each.versionId === current.versionId)),
-      );
+      // a catalog searches titles and ids, not paths: by the product's name,
+      // then the whole list, each matched on its path
+      let found: CubeDataProductCandidate[] = [];
+      for (const text of [dataProduct.split('::').at(-1) ?? dataProduct, '']) {
+        found = (await catalog.search({ text, environmentType })).filter(
+          (each) =>
+            each.dataProductPath === dataProduct &&
+            (!current ||
+              (each.groupId === current.groupId &&
+                each.artifactId === current.artifactId &&
+                each.versionId === current.versionId)),
+        );
+        if (found.length) {
+          break;
+        }
+      }
       if (found.length > 1) {
         throw new CubeLambdaReadError(
           CUBE_LAMBDA_SOURCES_MESSAGE.DATA_PRODUCTS(dataProduct),

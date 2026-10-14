@@ -42,6 +42,13 @@ Complete (2026-10-14): IP.1–IP.12 done; the draft PR, finos/legend-studio#5694
 
 ## Notes
 
+- After the review (2026-10-14): a cube written another way is said to read the same rows only when every step was
+  checked as it was read (`CubeLambdaReading.unchecked`): a select taken for the one a Join or a Partition writes,
+  with the columns unknown, may have been the user's restriction, so the banner then says Cube couldn't check it. A
+  data product is found by its name, then in the whole list, matched on its path (catalogs search titles and ids).
+  Tested: the binding of a data product's access point on a project host's warehouse; Studio's Edit MatView on a
+  data product matview in the headless probe (12 checks).
+
 - IP.10–IP.12: headless checks on the dev servers, all passing: Query (`probe-import-pure-query.mjs`, 7 checks:
   Import Pure on the Top customers example, five steps, no banner, 10 rows, Show Pure, one undo step, an unknown
   function named) and Studio (`studio-matview/probe-edit-matview.mjs`, 9 checks). Videos `28-edit-matview.webm` (1:04,
