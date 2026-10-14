@@ -279,6 +279,7 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     targets: optionalCustomList(
       (val: string) => val,
       (val) => val as unknown as string,
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
   },
 );
@@ -377,6 +378,7 @@ export const V1_DefaultAccessPointGroupModelSchema = createModelSchema(
     targets: optionalCustomList(
       (val: string) => val,
       (val) => val as unknown as string,
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
