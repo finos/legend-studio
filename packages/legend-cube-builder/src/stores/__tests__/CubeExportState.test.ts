@@ -138,6 +138,9 @@ describe('Export', () => {
     );
     expect(state.export.isExporting).toBe(false);
     expect(state.runStats.entries[0]?.label).toBe('Export CSV');
+    expect(
+      state.runStats.entries[0]?.lambda === fake.exportCsv.mock.calls[0]?.[1],
+    ).toBe(true);
   });
 
   test("Keeps the run's own Limit: only the row limit of the grid is left out", async () => {
@@ -156,6 +159,10 @@ describe('Export', () => {
     await flowResult(state.export.exportCsv(result));
     expect(state.export.error?.firstLine).toBe('Division by zero');
     expect(saved).toEqual([]);
+    expect(state.runStats.entries[0]).toMatchObject({
+      label: 'Export CSV',
+      error: 'Division by zero',
+    });
     await flowResult(state.export.exportCsv(result));
     expect(state.export.error).toBeUndefined();
     expect(saved).toHaveLength(1);
@@ -179,6 +186,10 @@ describe('Export', () => {
     await exporting;
     expect(saved).toEqual([]);
     expect(state.export.error).toBeUndefined();
+    // the Execute only
+    expect(state.runStats.entries.map((entry) => entry.label)).toEqual([
+      'Execute',
+    ]);
   });
 
   test('Refuses to export a run made in another context, as the warehouse is read from the page', async () => {

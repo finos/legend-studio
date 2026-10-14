@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { IR } from '@finos/legend-cube';
 import { describe, expect, test } from '@jest/globals';
 import { CubeRunStatsState, MAX_CUBE_RUN_STATS } from '../CubeRunStatsState.js';
 
@@ -24,6 +25,7 @@ describe('Run stats', () => {
       stats.record(`Run ${index}`, {
         durationMs: index,
         sql: [`select ${index}`],
+        lambda: undefined,
       });
     }
     expect(MAX_CUBE_RUN_STATS).toBe(15);
@@ -38,5 +40,17 @@ describe('Run stats', () => {
     expect(new Set(stats.entries.map((entry) => entry.id)).size).toBe(15);
     stats.clear();
     expect(stats.entries).toEqual([]);
+  });
+
+  test('Keeps the lambda a run sent, and why one failed, with no SQL', () => {
+    const stats = new CubeRunStatsState();
+    const lambda: IR = { k: 'lambda', params: [], body: [] };
+    stats.record('Execute', { durationMs: 3, lambda, error: 'No table T' });
+    expect(stats.entries[0]).toMatchObject({
+      label: 'Execute',
+      sql: [],
+      error: 'No table T',
+    });
+    expect(stats.entries[0]?.lambda === lambda).toBe(true);
   });
 });

@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
+import type { IR } from '@finos/legend-cube';
 import { action, makeObservable, observable } from 'mobx';
 
 /** How many of the latest runs are kept (spec §12.6) */
 export const MAX_CUBE_RUN_STATS = 15;
 
-/** One run on the engine: an Execute, a fetch of the grid's rows, an export */
+/**
+ * One run on the engine: an Execute, a fetch of the grid's rows, an export,
+ * the Pivot editor's value load; one that failed too (PLAN §11.16)
+ */
 export interface CubeRunStat {
   readonly id: number;
   /** What ran, e.g. `Execute` or `Rows of SHIP_COUNTRY "France"` */
@@ -29,12 +33,29 @@ export interface CubeRunStat {
   readonly durationMs: number;
   /** The SQL statements the engine ran */
   readonly sql: readonly string[];
+  /**
+   * The execution lambda sent, as it ran (its row limit included), for its
+   * Pure and JSON (PLAN §11.16); `undefined` when the run failed before one
+   * was written
+   */
+  readonly lambda: IR | undefined;
+  /** Why the run failed, the engine's first line; `undefined` for one that ran */
+  readonly error: string | undefined;
+}
+
+/** What a run gives to be recorded */
+export interface CubeRunRecord {
+  readonly durationMs: number;
+  readonly sql?: readonly string[] | undefined;
+  readonly lambda: IR | undefined;
+  readonly error?: string | undefined;
 }
 
 /**
  * The latest runs of the page, newest first, at most `MAX_CUBE_RUN_STATS`
- * (spec §12.6, PLAN §11.10): each successful Execute, fetch and export
- * records one. They are the page's, not the cube's, and aren't saved.
+ * (spec §12.6, PLAN §11.10): each Execute, fetch, export and Pivot value
+ * load records one, failed or not; a stopped one records nothing (PLAN
+ * §11.16). They are the page's, not the cube's, and aren't saved.
  */
 export class CubeRunStatsState {
   entries: readonly CubeRunStat[] = [];
@@ -49,17 +70,16 @@ export class CubeRunStatsState {
     });
   }
 
-  record(
-    label: string,
-    run: { readonly durationMs: number; readonly sql: readonly string[] },
-  ): void {
+  record(label: string, run: CubeRunRecord): void {
     this.entries = [
       {
         id: ++this.count,
         label,
         finishedAt: Date.now(),
         durationMs: run.durationMs,
-        sql: run.sql,
+        sql: run.sql ?? [],
+        lambda: run.lambda,
+        error: run.error,
       },
       ...this.entries,
     ].slice(0, MAX_CUBE_RUN_STATS);

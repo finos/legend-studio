@@ -1241,6 +1241,18 @@ export class V1_LegendCubeEngine implements CubeEngine {
     }
   }
 
+  serializeLambda(lambdaIR: IR): string {
+    return stringifyLosslessJSON(
+      V1_serializeCubeLambda(lambdaIR),
+      undefined,
+      2,
+    );
+  }
+
+  setRequestCompression(enabled: boolean): void {
+    this.client.setCompression(enabled);
+  }
+
   async renderPure(lambdaIR: IR): Promise<string> {
     try {
       // sent as text, as typing and execution are: the serialized lambda holds

@@ -15,6 +15,7 @@
  */
 
 import {
+  type IR,
   type ModelContext,
   needsDatabaseType,
   type Query,
@@ -40,6 +41,8 @@ export interface CubeQueryRunRequest {
   /** The most rows to keep: one more is fetched to tell whether there are more */
   readonly rowLimit: number;
   readonly abortController: AbortController;
+  /** What the Runs panel calls the run, e.g. `Execute` (PLAN §11.16) */
+  readonly label: string;
 }
 
 export interface CubeQueryRunResult {
@@ -49,6 +52,8 @@ export interface CubeQueryRunResult {
   readonly limited: boolean;
   readonly sql: readonly string[];
   readonly durationMs: number;
+  /** The execution lambda that ran, its row limit included */
+  readonly lambda: IR;
 }
 
 /** Thrown when a run is aborted while it waits for the model's outline */
@@ -59,18 +64,11 @@ export class CubeQueryRunAborted extends Error {
   }
 }
 
-/**
- * Runs a query up to its selected node (PLAN §8.2, §9), as Execute and the
- * grid's fetches do (PLAN §11.10): a Drop, Slice, Limit or Distinct is written
- * for the database it runs on (PLAN §11.4), which the model's outline gives,
- * loaded once and waited for only then; the row limit is the emitter's
- * `limit(rowLimit + 1)`. The engine's columns are checked against the schema,
- * since rows are read by position. Rejects with a `CubeEngineError`, or a
- * `CubeQueryRunAborted` when aborted before the engine is called.
- */
-export const runCubeQuery = async (
+/** Runs the query and checks the engine's columns, keeping the lambda once it is written */
+const runAndCheck = async (
   editorState: CubeEditorState,
   request: CubeQueryRunRequest,
+  sent: { lambda?: IR },
 ): Promise<CubeQueryRunResult> => {
   const { query, model, runtime, schema, rowLimit, abortController } = request;
   const nodeId = query.selected;
@@ -94,6 +92,7 @@ export const runCubeQuery = async (
     query,
     editorState.registry,
   ).emitExecutionLambda({ rowLimit, runtime, databaseType });
+  sent.lambda = lambda;
   const response = await editorState.host.engine.execute(model, lambda, {
     abortController,
   });
@@ -121,5 +120,50 @@ export const runCubeQuery = async (
     limited,
     sql: response.sql,
     durationMs: response.durationMs,
+    lambda,
   };
+};
+
+/**
+ * Runs a query up to its selected node (PLAN §8.2, §9), as Execute and the
+ * grid's fetches do (PLAN §11.10): a Drop, Slice, Limit or Distinct is written
+ * for the database it runs on (PLAN §11.4), which the model's outline gives,
+ * loaded once and waited for only then; the row limit is the emitter's
+ * `limit(rowLimit + 1)`. The engine's columns are checked against the schema,
+ * since rows are read by position. Rejects with a `CubeEngineError`, or a
+ * `CubeQueryRunAborted` when aborted before the engine is called. Each run
+ * is recorded in the Runs panel under its label with the lambda it sent,
+ * one that failed too; a stopped one isn't (PLAN §11.16).
+ */
+export const runCubeQuery = async (
+  editorState: CubeEditorState,
+  request: CubeQueryRunRequest,
+): Promise<CubeQueryRunResult> => {
+  const startedAt = Date.now();
+  const sent: { lambda?: IR } = {};
+  try {
+    const result = await runAndCheck(editorState, request, sent);
+    // a run stopped while it ran is let go of, even when it answers
+    if (!request.abortController.signal.aborted) {
+      editorState.runStats.record(request.label, result);
+    }
+    return result;
+  } catch (error) {
+    if (
+      !request.abortController.signal.aborted &&
+      !(error instanceof CubeQueryRunAborted)
+    ) {
+      editorState.runStats.record(request.label, {
+        durationMs: Date.now() - startedAt,
+        lambda: sent.lambda,
+        error:
+          error instanceof CubeEngineError
+            ? error.firstLine
+            : error instanceof Error
+              ? error.message
+              : String(error),
+      });
+    }
+    throw error;
+  }
 };
