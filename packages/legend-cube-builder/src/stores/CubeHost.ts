@@ -77,7 +77,17 @@ export interface CubeHost {
    * change either
    */
   readonly engineClientSettings?: CubeEngineClientSettings | undefined;
+  /**
+   * Whether the page offers Cube's sample data: the source dialog's Sample
+   * Data tab and the Examples. Offered unless the host says no, as Studio
+   * does, where a cube reads only the project's ingest definitions
+   */
+  readonly offersSampleData?: boolean | undefined;
 }
+
+/** Whether the host offers Cube's sample data and examples */
+export const isCubeSampleDataOffered = (host: CubeHost): boolean =>
+  host.offersSampleData !== false;
 
 /** Why the host can't list a project model's Databases */
 const NO_PROJECT_CATALOG =

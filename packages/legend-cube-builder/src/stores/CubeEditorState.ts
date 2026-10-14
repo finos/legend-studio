@@ -1393,18 +1393,42 @@ export class CubeEditorState implements CommandRegistrar {
 
   /**
    * The kinds of source the host serves: data products, ingest data sets and
-   * services only with their catalogs. The cube's kind may still disable one
-   * (`canAddNode`)
+   * services only with their catalogs, tables and functions only with a tab
+   * that reads them (Studio offers ingest data sets alone). The cube's kind
+   * may still disable one (`canAddNode`)
    */
   get offeredSources(): readonly SourceDefinition[] {
-    return this.registry.sources.filter(
-      (definition) =>
-        (definition.type !== DataProductAccessPointSource.TYPE ||
-          this.sourcePicker.dataProductTab.isAvailable) &&
-        (definition.type !== IngestDatasetSource.TYPE ||
-          this.sourcePicker.ingestTab.isAvailable) &&
-        (definition.type !== ServiceSource.TYPE ||
-          this.sourcePicker.serviceTab.isAvailable),
+    const {
+      modelTab,
+      projectTab,
+      projectFunctionTab,
+      directTab,
+      dataProductTab,
+      ingestTab,
+      serviceTab,
+    } = this.sourcePicker;
+    const isServed = (type: string): boolean => {
+      switch (type) {
+        case DataProductAccessPointSource.TYPE:
+          return dataProductTab.isAvailable;
+        case IngestDatasetSource.TYPE:
+          return ingestTab.isAvailable;
+        case ServiceSource.TYPE:
+          return serviceTab.isAvailable;
+        case FunctionSource.TYPE:
+          return modelTab.isAvailable || projectFunctionTab.isAvailable;
+        case RelationalTableSource.TYPE:
+          return (
+            modelTab.isAvailable ||
+            projectTab.isAvailable ||
+            directTab.isAvailable
+          );
+        default:
+          return true;
+      }
+    };
+    return this.registry.sources.filter((definition) =>
+      isServed(definition.type),
     );
   }
 

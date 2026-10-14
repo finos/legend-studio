@@ -15,6 +15,7 @@
  */
 
 import type { Schema } from '@finos/legend-cube';
+import type { PlainObject } from '@finos/legend-shared';
 import type { CubeDataProductEnvironmentType } from './CubeDataProduct.js';
 import type { CubeEngineError, NodeId } from './CubeEngine.js';
 
@@ -56,15 +57,22 @@ export class CubeIngestEnvironment {
   readonly name: string;
   /** The environment a run's lakehouse runtime names */
   readonly runtimeEnvironment: string;
+  /**
+   * The warehouse a new cube starts with, when the environment has one, e.g.
+   * the runtime of a Studio project; else the one the viewer last picked
+   */
+  readonly warehouse: string | undefined;
 
   constructor(fields: {
     environmentType: CubeDataProductEnvironmentType;
     name: string;
     runtimeEnvironment: string;
+    warehouse?: string | undefined;
   }) {
     this.environmentType = fields.environmentType;
     this.name = fields.name;
     this.runtimeEnvironment = fields.runtimeEnvironment;
+    this.warehouse = fields.warehouse;
   }
 }
 
@@ -166,4 +174,22 @@ export interface CubeIngestCatalog {
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
     options?: { readonly fresh?: boolean | undefined },
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
+}
+
+/**
+ * Where an ingest cube's engine reads the definitions it types and runs on,
+ * as protocol JSON, by URN, and the environment a run's lakehouse runtime
+ * names: the ingest servers for the deployed ones, or the host's own, e.g.
+ * Studio's workspace. Calls fail with a `CubeEngineError`
+ */
+export interface CubeIngestDefinitionSource {
+  /** A definition's element, as protocol JSON, by its URN, for the cube's class */
+  getDefinitionElement(
+    urn: string,
+    environmentType: CubeDataProductEnvironmentType,
+  ): Promise<PlainObject>;
+  /** The environment a run's lakehouse runtime names, for the cube's class */
+  getRuntimeEnvironment(
+    environmentType: CubeDataProductEnvironmentType,
+  ): Promise<string>;
 }

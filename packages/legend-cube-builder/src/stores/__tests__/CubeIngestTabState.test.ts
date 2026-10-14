@@ -38,7 +38,13 @@ import {
 import {
   CUBE_INGEST_MODEL_TYPE,
   CUBE_INGEST_RUNTIME_PATH,
+  formatCubeIngestUrn,
+  parseCubeIngestUrn,
 } from '../../graph-manager/CubeIngest.js';
+import {
+  CubeIngestEnvironment,
+  CubeIngestProducer,
+} from '../../graph-manager/CubeIngestCatalog.js';
 import { getCubeRememberedWarehouse } from '../CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
@@ -272,5 +278,45 @@ describe('The Ingest tab', () => {
     expect(tab.definition).toBeUndefined();
     expect(tab.dataSets).toBeUndefined();
     expect(tab.isDescribing).toBe(false);
+  });
+
+  test("Reads the only producer deployment's definitions, and starts a new cube on the environment's own warehouse", async () => {
+    const { state, ingest } = setUp();
+    ingest.listProducers.mockResolvedValueOnce([
+      new CubeIngestProducer({
+        deploymentId: '1234',
+        urn: 'urn:lakehouse:prod:producer:deployment:1234',
+      }),
+    ]);
+    ingest.resolveEnvironment.mockResolvedValueOnce(
+      new CubeIngestEnvironment({
+        environmentType: PRODUCTION,
+        name: 'env-a',
+        runtimeEnvironment: 'lakehouse-ingest-env-a',
+        warehouse: 'PROJECT_WH',
+      }),
+    );
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    const tab = state.sourcePicker.ingestTab;
+    expect(tab.producerDeploymentId).toBe('1234');
+    expect(ingest.listDefinitions.mock.calls).toEqual([[PRODUCTION, '1234']]);
+    expect(tab.shownDefinitions).toHaveLength(2);
+    expect(tab.warehouse).toBe('PROJECT_WH');
+  });
+});
+
+describe("An ingest definition's URN", () => {
+  test('Reads back as the class, project and definition it was written from', () => {
+    const urn = {
+      environmentType: PRODUCTION_PARALLEL,
+      groupId: 'org.finos.demo',
+      artifactId: 'trades-ingest',
+      definition: 'demo::ingest::TradesIngest',
+    };
+    expect(formatCubeIngestUrn(urn)).toBe(
+      'urn:lakehouse:prod-parallel:ingest:definition:alloy-git:org.finos.demo~trades-ingest~demo::ingest::TradesIngest',
+    );
+    expect(parseCubeIngestUrn(formatCubeIngestUrn(urn))).toEqual(urn);
   });
 });

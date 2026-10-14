@@ -74,20 +74,23 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   );
   return (
     <div className="flex flex-col gap-2">
-      <CubePickerStep
-        label="Mode"
-        value={tab.environmentType}
-        options={(tab.catalog?.environmentTypes ?? []).map((type) => ({
-          value: type,
-          label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
-        }))}
-        disabled={settings !== undefined}
-        onChange={(value) => {
-          if (value) {
-            tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
-          }
-        }}
-      />
+      {/* a host with one class, as Studio, offers no choice of Mode */}
+      {(tab.catalog?.environmentTypes.length ?? 0) > 1 && (
+        <CubePickerStep
+          label="Mode"
+          value={tab.environmentType}
+          options={(tab.catalog?.environmentTypes ?? []).map((type) => ({
+            value: type,
+            label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
+          }))}
+          disabled={settings !== undefined}
+          onChange={(value) => {
+            if (value) {
+              tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
+            }
+          }}
+        />
+      )}
       <div className="flex items-center gap-2 text-base">
         <span className="w-20 shrink-0">Environment</span>
         <span aria-label="Environment">

@@ -1,8 +1,9 @@
 # Hosting the Cube page
 
 A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Legend Query is the
-host today: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page (`src/components/cube/`) of
-`@finos/legend-application-query`.
+main host: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page (`src/components/cube/`) of
+`@finos/legend-application-query`. Legend Studio hosts it too, from an ingest definition's editor (see
+[Legend Studio](#legend-studio-create-matview-with-cube)).
 
 ## The host
 
@@ -15,6 +16,9 @@ interface CubeHost {
   readonly dataProductCatalog?: CubeDataProductCatalog | undefined;
   readonly ingestCatalog?: CubeIngestCatalog | undefined;
   readonly projectCatalog?: CubeProjectCatalog | undefined;
+  readonly serviceCatalog?: CubeServiceCatalog | undefined;
+  /** False to leave out the Sample Data tab and the Examples, as Studio does */
+  readonly offersSampleData?: boolean | undefined;
 }
 ```
 
@@ -110,6 +114,28 @@ lives as long as the page; Legend Query makes a new host on each visit.
 **The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an
 in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
 run.
+
+## Legend Studio: Create MatView with Cube
+
+An ingest definition's editor in Studio offers **Create MatView with Cube** where `NonProductionFeatureFlag` is on
+(`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
+screen over the editor, as the embedded query builder does, with `LegendStudioCubeHost`:
+
+- **Sources:** the project's own ingest definitions, as the workspace holds them, through the Ingest tab:
+  `LegendStudioCubeIngestCatalog` lists them under their app directory deployment, names each by the URN it would
+  have if the project deployed it (`formatCubeIngestUrn`), and types their data sets from their content
+  (`readCubeIngestDataSets`). No sample data or examples (`offersSampleData: false`), databases, data products or
+  services. One kind of source per cube, as in Legend Query.
+- **Runs:** the same catalog is the engine's `ingestDefinitionSource` (`buildCubeEngine`), so a run reads the
+  definitions from the workspace, on the environment and warehouse of the project's first lakehouse runtime, the one
+  Studio's own queries of an ingest definition use. Without a lakehouse runtime, the Ingest tab says to add one.
+- **Add as MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
+  as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, and appends a
+  `FunctionSource` data set to the definition. Studio sees it as a local change; Lineage and View SQL work on it.
+
+While the page is open, Studio's own shortcuts are off (its F9 compiles), and Cube's are on: Studio's core plugin
+contributes `LEGEND_CUBE_COMMAND_CONFIG`. The floating step editor is placed in the dialog that hosts the page, so the
+dialog doesn't hide it.
 
 ## Shortcuts
 
