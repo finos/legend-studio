@@ -1,11 +1,11 @@
 # Legend Cube: debugging runs, progress
 
-PLAN §11.16. Branch `cube-debug-runs`, from `cube-dev` (`afd8bdadd`); a draft PR into `cube-dev`.
+PLAN §11.16. Built on `cube-debug-runs`, from `cube-dev` (`afd8bdadd`, draft #5686), then replayed onto `master`
+(`56717aeec`) as `cube-debug-runs-master`, in a PR into `master` (user, 2026-10-14).
 
 ## Current state
 
-DR.1–DR.4 are built: every run keeps the lambda it sent, failures are recorded, and the Runs panel has Show Pure and
-Copy JSON per run and the "Send requests uncompressed" switch. DR.4's Network tab check is part of DR.5's rehearsal.
+Complete (2026-10-14): DR.1–DR.7 done, the video sent. The draft PR waits for the user's word to be marked ready.
 
 ## Steps
 
@@ -13,18 +13,32 @@ Copy JSON per run and the "Send requests uncompressed" switch. DR.4's Network ta
 - [x] DR.2 Runs keep their lambda and record failures; the Pivot value load and the export recorded
 - [x] DR.3 The Runs panel: Show Pure and Copy JSON per run, a failed run's error
 - [x] DR.4 "Send requests uncompressed", kept per user
-- [ ] DR.5 Verification: an inline review, a browser rehearsal
-- [ ] DR.6 A demo video
-- [ ] DR.7 Fold the supersessions in
+- [x] DR.5 Verification: an inline review, a browser rehearsal
+- [x] DR.6 A demo video
+- [x] DR.7 Fold the supersessions in
 
 ## Commits
 
-| Step | Commit      | What                                      |
-| ---- | ----------- | ----------------------------------------- |
-| DR.1 | `49cd64b12` | The plan                                  |
-| DR.2 | `a913db66f` | Runs keep their lambda; failures recorded |
+| Step       | Commit      | What                                                                                    |
+| ---------- | ----------- | --------------------------------------------------------------------------------------- |
+| DR.1       | `72af792e3` | The plan                                                                                |
+| DR.2       | `98f048801` | Runs keep their lambda; failures recorded                                               |
+| DR.3, DR.4 | `2572b7b09` | The Runs panel's Show Pure, Copy JSON, a failed run's error; Send requests uncompressed |
+| DR.5–DR.7  | this commit | Rehearsal, video, the plan folded                                                       |
 
 ## Notes
+
+- DR.7: folded into §8.7 (Show Pure), §9 (Runs), the §7.8 state table, §11.10 (Stats) and Appendix A (§12.6).
+- DR.6: `23-debug-runs.webm` (1:03) in the evidence folder's `videos/`, script `demo/demo-debug-runs.mjs`; every frame
+  checked against its caption. The request cards in the video are drawn by the script from what the browser sent
+  (Playwright's request headers and body, and the body's size from a `fetch` wrapper, since Playwright gives no size
+  for a Blob body).
+- DR.5: rehearsed on the dev server (:9002) and the local engine with the script's 9 checks, all passing: a
+  drill-down's levels listed in Runs, their Pure (the groups level's `groupBy` and `->limit(1001)`, the rows level's
+  filter on its key), the clipboard holding the lambda JSON, the default request `application/zlib` (10,814 bytes),
+  and after the switch `application/json` (41,943 bytes, the model included) with the rows back. Inline review: no
+  findings. A fetch whose answer the grid drops for a newer run is still listed, since it ran; only a stopped run
+  isn't.
 
 - DR.3: Show Pure's state gains `openRun(run)`, titled "Pure query of <label>" with a note that it is as it ran;
   the panel's Show Pure and Copy JSON are disabled for a run that failed before its lambda was written. A failed run
