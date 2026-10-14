@@ -4883,7 +4883,7 @@ sends nothing.
 - §8.7 (Show Pure): a run's Pure shows its row limit.
 - Appendix A: §12.6 (failed runs recorded).
 
-### 11.16 Legend Cube in Studio: Create MatView with Cube
+### 11.17 Legend Cube in Studio: Create MatView with Cube
 
 Built on `cube-studio`, from `cube-dev` (`afd8bdadd`), in a PR into `cube-dev`, for a demo (user, 2026-10-14): an
 ingest definition's editor opens Cube to build a materialized view of the project's ingest data sets.

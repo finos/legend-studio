@@ -523,7 +523,7 @@ New features suggested by the review:
 
 - **Runs in Studio are untested.** The local engine has no Lakehouse grammar, so a Studio cube's typing and runs, the
   ingest editor's grammar text, and Lineage and View SQL on a new materialized view were never seen working; the
-  catalog, the source dialog, the canvas and Add as MatView were (video `24-studio-matview.webm`, with a mock SDLC
+  catalog, the source dialog, the canvas and Add as MatView were (video `25-studio-matview.webm`, with a mock SDLC
   server, `demo/studio-matview/` in the evidence folder). Check on an engine that reads ingest definitions: a cube of
   one data set should return the rows Studio's own query of it does.
 - **The run's runtime is rebuilt from the project's.** A run takes only the environment and the warehouse of the
