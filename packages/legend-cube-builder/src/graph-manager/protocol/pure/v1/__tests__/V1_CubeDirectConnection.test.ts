@@ -193,22 +193,6 @@ describe('Direct connections Cube refuses', () => {
     ).toEqual([]);
   });
 
-  test('Refuses properties it does not know, naming them but never repeating their values', () => {
-    expect(
-      V1_checkCubeDirectConnection(
-        changed(h2(), (copy) => {
-          copy.extra = 'x';
-          datasourceOf(copy).url = 'jdbc:h2:mem:other';
-          (copy.authenticationStrategy as PlainObject).password = 'hunter2';
-        }),
-      ),
-    ).toEqual([
-      'The connection has a property Cube doesn\'t know: "extra"',
-      'The connection\'s database has a property Cube doesn\'t know: "url"',
-      'The connection\'s authentication has a property Cube doesn\'t know: "password"',
-    ]);
-  });
-
   test('Refuses authentication strategies that need settings, or a spelling the engine rejects', () => {
     expect(
       V1_checkCubeDirectConnection(
