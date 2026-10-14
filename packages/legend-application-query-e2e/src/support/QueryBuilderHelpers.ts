@@ -86,6 +86,32 @@ export const openDataSpaceQuery = async (page: Page): Promise<void> => {
 };
 
 /**
+ * Open the query builder's `Help...` menu, and return its item labelled
+ * `label`, e.g. `About Query Info` — to click, or to check it is disabled.
+ */
+export const getHelpMenuItem = async (
+  page: Page,
+  label: string,
+): Promise<Locator> => {
+  await page.getByTitle('See more options').click();
+  return page.getByRole('button', { name: label, exact: true });
+};
+
+/**
+ * The value of the field labelled `label` in one of the editor's `About ...`
+ * dialogs (data space, data product or ingest), e.g. `Execution Context`.
+ */
+export const getAboutDialogField = (dialog: Locator, label: string): Locator =>
+  dialog
+    .locator('.dataspace-info-modal__field')
+    .filter({
+      has: dialog.page().locator('.dataspace-info-modal__field__label', {
+        hasText: exactly(label),
+      }),
+    })
+    .locator('.dataspace-info-modal__field__value');
+
+/**
  * Stub `window.open`, which the app calls to open a page in a new tab — one of
  * its own routes, or another Legend application (Studio, Marketplace) —
  * recording each address instead of opening it, so tests can assert where a

@@ -484,6 +484,30 @@ export const mockProjectListing = async (page: Page): Promise<void> => {
   );
 };
 
+/**
+ * The SDLC project the fixture's project is built from, as depot reports it
+ * with {@link mockSDLCProject}. Its `PROD` prefix matches the Studio instance
+ * the app's dev config lists, so links into Studio resolve.
+ */
+export const TEST_SDLC_PROJECT_ID = 'PROD-1234';
+
+/**
+ * Report the fixture's project as built from the SDLC project `projectId`,
+ * which the mock depot server leaves out: the app needs it to link to the
+ * project in Studio.
+ */
+export const mockSDLCProject = async (
+  page: Page,
+  projectId = TEST_SDLC_PROJECT_ID,
+): Promise<void> => {
+  await page.route(
+    new RegExp(
+      `/depot/api/project-configurations/${TEST_PROJECT.groupId}/${TEST_PROJECT.artifactId}$`,
+    ),
+    (route) => route.fulfill({ json: { ...TEST_PROJECT, projectId } }),
+  );
+};
+
 /** Path of the service added by {@link mockServiceModel}. */
 export const COVID_CASES_SERVICE_PATH = 'test::CovidCasesService';
 
