@@ -22,7 +22,6 @@ import {
   columnAccess,
   Connection,
   CUBE_QUERY_READER_MESSAGE,
-  CubeLambdaReadError,
   ExpressionFilter,
   Extend,
   Filter,
@@ -30,7 +29,6 @@ import {
   findCubeLambdaExtends,
   findCubeLambdaSources,
   func,
-  getExpressionFilterSignature,
   getExtendSignature,
   isSameCubeIR,
   lambda,
@@ -49,18 +47,25 @@ import {
   type QueryNode,
   type Schema,
 } from '@finos/legend-cube';
-import { TEST__cubeLambdaSamples } from '../__test-utils__/CubeLambdaCorpus.js';
+import {
+  TEST__bindSampleSources,
+  TEST__checkedAsTheEngineWould,
+  TEST__cubeLambdaSamples,
+} from '../__test-utils__/CubeLambdaCorpus.js';
 import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
 
 // Import Pure's steps (PLAN §11.18): what Cube writes for each node of the
 // core's samples reads back into steps that Cube writes the same way again
 
-/** The steps the reader reads so far (IP.4, IP.6) */
+/** Every step the samples hold, which the reader reads */
 const READ_STEPS = new Set([
   'relational',
   'extend',
   'pivot',
   'concat',
+  'join',
+  'difference',
+  'partition',
   'filter',
   'expressionFilter',
   'group',
@@ -72,59 +77,6 @@ const READ_STEPS = new Set([
   'distinct',
   'rename',
 ]);
-
-/** Each table of the lambda bound to the sample's own source of it, with its saved columns */
-const bindSamplesSources =
-  (document: CubeDocument) =>
-  (source: IR): CubeSourceStep => {
-    const table = document.query.nodes.find(
-      (node): node is RelationalTableSource =>
-        node instanceof RelationalTableSource &&
-        source.k === 'storeAccessor' &&
-        source.path.join('.') ===
-          [node.database, node.schema, node.table].join('.'),
-    );
-    if (!table) {
-      throw new CubeLambdaReadError(`No table for ${JSON.stringify(source)}`);
-    }
-    return {
-      type: RelationalTableSource.TYPE,
-      create: (id) =>
-        new RelationalTableSource(
-          id,
-          {
-            database: table.database,
-            schema: table.schema,
-            table: table.table,
-          },
-          table.resolution,
-        ),
-    };
-  };
-
-/**
- * The query with each Filter by Expression checked, as the editor has the
- * engine check them on import: the samples' conditions are all Booleans
- */
-const checkedAsTheEngineWould = (query: Query): Query =>
-  query.nodes.reduce((checked, node) => {
-    if (!(node instanceof ExpressionFilter) || !node.lambda) {
-      return checked;
-    }
-    const [inputId] = checked.getInputIds(node.id);
-    const input =
-      inputId === undefined
-        ? undefined
-        : buildSchemasAndValidity(checked).schemas.get(inputId);
-    return input
-      ? checked.replace(
-          node.withCheck({
-            kind: 'checked',
-            signature: getExpressionFilterSignature(input, node.lambda),
-          }),
-        )
-      : checked;
-  }, query);
 
 const SAMPLES = TEST__cubeLambdaSamples().map((sample) => {
   const upstream = new Set<string>();
@@ -153,14 +105,14 @@ describe('Reading the steps of a lambda', () => {
         const parts = splitCubeLambda(written);
         expect(findCubeLambdaSources(parts).length).toBeGreaterThan(0);
         const { query, unchecked, rewritten } = readCubeQuery(parts, {
-          bindSource: bindSamplesSources(sample.document),
+          bindSource: TEST__bindSampleSources(sample.document),
           expressions: CUBE_EXPRESSION_CODEC,
         });
         // every step's columns were known, so every step was checked, and
         // each was written back the same
         expect(unchecked).toEqual([]);
         expect(rewritten).toEqual([]);
-        const emitter = new QueryEmitter(checkedAsTheEngineWould(query));
+        const emitter = new QueryEmitter(TEST__checkedAsTheEngineWould(query));
         const selected = query.selected as string;
         expect(emitter.canEmit(selected)).toBe(true);
         const again =
@@ -196,17 +148,8 @@ describe('Reading the steps of a lambda', () => {
     },
   );
 
-  test('Refuses, for now, the steps it reads in a later step of the plan', () => {
-    const later = SAMPLES.filter((sample) => !sample.readable);
-    expect(later.length).toBeGreaterThan(0);
-    later.forEach((sample) => {
-      expect(() =>
-        readCubeQuery(splitCubeLambda(sample.relation), {
-          bindSource: bindSamplesSources(sample.document),
-          expressions: CUBE_EXPRESSION_CODEC,
-        }),
-      ).toThrow(CubeLambdaReadError);
-    });
+  test('Reads every sample', () => {
+    expect(SAMPLES.filter((sample) => !sample.readable)).toEqual([]);
   });
 
   test("Keeps a plainly negated condition as it is when the columns aren't known", () => {
@@ -303,7 +246,7 @@ describe('Reading the steps of a lambda', () => {
     const chains = findCubeLambdaExtends(parts);
     expect(chains).toHaveLength(1);
     const options = {
-      bindSource: bindSamplesSources(sample.document),
+      bindSource: TEST__bindSampleSources(sample.document),
       expressions: CUBE_EXPRESSION_CODEC,
     };
 
@@ -346,7 +289,7 @@ describe('Reading the steps of a lambda', () => {
           lambda([], [{ k: 'func', name: 'olapGroupBy', params: [relation] }]),
         ),
         {
-          bindSource: bindSamplesSources(sample?.document as CubeDocument),
+          bindSource: TEST__bindSampleSources(sample?.document as CubeDocument),
           expressions: CUBE_EXPRESSION_CODEC,
         },
       ),

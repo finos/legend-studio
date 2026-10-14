@@ -15,11 +15,18 @@
  */
 
 import {
+  buildSchemasAndValidity,
+  CubeLambdaReadError,
   decodeCubeSpec,
+  ExpressionFilter,
+  getExpressionFilterSignature,
   lambda,
   QueryEmitter,
+  RelationalTableSource,
   type CubeDocument,
+  type CubeSourceStep,
   type IR,
+  type Query,
 } from '@finos/legend-cube';
 import { readdirSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
@@ -75,3 +82,56 @@ export const TEST__cubeLambdaSamples = (): TEST__CubeLambdaSample[] =>
           ).emitExecutionLambda({ runtime }),
         }));
     });
+
+/** Each table of the lambda bound to the sample's own source of it, with its saved columns */
+export const TEST__bindSampleSources =
+  (document: CubeDocument) =>
+  (source: IR): CubeSourceStep => {
+    const table = document.query.nodes.find(
+      (node): node is RelationalTableSource =>
+        node instanceof RelationalTableSource &&
+        source.k === 'storeAccessor' &&
+        source.path.join('.') ===
+          [node.database, node.schema, node.table].join('.'),
+    );
+    if (!table) {
+      throw new CubeLambdaReadError(`No table for ${JSON.stringify(source)}`);
+    }
+    return {
+      type: RelationalTableSource.TYPE,
+      create: (id) =>
+        new RelationalTableSource(
+          id,
+          {
+            database: table.database,
+            schema: table.schema,
+            table: table.table,
+          },
+          table.resolution,
+        ),
+    };
+  };
+
+/**
+ * The query with each Filter by Expression checked, as the editor has the
+ * engine check them on import: the samples' conditions are all Booleans
+ */
+export const TEST__checkedAsTheEngineWould = (query: Query): Query =>
+  query.nodes.reduce((checked, node) => {
+    if (!(node instanceof ExpressionFilter) || !node.lambda) {
+      return checked;
+    }
+    const [inputId] = checked.getInputIds(node.id);
+    const input =
+      inputId === undefined
+        ? undefined
+        : buildSchemasAndValidity(checked).schemas.get(inputId);
+    return input
+      ? checked.replace(
+          node.withCheck({
+            kind: 'checked',
+            signature: getExpressionFilterSignature(input, node.lambda),
+          }),
+        )
+      : checked;
+  }, query);

@@ -5,7 +5,7 @@ PLAN §11.18. Built on `cube-import-pure`, branched from #5690's head, then move
 
 ## Current state
 
-In progress (2026-10-14): IP.1–IP.6 done; the draft PR is finos/legend-studio#5694.
+In progress (2026-10-14): IP.1–IP.8 done; the draft PR is finos/legend-studio#5694.
 
 ## Steps
 
@@ -19,8 +19,8 @@ In progress (2026-10-14): IP.1–IP.6 done; the draft PR is finos/legend-studio#
       Save MatView (in place); the note
 - [x] IP.6 The other steps Cube writes as one function: Rename, Distinct, Drop, Slice, Extend (typed during the
       read), Filter by Expression, Pivot, Concat
-- [ ] IP.7 The steps Cube writes as several: Join, Difference, Concat that converts, Partition
-- [ ] IP.8 The round-trip corpus: every emitter test's cube and the examples, written, read and written again
+- [x] IP.7 The steps Cube writes as several: Join, Difference, Concat that converts, Partition
+- [x] IP.8 The round-trip corpus: every emitter test's cube and the examples, written, read and written again
 - [ ] IP.9 Import Pure in the Cube ▾ menu, text or JSON; binding in Query
 - [ ] IP.10 Verification: a review, a browser rehearsal
 - [ ] IP.11 A demo video
@@ -28,16 +28,25 @@ In progress (2026-10-14): IP.1–IP.6 done; the draft PR is finos/legend-studio#
 
 ## Commits
 
-| Step | Commit      | What                                                                                      |
-| ---- | ----------- | ----------------------------------------------------------------------------------------- |
-| IP.1 | `ed466c7de` | Cube loads lazily in Studio                                                               |
-| IP.2 | `d1d9c4475` | The plan section, this file                                                               |
-| IP.3 | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison                                   |
-| IP.4 | `6f9d92d0d` | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename |
-| IP.5 | `aeb821c7e` | Studio: Edit MatView, Add MatView and Save MatView, the import banner                     |
-| IP.6 | this commit | Extend (typed before reading), Pivot, Concat                                              |
+| Step       | Commit      | What                                                                                                |
+| ---------- | ----------- | --------------------------------------------------------------------------------------------------- |
+| IP.1       | `ed466c7de` | Cube loads lazily in Studio                                                                         |
+| IP.2       | `d1d9c4475` | The plan section, this file                                                                         |
+| IP.3       | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison                                             |
+| IP.4       | `6f9d92d0d` | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename           |
+| IP.5       | `aeb821c7e` | Studio: Edit MatView, Add MatView and Save MatView, the import banner                               |
+| IP.6       | `a51c3767f` | Extend (typed before reading), Pivot, Concat                                                        |
+| IP.7, IP.8 | this commit | Join, Difference, Concat that converts, Partition; the corpus on the engine's JSON and the examples |
 
 ## Notes
+
+- IP.7, IP.8: `StepPatterns.ts` reads the steps Cube writes as several functions: a Join's `join` (its keys from the
+  condition, Cube's temporary renames of same-named keys peeled, a FULL join's merge), a Difference's `select` over
+  its differences' extend over a FULL join of `_1`/`_2` renamed inputs, a Concat input's conversions (`cube_cast`),
+  a Partition's one to three window extends (Last's over the reversed window). A `select` after a Join or a
+  Partition is read with it when Cube writes that select (the Partition's functions in its order), else as the
+  Restrict after it. Every node of the core's samples (52) and of the nine examples reads back into as many steps,
+  written the same, as a matview and as Show Pure, from Cube's JSON and through the local engine's grammar.
 
 - IP.6: a chain of `extend`s that aren't windows reads as one Extend; the host types each chain with the engine
   before reading (`findCubeLambdaExtends`, one batch call), so the steps after it are checked, while the step

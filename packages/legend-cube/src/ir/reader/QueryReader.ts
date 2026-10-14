@@ -31,6 +31,7 @@ import {
   type ColumnAggregation,
 } from '../../nodes/transforms/Aggregation.js';
 import { Concat } from '../../nodes/transforms/Concat.js';
+import { Difference } from '../../nodes/transforms/Difference.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import {
@@ -43,8 +44,10 @@ import {
   type ExtendColumn,
 } from '../../nodes/transforms/Extend.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { Join } from '../../nodes/transforms/Join.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import { Pivot } from '../../nodes/transforms/Pivot.js';
 import { Rename, type RenameMapping } from '../../nodes/transforms/Rename.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
@@ -63,6 +66,16 @@ import { getCubeFunctionName, isSameCubeIR } from './CubeIRComparison.js';
 import type { CubeLambdaParts } from './CubeLambdaParts.js';
 import { CubeLambdaReadError } from './CubeLambdaReadError.js';
 import { readFilterCondition } from './FilterReader.js';
+import {
+  isWindowExtend,
+  peelConcatConversion,
+  readDifferenceSelect,
+  readJoinCall,
+  readWindowExtends,
+  withoutJoinMerge,
+  type JoinReading,
+  type PartitionReading,
+} from './StepPatterns.js';
 
 // A lambda's relation read into steps (Import Pure, PLAN §11.18), from its
 // sources up. Each step is read from the functions Cube writes for it, then,
@@ -94,6 +107,11 @@ export const CUBE_QUERY_READER_MESSAGE = {
   PIVOT:
     'Cube reads a pivot as it writes one: a select of its columns, the pivot, a cast of its columns, then a rename of each.',
   CAST: 'Cube reads a cast only after a pivot.',
+  JOIN: 'its condition is the keys of each side, equal: {l, r | $l.a == $r.b && …}.',
+  WINDOW:
+    "Cube reads a window as its Partition writes one: over() one window, the aggregates, ranks and other rows' values in up to three extends.",
+  RESTRICT: 'its columns must be some of its input, in order.',
+  CONCAT: 'both inputs need the same columns, in the same order.',
 };
 
 /** The step a source of the lambda reads as, which the host binds before reading */
@@ -653,6 +671,24 @@ class CubeQueryReader {
     if (isPlainExtend(ir)) {
       return this.readExtends(ir, lets, refuse);
     }
+    if (isWindowExtend(ir)) {
+      const partition = readWindowExtends(ir);
+      return partition
+        ? this.readPartition(partition, ir, undefined, lets)
+        : refuse(CUBE_QUERY_READER_MESSAGE.WINDOW);
+    }
+    if (name === 'select') {
+      return this.readSelect(ir, lets, refuse);
+    }
+    if (name === 'join') {
+      const join = readJoinCall(ir);
+      return join
+        ? this.readJoin(join, ir, undefined, lets)
+        : refuse(CUBE_QUERY_READER_MESSAGE.JOIN);
+    }
+    if (name === 'concatenate') {
+      return this.readConcat(ir, lets);
+    }
     const inputs = ir.params
       .slice(0, inputCount)
       .map((input) => this.readRelation(input, lets));
@@ -663,27 +699,6 @@ class CubeQueryReader {
       case 'groupBy':
       case 'aggregate':
         return this.readGroup(ir, inputs, name, settings, refuse);
-      case 'select': {
-        const columns = columnNamesOf(settings[0]);
-        if (!columns || settings.length !== 1) {
-          return refuse(CUBE_QUERY_READER_MESSAGE.COLUMNS);
-        }
-        return this.choose(
-          [
-            {
-              node: new Restrict(this.nextId(Restrict.TYPE), columns),
-              takenUnchecked: true,
-              takenWhenDifferent: true,
-            },
-          ],
-          inputs,
-          ir,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            name,
-            'its columns must be some of its input, in order.',
-          ),
-        );
-      }
       case 'sort': {
         const sorts = sortKeysOf(settings[0]);
         if (!sorts || settings.length !== 1) {
@@ -764,28 +779,6 @@ class CubeQueryReader {
           inputs,
           ir,
           CUBE_QUERY_READER_MESSAGE.NO_STEP(name),
-        );
-      case 'concatenate':
-        // as it is, or, with columns of other types, converted as Cube
-        // converts them
-        return this.choose(
-          [
-            {
-              node: new Concat(this.nextId(Concat.TYPE)),
-              takenUnchecked: true,
-            },
-            {
-              node: new Concat(this.nextId(Concat.TYPE), true),
-              takenUnchecked: false,
-              takenWhenDifferent: true,
-            },
-          ],
-          inputs,
-          ir,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            name,
-            'both inputs need the same columns, in the same order.',
-          ),
         );
       default:
         throw new CubeLambdaReadError(CUBE_QUERY_READER_MESSAGE.NOT_YET(name));
@@ -887,6 +880,254 @@ class CubeQueryReader {
       CUBE_QUERY_READER_MESSAGE.UNREADABLE(
         name,
         'Cube writes its groups another way.',
+      ),
+    );
+  }
+
+  /**
+   * A `select`: the last of a Join, a Difference or a Partition, which it is
+   * read with, when it is the one they write; else a Restrict
+   */
+  private readSelect(
+    ir: IR,
+    lets: ReadonlySet<string>,
+    refuse: (why: string) => never,
+  ): ReadStep {
+    const [below, columnsIr, ...rest] = (
+      ir as Extract<IR, { readonly k: 'func' }>
+    ).params;
+    const columns = columnNamesOf(columnsIr);
+    if (below === undefined || !columns || rest.length) {
+      return refuse(CUBE_QUERY_READER_MESSAGE.COLUMNS);
+    }
+    const difference = readDifferenceSelect(ir);
+    if (difference) {
+      const inputs = [
+        this.readRelation(difference.left, lets),
+        this.readRelation(difference.right, lets),
+      ];
+      return this.choose(
+        [
+          {
+            node: new Difference(
+              this.nextId(Difference.TYPE),
+              difference.settings,
+            ),
+            takenUnchecked: true,
+            takenWhenDifferent: true,
+          },
+        ],
+        inputs,
+        ir,
+        CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+          'select',
+          'Cube writes this Difference another way.',
+        ),
+      );
+    }
+    const join = readJoinCall(withoutJoinMerge(below));
+    if (join) {
+      return this.readJoin(join, below, { ir, columns }, lets);
+    }
+    if (isWindowExtend(below)) {
+      const partition = readWindowExtends(below);
+      if (partition) {
+        return this.readPartition(partition, below, { ir, columns }, lets);
+      }
+    }
+    return this.readRestrict(this.readRelation(below, lets), ir, columns);
+  }
+
+  private readRestrict(
+    input: ReadStep,
+    ir: IR,
+    columns: readonly string[],
+  ): ReadStep {
+    return this.choose(
+      [
+        {
+          node: new Restrict(this.nextId(Restrict.TYPE), columns),
+          takenUnchecked: true,
+          takenWhenDifferent: true,
+        },
+      ],
+      [input],
+      ir,
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'select',
+        CUBE_QUERY_READER_MESSAGE.RESTRICT,
+      ),
+    );
+  }
+
+  /**
+   * A step that writes a last `select`, read with it when it gives that
+   * `select` (or when the columns aren't known: Cube's own, then); else read
+   * without it, and the `select` the Restrict after it
+   */
+  private readWithSelect(
+    node: QueryNode,
+    inputs: readonly ReadStep[],
+    withoutSelect: IR,
+    select: { readonly ir: IR; readonly columns: readonly string[] },
+  ): ReadStep {
+    const { result, assumed } = this.check(node, inputs, select.ir);
+    if (result === 'same' || result === 'unknown') {
+      if (result === 'unknown') {
+        this.unchecked.push(node.id);
+      }
+      return this.add(node, inputs, select.ir, assumed);
+    }
+    const step = this.choose(
+      [{ node, takenUnchecked: true, takenWhenDifferent: true }],
+      inputs,
+      withoutSelect,
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        getCubeFunctionName(
+          (withoutSelect as Extract<IR, { readonly k: 'func' }>).name,
+        ),
+        CUBE_QUERY_READER_MESSAGE.RESTRICT,
+      ),
+    );
+    return this.readRestrict(step, select.ir, select.columns);
+  }
+
+  /** A Join, as `emitJoin` writes it, its last `select` read with it when it is the Join's */
+  private readJoin(
+    join: JoinReading,
+    joined: IR,
+    select:
+      | { readonly ir: IR; readonly columns: readonly string[] }
+      | undefined,
+    lets: ReadonlySet<string>,
+  ): ReadStep {
+    const inputs = [
+      this.readRelation(join.left, lets),
+      this.readRelation(join.right, lets),
+    ];
+    const node = new Join(this.nextId(Join.TYPE), join.settings);
+    return select
+      ? this.readWithSelect(node, inputs, joined, select)
+      : this.choose(
+          [{ node, takenUnchecked: true, takenWhenDifferent: true }],
+          inputs,
+          joined,
+          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+            'join',
+            CUBE_QUERY_READER_MESSAGE.JOIN,
+          ),
+        );
+  }
+
+  /**
+   * A Partition, as `emitPartition` writes it; with its last `select`, its
+   * window functions in that select's order, when it lists them all
+   */
+  private readPartition(
+    partition: PartitionReading,
+    windowed: IR,
+    select:
+      | { readonly ir: IR; readonly columns: readonly string[] }
+      | undefined,
+    lets: ReadonlySet<string>,
+  ): ReadStep {
+    const input = this.readRelation(partition.input, lets);
+    const make = (aggregations: PartitionReading['aggregations']): Partition =>
+      new Partition(
+        this.nextId(Partition.TYPE),
+        partition.columns,
+        partition.sorts,
+        aggregations,
+      );
+    if (select) {
+      const names = partition.aggregations.map(({ name }) => name);
+      const order = select.columns.filter((column) => names.includes(column));
+      const reordered = order.map((name) =>
+        partition.aggregations.find((aggregation) => aggregation.name === name),
+      );
+      if (
+        order.length === names.length &&
+        reordered.every((aggregation) => aggregation !== undefined)
+      ) {
+        return this.readWithSelect(
+          make(reordered as PartitionReading['aggregations']),
+          [input],
+          windowed,
+          select,
+        );
+      }
+      return this.readRestrict(
+        this.choose(
+          [
+            {
+              node: make(partition.aggregations),
+              takenUnchecked: true,
+              takenWhenDifferent: true,
+            },
+          ],
+          [input],
+          windowed,
+          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+            'extend',
+            CUBE_QUERY_READER_MESSAGE.WINDOW,
+          ),
+        ),
+        select.ir,
+        select.columns,
+      );
+    }
+    return this.choose(
+      [
+        {
+          node: make(partition.aggregations),
+          takenUnchecked: true,
+          takenWhenDifferent: true,
+        },
+      ],
+      [input],
+      windowed,
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'extend',
+        CUBE_QUERY_READER_MESSAGE.WINDOW,
+      ),
+    );
+  }
+
+  /**
+   * A Concat: its inputs below the conversions Cube writes to the types they
+   * share, which make it a Concat that converts types; else as it is, or
+   * converting where Cube would
+   */
+  private readConcat(ir: IR, lets: ReadonlySet<string>): ReadStep {
+    const [first, second] = (ir as Extract<IR, { readonly k: 'func' }>)
+      .params as [IR, IR];
+    const firstBelow = peelConcatConversion(first);
+    const secondBelow = peelConcatConversion(second);
+    const converted = firstBelow !== undefined || secondBelow !== undefined;
+    const inputs = [
+      this.readRelation(firstBelow ?? first, lets),
+      this.readRelation(secondBelow ?? second, lets),
+    ];
+    const widening = {
+      node: new Concat(this.nextId(Concat.TYPE), true),
+      takenUnchecked: converted,
+      takenWhenDifferent: true,
+    };
+    return this.choose(
+      converted
+        ? [widening]
+        : [
+            {
+              node: new Concat(this.nextId(Concat.TYPE)),
+              takenUnchecked: true,
+            },
+            widening,
+          ],
+      inputs,
+      ir,
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'concatenate',
+        CUBE_QUERY_READER_MESSAGE.CONCAT,
       ),
     );
   }
