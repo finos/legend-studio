@@ -29,6 +29,10 @@ Complete (2026-10-14): DR.1–DR.7 done, the video sent. The draft PR waits for 
 
 ## Notes
 
+- Rebased onto `master` (`a8532a256`) on 2026-10-14, after #5685 brought `cube-dev`'s work there (backup branch
+  `cube-debug-runs-master-before-rebase-2026-10-14`). The code applied unchanged; PLAN and PROGRESS were rebuilt on
+  `master`'s, which now has §11.14 and §11.15. The commit hashes in the table are from before the rebase.
+
 - DR.4, again (user, 2026-10-14): the switch left the Runs panel for a Dev Settings modal opened from a ☰ menu at
   the top left, as Legend Query's editor has, with the engine URL too. `CubeEngineClientSettings` replaces the
   engine port's `setRequestCompression`: the engine, the connection explorer and the service and ingest catalogs each
