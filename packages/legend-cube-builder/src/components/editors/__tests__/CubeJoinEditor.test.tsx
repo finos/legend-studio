@@ -15,7 +15,6 @@
  */
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { getColumnTypeLabel } from '../../../__lib__/LegendCubeLabels.js';
 import {
   Concat,
   Connection,
@@ -33,7 +32,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { DATE_OR_TIMESTAMP_WARNING } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  DATE_OR_TIMESTAMP_WARNING,
+  getColumnTypeLabel,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
