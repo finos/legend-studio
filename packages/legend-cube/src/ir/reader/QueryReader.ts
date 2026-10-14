@@ -111,21 +111,39 @@ export interface CubeQueryReading {
   readonly query: Query;
   /** The steps read without being written again, as the columns before them weren't known */
   readonly unchecked: readonly string[];
+  /** The steps Cube writes another way, reading the same rows */
+  readonly rewritten: readonly string[];
 }
 
 /** A step read, and the IR it was read from: what the steps after it read */
 interface ReadStep {
   readonly id: string;
   readonly ir: IR;
+  /**
+   * A Sort's input's IR, below the sort it was read from: a Limit, Drop or
+   * Slice after it writes the sort itself, by its input's order
+   */
+  readonly belowSort?: IR | undefined;
 }
 
-/** Whether a candidate step, written again, gives the Pure it was read from */
-type CheckResult = 'same' | 'different' | 'unknown';
+/**
+ * A candidate step written again: the Pure it was read from; other Pure,
+ * valid; not valid on the columns before it, or not written at all; or not
+ * known, as those columns aren't
+ */
+type CheckResult = 'same' | 'different' | 'invalid' | 'unknown';
 
-/** A way to read a step, and whether it may be taken when its columns aren't known */
+/** A way to read a step, and when it may be taken other than written back the same */
 interface Candidate {
   readonly node: QueryNode;
+  /** When the columns before it aren't known */
   readonly takenUnchecked: boolean;
+  /**
+   * When Cube writes it another way: a step read only one way, which reads
+   * the same rows however it is written, e.g. a Limit whose sort Cube writes
+   * just before it
+   */
+  readonly takenWhenDifferent?: boolean;
 }
 
 /** The functions whose first parameters are relations, how many, so a source is anything else */
@@ -313,6 +331,7 @@ class CubeQueryReader {
   private readonly assumed = new Map<string, QueryNode>();
   private readonly connections: Connection[] = [];
   private readonly unchecked: string[] = [];
+  private readonly rewritten: string[] = [];
   private readonly readLets = new Set<string>();
 
   constructor(
@@ -335,6 +354,7 @@ class CubeQueryReader {
     return {
       query: new Query(this.nodes, this.connections, last.id),
       unchecked: this.unchecked,
+      rewritten: this.rewritten,
     };
   }
 
@@ -432,7 +452,7 @@ class CubeQueryReader {
     const schema = schemas.get(assumed.id);
     const definition = this.registry.get(assumed.type);
     if (!schema || validity.get(assumed.id)?.length || !definition) {
-      return { result: 'different', assumed };
+      return { result: 'invalid', assumed };
     }
     const [input] = inputs;
     const inputOrder =
@@ -442,7 +462,11 @@ class CubeQueryReader {
     try {
       const written = definition.emit(
         assumed as never,
-        inputs.map((each) => each.ir),
+        inputs.map((each) =>
+          assumed.consumesInputOrder && each.belowSort !== undefined
+            ? each.belowSort
+            : each.ir,
+        ),
         {
           inputSchemas: inputSchemas as Schema[],
           schema,
@@ -458,7 +482,7 @@ class CubeQueryReader {
         assumed,
       };
     } catch {
-      return { result: 'different', assumed };
+      return { result: 'invalid', assumed };
     }
   }
 
@@ -479,6 +503,10 @@ class CubeQueryReader {
       }
       if (result === 'unknown' && candidate.takenUnchecked) {
         this.unchecked.push(candidate.node.id);
+        return this.add(candidate.node, inputs, read, assumed);
+      }
+      if (result === 'different' && candidate.takenWhenDifferent) {
+        this.rewritten.push(candidate.node.id);
         return this.add(candidate.node, inputs, read, assumed);
       }
     }
@@ -538,6 +566,7 @@ class CubeQueryReader {
             {
               node: new Restrict(this.nextId(Restrict.TYPE), columns),
               takenUnchecked: true,
+              takenWhenDifferent: true,
             },
           ],
           inputs,
@@ -558,11 +587,11 @@ class CubeQueryReader {
         // again before each one, which is no new step
         const [input] = inputs as [ReadStep];
         if (this.isInOrder(input.id, sorts)) {
-          return input;
+          return { id: input.id, ir, belowSort: input.ir };
         }
         const node = new Sort(this.nextId(Sort.TYPE), sorts);
         this.add(node, inputs, input.ir);
-        return { id: node.id, ir: input.ir };
+        return { id: node.id, ir, belowSort: input.ir };
       }
       case 'limit':
       case 'drop': {
@@ -575,7 +604,7 @@ class CubeQueryReader {
             ? new Limit(this.nextId(Limit.TYPE), size)
             : new Drop(this.nextId(Drop.TYPE), size);
         return this.choose(
-          [{ node, takenUnchecked: true }],
+          [{ node, takenUnchecked: true, takenWhenDifferent: true }],
           inputs,
           ir,
           CUBE_QUERY_READER_MESSAGE.UNREADABLE(
@@ -601,6 +630,7 @@ class CubeQueryReader {
             {
               node: new Slice(this.nextId(Slice.TYPE), start, stop),
               takenUnchecked: true,
+              takenWhenDifferent: true,
             },
           ],
           inputs,
@@ -621,6 +651,7 @@ class CubeQueryReader {
             {
               node: new Distinct(this.nextId(Distinct.TYPE)),
               takenUnchecked: true,
+              takenWhenDifferent: true,
             },
           ],
           inputs,
@@ -668,6 +699,7 @@ class CubeQueryReader {
         this.options.expressions.write(condition),
       ),
       takenUnchecked: true,
+      takenWhenDifferent: true,
     });
     return this.choose(
       candidates,
@@ -718,6 +750,7 @@ class CubeQueryReader {
         {
           node: new Group(this.nextId(Group.TYPE), columns, aggregations),
           takenUnchecked: true,
+          takenWhenDifferent: true,
         },
       ],
       inputs,
@@ -775,6 +808,7 @@ class CubeQueryReader {
                 group.map(({ mapping }) => mapping),
               ),
               takenUnchecked: true,
+              takenWhenDifferent: true,
             },
           ],
           [step],

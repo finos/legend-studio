@@ -18,6 +18,7 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import {
   act,
   findByText,
+  findByTitle,
   fireEvent,
   waitFor,
   within,
@@ -27,15 +28,26 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
   formatCubeIngestUrn,
+  LEGEND_CUBE_TEST_ID,
+  serializeCubeLambdaForHost,
   type CubeEngine,
 } from '@finos/legend-cube-builder';
 import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 import type { IngestDefinition } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
+  aggregationColSpec,
+  colSpec,
+  colSpecArray,
+  columnAccess,
+  func,
+  ingestAccessor,
+  lambda,
+  literal,
   PrimitiveType,
   Schema,
   SchemaColumn,
+  variable,
   type IR,
   type ModelContext,
 } from '@finos/legend-cube';
@@ -248,6 +260,53 @@ const TRADES_LAMBDA = {
   parameters: [],
 };
 
+/** As Cube writes a Filter and a Group of TRADES: the desks' big notionals */
+const BIG_TRADES_LAMBDA = serializeCubeLambdaForHost(
+  lambda(
+    [],
+    [
+      func('groupBy', [
+        func('filter', [
+          ingestAccessor([INGEST_PATH, 'TRADES']),
+          lambda(
+            ['row'],
+            [
+              func('greaterThan', [
+                columnAccess('row', 'NOTIONAL_USD'),
+                literal({ kind: 'float', value: '1000000.0' }),
+              ]),
+            ],
+          ),
+        ]),
+        colSpecArray([colSpec('DESK_ID')]),
+        colSpecArray([
+          aggregationColSpec(
+            'TOTAL_USD',
+            lambda(['x'], [columnAccess('x', 'NOTIONAL_USD')]),
+            lambda(['y'], [func('sum', [variable('y')])]),
+          ),
+        ]),
+      ]),
+    ],
+  ),
+);
+
+/** TradesIngest with a materialized view Cube wrote */
+const TRADES_INGEST_WITH_VIEW: PlainObject<Entity> = {
+  ...TRADES_INGEST,
+  content: {
+    ...(TRADES_INGEST.content as PlainObject),
+    datasets: [
+      ...((TRADES_INGEST.content as PlainObject).datasets as object[]),
+      {
+        name: 'BIG_TRADES',
+        primaryKey: ['DESK_ID'],
+        source: { _type: 'FunctionSource', function: BIG_TRADES_LAMBDA },
+      },
+    ],
+  },
+};
+
 const setUp = async (
   entities: PlainObject<Entity>[],
 ): Promise<{
@@ -372,7 +431,7 @@ describe('Legend Cube in Studio', () => {
 
   test(
     integrationTest(
-      "Create MatView with Cube opens Cube on the definition, and Add as MatView adds the cube's lambda to it as a data set",
+      "Create MatView with Cube opens Cube on the definition, and Add MatView adds the cube's lambda to it as a data set",
     ),
     async () => {
       const { editorStore, renderResult } = await setUp([
@@ -462,7 +521,7 @@ describe('Legend Cube in Studio', () => {
 
   test(
     integrationTest(
-      "Add as MatView asks for the view's name, a classification of its data, and a primary key among the columns of the step that runs",
+      "Add MatView asks for the view's name, a classification of its data, and a primary key among the columns of the step that runs",
     ),
     async () => {
       const { editorStore, renderResult } = await setUp([
@@ -503,13 +562,13 @@ describe('Legend Cube in Studio', () => {
         ).toBeNull(),
       );
 
-      const addAsMatView = await renderResult.findByRole('button', {
-        name: 'Add as MatView',
+      const addMatView = await renderResult.findByRole('button', {
+        name: 'Add MatView',
       });
       await waitFor(() =>
-        expect((addAsMatView as HTMLButtonElement).disabled).toBe(false),
+        expect((addMatView as HTMLButtonElement).disabled).toBe(false),
       );
-      fireEvent.click(addAsMatView);
+      fireEvent.click(addMatView);
       const form = await renderResult.findByTestId(
         EMBEDDED_CUBE_TEST_ID.ADD_MATERIALIZED_VIEW,
       );
@@ -554,6 +613,70 @@ describe('Legend Cube in Studio', () => {
           function: { _type: 'lambda', parameters: [] },
         },
       });
+    },
+  );
+
+  test(
+    integrationTest(
+      'Edit MatView reads the view back into the steps that wrote it, and Save MatView replaces it in place',
+    ),
+    async () => {
+      const { editorStore, renderResult } = await setUp([
+        TRADES_INGEST_WITH_VIEW,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      fireEvent.click(
+        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
+      );
+      fireEvent.click(await renderResult.findByText('Edit MatView BIG_TRADES'));
+      const { embeddedCubeState } = editorStore;
+      expect(embeddedCubeState.matView).toBe('BIG_TRADES');
+      await renderResult.findByText(
+        `Edit MatView BIG_TRADES of ${INGEST_PATH} with Cube`,
+      );
+      // the view's three steps, on Cube's canvas, and nothing to say: Cube
+      // writes them back the same
+      await waitFor(() =>
+        expect(
+          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
+        ).toHaveLength(3),
+      );
+      expect(
+        renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
+      ).toBeNull();
+      await renderResult.findByRole('button', { name: 'Save MatView' });
+
+      const ingest = ingestOf(editorStore);
+      const hashBefore = ingest.hashCode;
+      act(() => {
+        embeddedCubeState.saveMaterializedView(TRADES_LAMBDA);
+      });
+      expect(embeddedCubeState.isOpen).toBe(false);
+      // replaced where it was, its other keys kept
+      expect(getIngestDataSetNames(ingest)).toEqual([
+        'TRADES',
+        'DESKS',
+        'BIG_TRADES',
+      ]);
+      expect((ingest.content.datasets as object[]).at(-1)).toEqual({
+        name: 'BIG_TRADES',
+        primaryKey: ['DESK_ID'],
+        source: { _type: 'FunctionSource', function: TRADES_LAMBDA },
+      });
+      expect(
+        ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map((each) => [
+          each.name,
+          each.source.function.body,
+        ]),
+      ).toEqual([['BIG_TRADES', TRADES_LAMBDA.body]]);
+      expect(ingest.hashCode).not.toBe(hashBefore);
+      await renderResult.findByText(
+        'Saved materialized view BIG_TRADES of TradesIngest',
+      );
     },
   );
 

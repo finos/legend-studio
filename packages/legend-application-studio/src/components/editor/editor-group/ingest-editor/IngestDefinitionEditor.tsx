@@ -35,6 +35,10 @@ import {
   clsx,
   PanelLoadingIndicator,
   CubeIcon,
+  CaretDownIcon,
+  ControlledDropdownMenu,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import {
   INGEST_DEFINITION_TAB,
@@ -54,6 +58,7 @@ import {
 } from '@finos/legend-query-builder';
 import type { MatViewDataSet } from '@finos/legend-graph';
 import { IngestTestableEditor } from './testable/IngestTestableEditor.js';
+import { getIngestMaterializedViews } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 
 export const IngestLineageModal = observer(
   (props: { ingestDefinitionEditorState: IngestDefinitionEditorState }) => {
@@ -180,6 +185,8 @@ export const IngestDefinitionEditor = observer(() => {
       IngestDefinitionEditorState,
     );
   const ingestDef = ingestDefinitionEditorState.ingest;
+  // the views Cube can open to edit (Edit MatView, PLAN §11.18)
+  const materializedViews = getIngestMaterializedViews(ingestDef);
   const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
   const selectedTab = ingestDefinitionEditorState.selectedTab;
 
@@ -324,6 +331,43 @@ export const IngestDefinitionEditor = observer(() => {
                               Create MatView with Cube
                             </div>
                           </button>
+                          {materializedViews.length > 0 && (
+                            <ControlledDropdownMenu
+                              className="btn__dropdown-combo__dropdown-btn"
+                              title="Edit a materialized view with Cube"
+                              disabled={ingestDefinitionEditorState.isReadOnly}
+                              content={
+                                <MenuContent>
+                                  {materializedViews.map(({ name }) => (
+                                    <MenuContentItem
+                                      key={name}
+                                      className="btn__dropdown-combo__option"
+                                      onClick={() =>
+                                        editorStore.embeddedCubeState.open(
+                                          ingestDef,
+                                          name,
+                                        )
+                                      }
+                                    >
+                                      {`Edit MatView ${name}`}
+                                    </MenuContentItem>
+                                  ))}
+                                </MenuContent>
+                              }
+                              menuProps={{
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: 'right',
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: 'right',
+                                },
+                              }}
+                            >
+                              <CaretDownIcon />
+                            </ControlledDropdownMenu>
+                          )}
                         </div>
                       )}
                     </div>

@@ -37,6 +37,25 @@ export interface IngestMaterializedViewOptions {
   readonly sensitivity: string;
 }
 
+/** The materialized views of the ingest definition, as its content holds them: each name, and its lambda (protocol JSON) */
+export const getIngestMaterializedViews = (
+  ingest: IngestDefinition,
+): { name: string; lambda: PlainObject }[] =>
+  (Array.isArray(ingest.content.datasets) ? ingest.content.datasets : [])
+    .filter(isObject)
+    .flatMap((dataSet) => {
+      const { name, source } = dataSet as PlainObject;
+      const lambda = isObject(source)
+        ? (source as PlainObject).function
+        : undefined;
+      return isString(name) &&
+        (source as PlainObject | undefined)?._type ===
+          MATERIALIZED_VIEW_SOURCE_TYPE &&
+        isObject(lambda)
+        ? [{ name, lambda: lambda as PlainObject }]
+        : [];
+    });
+
 /**
  * Adds a materialized view to the ingest definition: a data set whose rows
  * the lambda (protocol JSON) computes, with its primary key and the
@@ -84,5 +103,47 @@ export const ingestDefinition_addMaterializedView = action(
         },
       },
     ];
+  },
+);
+
+/**
+ * Replaces a materialized view's lambda (protocol JSON) in place: its name,
+ * its place among the data sets and its other keys stay, as does its place
+ * among the views listed for Lineage and View SQL
+ */
+export const ingestDefinition_updateMaterializedView = action(
+  (ingest: IngestDefinition, name: string, lambda: PlainObject): void => {
+    const dataSets = Array.isArray(ingest.content.datasets)
+      ? (ingest.content.datasets as unknown[])
+      : [];
+    ingest.content = {
+      ...ingest.content,
+      datasets: dataSets.map((dataSet) => {
+        if (!isObject(dataSet)) {
+          return dataSet;
+        }
+        const { name: dataSetName, source } = dataSet as PlainObject;
+        return dataSetName === name &&
+          isObject(source) &&
+          (source as PlainObject)._type === MATERIALIZED_VIEW_SOURCE_TYPE
+          ? { ...dataSet, source: { ...source, function: lambda } }
+          : dataSet;
+      }),
+    };
+    ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS =
+      ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map((view) =>
+        view.name === name
+          ? {
+              ...view,
+              source: {
+                ...view.source,
+                function: new RawLambda(
+                  Array.isArray(lambda.parameters) ? lambda.parameters : [],
+                  lambda.body as object | undefined,
+                ),
+              },
+            }
+          : view,
+      );
   },
 );

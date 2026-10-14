@@ -137,10 +137,16 @@ screen over the editor, as the embedded query builder does, with `LegendStudioCu
   (`dataProductModelSource`), in place of the deployed definitions and the project's deployed version. A run adds
   Cube's lakehouse runtime, in the project runtime's environment (`lakehouseEnvironment`), on the cube's warehouse,
   which starts as the runtime's.
-- **Add as MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
+- **Add MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
   as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, a classification of
   its data and a primary key among the step's columns (`analysis.schemas` of the selected step), and appends a
   `FunctionSource` data set to the definition. Studio sees it as a local change; Lineage and View SQL work on it.
+- **Edit MatView:** the button's menu lists the definition's materialized views. Cube opens on one, read back into
+  its steps (`initialLambda` on `CubeEditor`, Import Pure, PLAN §11.18): the host binds its sources as the source
+  dialog would add them, and a banner says when Cube writes the view another way. The header button is then
+  **Save MatView**, which replaces that view's lambda in place, keeping its name, place and other keys.
+- **Loading:** Studio loads Cube with the dialog, on its first opening (`React.lazy`), so Cube's code stays out of
+  Studio's main bundle.
 
 While the page is open, Studio's own shortcuts are off (its F9 compiles), and Cube's are on: Studio's core plugin
 contributes `LEGEND_CUBE_COMMAND_CONFIG`. The floating step editor is placed in the dialog that hosts the page, so the

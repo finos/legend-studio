@@ -5,7 +5,7 @@ PLAN §11.18. Built on `cube-import-pure`, branched from #5690's head, then move
 
 ## Current state
 
-In progress (2026-10-14): IP.1–IP.4 done; the draft PR is finos/legend-studio#5694.
+In progress (2026-10-14): IP.1–IP.5 done; the draft PR is finos/legend-studio#5694.
 
 ## Steps
 
@@ -15,7 +15,7 @@ In progress (2026-10-14): IP.1–IP.4 done; the draft PR is finos/legend-studio#
       engine's (JSON to grammar to JSON)
 - [x] IP.4 IR to steps, a first slice: ingest and data product sources as bound; Filter, Group, Restrict, Sort,
       Limit; each step checked by writing it again
-- [ ] IP.5 Studio, end to end on that slice: Edit MatView opens Cube on a view (not an undo step); Add MatView and
+- [x] IP.5 Studio, end to end on that slice: Edit MatView opens Cube on a view (not an undo step); Add MatView and
       Save MatView (in place); the note
 - [ ] IP.6 The other steps Cube writes as one function: Rename, Distinct, Drop, Slice, Extend (typed during the
       read), Filter by Expression, Pivot, Concat
@@ -33,9 +33,23 @@ In progress (2026-10-14): IP.1–IP.4 done; the draft PR is finos/legend-studio#
 | IP.1 | `ed466c7de` | Cube loads lazily in Studio                                                               |
 | IP.2 | `d1d9c4475` | The plan section, this file                                                               |
 | IP.3 | `e258ad719` | Protocol JSON to IR, the run's own parts, IR comparison                                   |
-| IP.4 | this commit | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename |
+| IP.4 | `6f9d92d0d` | IR to steps: sources, Filter, Group, Restrict, Sort, Limit, Drop, Slice, Distinct, Rename |
+| IP.5 | this commit | Studio: Edit MatView, Add MatView and Save MatView, the import banner                     |
 
 ## Notes
+
+- IP.5: `CubeEditor`'s `initialLambda` reads a host's lambda after the page opens (`CubeLambdaImportState`): the
+  sources bound (`bindCubeLambdaSources`: ingest data sets and data products through the host's catalogs, tables on
+  the cube's model; one kind per cube; a matview never a source), the steps read, a Filter by Expression's code from
+  the engine's grammar, then opened with `openDocument`, no undo step. Once the cube's sources and expressions are
+  settled it is written again and compared (`getCubeLambdaFidelity`): a banner says when Cube writes it another way
+  or couldn't check it, or why it couldn't be read. A step read only one way (Limit, Group, Restrict…) is kept when
+  Cube writes it another way, e.g. a sort Cube moves to just before the Limit; a Filter isn't, and stays as it is,
+  as a Filter by Expression. A Sort step carries the IR with and without its sort, so the step after it is checked
+  as Cube writes it. Studio: the button's menu lists the views (`getIngestMaterializedViews`), `open(ingest,
+matView)`, the header button Add MatView or Save MatView (`ingestDefinition_updateMaterializedView`, in place).
+  Checked headless on the dev server (`probe-edit-matview.mjs`, 9 checks): Add MatView, Edit MatView reads the
+  two steps back with no banner, the Limit's 100 rows, Save MatView after changing it to 50, opened again with 50.
 
 - IP.4: `readCubeQuery` reads the relation from its sources up (`findCubeLambdaSources` lists them for the host to
   bind first). Each step is written again by its emitter on the inferred schemas and kept only when it gives the same

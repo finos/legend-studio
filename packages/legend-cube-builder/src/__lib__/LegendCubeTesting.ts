@@ -27,6 +27,7 @@ export enum LEGEND_CUBE_TEST_ID {
   NODE_EDITOR = 'legend-cube__node-editor',
   EDITOR_NOTICE = 'legend-cube__editor-notice',
   ENTRY_SOURCE_ERROR = 'legend-cube__entry-source-error',
+  LAMBDA_IMPORT = 'legend-cube__lambda-import',
   FILTER_CONDITION = 'legend-cube__filter-condition',
   RESULT_GRID = 'legend-cube__result-grid',
   DRILLDOWN_BAR = 'legend-cube__drilldown-bar',

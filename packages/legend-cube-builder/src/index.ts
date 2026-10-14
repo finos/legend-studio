@@ -65,6 +65,20 @@ export {
 } from './stores/CubeHost.js';
 export { getCubeRememberedWarehouse } from './stores/CubeDataProductWarehouse.js';
 export {
+  CUBE_LAMBDA_IMPORT_MESSAGE,
+  CubeLambdaFidelity,
+  getCubeLambdaFidelity,
+  readCubeLambdaDocument,
+  type CubeInitialLambda,
+  type CubeLambdaImportState,
+  type CubeLambdaReading,
+} from './stores/CubeLambdaImportState.js';
+export {
+  bindCubeLambdaSources,
+  CUBE_LAMBDA_SOURCES_MESSAGE,
+  type CubeLambdaBinding,
+} from './stores/CubeLambdaSources.js';
+export {
   BUNDLED_MODELS,
   type BundledModel,
   createTextModel,

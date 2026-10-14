@@ -140,12 +140,14 @@ describe('Reading the steps of a lambda', () => {
       [sample.relation, sample.run].forEach((written) => {
         const parts = splitCubeLambda(written);
         expect(findCubeLambdaSources(parts).length).toBeGreaterThan(0);
-        const { query, unchecked } = readCubeQuery(parts, {
+        const { query, unchecked, rewritten } = readCubeQuery(parts, {
           bindSource: bindSamplesSources(sample.document),
           expressions: CUBE_EXPRESSION_CODEC,
         });
-        // every step's columns were known, so every step was checked
+        // every step's columns were known, so every step was checked, and
+        // each was written back the same
         expect(unchecked).toEqual([]);
+        expect(rewritten).toEqual([]);
         const emitter = new QueryEmitter(checkedAsTheEngineWould(query));
         const selected = query.selected as string;
         expect(emitter.canEmit(selected)).toBe(true);

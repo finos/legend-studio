@@ -164,7 +164,7 @@ const MaterializedViewNameDialog = observer(
       <Dialog open={true} onClose={close}>
         <Modal darkMode={darkMode} className="w-[440px] max-w-full">
           <ModalHeader>
-            <div className="modal__title">Add as MatView</div>
+            <div className="modal__title">Add MatView</div>
           </ModalHeader>
           <ModalBody>
             <form
@@ -229,15 +229,18 @@ const MaterializedViewNameDialog = observer(
 
 /**
  * Cube's header button: the step that runs, as a lambda with no runtime and
- * no row limit, becomes a materialized view of the ingest definition
+ * no row limit, becomes a materialized view of the ingest definition (Add
+ * MatView, named, classified and keyed in a dialog), or replaces the one
+ * opened to edit (Save MatView)
  */
-const AddMaterializedViewButton = observer(
+const MaterializedViewButton = observer(
   (props: {
     embeddedCubeState: EmbeddedCubeState;
     editorState: CubeEditorState;
   }) => {
     const { embeddedCubeState, editorState } = props;
     const { execution } = editorState;
+    const { matView } = embeddedCubeState;
     const [view, setView] = useState<
       { lambda: PlainObject; columns: readonly string[] } | undefined
     >();
@@ -256,7 +259,11 @@ const AddMaterializedViewButton = observer(
       )?.columns.map((column) => column.name);
       setIsBuilding(true);
       buildCubeRunningStepLambda(editorState)
-        .then((lambda) => setView({ lambda, columns: columns ?? [] }))
+        .then((lambda) =>
+          matView === undefined
+            ? setView({ lambda, columns: columns ?? [] })
+            : embeddedCubeState.saveMaterializedView(lambda),
+        )
         .catch(editorState.host.applicationStore.alertUnhandledError)
         .finally(() => setIsBuilding(false));
     };
@@ -265,14 +272,16 @@ const AddMaterializedViewButton = observer(
         <CubeButton
           primary={true}
           title={
-            execution.canExecute
-              ? 'Add the step that runs to the ingest definition, as a materialized view'
-              : formatDisabledReasons(execution.disabledReasons)
+            !execution.canExecute
+              ? formatDisabledReasons(execution.disabledReasons)
+              : matView === undefined
+                ? 'Add the step that runs to the ingest definition, as a materialized view'
+                : `Replace materialized view ${matView} with the step that runs`
           }
           disabled={!execution.canExecute || isBuilding}
           onClick={start}
         >
-          Add as MatView
+          {matView === undefined ? 'Add MatView' : 'Save MatView'}
         </CubeButton>
         {view && (
           <MaterializedViewNameDialog
@@ -289,7 +298,8 @@ const AddMaterializedViewButton = observer(
 
 /**
  * Legend Cube, full screen over the editor, building a materialized view of
- * the ingest definition it was opened from (Create MatView with Cube). Loaded
+ * the ingest definition it was opened from (Create MatView with Cube), or
+ * editing one of its views, read back into the cube (Edit MatView). Loaded
  * on the first opening, with Cube (`EmbeddedCube`)
  */
 export const EmbeddedCubeEditor = observer(
@@ -301,6 +311,14 @@ export const EmbeddedCubeEditor = observer(
     const { editorStore } = embeddedCubeState;
     // a new host for each opening, so each starts on an empty cube
     const [host] = useState(() => new LegendStudioCubeHost(editorStore));
+    const { matView } = embeddedCubeState;
+    // the view as it was when opened: the cube is read from it once
+    const [initialLambda] = useState(() => {
+      const lambda = embeddedCubeState.matViewLambda;
+      return lambda && matView !== undefined
+        ? { lambda, label: `materialized view ${matView}` }
+        : undefined;
+    });
     const darkMode =
       !editorStore.applicationStore.layoutService
         .TEMPORARY__isLightColorThemeEnabled;
@@ -324,14 +342,20 @@ export const EmbeddedCubeEditor = observer(
             data-testid={EMBEDDED_CUBE_TEST_ID.DIALOG}
           >
             <div className="min-w-0 flex-1 truncate px-4 text-lg font-medium text-[var(--color-state-disabled-on-accent)]">
-              {`Create MatView for ${ingest.path} with Cube`}
+              {matView === undefined
+                ? `Create MatView for ${ingest.path} with Cube`
+                : `Edit MatView ${matView} of ${ingest.path} with Cube`}
             </div>
             <div className="query-builder__dialog__header__actions">
               <button
                 className="query-builder__dialog__header__action"
                 tabIndex={-1}
                 onClick={() => embeddedCubeState.close()}
-                title="Close Cube, adding nothing"
+                title={
+                  matView === undefined
+                    ? 'Close Cube, adding nothing'
+                    : 'Close Cube, saving nothing'
+                }
               >
                 <TimesIcon />
               </button>
@@ -340,8 +364,9 @@ export const EmbeddedCubeEditor = observer(
           <div className="query-builder__dialog__content">
             <CubeEditor
               host={host}
+              initialLambda={initialLambda}
               headerActions={(editorState) => (
-                <AddMaterializedViewButton
+                <MaterializedViewButton
                   embeddedCubeState={embeddedCubeState}
                   editorState={editorState}
                 />

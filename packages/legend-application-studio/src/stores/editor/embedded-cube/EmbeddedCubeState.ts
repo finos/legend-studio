@@ -16,10 +16,12 @@
 
 import type { IngestDefinition } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
-import { action, flowResult, makeObservable, observable } from 'mobx';
+import { action, computed, flowResult, makeObservable, observable } from 'mobx';
 import {
   getIngestDataSetNames,
+  getIngestMaterializedViews,
   ingestDefinition_addMaterializedView,
+  ingestDefinition_updateMaterializedView,
   type IngestMaterializedViewOptions,
 } from '../../graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { EditorStore } from '../EditorStore.js';
@@ -39,13 +41,22 @@ export class EmbeddedCubeState {
   readonly editorStore: EditorStore;
   /** The definition the materialized view is added to; none while closed */
   ingest: IngestDefinition | undefined;
+  /**
+   * The materialized view opened to edit (Edit MatView, PLAN §11.18), by
+   * name: Cube opens on its lambda, and Save MatView replaces it; none for a
+   * new one
+   */
+  matView: string | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
       ingest: observable.ref,
+      matView: observable,
+      matViewLambda: computed,
       open: action,
       close: action,
       addMaterializedView: action,
+      saveMaterializedView: action,
     });
     this.editorStore = editorStore;
   }
@@ -54,12 +65,24 @@ export class EmbeddedCubeState {
     return this.ingest !== undefined;
   }
 
-  open(ingest: IngestDefinition): void {
+  /** Opens Cube on a new materialized view of the definition, or on one of its views to edit */
+  open(ingest: IngestDefinition, matView?: string): void {
     this.ingest = ingest;
+    this.matView = matView;
   }
 
   close(): void {
     this.ingest = undefined;
+    this.matView = undefined;
+  }
+
+  /** The lambda (protocol JSON) of the materialized view opened to edit */
+  get matViewLambda(): PlainObject | undefined {
+    const { ingest, matView } = this;
+    return ingest && matView !== undefined
+      ? getIngestMaterializedViews(ingest).find((view) => view.name === matView)
+          ?.lambda
+      : undefined;
   }
 
   /** Why the name can't be the new materialized view's; none when it can */
@@ -125,6 +148,30 @@ export class EmbeddedCubeState {
       primaryKey: options.primaryKey,
       sensitivity: options.sensitivity.trim(),
     });
+    this.closeOn(
+      ingest,
+      `Added materialized view ${name.trim()} to ${ingest.name}`,
+    );
+  }
+
+  /**
+   * Replaces the lambda of the materialized view opened to edit, in place
+   * (Save MatView), closes the cube and shows the definition with it
+   */
+  saveMaterializedView(lambda: PlainObject): void {
+    const { ingest, matView } = this;
+    if (!ingest || matView === undefined) {
+      return;
+    }
+    ingestDefinition_updateMaterializedView(ingest, matView, lambda);
+    this.closeOn(
+      ingest,
+      `Saved materialized view ${matView} of ${ingest.name}`,
+    );
+  }
+
+  /** Closes the cube, then shows the definition's grammar with the change */
+  private closeOn(ingest: IngestDefinition, message: string): void {
     this.close();
     const editorState = this.editorStore.tabManagerState.tabs.find(
       (tab): tab is IngestDefinitionEditorState =>
@@ -136,7 +183,7 @@ export class EmbeddedCubeState {
       );
     }
     this.editorStore.applicationStore.notificationService.notifySuccess(
-      `Added materialized view ${name.trim()} to ${ingest.name}`,
+      message,
     );
   }
 }
