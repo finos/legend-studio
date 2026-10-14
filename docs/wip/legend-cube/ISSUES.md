@@ -485,6 +485,40 @@ deployment (PLAN §11.2 Part B2).
   so it would take data stored at 32 bits and widened.
 - **No pivot server-side**, as in the spec (§12.3); local mode has ag-grid's.
 
+## UX backlog (demo review, 2026-10-13)
+
+From a frame-by-frame review of the full walkthrough (`videos/20-walkthrough-v3.webm` in the evidence folder). The
+user picked the items marked **this pass** for the `cube-ux-pass` branch (PLAN §11.15); the rest are kept to weigh.
+
+1. **Group-row averages show every digit** (`264.61327566137567`): round the display to the column's scale, or 2
+   places. _This pass._
+2. **Aggregated integers have no thousands separators** on group rows (`37171394`): group them, never the group key.
+   _This pass._
+3. **Unfinished steps look broken:** "Apply 0 Window Functions", "Aggregate all rows" with nothing set, "Extend
+   with", "Filter by (blank)", "Join additional input". Show a muted "not set". _This pass._
+4. **The Join's tooltip repeats its label** ("Join additional input") under the problem. _This pass._
+5. **Palette labels keep the internal app's placeholders** ("Drop first `<x>` rows"). _This pass._
+6. **Types in engine notation** (`Varchar(20)?`, `Numeric(18,2)`): show Text / Number / Date, "can be empty", the
+   exact type on hover. _This pass._
+7. **Node editors open scrolled with their top heading clipped, and cut their help notes off**; the column picker
+   repeats the type beside the column.
+8. **Every edit needs an F9:** an "auto-run after Apply" toggle for queries under the row limit.
+9. **Expressions need `x | $x.` typed and a Validate:** column completion after `$x.`, validating on a pause.
+10. **Choosing the step that runs is hidden** (right-click → Select): a visible "Run this step", a clearer marker on
+    the running step. _This pass._
+11. **Pivot works on no sample** (all H2): a DuckDB sample with a Pivot example. _This pass._
+12. **No Redo, and a crowded header:** Redo (Cmd/Ctrl+Shift+Z), New, Import and Export under one menu. _This pass._
+13. **Functions have two ways in** (the palette's Function, and Sample Data's Tables / Functions): keep one.
+
+New features suggested by the review:
+
+- **Column preview for tables**, as access points have. _This pass._
+- **Copy, paste and duplicate steps.** _This pass._
+- **Delete-key removal of a step.** _This pass._
+- **Row counts on the nodes** after a run.
+- **Search in the palette.**
+- **Notes on steps**, saved with the cube once saving lands.
+
 ## Test gaps
 
 None hides a known bug.

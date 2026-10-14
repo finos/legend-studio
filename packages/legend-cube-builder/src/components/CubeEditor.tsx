@@ -26,7 +26,10 @@ import type { CubeDocument } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { UNDO_SHORTCUT_LABEL } from '../__lib__/LegendCubeCommand.js';
+import {
+  REDO_SHORTCUT_LABEL,
+  UNDO_SHORTCUT_LABEL,
+} from '../__lib__/LegendCubeCommand.js';
 import {
   CUBE_PENDING_LABEL,
   formatDisabledReasons,
@@ -48,6 +51,7 @@ import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
 import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
+import { CubeFileMenu } from './CubeFileMenu.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
 
@@ -93,18 +97,8 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
             {CUBE_PENDING_LABEL.CHECKING_EXPRESSIONS}
           </span>
         )}
+        <CubeFileMenu editorState={editorState} />
         <CubeAddItemsMenu editorState={editorState} />
-        <CubeButton
-          title={
-            editorState.isEmptyCube
-              ? 'This cube is new already'
-              : 'Start a new, empty cube in place of this one (Undo brings it back)'
-          }
-          disabled={editorState.isEmptyCube}
-          onClick={() => editorState.startNewCube()}
-        >
-          New
-        </CubeButton>
         <CubeButton
           title="Open an example cube, or start one on sample data"
           onClick={() => editorState.examples.open()}
@@ -121,6 +115,13 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           onClick={() => editorState.undoEdited()}
         >
           Undo
+        </CubeButton>
+        <CubeButton
+          title={`Redo the last change undone (${REDO_SHORTCUT_LABEL})`}
+          disabled={!editorState.canRedo}
+          onClick={() => editorState.redoEdited()}
+        >
+          Redo
         </CubeButton>
         <CubeButton
           title={
@@ -140,27 +141,6 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           }}
         >
           Show Pure
-        </CubeButton>
-        <CubeButton
-          title={
-            readOnly
-              ? READ_ONLY_CUBE_TITLE
-              : "Show the cube's spec, to copy or download"
-          }
-          disabled={readOnly}
-          onClick={() => {
-            if (editorState.nodeEditor.finishApplied()) {
-              editorState.specTransfer.openExport();
-            }
-          }}
-        >
-          Export
-        </CubeButton>
-        <CubeButton
-          title="Open a cube from its spec, in place of this one"
-          onClick={() => editorState.specTransfer.openImport()}
-        >
-          Import
         </CubeButton>
         <CubeButton
           title={

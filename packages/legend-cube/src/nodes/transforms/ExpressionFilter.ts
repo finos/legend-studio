@@ -235,6 +235,10 @@ export class ExpressionFilter extends UnaryNode {
   }
 
   /** `Filter by x | $x.PRICE > 10`, on one line */
+  override isUnset(): boolean {
+    return !this.code.trim();
+  }
+
   describe(): string {
     const code = this.code.replace(/\s+/gu, ' ').trim();
     return `Filter by ${code || BLANK_PLACEHOLDER}`;

@@ -367,6 +367,10 @@ export class Difference extends BinaryNode {
     ]);
   }
 
+  override isUnset(): boolean {
+    return !this.leftColumns.length && !this.rightColumns.length;
+  }
+
   describe(): string {
     return 'Compare Column Values';
   }

@@ -18,7 +18,11 @@ import { beforeEach, describe, expect, test } from '@jest/globals';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__getCanvasNodes } from '../../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__chooseCubeMenuItem,
+  TEST__isCubeMenuItemDisabled,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
@@ -68,10 +72,13 @@ describe('Examples dialog', () => {
       'Notional by desk and asset class',
       'Desk league table',
       'Largest buys',
+      'Sales (DuckDB)',
+      'Sales by country and year',
+      'Sales count by country and product',
     ]);
     expect(
       within(grid).getByLabelText(
-        'Steps: Relational Database Table, Filter by Column, Sort by Column, Take first <x> rows',
+        'Steps: Relational Database Table, Filter by Column, Sort by Column, Take first rows',
       ),
     ).toBeDefined();
     expect(
@@ -102,9 +109,8 @@ describe('Examples dialog', () => {
 
   test('Leaves an example for a new, empty cube with New, which Undo takes back', async () => {
     const { fake } = await renderPage();
-    const newButton = screen.getByText<HTMLButtonElement>('New');
     // the page's cube is new already
-    expect(newButton.disabled).toBe(true);
+    expect(await TEST__isCubeMenuItemDisabled('New')).toBe(true);
     fireEvent.click(screen.getByText('open an example'));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(
@@ -115,7 +121,7 @@ describe('Examples dialog', () => {
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
     expect(screen.queryByText('Execute the query to see its rows.')).toBeNull();
 
-    fireEvent.click(screen.getByText('New'));
+    await TEST__chooseCubeMenuItem('New');
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     expect(screen.getByText('open an example')).toBeDefined();
     expect(screen.queryByText('Top customers by orders')).toBeNull();
@@ -123,7 +129,7 @@ describe('Examples dialog', () => {
     expect(
       screen.getByText('Execute the query to see its rows.'),
     ).toBeDefined();
-    expect(screen.getByText<HTMLButtonElement>('New').disabled).toBe(true);
+    expect(await TEST__isCubeMenuItemDisabled('New')).toBe(true);
 
     fireEvent.click(screen.getByText('Undo'));
     expect(TEST__getCanvasNodes()).toHaveLength(7);

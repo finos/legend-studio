@@ -32,7 +32,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { DATE_OR_TIMESTAMP_WARNING } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  DATE_OR_TIMESTAMP_WARNING,
+  getColumnTypeLabel,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -212,9 +215,7 @@ describe('Join editor', () => {
     const left =
       within(panel()).getByLabelText<HTMLSelectElement>('Left join column 1');
     expect(Array.from(left.options).map((option) => option.text)).toEqual(
-      ORDERS_COLUMNS.map(
-        (c) => `${c.name}: ${c.type.displayName}${c.nullable ? '?' : ''}`,
-      ),
+      ORDERS_COLUMNS.map((c) => `${c.name}: ${getColumnTypeLabel(c)}`),
     );
     expect(
       within(panel()).getByLabelText<HTMLSelectElement>('Right join column 1')
@@ -541,12 +542,17 @@ describe('Join editor', () => {
         .getByLabelText(label)
         .parentElement?.querySelector('span') as HTMLElement;
     const text = typeLabel('Left join column 1');
-    expect(text.textContent).toBe('Varchar(5)?');
-    expect(text.title).toBe('meta::pure::precisePrimitives::Varchar(5)');
+    expect(text.textContent).toBe('Text, can be empty');
+    // the exact type, then its full path, on hover
+    expect(text.title).toBe(
+      'Varchar(5)? (meta::pure::precisePrimitives::Varchar(5))',
+    );
     const textIcon = text.querySelector('svg')?.innerHTML;
     pick('Left join column 1', 'EMPLOYEE_ID');
     const number = typeLabel('Left join column 1');
-    expect(number.title).toBe('meta::pure::precisePrimitives::SmallInt');
+    expect(number.title).toBe(
+      'SmallInt? (meta::pure::precisePrimitives::SmallInt)',
+    );
     expect(number.querySelector('svg')?.innerHTML).not.toBe(textIcon);
   });
 });

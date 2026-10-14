@@ -360,22 +360,22 @@ describe('Partition editor', () => {
     await render(ordersPartitioned([], [BY_DATE], [RANK_AGGREGATION]));
     await openPartition();
     expect(columnItems().map((item) => item.textContent)).toEqual([
-      'ORDER_IDSmallInt',
-      'CUSTOMER_IDVarchar(5)?',
-      'EMPLOYEE_IDSmallInt?',
-      'ORDER_DATEStrictDate?',
-      'REQUIRED_DATEStrictDate?',
-      'SHIPPED_DATEStrictDate?',
-      'SHIP_VIASmallInt?',
-      'FREIGHTDouble?',
-      'SHIP_NAMEVarchar(40)?',
-      'SHIP_ADDRESSVarchar(60)?',
-      'SHIP_CITYVarchar(15)?',
-      'SHIP_REGIONVarchar(15)?',
-      'SHIP_POSTAL_CODEVarchar(10)?',
-      'SHIP_COUNTRYVarchar(15)?',
-      "PAYLOADVariant? (can't be partitioned by)",
-      "SHAPEShape? (can't be partitioned by)",
+      'ORDER_IDWhole number',
+      'CUSTOMER_IDText, can be empty',
+      'EMPLOYEE_IDWhole number, can be empty',
+      'ORDER_DATEDate, can be empty',
+      'REQUIRED_DATEDate, can be empty',
+      'SHIPPED_DATEDate, can be empty',
+      'SHIP_VIAWhole number, can be empty',
+      'FREIGHTNumber, can be empty',
+      'SHIP_NAMEText, can be empty',
+      'SHIP_ADDRESSText, can be empty',
+      'SHIP_CITYText, can be empty',
+      'SHIP_REGIONText, can be empty',
+      'SHIP_POSTAL_CODEText, can be empty',
+      'SHIP_COUNTRYText, can be empty',
+      "PAYLOADVariant, can be empty (can't be partitioned by)",
+      "SHAPEShape, can be empty (can't be partitioned by)",
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(false);
     expect(checkbox('PAYLOAD').disabled).toBe(true);
@@ -796,17 +796,19 @@ describe('Partition editor', () => {
     expect(sortOption(2, 'SHIP_COUNTRY').disabled).toBe(false);
     // each says why
     expect(sortOption(2, 'PAYLOAD').textContent).toBe(
-      "PAYLOAD: Variant? (can't be sorted)",
+      "PAYLOAD: Variant, can be empty (can't be sorted)",
     );
     expect(sortOption(2, 'ORDER_ID').textContent).toBe(
-      'ORDER_ID: SmallInt (already sorted on)',
+      'ORDER_ID: Whole number (already sorted on)',
     );
     expect(sortOption(2, 'SHIP_COUNTRY').textContent).toBe(
-      'SHIP_COUNTRY: Varchar(15)?',
+      'SHIP_COUNTRY: Text, can be empty',
     );
     // a row keeps its own column
     expect(sortOption(1, 'ORDER_ID').disabled).toBe(false);
-    expect(sortOption(1, 'ORDER_ID').textContent).toBe('ORDER_ID: SmallInt');
+    expect(sortOption(1, 'ORDER_ID').textContent).toBe(
+      'ORDER_ID: Whole number',
+    );
   });
 
   test('Reorders the sort rows, the first sorting first, never past either end', async () => {

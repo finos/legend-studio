@@ -226,8 +226,12 @@ describe('Data product tab', () => {
     });
     expect(within(preview).getByText('One row per order')).not.toBeNull();
     const columns = within(preview).getByRole('table', { name: 'Columns' });
-    expect(within(columns).getByText('Varchar(10)')).not.toBeNull();
-    expect(within(columns).getByText('Numeric(10,2)')).not.toBeNull();
+    // the kind of value, the exact type on hover
+    expect(within(columns).getAllByText('Text').length).toBeGreaterThan(0);
+    expect(within(columns).getByText('Decimal')).not.toBeNull();
+    expect(within(columns).getByTitle(/^Numeric\(10,2\)/u).textContent).toBe(
+      'Decimal',
+    );
     const samples = within(preview).getByRole('table', { name: 'Sample rows' });
     expect(within(samples).getByText('ALFKI')).not.toBeNull();
     expect(

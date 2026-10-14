@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { SchemaColumn, SchemaDiff } from '@finos/legend-cube';
+import {
+  type SchemaColumn,
+  type SchemaDiff,
+  TypeFamily,
+} from '@finos/legend-cube';
 import { CubeTableFlag } from '../graph-manager/CubeEngine.js';
 
 // The page's own text and settings; validation messages live in the core's
@@ -100,9 +104,35 @@ export const CUBE_TABLE_FLAG_LABELS: Readonly<
   },
 };
 
-/** A column's type as the editors show it: its display name, `?` when it takes NULL, e.g. `Varchar(5)?` */
-export const getColumnTypeLabel = (column: SchemaColumn): string =>
+/** A column's exact type: its display name, `?` when it takes NULL, e.g. `Varchar(5)?`; for hover and type messages */
+export const getExactColumnTypeLabel = (column: SchemaColumn): string =>
   `${column.type.displayName}${column.nullable ? '?' : ''}`;
+
+/** The kind of value a type family holds, as the editors name it (the review of the demo, 2026-10-13) */
+const TYPE_FAMILY_LABELS: Partial<Record<TypeFamily, string>> = {
+  [TypeFamily.BOOLEAN]: 'True or false',
+  [TypeFamily.STRING]: 'Text',
+  [TypeFamily.INTEGER]: 'Whole number',
+  [TypeFamily.FLOAT]: 'Number',
+  [TypeFamily.DECIMAL]: 'Decimal',
+  [TypeFamily.NUMBER]: 'Number',
+  [TypeFamily.STRICT_DATE]: 'Date',
+  [TypeFamily.DATETIME]: 'Date and time',
+  [TypeFamily.DATE]: 'Date',
+  [TypeFamily.STRICT_TIME]: 'Time',
+  [TypeFamily.VARIANT]: 'Variant',
+};
+
+/**
+ * A column's type as the editors show it: the kind of value, and whether it
+ * can be empty, e.g. `Text, can be empty`; an enumeration, or a type Cube
+ * doesn't know, by its name. The exact type (`getExactColumnTypeLabel`) is
+ * on hover.
+ */
+export const getColumnTypeLabel = (column: SchemaColumn): string =>
+  `${TYPE_FAMILY_LABELS[column.type.family] ?? column.type.displayName}${
+    column.nullable ? ', can be empty' : ''
+  }`;
 
 const listColumns = (columns: readonly SchemaColumn[]): string =>
   columns.map((column) => column.name).join(', ');
@@ -121,7 +151,7 @@ export const getSchemaChangeList = (diff: SchemaDiff): string => {
           `changed ${diff.changed
             .map(
               (change) =>
-                `${change.after.name} (${getColumnTypeLabel(change.before)} to ${getColumnTypeLabel(change.after)})`,
+                `${change.after.name} (${getExactColumnTypeLabel(change.before)} to ${getExactColumnTypeLabel(change.after)})`,
             )
             .join(', ')}`,
         ]
@@ -408,13 +438,20 @@ export const getExtendPlanProblem = (
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';
 
+/** Words a title leaves in lower case, but first */
+const TITLE_SMALL_WORDS = new Set(['a', 'an', 'of']);
+
 /**
  * A node type's label as the node editor's title shows it, each word
- * capitalised (QUESTIONS.md U1(a)), e.g. 'Take First <x> Rows'; the registry
- * keeps its own wording
+ * capitalised but `a`, `an` and `of` (QUESTIONS.md U1(a)), e.g. 'Take a Range
+ * of Rows'; the registry keeps its own wording
  */
 export const toEditorTitle = (label: string): string =>
-  label.replace(/(?<=^|\s)[a-z]/gu, (letter) => letter.toUpperCase());
+  label.replace(/(?<=^|\s)[a-z]+/gu, (word, offset: number) =>
+    offset > 0 && TITLE_SMALL_WORDS.has(word)
+      ? word
+      : `${word[0]?.toUpperCase() ?? ''}${word.slice(1)}`,
+  );
 
 /** The source dialog's body until a tab is chosen, opened from the empty canvas (spec §17.8, U4(b)) */
 export const SELECT_SOURCE_TYPE_PROMPT = 'Select source type above';

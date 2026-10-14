@@ -186,6 +186,10 @@ export class Group extends UnaryNode {
     ]);
   }
 
+  override isUnset(): boolean {
+    return !this.columns.length && !this.aggregations.length;
+  }
+
   describe(): string {
     return this.columns.length
       ? `Group by ${this.columns

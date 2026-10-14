@@ -389,7 +389,7 @@ describe(unitTest('Node registry'), () => {
   test('Creates a drop of 10 rows', () => {
     expect(DROP_DEFINITION.kind).toBe('transform');
     expect(DROP_DEFINITION.type).toBe('drop');
-    expect(DROP_DEFINITION.label).toBe('Drop first <x> rows');
+    expect(DROP_DEFINITION.label).toBe('Drop first rows');
     expect(DROP_DEFINITION.icon).toBe('drop');
     expect(DROP_DEFINITION.beta).toBe(false);
     const drop = DROP_DEFINITION.create('drop101');
@@ -401,7 +401,7 @@ describe(unitTest('Node registry'), () => {
   test('Creates a limit of 10 rows', () => {
     expect(LIMIT_DEFINITION.kind).toBe('transform');
     expect(LIMIT_DEFINITION.type).toBe('limit');
-    expect(LIMIT_DEFINITION.label).toBe('Take first <x> rows');
+    expect(LIMIT_DEFINITION.label).toBe('Take first rows');
     expect(LIMIT_DEFINITION.icon).toBe('limit');
     expect(LIMIT_DEFINITION.beta).toBe(false);
     const limit = LIMIT_DEFINITION.create('limit101');
@@ -413,7 +413,7 @@ describe(unitTest('Node registry'), () => {
   test('Creates a slice of rows 10 to 20', () => {
     expect(SLICE_DEFINITION.kind).toBe('transform');
     expect(SLICE_DEFINITION.type).toBe('slice');
-    expect(SLICE_DEFINITION.label).toBe('Take rows <x> to <y>');
+    expect(SLICE_DEFINITION.label).toBe('Take a range of rows');
     expect(SLICE_DEFINITION.icon).toBe('slice');
     expect(SLICE_DEFINITION.beta).toBe(false);
     const slice = SLICE_DEFINITION.create('slice101');
@@ -956,4 +956,32 @@ describe(unitTest('Saved-spec hooks of the registry'), () => {
       expect(spec.encode(decoded)).toEqual(json);
     },
   );
+});
+
+describe('Nodes not set yet', () => {
+  test('A node with none of the settings it needs is not set; a node with any, or with none to need, is', () => {
+    expect(new Join('join101').isUnset()).toBe(true);
+    expect(
+      new Join('join101', { leftColumns: ['A'], rightColumns: [] }).isUnset(),
+    ).toBe(false);
+    expect(new Group('group101').isUnset()).toBe(true);
+    // no keys but an aggregation: every row aggregated, which is set
+    expect(
+      new Group(
+        'group101',
+        [],
+        [{ column: undefined, function: 'CountRows', name: 'N' }],
+      ).isUnset(),
+    ).toBe(false);
+    expect(new Filter('filter101').isUnset()).toBe(true);
+    expect(new Sort('sort101').isUnset()).toBe(true);
+    expect(new Restrict('restrict101').isUnset()).toBe(true);
+    expect(new Rename('rename101').isUnset()).toBe(true);
+    expect(new Extend('extend101').isUnset()).toBe(true);
+    expect(new Partition('partition101').isUnset()).toBe(true);
+    expect(new Difference('difference101').isUnset()).toBe(true);
+    expect(new Distinct('distinct101').isUnset()).toBe(false);
+    expect(new Concat('concat101').isUnset()).toBe(false);
+    expect(new Limit('limit101', 5).isUnset()).toBe(false);
+  });
 });

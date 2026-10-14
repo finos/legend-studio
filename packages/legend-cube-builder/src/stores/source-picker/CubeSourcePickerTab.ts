@@ -74,3 +74,6 @@ export const generateCubeNodeIds = (
   }
   return ids;
 };
+
+/** How long the clicks on a list's tables pause before the table picked last is previewed */
+export const CUBE_TABLE_PREVIEW_DELAY_MS = 250;

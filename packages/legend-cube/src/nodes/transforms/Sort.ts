@@ -211,6 +211,10 @@ export class Sort extends UnaryNode {
     ];
   }
 
+  override isUnset(): boolean {
+    return !this.sorts.length;
+  }
+
   describe(): string {
     return `Sort by ${
       this.sorts.length

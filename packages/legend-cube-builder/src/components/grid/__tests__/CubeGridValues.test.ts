@@ -18,6 +18,7 @@ import { describe, expect, test } from '@jest/globals';
 import {
   type ColumnFormat,
   ColumnFormatStyle,
+  PrimitiveType,
   TypeFamily,
 } from '@finos/legend-cube';
 import {
@@ -30,6 +31,8 @@ import {
   formatColumnValue,
   getColumnFormatProblem,
   getCubeCurrencyCodes,
+  formatGroupRowValue,
+  getTypeScale,
 } from '../CubeGridValues.js';
 
 const sortedText = (values: string[]): string[] =>
@@ -240,5 +243,33 @@ describe('Cube grid values', () => {
       text: '0',
       negative: false,
     });
+  });
+});
+
+describe("Group rows' aggregated numbers", () => {
+  test("Rounds a fraction to the column's scale, or 2 places, and groups the thousands, an integer's too", () => {
+    expect(
+      formatGroupRowValue('264.61327566137567', TypeFamily.DECIMAL, 4),
+    ).toBe('264.6133');
+    expect(formatGroupRowValue('264.61327566137567', TypeFamily.FLOAT)).toBe(
+      '264.61',
+    );
+    // an Average of integers keeps 2 places
+    expect(formatGroupRowValue('12.3456', TypeFamily.INTEGER)).toBe('12.35');
+    expect(formatGroupRowValue('37171394', TypeFamily.INTEGER)).toBe(
+      '37,171,394',
+    );
+    // a sum at the column's own scale keeps every digit
+    expect(
+      formatGroupRowValue('12345678901234567890.25', TypeFamily.DECIMAL, 2),
+    ).toBe('12,345,678,901,234,567,890.25');
+    expect(formatGroupRowValue('-0.001', TypeFamily.FLOAT)).toBe('0.00');
+    expect(formatGroupRowValue('text', TypeFamily.STRING)).toBe('text');
+  });
+
+  test("Reads the scale of a decimal column's type, and none of another", () => {
+    expect(getTypeScale(PrimitiveType.get('Numeric', [14, 4]))).toBe(4);
+    expect(getTypeScale(PrimitiveType.get('Integer'))).toBeUndefined();
+    expect(getTypeScale(PrimitiveType.get('Float'))).toBeUndefined();
   });
 });

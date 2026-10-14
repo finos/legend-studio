@@ -310,7 +310,7 @@ export const DISTINCT_DEFINITION: TransformDefinition<Distinct> = {
 export const DROP_DEFINITION: TransformDefinition<Drop> = {
   kind: 'transform',
   type: Drop.TYPE,
-  label: 'Drop first <x> rows',
+  label: 'Drop first rows',
   icon: 'drop',
   beta: false,
   create: (id) => new Drop(id, Drop.DEFAULT_SIZE),
@@ -321,7 +321,7 @@ export const DROP_DEFINITION: TransformDefinition<Drop> = {
 export const LIMIT_DEFINITION: TransformDefinition<Limit> = {
   kind: 'transform',
   type: Limit.TYPE,
-  label: 'Take first <x> rows',
+  label: 'Take first rows',
   icon: 'limit',
   beta: false,
   create: (id) => new Limit(id, Limit.DEFAULT_SIZE),
@@ -332,7 +332,7 @@ export const LIMIT_DEFINITION: TransformDefinition<Limit> = {
 export const SLICE_DEFINITION: TransformDefinition<Slice> = {
   kind: 'transform',
   type: Slice.TYPE,
-  label: 'Take rows <x> to <y>',
+  label: 'Take a range of rows',
   icon: 'slice',
   beta: false,
   create: (id) => new Slice(id, Slice.DEFAULT_START, Slice.DEFAULT_STOP),

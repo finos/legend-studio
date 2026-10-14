@@ -17,7 +17,9 @@
 import {
   type ColumnFormat,
   ColumnFormatStyle,
+  type CubeType,
   isColumnFormatStyle,
+  PrimitiveType,
   TypeFamily,
 } from '@finos/legend-cube';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
@@ -182,6 +184,52 @@ export const formatCellValue = (
     default:
       return text;
   }
+};
+
+/**
+ * The digits after the point a decimal column keeps, e.g. 4 for
+ * `Numeric(14,4)`; none for another type, whose group rows round to
+ * `CUBE_GRID_FLOAT_DECIMAL_PLACES` (an Average of integers keeps 2 places)
+ */
+export const getTypeScale = (type: CubeType): number | undefined =>
+  type instanceof PrimitiveType &&
+  type.family === TypeFamily.DECIMAL &&
+  type.params.length >= 2
+    ? type.params[1]
+    : undefined;
+
+/**
+ * How a group row shows a number it aggregates (the review of the demo,
+ * 2026-10-13): its thousands grouped, an integer's too, since a sum or a
+ * count is a quantity, not an id; a fraction rounded to the column's scale,
+ * or to `CUBE_GRID_FLOAT_DECIMAL_PLACES` places for a column without one,
+ * so an Average doesn't show every digit. A value that isn't a number, or a
+ * column that isn't numeric, shows as it is. Copying keeps the exact value.
+ */
+export const formatGroupRowValue = (
+  value: Exclude<CubeResultValue, null>,
+  family: TypeFamily,
+  scale?: number | undefined,
+): string => {
+  const text = String(value);
+  if (!isNumericFamily(family) || typeof value === 'boolean') {
+    return text;
+  }
+  const parts = PLAIN_NUMBER_TEXT.exec(text.trim())?.groups;
+  if (!parts) {
+    return text;
+  }
+  const places = scale ?? CUBE_GRID_FLOAT_DECIMAL_PLACES;
+  // the fraction's digits, the point left out
+  const fraction = (parts.fraction ?? '').slice(1);
+  if (fraction.length <= places) {
+    return groupThousands(text.trim());
+  }
+  const rounded = Number(text).toFixed(places);
+  // a value that rounds to zero shows no sign
+  return groupThousands(
+    Number(rounded) === 0 ? rounded.replace(/^-/u, '') : rounded,
+  );
 };
 
 /** The ISO 4217 codes the browser formats (PLAN §11.10: codes, not symbols, §21) */

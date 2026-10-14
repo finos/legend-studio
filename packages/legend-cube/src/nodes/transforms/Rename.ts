@@ -196,6 +196,10 @@ export class Rename extends UnaryNode {
     });
   }
 
+  override isUnset(): boolean {
+    return !this.mappings.length;
+  }
+
   describe(): string {
     const count = this.mappings.length;
     return `Rename ${count} Column${count === 1 ? '' : 's'}`;

@@ -29,7 +29,10 @@ import {
   type SchemaColumn,
   TypeFamily,
 } from '@finos/legend-cube';
-import { getColumnTypeLabel } from '../../__lib__/LegendCubeLabels.js';
+import {
+  getColumnTypeLabel,
+  getExactColumnTypeLabel,
+} from '../../__lib__/LegendCubeLabels.js';
 
 const FAMILY_ICONS: Readonly<
   Partial<Record<TypeFamily, React.FC<{ className?: string }>>>
@@ -116,7 +119,7 @@ export const CubeColumnPicker: React.FC<{
             <option
               key={column.name}
               value={column.name}
-              title={column.type.fullName}
+              title={`${getExactColumnTypeLabel(column)} (${column.type.fullName})`}
               disabled={reason !== undefined}
             >
               {`${column.name}: ${getColumnTypeLabel(column)}${reason === undefined ? '' : ` (${reason})`}`}
@@ -127,7 +130,7 @@ export const CubeColumnPicker: React.FC<{
       {picked && (
         <span
           className="flex shrink-0 items-center gap-1 text-sm text-[var(--color-text-secondary)]"
-          title={picked.type.fullName}
+          title={`${getExactColumnTypeLabel(picked)} (${picked.type.fullName})`}
         >
           <CubeColumnTypeIcon type={picked.type} />
           {getColumnTypeLabel(picked)}

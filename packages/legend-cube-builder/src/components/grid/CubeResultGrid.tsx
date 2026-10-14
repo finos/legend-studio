@@ -59,6 +59,8 @@ import {
   compareCellValues,
   formatCellValue,
   formatColumnValue,
+  formatGroupRowValue,
+  getTypeScale,
   isNumericFamily,
 } from './CubeGridValues.js';
 
@@ -251,6 +253,8 @@ export const CubeCell: React.FC<
     /** The column's name and the drill-down's levels, to tell a group row's key */
     columnName?: string | undefined;
     levels?: readonly string[] | undefined;
+    /** The digits after the point the column's type keeps, e.g. 4 for `Numeric(14,4)`; none for a type without */
+    scale?: number | undefined;
   }
 > = (props) => {
   if (props.value === undefined) {
@@ -263,6 +267,22 @@ export const CubeCell: React.FC<
   }
   const exact = String(props.value);
   const row = props.data;
+  // a value a group row aggregates: local mode's group rows, or a server-side
+  // group row's cell in a column that isn't one of the group's keys
+  const isGroupRowKey =
+    row !== undefined &&
+    !Array.isArray(row) &&
+    (row as CubeGridRowData).isGroup &&
+    (props.levels ?? [])
+      .slice(0, (row as CubeGridRowData).keys.length)
+      .includes(props.columnName ?? '');
+  // never a group's key: year 2024 and id 13 keep no comma
+  const isAggregate =
+    !isGroupRowKey &&
+    (props.node.group === true ||
+      (row !== undefined &&
+        !Array.isArray(row) &&
+        (row as CubeGridRowData).isGroup));
   // local mode's group row totalling the column by ag-grid's own count
   const isLocalCount =
     props.node.group === true && props.column?.getAggFunc() === 'count';
@@ -292,7 +312,9 @@ export const CubeCell: React.FC<
       </span>
     );
   }
-  const shown = formatCellValue(props.value, props.family);
+  const shown = isAggregate
+    ? formatGroupRowValue(props.value, props.family, props.scale)
+    : formatCellValue(props.value, props.family);
   return shown === exact ? <>{exact}</> : <span title={exact}>{shown}</span>;
 };
 
@@ -351,6 +373,7 @@ export const buildCubeColumnDefs = <Row extends CubeAnyRow>(
           : false,
         columnName: column.name,
         levels: drilldown?.columns ?? [],
+        scale: getTypeScale(column.type),
       },
       ...(width === undefined ? {} : { width }),
       ...(numeric

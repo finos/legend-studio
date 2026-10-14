@@ -168,14 +168,18 @@ describe('Node editor panel', () => {
       CUBE_NODE_HELP_TEXT.relational,
     );
     expect(editorState.document.query.selected).toBe('filter101');
-    const select = within(editor).getByRole('button', { name: 'Select' });
+    const select = within(editor).getByRole('button', {
+      name: 'Run this step',
+    });
     expect(select.title).toBe(SELECT_NODE_TOOLTIP);
     fireEvent.click(select);
     expect(editorState.document.query.selected).toBe('relational101');
-    const selected = within(panel()).getByText('(Selected)');
-    expect(selected.title).toBe(SELECT_NODE_TOOLTIP);
+    const selected = within(panel()).getByText('▶ Runs');
+    expect(selected.title).toBe(
+      'This is the step that runs: Execute shows its rows',
+    );
     expect(
-      within(panel()).queryByRole('button', { name: 'Select' }),
+      within(panel()).queryByRole('button', { name: 'Run this step' }),
     ).toBeNull();
   });
 
@@ -253,8 +257,8 @@ describe('Node editor panel', () => {
     const rows = columnRows();
     expect(rows).toHaveLength(ORDERS_COLUMNS.length);
     expect(rows.slice(0, 2)).toEqual([
-      'ORDER_ID SmallInt',
-      'CUSTOMER_ID Varchar(5)?',
+      'ORDER_ID Whole number',
+      'CUSTOMER_ID Text, can be empty',
     ]);
     // a source has nothing to apply
     expect(within(editor).queryByText('Apply')).toBeNull();
@@ -285,7 +289,7 @@ describe('Node editor panel', () => {
     expect(within(panel()).getByRole('status').textContent).toBe(
       'This table changed since the cube was saved: added COMPANY_NAME',
     );
-    expect(columnRows().at(-1)).toBe('COMPANY_NAME Varchar(40)');
+    expect(columnRows().at(-1)).toBe('COMPANY_NAME Text');
     expect(editorState.history).toHaveLength(0);
     // the panel follows the typed source
     expect(editorState.nodeEditor.node).toBe(

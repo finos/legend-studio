@@ -24,6 +24,7 @@ import type { CommandConfigData } from '@finos/legend-application';
 export enum LEGEND_CUBE_COMMAND_KEY {
   EXECUTE = 'legend-cube.execute',
   UNDO = 'legend-cube.undo',
+  REDO = 'legend-cube.redo',
   VALIDATE_EXPRESSIONS = 'legend-cube.validate-expressions',
 }
 
@@ -38,6 +39,11 @@ export const LEGEND_CUBE_COMMAND_CONFIG: CommandConfigData = {
     defaultKeyboardShortcut: 'Control+KeyZ',
     additionalKeyboardShortcuts: ['Meta+KeyZ'],
   },
+  [LEGEND_CUBE_COMMAND_KEY.REDO]: {
+    title: 'Redo the last change undone',
+    defaultKeyboardShortcut: 'Control+Shift+KeyZ',
+    additionalKeyboardShortcuts: ['Meta+Shift+KeyZ', 'Control+KeyY'],
+  },
   [LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS]: {
     title: "Validate the Extend's expressions",
     defaultKeyboardShortcut: 'F10',
@@ -47,3 +53,4 @@ export const LEGEND_CUBE_COMMAND_CONFIG: CommandConfigData = {
 /** How the buttons' tooltips name the shortcuts */
 export const EXECUTE_SHORTCUT_LABEL = 'F9';
 export const UNDO_SHORTCUT_LABEL = 'Ctrl+Z / Cmd+Z';
+export const REDO_SHORTCUT_LABEL = 'Ctrl+Shift+Z / Cmd+Shift+Z';

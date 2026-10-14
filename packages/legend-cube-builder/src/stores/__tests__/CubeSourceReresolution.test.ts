@@ -551,6 +551,24 @@ describe("Typing an imported cube's tables again", () => {
     expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
   });
 
+  test('Keeps the tables typed when an edit undone while they were typed is redone', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const answer = deferred<Answer>();
+    fake.resolveSchemas.mockReturnValueOnce(answer.promise);
+    const state = new CubeEditorState(host);
+    importDocument(state, oldOrdersDocument());
+    state.select('relational102');
+    state.undo();
+    expect(state.canRedo).toBe(true);
+    // the tables are typed while the edit waits to be redone
+    answer.resolve(FRESH);
+    await settle();
+    state.redo();
+    expect(state.document.query.selected).toBe('relational102');
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+  });
+
   test('Keeps a table saved without its columns typed when an edit made meanwhile is undone', async () => {
     const { host, fake } = TEST__createCubeHost();
     const answer = deferred<Answer>();

@@ -337,6 +337,10 @@ export class Extend extends UnaryNode {
     return keepInputOrder(inputOrders);
   }
 
+  override isUnset(): boolean {
+    return !this.columns.length;
+  }
+
   /** As the spec says: `Extend with "x", "y"` */
   describe(): string {
     return `Extend with ${this.columns.map(({ name }) => `"${name || '(blank)'}"`).join(', ')}`;

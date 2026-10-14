@@ -56,6 +56,7 @@ import {
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
   TEST__chooseAddItem,
+  TEST__chooseCubeMenuItem,
   TEST__renderInCubeApplication,
 } from '../../__test-utils__/CubePageTestUtils.js';
 import {
@@ -310,7 +311,7 @@ describe('Cube keyboard shortcuts', () => {
       (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
     ).toBe('true');
     rowLimit.blur();
-    fireEvent.click(within(graph()).getByText('Import'));
+    await TEST__chooseCubeMenuItem('Import');
     await screen.findByRole('dialog');
     pressUndo();
     expect(

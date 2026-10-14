@@ -115,6 +115,9 @@ const ROW_COUNTS = new Map([
   // the six desks, each ranked within its region
   ['trades-desk-league', 6],
   ['trades-largest-buys', 20],
+  // the four countries, pivoted on DuckDB
+  ['sales-by-year', 4],
+  ['sales-by-product', 4],
 ]);
 
 describe('Example cubes, on the engine', () => {

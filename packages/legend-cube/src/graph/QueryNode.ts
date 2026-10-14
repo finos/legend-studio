@@ -112,6 +112,14 @@ export abstract class QueryNode {
   abstract describe(): string;
 
   /**
+   * Whether the node has none of the settings it needs yet, e.g. a Join with
+   * no key pair: the canvas shows it as not set, not by its description
+   */
+  isUnset(): boolean {
+    return false;
+  }
+
+  /**
    * The description without the values users typed, which may be sensitive,
    * for logs and telemetry. By default the description, which has none.
    */

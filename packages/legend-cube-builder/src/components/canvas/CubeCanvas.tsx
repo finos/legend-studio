@@ -157,10 +157,40 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           target.classList.contains('react-flow__node')
             ? target.dataset.id
             : undefined;
-        if (
-          nodeId === undefined ||
-          (event.key !== 'Enter' && event.key !== ' ')
-        ) {
+        if (nodeId === undefined) {
+          return;
+        }
+        // the focused step's keys (the review of the demo, 2026-10-13): only
+        // on the step itself, never in an editor's field
+        const command = event.ctrlKey || event.metaKey;
+        const key = event.key.toLowerCase();
+        const stepAction =
+          !command && (key === 'delete' || key === 'backspace')
+            ? editorState.canRemoveNode(nodeId)
+              ? () => editorState.removeNode(nodeId)
+              : undefined
+            : command && key === 'c'
+              ? editorState.canCopyNode(nodeId)
+                ? () => editorState.copyNode(nodeId)
+                : undefined
+              : command && key === 'v'
+                ? editorState.canPaste
+                  ? () => editorState.pasteNode(nodeId)
+                  : undefined
+                : command && key === 'd'
+                  ? editorState.canDuplicateNode(nodeId)
+                    ? () => editorState.duplicateNode(nodeId)
+                    : undefined
+                  : null;
+        if (stepAction !== null) {
+          event.preventDefault();
+          // the open editor applies first, as for any change to the query
+          if (stepAction && editorState.nodeEditor.finish()) {
+            stepAction();
+          }
+          return;
+        }
+        if (event.key !== 'Enter' && event.key !== ' ') {
           return;
         }
         event.preventDefault();

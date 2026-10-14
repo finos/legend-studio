@@ -323,7 +323,7 @@ describe('Show Pure state', () => {
     expect(shown).not.toContain('limit');
   });
 
-  test('Shows a Take first <x> rows the user added, as its own limit', async () => {
+  test('Shows a Take first rows the user added, as its own limit', async () => {
     const { host, fake } = TEST__createCubeHost();
     const state = new CubeEditorState(
       host,

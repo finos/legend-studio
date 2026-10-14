@@ -124,6 +124,10 @@ export class Restrict extends UnaryNode {
     return dropped < 0 ? input : input.slice(0, dropped);
   }
 
+  override isUnset(): boolean {
+    return !this.columns.length;
+  }
+
   describe(): string {
     return `Restrict Columns to: ${
       this.columns.length

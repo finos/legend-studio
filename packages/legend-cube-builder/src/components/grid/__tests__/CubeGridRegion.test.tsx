@@ -514,8 +514,16 @@ describe('Cube results', () => {
     // the key, and the group's count
     expect(groupCell(0).textContent).toContain('(1)');
     expect(groupCell(1).textContent).toContain(NULL_CELL_TEXT);
-    // the ID column holds each group's Sum, digit for digit
-    expect(await cellTexts(0)).toEqual(['9', '9007199254740993', '10']);
+    // the ID column holds each group's Sum, digit for digit, its thousands
+    // grouped as a group row's aggregate is, with the exact value on hover
+    expect(await cellTexts(0)).toEqual(['9', '9,007,199,254,740,993', '10']);
+    expect(
+      grid()
+        .querySelector(
+          '.ag-center-cols-container .ag-row[row-index="1"] [title]',
+        )
+        ?.getAttribute('title'),
+    ).toBe('9007199254740993');
     const groups = printIR(fake.execute.mock.calls[1]?.[1] as IR);
     expect(groups).toContain(`->groupBy(~[NAME], ~['ID Sum'`);
     // the group with no name, expanded: its rows, by Is Empty
@@ -530,7 +538,8 @@ describe('Cube results', () => {
     await waitFor(async () =>
       expect(await cellTexts(0)).toEqual([
         '9',
-        '9007199254740993',
+        // the group row's Sum, grouped; its row below, as the column shows it
+        '9,007,199,254,740,993',
         '9007199254740993',
         '10',
       ]),

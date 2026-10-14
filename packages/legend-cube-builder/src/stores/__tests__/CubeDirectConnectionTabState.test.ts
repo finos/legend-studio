@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
+import { CUBE_TABLE_PREVIEW_DELAY_MS } from '../source-picker/CubeSourcePickerTab.js';
 import {
   CubeDocument,
   PrimitiveType,
@@ -350,6 +351,22 @@ describe('Database connection tab', () => {
     expect(state.document.query.selected).toBe('relational101');
     expect(state.history).toHaveLength(1);
     expect(tab.tableNames).toEqual([]);
+  });
+
+  test("Previews the picked table's columns once the clicks pause, and Add takes them with no second engine call", async () => {
+    const { tab, state, fake } = setUp();
+    await testConnection(tab);
+    tab.selectTable('"ORDERS"');
+    expect(fake.resolveSchemas).not.toHaveBeenCalled();
+    await new Promise((resolve) =>
+      setTimeout(resolve, CUBE_TABLE_PREVIEW_DELAY_MS + 50),
+    );
+    await settle();
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(tab.previewedColumns).toBe(ORDERS_SCHEMA);
+    expect(await flowResult(tab.confirm())).toBe(true);
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(nodeIds(state)).toEqual(['relational101']);
   });
 
   test('Shows why a table could not be typed, and adds it on a retry', async () => {
