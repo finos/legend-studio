@@ -24,7 +24,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
   EXPRESSION_FILTER_EDITOR_NOTES,
-  getColumnTypeLabel,
+  getExactColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import {
@@ -167,7 +167,7 @@ export const CubeExpressionFilterEditor = observer(
             <li key={column.name}>
               <button
                 className="flex items-center gap-1 rounded-sm border border-[var(--color-border-subtle)] px-1 text-sm hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
-                title={`Write ${columnAccessOf(column.name)} at the end of the condition (${getColumnTypeLabel(column)})`}
+                title={`Write ${columnAccessOf(column.name)} at the end of the condition (${getExactColumnTypeLabel(column)})`}
                 disabled={disabled}
                 onClick={() => {
                   const separator = /\s$/u.test(draft.code) ? '' : ' ';

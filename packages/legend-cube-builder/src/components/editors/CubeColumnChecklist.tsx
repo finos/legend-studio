@@ -21,7 +21,10 @@ import {
   type SchemaColumn,
 } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
-import { getColumnTypeLabel } from '../../__lib__/LegendCubeLabels.js';
+import {
+  getColumnTypeLabel,
+  getExactColumnTypeLabel,
+} from '../../__lib__/LegendCubeLabels.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
 
@@ -102,7 +105,10 @@ export const CubeColumnChecklist = observer(
                     className="text-[var(--color-text-secondary)]"
                   />
                   <span className="min-w-0 truncate">{column.name}</span>
-                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                  <span
+                    className="shrink-0 text-sm text-[var(--color-text-muted)]"
+                    title={getExactColumnTypeLabel(column)}
+                  >
                     {`${getColumnTypeLabel(column)}${pickable ? '' : ` (${reason})`}`}
                   </span>
                 </label>

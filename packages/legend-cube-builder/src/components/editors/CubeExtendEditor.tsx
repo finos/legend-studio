@@ -31,7 +31,7 @@ import { useState } from 'react';
 import {
   COLUMN_NAME_RULES_HINT,
   EXTEND_EDITOR_NOTES,
-  getColumnTypeLabel,
+  getExactColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import {
@@ -243,7 +243,7 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
           <li key={column.name}>
             <button
               className="flex items-center gap-1 rounded-sm border border-[var(--color-border-subtle)] px-1 text-sm hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
-              title={`Write ${columnAccessOf(column.name)} at the end of the expression last used (${getColumnTypeLabel(column)})`}
+              title={`Write ${columnAccessOf(column.name)} at the end of the expression last used (${getExactColumnTypeLabel(column)})`}
               disabled={readOnly || draft.validating || !target}
               onClick={() => {
                 if (target) {
