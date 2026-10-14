@@ -2372,7 +2372,7 @@ Every engine defect is listed in Appendix B.
 - **Runs** (spec §12.6): 'Runs (n)' opens a panel under the toolbar with the page's 15 latest runs, fetches,
   exports and Pivot value loads, each with its time, duration, SQL and Copy SQL, and the lambda it sent: Show Pure
   (as it ran, its row limit included) and Copy JSON (the lambda as the engine receives it). A failed run is listed
-  with the engine's first line; a stopped one isn't. 'Send requests uncompressed' turns off the compression of Cube's
+  with the engine's first line, and a fetch the grid drops for a newer run too; a stopped one isn't. 'Send requests uncompressed' turns off the compression of Cube's
   engine client, kept per user, so the browser's Network tab shows each request's JSON (§11.16). No trace link.
 - **Formats** (spec §13.1, with the §21 fixes): 'Format Column…' sets a number, currency (ISO 4217 codes from
   `Intl.supportedValuesOf('currency')`) or percent format, its places, separators, red and parentheses for
@@ -4845,7 +4845,8 @@ sends nothing.
 - **Copy JSON** copies the lambda as the engine receives it: lossless numbers, pretty-printed. The V1 serialization
   stays behind the port (`CubeEngine.serializeLambda`), so the panel never touches a `V1_*` class.
 - **Failed runs are recorded too,** with the engine's first line, since the query that failed is the one to debug.
-  A stopped run, or one dropped for a newer one, records nothing. _(Supersedes spec §12.6's "each successful run".)_
+  Only a stopped run records nothing; a grid fetch whose answer is dropped for a newer run is listed, since it ran
+  (M7 left those out). _(Supersedes spec §12.6's "each successful run".)_
 - **Readable requests:** a switch in the Runs panel, "Send requests uncompressed", turns off the compression of
   Cube's own engine client (`CubeEngine.setRequestCompression`), so the Network tab shows each request's JSON. It is
   kept per user (`userDataService`, as the grid mode is) and off by default. It doesn't reach Legend Query's own
