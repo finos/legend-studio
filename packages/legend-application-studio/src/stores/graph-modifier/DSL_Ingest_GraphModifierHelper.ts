@@ -15,7 +15,7 @@
  */
 
 import { RawLambda, type IngestDefinition } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import { isObject, isString, type PlainObject } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 /** The source of a data set whose rows a function computes: a materialized view */
@@ -25,11 +25,9 @@ const MATERIALIZED_VIEW_SOURCE_TYPE = 'FunctionSource';
 export const getIngestDataSetNames = (ingest: IngestDefinition): string[] =>
   (Array.isArray(ingest.content.datasets) ? ingest.content.datasets : [])
     .map((dataSet: unknown) =>
-      dataSet && typeof dataSet === 'object'
-        ? (dataSet as PlainObject).name
-        : undefined,
+      isObject(dataSet) ? (dataSet as PlainObject).name : undefined,
     )
-    .filter((name): name is string => typeof name === 'string');
+    .filter(isString);
 
 /**
  * Adds a materialized view to the ingest definition: a data set, with no
