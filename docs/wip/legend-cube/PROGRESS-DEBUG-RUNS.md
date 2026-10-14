@@ -1,7 +1,7 @@
 # Legend Cube: debugging runs, progress
 
 PLAN §11.16. Built on `cube-debug-runs`, from `cube-dev` (`afd8bdadd`, draft #5686), then replayed onto `master`
-(`56717aeec`) as `cube-debug-runs-master`, in a PR into `master` (user, 2026-10-14).
+(`56717aeec`) as `cube-debug-runs-master`, in a PR into `master`, finos/legend-studio#5689 (user, 2026-10-14).
 
 ## Current state
 
@@ -32,7 +32,7 @@ Complete (2026-10-14): DR.1–DR.7 done, the video sent. The draft PR waits for 
 - DR.4, again (user, 2026-10-14): the switch left the Runs panel for a Dev Settings modal opened from a ☰ menu at
   the top left, as Legend Query's editor has, with the engine URL too. `CubeEngineClientSettings` replaces the
   engine port's `setRequestCompression`: the engine, the connection explorer and the service and ingest catalogs each
-  register their client. Re-rehearsed with the demo script (14 checks): Dev Settings shows the deployment's URL;
+  register their client. Re-rehearsed with the demo script (14 checks; video `24-debug-runs-dev-settings.webm`, 1:29): Dev Settings shows the deployment's URL;
   compression off sends JSON; `http://localhost:6399/api` sends the next Execute there, which fails and is listed in
   Runs ("Failed: Failed to fetch"); Reset engine URL runs again on :6300.
 
