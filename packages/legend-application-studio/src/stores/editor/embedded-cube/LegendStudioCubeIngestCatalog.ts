@@ -32,35 +32,25 @@ import {
   type CubeIngestDefinitionSource,
   type NodeId,
 } from '@finos/legend-cube-builder';
-import {
-  LakehouseBaseRuntime,
-  LakehouseRuntime,
-  type IngestDefinition,
-  type PackageableRuntime,
-} from '@finos/legend-graph';
+import type { IngestDefinition } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
+import type { LegendStudioCubeWorkspace } from './LegendStudioCubeWorkspace.js';
 
 // Legend Cube in Studio: a cube reads the ingest definitions of the project
 // being edited, as the workspace holds them, and runs on the project's
 // lakehouse runtime, as Studio's own queries of an ingest definition do. The
-// Ingest tab lists them as Legend Query's lists deployed ones, each named by
-// the URN it would have if this project deployed it.
+// Ingest tab lists every definition of the project, under one producer that
+// stands for the project, each named by the URN it would have if this
+// project deployed it.
 
 /** The one class a Studio cube reads the project's definitions as, so the Ingest tab offers no other */
 const STUDIO_CUBE_INGEST_CLASS = CubeDataProductEnvironmentType.PRODUCTION;
 
-/** The producer deployment of a definition with no app directory deployment */
-const NO_DEPLOYMENT_ID = '0';
-
-/** The project's coordinates when Studio has no project configuration, which the URNs still need */
-const UNKNOWN_PROJECT = { groupId: 'studio', artifactId: 'workspace' };
+/** The one producer deployment the tab lists: the project itself, whatever its definitions' deployments */
+export const LEGEND_STUDIO_CUBE_PROJECT_PRODUCER = '0';
 
 export const LEGEND_STUDIO_CUBE_MESSAGE = {
-  NO_RUNTIME:
-    "Add a lakehouse runtime to the project: a cube runs the project's ingest data sets on it, as Studio's own queries do.",
-  NO_ENVIRONMENT: (runtime: string): string =>
-    `The project's lakehouse runtime ${runtime} names no environment.`,
   GONE: (definition: string): string =>
     `The project has no ingest definition ${definition} any more.`,
   UNREADABLE: (definition: string): string =>
@@ -68,11 +58,6 @@ export const LEGEND_STUDIO_CUBE_MESSAGE = {
   NO_DATA_SET: (dataSet: string, definition: string): string =>
     `Ingest definition ${definition} has no data set "${dataSet}".`,
 };
-
-const deploymentIdOf = (definition: IngestDefinition): string =>
-  definition.appDirDeployment
-    ? String(definition.appDirDeployment.appDirId)
-    : NO_DEPLOYMENT_ID;
 
 /**
  * The project's own ingest definitions, for the Ingest tab and for the
@@ -83,20 +68,11 @@ export class LegendStudioCubeIngestCatalog
 {
   readonly environmentTypes = [STUDIO_CUBE_INGEST_CLASS];
   readonly editorStore: EditorStore;
+  readonly workspace: LegendStudioCubeWorkspace;
 
-  constructor(editorStore: EditorStore) {
+  constructor(editorStore: EditorStore, workspace: LegendStudioCubeWorkspace) {
     this.editorStore = editorStore;
-  }
-
-  private get project(): { groupId: string; artifactId: string } {
-    const configuration =
-      this.editorStore.projectConfigurationEditorState.projectConfiguration;
-    return configuration
-      ? {
-          groupId: configuration.groupId,
-          artifactId: configuration.artifactId,
-        }
-      : UNKNOWN_PROJECT;
+    this.workspace = workspace;
   }
 
   /** The project's own definitions, not its dependencies' */
@@ -108,7 +84,7 @@ export class LegendStudioCubeIngestCatalog
   urnOf(definition: IngestDefinition): string {
     return formatCubeIngestUrn({
       environmentType: STUDIO_CUBE_INGEST_CLASS,
-      ...this.project,
+      ...this.workspace.project,
       definition: definition.path,
     });
   }
@@ -128,76 +104,52 @@ export class LegendStudioCubeIngestCatalog
     return definition;
   }
 
-  /**
-   * The lakehouse runtime a run uses: the project's first, as Studio's own
-   * queries of an ingest definition pick (`getCompatibleRuntimesFromAccessorOwner`)
-   */
-  get runtime(): PackageableRuntime | undefined {
-    return this.editorStore.graphManagerState.usableRuntimes.find(
-      (runtime) => runtime.runtimeValue instanceof LakehouseBaseRuntime,
-    );
-  }
-
+  /** The project's lakehouse runtime, which a run names, with its warehouse */
   async resolveEnvironment(
     environmentType: CubeDataProductEnvironmentType,
   ): Promise<CubeIngestEnvironment> {
-    const { runtime } = this;
-    if (!runtime) {
-      throw new CubeEngineError(
-        CubeEngineErrorKind.UNSUPPORTED_MODEL,
-        LEGEND_STUDIO_CUBE_MESSAGE.NO_RUNTIME,
-      );
-    }
-    const value = runtime.runtimeValue as LakehouseBaseRuntime;
-    if (!value.environment) {
-      throw new CubeEngineError(
-        CubeEngineErrorKind.UNSUPPORTED_MODEL,
-        LEGEND_STUDIO_CUBE_MESSAGE.NO_ENVIRONMENT(runtime.path),
-      );
-    }
+    const runtime = await this.workspace.resolveRuntime();
     return new CubeIngestEnvironment({
       environmentType,
-      name: `${value.environment}, from ${runtime.path}`,
-      runtimeEnvironment: value.environment,
-      warehouse:
-        value instanceof LakehouseRuntime ? value.warehouse : undefined,
+      name: runtime.label,
+      runtimeEnvironment: runtime.environment,
+      warehouse: runtime.warehouse,
     });
   }
 
-  async getRuntimeEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
-  ): Promise<string> {
-    return (await this.resolveEnvironment(environmentType)).runtimeEnvironment;
+  async getRuntimeEnvironment(): Promise<string> {
+    return (await this.workspace.resolveRuntime()).environment;
   }
 
-  /** The app directory deployments of the project's definitions */
+  /** One producer, the project, so the tab lists every definition at once */
   async listProducers(): Promise<readonly CubeIngestProducer[]> {
-    return [...new Set(this.definitions.map(deploymentIdOf))].map(
-      (deploymentId) =>
-        new CubeIngestProducer({
-          deploymentId,
-          urn: `${this.project.groupId}:${this.project.artifactId}:${deploymentId}`,
-        }),
-    );
+    const { groupId, artifactId } = this.workspace.project;
+    return [
+      new CubeIngestProducer({
+        deploymentId: LEGEND_STUDIO_CUBE_PROJECT_PRODUCER,
+        urn: `${groupId}:${artifactId}`,
+      }),
+    ];
   }
 
-  async listDefinitions(
-    environmentType: CubeDataProductEnvironmentType,
-    producerDeploymentId: string,
-  ): Promise<CubeIngestDefinitionList> {
+  /** Every definition of the project, whatever its app directory deployment */
+  async listDefinitions(): Promise<CubeIngestDefinitionList> {
     return {
-      candidates: this.definitions
-        .filter((each) => deploymentIdOf(each) === producerDeploymentId)
-        .map(
-          (each) =>
-            new CubeIngestDefinitionCandidate({
-              urn: this.urnOf(each),
-              definition: each.path,
-              ...this.project,
-            }),
-        ),
+      candidates: this.definitions.map(
+        (each) =>
+          new CubeIngestDefinitionCandidate({
+            urn: this.urnOf(each),
+            definition: each.path,
+            ...this.workspace.project,
+          }),
+      ),
       droppedCount: 0,
     };
+  }
+
+  /** The workspace's elements, which a typing's or a run's model holds */
+  getModelElements(): Promise<readonly PlainObject[]> {
+    return this.workspace.getModelElements();
   }
 
   /** The definition's element, as the workspace holds it now */

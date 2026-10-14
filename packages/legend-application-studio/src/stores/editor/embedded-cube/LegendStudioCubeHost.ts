@@ -22,27 +22,37 @@ import {
 } from '@finos/legend-cube-builder';
 import type { LegendStudioApplicationStore } from '../../LegendStudioBaseStore.js';
 import type { EditorStore } from '../EditorStore.js';
+import { LegendStudioCubeDataProductCatalog } from './LegendStudioCubeDataProductCatalog.js';
 import { LegendStudioCubeIngestCatalog } from './LegendStudioCubeIngestCatalog.js';
+import { LegendStudioCubeWorkspace } from './LegendStudioCubeWorkspace.js';
 
 /**
  * Studio as the host of Legend Cube: Studio's engine and application store,
- * and the project's own ingest definitions as the only sources, run on the
- * project's lakehouse runtime. No sample data, examples, databases, data
- * products or services. One per opening of the cube.
+ * and the project's own ingest definitions and data products as the only
+ * sources, typed and run on the workspace and the project's lakehouse
+ * runtime. No sample data, examples, databases or services. One per opening
+ * of the cube.
  */
 export class LegendStudioCubeHost implements CubeHost {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly engine: CubeEngine;
   readonly modelCatalog: LocalModelCatalog;
+  readonly project: LegendStudioCubeWorkspace;
   readonly ingestCatalog: LegendStudioCubeIngestCatalog;
+  readonly dataProductCatalog: LegendStudioCubeDataProductCatalog;
   readonly offersSampleData = false;
 
   constructor(editorStore: EditorStore) {
     const { applicationStore } = editorStore;
     const { config } = applicationStore;
     this.applicationStore = applicationStore;
-    this.ingestCatalog = new LegendStudioCubeIngestCatalog(editorStore);
-    // the engine Studio's own editor uses, configured the same way
+    this.project = new LegendStudioCubeWorkspace(editorStore);
+    this.ingestCatalog = new LegendStudioCubeIngestCatalog(
+      editorStore,
+      this.project,
+    );
+    // the engine Studio's own editor uses, configured the same way; a run
+    // reads the workspace, and names the project's lakehouse environment
     this.engine = buildCubeEngine(
       {
         baseUrl:
@@ -58,7 +68,14 @@ export class LegendStudioCubeHost implements CubeHost {
       {
         ingestCatalog: this.ingestCatalog,
         ingestDefinitionSource: this.ingestCatalog,
+        lakehouseEnvironment: this.project,
+        dataProductModelSource: this.project,
       },
+    );
+    this.dataProductCatalog = new LegendStudioCubeDataProductCatalog(
+      editorStore,
+      this.project,
+      this.engine,
     );
     this.modelCatalog = new LocalModelCatalog(this.engine);
   }

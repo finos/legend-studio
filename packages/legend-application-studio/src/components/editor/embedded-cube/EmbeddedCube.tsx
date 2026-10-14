@@ -46,10 +46,14 @@ const MaterializedViewNameDialog = observer(
   (props: {
     embeddedCubeState: EmbeddedCubeState;
     lambda: PlainObject;
-    darkMode: boolean;
     close: () => void;
   }) => {
-    const { embeddedCubeState, lambda, darkMode, close } = props;
+    const { embeddedCubeState, lambda, close } = props;
+    // as Cube's dialogs: the dialog follows the theme, and Add is an accent
+    // button in every theme (legend-art's light Add is a legacy grey)
+    const darkMode =
+      !embeddedCubeState.editorStore.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
     const [name, setName] = useState('');
     const problem = embeddedCubeState.getMaterializedViewNameProblem(name);
     const add = (): void => {
@@ -93,7 +97,7 @@ const MaterializedViewNameDialog = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              darkMode={darkMode}
+              darkMode={true}
               formatText={false}
               text="Add"
               disabled={problem !== undefined}
@@ -121,9 +125,8 @@ const AddMaterializedViewButton = observer(
   (props: {
     embeddedCubeState: EmbeddedCubeState;
     editorState: CubeEditorState;
-    darkMode: boolean;
   }) => {
-    const { embeddedCubeState, editorState, darkMode } = props;
+    const { embeddedCubeState, editorState } = props;
     const { execution } = editorState;
     const [lambda, setLambda] = useState<PlainObject | undefined>();
     const [isBuilding, setIsBuilding] = useState(false);
@@ -156,7 +159,6 @@ const AddMaterializedViewButton = observer(
           <MaterializedViewNameDialog
             embeddedCubeState={embeddedCubeState}
             lambda={lambda}
-            darkMode={darkMode}
             close={() => setLambda(undefined)}
           />
         )}
@@ -219,7 +221,6 @@ export const EmbeddedCube = observer(() => {
               <AddMaterializedViewButton
                 embeddedCubeState={embeddedCubeState}
                 editorState={editorState}
-                darkMode={darkMode}
               />
             )}
           />

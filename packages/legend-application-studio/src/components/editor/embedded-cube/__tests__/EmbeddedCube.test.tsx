@@ -18,11 +18,20 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { act, findByText, fireEvent, waitFor } from '@testing-library/react';
 import {
   CubeDataProductEnvironmentType,
+  CubeEngineError,
+  CubeEngineErrorKind,
   formatCubeIngestUrn,
+  type CubeEngine,
 } from '@finos/legend-cube-builder';
 import type { IngestDefinition } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
-import type { Schema } from '@finos/legend-cube';
+import {
+  PrimitiveType,
+  Schema,
+  SchemaColumn,
+  type IR,
+  type ModelContext,
+} from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -33,8 +42,18 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
   LEGEND_STUDIO_CUBE_MESSAGE,
+  LEGEND_STUDIO_CUBE_PROJECT_PRODUCER,
   LegendStudioCubeIngestCatalog,
 } from '../../../../stores/editor/embedded-cube/LegendStudioCubeIngestCatalog.js';
+import {
+  LEGEND_STUDIO_CUBE_DATA_PRODUCT_MESSAGE,
+  LegendStudioCubeDataProductCatalog,
+} from '../../../../stores/editor/embedded-cube/LegendStudioCubeDataProductCatalog.js';
+import {
+  LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE,
+  LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+  LegendStudioCubeWorkspace,
+} from '../../../../stores/editor/embedded-cube/LegendStudioCubeWorkspace.js';
 import { getIngestDataSetNames } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
@@ -127,6 +146,86 @@ const LAKEHOUSE_RUNTIME: PlainObject<Entity> = {
   },
 };
 
+const DATA_PRODUCT_PATH = 'demo::dataProduct::TradesDataProduct';
+
+/** A lakehouse access point reading a data set of TradesIngest as it is */
+const accessPoint = (id: string, dataSet: string): object => ({
+  _type: 'lakehouseAccessPoint',
+  id,
+  title: dataSet,
+  targetEnvironment: 'Snowflake',
+  func: {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'classInstance',
+        type: 'I',
+        value: { metadata: false, path: [INGEST_PATH, dataSet] },
+      },
+    ],
+    parameters: [],
+  },
+});
+
+const TRADES_DATA_PRODUCT: PlainObject<Entity> = {
+  path: DATA_PRODUCT_PATH,
+  classifierPath:
+    'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  content: {
+    _type: 'dataProduct',
+    name: 'TradesDataProduct',
+    package: 'demo::dataProduct',
+    title: 'Trades',
+    accessPointGroups: [
+      {
+        id: 'trading',
+        title: 'Trading',
+        accessPoints: [
+          accessPoint('trades', 'TRADES'),
+          accessPoint('desks', 'DESKS'),
+        ],
+      },
+    ],
+  },
+};
+
+/** An engine that types `#P{…}#` lambdas as the workspace's TRADES and DESKS, recording its calls */
+const fakeTypingEngine = (): {
+  engine: CubeEngine;
+  typeLambdas: jest.Mock<CubeEngine['typeLambdas']>;
+} => {
+  const typeLambdas = jest.fn<CubeEngine['typeLambdas']>(
+    async (_model: ModelContext, lambdas: ReadonlyMap<string, IR>) =>
+      new Map(
+        [...lambdas].map(([nodeId, ir]) => {
+          const text = JSON.stringify(ir);
+          return [
+            nodeId,
+            text.includes('"desks"')
+              ? new Schema([
+                  new SchemaColumn('ID', PrimitiveType.get('Integer'), false),
+                  new SchemaColumn('DESK', PrimitiveType.get('String'), false),
+                ])
+              : text.includes('"trades"')
+                ? new Schema([
+                    new SchemaColumn(
+                      'TRADE_ID',
+                      PrimitiveType.get('Integer'),
+                      false,
+                    ),
+                  ])
+                : new CubeEngineError(
+                    CubeEngineErrorKind.COMPILE,
+                    'unknown access point',
+                    nodeId,
+                  ),
+          ];
+        }),
+      ),
+  );
+  return { engine: { typeLambdas } as unknown as CubeEngine, typeLambdas };
+};
+
 /** The lambda a cube of TRADES alone gives */
 const TRADES_LAMBDA = {
   _type: 'lambda',
@@ -173,23 +272,30 @@ describe('Legend Cube in Studio', () => {
     ),
     async () => {
       const { editorStore } = await setUp([TRADES_INGEST, LAKEHOUSE_RUNTIME]);
-      const catalog = new LegendStudioCubeIngestCatalog(editorStore);
+      const workspace = new LegendStudioCubeWorkspace(editorStore);
+      const catalog = new LegendStudioCubeIngestCatalog(editorStore, workspace);
       const { PRODUCTION } = CubeDataProductEnvironmentType;
       expect(catalog.environmentTypes).toEqual([PRODUCTION]);
+      // one producer, the project, whatever the definitions' deployments
       expect(
         (await catalog.listProducers()).map((each) => each.deploymentId),
-      ).toEqual(['12345']);
+      ).toEqual([LEGEND_STUDIO_CUBE_PROJECT_PRODUCER]);
       const urn = formatCubeIngestUrn({
         environmentType: PRODUCTION,
         groupId: 'com.test',
         artifactId: 'string',
         definition: INGEST_PATH,
       });
-      const list = await catalog.listDefinitions(PRODUCTION, '12345');
+      const list = await catalog.listDefinitions();
       expect(list.candidates.map((each) => each.urn)).toEqual([urn]);
+      // typing and runs read the whole workspace
       expect(
-        (await catalog.listDefinitions(PRODUCTION, '999')).candidates,
-      ).toEqual([]);
+        (await catalog.getModelElements()).map(
+          (element) => `${String(element.package)}::${String(element.name)}`,
+        ),
+      ).toEqual(
+        expect.arrayContaining([INGEST_PATH, 'demo::ingest::LakehouseRuntime']),
+      );
       const dataSets = await catalog.describe(urn);
       expect(
         dataSets.map((each) => [
@@ -206,7 +312,7 @@ describe('Legend Cube in Studio', () => {
       const environment = await catalog.resolveEnvironment(PRODUCTION);
       expect(environment.runtimeEnvironment).toBe('demo-dev');
       expect(environment.warehouse).toBe('DEMO_WH');
-      expect(await catalog.getRuntimeEnvironment(PRODUCTION)).toBe('demo-dev');
+      expect(await catalog.getRuntimeEnvironment()).toBe('demo-dev');
       const schemas = await catalog.resolveSchemas(
         PRODUCTION,
         new Map([
@@ -243,11 +349,15 @@ describe('Legend Cube in Studio', () => {
     ),
     async () => {
       const { editorStore } = await setUp([TRADES_INGEST]);
-      const catalog = new LegendStudioCubeIngestCatalog(editorStore);
+      const workspace = new LegendStudioCubeWorkspace(editorStore);
+      const catalog = new LegendStudioCubeIngestCatalog(editorStore, workspace);
       await expect(
         catalog.resolveEnvironment(CubeDataProductEnvironmentType.PRODUCTION),
       ).rejects.toMatchObject({
-        detail: LEGEND_STUDIO_CUBE_MESSAGE.NO_RUNTIME,
+        detail: LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE.NO_RUNTIME,
+      });
+      await expect(workspace.resolveRuntime()).rejects.toMatchObject({
+        detail: LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE.NO_RUNTIME,
       });
     },
   );
@@ -312,6 +422,137 @@ describe('Legend Cube in Studio', () => {
       expect(ingest.hashCode).not.toBe(hashBefore);
       await renderResult.findByText(
         'Added materialized view TRADES_VIEW to TradesIngest',
+      );
+    },
+  );
+
+  test(
+    integrationTest(
+      "Reads the project's own data products, their lakehouse access points typed on the workspace",
+    ),
+    async () => {
+      const { editorStore } = await setUp([
+        TRADES_INGEST,
+        TRADES_DATA_PRODUCT,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      const workspace = new LegendStudioCubeWorkspace(editorStore);
+      const { engine, typeLambdas } = fakeTypingEngine();
+      const catalog = new LegendStudioCubeDataProductCatalog(
+        editorStore,
+        workspace,
+        engine,
+      );
+      const [candidate, ...others] = await catalog.search();
+      expect(others).toEqual([]);
+      expect(candidate).toMatchObject({
+        dataProductPath: DATA_PRODUCT_PATH,
+        title: 'Trades',
+        groupId: 'com.test',
+        artifactId: 'string',
+        versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+      });
+      const description = await catalog.describe(
+        candidate as NonNullable<typeof candidate>,
+      );
+      expect(
+        description.groups.map((group) => [
+          group.title,
+          group.accessPoints.map((point) => [
+            point.id,
+            point.schema?.columns.map((col) => col.name),
+          ]),
+        ]),
+      ).toEqual([
+        [
+          'Trading',
+          [
+            ['trades', ['TRADE_ID']],
+            ['desks', ['ID', 'DESK']],
+          ],
+        ],
+      ]);
+      // one typing call for the product, on a model of the workspace's project
+      expect(typeLambdas).toHaveBeenCalledTimes(1);
+      expect(typeLambdas.mock.calls[0]?.[0]).toMatchObject({
+        _type: 'cubeDataProduct',
+        groupId: 'com.test',
+        artifactId: 'string',
+        versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+      });
+      const schemas = await catalog.resolveSchemas(
+        {
+          groupId: 'com.test',
+          artifactId: 'string',
+          versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        },
+        new Map([
+          [
+            'dataProductAccessPoint101',
+            {
+              dataProduct: DATA_PRODUCT_PATH,
+              accessPointGroup: 'trading',
+              accessPoint: 'desks',
+            },
+          ],
+          [
+            'dataProductAccessPoint102',
+            {
+              dataProduct: DATA_PRODUCT_PATH,
+              accessPointGroup: 'trading',
+              accessPoint: 'gone',
+            },
+          ],
+        ]),
+      );
+      expect(
+        (schemas.get('dataProductAccessPoint101') as Schema).columns.map(
+          (col) => col.name,
+        ),
+      ).toEqual(['ID', 'DESK']);
+      expect(schemas.get('dataProductAccessPoint102')).toMatchObject({
+        detail: LEGEND_STUDIO_CUBE_DATA_PRODUCT_MESSAGE.NO_ACCESS_POINT(
+          'gone',
+          DATA_PRODUCT_PATH,
+        ),
+      });
+      expect(catalog.getMarketplaceLink()).toBeUndefined();
+    },
+  );
+
+  test(
+    integrationTest(
+      "Gives Cube the workspace as the model, and the project's lakehouse runtime to run on",
+    ),
+    async () => {
+      const { editorStore } = await setUp([
+        TRADES_INGEST,
+        TRADES_DATA_PRODUCT,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      const workspace = new LegendStudioCubeWorkspace(editorStore);
+      expect(await workspace.resolveRuntime()).toEqual({
+        path: 'demo::ingest::LakehouseRuntime',
+        environment: 'demo-dev',
+        label: 'demo-dev, from demo::ingest::LakehouseRuntime',
+        warehouse: 'DEMO_WH',
+      });
+      expect(await workspace.resolveEnvironment()).toBe('demo-dev');
+      const model = await workspace.getProjectModel();
+      expect(model._type).toBe('data');
+      expect(
+        (model.elements as PlainObject[])
+          .map(
+            (element) => `${String(element.package)}::${String(element.name)}`,
+          )
+          .sort(),
+      ).toEqual(
+        [
+          DATA_PRODUCT_PATH,
+          INGEST_PATH,
+          'demo::ingest::LakehouseRuntime',
+        ].sort(),
       );
     },
   );
