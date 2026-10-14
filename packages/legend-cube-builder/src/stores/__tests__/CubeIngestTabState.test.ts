@@ -22,7 +22,9 @@ import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.j
 import {
   createFakeCubeIngestCatalog,
   FAKE_INGEST_DESKS,
+  FAKE_INGEST_FILLS_SCHEMA,
   FAKE_INGEST_ORDERS,
+  FAKE_INGEST_ORDERS_WITH_FILLS,
   FAKE_INGEST_TRADES_SCHEMA,
   type FakeCubeIngestCatalog,
   fakeIngestUrnOf,
@@ -172,6 +174,63 @@ describe('The Ingest tab', () => {
     state.undo();
     expect(state.document.context).toBeUndefined();
     expect(state.document.query.nodes).toHaveLength(0);
+  });
+
+  test('Adds several data sets picked at once in one undo step, the first picked running, the last previewed', async () => {
+    const { state, ingest } = setUp();
+    ingest.describe.mockResolvedValueOnce(FAKE_INGEST_ORDERS_WITH_FILLS);
+    const tab = await openOnOrders(state);
+    // two can be added, so neither is picked for the viewer
+    expect(tab.pickedCount).toBe(0);
+    expect(tab.canConfirm).toBe(false);
+    tab.toggleDataSet('FILLS');
+    tab.toggleDataSet('TRADES');
+    expect(tab.pickedCount).toBe(2);
+    // the preview shows the data set picked last
+    expect(tab.dataSet?.schema).toBe(FAKE_INGEST_TRADES_SCHEMA);
+    expect(state.sourcePicker.canConfirm).toBe(true);
+    await flowResult(state.sourcePicker.confirm());
+    expect(state.sourcePicker.isOpen).toBe(false);
+    const nodes = state.document.query.nodes as IngestDatasetSource[];
+    expect(nodes.map((node) => [node.id, node.dataSet])).toEqual([
+      ['ingestDataset101', 'FILLS'],
+      ['ingestDataset102', 'TRADES'],
+    ]);
+    expect(nodes.map((node) => node.resolution)).toEqual([
+      { kind: 'resolved', schema: FAKE_INGEST_FILLS_SCHEMA },
+      { kind: 'resolved', schema: FAKE_INGEST_TRADES_SCHEMA },
+    ]);
+    expect(state.document.query.selected).toBe('ingestDataset101');
+    expect(state.document.context?.runtime).toBe(CUBE_INGEST_RUNTIME_PATH);
+    expect(state.history).toHaveLength(1);
+    expect(tab.pickedCount).toBe(0);
+  });
+
+  test("A plain pick replaces the picked data sets, ticking one again takes it out, and one that can't be added is never picked", async () => {
+    const { state, ingest } = setUp();
+    ingest.describe.mockResolvedValueOnce(FAKE_INGEST_ORDERS_WITH_FILLS);
+    const tab = await openOnOrders(state);
+    tab.toggleDataSet('TRADES');
+    tab.toggleDataSet('FILLS');
+    tab.selectDataSet('TRADES');
+    expect(tab.dataSetNames).toEqual(['TRADES']);
+    // a materialized view can't be added
+    tab.toggleDataSet('DAILY');
+    expect(tab.dataSetNames).toEqual(['TRADES']);
+    tab.toggleDataSet('TRADES');
+    expect(tab.dataSetNames).toEqual([]);
+    expect(tab.dataSet).toBeUndefined();
+    expect(tab.canConfirm).toBe(false);
+    // another definition starts on its own data sets, its only one picked
+    tab.toggleDataSet('FILLS');
+    tab.selectDefinition(
+      tab.shownDefinitions.find(
+        (candidate) => candidate.definition === FAKE_INGEST_DESKS,
+      ),
+    );
+    expect(tab.dataSetNames).toEqual([]);
+    await settle();
+    expect(tab.dataSetNames).toEqual(['DESKS']);
   });
 
   test('Keeps a cube to its class, producer deployment and warehouse, and to ingest data sets', async () => {

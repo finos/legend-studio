@@ -31,14 +31,23 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
+import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
+import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
-import { createFakeCubeIngestCatalog } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
+import {
+  createFakeCubeIngestCatalog,
+  FAKE_INGEST_ORDERS_WITH_FILLS,
+  type FakeCubeIngestCatalog,
+} from '../../../__test-utils__/FakeCubeIngestCatalog.js';
 import { CubeDataProductEnvironmentType } from '../../../graph-manager/CubeDataProduct.js';
 import {
   CubeIngestEnvironment,
   CubeIngestProducer,
 } from '../../../graph-manager/CubeIngestCatalog.js';
+import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import { CubeEditor } from '../../CubeEditor.js';
 import { CubeIngestTab } from '../CubeIngestTab.js';
 
 let consoleError: jest.SpiedFunction<typeof console.error>;
@@ -64,6 +73,39 @@ const renderTab = (): CubeEditorState => {
   });
   render(<CubeIngestTab tab={state.sourcePicker.ingestTab} />);
   return state;
+};
+
+/**
+ * A host reading one project's ingest definitions, as Studio: one producer,
+ * the project, and the environment and warehouse of its lakehouse runtime
+ */
+const createProjectHost = (): {
+  host: CubeHost;
+  ingest: FakeCubeIngestCatalog;
+} => {
+  const { host } = TEST__createCubeHost();
+  const ingest = createFakeCubeIngestCatalog();
+  ingest.listProducers.mockResolvedValue([
+    new CubeIngestProducer({ deploymentId: '1234', urn: 'the project' }),
+  ]);
+  ingest.resolveEnvironment.mockResolvedValue(
+    new CubeIngestEnvironment({
+      environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      name: 'demo-dev, from demo::Runtime',
+      runtimeEnvironment: 'demo-dev',
+      warehouse: 'DEMO_WH',
+    }),
+  );
+  return {
+    host: {
+      ...host,
+      ingestCatalog: ingest.catalog,
+      project: {
+        resolveRuntime: async () => ({ label: 'demo-dev, from demo::Runtime' }),
+      },
+    },
+    ingest,
+  };
 };
 
 describe('The Ingest tab', () => {
@@ -115,26 +157,7 @@ describe('The Ingest tab', () => {
   });
 
   test('On a host reading one project, as Studio, lists its definitions by name with their paths, under the runtime its runs use', async () => {
-    const { host } = TEST__createCubeHost();
-    const ingest = createFakeCubeIngestCatalog();
-    ingest.listProducers.mockResolvedValue([
-      new CubeIngestProducer({ deploymentId: '1234', urn: 'the project' }),
-    ]);
-    ingest.resolveEnvironment.mockResolvedValue(
-      new CubeIngestEnvironment({
-        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
-        name: 'demo-dev, from demo::Runtime',
-        runtimeEnvironment: 'demo-dev',
-        warehouse: 'DEMO_WH',
-      }),
-    );
-    const state = new CubeEditorState({
-      ...host,
-      ingestCatalog: ingest.catalog,
-      project: {
-        resolveRuntime: async () => ({ label: 'demo-dev, from demo::Runtime' }),
-      },
-    });
+    const state = new CubeEditorState(createProjectHost().host);
     act(() => {
       state.addNode(IngestDatasetSource.TYPE);
     });
@@ -163,5 +186,74 @@ describe('The Ingest tab', () => {
     await screen.findByRole('list', { name: 'Data sets' });
     expect(state.sourcePicker.ingestTab.warehouse).toBe('DEMO_WH');
     expect(state.sourcePicker.ingestTab.canConfirm).toBe(true);
+  });
+
+  test('On a host reading one project, as Studio, picks several data sets with their checkboxes, or a Cmd click, and adds them all', async () => {
+    const { host, ingest } = createProjectHost();
+    ingest.describe.mockResolvedValue(FAKE_INGEST_ORDERS_WITH_FILLS);
+    await TEST__renderInCubeApplication(
+      <CubeEditor host={host} />,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Ingest Dataset/u }));
+    const dialog = await screen.findByRole('dialog');
+    const definitions = await within(dialog).findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    fireEvent.click(within(definitions).getByText('OrdersIngest'));
+    const dataSets = await within(dialog).findByRole('list', {
+      name: 'Data sets',
+    });
+    fireEvent.click(within(dataSets).getByLabelText('Pick TRADES'));
+    fireEvent.click(within(dataSets).getByText('FILLS'), { metaKey: true });
+    expect(
+      within(dataSets)
+        .getAllByRole<HTMLInputElement>('checkbox')
+        .map((box) => [box.getAttribute('aria-label'), box.checked]),
+    ).toEqual([
+      ['Pick TRADES', true],
+      ['Pick DAILY', false],
+      ['Pick FILLS', true],
+    ]);
+    // a materialized view can't be ticked
+    expect(
+      within(dataSets).getByLabelText<HTMLInputElement>('Pick DAILY').disabled,
+    ).toBe(true);
+    // the data set picked last is previewed
+    expect(
+      within(
+        within(dialog).getByRole('region', { name: 'Data set preview' }),
+      ).getByText('FILL_ID'),
+    ).toBeDefined();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add 2' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await TEST__findCanvasNode('ingestDataset101')).toBeDefined();
+    expect(await TEST__findCanvasNode('ingestDataset102')).toBeDefined();
+  });
+
+  test('On a host reading one project, as Studio, a plain click on a data set picks it alone', async () => {
+    const { host, ingest } = createProjectHost();
+    ingest.describe.mockResolvedValue(FAKE_INGEST_ORDERS_WITH_FILLS);
+    const state = new CubeEditorState(host);
+    act(() => {
+      state.addNode(IngestDatasetSource.TYPE);
+    });
+    render(<CubeIngestTab tab={state.sourcePicker.ingestTab} />);
+    const definitions = await screen.findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    fireEvent.click(within(definitions).getByText('OrdersIngest'));
+    const dataSets = await screen.findByRole('list', { name: 'Data sets' });
+    fireEvent.click(within(dataSets).getByLabelText('Pick TRADES'));
+    fireEvent.click(within(dataSets).getByLabelText('Pick FILLS'));
+    fireEvent.click(within(dataSets).getByText('TRADES'));
+    expect(
+      within(dataSets).getByLabelText<HTMLInputElement>('Pick TRADES').checked,
+    ).toBe(true);
+    expect(
+      within(dataSets).getByLabelText<HTMLInputElement>('Pick FILLS').checked,
+    ).toBe(false);
+    expect(state.sourcePicker.ingestTab.pickedCount).toBe(1);
   });
 });

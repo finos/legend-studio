@@ -395,4 +395,36 @@ describe('Data product tab', () => {
     fireEvent.click(within(products).getByText(first.title));
     await within(dialog).findByRole('list', { name: 'Access points' });
   });
+
+  test('On a host reading one project, as Studio, picks several access points with their checkboxes, or a Cmd click, and adds them all', async () => {
+    await renderPage((host) => ({
+      ...host,
+      project: {
+        resolveRuntime: async () => ({
+          label: 'demo-dev, from demo::Runtime',
+          warehouse: 'DEMO_WH',
+        }),
+      },
+    }));
+    const dialog = await openFromPalette();
+    const products = within(dialog).getByRole('list', {
+      name: 'Data products',
+    });
+    fireEvent.click(within(products).getByText('Orders Product'));
+    const accessPoints = await within(dialog).findByRole('list', {
+      name: 'Access points',
+    });
+    fireEvent.click(within(accessPoints).getByLabelText('Pick Daily orders'));
+    fireEvent.click(within(accessPoints).getByText('customers'), {
+      metaKey: true,
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add 2' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(
+      await TEST__findCanvasNode('dataProductAccessPoint101'),
+    ).toBeDefined();
+    expect(
+      await TEST__findCanvasNode('dataProductAccessPoint102'),
+    ).toBeDefined();
+  });
 });
