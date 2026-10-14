@@ -114,11 +114,14 @@ const DATA_SETS: Record<string, StandInColumn[]> = {
   ],
 };
 
-/** The columns a batch-milestoned data set adds after its own, as legend-graph types them */
+/**
+ * The columns a batch-milestoned data set adds after its own, as legend-graph
+ * types them, in the order the engine returns them
+ */
 const MILESTONING: StandInColumn[] = [
+  { name: 'LAKE_DIGEST', path: 'String', sql: 'VARCHAR(64) NOT NULL' },
   { name: 'LAKE_IN_ID', path: 'Integer', sql: 'BIGINT NOT NULL' },
   { name: 'LAKE_OUT_ID', path: 'Integer', sql: 'BIGINT NOT NULL' },
-  { name: 'LAKE_DIGEST', path: 'String', sql: 'VARCHAR(64) NOT NULL' },
 ];
 
 /** The definition's content, as the ingest server serves it */
@@ -149,20 +152,20 @@ const CONTENT: PlainObject = {
   })),
 };
 
-/** Each data set's rows: its own values, then LAKE_IN_ID, LAKE_OUT_ID and LAKE_DIGEST */
+/** Each data set's rows: its own values, then LAKE_DIGEST, LAKE_IN_ID and LAKE_OUT_ID */
 const ROWS: Record<string, string[]> = {
   TRADES: [
-    `1, 'FX', 1.5, 10, 1, ${CURRENT}, 'd1'`,
+    `1, 'FX', 1.5, 10, 'd1', 1, ${CURRENT}`,
     // replaced by the next batch's version of trade 2
-    `2, 'FX', 2.5, 20, 1, 1, 'd2'`,
-    `2, 'FX', 3.0, 25, 2, ${CURRENT}, 'd3'`,
-    `3, 'RATES', NULL, 5, 2, ${CURRENT}, 'd4'`,
+    `2, 'FX', 2.5, 20, 'd2', 1, 1`,
+    `2, 'FX', 3.0, 25, 'd3', 2, ${CURRENT}`,
+    `3, 'RATES', NULL, 5, 'd4', 2, ${CURRENT}`,
   ],
   DESKS: [
-    `'FX', 'EMEA', 1, ${CURRENT}, 'e1'`,
+    `'FX', 'EMEA', 'e1', 1, ${CURRENT}`,
     // RATES moved from APAC to AMER
-    `'RATES', 'APAC', 1, 1, 'e2'`,
-    `'RATES', 'AMER', 2, ${CURRENT}, 'e3'`,
+    `'RATES', 'APAC', 'e2', 1, 1`,
+    `'RATES', 'AMER', 'e3', 2, ${CURRENT}`,
   ],
 };
 
