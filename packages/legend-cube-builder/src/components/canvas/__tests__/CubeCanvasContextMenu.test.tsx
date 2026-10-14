@@ -83,7 +83,15 @@ const H2_TRANSFORMS = TRANSFORMS.filter(
   (transform) => transform !== 'Pivot by Column',
 );
 const PALETTE = [TABLE, FUNCTION, 'Data Product (BETA)', ...TRANSFORMS];
-const ITEMS = [...PALETTE, 'Run this step', 'Remove', 'Swap Inputs'];
+const ITEMS = [
+  ...PALETTE,
+  'Run this step',
+  'Copy',
+  'Paste',
+  'Duplicate',
+  'Remove',
+  'Swap Inputs',
+];
 
 const render = async (document?: CubeDocument): Promise<CubeEditorState> => {
   const { host } = TEST__createCubeHost();
@@ -144,6 +152,8 @@ describe('Canvas context menu', () => {
       FUNCTION,
       ...H2_TRANSFORMS,
       'Run this step',
+      'Copy',
+      'Duplicate',
       'Remove',
       'Swap Inputs',
     ]);
@@ -159,6 +169,8 @@ describe('Canvas context menu', () => {
       TABLE,
       FUNCTION,
       ...H2_TRANSFORMS,
+      'Copy',
+      'Duplicate',
       'Remove',
     ]);
     await closeMenu();
@@ -169,6 +181,8 @@ describe('Canvas context menu', () => {
       FUNCTION,
       ...H2_TRANSFORMS,
       'Run this step',
+      'Copy',
+      'Duplicate',
       'Remove',
     ]);
   });
@@ -289,11 +303,11 @@ describe('Canvas context menu', () => {
     },
   );
 
-  test('Only selects in a read-only cube', async () => {
+  test('Only selects and copies in a read-only cube', async () => {
     const editorState = await render();
     await TEST__importDocument(editorState, slice(), true);
     const items = await openMenu(await TEST__findCanvasNode('join101'));
-    expect(enabledItems(items)).toEqual(['Run this step']);
+    expect(enabledItems(items)).toEqual(['Run this step', 'Copy']);
     fireEvent.click(items.get('Run this step') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
   });

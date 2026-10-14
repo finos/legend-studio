@@ -43,6 +43,9 @@ import {
   type SourceDefinition,
   foldColumnName,
   FunctionSource,
+  copyQueryNode,
+  type CubeContext,
+  SourceNode,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -198,6 +201,13 @@ export class CubeEditorState implements CommandRegistrar {
   /** Earlier documents, oldest first */
   history: readonly CubeDocument[] = [];
   /**
+   * The step copied last, as it was, with the cube's context then, which a
+   * pasted source needs; kept for the page, across cubes
+   */
+  copiedNode:
+    | { readonly node: QueryNode; readonly context: CubeContext | undefined }
+    | undefined;
+  /**
    * The changes undone, the latest last, to redo; a new change clears them.
    * Each keeps whether it was read-only and whether undoing it left another
    * cube (an import), so a redo restores both
@@ -301,6 +311,11 @@ export class CubeEditorState implements CommandRegistrar {
       addConfiguredNode: action,
       dropNode: action,
       removeNode: action,
+      copiedNode: observable.ref,
+      canPaste: computed,
+      copyNode: action,
+      pasteNode: action,
+      duplicateNode: action,
       swapInputs: action,
       setShowGraph: action,
       setPaletteCollapsed: action,
@@ -1493,6 +1508,95 @@ export class CubeEditorState implements CommandRegistrar {
       query.isEmpty
         ? this.document.withContext(undefined).withQuery(query)
         : this.document.withQuery(query),
+    );
+  }
+
+  /** Whether a step can be copied: a known type's, so its copy reads back */
+  canCopyNode(nodeId: string): boolean {
+    const node = this.document.query.getNode(nodeId);
+    return node !== undefined && this.registry.get(node.type) !== undefined;
+  }
+
+  /** Copies a step, as Cmd/Ctrl+C on it does, for Paste */
+  copyNode(nodeId: string): void {
+    const node = this.document.query.getNode(nodeId);
+    if (node && this.canCopyNode(nodeId)) {
+      this.copiedNode = { node, context: this.document.context };
+    }
+  }
+
+  /**
+   * Whether the step copied can be pasted here: a transform always; a source
+   * only into a cube of the same model and runtime, or an empty cube, which
+   * takes them, as a first table does
+   */
+  get canPaste(): boolean {
+    const copied = this.copiedNode;
+    return (
+      copied !== undefined &&
+      !this.readOnly &&
+      this.canTakeCopy(copied.node, copied.context)
+    );
+  }
+
+  /** Pastes the step copied: after the step given when it takes an input, else on its own; one undo step */
+  pasteNode(afterId?: string): void {
+    const copied = this.copiedNode;
+    if (copied && this.canPaste) {
+      this.addCopy(copied.node, copied.context, afterId);
+    }
+  }
+
+  canDuplicateNode(nodeId: string): boolean {
+    return !this.readOnly && this.canCopyNode(nodeId);
+  }
+
+  /** A copy of the step after it, as Cmd/Ctrl+D does, leaving the step copied for Paste as it was */
+  duplicateNode(nodeId: string): void {
+    const node = this.document.query.getNode(nodeId);
+    if (node && this.canDuplicateNode(nodeId)) {
+      this.addCopy(node, this.document.context, nodeId);
+    }
+  }
+
+  private canTakeCopy(
+    node: QueryNode,
+    context: CubeContext | undefined,
+  ): boolean {
+    if (!(node instanceof SourceNode)) {
+      return true;
+    }
+    const { document } = this;
+    return (
+      document.query.isEmpty ||
+      JSON.stringify(document.context) === JSON.stringify(context)
+    );
+  }
+
+  private addCopy(
+    node: QueryNode,
+    context: CubeContext | undefined,
+    afterId?: string,
+  ): void {
+    const { document } = this;
+    const copy = copyQueryNode(
+      node,
+      document.query.generateId(node.type),
+      this.registry,
+    );
+    if (!copy) {
+      return;
+    }
+    const after =
+      afterId !== undefined && document.query.canAdd(copy, afterId)
+        ? afterId
+        : undefined;
+    const query = document.query.add(copy, after);
+    // a source pasted into an empty cube brings its model and runtime
+    this.applyDocument(
+      copy instanceof SourceNode && document.query.isEmpty && context
+        ? document.withContext(context).withQuery(query)
+        : document.withQuery(query),
     );
   }
 

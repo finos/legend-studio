@@ -37,6 +37,7 @@ import {
   type NodeRegistry,
   type TransformDefinition,
 } from '../nodes/NodeRegistry.js';
+import { isResolvableSource } from '../nodes/sources/ResolvableSource.js';
 import { UnknownNode } from '../nodes/UnknownNode.js';
 import {
   copyJson,
@@ -729,4 +730,28 @@ export const parseCubeSpec = (
     );
   }
   return decodeCubeSpec(json, options);
+};
+
+/**
+ * A copy of a node under a new id, its settings read back through its type's
+ * spec, as a saved cube's are (the review of the demo, 2026-10-13: copy,
+ * paste and duplicate): a source keeps the columns it was typed with. A node
+ * of a type Cube doesn't know can't be copied: `undefined`.
+ */
+export const copyQueryNode = (
+  node: QueryNode,
+  id: string,
+  registry: NodeRegistry = createNodeRegistry(),
+): QueryNode | undefined => {
+  const definition =
+    node.type === UnknownNode.TYPE ? undefined : registry.get(node.type);
+  if (!definition) {
+    return undefined;
+  }
+  const { spec } = definition as TransformDefinition;
+  const own = spec.encode(node) as Record<string, JsonValue>;
+  const copy = spec.decode(id, own, '$', node.rest);
+  return isResolvableSource(node) && isResolvableSource(copy)
+    ? copy.withResolution(node.resolution)
+    : copy;
 };

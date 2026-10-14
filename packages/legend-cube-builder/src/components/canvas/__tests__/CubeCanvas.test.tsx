@@ -63,7 +63,10 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__importDocument,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -743,9 +746,64 @@ describe('Cube canvas, more', () => {
     expect(state.document.query.selected).toBe('relational101');
     // which closes the open editor, opening none
     expect(state.nodeEditor.nodeId).toBeUndefined();
-    // other keys do nothing
-    fireEvent.keyDown(filter, { key: 'Delete' });
+    // other keys do nothing; Delete removes a step (its own test)
+    fireEvent.keyDown(filter, { key: 'a' });
     expect(state.document.query.getNode('relational101')).toBeDefined();
+  });
+
+  test('Removes the focused step with Delete or Backspace, copies and pastes it with Ctrl/Cmd+C and V, duplicates it with Ctrl/Cmd+D, each one undo step', async () => {
+    const state = await renderCanvas(new CubeDocument({ query: sliceQuery() }));
+    const nodeElement = async (id: string): Promise<HTMLElement> => {
+      await TEST__findCanvasNode(id);
+      return document.querySelector<HTMLElement>(
+        `.react-flow__node[data-id="${id}"]`,
+      ) as HTMLElement;
+    };
+    // Ctrl+C on the Filter, Ctrl+V on the Join: a copy after the Join
+    fireEvent.keyDown(await nodeElement('filter101'), {
+      key: 'c',
+      ctrlKey: true,
+    });
+    expect(state.copiedNode?.node.id).toBe('filter101');
+    expect(state.history).toHaveLength(0);
+    fireEvent.keyDown(await nodeElement('join101'), {
+      key: 'v',
+      metaKey: true,
+    });
+    expect(state.document.query.getInputIds('filter102')).toEqual(['join101']);
+    expect(state.history).toHaveLength(1);
+    // Ctrl+D: a copy of the Filter, after itself
+    fireEvent.keyDown(await nodeElement('filter102'), {
+      key: 'd',
+      ctrlKey: true,
+    });
+    expect(state.document.query.getInputIds('filter103')).toEqual([
+      'filter102',
+    ]);
+    expect(state.history).toHaveLength(2);
+    // Delete, then Backspace
+    fireEvent.keyDown(await nodeElement('filter103'), { key: 'Delete' });
+    expect(state.document.query.getNode('filter103')).toBeUndefined();
+    fireEvent.keyDown(await nodeElement('filter102'), { key: 'Backspace' });
+    expect(state.document.query.getNode('filter102')).toBeUndefined();
+    expect(state.history).toHaveLength(4);
+  });
+
+  test('Takes no step key in a read-only cube, but copies', async () => {
+    const state = await renderCanvas();
+    await TEST__importDocument(
+      state,
+      new CubeDocument({ query: sliceQuery() }),
+      true,
+    );
+    const filter = (await TEST__findCanvasNode('filter101')).closest(
+      '.react-flow__node',
+    ) as HTMLElement;
+    fireEvent.keyDown(filter, { key: 'Delete' });
+    fireEvent.keyDown(filter, { key: 'd', ctrlKey: true });
+    expect(state.document.query.nodes).toHaveLength(4);
+    fireEvent.keyDown(filter, { key: 'c', ctrlKey: true });
+    expect(state.copiedNode?.node.id).toBe('filter101');
   });
 
   test("Doesn't open a node's editor on a click on one of its handles", () =>
