@@ -75,7 +75,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       ([PROGRESS-M6C.md](PROGRESS-M6C.md), PLAN §11.12)
 - [x] M6d Operations cleanup, merged into `cube-dev` as #5677
       ([PROGRESS-M6D.md](PROGRESS-M6D.md), PLAN §11.14)
-- [ ] Debugging runs: each run's Pure and readable requests, on `cube-debug-runs` ([PROGRESS-DEBUG-RUNS.md](PROGRESS-DEBUG-RUNS.md),
+- [ ] Debugging runs: each run's Pure and readable requests, complete on `cube-debug-runs`, draft #5686 into `cube-dev` ([PROGRESS-DEBUG-RUNS.md](PROGRESS-DEBUG-RUNS.md),
       PLAN §11.16)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
