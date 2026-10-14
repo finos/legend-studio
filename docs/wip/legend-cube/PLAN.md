@@ -4812,6 +4812,59 @@ new features; the whole list is the "UX backlog" in [ISSUES.md](ISSUES.md).
 - §7.8: `redoStack` and `copiedNode` in the state. §9: the group rows' number display.
 - Appendix A: §7.0 (the row steps' names), §17.9 (the Select tooltip, now "Run this step").
 
+### 11.16 Debugging runs: each run's Pure, and readable requests
+
+Built on `cube-debug-runs`, from `cube-dev` (`afd8bdadd`), in a PR into `cube-dev`. Its status is in
+[PROGRESS-DEBUG-RUNS.md](PROGRESS-DEBUG-RUNS.md). The user asked on 2026-10-14 to see the Pure that a drill-down
+level runs (Show Pure shows only the canvas's query, §8.7) and for a way to read the engine requests in the
+browser's dev tools, which shows the execute payloads as binary.
+
+This subsection overrides the sections it names until its last step folds it into them (see "Supersessions").
+
+**Why the payloads can't be read** ✅ (read in the code): Cube's host builds its engine client with
+`enableCompression: true` (`LegendQueryCubeHost.ts`), as Legend Query's editor and Data Cube do. legend-shared then
+deflates every request body (`NetworkUtils.ts`, `compressData`) and sends it as `Content-Type: application/zlib`, so
+the Network tab shows `POST …/pure/v1/execution/execute` with a binary payload. The response isn't compressed: its
+`activities[0].sql` holds the SQL. A drill-down level fetched before is served from the fetcher's cache (§11.10) and
+sends nothing.
+
+**Decided without asking** (precedents in the repo; for review):
+
+- **Every run keeps the lambda it sent.** `runCubeQuery` returns the execution lambda it emitted, and each Runs entry
+  keeps it, so Execute, each drill-down level or sorted fetch (labelled as today, e.g. `Rows of SHIP_COUNTRY
+"France"`), the CSV export and the Pivot editor's value load (newly recorded, "Values of X") can each show their
+  query. Nothing is rendered when a run is recorded: the Pure is asked of the engine only when the user opens it.
+- **Show Pure on a run shows it as it ran,** its row limit (`limit(rowLimit + 1)`) included. The header's Show Pure
+  keeps leaving the limit out (user, 2026-10-10), since it shows the cube's query; a run's Pure is for debugging what
+  was sent. Same dialog, titled with the run's label.
+- **Copy JSON** copies the lambda as the engine receives it: lossless numbers, pretty-printed. The V1 serialization
+  stays behind the port (`CubeEngine.serializeLambda`), so the panel never touches a `V1_*` class.
+- **Failed runs are recorded too,** with the engine's first line, since the query that failed is the one to debug.
+  A stopped run, or one dropped for a newer one, records nothing. _(Supersedes spec §12.6's "each successful run".)_
+- **Readable requests:** a switch in the Runs panel, "Send requests uncompressed", turns off the compression of
+  Cube's own engine client (`CubeEngine.setRequestCompression`), so the Network tab shows each request's JSON. It is
+  kept per user (`userDataService`, as the grid mode is) and off by default. It doesn't reach Legend Query's own
+  editor, which has its own Dev Settings switch, as Data Cube has: Cube's client is its own. The engine reads both.
+
+**Steps:**
+
+| Step | Deliverable                                                                                                 | Done when                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| DR.1 | This section, PROGRESS-DEBUG-RUNS.md, a draft PR                                                            | Pushed                                                        |
+| DR.2 | Runs keep their lambda and record failures; the Pivot value load and the export recorded; `serializeLambda` | Unit tests on each recorder                                   |
+| DR.3 | The Runs panel: Show Pure and Copy JSON per run, a failed run's error                                       | Component tests                                               |
+| DR.4 | "Send requests uncompressed", kept per user                                                                 | Tests; the Network tab shows JSON on the dev server, zlib off |
+| DR.5 | Verification: an inline review, a browser rehearsal on the dev server                                       | Findings fixed                                                |
+| DR.6 | A demo video                                                                                                | Every caption true on screen; sent to the user                |
+| DR.7 | Fold the supersessions in                                                                                   | §8.7, §9, §11.10 and Appendix A read as built                 |
+
+**Supersessions** (folded in at DR.7):
+
+- §9 and §11.10 (Runs): each entry also keeps its lambda, with Show Pure and Copy JSON; failed runs are recorded; the
+  Pivot value load is a run; the switch for uncompressed requests.
+- §8.7 (Show Pure): a run's Pure shows its row limit.
+- Appendix A: §12.6 (failed runs recorded).
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
