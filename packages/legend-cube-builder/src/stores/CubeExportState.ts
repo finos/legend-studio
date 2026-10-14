@@ -18,6 +18,7 @@ import {
   checkDrilldown,
   type ColumnDirection,
   deriveDrilldownLevel,
+  type IR,
   needsDatabaseType,
   QueryEmitter,
 } from '@finos/legend-cube';
@@ -39,6 +40,7 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../graph-manager/CubeEngine.js';
+import { CUBE_RUN_LABEL } from '../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import type { CubeExecutionResult } from './CubeExecutionState.js';
 
@@ -109,6 +111,8 @@ export class CubeExportState {
     const controller = new AbortController();
     this.controller = controller;
     const startedAt = Date.now();
+    // kept for the Runs panel, once written (PLAN §11.16)
+    let lambda: IR | undefined;
     try {
       // the run's rows, sorted as the grid is: no drill-down level
       const { query } = deriveDrilldownLevel({
@@ -136,14 +140,13 @@ export class CubeExportState {
       if (controller.signal.aborted) {
         return;
       }
-      const csv = (yield editorState.host.engine.exportCsv(
-        model,
-        new QueryEmitter(query, editorState.registry).emitExecutionLambda({
-          runtime,
-          databaseType,
-        }),
-        { abortController: controller },
-      )) as string;
+      lambda = new QueryEmitter(
+        query,
+        editorState.registry,
+      ).emitExecutionLambda({ runtime, databaseType });
+      const csv = (yield editorState.host.engine.exportCsv(model, lambda, {
+        abortController: controller,
+      })) as string;
       // stopped while it ran: `stop()` lets go of it
       if (this.controller !== controller) {
         return;
@@ -153,9 +156,9 @@ export class CubeExportState {
         csv,
         ContentType.TEXT_CSV,
       );
-      editorState.runStats.record('Export CSV', {
+      editorState.runStats.record(CUBE_RUN_LABEL.EXPORT_CSV, {
         durationMs: Date.now() - startedAt,
-        sql: [],
+        lambda,
       });
     } catch (error) {
       if (controller.signal.aborted) {
@@ -170,6 +173,11 @@ export class CubeExportState {
               error.message,
               captureId,
             );
+      editorState.runStats.record(CUBE_RUN_LABEL.EXPORT_CSV, {
+        durationMs: Date.now() - startedAt,
+        lambda,
+        error: this.error.firstLine,
+      });
     } finally {
       if (this.controller === controller) {
         this.controller = undefined;

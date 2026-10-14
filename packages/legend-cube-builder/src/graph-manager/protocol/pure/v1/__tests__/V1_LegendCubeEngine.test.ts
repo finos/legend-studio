@@ -690,3 +690,26 @@ describe('Legend Cube engine: Pure text', () => {
     expect(body as string).toMatch(/"value":9007199254740993[,}]/u);
   });
 });
+
+describe('Debugging a run (PLAN §11.16)', () => {
+  test('Gives a lambda as the engine receives it, pretty-printed, its numbers exact', () => {
+    const text = newEngine().serializeLambda(
+      lambda([], [literal({ kind: 'integer', value: '9007199254740993' })]),
+    );
+    expect(text).toContain('\n  "_type": "lambda"');
+    expect(text).toMatch(/"value": 9007199254740993\n/u);
+  });
+
+  test("Turns the client's request compression off and on", () => {
+    // compressed, as the host configures it
+    const engine = new V1_LegendCubeEngine(
+      { baseUrl: 'http://localhost:6300/api', enableCompression: true },
+      new TracerService(),
+    );
+    expect(engine.client.enableCompression).toBe(true);
+    engine.setRequestCompression(false);
+    expect(engine.client.enableCompression).toBe(false);
+    engine.setRequestCompression(true);
+    expect(engine.client.enableCompression).toBe(true);
+  });
+});

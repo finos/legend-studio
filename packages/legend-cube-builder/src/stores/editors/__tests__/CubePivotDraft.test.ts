@@ -261,7 +261,10 @@ describe('Pivot draft', () => {
       column: 'EMPLOYEE_ID',
       values: [integer('5'), integer('6')],
       more: false,
-    });
+    }); // a run of its own in the Runs panel; the abandoned one isn't (PLAN §11.16)
+    expect(
+      draft.editorState.runStats.entries.map((entry) => entry.label),
+    ).toEqual(['Values of EMPLOYEE_ID']);
   });
 
   test('Takes no column for Count rows, and one to pick for the others, keeping the one it had', () => {

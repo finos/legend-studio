@@ -27,6 +27,7 @@ import {
   CubeEngineErrorKind,
   type CubeResultValue,
 } from '../graph-manager/CubeEngine.js';
+import { CUBE_RUN_LABEL } from '../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import { type CubeQueryRunResult, runCubeQuery } from './CubeQueryRun.js';
 
@@ -197,6 +198,7 @@ export class CubeExecutionState {
         schema,
         rowLimit,
         abortController: controller,
+        label: CUBE_RUN_LABEL.EXECUTE,
       })) as CubeQueryRunResult;
       if (this.runController !== controller) {
         return;
@@ -213,7 +215,6 @@ export class CubeExecutionState {
         sql: run.sql,
         durationMs: run.durationMs,
       };
-      this.editorState.runStats.record('Execute', run);
     } catch (error) {
       // a stopped or replaced run shows nothing
       if (this.runController !== controller || controller.signal.aborted) {

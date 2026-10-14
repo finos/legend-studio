@@ -38,6 +38,8 @@ export enum LEGEND_CUBE_USER_DATA_KEY {
   DATA_PRODUCT_WAREHOUSE = 'legend-cube.data-product-warehouse',
   /** Server-side or local (PLAN §11.10) */
   GRID_MODE = 'legend-cube.grid-mode',
+  /** Engine requests sent uncompressed, for the browser's Network tab (PLAN §11.16) */
+  UNCOMPRESSED_REQUESTS = 'legend-cube.uncompressed-requests',
 }
 
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
@@ -54,6 +56,13 @@ export const READ_ONLY_CUBE_TITLE =
   "This cube was saved by a newer version of Legend Cube, so it can't be changed or exported";
 /** How a SQL NULL shows in the grid, distinct from an empty string */
 export const NULL_CELL_TEXT = '(null)';
+
+/** What the Runs panel calls a run (PLAN §11.10, §11.16); a fetch of the grid's rows is described by its level */
+export const CUBE_RUN_LABEL = {
+  EXECUTE: 'Execute',
+  EXPORT_CSV: 'Export CSV',
+  pivotValues: (column: string): string => `Values of ${column}`,
+};
 
 /** Pending labels: lower-case gerunds, shown as they are (spec §17.13) */
 export enum CUBE_PENDING_LABEL {

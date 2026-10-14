@@ -315,7 +315,16 @@ describe('Cube execution: a run', () => {
       `The column 'REMOVED' can't be found in the relation`,
     );
     expect([...state.hostIssues.keys()]).toEqual(['join101']);
-    expect(state.hostIssues.get('join101')?.detail).toContain('more');
+    expect(state.hostIssues.get('join101')?.detail).toContain('more'); // both failures are in the Runs panel, each with the lambda it sent
+    expect(
+      state.runStats.entries.map(({ label, error }) => [label, error]),
+    ).toEqual([
+      ['Execute', `The column 'REMOVED' can't be found in the relation`],
+      ['Execute', expect.stringContaining('returned 0 columns')],
+    ]);
+    expect(
+      state.runStats.entries[0]?.lambda === fake.execute.mock.calls[1]?.[1],
+    ).toBe(true);
   });
 
   test("Shows an answer whose columns aren't the query's, position by position, as an error on the capture node", async () => {
@@ -421,6 +430,7 @@ describe('Cube execution: stopping and staleness', () => {
     expect(state.execution.error).toBeUndefined();
     expect(state.execution.result).toBeUndefined();
     expect(state.hostIssues.size).toBe(0);
+    expect(state.runStats.entries).toEqual([]);
   });
 
   test('Ignores the late answer of a stopped run once a new run has started', async () => {
@@ -434,6 +444,8 @@ describe('Cube execution: stopping and staleness', () => {
     first.resolve(ordersResult(1));
     await firstRun;
     expect(state.execution.result?.rows).toHaveLength(3);
+    // the stopped run answered, but only the new one is recorded
+    expect(state.runStats.entries).toHaveLength(1);
   });
 
   test.each([

@@ -42,7 +42,10 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { type CubeQueryRunResult, runCubeQuery } from '../CubeQueryRun.js';
-import { PIVOT_VALUE_DISABLED_REASON } from '../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_RUN_LABEL,
+  PIVOT_VALUE_DISABLED_REASON,
+} from '../../__lib__/LegendCubeLabels.js';
 import { isSameList, toggledColumns } from './CubeAggregationRows.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
@@ -297,6 +300,7 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
         schema: new Schema([pivotColumn]),
         rowLimit: PIVOT_MAX_VALUES,
         abortController: load.abortController,
+        label: CUBE_RUN_LABEL.pivotValues(column),
       })) as CubeQueryRunResult;
       if (this.load !== load) {
         return;

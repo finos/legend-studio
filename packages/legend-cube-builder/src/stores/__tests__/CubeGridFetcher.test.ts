@@ -221,6 +221,13 @@ describe('Grid fetcher', () => {
       'Execute',
     ]);
     expect(state.runStats.entries[1]?.sql).toEqual(['select …']);
+    // each keeps the lambda it sent, row limit included (PLAN §11.16)
+    expect(
+      state.runStats.entries[0]?.lambda === fake.execute.mock.calls[2]?.[1],
+    ).toBe(true);
+    expect(
+      state.runStats.entries[1]?.lambda === fake.execute.mock.calls[1]?.[1],
+    ).toBe(true);
   });
 
   test('Answers a level asked for again from its cache, and another sort with a new run', async () => {
@@ -247,11 +254,21 @@ describe('Grid fetcher', () => {
     await expect(state.gridFetcher.fetchLevel(result, [], [])).rejects.toThrow(
       'The engine failed',
     );
+    // the failure is recorded, with the lambda that failed
+    expect(state.runStats.entries[0]).toMatchObject({
+      label: 'Groups by SHIP_COUNTRY',
+      error: 'The engine failed',
+      sql: [],
+    });
+    expect(
+      state.runStats.entries[0]?.lambda === fake.execute.mock.calls[1]?.[1],
+    ).toBe(true);
     fake.execute.mockResolvedValueOnce(COUNTRY_GROUPS());
     expect(
       (await state.gridFetcher.fetchLevel(result, [], [])).rows,
     ).toHaveLength(2);
     expect(fake.execute).toHaveBeenCalledTimes(3);
+    expect(state.runStats.entries[0]?.error).toBeUndefined();
   });
 
   test('Drops an answer that comes after a purge, and fetches the level again', async () => {
