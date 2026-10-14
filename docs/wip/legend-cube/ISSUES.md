@@ -488,7 +488,7 @@ deployment (PLAN §11.2 Part B2).
 ## UX backlog (demo review, 2026-10-13)
 
 From a frame-by-frame review of the full walkthrough (`videos/20-walkthrough-v3.webm` in the evidence folder). The
-user picked the items marked **this pass** for the `cube-ux-pass` branch (PLAN §11.13); the rest are kept to weigh.
+user picked the items marked **this pass** for the `cube-ux-pass` branch (PLAN §11.15); the rest are kept to weigh.
 
 1. **Group-row averages show every digit** (`264.61327566137567`): round the display to the column's scale, or 2
    places. _This pass._
