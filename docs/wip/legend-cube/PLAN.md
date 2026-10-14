@@ -4883,6 +4883,31 @@ sends nothing.
 - §8.7 (Show Pure): a run's Pure shows its row limit.
 - Appendix A: §12.6 (failed runs recorded).
 
+### 11.16 Legend Cube in Studio: Create MatView with Cube
+
+Built on `cube-studio`, from `cube-dev` (`afd8bdadd`), in a PR into `cube-dev`, for a demo (user, 2026-10-14): an
+ingest definition's editor opens Cube to build a materialized view of the project's ingest data sets.
+
+**Settled** (user, 2026-10-14):
+
+- **The button:** "Create MatView with Cube" in the ingest definition editor's header, beside Lineage and View SQL,
+  where `NonProductionFeatureFlag` is on. Cube opens full screen over the editor, as Studio's embedded query builder
+  does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
+- **Sources:** the ingest definitions of the project being edited, as the workspace holds them, and nothing else (no
+  sample data, examples, databases, data products or services). One kind of source per cube, as in Legend Query; data
+  products in Studio are a follow-up (Studio's own accessor query builder refuses a data product too).
+- **Runs:** as an ingest cube runs in Legend Query, a lakehouse runtime with an environment and a warehouse, here
+  those of the project's first lakehouse runtime, the one Studio's own ingest queries pick; the definitions come
+  from the workspace (`LegendStudioCubeIngestCatalog`, the engine's `ingestDefinitionSource`).
+- **Add as MatView:** the step that runs, as a lambda with no runtime and no row limit, becomes a data set of the
+  definition: `{name, primaryKey: [], source: {_type: 'FunctionSource', function}}`, a local change in Studio.
+
+**In the builder:** `CubeHost.offersSampleData`, `CubeEditor`'s `headerActions`, `buildCubeRunningStepLambda`,
+`buildCubeEngine`'s `ingestDefinitionSource`, `readCubeIngestDataSets` and `formatCubeIngestUrn`. The palette offers a
+table or a function only with a tab that reads it; the Ingest tab picks the only producer deployment, starts on the
+environment's warehouse, and hides Mode with one class; the floating step editor goes into the dialog that hosts the
+page; the canvas takes xyflow 12's colours back where React Flow 11's stylesheet is loaded too (Risks).
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks

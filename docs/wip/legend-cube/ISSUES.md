@@ -519,6 +519,21 @@ New features suggested by the review:
 - **Search in the palette.**
 - **Notes on steps**, saved with the cube once saving lands.
 
+## Legend Cube in Studio (2026-10-14)
+
+- **Runs in Studio are untested.** The local engine has no Lakehouse grammar, so a Studio cube's typing and runs, the
+  ingest editor's grammar text, and Lineage and View SQL on a new materialized view were never seen working; the
+  catalog, the source dialog, the canvas and Add as MatView were (video `24-studio-matview.webm`, with a mock SDLC
+  server, `demo/studio-matview/` in the evidence folder). Check on an engine that reads ingest definitions: a cube of
+  one data set should return the rows Studio's own query of it does.
+- **The run's runtime is rebuilt from the project's.** A run takes only the environment and the warehouse of the
+  project's first lakehouse runtime; anything else on it (a connection pointer) is left out, and a project with two
+  lakehouse runtimes can't pick the other.
+- **A materialized view's windows aren't isolated.** The lambda Add as MatView saves is the typing lambda's shape: it
+  binds no window with a `let` as a run does (§8.6), so a filter over a window, written by the lakehouse, may read
+  differently from the cube's run.
+- **Data products in Studio** are a follow-up: a cube there reads ingest data sets only.
+
 ## Test gaps
 
 None hides a known bug.
@@ -536,7 +551,9 @@ None hides a known bug.
 - **React Flow's two stylesheets.** The Cube canvas (xyflow 12) imports its CSS with the lazy Cube page, so Query's
   other pages don't load it (checked in the M1.8b dry run). Once the Cube page has been opened, it stays loaded for
   the session, and the query builder's lineage viewer (reactflow 11) shares its `.react-flow__*` class names. The
-  lineage viewer wasn't seen after a visit to `/cube` (it needs a depot query). Check it when one is reachable.
+  lineage viewer wasn't seen after a visit to `/cube` (it needs a depot query). Check it when one is reachable. Studio
+  loads both from the start: React Flow 11's fixed control and minimap colours won over xyflow 12's on the Cube canvas
+  (white icons on white), which now takes them back (`legend-cube-builder/style/index.scss`, 2026-10-14).
 - **Canvas fitting is checked by hand only.** jsdom measures nothing, so React Flow never reports the nodes measured
   and the refit after a layout or size change (`CubeCanvas.tsx`) has no jsdom test. Part B checks it by hand. The M1.9
   rehearsal found that a height-only change (the splitter above the grid) didn't refit, and that is fixed.
