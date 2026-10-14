@@ -63,6 +63,13 @@ export {
   isCubeProjectHost,
   isCubeSampleDataOffered,
 } from './stores/CubeHost.js';
+export {
+  buildLegendCubeLakehouseServices,
+  buildLegendCubeProjectCatalog,
+  LegendCubeHost,
+  type LegendCubeHostConfig,
+  type LegendCubeHostParts,
+} from './stores/LegendCubeHost.js';
 export { getCubeRememberedWarehouse } from './stores/CubeDataProductWarehouse.js';
 export {
   CUBE_LAMBDA_IMPORT_MESSAGE,
