@@ -42,6 +42,8 @@ jobs:
             os: ubuntu-latest
           - application: '@finos/legend-application-data-cube-deployment'
             os: ubuntu-latest
+          - application: '@finos/legend-application-analytics-deployment'
+            os: ubuntu-latest
           - application: '@finos/legend-application-pure-ide-deployment'
             os: ubuntu-latest
           - application: '@finos/legend-application-repl-deployment'

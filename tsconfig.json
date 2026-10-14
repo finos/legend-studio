@@ -49,6 +49,10 @@
     { "path": "packages/legend-application-data-cube" },
     { "path": "packages/legend-application-data-cube-bootstrap" },
     { "path": "packages/legend-application-data-cube-deployment" },
+    // analytics
+    { "path": "packages/legend-application-analytics" },
+    { "path": "packages/legend-application-analytics-bootstrap" },
+    { "path": "packages/legend-application-analytics-deployment" },
     // marketplace
     { "path": "packages/legend-application-marketplace" },
     { "path": "packages/legend-application-marketplace-bootstrap" },
@@ -69,7 +73,7 @@
     { "path": "packages/legend-extension-dsl-data-product" },
     { "path": "packages/legend-extension-dsl-data-space" },
     { "path": "packages/legend-extension-dsl-data-space-studio" },
-    { "path": "packages/legend-extension-application-studio-depot-dashboard"},
+    { "path": "packages/legend-extension-application-studio-depot-dashboard" },
     { "path": "packages/legend-extension-dsl-service" },
     { "path": "packages/legend-extension-dsl-persistence" },
     { "path": "packages/legend-extension-store-service-store" },

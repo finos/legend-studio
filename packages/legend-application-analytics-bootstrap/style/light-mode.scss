@@ -1,0 +1,173 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// The light theme of the shared components the Cube page shows (dialogs,
+// menus, form fields, inputs, notifications, tooltips, scrollbars), as Legend
+// Query's light mode draws them (`legend-application-query/style/light-mode.scss`),
+// so the page looks the same in both applications (PLAN §11.18). These are the
+// rules of Query's light mode that match the page; the colors they use are the
+// shared legacy light theme's. Like Query's, `index.scss` imports them after
+// every other style, so they win over the native dark theme.
+
+.theme__legacy-light {
+  // ---------------------------- Input -------------------------------
+
+  input,
+  textarea {
+    background: var(--color-white);
+    color: var(--color-legacylight-dark-grey-200);
+    border-color: var(--color-light-grey-250);
+
+    &:focus {
+      border-color: var(--color-light-grey-250);
+    }
+  }
+
+  // ---------------------------- Menu --------------------------------
+
+  .menu {
+    background: var(--color-white);
+    border-color: var(--color-light-grey-400);
+  }
+
+  .menu__item {
+    color: var(--color-dark-grey-300);
+
+    &:hover {
+      background: var(--color-legacylight-light-grey-100);
+    }
+  }
+
+  .menu__item[disabled] {
+    color: var(--color-light-grey-300);
+  }
+
+  // ---------------------------- Form --------------------------------
+
+  .panel__content__form__section__header__label {
+    color: var(--color-legacylight-dark-grey-400);
+  }
+
+  .panel__content__form__section__toggler__prompt,
+  .panel__content__form__section__header__prompt {
+    color: var(--color-legacylight-dark-grey-200);
+  }
+
+  .panel__content__form__section__input {
+    background: var(--color-white);
+    color: var(--color-legacylight-dark-grey-200);
+    border: 0.1rem solid var(--color-legacylight-dark-grey-400);
+
+    &:focus {
+      border-color: var(--color-legacylight-light-blue-100);
+    }
+  }
+
+  .panel__content__form__section__toggler__btn svg {
+    color: var(--color-light-grey-250);
+  }
+
+  .panel__content__form__section__toggler__btn--toggled svg {
+    color: var(--color-legacylight-light-blue-100);
+  }
+
+  // ---------------------------- Modal -------------------------------
+
+  .modal__header {
+    color: var(--color-legacylight-dark-grey-200);
+    background: var(--color-legacylight-light-grey-100);
+  }
+
+  .modal__body {
+    background: var(--color-legacylight-light-grey-100);
+  }
+
+  .modal__footer {
+    border: none;
+    background: var(--color-legacylight-light-grey-100);
+  }
+
+  .modal__footer__btn--primary {
+    background: var(--color-blue-200);
+    color: var(--color-white);
+
+    &:hover:not(:disabled) {
+      background: var(--color-legacylight-light-blue-100);
+      color: var(--color-black);
+    }
+  }
+
+  .modal__footer__btn--secondary {
+    background: var(--color-legacylight-dark-grey-400);
+    color: var(--color-white);
+
+    &:hover {
+      background: var(--color-legacylight-light-grey-400);
+      color: var(--color-black);
+    }
+  }
+
+  // ---------------------------- Tooltip -----------------------------
+
+  .MuiTooltip-tooltip {
+    background: white !important;
+    color: var(--color-legacylight-dark-grey-200);
+    border: 1px solid var(--color-legacylight-light-grey-200);
+    box-shadow:
+      0 2px 1px rgb(0 0 0 / 10%),
+      0 0 1px rgb(0 0 0 / 10%);
+  }
+
+  // ---------------------------- Notification ------------------------
+
+  .notification__content {
+    background: var(--color-white);
+    color: var(--color-dark-grey-300);
+  }
+
+  .notification__message__content:active {
+    background: var(--color-light-grey-100);
+  }
+
+  // ---------------------------- Virtual Assistant -------------------
+
+  .virtual-assistant__station {
+    .virtual-assistant__station__trigger {
+      background: var(--color-white);
+    }
+  }
+
+  // ---------------------------- Layout ------------------------------
+
+  ::-webkit-scrollbar-thumb {
+    height: 5rem;
+    background: var(--color-legacylight-light-grey-300);
+    outline-offset: -0.2rem;
+    border-radius: 0.4rem;
+    outline-color: var(--color-legacylight-light-grey-100);
+    border-color: var(--color-legacylight-light-grey-100);
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: var(--color-legacylight-light-grey-100);
+    border-radius: 0;
+  }
+
+  .reflex-container.horizontal > .reflex-splitter:hover,
+  .reflex-container.horizontal > .reflex-splitter.active {
+    background: var(--color-dark-grey-500);
+  }
+}

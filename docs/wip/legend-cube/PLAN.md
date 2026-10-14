@@ -5093,8 +5093,21 @@ This subsection overrides the sections it names until AN.6 folds it into them (s
 - **No feature flag:** deploying the app is the opt-in (D11). Query's `/query/cube` keeps the `NonProductionFeatureFlag`
   gate it has on `master`.
 - **The app's plugins** register Cube's shortcuts (`LEGEND_CUBE_COMMAND_CONFIG`) and set up the code editor, which
-  Cube's expression editors, SQL dialog and spec transfer use, as Query's plugins do. The theme defaults to light, as
-  in Query and Data Cube. The browser tab reads "Legend Analytics".
+  Cube's expression editors, SQL dialog and spec transfer use, as Query's plugins do. The browser tab reads "Legend
+  Analytics".
+- **The light theme, as Query draws it** (found at AN.3): the theme defaults to light, as in Query and Data Cube. But
+  much of Query's light look is Query's own stylesheet (`legend-application-query/style/light-mode.scss`, "a poor-man
+  version of theming for Legend Query"), which Analytics can't import. Without it, Cube's dialogs had blue headers.
+  - Measured on Query's Cube page (:9002): the rules of that stylesheet that match the page as each surface opens. The
+    surfaces were the Examples, Show Pure, Show SQL and source dialogs, Dev Settings, a node editor and its tooltip,
+    the canvas and grid context menus, and a notification.
+  - 27 rules match. The shared theme already gives Analytics one of them (the colour variables). The other 26 (inputs,
+    menus, form fields, modals, the tooltip, notifications, the assistant's button, scrollbars, the splitter) are
+    copied into the bootstrap's `light-mode.scss`, which its `index.scss` imports after every other style, as Query's bootstrap does its own.
+  - Not copied: the results grid's font. Query's styles load ag-grid's base stylesheet a second time after Balham's,
+    so Query's grid shows 14px Helvetica Neue. Analytics shows Balham's own 12px.
+- **No download helper:** Cube downloads its files through data URIs (`downloadFileUsingDataURI`), so the bootstrap
+  registers no service worker (`withDownloadHelper`), as Data Cube's doesn't.
 - **No deep links in this iteration:**
   - `?sourceType=…&sourceId=…` (Query's `LegendQueryCubeEntry`) and M8's `/:cubeId` move into the builder once M8
     lands, so both apps read them the same way.
@@ -5112,6 +5125,8 @@ This subsection overrides the sections it names until AN.6 folds it into them (s
 - ✅ Query and Data Cube both use react-oidc-context's `AuthProvider` with `LegendTokenSync`. Query keeps OIDC in
   `extensions.core.oidcConfig`, Data Cube at the top level.
 - ✅ Query's `/cube` route is mounted only with `extensions.core.NonProductionFeatureFlag` (on `master` since #5685).
+- ✅ Cube's dialogs and menus are legend-art's (`Modal`, `ModalHeader`, `MenuContentItem`, `PanelFormTextField`), whose
+  light look comes from each application's own stylesheet (see "The light theme, as Query draws it").
 
 **Steps:**
 
@@ -5131,6 +5146,7 @@ This subsection overrides the sections it names until AN.6 folds it into them (s
 - Links to Analytics from Marketplace and Studio (an `analyticsApplicationUrl` in their configs).
 - A Docker image, with the maintainers.
 - Whether `/query/cube` redirects to Analytics.
+- One shared legacy light stylesheet for Query and Analytics, in place of the rules Analytics copies from Query's.
 - Data Cube's grid as the results grid, and Legend Query's builder as a node (data spaces), each its own milestone
   (DEMO-RECAP discussion points 1 and 2).
 
