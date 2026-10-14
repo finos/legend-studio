@@ -39,6 +39,7 @@ import { CubeProjectTab } from './CubeProjectTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
 import { CubePickerConfirmContext } from './CubePickerListItem.js';
+import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
 
 /**
  * Adds a source to the cube (PLAN §6.1, §6.2.7, §6.8): a tab per way to find
@@ -142,7 +143,7 @@ export const CubeSourcePicker = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              darkMode={darkMode}
+              darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
               formatText={false}
               text={
                 (picker.activeTab.pickedCount ?? 1) > 1

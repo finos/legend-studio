@@ -37,6 +37,7 @@ import {
   getColumnFormatProblem,
   getCubeCurrencyCodes,
 } from './CubeGridValues.js';
+import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
 
 const STYLE_LABELS: Readonly<Record<ColumnFormatStyle, string>> = {
   [ColumnFormatStyle.NUMBER]: 'Number',
@@ -236,7 +237,7 @@ const CubeColumnFormatForm = observer(
             />
           )}
           <ModalFooterButton
-            darkMode={darkMode}
+            darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
             formatText={false}
             text="Apply"
             disabled={placesError !== undefined || problem !== undefined}

@@ -29,6 +29,7 @@ import {
   CUBE_RUN_PURE_NOTE,
 } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
 
 /**
  * The Pure text of what Execute would run, read-only, with Copy; or of a run
@@ -84,7 +85,7 @@ export const CubeShowPureDialog = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              darkMode={darkMode}
+              darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
               formatText={false}
               text="Copy to Clipboard"
               disabled={text === undefined}

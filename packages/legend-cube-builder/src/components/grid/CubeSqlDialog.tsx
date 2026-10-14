@@ -27,6 +27,7 @@ import { observer } from 'mobx-react-lite';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { formatCubeSql } from './CubeSqlFormat.js';
+import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.SQL` */
 const SQL_LANGUAGE = 'sql';
@@ -69,7 +70,7 @@ export const CubeSqlDialog = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              darkMode={darkMode}
+              darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
               formatText={false}
               text="Copy SQL"
               onClick={copySql}
