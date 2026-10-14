@@ -18,6 +18,7 @@ import { clsx } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
+import { CubeTablePreview } from './CubeTablePreview.js';
 import {
   CUBE_CSV_HELP_TEXT,
   CUBE_DIRECT_HELP_TEXT,
@@ -312,6 +313,16 @@ export const CubeDirectConnectionTab = observer(
                 );
               })}
             </ul>
+            {tab.previewTableName !== undefined && (
+              <CubeTablePreview
+                name={
+                  tab.tables.find(
+                    (table) => table.storedName === tab.previewTableName,
+                  )?.name ?? tab.previewTableName
+                }
+                columns={tab.previewedColumns}
+              />
+            )}
           </div>
         )}
         {tab.isResolving && (

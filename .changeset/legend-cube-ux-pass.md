@@ -12,3 +12,4 @@ Legend Cube, a UX pass from the demo review:
 - **Run this step:** a step's menu and its editor say "Run this step" in place of "Select", and the step that runs carries a "▶ Runs" badge on the canvas and in its editor.
 - **Redo** (Ctrl/Cmd+Shift+Z, or Ctrl+Y) brings back what Undo took, until a new change; a source re-checked meanwhile stays checked. **New, Import and Export** are under one "Cube ▾" menu, so the header keeps the actions used while building.
 - **A DuckDB sample, Sales**, in Examples, with two Pivot examples: the H2 samples can't run the engine's `pivot()`, so Pivot now works on a sample out of the box.
+- **A column preview for tables** in Sample Data, Project Database and Direct Connection: the table picked last shows its columns under the list once the clicks pause, as an access point does; Add takes the columns read, asking the engine only for the others.
