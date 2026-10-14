@@ -12,21 +12,29 @@ Complete (2026-10-14): DR.1–DR.7 done, the video sent. The draft PR waits for 
 - [x] DR.1 The plan section, this file, a draft PR
 - [x] DR.2 Runs keep their lambda and record failures; the Pivot value load and the export recorded
 - [x] DR.3 The Runs panel: Show Pure and Copy JSON per run, a failed run's error
-- [x] DR.4 "Send requests uncompressed", kept per user
+- [x] DR.4 Dev Settings, from the menu at the top left: the engine URL and request compression
 - [x] DR.5 Verification: an inline review, a browser rehearsal
 - [x] DR.6 A demo video
 - [x] DR.7 Fold the supersessions in
 
 ## Commits
 
-| Step       | Commit      | What                                                                                    |
-| ---------- | ----------- | --------------------------------------------------------------------------------------- |
-| DR.1       | `72af792e3` | The plan                                                                                |
-| DR.2       | `98f048801` | Runs keep their lambda; failures recorded                                               |
-| DR.3, DR.4 | `2572b7b09` | The Runs panel's Show Pure, Copy JSON, a failed run's error; Send requests uncompressed |
-| DR.5–DR.7  | this commit | Rehearsal, video, the plan folded                                                       |
+| Step       | Commit      | What                                                                                      |
+| ---------- | ----------- | ----------------------------------------------------------------------------------------- |
+| DR.1       | `72af792e3` | The plan                                                                                  |
+| DR.2       | `98f048801` | Runs keep their lambda; failures recorded                                                 |
+| DR.3, DR.4 | `2572b7b09` | The Runs panel's Show Pure, Copy JSON, a failed run's error; the first compression switch |
+| DR.4       | this commit | Dev Settings in place of the Runs panel's switch, with the engine URL                     |
+| DR.5–DR.7  | this commit | Rehearsal, video, the plan folded                                                         |
 
 ## Notes
+
+- DR.4, again (user, 2026-10-14): the switch left the Runs panel for a Dev Settings modal opened from a ☰ menu at
+  the top left, as Legend Query's editor has, with the engine URL too. `CubeEngineClientSettings` replaces the
+  engine port's `setRequestCompression`: the engine, the connection explorer and the service and ingest catalogs each
+  register their client. Re-rehearsed with the demo script (14 checks): Dev Settings shows the deployment's URL;
+  compression off sends JSON; `http://localhost:6399/api` sends the next Execute there, which fails and is listed in
+  Runs ("Failed: Failed to fetch"); Reset engine URL runs again on :6300.
 
 - DR.7: folded into §8.7 (Show Pure), §9 (Runs), the §7.8 state table, §11.10 (Stats) and Appendix A (§12.6).
 - DR.6: `23-debug-runs.webm` (1:03) in the evidence folder's `videos/`, script `demo/demo-debug-runs.mjs`; every frame

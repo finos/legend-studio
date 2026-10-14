@@ -37,6 +37,7 @@ import {
   V1_readExploredTables,
   V1_toCubeExplorationError,
 } from './V1_CubeSchemaExploration.js';
+import type { CubeEngineClientSettings } from '../../../CubeEngineClientSettings.js';
 import type { V1_CubeEngineConfig } from './V1_LegendCubeEngine.js';
 
 /** Where the engine puts the Database it reads for the picker: never saved */
@@ -50,9 +51,14 @@ const EXPLORED_DATABASE = { package: 'cube::explored', name: 'Database' };
 export class V1_LegendCubeConnectionExplorer implements CubeConnectionExplorer {
   readonly client: V1_EngineServerClient;
 
-  constructor(config: V1_CubeEngineConfig, tracerService: TracerService) {
+  constructor(
+    config: V1_CubeEngineConfig,
+    tracerService: TracerService,
+    clientSettings?: CubeEngineClientSettings,
+  ) {
     this.client = new V1_EngineServerClient(config);
     this.client.setTracerService(tracerService);
+    clientSettings?.register(this.client);
   }
 
   buildConnection(draft: CubeConnectionDraft): CubeDirectConnection {

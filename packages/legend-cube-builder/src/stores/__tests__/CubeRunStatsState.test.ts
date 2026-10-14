@@ -15,18 +15,12 @@
  */
 
 import type { IR } from '@finos/legend-cube';
-import { beforeEach, describe, expect, test } from '@jest/globals';
-import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
-import { LEGEND_CUBE_USER_DATA_KEY } from '../../__lib__/LegendCubeLabels.js';
+import { describe, expect, test } from '@jest/globals';
 import { CubeRunStatsState, MAX_CUBE_RUN_STATS } from '../CubeRunStatsState.js';
-
-beforeEach(() => {
-  localStorage.clear();
-});
 
 describe('Run stats', () => {
   test('Keeps the latest runs, newest first, at most 15', () => {
-    const stats = new CubeRunStatsState(TEST__createCubeHost().host);
+    const stats = new CubeRunStatsState();
     for (let index = 1; index <= MAX_CUBE_RUN_STATS + 2; index += 1) {
       stats.record(`Run ${index}`, {
         durationMs: index,
@@ -49,7 +43,7 @@ describe('Run stats', () => {
   });
 
   test('Keeps the lambda a run sent, and why one failed, with no SQL', () => {
-    const stats = new CubeRunStatsState(TEST__createCubeHost().host);
+    const stats = new CubeRunStatsState();
     const lambda: IR = { k: 'lambda', params: [], body: [] };
     stats.record('Execute', { durationMs: 3, lambda, error: 'No table T' });
     expect(stats.entries[0]).toMatchObject({
@@ -58,26 +52,5 @@ describe('Run stats', () => {
       error: 'No table T',
     });
     expect(stats.entries[0]?.lambda === lambda).toBe(true);
-  });
-
-  test('Sends requests uncompressed once asked, and remembers it for the user (PLAN §11.16)', () => {
-    const { host, fake } = TEST__createCubeHost();
-    const stats = new CubeRunStatsState(host);
-    // compressed by default: the host's client is left alone
-    expect(stats.uncompressedRequests).toBe(false);
-    expect(fake.setRequestCompression).not.toHaveBeenCalled();
-    stats.setUncompressedRequests(true);
-    expect(fake.setRequestCompression).toHaveBeenLastCalledWith(false);
-    expect(
-      host.applicationStore.userDataService.getBooleanValue(
-        LEGEND_CUBE_USER_DATA_KEY.UNCOMPRESSED_REQUESTS,
-      ),
-    ).toBe(true);
-    // a new page turns it off again for the user
-    const next = TEST__createCubeHost(undefined, host.applicationStore);
-    expect(new CubeRunStatsState(next.host).uncompressedRequests).toBe(true);
-    expect(next.fake.setRequestCompression).toHaveBeenCalledWith(false);
-    stats.setUncompressedRequests(false);
-    expect(fake.setRequestCompression).toHaveBeenLastCalledWith(true);
   });
 });

@@ -16,8 +16,6 @@
 
 import type { IR } from '@finos/legend-cube';
 import { action, makeObservable, observable } from 'mobx';
-import { LEGEND_CUBE_USER_DATA_KEY } from '../__lib__/LegendCubeLabels.js';
-import type { CubeHost } from './CubeHost.js';
 
 /** How many of the latest runs are kept (spec §12.6) */
 export const MAX_CUBE_RUN_STATS = 15;
@@ -60,43 +58,16 @@ export interface CubeRunRecord {
  * §11.16). They are the page's, not the cube's, and aren't saved.
  */
 export class CubeRunStatsState {
-  private readonly host: CubeHost;
   entries: readonly CubeRunStat[] = [];
-  /**
-   * The engine's requests are sent uncompressed, so the browser's Network tab
-   * shows their JSON (PLAN §11.16); kept for the user, off by default
-   */
-  uncompressedRequests: boolean;
   private count = 0;
 
-  constructor(host: CubeHost) {
-    makeObservable<CubeRunStatsState, 'count' | 'host'>(this, {
-      host: false,
+  constructor() {
+    makeObservable<CubeRunStatsState, 'count'>(this, {
       entries: observable.ref,
-      uncompressedRequests: observable,
       count: false,
       record: action,
       clear: action,
-      setUncompressedRequests: action,
     });
-    this.host = host;
-    this.uncompressedRequests =
-      host.applicationStore.userDataService.getBooleanValue(
-        LEGEND_CUBE_USER_DATA_KEY.UNCOMPRESSED_REQUESTS,
-      ) ?? false;
-    // the host's client compresses unless told otherwise
-    if (this.uncompressedRequests) {
-      host.engine.setRequestCompression(false);
-    }
-  }
-
-  setUncompressedRequests(uncompressed: boolean): void {
-    this.uncompressedRequests = uncompressed;
-    this.host.engine.setRequestCompression(!uncompressed);
-    this.host.applicationStore.userDataService.persistValue(
-      LEGEND_CUBE_USER_DATA_KEY.UNCOMPRESSED_REQUESTS,
-      uncompressed,
-    );
   }
 
   record(label: string, run: CubeRunRecord): void {

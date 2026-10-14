@@ -635,7 +635,7 @@ describe('Cube results', () => {
     expect(copy).toHaveBeenCalledWith('select … order by "ID"');
   });
 
-  test("Shows a run's Pure as it ran, copies its lambda's JSON, shows why a run failed, and sends requests uncompressed (PLAN §11.16)", async () => {
+  test("Shows a run's Pure as it ran, copies its lambda's JSON, and shows why a run failed (PLAN §11.16)", async () => {
     const applicationStore = TEST__createCubeApplicationStore();
     const copy = jest
       .spyOn(applicationStore.clipboardService, 'copyTextToClipboard')
@@ -691,13 +691,8 @@ describe('Cube results', () => {
       within(entry()).getByText<HTMLButtonElement>('Show Pure').disabled,
     ).toBe(false);
 
-    const uncompressed = within(runs).getByLabelText<HTMLInputElement>(
-      'Send requests uncompressed',
-    );
-    expect(uncompressed.checked).toBe(false);
-    fireEvent.click(uncompressed);
-    expect(uncompressed.checked).toBe(true);
-    expect(fake.setRequestCompression).toHaveBeenLastCalledWith(false);
+    // the compression switch is in Dev Settings, not in Runs
+    expect(within(runs).queryByText(/uncompressed|compress/u)).toBeNull();
   });
 
   test("Shows a number column as its saved format, sets one from the cell's menu, and keeps a saved width", async () => {

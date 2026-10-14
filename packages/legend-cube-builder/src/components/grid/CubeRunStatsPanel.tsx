@@ -43,8 +43,7 @@ export const CubeRunStatsPanel = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
     const { applicationStore } = editorState.host;
-    const { runStats } = editorState;
-    const { entries } = runStats;
+    const { entries } = editorState.runStats;
     const copy = (sql: readonly string[]): void => {
       applicationStore.clipboardService
         .copyTextToClipboard(formatCubeSql(sql))
@@ -148,23 +147,8 @@ export const CubeRunStatsPanel = observer(
             ))}
           </ol>
         )}
-        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-text-muted)]">
-          <span className="flex-1">
-            {`The latest ${MAX_CUBE_RUN_STATS} runs on this page are kept.`}
-          </span>
-          <label
-            className="flex items-center gap-1"
-            title="Cube's requests to the engine are compressed by default, which the browser's Network tab shows as binary. Uncompressed, it shows their JSON."
-          >
-            <input
-              type="checkbox"
-              checked={runStats.uncompressedRequests}
-              onChange={(event) =>
-                runStats.setUncompressedRequests(event.target.checked)
-              }
-            />
-            Send requests uncompressed
-          </label>
+        <div className="mt-1 text-sm text-[var(--color-text-muted)]">
+          {`The latest ${MAX_CUBE_RUN_STATS} runs on this page are kept.`}
         </div>
       </div>
     );

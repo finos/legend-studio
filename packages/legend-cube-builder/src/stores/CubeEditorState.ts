@@ -107,6 +107,7 @@ import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeExportState } from './CubeExportState.js';
 import { CubeGridFetcher } from './CubeGridFetcher.js';
 import { CubeGridState } from './CubeGridState.js';
+import { CubeDevSettingsState } from './CubeDevSettingsState.js';
 import { CubeRunStatsState } from './CubeRunStatsState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import { CubeExpressionFilterDraft } from './editors/CubeExpressionFilterDraft.js';
@@ -183,6 +184,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly execution: CubeExecutionState;
   /** The latest runs, fetches and exports (spec §12.6) */
   readonly runStats: CubeRunStatsState;
+  /** The Dev Settings, at the top left (PLAN §11.16) */
+  readonly devSettings: CubeDevSettingsState;
   /** The grid's server-side levels (PLAN §11.10) */
   readonly gridFetcher: CubeGridFetcher;
   /** The grid's mode and its server-side levels (PLAN §11.10) */
@@ -351,7 +354,8 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
-    this.runStats = new CubeRunStatsState(host);
+    this.runStats = new CubeRunStatsState();
+    this.devSettings = new CubeDevSettingsState(host);
     this.gridFetcher = new CubeGridFetcher(this);
     this.grid = new CubeGridState(this);
     this.export = new CubeExportState(this);

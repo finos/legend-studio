@@ -42,6 +42,7 @@ import {
 } from '../../../../../__test-utils__/CubeNorthwindTestQueries.js';
 import { V1_EngineServerClient } from '@finos/legend-graph';
 import { buildCubeEngine } from '../../CubeEngineBuilder.js';
+import { CubeEngineClientSettings } from '../../../../CubeEngineClientSettings.js';
 import { V1_LegendCubeEngine } from '../V1_LegendCubeEngine.js';
 import { V1_buildCubeSchema } from '../V1_CubeRelationTypeAdapter.js';
 
@@ -700,16 +701,19 @@ describe('Debugging a run (PLAN §11.16)', () => {
     expect(text).toMatch(/"value": 9007199254740993\n/u);
   });
 
-  test("Turns the client's request compression off and on", () => {
-    // compressed, as the host configures it
+  test("Registers its client with the host's engine client settings, which change its URL and compression", () => {
+    const clientSettings = new CubeEngineClientSettings({
+      baseUrl: 'http://localhost:6300/api',
+      enableCompression: true,
+    });
     const engine = new V1_LegendCubeEngine(
       { baseUrl: 'http://localhost:6300/api', enableCompression: true },
       new TracerService(),
+      { clientSettings },
     );
-    expect(engine.client.enableCompression).toBe(true);
-    engine.setRequestCompression(false);
+    clientSettings.setRequestCompression(false);
     expect(engine.client.enableCompression).toBe(false);
-    engine.setRequestCompression(true);
-    expect(engine.client.enableCompression).toBe(true);
+    clientSettings.setBaseUrl('http://localhost:6301/api');
+    expect(engine.client.baseUrl).toBe('http://localhost:6301/api');
   });
 });

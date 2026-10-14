@@ -22,6 +22,11 @@ import {
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import { TEST__getApplicationVersionData } from '@finos/legend-application/test';
+import { jest } from '@jest/globals';
+import {
+  type CubeEngineClientControls,
+  CubeEngineClientSettings,
+} from '../graph-manager/CubeEngineClientSettings.js';
 import type { CubeHost } from '../stores/CubeHost.js';
 import { LocalModelCatalog } from '../stores/LocalModelCatalog.js';
 import {
@@ -73,6 +78,9 @@ export const TEST__createCubeApplicationStore = (
   );
 };
 
+/** The engine URL a test host is configured with */
+export const TEST__CUBE_ENGINE_URL = 'http://localhost:6300/api';
+
 /** A host over fakes of the engine, the connection explorer and the data product catalog, with the bundled models */
 export const TEST__createCubeHost = (
   answers?: FakeCubeEngineAnswers,
@@ -82,8 +90,23 @@ export const TEST__createCubeHost = (
   fake: FakeCubeEngine;
   connections: FakeCubeConnectionExplorer;
   dataProducts: FakeCubeDataProductCatalog;
+  /** An engine client registered with the host's engine client settings */
+  engineClient: {
+    setBaseUrl: jest.Mock<CubeEngineClientControls['setBaseUrl']>;
+    setCompression: jest.Mock<CubeEngineClientControls['setCompression']>;
+  };
 } => {
   const fake = createFakeCubeEngine(answers);
+  const engineClientSettings = new CubeEngineClientSettings({
+    baseUrl: TEST__CUBE_ENGINE_URL,
+    enableCompression: true,
+  });
+  const engineClient = {
+    setBaseUrl: jest.fn<CubeEngineClientControls['setBaseUrl']>(),
+    setCompression: jest.fn<CubeEngineClientControls['setCompression']>(),
+  };
+  engineClientSettings.register(engineClient);
+  engineClient.setCompression.mockClear();
   const connections = createFakeCubeConnectionExplorer();
   const dataProducts = createFakeCubeDataProductCatalog();
   return {
@@ -93,9 +116,11 @@ export const TEST__createCubeHost = (
       modelCatalog: new LocalModelCatalog(fake.engine),
       connectionExplorer: connections.explorer,
       dataProductCatalog: dataProducts.catalog,
+      engineClientSettings,
     },
     fake,
     connections,
     dataProducts,
+    engineClient,
   };
 };

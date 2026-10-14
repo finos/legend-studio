@@ -245,11 +245,6 @@ export interface CubeEngine {
    */
   serializeLambda(lambda: IR): string;
   /**
-   * Whether the engine's requests are compressed (PLAN §11.16): they are by
-   * default; uncompressed, the browser's Network tab shows each request's JSON
-   */
-  setRequestCompression(enabled: boolean): void;
-  /**
    * An Extend column's expression as the engine's JSON (PLAN §11.7), located
    * under the source id; rejects with a `CubeEngineError` placed in the text
    */
