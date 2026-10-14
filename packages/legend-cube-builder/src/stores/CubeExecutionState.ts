@@ -149,7 +149,9 @@ export class CubeExecutionState {
     }
     const captureId = query.selected;
     if (captureId === undefined) {
-      reasons.push('Select the node to run.');
+      reasons.push(
+        'Pick the step to run: Run this step, from its menu or editor.',
+      );
     } else if (
       !emitter.canEmit(captureId) ||
       // as the editor sees it: an Extend typed for another input waits

@@ -21,6 +21,10 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
+import {
+  RUN_THIS_STEP_LABEL,
+  SELECT_NODE_TOOLTIP,
+} from '../../__lib__/LegendCubeHelpText.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeAddMenuItems } from '../CubeAddItems.js';
 
@@ -54,13 +58,13 @@ export const CubeCanvasContextMenu = observer(
         <CubeAddMenuItems editorState={editorState} nodeId={nodeId} />
         <MenuContentDivider />
         <MenuContentItem
-          title="Execute runs the query up to this node"
+          title={SELECT_NODE_TOOLTIP}
           disabled={nodeId === undefined || !query.canSelect(nodeId)}
           onClick={finishing(
             () => nodeId !== undefined && editorState.select(nodeId),
           )}
         >
-          Select
+          {RUN_THIS_STEP_LABEL}
         </MenuContentItem>
         <MenuContentItem
           disabled={nodeId === undefined || !editorState.canRemoveNode(nodeId)}

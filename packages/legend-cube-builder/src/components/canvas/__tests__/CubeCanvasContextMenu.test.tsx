@@ -83,7 +83,7 @@ const H2_TRANSFORMS = TRANSFORMS.filter(
   (transform) => transform !== 'Pivot by Column',
 );
 const PALETTE = [TABLE, FUNCTION, 'Data Product (BETA)', ...TRANSFORMS];
-const ITEMS = [...PALETTE, 'Select', 'Remove', 'Swap Inputs'];
+const ITEMS = [...PALETTE, 'Run this step', 'Remove', 'Swap Inputs'];
 
 const render = async (document?: CubeDocument): Promise<CubeEditorState> => {
   const { host } = TEST__createCubeHost();
@@ -143,7 +143,7 @@ describe('Canvas context menu', () => {
       TABLE,
       FUNCTION,
       ...H2_TRANSFORMS,
-      'Select',
+      'Run this step',
       'Remove',
       'Swap Inputs',
     ]);
@@ -168,7 +168,7 @@ describe('Canvas context menu', () => {
       TABLE,
       FUNCTION,
       ...H2_TRANSFORMS,
-      'Select',
+      'Run this step',
       'Remove',
     ]);
   });
@@ -220,9 +220,20 @@ describe('Canvas context menu', () => {
   test('Selects a node, so Execute runs the query up to it', async () => {
     const editorState = await render(slice());
     const items = await openMenu(await TEST__findCanvasNode('join101'));
-    fireEvent.click(items.get('Select') as HTMLButtonElement);
+    fireEvent.click(items.get('Run this step') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    // the step that runs, and only it, is marked Runs
+    await waitFor(async () =>
+      expect(
+        (await TEST__findCanvasNode('join101')).querySelector(
+          `[data-testid="${LEGEND_CUBE_TEST_ID.RUNNING_NODE_BADGE}"]`,
+        )?.textContent,
+      ).toBe('▶ Runs'),
+    );
+    expect(
+      screen.getAllByTestId(LEGEND_CUBE_TEST_ID.RUNNING_NODE_BADGE),
+    ).toHaveLength(1);
   });
 
   test('Adds a transform after the node the menu was opened on, or after the selected node around the nodes, opening its editor', async () => {
@@ -282,8 +293,8 @@ describe('Canvas context menu', () => {
     const editorState = await render();
     await TEST__importDocument(editorState, slice(), true);
     const items = await openMenu(await TEST__findCanvasNode('join101'));
-    expect(enabledItems(items)).toEqual(['Select']);
-    fireEvent.click(items.get('Select') as HTMLButtonElement);
+    expect(enabledItems(items)).toEqual(['Run this step']);
+    fireEvent.click(items.get('Run this step') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
   });
 });
@@ -333,7 +344,11 @@ describe('Canvas context menu, with the node editor open', () => {
           'relational101',
         ]),
     ],
-    ['Select', 'join101', (query) => expect(query.selected).toBe('join101')],
+    [
+      'Run this step',
+      'join101',
+      (query) => expect(query.selected).toBe('join101'),
+    ],
     [
       'Filter by Column',
       'relational101',

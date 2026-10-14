@@ -168,14 +168,18 @@ describe('Node editor panel', () => {
       CUBE_NODE_HELP_TEXT.relational,
     );
     expect(editorState.document.query.selected).toBe('filter101');
-    const select = within(editor).getByRole('button', { name: 'Select' });
+    const select = within(editor).getByRole('button', {
+      name: 'Run this step',
+    });
     expect(select.title).toBe(SELECT_NODE_TOOLTIP);
     fireEvent.click(select);
     expect(editorState.document.query.selected).toBe('relational101');
-    const selected = within(panel()).getByText('(Selected)');
-    expect(selected.title).toBe(SELECT_NODE_TOOLTIP);
+    const selected = within(panel()).getByText('▶ Runs');
+    expect(selected.title).toBe(
+      'This is the step that runs: Execute shows its rows',
+    );
     expect(
-      within(panel()).queryByRole('button', { name: 'Select' }),
+      within(panel()).queryByRole('button', { name: 'Run this step' }),
     ).toBeNull();
   });
 

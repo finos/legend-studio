@@ -18,6 +18,7 @@ import { clsx, ContextMenu, Tooltip, WarningIcon } from '@finos/legend-art';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
+import { RUNNING_NODE_LABEL } from '../../__lib__/LegendCubeHelpText.js';
 import { useDrag, useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
@@ -119,7 +120,7 @@ export const CubeCanvasNode = observer(
             className={clsx(
               // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
               // it from moving the node, 'nopan' from panning the canvas
-              'legend-cube__node nodrag nopan flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
+              'legend-cube__node nodrag nopan relative flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
               status.isInvalid
                 ? 'border-[var(--color-status-error)]'
                 : status.isIncomplete
@@ -169,6 +170,15 @@ export const CubeCanvasNode = observer(
                 className="ml-auto shrink-0 text-[var(--color-status-warn)]"
                 aria-hidden={true}
               />
+            )}
+            {status.isCapture && (
+              // the step Execute runs, marked on its corner
+              <span
+                className="absolute -top-2 right-2 rounded-sm bg-[var(--color-accent)] px-1 text-xs font-medium leading-4 text-[var(--color-text-on-accent)]"
+                data-testid={LEGEND_CUBE_TEST_ID.RUNNING_NODE_BADGE}
+              >
+                {`▶ ${RUNNING_NODE_LABEL}`}
+              </span>
             )}
           </div>
         </Tooltip>

@@ -102,7 +102,7 @@ describe('Node editor registries', () => {
       unknown: 'Source or transformation unknown to the application.',
     });
     expect(SELECT_NODE_TOOLTIP).toBe(
-      'Selects this node as active and its output will be shown in the grid once query is executed.',
+      'Make this the step that runs: Execute shows its rows in the grid.',
     );
   });
 
