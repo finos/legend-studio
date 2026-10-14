@@ -31,6 +31,7 @@ import {
   Connection,
   CubeDocument,
   FilterOperator,
+  type IR,
   Limit,
   printIR,
   Query,
@@ -252,6 +253,33 @@ describe('Show Pure', () => {
 });
 
 describe('Show Pure state', () => {
+  test("Renders a run's lambda as it ran, titled by the run, and the cube's query again after (PLAN §11.16)", async () => {
+    const { host, fake } = TEST__createCubeHost({ pure: PURE });
+    const state = new CubeEditorState(host, sliceDocument());
+    const lambda: IR = { k: 'lambda', params: [], body: [] };
+    const run = {
+      id: 1,
+      label: 'Groups by SHIP_COUNTRY',
+      finishedAt: 0,
+      durationMs: 1,
+      sql: [],
+      lambda,
+      error: undefined,
+    };
+    await flowResult(state.showPure.openRun(run));
+    expect(fake.renderPure.mock.calls[0]?.[0] === lambda).toBe(true);
+    expect(state.showPure.run).toBe('Groups by SHIP_COUNTRY');
+    expect(state.showPure.text).toBe(PURE);
+    state.showPure.close();
+    expect(state.showPure.run).toBeUndefined();
+    // a run that failed before its lambda was written has nothing to show
+    await flowResult(state.showPure.openRun({ ...run, lambda: undefined }));
+    expect(state.showPure.isOpen).toBe(false);
+    await flowResult(state.showPure.open());
+    expect(state.showPure.run).toBeUndefined();
+    expect(fake.renderPure).toHaveBeenCalledTimes(2);
+  });
+
   test('Drops a render that finishes after the dialog closed', async () => {
     const { host, fake } = TEST__createCubeHost();
     const answer = holdRender(fake);
