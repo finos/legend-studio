@@ -63,7 +63,7 @@ import {
 } from '../../../../stores/editor/embedded-cube/LegendStudioCubeWorkspace.js';
 import { getIngestDataSetNames } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
-import { EMBEDDED_CUBE_TEST_ID } from '../EmbeddedCube.js';
+import { EMBEDDED_CUBE_TEST_ID } from '../EmbeddedCubeEditor.js';
 
 jest.mock('@finos/legend-lego/code-editor', () => ({
   CodeEditor: () => null,

@@ -24,7 +24,6 @@ import {
 } from '../../graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { EditorStore } from '../EditorStore.js';
 import { IngestDefinitionEditorState } from '../editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
-import { LegendStudioCubeHost } from './LegendStudioCubeHost.js';
 
 /** A data set's name: a letter or an underscore, then letters, digits and underscores */
 const DATA_SET_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/u;
@@ -32,19 +31,18 @@ const DATA_SET_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/u;
 /**
  * Legend Cube, opened full screen from an ingest definition's editor to build
  * a materialized view of it from the project's ingest data sets (Create
- * MatView with Cube). Studio's own shortcuts are off while it is open.
+ * MatView with Cube). Studio's own shortcuts are off while it is open. Cube
+ * itself, and its host, are loaded with the dialog (`EmbeddedCube`), so
+ * nothing here imports them.
  */
 export class EmbeddedCubeState {
   readonly editorStore: EditorStore;
   /** The definition the materialized view is added to; none while closed */
   ingest: IngestDefinition | undefined;
-  /** The cube's host, new for each opening, so each starts on an empty cube */
-  host: LegendStudioCubeHost | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
       ingest: observable.ref,
-      host: observable.ref,
       open: action,
       close: action,
       addMaterializedView: action,
@@ -57,13 +55,11 @@ export class EmbeddedCubeState {
   }
 
   open(ingest: IngestDefinition): void {
-    this.host = new LegendStudioCubeHost(this.editorStore);
     this.ingest = ingest;
   }
 
   close(): void {
     this.ingest = undefined;
-    this.host = undefined;
   }
 
   /** Why the name can't be the new materialized view's; none when it can */

@@ -15,336 +15,43 @@
  */
 
 import {
-  Dialog,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalFooterButton,
-  ModalHeader,
-  TimesIcon,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import {
-  buildCubeRunningStepLambda,
-  CubeButton,
-  CubeEditor,
-  formatDisabledReasons,
-  type CubeEditorState,
-} from '@finos/legend-cube-builder';
-import { noop, type PlainObject } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import type { EmbeddedCubeState } from '../../../stores/editor/embedded-cube/EmbeddedCubeState.js';
+import { lazy, Suspense } from 'react';
 import { useEditorStore } from '../EditorStoreProvider.js';
 
-export const EMBEDDED_CUBE_TEST_ID = {
-  DIALOG: 'embedded-cube__dialog',
-  ADD_MATERIALIZED_VIEW: 'embedded-cube__add-materialized-view',
-};
-
-/**
- * The classification of the view's data: one of the classifications a data
- * product's access points offer, or typed when Studio's config gives none
- */
-const MaterializedViewClassification = observer(
-  (props: {
-    embeddedCubeState: EmbeddedCubeState;
-    sensitivity: string;
-    setSensitivity: (sensitivity: string) => void;
-  }) => {
-    const { embeddedCubeState, sensitivity, setSensitivity } = props;
-    const { classifications } = embeddedCubeState;
-    return (
-      <label className="flex flex-col gap-1 text-base">
-        Data classification
-        {classifications.length ? (
-          <select
-            className="input--dark h-8 rounded-sm px-2"
-            aria-label="Data classification"
-            value={sensitivity}
-            onChange={(event) => setSensitivity(event.target.value)}
-          >
-            <option value="" disabled={true}>
-              Pick a classification
-            </option>
-            {classifications.map((classification) => (
-              <option key={classification} value={classification}>
-                {classification}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            className="input--dark h-8 rounded-sm px-2"
-            aria-label="Data classification"
-            placeholder="Classification"
-            spellCheck={false}
-            value={sensitivity}
-            onChange={(event) => setSensitivity(event.target.value)}
-          />
-        )}
-      </label>
-    );
-  },
+// Loaded on the first opening, so Cube and its host stay out of Studio's
+// main bundle, as Legend Query loads its Cube page (`LegendQueryCubeRoute`)
+const LazyEmbeddedCubeEditor = lazy(() =>
+  import('./EmbeddedCubeEditor.js').then((module) => ({
+    default: module.EmbeddedCubeEditor,
+  })),
 );
 
 /**
- * The view's primary key: none or some of the columns of the step that
- * runs, kept in the order of the columns
- */
-const MaterializedViewPrimaryKey: React.FC<{
-  columns: readonly string[];
-  primaryKey: readonly string[];
-  setPrimaryKey: (primaryKey: string[]) => void;
-}> = ({ columns, primaryKey, setPrimaryKey }) => (
-  <fieldset className="flex min-w-0 flex-col gap-1 text-base">
-    <legend>Primary key</legend>
-    <span className="text-sm text-[var(--color-text-muted)]">
-      The columns that identify a row, if any
-    </span>
-    <ul className="max-h-40 overflow-auto" aria-label="Primary key columns">
-      {columns.map((column) => (
-        <li key={column}>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={primaryKey.includes(column)}
-              onChange={() =>
-                setPrimaryKey(
-                  primaryKey.includes(column)
-                    ? primaryKey.filter((each) => each !== column)
-                    : columns.filter(
-                        (each) => each === column || primaryKey.includes(each),
-                      ),
-                )
-              }
-            />
-            <span className="min-w-0 truncate">{column}</span>
-          </label>
-        </li>
-      ))}
-    </ul>
-  </fieldset>
-);
-
-/**
- * Names the materialized view, classifies its data and picks its primary
- * key, then adds it to the ingest definition
- */
-const MaterializedViewNameDialog = observer(
-  (props: {
-    embeddedCubeState: EmbeddedCubeState;
-    lambda: PlainObject;
-    /** The columns of the step that runs, the view's */
-    columns: readonly string[];
-    close: () => void;
-  }) => {
-    const { embeddedCubeState, lambda, columns, close } = props;
-    // as Cube's dialogs: the dialog follows the theme, and Add is an accent
-    // button in every theme (legend-art's light Add is a legacy grey)
-    const darkMode =
-      !embeddedCubeState.editorStore.applicationStore.layoutService
-        .TEMPORARY__isLightColorThemeEnabled;
-    const [name, setName] = useState('');
-    const [sensitivity, setSensitivity] = useState('');
-    const [primaryKey, setPrimaryKey] = useState<string[]>([]);
-    const nameProblem = embeddedCubeState.getMaterializedViewNameProblem(name);
-    const problem =
-      nameProblem ??
-      embeddedCubeState.getMaterializedViewClassificationProblem(sensitivity);
-    const add = (): void => {
-      if (problem === undefined) {
-        embeddedCubeState.addMaterializedView(name, lambda, {
-          primaryKey,
-          sensitivity,
-        });
-      }
-    };
-    return (
-      <Dialog open={true} onClose={close}>
-        <Modal darkMode={darkMode} className="w-[440px] max-w-full">
-          <ModalHeader>
-            <div className="modal__title">Add as MatView</div>
-          </ModalHeader>
-          <ModalBody>
-            <form
-              className="flex flex-col gap-2"
-              data-testid={EMBEDDED_CUBE_TEST_ID.ADD_MATERIALIZED_VIEW}
-              onSubmit={(event) => {
-                event.preventDefault();
-                add();
-              }}
-            >
-              <label className="flex flex-col gap-1 text-base">
-                {`A data set of ${embeddedCubeState.ingest?.name ?? 'the ingest definition'}, whose rows are the cube's`}
-                <input
-                  className="input--dark h-8 rounded-sm px-2"
-                  aria-label="Materialized view name"
-                  placeholder="Name"
-                  spellCheck={false}
-                  autoFocus={true}
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </label>
-              {name.trim() && nameProblem && (
-                <div className="text-sm text-[var(--color-status-error)]">
-                  {nameProblem}
-                </div>
-              )}
-              <MaterializedViewClassification
-                embeddedCubeState={embeddedCubeState}
-                sensitivity={sensitivity}
-                setSensitivity={setSensitivity}
-              />
-              <MaterializedViewPrimaryKey
-                columns={columns}
-                primaryKey={primaryKey}
-                setPrimaryKey={setPrimaryKey}
-              />
-            </form>
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              darkMode={true}
-              formatText={false}
-              text="Add"
-              title={problem ?? 'Add the materialized view'}
-              disabled={problem !== undefined}
-              onClick={add}
-            />
-            <ModalFooterButton
-              darkMode={darkMode}
-              formatText={false}
-              type="secondary"
-              text="Cancel"
-              onClick={close}
-            />
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
-/**
- * Cube's header button: the step that runs, as a lambda with no runtime and
- * no row limit, becomes a materialized view of the ingest definition
- */
-const AddMaterializedViewButton = observer(
-  (props: {
-    embeddedCubeState: EmbeddedCubeState;
-    editorState: CubeEditorState;
-  }) => {
-    const { embeddedCubeState, editorState } = props;
-    const { execution } = editorState;
-    const [view, setView] = useState<
-      { lambda: PlainObject; columns: readonly string[] } | undefined
-    >();
-    const [isBuilding, setIsBuilding] = useState(false);
-    const start = (): void => {
-      // the open step editor's edits go in first, as for Execute
-      if (!editorState.nodeEditor.finishApplied()) {
-        return;
-      }
-      // the columns of the step that runs, read with its lambda
-      const selected = editorState.document.query.selected;
-      const columns = (
-        selected === undefined
-          ? undefined
-          : editorState.analysis.schemas.get(selected)
-      )?.columns.map((column) => column.name);
-      setIsBuilding(true);
-      buildCubeRunningStepLambda(editorState)
-        .then((lambda) => setView({ lambda, columns: columns ?? [] }))
-        .catch(editorState.host.applicationStore.alertUnhandledError)
-        .finally(() => setIsBuilding(false));
-    };
-    return (
-      <>
-        <CubeButton
-          primary={true}
-          title={
-            execution.canExecute
-              ? 'Add the step that runs to the ingest definition, as a materialized view'
-              : formatDisabledReasons(execution.disabledReasons)
-          }
-          disabled={!execution.canExecute || isBuilding}
-          onClick={start}
-        >
-          Add as MatView
-        </CubeButton>
-        {view && (
-          <MaterializedViewNameDialog
-            embeddedCubeState={embeddedCubeState}
-            lambda={view.lambda}
-            columns={view.columns}
-            close={() => setView(undefined)}
-          />
-        )}
-      </>
-    );
-  },
-);
-
-/**
- * Legend Cube, full screen over the editor, building a materialized view of
- * the ingest definition it was opened from (Create MatView with Cube)
+ * Legend Cube, full screen over the editor, while it is open on an ingest
+ * definition (Create MatView with Cube); nothing otherwise
  */
 export const EmbeddedCube = observer(() => {
-  const editorStore = useEditorStore();
-  const { embeddedCubeState } = editorStore;
-  const { host, ingest } = embeddedCubeState;
-  if (!host || !ingest) {
+  const { embeddedCubeState } = useEditorStore();
+  const { ingest } = embeddedCubeState;
+  if (!ingest) {
     return null;
   }
-  const darkMode =
-    !editorStore.applicationStore.layoutService
-      .TEMPORARY__isLightColorThemeEnabled;
   return (
-    <Dialog
-      open={true}
-      onClose={noop} // closed by its own button only, so a cube isn't lost by Escape
-      classes={{
-        root: 'editor-modal__root-container',
-        container: 'editor-modal__container',
-        paper:
-          'editor-modal__content query-builder__dialog__container__content',
-      }}
+    <Suspense
+      fallback={
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      }
     >
-      <Modal
-        darkMode={darkMode}
-        className="editor-modal query-builder__dialog query-builder__dialog--expanded"
-      >
-        <div
-          className="query-builder__dialog__header"
-          data-testid={EMBEDDED_CUBE_TEST_ID.DIALOG}
-        >
-          <div className="min-w-0 flex-1 truncate px-4 text-lg font-medium text-[var(--color-state-disabled-on-accent)]">
-            {`Create MatView for ${ingest.path} with Cube`}
-          </div>
-          <div className="query-builder__dialog__header__actions">
-            <button
-              className="query-builder__dialog__header__action"
-              tabIndex={-1}
-              onClick={() => embeddedCubeState.close()}
-              title="Close Cube, adding nothing"
-            >
-              <TimesIcon />
-            </button>
-          </div>
-        </div>
-        <div className="query-builder__dialog__content">
-          <CubeEditor
-            host={host}
-            headerActions={(editorState) => (
-              <AddMaterializedViewButton
-                embeddedCubeState={embeddedCubeState}
-                editorState={editorState}
-              />
-            )}
-          />
-        </div>
-      </Modal>
-    </Dialog>
+      <LazyEmbeddedCubeEditor
+        embeddedCubeState={embeddedCubeState}
+        ingest={ingest}
+      />
+    </Suspense>
   );
 });
