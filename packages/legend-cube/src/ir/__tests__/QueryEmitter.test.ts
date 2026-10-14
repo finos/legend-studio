@@ -524,14 +524,14 @@ describe(unitTest('Query emission'), () => {
     const unknown = new Query(
       [
         table('relational101', 'ORDERS', ORDERS),
-        new UnknownNode('pivot101', 1),
+        new UnknownNode('future101', 1),
       ],
-      [new Connection('relational101', 'pivot101', 'in0')],
-      'pivot101',
+      [new Connection('relational101', 'future101', 'in0')],
+      'future101',
     );
-    expect(new QueryEmitter(unknown).canEmit('pivot101')).toBe(false);
-    expect(() => new QueryEmitter(unknown).emitRelation('pivot101')).toThrow(
-      `Can't emit node "pivot101": it is invalid`,
+    expect(new QueryEmitter(unknown).canEmit('future101')).toBe(false);
+    expect(() => new QueryEmitter(unknown).emitRelation('future101')).toThrow(
+      `Can't emit node "future101": it is invalid`,
     );
     // a valid node of a type the registry doesn't have
     const stranger = new Query(
@@ -697,7 +697,10 @@ describe(unitTest('Query emission'), () => {
       'distinct',
       'group',
       'aggregation',
+      'window',
+      'pivot',
       'concat',
+      'difference',
       'convert',
       'sort',
       'sortKey',
@@ -706,6 +709,9 @@ describe(unitTest('Query emission'), () => {
       'captureSort',
       'limit',
       'from',
+      'let',
+      'extend',
+      'expression',
     ]);
     expect(new Set(roles).size).toBe(roles.length);
     roles.forEach((role) => expect(role).not.toContain(':'));

@@ -71,6 +71,20 @@ export const FAKE_NORTHWIND_OUTLINE: CubeModelOutline = {
   ],
 };
 
+/** The Northwind outline, its runtime's connection of this database type */
+export const createFakeNorthwindOutline = (
+  databaseType: string,
+): CubeModelOutline => ({
+  ...FAKE_NORTHWIND_OUTLINE,
+  runtimes: [
+    {
+      path: NORTHWIND_RUNTIME,
+      storePaths: [NORTHWIND_DATABASE],
+      connections: [{ storePath: NORTHWIND_DATABASE, databaseType }],
+    },
+  ],
+});
+
 /** The schemas the fake gives, keyed by `<schema>.<table>` as the outline names them */
 export const FAKE_NORTHWIND_SCHEMAS: ReadonlyMap<string, Schema> = new Map([
   ['NORTHWIND.ORDERS', new Schema(ORDERS_COLUMNS)],
@@ -89,6 +103,7 @@ export interface FakeCubeEngineAnswers {
   /** keyed by `<schema>.<table>`; a table not in it gets a compile error */
   readonly schemas?: ReadonlyMap<string, Schema>;
   readonly result?: CubeResult;
+  readonly csv?: string;
   readonly pure?: string;
 }
 
@@ -98,7 +113,10 @@ export interface FakeCubeEngine {
   readonly resolveSchemas: jest.Mock<CubeEngine['resolveSchemas']>;
   readonly typeLambdas: jest.Mock<CubeEngine['typeLambdas']>;
   readonly execute: jest.Mock<CubeEngine['execute']>;
+  readonly exportCsv: jest.Mock<CubeEngine['exportCsv']>;
   readonly renderPure: jest.Mock<CubeEngine['renderPure']>;
+  readonly parseExpression: jest.Mock<CubeEngine['parseExpression']>;
+  readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
 }
 
 /** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
@@ -131,15 +149,42 @@ export const createFakeCubeEngine = (
   const execute = jest.fn<CubeEngine['execute']>(async () =>
     Promise.resolve(answers.result ?? EMPTY_CUBE_RESULT),
   );
+  const exportCsv = jest.fn<CubeEngine['exportCsv']>(async () =>
+    Promise.resolve(answers.csv ?? ''),
+  );
   const renderPure = jest.fn<CubeEngine['renderPure']>(async () =>
     Promise.resolve(answers.pure ?? ''),
   );
+  // a test that types expressions says how; by default, each parses to nothing
+  const parseExpression = jest.fn<CubeEngine['parseExpression']>(async () =>
+    Promise.reject(
+      new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        'The fake engine parses no expression',
+      ),
+    ),
+  );
+  const planLambda = jest.fn<CubeEngine['planLambda']>(async () =>
+    Promise.resolve(),
+  );
   return {
-    engine: { loadModel, resolveSchemas, typeLambdas, execute, renderPure },
+    engine: {
+      loadModel,
+      resolveSchemas,
+      typeLambdas,
+      execute,
+      exportCsv,
+      renderPure,
+      parseExpression,
+      planLambda,
+    },
     loadModel,
     resolveSchemas,
     typeLambdas,
     execute,
+    exportCsv,
     renderPure,
+    parseExpression,
+    planLambda,
   };
 };

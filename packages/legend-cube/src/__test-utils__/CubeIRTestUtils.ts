@@ -34,8 +34,6 @@ const children = (node: IR): (IR | undefined)[] => {
       return [...node.specs];
     case 'let':
       return [node.value];
-    case 'block':
-      return [...node.statements];
     default:
       return [];
   }
@@ -46,6 +44,10 @@ const label = (node: IR): string | undefined => {
   switch (node.k) {
     case 'func':
       return node.name;
+    case 'let':
+      return `let ${node.name}`;
+    case 'lambdaJson':
+      return 'lambda';
     case 'property':
       return `.${node.name}`;
     case 'literal':

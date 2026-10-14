@@ -270,6 +270,48 @@ describe('Data product tab', () => {
     expect(reopened.canAddNode('dataProductAccessPoint')).toBe(true);
   });
 
+  test('Adds several access points picked at once in one undo step, the first picked running, the last previewed', async () => {
+    const { state } = setUp();
+    const tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    tab.toggleAccessPoint('core', 'daily_orders');
+    tab.toggleAccessPoint('reference', 'customers');
+    expect(tab.pickedCount).toBe(2);
+    // the preview shows the access point picked last
+    expect(tab.accessPoint?.id).toBe('customers');
+    expect(state.sourcePicker.canConfirm).toBe(true);
+    await flowResult(state.sourcePicker.confirm());
+    expect(nodeIds(state)).toEqual([
+      'dataProductAccessPoint101',
+      'dataProductAccessPoint102',
+    ]);
+    const [orders, customers] = state.document.query
+      .nodes as DataProductAccessPointSource[];
+    expect([orders?.accessPoint, customers?.accessPoint]).toEqual([
+      'daily_orders',
+      'customers',
+    ]);
+    expect(state.document.query.selected).toBe('dataProductAccessPoint101');
+    expect(state.history).toHaveLength(1);
+    expect(tab.pickedCount).toBe(0);
+  });
+
+  test("A plain pick replaces the picked access points, and an access point that can't be picked keeps Add off", async () => {
+    const { state } = setUp();
+    const tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    tab.toggleAccessPoint('core', 'daily_orders');
+    tab.toggleAccessPoint('reference', 'customers');
+    tab.selectAccessPoint('core', 'daily_orders');
+    expect(tab.accessPointKeys).toEqual([
+      { group: 'core', id: 'daily_orders' },
+    ]);
+    tab.toggleAccessPoint('core', 'orders_as_of');
+    expect(state.sourcePicker.canConfirm).toBe(false);
+    tab.toggleAccessPoint('core', 'orders_as_of');
+    expect(state.sourcePicker.canConfirm).toBe(true);
+  });
+
   test('Joins two access points of the same data product, added through the tab, and runs the cube', async () => {
     const { state, fake } = setUp();
     let tab = await openTab(state);
@@ -347,7 +389,7 @@ describe('Data product tab', () => {
     ).not.toContain(CubeSourcePickerTabKey.DATA_PRODUCT);
     expect(
       withoutCatalog.offeredSources.map((definition) => definition.type),
-    ).toEqual(['relational']);
+    ).toEqual(['relational', 'function']);
   });
 
   test("Drops a product's access points that arrive after another product was picked, or after the dialog closed", async () => {

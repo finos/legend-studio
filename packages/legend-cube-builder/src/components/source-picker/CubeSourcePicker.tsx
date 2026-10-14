@@ -26,12 +26,19 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import {
+  CUBE_PICK_TO_ADD_TITLE,
+  SELECT_SOURCE_TYPE_PROMPT,
+} from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeDataProductTab } from './CubeDataProductTab.js';
 import { CubeIngestTab } from './CubeIngestTab.js';
+import { CubeServiceTab } from './CubeServiceTab.js';
+import { CubeProjectTab } from './CubeProjectTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
+import { CubePickerConfirmContext } from './CubePickerListItem.js';
 
 /**
  * Adds a source to the cube (PLAN §6.1, §6.2.7, §6.8): a tab per way to find
@@ -57,7 +64,9 @@ export const CubeSourcePicker = observer(
           <ModalHeader>
             <div className="modal__title">Add a source</div>
           </ModalHeader>
-          <PanelLoadingIndicator isLoading={activeTab.isBusy} />
+          <PanelLoadingIndicator
+            isLoading={!picker.isChoosingTab && activeTab.isBusy}
+          />
           <ModalBody>
             {tabs.length > 1 && (
               <div
@@ -66,7 +75,7 @@ export const CubeSourcePicker = observer(
                 aria-label="Source kinds"
               >
                 {tabs.map((tab) => {
-                  const isActive = tab === activeTab;
+                  const isActive = !picker.isChoosingTab && tab === activeTab;
                   return (
                     <button
                       key={tab.key}
@@ -88,23 +97,65 @@ export const CubeSourcePicker = observer(
                 })}
               </div>
             )}
-            <div role={tabs.length > 1 ? 'tabpanel' : undefined}>
-              {activeTab.key === CubeSourcePickerTabKey.DIRECT_CONNECTION ? (
-                <CubeDirectConnectionTab tab={picker.directTab} />
-              ) : activeTab.key === CubeSourcePickerTabKey.DATA_PRODUCT ? (
-                <CubeDataProductTab tab={picker.dataProductTab} />
-              ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
-                <CubeIngestTab tab={picker.ingestTab} />
-              ) : (
-                <CubeInlineModelTab tab={picker.modelTab} />
-              )}
+            <div
+              role={
+                tabs.length > 1 && !picker.isChoosingTab
+                  ? 'tabpanel'
+                  : undefined
+              }
+            >
+              <CubePickerConfirmContext.Provider value={confirm}>
+                {picker.isChoosingTab ? (
+                  <div className="py-4 text-center text-base text-[var(--color-text-secondary)]">
+                    {SELECT_SOURCE_TYPE_PROMPT}
+                  </div>
+                ) : activeTab.key ===
+                  CubeSourcePickerTabKey.DIRECT_CONNECTION ? (
+                  <CubeDirectConnectionTab tab={picker.directTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.DATA_PRODUCT ? (
+                  <CubeDataProductTab tab={picker.dataProductTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.INGEST ? (
+                  <CubeIngestTab tab={picker.ingestTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.PROJECT ? (
+                  <CubeProjectTab tab={picker.projectTab} />
+                ) : activeTab.key ===
+                  CubeSourcePickerTabKey.PROJECT_FUNCTION ? (
+                  <CubeProjectTab tab={picker.projectFunctionTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.SERVICE ? (
+                  <CubeServiceTab tab={picker.serviceTab} />
+                ) : (
+                  <CubeInlineModelTab tab={picker.modelTab} />
+                )}
+              </CubePickerConfirmContext.Provider>
             </div>
           </ModalBody>
           <ModalFooter>
+            {picker.isFromExamples && (
+              <ModalFooterButton
+                darkMode={darkMode}
+                formatText={false}
+                type="secondary"
+                className="mr-auto"
+                text="← Examples"
+                title="Back to the examples, to open an example cube instead"
+                onClick={() => picker.backToExamples()}
+              />
+            )}
             <ModalFooterButton
               darkMode={darkMode}
               formatText={false}
-              text="Add"
+              text={
+                (picker.activeTab.pickedCount ?? 1) > 1
+                  ? `Add ${picker.activeTab.pickedCount}`
+                  : 'Add'
+              }
+              // the legacy footer button looks the same disabled
+              className="disabled:cursor-not-allowed disabled:opacity-50"
+              title={
+                picker.canConfirm
+                  ? 'Add it to the cube'
+                  : CUBE_PICK_TO_ADD_TITLE
+              }
               disabled={!picker.canConfirm}
               onClick={confirm}
             />

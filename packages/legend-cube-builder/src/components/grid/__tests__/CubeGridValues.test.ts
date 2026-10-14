@@ -15,12 +15,21 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { TypeFamily } from '@finos/legend-cube';
+import {
+  type ColumnFormat,
+  ColumnFormatStyle,
+  TypeFamily,
+} from '@finos/legend-cube';
 import {
   compareCellValues,
   compareNumberText,
+  formatCellValue,
   formatDuration,
+  groupThousands,
   isNumericFamily,
+  formatColumnValue,
+  getColumnFormatProblem,
+  getCubeCurrencyCodes,
 } from '../CubeGridValues.js';
 
 const sortedText = (values: string[]): string[] =>
@@ -88,5 +97,148 @@ describe('Cube grid values', () => {
   test('Shows a run time in milliseconds under a second, else in seconds', () => {
     expect(formatDuration(566.4)).toBe('566 ms');
     expect(formatDuration(1250)).toBe('1.3 s');
+  });
+
+  test('Groups the thousands of a number written as text, keeping every digit and the sign', () => {
+    expect(groupThousands('31102024.71')).toBe('31,102,024.71');
+    expect(groupThousands('-1234.5')).toBe('-1,234.5');
+    expect(groupThousands('1000')).toBe('1,000');
+    expect(groupThousands('999')).toBe('999');
+    expect(groupThousands('0.123456789')).toBe('0.123456789');
+    expect(groupThousands('9007199254740993')).toBe('9,007,199,254,740,993');
+    // anything else is kept as it is
+    expect(groupThousands('1.5e21')).toBe('1.5e21');
+    expect(groupThousands('abc')).toBe('abc');
+    expect(groupThousands('')).toBe('');
+  });
+
+  test('Shows Decimal and Number values grouped with every digit, Float values grouped and rounded to 2 places, and the rest as they are', () => {
+    expect(formatCellValue('31102024.71', TypeFamily.DECIMAL)).toBe(
+      '31,102,024.71',
+    );
+    expect(formatCellValue('12.300', TypeFamily.DECIMAL)).toBe('12.300');
+    expect(formatCellValue('1234567', TypeFamily.NUMBER)).toBe('1,234,567');
+    expect(formatCellValue(31.10202471, TypeFamily.FLOAT)).toBe('31.10');
+    expect(formatCellValue(1234567.891, TypeFamily.FLOAT)).toBe('1,234,567.89');
+    expect(formatCellValue(-2.005, TypeFamily.FLOAT)).toBe('-2.00');
+    expect(formatCellValue(5124, TypeFamily.FLOAT)).toBe('5,124.00');
+    // a Float written as text reads the same
+    expect(formatCellValue('0.5', TypeFamily.FLOAT)).toBe('0.50');
+    // rounded to zero, with no sign
+    expect(formatCellValue(-0.001, TypeFamily.FLOAT)).toBe('0.00');
+    // what isn't a finite number is kept
+    expect(formatCellValue(Number.NaN, TypeFamily.FLOAT)).toBe('NaN');
+    expect(formatCellValue(1e21, TypeFamily.FLOAT)).toBe('1e+21');
+    expect(formatCellValue('n/a', TypeFamily.FLOAT)).toBe('n/a');
+    // ids and years get no commas
+    expect(formatCellValue('10692', TypeFamily.INTEGER)).toBe('10692');
+    expect(formatCellValue('2026', TypeFamily.INTEGER)).toBe('2026');
+    expect(formatCellValue('31102024', TypeFamily.STRING)).toBe('31102024');
+    expect(formatCellValue(true, TypeFamily.BOOLEAN)).toBe('true');
+  });
+
+  const format = (init: Partial<ColumnFormat>): ColumnFormat => ({
+    style: ColumnFormatStyle.NUMBER,
+    grouping: false,
+    redIfNegative: false,
+    parenthesesIfNegative: false,
+    ...init,
+  });
+
+  test("Formats a number column's values from their exact text, every digit kept unless places are set", () => {
+    const usd = format({
+      style: ColumnFormatStyle.CURRENCY,
+      currency: 'USD',
+      decimalPlaces: 2,
+      grouping: true,
+    });
+    expect(formatColumnValue('12345678901234567890.125', usd)).toEqual({
+      text: '$12,345,678,901,234,567,890.13',
+      negative: false,
+    });
+    expect(formatColumnValue('0.10000000000000000001', format({}))?.text).toBe(
+      '0.10000000000000000001',
+    );
+    expect(formatColumnValue(1234.5, format({ grouping: true }))?.text).toBe(
+      '1,234.5',
+    );
+    expect(
+      formatColumnValue('0.1234', format({ style: ColumnFormatStyle.PERCENT }))
+        ?.text,
+    ).toBe('12.34%');
+    expect(formatColumnValue('3', format({ decimalPlaces: 2 }))?.text).toBe(
+      '3.00',
+    );
+  });
+
+  test('Shows a negative in parentheses when asked, and says it is negative for red', () => {
+    expect(
+      formatColumnValue(
+        '-1234.5',
+        format({ grouping: true, parenthesesIfNegative: true }),
+      ),
+    ).toEqual({ text: '(1,234.5)', negative: true });
+    expect(formatColumnValue('-1234.5', format({}))).toEqual({
+      text: '-1234.5',
+      negative: true,
+    });
+    // zero is never negative
+    expect(formatColumnValue('-0', format({}))?.negative).toBe(false);
+  });
+
+  test("Leaves a value that isn't a number, or a format it can't use, to the default", () => {
+    expect(formatColumnValue('abc', format({}))).toBeUndefined();
+    expect(formatColumnValue(true, format({}))).toBeUndefined();
+    const unknownCurrency = format({
+      style: ColumnFormatStyle.CURRENCY,
+      currency: '$',
+    });
+    expect(formatColumnValue('1', unknownCurrency)).toBeUndefined();
+    expect(getColumnFormatProblem(unknownCurrency)).toBe(
+      'The currency "$" is unknown, so the column shows its values as they are.',
+    );
+    expect(getColumnFormatProblem(format({ style: 'scientific' }))).toBe(
+      'The format "scientific" is unknown, so the column shows its values as they are.',
+    );
+    expect(getColumnFormatProblem(format({}))).toBeUndefined();
+    expect(getCubeCurrencyCodes()).toEqual(
+      expect.arrayContaining(['USD', 'EUR', 'GBP', 'JPY', 'CHF']),
+    );
+  });
+
+  test("With no places set, keeps the value's own digits, a currency at least its cents (review of M7)", () => {
+    const usd = format({ style: ColumnFormatStyle.CURRENCY, currency: 'USD' });
+    expect(formatColumnValue('20.20', usd)?.text).toBe('$20.20');
+    expect(formatColumnValue('20', usd)?.text).toBe('$20.00');
+    expect(formatColumnValue('20.125', usd)?.text).toBe('$20.125');
+    expect(formatColumnValue('2.5000', format({}))?.text).toBe('2.5000');
+    expect(
+      formatColumnValue(
+        '1',
+        format({ style: ColumnFormatStyle.CURRENCY, currency: 'JPY' }),
+      )?.text,
+    ).toBe('¥1');
+  });
+
+  test('Shows a negative that rounds to zero as zero: no sign, not red, no parentheses (review of M7)', () => {
+    const noCents = format({
+      style: ColumnFormatStyle.CURRENCY,
+      currency: 'USD',
+      decimalPlaces: 0,
+      redIfNegative: true,
+      parenthesesIfNegative: true,
+    });
+    expect(formatColumnValue('-0.4', noCents)).toEqual({
+      text: '$0',
+      negative: false,
+    });
+    expect(formatColumnValue('-1.4', noCents)).toEqual({
+      text: '($1)',
+      negative: true,
+    });
+    expect(formatColumnValue('-0', format({}))).toEqual({
+      text: '0',
+      negative: false,
+    });
   });
 });

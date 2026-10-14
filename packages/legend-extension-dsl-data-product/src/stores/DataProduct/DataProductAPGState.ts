@@ -18,6 +18,8 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type V1_AccessPointGroup,
   type V1_ContractUserStatusResponse,
+  type V1_DataSubScriptionBaseResponse,
+  type V1_DataRequest,
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
@@ -25,9 +27,12 @@ import {
   type V1_LiteDataContractWithUserStatus,
   type V1_LiteDataRequestsResponse,
   type V1_User,
+  V1_AccessPointGroupReference,
   V1_ContractUserStatusResponseModelSchema,
-  V1_CreateSubscriptionInput,
-  V1_CreateSubscriptionInputModelSchema,
+  V1_CreateDataRequestSubscriptionInput,
+  V1_CreateDataRequestSubscriptionInputModelSchema,
+  V1_CreateContractSubscriptionInput,
+  V1_CreateContractSubscriptionInputModelSchema,
   V1_DataContract,
   V1_DataContractApprovedUsersResponseModelSchema,
   V1_dataSubscriptionModelSchema,
@@ -89,6 +94,12 @@ export enum AccessPointGroupAccess {
   ENTERPRISE = 'ENTERPRISE', // Used to indicate that the group is available for all users in the organization
 }
 
+// What a subscription can be created against: an approved contract or data request
+export enum SubscriptionSourceType {
+  CONTRACT = 'Contract',
+  DATA_REQUEST = 'Data Request',
+}
+
 export enum V1_UserApprovalPriority {
   NO_PRIORITY = 0,
   SUBMITTED_FOR_APPROVALS_PRIORITY = 1,
@@ -131,6 +142,8 @@ export class DataProductAPGState {
   readonly id = uuid();
 
   subscriptions: V1_DataSubscription[] = [];
+  // Completed (approved) data requests for this access point group
+  approvedDataRequests: V1_DataRequest[] = [];
 
   apgContracts: V1_LiteDataContract[] = [];
   // ASSUMPTION: one contract per user per group;
@@ -143,7 +156,7 @@ export class DataProductAPGState {
     undefined;
 
   associatedSystemAccountContractsAndApprovedUsers: {
-    contract: V1_DataContract;
+    contract: V1_LiteDataContract;
     approvedUsers: V1_User[];
   }[] = [];
 
@@ -182,6 +195,9 @@ export class DataProductAPGState {
       setAssociatedUserContract: action,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
+      approvedDataRequests: observable,
+      setApprovedDataRequests: action,
+      createDataRequestSubscription: flow,
       isCollapsed: computed,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
@@ -299,7 +315,8 @@ export class DataProductAPGState {
         this.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED) ||
       this.associatedSystemAccountContractsAndApprovedUsers.some(
         (contract) => contract.approvedUsers.length > 0,
-      )
+      ) ||
+      this.approvedDataRequests.length > 0
     );
   }
 
@@ -330,25 +347,23 @@ export class DataProductAPGState {
   ): GeneratorFn<void> {
     this.fetchingApprovedContractsState.inProgress();
     try {
+      if (systemAccountContracts.length === 0) {
+        this.associatedSystemAccountContractsAndApprovedUsers = [];
+        return;
+      }
+      const rawApprovedUsersByContractId =
+        (yield lakehouseContractServerClient.getApprovedUsersForDataContracts(
+          systemAccountContracts.map((contract) => contract.guid),
+          token,
+        )) as Record<string, PlainObject<V1_User>[]>;
       this.associatedSystemAccountContractsAndApprovedUsers =
-        (yield Promise.all(
-          systemAccountContracts.map(async (contract) => {
-            const rawApprovedUsers =
-              await lakehouseContractServerClient.getApprovedUsersForDataContract(
-                contract.guid,
-                token,
-              );
-            const approvedUsers =
-              deserialize(
-                V1_DataContractApprovedUsersResponseModelSchema,
-                rawApprovedUsers,
-              ).approvedUsers ?? [];
-            return {
-              contract,
-              approvedUsers,
-            };
-          }),
-        )) as { contract: V1_DataContract; approvedUsers: V1_User[] }[];
+        systemAccountContracts.map((contract) => ({
+          contract,
+          approvedUsers:
+            deserialize(V1_DataContractApprovedUsersResponseModelSchema, {
+              approvedUsers: rawApprovedUsersByContractId[contract.guid] ?? [],
+            }).approvedUsers ?? [],
+        }));
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
@@ -509,6 +524,10 @@ export class DataProductAPGState {
       }
     };
     yield poll();
+  }
+
+  setApprovedDataRequests(val: V1_DataRequest[]): void {
+    this.approvedDataRequests = val;
   }
 
   setSubscriptions(val: V1_DataSubscription[]): void {
@@ -930,6 +949,39 @@ export class DataProductAPGState {
     }
   }
 
+  private async fetchApprovedDataRequests(
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    token: string | undefined,
+  ): Promise<V1_DataRequest[]> {
+    const details = this.dataProductViewerState.entitlementsDataProductDetails;
+    if (!details) {
+      return [];
+    }
+    try {
+      const rawResponse =
+        await lakehouseContractServerClient.getDataRequestsForDataProduct(
+          details.dataProduct.name,
+          details.deploymentId,
+          token,
+        );
+      return V1_deserializeDataRequestsResponse(
+        rawResponse,
+        this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+      ).filter(
+        (request) =>
+          request.state === V1_RequestState.COMPLETED &&
+          request.resource instanceof V1_AccessPointGroupReference &&
+          request.resource.accessPointGroup === this.apg.id,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Error fetching data requests: ${error.message}`,
+      );
+      return [];
+    }
+  }
+
   *fetchSubscriptions(
     contracts: V1_LiteDataContract[],
     lakehouseContractServerClient: LakehouseContractServerClient,
@@ -937,15 +989,26 @@ export class DataProductAPGState {
   ): GeneratorFn<void> {
     try {
       this.fetchingSubscriptionsState.inProgress();
+      const approvedDataRequests = (yield this.fetchApprovedDataRequests(
+        lakehouseContractServerClient,
+        token,
+      )) as V1_DataRequest[];
+      this.setApprovedDataRequests(approvedDataRequests);
       const rawSubscriptions = (
-        (yield Promise.all(
-          contracts.map(async (contract) =>
+        (yield Promise.all([
+          ...contracts.map(async (contract) =>
             lakehouseContractServerClient.getSubscriptionsForContract(
               contract.guid,
               token,
             ),
           ),
-        )) as V1_DataSubscriptionResponse[]
+          ...approvedDataRequests.map(async (dataRequest) =>
+            lakehouseContractServerClient.getSubscriptionsForDataRequest(
+              dataRequest.guid,
+              token,
+            ),
+          ),
+        ])) as V1_DataSubscriptionResponse[]
       ).flatMap((response) => response.subscriptions ?? []);
       const subscriptions = rawSubscriptions.map((rawSubscription) =>
         deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
@@ -960,7 +1023,7 @@ export class DataProductAPGState {
   }
 
   logCreatingSubscription(
-    request: PlainObject<V1_DataSubscriptionResponse>,
+    request: PlainObject<V1_DataSubScriptionBaseResponse>,
     error: string | undefined,
   ): void {
     const projectGAV = this.dataProductViewerState.projectGAV;
@@ -994,53 +1057,90 @@ export class DataProductAPGState {
     );
   }
 
+  private async submitSubscriptionRequest(
+    buildRequest: () => PlainObject<V1_DataSubScriptionBaseResponse>,
+    send: (
+      request: PlainObject<V1_DataSubScriptionBaseResponse>,
+    ) => Promise<PlainObject<V1_DataSubscriptionResponse>>,
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    token: string | undefined,
+  ): Promise<void> {
+    let request: PlainObject<V1_DataSubScriptionBaseResponse> | undefined;
+    let succeeded = false;
+    try {
+      this.creatingSubscriptionState.inProgress();
+      request = buildRequest();
+      const response = await send(request);
+      guaranteeNonNullable(
+        deserialize(V1_DataSubscriptionResponseModelSchema, response)
+          .subscriptions?.[0],
+        'No subscription returned from server',
+      );
+      this.applicationStore.notificationService.notifySuccess(
+        `Subscription created`,
+      );
+      // eslint-disable-next-line no-void
+      void this.fetchSubscriptions(
+        this.apgContracts,
+        lakehouseContractServerClient,
+        token,
+      );
+      succeeded = true;
+      this.logCreatingSubscription(request, undefined);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(`${error.message}`);
+      if (request) {
+        this.logCreatingSubscription(request, error.message);
+      }
+    } finally {
+      this.creatingSubscriptionState.complete(succeeded);
+    }
+  }
+
   *createSubscription(
     contractId: string,
     target: V1_DataSubscriptionTarget,
     lakehouseContractServerClient: LakehouseContractServerClient,
     token: string | undefined,
   ): GeneratorFn<void> {
-    try {
-      this.creatingSubscriptionState.inProgress();
-      const input = new V1_CreateSubscriptionInput();
-      input.contractId = contractId;
-      input.target = target;
-      const request = serialize(
-        V1_CreateSubscriptionInputModelSchema,
-        input,
-      ) as PlainObject<V1_CreateSubscriptionInput>;
-      try {
-        const response =
-          (yield lakehouseContractServerClient.createSubscription(
-            request,
-            token,
-          )) as PlainObject<V1_DataSubscriptionResponse>;
-        guaranteeNonNullable(
-          deserialize(V1_DataSubscriptionResponseModelSchema, response)
-            .subscriptions?.[0],
-          'No subsription returned from server',
+    yield this.submitSubscriptionRequest(
+      () => {
+        const input = new V1_CreateContractSubscriptionInput();
+        input.contractId = contractId;
+        input.target = target;
+        return serialize(V1_CreateContractSubscriptionInputModelSchema, input);
+      },
+      (request) =>
+        lakehouseContractServerClient.createSubscription(request, token),
+      lakehouseContractServerClient,
+      token,
+    );
+  }
+
+  *createDataRequestSubscription(
+    dataRequestId: string,
+    target: V1_DataSubscriptionTarget,
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    yield this.submitSubscriptionRequest(
+      () => {
+        const input = new V1_CreateDataRequestSubscriptionInput();
+        input.dataRequestId = dataRequestId;
+        input.target = target;
+        return serialize(
+          V1_CreateDataRequestSubscriptionInputModelSchema,
+          input,
         );
-        this.applicationStore.notificationService.notifySuccess(
-          `Subscription created`,
-        );
-        this.fetchSubscriptions(
-          this.apgContracts,
-          lakehouseContractServerClient,
+      },
+      (request) =>
+        lakehouseContractServerClient.createDataRequestSubscription(
+          request,
           token,
-        );
-        this.logCreatingSubscription(request, undefined);
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(
-          `${error.message}`,
-        );
-        this.logCreatingSubscription(request, error.message);
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(`${error.message}`);
-    } finally {
-      this.creatingSubscriptionState.complete();
-    }
+        ),
+      lakehouseContractServerClient,
+      token,
+    );
   }
 }

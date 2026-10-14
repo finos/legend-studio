@@ -18,15 +18,23 @@ import { ChevronLeftIcon, ChevronRightIcon, clsx } from '@finos/legend-art';
 import {
   type AnyNodeDefinition,
   DataProductAccessPointSource,
+  FunctionSource,
+  IngestDatasetSource,
+  ServiceSource,
 } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import {
+  getCubeNodeBadge,
   OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  addCubeNode,
+  getCubeAddDatabaseProblem,
+} from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_DND_TYPE,
@@ -37,11 +45,19 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 /** Shown in the palette while the cube has no node yet (spec §17.2, worded for the canvas) */
 export const PALETTE_EMPTY_HINT = 'Drag items onto the canvas.';
 
+/** What a source item picks, for its tooltip: a table, unless its type says otherwise */
+const SOURCE_PICKS: Readonly<Record<string, string>> = {
+  [FunctionSource.TYPE]: 'a function',
+  [DataProductAccessPointSource.TYPE]: 'an access point',
+  [IngestDatasetSource.TYPE]: 'a data set',
+  [ServiceSource.TYPE]: 'a service',
+};
+
 /** What an item does, for its tooltip */
 const describeItem = (definition: AnyNodeDefinition): string =>
   definition.kind === 'source'
-    ? `Click, or drop it on the canvas, to pick ${definition.type === DataProductAccessPointSource.TYPE ? 'an access point' : 'a table'}`
-    : 'Drag it onto a node to add it after that node, or onto the canvas to add it on its own; click to add it on its own';
+    ? `Click, or drop it on the canvas, to pick ${SOURCE_PICKS[definition.type] ?? 'a table'}`
+    : 'Click, or drop it on the canvas, to add it after the selected node; drop it on a node to add it after that node';
 
 const CubePaletteItem = observer(
   (props: {
@@ -56,7 +72,12 @@ const CubePaletteItem = observer(
       !readOnly &&
       definition.kind === 'source' &&
       !editorState.canAddNode(definition.type);
-    const disabled = readOnly || otherKind;
+    // nor a transform its database can't run, after the selected node (PLAN §11.12)
+    const databaseProblem =
+      readOnly || definition.kind === 'source'
+        ? undefined
+        : getCubeAddDatabaseProblem(editorState, definition.type);
+    const disabled = readOnly || otherKind || databaseProblem !== undefined;
     const ref = useRef<HTMLDivElement>(null);
     const [, dragConnector] = useDrag<CubePaletteDragItem>(
       () => ({
@@ -64,16 +85,19 @@ const CubePaletteItem = observer(
         item: { nodeType: definition.type },
         canDrag: () =>
           !editorState.readOnly &&
-          (definition.kind !== 'source' ||
-            editorState.canAddNode(definition.type)),
+          (definition.kind === 'source'
+            ? editorState.canAddNode(definition.type)
+            : getCubeAddDatabaseProblem(editorState, definition.type) ===
+              undefined),
       }),
       [editorState, definition.type, definition.kind],
     );
     dragConnector(ref);
-    const label = `${definition.label}${definition.beta ? ' (BETA)' : ''}`;
+    const badge = getCubeNodeBadge(definition);
+    const label = `${definition.label}${badge ? ` (${badge})` : ''}`;
     const add = (): void => {
       if (!disabled) {
-        editorState.addNode(definition.type);
+        addCubeNode(editorState, definition.type);
       }
     };
     return (
@@ -95,9 +119,11 @@ const CubePaletteItem = observer(
             ? READ_ONLY_CUBE_TITLE
             : otherKind
               ? OTHER_SOURCE_KIND_TITLE
-              : collapsed
-                ? `${label}: ${describeItem(definition)}`
-                : describeItem(definition)
+              : databaseProblem !== undefined
+                ? databaseProblem
+                : collapsed
+                  ? `${label}: ${describeItem(definition)}`
+                  : describeItem(definition)
         }
         onClick={add}
         onKeyDown={(event) => {
@@ -115,9 +141,9 @@ const CubePaletteItem = observer(
         {!collapsed && (
           <span className="min-w-0 flex-1 truncate">{definition.label}</span>
         )}
-        {!collapsed && definition.beta && (
+        {!collapsed && badge && (
           <span className="shrink-0 rounded-sm bg-[var(--color-accent)] px-1 text-xs font-medium text-[var(--color-text-on-accent)]">
-            BETA
+            {badge}
           </span>
         )}
       </div>

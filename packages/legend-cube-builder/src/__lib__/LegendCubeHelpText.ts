@@ -17,16 +17,23 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  Difference,
   IngestDatasetSource,
   Distinct,
   Drop,
+  ExpressionFilter,
+  Extend,
   Filter,
+  FunctionSource,
   Group,
   Join,
   Limit,
+  Partition,
+  Pivot,
   RelationalTableSource,
   Rename,
   Restrict,
+  ServiceSource,
   Slice,
   Sort,
   UnknownNode,
@@ -39,23 +46,41 @@ import {
 
 export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [RelationalTableSource.TYPE]: 'Sources data from relational database table.',
+  /** Added by Cube: the original's PURE Native Function source (PLAN §6.5) */
+  [FunctionSource.TYPE]:
+    'Sources data from a function of the model that returns a relation, called with a value for each parameter.',
   /** Added by Cube: the original has no data product source (PLAN §6.8) */
   [DataProductAccessPointSource.TYPE]:
     'Sources data from an access point of a deployed data product.',
   /** Added by Cube: the original has no ingest data set source (PLAN §6.7) */
   [IngestDatasetSource.TYPE]:
     'Sources data from a data set of a deployed ingest definition.',
+  /** Added by Cube: the original's service source is read another way, still to come (PLAN §6.4) */
+  [ServiceSource.TYPE]:
+    "Sources data from a deployed service. In progress: Cube can't read services yet.",
   [Concat.TYPE]:
     'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
+  [Difference.TYPE]:
+    'Compares numeric values of specified columns from two previous data sets.',
   [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',
   [Drop.TYPE]:
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
+  [Extend.TYPE]:
+    'Extends outgoing data set with new columns produced by expressions.',
   [Filter.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
+  /** Added by Cube: the original has no filter by expression (PLAN §11.11) */
+  [ExpressionFilter.TYPE]:
+    'Reduces the number of rows in the previous data set, keeping only rows for which the expression is true.',
   [Group.TYPE]:
     'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
+  /** Added by Cube: the original has pivot only in the grid (PLAN §11.12) */
+  [Pivot.TYPE]:
+    'Turns the values of a column of the previous data set into columns: a row for each combination of the row columns that has a picked value, and a column for each picked value, holding its aggregate.',
   [Join.TYPE]:
     'Joins two previous data sets using specified columns as join keys.',
+  [Partition.TYPE]:
+    'Adds new columns with outputs of window functions for optional window partition and order.',
   [Limit.TYPE]:
     'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
   [Rename.TYPE]:

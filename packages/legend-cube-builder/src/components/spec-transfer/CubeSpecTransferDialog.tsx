@@ -23,10 +23,14 @@ import {
   ModalHeader,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_SPEC_TRANSFER_MODE } from '../../stores/CubeSpecTransferState.js';
+
+/** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.JSON` */
+const JSON_LANGUAGE = 'json';
 
 const TEXT_AREA_CLASS_NAME =
   'h-80 w-full resize-none rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] p-1 font-mono text-sm text-[var(--color-text-primary)]';
@@ -52,7 +56,7 @@ export const CubeSpecTransferDialog = observer(
         <Modal darkMode={darkMode} className="w-[720px] max-w-full">
           <ModalHeader>
             <div className="modal__title">
-              {isExport ? 'Export spec (dev)' : 'Import spec (dev)'}
+              {isExport ? 'Export spec' : 'Import spec'}
             </div>
           </ModalHeader>
           <PanelLoadingIndicator isLoading={transfer.isReadingFile} />
@@ -60,12 +64,20 @@ export const CubeSpecTransferDialog = observer(
             <div className="flex flex-col gap-2">
               {isExport ? (
                 transfer.exportText !== undefined && (
-                  <textarea
-                    className={TEXT_AREA_CLASS_NAME}
+                  // a code editor, so each object and list folds from the gutter
+                  <div
+                    className="h-80 w-full overflow-hidden rounded-sm border border-[var(--color-border-default)]"
                     aria-label="Cube spec"
-                    readOnly={true}
-                    value={transfer.exportText}
-                  />
+                  >
+                    <CodeEditor
+                      inputValue={transfer.exportText}
+                      language={JSON_LANGUAGE}
+                      isReadOnly={true}
+                      hideMinimap={true}
+                      hideActionBar={true}
+                      extraEditorOptions={{ scrollBeyondLastLine: false }}
+                    />
+                  </div>
                 )
               ) : (
                 <>

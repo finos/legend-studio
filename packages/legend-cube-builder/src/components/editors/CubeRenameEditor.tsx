@@ -18,7 +18,10 @@ import { clsx, TimesIcon } from '@finos/legend-art';
 import { type Schema, validateRenameMapping } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { COLUMN_NAME_RULES_HINT } from '../../__lib__/LegendCubeLabels.js';
+import {
+  COLUMN_NAME_RULES_HINT,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import {
   type CubeRenameRow,
   CubeRenameDraft,
@@ -109,7 +112,7 @@ export const CubeRenameEditor = observer((props: CubeNodeEditorProps) => {
   const canAddRow = !readOnly && draft.rows.length < schema.columns.length;
   return (
     <div className="flex flex-col gap-2 text-base">
-      <ul aria-label="Column renames" className="max-h-80 overflow-auto">
+      <ul aria-label="Column renames">
         {draft.rows.map((row, index) => (
           <CubeRenameRowEditor
             key={row.key}
@@ -125,9 +128,11 @@ export const CubeRenameEditor = observer((props: CubeNodeEditorProps) => {
       <div>
         <CubeButton
           title={
-            canAddRow
-              ? 'Add a column to rename'
-              : 'Every column of the input already has a row'
+            readOnly
+              ? READ_ONLY_CUBE_TITLE
+              : canAddRow
+                ? 'Add a column to rename'
+                : 'Every column of the input already has a row'
           }
           disabled={!canAddRow}
           onClick={() => draft.addRow()}

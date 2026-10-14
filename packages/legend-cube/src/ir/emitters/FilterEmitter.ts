@@ -15,8 +15,10 @@
  */
 
 import {
+  FILTER_OPERATOR_DESCRIPTIONS,
   FilterOperator,
   getNegatedOperator,
+  hasPatternWildcard,
   hasUnescapedPatternCharacter,
   NEGATIVE_OPERATORS,
 } from '../../filter/FilterOperator.js';
@@ -29,6 +31,7 @@ import {
   isFilterValueList,
   type NotFilter,
 } from '../../filter/FilterTree.js';
+import { MESSAGE_FILTER_VALUE_WILDCARD } from '../../messages/CubeMessages.js';
 import type { Filter } from '../../nodes/transforms/Filter.js';
 import type { Schema } from '../../schema/Schema.js';
 import type { CubeType } from '../../types/CubeType.js';
@@ -45,6 +48,7 @@ import {
   literal,
   type RelationExpr,
 } from '../CubeIR.js';
+import { hasNoLikeEscape } from '../CubeDialects.js';
 import { type EmitContext, originOf } from '../EmitContext.js';
 
 /** The variable of the filter lambda; columns are always properties of it, so names never collide */
@@ -151,6 +155,20 @@ export const emitFilter = (
         ) {
           throw new Error(
             `Filter "${node.id}" has a backslash in a pattern, which the engine would misread`,
+          );
+        }
+        // as the editor refuses it, once it knows the database (PLAN §11.11)
+        const { databaseType } = context;
+        if (
+          value.kind === 'string' &&
+          hasNoLikeEscape(databaseType) &&
+          hasPatternWildcard(operator, value.value)
+        ) {
+          throw new Error(
+            MESSAGE_FILTER_VALUE_WILDCARD(
+              FILTER_OPERATOR_DESCRIPTIONS[rule.operator],
+              databaseType,
+            ),
           );
         }
         return func(

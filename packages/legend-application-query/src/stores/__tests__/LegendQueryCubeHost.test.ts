@@ -89,13 +89,18 @@ describe('Legend Query as the Cube host', () => {
       typeLambdas: jest.fn<CubeEngine['typeLambdas']>(),
       execute: jest.fn<CubeEngine['execute']>(),
       renderPure: jest.fn<CubeEngine['renderPure']>(),
+      parseExpression: jest.fn<CubeEngine['parseExpression']>(),
+      planLambda: jest.fn<CubeEngine['planLambda']>(),
+      exportCsv: jest.fn<CubeEngine['exportCsv']>(),
     };
     const host = new LegendQueryCubeHost(applicationStore, engine);
     expect(host.applicationStore).toBe(applicationStore);
     expect(host.engine).toBe(engine);
     expect(host.modelCatalog.models).toBe(BUNDLED_MODELS);
     expect(host.modelCatalog.models.map((model) => model.label)).toEqual([
-      'Northwind (Cube fixture)',
+      'Northwind',
+      'Sports',
+      'Trades',
     ]);
     // the catalog reads models through the host's engine
     const [northwind] = host.modelCatalog.models;
@@ -407,6 +412,31 @@ describe('Legend Query as the Cube host', () => {
     const url = String(guaranteeNonNullable(fetchSpy.mock.calls[0])[0]);
     expect(url).toMatch(
       /^https:\/\/explorer-engine\.test\/pure\/v1\/utilities\/database\/schemaExploration/u,
+    );
+    expect(trace).toHaveBeenCalledTimes(1);
+    expect(trace.mock.calls[0]?.[2]).toBe(url);
+  });
+
+  test("Lists services from the registry of Query's engine server, traced by Query's tracer", async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () =>
+        Promise.reject(new Error('No engine server in tests')),
+      );
+    const applicationStore = createApplicationStore({
+      engine: { url: 'https://service-engine.test' },
+    });
+    const trace = jest.spyOn(applicationStore.tracerService, 'createTrace');
+    const { serviceCatalog } = new LegendQueryCubeHost(applicationStore);
+    // nothing is read until the Service tab opens
+    expect(fetchSpy).not.toHaveBeenCalled();
+    await expect(serviceCatalog.listServices()).rejects.toThrow(
+      'No engine server in tests',
+    );
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const url = String(guaranteeNonNullable(fetchSpy.mock.calls[0])[0]);
+    expect(url).toBe(
+      'https://service-engine.test/service/v1/list/detailsFromCache',
     );
     expect(trace).toHaveBeenCalledTimes(1);
     expect(trace.mock.calls[0]?.[2]).toBe(url);

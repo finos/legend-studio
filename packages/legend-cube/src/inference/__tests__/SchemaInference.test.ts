@@ -34,6 +34,7 @@ import {
   ERR_INCOMPLETE,
   ERR_OTHER,
   ERR_SCHEMAS,
+  ERR_TYPING,
   MESSAGE_DIFFERENT_DATABASES,
   MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
 } from '../../messages/CubeMessages.js';
@@ -47,6 +48,7 @@ import {
   buildSchemasAndValidity,
   isIncompleteError,
   isSchemasError,
+  isTypingError,
 } from '../SchemaInference.js';
 
 const edge = (s: string, t: string, port = 'tds'): Connection =>
@@ -209,24 +211,24 @@ describe(unitTest('Schema inference'), () => {
       [
         ORDERS,
         CUSTOMERS,
-        new UnknownNode('pivot101', 2),
+        new UnknownNode('future101', 2),
         new TestUnaryNode('n'),
       ],
       [
-        edge('orders', 'pivot101', 'in0'),
-        edge('customers', 'pivot101', 'in1'),
-        edge('pivot101', 'n'),
+        edge('orders', 'future101', 'in0'),
+        edge('customers', 'future101', 'in1'),
+        edge('future101', 'n'),
       ],
       'n',
     );
-    expect(query.getInputIds('pivot101')).toEqual(['orders', 'customers']);
+    expect(query.getInputIds('future101')).toEqual(['orders', 'customers']);
     const result = buildSchemasAndValidity(query);
-    expect(result.validity.get('pivot101')).toEqual([ERR_OTHER]);
+    expect(result.validity.get('future101')).toEqual([ERR_OTHER]);
     expect(result.validity.get('n')).toEqual([ERR_SCHEMAS]);
     // an empty synthetic port makes it incomplete, like any node
     expect(
       buildSchemasAndValidity(query.remove('customers')).validity.get(
-        'pivot101',
+        'future101',
       ),
     ).toEqual([ERR_INCOMPLETE]);
   });
@@ -236,6 +238,9 @@ describe(unitTest('Schema inference'), () => {
     expect(isSchemasError(ERR_INCOMPLETE)).toBe(false);
     expect(isIncompleteError(ERR_INCOMPLETE)).toBe(true);
     expect(isIncompleteError(ERR_OTHER)).toBe(false);
+    // a node waiting for the engine is pending, not invalid (PLAN §11.7)
+    expect(isTypingError(ERR_TYPING)).toBe(true);
+    expect(isTypingError(ERR_SCHEMAS)).toBe(false);
   });
 });
 

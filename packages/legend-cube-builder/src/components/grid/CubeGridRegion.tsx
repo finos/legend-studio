@@ -15,7 +15,6 @@
  */
 
 import { PanelLoadingIndicator } from '@finos/legend-art';
-import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { EXECUTE_SHORTCUT_LABEL } from '../../__lib__/LegendCubeCommand.js';
@@ -23,6 +22,7 @@ import { getCubeWarehouseErrorHint } from '../../__lib__/LegendCubeDataProductLa
 import {
   CUBE_PENDING_LABEL,
   formatDisabledReasons,
+  getLevelTruncationMessage,
   getRowLimitError,
   getTruncationMessage,
   ROW_LIMIT_WARNING_THRESHOLD,
@@ -32,9 +32,17 @@ import {
   CubeDataProductRunErrorKind,
   type CubeDataProductRuntimeState,
 } from '../../stores/CubeDataProductRuntimeState.js';
+import type { CubeEngineError } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { CubeButton } from '../CubeButton.js';
+import { CubeGridMode } from '../../stores/CubeGridState.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
+import { CubeColumnFormatDialog } from './CubeColumnFormatDialog.js';
+import { CubeDrilldownBar } from './CubeDrilldownBar.js';
+import { CubeSqlDialog } from './CubeSqlDialog.js';
+import { CubeRunStatsPanel } from './CubeRunStatsPanel.js';
+import { CubeServerSideGrid } from './CubeServerSideGrid.js';
 import { formatDuration } from './CubeGridValues.js';
 
 /** The first line of an error is shown, at most this long; the rest is under Details */
@@ -89,22 +97,57 @@ const CubeRowLimitInput = observer(
   },
 );
 
+/** Server-side or local: how the grid shows the run (spec §12.1, PLAN §11.10) */
+const CubeGridModeToggle = observer(
+  (props: { editorState: CubeEditorState }) => {
+    const { grid } = props.editorState;
+    const option = (mode: CubeGridMode, label: string, title: string) => (
+      <button
+        type="button"
+        className={`h-6 px-2 text-base ${
+          grid.mode === mode
+            ? 'bg-[var(--color-bg-selected)] font-medium text-[var(--color-text-primary)]'
+            : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]'
+        }`}
+        aria-pressed={grid.mode === mode}
+        title={title}
+        onClick={() => grid.setMode(mode)}
+      >
+        {label}
+      </button>
+    );
+    return (
+      <div
+        className="flex overflow-hidden rounded-sm border border-[var(--color-border-default)]"
+        role="group"
+        aria-label="Grid mode"
+      >
+        {option(
+          CubeGridMode.SERVER_SIDE,
+          'Server-side',
+          'Each sort and drill-down level runs on the engine, over every row of the query',
+        )}
+        {option(
+          CubeGridMode.LOCAL,
+          'Local',
+          "The run's rows, grouped, pivoted and filtered in the browser",
+        )}
+      </div>
+    );
+  },
+);
+
 const CubeGridToolbar = observer(
   (props: {
     editorState: CubeEditorState;
-    showSql: boolean;
-    onToggleSql: () => void;
+    onShowSql: () => void;
+    showRuns: boolean;
+    onToggleRuns: () => void;
   }) => {
-    const { editorState, showSql, onToggleSql } = props;
-    const { execution, host } = editorState;
-    const { applicationStore } = host;
+    const { editorState, onShowSql, showRuns, onToggleRuns } = props;
+    const { execution } = editorState;
     const { result } = execution;
     const disabledReasons = execution.disabledReasons;
-    const execute = (): void => {
-      flowResult(execution.execute()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
     return (
       <div
         className="flex h-8 shrink-0 items-center gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2"
@@ -123,12 +166,14 @@ const CubeGridToolbar = observer(
                 ? `${formatDisabledReasons(disabledReasons)}\n(${EXECUTE_SHORTCUT_LABEL})`
                 : `Run the query up to the selected node (${EXECUTE_SHORTCUT_LABEL})`
             }
-            onClick={execute}
+            // the node editor's edits apply first, so they run (spec §17.5)
+            onClick={() => editorState.executeEdited()}
           >
             Execute
           </CubeButton>
         )}
         <CubeRowLimitInput editorState={editorState} />
+        <CubeGridModeToggle editorState={editorState} />
         {execution.isRunning && (
           <span className="text-base text-[var(--color-text-secondary)]">
             {CUBE_PENDING_LABEL.EXECUTING_QUERY}
@@ -152,52 +197,49 @@ const CubeGridToolbar = observer(
                 {getTruncationMessage(result.rowLimit)}
               </span>
             )}
+            {editorState.grid.isServerSide &&
+              editorState.grid.hasLimitedLevel && (
+                <span className="text-base text-[var(--color-status-warn)]">
+                  {getLevelTruncationMessage(result.rowLimit)}
+                </span>
+              )}
+            {editorState.export.isExporting && (
+              <>
+                <span className="text-base text-[var(--color-text-secondary)]">
+                  {CUBE_PENDING_LABEL.EXPORTING_CSV}
+                </span>
+                <CubeButton
+                  title="Stop the export"
+                  onClick={() => editorState.export.stop()}
+                >
+                  Stop export
+                </CubeButton>
+              </>
+            )}
+            {editorState.grid.isServerSide && editorState.grid.fetching > 0 && (
+              <span className="text-base text-[var(--color-text-secondary)]">
+                {CUBE_PENDING_LABEL.FETCHING_ROWS}
+              </span>
+            )}
             {result.sql.length > 0 && (
-              <CubeButton aria-expanded={showSql} onClick={onToggleSql}>
-                {showSql ? 'Hide SQL' : 'Show SQL'}
+              <CubeButton aria-haspopup="dialog" onClick={onShowSql}>
+                Show SQL
               </CubeButton>
             )}
           </>
         )}
+        <span className="flex-1" />
+        <CubeButton
+          aria-expanded={showRuns}
+          title="The latest runs, fetches and exports, with their SQL"
+          onClick={onToggleRuns}
+        >
+          {`Runs (${editorState.runStats.entries.length})`}
+        </CubeButton>
       </div>
     );
   },
 );
-
-/** The SQL the run's database ran, with Copy */
-const CubeSqlPanel = observer((props: { editorState: CubeEditorState }) => {
-  const { editorState } = props;
-  const { applicationStore } = editorState.host;
-  const sql = editorState.execution.result?.sql ?? [];
-  if (!sql.length) {
-    return null;
-  }
-  const copySql = (): void => {
-    applicationStore.clipboardService
-      .copyTextToClipboard(sql.join('\n\n'))
-      .catch(applicationStore.alertUnhandledError);
-  };
-  return (
-    <div
-      className="flex max-h-40 shrink-0 gap-2 overflow-auto border-b border-[var(--color-border-default)] p-2"
-      data-testid={LEGEND_CUBE_TEST_ID.SQL_PANEL}
-    >
-      <div className="min-w-0 flex-1">
-        {sql.map((statement, index) => (
-          <pre
-            // statements hold no state, and the same one may run twice
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            className="whitespace-pre-wrap font-mono text-sm"
-          >
-            {statement}
-          </pre>
-        ))}
-      </div>
-      <CubeButton onClick={copySql}>Copy SQL</CubeButton>
-    </div>
-  );
-});
 
 /**
  * On a data product cube, what to do about a run refused for its warehouse,
@@ -236,11 +278,8 @@ const CubeDataProductRunErrorHelp = observer(
 );
 
 const CubeExecutionError = observer(
-  (props: { editorState: CubeEditorState }) => {
-    const error = props.editorState.execution.error;
-    if (!error) {
-      return null;
-    }
+  (props: { editorState: CubeEditorState; error: CubeEngineError }) => {
+    const { error } = props;
     const isCut = error.firstLine.length > MAX_ERROR_LINE_LENGTH;
     const firstLine = isCut
       ? `${error.firstLine.slice(0, MAX_ERROR_LINE_LENGTH)}…`
@@ -275,12 +314,73 @@ const CubeExecutionError = observer(
   },
 );
 
+/**
+ * The run's rows as the grid's mode shows them: in server-side mode built
+ * anew for each run and each drill-down, with a fetch's error above it
+ */
+const CubeRunGrid = observer(
+  (props: {
+    editorState: CubeEditorState;
+    result: CubeExecutionResult;
+    darkMode: boolean;
+  }) => {
+    const { editorState, result, darkMode } = props;
+    const { grid } = editorState;
+    const exportError = editorState.export.error && (
+      <CubeExecutionError
+        editorState={editorState}
+        error={editorState.export.error}
+      />
+    );
+    if (!grid.isServerSide) {
+      return (
+        <div className="flex h-full flex-col">
+          {exportError}
+          <div className="min-h-0 flex-1">
+            <CubeResultGrid
+              key={result.id}
+              editorState={editorState}
+              result={result}
+              presentation={editorState.document.meta.presentation}
+              darkMode={darkMode}
+            />
+          </div>
+        </div>
+      );
+    }
+    const drilldown = editorState.document.meta.drilldown;
+    return (
+      <div className="flex h-full flex-col">
+        <CubeDrilldownBar editorState={editorState} />
+        {exportError}
+        {grid.fetchError && (
+          <CubeExecutionError
+            editorState={editorState}
+            error={grid.fetchError}
+          />
+        )}
+        <div className="min-h-0 flex-1">
+          <CubeServerSideGrid
+            key={`${result.id}:${JSON.stringify(drilldown ?? null)}`}
+            editorState={editorState}
+            result={result}
+            levels={grid.drilldown?.columns ?? []}
+            presentation={editorState.document.meta.presentation}
+            darkMode={darkMode}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
 /** The results: Execute, the row limit and the run's stats above the grid (PLAN §9) */
 export const CubeGridRegion = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
     const { execution, host } = editorState;
     const [showSql, setShowSql] = useState(false);
+    const [showRuns, setShowRuns] = useState(false);
     const darkMode =
       !host.applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     return (
@@ -291,18 +391,26 @@ export const CubeGridRegion = observer(
         <PanelLoadingIndicator isLoading={execution.isRunning} />
         <CubeGridToolbar
           editorState={editorState}
-          showSql={showSql}
-          onToggleSql={() => setShowSql(!showSql)}
+          onShowSql={() => setShowSql(true)}
+          showRuns={showRuns}
+          onToggleRuns={() => setShowRuns(!showRuns)}
         />
+        {showRuns && <CubeRunStatsPanel editorState={editorState} />}
+        <CubeColumnFormatDialog editorState={editorState} />
         {showSql && !execution.isRunning && (
-          <CubeSqlPanel editorState={editorState} />
+          <CubeSqlDialog
+            editorState={editorState}
+            onClose={() => setShowSql(false)}
+          />
         )}
         <div className="min-h-0 flex-1">
           {execution.error ? (
-            <CubeExecutionError editorState={editorState} />
+            <CubeExecutionError
+              editorState={editorState}
+              error={execution.error}
+            />
           ) : execution.result ? (
-            <CubeResultGrid
-              key={execution.result.id}
+            <CubeRunGrid
               editorState={editorState}
               result={execution.result}
               darkMode={darkMode}

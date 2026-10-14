@@ -20,14 +20,20 @@ import {
   AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
+  CalculatorIcon,
+  CodeIcon,
+  CompareIcon,
   CompressIcon,
   DataCubeIcon,
   DatabaseImportIcon,
   FilterIcon,
+  FunctionIcon,
   LayerGroupIcon,
   PackageIcon,
   PencilIcon,
   QuestionSquareIcon,
+  RobotIcon,
+  SigmaIcon,
   SortIcon,
   TableIcon,
 } from '@finos/legend-art';
@@ -38,9 +44,12 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 /** The icon each node type's icon name draws (PLAN §11.4) */
 const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   table: TableIcon,
+  function: CodeIcon,
   dataProduct: PackageIcon,
   ingest: DatabaseImportIcon,
+  service: RobotIcon,
   filter: FilterIcon,
+  expressionFilter: FunctionIcon,
   join: ArrowsJoinIcon,
   concat: LayerGroupIcon,
   limit: AlignTopIcon,
@@ -49,8 +58,12 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
   group: DataCubeIcon.TableGroupBy,
+  pivot: DataCubeIcon.TablePivot,
   rename: PencilIcon,
   sort: SortIcon,
+  difference: CompareIcon,
+  extend: CalculatorIcon,
+  partition: SigmaIcon,
 };
 
 /** The markup an icon draws */

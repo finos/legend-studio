@@ -43,6 +43,7 @@ import {
   CONCAT_CONVERT_FIX_TITLE,
   CONCAT_CONVERT_TYPES_HINT,
   CONCAT_EDITOR_TEXT,
+  CONCAT_FIX_NEEDS_CONVERT_TEXT,
   CONCAT_RENAME_FIX_TEXT,
   CONCAT_RENAME_FIX_TITLE,
   getConcatRestrictFixText,
@@ -78,7 +79,6 @@ import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeConcatDraft } from '../../../stores/editors/CubeConcatDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const P = 'meta::pure::precisePrimitives::';
@@ -237,7 +237,6 @@ const render = async (
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -1302,8 +1301,9 @@ describe('Concat editor, its Convert types setting (PLAN §11.5, Q5)', () => {
     expect(schema?.names()).toEqual(CONTACT_CITY_COUNTRY);
     expect(schema?.columns[0]?.type.fullName).toBe('String');
     expect(schema?.columns[0]?.nullable).toBe(true);
-    // the panel goes on, on the stored concat, with nothing left to apply
-    expect(editorState.nodeEditor.nodeId).toBe('concat101');
+    // Apply closes the editor (UX audit B4); opened again, it shows the stored concat
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
+    await openConcat();
     expect(
       editorState.nodeEditor.draft?.original === storedConcat(editorState),
     ).toBe(true);
@@ -1501,6 +1501,8 @@ describe('Concat editor, its Convert types setting (PLAN §11.5, Q5)', () => {
     expect(editorState.analysis.validity.get('concat101')).toEqual(
       notConvertible,
     );
+    // Apply closes the editor (UX audit B4); opened again, it shows them
+    await openConcat();
     expect(problems()).toEqual(notConvertible);
   });
 
@@ -1562,11 +1564,18 @@ describe('Concat editor, its Convert types setting (PLAN §11.5, Q5)', () => {
     async ({ fix, list, changes, query, added, inputs }) => {
       const editorState = await render(query());
       await openConcat();
-      // requiring the same types, the fix leaves the concat invalid
+      // requiring the same types, the fix leaves the concat invalid, which
+      // the editor says
       expect(within(panel()).queryByRole('list', { name: list })).toBeNull();
       expect(within(panel()).queryByRole('button', { name: fix })).toBeNull();
+      expect(
+        within(panel()).getByText(CONCAT_FIX_NEEDS_CONVERT_TEXT),
+      ).toBeDefined();
       fireEvent.click(convertTypes());
       expect(fixList(list)).toEqual(changes);
+      expect(
+        within(panel()).queryByText(CONCAT_FIX_NEEDS_CONVERT_TEXT),
+      ).toBeNull();
       expect(button(fix).disabled).toBe(false);
       const before = editorState.document.query;
       fireEvent.click(button(fix));

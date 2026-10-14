@@ -33,6 +33,7 @@ import {
   CONCAT_CONVERT_FIX_TITLE,
   CONCAT_CONVERT_TYPES_HINT,
   CONCAT_EDITOR_TEXT,
+  CONCAT_FIX_NEEDS_CONVERT_TEXT,
   CONCAT_RENAME_FIX_TEXT,
   CONCAT_RENAME_FIX_TITLE,
   CUBE_TABLE_FLAG_LABELS,
@@ -253,6 +254,16 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
             `${column.name}: ${column.type.displayName} and ${other.type.displayName} → ${converted.displayName}`,
         )
       : [];
+  // a Rename or Restrict the inputs would get only with Convert types ticked:
+  // the problems name the names or counts, never the types, so say so
+  const isFixOnceConverted =
+    !widenTypes &&
+    !rename &&
+    !restrict &&
+    !conversions.length &&
+    !untyped.length &&
+    (planConcatRename(first, second, true) !== undefined ||
+      planConcatRestrict(first, second, true) !== undefined);
   return (
     <div className="flex flex-col gap-2 text-base">
       <div className="text-[var(--color-text-secondary)]">
@@ -270,6 +281,11 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
         />
         Convert types
       </label>
+      {isFixOnceConverted && (
+        <div className="text-sm text-[var(--color-status-warn)]">
+          {CONCAT_FIX_NEEDS_CONVERT_TEXT}
+        </div>
+      )}
       <table
         aria-label="Columns by position"
         className="w-full table-fixed border-collapse"

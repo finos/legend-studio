@@ -20,6 +20,8 @@ import {
   buildCubeEngine,
   buildCubeIngestCatalog,
   buildCubeLakehouseEnvironment,
+  buildCubeProjectCatalog,
+  buildCubeServiceCatalog,
   CubeDataProductEnvironmentType,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
@@ -27,6 +29,8 @@ import {
   type CubeEngine,
   type CubeIngestCatalog,
   type CubeLakehouseServices,
+  type CubeProjectCatalog,
+  type CubeServiceCatalog,
   type CubeEngineConfig,
   type CubeHost,
   LocalModelCatalog,
@@ -136,6 +140,21 @@ export const buildLegendQueryCubeLakehouseServices = (
   };
 };
 
+/** The published projects in Query's depot, or none without a depot */
+export const buildLegendQueryCubeProjectCatalog = (
+  applicationStore: LegendQueryApplicationStore,
+): CubeProjectCatalog | undefined => {
+  const { config, tracerService } = applicationStore;
+  if (!config.depotServerUrl) {
+    return undefined;
+  }
+  const depotServerClient = new DepotServerClient({
+    serverUrl: config.depotServerUrl,
+  });
+  depotServerClient.setTracerService(tracerService);
+  return buildCubeProjectCatalog(depotServerClient);
+};
+
 /**
  * Legend Query as the host of the Cube page (PLAN §3.5): Query's engine and
  * application store, the bundled models, direct database connections read
@@ -149,12 +168,18 @@ export class LegendQueryCubeHost implements CubeHost {
   readonly connectionExplorer: CubeConnectionExplorer;
   readonly dataProductCatalog: CubeDataProductCatalog | undefined;
   readonly ingestCatalog: CubeIngestCatalog | undefined;
+  readonly projectCatalog: CubeProjectCatalog | undefined;
+  readonly serviceCatalog: CubeServiceCatalog;
 
-  /** Tests give an engine and an explorer; otherwise each is built from Query's config */
+  /**
+   * Tests give an engine, an explorer and a project catalog; otherwise each
+   * is built from Query's config
+   */
   constructor(
     applicationStore: LegendQueryApplicationStore,
     engine?: CubeEngine,
     connectionExplorer?: CubeConnectionExplorer,
+    projectCatalog?: CubeProjectCatalog,
   ) {
     this.applicationStore = applicationStore;
     const config = buildLegendQueryCubeEngineConfig(applicationStore.config);
@@ -184,5 +209,15 @@ export class LegendQueryCubeHost implements CubeHost {
     this.connectionExplorer =
       connectionExplorer ??
       buildCubeConnectionExplorer(config, applicationStore.tracerService);
+    // the published projects in Query's depot (PLAN §6.3); it reads nothing
+    // until the source dialog's Project tab opens
+    this.projectCatalog =
+      projectCatalog ?? buildLegendQueryCubeProjectCatalog(applicationStore);
+    // the services in the registry of Query's engine (PLAN §6.4), in
+    // progress; it reads nothing until the source dialog's Service tab opens
+    this.serviceCatalog = buildCubeServiceCatalog(
+      config,
+      applicationStore.tracerService,
+    );
   }
 }

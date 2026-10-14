@@ -54,7 +54,6 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
-import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -73,7 +72,6 @@ const render = async (
       <div style={{ width: 800, height: 400 }}>
         <CubeCanvas editorState={editorState} />
       </div>
-      <CubeNodeEditorPanel editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -162,9 +160,8 @@ describe('Join editor', () => {
     expect(stored.leftColumns).toEqual(['CUSTOMER_ID']);
     expect(editorState.analysis.validity.get('join101')).toEqual([]);
     expect(editorState.history).toHaveLength(1);
-    // the panel goes on, on the stored join, with nothing left to apply
-    expect(editorState.nodeEditor.draft?.original).toBe(stored);
-    expect(button('Apply').disabled).toBe(true);
+    // Apply closes the editor (UX audit B4)
+    expect(editorState.nodeEditor.nodeId).toBeUndefined();
     await waitFor(async () =>
       expect(
         (await TEST__findCanvasNode('join101')).classList.contains(
@@ -517,6 +514,16 @@ describe('Join editor, renaming the columns both inputs have', () => {
   // ORDERS and CUSTOMERS both have CUSTOMER_ID
   const sharedColumns = (): HTMLElement =>
     within(panel()).getByRole('list', { name: 'Columns in both inputs' });
+
+  test('Wraps each shared column rather than widening the editor', async () => {
+    await render(ordersJoinCustomers(['SHIP_COUNTRY'], ['COUNTRY']));
+    await openJoin();
+    const items = within(sharedColumns()).getAllByRole('listitem');
+    expect(items).toHaveLength(1);
+    items.forEach((item) =>
+      expect(item.classList.contains('break-all')).toBe(true),
+    );
+  });
 
   test('Puts a Rename before each input, as one undo step, and the join turns valid', async () => {
     const editorState = await render(

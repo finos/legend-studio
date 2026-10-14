@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.168
+
+### Patch Changes
+
+- [#5659](https://github.com/finos/legend-studio/pull/5659) [`d68ccb8`](https://github.com/finos/legend-studio/commit/d68ccb80f24b93dec798c13d82c1f5d381a15296) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's examples move from a tab of the source dialog to their own dialog, opened by an Examples button beside Add table: a grid with a card per sample dataset (which starts a new cube on it) and its example cubes (which open in place of the cube and run), with icons. Legend Art adds `TrophyIcon`.
+
 ## 7.1.167
 
 ## 7.1.166

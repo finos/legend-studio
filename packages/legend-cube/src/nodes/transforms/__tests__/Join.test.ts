@@ -116,6 +116,37 @@ describe(unitTest('Join node'), () => {
     expect(node.describe()).toBe('Join additional input');
   });
 
+  test('Describes itself by its type and key pairs once it has them, as the other nodes do', () => {
+    expect(new Join('join101').describe()).toBe('Join additional input');
+    expect(
+      new Join('join101', {
+        leftColumns: ['DESK_ID'],
+        rightColumns: ['ID'],
+      }).describe(),
+    ).toBe('Left Outer join on "DESK_ID" = "ID"');
+    expect(
+      new Join('join101', {
+        joinType: JoinType.INNER,
+        leftColumns: ['A', 'B'],
+        rightColumns: ['X', 'Y'],
+      }).describe(),
+    ).toBe('Inner join on "A" = "X", "B" = "Y"');
+    // a pair half set shows its blank side
+    expect(
+      new Join('join101', {
+        joinType: JoinType.FULL_OUTER,
+        leftColumns: ['A', ''],
+        rightColumns: ['X'],
+      }).describe(),
+    ).toBe('Full Outer join on "A" = "X", (blank) = (blank)');
+    // column names aren't user values: the redacted text is the same
+    const keyed = new Join('join101', {
+      leftColumns: ['DESK_ID'],
+      rightColumns: ['ID'],
+    });
+    expect(keyed.describeRedacted()).toBe(keyed.describe());
+  });
+
   test('Starts as a left outer join with no key columns', () => {
     const node = new Join('join101');
     expect(node.leftColumns).toEqual([]);

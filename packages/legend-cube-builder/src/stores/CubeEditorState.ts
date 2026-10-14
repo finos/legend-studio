@@ -21,7 +21,11 @@ import {
   createNodeRegistry,
   CubeDocument,
   diffSchemas,
+  dependsOnDatabaseType,
   findLostSortOrders,
+  getDatabaseProblemOfType,
+  getDatabaseProblems,
+  isTypingError,
   MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
   MESSAGE_SORT_ORDER_LOST,
@@ -30,11 +34,15 @@ import {
   type Query,
   QueryEmitter,
   type QueryNode,
+  type QueryRule,
   RelationalTableSource,
   rereadQueryFilterValues,
   type Schema,
   type SchemaInferenceResult,
+  ServiceSource,
   type SourceDefinition,
+  foldColumnName,
+  FunctionSource,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -43,10 +51,13 @@ import {
   computed,
   flow,
   flowResult,
+  type IReactionDisposer,
   makeObservable,
   observable,
+  reaction,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
+import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
@@ -67,17 +78,45 @@ import {
 } from '../__lib__/LegendCubeIngestLabels.js';
 import { isCubeDataProductModel } from '../graph-manager/CubeDataProduct.js';
 import { isCubeIngestModel } from '../graph-manager/CubeIngest.js';
+import { isCubeServiceModel } from '../graph-manager/CubeService.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeModelOutline,
+  type NodeId,
 } from '../graph-manager/CubeEngine.js';
+import {
+  CUBE_LAKEHOUSE_RUNTIME_KIND,
+  getLakehouseDatabaseType,
+} from '../graph-manager/CubeLakehouseRuntime.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
 import { recheckCubeIngestSources } from './CubeIngestRecheck.js';
+import { recheckCubeServiceSources } from './CubeServiceRecheck.js';
+import {
+  CUBE_FUNCTION_MESSAGE,
+  getFunctionDriftWarning,
+  getFunctionRecheckWarning,
+} from '../__lib__/LegendCubeFunctionLabels.js';
+import { recheckCubeFunctionSources } from './CubeFunctionRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
+import { CubeExamplesState } from './CubeExamplesState.js';
+import { CubeExportState } from './CubeExportState.js';
+import { CubeGridFetcher } from './CubeGridFetcher.js';
+import { CubeGridState } from './CubeGridState.js';
+import { CubeRunStatsState } from './CubeRunStatsState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
-import type { CubeHost } from './CubeHost.js';
+import { CubeExpressionFilterDraft } from './editors/CubeExpressionFilterDraft.js';
+import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
+import {
+  buildCubeEngineCheckRequest,
+  type CubeEngineCheckedNode,
+  createStaleCubeEngineCheckRule,
+  getCubeEngineCheckUpstream,
+  isCubeEngineCheckedNode,
+} from './CubeEngineChecks.js';
+import { getCubeExtendUpstream } from './CubeExtendTyping.js';
+import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
@@ -102,11 +141,19 @@ const isTypingText = (): boolean => {
   );
 };
 
-/** A source Cube types again to see drift: a table, or a data product's access point */
+/** Focus is in the node editor, whose shortcuts give it back to the node (PLAN §11.8) */
+const isFocusInNodeEditor = (): boolean =>
+  document.activeElement?.closest(
+    `[data-testid="${LEGEND_CUBE_TEST_ID.NODE_EDITOR}"]`,
+  ) !== null && document.activeElement !== null;
+
+/** A source Cube types again to see drift: a table, a function, an access point, an ingest data set or a service */
 type RecheckedSource =
   | RelationalTableSource
+  | FunctionSource
   | DataProductAccessPointSource
-  | IngestDatasetSource;
+  | IngestDatasetSource
+  | ServiceSource;
 
 /**
  * The state of one Cube page (PLAN §7.8). The document is immutable: every
@@ -118,11 +165,32 @@ export class CubeEditorState implements CommandRegistrar {
   readonly host: CubeHost;
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
+  /**
+   * The editor's own query rule: an Extend typed, or a Filter by Expression
+   * checked, for another input than its own waits to be checked again (PLAN
+   * §11.7, §11.11)
+   */
+  private readonly staleEngineChecks: QueryRule;
+  /**
+   * The editor's query rule for the database a node runs on: `%` or `_`
+   * given to a pattern on DuckDB (PLAN §11.11), once the model's outline
+   * tells the database
+   */
+  private readonly databaseRefusals: QueryRule;
   readonly execution: CubeExecutionState;
+  /** The latest runs, fetches and exports (spec §12.6) */
+  readonly runStats: CubeRunStatsState;
+  /** The grid's server-side levels (PLAN §11.10) */
+  readonly gridFetcher: CubeGridFetcher;
+  /** The grid's mode and its server-side levels (PLAN §11.10) */
+  readonly grid: CubeGridState;
+  /** The results' export (spec §12.5) */
+  readonly export: CubeExportState;
   /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
+  readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
   readonly nodeEditor: CubeNodeEditorState;
 
@@ -137,14 +205,31 @@ export class CubeEditorState implements CommandRegistrar {
    */
   warnings: ReadonlyMap<number, readonly string[]> = new Map();
   /**
-   * The outline of each model the cube used, loaded when an editor needs it,
-   * e.g. for the Join's 'type unknown' warning; by reference, never observed
-   * deeply
+   * The outline of each model the cube used, by the model's JSON
+   * (`modelKey`): loaded when the cube reads a table, or an editor or a run
+   * needs it, e.g. for the Join's 'type unknown' warning or the database a
+   * node runs on (PLAN §11.12); by reference, never observed deeply
    */
-  private modelOutlines: ReadonlyMap<ModelContext, CubeModelOutline> =
-    new Map();
+  private modelOutlines: ReadonlyMap<string, CubeModelOutline> = new Map();
+  /** Each model's key in `modelOutlines`, its JSON, worked out once per model object */
+  private readonly modelKeys = new WeakMap<ModelContext, string>();
+  /** The outlines on their way, by model key, so a second load waits for the first */
+  private readonly loadingOutlines = new Map<
+    string,
+    Promise<CubeModelOutline>
+  >();
   /** Sources sent to the engine to be typed again, until it answers */
   private pendingSources: ReadonlySet<QueryNode> = new Set();
+  /** Extends and Filters by Expression sent to the engine to be checked, until it answers (PLAN §11.7, §11.11) */
+  private checkingNodes: ReadonlySet<QueryNode> = new Set();
+  /** Checks the nodes that wait for the engine, whenever one does (PLAN §11.7 Q4) */
+  private readonly rechecking: IReactionDisposer;
+  /**
+   * Loads the model's outline once the cube reads a table, so the database it
+   * runs on is known before any run: some nodes are refused there, or written
+   * another way (PLAN §11.4, §11.11, §11.12)
+   */
+  private readonly outlineLoading: IReactionDisposer;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /** The palette shows icons only; kept per user, never in the cube */
@@ -160,8 +245,15 @@ export class CubeEditorState implements CommandRegistrar {
   private readonly importedOver = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
-    makeObservable<CubeEditorState, 'pendingSources' | 'modelOutlines'>(this, {
+    makeObservable<
+      CubeEditorState,
+      'pendingSources' | 'modelOutlines' | 'checkingNodes'
+    >(this, {
       pendingSources: observable.ref,
+      checkingNodes: observable.ref,
+      nodesToCheck: computed,
+      isCheckingExpressions: computed,
+      checkExpressions: flow,
       modelOutlines: observable.ref,
       modelOutline: computed,
       loadModelOutline: flow,
@@ -177,10 +269,15 @@ export class CubeEditorState implements CommandRegistrar {
       analysis: computed,
       emitter: computed,
       canUndo: computed,
+      hasEditsToApply: computed,
+      executeEdited: action,
+      undoEdited: action,
       isDialogOpen: computed,
       applyDocument: action,
       undo: action,
       importDocument: action,
+      startNewCube: action,
+      isEmptyCube: computed,
       reresolveSources: flow,
       refreshSource: flow,
       applyQuery: action,
@@ -196,9 +293,23 @@ export class CubeEditorState implements CommandRegistrar {
       setHostIssue: action,
       clearHostIssues: action,
       setRowLimit: action,
+      setColumnWidth: action,
     });
     this.host = host;
     this.registry = createNodeRegistry();
+    this.staleEngineChecks = createStaleCubeEngineCheckRule(
+      this.registry,
+      () => this.document.context?.model,
+    );
+    this.databaseRefusals = (query) =>
+      new Map(
+        query.nodes
+          .map((node): [string, string[]] => [
+            node.id,
+            this.getNodeDatabaseProblems(query, node),
+          ])
+          .filter(([, problems]) => problems.length > 0),
+      );
     this.document = document;
     const storedLimit = host.applicationStore.userDataService.getNumericValue(
       LEGEND_CUBE_USER_DATA_KEY.ROW_LIMIT,
@@ -211,19 +322,58 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
+    this.runStats = new CubeRunStatsState();
+    this.gridFetcher = new CubeGridFetcher(this);
+    this.grid = new CubeGridState(this);
+    this.export = new CubeExportState(this);
     this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
+    this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
+    this.rechecking = reaction(
+      () => this.nodesToCheck,
+      (waiting) => {
+        if (waiting.length) {
+          flowResult(this.checkExpressions(waiting)).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      { fireImmediately: true },
+    );
+    // the model, while the cube reads a table: another model loads too
+    this.outlineLoading = reaction(
+      () =>
+        this.document.query.nodes.some(
+          (node) => node instanceof RelationalTableSource,
+        )
+          ? this.document.context?.model
+          : undefined,
+      (model) => {
+        if (model !== undefined) {
+          flowResult(this.loadModelOutline(model)).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      { fireImmediately: true },
+    );
   }
 
-  /** Each node's schema and errors, query-level rules included, as the emitter sees them */
+  /**
+   * Each node's schema and errors, query-level rules included, as the
+   * emitter sees them; an Extend or a Filter by Expression checked for
+   * another input than its own waiting, and a filter its database would
+   * misread refused, which only the editor can tell
+   */
   get analysis(): SchemaInferenceResult {
-    return buildSchemasAndValidity(
-      this.document.query,
-      this.registry.queryRules,
-    );
+    return buildSchemasAndValidity(this.document.query, [
+      ...this.registry.queryRules,
+      this.staleEngineChecks,
+      this.databaseRefusals,
+    ]);
   }
 
   get emitter(): QueryEmitter {
@@ -240,6 +390,141 @@ export class CubeEditorState implements CommandRegistrar {
   /** The source is being typed again by the engine, e.g. after an import */
   isPendingSource(node: QueryNode): boolean {
     return this.pendingSources.has(node);
+  }
+
+  /**
+   * The Extends and Filters by Expression of the cube shown that wait for
+   * the engine, their input valid, and that aren't being checked (PLAN §11.7,
+   * §11.11): new expressions, or an input that changed
+   */
+  get nodesToCheck(): readonly CubeEngineCheckedNode[] {
+    const { validity } = this.analysis;
+    return this.document.query.nodes.filter(
+      (node): node is CubeEngineCheckedNode =>
+        isCubeEngineCheckedNode(node) &&
+        !this.checkingNodes.has(node) &&
+        (validity.get(node.id) ?? []).some(isTypingError),
+    );
+  }
+
+  /** The cube shown has expressions the engine is checking: an Extend's columns, a filter's condition */
+  get isCheckingExpressions(): boolean {
+    return this.document.query.nodes.some((node) =>
+      this.checkingNodes.has(node),
+    );
+  }
+
+  /** The node waits for the engine to check it, or is being checked: an Extend or a Filter by Expression (PLAN §11.7, §11.11) */
+  isTypingNode(node: QueryNode): boolean {
+    return (
+      this.checkingNodes.has(node) ||
+      (this.analysis.validity.get(node.id) ?? []).some(isTypingError)
+    );
+  }
+
+  /**
+   * Checks expressions with the engine, in one call, outside the undo history
+   * (PLAN §11.7 Q4, §11.11): an Extend's columns typed, a Filter by
+   * Expression's condition checked, each for the input it has now, after its
+   * input's relation, as typing types any node. The check goes in place of
+   * the very nodes sent, in the cube shown and the undo snapshots that give
+   * the engine the same input; one the user changed meanwhile is left to
+   * check again. Each check records the input as the engine was given it
+   * (`upstream`). A check the engine couldn't give says why; when the engine
+   * can't be reached, a check still current for the input is kept, with a
+   * warning, as a source's saved columns are.
+   */
+  *checkExpressions(
+    nodes: readonly CubeEngineCheckedNode[],
+  ): GeneratorFn<void> {
+    const { context, query } = this.document;
+    if (!context) {
+      return;
+    }
+    const { schemas } = this.analysis;
+    const emitter = new QueryEmitter(query, this.registry);
+    const requests = nodes.flatMap((node) => {
+      const [inputId] = query.getInputIds(node.id);
+      const input = inputId === undefined ? undefined : schemas.get(inputId);
+      if (
+        query.getNode(node.id) !== node ||
+        this.checkingNodes.has(node) ||
+        !input
+      ) {
+        return [];
+      }
+      const request = buildCubeEngineCheckRequest(
+        query,
+        node,
+        input,
+        getCubeExtendUpstream(emitter, node.id, context.model),
+        this.registry,
+      );
+      return request ? [request] : [];
+    });
+    if (!requests.length) {
+      return;
+    }
+    const sent: readonly QueryNode[] = requests.map(({ node }) => node);
+    this.checkingNodes = new Set([...this.checkingNodes, ...sent]);
+    let answers: ReadonlyMap<NodeId, Schema | CubeEngineError>;
+    try {
+      answers = (yield this.host.engine.typeLambdas(
+        context.model,
+        new Map(requests.flatMap(({ lambdas }) => [...lambdas])),
+      )) as ReadonlyMap<NodeId, Schema | CubeEngineError>;
+    } catch (error) {
+      const failure =
+        error instanceof CubeEngineError
+          ? error
+          : new CubeEngineError(
+              CubeEngineErrorKind.NETWORK,
+              error instanceof Error ? error.message : String(error),
+            );
+      answers = new Map(
+        requests.flatMap(({ lambdas }) =>
+          [...lambdas.keys()].map((key) => [key, failure] as const),
+        ),
+      );
+    } finally {
+      this.checkingNodes = new Set(
+        [...this.checkingNodes].filter((node) => !sent.includes(node)),
+      );
+    }
+    // a check that comes back the same leaves its node, and the query, alone
+    const warnings = new Map(this.warnings);
+    const replacements = new Map<QueryNode, QueryNode>(
+      requests.flatMap((request) => {
+        const { node } = request;
+        const outcome = request.read(answers);
+        if (outcome.keptWarning !== undefined) {
+          warnings.set(node.key, [outcome.keptWarning]);
+          return [];
+        }
+        warnings.delete(node.key);
+        return outcome.node ? [[node, outcome.node] as const] : [];
+      }),
+    );
+    this.warnings = warnings;
+    // an undo snapshot whose input differs keeps the check it had
+    const emitters = new Map<Query, QueryEmitter>([[query, emitter]]);
+    this.replaceOutsideHistory(replacements, (snapshot, resolved) => {
+      const upstream = getCubeEngineCheckUpstream(
+        resolved as CubeEngineCheckedNode,
+      );
+      if (upstream === undefined) {
+        return true;
+      }
+      let snapshotEmitter = emitters.get(snapshot);
+      if (!snapshotEmitter) {
+        snapshotEmitter = new QueryEmitter(snapshot, this.registry);
+        emitters.set(snapshot, snapshotEmitter);
+      }
+      return (
+        getCubeExtendUpstream(snapshotEmitter, resolved.id, context.model) ===
+        upstream
+      );
+    });
   }
 
   /**
@@ -308,17 +593,31 @@ export class CubeEditorState implements CommandRegistrar {
     return model === undefined ? undefined : this.getModelOutline(model);
   }
 
+  /**
+   * A model's key for its outline: its JSON, so a cube imported on the same
+   * model, a new object with the same content, shares the outline loaded
+   */
+  private modelKey(model: ModelContext): string {
+    let key = this.modelKeys.get(model);
+    if (key === undefined) {
+      key = JSON.stringify(model);
+      this.modelKeys.set(model, key);
+    }
+    return key;
+  }
+
   /** The outline of a model, once loaded */
   getModelOutline(model: ModelContext): CubeModelOutline | undefined {
-    return this.modelOutlines.get(model);
+    return this.modelOutlines.get(this.modelKey(model));
   }
 
   /**
    * The database type a run of the query up to the node needs, with the
-   * model's runtime (PLAN §11.4), from the model's outline once it is loaded
-   * (`loadModelOutline`): the type of the runtime's connections to the
-   * databases the node reads. None without an outline, which writes every
-   * operation the native way.
+   * model's runtime (PLAN §11.4): for a data product or ingest cube, the
+   * database its lakehouse runtime routes to (§11.12); else, from the model's
+   * outline once it is loaded (`loadModelOutline`), the type of the runtime's
+   * connections to the databases the node reads. None without an outline,
+   * which writes every operation the native way.
    */
   getRunDatabaseType(
     query: Query,
@@ -326,6 +625,9 @@ export class CubeEditorState implements CommandRegistrar {
     model: ModelContext,
     runtime: string,
   ): string | undefined {
+    if (isCubeDataProductModel(model) || isCubeIngestModel(model)) {
+      return getLakehouseDatabaseType(CUBE_LAKEHOUSE_RUNTIME_KIND);
+    }
     const outline = this.getModelOutline(model);
     if (!outline) {
       return undefined;
@@ -335,6 +637,11 @@ export class CubeEditorState implements CommandRegistrar {
       const node = query.getNode(id);
       if (node instanceof RelationalTableSource) {
         databases.add(node.database);
+      } else if (node instanceof FunctionSource) {
+        // a function reads what Cube can't see: any database of the runtime
+        outline.runtimes
+          .find(({ path }) => path === runtime)
+          ?.connections?.forEach(({ storePath }) => databases.add(storePath));
       }
       query
         .getInputIds(id)
@@ -345,30 +652,85 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Loads the outline of a model, the cube's by default, once per model. It
-   * only adds warnings and database types, so a model that fails to load
-   * shows none and runs every operation the native way.
+   * A node's problems on the database the query up to it runs on, with the
+   * cube's runtime (`getRunDatabaseType`): a Pivot where it can't run (PLAN
+   * §11.12); a filter giving `%` or `_` to a pattern on DuckDB, which would
+   * match them as wildcards (§11.11). None when the database isn't known.
+   */
+  getNodeDatabaseProblems(query: Query, node: QueryNode): string[] {
+    const { context } = this.document;
+    const runtime = context?.runtime;
+    if (!context || runtime === undefined || !dependsOnDatabaseType(node)) {
+      return [];
+    }
+    return getDatabaseProblems(
+      node,
+      this.getRunDatabaseType(query, node.id, context.model, runtime),
+    );
+  }
+
+  /**
+   * Why a node of the type can't be added after the node, on the database the
+   * query up to that node runs on (PLAN §11.12): a Pivot where it can't run.
+   * `undefined` when it can, or the database isn't known.
+   */
+  getAddDatabaseProblem(
+    type: string,
+    afterId: string | undefined,
+  ): string | undefined {
+    const { context, query } = this.document;
+    const runtime = context?.runtime;
+    if (!context || runtime === undefined || afterId === undefined) {
+      return undefined;
+    }
+    return getDatabaseProblemOfType(
+      type,
+      this.getRunDatabaseType(query, afterId, context.model, runtime),
+    );
+  }
+
+  /**
+   * Loads the outline of a model, the cube's by default, once per model: a
+   * load already on its way is waited for, not started again, e.g. a run's
+   * while the cube's opening load is still out. It only adds warnings,
+   * database types and a database's refusals (PLAN §11.11, §11.12), so a
+   * model that fails to load shows none and runs every operation the native
+   * way.
    */
   *loadModelOutline(
     model: ModelContext | undefined = this.document.context?.model,
   ): GeneratorFn<void> {
-    if (model === undefined || this.modelOutlines.has(model)) {
+    if (model === undefined) {
       return;
     }
+    const key = this.modelKey(model);
+    if (this.modelOutlines.has(key)) {
+      return;
+    }
+    let loading = this.loadingOutlines.get(key);
+    if (!loading) {
+      loading = loadCubeModelOutline(this.host, model);
+      this.loadingOutlines.set(key, loading);
+    }
     try {
-      const outline = (yield this.host.modelCatalog.loadOutline(
-        model,
-      )) as CubeModelOutline;
-      this.modelOutlines = new Map([...this.modelOutlines, [model, outline]]);
+      const outline = (yield loading) as CubeModelOutline;
+      if (!this.modelOutlines.has(key)) {
+        this.modelOutlines = new Map([...this.modelOutlines, [key, outline]]);
+      }
     } catch {
       // no outline, no warning: nothing is blocked on it
+    } finally {
+      this.loadingOutlines.delete(key);
     }
   }
 
-  /** One of Cube's dialogs is open: the source picker, Import or Export, Show Pure */
+  /** One of Cube's dialogs is open: the source picker, Examples, the group rows' settings, Import or Export, Show Pure */
   get isDialogOpen(): boolean {
     return (
       this.sourcePicker.isOpen ||
+      this.examples.isOpen ||
+      this.grid.isSettingsShown ||
+      this.grid.formatColumn !== undefined ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen
     );
@@ -378,25 +740,95 @@ export class CubeEditorState implements CommandRegistrar {
    * The page's keyboard shortcuts, while it is open (spec §17.12). Each does
    * nothing when its button can't be used, and nothing while a Cube dialog
    * is open, since a dialog doesn't stop the app's shortcuts (user's choice,
-   * 2026-10-07). Undo leaves Ctrl+Z to a text field that has the focus.
+   * 2026-10-07), or while something opened from the node editor holds it
+   * open. Like their buttons, they finish the node editor first (PLAN §11.8):
+   * F9 runs the edited query, and Ctrl+Z undoes what finishing applied. Undo
+   * leaves Ctrl+Z to a text field that has the focus.
    */
   registerCommands(): void {
-    const { commandService, alertUnhandledError } = this.host.applicationStore;
+    const { commandService } = this.host.applicationStore;
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.EXECUTE,
       trigger: () =>
         !this.isDialogOpen &&
-        this.execution.canExecute &&
-        !this.execution.isRunning,
+        !this.nodeEditor.isHeld &&
+        !this.execution.isRunning &&
+        (this.execution.canExecute || this.hasEditsToApply),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.executeEdited(),
+          isFocusInNodeEditor(),
+        ),
+    });
+    // F10 in the Extend and Filter by Expression editors (PLAN §11.7, §11.11)
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS,
+      trigger: () => {
+        const { draft } = this.nodeEditor;
+        return (
+          !this.isDialogOpen &&
+          !this.readOnly &&
+          (draft instanceof CubeExtendDraft ||
+            draft instanceof CubeExpressionFilterDraft) &&
+          !draft.validating
+        );
+      },
       action: () => {
-        flowResult(this.execution.execute()).catch(alertUnhandledError);
+        const { draft } = this.nodeEditor;
+        if (
+          draft instanceof CubeExtendDraft ||
+          draft instanceof CubeExpressionFilterDraft
+        ) {
+          flowResult(draft.validate()).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
       },
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
-      trigger: () => !this.isDialogOpen && this.canUndo && !isTypingText(),
-      action: () => this.undo(),
+      trigger: () =>
+        !this.isDialogOpen &&
+        !this.nodeEditor.isHeld &&
+        (this.canUndo || this.hasEditsToApply) &&
+        !isTypingText(),
+      action: () =>
+        this.nodeEditor.runFromKeyboard(
+          () => this.undoEdited(),
+          isFocusInNodeEditor(),
+        ),
     });
+  }
+
+  /** The node editor has edits that closing it would apply */
+  get hasEditsToApply(): boolean {
+    return this.nodeEditor.hasChanges && !this.readOnly;
+  }
+
+  /**
+   * Execute, as its button and F9 do (spec §17.5): finishes the node editor
+   * first, so the edits run, then runs the query if it can; runs nothing
+   * when the edits had to be dropped, since the run would not be what the
+   * user edited
+   */
+  executeEdited(): void {
+    if (!this.nodeEditor.finishApplied() || !this.execution.canExecute) {
+      return;
+    }
+    flowResult(this.execution.execute()).catch(
+      this.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * Undo, as its button and Ctrl+Z do: finishes the node editor first, then
+   * undoes the last change, which drops the edits it just applied; when the
+   * edits had to be dropped instead, that was the undo
+   */
+  undoEdited(): void {
+    if (this.nodeEditor.finishApplied()) {
+      this.undo();
+    }
   }
 
   deregisterCommands(): void {
@@ -424,6 +856,26 @@ export class CubeEditorState implements CommandRegistrar {
    * without applying its edits, and drops the last run's rows and errors,
    * which belong to the cube before. Never runs the cube.
    */
+  /** Whether the cube is a new one: no name, no context, no node */
+  get isEmptyCube(): boolean {
+    const { document } = this;
+    return (
+      document.name === undefined &&
+      document.context === undefined &&
+      document.query.nodes.length === 0
+    );
+  }
+
+  /**
+   * Replaces the cube with a new, empty one, as an import does (one undo
+   * step, so Undo brings the cube back); a cube already new is left as it is
+   */
+  startNewCube(): void {
+    if (!this.isEmptyCube) {
+      this.importDocument(new CubeDocument(), false);
+    }
+  }
+
   importDocument(next: CubeDocument, readOnly: boolean): void {
     this.pushHistory();
     this.importedOver.add(this.document);
@@ -438,6 +890,11 @@ export class CubeEditorState implements CommandRegistrar {
     flowResult(this.reresolveSources()).catch(
       this.host.applicationStore.alertUnhandledError,
     );
+    // checked once on load too, as sources are checked again: the model may
+    // have changed the types of its functions (PLAN §11.7, §11.11)
+    flowResult(
+      this.checkExpressions(next.query.nodes.filter(isCubeEngineCheckedNode)),
+    ).catch(this.host.applicationStore.alertUnhandledError);
   }
 
   /**
@@ -490,10 +947,27 @@ export class CubeEditorState implements CommandRegistrar {
             node instanceof IngestDatasetSource,
         )
       : [];
+    // a function on another kind of cube is the no-mix rule's to flag
+    const functions =
+      isCubeDataProductModel(context.model) ||
+      isCubeIngestModel(context.model) ||
+      isCubeServiceModel(context.model)
+        ? []
+        : kept.filter(
+            (node): node is FunctionSource => node instanceof FunctionSource,
+          );
+    // services are typed in one place, still to come (PLAN §6.4)
+    const services = isCubeServiceModel(context.model)
+      ? kept.filter(
+          (node): node is ServiceSource => node instanceof ServiceSource,
+        )
+      : [];
     const sources: readonly RecheckedSource[] = [
       ...tables,
+      ...functions,
       ...accessPoints,
       ...dataSets,
+      ...services,
     ];
     if (!sources.length) {
       return;
@@ -501,53 +975,72 @@ export class CubeEditorState implements CommandRegistrar {
     this.pendingSources = new Set([...this.pendingSources, ...sources]);
     let answers: ReadonlyMap<string, Schema | CubeEngineError>;
     try {
-      const [tableAnswers, accessPointAnswers, dataSetAnswers] =
-        (yield Promise.all([
-          tables.length
-            ? this.host.engine
-                .resolveSchemas(
-                  context.model,
-                  new Map(
-                    tables.map((source) => [
-                      source.id,
-                      [source.database, source.schema, source.table],
-                    ]),
-                  ),
-                )
-                .catch((error: unknown) => {
-                  const failure =
-                    error instanceof CubeEngineError
-                      ? error
-                      : new CubeEngineError(
-                          CubeEngineErrorKind.NETWORK,
-                          error instanceof Error
-                            ? error.message
-                            : String(error),
-                        );
-                  return new Map(tables.map((source) => [source.id, failure]));
-                })
-            : new Map(),
-          accessPoints.length
-            ? recheckCubeDataProductSources(
-                this.host.dataProductCatalog,
+      const [
+        tableAnswers,
+        accessPointAnswers,
+        dataSetAnswers,
+        serviceAnswers,
+        functionAnswers,
+      ] = (yield Promise.all([
+        tables.length
+          ? this.host.engine
+              .resolveSchemas(
                 context.model,
-                accessPoints,
-                fresh,
+                new Map(
+                  tables.map((source) => [
+                    source.id,
+                    [source.database, source.schema, source.table],
+                  ]),
+                ),
               )
-            : new Map(),
-          dataSets.length
-            ? recheckCubeIngestSources(
-                this.host.ingestCatalog,
-                context.model,
-                dataSets,
-                fresh,
-              )
-            : new Map(),
-        ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
+              .catch((error: unknown) => {
+                const failure =
+                  error instanceof CubeEngineError
+                    ? error
+                    : new CubeEngineError(
+                        CubeEngineErrorKind.NETWORK,
+                        error instanceof Error ? error.message : String(error),
+                      );
+                return new Map(tables.map((source) => [source.id, failure]));
+              })
+          : new Map(),
+        accessPoints.length
+          ? recheckCubeDataProductSources(
+              this.host.dataProductCatalog,
+              context.model,
+              accessPoints,
+              fresh,
+            )
+          : new Map(),
+        dataSets.length
+          ? recheckCubeIngestSources(
+              this.host.ingestCatalog,
+              context.model,
+              dataSets,
+              fresh,
+            )
+          : new Map(),
+        services.length
+          ? recheckCubeServiceSources(
+              this.host.serviceCatalog,
+              context.model,
+              services,
+            )
+          : new Map(),
+        functions.length
+          ? recheckCubeFunctionSources(
+              this.host.engine,
+              context.model,
+              functions,
+            )
+          : new Map(),
+      ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
       answers = new Map([
         ...(tableAnswers ?? []),
         ...(accessPointAnswers ?? []),
         ...(dataSetAnswers ?? []),
+        ...(serviceAnswers ?? []),
+        ...(functionAnswers ?? []),
       ]);
     } finally {
       this.pendingSources = new Set(
@@ -562,6 +1055,7 @@ export class CubeEditorState implements CommandRegistrar {
     sources.forEach((source) => {
       const isAccessPoint = source instanceof DataProductAccessPointSource;
       const isDataSet = source instanceof IngestDatasetSource;
+      const isFunction = source instanceof FunctionSource;
       const answer =
         answers.get(source.id) ??
         new CubeEngineError(
@@ -570,7 +1064,9 @@ export class CubeEditorState implements CommandRegistrar {
             ? CUBE_DATA_PRODUCT_RECHECK_MESSAGE.NO_ANSWER
             : isDataSet
               ? CUBE_INGEST_RECHECK_MESSAGE.NO_ANSWER
-              : 'The engine gave no schema for this table',
+              : isFunction
+                ? CUBE_FUNCTION_MESSAGE.NO_ANSWER
+                : 'The engine gave no schema for this table',
           source.id,
         );
       const saved =
@@ -584,7 +1080,9 @@ export class CubeEditorState implements CommandRegistrar {
               ? getAccessPointRecheckWarning(answer.firstLine)
               : isDataSet
                 ? getDataSetRecheckWarning(answer.firstLine)
-                : getSourceRecheckWarning(answer.firstLine),
+                : isFunction
+                  ? getFunctionRecheckWarning(answer.firstLine)
+                  : getSourceRecheckWarning(answer.firstLine),
           ]);
         } else if (
           source.resolution.kind !== 'failed' ||
@@ -613,12 +1111,28 @@ export class CubeEditorState implements CommandRegistrar {
             ? getAccessPointDriftWarning(diff)
             : isDataSet
               ? getDataSetDriftWarning(diff)
-              : getSchemaDriftWarning(diff),
+              : isFunction
+                ? getFunctionDriftWarning(diff)
+                : getSchemaDriftWarning(diff),
         ]);
       }
       replacements.set(source, resolved);
     });
     this.warnings = warnings;
+    this.replaceOutsideHistory(replacements);
+  }
+
+  /**
+   * Puts nodes the engine checked in place of the very objects that were
+   * sent, outside the undo history: in the cube shown and in the undo
+   * snapshots taken meanwhile, so undoing an edit made meanwhile keeps them.
+   * A node the user changed meanwhile is a new object, and is left alone.
+   * Filter values saved as invalid text are read again against the columns.
+   */
+  private replaceOutsideHistory(
+    replacements: ReadonlyMap<QueryNode, QueryNode>,
+    accepts?: (query: Query, resolved: QueryNode) => boolean,
+  ): void {
     if (!replacements.size) {
       return;
     }
@@ -630,7 +1144,10 @@ export class CubeEditorState implements CommandRegistrar {
       if (checked === undefined) {
         let replaced = document.query;
         replacements.forEach((resolved, source) => {
-          if (replaced.getNode(source.id) === source) {
+          if (
+            replaced.getNode(source.id) === source &&
+            (accepts?.(document.query, resolved) ?? true)
+          ) {
             replaced = replaced.replace(resolved);
           }
         });
@@ -670,7 +1187,9 @@ export class CubeEditorState implements CommandRegistrar {
     if (
       source instanceof RelationalTableSource ||
       source instanceof DataProductAccessPointSource ||
-      source instanceof IngestDatasetSource
+      source instanceof IngestDatasetSource ||
+      source instanceof ServiceSource ||
+      source instanceof FunctionSource
     ) {
       // a Refresh reads the deployed artifact or definition again
       yield flowResult(this.reresolveSources([source], true));
@@ -698,11 +1217,22 @@ export class CubeEditorState implements CommandRegistrar {
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
     }
-    const { query } = this.document;
+    const { query, meta } = this.document;
+    const restored = previous.withQuery(
+      previous.query === query ? query : previous.query.clone(),
+    );
+    // widths take no undo step, so the same cube keeps the ones set since
+    // (review of M7); the cube before an import keeps its own
     this.replaceDocument(
-      previous.withQuery(
-        previous.query === query ? query : previous.query.clone(),
-      ),
+      this.importedOver.has(previous)
+        ? restored
+        : restored.withMeta({
+            ...restored.meta,
+            presentation: {
+              ...restored.meta.presentation,
+              columnWidths: meta.presentation.columnWidths,
+            },
+          }),
     );
   }
 
@@ -752,8 +1282,8 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * The kinds of source the host serves: data products and ingest data sets
-   * only with their catalogs. The cube's kind may still disable one
+   * The kinds of source the host serves: data products, ingest data sets and
+   * services only with their catalogs. The cube's kind may still disable one
    * (`canAddNode`)
    */
   get offeredSources(): readonly SourceDefinition[] {
@@ -762,7 +1292,9 @@ export class CubeEditorState implements CommandRegistrar {
         (definition.type !== DataProductAccessPointSource.TYPE ||
           this.sourcePicker.dataProductTab.isAvailable) &&
         (definition.type !== IngestDatasetSource.TYPE ||
-          this.sourcePicker.ingestTab.isAvailable),
+          this.sourcePicker.ingestTab.isAvailable) &&
+        (definition.type !== ServiceSource.TYPE ||
+          this.sourcePicker.serviceTab.isAvailable),
     );
   }
 
@@ -770,6 +1302,8 @@ export class CubeEditorState implements CommandRegistrar {
    * Whether a node of the type can be added: a transform, unconnected or
    * spliced in after `afterId`, when the query allows it; a source only
    * unconnected, through the source picker. Never while the cube is read-only.
+   * The low-level rule: the palette, drops and menus place nodes through
+   * `CubeAddPlacement` (PLAN §11.8).
    */
   canAddNode(type: string, afterId?: string): boolean {
     const definition = this.registry.get(type);
@@ -790,24 +1324,24 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Adds a node of the type, as the palette and the context menu do (spec
-   * §17.4): a transform with its default settings, unconnected or spliced in
+   * Adds a node of the type (spec §17.4), the low-level add that
+   * `CubeAddPlacement` places for the palette, drops and menus: a transform with its default settings, unconnected or spliced in
    * after `afterId`; a source opens the source picker, which adds it once
    * the engine has typed it. Does nothing `canAddNode` refuses.
    */
-  addNode(type: string, afterId?: string): void {
+  addNode(type: string, afterId?: string): string | undefined {
     const definition = this.registry.get(type);
     if (!definition || !this.canAddNode(type, afterId)) {
-      return;
+      return undefined;
     }
     if (definition.kind === 'source') {
-      this.sourcePicker.open(this.sourcePicker.tabForSourceType(type)?.key);
-      return;
+      this.sourcePicker.openForSourceType(type);
+      return undefined;
     }
     const { query } = this.document;
-    this.applyQuery(
-      query.add(definition.create(query.generateId(type)), afterId),
-    );
+    const id = query.generateId(type);
+    this.applyQuery(query.add(definition.create(id), afterId));
+    return id;
   }
 
   /**
@@ -898,6 +1432,31 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
+  /**
+   * Keeps a grid column's width, which the cube saves (PLAN §11.10): by the
+   * column's name, in any case. Presentation the user sets by dragging, so
+   * no undo step, and the rows stay current.
+   */
+  setColumnWidth(column: string, width: number): void {
+    if (!Number.isFinite(width) || width <= 0) {
+      return;
+    }
+    const { meta } = this.document;
+    const { presentation } = meta;
+    const others = presentation.columnWidths.filter(
+      (each) => foldColumnName(each.column) !== foldColumnName(column),
+    );
+    this.replaceDocument(
+      this.document.withMeta({
+        ...meta,
+        presentation: {
+          ...presentation,
+          columnWidths: [...others, { column, width: Math.round(width) }],
+        },
+      }),
+    );
+  }
+
   setHostIssue(nodeId: string, error: CubeEngineError): void {
     this.hostIssues = new Map([
       ...this.hostIssues,
@@ -935,6 +1494,8 @@ export class CubeEditorState implements CommandRegistrar {
 
   /** Stops any run; call when the page closes */
   dispose(): void {
+    this.rechecking();
+    this.outlineLoading();
     this.execution.stop();
     this.nodeEditor.dispose();
   }

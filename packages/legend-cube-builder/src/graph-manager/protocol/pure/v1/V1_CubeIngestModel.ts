@@ -22,6 +22,7 @@ import {
   type CubeIngestSettings,
   parseCubeIngestUrn,
 } from '../../../CubeIngest.js';
+import { CUBE_LAKEHOUSE_RUNTIME_KIND } from '../../../CubeLakehouseRuntime.js';
 
 // The models an ingest cube's engine calls run on (PLAN §6.7), built for
 // each call and never saved, as Data Cube builds its producer source's: the
@@ -171,7 +172,7 @@ export const V1_buildCubeIngestExecutionContext = (
       _type: 'runtime',
       ...splitPath(CUBE_INGEST_RUNTIME_PATH),
       runtimeValue: {
-        _type: 'LakehouseRuntime',
+        _type: CUBE_LAKEHOUSE_RUNTIME_KIND,
         connectionStores: [],
         connections: [],
         mappings: [],

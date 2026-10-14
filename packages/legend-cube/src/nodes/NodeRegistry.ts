@@ -27,8 +27,13 @@ import { emitConcat } from '../ir/emitters/ConcatEmitter.js';
 import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
+import { emitDifference } from '../ir/emitters/DifferenceEmitter.js';
+import { emitExtend } from '../ir/emitters/ExtendEmitter.js';
+import { emitExpressionFilter } from '../ir/emitters/ExpressionFilterEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
+import { emitPartition } from '../ir/emitters/PartitionEmitter.js';
+import { emitPivot } from '../ir/emitters/PivotEmitter.js';
 import { emitRename } from '../ir/emitters/RenameEmitter.js';
 import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
@@ -36,13 +41,20 @@ import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { emitIngestDatasetSource } from '../ir/emitters/IngestDatasetSourceEmitter.js';
+import { emitServiceSource } from '../ir/emitters/ServiceSourceEmitter.js';
+import { emitFunctionSource } from '../ir/emitters/FunctionSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
+import { DIFFERENCE_CODEC } from '../spec/codecs/DifferenceCodec.js';
+import { EXTEND_CODEC } from '../spec/codecs/ExtendCodec.js';
+import { EXPRESSION_FILTER_CODEC } from '../spec/codecs/ExpressionFilterCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
+import { PARTITION_CODEC } from '../spec/codecs/PartitionCodec.js';
+import { PIVOT_CODEC } from '../spec/codecs/PivotCodec.js';
 import { RENAME_CODEC } from '../spec/codecs/RenameCodec.js';
 import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
@@ -50,9 +62,13 @@ import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProductAccessPointSourceCodec.js';
 import { INGEST_DATASET_SOURCE_CODEC } from '../spec/codecs/IngestDatasetSourceCodec.js';
+import { SERVICE_SOURCE_CODEC } from '../spec/codecs/ServiceSourceCodec.js';
+import { FUNCTION_SOURCE_CODEC } from '../spec/codecs/FunctionSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import { DataProductAccessPointSource } from './sources/DataProductAccessPointSource.js';
 import { IngestDatasetSource } from './sources/IngestDatasetSource.js';
+import { ServiceSource } from './sources/ServiceSource.js';
+import { FunctionSource } from './sources/FunctionSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -63,8 +79,13 @@ import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Group } from './transforms/Group.js';
+import { Difference } from './transforms/Difference.js';
+import { Extend } from './transforms/Extend.js';
+import { ExpressionFilter } from './transforms/ExpressionFilter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
+import { Partition } from './transforms/Partition.js';
+import { Pivot } from './transforms/Pivot.js';
 import { Rename } from './transforms/Rename.js';
 import { Restrict } from './transforms/Restrict.js';
 import { Slice } from './transforms/Slice.js';
@@ -79,6 +100,11 @@ export interface NodeDefinition {
   readonly icon: string;
   /** Shows a BETA badge */
   readonly beta: boolean;
+  /**
+   * Shows a WIP badge, in place of BETA: picked and saved, but not working
+   * yet, e.g. a service (PLAN §6.4)
+   */
+  readonly wip?: boolean;
 }
 
 export interface TransformDefinition<N extends QueryNode = QueryNode>
@@ -97,6 +123,12 @@ export interface TransformDefinition<N extends QueryNode = QueryNode>
   ): RelationExpr;
   /** How the saved spec stores the node's own fields */
   readonly spec: NodeSpecCodec<N>;
+  /**
+   * Whether a run binds the node's relation with a `let` when the node isn't
+   * the one captured, so what follows it can't change its rows: a window,
+   * which a later filter would otherwise run before (PLAN §8.6)
+   */
+  readonly isolationBoundary?: boolean;
 }
 
 export interface SourceDefinition<S extends SourceNode = SourceNode>
@@ -167,6 +199,35 @@ export const INGEST_DATASET_SOURCE_DEFINITION: SourceDefinition<IngestDatasetSou
     spec: INGEST_DATASET_SOURCE_CODEC,
   };
 
+/** A function of the cube's model that returns a relation (PLAN §6.5), in beta */
+export const FUNCTION_SOURCE_DEFINITION: SourceDefinition<FunctionSource> = {
+  kind: 'source',
+  type: FunctionSource.TYPE,
+  label: 'Function',
+  icon: 'function',
+  beta: true,
+  fromCoordinates: (id, coordinates) =>
+    FunctionSource.fromCoordinates(id, coordinates),
+  resolve: (node, resolution) => node.withResolution(resolution),
+  emit: (node) => emitFunctionSource(node),
+  spec: FUNCTION_SOURCE_CODEC,
+};
+
+/** A deployed service (PLAN §6.4), in progress: picked, not read yet */
+export const SERVICE_SOURCE_DEFINITION: SourceDefinition<ServiceSource> = {
+  kind: 'source',
+  type: ServiceSource.TYPE,
+  label: 'Service',
+  icon: 'service',
+  beta: false,
+  wip: true,
+  fromCoordinates: (id, coordinates) =>
+    ServiceSource.fromCoordinates(id, coordinates),
+  resolve: (node, resolution) => node.withResolution(resolution),
+  emit: (node) => emitServiceSource(node),
+  spec: SERVICE_SOURCE_CODEC,
+};
+
 export const SORT_DEFINITION: TransformDefinition<Sort> = {
   kind: 'transform',
   type: Sort.TYPE,
@@ -188,6 +249,18 @@ export const GROUP_DEFINITION: TransformDefinition<Group> = {
   create: (id) => new Group(id),
   emit: emitGroup,
   spec: GROUP_CODEC,
+};
+
+/** Pivot (PLAN §11.12), after Group by Column in the menus */
+export const PIVOT_DEFINITION: TransformDefinition<Pivot> = {
+  kind: 'transform',
+  type: Pivot.TYPE,
+  label: 'Pivot by Column',
+  icon: 'pivot',
+  beta: false,
+  create: (id) => new Pivot(id),
+  emit: emitPivot,
+  spec: PIVOT_CODEC,
 };
 
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {
@@ -267,6 +340,22 @@ export const SLICE_DEFINITION: TransformDefinition<Slice> = {
   spec: SLICE_CODEC,
 };
 
+/**
+ * Partition (spec §7.13, PLAN §11.6): a window, so a run binds it with a let
+ * when something follows it (§8.6)
+ */
+export const PARTITION_DEFINITION: TransformDefinition<Partition> = {
+  kind: 'transform',
+  type: Partition.TYPE,
+  label: 'Apply Window Functions',
+  icon: 'partition',
+  beta: false,
+  create: (id) => new Partition(id),
+  emit: emitPartition,
+  spec: PARTITION_CODEC,
+  isolationBoundary: true,
+};
+
 /** Concat (spec §7.10, PLAN §11.5) */
 export const CONCAT_DEFINITION: TransformDefinition<Concat> = {
   kind: 'transform',
@@ -288,6 +377,43 @@ export const JOIN_DEFINITION: TransformDefinition<Join> = {
   create: (id) => new Join(id),
   emit: emitJoin,
   spec: JOIN_CODEC,
+};
+
+/** Extend, "Extend Columns" (spec §7.14, PLAN §11.7) */
+export const EXTEND_DEFINITION: TransformDefinition<Extend> = {
+  kind: 'transform',
+  type: Extend.TYPE,
+  label: 'Extend Columns',
+  icon: 'extend',
+  beta: false,
+  create: (id) => new Extend(id),
+  emit: emitExtend,
+  spec: EXTEND_CODEC,
+};
+
+/** Filter by Expression (PLAN §11.11): a condition of one row, beyond the spec, after Filter by Column */
+export const EXPRESSION_FILTER_DEFINITION: TransformDefinition<ExpressionFilter> =
+  {
+    kind: 'transform',
+    type: ExpressionFilter.TYPE,
+    label: 'Filter by Expression',
+    icon: 'expressionFilter',
+    beta: false,
+    create: (id) => new ExpressionFilter(id),
+    emit: emitExpressionFilter,
+    spec: EXPRESSION_FILTER_CODEC,
+  };
+
+/** Difference, "Compare Column Values" (spec §7.12, PLAN §11.7) */
+export const DIFFERENCE_DEFINITION: TransformDefinition<Difference> = {
+  kind: 'transform',
+  type: Difference.TYPE,
+  label: 'Compare Column Values',
+  icon: 'difference',
+  beta: false,
+  create: (id) => new Difference(id),
+  emit: emitDifference,
+  spec: DIFFERENCE_CODEC,
 };
 
 /**
@@ -342,11 +468,15 @@ export class NodeRegistry {
 export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
+    FUNCTION_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     INGEST_DATASET_SOURCE_DEFINITION,
+    SERVICE_SOURCE_DEFINITION,
     SORT_DEFINITION,
     GROUP_DEFINITION,
+    PIVOT_DEFINITION,
     FILTER_DEFINITION,
+    EXPRESSION_FILTER_DEFINITION,
     RESTRICT_DEFINITION,
     RENAME_DEFINITION,
     DISTINCT_DEFINITION,
@@ -355,4 +485,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     SLICE_DEFINITION,
     CONCAT_DEFINITION,
     JOIN_DEFINITION,
+    DIFFERENCE_DEFINITION,
+    PARTITION_DEFINITION,
+    EXTEND_DEFINITION,
   ]);

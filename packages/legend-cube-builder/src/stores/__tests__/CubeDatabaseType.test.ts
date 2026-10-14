@@ -16,12 +16,23 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  DEFAULT_PIVOT_AGGREGATION,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
+  Pivot,
+  ColumnComparisonFilter,
+  CompositeFilter,
+  CompositeFilterOperator,
   Connection,
   CubeDocument,
   DataProductAccessPointSource,
   Distinct,
   Drop,
+  type ExpressionFilter,
+  Filter,
+  FilterOperator,
   Limit,
+  MESSAGE_CONDITION_WILDCARD,
+  MESSAGE_FILTER_VALUE_WILDCARD,
   printIR,
   Query,
   RelationalTableSource,
@@ -32,6 +43,10 @@ import {
   SortDirection,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
+import {
+  TEST__checkedExpressionFilter,
+  TEST__expression,
+} from '../../__test-utils__/CubeExpressionTestUtils.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import { FAKE_DAILY_ORDERS_SCHEMA } from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
@@ -41,6 +56,7 @@ import {
   ORDERS_COLUMNS,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
+  createFakeNorthwindOutline,
   FAKE_NORTHWIND_OUTLINE,
   type FakeCubeEngine,
 } from '../../__test-utils__/FakeCubeEngine.js';
@@ -53,7 +69,19 @@ import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CubeDataProductEnvironmentType,
 } from '../../graph-manager/CubeDataProduct.js';
-import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
+import {
+  CUBE_NORTHWIND_MODEL,
+  CUBE_NORTHWIND_MODEL_CODE,
+} from '../fixtures/CubeNorthwindModel.js';
+import {
+  CUBE_INGEST_MODEL_TYPE,
+  CUBE_INGEST_RUNTIME_PATH,
+} from '../../graph-manager/CubeIngest.js';
+import {
+  CUBE_LAKEHOUSE_RUNTIME_KIND,
+  CubeLakehouseRuntimeKind,
+  getLakehouseDatabaseType,
+} from '../../graph-manager/CubeLakehouseRuntime.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 
 // The database type a run is written for (PLAN §11.4), from the runtime's
@@ -62,16 +90,7 @@ import { CubeEditorState } from '../CubeEditorState.js';
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
 /** The Northwind outline, its runtime's connection of this database type */
-const outlineOn = (databaseType: string): CubeModelOutline => ({
-  ...FAKE_NORTHWIND_OUTLINE,
-  runtimes: [
-    {
-      path: NORTHWIND_RUNTIME,
-      storePaths: [NORTHWIND_DATABASE],
-      connections: [{ storePath: NORTHWIND_DATABASE, databaseType }],
-    },
-  ],
-});
+const outlineOn = createFakeNorthwindOutline;
 
 const OTHER_DATABASE = 'test::Other';
 
@@ -130,15 +149,18 @@ const sortedDrop = (): CubeDocument =>
     new Drop('drop101', 10),
   );
 
+/** A cube on the document, its fake engine prepared first: a cube with a table loads its outline as it opens */
 const setUp = (
   document: CubeDocument,
   outline?: CubeModelOutline,
+  prepare?: (fake: FakeCubeEngine) => void,
 ): { state: CubeEditorState; fake: FakeCubeEngine } => {
   const { host, fake } = TEST__createCubeHost({
     result: NO_ORDERS,
     pure: 'the Pure',
     ...(outline ? { outline } : {}),
   });
+  prepare?.(fake);
   return { state: new CubeEditorState(host, document), fake };
 };
 
@@ -186,7 +208,7 @@ describe('Cube execution: the database type', () => {
     ],
     ['with the outline the engine gives it', undefined],
   ])(
-    'Writes a Drop the native way on a data product cube, %s: it reads no database',
+    'Writes a Drop the native way on a data product cube, %s: it runs on Snowflake, where its lakehouse runtime routes',
     async (_case, connections) => {
       const daily = new DataProductAccessPointSource(
         'dataProductAccessPoint101',
@@ -244,7 +266,15 @@ describe('Cube execution: the database type', () => {
         }),
       );
       await flowResult(state.execution.execute());
-      expect(fake.loadModel).toHaveBeenCalled();
+      const { model, runtime } = state.document.context ?? {};
+      expect(
+        state.getRunDatabaseType(
+          state.document.query,
+          drop.id,
+          model as never,
+          runtime as never,
+        ),
+      ).toBe('Snowflake');
       const ran = ranLambda(fake);
       expect(ran).toContain('->drop(10)');
       expect(ran).not.toContain('rowNumber');
@@ -261,16 +291,36 @@ describe('Cube execution: the database type', () => {
   });
 
   test('Writes the native forms when the outline fails to load, with no error', async () => {
-    const { state, fake } = setUp(sortedDrop(), outlineOn('SqlServer'));
-    fake.loadModel.mockRejectedValueOnce(
-      new Error('The model does not compile'),
+    const { state, fake } = setUp(sortedDrop(), outlineOn('SqlServer'), (f) =>
+      f.loadModel.mockRejectedValueOnce(
+        new Error('The model does not compile'),
+      ),
     );
+    // the run waits for the load the cube started as it opened
     await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
     expect(ranLambda(fake)).toContain('->drop(10)');
     expect(state.execution.error).toBeUndefined();
   });
 
-  test('Loads no outline for a query without a Drop, Slice, Limit or Distinct', async () => {
+  test('Loads the outline again on the next run after it failed to load, and writes that run for its database', async () => {
+    const { state, fake } = setUp(sortedDrop(), outlineOn('SqlServer'), (f) =>
+      f.loadModel.mockRejectedValueOnce(new Error('The engine is down')),
+    );
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    expect(printIR(fake.execute.mock.calls[0]?.[1] as never)).toContain(
+      '->drop(10)',
+    );
+    // the failed load isn't kept: the next run loads the outline again
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalledTimes(2);
+    expect(printIR(fake.execute.mock.calls[1]?.[1] as never)).toContain(
+      '$row.cube_rn > 10',
+    );
+  });
+
+  test('Loads the outline once, as a cube with a table opens, and a run that needs no database type loads it no more', async () => {
     const { state, fake } = setUp(
       ordersThen(
         new Sort('sort101', [
@@ -279,8 +329,9 @@ describe('Cube execution: the database type', () => {
       ),
       outlineOn('SqlServer'),
     );
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
     await flowResult(state.execution.execute());
-    expect(fake.loadModel).not.toHaveBeenCalled();
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
     expect(ranLambda(fake)).toContain(
       '->sort(~ORDER_ID->descending())->limit(1001)',
     );
@@ -429,5 +480,219 @@ describe('Cube execution: while the outline loads', () => {
     expect(state.showPure.isOpen).toBe(false);
     expect(state.showPure.text).toBeUndefined();
     expect(state.showPure.isRendering).toBe(false);
+  });
+});
+
+describe('Cube on DuckDB: patterns given % or _', () => {
+  /** A Filter of SHIP_COUNTRY with this operator and value */
+  const filterOf = (operator: FilterOperator, value: string): Filter =>
+    new Filter(
+      'filter101',
+      new ColumnComparisonFilter('SHIP_COUNTRY', operator, {
+        kind: 'string',
+        value,
+      }),
+    );
+  /** `x | $x.SHIP_NAME->toOne()->endsWith(<value>)`, checked for ORDERS */
+  const endsWithOf = (value: string): ExpressionFilter =>
+    TEST__checkedExpressionFilter(
+      'expressionFilter101',
+      ordersThen().query,
+      `x | $x.SHIP_NAME->toOne()->endsWith('${value}')`,
+      TEST__expression.lambda(
+        TEST__expression.call(
+          'endsWith',
+          TEST__expression.call('toOne', TEST__expression.column('SHIP_NAME')),
+          TEST__expression.string(value),
+        ),
+      ),
+    );
+  /** Lets the outline the cube loads by itself arrive */
+  const settle = async (): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+
+  test("Refuses a column Filter's pattern given % or _, negated or not, once the outline it loads by itself names DuckDB, and runs nothing", async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.DOES_NOT_CONTAIN, '50%')),
+      outlineOn('DuckDB'),
+    );
+    await settle();
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    expect(state.getNodeErrors('filter101')).toEqual([
+      MESSAGE_FILTER_VALUE_WILDCARD('does not contain', 'DuckDB'),
+    ]);
+    await flowResult(state.execution.execute());
+    expect(fake.execute).not.toHaveBeenCalled();
+  });
+
+  test("Refuses a Filter by Expression's endsWith given _ on DuckDB", async () => {
+    const { state } = setUp(ordersThen(endsWithOf('a_b')), outlineOn('DuckDB'));
+    await settle();
+    expect(state.getNodeErrors('expressionFilter101')).toEqual([
+      MESSAGE_CONDITION_WILDCARD('endsWith', 'DuckDB'),
+    ]);
+  });
+
+  test('Runs them on H2, with the value as it is', async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.STARTS_WITH, '50%')),
+      outlineOn('H2'),
+    );
+    await settle();
+    expect(state.getNodeErrors('filter101')).toEqual([]);
+    await flowResult(state.execution.execute());
+    expect(ranLambda(fake)).toContain("$row.SHIP_COUNTRY->startsWith('50%')");
+  });
+
+  test("Loads the new model's outline when an import changes the model under such a filter", async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.CONTAINS, '50%')),
+      outlineOn('H2'),
+    );
+    await settle();
+    expect(state.getNodeErrors('filter101')).toEqual([]);
+    // another model's text, as the catalog keeps outlines by it
+    const otherModel = {
+      _type: 'text',
+      code: `${CUBE_NORTHWIND_MODEL_CODE}\n`,
+    };
+    fake.loadModel.mockResolvedValueOnce(outlineOn('DuckDB'));
+    state.importDocument(
+      new CubeDocument({
+        context: { ...CONTEXT, model: otherModel },
+        query: state.document.query,
+      }),
+      false,
+    );
+    await settle();
+    expect(fake.loadModel.mock.calls.at(-1)?.[0] === otherModel).toBe(true);
+    expect(state.getNodeErrors('filter101')).toEqual([
+      MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB'),
+    ]);
+  });
+
+  test('Runs a filter with no % or _ in a pattern, nor one in an Equal, on DuckDB', async () => {
+    const { state, fake } = setUp(
+      ordersThen(
+        new Filter(
+          'filter101',
+          new CompositeFilter(CompositeFilterOperator.AND, [
+            new ColumnComparisonFilter(
+              'SHIP_COUNTRY',
+              FilterOperator.CONTAINS,
+              { kind: 'string', value: 'ance' },
+            ),
+            new ColumnComparisonFilter('SHIP_NAME', FilterOperator.EQUAL, {
+              kind: 'string',
+              value: '50%',
+            }),
+          ]),
+        ),
+      ),
+      outlineOn('DuckDB'),
+    );
+    await settle();
+    expect(state.getNodeErrors('filter101')).toEqual([]);
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+  });
+
+  test('Refuses a run started before the outline names DuckDB, with the message, and asks the engine nothing', async () => {
+    const { state, fake } = setUp(
+      ordersThen(filterOf(FilterOperator.CONTAINS, '_')),
+      outlineOn('DuckDB'),
+    );
+    // the run starts while the outline the cube asked for is on its way:
+    // the filter is valid then, so the run itself refuses it, for DuckDB
+    expect(state.execution.canExecute).toBe(true);
+    await flowResult(state.execution.execute());
+    expect(fake.execute).not.toHaveBeenCalled();
+    expect(state.execution.error?.message ?? '').toContain(
+      MESSAGE_FILTER_VALUE_WILDCARD('contains', 'DuckDB'),
+    );
+    // and the filter is refused from then on
+    expect(state.execution.canExecute).toBe(false);
+  });
+});
+
+describe('Cube databases: Pivot, and the lakehouse runtimes', () => {
+  /** SHIP_VIA's 1 by SHIP_COUNTRY, counting rows */
+  const pivotOf = (): Pivot =>
+    new Pivot(
+      'pivot101',
+      ['SHIP_COUNTRY'],
+      'SHIP_VIA',
+      [{ kind: 'integer', value: '1' }],
+      DEFAULT_PIVOT_AGGREGATION,
+    );
+  /** Lets the outline the cube loads as it opens arrive */
+  const settle = async (): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+
+  test('Refuses a Pivot on an H2 cube once the outline is in, says why one would be refused there, and allows it on DuckDB', async () => {
+    const h2 = setUp(ordersThen(pivotOf()), outlineOn('H2'));
+    // before the outline arrives, the database isn't known
+    expect(
+      h2.state.getAddDatabaseProblem('pivot', 'relational101'),
+    ).toBeUndefined();
+    await settle();
+    expect(h2.state.getNodeErrors('pivot101')).toEqual([
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'),
+    ]);
+    expect(h2.state.getAddDatabaseProblem('pivot', 'relational101')).toBe(
+      MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'),
+    );
+    expect(
+      h2.state.getAddDatabaseProblem('group', 'relational101'),
+    ).toBeUndefined();
+    // added after nothing, it reads no database
+    expect(h2.state.getAddDatabaseProblem('pivot', undefined)).toBeUndefined();
+    const duckDb = setUp(ordersThen(pivotOf()), outlineOn('DuckDB'));
+    await settle();
+    expect(duckDb.state.getNodeErrors('pivot101')).toEqual([]);
+    expect(
+      duckDb.state.getAddDatabaseProblem('pivot', 'relational101'),
+    ).toBeUndefined();
+  });
+
+  test('Maps each lakehouse runtime to the database it routes to, an ingest cube to Snowflake too', () => {
+    expect(getLakehouseDatabaseType(CubeLakehouseRuntimeKind.LAKEHOUSE)).toBe(
+      'Snowflake',
+    );
+    expect(
+      getLakehouseDatabaseType(CubeLakehouseRuntimeKind.SINGLE_STORE),
+    ).toBe('MemSQL');
+    expect(getLakehouseDatabaseType('LakehouseDatabricksRuntime')).toBe(
+      undefined,
+    );
+    expect(CUBE_LAKEHOUSE_RUNTIME_KIND).toBe('LakehouseRuntime');
+    const { state } = setUp(ordersThen());
+    expect(
+      state.getRunDatabaseType(
+        state.document.query,
+        'relational101',
+        { _type: CUBE_INGEST_MODEL_TYPE } as never,
+        CUBE_INGEST_RUNTIME_PATH,
+      ),
+    ).toBe('Snowflake');
+  });
+
+  test('Keeps one outline per model content: a cube imported on the same model loads it no more', async () => {
+    const { state, fake } = setUp(ordersThen(), outlineOn('H2'));
+    await settle();
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    state.importDocument(
+      new CubeDocument({
+        context: { ...CONTEXT, model: { ...CUBE_NORTHWIND_MODEL } },
+        query: state.document.query,
+      }),
+      false,
+    );
+    await settle();
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+    expect(state.modelOutline).toBeDefined();
   });
 });

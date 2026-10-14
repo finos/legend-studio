@@ -363,7 +363,9 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/seri
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_SubscriptionSerializationHelper.js';
 export {
   V1_BigQueryTarget,
-  V1_CreateSubscriptionInput,
+  V1_CreateDataRequestSubscriptionInput,
+  V1_CreateContractSubscriptionInput,
+  V1_DataSubScriptionBaseResponse,
   V1_DatabricksTarget,
   V1_DataSubscription,
   V1_DataSubscriptionResponse,

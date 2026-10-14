@@ -48,8 +48,10 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { ExpressionFilter } from '../../nodes/transforms/ExpressionFilter.js';
+import { Partition } from '../../nodes/transforms/Partition.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
-import { Sort } from '../../nodes/transforms/Sort.js';
+import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -505,12 +507,12 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     const json = {
       formatVersion: 1,
       query: {
-        selected: 'pivot101',
+        selected: 'future101',
         nodes: [
           RELATIONAL,
           {
-            kind: 'pivot',
-            id: 'pivot101',
+            kind: 'future',
+            id: 'future101',
             inputs: ['relational101'],
             rows: ['COUNTRY'],
             values: [
@@ -528,20 +530,20 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       },
     };
     const { document } = decodeCubeSpec(json);
-    const node = document.query.getNode('pivot101') as UnknownNode;
+    const node = document.query.getNode('future101') as UnknownNode;
     expect(node).toBeInstanceOf(UnknownNode);
     expect(node.type).toBe('unknown');
-    expect(node.savedKind).toBe('pivot');
-    expect(node.describe()).toBe('Unknown Transform "pivot101"');
+    expect(node.savedKind).toBe('future');
+    expect(node.describe()).toBe('Unknown Transform "future101"');
     expect(node.ports).toEqual(['in0']);
     expect(node.hasInputs).toBe(true);
     expect(describeConnections(document.query)).toEqual([
-      'relational101 -> pivot101.in0',
+      'relational101 -> future101.in0',
     ]);
     // `kind` included; `id` and `inputs` come from the query
     expect(JSON.stringify(node.json)).toBe(
       JSON.stringify({
-        kind: 'pivot',
+        kind: 'future',
         rows: ['COUNTRY'],
         values: [
           {
@@ -792,25 +794,25 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
   test('Re-opens a newer cube after its Unknown node lost its input, and refuses to rewire it', () => {
     const json = readFixture('newer-version.cube.json');
     const { document } = decodeCubeSpec(json);
-    expect(document.query.getNode('pivot101')).toBeInstanceOf(UnknownNode);
-    expect(document.query.getInputIds('pivot101')).toEqual(['filter101']);
+    expect(document.query.getNode('future101')).toBeInstanceOf(UnknownNode);
+    expect(document.query.getInputIds('future101')).toEqual(['filter101']);
 
     // removing the source first, so the filter has nothing to heal with
     const withoutSource = document.query.remove('relational101');
     expect(withoutSource.getInputIds('filter101')).toEqual([undefined]);
-    expect(withoutSource.getInputIds('pivot101')).toEqual(['filter101']);
+    expect(withoutSource.getInputIds('future101')).toEqual(['filter101']);
     const edited = withoutSource.remove('filter101');
-    expect(edited.getInputIds('pivot101')).toEqual([undefined]);
+    expect(edited.getInputIds('future101')).toEqual([undefined]);
     expect(edited.connections).toEqual([]);
 
     const saved = encodeCubeSpec(document.withQuery(edited));
     expect(JSON.stringify(saved.query)).toBe(
       JSON.stringify({
-        selected: 'pivot101',
+        selected: 'future101',
         nodes: [
           {
-            kind: 'pivot',
-            id: 'pivot101',
+            kind: 'future',
+            id: 'future101',
             inputs: [null],
             rows: ['SHIP_CITY'],
             values: [{ column: 'FREIGHT', aggregation: 'sum' }],
@@ -824,16 +826,16 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     expect(
       describeDocument(parseCubeSpec(JSON.stringify(saved)).document),
     ).toEqual(describeDocument(again));
-    const pivot = again.query.getNode('pivot101') as UnknownNode;
-    expect(pivot).toBeInstanceOf(UnknownNode);
-    expect(pivot.savedKind).toBe('pivot');
-    expect(pivot.ports).toEqual(['in0']);
-    expect(again.query.getInputIds('pivot101')).toEqual([undefined]);
+    const future = again.query.getNode('future101') as UnknownNode;
+    expect(future).toBeInstanceOf(UnknownNode);
+    expect(future.savedKind).toBe('future');
+    expect(future.ports).toEqual(['in0']);
+    expect(again.query.getInputIds('future101')).toEqual([undefined]);
     expect(again.rest).toEqual({
       description: 'A field this version does not know',
     });
     expect(again.meta.rest).toEqual({
-      drilldown: { levels: ['SHIP_COUNTRY', 'SHIP_CITY'] },
+      pivot: { levels: ['SHIP_COUNTRY', 'SHIP_CITY'] },
     });
     expect(JSON.stringify(encodeCubeSpec(again))).toBe(JSON.stringify(saved));
 
@@ -841,18 +843,18 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     const query = again.query.add(
       resolvedTable('relational102', 'ORDERS', [column('ORDER_ID')]),
     );
-    expect(query.canConnect('relational102', 'pivot101')).toBe(false);
-    expect(query.canConnect('relational102', 'pivot101', 'in0')).toBe(false);
-    expect(() => query.connect('relational102', 'pivot101')).toThrow(
-      `Can't connect node "relational102" to node "pivot101"`,
+    expect(query.canConnect('relational102', 'future101')).toBe(false);
+    expect(query.canConnect('relational102', 'future101', 'in0')).toBe(false);
+    expect(() => query.connect('relational102', 'future101')).toThrow(
+      `Can't connect node "relational102" to node "future101"`,
     );
-    expect(() => query.connect('relational102', 'pivot101', 'in0')).toThrow(
-      `Can't connect node "relational102" to node "pivot101" on port "in0"`,
+    expect(() => query.connect('relational102', 'future101', 'in0')).toThrow(
+      `Can't connect node "relational102" to node "future101" on port "in0"`,
     );
-    expect(query.canMove('pivot101', 'relational102')).toBe(false);
-    expect(query.canSwapInputs('pivot101')).toBe(false);
-    expect(() => query.swapInputs('pivot101')).toThrow(
-      `Can't swap the inputs of node "pivot101"`,
+    expect(query.canMove('future101', 'relational102')).toBe(false);
+    expect(query.canSwapInputs('future101')).toBe(false);
+    expect(() => query.swapInputs('future101')).toThrow(
+      `Can't swap the inputs of node "future101"`,
     );
   });
 
@@ -899,15 +901,15 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       query: new Query(
         [
           resolvedTable('relational101', 'ORDERS', [column('QTY')]),
-          new UnknownNode('pivot101', 1, {
-            kind: 'pivot',
+          new UnknownNode('future101', 1, {
+            kind: 'future',
             id: 'stale',
             inputs: ['gone'],
             rows: ['QTY'],
           }),
         ],
-        [new Connection('relational101', 'pivot101', 'in0')],
-        'pivot101',
+        [new Connection('relational101', 'future101', 'in0')],
+        'future101',
       ),
     });
     // by position: the id written may not be the node's
@@ -915,8 +917,8 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
       .nodes as readonly JsonValue[];
     expect(JSON.stringify(saved[1])).toBe(
       JSON.stringify({
-        kind: 'pivot',
-        id: 'pivot101',
+        kind: 'future',
+        id: 'future101',
         inputs: ['relational101'],
         rows: ['QTY'],
       }),
@@ -1012,7 +1014,7 @@ const INTERLEAVED = {
       showGraph: false,
       alphaPresentation: {},
     },
-    drilldown: { levels: ['COUNTRY'] },
+    pivot: { levels: ['COUNTRY'] },
   },
 };
 
@@ -1101,7 +1103,7 @@ const CANONICAL = {
       alphaPresentation: {},
     },
     zetaMeta: 'z',
-    drilldown: { levels: ['COUNTRY'] },
+    pivot: { levels: ['COUNTRY'] },
   },
   zetaTop: 'z',
   alphaTop: { nested: [1, null] },
@@ -1147,7 +1149,7 @@ describe(unitTest('Saved spec: unknown keys'), () => {
 
     expect(meta.rest).toEqual({
       zetaMeta: 'z',
-      drilldown: { levels: ['COUNTRY'] },
+      pivot: { levels: ['COUNTRY'] },
     });
     expect(meta.presentation.rest).toEqual({
       zetaPresentation: 'z',
@@ -2250,5 +2252,300 @@ describe(unitTest('Saved spec: concats, added in M4'), () => {
         note: 'kept',
       }),
     );
+  });
+});
+
+describe(unitTest('Saved spec: partitions, added in M5'), () => {
+  const PARTITION_REGISTRY = createNodeRegistry();
+  /** The registry of the version before M5: every M4 operation, but no Partition */
+  const M4_REGISTRY = new NodeRegistry(
+    [...PARTITION_REGISTRY.sources, ...PARTITION_REGISTRY.transforms].filter(
+      (definition) => definition.type !== Partition.TYPE,
+    ),
+  );
+
+  const QTY_DESC = { column: 'QTY', direction: 'DESC' };
+  const RANK = { function: 'Rank', name: 'Rank' };
+  const SUM_QTY = { column: 'QTY', function: 'Sum', name: 'QTY Sum' };
+
+  /** A saved spec: `relational101` feeding `partition101`, by COUNTRY, with these sorts, aggregations and other keys */
+  const partitionSpec = (
+    sorts: readonly JsonObject[],
+    aggregations: readonly JsonObject[],
+    other: JsonObject = {},
+  ): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'partition101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'partition',
+          id: 'partition101',
+          inputs: ['relational101'],
+          columns: ['COUNTRY'],
+          sorts,
+          aggregations,
+          ...other,
+        },
+      ],
+    },
+  });
+
+  test('Reads a partition as an Unknown node in a version without Partition, editable, and re-saves it verbatim', () => {
+    // an aggregation saved without a name stays so: only a Partition gives it its auto-name
+    const json = partitionSpec([QTY_DESC], [SUM_QTY, { function: 'Rank' }], {
+      note: 'kept',
+    });
+    const { document, readOnly } = decodeCubeSpec(json, {
+      registry: M4_REGISTRY,
+    });
+    expect(readOnly).toBe(false);
+    const node = document.query.getNode('partition101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('partition');
+    expect(describeConnections(document.query)).toEqual([
+      'relational101 -> partition101.in0',
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, M4_REGISTRY))).toBe(
+      JSON.stringify(json),
+    );
+    // a new node would not take the saved node's id
+    expect(document.query.generateId(Partition.TYPE)).not.toBe('partition101');
+  });
+
+  test('Reads a partition as a Partition in this version, its unknown keys kept', () => {
+    const json = partitionSpec([QTY_DESC], [SUM_QTY, RANK], {
+      note: 'kept',
+      zeta: [null, { flag: false }],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: PARTITION_REGISTRY,
+    }).document.query.getNode('partition101');
+    expect(node).toBeInstanceOf(Partition);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(reSave(json, PARTITION_REGISTRY)).toBe(JSON.stringify(json));
+  });
+
+  test.each<[string, JsonObject[], JsonObject[], JsonObject[], JsonObject[]]>([
+    [
+      'a sort direction this version does not know',
+      [{ column: 'QTY', direction: 'RANDOM' }],
+      [RANK],
+      [QTY_DESC],
+      [RANK],
+    ],
+    [
+      'a key this version does not know on a sort entry',
+      [
+        { column: 'COUNTRY', direction: 'ASC' },
+        { ...QTY_DESC, nulls: 'first' },
+      ],
+      [RANK],
+      [{ column: 'COUNTRY', direction: 'ASC' }, QTY_DESC],
+      [RANK],
+    ],
+    [
+      'a key this version does not know on an aggregation',
+      [QTY_DESC],
+      [SUM_QTY, { ...RANK, ties: 'dense' }],
+      [QTY_DESC],
+      [SUM_QTY, RANK],
+    ],
+    [
+      // the whole node is kept as saved: the aggregation gets no name
+      'a sort direction this version does not know beside an aggregation saved without a name',
+      [{ column: 'QTY', direction: 'RANDOM' }],
+      [{ function: 'RowNumber' }],
+      [QTY_DESC],
+      [{ function: 'RowNumber' }],
+    ],
+    [
+      'a key this version does not know on an aggregation after one saved without a name',
+      [QTY_DESC],
+      [{ function: 'RowNumber' }, { ...SUM_QTY, filter: null }],
+      [QTY_DESC],
+      [{ function: 'RowNumber' }, SUM_QTY],
+    ],
+  ])(
+    'Keeps a partition with %s as an Unknown node, re-saved verbatim',
+    (_, sorts, aggregations, readableSorts, readableAggregations) => {
+      // ignoring either could change the rows (PLAN §11.4, §11.6): without
+      // it, the same partition is read as a Partition
+      expect(
+        decodeCubeSpec(partitionSpec(readableSorts, readableAggregations), {
+          registry: PARTITION_REGISTRY,
+        }).document.query.getNode('partition101'),
+      ).toBeInstanceOf(Partition);
+      const json = partitionSpec(sorts, aggregations, { note: 'kept' });
+      const { document, readOnly } = decodeCubeSpec(json, {
+        registry: PARTITION_REGISTRY,
+      });
+      expect(readOnly).toBe(false);
+      const node = document.query.getNode('partition101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('partition');
+      // the whole node as saved, but its id and inputs, which the query holds
+      expect(JSON.stringify(node.json)).toBe(
+        JSON.stringify({
+          kind: 'partition',
+          columns: ['COUNTRY'],
+          sorts,
+          aggregations,
+          note: 'kept',
+        }),
+      );
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> partition101.in0',
+      ]);
+      expect(reSave(json, PARTITION_REGISTRY)).toBe(JSON.stringify(json));
+
+      // it is invalid and can't run, but its input can
+      const { validity } = buildSchemasAndValidity(
+        document.query,
+        PARTITION_REGISTRY.queryRules,
+      );
+      expect(validity.get('partition101')).toEqual([
+        'This graph node is invalid.',
+      ]);
+      expect(validity.get('relational101')).toEqual([]);
+      const emitter = new QueryEmitter(document.query, PARTITION_REGISTRY);
+      expect(emitter.canEmit('partition101')).toBe(false);
+      expect(emitter.canEmit('relational101')).toBe(true);
+    },
+  );
+
+  test('Keeps the unknown keys of a partition whose columns, sorts or aggregations change', () => {
+    const document = decodeCubeSpec(
+      partitionSpec([QTY_DESC], [RANK], { note: 'kept' }),
+      { registry: PARTITION_REGISTRY },
+    ).document;
+    const partition = document.query.getNode('partition101') as Partition;
+    const saved = (edited: Partition): string =>
+      JSON.stringify(
+        savedNode(
+          encodeCubeSpec(
+            document.withQuery(document.query.replace(edited)),
+            PARTITION_REGISTRY,
+          ),
+          'partition101',
+        ),
+      );
+    const savedPartition = (own: JsonObject): string =>
+      JSON.stringify({
+        kind: 'partition',
+        id: 'partition101',
+        inputs: ['relational101'],
+        ...own,
+        note: 'kept',
+      });
+    const columns = partition.withColumns([]);
+    expect(columns.rest).toEqual({ note: 'kept' });
+    expect(saved(columns)).toBe(
+      savedPartition({ columns: [], sorts: [QTY_DESC], aggregations: [RANK] }),
+    );
+    const sorts = partition.withSorts([
+      { column: 'COUNTRY', direction: SortDirection.ASC },
+    ]);
+    expect(sorts.rest).toEqual({ note: 'kept' });
+    expect(saved(sorts)).toBe(
+      savedPartition({
+        columns: ['COUNTRY'],
+        sorts: [{ column: 'COUNTRY', direction: 'ASC' }],
+        aggregations: [RANK],
+      }),
+    );
+    const aggregations = partition.withAggregations([]);
+    expect(aggregations.rest).toEqual({ note: 'kept' });
+    expect(saved(aggregations)).toBe(
+      savedPartition({
+        columns: ['COUNTRY'],
+        sorts: [QTY_DESC],
+        aggregations: [],
+      }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec: filters by expression, added in M6b'), () => {
+  const REGISTRY = createNodeRegistry();
+  /** The registry of the version before M6b: every operation, but no Filter by Expression */
+  const M7_REGISTRY = new NodeRegistry(
+    [...REGISTRY.sources, ...REGISTRY.transforms].filter(
+      (definition) => definition.type !== ExpressionFilter.TYPE,
+    ),
+  );
+
+  /** A saved spec: `relational101` feeding `expressionFilter101`, with these fields of its own */
+  const expressionFilterSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'expressionFilter101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'expressionFilter',
+          id: 'expressionFilter101',
+          inputs: ['relational101'],
+          ...own,
+        },
+      ],
+    },
+  });
+  const LAMBDA: JsonObject = {
+    _type: 'lambda',
+    parameters: [{ _type: 'var', name: 'x' }],
+    body: [{ _type: 'boolean', value: true }],
+  };
+
+  test.each<[string, JsonObject]>([
+    [
+      'a filter by expression',
+      {
+        code: 'x | true',
+        lambda: LAMBDA,
+        checked: { signature: '1a2b3c' },
+        note: 'kept',
+      },
+    ],
+    // an error only where Filter by Expression is known
+    ['a filter by expression without its text', { lambda: LAMBDA }],
+  ])(
+    'Reads %s as an Unknown node in a version without Filter by Expression, editable, and re-saves it verbatim',
+    (_, own) => {
+      const json = expressionFilterSpec(own);
+      const { document, readOnly } = decodeCubeSpec(json, {
+        registry: M7_REGISTRY,
+      });
+      expect(readOnly).toBe(false);
+      const node = document.query.getNode('expressionFilter101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('expressionFilter');
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> expressionFilter101.in0',
+      ]);
+      expect(JSON.stringify(encodeCubeSpec(document, M7_REGISTRY))).toBe(
+        JSON.stringify(json),
+      );
+      // a new node would not take the saved node's id
+      expect(document.query.generateId(ExpressionFilter.TYPE)).not.toBe(
+        'expressionFilter101',
+      );
+    },
+  );
+
+  test('Reads a filter by expression in this version, its unknown keys kept', () => {
+    const json = expressionFilterSpec({
+      code: 'x | true',
+      lambda: LAMBDA,
+      note: 'kept',
+      zeta: [null, { flag: false }],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: REGISTRY,
+    }).document.query.getNode('expressionFilter101');
+    expect(node).toBeInstanceOf(ExpressionFilter);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(reSave(json, REGISTRY)).toBe(JSON.stringify(json));
   });
 });

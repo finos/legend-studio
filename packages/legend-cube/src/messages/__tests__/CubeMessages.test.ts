@@ -178,6 +178,63 @@ test(unitTest('Messages added by Cube'), () => {
   expect(
     MESSAGES.MESSAGE_GROUP_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
   ).toBe('Group column "PAYLOAD" of type Variant cannot be grouped.');
+  expect(
+    MESSAGES.MESSAGE_PARTITION_COLUMN_NOT_PARTITIONABLE('PAYLOAD', 'Variant'),
+  ).toBe('Partition column "PAYLOAD" of type Variant cannot be partitioned.');
+  // Pivot (PLAN §11.12)
+  expect(
+    MESSAGES.MESSAGE_PIVOT_ROW_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
+  ).toBe('Row column "PAYLOAD" of type Variant cannot be grouped.');
+  expect(MESSAGES.MESSAGE_PIVOT_COLUMN_NOT_PIVOTABLE('FREIGHT', 'Double')).toBe(
+    'Pivot column "FREIGHT" of type Double cannot be pivoted.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_COLUMN_IS_ROW_COLUMN('YEAR')).toBe(
+    'Pivot column "YEAR" cannot also be a row column.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUES_TOO_MANY(100)).toBe(
+    'Pivot values cannot be more than 100.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUE_INVALID('x', 'Int')).toBe(
+    'Pivot value "x" is not a valid Int.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE('A', 'a')).toBe(
+    'Pivot values "a" and "A" differ only in case, so some databases would mix up their columns.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME('q"t')).toBe(
+    'Pivot value "q"t" cannot name a column.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED('DistinctValue')).toBe(
+    'Aggregation function "DistinctValue" cannot be used in a pivot.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2')).toBe(
+    'Pivot is not supported on H2.',
+  );
+  expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN('YEAR')).toBe(
+    'Aggregation column "YEAR" cannot be a row column or the pivot column.',
+  );
+  expect(MESSAGES.MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT('DenseRank')).toBe(
+    'Aggregation function "DenseRank" requires at least one sort column.',
+  );
+  expect(MESSAGES.MESSAGE_DIFFERENCE_COLUMN_IS_JOIN_COLUMN('FREIGHT')).toBe(
+    'Difference column "FREIGHT" cannot be a join column.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DIFFERENCE_OUTPUT_NAME_INVALID('x_valueDifference'),
+  ).toBe(
+    'Difference output column "x_valueDifference" is not valid column name.',
+  );
+  expect(MESSAGES.MESSAGE_EXPRESSION_NOT_A_LAMBDA('margin')).toBe(
+    '"margin" must be a lambda with one parameter, such as x | $x.PRICE.',
+  );
+  expect(
+    MESSAGES.MESSAGE_EXPRESSION_NOT_TYPED('margin', "Can't find a match"),
+  ).toBe(`"margin" can't be typed: Can't find a match`);
+  expect(MESSAGES.MESSAGE_EXPRESSIONS_NOT_TYPED('No such function')).toBe(
+    "The new columns can't be typed: No such function",
+  );
+  expect(MESSAGES.ERR_TYPING).toBe(
+    'Waiting for the engine to type the new columns.',
+  );
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );
@@ -235,6 +292,30 @@ test(unitTest('Messages added by Cube'), () => {
   ).toBe(
     `Column "REGION" is a::Region in the first input and b::Region in the second, which can't be converted to one type.`,
   );
+  // the grid's drill-down (PLAN §11.10)
+  expect(MESSAGES.MESSAGE_DRILLDOWN_COLUMN_NOT_IN_OUTPUT('CITY')).toBe(
+    `Drill-down column "CITY" is not in the query's output.`,
+  );
+  expect(MESSAGES.MESSAGE_DRILLDOWN_COLUMN_NOT_GROUPABLE('V', 'Variant')).toBe(
+    'Drill-down column "V" of type Variant cannot be grouped.',
+  );
+  expect(MESSAGES.MESSAGE_DRILLDOWN_COLUMN_LISTED_TWICE('CITY')).toBe(
+    'Drill-down column "CITY" is listed more than once.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_COLUMN_NOT_IN_OUTPUT('FREIGHT'),
+  ).toBe(
+    `Drill-down aggregation column "FREIGHT" is not in the query's output.`,
+  );
+  expect(MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_LISTED_TWICE('FREIGHT')).toBe(
+    'Drill-down aggregation column "FREIGHT" is listed more than once.',
+  );
+  expect(
+    MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_UNKNOWN('Median', 'FREIGHT'),
+  ).toBe('Drill-down aggregation "Median" of column "FREIGHT" is unknown.');
+  expect(
+    MESSAGES.MESSAGE_DRILLDOWN_AGGREGATION_INCOMPATIBLE('Sum', 'CITY'),
+  ).toBe('Drill-down aggregation "Sum" is incompatible with column "CITY".');
 });
 
 test(

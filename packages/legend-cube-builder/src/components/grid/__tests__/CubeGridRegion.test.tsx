@@ -22,6 +22,7 @@ import {
   jest,
   test,
 } from '@jest/globals';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
   Core_LegendApplicationPlugin,
   type GenericLegendApplicationStore,
@@ -30,6 +31,7 @@ import {
 import {
   ColumnComparisonFilter,
   CubeDocument,
+  DEFAULT_META,
   FilterOperator,
   type IR,
   PrimitiveType,
@@ -69,6 +71,7 @@ import {
 } from '../../../graph-manager/CubeEngine.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { NULL_CELL_TEXT } from '../../../__lib__/LegendCubeLabels.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
 const P = 'meta::pure::precisePrimitives::';
@@ -166,9 +169,9 @@ const rowLimitInput = (): HTMLInputElement =>
 const selectNode = async (nodeId: string): Promise<void> => {
   fireEvent.click(await TEST__findCanvasNode(nodeId), { ctrlKey: true });
 };
-/** The node's errors and warnings, from its tooltip, which ends with its description and id */
+/** The node's errors and warnings, from its tooltip, which ends with its description */
 const nodeProblems = async (nodeId: string): Promise<string[]> =>
-  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -2);
+  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -1);
 
 const grid = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.RESULT_GRID);
@@ -202,6 +205,11 @@ const cellTexts = async (column: number): Promise<string[]> => {
 };
 
 /** Sorts by a column, as a click on its header does */
+/** Shows the grid in local mode: the run's rows sorted, grouped and filtered in the browser */
+const useLocalMode = (): void => {
+  fireEvent.click(within(toolbar()).getByRole('button', { name: 'Local' }));
+};
+
 const clickHeader = (column: number): void => {
   fireEvent.click(
     headerCell(column).querySelector('.ag-header-cell-label') as Element,
@@ -233,6 +241,9 @@ const consoleError = console.error; // eslint-disable-line no-console
 
 beforeEach(() => {
   localStorage.clear();
+  // the mocked code editor holds no text of its own
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  MockedMonacoEditorInstance.setValue.mockClear();
 });
 
 afterEach(() => {
@@ -250,7 +261,7 @@ describe('Cube results', () => {
     expect(fake.execute).toHaveBeenCalledTimes(1);
   });
 
-  test("Shows booleans as true and false, an empty string as empty and a 0 as 0, and only nulls as a muted '(null)'", async () => {
+  test("Shows booleans as true and false, an empty string as empty and a Float 0 as 0.00, and only nulls as a muted '(null)'", async () => {
     const schema = new Schema([
       new SchemaColumn('B', PrimitiveType.get('Boolean'), true),
       new SchemaColumn('S', PrimitiveType.get(`${P}Varchar`, [10]), true),
@@ -270,7 +281,7 @@ describe('Cube results', () => {
     fireEvent.click(executeButton());
     expect(await cellTexts(0)).toEqual(['true', 'false', '(null)']);
     expect(await cellTexts(1)).toEqual(['', ' a ', '(null)']);
-    expect(await cellTexts(2)).toEqual(['0', '1.5', '(null)']);
+    expect(await cellTexts(2)).toEqual(['0.00', '1.50', '(null)']);
     expect(within(cell(2, 1)).getByText('(null)').className).toContain(
       'text-[var(--color-text-muted)]',
     );
@@ -345,6 +356,48 @@ describe('Cube results', () => {
     expect(grid().classList.contains('ag-theme-balham')).toBe(false);
   });
 
+  test('Shows Decimal values grouped and Float values rounded to 2 places, with the exact value on hover, and leaves ids and years plain', async () => {
+    const schema = new Schema([
+      new SchemaColumn('TRADE_ID', PrimitiveType.get(`${P}BigInt`), false),
+      new SchemaColumn('NOTIONAL', PrimitiveType.get('Decimal'), false),
+      new SchemaColumn('NOTIONAL_MM', PrimitiveType.get('Float'), true),
+      new SchemaColumn('YEAR', PrimitiveType.get(`${P}Int`), false),
+    ]);
+    await renderCube({
+      document: new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(schema),
+      }),
+      result: resultFor(schema, [
+        ['10692', '31102024.71', 31.10202471, '2026'],
+        ['5', '-1234.5', null, '1999'],
+        ['7', '512.00', 0.5, '2025'],
+      ]),
+    });
+    useLocalMode();
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual(['10692', '5', '7']);
+    expect(await cellTexts(1)).toEqual(['31,102,024.71', '-1,234.5', '512.00']);
+    expect(await cellTexts(2)).toEqual(['31.10', NULL_CELL_TEXT, '0.50']);
+    expect(await cellTexts(3)).toEqual(['2026', '1999', '2025']);
+    // the exact value on hover, where the two differ
+    const shown = (row: number, column: number): HTMLElement =>
+      cell(row, column).querySelector('span') as HTMLElement;
+    expect(shown(0, 1).title).toBe('31102024.71');
+    expect(shown(0, 2).title).toBe('31.10202471');
+    expect(cell(2, 1).querySelector('span[title]')).toBeNull();
+    expect(cell(0, 0).querySelector('span[title]')).toBeNull();
+    // sorting still reads the values, not the text shown
+    clickHeader(1);
+    await waitFor(async () =>
+      expect(await cellTexts(1)).toEqual([
+        '-1,234.5',
+        '512.00',
+        '31,102,024.71',
+      ]),
+    );
+  });
+
   test('Sorts a number column by value, digit for digit past what a JS number holds', async () => {
     // the two large values are the same JS number: in this order, only a sort by their text gets them right
     await renderPage(undefined, (fake) =>
@@ -357,6 +410,7 @@ describe('Cube results', () => {
         ]),
       ),
     );
+    useLocalMode();
     fireEvent.click(executeButton());
     await cellTexts(0);
     clickHeader(0);
@@ -372,6 +426,7 @@ describe('Cube results', () => {
 
   test("Shows a new run's rows in the engine's order, not under the last run's sort", async () => {
     const fake = await renderPage();
+    useLocalMode();
     fireEvent.click(executeButton());
     await cellTexts(0);
     clickHeader(0);
@@ -390,6 +445,239 @@ describe('Cube results', () => {
       expect(new Set(await cellTexts(0))).toEqual(new Set(['1', '2', '3'])),
     );
     expect(await cellTexts(0)).toEqual(['3', '1', '2']);
+  });
+
+  test("Sorts by a header on the engine in server-side mode, over all the query's rows, and shows the engine's order", async () => {
+    const fake = await renderPage();
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']);
+    fake.execute.mockResolvedValueOnce(
+      result([
+        ['9007199254740993', 'b'],
+        ['10', 'a'],
+        ['9', null],
+      ]),
+    );
+    clickHeader(0);
+    // the engine's order, whatever the browser would make of it
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['9007199254740993', '10', '9']),
+    );
+    const sorted = printIR(fake.execute.mock.calls[1]?.[1] as IR);
+    expect(sorted).toContain('->sort(~ID->ascending())');
+    // descending, then cleared: the run's own rows again, with no new run
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    clickHeader(0);
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
+    );
+    expect(fake.execute.mock.calls.map((call) => printIR(call[1]))).toEqual([
+      expect.not.stringContaining('->sort('),
+      expect.stringContaining('->sort(~ID->ascending())'),
+      expect.stringContaining('->sort(~ID->descending())'),
+    ]);
+  });
+
+  test("Shows a drill-down's groups with their counts, each number summed, and a group's rows on expanding it", async () => {
+    const fake = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          drilldown: { columns: ['NAME'], aggregations: [] },
+        },
+      }),
+    );
+    fake.execute.mockResolvedValueOnce(result(ROWS));
+    fake.execute.mockResolvedValueOnce({
+      columns: ['NAME', 'ID Sum', 'Count Rows'],
+      rows: [
+        ['nine', '9', '1'],
+        [null, '9007199254740993', '1'],
+        ['ten', '10', '1'],
+      ],
+      sql: [],
+      durationMs: 1,
+    });
+    fireEvent.click(executeButton());
+    const groupCell = (row: number): HTMLElement =>
+      grid().querySelector(
+        `.ag-row[row-index="${row}"] [col-id="ag-Grid-AutoColumn"]`,
+      ) as HTMLElement;
+    await waitFor(() => expect(groupCell(0).textContent).toContain('nine'));
+    expect(
+      grid().querySelector('.ag-header-cell[col-id="ag-Grid-AutoColumn"]')
+        ?.textContent,
+    ).toContain('NAME');
+    // the key, and the group's count
+    expect(groupCell(0).textContent).toContain('(1)');
+    expect(groupCell(1).textContent).toContain(NULL_CELL_TEXT);
+    // the ID column holds each group's Sum, digit for digit
+    expect(await cellTexts(0)).toEqual(['9', '9007199254740993', '10']);
+    const groups = printIR(fake.execute.mock.calls[1]?.[1] as IR);
+    expect(groups).toContain(`->groupBy(~[NAME], ~['ID Sum'`);
+    // the group with no name, expanded: its rows, by Is Empty
+    fake.execute.mockResolvedValueOnce(result([['9007199254740993', null]]));
+    fireEvent.click(
+      groupCell(1).querySelector('.ag-group-contracted') as HTMLElement,
+    );
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    expect(printIR(fake.execute.mock.calls[2]?.[1] as IR)).toContain(
+      '$row.NAME->isEmpty()',
+    );
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual([
+        '9',
+        '9007199254740993',
+        '9007199254740993',
+        '10',
+      ]),
+    );
+  });
+
+  test("Lists the drill-down's levels above the grid, sets what group rows show, and removes a level or all", async () => {
+    const fake = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          drilldown: { columns: ['NAME', 'MISSING'], aggregations: [] },
+        },
+      }),
+    );
+    const groups = (sumName: string) => ({
+      columns: ['NAME', sumName, 'Count Rows'],
+      rows: [['ten', '10', '1']],
+      sql: [],
+      durationMs: 1,
+    });
+    fake.execute.mockResolvedValueOnce(result(ROWS));
+    fake.execute.mockResolvedValueOnce(groups('ID Sum'));
+    fireEvent.click(executeButton());
+    const bar = await screen.findByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR);
+    expect(bar.textContent).toContain('NAME');
+    // a level the run lacks is said, and left out
+    expect(within(bar).getByRole('status').textContent).toBe(
+      `Drill-down column "MISSING" is not in the query's output.`,
+    );
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    // the group rows' ID: its Average instead of its Sum
+    fireEvent.click(within(bar).getByText('Group rows…'));
+    const settings = await screen.findByTestId(
+      LEGEND_CUBE_TEST_ID.DRILLDOWN_SETTINGS,
+    );
+    const id =
+      within(settings).getByLabelText<HTMLSelectElement>("Group rows' ID");
+    expect(id.value).toBe('Sum');
+    expect([...id.options].map((option) => option.textContent)).toContain(
+      'Sum (default)',
+    );
+    // NAME is a level: it has no setting
+    expect(within(settings).queryByLabelText("Group rows' NAME")).toBeNull();
+    fake.execute.mockResolvedValueOnce(groups('ID Average'));
+    fireEvent.change(id, { target: { value: 'Average' } });
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(3));
+    expect(printIR(fake.execute.mock.calls[2]?.[1] as IR)).toContain(
+      `'ID Average': x | $x.ID : y | $y->average()`,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    // removing the only usable level shows the run's rows again
+    fireEvent.click(within(bar).getByLabelText('Stop drilling down by NAME'));
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']),
+    );
+    fireEvent.click(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR)).getByText(
+        'Clear',
+      ),
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.DRILLDOWN_BAR)).toBeNull();
+    expect(fake.execute).toHaveBeenCalledTimes(3);
+  });
+
+  test('Lists the latest runs, newest first, with their SQL to copy', async () => {
+    const applicationStore = TEST__createCubeApplicationStore();
+    const copy = jest
+      .spyOn(applicationStore.clipboardService, 'copyTextToClipboard')
+      .mockResolvedValue(undefined);
+    const { fake } = await renderCube({ applicationStore });
+    fireEvent.click(executeButton());
+    await cellTexts(0);
+    fake.execute.mockResolvedValueOnce({
+      ...result(ROWS),
+      sql: ['select … order by "ID"'],
+    });
+    clickHeader(0);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
+    fireEvent.click(within(toolbar()).getByText('Runs (2)'));
+    const runs = screen.getByTestId(LEGEND_CUBE_TEST_ID.RUN_STATS);
+    const entries = within(runs).getAllByRole('listitem');
+    expect(entries.map((entry) => entry.textContent)).toEqual([
+      expect.stringContaining('Rows, sorted by ID ascending'),
+      expect.stringContaining('Execute'),
+    ]);
+    fireEvent.click(within(entries[0] as HTMLElement).getByText('Copy SQL'));
+    expect(copy).toHaveBeenCalledWith('select … order by "ID"');
+  });
+
+  test("Shows a number column as its saved format, sets one from the cell's menu, and keeps a saved width", async () => {
+    await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: tableQuery(),
+        meta: {
+          ...DEFAULT_META,
+          presentation: {
+            ...DEFAULT_META.presentation,
+            columnWidths: [{ column: 'NAME', width: 321 }],
+            columnHints: [
+              {
+                column: 'ID',
+                format: {
+                  style: 'currency',
+                  currency: 'USD',
+                  decimalPlaces: 2,
+                  grouping: true,
+                  redIfNegative: false,
+                  parenthesesIfNegative: false,
+                },
+              },
+            ],
+          },
+        },
+      }),
+    );
+    fireEvent.click(executeButton());
+    expect(await cellTexts(0)).toEqual([
+      '$10.00',
+      '$9,007,199,254,740,993.00',
+      '$9.00',
+    ]);
+    // the exact value on hover
+    expect(cell(1, 0).querySelector('span')?.title).toBe('9007199254740993');
+    expect(headerCell(1).style.width).toBe('321px');
+    // the menu's Format Column, on the ID column: a percent with no places
+    fireEvent.contextMenu(cell(0, 0));
+    fireEvent.click(await screen.findByText('Format Column…'));
+    const form = await screen.findByTestId(LEGEND_CUBE_TEST_ID.COLUMN_FORMAT);
+    fireEvent.change(within(form).getByLabelText('Style'), {
+      target: { value: 'percent' },
+    });
+    fireEvent.change(within(form).getByLabelText('Decimal places'), {
+      target: { value: '' },
+    });
+    expect(within(form).getByLabelText('Preview').textContent).toContain('25%');
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    await waitFor(async () =>
+      expect(await cellTexts(0)).toEqual([
+        '1,000%',
+        '900,719,925,474,099,300%',
+        '900%',
+      ]),
+    );
   });
 
   test("Shows the limit, says when the run returned more rows, and keeps naming the run's limit after an edit", async () => {
@@ -789,7 +1077,7 @@ describe('Cube results', () => {
     expect(signal?.aborted).toBe(true);
   });
 
-  test("Shows each of the run's SQL statements on request, and copies them all", async () => {
+  test("Shows the run's SQL statements formatted in a dialog, numbered, and copies them all", async () => {
     const writeText = jest.fn(async (_text: string) => Promise.resolve());
     Object.assign(navigator, { clipboard: { writeText } });
     const { host, fake } = await renderCube({
@@ -801,36 +1089,30 @@ describe('Cube results', () => {
     );
     fireEvent.click(executeButton());
     await cellTexts(0);
-    const showSql = within(toolbar()).getByText('Show SQL');
-    expect(showSql.getAttribute('aria-expanded')).toBe('false');
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
-    fireEvent.click(showSql);
+    fireEvent.click(within(toolbar()).getByText('Show SQL'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Executed SQL')).toBeDefined();
     expect(
-      within(toolbar()).getByText('Hide SQL').getAttribute('aria-expanded'),
-    ).toBe('true');
-    const panel = screen.getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL);
-    expect(
-      [...panel.querySelectorAll('pre')].map((pre) => pre.textContent),
-    ).toEqual(['select 1', 'select 2']);
-    fireEvent.click(within(panel).getByText('Copy SQL'));
+      within(dialog).getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL),
+    ).toBeDefined();
+    const formatted = '--QUERY #1\nselect\n  1\n\n--QUERY #2\nselect\n  2';
+    // the (mocked) code editor is given the formatted statements
+    expect(MockedMonacoEditorInstance.setValue.mock.calls.at(-1)?.[0]).toBe(
+      formatted,
+    );
+    fireEvent.click(within(dialog).getByText('Copy SQL'));
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
-    // through the application's clipboard service, every statement in order
-    expect(copyTextToClipboard).toHaveBeenCalledTimes(1);
-    expect(copyTextToClipboard.mock.calls[0]?.[0].split(/\n+/u)).toEqual([
-      'select 1',
-      'select 2',
-    ]);
-    // a run in flight hides the last run's SQL
+    // through the application's clipboard service, as shown
+    expect(copyTextToClipboard).toHaveBeenCalledWith(formatted);
+    fireEvent.click(within(dialog).getByText('Close'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    // a run in flight has no SQL to show
     fake.execute.mockImplementationOnce(
       async () => new Promise<CubeResult>(() => undefined),
     );
     fireEvent.click(executeButton());
     expect(await within(toolbar()).findByText('executing query')).toBeDefined();
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
-    expect(within(toolbar()).queryByText(/(?:Show|Hide) SQL/u)).toBeNull();
-    fireEvent.click(within(toolbar()).getByText('Stop'));
-    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeDefined();
-    fireEvent.click(within(toolbar()).getByText('Hide SQL'));
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
+    expect(within(toolbar()).queryByText('Show SQL')).toBeNull();
   });
 });

@@ -20,35 +20,48 @@ import {
   buildSchemasAndValidity,
   type ColumnAggregation,
   ColumnComparisonFilter,
+  type ColumnDirection,
   CompositeFilter,
   CompositeFilterOperator,
   Concat,
   Connection,
   createNodeRegistry,
+  Difference,
   DataProductAccessPointSource,
   Distinct,
   Drop,
   Filter,
   FilterOperator,
+  FunctionSource,
   fixJoinDuplicates,
   getAvailableAggregations,
   Group,
   IngestDatasetSource,
+  type JsonObject,
   Join,
   JoinType,
   Limit,
   NotFilter,
+  Partition,
+  Pivot,
   Query,
   type QueryNode,
   type RelationalTableSource,
   Rename,
   renameConcatInput,
   Restrict,
+  ServiceSource,
   restrictConcatInput,
   Schema,
   Slice,
   Sort,
   SortDirection,
+  WindowRankFunction,
+  WindowRowFunction,
+  checkDrilldown,
+  deriveDrilldownLevel,
+  type DrilldownAggregation,
+  type DrilldownCell,
 } from '@finos/legend-cube';
 import {
   TEST__chainOf,
@@ -57,6 +70,12 @@ import {
   TEST__northwindTable,
   TEST__typingDifferences,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
+import {
+  TEST__checkedExpressionFilter,
+  TEST__expression,
+  type TEST__ExtendColumn,
+  TEST__typedExtend,
+} from '../__test-utils__/CubeExpressionTestUtils.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
 import { CUBE_NORTHWIND_MODEL } from '../stores/fixtures/CubeNorthwindModel.js';
@@ -145,6 +164,41 @@ const joined =
     );
   };
 
+/**
+ * relational101, then the nodes, then extend101 adding these columns, typed
+ * as given for the input Cube infers: the suite checks the types against the
+ * engine's
+ */
+const extended =
+  (before: readonly QueryNode[], columns: readonly TEST__ExtendColumn[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const nodes = [source(sources, 'relational101'), ...before];
+    return TEST__chainOf([
+      ...nodes,
+      TEST__typedExtend('extend101', TEST__chainOf(nodes), columns),
+    ]);
+  };
+
+/**
+ * relational101, then the nodes, then expressionFilter101 of the condition,
+ * checked for the input Cube infers: the suite checks its columns are the
+ * engine's (PLAN §11.11)
+ */
+const expressionFiltered =
+  (before: readonly QueryNode[], condition: JsonObject) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const nodes = [source(sources, 'relational101'), ...before];
+    return TEST__chainOf([
+      ...nodes,
+      TEST__checkedExpressionFilter(
+        'expressionFilter101',
+        TEST__chainOf(nodes),
+        'x | …',
+        condition,
+      ),
+    ]);
+  };
+
 /** Each arm's nodes, each feeding the next */
 const armConnections = (arm: readonly QueryNode[]): Connection[] =>
   arm
@@ -157,6 +211,45 @@ const armConnections = (arm: readonly QueryNode[]): Connection[] =>
           node.ports[0] as string,
         ),
     );
+
+/**
+ * relational101 through the first nodes and relational102 through the second,
+ * compared by difference101 (its Left and Right) on the keys by the difference
+ * columns, captured
+ */
+const differenced =
+  (
+    first: readonly QueryNode[],
+    second: readonly QueryNode[],
+    keys: readonly (readonly [string, string])[],
+    differenceColumns: readonly string[],
+  ) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const difference = new Difference('difference101', {
+      leftColumns: keys.map(([left]) => left),
+      rightColumns: keys.map(([, right]) => right),
+      differenceColumns,
+    });
+    const arms = [
+      [source(sources, 'relational101'), ...first],
+      [source(sources, 'relational102'), ...second],
+    ];
+    return new Query(
+      [...arms.flat(), difference],
+      [
+        ...arms.flatMap(armConnections),
+        ...arms.map(
+          (arm, index) =>
+            new Connection(
+              (arm.at(-1) as QueryNode).id,
+              difference.id,
+              difference.ports[index] as string,
+            ),
+        ),
+      ],
+      difference.id,
+    );
+  };
 
 /**
  * relational101 through the first nodes and relational102 through the second,
@@ -209,12 +302,21 @@ const converting = concatenatedWith(true);
  * data product's access point, which it doesn't read (PLAN §6.8), and an
  * ingest definition's data set, which needs a deployed definition (PLAN
  * §6.7); `CubeDataProduct.engine-roundtrip-test.ts` checks Cube's reading of
- * a data product's types against a stand-in function instead
+ * a data product's types against a stand-in function instead. A service
+ * isn't read yet (PLAN §6.4).
  */
 const NOT_TYPED_BY_THE_ENGINE: readonly string[] = [
   DataProductAccessPointSource.TYPE,
   IngestDatasetSource.TYPE,
+  ServiceSource.TYPE,
 ];
+
+/**
+ * The registered types typed against the engine elsewhere, on a model of
+ * their own: a function, which the Northwind fixture has none of
+ * (`CubeFunctionSource.engine-roundtrip-test.ts`, on the Trades sample)
+ */
+const TYPED_ELSEWHERE: readonly string[] = [FunctionSource.TYPE];
 
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];
 const CUSTOMERS: CaseTable = ['relational102', 'CUSTOMERS'];
@@ -288,7 +390,7 @@ const sumsAndAverages = (
     .map(({ name }) => name);
 
 const aggregation = (
-  fn: AggregationFunction,
+  fn: AggregationFunction | WindowRankFunction | WindowRowFunction,
   column: string | undefined,
   name: string,
 ): ColumnAggregation => ({ column, function: fn, name });
@@ -329,6 +431,180 @@ const ORDERS_AGGREGATIONS = [
   aggregation(AggregationFunction.AVERAGE, 'ORDER_ID', 'average id'),
   aggregation(AggregationFunction.MAX, 'ORDER_DATE', 'last order'),
   aggregation(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'region'),
+];
+
+/**
+ * ALLTYPES' columns concatenated with others of its own, converting types,
+ * then grouped with every function each column offers: an Integer (TinyInt
+ * with SmallInt), a Number (BigInt with Float4), a Float (Float4 with Double),
+ * a Decimal, a Date (StrictDate with Timestamp), and K, a Varchar(20) in both
+ */
+const CONVERTED_NAMES = ['I', 'N', 'FL', 'DE', 'W', 'K'];
+const groupOfConverted =
+  (keys: string[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const arms = (): [QueryNode[], QueryNode[]] => [
+      keptAs('101', ['TI', 'BI', 'F', 'DEC', 'DT', 'VC'], CONVERTED_NAMES),
+      keptAs('102', ['SI', 'F', 'D', 'NUM', 'TS', 'VC'], CONVERTED_NAMES),
+    ];
+    const concat = buildSchemasAndValidity(
+      converting(...arms())(sources),
+      createNodeRegistry().queryRules,
+    ).schemas.get('concat101');
+    return converting(
+      ...arms(),
+      new Group('group101', keys, [
+        aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+        ...(concat?.columns ?? []).flatMap((column) =>
+          getAvailableAggregations(column.type).map((fn) =>
+            aggregation(fn, column.name, `${column.name}_${fn}`),
+          ),
+        ),
+      ]),
+    )(sources);
+  };
+const CONVERTED_SUMS_AND_AVERAGES = ['N', 'DE', 'I', 'FL'].flatMap((name) => [
+  `${name}_Sum`,
+  `${name}_Average`,
+]);
+
+// Partition (M5, PLAN §11.6): its windows' functions are typed as a Group's
+// (§5.7), and the engine types Sum and Average as never null here too, though
+// an all-null partition gives none, so the cases declare them wider
+
+/** A rank function's output, which takes no column */
+const ranked = (fn: WindowRankFunction, name: string): ColumnAggregation => ({
+  column: undefined,
+  function: fn,
+  name,
+});
+
+/** Rank, Dense Rank and Row Number, named as the editor names them */
+const RANKS: readonly ColumnAggregation[] = [
+  ranked(WindowRankFunction.RANK, 'Rank'),
+  ranked(WindowRankFunction.DENSE_RANK, 'Dense Rank'),
+  ranked(WindowRankFunction.ROW_NUMBER, 'Row Number'),
+];
+
+/** Each country's orders, the latest first (PLAN §11.6's window on ORDERS) */
+const BY_COUNTRY = ['SHIP_COUNTRY'];
+const LATEST_FIRST: readonly ColumnDirection[] = [
+  { column: 'ORDER_DATE', direction: DESC },
+  { column: 'ORDER_ID', direction: ASC },
+];
+
+/**
+ * Every window function, on ORDERS' columns: counts of a Varchar, Sum and
+ * Average of a SmallInt and of a Double (FREIGHT), Min and Max of a
+ * StrictDate and of a number, Count rows and the rank functions
+ */
+const ORDERS_WINDOW_FUNCTIONS: readonly ColumnAggregation[] = [
+  aggregation(AggregationFunction.COUNT, 'SHIP_REGION', 'regions'),
+  aggregation(AggregationFunction.DISTINCT_COUNT, 'SHIP_CITY', 'cities'),
+  aggregation(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'region'),
+  aggregation(AggregationFunction.SUM, 'EMPLOYEE_ID', 'employee total'),
+  aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight total'),
+  aggregation(AggregationFunction.AVERAGE, 'EMPLOYEE_ID', 'average employee'),
+  aggregation(AggregationFunction.AVERAGE, 'FREIGHT', 'average freight'),
+  aggregation(AggregationFunction.MIN, 'ORDER_DATE', 'first order'),
+  aggregation(AggregationFunction.MAX, 'SHIPPED_DATE', 'last shipped'),
+  aggregation(AggregationFunction.MIN, 'FREIGHT', 'least freight'),
+  aggregation(AggregationFunction.MAX, 'ORDER_ID', 'last id'),
+  aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+  ...RANKS,
+];
+
+/** ALLTYPES' Sum and Average outputs, as `everyAggregation` names them */
+const ALLTYPES_SUMS_AND_AVERAGES = [
+  'TI',
+  'SI',
+  'BI',
+  'ID',
+  'F',
+  'D',
+  'DEC',
+  'NUM',
+].flatMap((name) => [`${name}_Sum`, `${name}_Average`]);
+
+/**
+ * Every function of every ALLTYPES column in a Partition by these columns
+ * and sort keys, and the rank functions when it sorts
+ */
+const everyAlltypesWindowFunction =
+  (columns: string[], sorts: readonly ColumnDirection[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query =>
+    chain(
+      new Partition('partition101', columns, sorts, [
+        ...everyAggregation(source(sources, 'relational101')),
+        ...(sorts.length ? RANKS : []),
+      ]),
+    )(sources);
+
+/**
+ * `groupOfConverted`'s converted columns, in a Partition by these columns
+ * and sort keys: every function each column offers, Count rows and the rank
+ * functions
+ */
+const partitionOfConverted =
+  (columns: string[], sorts: readonly ColumnDirection[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const arms = (): [QueryNode[], QueryNode[]] => [
+      keptAs('101', ['TI', 'BI', 'F', 'DEC', 'DT', 'VC'], CONVERTED_NAMES),
+      keptAs('102', ['SI', 'F', 'D', 'NUM', 'TS', 'VC'], CONVERTED_NAMES),
+    ];
+    const concat = buildSchemasAndValidity(
+      converting(...arms())(sources),
+      createNodeRegistry().queryRules,
+    ).schemas.get('concat101');
+    return converting(
+      ...arms(),
+      new Partition('partition101', columns, sorts, [
+        aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+        ...(concat?.columns ?? []).flatMap((column) =>
+          getAvailableAggregations(column.type).map((fn) =>
+            aggregation(fn, column.name, `${column.name}_${fn}`),
+          ),
+        ),
+        ...RANKS,
+      ]),
+    )(sources);
+  };
+
+/**
+ * A level of the grid's drill-down (PLAN §11.10), derived from a run of the
+ * case's first table: the Filter, Group and Sort Cube appends
+ */
+const drilledDown =
+  (
+    columns: readonly string[],
+    keys: readonly DrilldownCell[],
+    aggregations: readonly DrilldownAggregation[] = [],
+  ) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
+    const table = source(sources, 'relational101');
+    // listing the node types, untyped: the run alone
+    if (table.resolution.kind !== 'resolved') {
+      return chain()(sources);
+    }
+    return deriveDrilldownLevel({
+      query: chain()(sources),
+      captureId: table.id,
+      schema: table.resolution.schema,
+      drilldown: checkDrilldown(
+        { columns, aggregations },
+        table.resolution.schema,
+      ),
+      keys,
+      sorts: [],
+    }).query;
+  };
+
+/** The Sums a drill-down of ORDERS gives each group by default, which the engine types as never null */
+const ORDERS_DRILLDOWN_SUMS = [
+  'ORDER_ID Sum',
+  'EMPLOYEE_ID Sum',
+  'SHIP_VIA Sum',
+  'FREIGHT Sum',
 ];
 
 const CASES: readonly ConformanceCase[] = [
@@ -978,6 +1254,688 @@ const CASES: readonly ConformanceCase[] = [
         )(sources),
       ),
   },
+  {
+    // a Group of converted columns (M4.13): Number, Decimal, Date, Integer and
+    // Float, every function each offers, by a key and over all the rows
+    name: 'group-of-converted-types',
+    converted:
+      'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: groupOfConverted(['K']),
+    widerNullable: { group101: CONVERTED_SUMS_AND_AVERAGES },
+  },
+  {
+    name: 'group-by-converted-types',
+    converted:
+      'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: groupOfConverted(['N', 'W']),
+    widerNullable: { group101: CONVERTED_SUMS_AND_AVERAGES },
+  },
+  {
+    // and a String (two Varchar lengths): every function it offers
+    name: 'group-of-a-converted-string',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      keptAs('102', ['COMPANY_NAME', 'CONTACT_NAME'], ['COMPANY_NAME', 'CITY']),
+      new Group(
+        'group101',
+        ['COMPANY_NAME'],
+        [
+          aggregation(AggregationFunction.COUNT, 'CITY', 'CITY_Count'),
+          aggregation(
+            AggregationFunction.DISTINCT_COUNT,
+            'CITY',
+            'CITY_DistinctCount',
+          ),
+          aggregation(
+            AggregationFunction.DISTINCT_VALUE,
+            'CITY',
+            'CITY_DistinctValue',
+          ),
+        ],
+      ),
+    ),
+  },
+  // Difference (M6, PLAN §11.7): a full outer join, then the differences
+  {
+    // integer and float differences, on a merged key
+    name: 'difference-orders',
+    tables: [ORDERS, ['relational102', 'ORDERS']],
+    build: differenced(
+      [new Restrict('restrict101', ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'])],
+      [new Restrict('restrict102', ['ORDER_ID', 'SHIP_VIA', 'FREIGHT'])],
+      [['ORDER_ID', 'ORDER_ID']],
+      ['SHIP_VIA', 'FREIGHT'],
+    ),
+  },
+  {
+    // every numeric family of ALLTYPES, by the family's difference type
+    name: 'difference-every-alltypes-number',
+    tables: [ALLTYPES, ['relational102', 'ALLTYPES', 'CUBETEST']],
+    build: differenced(
+      [
+        new Restrict('restrict101', [
+          'ID',
+          'TI',
+          'SI',
+          'BI',
+          'F',
+          'D',
+          'DEC',
+          'NUM',
+        ]),
+      ],
+      [
+        new Restrict('restrict102', [
+          'ID',
+          'TI',
+          'SI',
+          'BI',
+          'F',
+          'D',
+          'DEC',
+          'NUM',
+        ]),
+      ],
+      [['ID', 'ID']],
+      ['TI', 'SI', 'BI', 'F', 'D', 'DEC', 'NUM'],
+    ),
+  },
+  {
+    // keys whose names differ, both kept, and a column of each input
+    name: 'difference-keys-named-apart',
+    tables: [ORDERS, ['relational102', 'ORDERS']],
+    build: differenced(
+      [new Restrict('restrict101', ['ORDER_ID', 'SHIP_CITY', 'SHIP_VIA'])],
+      [
+        new Restrict('restrict102', ['ORDER_ID', 'CUSTOMER_ID', 'SHIP_VIA']),
+        new Rename('rename102', [{ from: 'ORDER_ID', to: 'ORDER_REF' }]),
+      ],
+      [['ORDER_ID', 'ORDER_REF']],
+      ['SHIP_VIA'],
+    ),
+    // the engine types a full join's keys as never empty, yet each is empty
+    // on the rows only the other input has (LegendCubeOperations' Difference)
+    widerNullable: { difference101: ['ORDER_ID', 'ORDER_REF'] },
+  },
+  // Extend (M6, PLAN §11.7): the engine types each column `[1]` after
+  // toOne(), though an empty value gives an empty result, so every new
+  // column is declared wider
+  {
+    // arithmetic, a column using the one before, and a float times an integer
+    name: 'extend-arithmetic',
+    tables: [ORDERS],
+    build: extended(
+      [],
+      [
+        [
+          'a',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'plus',
+              TEST__expression.pair(
+                TEST__expression.column('ORDER_ID'),
+                TEST__expression.integer(1),
+              ),
+            ),
+          ),
+          'Integer',
+        ],
+        [
+          'b',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'times',
+              TEST__expression.pair(
+                TEST__expression.column('a'),
+                TEST__expression.integer(2),
+              ),
+            ),
+          ),
+          'Integer',
+        ],
+        [
+          'c',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'times',
+              TEST__expression.pair(
+                TEST__expression.call(
+                  'toOne',
+                  TEST__expression.column('FREIGHT'),
+                ),
+                TEST__expression.integer(2),
+              ),
+            ),
+          ),
+          'Number',
+        ],
+      ],
+    ),
+    widerNullable: { extend101: ['a', 'b', 'c'] },
+  },
+  {
+    // text, a comparison and a date, after a Restrict
+    name: 'extend-text-boolean-date',
+    tables: [ORDERS],
+    build: extended(
+      [
+        new Restrict('restrict101', [
+          'ORDER_ID',
+          'SHIP_CITY',
+          'SHIP_VIA',
+          'ORDER_DATE',
+        ]),
+      ],
+      [
+        [
+          'city',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'toUpper',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('SHIP_CITY'),
+              ),
+            ),
+          ),
+          'String',
+        ],
+        [
+          'fast',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'greaterThan',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('SHIP_VIA'),
+              ),
+              TEST__expression.integer(1),
+            ),
+          ),
+          'Boolean',
+        ],
+        [
+          'due',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'adjust',
+              TEST__expression.call(
+                'toOne',
+                TEST__expression.column('ORDER_DATE'),
+              ),
+              TEST__expression.integer(1),
+              {
+                _type: 'property',
+                property: 'DAYS',
+                parameters: [
+                  { _type: 'packageableElementPtr', fullPath: 'DurationUnit' },
+                ],
+              },
+            ),
+          ),
+          'Date',
+        ],
+      ],
+    ),
+    widerNullable: { extend101: ['city', 'fast', 'due'] },
+  },
+  // Partition (M5, PLAN §11.6): typed as a plain chain, as every case is
+  {
+    // every window function, partitioned and sorted: over(~[p], [sorts])
+    name: 'partition-every-function',
+    tables: [ORDERS],
+    build: chain(
+      new Partition(
+        'partition101',
+        BY_COUNTRY,
+        LATEST_FIRST,
+        ORDERS_WINDOW_FUNCTIONS,
+      ),
+    ),
+    widerNullable: {
+      partition101: sumsAndAverages(ORDERS_WINDOW_FUNCTIONS),
+    },
+  },
+  {
+    // every (function, family) cell on ALLTYPES, with the rank functions
+    name: 'partition-every-alltypes-function',
+    tables: [ALLTYPES],
+    build: everyAlltypesWindowFunction(
+      ['B'],
+      [{ column: 'ID', direction: ASC }],
+    ),
+    widerNullable: { partition101: ALLTYPES_SUMS_AND_AVERAGES },
+  },
+  {
+    // and over each partition whole, with no sort: over(~[p])
+    name: 'partition-every-alltypes-function-unsorted',
+    tables: [ALLTYPES],
+    build: everyAlltypesWindowFunction(['VC'], []),
+    widerNullable: { partition101: ALLTYPES_SUMS_AND_AVERAGES },
+  },
+  {
+    // and over all the rows: over([])
+    name: 'partition-every-alltypes-function-over-all-rows',
+    tables: [ALLTYPES],
+    build: everyAlltypesWindowFunction([], []),
+    widerNullable: { partition101: ALLTYPES_SUMS_AND_AVERAGES },
+  },
+  {
+    // the converted columns (M4.13): Integer, Number, Float, Decimal and Date,
+    // every function each offers, partitioned by a Varchar, sorted by a Date
+    name: 'partition-of-converted-types',
+    converted:
+      'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: partitionOfConverted(['K'], [{ column: 'W', direction: DESC }]),
+    widerNullable: { partition101: CONVERTED_SUMS_AND_AVERAGES },
+  },
+  {
+    // partitioned by a Number and a Date, sorted by a Float and a Decimal
+    name: 'partition-by-converted-types',
+    converted:
+      'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: partitionOfConverted(
+      ['N', 'W'],
+      [
+        { column: 'FL', direction: DESC },
+        { column: 'DE', direction: ASC },
+      ],
+    ),
+    widerNullable: { partition101: CONVERTED_SUMS_AND_AVERAGES },
+  },
+  {
+    // and a String (two Varchar lengths): every function it offers, sorted by
+    // it
+    name: 'partition-of-a-converted-string',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      keptAs('102', ['COMPANY_NAME', 'CONTACT_NAME'], ['COMPANY_NAME', 'CITY']),
+      new Partition(
+        'partition101',
+        ['COMPANY_NAME'],
+        [{ column: 'CITY', direction: ASC }],
+        [
+          aggregation(AggregationFunction.COUNT, 'CITY', 'CITY_Count'),
+          aggregation(
+            AggregationFunction.DISTINCT_COUNT,
+            'CITY',
+            'CITY_DistinctCount',
+          ),
+          aggregation(
+            AggregationFunction.DISTINCT_VALUE,
+            'CITY',
+            'CITY_DistinctValue',
+          ),
+          ...RANKS,
+        ],
+      ),
+    ),
+  },
+  // Filter by Expression (M6b, PLAN §11.11): its input's columns, as the
+  // engine types the filtered relation
+  {
+    // a comparison without toOne() or an isEmpty(), after a Restrict
+    name: 'expression-filter',
+    tables: [ORDERS],
+    build: expressionFiltered(
+      [
+        new Restrict('restrict101', [
+          'ORDER_ID',
+          'SHIP_VIA',
+          'SHIP_REGION',
+          'FREIGHT',
+          'ORDER_DATE',
+        ]),
+      ],
+      TEST__expression.lambda(
+        TEST__expression.call(
+          'or',
+          TEST__expression.call(
+            'greaterThan',
+            TEST__expression.column('SHIP_VIA'),
+            TEST__expression.integer(1),
+          ),
+          TEST__expression.call(
+            'isEmpty',
+            TEST__expression.column('SHIP_REGION'),
+          ),
+        ),
+      ),
+    ),
+  },
+  // Pivot (M6c, PLAN §11.12): Cube writes a cast with the columns it infers,
+  // each value's emptiness included, so the engine types them as Cube does,
+  // and the nodes after it too
+  {
+    name: 'pivot',
+    tables: [ORDERS],
+    build: chain(
+      new Pivot(
+        'pivot101',
+        ['SHIP_COUNTRY', 'EMPLOYEE_ID'],
+        'SHIP_VIA',
+        ['1', '2', '3'].map((value) => ({ kind: 'integer', value })),
+        { function: AggregationFunction.SUM, column: 'FREIGHT' },
+      ),
+    ),
+  },
+  {
+    // counts are never empty; a string pivot column; a Restrict after it
+    name: 'pivot-counts-then-restrict',
+    tables: [ORDERS],
+    build: chain(
+      new Pivot(
+        'pivot101',
+        ['CUSTOMER_ID'],
+        'SHIP_COUNTRY',
+        ['France', 'Germany'].map((value) => ({ kind: 'string', value })),
+        { function: AggregationFunction.COUNT_ROWS, column: undefined },
+      ),
+      new Restrict('restrict101', ['Germany', 'CUSTOMER_ID']),
+    ),
+  },
+  {
+    // M5b (PLAN §11.9): the row functions of a number, a text and a date,
+    // nullable, and the new rank functions, never empty; Last as First over
+    // the reversed sort, in a third extend
+    name: 'partition-m5b-functions',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', ['SHIP_COUNTRY'], LATEST_FIRST, [
+        {
+          ...aggregation(WindowRowFunction.LAG, 'FREIGHT', 'previous freight'),
+          offset: 1,
+        },
+        {
+          ...aggregation(WindowRowFunction.LEAD, 'SHIP_CITY', 'next city'),
+          offset: 3,
+        },
+        aggregation(WindowRowFunction.FIRST, 'ORDER_DATE', 'first date'),
+        aggregation(WindowRowFunction.LAST, 'SHIP_REGION', 'last region'),
+        {
+          ...aggregation(WindowRankFunction.NTILE, undefined, 'quartile'),
+          buckets: 4,
+        },
+        aggregation(WindowRankFunction.PERCENT_RANK, undefined, 'percent'),
+        aggregation(
+          WindowRankFunction.CUMULATIVE_DISTRIBUTION,
+          undefined,
+          'cumulative',
+        ),
+      ]),
+    ),
+  },
+  {
+    // no partition column: over([sorts])
+    name: 'partition-no-partition-column',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', [], LATEST_FIRST, [
+        aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight so far'),
+        aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+        ...RANKS,
+      ]),
+    ),
+    widerNullable: { partition101: ['freight so far'] },
+  },
+  {
+    // neither partition columns nor sort keys: over([])
+    name: 'partition-no-partition-or-sort',
+    tables: [ORDERS],
+    build: chain(
+      new Partition(
+        'partition101',
+        [],
+        [],
+        [
+          aggregation(AggregationFunction.COUNT, 'SHIP_REGION', 'regions'),
+          aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight total'),
+          aggregation(
+            AggregationFunction.AVERAGE,
+            'EMPLOYEE_ID',
+            'average employee',
+          ),
+          aggregation(AggregationFunction.MAX, 'ORDER_DATE', 'last order'),
+          aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+        ],
+      ),
+    ),
+    widerNullable: { partition101: ['freight total', 'average employee'] },
+  },
+  {
+    // the rank functions alone: the extend of aggregates left out
+    name: 'partition-ranks-only',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', BY_COUNTRY, LATEST_FIRST, RANKS),
+    ),
+  },
+  {
+    // a rank listed between aggregates: the two extends, then a select
+    // restoring the listed order
+    name: 'partition-mixed-order',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', BY_COUNTRY, LATEST_FIRST, [
+        aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight so far'),
+        ranked(WindowRankFunction.RANK, 'Rank'),
+        aggregation(AggregationFunction.MAX, 'ORDER_DATE', 'last order'),
+      ]),
+    ),
+    widerNullable: { partition101: ['freight so far'] },
+  },
+  {
+    // a partition column padded by a LEFT join: the engine types it as its
+    // table has it, on the join and on the Partition after it
+    name: 'partition-after-a-left-join',
+    tables: [ORDERS, CUSTOMERS],
+    build: joined(
+      ON_CUSTOMER,
+      JoinType.LEFT_OUTER,
+      new Partition(
+        'partition101',
+        ['COMPANY_NAME'],
+        [{ column: 'ORDER_DATE', direction: DESC }],
+        [
+          aggregation(AggregationFunction.COUNT_ROWS, undefined, 'orders'),
+          aggregation(AggregationFunction.COUNT, 'COMPANY_NAME', 'companies'),
+          aggregation(
+            AggregationFunction.DISTINCT_VALUE,
+            'COMPANY_NAME',
+            'company',
+          ),
+          aggregation(AggregationFunction.MAX, 'ORDER_DATE', 'last order'),
+          aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight so far'),
+          ranked(WindowRankFunction.DENSE_RANK, 'Dense Rank'),
+        ],
+      ),
+    ),
+    widerNullable: {
+      join101: ['COMPANY_NAME'],
+      partition101: ['COMPANY_NAME', 'freight so far'],
+    },
+  },
+  {
+    // a Group's outputs, Sum and Average among them, windowed by a key
+    name: 'partition-after-a-group',
+    tables: [ORDERS],
+    build: chain(
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY', 'EMPLOYEE_ID'],
+        ORDERS_AGGREGATIONS,
+      ),
+      new Partition(
+        'partition101',
+        ['SHIP_COUNTRY'],
+        [{ column: 'n', direction: DESC }],
+        [
+          aggregation(AggregationFunction.SUM, 'n', 'country orders'),
+          aggregation(AggregationFunction.MAX, 'freight total', 'most freight'),
+          aggregation(
+            AggregationFunction.AVERAGE,
+            'average id',
+            'mean average id',
+          ),
+          aggregation(AggregationFunction.MIN, 'last order', 'earliest order'),
+          aggregation(AggregationFunction.COUNT, 'region', 'regions'),
+          ranked(WindowRankFunction.RANK, 'Rank'),
+        ],
+      ),
+    ),
+    widerNullable: {
+      group101: sumsAndAverages(ORDERS_AGGREGATIONS),
+      partition101: [
+        ...sumsAndAverages(ORDERS_AGGREGATIONS),
+        'country orders',
+        'mean average id',
+      ],
+    },
+  },
+  {
+    // a Partition by the first one's rank, sorted by its running Sum
+    name: 'partition-of-a-partition',
+    tables: [ORDERS],
+    build: chain(
+      new Partition(
+        'partition101',
+        BY_COUNTRY,
+        [{ column: 'ORDER_DATE', direction: DESC }],
+        [
+          aggregation(AggregationFunction.SUM, 'EMPLOYEE_ID', 'employee total'),
+          ranked(WindowRankFunction.RANK, 'Rank'),
+        ],
+      ),
+      new Partition(
+        'partition102',
+        ['Rank'],
+        [{ column: 'employee total', direction: DESC }],
+        [
+          aggregation(AggregationFunction.COUNT_ROWS, undefined, 'orders'),
+          aggregation(AggregationFunction.MAX, 'FREIGHT', 'most freight'),
+          aggregation(
+            AggregationFunction.AVERAGE,
+            'employee total',
+            'average total',
+          ),
+          ranked(WindowRankFunction.ROW_NUMBER, 'Row Number'),
+        ],
+      ),
+    ),
+    widerNullable: {
+      partition101: ['employee total'],
+      partition102: ['employee total', 'average total'],
+    },
+  },
+  {
+    // the top 3 orders per country, then grouped: a Filter and a Group see
+    // the window's columns
+    name: 'partition-then-filter-and-group',
+    tables: [ORDERS],
+    build: chain(
+      new Partition('partition101', BY_COUNTRY, LATEST_FIRST, [
+        aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight so far'),
+        ranked(WindowRankFunction.ROW_NUMBER, 'Row Number'),
+      ]),
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter(
+          'Row Number',
+          FilterOperator.LESS_THAN_OR_EQUAL,
+          { kind: 'integer', value: '3' },
+        ),
+      ),
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY'],
+        [
+          aggregation(AggregationFunction.COUNT_ROWS, undefined, 'orders'),
+          aggregation(
+            AggregationFunction.MAX,
+            'freight so far',
+            'most freight',
+          ),
+          aggregation(AggregationFunction.SUM, 'Row Number', 'row total'),
+        ],
+      ),
+    ),
+    widerNullable: {
+      partition101: ['freight so far'],
+      filter101: ['freight so far'],
+      group101: ['row total'],
+    },
+  },
+  {
+    // the grid's drill-down (PLAN §11.10): the top level, each number summed
+    name: 'drilldown-top-level',
+    tables: [ORDERS],
+    build: drilledDown(['SHIP_COUNTRY', 'SHIP_CITY'], []),
+    widerNullable: {
+      group101: ORDERS_DRILLDOWN_SUMS,
+      sort101: ORDERS_DRILLDOWN_SUMS,
+    },
+  },
+  {
+    // a level below, by a key, with an Average, a Distinct Count and nothing
+    name: 'drilldown-level-below',
+    tables: [ORDERS],
+    build: drilledDown(
+      ['SHIP_COUNTRY', 'SHIP_CITY'],
+      ['France'],
+      [
+        { column: 'FREIGHT', function: AggregationFunction.AVERAGE },
+        { column: 'SHIP_NAME', function: AggregationFunction.DISTINCT_COUNT },
+        { column: 'ORDER_ID', function: null },
+      ],
+    ),
+    widerNullable: {
+      group101: ['EMPLOYEE_ID Sum', 'SHIP_VIA Sum', 'FREIGHT Average'],
+      sort101: ['EMPLOYEE_ID Sum', 'SHIP_VIA Sum', 'FREIGHT Average'],
+    },
+  },
+  {
+    // the rows under an empty key and a float key: Is Empty, then In of the
+    // float and its 32-bit neighbour
+    name: 'drilldown-rows-by-empty-and-float-keys',
+    tables: [ORDERS],
+    build: drilledDown(['SHIP_REGION', 'FREIGHT'], [null, 32.38]),
+  },
+  {
+    // ALLTYPES by its Boolean: every number type summed
+    name: 'drilldown-alltypes-sums',
+    tables: [ALLTYPES],
+    build: drilledDown(['B'], []),
+    widerNullable: {
+      group101: [
+        'ID Sum',
+        'TI Sum',
+        'SI Sum',
+        'BI Sum',
+        'F Sum',
+        'D Sum',
+        'DEC Sum',
+        'NUM Sum',
+      ],
+      sort101: [
+        'ID Sum',
+        'TI Sum',
+        'SI Sum',
+        'BI Sum',
+        'F Sum',
+        'D Sum',
+        'DEC Sum',
+        'NUM Sum',
+      ],
+    },
+  },
 ];
 
 /** Every case's tables, not resolved: enough to see the node types */
@@ -1044,7 +2002,9 @@ describe('Cube inference against the engine', () => {
         .map((definition) => definition.type)
         .filter(
           (type) =>
-            !covered.has(type) && !NOT_TYPED_BY_THE_ENGINE.includes(type),
+            !covered.has(type) &&
+            !NOT_TYPED_BY_THE_ENGINE.includes(type) &&
+            !TYPED_ELSEWHERE.includes(type),
         ),
     ).toEqual([]);
   });

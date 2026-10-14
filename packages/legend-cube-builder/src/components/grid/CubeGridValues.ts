@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { TypeFamily } from '@finos/legend-cube';
+import {
+  type ColumnFormat,
+  ColumnFormatStyle,
+  isColumnFormatStyle,
+  TypeFamily,
+} from '@finos/legend-cube';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 
 // How the grid shows and sorts values (PLAN §9, Settled before M1.8).
@@ -123,3 +128,150 @@ export const formatDuration = (durationMs: number): string =>
   durationMs < 1000
     ? `${Math.round(durationMs)} ms`
     : `${(durationMs / 1000).toFixed(1)} s`;
+
+/** The decimal places a Float value shows in the grid */
+export const CUBE_GRID_FLOAT_DECIMAL_PLACES = 2;
+
+const PLAIN_NUMBER_TEXT = /^(?<sign>-?)(?<whole>\d+)(?<fraction>\.\d*)?$/u;
+
+/**
+ * Number text with a comma between each group of three digits of its whole
+ * part ("31102024.71" reads "31,102,024.71"); any other text is kept as it is
+ */
+export const groupThousands = (text: string): string => {
+  const groups = PLAIN_NUMBER_TEXT.exec(text)?.groups;
+  if (!groups) {
+    return text;
+  }
+  const { sign = '', whole = '', fraction = '' } = groups;
+  return `${sign}${whole.replace(/\B(?=(?:\d{3})+(?!\d))/gu, ',')}${fraction}`;
+};
+
+/**
+ * How the grid shows a value of a column of the family (PLAN §9, user,
+ * 2026-10-10): Decimal and Number values keep every digit,
+ * their thousands grouped; Float values are rounded to
+ * `CUBE_GRID_FLOAT_DECIMAL_PLACES` places, grouped too; Integer values, and
+ * everything else, show as they are, so ids and years get no commas. The
+ * value itself is unchanged, so copying a cell copies its exact value.
+ */
+export const formatCellValue = (
+  value: Exclude<CubeResultValue, null>,
+  family: TypeFamily,
+): string => {
+  const text = String(value);
+  switch (family) {
+    case TypeFamily.DECIMAL:
+    case TypeFamily.NUMBER:
+      return groupThousands(text);
+    case TypeFamily.FLOAT: {
+      const number = typeof value === 'number' ? value : Number(text);
+      if (
+        typeof value === 'boolean' ||
+        text.trim() === '' ||
+        !Number.isFinite(number)
+      ) {
+        return text;
+      }
+      const rounded = number.toFixed(CUBE_GRID_FLOAT_DECIMAL_PLACES);
+      // a value that rounds to zero shows no sign
+      return groupThousands(
+        Number(rounded) === 0 ? rounded.replace(/^-/u, '') : rounded,
+      );
+    }
+    default:
+      return text;
+  }
+};
+
+/** The ISO 4217 codes the browser formats (PLAN §11.10: codes, not symbols, §21) */
+export const getCubeCurrencyCodes = (): readonly string[] => {
+  const supportedValuesOf = (
+    Intl as unknown as {
+      supportedValuesOf?: (key: string) => string[];
+    }
+  ).supportedValuesOf;
+  return supportedValuesOf?.('currency') ?? ['EUR', 'GBP', 'JPY', 'USD'];
+};
+
+/** Why a format can't be used, if it can't: a style or a currency this browser doesn't know */
+export const getColumnFormatProblem = (
+  format: ColumnFormat,
+): string | undefined => {
+  if (!isColumnFormatStyle(format.style)) {
+    return `The format "${format.style}" is unknown, so the column shows its values as they are.`;
+  }
+  if (
+    format.style === ColumnFormatStyle.CURRENCY &&
+    !getCubeCurrencyCodes().includes(format.currency ?? '')
+  ) {
+    return `The currency "${format.currency ?? ''}" is unknown, so the column shows its values as they are.`;
+  }
+  return undefined;
+};
+
+/**
+ * A number formatted as the column's format says (spec §13.1, PLAN §11.10),
+ * from its exact text, so no digit is lost (`Intl.NumberFormat` reads a
+ * decimal string exactly); `undefined` for a value that isn't a number or a
+ * format that can't be used (`getColumnFormatProblem`), which shows as if
+ * none were set
+ */
+export const formatColumnValue = (
+  value: Exclude<CubeResultValue, null>,
+  format: ColumnFormat,
+): { readonly text: string; readonly negative: boolean } | undefined => {
+  const text = String(value).trim();
+  const parsed = typeof value === 'boolean' ? undefined : parseNumberText(text);
+  if (!parsed || getColumnFormatProblem(format) !== undefined) {
+    return undefined;
+  }
+  // with no places set, the value's own: '20.20' keeps its zero (a
+  // currency at least its usual cents), as the grid shows it unformatted
+  const ownPlaces = Math.min(
+    20,
+    /e/iu.test(text)
+      ? Math.max(0, parsed.digits.length - parsed.point)
+      : (text.split('.')[1]?.length ?? 0),
+  );
+  const places = format.decimalPlaces;
+  const formatter = new Intl.NumberFormat('en-US', {
+    style:
+      format.style === ColumnFormatStyle.CURRENCY
+        ? 'currency'
+        : format.style === ColumnFormatStyle.PERCENT
+          ? 'percent'
+          : 'decimal',
+    ...(format.style === ColumnFormatStyle.CURRENCY
+      ? { currency: format.currency }
+      : {}),
+    useGrouping: format.grouping,
+    // a negative that rounds to zero shows as zero, with no sign
+    signDisplay: 'negative',
+    ...(places !== undefined
+      ? { minimumFractionDigits: places, maximumFractionDigits: places }
+      : format.style === ColumnFormatStyle.PERCENT
+        ? { minimumFractionDigits: 0, maximumFractionDigits: 20 }
+        : {
+            minimumFractionDigits: Math.max(
+              ownPlaces,
+              format.style === ColumnFormatStyle.CURRENCY
+                ? (new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: format.currency,
+                  }).resolvedOptions().minimumFractionDigits ?? 0)
+                : 0,
+            ),
+            maximumFractionDigits: 20,
+          }),
+  });
+  // a decimal string keeps every digit, where a JS number would round
+  const shown = (number: string): string =>
+    formatter.format(number as unknown as number);
+  const signed = shown(text);
+  // negative as shown: one that rounds to zero isn't
+  const negative = parsed.negative && signed.includes('-');
+  return format.parenthesesIfNegative && negative
+    ? { text: `(${shown(text.replace(/^-/u, ''))})`, negative }
+    : { text: signed, negative };
+};

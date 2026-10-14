@@ -16,10 +16,17 @@
 
 import {
   type CubeContext,
+  type EnteredValue,
+  FUNCTION_SOURCE_DEFINITION,
+  type FunctionParameter,
+  FunctionSource,
   getRelationalDisplayName,
   type ModelContext,
+  parseValue,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   RelationalTableSource,
+  resolveCubeType,
+  getFunctionParameterValueError,
 } from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import {
@@ -36,16 +43,21 @@ import {
   CubeTableFlag,
   type CubeModelOutline,
   type CubeOutlineDatabase,
+  type CubeOutlineFunction,
   type CubeOutlineRuntime,
   type CubeOutlineSchema,
   type CubeOutlineTable,
 } from '../../graph-manager/CubeEngine.js';
 import { getRuntimesForDatabase } from '../../graph-manager/CubeModelOutlineHelper.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { loadCubeModelOutline } from '../CubeHost.js';
+import { recheckCubeFunctionSources } from '../CubeFunctionRecheck.js';
+import { CUBE_FUNCTION_MESSAGE } from '../../__lib__/LegendCubeFunctionLabels.js';
 import { type BundledModel, createTextModel } from '../LocalModelCatalog.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
+  generateCubeNodeIds,
 } from './CubeSourcePickerTab.js';
 
 const toMessage = (error: unknown): string => {
@@ -57,6 +69,31 @@ const toMessage = (error: unknown): string => {
 export const isTableSelectable = (table: CubeOutlineTable): boolean =>
   !table.flags.includes(CubeTableFlag.UNAVAILABLE);
 
+/** What the tab adds from the model: a table, or a function that returns a relation (PLAN §6.5) */
+export enum CubeModelReadKind {
+  TABLE = 'table',
+  FUNCTION = 'function',
+}
+
+/**
+ * A parameter's value from its text: none for empty text, whatever the type,
+ * so an optional String left empty passes `[]`, not `''`
+ */
+export const readCubeFunctionValue = (
+  text: string,
+  parameter: FunctionParameter,
+): EnteredValue => (text === '' ? undefined : parseValue(text, parameter.type));
+
+/** A function's parameters as Cube types: `[0..1]` ones optional */
+export const getCubeFunctionParameters = (
+  fn: CubeOutlineFunction,
+): FunctionParameter[] =>
+  fn.parameters.map((parameter) => ({
+    name: parameter.name,
+    type: resolveCubeType(parameter.type),
+    optional: parameter.multiplicity === '[0..1]',
+  }));
+
 /**
  * The source picker's Model tab (PLAN §6.2.7, Settled before M1.8): model,
  * then database, then a runtime keyed by that database, then schema and
@@ -66,9 +103,8 @@ export const isTableSelectable = (table: CubeOutlineTable): boolean =>
  * It serves every cube no other tab claims, e.g. one on Pure text.
  */
 export class CubeInlineModelTabState implements CubeSourcePickerTab {
-  readonly key = CubeSourcePickerTabKey.MODEL;
-  readonly label = 'Model';
-  readonly isAvailable = true;
+  readonly key: CubeSourcePickerTabKey = CubeSourcePickerTabKey.MODEL;
+  readonly label: string = 'Sample Data';
   readonly editorState: CubeEditorState;
 
   model: ModelContext | undefined;
@@ -82,8 +118,18 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
   databasePath: string | undefined;
   runtimePath: string | undefined;
   schemaName: string | undefined;
-  tableName: string | undefined;
+  /** The picked tables, in the order picked; several are added at once */
+  tableNames: readonly string[] = [];
   tableSearch = '';
+  /** Whether the tab adds a table or a function */
+  readKind = CubeModelReadKind.TABLE;
+  functionSearch = '';
+  /** The picked function's full name */
+  functionSignature: string | undefined;
+  /** The text entered for each of its parameters */
+  functionValueTexts: string[] = [];
+  /** The runtime picked for a function that leaves it to its caller */
+  functionRuntimePath: string | undefined;
   isResolving = false;
   /** Why the outline or the table couldn't be loaded, shown in the dialog */
   error: string | undefined;
@@ -100,9 +146,27 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       databasePath: observable,
       runtimePath: observable,
       schemaName: observable,
-      tableName: observable,
+      tableNames: observable.ref,
+      tableName: computed,
       tableSearch: observable,
+      readKind: observable,
+      functionSearch: observable,
+      functionSignature: observable,
+      functionValueTexts: observable.ref,
+      functionRuntimePath: observable,
       isResolving: observable,
+      functions: computed,
+      pickedFunction: computed,
+      functionParameters: computed,
+      functionValues: computed,
+      functionRuntime: computed,
+      functionRuntimes: computed,
+      functionProblem: computed,
+      setReadKind: action,
+      setFunctionSearch: action,
+      selectFunction: action,
+      setFunctionValueText: action,
+      selectFunctionRuntime: action,
       error: observable,
       fixedContext: computed,
       fixedDatabasePath: computed,
@@ -110,6 +174,7 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       runtimes: computed,
       schemas: computed,
       tables: computed,
+      schemaTables: computed,
       canConfirm: computed,
       isBusy: computed,
       open: action,
@@ -118,12 +183,14 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       selectRuntime: action,
       selectSchema: action,
       selectTable: action,
+      toggleTable: action,
       setTableSearch: action,
       startPastingModel: action,
       setPastedModelText: action,
       selectModel: flow,
       loadPastedModel: flow,
       confirm: flow,
+      confirmFunction: flow,
     });
     this.editorState = editorState;
   }
@@ -177,6 +244,20 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     );
   }
 
+  /** The schema's tables, views left out */
+  get schemaTables(): readonly CubeOutlineTable[] {
+    return (
+      this.schemas
+        .find((schema) => schema.name === this.schemaName)
+        ?.tables.filter((table) => !table.isView) ?? []
+    );
+  }
+
+  /** The one picked table; none when several are */
+  get tableName(): string | undefined {
+    return this.tableNames.length === 1 ? this.tableNames[0] : undefined;
+  }
+
   /** The schema's tables, views left out, filtered by the search text */
   get tables(): readonly CubeOutlineTable[] {
     const search = this.tableSearch.trim().toLowerCase();
@@ -190,40 +271,129 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     );
   }
 
+  /** The model's functions that return a relation, filtered by the search text */
+  get functions(): readonly CubeOutlineFunction[] {
+    const search = this.functionSearch.trim().toLowerCase();
+    return (this.outline?.functions ?? []).filter((fn) =>
+      fn.path.toLowerCase().includes(search),
+    );
+  }
+
+  get pickedFunction(): CubeOutlineFunction | undefined {
+    return this.outline?.functions?.find(
+      (fn) => fn.signature === this.functionSignature,
+    );
+  }
+
+  get functionParameters(): readonly FunctionParameter[] {
+    const fn = this.pickedFunction;
+    return fn ? getCubeFunctionParameters(fn) : [];
+  }
+
+  /** The value entered for each parameter */
+  get functionValues(): readonly EnteredValue[] {
+    return this.functionParameters.map((parameter, index) =>
+      readCubeFunctionValue(this.functionValueTexts[index] ?? '', parameter),
+    );
+  }
+
+  /**
+   * The runtimes a function that leaves the runtime to its caller can run
+   * on: the cube's, once it has one, else every runtime of the model
+   */
+  get functionRuntimes(): readonly CubeOutlineRuntime[] {
+    const fixedRuntime = this.fixedContext?.runtime;
+    return (this.outline?.runtimes ?? []).filter(
+      (runtime) => fixedRuntime === undefined || runtime.path === fixedRuntime,
+    );
+  }
+
+  /**
+   * The runtime the picked function runs on: its own, when its body names
+   * one; else the one picked
+   */
+  get functionRuntime(): string | undefined {
+    return this.pickedFunction?.runtime ?? this.functionRuntimePath;
+  }
+
+  /** Why the picked function can't be added, if it can't */
+  get functionProblem(): string | undefined {
+    const fn = this.pickedFunction;
+    if (!fn) {
+      return undefined;
+    }
+    if (fn.problem !== undefined) {
+      return fn.problem;
+    }
+    const fixedRuntime = this.fixedContext?.runtime;
+    return fn.runtime !== undefined &&
+      fixedRuntime !== undefined &&
+      fn.runtime !== fixedRuntime
+      ? CUBE_FUNCTION_MESSAGE.OTHER_RUNTIME(fn.runtime, fixedRuntime)
+      : undefined;
+  }
+
+  /** The host serves the tab: it always serves models */
+  get isAvailable(): boolean {
+    return true;
+  }
+
   get isBusy(): boolean {
     return this.isLoadingModel || this.isResolving;
   }
 
   /** The tab claims no cube: the dialog gives it every cube no other tab claims */
-  ownsContext(): boolean {
+  ownsContext(context: CubeContext): boolean {
     return false;
   }
 
   get canConfirm(): boolean {
-    const table = this.tables.find(
-      (candidate) => candidate.name === this.tableName,
+    if (this.readKind === CubeModelReadKind.FUNCTION) {
+      return (
+        !this.isLoadingModel &&
+        !this.isResolving &&
+        this.model !== undefined &&
+        this.pickedFunction !== undefined &&
+        this.functionProblem === undefined &&
+        this.functionRuntime !== undefined &&
+        this.functionParameters.every(
+          (parameter, index) =>
+            getFunctionParameterValueError(
+              parameter,
+              this.functionValues[index],
+            ) === undefined,
+        )
+      );
+    }
+    // a picked table hidden by the search still counts
+    const tables = this.tableNames.map((name) =>
+      this.schemaTables.find((candidate) => candidate.name === name),
     );
     return (
       !this.isLoadingModel &&
       !this.isResolving &&
       this.model !== undefined &&
       this.runtimePath !== undefined &&
-      table !== undefined &&
-      isTableSelectable(table)
+      tables.length > 0 &&
+      tables.every((table) => table !== undefined && isTableSelectable(table))
     );
   }
 
   /**
-   * When the dialog opens on the tab: on the cube's model, or on the only
-   * model offered. A model whose outline failed to load is loaded again.
+   * When the dialog opens on the tab: on the cube's model, else the pasted
+   * model while the paste box is shown, else the bundled model picked last,
+   * else the first one. A model whose outline failed to load is loaded again.
    */
   open(): void {
     this.error = undefined;
     const model =
       this.fixedContext?.model ??
-      (this.models.length === 1 && !this.isPastingModel
-        ? this.models[0]?.model
-        : this.model);
+      (this.isPastingModel
+        ? this.model
+        : (
+            this.models.find((bundled) => bundled.model === this.model) ??
+            this.models[0]
+          )?.model);
     if (!model) {
       return;
     }
@@ -240,6 +410,27 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       this.selectDatabase(
         onlyDatabase && !otherDatabases.length ? onlyDatabase.path : undefined,
       );
+    } else {
+      this.followFixedRuntime();
+    }
+  }
+
+  /**
+   * Takes the cube's runtime once it has one, e.g. a function's (PLAN
+   * §6.5): its table and function steps can't pick another
+   */
+  protected followFixedRuntime(): void {
+    const fixedRuntime = this.fixedContext?.runtime;
+    if (fixedRuntime === undefined) {
+      return;
+    }
+    if (this.runtimes.some((runtime) => runtime.path === fixedRuntime)) {
+      this.runtimePath = fixedRuntime;
+    }
+    if (
+      this.functionRuntimes.some((runtime) => runtime.path === fixedRuntime)
+    ) {
+      this.functionRuntimePath = fixedRuntime;
     }
   }
 
@@ -286,7 +477,8 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     this.resetFrom('database');
     this.isLoadingModel = true;
     try {
-      const outline = (yield this.editorState.host.modelCatalog.loadOutline(
+      const outline = (yield loadCubeModelOutline(
+        this.editorState.host,
         model,
       )) as CubeModelOutline;
       if (this.model !== model) {
@@ -330,13 +522,72 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     this.resetFrom('table');
   }
 
+  /** Picks the table alone, in place of any picked */
   selectTable(name: string | undefined): void {
-    this.tableName = name;
+    this.tableNames = name === undefined ? [] : [name];
     this.error = undefined;
+  }
+
+  /** Adds the table to the picked ones, or takes it out */
+  toggleTable(name: string): void {
+    this.tableNames = this.tableNames.includes(name)
+      ? this.tableNames.filter((each) => each !== name)
+      : [...this.tableNames, name];
+    this.error = undefined;
+  }
+
+  /** How many sources Add adds */
+  get pickedCount(): number {
+    return this.readKind === CubeModelReadKind.FUNCTION
+      ? 1
+      : this.tableNames.length;
   }
 
   setTableSearch(search: string): void {
     this.tableSearch = search;
+  }
+
+  /**
+   * What the tab reads: a model's tables or functions; a project's tables
+   * and functions each have a tab of their own (user, 2026-10-13)
+   */
+  get readKinds(): readonly CubeModelReadKind[] {
+    return [CubeModelReadKind.TABLE, CubeModelReadKind.FUNCTION];
+  }
+
+  /** Reads tables or functions, when the tab reads that kind */
+  setReadKind(kind: CubeModelReadKind): void {
+    if (this.readKinds.includes(kind)) {
+      this.readKind = kind;
+      this.error = undefined;
+    }
+  }
+
+  setFunctionSearch(search: string): void {
+    this.functionSearch = search;
+  }
+
+  /** Picks a function; its parameters start empty, and its runtime is the only one there is */
+  selectFunction(signature: string | undefined): void {
+    if (signature === this.functionSignature) {
+      return;
+    }
+    this.functionSignature = signature;
+    this.functionValueTexts = [];
+    this.error = undefined;
+    const [onlyRuntime, ...otherRuntimes] = this.functionRuntimes;
+    this.functionRuntimePath =
+      onlyRuntime && !otherRuntimes.length ? onlyRuntime.path : undefined;
+  }
+
+  setFunctionValueText(index: number, text: string): void {
+    const texts = [...this.functionValueTexts];
+    texts[index] = text;
+    this.functionValueTexts = texts;
+  }
+
+  selectFunctionRuntime(path: string | undefined): void {
+    this.functionRuntimePath = path;
   }
 
   /**
@@ -350,18 +601,21 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     if (!this.canConfirm) {
       return false;
     }
+    if (this.readKind === CubeModelReadKind.FUNCTION) {
+      return (yield flowResult(this.confirmFunction())) as boolean;
+    }
     const { editorState } = this;
     const model = this.model as ModelContext;
     const runtime = this.runtimePath as string;
-    const coordinates = {
-      database: this.databasePath as string,
-      schema: this.schemaName as string,
-      table: this.tableName as string,
-    };
+    const database = this.databasePath as string;
+    const schemaName = this.schemaName as string;
+    const names = [...this.tableNames];
     const contextBefore = editorState.document.context;
-    // the engine stamps the table's accessor with its node id, so the id comes first
-    const id = editorState.document.query.generateId(
+    // the engine stamps each table's accessor with its node id, so the ids come first
+    const ids = generateCubeNodeIds(
+      editorState.document.query,
       RelationalTableSource.TYPE,
+      names.length,
     );
     const request = ++this.confirmRequest;
     this.isResolving = true;
@@ -369,47 +623,85 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     try {
       const typed = (yield editorState.host.engine.resolveSchemas(
         model,
-        new Map([
-          [id, [coordinates.database, coordinates.schema, coordinates.table]],
-        ]),
+        new Map(
+          names.map((table, index) => [
+            ids[index] as string,
+            [database, schemaName, table],
+          ]),
+        ),
       )) as Awaited<ReturnType<typeof editorState.host.engine.resolveSchemas>>;
       if (request !== this.confirmRequest) {
         return false;
       }
-      const schema = typed.get(id);
-      if (schema === undefined || schema instanceof CubeEngineError) {
-        throw (
-          schema ??
-          new CubeEngineError(
-            CubeEngineErrorKind.COMPILE,
-            `The engine gave no schema for this table`,
-          )
-        );
-      }
-      const node = RELATIONAL_TABLE_SOURCE_DEFINITION.resolve(
-        RELATIONAL_TABLE_SOURCE_DEFINITION.fromCoordinates(id, coordinates),
-        { kind: 'resolved', schema },
-      );
       const { document } = editorState;
-      if (document.context !== contextBefore || !document.query.canAdd(node)) {
+      if (document.context !== contextBefore) {
         throw new Error(
           `The cube changed while the table was loading; pick the table again.`,
         );
       }
-      const query = document.query.add(node);
-      // the first table sets the model and runtime; a cube saved with a model
-      // but no runtime takes the picked runtime and keeps the rest
-      editorState.applyDocument(
-        document.context?.runtime !== undefined
-          ? document.withQuery(query)
-          : document
-              .withContext({
-                ...document.context,
-                model: document.context?.model ?? model,
-                runtime,
-              })
-              .withQuery(query),
-      );
+      // each table typed is added, in the order picked; the first one picked
+      // is the one that runs on an empty cube, as a single table would be
+      let query = document.query;
+      const added: string[] = [];
+      const failed: string[] = [];
+      // with several tables, each failure names its table
+      const named = (table: string, message: string): string =>
+        names.length > 1
+          ? `${getRelationalDisplayName(table)}: ${message}`
+          : message;
+      names.forEach((table, index) => {
+        const id = ids[index] as string;
+        const schema = typed.get(id);
+        if (schema === undefined || schema instanceof CubeEngineError) {
+          failed.push(
+            named(
+              table,
+              schema?.message ?? 'The engine gave no schema for this table',
+            ),
+          );
+          return;
+        }
+        const node = RELATIONAL_TABLE_SOURCE_DEFINITION.resolve(
+          RELATIONAL_TABLE_SOURCE_DEFINITION.fromCoordinates(id, {
+            database,
+            schema: schemaName,
+            table,
+          }),
+          { kind: 'resolved', schema },
+        );
+        if (!query.canAdd(node)) {
+          failed.push(
+            named(
+              table,
+              'The cube changed while the table was loading; pick the table again.',
+            ),
+          );
+          return;
+        }
+        query = query.add(node);
+        added.push(table);
+      });
+      if (added.length) {
+        // the first table sets the model and runtime; a cube saved with a model
+        // but no runtime takes the picked runtime and keeps the rest
+        editorState.applyDocument(
+          document.context?.runtime !== undefined
+            ? document.withQuery(query)
+            : document
+                .withContext({
+                  ...document.context,
+                  model: document.context?.model ?? model,
+                  runtime,
+                })
+                .withQuery(query),
+        );
+      }
+      if (failed.length) {
+        // the tables added aren't picked any more, so Add again adds only the others
+        this.tableNames = names.filter((table) => !added.includes(table));
+        this.error = failed.join('\n');
+        return false;
+      }
       this.resetFrom('table');
       return true;
     } catch (error) {
@@ -424,15 +716,95 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
     }
   }
 
-  private resetFrom(step: 'database' | 'runtime' | 'table'): void {
+  /**
+   * Types the picked function's call with the engine, then adds it with its
+   * values; the first source also sets the cube's model and runtime, in the
+   * same undo step: the function's own runtime when its body names one
+   * (PLAN §6.5). Gives whether the function was added.
+   */
+  *confirmFunction(): GeneratorFn<boolean> {
+    const { editorState } = this;
+    const model = this.model as ModelContext;
+    const fn = this.pickedFunction as CubeOutlineFunction;
+    const runtime = this.functionRuntime as string;
+    const contextBefore = editorState.document.context;
+    const id = editorState.document.query.generateId(FunctionSource.TYPE);
+    const unresolved = FUNCTION_SOURCE_DEFINITION.fromCoordinates(id, {
+      function: fn.path,
+      signature: fn.signature,
+      parameters: this.functionParameters,
+      values: this.functionValues,
+    });
+    const request = ++this.confirmRequest;
+    this.isResolving = true;
+    this.error = undefined;
+    try {
+      const typed = (yield recheckCubeFunctionSources(
+        editorState.host.engine,
+        model,
+        [unresolved],
+      )) as Awaited<ReturnType<typeof recheckCubeFunctionSources>>;
+      if (request !== this.confirmRequest) {
+        return false;
+      }
+      const schema = typed.get(id);
+      if (schema === undefined || schema instanceof CubeEngineError) {
+        throw (
+          schema ??
+          new CubeEngineError(
+            CubeEngineErrorKind.COMPILE,
+            CUBE_FUNCTION_MESSAGE.NO_ANSWER,
+          )
+        );
+      }
+      const node = FUNCTION_SOURCE_DEFINITION.resolve(unresolved, {
+        kind: 'resolved',
+        schema,
+      });
+      const { document } = editorState;
+      if (document.context !== contextBefore || !document.query.canAdd(node)) {
+        throw new Error(CUBE_FUNCTION_MESSAGE.CUBE_CHANGED);
+      }
+      const query = document.query.add(node);
+      editorState.applyDocument(
+        document.context?.runtime !== undefined
+          ? document.withQuery(query)
+          : document
+              .withContext({
+                ...document.context,
+                model: document.context?.model ?? model,
+                runtime,
+              })
+              .withQuery(query),
+      );
+      this.functionSignature = undefined;
+      this.functionValueTexts = [];
+      return true;
+    } catch (error) {
+      if (request === this.confirmRequest) {
+        this.error = toMessage(error);
+      }
+      return false;
+    } finally {
+      if (request === this.confirmRequest) {
+        this.isResolving = false;
+      }
+    }
+  }
+
+  protected resetFrom(step: 'database' | 'runtime' | 'table'): void {
     if (step === 'database') {
       this.databasePath = undefined;
+      this.functionSignature = undefined;
+      this.functionValueTexts = [];
+      this.functionRuntimePath = undefined;
+      this.functionSearch = '';
     }
     if (step === 'database' || step === 'runtime') {
       this.runtimePath = undefined;
       this.schemaName = undefined;
     }
-    this.tableName = undefined;
+    this.tableNames = [];
     this.tableSearch = '';
   }
 }

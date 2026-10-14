@@ -1,5 +1,47 @@
 # @finos/legend-cube
 
+## 0.0.4
+
+### Patch Changes
+
+- [#5641](https://github.com/finos/legend-studio/pull/5641) [`e015523`](https://github.com/finos/legend-studio/commit/e01552380b877e9de4251a7a46ebfefde718aaf1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: add the access points of deployed data products as a source, in beta (production and production-parallel deployments).
+
+- [#5659](https://github.com/finos/legend-studio/pull/5659) [`4747154`](https://github.com/finos/legend-studio/commit/474715476c1c6d3aeb626cdb50aa7675c7c8991d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's cleanups for a demo:
+
+  - **Numbers.** The results grid shows Decimal and Number values with their thousands grouped, every digit kept, and Float values rounded to 2 places and grouped. Integer values stay plain, so ids and years get no commas. Copying a cell copies its exact value, which also shows on hover.
+  - **Export and Import** lose their "(dev)" label.
+  - **A desk league table example** over the Trades sample: trades joined to their desks, each desk's dollar notional added up, then ranked within its region with a window function.
+  - **Show Pure** leaves out the row limit Execute adds to see if there are more rows, as Legend Query's own Show Pure does; a Take or Drop the user added still shows. `QueryEmitter.emitExecutionLambda`'s `rowLimit` is now optional.
+  - **Behind the non-production flag.** Legend Query mounts the Cube page at `/query/cube` only when `extensions.core.NonProductionFeatureFlag` is set, since Cube is still a proof of concept. To see it locally, add the flag to the deployment's `dev/config.json`.
+
+- [#5659](https://github.com/finos/legend-studio/pull/5659) [`dd159b9`](https://github.com/finos/legend-studio/commit/dd159b93d7d6fb336991f0835dfab5deade50635) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Compare Column Values (Difference) and Extend Columns to Legend Cube. Difference joins two inputs on key columns, keeping every row of both, and for each numeric difference column `x` gives `x_1`, `x_2` and `x_valueDifference`, an empty value counting as 0. Extend adds columns computed by Pure expressions, written inline, which the engine checks, types against the cube's model and plans for its database; a column can use the ones before it, and the builder types an Extend again in the background when its input changes.
+
+- [#5641](https://github.com/finos/legend-studio/pull/5641) [`e015523`](https://github.com/finos/legend-studio/commit/e01552380b877e9de4251a7a46ebfefde718aaf1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: add tables from a direct database connection (H2 and DuckDB) through a tabbed "Add a source" dialog.
+
+- [#5649](https://github.com/finos/legend-studio/pull/5649) [`d847e67`](https://github.com/finos/legend-studio/commit/d847e6721c83fe0d82b437e12a7c87e257ef83ee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube gains Group ("Group by Column") and Concat ("Concatenate Another Input").
+
+  Group gives one row per value of its group columns, or one row for all the rows with none, each with its
+  aggregations: Count, Distinct Count, Distinct Value, Sum, Average, Min, Max and Count Rows, which counts every row.
+  Each is offered on the column types the spec lists, typed and made nullable as the engine types it, and named after
+  its column until renamed. The grid's quick actions gain `Group by "X"`.
+
+  Concat gives the rows of its two inputs, which must have the same columns, matched by position. Its editor shows both
+  inputs' columns side by side, marking each difference, and offers a Rename or a Restrict before an input when one
+  makes them match. Its Convert types setting converts types that differ within numbers, strings or dates to the type
+  they share; the Join and Filter editors warn that a date converted with timestamps matches them only at midnight.
+
+  Engine tests hold the schema Cube infers to the engine's for every node type.
+
+- [#5654](https://github.com/finos/legend-studio/pull/5654) [`59bbf5d`](https://github.com/finos/legend-studio/commit/59bbf5d54238b5049d7cb7a298aa0f0d04f9cf94) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads the data sets of deployed ingest definitions (beta), as Data Cube's producer source picks them: an Ingest tab and an "Ingest Dataset" palette item (Mode, the viewer's environment, a producer deployment, one of its definitions, a data set), typed from what the definition declares, and run through the `#I` accessor on a lakehouse runtime with the cube's warehouse, which the data set's panel edits. A cube reads one kind of source: tables, data products or ingest data sets. Legend Query offers it when its optional `lakehouse.platformUrl` is set.
+
+- [#5659](https://github.com/finos/legend-studio/pull/5659) [`4860e48`](https://github.com/finos/legend-studio/commit/4860e48e17654fad0ce4a421dec4fef05d099c58) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's adding-an-operation guides, testing notes and READMEs cover Group and Concat: two-input nodes with their
+  own port labels, settings that change a node's types, autofixes offered only when they make a node valid, warnings
+  shown in an editor, and the conformance and database tests a new node type needs.
+
+- [#5659](https://github.com/finos/legend-studio/pull/5659) [`dd159b9`](https://github.com/finos/legend-studio/commit/dd159b93d7d6fb336991f0835dfab5deade50635) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Lag, Lead, NTile, Percent Rank, Cumulative Distribution, First and Last to Legend Cube's Apply Window Functions. Lag and Lead read a column from the row so many rows before or after, by the window's sort; First and Last read the partition's first and last rows; NTile splits each partition into buckets; Percent Rank and Cumulative Distribution place each row in its partition. Each needs a sort column.
+
+- [#5659](https://github.com/finos/legend-studio/pull/5659) [`4860e48`](https://github.com/finos/legend-studio/commit/4860e48e17654fad0ce4a421dec4fef05d099c58) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add window functions to Legend Cube: Apply Window Functions (Partition), with partition columns, sort columns, and Count, Distinct Count, Distinct Value, Sum, Average, Min, Max, Count Rows, Rank, Dense Rank and Row Number. Every window that isn't the node being run is bound with a `let`, so a later filter can't run before it.
+
 ## 0.0.3
 
 ### Patch Changes

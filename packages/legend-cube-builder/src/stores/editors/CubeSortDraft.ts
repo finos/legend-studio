@@ -17,37 +17,19 @@
 import {
   type ColumnDirection,
   type Sort,
-  SortDirection,
+  type SortDirection,
 } from '@finos/legend-cube';
 import { action, makeObservable, observable } from 'mobx';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
-
-/** One row of the Sort editor: a column, `''` until picked, and its direction */
-export interface CubeSortRow {
-  /** Identifies the row in the editor */
-  readonly key: number;
-  readonly column: string;
-  readonly direction: SortDirection;
-}
-
-let nextRowKey = 1;
-
-const blankRow = (): CubeSortRow => ({
-  key: nextRowKey++,
-  column: '',
-  direction: SortDirection.ASC,
-});
-
-const isSameSorts = (
-  a: readonly ColumnDirection[],
-  b: readonly ColumnDirection[],
-): boolean =>
-  a.length === b.length &&
-  a.every(
-    (sort, index) =>
-      sort.column === b[index]?.column &&
-      sort.direction === b[index]?.direction,
-  );
+import {
+  blankSortRow,
+  type CubeSortRow,
+  isSameSorts,
+  movedSortRows,
+  sortKeysOfRows,
+  sortRowsOf,
+  sortsOfRows,
+} from './CubeSortRows.js';
 
 /**
  * The Sort editor's draft (spec §17.6: a list of column and direction rows,
@@ -72,27 +54,18 @@ export class CubeSortDraft extends CubeNodeDraft<Sort> {
       setDirection: action,
     });
     this.rows = original.sorts.length
-      ? original.sorts.map(({ column, direction }) => ({
-          key: nextRowKey++,
-          column,
-          direction,
-        }))
-      : [blankRow()];
-    this.initialKeys = this.keys;
-  }
-
-  /** Every row's key, a blank one included */
-  private get keys(): ColumnDirection[] {
-    return this.rows.map(({ column, direction }) => ({ column, direction }));
+      ? sortRowsOf(original.sorts)
+      : [blankSortRow()];
+    this.initialKeys = sortKeysOfRows(this.rows);
   }
 
   /** The keys the rows build, in order: a row without a column is left out */
   get sorts(): ColumnDirection[] {
-    return this.keys.filter(({ column }) => column);
+    return sortsOfRows(this.rows);
   }
 
   addRow(): void {
-    this.rows = [...this.rows, blankRow()];
+    this.rows = [...this.rows, blankSortRow()];
   }
 
   removeRow(key: number): void {
@@ -101,17 +74,7 @@ export class CubeSortDraft extends CubeNodeDraft<Sort> {
 
   /** Moves a row one place up (`-1`) or down (`1`), if it can go there */
   moveRow(key: number, offset: -1 | 1): void {
-    const from = this.rows.findIndex((row) => row.key === key);
-    const to = from + offset;
-    if (from < 0 || to < 0 || to >= this.rows.length) {
-      return;
-    }
-    const rows = [...this.rows];
-    [rows[from], rows[to]] = [
-      rows[to] as CubeSortRow,
-      rows[from] as CubeSortRow,
-    ];
-    this.rows = rows;
+    this.rows = movedSortRows(this.rows, key, offset);
   }
 
   setColumn(key: number, column: string): void {
@@ -128,7 +91,7 @@ export class CubeSortDraft extends CubeNodeDraft<Sort> {
 
   build(): Sort {
     const { original } = this;
-    return isSameSorts(this.keys, this.initialKeys)
+    return isSameSorts(sortKeysOfRows(this.rows), this.initialKeys)
       ? original
       : original.withSorts(this.sorts);
   }

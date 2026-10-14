@@ -205,6 +205,7 @@ describe('Legend Cube engine: model outline', () => {
     expect(await engine.loadModel(MODEL)).toEqual({
       databases: [],
       runtimes: [],
+      functions: [],
     });
     expect(parse).toHaveBeenCalledTimes(1);
     expect(parse).toHaveBeenCalledWith(MODEL.code);

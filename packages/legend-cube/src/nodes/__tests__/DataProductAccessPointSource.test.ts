@@ -218,7 +218,7 @@ describe(unitTest('Data product access point source'), () => {
     expect(
       isResolvableSource(resolvedTable('relational101', 'ORDERS', [])),
     ).toBe(true);
-    expect(isResolvableSource(new UnknownNode('pivot101', 1))).toBe(false);
+    expect(isResolvableSource(new UnknownNode('future101', 1))).toBe(false);
     expect(isResolvableSource(new Join('join101'))).toBe(false);
   });
 });

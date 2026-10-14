@@ -21,6 +21,7 @@ import {
   CompositeFilterOperator,
   FILTER_OPERATOR_DESCRIPTIONS,
   type FilterRule,
+  findPatternWildcardOperator,
   getAvailableOperators,
   getFilterValueShape,
   isDateOrTimestampType,
@@ -31,8 +32,10 @@ import {
   NotFilter,
   type Schema,
 } from '@finos/legend-cube';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, noop } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import {
   DATE_OR_TIMESTAMP_WARNING,
   FILTER_FLOAT_COMPARISON_HINT,
@@ -297,8 +300,17 @@ const CubeFilterGroup = observer(
  * kept, marked, to be fixed. Blank conditions are not stored.
  */
 export const CubeFilterEditor = observer((props: CubeNodeEditorProps) => {
+  const { editorState } = props;
   const draft = guaranteeType(props.draft, CubeFilterDraft);
   const [schema] = props.inputSchemas as [Schema];
+  // a pattern given % or _ is refused on some databases, which the model's
+  // outline tells (PLAN §11.11)
+  const givesWildcard = findPatternWildcardOperator(draft.tree) !== undefined;
+  useEffect(() => {
+    if (givesWildcard) {
+      flowResult(editorState.loadModelOutline()).catch(noop());
+    }
+  }, [editorState, givesWildcard]);
   return (
     <div className="flex flex-col gap-2">
       <CubeFilterGroup

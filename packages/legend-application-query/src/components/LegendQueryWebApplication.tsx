@@ -138,10 +138,18 @@ const LegendQueryWebApplicationRouter = observer(() => {
             element={<DataSpaceArtifactInspector />}
           />
 
-          <Route
-            path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
-            element={<LegendQueryCubeRoute />}
-          />
+          {/*
+            Legend Cube is a proof of concept: it is only mounted where the
+            config turns on non-production features
+            (`extensions.core.NonProductionFeatureFlag`), so production
+            deployments don't show it yet.
+          */}
+          {applicationStore.config.options.NonProductionFeatureFlag && (
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
+              element={<LegendQueryCubeRoute />}
+            />
+          )}
 
           {/* LEGACY DATA SPACE */}
           <Route

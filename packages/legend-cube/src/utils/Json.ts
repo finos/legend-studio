@@ -59,3 +59,38 @@ export const pickUnknownKeys = (
   );
   return Object.keys(rest).length ? copyJson(rest) : EMPTY_JSON_OBJECT;
 };
+
+/**
+ * A JSON value's text with every object's keys sorted, so two equal values
+ * give the same text whatever the order their keys were written in
+ */
+export const stableJsonText = (value: JsonValue): string =>
+  JSON.stringify(value, (_, inner: unknown) =>
+    isJsonObject(inner)
+      ? Object.fromEntries(
+          Object.keys(inner)
+            .sort()
+            .map((key) => [key, inner[key]]),
+        )
+      : inner,
+  );
+
+/**
+ * A short, stable digest of some text, 13 or 14 hex digits: cyrb53, two
+ * 32-bit hashes combined into 53 bits. For telling texts apart as a cache key
+ * would, never for security.
+ */
+export const hashText = (text: string): string => {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    h1 = Math.imul(h1 ^ code, 2654435761);
+    h2 = Math.imul(h2 ^ code, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+};

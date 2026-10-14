@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { IR, ModelContext, Schema } from '@finos/legend-cube';
+import type { IR, JsonObject, ModelContext, Schema } from '@finos/legend-cube';
 
 // The engine port (PLAN §8.7): what Cube asks of an engine, in Cube's own
 // terms. Only its Legend implementation, under `protocol/pure/v1/`, knows the
@@ -84,10 +84,45 @@ export interface CubeOutlineRuntime {
   readonly connections?: readonly CubeOutlineConnection[];
 }
 
-/** What a model offers the source picker: its databases and runtimes, as plain data */
+/** A parameter of a function, as its signature declares it */
+export interface CubeOutlineFunctionParameter {
+  readonly name: string;
+  /** Its type's path, as written, e.g. `Float` */
+  readonly type: string;
+  /** Its multiplicity, as written, e.g. `[1]`, `[0..1]` or `[*]` */
+  readonly multiplicity: string;
+}
+
+/** A column a function declares it returns, e.g. `ID:Integer` */
+export interface CubeOutlineFunctionColumn {
+  readonly name: string;
+  readonly type: string;
+}
+
+/** A function of a model that returns a relation (PLAN §6.5), as plain data */
+export interface CubeOutlineFunction {
+  /** The path the lambda calls it by, e.g. `sales::ordersAbove` */
+  readonly path: string;
+  /** The engine's full name, e.g. `sales::ordersAbove_Float_1__Relation_1_` */
+  readonly signature: string;
+  readonly parameters: readonly CubeOutlineFunctionParameter[];
+  readonly columns: readonly CubeOutlineFunctionColumn[];
+  /**
+   * The runtime it reads through, as its body's `from()` names it, directly
+   * or through a function it calls; none when it leaves the runtime to its
+   * caller
+   */
+  readonly runtime?: string | undefined;
+  /** Why it can't be added, e.g. a parameter Cube can't take a value for */
+  readonly problem?: string | undefined;
+}
+
+/** What a model offers the source picker: its databases, runtimes and functions, as plain data */
 export interface CubeModelOutline {
   readonly databases: readonly CubeOutlineDatabase[];
   readonly runtimes: readonly CubeOutlineRuntime[];
+  /** Its functions that return a relation; optional, as an outline from before them has none */
+  readonly functions?: readonly CubeOutlineFunction[] | undefined;
 }
 
 export enum CubeEngineErrorKind {
@@ -99,6 +134,30 @@ export enum CubeEngineErrorKind {
   UNSUPPORTED_MODEL = 'unsupportedModel',
   /** the engine couldn't be reached, or answered with no readable error */
   NETWORK = 'network',
+}
+
+/**
+ * Where in a text the engine places a problem: the source id the text was
+ * parsed under, and its 1-based first and last lines and columns, the last
+ * column included (an Extend column's expression, PLAN §11.7)
+ */
+export interface CubeSourceLocation {
+  readonly sourceId: string;
+  readonly startLine: number;
+  readonly startColumn: number;
+  readonly endLine: number;
+  readonly endColumn: number;
+}
+
+/**
+ * An expression's text as the engine's JSON (PLAN §11.7), its number
+ * literals as their digit strings: as a column stores it, with no source
+ * information, and as the engine located it in the text, so a later error
+ * can point into the text
+ */
+export interface CubeParsedExpression {
+  readonly lambda: JsonObject;
+  readonly located: JsonObject;
 }
 
 /**
@@ -114,12 +173,15 @@ export class CubeEngineError extends Error {
   readonly firstLine: string;
   /** The engine's whole message, without its Java trace, shown in the panel */
   readonly detail: string;
+  /** Where in a text the error is, when the text was parsed with its locations */
+  readonly location: CubeSourceLocation | undefined;
 
   constructor(
     kind: CubeEngineErrorKind,
     detail: string,
     nodeId?: NodeId,
     role?: string,
+    location?: CubeSourceLocation,
   ) {
     const firstLine = detail.split('\n', 1)[0]?.trim() ?? '';
     super(firstLine);
@@ -129,6 +191,7 @@ export class CubeEngineError extends Error {
     this.firstLine = firstLine;
     this.nodeId = nodeId;
     this.role = role;
+    this.location = location;
   }
 }
 
@@ -164,6 +227,30 @@ export interface CubeEngine {
     lambda: IR,
     options?: { abortController?: AbortController | undefined },
   ): Promise<CubeResult>;
+  /**
+   * Runs an execution lambda and gives its rows as CSV text (PLAN §11.10):
+   * the engine's own, a header row first, every value as the engine writes
+   * it; rejects with a `CubeEngineError`
+   */
+  exportCsv(
+    model: ModelContext,
+    lambda: IR,
+    options?: { abortController?: AbortController | undefined },
+  ): Promise<string>;
   /** The Pure text of a lambda, for display only: never parsed back */
   renderPure(lambda: IR): Promise<string>;
+  /**
+   * An Extend column's expression as the engine's JSON (PLAN §11.7), located
+   * under the source id; rejects with a `CubeEngineError` placed in the text
+   */
+  parseExpression(
+    code: string,
+    sourceId: string,
+  ): Promise<CubeParsedExpression>;
+  /**
+   * Plans an execution lambda for its runtime's database, as a run would,
+   * without running it: some expressions type, then fail when planned (PLAN
+   * §11.7). Rejects with a `CubeEngineError`
+   */
+  planLambda(model: ModelContext, lambda: IR): Promise<void>;
 }

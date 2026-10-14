@@ -28,8 +28,10 @@ import {
   FilterOperator,
   func,
   genericType,
+  relationType,
   type IR,
   lambda,
+  letBinding,
   literal,
   NotFilter,
   type Origin,
@@ -217,7 +219,8 @@ describe('Cube lambda serializer: shapes', () => {
     ['a boolean', { kind: 'boolean', value: false }, false],
     ['an integer', { kind: 'integer', value: '-3' }, -3],
     ['a float', { kind: 'float', value: '1.5' }, 1.5],
-    ['a decimal', { kind: 'decimal', value: '12.30' }, 12.3],
+    // as its text, which the engine reads as a BigDecimal (a number loses digits)
+    ['a decimal', { kind: 'decimal', value: '12.30' }, '12.30'],
     ['a date', { kind: 'strictDate', value: '1997-01-01' }, '1997-01-01'],
     [
       'a date and time',
@@ -231,26 +234,38 @@ describe('Cube lambda serializer: shapes', () => {
     });
   });
 
-  test.each([
-    '9007199254740993',
-    '-9223372036854775808',
-    '0.10000000000000000001',
-    '12.30',
-    '-1.5e3',
-  ])('Writes the number %s digit for digit, as one token', (value) => {
-    const kind =
-      value.includes('.') || value.includes('e') ? 'decimal' : 'integer';
+  test.each<['integer' | 'float', string]>([
+    ['integer', '9007199254740993'],
+    ['integer', '-9223372036854775808'],
+    ['float', '0.10000000000000000001'],
+    ['float', '12.30'],
+    ['float', '-1.5e3'],
+  ])('Writes the %s %s digit for digit, as one token', (kind, value) => {
     expect(text(lambda([], [literal({ kind, value })]))).toBe(
       `{"_type":"lambda","parameters":[],"body":[{"_type":"${kind}","value":${value}}]}`,
     );
   });
 
-  test('Refuses a number literal that is not a JSON number', () => {
+  test.each([
+    '0.10000000000000000001',
+    '12.30',
+    '-1.5e3',
+    '123456789012345678901234567890',
+  ])('Writes the decimal %s as its text, every digit kept', (value) => {
+    expect(text(lambda([], [literal({ kind: 'decimal', value })]))).toBe(
+      `{"_type":"lambda","parameters":[],"body":[{"_type":"decimal","value":"${value}"}]}`,
+    );
+  });
+
+  test.each<['integer' | 'decimal', string]>([
+    ['integer', '+5'],
+    // a decimal is sent as text, but must still be a number
+    ['decimal', '1,5'],
+    ['decimal', 'NaN'],
+  ])('Refuses the %s literal %s, not a JSON number', (kind, value) => {
     expect(() =>
-      V1_serializeCubeLambda(
-        lambda([], [literal({ kind: 'integer', value: '+5' })]),
-      ),
-    ).toThrow(`"+5" is not a number Cube can send`);
+      V1_serializeCubeLambda(lambda([], [literal({ kind, value })])),
+    ).toThrow(`"${value}" is not a number Cube can send`);
   });
 
   test('Refuses an enumeration value given as a literal', () => {
@@ -460,6 +475,69 @@ describe('Cube lambda serializer: shapes', () => {
     );
   });
 
+  test("Writes a relation type argument as the engine parses `@Relation<(…)>`: each column's type, and whether it can be empty", () => {
+    const column = (
+      name: string,
+      fullPath: string,
+      lowerBound: number,
+      params: number[] = [],
+    ): unknown => ({
+      name,
+      genericType: {
+        rawType: { _type: 'packageableType', fullPath },
+        typeArguments: [],
+        multiplicityArguments: [],
+        typeVariableValues: params.map((value) => ({
+          _type: 'integer',
+          value,
+        })),
+      },
+      multiplicity: { lowerBound, upperBound: 1 },
+    });
+    expect(
+      bodyOf(
+        relationType([
+          {
+            name: 'SHIP_COUNTRY',
+            type: genericType('meta::pure::precisePrimitives::Varchar', [15]),
+            nullable: true,
+          },
+          {
+            name: "'2000__|__cube_pivot'",
+            type: genericType('Integer'),
+            nullable: false,
+          },
+        ]),
+      ),
+    ).toEqual({
+      _type: 'genericTypeInstance',
+      genericType: {
+        rawType: { _type: 'packageableType', fullPath: 'Relation' },
+        typeArguments: [
+          {
+            rawType: {
+              _type: 'relationType',
+              columns: [
+                column(
+                  'SHIP_COUNTRY',
+                  'meta::pure::precisePrimitives::Varchar',
+                  0,
+                  [15],
+                ),
+                column("'2000__|__cube_pivot'", 'Integer', 1),
+              ],
+            },
+            typeArguments: [],
+            multiplicityArguments: [],
+            typeVariableValues: [],
+          },
+        ],
+        multiplicityArguments: [],
+        typeVariableValues: [],
+      },
+    });
+  });
+
   test('Writes an enumeration value, a join kind included, as a property of its enumeration', () => {
     expect(
       bodyOf(enumValue('meta::pure::functions::relation::JoinKind', 'INNER')),
@@ -480,18 +558,124 @@ describe('Cube lambda serializer: shapes', () => {
     expect(bodyOf({ k: 'raw', json })).toEqual(json);
   });
 
-  test('Refuses let and block, which come with window isolation (M5)', () => {
-    const relation = storeAccessor(['db::Db', 'S', 'T']);
-    expect(() =>
-      V1_serializeCubeLambda(
-        lambda([], [{ k: 'let', name: 'x', value: relation }]),
+  test("Writes an expression's lambda with its numbers digit for digit, and its origin on every value specification in place of any source information", () => {
+    const EXPRESSION: Origin = {
+      nodeId: 'extend101',
+      role: EmitRole.EXPRESSION,
+    };
+    const written = text(
+      lambda(
+        [],
+        [
+          {
+            k: 'lambdaJson',
+            json: {
+              _type: 'lambda',
+              parameters: [{ _type: 'var', name: 'x' }],
+              body: [
+                {
+                  _type: 'func',
+                  function: 'times',
+                  sourceInformation: { sourceId: 'extend101:0' },
+                  parameters: [
+                    {
+                      _type: 'collection',
+                      multiplicity: { lowerBound: 2, upperBound: 2 },
+                      values: [
+                        { _type: 'integer', value: '9007199254740993' },
+                        { _type: 'decimal', value: '1.10' },
+                        { _type: 'string', value: '12' },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            origin: EXPRESSION,
+          },
+        ],
       ),
-    ).toThrow(`Can't send "let" yet`);
-    expect(() =>
-      V1_serializeCubeLambda(
-        lambda([], [{ k: 'block', statements: [relation] }]),
+    );
+    // an integer digit for digit; a decimal as its text, its trailing zero
+    // too; a string stays a string
+    expect(written).toContain('"value":9007199254740993');
+    expect(written).toContain('"value":"1.10"');
+    expect(written).toContain('"value":"12"');
+    expect(written).not.toContain('extend101:0');
+    const stamps = written.match(/"sourceId":"cube:extend101:expression"/gu);
+    // the lambda, its parameter, the func, the collection and its three values
+    expect(stamps).toHaveLength(7);
+    // the multiplicity has no _type, so it isn't stamped
+    expect(written).toContain('"multiplicity":{"lowerBound":2,"upperBound":2}');
+  });
+
+  test("Writes a let as the engine's letFunction, stamped with its origin, name and all", () => {
+    const LET: Origin = { nodeId: 'partition101', role: EmitRole.LET };
+    const DISTINCT: Origin = { nodeId: 'distinct101', role: EmitRole.DISTINCT };
+    const json = V1_serializeCubeLambda(
+      lambda(
+        [],
+        [
+          letBinding(
+            'n_partition101',
+            storeAccessor(['db::Db', 'S', 'T']),
+            LET,
+          ),
+          func('distinct', [variable('n_partition101')], DISTINCT),
+        ],
       ),
-    ).toThrow(`Can't send "block" yet`);
+    );
+    expect(withoutSourceInformation(json)).toEqual({
+      _type: 'lambda',
+      parameters: [],
+      body: [
+        {
+          _type: 'func',
+          function: 'letFunction',
+          parameters: [
+            { _type: 'string', value: 'n_partition101' },
+            {
+              _type: 'classInstance',
+              type: '>',
+              value: { path: ['db::Db', 'S', 'T'] },
+            },
+          ],
+        },
+        {
+          _type: 'func',
+          function: 'distinct',
+          parameters: [{ _type: 'var', name: 'n_partition101' }],
+        },
+      ],
+    });
+    // the reference takes its reader's origin
+    expect(sourceIds(json)).toEqual([
+      'cube:partition101:let',
+      'cube:partition101:let',
+      'cube:partition101:let',
+      'cube:partition101:let',
+      'cube:distinct101:distinct',
+      'cube:distinct101:distinct',
+    ]);
+  });
+
+  test('Stamps a let without an origin with the nearest one around it', () => {
+    expect(
+      sourceIds(
+        bodyOf(
+          func(
+            'from',
+            [
+              lambda(
+                [],
+                [letBinding('n_a', literal({ kind: 'integer', value: '1' }))],
+              ),
+            ],
+            ORIGIN,
+          ),
+        ),
+      ),
+    ).toEqual(Array(5).fill(SOURCE_ID));
   });
 
   test('Refuses anything but a lambda at the root', () => {

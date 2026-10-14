@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-cube-builder",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Legend Cube builder: the canvas UI and the Legend engine adapter of the Legend Cube query builder",
   "keywords": [
     "legend",
@@ -63,7 +63,8 @@
     "react": "19.0.1",
     "react-dnd": "16.0.1",
     "react-dom": "19.0.1",
-    "serializr": "3.0.3"
+    "serializr": "3.0.3",
+    "sql-formatter": "15.4.11"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

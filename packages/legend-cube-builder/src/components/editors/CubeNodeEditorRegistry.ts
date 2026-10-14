@@ -17,17 +17,24 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  Difference,
   IngestDatasetSource,
   Distinct,
   Drop,
+  ExpressionFilter,
+  Pivot,
+  Extend,
   Filter,
+  FunctionSource,
   Group,
   Join,
   Limit,
+  Partition,
   RelationalTableSource,
   Rename,
   Restrict,
   type Schema,
+  ServiceSource,
   Slice,
   Sort,
 } from '@finos/legend-cube';
@@ -35,11 +42,18 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeConcatEditor } from './CubeConcatEditor.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
+import { CubeExpressionFilterEditor } from './CubeExpressionFilterEditor.js';
+import { CubePivotEditor } from './CubePivotEditor.js';
+import { CubeDifferenceEditor } from './CubeDifferenceEditor.js';
 import { CubeIngestSourceEditor } from './CubeIngestSourceEditor.js';
+import { CubeServiceSourceEditor } from './CubeServiceSourceEditor.js';
+import { CubeFunctionSourceEditor } from './CubeFunctionSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
+import { CubeExtendEditor } from './CubeExtendEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeGroupEditor } from './CubeGroupEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
+import { CubePartitionEditor } from './CubePartitionEditor.js';
 import { CubeRenameEditor } from './CubeRenameEditor.js';
 import { CubeRestrictEditor } from './CubeRestrictEditor.js';
 import { CubeRowCountEditor } from './CubeRowCountEditor.js';
@@ -77,11 +91,15 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   React.FC<CubeNodeEditorProps>
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
+  [FunctionSource.TYPE, CubeFunctionSourceEditor],
   [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [IngestDatasetSource.TYPE, CubeIngestSourceEditor],
+  [ServiceSource.TYPE, CubeServiceSourceEditor],
   [Sort.TYPE, CubeSortEditor],
   [Group.TYPE, CubeGroupEditor],
   [Filter.TYPE, CubeFilterEditor],
+  [ExpressionFilter.TYPE, CubeExpressionFilterEditor],
+  [Pivot.TYPE, CubePivotEditor],
   [Restrict.TYPE, CubeRestrictEditor],
   [Rename.TYPE, CubeRenameEditor],
   [Distinct.TYPE, CubeDistinctEditor],
@@ -90,4 +108,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Limit.TYPE, CubeRowCountEditor],
   [Slice.TYPE, CubeSliceEditor],
   [Concat.TYPE, CubeConcatEditor],
+  [Difference.TYPE, CubeDifferenceEditor],
+  [Partition.TYPE, CubePartitionEditor],
+  [Extend.TYPE, CubeExtendEditor],
 ]);

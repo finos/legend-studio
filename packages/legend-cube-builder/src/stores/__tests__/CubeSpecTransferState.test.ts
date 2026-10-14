@@ -71,13 +71,13 @@ const unfinishedDocument = (): CubeDocument => {
     query: new Query(
       [
         ...slice.nodes,
-        new UnknownNode('pivot101', 1, {
-          kind: 'pivot',
+        new UnknownNode('future101', 1, {
+          kind: 'future',
           pivotColumns: ['SHIP_COUNTRY'],
         }),
       ],
-      [...slice.connections, new Connection('filter101', 'pivot101', 'in0')],
-      'pivot101',
+      [...slice.connections, new Connection('filter101', 'future101', 'in0')],
+      'future101',
     ),
     rest: { savedBy: 'a newer Cube' },
   });
@@ -117,7 +117,7 @@ const settle = async (): Promise<void> =>
     setTimeout(resolve, 0);
   });
 
-/** Imports `text`, as Import (dev) does */
+/** Imports `text`, as Import does */
 const importSpecText = (state: CubeEditorState, text: string): void => {
   state.specTransfer.openImport();
   state.specTransfer.setImportText(text);
@@ -212,9 +212,9 @@ describe('Cube spec export and import', () => {
     );
     // compared by identity: a failed match on documents can't be reported
     expect(state.document === document).toBe(false);
-    const pivot = state.document.query.getNode('pivot101');
-    expect(pivot).toBeInstanceOf(UnknownNode);
-    expect((pivot as UnknownNode).savedKind).toBe('pivot');
+    const future = state.document.query.getNode('future101');
+    expect(future).toBeInstanceOf(UnknownNode);
+    expect((future as UnknownNode).savedKind).toBe('future');
     expect(state.document.rest).toEqual({ savedBy: 'a newer Cube' });
     expect(state.specTransfer.mode).toBeUndefined();
     expect(state.readOnly).toBe(false);

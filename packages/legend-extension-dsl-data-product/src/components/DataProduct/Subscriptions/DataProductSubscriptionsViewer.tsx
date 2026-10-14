@@ -44,6 +44,7 @@ import {
   V1_AWSSnowflakeIngestEnvironment,
   V1_ContractState,
   V1_DataContract,
+  V1_DataRequest,
   V1_DataSubscriptionTargetType,
   V1_EnrichedUserApprovalStatus,
   V1_SnowflakeNetwork,
@@ -51,7 +52,7 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
@@ -73,14 +74,19 @@ import {
   getOrganizationalScopeTypeName,
   stringifyOrganizationalScope,
 } from '../../../utils/LakehouseUtils.js';
-import type { DataProductAPGState } from '../../../stores/DataProduct/DataProductAPGState.js';
+import {
+  type DataProductAPGState,
+  SubscriptionSourceType,
+} from '../../../stores/DataProduct/DataProductAPGState.js';
 import type { DataProductDataAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import { DataProductTelemetryHelper } from '../../../__lib__/DataProductTelemetryHelper.js';
 
+const SUBSCRIPTION_TYPE_LABEL = `${SubscriptionSourceType.CONTRACT} / ${SubscriptionSourceType.DATA_REQUEST}`;
+
 const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   (props: {
-    contract: V1_LiteDataContract;
+    contract: V1_LiteDataContract | V1_DataRequest;
     dataAccessState: DataProductDataAccessState;
   }) => {
     const { contract, dataAccessState } = props;
@@ -115,12 +121,16 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
         consumer,
         dataAccessState.applicationStore.pluginManager.getApplicationPlugins(),
       );
+      const orgCode = dataAccessState.dataAccessPlugins
+        .map((plugin) => plugin.getOrganizationalNodeCode?.(consumer))
+        .find(isNonNullable);
       consumerComponent = (
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__details">
-          {getOrganizationalScopeTypeName(
-            consumer,
-            dataAccessState.applicationStore.pluginManager.getApplicationPlugins(),
-          )}
+          {orgCode ??
+            getOrganizationalScopeTypeName(
+              consumer,
+              dataAccessState.applicationStore.pluginManager.getApplicationPlugins(),
+            )}
           {typeDetails !== undefined && (
             <Tooltip
               className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__tooltip__icon"
@@ -140,6 +150,9 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
             User(s): {consumerComponent}
           </Box>
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
+            {contract instanceof V1_DataRequest
+              ? SubscriptionSourceType.DATA_REQUEST
+              : SubscriptionSourceType.CONTRACT}{' '}
             ID: {contract.guid}
             <IconButton
               onClick={(event) => {
@@ -155,7 +168,10 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
           </Box>
         </Box>
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
-          Description: {contract.description}
+          Description:{' '}
+          {contract instanceof V1_DataRequest
+            ? contract.businessJustification
+            : contract.description}
         </Box>
       </Box>
     );
@@ -163,7 +179,7 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
 );
 
 const contractMatchesSearch = (
-  contract: V1_LiteDataContract,
+  contract: V1_LiteDataContract | V1_DataRequest,
   searchText: string,
   plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
 ): boolean => {
@@ -172,7 +188,9 @@ const contractMatchesSearch = (
     return true;
   }
   const searchableFields = [
-    contract.description,
+    contract instanceof V1_DataRequest
+      ? contract.businessJustification
+      : contract.description,
     contract.guid,
     contract.createdBy,
     stringifyOrganizationalScope(contract.consumer, plugins),
@@ -190,7 +208,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
     apgState: DataProductAPGState;
     dataAccessState: DataProductDataAccessState;
     onSubmit: (
-      contract: V1_LiteDataContract,
+      source: V1_LiteDataContract | V1_DataRequest,
       target: V1_DataSubscriptionTarget,
     ) => Promise<void>;
   }) => {
@@ -210,9 +228,13 @@ const LakehouseSubscriptionsCreateDialog = observer(
     // All completed (approved) contracts for this access point group, from every
     // consumer -- not just the current user's -- sourced from the single "lite"
     // all-contracts fetch already cached on apgState.apgContracts.
-    const selectableContracts = apgState.apgContracts.filter(
-      (_contract) => _contract.state === V1_ContractState.COMPLETED,
-    );
+    const selectableContracts: (V1_LiteDataContract | V1_DataRequest)[] = [
+      ...apgState.apgContracts.filter(
+        (_contract) => _contract.state === V1_ContractState.COMPLETED,
+      ),
+      // Approved (completed) data requests
+      ...apgState.approvedDataRequests,
+    ];
 
     // Used only to derive the default selection below; the priority logic that
     // ranks a user's contracts (see V1_USER_APPROVAL_STAGE_PRIORITY) still lives
@@ -243,9 +265,9 @@ const LakehouseSubscriptionsCreateDialog = observer(
       return undefined;
     })();
 
-    const [contract, setContract] = useState<V1_LiteDataContract | undefined>(
-      defaultContract,
-    );
+    const [contract, setContract] = useState<
+      V1_LiteDataContract | V1_DataRequest | undefined
+    >(defaultContract);
     const [contractSearchText, setContractSearchText] = useState<string>('');
     const filteredSelectableContracts = selectableContracts.filter(
       (_contract) =>
@@ -342,7 +364,9 @@ const LakehouseSubscriptionsCreateDialog = observer(
           }}
         >
           <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="contract-select-label">Contract</InputLabel>
+            <InputLabel id="contract-select-label">
+              {SUBSCRIPTION_TYPE_LABEL}
+            </InputLabel>
             <Select
               ref={contractFieldRef}
               required={true}
@@ -350,7 +374,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
               id="contract-select"
               name="contract"
               value={contract?.guid ?? ''}
-              label="Contract"
+              label={SUBSCRIPTION_TYPE_LABEL}
               autoFocus={contract === undefined}
               onClose={() => setContractSearchText('')}
               renderValue={() =>
@@ -497,7 +521,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
             Cancel
           </Button>
           <Button type="submit" variant="contained">
-            Create Subsciption
+            Create Subscription
           </Button>
         </DialogActions>
       </Dialog>
@@ -537,16 +561,23 @@ export const DataProductSubscriptionViewer = observer(
     );
 
     const createDialogHandleSubmit = async (
-      _contract: V1_LiteDataContract,
+      source: V1_LiteDataContract | V1_DataRequest,
       target: V1_DataSubscriptionTarget,
     ): Promise<void> => {
       await flowResult(
-        apgState.createSubscription(
-          _contract.guid,
-          target,
-          dataAccessState.lakehouseContractServerClient,
-          auth.user?.access_token,
-        ),
+        source instanceof V1_DataRequest
+          ? apgState.createDataRequestSubscription(
+              source.guid,
+              target,
+              dataAccessState.lakehouseContractServerClient,
+              auth.user?.access_token,
+            )
+          : apgState.createSubscription(
+              source.guid,
+              target,
+              dataAccessState.lakehouseContractServerClient,
+              auth.user?.access_token,
+            ),
       );
     };
 
@@ -632,7 +663,7 @@ export const DataProductSubscriptionViewer = observer(
           minWidth: 275,
           sortable: true,
           resizable: true,
-          headerName: 'Contract ID',
+          headerName: 'Contract / Request ID',
           valueGetter: (p) => p.data?.dataContractId,
           flex: 1,
         },
@@ -646,7 +677,7 @@ export const DataProductSubscriptionViewer = observer(
     useEffect(() => {
       if (
         open &&
-        apgState.apgContracts.length > 0 &&
+        apgState.handlingContractsState.hasCompleted &&
         apgState.fetchingSubscriptionsState.isInInitialState
       ) {
         //ensure subscription loading screen appears before fetching subscriptions
@@ -664,6 +695,7 @@ export const DataProductSubscriptionViewer = observer(
       apgState,
       apgState.fetchingSubscriptionsState,
       apgState.apgContracts,
+      apgState.handlingContractsState.hasCompleted,
       auth.user?.access_token,
       dataAccessState.lakehouseContractServerClient,
       open,
@@ -710,7 +742,7 @@ export const DataProductSubscriptionViewer = observer(
                     className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
                     title={
                       !apgState.canCreateSubscription
-                        ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
+                        ? 'Cannot create subscription. No approved contracts or data requests found for this Access Point Group.'
                         : undefined
                     }
                   >

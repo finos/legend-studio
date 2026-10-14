@@ -40,6 +40,7 @@ import {
   UnknownNode,
   UnsupportedFilter,
 } from '@finos/legend-cube';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable, readFileAsText } from '@finos/legend-shared';
 import {
   act,
@@ -49,12 +50,16 @@ import {
   waitForElementToBeRemoved,
   within,
 } from '@testing-library/react';
+import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
   TEST__getCanvasNodeTooltip,
 } from '../../__test-utils__/CubeCanvasTestUtils.js';
-import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__getAddItemsTrigger,
+  TEST__renderInCubeApplication,
+} from '../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
@@ -114,13 +119,13 @@ const unfinishedDocument = (): CubeDocument => {
     query: new Query(
       [
         ...slice.nodes,
-        new UnknownNode('pivot101', 2, {
-          kind: 'pivot',
+        new UnknownNode('future101', 2, {
+          kind: 'future',
           pivotColumns: ['SHIP_COUNTRY'],
         }),
       ],
-      [...slice.connections, new Connection('filter101', 'pivot101', 'in0')],
-      'pivot101',
+      [...slice.connections, new Connection('filter101', 'future101', 'in0')],
+      'future101',
     ),
     rest: { savedBy: 'a newer Cube' },
   });
@@ -147,15 +152,15 @@ const headerButton = (text: string): HTMLButtonElement =>
  * buttons: the one that holds Import, which is never hidden
  */
 const headerStrip = (): HTMLElement =>
-  guaranteeNonNullable(headerButton('Import (dev)').parentElement);
+  guaranteeNonNullable(headerButton('Import').parentElement);
 /** The ids of the nodes on the canvas, in the query's order */
 const nodeIds = (): string[] =>
   Array.from(document.querySelectorAll('.react-flow__node')).map(
     (node) => node.getAttribute('data-id') ?? '',
   );
-/** The node's errors and warnings, from its tooltip, which ends with its description and id */
+/** The node's errors and warnings, from its tooltip, which ends with its description */
 const nodeProblems = async (nodeId: string): Promise<string[]> =>
-  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -2);
+  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -1);
 const executeButton = (): HTMLButtonElement =>
   within(
     screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
@@ -168,9 +173,11 @@ const barIn = (region: HTMLElement): Element | undefined =>
   Array.from(region.children).find((child) =>
     child.className.startsWith('panel-loading-indicator'),
   );
-/** The spec the Export dialog shows */
-const exportedText = (dialog: HTMLElement): string =>
-  within(dialog).getByLabelText<HTMLTextAreaElement>('Cube spec').value;
+/** The spec the Export dialog shows: the text its (mocked) code editor was given last */
+const exportedText = (dialog: HTMLElement): string => {
+  expect(within(dialog).getByLabelText('Cube spec')).toBeDefined();
+  return String(MockedMonacoEditorInstance.setValue.mock.calls.at(-1)?.[0]);
+};
 
 /**
  * Whether the dialog's frame and the named footer buttons are drawn dark,
@@ -205,7 +212,7 @@ function deferred<T>(): {
 
 /** Opens Import, pastes the text and presses Import */
 const importText = async (text: string): Promise<HTMLElement> => {
-  fireEvent.click(headerButton('Import (dev)'));
+  fireEvent.click(headerButton('Import'));
   const dialog = await screen.findByRole('dialog');
   fireEvent.change(within(dialog).getByLabelText('Cube spec'), {
     target: { value: text },
@@ -222,6 +229,9 @@ const CREATE_OBJECT_URL = Object.getOwnPropertyDescriptor(
 
 beforeEach(() => {
   localStorage.clear();
+  // the mocked code editor holds no text of its own
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  MockedMonacoEditorInstance.setValue.mockClear();
 });
 
 afterEach(() => {
@@ -256,9 +266,9 @@ describe('Cube spec export and import, on the page', () => {
         clicked.push(this);
       });
 
-    fireEvent.click(headerButton('Export (dev)'));
+    fireEvent.click(headerButton('Export'));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Export spec (dev)')).toBeDefined();
+    expect(within(dialog).getByText('Export spec')).toBeDefined();
     const spec = serializeCubeSpec(sliceDocument());
     expect(exportedText(dialog)).toBe(spec);
 
@@ -286,7 +296,7 @@ describe('Cube spec export and import, on the page', () => {
     expect(executeButton().disabled).toBe(true);
     expect(headerButton('Show Pure').disabled).toBe(true);
 
-    const exportButton = headerButton('Export (dev)');
+    const exportButton = headerButton('Export');
     expect(exportButton.disabled).toBe(false);
     fireEvent.click(exportButton);
     let dialog = await screen.findByRole('dialog');
@@ -299,7 +309,7 @@ describe('Cube spec export and import, on the page', () => {
     };
     expect(saved.savedBy).toBe('a newer Cube');
     expect(
-      saved.query.nodes.find((node) => node.id === 'pivot101')?.inputs,
+      saved.query.nodes.find((node) => node.id === 'future101')?.inputs,
     ).toEqual(['filter101', null]);
     fireEvent.click(within(dialog).getByText('Close'));
     await waitForElementToBeRemoved(dialog);
@@ -317,17 +327,17 @@ describe('Cube spec export and import, on the page', () => {
         'relational102',
         'join101',
         'filter101',
-        'pivot101',
+        'future101',
       ]),
     );
-    fireEvent.click(headerButton('Export (dev)'));
+    fireEvent.click(headerButton('Export'));
     dialog = await screen.findByRole('dialog');
     expect(exportedText(dialog)).toBe(spec);
   });
 
   test('Says why a cube too large to save is not exported, and offers nothing to copy or download', async () => {
     await renderPage(ordersDocument().withName('x'.repeat(MAX_SPEC_BYTES)));
-    fireEvent.click(headerButton('Export (dev)'));
+    fireEvent.click(headerButton('Export'));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('alert').textContent).toBe(
       `The cube is too large to save: its spec is over ${MAX_SPEC_BYTES} bytes`,
@@ -360,7 +370,7 @@ describe('Cube spec export and import, on the page', () => {
       expect(layoutService.currentColorTheme.key).toBe(theme);
       await renderPage(ordersDocument(), created);
 
-      fireEvent.click(headerButton('Export (dev)'));
+      fireEvent.click(headerButton('Export'));
       let dialog = await screen.findByRole('dialog');
       expect(themeOf(dialog, ['Copy', 'Download', 'Close'])).toEqual([
         dark,
@@ -373,7 +383,7 @@ describe('Cube spec export and import, on the page', () => {
       fireEvent.click(within(dialog).getByText('Close'));
       await waitForElementToBeRemoved(dialog);
 
-      fireEvent.click(headerButton('Import (dev)'));
+      fireEvent.click(headerButton('Import'));
       dialog = await screen.findByRole('dialog');
       expect(themeOf(dialog, ['Import', 'Cancel'])).toEqual([
         dark,
@@ -424,7 +434,7 @@ describe('Cube spec export and import, on the page', () => {
 
   test("Can't import before a spec is pasted or chosen", async () => {
     await renderPage();
-    fireEvent.click(headerButton('Import (dev)'));
+    fireEvent.click(headerButton('Import'));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText<HTMLButtonElement>('Import').disabled).toBe(
       true,
@@ -435,7 +445,7 @@ describe('Cube spec export and import, on the page', () => {
 
   test('Reads a chosen .cube.json file into the spec to import', async () => {
     await renderPage();
-    fireEvent.click(headerButton('Import (dev)'));
+    fireEvent.click(headerButton('Import'));
     const dialog = await screen.findByRole('dialog');
     const spec = serializeCubeSpec(sliceDocument());
     fireEvent.change(within(dialog).getByLabelText('Spec file'), {
@@ -469,10 +479,14 @@ describe('Cube spec export and import, on the page', () => {
     expect(banner.textContent).toContain(
       'saved by a newer version of Legend Cube',
     );
-    expect(headerButton('Add table').disabled).toBe(true);
+    const addItems = TEST__getAddItemsTrigger();
+    expect(addItems.disabled).toBe(true);
+    expect(addItems.title).toBe(READ_ONLY_CUBE_TITLE);
+    fireEvent.click(addItems);
+    expect(screen.queryByRole('menu')).toBeNull();
     expect(headerButton('Undo').disabled).toBe(true);
-    expect(headerButton('Export (dev)').disabled).toBe(true);
-    expect(headerButton('Import (dev)').disabled).toBe(false);
+    expect(headerButton('Export').disabled).toBe(true);
+    expect(headerButton('Import').disabled).toBe(false);
     expect(executeButton().disabled).toBe(false);
 
     // Show Pure works
@@ -499,7 +513,7 @@ describe('Cube spec export and import, on the page', () => {
     ).toBe('false');
     expect(within(graphRegion()).getByRole('status')).toBe(banner);
     expect(headerButton('Undo').disabled).toBe(true);
-    expect(headerButton('Export (dev)').disabled).toBe(true);
+    expect(headerButton('Export').disabled).toBe(true);
     expect(executeButton().disabled).toBe(false);
   });
 

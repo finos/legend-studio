@@ -357,6 +357,7 @@ describe('Cube model outline', () => {
     expect(V1_buildCubeModelOutline({ _type: 'data', elements: [] })).toEqual({
       databases: [],
       runtimes: [],
+      functions: [],
     });
   });
 });

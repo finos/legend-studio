@@ -74,6 +74,18 @@ export const ERR_SCHEMAS =
 /** The node is invalid but gave no reason */
 export const ERR_OTHER = 'This graph node is invalid.';
 
+/**
+ * Added by Cube: the node waits for the engine to type its columns (an
+ * Extend's, PLAN §11.7 Q4), shown as pending, not as a problem
+ */
+export const ERR_TYPING = 'Waiting for the engine to type the new columns.';
+
+/**
+ * Added by Cube: the node waits for the engine to check its condition (a
+ * Filter by Expression's, PLAN §11.11), shown as pending, not as a problem
+ */
+export const ERR_CHECKING = 'Waiting for the engine to check the condition.';
+
 // ---------------------------------------- Sources ----------------------------------------
 
 export const MESSAGE_SOURCE_INFO_UNRESOLVED =
@@ -82,8 +94,27 @@ export const MESSAGE_SOURCE_INFO_UNRESOLVED =
 export const MESSAGE_SOURCE_SCHEMA_UNRESOLVED =
   'Required schema of this source could not be resolved.';
 
+/** Added by Cube: services are picked but not read yet (PLAN §6.4) */
+export const MESSAGE_SERVICE_NOT_READABLE = `Cube can't read services yet`;
+
 export const MESSAGE_PARAMETER_WITHOUT_VALUE = (name: string): string =>
   `Required parameter ${quote(name)} does not have a value.`;
+
+/** Added by Cube: a function's parameter values are checked against their types (PLAN §6.5) */
+export const MESSAGE_PARAMETER_VALUE_INVALID = (
+  name: string,
+  value: string,
+  type: string,
+): string =>
+  `Parameter ${quote(name)} value ${quote(value)} is not a valid ${type}.`;
+
+/** Added by Cube: a function's parameter values are checked against their types (PLAN §6.5) */
+export const MESSAGE_PARAMETER_VALUE_OUT_OF_RANGE = (
+  name: string,
+  value: string,
+  type: string,
+): string =>
+  `Parameter ${quote(name)} value ${quote(value)} is out of range for ${type}.`;
 
 /** Added by Cube: v1 queries read from one Database element */
 export const MESSAGE_DIFFERENT_DATABASES = (
@@ -141,6 +172,15 @@ export const MESSAGE_DIFFERENCE_COLUMN_TYPE_DIFFERS = (name: string): string =>
 
 export const MESSAGE_DIFFERENCE_COLUMN_NOT_NUMERIC = (name: string): string =>
   `Difference column ${quote(name)} must be of numeric type.`;
+
+/** Added by Cube: a difference column is renamed on each side, so it can't also join them (PLAN §11.7) */
+export const MESSAGE_DIFFERENCE_COLUMN_IS_JOIN_COLUMN = (
+  name: string,
+): string => `Difference column ${quote(name)} cannot be a join column.`;
+
+/** Added by Cube: an output name a difference column gives, such as `x_valueDifference`, is too long (PLAN §11.7) */
+export const MESSAGE_DIFFERENCE_OUTPUT_NAME_INVALID = (name: string): string =>
+  `Difference output column ${quote(name)} is not valid column name.`;
 
 export const MESSAGE_INPUT_SCHEMAS_DIFFER =
   'Both input schemas must be identical.';
@@ -212,6 +252,26 @@ export const MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN = (
 export const MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID =
   'Aggregation output name is not valid column name.';
 
+/** Added by Cube: a rank function numbers rows by its window's sort; with none, the database fails with no location (PLAN §11.6) */
+export const MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT = (
+  aggregation: string,
+): string =>
+  `Aggregation function ${quote(aggregation)} requires at least one sort column.`;
+
+/** Added by Cube (PLAN §11.9): Lag's and Lead's offset, NTile's bucket count */
+export const MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID = (
+  aggregation: string,
+  setting: string,
+): string =>
+  `Aggregation function ${quote(aggregation)} needs ${setting === 'offset' ? 'an offset' : 'a bucket count'} that is a whole number of at least 1.`;
+
+/** Added by Cube (PLAN §11.9): an offset or a bucket count on a function that takes none */
+export const MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING = (
+  aggregation: string,
+  setting: string,
+): string =>
+  `Aggregation function ${quote(aggregation)} does not take ${setting === 'offset' ? 'an offset' : 'a bucket count'}.`;
+
 export const MESSAGE_SORT_DIRECTION_EMPTY = 'Sort direction cannot be empty.';
 
 export const MESSAGE_SORT_DIRECTION_UNKNOWN = (direction: string): string =>
@@ -236,7 +296,44 @@ export const MESSAGE_NO_EXPRESSION = (name: string): string =>
 export const MESSAGE_NO_VALID_TYPE = (name: string): string =>
   `${quote(name)} does not have a valid type.`;
 
+/** Added by Cube: an Extend column's expression is a lambda of one row, `x | …` (PLAN §11.7 Q2) */
+export const MESSAGE_EXPRESSION_NOT_A_LAMBDA = (name: string): string =>
+  `${quote(name)} must be a lambda with one parameter, such as x | $x.PRICE.`;
+
+/** Added by Cube: the engine could not type an Extend column, with its first line (PLAN §11.7) */
+export const MESSAGE_EXPRESSION_NOT_TYPED = (
+  name: string,
+  detail: string,
+): string => `${quote(name)} can't be typed: ${detail}`;
+
+/** Added by Cube: the engine could not type an Extend's columns, and named none (PLAN §11.7) */
+export const MESSAGE_EXPRESSIONS_NOT_TYPED = (detail: string): string =>
+  `The new columns can't be typed: ${detail}`;
+
 export const MESSAGE_FILTER_EMPTY = 'Filter cannot be empty.';
+
+/** Added by Cube: a Filter by Expression's condition is a lambda of one row, `x | …` (PLAN §11.11) */
+export const MESSAGE_CONDITION_NOT_A_LAMBDA =
+  'Condition must be a lambda with one parameter, such as x | $x.PRICE > 10.';
+
+/** Added by Cube: a condition gives something other than one Boolean, as the engine typed it (PLAN §11.11) */
+export const MESSAGE_CONDITION_NOT_BOOLEAN = (type: string): string =>
+  `Condition must give one Boolean, such as x | $x.PRICE > 10, not ${type}.`;
+
+/** Added by Cube: the engine could not check a condition, with its first line (PLAN §11.11) */
+export const MESSAGE_CONDITION_NOT_CHECKED = (detail: string): string =>
+  `Condition can't be checked: ${detail}`;
+
+/** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN §11.11, Appendix B) */
+export const MESSAGE_CONDITION_BACKSLASH = (fn: string): string =>
+  `The value given to ${quote(fn)} cannot contain a backslash (\\) yet.`;
+
+/** Added by Cube: on a database with no default `LIKE` escape character, the engine's patterns match `%` and `_` as wildcards (PLAN §11.11) */
+export const MESSAGE_CONDITION_WILDCARD = (
+  fn: string,
+  databaseType: string,
+): string =>
+  `On ${databaseType}, the value given to ${quote(fn)} cannot contain % or _ yet: ${databaseType} would match them as wildcards, so the rows would be wrong.`;
 
 /** Spec §8.5: a filter this version can't read, kept as it was saved */
 export const MESSAGE_FILTER_UNSUPPORTED = 'This filter is not supported yet.';
@@ -273,6 +370,13 @@ export const MESSAGE_GROUP_COLUMN_NOT_GROUPABLE = (
 ): string =>
   `Group column ${quote(column)} of type ${typeName} cannot be grouped.`;
 
+/** Added by Cube: VARIANT and a type Cube doesn't know can't be compared, so not partitioned by either (PLAN §11.6) */
+export const MESSAGE_PARTITION_COLUMN_NOT_PARTITIONABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Partition column ${quote(column)} of type ${typeName} cannot be partitioned.`;
+
 /** Added by Cube: Variant and unknown types can't be compared, so not sorted either (PLAN §11.4) */
 export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (
   column: string,
@@ -307,7 +411,116 @@ export const MESSAGE_SORT_COLUMNS_CUT = (columns: readonly string[]): string =>
 export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
   `Filter values for ${quote(operator)} cannot contain a backslash (\\) yet.`;
 
+/** Added by Cube: on a database with no default `LIKE` escape character, the engine's patterns match `%` and `_` as wildcards (PLAN §11.11) */
+export const MESSAGE_FILTER_VALUE_WILDCARD = (
+  operator: string,
+  databaseType: string,
+): string =>
+  `On ${databaseType}, filter values for ${quote(operator)} cannot contain % or _ yet: ${databaseType} would match them as wildcards, so the rows would be wrong.`;
+
+// ---------------------------------------- Pivot (PLAN §11.12) ----------------------------------------
+
+/** Added by Cube: a row column must be groupable, as a Group's key (PLAN §11.12) */
+export const MESSAGE_PIVOT_ROW_COLUMN_NOT_GROUPABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Row column ${quote(column)} of type ${typeName} cannot be grouped.`;
+
+/** Added by Cube: the pivot column must be a String, an integer, a StrictDate or a Boolean (PLAN §11.12) */
+export const MESSAGE_PIVOT_COLUMN_NOT_PIVOTABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Pivot column ${quote(column)} of type ${typeName} cannot be pivoted.`;
+
+/** Added by Cube: the pivot column makes the columns, so it can't also make the rows (PLAN §11.12) */
+export const MESSAGE_PIVOT_COLUMN_IS_ROW_COLUMN = (column: string): string =>
+  `Pivot column ${quote(column)} cannot also be a row column.`;
+
+/** Added by Cube: each value makes a column, so a Pivot takes a bounded number (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUES_TOO_MANY = (max: number): string =>
+  `Pivot values cannot be more than ${max}.`;
+
+/** Added by Cube: a value must be one of the pivot column's type (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUE_INVALID = (
+  value: string,
+  type: string,
+): string => `Pivot value ${quote(value)} is not a valid ${type}.`;
+
+/** Added by Cube: on databases that compare names without case, the engine's columns for the two values are one (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE = (
+  value: string,
+  other: string,
+): string =>
+  `Pivot values ${quote(other)} and ${quote(value)} differ only in case, so some databases would mix up their columns.`;
+
+/** Added by Cube: a value names its column, so its text must be a valid column name (PLAN §11.12) */
+export const MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME = (value: string): string =>
+  `Pivot value ${quote(value)} cannot name a column.`;
+
+/** Added by Cube: the engine's pivot of Distinct Value fails on the database (PLAN §11.12) */
+export const MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED = (
+  aggregation: string,
+): string =>
+  `Aggregation function ${quote(aggregation)} cannot be used in a pivot.`;
+
+/** Added by Cube: the database is known not to run the engine's pivot (PLAN §11.12) */
+export const MESSAGE_PIVOT_UNSUPPORTED_DATABASE = (
+  databaseType: string,
+): string => `Pivot is not supported on ${databaseType}.`;
+
+/** Added by Cube: the aggregated column is consumed by the pivot, so it can't make rows or columns (PLAN §11.12) */
+export const MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN = (
+  column: string,
+): string =>
+  `Aggregation column ${quote(column)} cannot be a row column or the pivot column.`;
+
 // ---------------------------------------- Display ----------------------------------------
 
 /** The placeholder for any missing value anywhere in the UI */
 export const BLANK_PLACEHOLDER = '(blank)';
+
+// ---------------------------------------- Drill-down (PLAN §11.10) ----------------------------------------
+
+/** Added by Cube: a drill-down level is a column of the run it expands */
+export const MESSAGE_DRILLDOWN_COLUMN_NOT_IN_OUTPUT = (
+  column: string,
+): string => `Drill-down column ${quote(column)} is not in the query's output.`;
+
+/** Added by Cube: VARIANT and a type Cube doesn't know can't be grouped, so not drilled down by either */
+export const MESSAGE_DRILLDOWN_COLUMN_NOT_GROUPABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Drill-down column ${quote(column)} of type ${typeName} cannot be grouped.`;
+
+/** Added by Cube: a column is a drill-down level once */
+export const MESSAGE_DRILLDOWN_COLUMN_LISTED_TWICE = (column: string): string =>
+  `Drill-down column ${quote(column)} is listed more than once.`;
+
+/** Added by Cube: a drill-down aggregation is of a column of the run it expands */
+export const MESSAGE_DRILLDOWN_AGGREGATION_COLUMN_NOT_IN_OUTPUT = (
+  column: string,
+): string =>
+  `Drill-down aggregation column ${quote(column)} is not in the query's output.`;
+
+/** Added by Cube: a column has one drill-down aggregation */
+export const MESSAGE_DRILLDOWN_AGGREGATION_LISTED_TWICE = (
+  column: string,
+): string =>
+  `Drill-down aggregation column ${quote(column)} is listed more than once.`;
+
+/** Added by Cube: a saved function this version doesn't know */
+export const MESSAGE_DRILLDOWN_AGGREGATION_UNKNOWN = (
+  aggregation: string,
+  column: string,
+): string =>
+  `Drill-down aggregation ${quote(aggregation)} of column ${quote(column)} is unknown.`;
+
+/** Added by Cube: a function the column's type doesn't offer */
+export const MESSAGE_DRILLDOWN_AGGREGATION_INCOMPATIBLE = (
+  aggregation: string,
+  column: string,
+): string =>
+  `Drill-down aggregation ${quote(aggregation)} is incompatible with column ${quote(column)}.`;

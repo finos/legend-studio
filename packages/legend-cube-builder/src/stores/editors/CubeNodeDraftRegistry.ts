@@ -16,12 +16,18 @@
 
 import {
   Concat,
+  Difference,
   Distinct,
   Drop,
+  ExpressionFilter,
+  Pivot,
+  Extend,
   Filter,
+  FunctionSource,
   Group,
   Join,
   Limit,
+  Partition,
   type QueryNode,
   Rename,
   Restrict,
@@ -31,10 +37,16 @@ import {
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeConcatDraft } from './CubeConcatDraft.js';
+import { CubeDifferenceDraft } from './CubeDifferenceDraft.js';
+import { CubeExpressionFilterDraft } from './CubeExpressionFilterDraft.js';
+import { CubePivotDraft } from './CubePivotDraft.js';
+import { CubeExtendDraft } from './CubeExtendDraft.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
+import { CubeFunctionDraft } from './CubeFunctionDraft.js';
 import { CubeGroupDraft } from './CubeGroupDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
+import { CubePartitionDraft } from './CubePartitionDraft.js';
 import { CubeRenameDraft } from './CubeRenameDraft.js';
 import { CubeRestrictDraft } from './CubeRestrictDraft.js';
 import { CubeRowCountDraft } from './CubeRowCountDraft.js';
@@ -49,13 +61,19 @@ export type CubeNodeDraftFactory = (
 
 /**
  * The draft of each node type the panel edits, by type (PLAN §7.4). A
- * transform with an editor in `CUBE_NODE_EDITORS` has its factory here; a
- * source, which has nothing to edit, has none, and so no Apply or Cancel.
+ * transform with an editor in `CUBE_NODE_EDITORS` has its factory here, as
+ * has a function source, whose parameter values are edited (PLAN §6.5);
+ * another source, which has nothing to edit, has none, and so no Apply or
+ * Cancel.
  */
 export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   string,
   CubeNodeDraftFactory
 > = new Map<string, CubeNodeDraftFactory>([
+  [
+    FunctionSource.TYPE,
+    (node) => new CubeFunctionDraft(guaranteeType(node, FunctionSource)),
+  ],
   [Sort.TYPE, (node) => new CubeSortDraft(guaranteeType(node, Sort))],
   [Group.TYPE, (node) => new CubeGroupDraft(guaranteeType(node, Group))],
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],
@@ -69,6 +87,32 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
   [Slice.TYPE, (node) => new CubeSliceDraft(guaranteeType(node, Slice))],
   [Concat.TYPE, (node) => new CubeConcatDraft(guaranteeType(node, Concat))],
+  [
+    Difference.TYPE,
+    (node) => new CubeDifferenceDraft(guaranteeType(node, Difference)),
+  ],
+  [
+    Partition.TYPE,
+    (node) => new CubePartitionDraft(guaranteeType(node, Partition)),
+  ],
+  [
+    Extend.TYPE,
+    (node, editorState) =>
+      new CubeExtendDraft(guaranteeType(node, Extend), editorState),
+  ],
+  [
+    ExpressionFilter.TYPE,
+    (node, editorState) =>
+      new CubeExpressionFilterDraft(
+        guaranteeType(node, ExpressionFilter),
+        editorState,
+      ),
+  ],
+  [
+    Pivot.TYPE,
+    (node, editorState) =>
+      new CubePivotDraft(guaranteeType(node, Pivot), editorState),
+  ],
 ]);
 
 /**

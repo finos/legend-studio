@@ -37,15 +37,16 @@ import {
 } from '../../stores/source-picker/CubeDataProductTabState.js';
 import type { CubeAccessPoint } from '../../graph-manager/CubeDataProductCatalog.js';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
+import {
+  CUBE_PICKER_LIST_CLASS,
+  CubePickerListItem,
+} from './CubePickerListItem.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
 const INPUT_CLASS =
   'h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)] disabled:text-[var(--color-text-secondary)]';
-
-const LIST_ITEM_CLASS =
-  'flex w-full items-center gap-2 px-2 py-1 text-left text-base enabled:hover:bg-[var(--color-bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]';
 
 /** An error as the tab shows it: its first line, the rest on demand, and an action when it has one */
 const CubeDataProductTabAlert: React.FC<{
@@ -180,7 +181,7 @@ const CubeAccessPointPreview: React.FC<{
 );
 
 /**
- * The source dialog's Data product tab (PLAN §6.8), as Data Cube's selection
+ * The source dialog's Data Product tab (PLAN §6.8), as Data Cube's selection
  * goes: the mode, a deployed data product, one of its access points, and the
  * warehouse. The dialog's Add adds the access point.
  */
@@ -259,32 +260,27 @@ export const CubeDataProductTab = observer(
           </CubeDataProductTabAlert>
         )}
         <ul
-          className="max-h-40 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
           aria-label="Data products"
         >
           {tab.shownCandidates.map((candidate) => {
             const isPicked = tab.candidate === candidate;
             const reason = tab.getCandidateDisabledReason(candidate);
             return (
-              <li key={`${candidate.id}/${candidate.deploymentId}`}>
-                <button
-                  type="button"
-                  className={clsx(LIST_ITEM_CLASS, {
-                    'bg-[var(--color-bg-selected)]': isPicked,
-                  })}
-                  aria-pressed={isPicked}
-                  disabled={reason !== undefined}
-                  title={reason ?? candidate.description}
-                  onClick={() => tab.selectCandidate(candidate)}
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    {candidate.title}
-                  </span>
-                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                    {reason ?? `${candidate.id} · ${candidate.versionId}`}
-                  </span>
-                </button>
-              </li>
+              <CubePickerListItem
+                key={`${candidate.id}/${candidate.deploymentId}`}
+                picked={isPicked}
+                disabled={reason !== undefined}
+                title={reason ?? candidate.description}
+                onPick={() => tab.selectCandidate(candidate)}
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {candidate.title}
+                </span>
+                <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                  {reason ?? `${candidate.id} · ${candidate.versionId}`}
+                </span>
+              </CubePickerListItem>
             );
           })}
         </ul>
@@ -311,7 +307,7 @@ export const CubeDataProductTab = observer(
         )}
         {tab.description && (
           <ul
-            className="max-h-56 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
+            className={`max-h-56 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
             aria-label="Access points"
           >
             {tab.description.groups.map((group) => (
@@ -324,33 +320,32 @@ export const CubeDataProductTab = observer(
                 </div>
                 <ul aria-label={`Access points of ${group.title ?? group.id}`}>
                   {group.accessPoints.map((point) => {
-                    const isPicked =
-                      tab.accessPointKey?.group === group.id &&
-                      tab.accessPointKey.id === point.id;
+                    const isPicked = tab.isAccessPointPicked(
+                      group.id,
+                      point.id,
+                    );
                     return (
-                      <li key={point.id}>
-                        <button
-                          type="button"
-                          className={clsx(LIST_ITEM_CLASS, {
-                            'bg-[var(--color-bg-selected)]': isPicked,
-                          })}
-                          aria-pressed={isPicked}
-                          disabled={!point.isPickable}
-                          title={point.disabledReason ?? point.description}
-                          onClick={() =>
-                            tab.selectAccessPoint(group.id, point.id)
-                          }
-                        >
-                          <span className="min-w-0 flex-1 truncate">
-                            {point.title ?? point.id}
-                          </span>
-                          <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                            {point.isPickable
-                              ? `${point.schema?.columns.length ?? 0} columns`
-                              : point.disabledReason}
-                          </span>
-                        </button>
-                      </li>
+                      <CubePickerListItem
+                        key={point.id}
+                        picked={isPicked}
+                        disabled={!point.isPickable}
+                        title={point.disabledReason ?? point.description}
+                        adds={true}
+                        onPick={() => tab.selectAccessPoint(group.id, point.id)}
+                        onToggle={() =>
+                          tab.toggleAccessPoint(group.id, point.id)
+                        }
+                        toggleLabel={point.title ?? point.id}
+                      >
+                        <span className="min-w-0 flex-1 truncate">
+                          {point.title ?? point.id}
+                        </span>
+                        <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                          {point.isPickable
+                            ? `${point.schema?.columns.length ?? 0} columns`
+                            : point.disabledReason}
+                        </span>
+                      </CubePickerListItem>
                     );
                   })}
                 </ul>
