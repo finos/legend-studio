@@ -192,4 +192,11 @@ export interface CubeIngestDefinitionSource {
   getRuntimeEnvironment(
     environmentType: CubeDataProductEnvironmentType,
   ): Promise<string>;
+  /**
+   * Every element a typing's or a run's model holds, as protocol JSON, when
+   * the host has more than the definitions, e.g. Studio's whole workspace,
+   * whose definitions' materialized views read other elements; the
+   * definitions alone otherwise
+   */
+  getModelElements?(): Promise<readonly PlainObject[]>;
 }

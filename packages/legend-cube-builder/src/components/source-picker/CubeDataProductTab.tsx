@@ -44,6 +44,8 @@ import {
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
+import { CUBE_PROJECT_SOURCE_LABEL } from '../../__lib__/LegendCubeProjectSourceLabels.js';
+import { isCubeProjectHost } from '../../stores/CubeHost.js';
 
 const INPUT_CLASS =
   'h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)] disabled:text-[var(--color-text-secondary)]';
@@ -119,7 +121,9 @@ const CubeSampleValue: React.FC<{ value: CubeResultValue }> = ({ value }) =>
 const CubeAccessPointPreview: React.FC<{
   accessPoint: CubeAccessPoint;
   marketplaceLink: string | undefined;
-}> = ({ accessPoint, marketplaceLink }) => (
+  /** False where products have no deployed artifact to read sample rows from, as a Studio workspace's */
+  fromArtifact?: boolean | undefined;
+}> = ({ accessPoint, marketplaceLink, fromArtifact = true }) => (
   <section
     className="flex flex-col gap-1 rounded-sm border border-[var(--color-border-default)] p-2"
     aria-label="Access point preview"
@@ -172,12 +176,149 @@ const CubeAccessPointPreview: React.FC<{
           </tbody>
         </table>
       </div>
-    ) : (
+    ) : fromArtifact ? (
       <span className="text-base text-[var(--color-text-muted)]">
         No sample rows in the deployed artifact
       </span>
-    )}
+    ) : null}
   </section>
+);
+
+/** A product's access points, by group, each picked or ticked to add */
+const CubeAccessPointList = observer(
+  (props: { tab: CubeDataProductTabState }) => {
+    const { tab } = props;
+    if (!tab.description) {
+      return null;
+    }
+    return (
+      <ul
+        className={`max-h-56 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
+        aria-label="Access points"
+      >
+        {tab.description.groups.map((group) => (
+          <li key={group.id}>
+            <div className="flex items-center gap-2 px-2 pt-1 text-sm text-[var(--color-text-secondary)]">
+              <span className="min-w-0 flex-1 truncate">
+                {group.title ?? group.id}
+              </span>
+              <CubeAccessPointGroupBadge tab={tab} groupId={group.id} />
+            </div>
+            <ul aria-label={`Access points of ${group.title ?? group.id}`}>
+              {group.accessPoints.map((point) => (
+                <CubePickerListItem
+                  key={point.id}
+                  picked={tab.isAccessPointPicked(group.id, point.id)}
+                  disabled={!point.isPickable}
+                  title={point.disabledReason ?? point.description}
+                  adds={true}
+                  onPick={() => tab.selectAccessPoint(group.id, point.id)}
+                  onToggle={() => tab.toggleAccessPoint(group.id, point.id)}
+                  toggleLabel={point.title ?? point.id}
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {point.title ?? point.id}
+                  </span>
+                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                    {point.isPickable
+                      ? `${point.schema?.columns.length ?? 0} columns`
+                      : point.disabledReason}
+                  </span>
+                </CubePickerListItem>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    );
+  },
+);
+
+/**
+ * The Data Product tab on a host reading one project's data products
+ * (Studio): the project's products by name, each path muted beside it, then
+ * a product's access points; the runtime its runs use is named, not picked
+ */
+const CubeProjectDataProductTab = observer(
+  (props: { tab: CubeDataProductTabState }) => {
+    const { tab } = props;
+    const candidates = tab.candidates;
+    return (
+      <div className="flex flex-col gap-2">
+        <span
+          className="text-sm text-[var(--color-text-muted)]"
+          aria-label="Runtime"
+        >
+          {tab.projectRuntime
+            ? CUBE_PROJECT_SOURCE_LABEL.RUNS_ON(tab.projectRuntime.label)
+            : tab.isReadingProjectRuntime
+              ? CUBE_PROJECT_SOURCE_LABEL.READING_RUNTIME
+              : ''}
+        </span>
+        {tab.projectRuntimeError !== undefined && (
+          <CubeDataProductTabAlert error={tab.projectRuntimeError} />
+        )}
+        {tab.isListing && (
+          <div className="text-base text-[var(--color-text-secondary)]">
+            listing data products
+          </div>
+        )}
+        {tab.listError !== undefined && (
+          <CubeDataProductTabAlert error={tab.listError}>
+            <div>
+              <CubeButton onClick={() => tab.retryListing()}>Retry</CubeButton>
+            </div>
+          </CubeDataProductTabAlert>
+        )}
+        {candidates && (
+          <ul
+            className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
+            aria-label="Data products"
+          >
+            {candidates.map((candidate) => (
+              <CubePickerListItem
+                key={candidate.dataProductPath}
+                picked={tab.candidate === candidate}
+                title={candidate.description ?? candidate.dataProductPath}
+                onPick={() => tab.selectCandidate(candidate)}
+              >
+                <span className="shrink-0">{candidate.title}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-muted)]">
+                  {candidate.dataProductPath}
+                </span>
+              </CubePickerListItem>
+            ))}
+          </ul>
+        )}
+        {candidates?.length === 0 && (
+          <span className="text-sm text-[var(--color-text-muted)]">
+            {CUBE_PROJECT_SOURCE_LABEL.NO_DATA_PRODUCTS}
+          </span>
+        )}
+        {tab.isDescribing && (
+          <div className="text-base text-[var(--color-text-secondary)]">
+            loading access points
+          </div>
+        )}
+        <CubeAccessPointList tab={tab} />
+        {tab.accessPoint?.isPickable === true && (
+          <CubeAccessPointPreview
+            accessPoint={tab.accessPoint}
+            marketplaceLink={undefined}
+            fromArtifact={false}
+          />
+        )}
+        {tab.isAdding && (
+          <div className="text-base text-[var(--color-text-secondary)]">
+            {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
+          </div>
+        )}
+        {tab.error !== undefined && (
+          <CubeDataProductTabAlert error={tab.error} />
+        )}
+      </div>
+    );
+  },
 );
 
 /**
@@ -190,6 +331,11 @@ export const CubeDataProductTab = observer(
     const { tab } = props;
     const warehouseId = useId();
     const project = tab.fixedProject;
+    // a host reading one project's data products, as Studio, lists them
+    // alone: no class, search or warehouse to pick, its runtime named instead
+    if (isCubeProjectHost(tab.editorState.host)) {
+      return <CubeProjectDataProductTab tab={tab} />;
+    }
     return (
       <div className="flex flex-col gap-2">
         <CubePickerStep
@@ -305,54 +451,7 @@ export const CubeDataProductTab = observer(
             loading access points
           </div>
         )}
-        {tab.description && (
-          <ul
-            className={`max-h-56 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
-            aria-label="Access points"
-          >
-            {tab.description.groups.map((group) => (
-              <li key={group.id}>
-                <div className="flex items-center gap-2 px-2 pt-1 text-sm text-[var(--color-text-secondary)]">
-                  <span className="min-w-0 flex-1 truncate">
-                    {group.title ?? group.id}
-                  </span>
-                  <CubeAccessPointGroupBadge tab={tab} groupId={group.id} />
-                </div>
-                <ul aria-label={`Access points of ${group.title ?? group.id}`}>
-                  {group.accessPoints.map((point) => {
-                    const isPicked = tab.isAccessPointPicked(
-                      group.id,
-                      point.id,
-                    );
-                    return (
-                      <CubePickerListItem
-                        key={point.id}
-                        picked={isPicked}
-                        disabled={!point.isPickable}
-                        title={point.disabledReason ?? point.description}
-                        adds={true}
-                        onPick={() => tab.selectAccessPoint(group.id, point.id)}
-                        onToggle={() =>
-                          tab.toggleAccessPoint(group.id, point.id)
-                        }
-                        toggleLabel={point.title ?? point.id}
-                      >
-                        <span className="min-w-0 flex-1 truncate">
-                          {point.title ?? point.id}
-                        </span>
-                        <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                          {point.isPickable
-                            ? `${point.schema?.columns.length ?? 0} columns`
-                            : point.disabledReason}
-                        </span>
-                      </CubePickerListItem>
-                    );
-                  })}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        )}
+        <CubeAccessPointList tab={tab} />
         {tab.accessPoint?.isPickable === true && (
           <CubeAccessPointPreview
             accessPoint={tab.accessPoint}

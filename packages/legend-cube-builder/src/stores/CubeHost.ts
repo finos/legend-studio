@@ -83,7 +83,32 @@ export interface CubeHost {
    * does, where a cube reads only the project's ingest definitions
    */
   readonly offersSampleData?: boolean | undefined;
+  /**
+   * The one project whose own sources the page reads, e.g. the one Studio
+   * edits: the source dialog lists its ingest definitions and data products
+   * by name and path, with no class, deployment or search across the
+   * platform, and says which lakehouse runtime its runs use
+   */
+  readonly project?: CubeHostProject | undefined;
 }
+
+/** The lakehouse runtime a project's runs use, as the source dialog shows it */
+export interface CubeHostProjectRuntime {
+  /** e.g. `demo-dev, from demo::ingest::LakehouseRuntime` */
+  readonly label: string;
+  /** The warehouse a new cube starts on, when the runtime names one */
+  readonly warehouse?: string | undefined;
+}
+
+/** The one project a host's page reads the sources of (`CubeHost.project`) */
+export interface CubeHostProject {
+  /** Its lakehouse runtime; fails with a `CubeEngineError` saying why when it has none */
+  resolveRuntime(): Promise<CubeHostProjectRuntime>;
+}
+
+/** Whether the host's page reads one project's own sources, as Studio's does */
+export const isCubeProjectHost = (host: CubeHost): boolean =>
+  host.project !== undefined;
 
 /** Whether the host offers Cube's sample data and examples */
 export const isCubeSampleDataOffered = (host: CubeHost): boolean =>

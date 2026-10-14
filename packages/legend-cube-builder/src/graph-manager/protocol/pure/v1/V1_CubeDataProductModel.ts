@@ -63,24 +63,29 @@ export const V1_hasCubeDataProductAccessor = (ir: IR): boolean => {
   return visit(ir);
 };
 
-/** The model typing runs on: the project alone, with no runtime */
+/**
+ * The model typing runs on: the project alone, with no runtime; the host's
+ * model of it when it has one, e.g. Studio's workspace
+ */
 export const V1_buildCubeDataProductTypingContext = (
   project: CubeDataProductProject,
-): PlainObject => pointerOf(project);
+  projectModel?: PlainObject | undefined,
+): PlainObject => projectModel ?? pointerOf(project);
 
 /**
- * The model a run runs on: the project, then a model holding only the
- * lakehouse runtime at Cube's fixed path, with the viewer's environment and
- * the warehouse, always given
+ * The model a run runs on: the project (the host's model of it, when it has
+ * one), then a model holding only the lakehouse runtime at Cube's fixed path,
+ * with the viewer's environment and the warehouse, always given
  */
 export const V1_buildCubeDataProductExecutionContext = (
   project: CubeDataProductProject,
   environment: string,
   warehouse: string,
+  projectModel?: PlainObject | undefined,
 ): PlainObject => ({
   _type: 'combination',
   contexts: [
-    pointerOf(project),
+    projectModel ?? pointerOf(project),
     {
       _type: 'data',
       elements: [

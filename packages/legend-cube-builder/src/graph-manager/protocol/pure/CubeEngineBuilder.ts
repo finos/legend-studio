@@ -31,6 +31,7 @@ import {
 import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
 import type {
   CubeDataProductCatalog,
+  CubeDataProductModelSource,
   CubeMarketplaceLinkTarget,
 } from '../../CubeDataProductCatalog.js';
 import type { CubeEngine } from '../../CubeEngine.js';
@@ -80,12 +81,19 @@ export const buildCubeEngine = (
      * built by `buildCubeIngestCatalog`, e.g. Studio's workspace
      */
     ingestDefinitionSource?: CubeIngestDefinitionSource | undefined;
+    /**
+     * The model data product cubes read their project from, for a host whose
+     * data products aren't deployed, e.g. Studio's workspace; the project's
+     * deployed version otherwise
+     */
+    dataProductModelSource?: CubeDataProductModelSource | undefined;
   },
 ): CubeEngine =>
   new V1_LegendCubeEngine(config, tracerService, {
     clientSettings: options?.clientSettings,
     lakehouseEnvironment: options?.lakehouseEnvironment,
     getRememberedWarehouse: options?.getRememberedWarehouse,
+    dataProductModels: options?.dataProductModelSource,
     // the catalog reads the definitions the engine types and runs on
     ingestDefinitions:
       options?.ingestDefinitionSource ??

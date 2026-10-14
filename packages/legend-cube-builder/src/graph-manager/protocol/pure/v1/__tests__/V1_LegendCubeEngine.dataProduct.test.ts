@@ -37,6 +37,7 @@ import {
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../../../../CubeEngine.js';
+import type { CubeDataProductModelSource } from '../../../../CubeDataProductCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../../../CubeLakehouseEnvironment.js';
 import {
   V1_buildCubeDataProductExecutionContext,
@@ -81,6 +82,7 @@ const RESULT = `{"builder": {"_type":"tdsBuilder","columns":[{"name":"ORDER_ID",
 const setUp = (
   lakehouseEnvironment?: CubeLakehouseEnvironment,
   getRememberedWarehouse?: () => string | undefined,
+  dataProductModels?: CubeDataProductModelSource,
 ): {
   engine: V1_LegendCubeEngine;
   run: jest.Mock;
@@ -90,7 +92,7 @@ const setUp = (
   const engine = new V1_LegendCubeEngine(
     { baseUrl: 'http://localhost:6300/api' },
     new TracerService(),
-    { lakehouseEnvironment, getRememberedWarehouse },
+    { lakehouseEnvironment, getRememberedWarehouse, dataProductModels },
   );
   const run = jest.spyOn(engine.client, 'runQuery').mockResolvedValue({
     ok: true,
@@ -300,5 +302,47 @@ describe('Legend Cube engine: data product cubes', () => {
       nodeId: 'relational101',
     });
     expect(batch).not.toHaveBeenCalled();
+  });
+
+  test("Types and runs on the host's model of the project when it has one, as Studio's workspace", async () => {
+    const workspace = {
+      _type: 'data',
+      elements: [
+        {
+          _type: 'dataProduct',
+          package: 'sales::products',
+          name: 'OrdersProduct',
+        },
+      ],
+    };
+    const getProjectModel = jest.fn<
+      CubeDataProductModelSource['getProjectModel']
+    >(async () => workspace);
+    const { environment } = environmentOf('studio-env');
+    const { engine, run, batch } = setUp(environment, undefined, {
+      getProjectModel,
+    });
+    await engine.typeLambdas(
+      MODEL,
+      new Map([['join101', lambda([], [ACCESSOR])]]),
+    );
+    expect(sentBody(batch.mock.calls[0] as unknown[]).model).toEqual(workspace);
+    await engine.execute(MODEL, runOf(ACCESSOR));
+    const body = sentBody(run.mock.calls[0] as unknown[]);
+    expect(body.model).toEqual(
+      V1_buildCubeDataProductExecutionContext(
+        { ...PROJECT, warehouse: 'SALES_WH' },
+        'studio-env',
+        'SALES_WH',
+        workspace,
+      ),
+    );
+    expect((body.model as { contexts: unknown[] }).contexts[0]).toEqual(
+      workspace,
+    );
+    expect(getProjectModel).toHaveBeenCalledWith({
+      ...PROJECT,
+      warehouse: 'SALES_WH',
+    });
   });
 });

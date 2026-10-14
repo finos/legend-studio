@@ -468,4 +468,37 @@ describe('Legend Cube engine: ingest cubes', () => {
     );
     expect(run).not.toHaveBeenCalled();
   });
+
+  test('Types and runs on every element the host gives, as Studio gives its whole workspace, in place of the definitions alone', async () => {
+    const other = { _type: 'dataProduct', package: 'sales', name: 'Daily' };
+    const getModelElements = jest.fn<
+      NonNullable<V1_CubeIngestDefinitionSource['getModelElements']>
+    >(async () => [elementOf(ORDERS), other]);
+    const source = { ...fakeSource(), getModelElements };
+    const { engine, run, batch } = setUp(source);
+    await engine.typeLambdas(
+      MODEL,
+      new Map([
+        [
+          'ingestDataset101',
+          lambda([], [accessor(ORDERS, 'ingestDataset101')]),
+        ],
+      ]),
+    );
+    expect(sentBody(batch.mock.calls[0] as unknown[]).model).toEqual({
+      _type: 'data',
+      elements: [withoutTestSuites(elementOf(ORDERS)), other],
+    });
+    await engine.execute(MODEL, runOf(accessor(ORDERS, 'ingestDataset101')));
+    expect(sentBody(run.mock.calls[0] as unknown[]).model).toEqual({
+      _type: 'data',
+      elements: [
+        withoutTestSuites(elementOf(ORDERS)),
+        other,
+        runtimeOf('producer-env', 'SALES_WH'),
+      ],
+    });
+    // the definitions a lambda reads are still checked to be there
+    expect(source.getDefinitionElement).toHaveBeenCalled();
+  });
 });

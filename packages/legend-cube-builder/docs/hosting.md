@@ -121,21 +121,30 @@ An ingest definition's editor in Studio offers **Create MatView with Cube** wher
 (`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
 screen over the editor, as the embedded query builder does, with `LegendStudioCubeHost`:
 
-- **Sources:** the project's own ingest definitions, as the workspace holds them, through the Ingest tab:
-  `LegendStudioCubeIngestCatalog` lists them under their app directory deployment, names each by the URN it would
-  have if the project deployed it (`formatCubeIngestUrn`), and types their data sets from their content
-  (`readCubeIngestDataSets`). No sample data or examples (`offersSampleData: false`), databases, data products or
-  services. One kind of source per cube, as in Legend Query.
-- **Runs:** the same catalog is the engine's `ingestDefinitionSource` (`buildCubeEngine`), so a run reads the
-  definitions from the workspace, on the environment and warehouse of the project's first lakehouse runtime, the one
-  Studio's own queries of an ingest definition use. Without a lakehouse runtime, the Ingest tab says to add one.
+- **The project:** `CubeHost.project` (`LegendStudioCubeWorkspace`) says the page reads one project's own sources. The
+  source dialog's Ingest and Data Product tabs then list that project's definitions and products by name, each path
+  muted beside it, with no class, producer deployment, search or warehouse to pick, and name the lakehouse runtime
+  its runs use: the project's first, the one Studio's own queries of an ingest definition or a data product pick.
+  Without one, the tabs say to add one. No sample data or examples (`offersSampleData: false`), databases or
+  services; one kind of source per cube, as in Legend Query.
+- **Ingest data sets:** `LegendStudioCubeIngestCatalog` lists the workspace's definitions under one producer that
+  stands for the project, names each by the URN it would have if the project deployed it (`formatCubeIngestUrn`),
+  and types their data sets from their content (`readCubeIngestDataSets`), with no engine call.
+- **Data products:** `LegendStudioCubeDataProductCatalog` lists the workspace's products, as version `workspace`, and
+  types their lakehouse access points with the engine (`#P{product.accessPoint}#`), a product's in one call.
+- **The model typing and runs read:** the workspace, as Studio's own queries send it: the ingest catalog's
+  `getModelElements` (`ingestDefinitionSource` on `buildCubeEngine`) and the workspace's `getProjectModel`
+  (`dataProductModelSource`), in place of the deployed definitions and the project's deployed version. A run adds
+  Cube's lakehouse runtime, in the project runtime's environment (`lakehouseEnvironment`), on the cube's warehouse,
+  which starts as the runtime's.
 - **Add as MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
   as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, and appends a
   `FunctionSource` data set to the definition. Studio sees it as a local change; Lineage and View SQL work on it.
 
 While the page is open, Studio's own shortcuts are off (its F9 compiles), and Cube's are on: Studio's core plugin
 contributes `LEGEND_CUBE_COMMAND_CONFIG`. The floating step editor is placed in the dialog that hosts the page, so the
-dialog doesn't hide it.
+dialog doesn't hide it. In a light theme, Cube's dialogs draw their primary button as an accent button
+(`CubeDialogTheme.ts`): legend-art's light variant draws it grey.
 
 ## Shortcuts
 

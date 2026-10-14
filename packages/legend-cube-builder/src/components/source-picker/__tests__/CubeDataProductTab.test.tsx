@@ -360,4 +360,39 @@ describe('Data product tab', () => {
     fireEvent.click(source);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  test('On a host reading one project, as Studio, lists its products by name with their paths, under the runtime its runs use', async () => {
+    await renderPage((host) => ({
+      ...host,
+      project: {
+        resolveRuntime: async () => ({
+          label: 'demo-dev, from demo::Runtime',
+          warehouse: 'DEMO_WH',
+        }),
+      },
+    }));
+    const dialog = await openFromPalette();
+    await waitFor(() =>
+      expect(within(dialog).getByLabelText('Runtime').textContent).toBe(
+        'Runs on demo-dev, from demo::Runtime',
+      ),
+    );
+    // no class, search or warehouse to pick
+    expect(within(dialog).queryByLabelText('Mode')).toBeNull();
+    expect(
+      within(dialog).queryByRole('textbox', { name: 'Search data products' }),
+    ).toBeNull();
+    expect(within(dialog).queryByLabelText('Warehouse')).toBeNull();
+    const products = within(dialog).getByRole('list', {
+      name: 'Data products',
+    });
+    const first = FAKE_DATA_PRODUCT_CANDIDATES.find(
+      (each) =>
+        each.environmentType === CubeDataProductEnvironmentType.PRODUCTION,
+    ) as CubeDataProductCandidate;
+    const row = within(products).getByText(first.title).closest('button');
+    expect(row?.textContent).toBe(`${first.title}${first.dataProductPath}`);
+    fireEvent.click(within(products).getByText(first.title));
+    await within(dialog).findByRole('list', { name: 'Access points' });
+  });
 });

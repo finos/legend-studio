@@ -35,6 +35,8 @@ import {
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
+import { CUBE_PROJECT_SOURCE_LABEL } from '../../__lib__/LegendCubeProjectSourceLabels.js';
+import { isCubeProjectHost } from '../../stores/CubeHost.js';
 
 const INPUT_CLASS =
   'h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)] disabled:text-[var(--color-text-secondary)]';
@@ -59,6 +61,119 @@ const CubeIngestTabAlert: React.FC<{
   </div>
 );
 
+/** A definition's or a data set's rows, as both Ingest screens list them */
+const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
+  const { tab } = props;
+  return (
+    <>
+      {tab.isDescribing && (
+        <div className="text-base text-[var(--color-text-secondary)]">
+          reading the definition
+        </div>
+      )}
+      {tab.dataSets && (
+        <ul
+          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
+          aria-label="Data sets"
+        >
+          {tab.dataSets.map((dataSet) => {
+            const isPicked = tab.dataSetName === dataSet.name;
+            return (
+              <CubePickerListItem
+                key={dataSet.name}
+                picked={isPicked}
+                disabled={!dataSet.isPickable}
+                title={dataSet.disabledReason}
+                adds={true}
+                onPick={() => tab.selectDataSet(dataSet.name)}
+              >
+                <span className="min-w-0 flex-1 truncate">{dataSet.name}</span>
+                <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                  {dataSet.isPickable
+                    ? `${dataSet.schema?.columns.length ?? 0} columns`
+                    : dataSet.disabledReason}
+                </span>
+              </CubePickerListItem>
+            );
+          })}
+        </ul>
+      )}
+      {tab.dataSet?.schema && (
+        <section aria-label="Data set preview">
+          <CubeSchemaColumnsTable schema={tab.dataSet.schema} />
+        </section>
+      )}
+    </>
+  );
+});
+
+/**
+ * The Ingest tab on a host reading one project's definitions (Studio): the
+ * project's definitions by name, each path muted beside it, then a
+ * definition's data sets; the runtime its runs use is named, not picked
+ */
+const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
+  const { tab } = props;
+  const candidates = tab.definitionList?.candidates;
+  return (
+    <div className="flex flex-col gap-2">
+      <span
+        className="text-sm text-[var(--color-text-muted)]"
+        aria-label="Runtime"
+      >
+        {tab.environment
+          ? CUBE_PROJECT_SOURCE_LABEL.RUNS_ON(tab.environment.name)
+          : tab.isLoadingEnvironment
+            ? CUBE_PROJECT_SOURCE_LABEL.READING_RUNTIME
+            : ''}
+      </span>
+      {tab.isListingDefinitions && (
+        <div className="text-base text-[var(--color-text-secondary)]">
+          listing ingest definitions
+        </div>
+      )}
+      {candidates && (
+        <ul
+          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
+          aria-label="Ingest definitions"
+        >
+          {candidates.map((candidate) => (
+            <CubePickerListItem
+              key={candidate.urn}
+              picked={tab.definition?.urn === candidate.urn}
+              title={candidate.definition}
+              onPick={() => tab.selectDefinition(candidate)}
+            >
+              <span className="shrink-0">{candidate.name}</span>
+              <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-muted)]">
+                {candidate.definition}
+              </span>
+            </CubePickerListItem>
+          ))}
+        </ul>
+      )}
+      {candidates?.length === 0 && (
+        <span className="text-sm text-[var(--color-text-muted)]">
+          {CUBE_PROJECT_SOURCE_LABEL.NO_INGEST_DEFINITIONS}
+        </span>
+      )}
+      <CubeIngestDataSets tab={tab} />
+      {tab.isAdding && (
+        <div className="text-base text-[var(--color-text-secondary)]">
+          {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
+        </div>
+      )}
+      {tab.error !== undefined && (
+        <CubeIngestTabAlert error={tab.error}>
+          <div>
+            <CubeButton onClick={() => tab.retry()}>Retry</CubeButton>
+          </div>
+        </CubeIngestTabAlert>
+      )}
+    </div>
+  );
+});
+
 /**
  * The source dialog's Ingest tab (PLAN §6.7): Mode, the viewer's
  * environment (read-only), a producer deployment, one of its definitions,
@@ -72,6 +187,12 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const dropped = getDroppedDefinitionsLabel(
     tab.definitionList?.droppedCount ?? 0,
   );
+  // a host reading one project's definitions, as Studio, lists them alone:
+  // no class, deployment or warehouse to pick, its runtime named instead
+  const projectScoped = isCubeProjectHost(tab.editorState.host);
+  if (projectScoped) {
+    return <CubeProjectIngestTab tab={tab} />;
+  }
   return (
     <div className="flex flex-col gap-2">
       {/* a host with one class, as Studio, offers no choice of Mode */}
@@ -157,43 +278,7 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
           {dropped}
         </span>
       )}
-      {tab.isDescribing && (
-        <div className="text-base text-[var(--color-text-secondary)]">
-          reading the definition
-        </div>
-      )}
-      {tab.dataSets && (
-        <ul
-          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
-          aria-label="Data sets"
-        >
-          {tab.dataSets.map((dataSet) => {
-            const isPicked = tab.dataSetName === dataSet.name;
-            return (
-              <CubePickerListItem
-                key={dataSet.name}
-                picked={isPicked}
-                disabled={!dataSet.isPickable}
-                title={dataSet.disabledReason}
-                adds={true}
-                onPick={() => tab.selectDataSet(dataSet.name)}
-              >
-                <span className="min-w-0 flex-1 truncate">{dataSet.name}</span>
-                <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                  {dataSet.isPickable
-                    ? `${dataSet.schema?.columns.length ?? 0} columns`
-                    : dataSet.disabledReason}
-                </span>
-              </CubePickerListItem>
-            );
-          })}
-        </ul>
-      )}
-      {tab.dataSet?.schema && (
-        <section aria-label="Data set preview">
-          <CubeSchemaColumnsTable schema={tab.dataSet.schema} />
-        </section>
-      )}
+      <CubeIngestDataSets tab={tab} />
       <div className="flex items-center gap-2">
         <label className="w-20 shrink-0 text-base" htmlFor={warehouseId}>
           Warehouse
