@@ -212,7 +212,7 @@ describe('Show Pure', () => {
     [LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT, false],
     [LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK, true],
   ])(
-    'Draws the dialog and its buttons in the color theme %s (dark: %s)',
+    'Draws the dialog and its Close in the color theme %s (dark: %s), and Copy as an accent button in every theme',
     async (theme, dark) => {
       const { host } = TEST__createCubeHost(
         { pure: PURE },
@@ -245,7 +245,8 @@ describe('Show Pure', () => {
           ];
         }),
       ).toEqual([
-        ['Copy to Clipboard', dark, !dark],
+        // a primary button is an accent button in every theme (CubeDialogTheme)
+        ['Copy to Clipboard', true, false],
         ['Close', dark, !dark],
       ]);
     },

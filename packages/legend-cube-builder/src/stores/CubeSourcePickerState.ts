@@ -145,9 +145,12 @@ export class CubeSourcePickerState {
       : undefined;
   }
 
+  /** The tab open last, else the first the host serves */
   get activeTab(): CubeSourcePickerTab {
     return (
-      this.tabs.find((tab) => tab.key === this.activeTabKey) ?? this.modelTab
+      this.tabs.find((tab) => tab.key === this.activeTabKey) ??
+      this.tabs[0] ??
+      this.modelTab
     );
   }
 

@@ -37,7 +37,11 @@ import { useCubeNodeEditorDismiss } from './useCubeNodeEditorDismiss.js';
  */
 export const CUBE_NODE_EDITOR_WIDTH = 432;
 
-/** Above the canvas and the grid, below MUI's dialogs (1300), so a dialog opened from the editor covers it */
+/**
+ * Above the canvas and the grid, below MUI's dialogs (1300), so a dialog
+ * opened from the editor covers it; inside the dialog that hosts the page,
+ * if one does, so the page's own dialog doesn't
+ */
 export const CUBE_NODE_EDITOR_Z_INDEX = 1250;
 
 /** The gap between the node and its editor, and between the editor and the window's edges */
@@ -157,6 +161,10 @@ export const CubeNodeEditorPopper = observer(
         role="presentation"
         popperRef={popperRef}
         anchorEl={anchor}
+        // a page hosted in a dialog, as Studio hosts Cube, keeps the editor
+        // in the dialog's layer, above the page: on the body, under the
+        // dialogs' z-index, the dialog would hide it
+        container={canvas.closest<HTMLElement>('.MuiDialog-root')}
         placement="bottom"
         modifiers={MODIFIERS}
         style={{

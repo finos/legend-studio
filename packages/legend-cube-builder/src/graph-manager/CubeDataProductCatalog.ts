@@ -15,6 +15,7 @@
  */
 
 import type { Schema } from '@finos/legend-cube';
+import type { PlainObject } from '@finos/legend-shared';
 import {
   type CubeDataProductEnvironmentType,
   type CubeDataProductProject,
@@ -242,4 +243,14 @@ export interface CubeDataProductCatalog {
     candidate: CubeDataProductCandidate,
     signal?: AbortSignal,
   ): Promise<ReadonlyMap<string, CubeAccessPointGroupAccess>>;
+}
+
+/**
+ * Where a data product cube's engine reads the project its data products
+ * are in, as protocol JSON: by default the project at the version they were
+ * deployed from (a pointer); a host's own, e.g. Studio's workspace, whose
+ * data products aren't deployed. Fails with a `CubeEngineError`
+ */
+export interface CubeDataProductModelSource {
+  getProjectModel(project: CubeDataProductProject): Promise<PlainObject>;
 }

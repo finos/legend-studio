@@ -40,6 +40,7 @@ import { LEGEND_STUDIO_SETTING_CONFIG } from '../../__lib__/LegendStudioSetting.
 import { setupPureLanguageService } from '@finos/legend-code-editor';
 import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/STO_Relational_LegendStudioCommand.js';
+import { LEGEND_CUBE_COMMAND_CONFIG } from '@finos/legend-cube-builder';
 import { ShowcaseManager } from '../ShowcaseManager.js';
 import { CabinetIcon } from '@finos/legend-art';
 import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
@@ -120,6 +121,9 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
       ...collectKeyedCommandConfigEntriesFromConfig(
         STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG,
       ),
+      // Legend Cube's shortcuts (F9, Ctrl/Cmd+Z), for Create MatView with
+      // Cube: Studio's own are off while the cube is open
+      ...collectKeyedCommandConfigEntriesFromConfig(LEGEND_CUBE_COMMAND_CONFIG),
     ];
   }
 

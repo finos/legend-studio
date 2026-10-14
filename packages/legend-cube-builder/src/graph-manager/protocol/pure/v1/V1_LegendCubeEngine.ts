@@ -55,6 +55,7 @@ import {
   isCubeIngestModel,
 } from '../../../CubeIngest.js';
 import type { CubeEngineClientSettings } from '../../../CubeEngineClientSettings.js';
+import type { CubeDataProductModelSource } from '../../../CubeDataProductCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
 import {
   checkCubeProjectModel,
@@ -292,6 +293,8 @@ export class V1_LegendCubeEngine implements CubeEngine {
   private readonly getRememberedWarehouse: () => string | undefined;
   /** The deployed ingest definitions, which ingest cubes read */
   private readonly ingestDefinitions: V1_CubeIngestDefinitionSource | undefined;
+  /** The model data product cubes read their project from, when not its deployed version */
+  private readonly dataProductModels: CubeDataProductModelSource | undefined;
 
   constructor(
     config: V1_CubeEngineConfig,
@@ -302,6 +305,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
       ingestDefinitions?: V1_CubeIngestDefinitionSource | undefined;
       /** Dev Settings' engine URL and compression (PLAN §11.16) */
       clientSettings?: CubeEngineClientSettings | undefined;
+      dataProductModels?: CubeDataProductModelSource | undefined;
     },
   ) {
     this.client = new V1_EngineServerClient(config);
@@ -312,6 +316,29 @@ export class V1_LegendCubeEngine implements CubeEngine {
     this.getRememberedWarehouse =
       options?.getRememberedWarehouse ?? (() => undefined);
     this.ingestDefinitions = options?.ingestDefinitions;
+    this.dataProductModels = options?.dataProductModels;
+  }
+
+  /**
+   * The elements an ingest cube's model holds: the host's, when it has more
+   * than the definitions (Studio's workspace), else the definitions read
+   */
+  private async ingestModelElementsOf(
+    definitions: ReadonlyMap<string, PlainObject | CubeEngineError>,
+  ): Promise<readonly PlainObject[]> {
+    const source = this.ingestDefinitions;
+    return source?.getModelElements
+      ? source.getModelElements()
+      : [...definitions.values()].filter(
+          (read): read is PlainObject => !(read instanceof CubeEngineError),
+        );
+  }
+
+  /** The model a data product cube's project is read from: the host's, else its deployed version's pointer */
+  private async dataProductProjectModelOf(
+    project: CubeDataProductProject,
+  ): Promise<PlainObject | undefined> {
+    return this.dataProductModels?.getProjectModel(project);
   }
 
   /** An ingest model's settings, or an unsupported-model error naming its problems */
@@ -644,7 +671,21 @@ export class V1_LegendCubeEngine implements CubeEngine {
         ]),
       );
     }
-    return this.typeOn(V1_buildCubeDataProductTypingContext(project), lambdas);
+    let projectModel: PlainObject | undefined;
+    try {
+      projectModel = await this.dataProductProjectModelOf(project);
+    } catch (error) {
+      return new Map(
+        [...lambdas.keys()].map((nodeId) => [
+          nodeId,
+          V1_toCubeEngineError(error, nodeId, CubeEngineErrorKind.COMPILE),
+        ]),
+      );
+    }
+    return this.typeOn(
+      V1_buildCubeDataProductTypingContext(project, projectModel),
+      lambdas,
+    );
   }
 
   /**
@@ -713,9 +754,19 @@ export class V1_LegendCubeEngine implements CubeEngine {
         typable.set(nodeId, ir);
       }
     });
-    const elements = [...definitions.values()].filter(
-      (read): read is PlainObject => !(read instanceof CubeEngineError),
-    );
+    let elements: readonly PlainObject[];
+    try {
+      elements = await this.ingestModelElementsOf(definitions);
+    } catch (error) {
+      typable.forEach((_ir, nodeId) =>
+        typed.set(
+          nodeId,
+          toIngestError(error, CubeEngineErrorKind.COMPILE, nodeId),
+        ),
+      );
+      typable.clear();
+      elements = [];
+    }
     (
       await this.typeOn(V1_buildCubeIngestTypingContext(elements), typable)
     ).forEach((schema, nodeId) => typed.set(nodeId, schema));
@@ -1016,10 +1067,21 @@ export class V1_LegendCubeEngine implements CubeEngine {
             captureId,
           );
     }
+    let projectModel: PlainObject | undefined;
+    try {
+      projectModel = await this.dataProductProjectModelOf(project);
+    } catch (error) {
+      throw V1_toCubeEngineError(
+        error,
+        captureId,
+        CubeEngineErrorKind.EXECUTION,
+      );
+    }
     return V1_buildCubeDataProductExecutionContext(
       project,
       environment,
       getEffectiveCubeWarehouse(project, this.getRememberedWarehouse()),
+      projectModel,
     );
   }
 
@@ -1056,13 +1118,17 @@ export class V1_LegendCubeEngine implements CubeEngine {
       V1_getCubeIngestUrns(accessors),
       settings,
     );
-    const elements: PlainObject[] = [];
     definitions.forEach((read) => {
       if (read instanceof CubeEngineError) {
         throw toIngestError(read, CubeEngineErrorKind.EXECUTION, captureId);
       }
-      elements.push(read);
     });
+    let elements: readonly PlainObject[];
+    try {
+      elements = await this.ingestModelElementsOf(definitions);
+    } catch (error) {
+      throw toIngestError(error, CubeEngineErrorKind.EXECUTION, captureId);
+    }
     let environment: string;
     try {
       environment = await source.getRuntimeEnvironment(

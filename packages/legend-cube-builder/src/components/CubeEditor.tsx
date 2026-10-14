@@ -42,7 +42,7 @@ import {
   type CubeEntrySource,
   CubeEntrySourceState,
 } from '../stores/CubeEntrySource.js';
-import type { CubeHost } from '../stores/CubeHost.js';
+import { type CubeHost, isCubeSampleDataOffered } from '../stores/CubeHost.js';
 import { CubeAddItemsMenu } from './CubeAddItems.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
@@ -70,130 +70,143 @@ const useMaxGraphHeight = (): number => {
   return Math.round(windowHeight * MAX_GRAPH_SHARE_OF_WINDOW);
 };
 
+/** The buttons a host adds to the header, given the page's state */
+export type CubeHeaderActions = (
+  editorState: CubeEditorState,
+) => React.ReactNode;
+
 /**
  * The graph region's header, above the graph and the results: the cube's
  * name, its actions, its pending and read-only notes, and its dialogs. It
  * stays when the graph is hidden; its buttons wrap when the page is narrow.
  */
-const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
-  const { editorState } = props;
-  const { readOnly } = editorState;
-  const { showGraph } = editorState.document.meta.presentation;
-  return (
-    <div
-      className="flex shrink-0 flex-col bg-[var(--color-bg-panel)]"
-      data-testid={LEGEND_CUBE_TEST_ID.GRAPH_REGION}
-    >
-      <div className="flex min-h-8 shrink-0 flex-wrap items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2 py-1">
-        <span className="min-w-24 flex-1 truncate text-lg font-medium">
-          {editorState.document.name ?? UNSAVED_CUBE_NAME}
-        </span>
-        {editorState.isResolvingSources && (
-          <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
-            {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
+const CubeGraphHeader = observer(
+  (props: {
+    editorState: CubeEditorState;
+    headerActions?: CubeHeaderActions | undefined;
+  }) => {
+    const { editorState, headerActions } = props;
+    const { readOnly } = editorState;
+    const { showGraph } = editorState.document.meta.presentation;
+    return (
+      <div
+        className="flex shrink-0 flex-col bg-[var(--color-bg-panel)]"
+        data-testid={LEGEND_CUBE_TEST_ID.GRAPH_REGION}
+      >
+        <div className="flex min-h-8 shrink-0 flex-wrap items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2 py-1">
+          <span className="min-w-24 flex-1 truncate text-lg font-medium">
+            {editorState.document.name ?? UNSAVED_CUBE_NAME}
           </span>
-        )}
-        {editorState.isCheckingExpressions && (
-          <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
-            {CUBE_PENDING_LABEL.CHECKING_EXPRESSIONS}
-          </span>
-        )}
-        <CubeFileMenu editorState={editorState} />
-        <CubeAddItemsMenu editorState={editorState} />
-        <CubeButton
-          title="Open an example cube, or start one on sample data"
-          onClick={() => editorState.examples.open()}
-        >
-          Examples
-        </CubeButton>
-        <CubeButton
-          title={
-            readOnly
-              ? READ_ONLY_CUBE_TITLE
-              : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
-          }
-          disabled={!editorState.canUndo && !editorState.hasEditsToApply}
-          onClick={() => editorState.undoEdited()}
-        >
-          Undo
-        </CubeButton>
-        <CubeButton
-          title={`Redo the last change undone (${REDO_SHORTCUT_LABEL})`}
-          disabled={!editorState.canRedo}
-          onClick={() => editorState.redoEdited()}
-        >
-          Redo
-        </CubeButton>
-        <CubeButton
-          title={
-            editorState.execution.canExecute
-              ? 'Show the Pure query that Execute runs'
-              : formatDisabledReasons(editorState.execution.disabledReasons)
-          }
-          disabled={!editorState.execution.canExecute}
-          onClick={() => {
-            // what it shows includes the node editor's edits, as Execute runs them
-            if (!editorState.nodeEditor.finishApplied()) {
-              return;
+          {editorState.isResolvingSources && (
+            <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
+              {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
+            </span>
+          )}
+          {editorState.isCheckingExpressions && (
+            <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
+              {CUBE_PENDING_LABEL.CHECKING_EXPRESSIONS}
+            </span>
+          )}
+          <CubeFileMenu editorState={editorState} />
+          <CubeAddItemsMenu editorState={editorState} />
+          {isCubeSampleDataOffered(editorState.host) && (
+            <CubeButton
+              title="Open an example cube, or start one on sample data"
+              onClick={() => editorState.examples.open()}
+            >
+              Examples
+            </CubeButton>
+          )}
+          <CubeButton
+            title={
+              readOnly
+                ? READ_ONLY_CUBE_TITLE
+                : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
             }
-            flowResult(editorState.showPure.open()).catch(
-              editorState.host.applicationStore.alertUnhandledError,
-            );
-          }}
-        >
-          Show Pure
-        </CubeButton>
-        <CubeButton
-          title={
-            showGraph
-              ? 'Hide the graph, leaving more room for the results'
-              : 'Show the graph'
-          }
-          onClick={() => {
-            // the floating editor goes with the graph, applying its edits
-            if (!showGraph || editorState.nodeEditor.finish()) {
-              editorState.setShowGraph(!showGraph);
-            }
-          }}
-        >
-          {showGraph ? 'Hide graph' : 'Show graph'}
-        </CubeButton>
-      </div>
-      <PanelLoadingIndicator
-        isLoading={
-          editorState.isResolvingSources || editorState.isCheckingExpressions
-        }
-      />
-      {readOnly && (
-        <div
-          className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
-          role="status"
-        >
-          {READ_ONLY_CUBE_TITLE}. You can view and run it.
-        </div>
-      )}
-      {editorState.nodeEditor.notice && (
-        <div
-          className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
-          role="status"
-          data-testid={LEGEND_CUBE_TEST_ID.EDITOR_NOTICE}
-        >
-          <span className="min-w-0 flex-1">
-            {editorState.nodeEditor.notice}
-          </span>
-          <CubeButton onClick={() => editorState.nodeEditor.dismissNotice()}>
-            Dismiss
+            disabled={!editorState.canUndo && !editorState.hasEditsToApply}
+            onClick={() => editorState.undoEdited()}
+          >
+            Undo
           </CubeButton>
+          <CubeButton
+            title={`Redo the last change undone (${REDO_SHORTCUT_LABEL})`}
+            disabled={!editorState.canRedo}
+            onClick={() => editorState.redoEdited()}
+          >
+            Redo
+          </CubeButton>
+          <CubeButton
+            title={
+              editorState.execution.canExecute
+                ? 'Show the Pure query that Execute runs'
+                : formatDisabledReasons(editorState.execution.disabledReasons)
+            }
+            disabled={!editorState.execution.canExecute}
+            onClick={() => {
+              // what it shows includes the node editor's edits, as Execute runs them
+              if (!editorState.nodeEditor.finishApplied()) {
+                return;
+              }
+              flowResult(editorState.showPure.open()).catch(
+                editorState.host.applicationStore.alertUnhandledError,
+              );
+            }}
+          >
+            Show Pure
+          </CubeButton>
+          <CubeButton
+            title={
+              showGraph
+                ? 'Hide the graph, leaving more room for the results'
+                : 'Show the graph'
+            }
+            onClick={() => {
+              // the floating editor goes with the graph, applying its edits
+              if (!showGraph || editorState.nodeEditor.finish()) {
+                editorState.setShowGraph(!showGraph);
+              }
+            }}
+          >
+            {showGraph ? 'Hide graph' : 'Show graph'}
+          </CubeButton>
+          {headerActions?.(editorState)}
         </div>
-      )}
-      <CubeSourcePicker editorState={editorState} />
-      <CubeExamplesDialog editorState={editorState} />
-      <CubeSpecTransferDialog editorState={editorState} />
-      <CubeShowPureDialog editorState={editorState} />
-      <CubeDevSettingsDialog editorState={editorState} />
-    </div>
-  );
-});
+        <PanelLoadingIndicator
+          isLoading={
+            editorState.isResolvingSources || editorState.isCheckingExpressions
+          }
+        />
+        {readOnly && (
+          <div
+            className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
+            role="status"
+          >
+            {READ_ONLY_CUBE_TITLE}. You can view and run it.
+          </div>
+        )}
+        {editorState.nodeEditor.notice && (
+          <div
+            className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
+            role="status"
+            data-testid={LEGEND_CUBE_TEST_ID.EDITOR_NOTICE}
+          >
+            <span className="min-w-0 flex-1">
+              {editorState.nodeEditor.notice}
+            </span>
+            <CubeButton onClick={() => editorState.nodeEditor.dismissNotice()}>
+              Dismiss
+            </CubeButton>
+          </div>
+        )}
+        <CubeSourcePicker editorState={editorState} />
+        <CubeExamplesDialog editorState={editorState} />
+        <CubeSpecTransferDialog editorState={editorState} />
+        <CubeShowPureDialog editorState={editorState} />
+        <CubeDevSettingsDialog editorState={editorState} />
+      </div>
+    );
+  },
+);
 
 /**
  * The Legend Cube page: the query above, its results below, both always
@@ -209,6 +222,8 @@ export const CubeEditor = observer(
     initialDocument?: CubeDocument | undefined;
     /** A source a link asks the page to start with, on an empty cube (spec §17.15) */
     initialSource?: CubeEntrySource | undefined;
+    /** The host's own buttons, at the end of the header, e.g. Studio's Add as MatView */
+    headerActions?: CubeHeaderActions | undefined;
   }) => {
     const [editorState] = useState(
       () => new CubeEditorState(props.host, props.initialDocument),
@@ -239,7 +254,10 @@ export const CubeEditor = observer(
       >
         <CubePalette editorState={editorState} />
         <div className="flex h-full min-w-0 flex-1 flex-col">
-          <CubeGraphHeader editorState={editorState} />
+          <CubeGraphHeader
+            editorState={editorState}
+            headerActions={props.headerActions}
+          />
           <CubeEntrySourceBanner entry={entry} />
           <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel

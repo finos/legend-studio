@@ -38,6 +38,7 @@ import { useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import { canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import { isCubeSampleDataOffered } from '../../stores/CubeHost.js';
 import {
   buildCubeCanvasEdges,
   buildCubeCanvasNodes,
@@ -303,15 +304,22 @@ export const CubeCanvas = observer(
                   onClick={() => editorState.sourcePicker.openToChoose()}
                 >
                   Connect to a source
-                </button>{' '}
-                to start a new one, or{' '}
-                <button
-                  className="text-[var(--color-accent)] underline"
-                  onClick={() => editorState.examples.open()}
-                >
-                  open an example
                 </button>
-                .
+                {isCubeSampleDataOffered(editorState.host) ? (
+                  <>
+                    {' '}
+                    to start a new one, or{' '}
+                    <button
+                      className="text-[var(--color-accent)] underline"
+                      onClick={() => editorState.examples.open()}
+                    >
+                      open an example
+                    </button>
+                    .
+                  </>
+                ) : (
+                  ' to start a new one.'
+                )}
               </span>
             </div>
           ) : (

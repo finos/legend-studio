@@ -55,6 +55,7 @@ import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
+import { EmbeddedCube } from './embedded-cube/EmbeddedCube.js';
 import { GRAPH_EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 import { QuickInput } from './QuickInput.js';
 import { ShowcaseManager } from '../ShowcaseManager.js';
@@ -301,6 +302,7 @@ export const Editor = withEditorStore(
             <WorkspaceSyncConflictResolver />
           )}
           <EmbeddedQueryBuilder />
+          <EmbeddedCube />
           {editorStore.embeddedDataCubeViewerState && (
             <QueryDataCubeViewer
               state={editorStore.embeddedDataCubeViewerState}

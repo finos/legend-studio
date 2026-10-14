@@ -33,6 +33,11 @@ import {
 } from '@testing-library/react';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { createFakeCubeIngestCatalog } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
+import { CubeDataProductEnvironmentType } from '../../../graph-manager/CubeDataProduct.js';
+import {
+  CubeIngestEnvironment,
+  CubeIngestProducer,
+} from '../../../graph-manager/CubeIngestCatalog.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeIngestTab } from '../CubeIngestTab.js';
 
@@ -106,6 +111,57 @@ describe('The Ingest tab', () => {
       'value',
       'LAKEHOUSE_CONSUMER_DEFAULT_WH',
     );
+    expect(state.sourcePicker.ingestTab.canConfirm).toBe(true);
+  });
+
+  test('On a host reading one project, as Studio, lists its definitions by name with their paths, under the runtime its runs use', async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    ingest.listProducers.mockResolvedValue([
+      new CubeIngestProducer({ deploymentId: '1234', urn: 'the project' }),
+    ]);
+    ingest.resolveEnvironment.mockResolvedValue(
+      new CubeIngestEnvironment({
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        name: 'demo-dev, from demo::Runtime',
+        runtimeEnvironment: 'demo-dev',
+        warehouse: 'DEMO_WH',
+      }),
+    );
+    const state = new CubeEditorState({
+      ...host,
+      ingestCatalog: ingest.catalog,
+      project: {
+        resolveRuntime: async () => ({ label: 'demo-dev, from demo::Runtime' }),
+      },
+    });
+    act(() => {
+      state.addNode(IngestDatasetSource.TYPE);
+    });
+    render(<CubeIngestTab tab={state.sourcePicker.ingestTab} />);
+    await waitFor(() =>
+      expect(screen.getByLabelText('Runtime').textContent).toBe(
+        'Runs on demo-dev, from demo::Runtime',
+      ),
+    );
+    // no class, deployment or warehouse to pick
+    expect(screen.queryByLabelText('Mode')).toBeNull();
+    expect(screen.queryByLabelText('Producer')).toBeNull();
+    expect(screen.queryByLabelText('Warehouse')).toBeNull();
+    const definitions = await screen.findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    expect(
+      within(definitions)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual([
+      'OrdersIngestsales::ingest::OrdersIngest',
+      'DesksIngestsales::ingest::DesksIngest',
+    ]);
+    fireEvent.click(within(definitions).getByText('OrdersIngest'));
+    await screen.findByRole('list', { name: 'Data sets' });
+    expect(state.sourcePicker.ingestTab.warehouse).toBe('DEMO_WH');
     expect(state.sourcePicker.ingestTab.canConfirm).toBe(true);
   });
 });

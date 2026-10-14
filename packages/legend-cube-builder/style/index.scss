@@ -20,6 +20,47 @@
 .legend-cube {
   height: 100%;
   width: 100%;
+
+  // Studio also loads React Flow 11's stylesheet (its lineage viewer), whose
+  // controls and minimap have fixed light colours that win over xyflow 12's
+  // variables, leaving white icons on white in the dark theme: the canvas
+  // takes xyflow 12's colours back
+  .react-flow__controls-button {
+    background: var(
+      --xy-controls-button-background-color,
+      var(--xy-controls-button-background-color-default)
+    );
+    border-bottom-color: var(
+      --xy-controls-button-border-color,
+      var(--xy-controls-button-border-color-default)
+    );
+    color: var(
+      --xy-controls-button-color,
+      var(--xy-controls-button-color-default)
+    );
+
+    &:hover {
+      background: var(
+        --xy-controls-button-background-color-hover,
+        var(--xy-controls-button-background-color-hover-default)
+      );
+      color: var(
+        --xy-controls-button-color-hover,
+        var(--xy-controls-button-color-hover-default)
+      );
+    }
+
+    svg {
+      fill: currentcolor;
+    }
+  }
+
+  .react-flow__minimap {
+    background: var(
+      --xy-minimap-background-color,
+      var(--xy-minimap-background-color-default)
+    );
+  }
 }
 
 // Legend Query's legacy themes give every input its border color with a rule

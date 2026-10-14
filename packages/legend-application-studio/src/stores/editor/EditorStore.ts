@@ -111,6 +111,7 @@ import {
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
+import { EmbeddedCubeState } from './embedded-cube/EmbeddedCubeState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from '../../__lib__/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
@@ -198,6 +199,7 @@ export class EditorStore implements CommandRegistrar {
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
+  embeddedCubeState: EmbeddedCubeState;
   embeddedDataCubeViewerState: QueryBuilderDataCubeViewerState | undefined;
   newElementState: NewElementState;
   /**
@@ -297,6 +299,7 @@ export class EditorStore implements CommandRegistrar {
       this,
     );
     this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
+    this.embeddedCubeState = new EmbeddedCubeState(this);
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
@@ -445,9 +448,11 @@ export class EditorStore implements CommandRegistrar {
    */
   createEditorCommandTrigger(additionalChecker?: () => boolean): () => boolean {
     return (): boolean =>
-      // we don't want to leak any hotkeys when we have embedded query builder open
+      // we don't want to leak any hotkeys when we have embedded query builder
+      // or Legend Cube open, e.g. Studio's F9 compiles where Cube's executes
       // TODO?: we probably should come up with a more generic mechanism for this
       !this.embeddedQueryBuilderState.queryBuilderState &&
+      !this.embeddedCubeState.isOpen &&
       (!additionalChecker || additionalChecker());
   }
 

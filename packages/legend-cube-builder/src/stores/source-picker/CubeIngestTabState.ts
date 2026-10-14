@@ -364,6 +364,20 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       }
       this.environment = environment;
       this.producers = producers;
+      // a new cube starts on the environment's own warehouse, when it has one
+      if (!this.fixedSettings && environment.warehouse) {
+        this.warehouse = environment.warehouse;
+      }
+      // the only producer deployment is the one to read
+      const [onlyProducer] = producers;
+      if (
+        this.producerDeploymentId === undefined &&
+        producers.length === 1 &&
+        onlyProducer
+      ) {
+        this.producerDeploymentId = onlyProducer.deploymentId;
+        this.resetDefinitions();
+      }
     } catch (error) {
       if (request === this.environmentRequest) {
         this.loadedEnvironmentType = undefined;

@@ -28,6 +28,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_SPEC_TRANSFER_MODE } from '../../stores/CubeSpecTransferState.js';
+import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.JSON` */
 const JSON_LANGUAGE = 'json';
@@ -127,7 +128,7 @@ export const CubeSpecTransferDialog = observer(
             {isExport ? (
               <>
                 <ModalFooterButton
-                  darkMode={darkMode}
+                  darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
                   formatText={false}
                   text="Copy"
                   disabled={transfer.exportText === undefined}
@@ -138,7 +139,7 @@ export const CubeSpecTransferDialog = observer(
                   }}
                 />
                 <ModalFooterButton
-                  darkMode={darkMode}
+                  darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
                   formatText={false}
                   text="Download"
                   disabled={transfer.exportText === undefined}
@@ -147,7 +148,7 @@ export const CubeSpecTransferDialog = observer(
               </>
             ) : (
               <ModalFooterButton
-                darkMode={darkMode}
+                darkMode={CUBE_PRIMARY_BUTTON_DARK_MODE}
                 formatText={false}
                 text="Import"
                 disabled={!transfer.importText.trim() || transfer.isReadingFile}

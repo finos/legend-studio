@@ -16,12 +16,12 @@
 
 import type { IR } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
-import type { CubeDataProductEnvironmentType } from '../../../CubeDataProduct.js';
 import {
   CUBE_INGEST_RUNTIME_PATH,
   type CubeIngestSettings,
   parseCubeIngestUrn,
 } from '../../../CubeIngest.js';
+import type { CubeIngestDefinitionSource } from '../../../CubeIngestCatalog.js';
 import { CUBE_LAKEHOUSE_RUNTIME_KIND } from '../../../CubeLakehouseRuntime.js';
 
 // The models an ingest cube's engine calls run on (PLAN §6.7), built for
@@ -30,20 +30,10 @@ import { CUBE_LAKEHOUSE_RUNTIME_KIND } from '../../../CubeLakehouseRuntime.js';
 // run a lakehouse runtime at Cube's fixed path
 
 /**
- * The deployed definitions an ingest cube reads, from the host's ingest
- * servers: what the engine needs to type and run them
+ * The definitions an ingest cube reads, as protocol JSON, and the
+ * environment its runs name: what the engine needs to type and run them
  */
-export interface V1_CubeIngestDefinitionSource {
-  /** A definition's element, as protocol JSON, by its URN, for the cube's class */
-  getDefinitionElement(
-    urn: string,
-    environmentType: CubeDataProductEnvironmentType,
-  ): Promise<PlainObject>;
-  /** The environment a run's lakehouse runtime names, for the cube's class */
-  getRuntimeEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
-  ): Promise<string>;
-}
+export type V1_CubeIngestDefinitionSource = CubeIngestDefinitionSource;
 
 /** An ingest data set a lambda reads */
 export interface V1_CubeIngestAccessor {

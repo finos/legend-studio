@@ -51,7 +51,7 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import { getRuntimesForDatabase } from '../../graph-manager/CubeModelOutlineHelper.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
-import { loadCubeModelOutline } from '../CubeHost.js';
+import { isCubeSampleDataOffered, loadCubeModelOutline } from '../CubeHost.js';
 import { recheckCubeFunctionSources } from '../CubeFunctionRecheck.js';
 import { CUBE_FUNCTION_MESSAGE } from '../../__lib__/LegendCubeFunctionLabels.js';
 import { type BundledModel, createTextModel } from '../LocalModelCatalog.js';
@@ -351,9 +351,9 @@ export class CubeInlineModelTabState implements CubeSourcePickerTab {
       : undefined;
   }
 
-  /** The host serves the tab: it always serves models */
+  /** The host serves the tab unless it offers no sample data */
   get isAvailable(): boolean {
-    return true;
+    return isCubeSampleDataOffered(this.editorState.host);
   }
 
   get isBusy(): boolean {

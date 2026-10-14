@@ -19,7 +19,11 @@ export {
   LEGEND_CUBE_COMMAND_KEY,
 } from './__lib__/LegendCubeCommand.js';
 export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
-export { CubeEditor } from './components/CubeEditor.js';
+export { CubeButton } from './components/CubeButton.js';
+export { CubeEditor, type CubeHeaderActions } from './components/CubeEditor.js';
+export type { CubeEditorState } from './stores/CubeEditorState.js';
+export { buildCubeRunningStepLambda } from './stores/CubeRunningStepLambda.js';
+export { formatDisabledReasons } from './__lib__/LegendCubeLabels.js';
 export {
   type CubeAccessPointEntry,
   type CubeEntrySource,
@@ -46,11 +50,19 @@ export {
   buildCubeLakehouseEnvironment,
   buildCubeProjectCatalog,
   buildCubeServiceCatalog,
+  readCubeIngestDataSets,
+  serializeCubeLambdaForHost,
   type CubeEngineConfig,
   type CubeLakehouseServices,
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';
 export type { CubeLakehouseEnvironment } from './graph-manager/CubeLakehouseEnvironment.js';
-export type { CubeHost } from './stores/CubeHost.js';
+export {
+  type CubeHost,
+  type CubeHostProject,
+  type CubeHostProjectRuntime,
+  isCubeProjectHost,
+  isCubeSampleDataOffered,
+} from './stores/CubeHost.js';
 export { getCubeRememberedWarehouse } from './stores/CubeDataProductWarehouse.js';
 export {
   BUNDLED_MODELS,

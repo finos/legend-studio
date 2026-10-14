@@ -52,6 +52,7 @@ import {
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import type { CubeHostProjectRuntime } from '../CubeHost.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
@@ -160,6 +161,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   listError: CubeDataProductTabError | undefined;
   /** Why a product couldn't be read or its access point added */
   error: CubeDataProductTabError | undefined;
+  /** The lakehouse runtime a project host's runs use (`CubeHost.project`), once read */
+  projectRuntime: CubeHostProjectRuntime | undefined;
+  /** Why the project host's runtime couldn't be read */
+  projectRuntimeError: CubeDataProductTabError | undefined;
+  isReadingProjectRuntime = false;
 
   /** The warehouse field shows a cube's own, not one the viewer typed */
   private warehouseFromProject = false;
@@ -204,6 +210,10 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       isAdding: observable,
       listError: observable.ref,
       error: observable.ref,
+      projectRuntime: observable.ref,
+      projectRuntimeError: observable.ref,
+      isReadingProjectRuntime: observable,
+      readProjectRuntime: flow,
       isAvailable: computed,
       searchesOnServer: computed,
       fixedProject: computed,
@@ -527,10 +537,22 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         this.resetCandidate();
       }
     } else if (this.warehouseFromProject || !this.candidate) {
-      // a new cube starts on the viewer's warehouse, not a previous cube's
+      // a new cube starts on the project host's runtime's warehouse, else
+      // the viewer's, not a previous cube's
       this.warehouse =
-        runtime.rememberedWarehouse ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+        this.projectRuntime?.warehouse ??
+        runtime.rememberedWarehouse ??
+        CUBE_DEFAULT_CONSUMER_WAREHOUSE;
       this.warehouseFromProject = false;
+    }
+    if (
+      this.editorState.host.project &&
+      !this.projectRuntime &&
+      !this.isReadingProjectRuntime
+    ) {
+      flowResult(this.readProjectRuntime()).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      );
     }
     if (
       this.candidates === undefined ||
@@ -561,6 +583,35 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
     this.describeRequest++;
     this.isDescribing = false;
+  }
+
+  /**
+   * Reads the lakehouse runtime a project host's runs use, which the tab
+   * names; a new cube starts on its warehouse
+   */
+  *readProjectRuntime(): GeneratorFn<void> {
+    const { project } = this.editorState.host;
+    if (!project) {
+      return;
+    }
+    this.isReadingProjectRuntime = true;
+    this.projectRuntimeError = undefined;
+    try {
+      const runtime =
+        (yield project.resolveRuntime()) as CubeHostProjectRuntime;
+      this.projectRuntime = runtime;
+      if (
+        !this.fixedProject &&
+        !this.warehouseFromProject &&
+        runtime.warehouse
+      ) {
+        this.warehouse = runtime.warehouse;
+      }
+    } catch (error) {
+      this.projectRuntimeError = toError(error);
+    } finally {
+      this.isReadingProjectRuntime = false;
+    }
   }
 
   /** Lists the products again after a failed listing */

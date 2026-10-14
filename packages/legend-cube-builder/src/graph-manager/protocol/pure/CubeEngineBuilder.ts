@@ -22,15 +22,25 @@ import type {
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
 import type { MarketplaceServerClient } from '@finos/legend-server-marketplace';
-import type { TracerService } from '@finos/legend-shared';
+import type { IR } from '@finos/legend-cube';
+import {
+  type PlainObject,
+  stringifyLosslessJSON,
+  type TracerService,
+} from '@finos/legend-shared';
 import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
 import type {
   CubeDataProductCatalog,
+  CubeDataProductModelSource,
   CubeMarketplaceLinkTarget,
 } from '../../CubeDataProductCatalog.js';
 import type { CubeEngine } from '../../CubeEngine.js';
 import type { CubeEngineClientSettings } from '../../CubeEngineClientSettings.js';
-import type { CubeIngestCatalog } from '../../CubeIngestCatalog.js';
+import type {
+  CubeIngestCatalog,
+  CubeIngestDataSet,
+  CubeIngestDefinitionSource,
+} from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
 import type { CubeProjectCatalog } from '../../CubeProjectCatalog.js';
 import type { CubeServiceCatalog } from '../../CubeServiceCatalog.js';
@@ -40,6 +50,8 @@ import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCa
 import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
 import { V1_LegendCubeProjectCatalog } from './v1/V1_LegendCubeProjectCatalog.js';
 import { V1_LegendCubeServiceCatalog } from './v1/V1_LegendCubeServiceCatalog.js';
+import { V1_readCubeIngestDataSets } from './v1/V1_CubeIngestDefinition.js';
+import { V1_serializeCubeLambda } from './v1/V1_CubeLambdaSerializer.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -64,17 +76,30 @@ export const buildCubeEngine = (
     ingestCatalog?: CubeIngestCatalog | undefined;
     /** Dev Settings' engine URL and compression, shared by the host's engine clients (PLAN §11.16) */
     clientSettings?: CubeEngineClientSettings | undefined;
+    /**
+     * The definitions ingest cubes read, for a host whose catalog isn't
+     * built by `buildCubeIngestCatalog`, e.g. Studio's workspace
+     */
+    ingestDefinitionSource?: CubeIngestDefinitionSource | undefined;
+    /**
+     * The model data product cubes read their project from, for a host whose
+     * data products aren't deployed, e.g. Studio's workspace; the project's
+     * deployed version otherwise
+     */
+    dataProductModelSource?: CubeDataProductModelSource | undefined;
   },
 ): CubeEngine =>
   new V1_LegendCubeEngine(config, tracerService, {
     clientSettings: options?.clientSettings,
     lakehouseEnvironment: options?.lakehouseEnvironment,
     getRememberedWarehouse: options?.getRememberedWarehouse,
+    dataProductModels: options?.dataProductModelSource,
     // the catalog reads the definitions the engine types and runs on
     ingestDefinitions:
-      options?.ingestCatalog instanceof V1_LegendCubeIngestCatalog
+      options?.ingestDefinitionSource ??
+      (options?.ingestCatalog instanceof V1_LegendCubeIngestCatalog
         ? options.ingestCatalog
-        : undefined,
+        : undefined),
   });
 
 /**
@@ -202,3 +227,34 @@ export const buildCubeIngestCatalog = (
     services.getAccessToken,
   );
 };
+
+/** The JSON without any `sourceInformation`, at any depth */
+const withoutSourceInformation = (json: unknown): unknown =>
+  Array.isArray(json)
+    ? json.map(withoutSourceInformation)
+    : json !== null && typeof json === 'object'
+      ? Object.fromEntries(
+          Object.entries(json)
+            .filter(([key]) => key !== 'sourceInformation')
+            .map(([key, value]) => [key, withoutSourceInformation(value)]),
+        )
+      : json;
+
+/**
+ * A lambda Cube emitted, as protocol JSON for a host to keep, e.g. in a
+ * Studio ingest definition: plain JSON numbers, and none of the source
+ * information Cube stamps on a lambda to place the engine's errors
+ */
+export const serializeCubeLambdaForHost = (lambda: IR): PlainObject =>
+  withoutSourceInformation(
+    JSON.parse(stringifyLosslessJSON(V1_serializeCubeLambda(lambda))),
+  ) as PlainObject;
+
+/**
+ * The data sets of an ingest definition's content, its protocol JSON, in
+ * order, typed from what it declares; for a host that lists definitions of
+ * its own, e.g. Studio's workspace. Throws when the content can't be read.
+ */
+export const readCubeIngestDataSets = (
+  content: PlainObject,
+): CubeIngestDataSet[] => V1_readCubeIngestDataSets(content);

@@ -617,7 +617,7 @@ describe('Cube source picker', () => {
     [LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT, false],
     [LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK, true],
   ])(
-    'Draws the dialog and its buttons in the color theme %s (dark: %s)',
+    'Draws the dialog and its Cancel in the color theme %s (dark: %s), and Add as an accent button in every theme',
     async (theme, dark) => {
       const { host } = TEST__createCubeHost(
         undefined,
@@ -649,7 +649,8 @@ describe('Cube source picker', () => {
           ];
         }),
       ).toEqual([
-        ['Add', dark, !dark],
+        // a primary button is an accent button in every theme (CubeDialogTheme)
+        ['Add', true, false],
         ['Cancel', dark, !dark],
       ]);
     },

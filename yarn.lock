@@ -2836,6 +2836,8 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
+    "@finos/legend-cube": "workspace:*"
+    "@finos/legend-cube-builder": "workspace:*"
     "@finos/legend-data-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-product": "workspace:*"

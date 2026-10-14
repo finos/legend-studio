@@ -118,6 +118,21 @@ export interface CubeIngestUrn {
   readonly definition: string;
 }
 
+/** The URN's environment segment of each class */
+const URN_ENVIRONMENTS: Readonly<
+  Record<CubeDataProductEnvironmentType, string>
+> = {
+  [CubeDataProductEnvironmentType.PRODUCTION]: 'prod',
+  [CubeDataProductEnvironmentType.PRODUCTION_PARALLEL]: 'prod-parallel',
+};
+
+/**
+ * The URN of a definition deployed from SDLC, as `parseCubeIngestUrn` reads
+ * it: for a host naming definitions of its own, e.g. Studio's workspace
+ */
+export const formatCubeIngestUrn = (urn: CubeIngestUrn): string =>
+  `urn:lakehouse:${URN_ENVIRONMENTS[urn.environmentType]}:ingest:definition:alloy-git:${urn.groupId}~${urn.artifactId}~${urn.definition}`;
+
 const SDLC_DEPLOYED_URN =
   /^urn:lakehouse:(?<environment>[^:]+):ingest:definition:alloy-git:(?<groupId>[^~]+)~(?<artifactId>[^~]+)~(?<definition>.+)$/u;
 

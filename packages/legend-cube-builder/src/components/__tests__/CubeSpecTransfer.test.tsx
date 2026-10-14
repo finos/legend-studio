@@ -358,7 +358,7 @@ describe('Cube spec export and import, on the page', () => {
     [LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT, false],
     [LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK, true],
   ])(
-    'Draws the Export and Import dialogs and their buttons in the color theme %s (dark: %s)',
+    'Draws the Export and Import dialogs and their Close and Cancel in the color theme %s (dark: %s), and their other buttons as accent buttons in every theme',
     async (theme, dark) => {
       const created = TEST__createCubeHost(
         undefined,
@@ -376,8 +376,9 @@ describe('Cube spec export and import, on the page', () => {
       expect(themeOf(dialog, ['Copy', 'Download', 'Close'])).toEqual([
         dark,
         [
-          ['Copy', dark, !dark],
-          ['Download', dark, !dark],
+          // a primary button is an accent button in every theme (CubeDialogTheme)
+          ['Copy', true, false],
+          ['Download', true, false],
           ['Close', dark, !dark],
         ],
       ]);
@@ -389,7 +390,7 @@ describe('Cube spec export and import, on the page', () => {
       expect(themeOf(dialog, ['Import', 'Cancel'])).toEqual([
         dark,
         [
-          ['Import', dark, !dark],
+          ['Import', true, false],
           ['Cancel', dark, !dark],
         ],
       ]);

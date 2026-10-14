@@ -4883,6 +4883,36 @@ sends nothing.
 - §8.7 (Show Pure): a run's Pure shows its row limit.
 - Appendix A: §12.6 (failed runs recorded).
 
+### 11.17 Legend Cube in Studio: Create MatView with Cube
+
+Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/legend-studio#5690), for a demo (user,
+2026-10-14): an ingest definition's editor opens Cube to build a materialized view of the project's own sources.
+
+**Settled** (user, 2026-10-14):
+
+- **The button:** "Create MatView with Cube" in the ingest definition editor's header, beside Lineage and View SQL,
+  where `NonProductionFeatureFlag` is on. Cube opens full screen over the editor, as Studio's embedded query builder
+  does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
+- **Sources:** the ingest definitions and data products of the project being edited, as the workspace holds them,
+  and nothing else (no sample data, examples, databases or services). One kind of source per cube, as in Legend Query.
+- **The source dialog in Studio:** a screen of its own for each: the project's definitions, or products, by name,
+  each path muted beside it; no class, producer deployment, search across the platform or warehouse to pick; the
+  lakehouse runtime its runs use named instead (`CubeHost.project`).
+- **Runs:** as Studio's own queries of an ingest definition or a data product run: the workspace as the model, on
+  the project's first lakehouse runtime's environment, the cube's warehouse starting as the runtime's
+  (`LegendStudioCubeWorkspace`, the engine's `ingestDefinitionSource` and `dataProductModelSource`).
+- **Add as MatView:** the step that runs, as a lambda with no runtime and no row limit, becomes a data set of the
+  definition: `{name, primaryKey: [], source: {_type: 'FunctionSource', function}}`, a local change in Studio.
+- **The light theme:** the demo is shown in Studio's light theme; Cube's dialogs draw their primary button as an
+  accent button in every theme.
+
+**In the builder:** `CubeHost.project` and `offersSampleData`, `CubeEditor`'s `headerActions`,
+`buildCubeRunningStepLambda`, `buildCubeEngine`'s `ingestDefinitionSource` (with `getModelElements`) and
+`dataProductModelSource`, `readCubeIngestDataSets` and `formatCubeIngestUrn`. The palette offers a table or a function
+only with a tab that reads it; the Ingest tab picks the only producer deployment, starts on the environment's
+warehouse, and hides Mode with one class; the floating step editor goes into the dialog that hosts the page; the
+canvas takes xyflow 12's colours back where React Flow 11's stylesheet is loaded too (Risks).
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
