@@ -64,6 +64,13 @@ export const CUBE_RUN_LABEL = {
   pivotValues: (column: string): string => `Values of ${column}`,
 };
 
+/**
+ * Above a run's Pure (PLAN §11.16): unlike Show Pure, it shows the limit a
+ * grid run adds, one more than the row limit, to tell whether there are more
+ */
+export const CUBE_RUN_PURE_NOTE =
+  'As it ran, with any row limit Cube added to it.';
+
 /** Pending labels: lower-case gerunds, shown as they are (spec §17.13) */
 export enum CUBE_PENDING_LABEL {
   LOADING_MODEL = 'loading model',

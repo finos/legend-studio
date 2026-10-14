@@ -351,7 +351,7 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
-    this.runStats = new CubeRunStatsState();
+    this.runStats = new CubeRunStatsState(host);
     this.gridFetcher = new CubeGridFetcher(this);
     this.grid = new CubeGridState(this);
     this.export = new CubeExportState(this);

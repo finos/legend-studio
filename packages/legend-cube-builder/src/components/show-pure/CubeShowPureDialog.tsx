@@ -24,10 +24,16 @@ import {
   PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_PENDING_LABEL,
+  CUBE_RUN_PURE_NOTE,
+} from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 
-/** The Pure text of what Execute would run, read-only, with Copy */
+/**
+ * The Pure text of what Execute would run, read-only, with Copy; or of a run
+ * from the Runs panel, as it ran (PLAN §11.16)
+ */
 export const CubeShowPureDialog = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
@@ -35,17 +41,24 @@ export const CubeShowPureDialog = observer(
     const { applicationStore } = editorState.host;
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const { text, error } = showPure;
+    const { text, error, run } = showPure;
 
     return (
       <Dialog open={showPure.isOpen} onClose={() => showPure.close()}>
         <Modal darkMode={darkMode} className="w-[800px] max-w-full">
           <ModalHeader>
-            <div className="modal__title">Pure query</div>
+            <div className="modal__title truncate" title={run}>
+              {run === undefined ? 'Pure query' : `Pure query of ${run}`}
+            </div>
           </ModalHeader>
           <PanelLoadingIndicator isLoading={showPure.isRendering} />
           <ModalBody>
             <div className="flex flex-col gap-2">
+              {run !== undefined && (
+                <div className="text-base text-[var(--color-text-secondary)]">
+                  {CUBE_RUN_PURE_NOTE}
+                </div>
+              )}
               {showPure.isRendering && (
                 <div className="text-base text-[var(--color-text-secondary)]">
                   {CUBE_PENDING_LABEL.RENDERING_QUERY}
