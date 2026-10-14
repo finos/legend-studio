@@ -1,0 +1,49 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// ============================================================================
+// HtmlBlockRenderer
+// ============================================================================
+// Wraps a sandboxed iframe carrying an HTML (or markdown-with-inline-HTML)
+// payload. The iframe body applies its own theme-aware styles (see
+// `HtmlBlockRenderer.buildIframeStyles`); this wrapper only owns the outer
+// layout / border / title bar within the host container.
+
+.html-block-renderer {
+  width: 100%;
+  margin: 0.4rem 0;
+  border: 1px solid var(--color-dark-shade-100, #4a4a4a);
+  border-radius: 6px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.html-block-renderer__title {
+  padding: 0.4rem 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-light-grey-200, #c9c9c9);
+  background: var(--color-dark-shade-50, #313131);
+  border-bottom: 1px solid var(--color-dark-shade-100, #4a4a4a);
+}
+
+.html-block-renderer__frame {
+  display: block;
+  width: 100%;
+  min-height: 4rem;
+  border: 0;
+  background: transparent;
+}

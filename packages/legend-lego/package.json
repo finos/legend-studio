@@ -26,6 +26,7 @@
     "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
     "./data-grid": "./lib/data-grid/index.js",
     "./graph-editor": "./lib/graph-editor/index.js",
+    "./html-renderer": "./lib/html-renderer/index.js",
     "./legend-ai": "./lib/legend-ai/index.js",
     "./legend-ai/test": "./lib/legend-ai/__test-utils__/LegendAITestUtils.js",
     "./model-documentation": "./lib/model-documentation/index.js",

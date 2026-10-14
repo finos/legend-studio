@@ -20,12 +20,23 @@ import type { MarkdownText } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import mermaid from 'mermaid';
+import type { PluggableList } from 'unified';
 
 export const MarkdownTextViewer: React.FC<{
   value: MarkdownText;
   className?: string | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   components?: Record<string, any> | undefined;
+  /**
+   * Opt-in rehype plugins (e.g. `rehype-raw`, `rehype-sanitize`). Omit to
+   * keep the viewer's default behavior unchanged (no raw HTML, no sanitizer).
+   *
+   * SECURITY: whenever `rehype-raw` is included, callers MUST also include
+   * `rehype-sanitize` with an allowlist schema appropriate for their content
+   * source. `rehype-raw` without `rehype-sanitize` exposes the viewer to XSS
+   * via `<script>` / `<iframe>` / `on*` attributes / `javascript:` URLs.
+   */
+  rehypePlugins?: PluggableList | undefined;
 }> = (props) => {
   useEffect(() => {
     // this will render the mermaid diagram
@@ -37,6 +48,7 @@ export const MarkdownTextViewer: React.FC<{
     <div className={clsx('markdown-content', props.className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGFM]}
+        rehypePlugins={props.rehypePlugins}
         components={
           props.components ?? {
             // customize the rendering of the <code> block, if the language is mermaid
