@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.21.53
+
+### Patch Changes
+
+- [#5697](https://github.com/finos/legend-studio/pull/5697) [`bcbea2a`](https://github.com/finos/legend-studio/commit/bcbea2a1d38f50f0503d98673a3e5e838f44e77f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Studio: a materialized view's primary key leaves out the milestoning columns a write mode adds (`LAKE_DIGEST`, `LAKE_IN_ID`, `LAKE_OUT_ID`, `LAKE_FROM`, `LAKE_THRU`), in Add MatView and when Save MatView asks again, and Save MatView asks again for a key that has one.
+
+- [#5702](https://github.com/finos/legend-studio/pull/5702) [`3079fd4`](https://github.com/finos/legend-studio/commit/3079fd48e907d33b0ff7c503d8fa24e03a1d775a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The ingest definition editor's Create MatView button, which opens Legend Cube, is now shown in production: it no longer depends on `NonProductionFeatureFlag` (the builder's hosting guide says so).
+
 ## 28.21.52
 
 ### Patch Changes
