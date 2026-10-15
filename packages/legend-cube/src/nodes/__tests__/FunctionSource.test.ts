@@ -221,7 +221,7 @@ describe(unitTest('Function source'), () => {
     });
   });
 
-  test('Is a source the host resolves, in beta in the registry, after tables', () => {
+  test('Is a source the host resolves, in beta in the registry, after ingest data sets', () => {
     expect(
       isResolvableSource(new FunctionSource('function101', ALL_ORDERS)),
     ).toBe(true);
@@ -229,8 +229,8 @@ describe(unitTest('Function source'), () => {
     expect(registry.get(FunctionSource.TYPE)?.label).toBe('Function');
     expect(registry.get(FunctionSource.TYPE)?.beta).toBe(true);
     expect(
-      registry.sources.map((definition) => definition.type).slice(0, 2),
-    ).toEqual(['relational', 'function']);
+      registry.sources.map((definition) => definition.type).slice(2, 4),
+    ).toEqual(['ingestDataset', 'function']);
   });
 });
 

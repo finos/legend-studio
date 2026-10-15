@@ -175,8 +175,8 @@ describe('Cube palette', () => {
       ),
     ).toEqual([
       TABLE,
-      'Function (BETA)',
       'Data Product (BETA)',
+      'Function (BETA)',
       'separator',
       SORT,
       GROUP,

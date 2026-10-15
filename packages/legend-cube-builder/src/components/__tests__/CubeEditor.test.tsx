@@ -932,8 +932,8 @@ describe("The header's Add Items", () => {
     const labels = items.map((item) => item.textContent);
     expect(labels).toEqual([
       TABLE,
-      'Function (BETA)',
       'Data Product (BETA)',
+      'Function (BETA)',
       ...TRANSFORMS,
     ]);
     expect(labels).toEqual(palette);
@@ -941,7 +941,7 @@ describe("The header's Add Items", () => {
     const divider = menu.querySelectorAll('.menu__divider');
     expect(divider).toHaveLength(1);
     expect(divider[0]?.previousElementSibling?.textContent).toBe(
-      'Data Product (BETA)',
+      'Function (BETA)',
     );
     expect(divider[0]?.nextElementSibling?.textContent).toBe('Sort by Column');
     // a cube of tables takes no data product, and says why
