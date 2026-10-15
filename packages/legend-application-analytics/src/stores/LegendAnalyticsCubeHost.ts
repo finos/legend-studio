@@ -31,7 +31,8 @@ import type { LegendAnalyticsApplicationStore } from './LegendAnalyticsBaseStore
 export const buildLegendAnalyticsCubeHostConfig = (
   config: LegendAnalyticsApplicationConfig,
 ): LegendCubeHostConfig => {
-  const publicStereotype = config.options.dataProductConfig?.publicStereotype;
+  const { dataProductConfig } = config.options;
+  const publicStereotype = dataProductConfig?.publicStereotype;
   return {
     engine: {
       baseUrl: config.engineServerUrl,
@@ -52,6 +53,9 @@ export const buildLegendAnalyticsCubeHostConfig = (
           value: publicStereotype.stereotype,
         }
       : undefined,
+    // the deployment directory Marketplace's producer info reads
+    deploymentNameServiceUrl:
+      dataProductConfig?.producer?.deploymentLegendServiceUrl,
   };
 };
 

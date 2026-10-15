@@ -18,7 +18,10 @@ import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useId } from 'react';
 import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
-import { getDroppedDefinitionsLabel } from '../../__lib__/LegendCubeIngestLabels.js';
+import {
+  getDroppedDefinitionsLabel,
+  getFixedProducerLabel,
+} from '../../__lib__/LegendCubeIngestLabels.js';
 import {
   CUBE_PENDING_LABEL,
   READ_ONLY_CUBE_TITLE,
@@ -256,14 +259,14 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
         value={tab.producerDeploymentId}
         options={(tab.producers ?? []).map((producer) => ({
           value: producer.deploymentId,
-          label: `Deployment ${producer.deploymentId}`,
+          label: tab.getProducerLabel(producer.deploymentId),
         }))}
         disabled={settings !== undefined}
         onChange={(value) => tab.selectProducer(value)}
       />
       {settings && (
         <span className="text-sm text-[var(--color-text-muted)]">
-          {`All of the cube's data sets come from producer deployment ${settings.producerDeploymentId}.`}
+          {`All of the cube's data sets come from producer deployment ${getFixedProducerLabel(settings.producerDeploymentId, tab.producerNames.get(settings.producerDeploymentId))}.`}
         </span>
       )}
       {tab.producerDeploymentId !== undefined && (

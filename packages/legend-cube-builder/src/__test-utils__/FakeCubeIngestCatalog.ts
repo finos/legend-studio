@@ -30,12 +30,15 @@ import {
 } from '../graph-manager/CubeIngestCatalog.js';
 
 // A fake of the deployed ingest definitions, for the Ingest tab's and the
-// editor's tests: producer deployment 1234 deploys two definitions from
-// com.example:sales, 5678 none
+// editor's tests: producer deployment 1234, named Sales Feed in the
+// deployment directory, deploys two definitions from com.example:sales;
+// 5678, which the directory doesn't know, none
 
 const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
 
 export const FAKE_INGEST_ORDERS = 'sales::ingest::OrdersIngest';
+export const FAKE_INGEST_PRODUCER_ID = '1234';
+export const FAKE_INGEST_PRODUCER_NAME = 'Sales Feed';
 export const FAKE_INGEST_DESKS = 'sales::ingest::DesksIngest';
 
 export const fakeIngestUrnOf = (
@@ -109,6 +112,9 @@ export interface FakeCubeIngestCatalog {
   catalog: CubeIngestCatalog;
   resolveEnvironment: jest.Mock<CubeIngestCatalog['resolveEnvironment']>;
   listProducers: jest.Mock<CubeIngestCatalog['listProducers']>;
+  getProducerNames: jest.Mock<
+    NonNullable<CubeIngestCatalog['getProducerNames']>
+  >;
   listDefinitions: jest.Mock<CubeIngestCatalog['listDefinitions']>;
   describe: jest.Mock<CubeIngestCatalog['describe']>;
   resolveSchemas: jest.Mock<CubeIngestCatalog['resolveSchemas']>;
@@ -137,6 +143,17 @@ export const createFakeCubeIngestCatalog = (): FakeCubeIngestCatalog => {
             deploymentId,
             urn: `urn:lakehouse:prod:producer:deployment:${deploymentId}`,
           }),
+      ),
+    ),
+  );
+  const getProducerNames = jest.fn<
+    NonNullable<CubeIngestCatalog['getProducerNames']>
+  >(async (deploymentIds) =>
+    Promise.resolve(
+      new Map(
+        deploymentIds.includes(FAKE_INGEST_PRODUCER_ID)
+          ? [[FAKE_INGEST_PRODUCER_ID, FAKE_INGEST_PRODUCER_NAME]]
+          : [],
       ),
     ),
   );
@@ -185,12 +202,14 @@ export const createFakeCubeIngestCatalog = (): FakeCubeIngestCatalog => {
       environmentTypes: [PRODUCTION, PRODUCTION_PARALLEL],
       resolveEnvironment,
       listProducers,
+      getProducerNames,
       listDefinitions,
       describe,
       resolveSchemas,
     },
     resolveEnvironment,
     listProducers,
+    getProducerNames,
     listDefinitions,
     describe,
     resolveSchemas,

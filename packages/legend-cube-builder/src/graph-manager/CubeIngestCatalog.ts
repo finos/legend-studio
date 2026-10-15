@@ -149,6 +149,16 @@ export interface CubeIngestCatalog {
     environmentType: CubeDataProductEnvironmentType,
   ): Promise<readonly CubeIngestProducer[]>;
 
+  /**
+   * The names of producer deployments, by deployment id, from the host's
+   * deployment directory: none for an id it doesn't know. Only the Ingest
+   * tab reads them, to label its producers; hosts without a directory leave
+   * it out, and producers show their ids alone
+   */
+  getProducerNames?(
+    deploymentIds: readonly string[],
+  ): Promise<ReadonlyMap<string, string>>;
+
   /** A producer deployment's SDLC-deployed definitions of the class */
   listDefinitions(
     environmentType: CubeDataProductEnvironmentType,

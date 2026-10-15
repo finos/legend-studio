@@ -19,6 +19,7 @@ import { PanelLoadingIndicator } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { getCubeIngestSettings } from '../../graph-manager/CubeIngest.js';
@@ -40,6 +41,16 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
   const refreshing = editorState.isPendingSource(source);
   const model = editorState.document.context?.model;
   const settings = model ? getCubeIngestSettings(model) : undefined;
+  const { ingestTab } = editorState.sourcePicker;
+  const producerDeploymentId = settings?.producerDeploymentId;
+  // the producer's name, when the host's deployment directory knows it
+  useEffect(() => {
+    if (producerDeploymentId !== undefined) {
+      flowResult(ingestTab.loadProducerNames([producerDeploymentId])).catch(
+        editorState.host.applicationStore.alertUnhandledError,
+      );
+    }
+  }, [editorState, ingestTab, producerDeploymentId]);
   return (
     <div className="relative flex flex-col gap-2">
       <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-base">
@@ -57,7 +68,7 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
             </dd>
             <dt className="text-[var(--color-text-secondary)]">Producer</dt>
             <dd className="min-w-0 break-all">
-              {`Deployment ${settings.producerDeploymentId}`}
+              {ingestTab.getProducerLabel(settings.producerDeploymentId)}
             </dd>
             <dt className="self-center text-[var(--color-text-secondary)]">
               Warehouse

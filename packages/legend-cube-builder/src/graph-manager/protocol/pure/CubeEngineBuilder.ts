@@ -15,7 +15,10 @@
  */
 
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import { V1_EngineServerClient } from '@finos/legend-graph';
+import {
+  EXECUTION_SERIALIZATION_FORMAT,
+  V1_EngineServerClient,
+} from '@finos/legend-graph';
 import type {
   LakehouseContractServerClient,
   LakehouseIngestServerClient,
@@ -49,6 +52,7 @@ import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnviro
 import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
 import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCatalog.js';
 import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
+import { V1_CUBE_DEPLOYMENT_DIRECTORY_ENVIRONMENT } from './v1/V1_CubeDeploymentName.js';
 import { V1_LegendCubeProjectCatalog } from './v1/V1_LegendCubeProjectCatalog.js';
 import { V1_LegendCubeServiceCatalog } from './v1/V1_LegendCubeServiceCatalog.js';
 import { V1_readCubeIngestDataSets } from './v1/V1_CubeIngestDefinition.js';
@@ -145,6 +149,12 @@ export interface CubeLakehouseServices {
   readonly platformServerClient?: LakehousePlatformServerClient | undefined;
   /** A client for the ingest servers the platform names: each call names its server */
   readonly ingestServerClient?: LakehouseIngestServerClient | undefined;
+  /**
+   * The engine path of the Legend user service naming producer deployments,
+   * as Marketplace configures it (`dataProductConfig.producer.deploymentLegendServiceUrl`):
+   * with it, the Ingest tab shows each producer's name
+   */
+  readonly deploymentNameServiceUrl?: string | undefined;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -225,12 +235,27 @@ export const buildCubeIngestCatalog = (
     services.getCurrentUser,
     services.getPreferredEnvironment,
   );
+  const { deploymentNameServiceUrl } = services;
   return new V1_LegendCubeIngestCatalog(
     platformServerClient,
     ingestServerClient,
     () => environment.resolveBaseEnvironment(),
     (code) => engineClient.grammarToJSON_model(code),
     services.getAccessToken,
+    {
+      readDeploymentNames: deploymentNameServiceUrl
+        ? (deploymentIds) =>
+            // the parameters Marketplace's producer info sends, several ids at once
+            engineClient.executeLegendUserService(
+              deploymentNameServiceUrl,
+              {
+                env: V1_CUBE_DEPLOYMENT_DIRECTORY_ENVIRONMENT,
+                deploymentIds: deploymentIds.map(Number),
+              },
+              EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT,
+            )
+        : undefined,
+    },
   );
 };
 

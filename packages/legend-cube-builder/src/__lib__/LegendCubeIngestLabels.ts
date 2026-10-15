@@ -38,3 +38,16 @@ export const getDroppedDefinitionsLabel = (
   count === 0
     ? undefined
     : `${count} ${count === 1 ? 'definition' : 'definitions'} not deployed from a project, or deployed to another environment, not shown`;
+
+/** A producer deployment as the Ingest tab shows it: its name and id, else its id alone */
+export const getProducerLabel = (
+  deploymentId: string,
+  name: string | undefined,
+): string =>
+  name ? `${name} (${deploymentId})` : `Deployment ${deploymentId}`;
+
+/** The producer deployment a cube's data sets come from: its id, then its name when known */
+export const getFixedProducerLabel = (
+  deploymentId: string,
+  name: string | undefined,
+): string => (name ? `${deploymentId} (${name})` : deploymentId);

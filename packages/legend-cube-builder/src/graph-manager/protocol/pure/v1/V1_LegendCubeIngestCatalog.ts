@@ -43,6 +43,7 @@ import {
   CubeIngestEnvironment,
   CubeIngestProducer,
 } from '../../../CubeIngestCatalog.js';
+import { V1_readCubeDeploymentNames } from './V1_CubeDeploymentName.js';
 import { V1_readCubeIngestDataSets } from './V1_CubeIngestDefinition.js';
 import type { V1_CubeIngestDefinitionSource } from './V1_CubeIngestModel.js';
 
@@ -50,8 +51,8 @@ import type { V1_CubeIngestDefinitionSource } from './V1_CubeIngestModel.js';
 // source reads them: the platform's ingest environments, the one named by
 // the viewer's environment in the class, its ingest server's producer
 // deployments, a deployment's definitions, and a definition's grammar, which
-// the engine parses. Everything is read once per page visit; `fresh` reads
-// a definition again
+// the engine parses; and, with a deployment directory, the producers' names.
+// Everything is read once per page visit; `fresh` reads a definition again
 
 /** The section the ingest server's grammar is in, which the engine needs before it */
 const LAKEHOUSE_SECTION = '###Lakehouse';
@@ -141,6 +142,14 @@ export class V1_LegendCubeIngestCatalog
     Promise<CubeIngestDefinitionList>
   >();
   private readonly elements = new Map<string, Promise<PlainObject>>();
+  private readonly readDeploymentNames:
+    | ((deploymentIds: readonly string[]) => Promise<unknown>)
+    | undefined;
+  /** Each deployment's name, by id, none when the directory doesn't know it */
+  private readonly deploymentNames = new Map<
+    string,
+    Promise<string | undefined>
+  >();
 
   constructor(
     platformServerClient: LakehousePlatformServerClient,
@@ -148,12 +157,19 @@ export class V1_LegendCubeIngestCatalog
     resolveBaseEnvironment: () => Promise<string>,
     parseGrammar: (code: string) => Promise<PlainObject>,
     getAccessToken: () => string | undefined,
+    options?: {
+      /** The deployment directory's answer for some deployments: without it, producers have no names */
+      readonly readDeploymentNames?:
+        | ((deploymentIds: readonly string[]) => Promise<unknown>)
+        | undefined;
+    },
   ) {
     this.platformServerClient = platformServerClient;
     this.ingestServerClient = ingestServerClient;
     this.resolveBaseEnvironment = resolveBaseEnvironment;
     this.parseGrammar = parseGrammar;
     this.getAccessToken = getAccessToken;
+    this.readDeploymentNames = options?.readDeploymentNames;
   }
 
   /** Reads a promise once per page visit, again after a failure */
@@ -259,6 +275,47 @@ export class V1_LegendCubeIngestCatalog
             : [];
         });
       },
+    );
+  }
+
+  /**
+   * The deployments' names, asked of the directory in one call for those
+   * not asked yet; a failed call is asked again next time
+   */
+  async getProducerNames(
+    deploymentIds: readonly string[],
+  ): Promise<ReadonlyMap<string, string>> {
+    const read = this.readDeploymentNames;
+    if (!read) {
+      return new Map();
+    }
+    const unread = [...new Set(deploymentIds)].filter(
+      (id) => !this.deploymentNames.has(id),
+    );
+    if (unread.length > 0) {
+      const reading = read(unread)
+        .then(V1_readCubeDeploymentNames)
+        .catch((error: unknown) => {
+          unread.forEach((id) => this.deploymentNames.delete(id));
+          throw toNetworkError(error);
+        });
+      unread.forEach((id) =>
+        this.deploymentNames.set(
+          id,
+          reading.then((names) => names.get(id)),
+        ),
+      );
+    }
+    const names = await Promise.all(
+      deploymentIds.map(
+        async (id): Promise<[string, string | undefined]> => [
+          id,
+          await this.deploymentNames.get(id),
+        ],
+      ),
+    );
+    return new Map(
+      names.flatMap(([id, name]) => (name !== undefined ? [[id, name]] : [])),
     );
   }
 

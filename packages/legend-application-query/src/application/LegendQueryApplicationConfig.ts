@@ -70,17 +70,39 @@ export class ServiceRegistrationEnvironmentConfig {
 }
 
 /**
+ * The producers of data products, as Legend Marketplace configures them:
+ * Query reads only the engine path of the Legend user service naming
+ * producer deployments, which Legend Cube's Ingest tab labels its producers
+ * with
+ */
+export class LegendQueryDataProductProducerConfig {
+  deploymentLegendServiceUrl: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendQueryDataProductProducerConfig, {
+      deploymentLegendServiceUrl: optional(primitive()),
+    }),
+  );
+}
+
+/**
  * Data products, as Legend Studio and Legend Marketplace configure them:
  * Query reads only the stereotype that marks access point groups open to
  * everyone in the organization, which Legend Cube's access badges use
  */
 export class LegendQueryDataProductConfig {
   publicStereotype: StereotypeConfig | undefined;
+  producer: LegendQueryDataProductProducerConfig | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryDataProductConfig, {
       publicStereotype: optional(
         usingModelSchema(StereotypeConfig.serialization.schema),
+      ),
+      producer: optional(
+        usingModelSchema(
+          LegendQueryDataProductProducerConfig.serialization.schema,
+        ),
       ),
     }),
   );

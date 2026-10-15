@@ -21,6 +21,7 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
+import { V1_EngineServerClient } from '@finos/legend-graph';
 import {
   NetworkClientError,
   type PlainObject,
@@ -368,6 +369,97 @@ describe('The deployed ingest definitions of a lakehouse', () => {
     });
     // one read per definition
     expect(grammar).toHaveBeenCalledTimes(2);
+  });
+
+  test("Names producer deployments from the deployment directory, asking once for those it hasn't asked, again after a failure", async () => {
+    const read = jest.fn(async (ids: readonly string[]) =>
+      Promise.resolve(
+        [
+          { 'Deployment Id': 1234, 'Deployment Name': 'Sales Feed' },
+          { 'Deployment Id': 5678, 'Deployment Name': ' ' },
+          'not a row',
+        ].filter(
+          (row) =>
+            typeof row !== 'object' ||
+            ids.includes(String(row['Deployment Id'])),
+        ),
+      ),
+    );
+    const platform = new LakehousePlatformServerClient('http://platform.test');
+    const catalog = new V1_LegendCubeIngestCatalog(
+      platform,
+      new LakehouseIngestServerClient(undefined),
+      async () => 'env-a',
+      async () => ({}),
+      () => 'token',
+      { readDeploymentNames: read },
+    );
+    // one call for both; a blank name is no name
+    expect([...(await catalog.getProducerNames(['1234', '5678']))]).toEqual([
+      ['1234', 'Sales Feed'],
+    ]);
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(read).toHaveBeenCalledWith(['1234', '5678']);
+    // asked already, whatever the answer
+    await catalog.getProducerNames(['5678', '1234']);
+    expect(read).toHaveBeenCalledTimes(1);
+    // only the new one is asked
+    await catalog.getProducerNames(['1234', '9999']);
+    expect(read).toHaveBeenLastCalledWith(['9999']);
+
+    read.mockRejectedValueOnce(new Error('directory down'));
+    expect((await errorOf(() => catalog.getProducerNames(['4321']))).kind).toBe(
+      CubeEngineErrorKind.NETWORK,
+    );
+    await catalog.getProducerNames(['4321']);
+    expect(read).toHaveBeenLastCalledWith(['4321']);
+    expect(read).toHaveBeenCalledTimes(4);
+
+    // without a directory, no names, nothing called
+    expect((await setUp().catalog.getProducerNames(['1234'])).size).toBe(0);
+  });
+
+  test('Asks the Legend user service Marketplace configures for the names, several deployments at once', async () => {
+    const execute = jest
+      .spyOn(V1_EngineServerClient.prototype, 'get')
+      .mockImplementation((async () => [
+        { 'Deployment Id': 1234, 'Deployment Name': 'Sales Feed' },
+      ]) as never);
+    try {
+      const catalog = buildCubeIngestCatalog(
+        { baseUrl: 'http://engine.test' },
+        new TracerService(),
+        {
+          contractServerClient: new LakehouseContractServerClient({
+            baseUrl: 'http://contract.test',
+          }),
+          depotServerClient: {} as never,
+          getAccessToken: () => 'token',
+          getCurrentUser: () => 'someone',
+          platformServerClient: new LakehousePlatformServerClient(
+            'http://platform.test',
+          ),
+          ingestServerClient: new LakehouseIngestServerClient(undefined),
+          deploymentNameServiceUrl: '/directory/deploymentNames',
+        },
+      );
+      expect([
+        ...((await catalog?.getProducerNames?.(['1234', '5678'])) ?? []),
+      ]).toEqual([['1234', 'Sales Feed']]);
+      // as Marketplace's producer info asks: one id per repeated parameter
+      expect(execute).toHaveBeenCalledWith(
+        'http://engine.test/user/directory/deploymentNames',
+        {},
+        undefined,
+        {
+          env: 'PROD',
+          deploymentIds: [1234, 5678],
+          serializationFormat: expect.any(String),
+        },
+      );
+    } finally {
+      execute.mockRestore();
+    }
   });
 
   test('Is built only for a host with a lakehouse platform and its ingest servers', () => {

@@ -77,7 +77,9 @@ with the functions below instead.
   definition's grammar, which the engine Cube uses parses. It needs `services.platformServerClient` and
   `services.ingestServerClient` (an ingest client with no server of its own: each call names one), and gives none
   without them. Pass it to `buildCubeEngine` as `ingestCatalog` too, so ingest cubes type and run. Legend Query builds
-  both clients only when `lakehouse.platformUrl` is set.
+  both clients only when `lakehouse.platformUrl` is set. With `services.deploymentNameServiceUrl`, the engine path of
+  the Legend user service Marketplace's producer info reads, the Ingest tab labels each producer deployment with its
+  name; without it, or when the service fails, producers show their ids alone.
 
 - **Published projects (optional):** `buildCubeProjectCatalog(depotServerClient)` lists the depot's projects, their
   released versions, and a version's own Databases with the runtimes of it and its dependencies, for the source
@@ -94,10 +96,12 @@ it, as in production, the address shows nothing. To see it locally, add it to th
 changes the rest of Query (its data space selector lists data products too), which Query's end-to-end tests check.
 
 In Legend Query's config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
-`lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Two keys are optional:
-`marketplace.serverUrl`, for search on the marketplace server, takes the value Legend Marketplace's own config gives
-`marketplace.url`; `extensions.core.dataProductConfig.publicStereotype`, for the "Enterprise access" badge, is the
-stereotype Studio and Marketplace use for groups open to everyone.
+`lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Three keys are
+optional: `marketplace.serverUrl`, for search on the marketplace server, takes the value Legend Marketplace's own config
+gives `marketplace.url`; `extensions.core.dataProductConfig.publicStereotype`, for the "Enterprise access" badge, is the
+stereotype Studio and Marketplace use for groups open to everyone; and
+`extensions.core.dataProductConfig.producer.deploymentLegendServiceUrl`, for the producers' names in the Ingest tab,
+takes the value Legend Marketplace's own config gives it.
 
 ```json
 {
@@ -116,6 +120,9 @@ stereotype Studio and Marketplace use for groups open to everyone.
         "publicStereotype": {
           "profile": "<profile path>",
           "stereotype": "<stereotype>"
+        },
+        "producer": {
+          "deploymentLegendServiceUrl": "<the deployment directory's user service path>"
         }
       }
     }
