@@ -27,8 +27,9 @@ export const V1_CUBE_DEPLOYMENT_DIRECTORY_ENVIRONMENT = 'PROD';
 
 /** A row of the deployment directory's answer */
 export class V1_CubeDeploymentName {
-  deploymentId!: number | string;
-  deploymentName!: string;
+  /** Missing from a row the directory answers without one */
+  deploymentId?: number | string | undefined;
+  deploymentName?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_CubeDeploymentName, {
@@ -49,11 +50,10 @@ export const V1_readCubeDeploymentNames = (
           typeof row === 'object' && row !== null,
       )
       .map((row) => V1_CubeDeploymentName.serialization.fromJson(row))
-      .filter(
-        (row) =>
-          row.deploymentId !== undefined &&
-          typeof row.deploymentName === 'string' &&
-          row.deploymentName.trim() !== '',
-      )
-      .map((row) => [String(row.deploymentId), row.deploymentName.trim()]),
+      .flatMap((row): [string, string][] => {
+        const name = row.deploymentName?.trim();
+        return row.deploymentId !== undefined && name
+          ? [[String(row.deploymentId), name]]
+          : [];
+      }),
   );

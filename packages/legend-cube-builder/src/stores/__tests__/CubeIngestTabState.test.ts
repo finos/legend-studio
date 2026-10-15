@@ -45,6 +45,7 @@ import {
   parseCubeIngestUrn,
 } from '../../graph-manager/CubeIngest.js';
 import {
+  type CubeIngestCatalog,
   CubeIngestEnvironment,
   CubeIngestProducer,
 } from '../../graph-manager/CubeIngestCatalog.js';
@@ -173,12 +174,12 @@ describe('The Ingest tab', () => {
 
     const { host } = TEST__createCubeHost();
     const ingest = createFakeCubeIngestCatalog();
-    const { getProducerNames, ...withoutDirectory } = ingest.catalog;
+    const withoutDirectory: CubeIngestCatalog = { ...ingest.catalog };
+    delete withoutDirectory.getProducerNames;
     const state = new CubeEditorState({
       ...host,
       ingestCatalog: withoutDirectory,
     });
-    expect(getProducerNames).toBeDefined();
     expect((await openOnOrders(state)).getProducerLabel('1234')).toBe(
       'Deployment 1234',
     );
