@@ -625,12 +625,19 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
           orderLineColumn('product', 'String'),
           orderLineColumn('qty', 'Integer'),
         ]),
+        // a lateral join keeps no order: the lines by order, then product
+        new Sort('sort101', [
+          { column: 'id', direction: SortDirection.ASC },
+          { column: 'product', direction: SortDirection.ASC },
+          { column: 'qty', direction: SortDirection.ASC },
+        ]),
       ],
       connections: chain([
         'relational101',
         'extend101',
         'explode101',
         'extend102',
+        'sort101',
       ]),
     }),
   ),

@@ -4,7 +4,7 @@ PLAN §11.20. Built on `cube-variant`, from `master` (`dd0b62af9`), in a PR into
 
 ## Current state
 
-V.6 done (2026-10-15): the Explode Array node. Next: V.7, an inline review, a browser rehearsal and the demo video.
+V.7 done (2026-10-15): reviewed, rehearsed in the browser, demo video 31 sent. Next: V.8, fold the supersessions into the plan and the docs.
 
 ## Steps
 
@@ -14,7 +14,7 @@ V.6 done (2026-10-15): the Explode Array node. Next: V.7, an inline review, a br
 - [x] V.4 Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend
 - [x] V.5 Parse as JSON, and the DuckDB `demo.orders` sample with its example
 - [x] V.6 Explode Array: core node, codec, emission, database refusal, editor, palette
-- [ ] V.7 Verification, and a demo video
+- [x] V.7 Verification, and a demo video
 - [ ] V.8 Fold the supersessions in
 
 ## Commits
@@ -26,9 +26,25 @@ V.6 done (2026-10-15): the Explode Array node. Next: V.7, an inline review, a br
 | V.3  | `bdb5acd53` | Shape inference, the offers  |
 | V.4  | `b1439c2e7` | Explore JSON                 |
 | V.5  | `c24a80119` | Parse as JSON, the sample    |
-| V.6  | this commit | Explode Array                |
+| V.6  | `5bf49334d` | Explode Array                |
+| V.6  | `b7ca6d5c3` | After review                 |
+| V.7  | this commit | Review, rehearsal, video     |
 
 ## Notes
+
+- V.7:
+
+  - **Review:** the advisor's points (what follows an Explode, data products, the name and Find arrays) are fixed in
+    `b7ca6d5c3`; a sweep of the branch's diff finds no stray log, `.only` or `.skip`, a 2026 header on every new
+    file, and `V1_` imports only in the DuckDB engine test.
+  - **The browser, on :9002:** Order lines from JSON opens and runs (4 steps, 12 rows: products and quantities, the
+    order with no lines and the one with no document once each); its Explode editor's Find arrays reads a sample
+    (listed in Runs) and lists `items`, picked, and `tags`. A lateral join keeps no order, so the example now sorts
+    the lines by order, product and quantity.
+  - **The video** (`videos/31-variant-json.webm`, 1:14, script `demo/variant/demo-variant.mjs`): the one-line cell,
+    the cell menu and Open JSON's tree, Parse as JSON on the text column, Explore JSON (a country column and one row
+    per element, 12 rows), Explore JSON on the element (product and qty), the Explode editor, the refusal on H2. Four
+    captions were reworded or their frames changed until each said only what the screen shows.
 
 - V.6:
 
