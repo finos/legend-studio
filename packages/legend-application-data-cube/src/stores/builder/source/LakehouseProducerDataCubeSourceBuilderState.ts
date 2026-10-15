@@ -69,6 +69,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   enableIceberg: boolean;
   nonIcebergWarehouse: string | undefined;
   databaseName: string | undefined;
+  icebergWarehouse: string | undefined;
   catalogUrl: string | undefined;
   milestoning: boolean;
   envMode: V1_EntitlementsLakehouseEnvironmentType;
@@ -116,6 +117,8 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       selectedLakehouseEnv: observable,
       producerEnvironments: observable,
       selectedProducerEnv: observable,
+      catalogUrl: observable,
+      user: observable,
 
       setDeploymentId: action,
       setSelectedIngestUrn: action,
@@ -197,6 +200,9 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   setEnableIceberg(enable: boolean) {
     if (enable) {
       this.nonIcebergWarehouse = this.warehouse;
+      if (this.icebergWarehouse !== undefined) {
+        this.warehouse = this.icebergWarehouse;
+      }
     } else if (this.nonIcebergWarehouse !== undefined) {
       this.warehouse = this.nonIcebergWarehouse;
     }
@@ -224,6 +230,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.icebergEnabled = undefined;
     this.enableIceberg = false;
     this.nonIcebergWarehouse = undefined;
+    this.icebergWarehouse = undefined;
     this.catalogUrl = undefined;
     this.databaseName = undefined;
     this.ingestDefinition = undefined;
@@ -487,6 +494,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       V1_AWSSnowflakeIngestEnvironment,
     );
     this.warehouse = ingestEnv.iceberg.catalog.name;
+    this.icebergWarehouse = this.warehouse;
     this.catalogUrl = guaranteeType(
       ingestEnv.iceberg.catalog,
       V1_OpenCatalog,
