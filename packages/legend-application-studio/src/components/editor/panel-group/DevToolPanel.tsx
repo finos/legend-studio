@@ -22,6 +22,8 @@ import {
   PanelForm,
   CloudDownloadIcon,
   PanelFormListItems,
+  ServerIcon,
+  clsx,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -33,6 +35,67 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
 import { ProjectDependencyCoordinates } from '@finos/legend-server-depot';
+
+/**
+ * The backend servers Studio uses, and the way to the backend servers dialog,
+ * which overrides them for the whole application from the next reload
+ */
+const DevToolBackendServers = observer(() => {
+  const editorStore = useEditorStore();
+  const backendOverrideService =
+    editorStore.applicationStore.backendOverrideService;
+  if (!backendOverrideService.isEnabled) {
+    return null;
+  }
+  return (
+    <PanelFormListItems
+      title="Backend Servers"
+      prompt="Servers used by the whole application; changing them reloads it"
+    >
+      {backendOverrideService.entries.map((entry) => (
+        <div
+          key={entry.entry.key}
+          className="developer-tools__backend-server"
+          data-testid={`dev-tool-backend-server-${entry.entry.key}`}
+        >
+          <div className="developer-tools__backend-server__label">
+            {entry.entry.label}
+          </div>
+          <div
+            className={clsx('developer-tools__backend-server__url', {
+              'developer-tools__backend-server__url--overridden':
+                entry.override,
+            })}
+            title={
+              entry.override
+                ? `Overridden; configured: ${entry.configuredUrl}`
+                : undefined
+            }
+          >
+            {entry.url}
+            {entry.override && ' (overridden)'}
+          </div>
+        </div>
+      ))}
+      <div className="developer-tools__action-groups">
+        <div
+          className="developer-tools__action-group"
+          onClick={() => backendOverrideService.open()}
+          role="button"
+          tabIndex={-1}
+          title="Change backend servers..."
+        >
+          <button className="developer-tools__action-group__btn" tabIndex={-1}>
+            <ServerIcon />
+          </button>
+          <div className="developer-tools__action-group__prompt">
+            change backend servers...
+          </div>
+        </div>
+      </div>
+    </PanelFormListItems>
+  );
+});
 
 export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -120,6 +183,7 @@ export const DevToolPanel = observer(() => {
   return (
     <Panel>
       <PanelForm>
+        <DevToolBackendServers />
         <PanelFormBooleanField
           name="Engine client request payload compression"
           prompt="Specifies if request payload should be compressed"
@@ -136,6 +200,7 @@ export const DevToolPanel = observer(() => {
         />
         <PanelFormTextField
           name="Engine client base URL"
+          prompt="Used by this editor until the next reload; to change it for the whole application, change the backend servers"
           value={engineConfig.baseUrl ?? ''}
           isReadOnly={false}
           update={(value: string | undefined): void =>

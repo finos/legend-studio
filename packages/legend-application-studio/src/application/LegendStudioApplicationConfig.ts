@@ -32,6 +32,7 @@ import {
 import {
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
+  type LegendApplicationBackendEntry,
   LegendApplicationConfig,
 } from '@finos/legend-application';
 import { QueryBuilderConfig } from '@finos/legend-query-builder';
@@ -370,5 +371,46 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
 
   override getDefaultApplicationStorageKey(): string {
     return 'legend-studio';
+  }
+
+  override getBackendEntries(): LegendApplicationBackendEntry[] {
+    return [
+      {
+        key: 'sdlc',
+        label: 'SDLC Server',
+        configPath: 'sdlc.url',
+        field: 'sdlcServerUrl',
+      },
+      {
+        key: 'engine',
+        label: 'Engine Server',
+        configPath: 'engine.url',
+        field: 'engineServerUrl',
+      },
+      {
+        key: 'engine-query',
+        label: 'Engine Query Server',
+        configPath: 'engine.queryUrl',
+        field: 'engineQueryServerUrl',
+      },
+      {
+        key: 'depot',
+        label: 'Depot Server',
+        configPath: 'depot.url',
+        field: 'depotServerUrl',
+      },
+      {
+        key: 'showcase',
+        label: 'Showcase Server',
+        configPath: 'showcase.url',
+        field: 'showcaseServerUrl',
+      },
+      {
+        key: 'legend-ai',
+        label: 'Legend AI',
+        configPath: 'legendAI.url',
+        field: 'legendAIUrl',
+      },
+    ];
   }
 }
