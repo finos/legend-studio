@@ -30,6 +30,10 @@ import {
 import { VirtualAssistant } from './VirtualAssistant.js';
 import { LegendApplicationTelemetryHelper } from '../__lib__/LegendApplicationTelemetry.js';
 import type { GenericLegendApplicationStore } from '../stores/ApplicationStore.js';
+import {
+  BackendOverridesDialog,
+  BackendOverridesFrame,
+} from './BackendOverrides.js';
 
 enum APPLICATION_COMPONENT_ELEMENT_ID {
   TOP_LEVEL_CONTAINER = 'application.top-level-container',
@@ -187,6 +191,7 @@ export const ApplicationComponentFrameworkProvider = observer(
         <BlockingAlert />
         <ActionAlert />
         <NotificationManager />
+        <BackendOverridesDialog />
         {!disableVirtualAssistant && <VirtualAssistant />}
         {applicationStore.layoutService.showBackdrop && (
           // We use <Portal> here to insert backdrop into different parts of the app
@@ -223,7 +228,7 @@ export const ApplicationComponentFrameworkProvider = observer(
             <BackdropContainer
               elementId={APPLICATION_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
             />
-            {children}
+            <BackendOverridesFrame>{children}</BackendOverridesFrame>
           </div>
         </DndProvider>
       </LegendStyleProvider>

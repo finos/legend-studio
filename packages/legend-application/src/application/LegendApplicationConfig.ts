@@ -35,6 +35,10 @@ import {
 } from '../stores/DocumentationService.js';
 import type { SettingOverrideConfigData } from '../stores/SettingService.js';
 import { createModelSchema, list, primitive } from 'serializr';
+import type {
+  LegendApplicationAppliedBackendOverride,
+  LegendApplicationBackendEntry,
+} from './LegendApplicationBackendOverrides.js';
 
 export interface LegendApplicationVersionData {
   buildTime?: string;
@@ -84,6 +88,15 @@ export interface LegendApplicationConfigurationData {
   application?: {
     storageKey?: string;
     settingsOverrides?: SettingOverrideConfigData;
+    /**
+     * Lets the user override backend URLs (e.g. SDLC, engine) from the
+     * backend servers dialog; meant for development deployments.
+     *
+     * Default to `false`.
+     */
+    backendOverrides?: {
+      enabled?: boolean;
+    };
   };
   legendCookieDomain?: string;
   // TODO: when we support vault-like settings, we could support `settingOverrides`
@@ -107,6 +120,11 @@ export abstract class LegendApplicationConfig {
   readonly applicationStorageKey: string;
   readonly legendCookieDomain?: string | undefined;
   readonly enableTokenClient: boolean;
+
+  // backend overrides
+  readonly enableBackendOverrides: boolean;
+  /** The backend overrides applied to `config.json` when the application started */
+  readonly backendOverrides: LegendApplicationAppliedBackendOverride[];
 
   // documentation
   readonly documentationUrl?: string | undefined;
@@ -137,6 +155,12 @@ export abstract class LegendApplicationConfig {
       this.getDefaultApplicationStorageKey();
     this.legendCookieDomain = input.configData.legendCookieDomain;
     this.enableTokenClient = Boolean(input.configData.enableTokenClient);
+
+    // Backend overrides
+    this.enableBackendOverrides = Boolean(
+      input.configData.application?.backendOverrides?.enabled,
+    );
+    this.backendOverrides = input.backendOverrides ?? [];
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;
@@ -169,4 +193,13 @@ export abstract class LegendApplicationConfig {
   }
 
   abstract getDefaultApplicationStorageKey(): string;
+
+  /**
+   * The backend servers the application talks to, which the backend servers
+   * dialog lets the user override when `application.backendOverrides.enabled`
+   * is set in `config.json`
+   */
+  getBackendEntries(): LegendApplicationBackendEntry[] {
+    return [];
+  }
 }
