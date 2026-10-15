@@ -1678,22 +1678,24 @@ an earlier warning on that table cleared once it re-checks clean (M1.8b S17).
 
 `CubeEditorState`:
 
-| Field                                             | Contents                                                                                                                                                    |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document` (`observable.ref`, immutable)          | the `CubeDocument`                                                                                                                                          |
-| `history`                                         | undo: `CubeDocument` snapshots, at most 100; Redo since §11.15 (`redoStack`, cleared by a new change)                                                       |
-| `analysis` (`computed`)                           | `buildSchemasAndValidity(document.query, registry.queryRules)`: the query-level rules must be passed, the default is none                                   |
-| `hostIssues` (`Map<nodeId, {firstLine, detail}>`) | engine errors mapped back to nodes                                                                                                                          |
-| `warnings` (`Map<node key, …>`)                   | non-blocking: schema drift and failed re-checks (Settled before M1.8); keyed by node key, so a warning leaves with its node, and comes back with it on Undo |
-| `pendingSources` (private, `observable.ref`)      | sources sent to the engine to be typed again; read through `isResolvingSources` and `isPendingSource(node)`                                                 |
-| `modelOutlines` (private, by model)               | outlines loaded on demand by `loadModelOutline`, read through `modelOutline`, e.g. for the Join's 'type unknown' warning                                    |
-| `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                                                            |
-| `gridFetcher` (`CubeGridFetcher`, M7)             | the server-side levels, derived from the run on screen; an LRU cache of 200,000 rows keyed by the run lambda; a generation number drops purged answers      |
-| `grid` (`CubeGridState`, M7)                      | the grid's mode (kept per user), `loadRows` for each grid by its token, drill-down, format and width edits, the open dialogs                                |
-| `export` (`CubeExportState`, M7)                  | the CSV export in flight, Stop, its error                                                                                                                   |
-| `runStats` (`CubeRunStatsState`, M7)              | the page's 15 latest runs, fetches, exports and Pivot value loads, with their SQL and lambda, failed ones too; Dev Settings in `devSettings` (§11.16)       |
-| `nodeEditor` (`CubeNodeEditorState`)              | the open node editor: `nodeId`, `draft`, `notice`; `finish()`, `holdOpen()` and `addFlusher()` (M3b); ephemeral, not saved                                  |
-| `isPaletteCollapsed`                              | kept per user in user data, never in the cube                                                                                                               |
+| Field                                             | Contents                                                                                                                                                                                                          |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document` (`observable.ref`, immutable)          | the `CubeDocument`                                                                                                                                                                                                |
+| `history`                                         | undo: `CubeDocument` snapshots, at most 100; Redo since §11.15 (`redoStack`, cleared by a new change)                                                                                                             |
+| `analysis` (`computed`)                           | `buildSchemasAndValidity(document.query, registry.queryRules)`: the query-level rules must be passed, the default is none                                                                                         |
+| `hostIssues` (`Map<nodeId, {firstLine, detail}>`) | engine errors mapped back to nodes                                                                                                                                                                                |
+| `warnings` (`Map<node key, …>`)                   | non-blocking: schema drift and failed re-checks (Settled before M1.8); keyed by node key, so a warning leaves with its node, and comes back with it on Undo                                                       |
+| `pendingSources` (private, `observable.ref`)      | sources sent to the engine to be typed again; read through `isResolvingSources` and `isPendingSource(node)`                                                                                                       |
+| `modelOutlines` (private, by model)               | outlines loaded on demand by `loadModelOutline`, read through `modelOutline`, e.g. for the Join's 'type unknown' warning                                                                                          |
+| `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                                                                                                                  |
+| `gridFetcher` (`CubeGridFetcher`, M7)             | the server-side levels, derived from the run on screen; an LRU cache of 200,000 rows keyed by the run lambda; a generation number drops purged answers                                                            |
+| `grid` (`CubeGridState`, M7)                      | the grid's mode (kept per user), `loadRows` for each grid by its token, drill-down, format and width edits, the open dialogs                                                                                      |
+| `export` (`CubeExportState`, M7)                  | the CSV export in flight, Stop, its error                                                                                                                                                                         |
+| `runStats` (`CubeRunStatsState`, M7)              | the page's 15 latest runs, fetches, exports, Pivot value loads and JSON samples, with their SQL and lambda, failed ones too; Dev Settings in `devSettings` (§11.16)                                               |
+| `nodeEditor` (`CubeNodeEditorState`)              | the open node editor: `nodeId`, `draft`, `notice`; `finish()`, `holdOpen()` and `addFlusher()` (M3b); ephemeral, not saved                                                                                        |
+| `jsonViewer` (`CubeJsonViewerState`, §11.20)      | Open JSON's dialog: the column and its cell's text, shown as a tree                                                                                                                                               |
+| `jsonExplorer` (`CubeJsonExplorerState`, §11.20)  | Explore JSON's dialog: the column, its sample read through Runs (`readCubeJsonSample`), the field tree, the ticked offers; `add()` adds an Extend, then an Explode Array, as one undo step (`addConfiguredNodes`) |
+| `isPaletteCollapsed`                              | kept per user in user data, never in the cube                                                                                                                                                                     |
 
 Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change), which pushes onto history.
 Import goes through `importDocument`, which pushes history and replaces the document itself, not through
@@ -2374,7 +2376,7 @@ Every engine defect is listed in Appendix B.
   Stop aborts it. 'Excel (rows shown)' is ag-grid's export of the loaded rows, expanded groups included, number
   columns as numbers but unformatted, each group by its key.
 - **Runs** (spec §12.6): 'Runs (n)' opens a panel under the toolbar with the page's 15 latest runs, fetches,
-  exports and Pivot value loads, each with its time, duration, SQL and Copy SQL, and the lambda it sent: Show Pure
+  exports, Pivot value loads and JSON samples (§11.20), each with its time, duration, SQL and Copy SQL, and the lambda it sent: Show Pure
   (as it ran, its row limit included) and Copy JSON (the lambda as the engine receives it). A failed run is listed
   with the engine's first line, and a fetch the grid drops for a newer run too; a stopped one isn't. No trace link.
 - **Dev Settings** (§11.16): the menu (☰) at the top left, in the palette's header, opens Dev Settings, as Legend
@@ -2388,6 +2390,21 @@ Every engine defect is listed in Appendix B.
   places; never a group's key, and the exact value on hover and copy.
 - **Late answers** for an earlier run, mode, cube or grid are dropped (the run id, the fetcher's generation, a token
   per grid). A fetch's error shows in the grid region and fails only its level.
+
+**Variant (JSON) columns (§11.20):**
+
+- **One line:** a Variant cell shows in legend-lite's notation, `{name: ann, tier: gold}`, `[a, b]`: numbers as
+  written, a key or string bare unless it could be read as something else. Copy, CSV and Excel keep the JSON text,
+  which the cell's title shows too.
+- **The cell's menu:** on a Variant cell, "Open JSON" (the document as a tree, open to two levels, with Copy JSON)
+  and "Explore JSON…"; on a text cell holding a JSON object or array, "Parse as JSON", which adds an Extend
+  `<name>_json: $x.<name>->toOne()->fromJson()`. A Variant column's header menu starts with Explore JSON…. Each is
+  disabled as the quick actions are, and on a database without the Variant functions (Snowflake, Databricks,
+  Postgres and DuckDB have them).
+- **Explore JSON:** the column's first 1,000 values, or every row, read through Runs: the query up to the node that
+  ran, the column alone, its non-empty values. A searchable field tree, each field with its kind and its share; the
+  picked field's offers, ticked, are added after the node that ran as an Extend, then an Explode Array for one row
+  per element of an array (one array at a time), one undo step. Nothing runs: the rows turn stale.
 
 ---
 
@@ -2557,6 +2574,10 @@ value}`. **Negations are stored as negated operators** (`NotEqual`, `NotIn`, …
   the aggregation `{column, function}`, the column left out for Count rows. A value this version doesn't read, or a
   key it doesn't know in a value or the aggregation, makes an Unknown node; an unknown key on the node goes to its
   `rest`.
+- **Explode Array** (§11.20; tests in `CubeSpecExplode.test.ts`, no corpus sample: Northwind has no Variant column):
+  `explode` stores `{column, path, name}`, the Variant column, its keys to the array (empty when the column is the
+  array) and the new column's name, always written, `''` and empty keys kept for validation. An unknown key goes to
+  its `rest`; an older Cube keeps the node as an Unknown node.
 - **M7's grid settings** (§11.10), in `meta`: `drilldown: {columns, aggregations: [{column, function}]}`, an
   aggregation only where it differs from the default (a number's Sum, nothing for other columns), `null` for Nothing,
   none written for an empty drill-down; `presentation.columnHints: [{column?, format: {style, decimalPlaces?,
@@ -3142,6 +3163,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
   adds "Sort column "X" of type Variant cannot be sorted." (VARIANT and OPAQUE, through one exported
   `isSortableType`, also used by the editor's picker, the Sort by quick action and the row-number fallback's default
   key) and "Sort columns cannot have duplicates.". The two Sort direction messages stay in the catalogue, unreachable.
+  _(§11.20: a Variant column stays unsortable, ungroupable and with no comparison; Explode Array is the one
+  operation that takes one: "Explode column "X" of type T is not a Variant (JSON) column." for any other, and its
+  element is a nullable Variant.)_
 - **Restrict.** Its messages use the labels `Columns` and `Column`. The output keeps the input's order; the editor
   stores picks in input order.
 - **Rename.** The column-name rule (`src/schema/ColumnName.ts`, shared with the autofix, Group and Extend):
@@ -5004,7 +5028,7 @@ usually hold JSON, and whether anything in Legend's UIs helps navigate them. The
 answers are in the evidence folder's `variant/` (`PROPOSAL.md`). legend-lite's Data Cube (github.com/neema2/legend-lite,
 `datacube/src/json-shape.ts`, `ui/json-fields.ts`) is the inspiration the user pointed to.
 
-This subsection overrides the sections it names until V.8 folds it into them (see "Supersessions").
+V.8 folded it into the sections it names (see "Supersessions").
 
 **Settled** (user, 2026-10-14):
 
@@ -5176,7 +5200,7 @@ This subsection overrides the sections it names until V.8 folds it into them (se
 - **Sampling the first rows can miss rare fields.** The share and Read every row make that visible.
 - **Read every row** reads the whole column into the browser; a huge column is slow, and the run can be stopped.
 
-**Supersessions** (to fold in at V.8):
+**Supersessions** (folded in at V.8, 2026-10-15):
 
 - §9 (grid): a Variant cell's one-line view, Open JSON, Explore JSON, Parse as JSON.
 - §7.8 (state): the Explore JSON state.

@@ -4,7 +4,7 @@ PLAN §11.20. Built on `cube-variant`, from `master` (`dd0b62af9`), in a PR into
 
 ## Current state
 
-V.7 done (2026-10-15): reviewed, rehearsed in the browser, demo video 31 sent. Next: V.8, fold the supersessions into the plan and the docs.
+V.8 done (2026-10-15): the milestone is complete. PR #5698 stays a draft until the user says it is ready.
 
 ## Steps
 
@@ -15,7 +15,7 @@ V.7 done (2026-10-15): reviewed, rehearsed in the browser, demo video 31 sent. N
 - [x] V.5 Parse as JSON, and the DuckDB `demo.orders` sample with its example
 - [x] V.6 Explode Array: core node, codec, emission, database refusal, editor, palette
 - [x] V.7 Verification, and a demo video
-- [ ] V.8 Fold the supersessions in
+- [x] V.8 Fold the supersessions in
 
 ## Commits
 
@@ -28,9 +28,15 @@ V.7 done (2026-10-15): reviewed, rehearsed in the browser, demo video 31 sent. N
 | V.5  | `c24a80119` | Parse as JSON, the sample    |
 | V.6  | `5bf49334d` | Explode Array                |
 | V.6  | `b7ca6d5c3` | After review                 |
-| V.7  | this commit | Review, rehearsal, video     |
+| V.7  | `07da55e56` | Review, rehearsal, video     |
+| V.8  | this commit | Supersessions folded         |
 
 ## Notes
+
+- V.8: §11.20 folded into §7.8 (`jsonViewer`, `jsonExplorer`, Runs' JSON samples), §9 (a Variant block: the one-line
+  cell, the menus, Explore JSON), §11.4 (Explode Array, the one operation that takes a Variant column) and §10.3 (the
+  `explode` node's saved form). The core guide names Explode Array as the example of an allow-list of databases and
+  gains a section on Import Pure's reader; the builder guide names its editor's sample.
 
 - V.7:
 
