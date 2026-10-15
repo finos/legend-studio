@@ -1,5 +1,16 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.1
+
+### Patch Changes
+
+- [#5706](https://github.com/finos/legend-studio/pull/5706) [`d31659a`](https://github.com/finos/legend-studio/commit/d31659a629ad2cc845cfc2473156390defec51bd) ([@TharunRajeev](https://github.com/TharunRajeev)) - Isolate completed-data-request lookup and scope to APG in approved users fetch
+
+  Error from the new completed-data-request calls no longer discards the
+  already-fetched contract-based approved users list, and completed
+  requests are now filtered to the current access point group instead of
+  the whole data product.
+
 ## 0.2.0
 
 ### Minor Changes

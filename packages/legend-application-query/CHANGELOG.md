@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.63
+
+### Patch Changes
+
+- [#5692](https://github.com/finos/legend-studio/pull/5692) [`33bdd8a`](https://github.com/finos/legend-studio/commit/33bdd8ac4730db40232014921e4e7b13bb8b994f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `LegendCubeHost`, the host a Legend deployment gives the Legend Cube page, built from a plain config of its servers (the engine, and optionally the depot, the lakehouse, its platform and the marketplace). Legend Query's Cube host is now built on it, so Legend Query and Legend Analytics offer the same sources by the same rules.
+
 ## 13.8.62
 
 ### Patch Changes

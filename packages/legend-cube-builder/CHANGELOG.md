@@ -1,5 +1,23 @@
 # @finos/legend-cube-builder
 
+## 0.0.6
+
+### Patch Changes
+
+- [#5692](https://github.com/finos/legend-studio/pull/5692) [`33bdd8a`](https://github.com/finos/legend-studio/commit/33bdd8ac4730db40232014921e4e7b13bb8b994f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `LegendCubeHost`, the host a Legend deployment gives the Legend Cube page, built from a plain config of its servers (the engine, and optionally the depot, the lakehouse, its platform and the marketplace). Legend Query's Cube host is now built on it, so Legend Query and Legend Analytics offer the same sources by the same rules.
+
+- [#5704](https://github.com/finos/legend-studio/pull/5704) [`8349007`](https://github.com/finos/legend-studio/commit/83490075351faff47a27b64f57a87055bac5d6c0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a guided tour of the Legend Cube editor, started from the page menu or the empty canvas.
+
+- [#5697](https://github.com/finos/legend-studio/pull/5697) [`bcbea2a`](https://github.com/finos/legend-studio/commit/bcbea2a1d38f50f0503d98673a3e5e838f44e77f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: the Ingest tab opens several ingest definitions at once, each ticked beside the one picked, and lists each one's data sets under its name, so one Add adds data sets of several definitions; a plain click still opens one alone.
+
+- [#5697](https://github.com/finos/legend-studio/pull/5697) [`bcbea2a`](https://github.com/finos/legend-studio/commit/bcbea2a1d38f50f0503d98673a3e5e838f44e77f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Studio: a materialized view's primary key leaves out the milestoning columns a write mode adds (`LAKE_DIGEST`, `LAKE_IN_ID`, `LAKE_OUT_ID`, `LAKE_FROM`, `LAKE_THRU`), in Add MatView and when Save MatView asks again, and Save MatView asks again for a key that has one.
+
+- [#5697](https://github.com/finos/legend-studio/pull/5697) [`bcbea2a`](https://github.com/finos/legend-studio/commit/bcbea2a1d38f50f0503d98673a3e5e838f44e77f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube labels a column that can be empty as optional, e.g. `Text, optional` in place of `Text, can be empty`, and so do the `->toOne()` hints.
+
+- [#5698](https://github.com/finos/legend-studio/pull/5698) [`1003eb7`](https://github.com/finos/legend-studio/commit/1003eb7fb137e6aba11b49bac26616135a03d910) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube shows a Variant (JSON) cell on one line, `{name: ann, tags: [a, b]}`, numbers as written, and its menu's Open JSON shows the document as a tree, with Copy JSON (PLAN §11.20). Explore JSON… on a Variant column (its cells' and its header's menu) reads its first 1,000 values, or every row, through Runs, shows its fields with their kinds and shares, and adds the columns ticked from each field's offers (the value typed, as JSON, keys, counts, lists, contains, the first element's fields, totals) as one Extend. The core gains `getVariantDatabaseProblem`: JSON is read on Snowflake, Databricks, Postgres and DuckDB. A text cell holding a JSON object or array offers Parse as JSON (`fromJson()`), and the DuckDB Sales sample gains a table of orders as JSON documents, with the example Orders from JSON; an example now runs once its Extend is typed. The new node Explode Array gives one row per element of an array in a Variant column, the element as a new column, keeping a row whose array is empty once; its editor finds the arrays in a sample of the column, and Explore JSON's one row per element adds it. It runs on Snowflake, Databricks, Postgres and DuckDB, is saved in the spec, and Import Pure reads it back. A second DuckDB example, Order lines from JSON, explodes the orders' lines. In the Extend and Filter by Expression editors, a Variant input column's chip opens its fields in place, read from its first values just before the step, so no run is needed: a field clicked is written into the expression, and + column adds it as a new Extend column.
+
+- [#5702](https://github.com/finos/legend-studio/pull/5702) [`3079fd4`](https://github.com/finos/legend-studio/commit/3079fd48e907d33b0ff7c503d8fa24e03a1d775a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The ingest definition editor's Create MatView button, which opens Legend Cube, is now shown in production: it no longer depends on `NonProductionFeatureFlag` (the builder's hosting guide says so).
+
 ## 0.0.5
 
 ### Patch Changes
