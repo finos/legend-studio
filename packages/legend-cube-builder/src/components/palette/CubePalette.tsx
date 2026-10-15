@@ -32,6 +32,10 @@ import {
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
+  CUBE_TOUR_ANCHOR,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
+import {
   addCubeNode,
   getCubeAddDatabaseProblem,
 } from '../../stores/CubeAddPlacement.js';
@@ -109,6 +113,11 @@ const CubePaletteItem = observer(
         tabIndex={disabled ? -1 : 0}
         aria-disabled={disabled}
         aria-label={label}
+        {...cubeTourAnchor(
+          definition.kind === 'source'
+            ? CUBE_TOUR_ANCHOR.SOURCES
+            : CUBE_TOUR_ANCHOR.STEPS,
+        )}
         className={clsx(
           'flex h-8 shrink-0 items-center gap-2 px-3 text-base',
           disabled

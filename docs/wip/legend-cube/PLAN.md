@@ -1695,6 +1695,7 @@ an earlier warning on that table cleared once it re-checks clean (M1.8b S17).
 | `nodeEditor` (`CubeNodeEditorState`)              | the open node editor: `nodeId`, `draft`, `notice`; `finish()`, `holdOpen()` and `addFlusher()` (M3b); ephemeral, not saved                                                                                        |
 | `jsonViewer` (`CubeJsonViewerState`, §11.20)      | Open JSON's dialog: the column and its cell's text, shown as a tree                                                                                                                                               |
 | `jsonExplorer` (`CubeJsonExplorerState`, §11.20)  | Explore JSON's dialog: the column, its sample read through Runs (`readCubeJsonSample`), the field tree, the ticked offers; `add()` adds an Extend, then an Explode Array, as one undo step (`addConfiguredNodes`) |
+| `tour` (`CubeTourState`, §11.21)                  | the editor's guided tour: `isOpen`, `index`, `openedExample`; `start()`, `move(by, isShown)`, `close()`; counts as a dialog                                                                                       |
 | `isPaletteCollapsed`                              | kept per user in user data, never in the cube                                                                                                                                                                     |
 
 Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change), which pushes onto history.
@@ -5221,6 +5222,50 @@ V.8 folded it into the sections it names (see "Supersessions").
 - §7.8 (state): the Explore JSON state.
 - §11.4 (types): Variant unchanged, plus the new node's type rules.
 - The core's and the builder's operation docs: Explode Array.
+
+### 11.21 The editor's guided tour
+
+**Why:** users don't find much of what Cube does. The user chose a guided tour of the editor first (2026-10-15), ahead
+of a "help mode" and a hosted user guide (planned separately, below).
+
+**As built:**
+
+- **Where it starts:** "Take the tour" in the page menu (☰, top left) and on the empty canvas. Nothing starts it on its
+  own.
+- **On an empty cube** where examples are offered, it opens "Top customers by orders" behind its first step, which says
+  so; Undo takes it back. Otherwise it tours the cube as it is, after the node editor's edits apply.
+- **One step at a time:** the page dimmed but for the step's controls, and a card beside them (Back, Next or Done, End
+  the tour, "n of 15"). The card follows the controls as the page moves them. Esc ends it; the arrow keys move; the
+  focus stays on Next, so Enter moves on. Clicks on the page are held, and the page's shortcuts wait (`isDialogOpen`).
+- **Steps:** welcome, sources, steps, the graph, the step that runs, Execute and Rows, Server-side or Local, the
+  results, Show SQL, Runs, the Cube menu, Add Items, Examples, Undo/Show Pure/Hide graph, and the page menu to end.
+  Their text is in `__lib__/LegendCubeTour.ts`, and says only what the page does.
+- **Anchors:** a control joins a step by carrying `cubeTourAnchor(...)` (`data-cube-tour`); a step points at the box
+  around its controls. A step whose controls aren't on the page (the graph hidden, no SQL yet, a host without Examples)
+  is skipped.
+- **No new dependency:** the card is placed by legend-art's `BasePopper`; in a page hosted in a dialog (Studio), the
+  tour stays in the dialog's layer.
+- **Not in v1:** a step inside a node's editor (its outside-click closing would fight the card), and remembering who has
+  seen the tour.
+
+**Tests:** every step's controls are on the page of an example cube (what keeps the tour from going stale); the example
+opened and taken back by Undo; keys, Back, End the tour; the graph's steps skipped when it is hidden; shortcuts held
+while the tour shows.
+
+**Next (planned, not built):**
+
+- **A user guide on legend.finos.org**, its pages and screenshots in legend-studio (`docs/user-guide/cube/`), the
+  screenshots made by a script that marks the controls by their names. The legend repo's site would read the folder
+  when it builds (a second Docusaurus docs section), with a daily build so new pages show within a day; or Studio's CI
+  would push it into the legend repo, as legend-engine's does (needs a token the FINOS admins grant).
+- **Help mode:** every control labelled at once, from the same text as the tour and the guide.
+
+**Steps:**
+
+| Step | Deliverable                                                     | Done when                                 |
+| ---- | --------------------------------------------------------------- | ----------------------------------------- |
+| T.1  | The tour: steps, anchors, the card, the menu item and the offer | Store and component tests; a browser walk |
+| T.2  | A demo video                                                    | Every caption true on screen              |
 
 ## 12. G. Risks and open questions
 

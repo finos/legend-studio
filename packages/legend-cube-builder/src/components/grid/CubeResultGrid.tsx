@@ -47,6 +47,10 @@ import {
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
+  CUBE_TOUR_ANCHOR,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
+import {
   CubeEngineError,
   type CubeResultValue,
 } from '../../graph-manager/CubeEngine.js';
@@ -665,6 +669,7 @@ export const CubeResultGrid = memo(
           'ag-theme-balham-dark': darkMode,
         })}
         data-testid={LEGEND_CUBE_TEST_ID.RESULT_GRID}
+        {...cubeTourAnchor(CUBE_TOUR_ANCHOR.RESULTS)}
       >
         <DataGrid<CubeRow>
           rowData={result.rows as CubeRow[]}

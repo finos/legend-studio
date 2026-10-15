@@ -104,6 +104,7 @@ import {
 import { recheckCubeFunctionSources } from './CubeFunctionRecheck.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
+import { CubeTourState } from './CubeTourState.js';
 import { CubeExportState } from './CubeExportState.js';
 import { CubeGridFetcher } from './CubeGridFetcher.js';
 import { CubeGridState } from './CubeGridState.js';
@@ -201,6 +202,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly specTransfer: CubeSpecTransferState;
   readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
+  /** The editor's guided tour (PLAN §11.21) */
+  readonly tour: CubeTourState;
   /** Open JSON: a Variant cell's document as a tree (PLAN §11.20) */
   readonly jsonViewer = new CubeJsonViewerState();
   /** Explore JSON: a Variant column's fields, and the columns they can become (PLAN §11.20) */
@@ -375,6 +378,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.specTransfer = new CubeSpecTransferState(this);
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
+    this.tour = new CubeTourState(this);
     this.jsonExplorer = new CubeJsonExplorerState(this);
     this.lambdaImport = new CubeLambdaImportState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
@@ -770,7 +774,7 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
-  /** One of Cube's dialogs is open: the source picker, Examples, the group rows' settings, Import or Export, Show Pure */
+  /** One of Cube's dialogs is open: the source picker, Examples, the group rows' settings, Import or Export, Show Pure, or the tour */
   get isDialogOpen(): boolean {
     return (
       this.sourcePicker.isOpen ||
@@ -778,7 +782,8 @@ export class CubeEditorState implements CommandRegistrar {
       this.grid.isSettingsShown ||
       this.grid.formatColumn !== undefined ||
       this.specTransfer.mode !== undefined ||
-      this.showPure.isOpen
+      this.showPure.isOpen ||
+      this.tour.isOpen
     );
   }
 

@@ -32,6 +32,7 @@ import {
   OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../__lib__/LegendCubeLabels.js';
+import { CUBE_TOUR_ANCHOR, cubeTourAnchor } from '../__lib__/LegendCubeTour.js';
 import {
   addCubeNode,
   canAddCubeNode,
@@ -158,6 +159,7 @@ export const CubeAddItemsMenu = observer(
               ? READ_ONLY_CUBE_TITLE
               : 'Add a source, or a step after the selected node'
           }
+          {...cubeTourAnchor(CUBE_TOUR_ANCHOR.ADD_ITEMS)}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           onClick={openMenu}

@@ -490,12 +490,12 @@ describe('Cube canvas', () => {
     ).toBe(false);
   });
 
-  test('Offers to connect to a source, or open an example, when the cube is empty, opening the dialog with no tab chosen', async () => {
+  test('Offers to connect to a source, open an example or take the tour when the cube is empty, opening the dialog with no tab chosen', async () => {
     const state = await renderCanvas();
     expect(TEST__getCanvasNodes()).toHaveLength(0);
     const canvas = screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS);
     expect(canvas.textContent).toBe(
-      'Connect to a source to start a new one, or open an example.',
+      'Connect to a source to start a new one, or open an example.New to Legend Cube? Take the tour.',
     );
     fireEvent.click(within(canvas).getByText('Connect to a source'));
     expect(state.sourcePicker.isOpen).toBe(true);

@@ -23,6 +23,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { READ_ONLY_CUBE_TITLE } from '../__lib__/LegendCubeLabels.js';
+import { CUBE_TOUR_ANCHOR, cubeTourAnchor } from '../__lib__/LegendCubeTour.js';
 import type { CubeEditorState } from '../stores/CubeEditorState.js';
 
 interface CubeFileMenuItem {
@@ -83,6 +84,7 @@ export const CubeFileMenu = observer(
           type="button"
           className="flex h-6 shrink-0 items-center gap-1 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-2 text-base text-[var(--color-text-primary)] enabled:cursor-pointer enabled:hover:bg-[var(--color-bg-hover)]"
           title="New, Import, Import Pure and Export"
+          {...cubeTourAnchor(CUBE_TOUR_ANCHOR.CUBE_MENU)}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           onClick={openMenu}

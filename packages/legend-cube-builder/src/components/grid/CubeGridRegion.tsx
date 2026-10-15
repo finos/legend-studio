@@ -29,6 +29,10 @@ import {
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
+  CUBE_TOUR_ANCHOR,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
+import {
   CubeDataProductRunErrorKind,
   type CubeDataProductRuntimeState,
 } from '../../stores/CubeDataProductRuntimeState.js';
@@ -63,7 +67,10 @@ const CubeRowLimitInput = observer(
       }
     };
     return (
-      <div className="flex items-center gap-1">
+      <div
+        className="flex items-center gap-1"
+        {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
+      >
         <label className="flex items-center gap-1 text-base">
           Rows
           <input
@@ -123,6 +130,7 @@ const CubeGridModeToggle = observer(
         className="flex overflow-hidden rounded-sm border border-[var(--color-border-default)]"
         role="group"
         aria-label="Grid mode"
+        {...cubeTourAnchor(CUBE_TOUR_ANCHOR.GRID_MODE)}
       >
         {option(
           CubeGridMode.SERVER_SIDE,
@@ -156,12 +164,17 @@ const CubeGridToolbar = observer(
         data-testid={LEGEND_CUBE_TEST_ID.GRID_TOOLBAR}
       >
         {execution.isRunning ? (
-          <CubeButton title="Stop the run" onClick={() => execution.stop()}>
+          <CubeButton
+            title="Stop the run"
+            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
+            onClick={() => execution.stop()}
+          >
             Stop
           </CubeButton>
         ) : (
           <CubeButton
             primary={true}
+            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
             disabled={!execution.canExecute}
             title={
               disabledReasons.length
@@ -224,7 +237,11 @@ const CubeGridToolbar = observer(
               </span>
             )}
             {result.sql.length > 0 && (
-              <CubeButton aria-haspopup="dialog" onClick={onShowSql}>
+              <CubeButton
+                aria-haspopup="dialog"
+                {...cubeTourAnchor(CUBE_TOUR_ANCHOR.SHOW_SQL)}
+                onClick={onShowSql}
+              >
                 Show SQL
               </CubeButton>
             )}
@@ -233,6 +250,7 @@ const CubeGridToolbar = observer(
         <span className="flex-1" />
         <CubeButton
           aria-expanded={showRuns}
+          {...cubeTourAnchor(CUBE_TOUR_ANCHOR.RUNS)}
           title="The latest runs, fetches and exports, with their SQL"
           onClick={onToggleRuns}
         >
