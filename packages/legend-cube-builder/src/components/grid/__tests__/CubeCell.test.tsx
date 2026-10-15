@@ -202,3 +202,20 @@ describe('Cube cell formats', () => {
     expect(total('sum')).toBe('$4.00');
   });
 });
+
+describe('A Variant cell (PLAN §11.20)', () => {
+  test('Shows its JSON on one line, with the JSON as sent on hover', () => {
+    const json = '{"user":{"name":"ann"},"tags":["a"]}';
+    const cell = render(
+      <CubeCell
+        {...({
+          value: json,
+          family: TypeFamily.VARIANT,
+          node: RUN_ROW_NODE,
+        } as unknown as Parameters<typeof CubeCell>[0])}
+      />,
+    ).container;
+    expect(cell.textContent).toBe('{user: {name: ann}, tags: [a]}');
+    expect(cell.querySelector('span')?.title).toBe(json);
+  });
+});

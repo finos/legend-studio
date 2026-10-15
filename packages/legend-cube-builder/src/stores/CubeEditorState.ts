@@ -123,6 +123,7 @@ import { getCubeExtendUpstream } from './CubeExtendTyping.js';
 import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
+import { CubeJsonViewerState } from './variant/CubeJsonViewerState.js';
 import { CubeLambdaImportState } from './CubeLambdaImportState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
@@ -199,6 +200,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly specTransfer: CubeSpecTransferState;
   readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
+  /** Open JSON: a Variant cell's document as a tree (PLAN §11.20) */
+  readonly jsonViewer = new CubeJsonViewerState();
   /** Import Pure: the lambda the page opened on, read into the cube (PLAN §11.18) */
   readonly lambdaImport: CubeLambdaImportState;
   readonly nodeEditor: CubeNodeEditorState;

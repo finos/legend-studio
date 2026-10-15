@@ -188,6 +188,12 @@ export const CUBE_SORT_COLUMN_DISABLED_REASON = {
 };
 
 /** Why the grid's quick actions (spec §12.4) can't be used */
+/** Why a Variant cell's Open JSON can't be used (PLAN §11.20) */
+export const CUBE_JSON_DISABLED_REASON = {
+  NOT_A_ROW: "A group row's cell holds no row's document.",
+  EMPTY: 'This cell is empty.',
+};
+
 export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   STALE_ROWS:
     'Execute again: these rows are from an earlier version of the query.',

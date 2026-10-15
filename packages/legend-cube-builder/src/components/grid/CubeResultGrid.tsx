@@ -19,11 +19,12 @@ import {
   AggregationFunction,
   type CheckedDrilldown,
   type ColumnFormat,
+  type CubeType,
   DEFAULT_PRESENTATION,
   foldColumnName,
   getColumnFormat,
   type Presentation,
-  type TypeFamily,
+  TypeFamily,
 } from '@finos/legend-cube';
 import {
   DataGrid,
@@ -39,6 +40,7 @@ import { flowResult } from 'mobx';
 import { memo, useCallback, useMemo } from 'react';
 import {
   CUBE_FORMAT_NOT_A_NUMBER,
+  CUBE_JSON_DISABLED_REASON,
   NULL_CELL_TEXT,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -178,6 +180,39 @@ const CUBE_GRID_MENU_ITEMS: readonly DataGridDefaultMenuItem[] = [
  * only. Read when the menu opens, so it reflects the cube and the run as they
  * are then.
  */
+/**
+ * A Variant cell's items (PLAN §11.20): Open JSON shows a run row's document
+ * as a tree; a group row's cell, or an empty one, has none to show
+ */
+const getCubeVariantMenuItems = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  column: { readonly name: string; readonly type: CubeType },
+  cell: CubeResultValue,
+  kind: CubeGridCellKind,
+): DataGridMenuItemDef<Row>[] => {
+  if (column.type.family !== TypeFamily.VARIANT) {
+    return [];
+  }
+  const reason =
+    kind !== CubeGridCellKind.VALUE
+      ? CUBE_JSON_DISABLED_REASON.NOT_A_ROW
+      : typeof cell !== 'string'
+        ? CUBE_JSON_DISABLED_REASON.EMPTY
+        : undefined;
+  return [
+    {
+      name: 'Open JSON',
+      disabled: reason !== undefined,
+      ...(reason === undefined ? {} : { tooltip: reason }),
+      action: () => {
+        if (typeof cell === 'string') {
+          editorState.jsonViewer.open(column.name, cell);
+        }
+      },
+    },
+  ];
+};
+
 export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
   params: DataGridGetContextMenuItemsParams<Row>,
@@ -224,6 +259,7 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
         action: () => quickAction.apply(),
       };
     }),
+    ...getCubeVariantMenuItems<Row>(editorState, column, cell, kind),
     'separator',
     {
       name: 'Format Column…',

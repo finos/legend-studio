@@ -53,6 +53,7 @@ import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeDevSettingsDialog } from './dev-settings/CubeDevSettings.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
+import { CubeJsonViewerDialog } from './grid/CubeJsonViewerDialog.js';
 import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeFileMenu } from './CubeFileMenu.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
@@ -206,6 +207,7 @@ const CubeGraphHeader = observer(
         <CubeSpecTransferDialog editorState={editorState} />
         <CubeImportPureDialog editorState={editorState} />
         <CubeShowPureDialog editorState={editorState} />
+        <CubeJsonViewerDialog editorState={editorState} />
         <CubeDevSettingsDialog editorState={editorState} />
       </div>
     );

@@ -38,4 +38,5 @@ export enum LEGEND_CUBE_TEST_ID {
   GRID_TOOLBAR = 'legend-cube__grid-toolbar',
   EXECUTION_ERROR = 'legend-cube__execution-error',
   SQL_PANEL = 'legend-cube__sql-panel',
+  JSON_VIEWER = 'legend-cube__json-viewer',
 }
