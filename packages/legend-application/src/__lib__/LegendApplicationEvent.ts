@@ -25,6 +25,8 @@ export enum APPLICATION_EVENT {
 
   ILLEGAL_APPLICATION_STATE_OCCURRED = 'application.error.illegal-state',
   APPLICATION_CONFIGURATION__FAILURE = 'application.configuration.failure',
+  BACKEND_OVERRIDES_APPLIED = 'application.configuration.backend-overrides-applied',
+  BACKEND_OVERRIDES_APPLY__FAILURE = 'application.configuration.backend-overrides-apply.failure',
 
   IDENTITY_AUTO_FETCH__FAILURE = 'application.identity.auto-fetch.failure',
 

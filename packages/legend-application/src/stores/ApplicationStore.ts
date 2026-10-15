@@ -51,6 +51,7 @@ import { DefaultNavigator } from './navigation/DefaultNavigator.js';
 import type { ApplicationPlatform } from './platform/ApplicationPlatform.js';
 import { UserDataService } from './UserDataService.js';
 import { ReleaseNotesService } from './ReleaseNotesService.js';
+import { BackendOverrideService } from './BackendOverrideService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -104,6 +105,7 @@ export class ApplicationStore<
   readonly storageService: StorageService;
   readonly userDataService: UserDataService;
   readonly settingService: SettingService;
+  readonly backendOverrideService: BackendOverrideService;
   readonly alertService: AlertService;
   readonly notificationService: NotificationService;
 
@@ -145,6 +147,7 @@ export class ApplicationStore<
     this.storageService = new StorageService(this);
     this.settingService = new SettingService(this);
     this.userDataService = new UserDataService(this);
+    this.backendOverrideService = new BackendOverrideService(this);
     this.alertService = new AlertService(this);
     this.notificationService = new NotificationService();
 

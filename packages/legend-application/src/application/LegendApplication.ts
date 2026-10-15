@@ -46,6 +46,13 @@ import {
 } from '../stores/ApplicationStore.js';
 import { registerDownloadHelperServiceWorker } from '../util/DownloadHelperServiceWorker.js';
 import type { VersionReleaseNotes } from '../stores/ReleaseNotesService.js';
+import {
+  applyBackendOverrides,
+  LEGEND_APPLICATION_RESET_BACKEND_OVERRIDES_QUERY_PARAM,
+  readBackendOverrides,
+  writeBackendOverrides,
+  type LegendApplicationAppliedBackendOverride,
+} from './LegendApplicationBackendOverrides.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -95,6 +102,8 @@ export interface LegendApplicationConfigurationInput<
   configData: T;
   versionData: LegendApplicationVersionData;
   docEntries?: Record<string, DocumentationEntryData>;
+  /** The backend overrides applied to `configData` */
+  backendOverrides?: LegendApplicationAppliedBackendOverride[];
 }
 
 export abstract class LegendApplication {
@@ -222,14 +231,76 @@ export abstract class LegendApplication {
     }
     assertNonNullable(versionData, `Can't fetch Legend application version`);
 
+    // backend overrides
+    const { configData: effectiveConfigData, backendOverrides } =
+      this.applyBackendOverrides(configData);
+
     return [
       await this.configureApplication({
-        configData,
+        configData: effectiveConfigData,
         versionData,
         baseAddress: this.baseAddress,
+        backendOverrides,
       }),
-      configData.extensions ?? {},
+      effectiveConfigData.extensions ?? {},
     ];
+  }
+
+  /**
+   * Applies the backend URLs the user set in the backend servers dialog, if
+   * the deployment allows it. They go into the raw `config.json` before the
+   * config is built, so every server client and URL built from the config
+   * uses them, including ones used before the application loads, such as the
+   * SDLC authorization redirect.
+   */
+  private applyBackendOverrides(
+    configData: LegendApplicationConfigurationData,
+  ): {
+    configData: LegendApplicationConfigurationData;
+    backendOverrides: LegendApplicationAppliedBackendOverride[];
+  } {
+    if (!configData.application?.backendOverrides?.enabled) {
+      return { configData, backendOverrides: [] };
+    }
+    try {
+      const storage = window.localStorage;
+      const url = new URL(window.location.href);
+      if (
+        url.searchParams.has(
+          LEGEND_APPLICATION_RESET_BACKEND_OVERRIDES_QUERY_PARAM,
+        )
+      ) {
+        writeBackendOverrides(storage, configData.appName, configData.env, {});
+        url.searchParams.delete(
+          LEGEND_APPLICATION_RESET_BACKEND_OVERRIDES_QUERY_PARAM,
+        );
+        window.history.replaceState(window.history.state, '', url.toString());
+      }
+      const result = applyBackendOverrides(
+        configData,
+        readBackendOverrides(storage, configData.appName, configData.env),
+      );
+      if (result.applied.length) {
+        this.logger.warn(
+          LogEvent.create(APPLICATION_EVENT.BACKEND_OVERRIDES_APPLIED),
+          'Using overridden backend URLs:',
+          result.applied
+            .map((override) => `${override.configPath} -> ${override.url}`)
+            .join(', '),
+        );
+      }
+      return {
+        configData: result.configData,
+        backendOverrides: result.applied,
+      };
+    } catch (error) {
+      assertErrorThrown(error);
+      this.logger.error(
+        LogEvent.create(APPLICATION_EVENT.BACKEND_OVERRIDES_APPLY__FAILURE),
+        `Can't apply backend overrides: ${error.message}`,
+      );
+      return { configData, backendOverrides: [] };
+    }
   }
 
   async loadDocumentationRegistryData(
