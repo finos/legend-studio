@@ -53,6 +53,8 @@ import { CubeEditorState } from '../CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
 const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
+/** The viewer's own production environment, as a cube naming none reads it */
+const VIEWER_PRODUCTION = { environmentType: PRODUCTION, name: undefined };
 
 /** Lets the flows an action started finish */
 const settle = async (): Promise<void> => {
@@ -123,7 +125,9 @@ describe('The Ingest tab', () => {
       '1234',
       '5678',
     ]);
-    expect(ingest.listDefinitions.mock.calls).toEqual([[PRODUCTION, '1234']]);
+    expect(ingest.listDefinitions.mock.calls).toEqual([
+      [VIEWER_PRODUCTION, '1234'],
+    ]);
     expect(tab.definitionList?.droppedCount).toBe(1);
     tab.setDefinitionSearch('desks');
     expect(tab.shownDefinitions.map((each) => each.definition)).toEqual([
@@ -132,7 +136,7 @@ describe('The Ingest tab', () => {
     tab.setDefinitionSearch('com.example:sales');
     expect(tab.shownDefinitions).toHaveLength(2);
     expect(ingest.describe.mock.calls).toEqual([
-      [fakeIngestUrnOf(FAKE_INGEST_ORDERS), PRODUCTION],
+      [fakeIngestUrnOf(FAKE_INGEST_ORDERS), VIEWER_PRODUCTION],
     ]);
     // the only data set that can be added is picked; a materialized view can't be
     expect(tab.dataSetName).toBe('TRADES');
@@ -190,6 +194,8 @@ describe('The Ingest tab', () => {
       model: {
         _type: CUBE_INGEST_MODEL_TYPE,
         environmentType: 'PRODUCTION',
+        // the environment read, by name, for whoever opens the cube
+        environment: 'env-a',
         producerDeploymentId: '1234',
         warehouse: 'SALES_WH',
       },
@@ -359,6 +365,91 @@ describe('The Ingest tab', () => {
     ).toEqual(['TRADES', 'DESKS']);
   });
 
+  test("Lists every ingest environment, starts on the viewer's own production one, and reads the one picked", async () => {
+    const { state, ingest } = setUp();
+    const tab = await openOnOrders(state);
+    expect(
+      tab.environments?.map((each) => [each.name, each.environmentType]),
+    ).toEqual([
+      ['env-a', PRODUCTION],
+      ['env-a', PRODUCTION_PARALLEL],
+      ['env-b', PRODUCTION],
+    ]);
+    expect(tab.environment?.name).toBe('env-a');
+    expect(tab.environment?.environmentType).toBe(PRODUCTION);
+    const envB = guaranteeNonNullable(
+      tab.environments?.find((each) => each.name === 'env-b'),
+    );
+    tab.setEnvironment(envB);
+    // its producers are read again, the producer and definitions dropped
+    expect(tab.producerDeploymentId).toBeUndefined();
+    expect(tab.definition).toBeUndefined();
+    await settle();
+    expect(tab.environment?.runtimeEnvironment).toBe('lakehouse-ingest-env-b');
+    expect(ingest.listProducers.mock.calls.at(-1)).toEqual([
+      { environmentType: PRODUCTION, name: 'env-b' },
+    ]);
+    // listed once
+    expect(ingest.listEnvironments).toHaveBeenCalledTimes(1);
+    tab.selectProducer('1234');
+    await settle();
+    expect(ingest.listDefinitions.mock.calls.at(-1)).toEqual([
+      { environmentType: PRODUCTION, name: 'env-b' },
+      '1234',
+    ]);
+    tab.selectDefinition(
+      tab.shownDefinitions.find(
+        (candidate) => candidate.definition === FAKE_INGEST_ORDERS,
+      ),
+    );
+    await settle();
+    await flowResult(state.sourcePicker.confirm());
+    expect(state.document.context?.model).toMatchObject({
+      environmentType: PRODUCTION,
+      environment: 'env-b',
+      producerDeploymentId: '1234',
+    });
+    // the cube keeps to it
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    tab.setEnvironment(
+      guaranteeNonNullable(
+        tab.environments?.find(
+          (each) =>
+            each.name === 'env-a' && each.environmentType === PRODUCTION,
+        ),
+      ),
+    );
+    expect(tab.environment?.name).toBe('env-b');
+  });
+
+  test("Lists the environments to pick from when the viewer's own can't be read", async () => {
+    const { state, ingest } = setUp();
+    ingest.resolveEnvironment.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Unable to resolve lakehouse user environment.',
+      ),
+    );
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    const tab = state.sourcePicker.ingestTab;
+    expect(tab.error?.message).toBe(
+      'Unable to resolve lakehouse user environment.',
+    );
+    expect(tab.environment).toBeUndefined();
+    expect(tab.environments).toHaveLength(3);
+    tab.setEnvironment(
+      guaranteeNonNullable(
+        tab.environments?.find((each) => each.name === 'env-b'),
+      ),
+    );
+    await settle();
+    expect(tab.error).toBeUndefined();
+    expect(tab.environment?.name).toBe('env-b');
+    expect(tab.producers).toHaveLength(2);
+  });
+
   test('Reads the class the Mode names, and starts over on another', async () => {
     const { state, ingest } = setUp();
     const tab = await openOnOrders(state);
@@ -367,7 +458,7 @@ describe('The Ingest tab', () => {
     expect(tab.definition).toBeUndefined();
     await settle();
     expect(ingest.resolveEnvironment.mock.calls.at(-1)).toEqual([
-      PRODUCTION_PARALLEL,
+      { environmentType: PRODUCTION_PARALLEL, name: undefined },
     ]);
     expect(tab.environment?.runtimeEnvironment).toBe(
       'lakehouse-ingest-env-a-pp',
@@ -452,7 +543,9 @@ describe('The Ingest tab', () => {
     await settle();
     const tab = state.sourcePicker.ingestTab;
     expect(tab.producerDeploymentId).toBe('1234');
-    expect(ingest.listDefinitions.mock.calls).toEqual([[PRODUCTION, '1234']]);
+    expect(ingest.listDefinitions.mock.calls).toEqual([
+      [VIEWER_PRODUCTION, '1234'],
+    ]);
     expect(tab.shownDefinitions).toHaveLength(2);
     expect(tab.warehouse).toBe('PROJECT_WH');
   });

@@ -29,7 +29,10 @@ import {
   checkCubeIngestModel,
   getCubeIngestSettings,
 } from '../graph-manager/CubeIngest.js';
-import type { CubeIngestCatalog } from '../graph-manager/CubeIngestCatalog.js';
+import {
+  type CubeIngestCatalog,
+  getCubeIngestEnvironmentKey,
+} from '../graph-manager/CubeIngestCatalog.js';
 
 /**
  * Reads an ingest cube's data sets again (PLAN §6.7): their columns as their
@@ -68,7 +71,7 @@ export const recheckCubeIngestSources = async (
   }
   try {
     return await catalog.resolveSchemas(
-      settings.environmentType,
+      getCubeIngestEnvironmentKey(settings),
       new Map(
         sources.map((source) => [
           source.id,

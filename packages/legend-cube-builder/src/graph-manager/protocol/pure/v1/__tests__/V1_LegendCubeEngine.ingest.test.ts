@@ -124,8 +124,9 @@ const fakeSource = (
   }),
   getRuntimeEnvironment: jest.fn<
     V1_CubeIngestDefinitionSource['getRuntimeEnvironment']
-  >(async (environmentType) =>
-    environmentType === PRODUCTION ? 'producer-env' : 'producer-env-pp',
+  >(
+    async ({ environmentType, name }) =>
+      `producer-env${name ? `-${name}` : ''}${environmentType === PRODUCTION ? '' : '-pp'}`,
   ),
 });
 
@@ -216,11 +217,13 @@ describe('Legend Cube engine: ingest cubes', () => {
     );
     const result = await engine.execute(MODEL, query);
     expect(result.rows).toHaveLength(1);
+    // a cube naming no environment reads the viewer's own of its class
+    const viewers = { environmentType: PRODUCTION, name: undefined };
     expect(source.getDefinitionElement.mock.calls).toEqual([
-      [urnOf(ORDERS), PRODUCTION],
-      [urnOf(DESKS), PRODUCTION],
+      [urnOf(ORDERS), viewers],
+      [urnOf(DESKS), viewers],
     ]);
-    expect(source.getRuntimeEnvironment.mock.calls).toEqual([[PRODUCTION]]);
+    expect(source.getRuntimeEnvironment.mock.calls).toEqual([[viewers]]);
     const body = sentBody(run.mock.calls[0] as unknown[]);
     expect(body.model).toEqual({
       _type: 'data',
@@ -233,6 +236,28 @@ describe('Legend Cube engine: ingest cubes', () => {
     // the URN stays out of the query
     expect(JSON.stringify(body.function)).not.toContain('urn:lakehouse');
     expect(JSON.stringify(body.function)).toContain('"type":"I"');
+  });
+
+  test('Reads the definitions of the ingest environment the cube names, and runs there', async () => {
+    const source = fakeSource();
+    const { engine, run } = setUp(source);
+    await engine.execute(
+      createCubeIngestModel({
+        environmentType: PRODUCTION,
+        environment: 'env-b',
+        producerDeploymentId: '1234',
+        warehouse: 'SALES_WH',
+      }),
+      runOf(accessor(ORDERS, 'ingestDataset101')),
+    );
+    const envB = { environmentType: PRODUCTION, name: 'env-b' };
+    expect(source.getDefinitionElement.mock.calls).toEqual([
+      [urnOf(ORDERS), envB],
+    ]);
+    expect(source.getRuntimeEnvironment.mock.calls).toEqual([[envB]]);
+    expect(
+      (sentBody(run.mock.calls[0] as unknown[]).model as PlainObject).elements,
+    ).toContainEqual(runtimeOf('producer-env-env-b', 'SALES_WH'));
   });
 
   test('Runs on the cube’s warehouse, else the one the viewer last picked, else the default, in the class’s environment', async () => {

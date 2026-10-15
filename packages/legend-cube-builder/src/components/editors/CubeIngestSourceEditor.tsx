@@ -20,9 +20,10 @@ import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
+import { getIngestEnvironmentLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { getCubeIngestSettings } from '../../graph-manager/CubeIngest.js';
+import { getCubeIngestEnvironmentKey } from '../../graph-manager/CubeIngestCatalog.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -64,7 +65,7 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
           <>
             <dt className="text-[var(--color-text-secondary)]">Environment</dt>
             <dd className="min-w-0 break-all">
-              {CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[settings.environmentType]}
+              {getIngestEnvironmentLabel(getCubeIngestEnvironmentKey(settings))}
             </dd>
             <dt className="text-[var(--color-text-secondary)]">Producer</dt>
             <dd className="min-w-0 break-all">

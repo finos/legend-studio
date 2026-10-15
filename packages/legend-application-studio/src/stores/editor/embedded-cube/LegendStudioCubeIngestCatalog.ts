@@ -30,6 +30,7 @@ import {
   type CubeIngestDataSetLocation,
   type CubeIngestDefinitionList,
   type CubeIngestDefinitionSource,
+  type CubeIngestEnvironmentKey,
   type NodeId,
 } from '@finos/legend-cube-builder';
 import type { IngestDefinition } from '@finos/legend-graph';
@@ -104,13 +105,22 @@ export class LegendStudioCubeIngestCatalog
     return definition;
   }
 
-  /** The project's lakehouse runtime, which a run names, with its warehouse */
+  /** The project's lakehouse runtime, the one environment a Studio cube reads */
+  async listEnvironments(): Promise<readonly CubeIngestEnvironment[]> {
+    return [
+      await this.resolveEnvironment({
+        environmentType: STUDIO_CUBE_INGEST_CLASS,
+      }),
+    ];
+  }
+
+  /** The project's lakehouse runtime, which a run names, with its warehouse, whatever environment is named */
   async resolveEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
   ): Promise<CubeIngestEnvironment> {
     const runtime = await this.workspace.resolveRuntime();
     return new CubeIngestEnvironment({
-      environmentType,
+      environmentType: environment.environmentType,
       name: runtime.label,
       runtimeEnvironment: runtime.environment,
       warehouse: runtime.warehouse,
@@ -173,7 +183,7 @@ export class LegendStudioCubeIngestCatalog
   }
 
   async resolveSchemas(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
     const described = new Map<

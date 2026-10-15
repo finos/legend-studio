@@ -145,9 +145,14 @@ const bindIngestDataSets = async (
   if (environmentType === undefined) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
   }
+  // the cube's ingest environment, else the viewer's own of the class
+  const environment = {
+    environmentType,
+    name: current?.environment,
+  };
   let producerDeploymentId = current?.producerDeploymentId;
   if (producerDeploymentId === undefined) {
-    const producers = await catalog.listProducers(environmentType);
+    const producers = await catalog.listProducers(environment);
     producerDeploymentId =
       producers.length === 1 ? producers[0]?.deploymentId : undefined;
   }
@@ -155,7 +160,7 @@ const bindIngestDataSets = async (
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
   }
   const { candidates } = await catalog.listDefinitions(
-    environmentType,
+    environment,
     producerDeploymentId,
   );
   const steps = new Map<string, CubeSourceStep>();
@@ -170,7 +175,7 @@ const bindIngestDataSets = async (
     }
     const dataSets =
       described.get(candidate.urn) ??
-      (await catalog.describe(candidate.urn, environmentType));
+      (await catalog.describe(candidate.urn, environment));
     described.set(candidate.urn, dataSets);
     const dataSet = dataSets.find((each) => each.name === dataSetName);
     if (!dataSet) {
@@ -203,11 +208,12 @@ const bindIngestDataSets = async (
   }
   const warehouse =
     current?.warehouse ??
-    (await catalog.resolveEnvironment(environmentType)).warehouse;
+    (await catalog.resolveEnvironment(environment)).warehouse;
   return bindingOf(
     {
       model: createCubeIngestModel({
         environmentType,
+        environment: current?.environment,
         producerDeploymentId,
         warehouse: await newCubeWarehouse(editorState, warehouse),
       }),
