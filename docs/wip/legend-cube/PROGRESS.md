@@ -75,8 +75,10 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       ([PROGRESS-M6C.md](PROGRESS-M6C.md), PLAN §11.12)
 - [x] M6d Operations cleanup, merged into `cube-dev` as #5677, then into `master` with #5685
       ([PROGRESS-M6D.md](PROGRESS-M6D.md), PLAN §11.14)
-- [ ] Debugging runs: each run's Pure, and Dev Settings for the engine URL and request compression, complete on
-      `cube-debug-runs-master`, draft #5689 into `master` ([PROGRESS-DEBUG-RUNS.md](PROGRESS-DEBUG-RUNS.md), PLAN §11.16)
+- [x] Debugging runs: each run's Pure, and Dev Settings for the engine URL and request compression, merged into
+      `master` as #5689 ([PROGRESS-DEBUG-RUNS.md](PROGRESS-DEBUG-RUNS.md), PLAN §11.16)
+- [ ] Variant (JSON) columns: a readable cell, Explore JSON, Parse as JSON, Explode Array, on `cube-variant` from
+      `master` ([PROGRESS-VARIANT.md](PROGRESS-VARIANT.md), PLAN §11.20)
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action

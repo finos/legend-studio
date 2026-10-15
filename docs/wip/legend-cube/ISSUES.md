@@ -395,6 +395,54 @@ processIdentifierWithQuoteChar (extensionDefaults.pure) wraps an identifier in t
 pivot's value) gives `q`t`, which ends the identifier early. The quote character inside should be doubled.
 ```
 
+### Schema exploration returns JSON and VARIANT columns as `Other` or text
+
+Found in the Variant analysis (PLAN §11.20), run on the local engine 🧪 (`variant/probe-cube-path.out.txt` in the
+evidence folder). `SchemaExportation.java` maps only the standard JDBC types, so a DuckDB `JSON` column is explored as
+`Other`, which Cube leaves out of a direct connection's table: the column isn't there at all. 💭 A Snowflake `VARIANT`
+and a Postgres `jsonb` likely come back as `Other` or a string too. Cube offers Parse as JSON on a String column
+meanwhile. Draft issue for finos/legend-engine:
+
+```text
+Title: Schema exploration doesn't map JSON/VARIANT columns to SemiStructured
+
+The database builder's schema exploration (SchemaExportation) maps java.sql.Types only: a DuckDB JSON column is
+explored as Other (and a Snowflake VARIANT, Postgres json/jsonb likely as Other or Varchar). Explored databases then
+lose the column's semi-structured type, so get()/to()/flatten can't be used on it. Mapping these by TYPE_NAME
+(JSON, VARIANT, OBJECT, ARRAY, json, jsonb) to SemiStructured would let them through.
+```
+
+### `toMany(@String)->contains(v)` on a Variant array writes invalid SQL on DuckDB
+
+Found in the Variant analysis, run on the local engine 🧪 (`variant/probe-engine.out.txt`).
+`$x.payload->get('tags')->toMany(@String)->contains('b')` is written
+`array_contains(((payload->'tags')->>'$'), 'b')`: the array read as one text, which DuckDB refuses. The same through
+`toMany(@Variant)->map(t | $t->to(@String))->contains('b')` is written over the array and returns the right rows; Cube
+writes that form. Draft issue for finos/legend-engine:
+
+```text
+Title: toMany(@String)->contains() on a variant array writes array_contains over the array's text (DuckDB)
+
+$x.v->get('tags')->toMany(@String)->contains('b') plans as array_contains(((v->'tags')->>'$'), 'b') on DuckDB, which
+fails: "No function matches array_contains(VARCHAR, STRING_LITERAL)". toMany(@Variant)->map(t|$t->to(@String))
+->contains('b') plans as array_contains(apply(cast(v->'tags' as JSON[]), ...), 'b') and works.
+```
+
+### `exists` over a Variant array fails while planning
+
+Found in the Variant analysis, run on the local engine 🧪.
+`$x.payload->get('items')->toMany(@Variant)->exists(i | $i->get('sku')->to(@String) == 'z')` fails with "Cannot cast a
+collection of size 0 to multiplicity [1]" (`pureToSQLQuery.pure` line 6030), where `filter(…)->size() > 0` works. Cube
+doesn't offer `exists`. Draft issue for finos/legend-engine:
+
+```text
+Title: exists() over toMany(@Variant) fails in plan generation
+
+|#>{db.s.t}#->filter(x|$x.payload->get('items')->toMany(@Variant)->exists(i|$i->get('sku')->to(@String) == 'z'))
+fails on DuckDB with "Cannot cast a collection of size 0 to multiplicity [1]" (pureToSQLQuery.pure:6030). The same
+condition through filter(...)->size() > 0 plans and runs.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns

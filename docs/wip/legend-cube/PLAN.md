@@ -4996,6 +4996,170 @@ Studio's Edit MatView and Save MatView, and Cube loaded lazily in Studio. Every 
 nine examples reads back into the steps that wrote it, written the same, from Cube's JSON and through the engine's
 grammar. Videos `28-edit-matview.webm` and `29-import-pure.webm`.
 
+### 11.20 Variant (JSON) columns: a readable cell, Explore JSON, Explode Array, Parse as JSON
+
+Built on `cube-variant`, from master (`dd0b62af9`), in a PR into master. Steps and status in
+[PROGRESS-VARIANT.md](PROGRESS-VARIANT.md). The user asked on 2026-10-14 what Cube can do with Variant columns, which
+usually hold JSON, and whether anything in Legend's UIs helps navigate them. The analysis, its probes and the user's
+answers are in the evidence folder's `variant/` (`PROPOSAL.md`). legend-lite's Data Cube (github.com/neema2/legend-lite,
+`datacube/src/json-shape.ts`, `ui/json-fields.ts`) is the inspiration the user pointed to.
+
+This subsection overrides the sections it names until V.8 folds it into them (see "Supersessions").
+
+**Settled** (user, 2026-10-14):
+
+1. **The whole proposal in one milestone:** the readable cell, Explore JSON, Parse as JSON, and the Explode Array node.
+2. **Explore JSON opens from the grid's column menu:** a Variant column's cell menu, beside Sort by and Filter by, and
+   its header menu.
+3. **Sampling:** the first 1,000 values, with "Read every row" on request.
+4. **Engine gaps** are drafted in ISSUES.md for the user to file; Cube works around them.
+
+**Engine facts:**
+
+- ✅ Read in legend-engine `93d92b4852`:
+  - **Variant functions:** `get(key)`, `get(index)`, `to(@T)`, `toMany(@T)`, `toVariant`, `fromJson`, `toJson`, and
+    the relation `flatten(~col)` inside `lateral`.
+  - **Array functions after `toMany(@Variant)`:** `size`, `map`, `filter`, `fold`, `sum`, `min`, `max`, `first`, `at`,
+    `slice`, `sort`, `contains`, `joinStrings`, and `keys`/`values` through `to(@Map<String, Variant>)`. All are
+    written to SQL (`pureToSQLQuery_variant.pure`).
+  - **Per database:** Snowflake, Databricks, Postgres and DuckDB implement them. Each excludes 14–17 Variant PCT tests
+    and no `lateral`/`flatten` test. H2 excludes 78, `get` and `fromJson` among them, and 13 `lateral` tests: it has
+    no Variant support.
+  - **What the exclusions are on those four:**
+    - `to(@Integer)` of a float or float string, `to(@StrictDate)` of a bad string, `to(@Enum)`, and `toMany` of a
+      non-array return a value or nothing where Pure throws;
+    - `to(@Class)` isn't supported;
+    - nested list or map literals fail.
+  - **The engine sends a Variant cell as compact JSON text** (`RelationalResult.java`): Cube's reader takes it as a
+    string.
+  - **Schema exploration maps only the standard JDBC types** (`SchemaExportation.java`): a DuckDB `JSON` column comes
+    back as `Other`, which Cube hides, so a direct connection never shows it.
+- 🧪 Run on the local engine, DuckDB (evidence `variant/probe-*`), with a `SEMISTRUCTURED` column in a text model over
+  a DuckDB file:
+  - Cube types the column Variant, and its cell is the JSON text.
+  - **In an Extend, through Cube's own typing:**
+    - `get`/`to` paths;
+    - `get(0)`;
+    - `toMany(@Variant)->size()`;
+    - `->map(i | $i->get('qty')->to(@Integer))->sum()`;
+    - `->filter(…)->size()`;
+    - a Variant-valued `get`;
+    - a Boolean condition on a path.
+  - **Straight to the engine:**
+    - `lateral(x | $x.payload->get('items')->toMany(@Variant)->flatten(~item))` gives one row per element. A row
+      with no elements, or a null document, comes back once with null.
+    - grouping and sorting by an extracted field;
+    - `keys()` and `values()` through a Map;
+    - `toJson` after `toOne()`.
+  - **On a VARCHAR column:** `fromJson()` gives the same results.
+  - **Fails:**
+    - `toMany(@String)->contains('b')`: invalid SQL on DuckDB. The form through `toMany(@Variant)->map(…to(@String))`
+      works.
+    - `toMany(@Variant)->exists(…)`: "Cannot cast a collection of size 0".
+- 💭 A Snowflake data product is the main place Variant columns come from, and Snowflake isn't probed here: its SQL is
+  known from the manifests only.
+
+**Decided without asking** (for review):
+
+- **The readable cell (V.2):**
+  - **One line:** a Variant cell is shown on one line in legend-lite's notation, `{name: ann, tier: gold}`,
+    `[a, b]`. Numbers are kept as written, and a key or string is bare unless it could be mistaken for something
+    else.
+  - **The value stays the JSON text** for Copy, CSV and Excel.
+  - **"Open JSON"** in the cell menu opens the document pretty-printed as a collapsible tree in a dialog, with Copy
+    JSON. Text that isn't JSON is shown as it is.
+- **Shape inference (V.3)** is host-free code in the builder (`src/stores/variant/`). It reads a sample's documents
+  with legend-shared's lossless JSON, so `1` and `1.0` differ and large ids keep their digits. Each position records:
+  - how often it is present and how often null;
+  - its scalar kinds, and its top 50 values;
+  - its object fields;
+  - its array element shape and lengths.
+- **Types are suggested conservatively**, since the engine won't catch a wrong one:
+
+  - integers mixed with floats are Float;
+  - Date and DateTime only when every sampled value matches;
+  - any other mix is String.
+
+  The panel shows the top values beside the suggestion. The engine then types the column, as any Extend's.
+
+- **The offers.** Each is Pure text for one Extend column, with a default name: the path joined with `_`, made a valid
+  column name, and numbered `_2`, `_3` … if taken. Only forms run on legend-engine are offered.
+
+  | Field            | Offers                                                                                                                                  |
+  | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+  | scalar           | the value, as its suggested type: `…->get(k)->to(@T)`                                                                                   |
+  | object or array  | as JSON: `…->get(k)`, a Variant column of its own, to explore again                                                                     |
+  | object           | its keys, as text: `…->to(@Map<String, Variant>)->toOne()->keys()->joinStrings(', ')`                                                   |
+  | array            | number of elements (`size`); one row per element (adds an Explode Array node)                                                           |
+  | array of scalars | all values, as text (`map(e \| $e->to(@String))->joinStrings`); contains _v_ for its top values (the `map` form, not `toMany(@String)`) |
+  | array of objects | first element's _k_ (`get(0)->get(k)->to(@T)`); total of a numeric _k_ (`map(…)->sum()`)                                                |
+
+  Not offered: `exists` (an engine error); a tuple explode of several fields (`toVariant(newMap(…))`, nested maps
+  excluded on Snowflake and DuckDB); `to(@Class)`.
+
+- **Explore JSON (V.4):**
+  - **Where:** "Explore JSON…" in a Variant column's cell menu and header menu opens a dialog.
+  - **The sample:** the query up to the node that ran, then a Restrict to the column and an Is Not Empty filter,
+    1,000 rows. It is run through `runCubeQuery` as the Pivot editor's values are, so it is listed in Runs ("Sample
+    of payload") and can be stopped.
+  - **"Read every row":** reads the same query with no row limit, through the engine's CSV export (as Export → CSV
+    does), parsing the column's cells. It is listed in Runs ("Every value of payload") and can be stopped.
+  - **The dialog:** a searchable field tree, each field with its kind and share ("in 83% of the rows read"). The
+    picked field's offers show on the right, and ticked offers become the columns of one new Extend, added after the
+    node that ran as one undo step. The engine parses each column's text before it is added; the background check
+    types it.
+  - **Refusals:** on a database without Variant support (H2), or while the rows are stale, a run is in flight or the
+    cube is read-only, as for the quick actions.
+- **Parse as JSON (V.5):** a String column's cell menu offers "Parse as JSON", which adds an Extend column
+  `<name>_json: $x.<name>->toOne()->fromJson()`, a Variant column. Refused on H2.
+- **Explode Array (V.6)** is a new core node, `explode`, "Explode Array", after Extend in the palette.
+  - **Settings:** a Variant column, a path of keys to its array (empty when the column is the array), and the new
+    column's name.
+  - **Output:** the input's columns plus the new one, a nullable Variant: one row per element. A row with no
+    elements, or none, is kept once with null.
+  - **Emission:** `lateral(x | $x.<col>->get(k)…->toMany(@Variant)->flatten(~<name>))`, with no new IR kind.
+  - **Databases:** run only on the types that support it (Snowflake, Databricks, Postgres, DuckDB). Any other known
+    type is refused with a message, as Pivot is; typing lambdas carry no type.
+  - **Its editor** picks the column, the path from the column's sampled shape (or typed keys), and the name. Explore
+    JSON's "one row per element" adds one, prefilled.
+- **A Variant column itself stays not sortable, groupable or comparable,** with Count only and empty tests (§11.4).
+  Grouping or sorting on a raw Variant isn't probed on legend-engine, and extracting a field first covers the need.
+- **Samples:**
+  - **The DuckDB Sales dataset gains a table `demo.events`,** with a VARCHAR column of JSON documents: orders, each
+    with a customer object and an array of items.
+  - **An example cube runs Parse as JSON then Explode Array.** No other local source can show a Variant column: H2
+    has none, and the DuckDB direct connection hides `JSON` columns.
+  - **The engine tests** do what the probe does: create a DuckDB file through a direct connection, then read it
+    through a text model declaring `SEMISTRUCTURED`.
+
+**Steps:**
+
+| Step | Deliverable                                                                       | Done when                                                           |
+| ---- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| V.1  | This section, PROGRESS-VARIANT.md, ISSUES.md's engine drafts, a draft PR          | Pushed                                                              |
+| V.2  | The readable Variant cell, and Open JSON's tree dialog                            | Unit and component tests                                            |
+| V.3  | Shape inference and the offers                                                    | Unit tests: lossless numbers, conservative types, each offer's Pure |
+| V.4  | Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend | Store and component tests; engine test of each offer's Pure         |
+| V.5  | Parse as JSON, and the DuckDB `demo.events` sample with its example               | Tests; the example runs on the engine                               |
+| V.6  | Explode Array: core node, codec, emission, database refusal, editor, palette      | Core and builder tests; engine tests (DuckDB) and conformance       |
+| V.7  | Verification: an inline review, a browser rehearsal; a demo video                 | Findings fixed; every caption true on screen                        |
+| V.8  | Fold the supersessions in                                                         | §7.8, §9, §11.4 and the builder docs read as built                  |
+
+**Risks:**
+
+- **Snowflake isn't probed:** the Snowflake SQL for `get`, `to` and `lateral` is known from its manifests only.
+- **Wrong guesses give wrong rows on these databases.** Hence the conservative types, and the top values shown beside
+  them.
+- **Sampling the first rows can miss rare fields.** The share and Read every row make that visible.
+- **Read every row** reads the whole column into the browser; a huge column is slow, and the run can be stopped.
+
+**Supersessions** (to fold in at V.8):
+
+- §9 (grid): a Variant cell's one-line view, Open JSON, Explore JSON, Parse as JSON.
+- §7.8 (state): the Explore JSON state.
+- §11.4 (types): Variant unchanged, plus the new node's type rules.
+- The core's and the builder's operation docs: Explode Array.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
