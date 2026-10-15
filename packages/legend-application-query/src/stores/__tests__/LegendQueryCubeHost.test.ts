@@ -167,7 +167,9 @@ describe('Legend Query as the Cube host', () => {
       new LegendQueryCubeHost(applicationStore).ingestCatalog,
     );
     await expect(
-      catalog.listProducers(CubeDataProductEnvironmentType.PRODUCTION),
+      catalog.listProducers({
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
     ).rejects.toThrow('No server in tests');
     expect(
       fetchSpy.mock.calls
