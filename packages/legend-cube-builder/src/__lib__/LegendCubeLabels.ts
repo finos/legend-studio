@@ -366,6 +366,29 @@ export const EXPLODE_EDITOR_NOTES = [
 export const CUBE_JSON_EXPLODE_OFFER_TITLE =
   'Adds an Explode Array node: a row for each element, the element as a new JSON column. One array at a time.';
 
+/** The tooltips of a Variant column's fields in an expression editor (PLAN §11.20, V.9) */
+export const CUBE_JSON_FIELDS_TITLE = {
+  OPEN: 'Show its fields, read from its first values just before this step: listed in Runs; a field clicked is written into the expression',
+  FORMS:
+    'Other forms of the field: counts, lists, the first element, totals, as JSON',
+  EXPLODE:
+    'One row per element is a step of its own: add Explode Array from the palette, or from Explore JSON in the grid',
+  READ_AGAIN: 'Read the column again',
+  EVERY_ROW:
+    'Read every value of the column, for the shape of the whole column: listed in Runs, and it can be stopped',
+} as const;
+
+/** What a Variant column's fields were read from, in an expression editor (PLAN §11.20, V.9) */
+export const getCubeJsonFieldsStatus = (sample: {
+  readonly rows: number;
+  readonly complete: boolean;
+}): string => {
+  const count = sample.rows.toLocaleString('en-US');
+  return sample.complete
+    ? `All ${count} values read, just before this step`
+    : `The first ${count} values read, just before this step`;
+};
+
 /** Says that Find arrays found none in the values read (PLAN §11.20) */
 export const EXPLODE_NO_ARRAYS_NOTICE =
   'No array in the values read: type the keys to one.';
@@ -420,6 +443,7 @@ export const EXTEND_EDITOR_NOTES = [
   'Write each expression as a lambda of one row, such as x | $x.PRICE * $x.QTY: $x.PRICE reads the column PRICE. A column can use the new columns above it.',
   'An optional column needs ->toOne() before arithmetic, such as $x.QTY->toOne() * 2; an empty value still gives an empty result. Every new column is optional.',
   "Validate (F10) checks the expressions with the engine, types them, and plans them for this cube's database: some functions type, but not every database runs them.",
+  'A JSON (Variant) column’s {} opens its fields, read from its first values just before this step: a field clicked is written into the expression last used, and + column adds it as a new column.',
 ];
 
 /** Why the Extend editor's Apply waits (PLAN §11.7) */
@@ -464,6 +488,7 @@ export const EXPRESSION_FILTER_EDITOR_NOTES = [
   'An optional column, compared directly ($x.A > 6), fails the condition when it is empty and passes its negation. After ->toOne(), an empty value fails both.',
   "Validate (F10) checks the condition with the engine and plans it for the cube's database.",
   "startsWith, endsWith and contains can't take a value with a backslash (\\) yet, nor, on DuckDB, one with % or _.",
+  'A JSON (Variant) column’s {} opens its fields, read from its first values just before this step: a field clicked is written into the condition.',
 ] as const;
 
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */

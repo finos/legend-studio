@@ -29,7 +29,10 @@ import { CUBE_JSON_EXPLODE_OFFER_TITLE } from '../../__lib__/LegendCubeLabels.js
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeJsonExplorerState } from '../../stores/variant/CubeJsonExplorerState.js';
-import type { CubeJsonField } from '../../stores/variant/CubeJsonOffers.js';
+import {
+  type CubeJsonField,
+  filterCubeJsonFields,
+} from '../../stores/variant/CubeJsonOffers.js';
 import { CubeButton } from '../CubeButton.js';
 import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
 
@@ -43,24 +46,6 @@ const nameOf = (
   explorer: CubeJsonExplorerState,
   field: CubeJsonField,
 ): string => field.path.at(-1) ?? explorer.column?.name ?? '';
-
-/** The fields whose path matches the search, with the fields they are in; all without a search */
-const filterFields = (
-  field: CubeJsonField,
-  search: string,
-): CubeJsonField | undefined => {
-  const needle = search.trim().toLowerCase();
-  if (!needle) {
-    return field;
-  }
-  const children = field.children
-    .map((child) => filterFields(child, search))
-    .filter((child): child is CubeJsonField => child !== undefined);
-  return children.length ||
-    field.path.some((key) => key.toLowerCase().includes(needle))
-    ? { ...field, children }
-    : undefined;
-};
 
 /** What was read, on one line: the first values or every row, and why it stopped */
 const CubeJsonExplorerStatus = observer(
@@ -237,7 +222,7 @@ export const CubeJsonExplorerDialog = observer(
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     const fields = explorer.fields
-      ? filterFields(explorer.fields, explorer.search)
+      ? filterCubeJsonFields(explorer.fields, explorer.search)
       : undefined;
     const count = explorer.tickedOffers.length;
     const add = (): void => {

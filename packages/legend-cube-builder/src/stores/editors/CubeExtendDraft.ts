@@ -51,6 +51,8 @@ import {
   type NodeId,
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { CubeJsonFieldsState } from '../variant/CubeJsonFieldsState.js';
+import { getFreeCubeColumnName } from '../variant/CubeJsonOffers.js';
 import {
   buildCubeExtendTypingLambdas,
   getCubeExtendUpstream,
@@ -110,6 +112,8 @@ const problemOf = (error: CubeEngineError): CubeExtendRowProblem => ({
  */
 export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   readonly editorState: CubeEditorState;
+  /** A Variant input column's fields, opened from its chip (PLAN §11.20, V.9) */
+  readonly jsonFields: CubeJsonFieldsState;
   rows: readonly CubeExtendRow[];
   /** The typing the last Validate gave, for the rows as they were then */
   typing: ExtendTyping | undefined;
@@ -131,6 +135,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       isValidated: computed,
       applyDisabledReason: computed,
       addRow: action,
+      addColumn: action,
       removeRow: action,
       moveRow: action,
       setName: action,
@@ -139,6 +144,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       follow: action,
     });
     this.editorState = editorState;
+    this.jsonFields = new CubeJsonFieldsState(editorState, original.id);
     const types = original.typing.kind === 'typed' ? original.typing.types : [];
     this.rows = original.columns.map(({ name, code, lambda }, index) => ({
       key: nextRowKey++,
@@ -212,6 +218,29 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
 
   addRow(): void {
     this.change([...this.rows, this.newRow()]);
+  }
+
+  /**
+   * Adds a row of this code, named as given or the next free name, compared
+   * as the input's and the other rows' names fold (a JSON field's "+ column",
+   * V.9); it replaces a new row still empty
+   */
+  addColumn(name: string, code: string): void {
+    const blank = this.rows.find(
+      (row) => row.code.trim() === NEW_EXPRESSION_CODE.trim() && !row.checked,
+    );
+    const others = this.rows.filter((row) => row !== blank);
+    this.change([
+      ...others,
+      {
+        key: nextRowKey++,
+        name: getFreeCubeColumnName(name, [
+          ...(this.inputSchema?.names() ?? []),
+          ...others.map((row) => row.name),
+        ]),
+        code,
+      },
+    ]);
   }
 
   removeRow(key: number): void {

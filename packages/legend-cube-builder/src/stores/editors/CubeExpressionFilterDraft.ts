@@ -50,6 +50,7 @@ import {
   type NodeId,
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { CubeJsonFieldsState } from '../variant/CubeJsonFieldsState.js';
 import {
   buildCubeConditionCheckLambdas,
   readCubeConditionCheck,
@@ -118,6 +119,8 @@ const asEngineError = (error: unknown): CubeEngineError =>
  */
 export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   readonly editorState: CubeEditorState;
+  /** A Variant input column's fields, opened from its chip (PLAN §11.20, V.9) */
+  readonly jsonFields: CubeJsonFieldsState;
   code: string;
   /** What the engine made of the code the last time it parsed it */
   checked: CubeConditionCheckedCode | undefined;
@@ -149,6 +152,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       follow: action,
     });
     this.editorState = editorState;
+    this.jsonFields = new CubeJsonFieldsState(editorState, original.id);
     const { code, lambda } = original;
     this.code = code || NEW_CONDITION_CODE;
     this.checked = lambda ? { code, lambda, located: lambda } : undefined;

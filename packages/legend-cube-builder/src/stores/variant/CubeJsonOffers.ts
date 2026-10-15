@@ -314,3 +314,46 @@ export const getFreeCubeColumnName = (
   }
   return `${name}_${index}`;
 };
+
+/** An offer's expression of the row, as an editor writes it: its text without `x | ` */
+export const getCubeJsonOfferExpression = (
+  offer: CubeJsonOffer,
+): string | undefined => offer.code?.replace(/^x \| /u, '');
+
+/**
+ * What clicking a field in an expression editor writes (PLAN §11.20, V.9):
+ * a value as its suggested type, anything else as JSON (the column itself
+ * for its root); and the column "+ column" would add, but for the root,
+ * which is the column already
+ */
+export const getCubeJsonFieldDefault = (
+  column: string,
+  field: CubeJsonField,
+): { expression: string; column?: { name: string; code: string } } => {
+  const offer = field.offers.find(
+    ({ key }) => key === 'value' || key === 'json',
+  );
+  const expression =
+    (offer && getCubeJsonOfferExpression(offer)) ?? pathOf(column, field.path);
+  return offer?.code && field.path.length
+    ? { expression, column: { name: offer.name, code: offer.code } }
+    : { expression };
+};
+
+/** The fields whose keys match a search, with the fields they are in; all without a search */
+export const filterCubeJsonFields = (
+  field: CubeJsonField,
+  search: string,
+): CubeJsonField | undefined => {
+  const needle = search.trim().toLowerCase();
+  if (!needle) {
+    return field;
+  }
+  const children = field.children
+    .map((child) => filterCubeJsonFields(child, search))
+    .filter((child): child is CubeJsonField => child !== undefined);
+  return children.length ||
+    field.path.some((key) => key.toLowerCase().includes(needle))
+    ? { ...field, children }
+    : undefined;
+};
