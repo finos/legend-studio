@@ -44,7 +44,7 @@ The question: which desk trades most, and how does each rank in its region?
    **Descending**; function **Rank** named **RANK_IN_REGION**. **Apply**, **F9**: Americas is Commodities 1, Rates 2,
    Equities Cash 3; Europe is Equity Derivatives 1, Credit 2; Asia is FX 1. _(`trades-desks-3-ranked`.)_
 5. **Add Items ▾ → Extend Columns**: name **NOTIONAL_MM**, expression `x | $x.TOTAL_NOTIONAL_USD / 1000000`,
-   **Validate** (_"Float, can be empty"_), **Apply**, **F9**: Commodities 31,102,024.71 → **31.10**.
+   **Validate** (_"Float, optional"_), **Apply**, **F9**: Commodities 31,102,024.71 → **31.10**.
    _(`trades-desks-4-extended`.)_
 6. **Add Items ▾ → Filter by Expression**: `x | $x.NOTIONAL_MM > 25`, **Validate**, **Apply**, **F9**: **4 desks**
    (Commodities, Equity Derivatives, FX, Rates), their ranks unchanged. _(`trades-desks-5-final`.)_

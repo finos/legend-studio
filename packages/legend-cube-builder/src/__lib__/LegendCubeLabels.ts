@@ -141,13 +141,13 @@ const TYPE_FAMILY_LABELS: Partial<Record<TypeFamily, string>> = {
 
 /**
  * A column's type as the editors show it: the kind of value, and whether it
- * can be empty, e.g. `Text, can be empty`; an enumeration, or a type Cube
- * doesn't know, by its name. The exact type (`getExactColumnTypeLabel`) is
- * on hover.
+ * is optional (can be empty), e.g. `Text, optional`; an enumeration, or a
+ * type Cube doesn't know, by its name. The exact type
+ * (`getExactColumnTypeLabel`) is on hover.
  */
 export const getColumnTypeLabel = (column: SchemaColumn): string =>
   `${TYPE_FAMILY_LABELS[column.type.family] ?? column.type.displayName}${
-    column.nullable ? ', can be empty' : ''
+    column.nullable ? ', optional' : ''
   }`;
 
 const listColumns = (columns: readonly SchemaColumn[]): string =>
@@ -364,7 +364,7 @@ export const PARTITION_EDITOR_NOTES = [
   "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",
   'NTile, Percent Rank and Cumulative Distribution need a sort column too. NTile splits each partition into buckets of near-equal size, numbered from 1 in the sort order; Percent Rank and Cumulative Distribution give each row its place in its partition, from 0 to 1.',
   "Lag and Lead read a column from the row so many rows before or after in the sort order, and are empty at the partition's edges. First and Last read it from the partition's first and last rows, the same on every row. They need a sort column, and rows tied on it may give any of them.",
-  "On ClickHouse, First and Last skip empty values, and Lag and Lead show a column's default, such as 0, at the partition's edges instead of empty, unless the column can be empty there.",
+  "On ClickHouse, First and Last skip empty values, and Lag and Lead show a column's default, such as 0, at the partition's edges instead of empty, unless the column is optional there.",
   "Their sort columns also make this node's other functions run. For totals over the whole partition, add another Apply Window Functions without sort columns.",
   'Empty sort values come last when ascending and first when descending on H2; other databases may differ.',
   "A Sort before this node doesn't order the window: its sort columns do. The rows keep the order they came in.",
@@ -391,7 +391,7 @@ export const DIFFERENCE_EDITOR_NOTES = [
 /** What the Extend editor says about its expressions (PLAN §11.7) */
 export const EXTEND_EDITOR_NOTES = [
   'Write each expression as a lambda of one row, such as x | $x.PRICE * $x.QTY: $x.PRICE reads the column PRICE. A column can use the new columns above it.',
-  'A column that can be empty needs ->toOne() before arithmetic, such as $x.QTY->toOne() * 2; an empty value still gives an empty result. Every new column can be empty.',
+  'An optional column needs ->toOne() before arithmetic, such as $x.QTY->toOne() * 2; an empty value still gives an empty result. Every new column is optional.',
   "Validate (F10) checks the expressions with the engine, types them, and plans them for this cube's database: some functions type, but not every database runs them.",
 ];
 
@@ -434,14 +434,14 @@ export const EXPRESSION_FILTER_PARENTHESES_HINT =
 export const EXPRESSION_FILTER_EDITOR_NOTES = [
   "A condition of one row, written as in Query's text mode: x | $x.SHIPPED_DATE > $x.REQUIRED_DATE. The rows for which it is true are kept, in their order.",
   'Put each comparison in parentheses when you combine them: ($x.A > 1) && ($x.B > 3). In Pure, &&, || and ! bind as tightly as >, <, >= and <=; == binds tighter.',
-  'A column that can be empty, compared directly ($x.A > 6), fails the condition when it is empty and passes its negation. After ->toOne(), an empty value fails both.',
+  'An optional column, compared directly ($x.A > 6), fails the condition when it is empty and passes its negation. After ->toOne(), an empty value fails both.',
   "Validate (F10) checks the condition with the engine and plans it for the cube's database.",
   "startsWith, endsWith and contains can't take a value with a backslash (\\) yet, nor, on DuckDB, one with % or _.",
 ] as const;
 
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
 export const EXTEND_TO_ONE_HINT =
-  'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.';
+  'An optional column needs ->toOne() first, such as $x.QTY->toOne() + 1.';
 
 /** The problem a database refusing an Extend's or a Filter by Expression's plan gives (PLAN §11.7, §11.11) */
 export const getExtendPlanProblem = (

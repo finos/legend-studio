@@ -542,7 +542,7 @@ describe('Join editor', () => {
         .getByLabelText(label)
         .parentElement?.querySelector('span') as HTMLElement;
     const text = typeLabel('Left join column 1');
-    expect(text.textContent).toBe('Text, can be empty');
+    expect(text.textContent).toBe('Text, optional');
     // the exact type, then its full path, on hover
     expect(text.title).toBe(
       'Varchar(5)? (meta::pure::precisePrimitives::Varchar(5))',

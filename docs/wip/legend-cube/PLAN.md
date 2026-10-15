@@ -4802,8 +4802,9 @@ new features; the whole list is the "UX backlog" in [ISSUES.md](ISSUES.md).
 - **Plain row-step names** (5): "Drop first rows", "Take first rows", "Take a range of rows", in place of the
   internal app's `<x>` placeholders (Appendix A, §7.0); editor titles keep `a`, `an` and `of` in lower case.
 - **Types by the kind of value** (6): the editors' column lists say Text, Whole number, Number, Decimal, Date, Date and
-  time, Time, True or false, and ", can be empty"; the exact type is on hover, and messages that compare types (Join,
-  Concat, a table that changed) keep it (`getColumnTypeLabel`, `getExactColumnTypeLabel`).
+  time, Time, True or false, and ", optional" (", can be empty" until 2026-10-15, user); the exact type is on hover, and
+  messages that compare types (Join, Concat, a table that changed) keep it (`getColumnTypeLabel`,
+  `getExactColumnTypeLabel`).
 - **Run this step** (10): the node menu's and editor's Select is "Run this step"; the step that runs carries a "▶
   Runs" badge on the canvas and in its editor. `selected` and the saved spec are unchanged (Appendix A, §17.9's
   tooltip).
