@@ -75,12 +75,14 @@ const TRANSFORMS = [
   'Compare Column Values',
   'Apply Window Functions',
   'Extend Columns',
+  'Explode Array',
 ];
 const TABLE = 'Relational Database Table';
 const FUNCTION = 'Function (BETA)';
 /** The transforms its database runs: the test cube is on H2, which can't pivot (PLAN §11.12) */
 const H2_TRANSFORMS = TRANSFORMS.filter(
-  (transform) => transform !== 'Pivot by Column',
+  (transform) =>
+    transform !== 'Pivot by Column' && transform !== 'Explode Array',
 );
 const PALETTE = [TABLE, FUNCTION, 'Data Product (BETA)', ...TRANSFORMS];
 const ITEMS = [

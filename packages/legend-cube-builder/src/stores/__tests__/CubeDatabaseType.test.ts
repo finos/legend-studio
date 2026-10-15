@@ -19,7 +19,10 @@ import {
   DEFAULT_PIVOT_AGGREGATION,
   MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
   Pivot,
+  PrimitiveType,
+  SchemaColumn,
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
@@ -729,6 +732,55 @@ describe('Cube databases: Pivot, and the lakehouse runtimes', () => {
         CUBE_INGEST_RUNTIME_PATH,
       ),
     ).toBe('Snowflake');
+  });
+
+  test('Allows Explode Array and Explore JSON on a data product cube, which runs on Snowflake, and refuses them on H2 (PLAN §11.20)', async () => {
+    const schema = new Schema([
+      ...FAKE_DAILY_ORDERS_SCHEMA.columns,
+      new SchemaColumn('PAYLOAD', PrimitiveType.get('Variant'), true),
+    ]);
+    const daily = new DataProductAccessPointSource(
+      'dataProductAccessPoint101',
+      {
+        dataProduct: 'sales::products::OrdersProduct',
+        accessPointGroup: 'core',
+        accessPoint: 'daily_orders',
+        dataProductId: 'ORDERS_PRODUCT',
+        deploymentId: '1234',
+      },
+      { kind: 'resolved', schema },
+    );
+    const { host } = TEST__createCubeHost({
+      result: {
+        columns: schema.columns.map(({ name }) => name),
+        rows: [],
+        sql: [],
+        durationMs: 1,
+      },
+    });
+    const state = new CubeEditorState(
+      host,
+      new CubeDocument({
+        context: {
+          model: createCubeDataProductModel({
+            groupId: 'com.example.sales',
+            artifactId: 'orders-products',
+            versionId: '1.4.0',
+            environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+          }),
+          runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+        },
+        query: new Query([daily], [], daily.id),
+      }),
+    );
+    await flowResult(state.execution.execute());
+    expect(state.getAddDatabaseProblem('explode', daily.id)).toBeUndefined();
+    expect(state.jsonExplorer.getDisabledReason()).toBeUndefined();
+    const h2 = setUp(ordersThen(), outlineOn('H2'));
+    await settle();
+    expect(h2.state.getAddDatabaseProblem('explode', 'relational101')).toBe(
+      MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2'),
+    );
   });
 
   test('Keeps one outline per model content: a cube imported on the same model loads it no more', async () => {

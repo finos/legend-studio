@@ -28,6 +28,7 @@ import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitDifference } from '../ir/emitters/DifferenceEmitter.js';
+import { emitExplode } from '../ir/emitters/ExplodeEmitter.js';
 import { emitExtend } from '../ir/emitters/ExtendEmitter.js';
 import { emitExpressionFilter } from '../ir/emitters/ExpressionFilterEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
@@ -49,6 +50,7 @@ import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { DIFFERENCE_CODEC } from '../spec/codecs/DifferenceCodec.js';
+import { EXPLODE_CODEC } from '../spec/codecs/ExplodeCodec.js';
 import { EXTEND_CODEC } from '../spec/codecs/ExtendCodec.js';
 import { EXPRESSION_FILTER_CODEC } from '../spec/codecs/ExpressionFilterCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
@@ -80,6 +82,7 @@ import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Group } from './transforms/Group.js';
 import { Difference } from './transforms/Difference.js';
+import { Explode } from './transforms/Explode.js';
 import { Extend } from './transforms/Extend.js';
 import { ExpressionFilter } from './transforms/ExpressionFilter.js';
 import { Join } from './transforms/Join.js';
@@ -391,6 +394,21 @@ export const EXTEND_DEFINITION: TransformDefinition<Extend> = {
   spec: EXTEND_CODEC,
 };
 
+/**
+ * Explode Array (PLAN §11.20): one row per element of a JSON array, beyond
+ * the spec, after Extend; refused on databases without the Variant functions
+ */
+export const EXPLODE_DEFINITION: TransformDefinition<Explode> = {
+  kind: 'transform',
+  type: Explode.TYPE,
+  label: 'Explode Array',
+  icon: 'explode',
+  beta: false,
+  create: (id) => new Explode(id),
+  emit: emitExplode,
+  spec: EXPLODE_CODEC,
+};
+
 /** Filter by Expression (PLAN §11.11): a condition of one row, beyond the spec, after Filter by Column */
 export const EXPRESSION_FILTER_DEFINITION: TransformDefinition<ExpressionFilter> =
   {
@@ -488,4 +506,5 @@ export const createNodeRegistry = (): NodeRegistry =>
     DIFFERENCE_DEFINITION,
     PARTITION_DEFINITION,
     EXTEND_DEFINITION,
+    EXPLODE_DEFINITION,
   ]);

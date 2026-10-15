@@ -30,6 +30,7 @@ import {
   DataProductAccessPointSource,
   Distinct,
   Drop,
+  Explode,
   Filter,
   FilterOperator,
   FunctionSource,
@@ -1610,6 +1611,34 @@ const CASES: readonly ConformanceCase[] = [
         ),
       ),
     ),
+  },
+  // Explode Array (PLAN §11.20): a document parsed from text, then one row
+  // per element of its array; the engine types the element [1], though an
+  // empty array or a missing document gives a row without one
+  {
+    name: 'explode-parsed-json',
+    tables: [ORDERS],
+    build: (sources) => {
+      const nodes = [source(sources, 'relational101')];
+      const parsed = TEST__typedExtend('extend101', TEST__chainOf(nodes), [
+        [
+          'doc',
+          TEST__expression.lambda(
+            TEST__expression.call(
+              'fromJson',
+              TEST__expression.string('{"items":[1,2]}'),
+            ),
+          ),
+          'Variant',
+        ],
+      ]);
+      return TEST__chainOf([
+        ...nodes,
+        parsed,
+        new Explode('explode101', 'doc', ['items'], 'item'),
+      ]);
+    },
+    widerNullable: { extend101: ['doc'], explode101: ['doc', 'item'] },
   },
   // Pivot (M6c, PLAN §11.12): Cube writes a cast with the columns it infers,
   // each value's emptiness included, so the engine types them as Cube does,

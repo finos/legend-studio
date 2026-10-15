@@ -23,9 +23,11 @@ import {
   MESSAGE_FILTER_VALUE_WILDCARD,
   MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
 } from '../messages/CubeMessages.js';
 import { Distinct } from '../nodes/transforms/Distinct.js';
 import { Drop } from '../nodes/transforms/Drop.js';
+import { Explode } from '../nodes/transforms/Explode.js';
 import { ExpressionFilter } from '../nodes/transforms/ExpressionFilter.js';
 import { Extend } from '../nodes/transforms/Extend.js';
 import { Filter } from '../nodes/transforms/Filter.js';
@@ -245,19 +247,52 @@ export const PIVOT_UNSUPPORTED_DATABASE_TYPES: ReadonlySet<string> = new Set([
   'Composite',
 ]);
 
-/** Whether a node of the type can run on the database type: a Pivot only where it isn't known to fail; any type when none is known */
+/**
+ * The database types whose engine dialect writes the Variant (JSON) functions,
+ * `get`, `to`, `toMany`, `fromJson` and `lateral` with `flatten`, to SQL
+ * (PLAN §11.20, from legend-engine's PCT manifests): H2 writes none of them,
+ * and the other dialects implement none or a few. A `Set`: the type comes
+ * from the model.
+ */
+export const VARIANT_DATABASE_TYPES: ReadonlySet<string> = new Set([
+  'Snowflake',
+  'Databricks',
+  'Postgres',
+  'DuckDB',
+]);
+
+/**
+ * Why JSON can't be read on the database type (PLAN §11.20): Explore JSON,
+ * Parse as JSON and Explode Array need the Variant functions.
+ * `undefined` where they run, or no type is known.
+ */
+export const getVariantDatabaseProblem = (
+  databaseType: string | undefined,
+): string | undefined =>
+  databaseType === undefined || VARIANT_DATABASE_TYPES.has(databaseType)
+    ? undefined
+    : MESSAGE_VARIANT_UNSUPPORTED_DATABASE(databaseType);
+
+/**
+ * Whether a node of the type can run on the database type: a Pivot only where
+ * it isn't known to fail, an Explode Array only where the Variant functions
+ * run (PLAN §11.20)
+ */
 const getTypeProblem = (
   type: string,
   databaseType: string,
 ): string | undefined =>
   type === Pivot.TYPE && PIVOT_UNSUPPORTED_DATABASE_TYPES.has(databaseType)
     ? MESSAGE_PIVOT_UNSUPPORTED_DATABASE(databaseType)
-    : undefined;
+    : type === Explode.TYPE
+      ? getVariantDatabaseProblem(databaseType)
+      : undefined;
 
 /**
  * Why a node of the type can't be added on the database type, before it
- * exists (PLAN §11.12): a Pivot on a database known not to run it.
- * `undefined` when it can, or no type is known.
+ * exists (PLAN §11.12): a Pivot on a database known not to run it, an Explode
+ * Array on one without the Variant functions (§11.20). `undefined` when it
+ * can, or no type is known.
  */
 export const getDatabaseProblemOfType = (
   type: string,
@@ -289,8 +324,8 @@ export const getEmitPatternProblem = (
 
 /**
  * A node's problems on a database type: a pattern that isn't a literal unless
- * on Snowflake, when no type is known too (PLAN §11.14); a Pivot where it
- * can't run (§11.12); `%` or `_` given to a pattern, on a database with no
+ * on Snowflake, when no type is known too (PLAN §11.14); a Pivot or an Explode
+ * Array where it can't run (§11.12, §11.20); `%` or `_` given to a pattern, on a database with no
  * default `LIKE` escape character (`hasNoLikeEscape`, §11.11), as `\` is
  * refused everywhere. None for another type.
  */
@@ -323,7 +358,7 @@ const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
 /**
  * Whether how a node runs depends on the database type: a Drop, a Slice, a
  * Limit or a Distinct, which some databases take another way (PLAN §11.4); a
- * Pivot, which some can't run (§11.12); a filter or an Extend that gives `%`
+ * Pivot or an Explode Array, which some can't run (§11.12, §11.20); a filter or an Extend that gives `%`
  * or `_` to a pattern (`givesPatternWildcard`, §11.11), or a pattern that
  * isn't a literal (`givesNonLiteralPattern`, §11.14). The one rule for when
  * Cube needs the database type.
@@ -331,6 +366,7 @@ const WORKAROUND_TYPES: ReadonlySet<string> = new Set([
 export const dependsOnDatabaseType = (node: QueryNode): boolean =>
   WORKAROUND_TYPES.has(node.type) ||
   node.type === Pivot.TYPE ||
+  node.type === Explode.TYPE ||
   givesPatternWildcard(node) ||
   givesNonLiteralPattern(node);
 

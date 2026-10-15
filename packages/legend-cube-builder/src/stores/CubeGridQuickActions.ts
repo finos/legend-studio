@@ -77,6 +77,28 @@ export enum CubeGridCellKind {
 }
 
 /**
+ * What keeps the grid's actions that add a node after the node that ran from
+ * being used, in order (the quick actions, Explore JSON and Parse as JSON,
+ * PLAN §11.20): rows from an earlier query, edits not applied yet, a run in
+ * flight, a cube that can't change; `undefined` when nothing does
+ */
+export const getCubeGridActionBlocker = (
+  editorState: CubeEditorState,
+): string | undefined => {
+  const { execution, document } = editorState;
+  return execution.result?.query !== document.query || execution.isStale
+    ? CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS
+    : // choosing would apply the edits first, leaving these rows stale
+      editorState.hasEditsToApply || editorState.nodeEditor.hasPendingInput()
+      ? CUBE_QUICK_ACTION_DISABLED_REASON.EDITING
+      : execution.isRunning
+        ? CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING
+        : editorState.readOnly
+          ? READ_ONLY_CUBE_TITLE
+          : undefined;
+};
+
+/**
  * The quick actions on a cell of the shown rows (spec §12.4, PLAN §11.4,
  * §11.5 and §11.10): "Sort by" adds an ascending Sort on the cell's column,
  * "Group by" a Group by it with Count rows, and "Filter by" an Equal on its
@@ -109,18 +131,7 @@ export const getCubeGridQuickActions = (
     cellKind === CubeGridCellKind.VALUE
       ? buildDrilldownKeyRule(column.name, column.type, cell)
       : undefined;
-  // what keeps both from being used, in order
-  const blocked =
-    result.query !== query || execution.isStale
-      ? CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS
-      : // choosing would apply the edits first, leaving these rows stale
-        editorState.hasEditsToApply || editorState.nodeEditor.hasPendingInput()
-        ? CUBE_QUICK_ACTION_DISABLED_REASON.EDITING
-        : execution.isRunning
-          ? CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING
-          : editorState.readOnly
-            ? READ_ONLY_CUBE_TITLE
-            : undefined;
+  const blocked = getCubeGridActionBlocker(editorState);
   const sortReason =
     blocked ??
     (isSortableType(column.type)

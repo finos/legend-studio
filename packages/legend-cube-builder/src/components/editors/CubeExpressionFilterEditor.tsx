@@ -33,7 +33,12 @@ import {
 } from '../../stores/editors/CubeExpressionFilterDraft.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
-import { columnAccessOf } from './CubeExtendEditor.js';
+import {
+  CubeJsonFieldsToggle,
+  CubeJsonFieldsTree,
+  isCubeJsonColumn,
+} from './CubeJsonFieldsTree.js';
+import { columnAccessOf } from '../../stores/CubePureText.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */
@@ -108,6 +113,11 @@ export const CubeExpressionFilterEditor = observer(
     const [schema] = inputSchemas as [Schema];
     const [expanded, setExpanded] = useState(false);
     const disabled = readOnly || draft.validating;
+    /** Writes text at the end of the condition, as the chips do */
+    const write = (text: string): void => {
+      const separator = /\s$/u.test(draft.code) ? '' : ' ';
+      draft.setCode(`${draft.code}${separator}${text}`);
+    };
     return (
       <div className="flex flex-col gap-2 text-base">
         <div className="flex items-center gap-1">
@@ -164,24 +174,31 @@ export const CubeExpressionFilterEditor = observer(
         <span>Input columns</span>
         <ul aria-label="Input columns" className="flex flex-wrap gap-1">
           {schema.columns.map((column) => (
-            <li key={column.name}>
+            <li key={column.name} className="flex items-stretch gap-0.5">
               <button
                 className="flex items-center gap-1 rounded-sm border border-[var(--color-border-subtle)] px-1 text-sm hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
                 title={`Write ${columnAccessOf(column.name)} at the end of the condition (${getExactColumnTypeLabel(column)})`}
                 disabled={disabled}
-                onClick={() => {
-                  const separator = /\s$/u.test(draft.code) ? '' : ' ';
-                  draft.setCode(
-                    `${draft.code}${separator}${columnAccessOf(column.name)}`,
-                  );
-                }}
+                onClick={() => write(columnAccessOf(column.name))}
               >
                 <CubeColumnTypeIcon type={column.type} />
                 {column.name}
               </button>
+              {isCubeJsonColumn(column) && (
+                <CubeJsonFieldsToggle
+                  fields={draft.jsonFields}
+                  column={column}
+                  disabled={readOnly}
+                />
+              )}
             </li>
           ))}
         </ul>
+        <CubeJsonFieldsTree
+          fields={draft.jsonFields}
+          disabled={disabled}
+          onInsert={write}
+        />
         <ul className="flex list-disc flex-col gap-1 pl-4 text-sm text-[var(--color-text-secondary)]">
           {EXPRESSION_FILTER_EDITOR_NOTES.map((note) => (
             <li key={note}>{note}</li>

@@ -123,6 +123,8 @@ import { getCubeExtendUpstream } from './CubeExtendTyping.js';
 import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
+import { CubeJsonViewerState } from './variant/CubeJsonViewerState.js';
+import { CubeJsonExplorerState } from './variant/CubeJsonExplorerState.js';
 import { CubeLambdaImportState } from './CubeLambdaImportState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
@@ -199,6 +201,10 @@ export class CubeEditorState implements CommandRegistrar {
   readonly specTransfer: CubeSpecTransferState;
   readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
+  /** Open JSON: a Variant cell's document as a tree (PLAN §11.20) */
+  readonly jsonViewer = new CubeJsonViewerState();
+  /** Explore JSON: a Variant column's fields, and the columns they can become (PLAN §11.20) */
+  readonly jsonExplorer: CubeJsonExplorerState;
   /** Import Pure: the lambda the page opened on, read into the cube (PLAN §11.18) */
   readonly lambdaImport: CubeLambdaImportState;
   readonly nodeEditor: CubeNodeEditorState;
@@ -316,6 +322,7 @@ export class CubeEditorState implements CommandRegistrar {
       connect: action,
       addNode: action,
       addConfiguredNode: action,
+      addConfiguredNodes: action,
       dropNode: action,
       removeNode: action,
       copiedNode: observable.ref,
@@ -368,6 +375,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.specTransfer = new CubeSpecTransferState(this);
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
+    this.jsonExplorer = new CubeJsonExplorerState(this);
     this.lambdaImport = new CubeLambdaImportState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
     this.rechecking = reaction(
@@ -1505,11 +1513,29 @@ export class CubeEditorState implements CommandRegistrar {
    * read-only cube, or when the query can't take it.
    */
   addConfiguredNode(node: QueryNode, afterId?: string): void {
-    const { query } = this.document;
-    if (this.readOnly || !query.canAdd(node, afterId)) {
+    this.addConfiguredNodes([node], afterId);
+  }
+
+  /**
+   * Adds nodes made elsewhere one after another, the first spliced in after
+   * `afterId`, as one undo step, the last then running when that one did
+   * (Explore JSON's Extend then Explode Array). Does nothing in a read-only
+   * cube, or when the query can't take one of them.
+   */
+  addConfiguredNodes(nodes: readonly QueryNode[], afterId?: string): void {
+    if (this.readOnly || !nodes.length) {
       return;
     }
-    this.applyQuery(query.add(node, afterId));
+    let query = this.document.query;
+    let after = afterId;
+    for (const node of nodes) {
+      if (!query.canAdd(node, after)) {
+        return;
+      }
+      query = query.add(node, after);
+      after = node.id;
+    }
+    this.applyQuery(query);
   }
 
   /** Whether dropping a node on another does anything: connect it, or else move it after it */

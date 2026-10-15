@@ -11,9 +11,10 @@ node whose settings are rows, Concat (`Concat.ts`) for a plain two-input node wi
 output types, Partition (`Partition.ts`) for a window, which a run must isolate from what follows it, Difference
 (`Difference.ts`) for a node built from another's parts (Join's key checks and join relation), Extend
 (`Extend.ts`) for a node whose output types only the engine knows, Filter by Expression (`ExpressionFilter.ts`)
-for one whose setting only the engine can check, and Pivot (`Pivot.ts`) for one that some databases can't run, and
+for one whose setting only the engine can check, Pivot (`Pivot.ts`) for one that some databases can't run, and
 whose engine function types as `Relation<Any>`, so its emitter writes a `cast` (a `relationType` IR) naming each column
-as its schema types it.
+as its schema types it, and Explode Array (`Explode.ts`) for one that only some databases run (an allow-list) and that
+reads a Variant (JSON) column, emitted as `lateral` with a lambda (PLAN §11.20).
 
 ## 1. The node
 
@@ -147,7 +148,8 @@ gets a flag in `CUBE_DIALECT_WORKAROUNDS` (`src/ir/CubeDialects.ts`, a `Map`: th
 `getDialectWorkarounds(context.databaseType)` in its emitter, as Drop, Slice, Limit and Distinct do; add its type to
 `needsDatabaseType` too, so the builder loads the model's connections before such a run. Without a type, or for an
 unknown one, write the native form. A node a database can't run, or would run with wrong rows, is refused instead:
-a Pivot on a type in `PIVOT_UNSUPPORTED_DATABASE_TYPES` (PLAN §11.12), a filter or an Extend that gives `%` or `_` to
+a Pivot on a type in `PIVOT_UNSUPPORTED_DATABASE_TYPES` (PLAN §11.12), an Explode Array on a type outside
+`VARIANT_DATABASE_TYPES`, the four whose dialects write the Variant functions (§11.20), a filter or an Extend that gives `%` or `_` to
 a pattern on DuckDB (`hasNoLikeEscape`, PLAN §8.2), or a pattern that isn't a literal unless on Snowflake, where none is
 known too (`getNonLiteralPatternProblem`, PLAN §11.14). `getEmitPatternProblem` is the pattern rules' backstop for
 an emitter; typing passes no type, so it writes them. `getDatabaseProblems` gives the node's message, which the builder adds to its
@@ -193,13 +195,22 @@ included: a missing key is a `CubeSpecDecodeError`, and a value that isn't a boo
 After an import types the sources again, only Filter's invalid values are read again (`rereadQueryFilterValues` in
 `src/filter/QueryFilterValues.ts`). An operation that holds values typed by a column needs its own case there.
 
-## 5. Its definition
+## 5. Import Pure
+
+Import Pure (PLAN §11.18) reads a lambda back into steps (`src/ir/reader/QueryReader.ts`). A node whose emitter
+writes a relation function of its own gets that function in `RELATION_INPUTS`, with its number of relation inputs,
+and a case in `readRelation` that reads its settings into the node and hands it to `choose`, which keeps it only if
+the emitter writes it back the same. Refuse any other form of the function with a `CUBE_QUERY_READER_MESSAGE` that
+says what Cube reads, as Explode Array's `lateral` does. The builder's `CubeQueryReader.test.ts` lists the steps it
+reads (`READ_STEPS`).
+
+## 6. Its definition
 
 A `TransformDefinition` in `src/nodes/NodeRegistry.ts`: `kind: 'transform'`, `type`, `label` (the palette's text),
 `icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`,
 and `isolationBoundary` for a window (see 3). Add it to `createNodeRegistry()` in menu order (Sort, Group, Pivot,
 Filter, Filter by Expression, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, Extend;
-spec §7.0, with Cube's own beside the spec's), and export
+spec §7.0, with Cube's own beside the spec's; Explode Array after Extend), and export
 the new modules from `src/index.ts`.
 
 ## Tests

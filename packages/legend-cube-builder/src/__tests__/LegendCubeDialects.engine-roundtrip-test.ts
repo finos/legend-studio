@@ -34,8 +34,10 @@ import {
   Join,
   JoinType,
   Limit,
+  Explode,
   Partition,
   MESSAGE_PATTERN_NOT_LITERAL,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
   Pivot,
   printIR,
   Query,
@@ -47,6 +49,7 @@ import {
   Slice,
   Sort,
   SortDirection,
+  VARIANT_DATABASE_TYPES,
   WindowRankFunction,
   WindowRowFunction,
 } from '@finos/legend-cube';
@@ -1707,6 +1710,77 @@ describe('Pivot, as each database plans it', () => {
       planSql(pivotThen(), databaseType, { native: true }),
     ).rejects.toThrow();
   });
+});
+
+// Explode Array (PLAN §11.20): a document parsed from text, then one row per
+// element of its array, planned on the four types with the Variant functions
+describe('Explode Array, as each database plans it', () => {
+  const explodeThen = (): Query => {
+    const parsed = TEST__typedExtend('extend101', ordersThen(), [
+      [
+        'doc',
+        TEST__expression.lambda(
+          TEST__expression.call(
+            'fromJson',
+            TEST__expression.string('{"items":[1,2]}'),
+          ),
+        ),
+        'Variant',
+      ],
+    ]);
+    return ordersThen(
+      parsed,
+      new Explode('explode101', 'doc', ['items'], 'item'),
+    );
+  };
+
+  test.each<[string, RegExp]>([
+    // flatten with outer => true keeps a row whose array is empty
+    ['Snowflake', /inner join lateral flatten\(.*outer => true/u],
+    // explode_outer gives a row with no element for an empty array
+    ['Databricks', /inner join lateral \(select .*explode_outer\(/u],
+    ['Postgres', /left join lateral \(.*jsonb_array_elements\(.* on true\b/u],
+    // an empty list is read as [null]
+    ['DuckDB', /inner join lateral \(select unnest\(if\(len\(.*\[null\]\)/u],
+  ])(
+    'Joins the elements laterally, keeping a row whose array is empty, on %s',
+    async (databaseType, form) => {
+      const sql = await planSql(explodeThen(), databaseType);
+      expect(sql).toMatch(form);
+      expect(sql).toMatch(/ as ["`]item["`]/u);
+    },
+  );
+
+  test.each([...VARIANT_DATABASE_TYPES])(
+    'Plans the element alone and not empty, as Explore JSON reads it, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        ordersThen(
+          ...explodeThen().nodes.slice(1),
+          new Restrict('restrict101', ['item']),
+          new Filter(
+            'filter101',
+            new ColumnComparisonFilter('item', FilterOperator.IS_NOT_EMPTY),
+          ),
+        ),
+        databaseType,
+      );
+      expect(sql).toMatch(/\blateral\b/u);
+      // the element's emptiness tested after the lateral: `where not … is null`
+      expect(sql).toMatch(/\bwhere not .*\bis null\b|\bis not null\b/u);
+    },
+  );
+
+  test.each(
+    PLANNED_DATABASE_TYPES.filter((type) => !VARIANT_DATABASE_TYPES.has(type)),
+  )(
+    'Is refused by Cube on %s, before the engine plans it',
+    async (databaseType) => {
+      await expect(planSql(explodeThen(), databaseType)).rejects.toThrow(
+        MESSAGE_VARIANT_UNSUPPORTED_DATABASE(databaseType),
+      );
+    },
+  );
 });
 
 describe('Difference, as each database plans it', () => {

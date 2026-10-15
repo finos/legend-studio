@@ -29,6 +29,7 @@ import {
   Schema,
   serializeCubeSpec,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
 } from '@finos/legend-cube';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -910,6 +911,7 @@ describe("The header's Add Items", () => {
     'Compare Column Values',
     'Apply Window Functions',
     'Extend Columns',
+    'Explode Array',
   ];
 
   const slice = (): CubeDocument =>
@@ -949,7 +951,10 @@ describe("The header's Add Items", () => {
     expect(enabled.map((item) => item.textContent)).toEqual([
       TABLE,
       'Function (BETA)',
-      ...TRANSFORMS.filter((transform) => transform !== 'Pivot by Column'),
+      ...TRANSFORMS.filter(
+        (transform) =>
+          transform !== 'Pivot by Column' && transform !== 'Explode Array',
+      ),
     ]);
     expect(
       items.find((item) => item.textContent === 'Data Product (BETA)')?.title,
@@ -958,6 +963,10 @@ describe("The header's Add Items", () => {
     expect(
       items.find((item) => item.textContent === 'Pivot by Column')?.title,
     ).toBe(MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2'));
+    // nor read JSON (PLAN §11.20)
+    expect(
+      items.find((item) => item.textContent === 'Explode Array')?.title,
+    ).toBe(MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2'));
     expect(enabled.every((item) => item.title === '')).toBe(true);
     await TEST__closeAddItems();
     // in place of 'Add table'

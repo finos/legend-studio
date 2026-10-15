@@ -19,6 +19,7 @@ import {
   Difference,
   Distinct,
   Drop,
+  Explode,
   ExpressionFilter,
   Pivot,
   Extend,
@@ -38,6 +39,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeConcatDraft } from './CubeConcatDraft.js';
 import { CubeDifferenceDraft } from './CubeDifferenceDraft.js';
+import { CubeExplodeDraft } from './CubeExplodeDraft.js';
 import { CubeExpressionFilterDraft } from './CubeExpressionFilterDraft.js';
 import { CubePivotDraft } from './CubePivotDraft.js';
 import { CubeExtendDraft } from './CubeExtendDraft.js';
@@ -112,6 +114,11 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
     Pivot.TYPE,
     (node, editorState) =>
       new CubePivotDraft(guaranteeType(node, Pivot), editorState),
+  ],
+  [
+    Explode.TYPE,
+    (node, editorState) =>
+      new CubeExplodeDraft(guaranteeType(node, Explode), editorState),
   ],
 ]);
 

@@ -23,6 +23,7 @@ import {
   Drop,
   ExpressionFilter,
   Pivot,
+  Explode,
   Extend,
   Filter,
   FunctionSource,
@@ -42,6 +43,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeConcatEditor } from './CubeConcatEditor.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
+import { CubeExplodeEditor } from './CubeExplodeEditor.js';
 import { CubeExpressionFilterEditor } from './CubeExpressionFilterEditor.js';
 import { CubePivotEditor } from './CubePivotEditor.js';
 import { CubeDifferenceEditor } from './CubeDifferenceEditor.js';
@@ -100,6 +102,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Filter.TYPE, CubeFilterEditor],
   [ExpressionFilter.TYPE, CubeExpressionFilterEditor],
   [Pivot.TYPE, CubePivotEditor],
+  [Explode.TYPE, CubeExplodeEditor],
   [Restrict.TYPE, CubeRestrictEditor],
   [Rename.TYPE, CubeRenameEditor],
   [Distinct.TYPE, CubeDistinctEditor],

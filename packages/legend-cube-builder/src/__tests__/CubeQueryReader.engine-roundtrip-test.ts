@@ -19,11 +19,9 @@ import {
   CubeDocument,
   isSameCubeIR,
   lambda,
-  Query,
+  type Query,
   QueryEmitter,
   readCubeQuery,
-  RelationalTableSource,
-  Schema,
   splitCubeLambda,
   type IR,
 } from '@finos/legend-cube';
@@ -32,6 +30,10 @@ import {
   CUBE_ENGINE_TEST__grammarToJson_lambda,
   CUBE_ENGINE_TEST__jsonToGrammar_lambda,
 } from '../__test-utils__/CubeEngineTestSupport.js';
+import {
+  TEST__openExampleOnEngine,
+  TEST__typeExtendsOnEngine,
+} from '../__test-utils__/CubeExampleTestUtils.js';
 import {
   TEST__bindSampleSources,
   TEST__checkedAsTheEngineWould,
@@ -66,6 +68,7 @@ const expectReadBack = async (
   document: CubeDocument,
   written: IR,
   isRun: boolean,
+  typeExtends: (query: Query) => Promise<Query> = async (query) => query,
 ): Promise<void> => {
   const parts = splitCubeLambda(
     readCubeLambdaJson(await throughGrammar(written)),
@@ -75,7 +78,9 @@ const expectReadBack = async (
     expressions: CUBE_EXPRESSION_CODEC,
   });
   expect(rewritten).toEqual([]);
-  const emitter = new QueryEmitter(TEST__checkedAsTheEngineWould(query));
+  const emitter = new QueryEmitter(
+    await typeExtends(TEST__checkedAsTheEngineWould(query)),
+  );
   const selected = query.selected as string;
   const again = isRun
     ? emitter.emitExecutionLambda({ runtime: parts.runtime as string })
@@ -102,54 +107,33 @@ describe('Reading the examples back', () => {
     'Reads every node of example %s through the grammar into steps Cube writes the same way',
     async (_id, example) => {
       const { engine } = V1_createEngineBackedCubeEngine();
-      const opened = example.createDocument();
-      const { context } = opened;
-      if (!context?.runtime) {
-        throw new Error(`Example ${example.id} has no runtime`);
-      }
-      // its tables typed by the engine, as opening it does
-      const sources = opened.query.nodes.filter(
-        (node): node is RelationalTableSource =>
-          node instanceof RelationalTableSource,
+      // typed as opening it types it: its tables, then its Extends
+      const { model, runtime, query } = await TEST__openExampleOnEngine(
+        engine,
+        example,
       );
-      const typed = await engine.resolveSchemas(
-        context.model,
-        new Map(
-          sources.map((source) => [
-            source.id,
-            [source.database, source.schema, source.table] as const,
-          ]),
-        ),
-      );
-      const query = new Query(
-        opened.query.nodes.map((node) =>
-          node instanceof RelationalTableSource &&
-          typed.get(node.id) instanceof Schema
-            ? node.withResolution({
-                kind: 'resolved',
-                schema: typed.get(node.id) as Schema,
-              })
-            : node,
-        ),
-        opened.query.connections,
-        opened.query.selected,
-      );
+      const context = { model, runtime };
       const document = new CubeDocument({ context, query });
       const emitter = new QueryEmitter(query);
       const nodes = query.nodes.filter((node) => emitter.canEmit(node.id));
       expect(nodes.length).toBe(query.nodes.length);
+      // an Extend read back is typed as the editor types one on import
+      const typeExtends = async (read: Query): Promise<Query> =>
+        TEST__typeExtendsOnEngine(engine, model, read);
       for (const node of nodes) {
         await expectReadBack(
           document,
           lambda([], [emitter.emitRelation(node.id, { withRowOrder: true })]),
           false,
+          typeExtends,
         );
         await expectReadBack(
           document,
           new QueryEmitter(
             query.selected === node.id ? query : query.select(node.id),
-          ).emitExecutionLambda({ runtime: context.runtime }),
+          ).emitExecutionLambda({ runtime }),
           true,
+          typeExtends,
         );
       }
     },

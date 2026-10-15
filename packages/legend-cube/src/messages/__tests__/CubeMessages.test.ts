@@ -209,6 +209,12 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_PIVOT_UNSUPPORTED_DATABASE('H2')).toBe(
     'Pivot is not supported on H2.',
   );
+  expect(MESSAGES.MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2')).toBe(
+    'JSON is not supported on H2: Variant functions run on Snowflake, Databricks, Postgres and DuckDB.',
+  );
+  expect(MESSAGES.MESSAGE_EXPLODE_COLUMN_NOT_VARIANT('NOTE', 'String')).toBe(
+    'Explode column "NOTE" of type String is not a Variant (JSON) column.',
+  );
   expect(MESSAGES.MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN('YEAR')).toBe(
     'Aggregation column "YEAR" cannot be a row column or the pivot column.',
   );

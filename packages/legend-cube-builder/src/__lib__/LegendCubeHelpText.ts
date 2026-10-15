@@ -22,6 +22,7 @@ import {
   Distinct,
   Drop,
   ExpressionFilter,
+  Explode,
   Extend,
   Filter,
   FunctionSource,
@@ -67,6 +68,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
   [Extend.TYPE]:
     'Extends outgoing data set with new columns produced by expressions.',
+  /** Added by Cube: the original has no JSON operations (PLAN §11.20) */
+  [Explode.TYPE]:
+    'Makes a row for each element of an array in a JSON (Variant) column of the previous data set, keeping its columns and adding the element as a new column. A row whose array is empty, or missing, is kept once, with an empty element.',
   [Filter.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
   /** Added by Cube: the original has no filter by expression (PLAN §11.11) */

@@ -19,11 +19,12 @@ import {
   AggregationFunction,
   type CheckedDrilldown,
   type ColumnFormat,
+  type CubeType,
   DEFAULT_PRESENTATION,
   foldColumnName,
   getColumnFormat,
   type Presentation,
-  type TypeFamily,
+  TypeFamily,
 } from '@finos/legend-cube';
 import {
   DataGrid,
@@ -34,17 +35,26 @@ import {
   type DataGridGetContextMenuItemsParams,
   type DataGridIAggFuncParams,
   type DataGridMenuItemDef,
+  type DataGridOptions,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { memo, useCallback, useMemo } from 'react';
 import {
   CUBE_FORMAT_NOT_A_NUMBER,
+  CUBE_JSON_DISABLED_REASON,
   NULL_CELL_TEXT,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
-import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
+import {
+  CubeEngineError,
+  type CubeResultValue,
+} from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import {
+  addCubeJsonParseColumn,
+  isCubeJsonDocumentText,
+} from '../../stores/variant/CubeJsonParse.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { getCubeExportFileName } from '../../stores/CubeExportState.js';
 import {
@@ -171,6 +181,126 @@ const CUBE_GRID_MENU_ITEMS: readonly DataGridDefaultMenuItem[] = [
 ];
 
 /**
+ * Explore JSON… on a Variant column (PLAN §11.20), in its cells' menu and its
+ * header's: the column's fields, and the columns they can become
+ */
+export const getCubeExploreJsonItem = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  columnName: string,
+): DataGridMenuItemDef<Row> => {
+  const column = editorState.execution.result?.schema.columns.find(
+    ({ name }) => name === columnName,
+  );
+  const reason = editorState.jsonExplorer.getDisabledReason();
+  return {
+    name: 'Explore JSON…',
+    disabled: reason !== undefined || !column,
+    ...(reason === undefined ? {} : { tooltip: reason }),
+    action: () => {
+      if (column && reason === undefined) {
+        flowResult(editorState.jsonExplorer.open(column)).catch(
+          editorState.host.applicationStore.alertUnhandledError,
+        );
+      }
+    },
+  };
+};
+
+/**
+ * A JSON cell's items (PLAN §11.20): on a Variant cell, Open JSON shows a run
+ * row's document as a tree (a group row's cell, or an empty one, has none to
+ * show), and Explore JSON…; on a text cell holding a JSON object or array,
+ * Parse as JSON
+ */
+const getCubeVariantMenuItems = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  column: { readonly name: string; readonly type: CubeType },
+  cell: CubeResultValue,
+  kind: CubeGridCellKind,
+): DataGridMenuItemDef<Row>[] => {
+  // a text cell holding a JSON object or array: Parse as JSON
+  if (
+    column.type.family === TypeFamily.STRING &&
+    kind === CubeGridCellKind.VALUE &&
+    typeof cell === 'string' &&
+    isCubeJsonDocumentText(cell)
+  ) {
+    const reason = editorState.jsonExplorer.getDisabledReason();
+    const { applicationStore } = editorState.host;
+    return [
+      {
+        name: 'Parse as JSON',
+        disabled: reason !== undefined,
+        ...(reason === undefined ? {} : { tooltip: reason }),
+        action: () => {
+          if (reason === undefined) {
+            addCubeJsonParseColumn(editorState, column.name).catch(
+              (error: unknown) =>
+                applicationStore.notificationService.notifyError(
+                  error instanceof CubeEngineError
+                    ? error.firstLine
+                    : String(error),
+                ),
+            );
+          }
+        },
+      },
+    ];
+  }
+  if (column.type.family !== TypeFamily.VARIANT) {
+    return [];
+  }
+  const reason =
+    kind !== CubeGridCellKind.VALUE
+      ? CUBE_JSON_DISABLED_REASON.NOT_A_ROW
+      : typeof cell !== 'string'
+        ? CUBE_JSON_DISABLED_REASON.EMPTY
+        : undefined;
+  return [
+    {
+      name: 'Open JSON',
+      disabled: reason !== undefined,
+      ...(reason === undefined ? {} : { tooltip: reason }),
+      action: () => {
+        if (typeof cell === 'string') {
+          editorState.jsonViewer.open(column.name, cell);
+        }
+      },
+    },
+    getCubeExploreJsonItem<Row>(editorState, column.name),
+  ];
+};
+
+/** What ag-grid gives a column header's menu */
+export type CubeGridHeaderMenuParams<Row extends CubeAnyRow> = Parameters<
+  NonNullable<DataGridOptions<Row>['getMainMenuItems']>
+>[0];
+
+/**
+ * A column header's menu: ag-grid's own items, after Explore JSON… on a
+ * Variant column (PLAN §11.20)
+ */
+export const getCubeGridHeaderMenuItems = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  params: CubeGridHeaderMenuParams<Row>,
+): (DataGridDefaultMenuItem | DataGridMenuItemDef<Row>)[] => {
+  const defaults = params.defaultItems;
+  const colId = params.column?.getColId();
+  const column = colId?.startsWith(COLUMN_ID_PREFIX)
+    ? editorState.execution.result?.schema.columns[
+        Number(colId.slice(COLUMN_ID_PREFIX.length))
+      ]
+    : undefined;
+  return column?.type.family === TypeFamily.VARIANT
+    ? [
+        getCubeExploreJsonItem<Row>(editorState, column.name),
+        'separator',
+        ...defaults,
+      ]
+    : defaults;
+};
+
+/**
  * The grid's context menu (spec §12.4, PLAN §11.10), curated: on a cell,
  * 'Drilldown by' its column and the quick actions, then a separator; then,
  * anywhere, sizing and resetting the columns, copying, and Cube's Export. Not
@@ -224,6 +354,7 @@ export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
         action: () => quickAction.apply(),
       };
     }),
+    ...getCubeVariantMenuItems<Row>(editorState, column, cell, kind),
     'separator',
     {
       name: 'Format Column…',
@@ -497,6 +628,11 @@ export const CubeResultGrid = memo(
         getCubeGridContextMenuItems(editorState, params),
       [editorState],
     );
+    const getMainMenuItems = useCallback(
+      (params: CubeGridHeaderMenuParams<CubeRow>) =>
+        getCubeGridHeaderMenuItems(editorState, params),
+      [editorState],
+    );
     const columnDefs = useMemo(
       () =>
         buildCubeColumnDefs<CubeRow>(
@@ -536,6 +672,7 @@ export const CubeResultGrid = memo(
           suppressFieldDotNotation={true}
           tooltipShowDelay={500}
           getContextMenuItems={getContextMenuItems}
+          getMainMenuItems={getMainMenuItems}
           // local mode (spec §12.1): ag-grid's own grouping, pivot and
           // filters on the run's rows, with their panels and totals
           defaultColDef={LOCAL_COLUMN_DEFAULTS}

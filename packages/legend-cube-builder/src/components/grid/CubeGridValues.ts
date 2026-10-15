@@ -23,6 +23,7 @@ import {
   TypeFamily,
 } from '@finos/legend-cube';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
+import { formatCubeJsonLine } from '../../stores/variant/CubeJson.js';
 
 // How the grid shows and sorts values (PLAN §9, Settled before M1.8).
 // Integer and Decimal values arrive as their exact text and are never turned
@@ -153,9 +154,11 @@ export const groupThousands = (text: string): string => {
  * How the grid shows a value of a column of the family (PLAN §9, user,
  * 2026-10-10): Decimal and Number values keep every digit,
  * their thousands grouped; Float values are rounded to
- * `CUBE_GRID_FLOAT_DECIMAL_PLACES` places, grouped too; Integer values, and
- * everything else, show as they are, so ids and years get no commas. The
- * value itself is unchanged, so copying a cell copies its exact value.
+ * `CUBE_GRID_FLOAT_DECIMAL_PLACES` places, grouped too; a Variant's JSON on
+ * one line, `{name: ann, tier: gold}` (`formatCubeJsonLine`, PLAN §11.20);
+ * Integer values, and everything else, show as they are, so ids and years get
+ * no commas. The value itself is unchanged, so copying a cell copies its
+ * exact value.
  */
 export const formatCellValue = (
   value: Exclude<CubeResultValue, null>,
@@ -181,6 +184,8 @@ export const formatCellValue = (
         Number(rounded) === 0 ? rounded.replace(/^-/u, '') : rounded,
       );
     }
+    case TypeFamily.VARIANT:
+      return formatCubeJsonLine(text);
     default:
       return text;
   }

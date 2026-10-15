@@ -174,6 +174,18 @@ describe('Cube grid values', () => {
     );
   });
 
+  test("Shows a Variant's JSON on one line, and text that isn't JSON as it is (PLAN §11.20)", () => {
+    expect(
+      formatCellValue(
+        '{"name":"ann","tags":["a","b"],"n":1.0}',
+        TypeFamily.VARIANT,
+      ),
+    ).toBe('{name: ann, tags: [a, b], n: 1.0}');
+    expect(formatCellValue('not json', TypeFamily.VARIANT)).toBe('not json');
+    // a String column's JSON text is shown as it is
+    expect(formatCellValue('{"a":1}', TypeFamily.STRING)).toBe('{"a":1}');
+  });
+
   test('Shows a negative in parentheses when asked, and says it is negative for red', () => {
     expect(
       formatColumnValue(

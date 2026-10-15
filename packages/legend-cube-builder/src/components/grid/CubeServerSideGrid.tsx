@@ -37,7 +37,9 @@ import { formatCellValue } from './CubeGridValues.js';
 import {
   buildCubeColumnDefs,
   CUBE_EXCEL_STYLES,
+  type CubeGridHeaderMenuParams,
   getCubeGridContextMenuItems,
+  getCubeGridHeaderMenuItems,
   keepCubeColumnWidths,
 } from './CubeResultGrid.js';
 
@@ -102,6 +104,11 @@ export const CubeServerSideGrid = memo(
         getCubeGridContextMenuItems(editorState, params),
       [editorState],
     );
+    const getMainMenuItems = useCallback(
+      (params: CubeGridHeaderMenuParams<CubeGridRowData>) =>
+        getCubeGridHeaderMenuItems(editorState, params),
+      [editorState],
+    );
     const columnDefs = useMemo(
       (): DataGridColumnDefinition<CubeGridRowData>[] =>
         buildCubeColumnDefs<CubeGridRowData>(
@@ -163,6 +170,7 @@ export const CubeServerSideGrid = memo(
           suppressFieldDotNotation={true}
           tooltipShowDelay={500}
           getContextMenuItems={getContextMenuItems}
+          getMainMenuItems={getMainMenuItems}
           serverSideSortAllLevels={true}
           excelStyles={CUBE_EXCEL_STYLES}
           onColumnResized={(event) =>

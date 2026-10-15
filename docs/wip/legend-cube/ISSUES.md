@@ -395,6 +395,85 @@ processIdentifierWithQuoteChar (extensionDefaults.pure) wraps an identifier in t
 pivot's value) gives `q`t`, which ends the identifier early. The quote character inside should be doubled.
 ```
 
+### Schema exploration returns JSON and VARIANT columns as `Other` or text
+
+Found in the Variant analysis (PLAN §11.20), run on the local engine 🧪 (`variant/probe-cube-path.out.txt` in the
+evidence folder). `SchemaExportation.java` maps only the standard JDBC types, so a DuckDB `JSON` column is explored as
+`Other`, which Cube leaves out of a direct connection's table: the column isn't there at all. 💭 A Snowflake `VARIANT`
+and a Postgres `jsonb` likely come back as `Other` or a string too. Cube offers Parse as JSON on a String column
+meanwhile. Draft issue for finos/legend-engine:
+
+```text
+Title: Schema exploration doesn't map JSON/VARIANT columns to SemiStructured
+
+The database builder's schema exploration (SchemaExportation) maps java.sql.Types only: a DuckDB JSON column is
+explored as Other (and a Snowflake VARIANT, Postgres json/jsonb likely as Other or Varchar). Explored databases then
+lose the column's semi-structured type, so get()/to()/flatten can't be used on it. Mapping these by TYPE_NAME
+(JSON, VARIANT, OBJECT, ARRAY, json, jsonb) to SemiStructured would let them through.
+```
+
+### `toMany(@String)->contains(v)` on a Variant array writes invalid SQL on DuckDB
+
+Found in the Variant analysis, run on the local engine 🧪 (`variant/probe-engine.out.txt`).
+`$x.payload->get('tags')->toMany(@String)->contains('b')` is written
+`array_contains(((payload->'tags')->>'$'), 'b')`: the array read as one text, which DuckDB refuses. The same through
+`toMany(@Variant)->map(t | $t->to(@String))->contains('b')` is written over the array and returns the right rows; Cube
+writes that form. Draft issue for finos/legend-engine:
+
+```text
+Title: toMany(@String)->contains() on a variant array writes array_contains over the array's text (DuckDB)
+
+$x.v->get('tags')->toMany(@String)->contains('b') plans as array_contains(((v->'tags')->>'$'), 'b') on DuckDB, which
+fails: "No function matches array_contains(VARCHAR, STRING_LITERAL)". toMany(@Variant)->map(t|$t->to(@String))
+->contains('b') plans as array_contains(apply(cast(v->'tags' as JSON[]), ...), 'b') and works.
+```
+
+### `exists` over a Variant array fails while planning
+
+Found in the Variant analysis, run on the local engine 🧪.
+`$x.payload->get('items')->toMany(@Variant)->exists(i | $i->get('sku')->to(@String) == 'z')` fails with "Cannot cast a
+collection of size 0 to multiplicity [1]" (`pureToSQLQuery.pure` line 6030), where `filter(…)->size() > 0` works. Cube
+doesn't offer `exists`. Draft issue for finos/legend-engine:
+
+```text
+Title: exists() over toMany(@Variant) fails in plan generation
+
+|#>{db.s.t}#->filter(x|$x.payload->get('items')->toMany(@Variant)->exists(i|$i->get('sku')->to(@String) == 'z'))
+fails on DuckDB with "Cannot cast a collection of size 0 to multiplicity [1]" (pureToSQLQuery.pure:6030). The same
+condition through filter(...)->size() > 0 plans and runs.
+```
+
+### `lateral(…flatten(~c))` types the element `[1]`, though a row with an empty array gets none
+
+Found building Explode Array (V.6), run on the local engine 🧪 (`CubeVariant.engine-roundtrip-test.ts`). On DuckDB, a row
+whose array is empty, or whose document is null, comes back once with the element null, as every dialect's SQL writes
+it (Snowflake `outer => true`, Databricks `explode_outer`, Postgres `left join lateral`, DuckDB `[NULL]` 📄), yet
+`lambdaRelationType` types the element `Variant[1]`. Cube says nullable. Draft issue for finos/legend-engine:
+
+```text
+Title: The column flatten() adds inside lateral() is typed [1], but is empty for an empty or missing array
+
+|#>{db.s.t}#->lateral(x|$x.payload->get('items')->toMany(@Variant)->flatten(~item)) types item as Variant[1]. Every
+dialect keeps a row whose array is empty or null (outer flatten, explode_outer, left join lateral, unnest of [NULL]),
+with item NULL, so the column should be [0..1].
+```
+
+### On Postgres, `flatten` reads each element as text, then casts it to `jsonb`
+
+Read from the plan only 📄 (`LegendCubeDialects.engine-roundtrip-test.ts`, Explode Array): Postgres writes the lateral as
+`select "value" #>> '{}' as value from jsonb_array_elements(…)` and the element as `cast(value as jsonb)`. `#>> '{}'`
+gives a string element without its quotes, so an array of strings (`["a","b"]`) would cast `a` to `jsonb`, which isn't
+JSON: likely an error. Not run, as no Postgres is set up here. Draft issue for finos/legend-engine, once confirmed:
+
+```text
+Title: Postgres: flatten() of a string array casts the unquoted text to jsonb
+
+|#>{db.s.t}#->lateral(x|$x.payload->get('tags')->toMany(@Variant)->flatten(~tag)) plans on Postgres as
+left join lateral (select "value" #>> '{}' as value from jsonb_array_elements(...)) ... cast(value as jsonb). For
+tags = ["a"], #>> '{}' yields a (no quotes), and cast('a' as jsonb) is invalid JSON. Selecting "value" itself, a jsonb,
+would keep each element as JSON.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns

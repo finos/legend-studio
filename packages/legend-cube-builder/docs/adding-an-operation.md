@@ -11,8 +11,10 @@ the icon name the node's definition gives. Join and Filter are the examples to f
 (`CubePartitionEditor`, `CubePartitionDraft`), Difference for a two-input editor sharing Join's key rows
 (`CubeDifferenceEditor`, `CubeDifferenceDraft`), Extend for an editor that asks the engine before Apply
 (`CubeExtendEditor`, `CubeExtendDraft`), Filter by Expression for one condition the engine checks
-(`CubeExpressionFilterEditor`, `CubeExpressionFilterDraft`), and Pivot for an editor that loads values from the engine
-through `runCubeQuery` (`CubePivotEditor`, `CubePivotDraft`). A node type a database can't run is greyed, with the
+(`CubeExpressionFilterEditor`, `CubeExpressionFilterDraft`), Pivot for an editor that loads values from the engine
+through `runCubeQuery` (`CubePivotEditor`, `CubePivotDraft`), and Explode Array for one that reads a sample of a column
+after the node's input, as Explore JSON does (`readCubeJsonSample`), greying its button with the database's reason
+(`CubeExplodeEditor`, `CubeExplodeDraft`; PLAN §11.20). A node type a database can't run is greyed, with the
 reason, in the palette and the Add menus (`getCubeAddDatabaseProblem` in `CubeAddPlacement.ts`): nothing to add for a
 new type but the core's rule.
 

@@ -17,11 +17,13 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   buildSchemasAndValidity,
+  colSpec,
   collection,
   ColumnComparisonFilter,
   columnAccess,
   Connection,
   CUBE_QUERY_READER_MESSAGE,
+  Explode,
   ExpressionFilter,
   Extend,
   Filter,
@@ -29,6 +31,7 @@ import {
   findCubeLambdaExtends,
   findCubeLambdaSources,
   func,
+  genericType,
   getExtendSignature,
   isSameCubeIR,
   lambda,
@@ -38,6 +41,8 @@ import {
   QueryEmitter,
   readCubeQuery,
   RelationalTableSource,
+  Schema,
+  SchemaColumn,
   Sort,
   splitCubeLambda,
   storeAccessor,
@@ -45,7 +50,6 @@ import {
   type CubeSourceStep,
   type IR,
   type QueryNode,
-  type Schema,
 } from '@finos/legend-cube';
 import {
   TEST__bindSampleSources,
@@ -61,6 +65,7 @@ import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeEngine
 const READ_STEPS = new Set([
   'relational',
   'extend',
+  'explode',
   'pivot',
   'concat',
   'join',
@@ -277,6 +282,81 @@ describe('Reading the steps of a lambda', () => {
       read.query.nodes[1]?.id,
       read.query.nodes[2]?.id,
     ]);
+  });
+
+  test('Reads an Explode Array of a JSON column, checked, and names the lateral it reads when it is another', () => {
+    const table = storeAccessor(['db::Store', 'S', 'EVENTS']);
+    const schema = new Schema([
+      new SchemaColumn(
+        'ID',
+        PrimitiveType.get('meta::pure::precisePrimitives::Int'),
+        false,
+      ),
+      new SchemaColumn('PAYLOAD', PrimitiveType.get('Variant'), true),
+    ]);
+    const bindSource = (): CubeSourceStep => ({
+      type: RelationalTableSource.TYPE,
+      create: (id) =>
+        new RelationalTableSource(
+          id,
+          { database: 'db::Store', schema: 'S', table: 'EVENTS' },
+          { kind: 'resolved', schema },
+        ),
+    });
+    const source = bindSource().create('relational101');
+    const explode = new Explode(
+      'explode101',
+      'PAYLOAD',
+      ['order', 'items'],
+      'item',
+    );
+    const written = lambda(
+      [],
+      [
+        new QueryEmitter(
+          new Query(
+            [source, explode],
+            [new Connection(source.id, explode.id, 'tds')],
+            explode.id,
+          ),
+        ).emitRelation(explode.id, { withRowOrder: true }),
+      ],
+    );
+    const options = { bindSource, expressions: CUBE_EXPRESSION_CODEC };
+    const read = readCubeQuery(splitCubeLambda(written), options);
+    expect(read.unchecked).toEqual([]);
+    expect(read.rewritten).toEqual([]);
+    const step = read.query.getNode(read.query.selected as string) as Explode;
+    expect(step).toBeInstanceOf(Explode);
+    expect([step.column, step.path, step.name]).toEqual([
+      'PAYLOAD',
+      ['order', 'items'],
+      'item',
+    ]);
+    // a lateral of another function: of integers, not Variants
+    const ofIntegers = func('lateral', [
+      table,
+      lambda(
+        ['x'],
+        [
+          func('flatten', [
+            func('toMany', [
+              columnAccess('x', 'PAYLOAD'),
+              genericType('Integer'),
+            ]),
+            colSpec('n'),
+          ]),
+        ],
+      ),
+    ]);
+    expect(() =>
+      readCubeQuery(splitCubeLambda(lambda([], [ofIntegers])), options),
+    ).toThrow(
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'lateral',
+        CUBE_QUERY_READER_MESSAGE.EXPLODE,
+      ),
+    );
   });
 
   test('Names a function Cube has no step for', () => {

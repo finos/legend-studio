@@ -20,6 +20,7 @@ import {
   HashtagIcon,
   ListIcon,
   QuestionIcon,
+  SitemapIcon,
   StringTypeIcon,
   ToggleIcon,
 } from '@finos/legend-art';
@@ -47,6 +48,8 @@ const FAMILY_ICONS: Readonly<
   [TypeFamily.DATETIME]: CalendarIcon,
   [TypeFamily.DATE]: CalendarIcon,
   [TypeFamily.ENUM]: ListIcon,
+  // a JSON document: its fields as a tree (PLAN §11.20)
+  [TypeFamily.VARIANT]: SitemapIcon,
 };
 
 /** The icon of a column type's family: text, number, date, ...; a question mark for the rest */

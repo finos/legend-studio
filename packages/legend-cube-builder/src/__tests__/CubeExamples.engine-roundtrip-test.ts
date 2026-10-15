@@ -19,13 +19,14 @@ import {
   AggregationFunction,
   buildSchemasAndValidity,
   createNodeRegistry,
+  Explode,
+  Extend,
   Group,
-  Query,
+  type Query,
   QueryEmitter,
-  RelationalTableSource,
-  Schema,
 } from '@finos/legend-cube';
 import { CUBE_ENGINE_TEST__compile } from '../__test-utils__/CubeEngineTestSupport.js';
+import { TEST__openExampleOnEngine } from '../__test-utils__/CubeExampleTestUtils.js';
 import {
   TEST__emittableNodes,
   TEST__typingDifferences,
@@ -46,43 +47,9 @@ beforeEach(() => {
   ({ engine } = V1_createEngineBackedCubeEngine());
 });
 
-/** The example's cube with its tables typed by the engine, as opening it does */
-const openExample = async (example: CubeExample) => {
-  const document = example.createDocument();
-  const model = document.context?.model;
-  const runtime = document.context?.runtime;
-  if (!model || !runtime) {
-    throw new Error(`Example ${example.id} has no model or runtime`);
-  }
-  const sources = document.query.nodes.filter(
-    (node): node is RelationalTableSource =>
-      node instanceof RelationalTableSource,
-  );
-  const typed = await engine.resolveSchemas(
-    model,
-    new Map(
-      sources.map((source) => [
-        source.id,
-        [source.database, source.schema, source.table] as const,
-      ]),
-    ),
-  );
-  const query = new Query(
-    document.query.nodes.map((node) => {
-      if (!(node instanceof RelationalTableSource)) {
-        return node;
-      }
-      const schema = typed.get(node.id);
-      if (!(schema instanceof Schema)) {
-        throw schema ?? new Error(`No schema for ${node.id}`);
-      }
-      return node.withResolution({ kind: 'resolved', schema });
-    }),
-    document.query.connections,
-    document.query.selected,
-  );
-  return { model, runtime, query };
-};
+/** The example's cube as opening it types it */
+const openExample = async (example: CubeExample) =>
+  TEST__openExampleOnEngine(engine, example);
 
 /**
  * The Sum and Average outputs of the query's groups, which the engine types
@@ -102,6 +69,20 @@ const sumsAndAverages = (query: Query): string[] =>
       : [],
   );
 
+/**
+ * An Extend's columns, which Cube takes as nullable whatever the engine says
+ * (PLAN §11.7), and an Explode Array's element, which the engine types [1]
+ * though an empty array gives none (§11.20)
+ */
+const extendColumns = (query: Query): string[] =>
+  query.nodes.flatMap((node) =>
+    node instanceof Extend
+      ? node.columns.map((column) => column.name)
+      : node instanceof Explode
+        ? [node.name]
+        : [],
+  );
+
 /** The rows each example shows */
 const ROW_COUNTS = new Map([
   // the ten customers with most orders
@@ -118,6 +99,10 @@ const ROW_COUNTS = new Map([
   // the four countries, pivoted on DuckDB
   ['sales-by-year', 4],
   ['sales-by-product', 4],
+  // the eight orders, one with no document
+  ['sales-orders-json', 8],
+  // their ten lines, and once each the order with none and the one with no document
+  ['sales-order-lines-json', 12],
 ]);
 
 describe('Example cubes, on the engine', () => {
@@ -161,7 +146,12 @@ describe('Example cubes, on the engine', () => {
             key,
             schemas.get(nodeId),
             engineSchemas.get(key),
-            { widerNullable: sumsAndAverages(query) },
+            {
+              widerNullable: [
+                ...sumsAndAverages(query),
+                ...extendColumns(query),
+              ],
+            },
           ),
         ),
       ).toEqual([]);

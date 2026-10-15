@@ -25,6 +25,7 @@ import {
   FilterOperator,
   type Group,
   Limit,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
   OpaqueType,
   PrimitiveType,
   Query,
@@ -39,6 +40,7 @@ import type { DataGridGetContextMenuItemsParams } from '@finos/legend-lego/data-
 import { flowResult, runInAction } from 'mobx';
 import {
   CUBE_DRILLDOWN_BLOCKER,
+  CUBE_JSON_DISABLED_REASON,
   CUBE_QUICK_ACTION_DISABLED_REASON,
   FILTER_FLOAT_COMPARISON_HINT,
   READ_ONLY_CUBE_TITLE,
@@ -49,7 +51,11 @@ import {
   northwindTable,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
-import { getCubeGridContextMenuItems } from '../../components/grid/CubeResultGrid.js';
+import {
+  type CubeGridHeaderMenuParams,
+  getCubeGridContextMenuItems,
+  getCubeGridHeaderMenuItems,
+} from '../../components/grid/CubeResultGrid.js';
 import type {
   CubeResult,
   CubeResultValue,
@@ -652,6 +658,85 @@ describe('Grid context menu', () => {
     });
     state.undo();
     expect(state.document.meta.drilldown).toBeUndefined();
+  });
+
+  test("Offers Open JSON on a Variant cell, after the quick actions, which shows the cell's document (PLAN §11.20)", async () => {
+    const { state } = await setUp();
+    const items = getCubeGridContextMenuItems(state, params('c5'));
+    const names = items.map((item) =>
+      typeof item === 'string' ? item : item.name,
+    );
+    expect(names.slice(0, 7)).toEqual([
+      'Drilldown by "PAYLOAD"',
+      'Sort by "PAYLOAD"',
+      'Group by "PAYLOAD"',
+      'Filter by "PAYLOAD"',
+      'Open JSON',
+      'Explore JSON…',
+      'separator',
+    ]);
+    const openJson = items[4];
+    expect(openJson).toMatchObject({ disabled: false });
+    if (typeof openJson === 'object') {
+      openJson.action?.({} as never);
+    }
+    expect(state.jsonViewer.isOpen).toBe(true);
+    expect(state.jsonViewer.column).toBe('PAYLOAD');
+    expect(state.jsonViewer.text).toBe('{"a": 1}');
+    expect(state.jsonViewer.document?.kind).toBe('object');
+    state.jsonViewer.close();
+    expect(state.jsonViewer.isOpen).toBe(false);
+    // a column of another type has none
+    expect(
+      getCubeGridContextMenuItems(state, params('c1')).some(
+        (item) => typeof item === 'object' && item.name === 'Open JSON',
+      ),
+    ).toBe(false);
+  });
+
+  test("Puts Explore JSON… first in a Variant column's header menu, before ag-grid's own items, disabled on H2, and nothing in another's", async () => {
+    const { state } = await setUp();
+    const header = (
+      colId: string,
+    ): CubeGridHeaderMenuParams<readonly CubeResultValue[]> =>
+      ({
+        column: { getColId: () => colId },
+        defaultItems: ['pinSubMenu', 'autoSizeThis'],
+      }) as unknown as CubeGridHeaderMenuParams<readonly CubeResultValue[]>;
+    const items = getCubeGridHeaderMenuItems(state, header('c5'));
+    expect(
+      items.map((item) => (typeof item === 'string' ? item : item.name)),
+    ).toEqual(['Explore JSON…', 'separator', 'pinSubMenu', 'autoSizeThis']);
+    // these rows run on H2, which can't read JSON
+    expect(items[0]).toMatchObject({
+      disabled: true,
+      tooltip: MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2'),
+    });
+    expect(getCubeGridHeaderMenuItems(state, header('c1'))).toEqual([
+      'pinSubMenu',
+      'autoSizeThis',
+    ]);
+  });
+
+  test('Disables Open JSON on an empty Variant cell, saying why', async () => {
+    const { state } = await setUp();
+    const emptyRow = ROW.map((value, index) =>
+      index === position('PAYLOAD') ? null : value,
+    );
+    const items = getCubeGridContextMenuItems(state, {
+      ...params('c5'),
+      node: { data: emptyRow },
+    } as unknown as DataGridGetContextMenuItemsParams<
+      readonly CubeResultValue[]
+    >);
+    expect(
+      items.find(
+        (item) => typeof item === 'object' && item.name === 'Open JSON',
+      ),
+    ).toMatchObject({
+      disabled: true,
+      tooltip: CUBE_JSON_DISABLED_REASON.EMPTY,
+    });
   });
 
   test("Can't drill down by a type that can't be grouped, or in a read-only cube", async () => {
