@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.8.0
+
+### Minor Changes
+
+- [#5680](https://github.com/finos/legend-studio/pull/5680) [`f659470`](https://github.com/finos/legend-studio/commit/f6594709fdfef186855ee0991d7374828ed2ae15) ([@TharunRajeev](https://github.com/TharunRajeev)) - Support subscriptions for approved data requests: list them in the Data Product Subscriptions viewer and allow creating them manually from the approved data requests alongside approved contracts.
+
+### Patch Changes
+
+- [#5690](https://github.com/finos/legend-studio/pull/5690) [`b33fba5`](https://github.com/finos/legend-studio/commit/b33fba599d8bb530d1587ff7c564e3f8dfa81afe) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Studio: an ingest definition's editor offers Create MatView with Cube (behind `NonProductionFeatureFlag`). Cube opens full screen over Studio and reads only the project's own ingest definitions and data products, as the workspace holds them: the source dialog lists them by name, each path muted beside it, with no class, deployment or search to pick, and runs use the workspace and the project's lakehouse runtime, as Studio's own queries do. Add as MatView adds the step that runs to the definition as a materialized view (a `FunctionSource` data set). Cube's host can now name the one project its sources come from (`CubeHost.project`), turn off its sample data and examples, give the engine its own ingest definitions and data product model, and add buttons to the header; the floating step editor stays above a dialog that hosts the page; the Ingest tab picks the only producer deployment and starts on the environment's warehouse; a dialog's primary button is an accent button in every theme; and the canvas keeps its controls' colours where React Flow 11's stylesheet is loaded too.
+
+- [#5693](https://github.com/finos/legend-studio/pull/5693) [`cce1319`](https://github.com/finos/legend-studio/commit/cce13197ba0072a508df0da0a4c3496ad36960e3) ([@janeenyamak1](https://github.com/janeenyamak1)) - Update serialzation for MAPGs and APGs
+
 ## 32.7.6
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @finos/legend-art
 
+## 7.1.169
+
+### Patch Changes
+
+- [#5688](https://github.com/finos/legend-studio/pull/5688) [`6dd956d`](https://github.com/finos/legend-studio/commit/6dd956d8ef2057855c82a0172c5cc020155cae88) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Add an opt-in `rehypePlugins` prop to `MarkdownTextViewer` (`legend-art`); default behavior is unchanged when it is omitted.
+  Add `HtmlBlockRenderer` to `legend-lego` (exported from `@finos/legend-lego/html-renderer`), which renders raw HTML payloads in a sandboxed iframe with auto-sizing height.
+
 ## 7.1.168
 
 ### Patch Changes

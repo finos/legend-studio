@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 28.21.52
+
+### Patch Changes
+
+- [#5694](https://github.com/finos/legend-studio/pull/5694) [`dd0b62a`](https://github.com/finos/legend-studio/commit/dd0b62af9bf179f2c20e55462ed0c3c4e6e0e8a3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads a lambda back into steps (Import Pure): the engine's or Cube's JSON of a lambda to Cube's IR, a run's own parts taken off, lambdas compared as the same Pure, and the relation read into steps, each checked by writing it again. `CubeEditor` opens on a host's lambda (`initialLambda`); Studio's Create MatView with Cube button is now Create MatView, and it lists the definition's materialized views to edit: Cube opens on the view, read back, and Save MatView replaces it in place, first asking again for its data's classification when it has none and for its primary key when a key column is gone. The Cube menu's Import Pure reads a pasted Pure query, or its JSON, into steps in place of the cube.
+
+- [#5694](https://github.com/finos/legend-studio/pull/5694) [`dd0b62a`](https://github.com/finos/legend-studio/commit/dd0b62af9bf179f2c20e55462ed0c3c4e6e0e8a3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Create MatView loads Legend Cube on its first opening, so Cube stays out of Studio's main bundle.
+
+- [#5690](https://github.com/finos/legend-studio/pull/5690) [`b33fba5`](https://github.com/finos/legend-studio/commit/b33fba599d8bb530d1587ff7c564e3f8dfa81afe) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Studio: an ingest definition's editor offers Create MatView with Cube (behind `NonProductionFeatureFlag`). Cube opens full screen over Studio and reads only the project's own ingest definitions and data products, as the workspace holds them: the source dialog lists them by name, each path muted beside it, with no class, deployment or search to pick, and runs use the workspace and the project's lakehouse runtime, as Studio's own queries do. Add as MatView adds the step that runs to the definition as a materialized view (a `FunctionSource` data set). Cube's host can now name the one project its sources come from (`CubeHost.project`), turn off its sample data and examples, give the engine its own ingest definitions and data product model, and add buttons to the header; the floating step editor stays above a dialog that hosts the page; the Ingest tab picks the only producer deployment and starts on the environment's warehouse; a dialog's primary button is an accent button in every theme; and the canvas keeps its controls' colours where React Flow 11's stylesheet is loaded too.
+
+- [#5695](https://github.com/finos/legend-studio/pull/5695) [`3e5ec86`](https://github.com/finos/legend-studio/commit/3e5ec8622b5af70381a906ede4684c1906ddce22) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Create MatView with Cube: Add as MatView asks for the classification of the view's data (one of the data product classifications Studio's config gives, or typed when it gives none) and its primary key, among the columns of the step that runs, and writes the data set with `privacyClassification: { sensitivity }`, the primary key and the empty lists the engine gives every data set it parses. A view without a classification failed with a NullPointerException.
+
 ## 28.21.51
 
 ### Patch Changes
