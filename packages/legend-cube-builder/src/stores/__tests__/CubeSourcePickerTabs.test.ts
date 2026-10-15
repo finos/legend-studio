@@ -83,8 +83,8 @@ describe('Source dialog tabs', () => {
     const picker = state.sourcePicker;
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
-      [DIRECT_CONNECTION, true],
       [DATA_PRODUCT, true],
+      [DIRECT_CONNECTION, true],
     ]);
     picker.open();
     expect(picker.activeTab.key).toBe(MODEL);
@@ -121,8 +121,8 @@ describe('Source dialog tabs', () => {
     const picker = state.sourcePicker;
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
-      [DIRECT_CONNECTION, false],
       [DATA_PRODUCT, false],
+      [DIRECT_CONNECTION, false],
     ]);
     picker.open(DIRECT_CONNECTION);
     expect(picker.activeTab.key).toBe(MODEL);
@@ -138,8 +138,8 @@ describe('Source dialog tabs', () => {
     );
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
-      [DIRECT_CONNECTION, false],
       [DATA_PRODUCT, false],
+      [DIRECT_CONNECTION, false],
     ]);
   });
 
@@ -148,8 +148,8 @@ describe('Source dialog tabs', () => {
     const picker = state.sourcePicker;
     expect(tabsOf(state)).toEqual([
       [MODEL, false],
-      [DIRECT_CONNECTION, true],
       [DATA_PRODUCT, false],
+      [DIRECT_CONNECTION, true],
     ]);
     picker.open(MODEL);
     expect(picker.activeTab.key).toBe(DIRECT_CONNECTION);
@@ -176,8 +176,8 @@ describe('Source dialog tabs', () => {
     // the cube is now direct: its tab alone is enabled
     expect(tabsOf(state)).toEqual([
       [MODEL, false],
-      [DIRECT_CONNECTION, true],
       [DATA_PRODUCT, false],
+      [DIRECT_CONNECTION, true],
     ]);
 
     // a table the engine can't type keeps the dialog open, with the error
@@ -195,8 +195,8 @@ describe('Source dialog tabs', () => {
     state.undo();
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
-      [DIRECT_CONNECTION, true],
       [DATA_PRODUCT, true],
+      [DIRECT_CONNECTION, true],
     ]);
   });
 

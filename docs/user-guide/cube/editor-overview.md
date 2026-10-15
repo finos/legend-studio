@@ -18,8 +18,8 @@ Click the image to see it full size.
 
 ## The palette
 
-1. **Sources**: where the rows come from: a database table, a function, a data product or a service. Click one to
-   pick it, or drop it on the canvas.
+1. **Sources**: where the rows come from: a database table, a data product, an ingest data set, a function or a
+   service. Click one to pick it, or drop it on the canvas.
 2. **Steps**: each works on the rows of the step before it. Click one to add it after the selected step, or drop it on
    the canvas; drop it on a step to add it after that step. A greyed-out step can't be added here; hover over it to
    see why, e.g. a database without JSON functions.

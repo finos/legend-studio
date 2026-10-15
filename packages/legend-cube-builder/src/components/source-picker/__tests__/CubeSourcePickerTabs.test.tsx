@@ -89,8 +89,8 @@ describe('Source dialog', () => {
     expect(within(dialog).getByText('Add a source')).toBeDefined();
     expect(tabStates(dialog)).toEqual([
       ['Sample Data', false, false],
-      ['Direct Connection', false, false],
       ['Data Product', false, false],
+      ['Direct Connection', false, false],
     ]);
     expect(within(dialog).getByText(SELECT_SOURCE_TYPE_PROMPT)).toBeDefined();
     expect(within(dialog).queryByLabelText('Dataset')).toBeNull();
@@ -99,8 +99,8 @@ describe('Source dialog', () => {
     fireEvent.click(within(dialog).getByRole('tab', { name: 'Sample Data' }));
     expect(tabStates(dialog)).toEqual([
       ['Sample Data', true, false],
-      ['Direct Connection', false, false],
       ['Data Product', false, false],
+      ['Direct Connection', false, false],
     ]);
     expect(within(dialog).queryByText(SELECT_SOURCE_TYPE_PROMPT)).toBeNull();
     expect(within(dialog).getByLabelText('Dataset')).toBeDefined();
@@ -114,8 +114,8 @@ describe('Source dialog', () => {
     expect(within(dialog).getByText('Add a source')).toBeDefined();
     expect(tabStates(dialog)).toEqual([
       ['Sample Data', true, false],
-      ['Direct Connection', false, false],
       ['Data Product', false, false],
+      ['Direct Connection', false, false],
     ]);
     expect(within(dialog).getByLabelText('Dataset')).toBeDefined();
     fireEvent.click(
@@ -123,8 +123,8 @@ describe('Source dialog', () => {
     );
     expect(tabStates(dialog)).toEqual([
       ['Sample Data', false, false],
-      ['Direct Connection', true, false],
       ['Data Product', false, false],
+      ['Direct Connection', true, false],
     ]);
     expect(within(dialog).getByLabelText('Setup SQL')).toBeDefined();
     expect(within(dialog).queryByLabelText('Dataset')).toBeNull();
@@ -161,8 +161,8 @@ describe('Source dialog', () => {
     const dialog = await openDialog();
     expect(tabStates(dialog)).toEqual([
       ['Sample Data', false, true],
-      ['Direct Connection', true, false],
       ['Data Product', false, true],
+      ['Direct Connection', true, false],
     ]);
     expect(within(dialog).queryByText(SELECT_SOURCE_TYPE_PROMPT)).toBeNull();
   });

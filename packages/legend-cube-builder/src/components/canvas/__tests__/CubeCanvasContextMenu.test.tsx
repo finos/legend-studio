@@ -84,7 +84,7 @@ const H2_TRANSFORMS = TRANSFORMS.filter(
   (transform) =>
     transform !== 'Pivot by Column' && transform !== 'Explode Array',
 );
-const PALETTE = [TABLE, FUNCTION, 'Data Product (BETA)', ...TRANSFORMS];
+const PALETTE = [TABLE, 'Data Product (BETA)', FUNCTION, ...TRANSFORMS];
 const ITEMS = [
   ...PALETTE,
   'Run this step',
