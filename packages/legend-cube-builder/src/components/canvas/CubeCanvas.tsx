@@ -36,6 +36,11 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  CUBE_TOUR_ANCHOR,
+  CUBE_TOUR_LABEL,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
 import { canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { isCubeSampleDataOffered } from '../../stores/CubeHost.js';
@@ -284,6 +289,7 @@ export const CubeCanvas = observer(
         ref={ref}
         className="relative h-full w-full"
         data-testid={LEGEND_CUBE_TEST_ID.CANVAS}
+        {...cubeTourAnchor(CUBE_TOUR_ANCHOR.CANVAS)}
       >
         <ContextMenu
           className="h-full w-full"
@@ -293,7 +299,7 @@ export const CubeCanvas = observer(
           menuProps={{ elevation: 7 }}
         >
           {editorState.document.query.isEmpty ? (
-            <div className="flex h-full items-center justify-center p-4 text-base text-[var(--color-text-secondary)]">
+            <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-base text-[var(--color-text-secondary)]">
               <span>
                 <button
                   className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
@@ -320,6 +326,16 @@ export const CubeCanvas = observer(
                 ) : (
                   ' to start a new one.'
                 )}
+              </span>
+              <span>
+                {CUBE_TOUR_LABEL.OFFER}{' '}
+                <button
+                  className="text-[var(--color-accent)] underline"
+                  onClick={() => editorState.tour.start()}
+                >
+                  {CUBE_TOUR_LABEL.START}
+                </button>
+                .
               </span>
             </div>
           ) : (

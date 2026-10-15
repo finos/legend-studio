@@ -21,6 +21,10 @@ import { useRef } from 'react';
 import { RUNNING_NODE_LABEL } from '../../__lib__/LegendCubeHelpText.js';
 import { useDrag, useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  CUBE_TOUR_ANCHOR,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import {
   CUBE_OUTPUT_HANDLE_ID,
@@ -144,6 +148,9 @@ export const CubeCanvasNode = observer(
             aria-description={status.tooltip}
             aria-current={status.isCapture}
             data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
+            {...(status.isCapture
+              ? cubeTourAnchor(CUBE_TOUR_ANCHOR.RUNNING_STEP)
+              : {})}
           >
             <CubeNodeIcon
               icon={editorState.registry.get(node.type)?.icon}

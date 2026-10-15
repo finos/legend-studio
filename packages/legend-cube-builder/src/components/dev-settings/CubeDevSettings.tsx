@@ -30,6 +30,11 @@ import {
   useDropdownMenu,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import {
+  CUBE_TOUR_ANCHOR,
+  CUBE_TOUR_LABEL,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 
 /** Why Dev Settings can't change anything */
@@ -37,8 +42,8 @@ const DEV_SETTINGS_UNAVAILABLE =
   "This Legend deployment doesn't let Legend Cube's engine clients be changed.";
 
 /**
- * The page's menu, at the top left, as Legend Query's editor has one: Dev
- * Settings (PLAN §11.16)
+ * The page's menu, at the top left, as Legend Query's editor has one: the
+ * tour (PLAN §11.21) and Dev Settings (PLAN §11.16)
  */
 export const CubePageMenu = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -50,6 +55,7 @@ export const CubePageMenu = observer(
           type="button"
           className="flex h-6 w-6 shrink-0 items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
           title="Menu"
+          {...cubeTourAnchor(CUBE_TOUR_ANCHOR.PAGE_MENU)}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           onClick={openMenu}
@@ -65,6 +71,15 @@ export const CubePageMenu = observer(
             },
           }}
         >
+          <DropdownMenuItem
+            className="px-2 text-base"
+            onClick={() => {
+              closeMenu();
+              editorState.tour.start();
+            }}
+          >
+            {CUBE_TOUR_LABEL.START}
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="px-2 text-base"
             onClick={() => {

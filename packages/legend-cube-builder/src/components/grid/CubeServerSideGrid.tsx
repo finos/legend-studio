@@ -27,6 +27,10 @@ import {
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { NULL_CELL_TEXT } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  CUBE_TOUR_ANCHOR,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import type {
@@ -161,6 +165,7 @@ export const CubeServerSideGrid = memo(
           'ag-theme-balham-dark': darkMode,
         })}
         data-testid={LEGEND_CUBE_TEST_ID.RESULT_GRID}
+        {...cubeTourAnchor(CUBE_TOUR_ANCHOR.RESULTS)}
       >
         <DataGrid<CubeGridRowData>
           rowModelType="serverSide"

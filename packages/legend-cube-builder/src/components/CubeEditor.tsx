@@ -37,6 +37,7 @@ import {
   UNSAVED_CUBE_NAME,
 } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
+import { CUBE_TOUR_ANCHOR, cubeTourAnchor } from '../__lib__/LegendCubeTour.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import {
   type CubeEntrySource,
@@ -60,6 +61,7 @@ import { CubeFileMenu } from './CubeFileMenu.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
 import { CubeImportPureDialog } from './spec-transfer/CubeImportPureDialog.js';
+import { CubeTour } from './tour/CubeTour.js';
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
@@ -117,12 +119,14 @@ const CubeGraphHeader = observer(
           {isCubeSampleDataOffered(editorState.host) && (
             <CubeButton
               title="Open an example cube, or start one on sample data"
+              {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXAMPLES)}
               onClick={() => editorState.examples.open()}
             >
               Examples
             </CubeButton>
           )}
           <CubeButton
+            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.VIEW)}
             title={
               readOnly
                 ? READ_ONLY_CUBE_TITLE
@@ -134,6 +138,7 @@ const CubeGraphHeader = observer(
             Undo
           </CubeButton>
           <CubeButton
+            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.VIEW)}
             title={`Redo the last change undone (${REDO_SHORTCUT_LABEL})`}
             disabled={!editorState.canRedo}
             onClick={() => editorState.redoEdited()}
@@ -141,6 +146,7 @@ const CubeGraphHeader = observer(
             Redo
           </CubeButton>
           <CubeButton
+            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.VIEW)}
             title={
               editorState.execution.canExecute
                 ? 'Show the Pure query that Execute runs'
@@ -160,6 +166,7 @@ const CubeGraphHeader = observer(
             Show Pure
           </CubeButton>
           <CubeButton
+            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.VIEW)}
             title={
               showGraph
                 ? 'Hide the graph, leaving more room for the results'
@@ -264,9 +271,12 @@ export const CubeEditor = observer(
     // hiding the graph collapses its panel: the header and the results stay
     // where they are, so the grid keeps its state
     const graphPanel = getCollapsiblePanelGroupProps(!showGraph);
+    // the page, whose controls the tour points at
+    const [page, setPage] = useState<HTMLDivElement | null>(null);
 
     return (
       <div
+        ref={setPage}
         className="legend-cube flex bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
         data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
       >
@@ -292,6 +302,7 @@ export const CubeEditor = observer(
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
+        <CubeTour editorState={editorState} root={page} />
       </div>
     );
   },
