@@ -269,7 +269,7 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
       />
       {settings && (
         <span className="text-sm text-[var(--color-text-muted)]">
-          {`All of the cube's data sets come from producer deployment ${getFixedProducerLabel(settings.producerDeploymentId, tab.producerNames.get(settings.producerDeploymentId))}.`}
+          {`All of the cube's data sets come from ${getFixedProducerLabel(settings.producerDeploymentId, tab.producerNames.get(settings.producerDeploymentId))}.`}
         </span>
       )}
       {tab.producerDeploymentId !== undefined && (
