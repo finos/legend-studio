@@ -149,6 +149,25 @@ test(
 
 test(
   unitTest(
+    'setEnableIceberg(true) restores the resolved Iceberg catalog warehouse, not the stale non-Iceberg value',
+  ),
+  () => {
+    const state = buildState();
+    state.setWarehouse('LAKEHOUSE_PRODUCER_123_QUERY_WH');
+    state.setEnableIceberg(true);
+    // Simulate a resolved Iceberg catalog (e.g. via fetchIcebergCatalogDetails)
+    state.setWarehouse('TEST_CATALOG');
+    state.icebergWarehouse = 'TEST_CATALOG';
+    // Toggle off then back on without ever re-resolving the catalog
+    state.setEnableIceberg(false);
+    expect(state.warehouse).toBe('LAKEHOUSE_PRODUCER_123_QUERY_WH');
+    state.setEnableIceberg(true);
+    expect(state.warehouse).toBe('TEST_CATALOG');
+  },
+);
+
+test(
+  unitTest(
     'setEnableIceberg(false) keeps current warehouse when nonIcebergWarehouse is unset',
   ),
   () => {
@@ -364,6 +383,8 @@ test(
       },
     } as unknown as Partial<LakehouseIngestServerClient>);
 
+    state.setWarehouse('LAKEHOUSE_PRODUCER_123_QUERY_WH');
+
     await state.toggleIceberg(true, undefined);
     await state.toggleIceberg(false, undefined);
     await state.toggleIceberg(true, undefined);
@@ -371,6 +392,7 @@ test(
     expect(getIngestEnvironmentCalls).toBe(1);
     expect(state.enableIceberg).toBe(true);
     expect(state.catalogUrl).toBe('https://catalog-proxy.test');
+    expect(state.warehouse).toBe('TEST_CATALOG');
   },
 );
 

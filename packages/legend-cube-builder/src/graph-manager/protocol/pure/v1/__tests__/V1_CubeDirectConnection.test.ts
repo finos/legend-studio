@@ -199,7 +199,7 @@ describe('Direct connections Cube refuses', () => {
         changed(h2(), (copy) => {
           copy.extra = 'x';
           datasourceOf(copy).url = 'jdbc:h2:mem:other';
-          (copy.authenticationStrategy as PlainObject).password = 'hunter2';
+          (copy.authenticationStrategy as PlainObject).password = 'x';
         }),
       ),
     ).toEqual([
