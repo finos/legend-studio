@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 13.8.62
+
+### Patch Changes
+
+- [#5689](https://github.com/finos/legend-studio/pull/5689) [`1cc6925`](https://github.com/finos/legend-studio/commit/1cc69259abbb451b983ac5749df6c3df708943c9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: each run in the Runs panel keeps the lambda it sent, with its Pure and JSON, failed runs are recorded too, and Dev Settings, from a menu at the top left, change the engine URL and request compression of Cube's engine clients.
+
+- [#5669](https://github.com/finos/legend-studio/pull/5669) [`1018fe9`](https://github.com/finos/legend-studio/commit/1018fe93c7d475b344643ab07b5b84ac3f262f8c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's results grid works server-side by default, with drill-down levels, CSV and Excel export, a curated menu, run stats and column formats; decimal literals are sent as text, so they keep every digit.
+
+- [#5678](https://github.com/finos/legend-studio/pull/5678) [`54ba40f`](https://github.com/finos/legend-studio/commit/54ba40fc93e31fc3ef4621f22478aa565fd31e73) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: pick a deployed service as a source, from the engine's service registry (in progress: Cube can't read services yet).
+
 ## 13.8.61
 
 ### Patch Changes

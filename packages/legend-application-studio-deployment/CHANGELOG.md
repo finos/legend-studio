@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-deployment
 
+## 13.270.0
+
+### Patch Changes
+
+- [#5693](https://github.com/finos/legend-studio/pull/5693) [`cce1319`](https://github.com/finos/legend-studio/commit/cce13197ba0072a508df0da0a4c3496ad36960e3) ([@janeenyamak1](https://github.com/janeenyamak1)) - Update serialzation for MAPGs and APGs
+
 ## 13.269.0
 
 ## 13.268.0

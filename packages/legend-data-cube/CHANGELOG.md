@@ -1,5 +1,12 @@
 # @finos/legend-data-cube
 
+## 0.3.129
+
+### Patch Changes
+
+- [#5691](https://github.com/finos/legend-studio/pull/5691) [`a8532a2`](https://github.com/finos/legend-studio/commit/a8532a256966c6a0420e7d3f206c6ce04be86c1d) ([@jackp5150](https://github.com/jackp5150)) - Updated telemetry logging in datacube for different entry points, consumer types.
+  Added additional metadata to existing logs for data products.
+
 ## 0.3.128
 
 ## 0.3.127

@@ -1,5 +1,22 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.0
+
+### Minor Changes
+
+- [#5680](https://github.com/finos/legend-studio/pull/5680) [`f659470`](https://github.com/finos/legend-studio/commit/f6594709fdfef186855ee0991d7374828ed2ae15) ([@TharunRajeev](https://github.com/TharunRajeev)) - Support subscriptions for approved data requests: list them in the Data Product Subscriptions viewer and allow creating them manually from the approved data requests alongside approved contracts.
+
+### Patch Changes
+
+- [#5699](https://github.com/finos/legend-studio/pull/5699) [`bfdcc73`](https://github.com/finos/legend-studio/commit/bfdcc7303668920929d6884a45f8cb97a2c55a19) ([@bojja-gs](https://github.com/bojja-gs)) - Bump dompurify to 3.4.17 to fix a known vulnerability (sonatype-2026-009251).
+
+- [#5671](https://github.com/finos/legend-studio/pull/5671) [`ab198ca`](https://github.com/finos/legend-studio/commit/ab198cab7f09587165430bbe0d4e505637a7173e) ([@TharunRajeev](https://github.com/TharunRajeev)) - Replace GET /datacontracts/{id}/approvedUsers (one call per contract)
+  with POST /datacontracts/approvedUsers, sending all contract ids in
+  the request body in a single call.
+
+- [#5691](https://github.com/finos/legend-studio/pull/5691) [`a8532a2`](https://github.com/finos/legend-studio/commit/a8532a256966c6a0420e7d3f206c6ce04be86c1d) ([@jackp5150](https://github.com/jackp5150)) - Updated telemetry logging in datacube for different entry points, consumer types.
+  Added additional metadata to existing logs for data products.
+
 ## 0.1.6
 
 ## 0.1.5

@@ -1,5 +1,65 @@
 # @finos/legend-cube-builder
 
+## 0.0.5
+
+### Patch Changes
+
+- [#5689](https://github.com/finos/legend-studio/pull/5689) [`1cc6925`](https://github.com/finos/legend-studio/commit/1cc69259abbb451b983ac5749df6c3df708943c9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: each run in the Runs panel keeps the lambda it sent, with its Pure and JSON, failed runs are recorded too, and Dev Settings, from a menu at the top left, change the engine URL and request compression of Cube's engine clients.
+
+- [#5685](https://github.com/finos/legend-studio/pull/5685) [`3a26c9d`](https://github.com/finos/legend-studio/commit/3a26c9d7b8d72820cb347e25db59ffb42e3fbf2e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Move Legend Cube's demo walkthrough, fast notes and specs into the builder's docs (`docs/demo`), out of the repo's
+  docs.
+
+- [#5685](https://github.com/finos/legend-studio/pull/5685) [`3a26c9d`](https://github.com/finos/legend-studio/commit/3a26c9d7b8d72820cb347e25db59ffb42e3fbf2e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube, from demo feedback: the source dialog opened from Examples links back to them with "← Back to Examples" under its title, in place of a footer button.
+
+- [#5681](https://github.com/finos/legend-studio/pull/5681) [`56717ae`](https://github.com/finos/legend-studio/commit/56717aeec71833675140d822879829625a102f1e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube, from demo feedback:
+
+  - **Pick several sources at once.** The tables of Sample Data, Project Database and Direct Connection, and the access points of a data product, each have a checkbox (or Cmd/Ctrl-click a row). Add says how many it adds and adds them all in one undo step, the first one picked running; a table the engine can't type stays picked with its error while the others are added. A plain click still picks one row, a double-click adds it alone, and the access point preview shows the one picked last.
+  - **Show SQL opens a dialog** with the run's SQL formatted, as Legend Query shows its executed SQL, with Copy SQL. The Runs panel formats its SQL too.
+  - **The exported spec shows in a JSON code editor**, so each object and list folds.
+  - **New** in the header replaces the cube with a new, empty one (one undo step), e.g. to leave an example.
+  - **Back to the examples:** the source dialog opened from a dataset in Examples has a ← Examples button.
+
+- [#5669](https://github.com/finos/legend-studio/pull/5669) [`4a0bfe3`](https://github.com/finos/legend-studio/commit/4a0bfe3e00cc835b1723834c106668a0d02baf81) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube can filter rows by a Pure condition (Filter by Expression), checked by the engine, which now checks Extend's columns and filter conditions through one path. On DuckDB, both filters refuse `%` and `_` in a starts-with, ends-with or contains pattern, which the engine's SQL would match as wildcards.
+
+- [#5678](https://github.com/finos/legend-studio/pull/5678) [`ef8cdef`](https://github.com/finos/legend-studio/commit/ef8cdef1d4712f0808da6e100e6faa59483795d3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube can read a function of a model or a released project that returns a relation, with a value for each of its parameters, on its own runtime when its body names one, and joined with the model's tables.
+
+- [#5694](https://github.com/finos/legend-studio/pull/5694) [`dd0b62a`](https://github.com/finos/legend-studio/commit/dd0b62af9bf179f2c20e55462ed0c3c4e6e0e8a3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads a lambda back into steps (Import Pure): the engine's or Cube's JSON of a lambda to Cube's IR, a run's own parts taken off, lambdas compared as the same Pure, and the relation read into steps, each checked by writing it again. `CubeEditor` opens on a host's lambda (`initialLambda`); Studio's Create MatView with Cube button is now Create MatView, and it lists the definition's materialized views to edit: Cube opens on the view, read back, and Save MatView replaces it in place, first asking again for its data's classification when it has none and for its primary key when a key column is gone. The Cube menu's Import Pure reads a pasted Pure query, or its JSON, into steps in place of the cube.
+
+- [#5695](https://github.com/finos/legend-studio/pull/5695) [`3e5ec86`](https://github.com/finos/legend-studio/commit/3e5ec8622b5af70381a906ede4684c1906ddce22) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: a batch-milestoned ingest data set lists the columns its write mode adds in the order the engine returns them, `LAKE_DIGEST`, `LAKE_IN_ID`, `LAKE_OUT_ID` (then `LAKE_FROM`, `LAKE_THRU` for a business-temporal one), so its runs no longer fail with "The engine returned the column "LAKE_DIGEST" at position …, but the query has "LAKE_IN_ID" there". A saved cube's data sets take the new order when it is opened or refreshed, with a warning that their columns were reordered.
+
+- [#5695](https://github.com/finos/legend-studio/pull/5695) [`3e5ec86`](https://github.com/finos/legend-studio/commit/3e5ec8622b5af70381a906ede4684c1906ddce22) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: the Ingest tab picks several data sets of a definition at once, with their checkboxes or a Cmd or Ctrl click, as the other tabs pick tables and access points, and adds them all in one step; the data set picked last is previewed. This includes the screen a host reading one project's ingest definitions shows, as Studio's Create MatView with Cube.
+
+- [#5669](https://github.com/finos/legend-studio/pull/5669) [`1018fe9`](https://github.com/finos/legend-studio/commit/1018fe93c7d475b344643ab07b5b84ac3f262f8c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's results grid works server-side by default, with drill-down levels, CSV and Excel export, a curated menu, run stats and column formats; decimal literals are sent as text, so they keep every digit.
+
+- [#5685](https://github.com/finos/legend-studio/pull/5685) [`3a26c9d`](https://github.com/finos/legend-studio/commit/3a26c9d7b8d72820cb347e25db59ffb42e3fbf2e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube cleans up its operations: Min and Max on strings and Booleans, Distinct Count and Distinct Value on enumerations, a Join's shared columns compared in any case, no backtick in the names it gives columns, a `startsWith`, `endsWith` or `contains` given a pattern that isn't a literal refused unless the cube runs on Snowflake, the grid's Filter by on a 32-bit float finding its rows, and the row limit read as a whole number.
+
+- [#5678](https://github.com/finos/legend-studio/pull/5678) [`aca74f3`](https://github.com/finos/legend-studio/commit/aca74f399951a1afc66ec6eeebc586f96c483863) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube can pivot a column's values into columns through the engine's `pivot()`, refused, and greyed in the palette, on the databases that can't run it; data product and ingest cubes now know they run on Snowflake.
+
+- [#5678](https://github.com/finos/legend-studio/pull/5678) [`54ba40f`](https://github.com/finos/legend-studio/commit/54ba40fc93e31fc3ef4621f22478aa565fd31e73) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: pick a deployed service as a source, from the engine's service registry (in progress: Cube can't read services yet).
+
+- [#5690](https://github.com/finos/legend-studio/pull/5690) [`b33fba5`](https://github.com/finos/legend-studio/commit/b33fba599d8bb530d1587ff7c564e3f8dfa81afe) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Studio: an ingest definition's editor offers Create MatView with Cube (behind `NonProductionFeatureFlag`). Cube opens full screen over Studio and reads only the project's own ingest definitions and data products, as the workspace holds them: the source dialog lists them by name, each path muted beside it, with no class, deployment or search to pick, and runs use the workspace and the project's lakehouse runtime, as Studio's own queries do. Add as MatView adds the step that runs to the definition as a materialized view (a `FunctionSource` data set). Cube's host can now name the one project its sources come from (`CubeHost.project`), turn off its sample data and examples, give the engine its own ingest definitions and data product model, and add buttons to the header; the floating step editor stays above a dialog that hosts the page; the Ingest tab picks the only producer deployment and starts on the environment's warehouse; a dialog's primary button is an accent button in every theme; and the canvas keeps its controls' colours where React Flow 11's stylesheet is loaded too.
+
+- [#5685](https://github.com/finos/legend-studio/pull/5685) [`3a26c9d`](https://github.com/finos/legend-studio/commit/3a26c9d7b8d72820cb347e25db59ffb42e3fbf2e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube, a UX pass from the demo review:
+
+  - **Plain row-step names:** "Drop first rows", "Take first rows" and "Take a range of rows", in place of the `<x>` placeholders.
+  - **Steps not set yet** show their type's name with a muted "Not set" ("Join Another Input", not "Join additional input"; not "Apply 0 Window Functions"), and their tooltip shows only what is missing. The core's nodes say whether they are set (`isUnset`).
+  - **Group rows' numbers** read as quantities: their thousands grouped, an integer's too, and a fraction rounded to the column's scale, or 2 places, so an Average doesn't show every digit. A group's key is never touched, and hover and copy keep the exact value.
+  - **Types by the kind of value:** the editors' column lists say "Text", "Whole number", "Date"… and "can be empty", in place of `Varchar(20)?`; the exact type is on hover, and messages that compare types (Join, Concat, a table that changed) keep it.
+  - **Run this step:** a step's menu and its editor say "Run this step" in place of "Select", and the step that runs carries a "▶ Runs" badge on the canvas and in its editor.
+  - **Redo** (Ctrl/Cmd+Shift+Z, or Ctrl+Y) brings back what Undo took, until a new change; a source re-checked meanwhile stays checked. **New, Import and Export** are under one "Cube ▾" menu, so the header keeps the actions used while building.
+  - **A DuckDB sample, Sales**, in Examples, with two Pivot examples: the H2 samples can't run the engine's `pivot()`, so Pivot now works on a sample out of the box.
+  - **A column preview for tables** in Sample Data, Project Database and Direct Connection: the table picked last shows its columns under the list once the clicks pause, as an access point does; Add takes the columns read, asking the engine only for the others.
+  - **Steps by keyboard and menu:** Delete or Backspace removes the focused step; Ctrl/Cmd+C copies it and Ctrl/Cmd+V pastes the copy after the focused step; Ctrl/Cmd+D duplicates it; the node menu has Copy, Paste and Duplicate. Each is one undo step, and the keys act only on a step, never while typing. A copied source pastes only into a cube of its model, or an empty one, which takes it. The core gains `copyQueryNode`.
+
+- [#5669](https://github.com/finos/legend-studio/pull/5669) [`b464900`](https://github.com/finos/legend-studio/commit/b464900a2bd9e800b116aa80ab169e90c90575a4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube UX polish, from an audit of the demo:
+
+  - **Picking a source in the source dialog.** The picked row shows an accent bar, a check and a stronger background, which hovering no longer hides. Lists sit on the input background, so hovering a row shows. Add looks disabled until something is picked, and says why. Double-clicking a table, data set or access point adds it, as does Enter on a picked one.
+  - **The Join describes itself:** `Left Outer join on "DESK_ID" = "ID"` once it has key pairs, in place of "Join additional input".
+  - **Node tooltips** no longer end with the node's internal id.
+  - **Apply closes the node editor**, as the other ways out but Cancel do.
+  - **Shorter node labels:** a source shows its name, with its schema, data product or ingest definition below; the full description stays in the tooltip. Steps sit closer together, so a long flow keeps its text larger.
+  - **An added transform opens its editor**, unless it has nothing to set (Distinct).
+
 ## 0.0.4
 
 ### Patch Changes
