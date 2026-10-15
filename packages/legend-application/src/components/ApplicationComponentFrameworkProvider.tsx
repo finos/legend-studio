@@ -277,6 +277,7 @@ export const SimpleApplicationComponentFrameworkProvider = observer(
         enableTransitions={enableTransitions}
         customFonts={customFonts}
       >
+        <BackendOverridesDialog />
         <DndProvider backend={HTML5Backend}>
           <div
             style={{ height: '100%', width: '100%' }}
@@ -291,7 +292,7 @@ export const SimpleApplicationComponentFrameworkProvider = observer(
             <BackdropContainer
               elementId={APPLICATION_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
             />
-            {children}
+            <BackendOverridesFrame>{children}</BackendOverridesFrame>
           </div>
         </DndProvider>
       </LegendStyleProvider>

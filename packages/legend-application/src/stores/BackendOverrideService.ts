@@ -41,6 +41,15 @@ export interface BackendOverrideEntry {
   override?: LegendApplicationAppliedBackendOverride | undefined;
 }
 
+/** A backend override in use, as the banner shows it */
+export interface BackendOverrideInUse {
+  /** The backend's label, or the config path for a backend the application doesn't declare */
+  label: string;
+  configPath: string;
+  configuredUrl: string;
+  url: string;
+}
+
 /**
  * Lets the user override the URLs of the application's backend servers (e.g.
  * SDLC, engine) from the backend servers dialog. Overrides are saved in the
@@ -68,6 +77,8 @@ export class BackendOverrideService {
       setDraft: action,
       resetDraft: action,
       resetAllDrafts: action,
+      saveAndReload: action,
+      resetAndReload: action,
     });
     this.applicationStore = applicationStore;
   }
@@ -80,9 +91,19 @@ export class BackendOverrideService {
     );
   }
 
-  /** The backend overrides in use */
-  get activeOverrides(): BackendOverrideEntry[] {
-    return this.entries.filter((entry) => entry.override !== undefined);
+  /**
+   * Every backend override in use, including ones for backends the
+   * application doesn't declare (e.g. stored by an earlier version), so none
+   * is ever used unknowingly
+   */
+  get activeOverrides(): BackendOverrideInUse[] {
+    const entries = this.applicationStore.config.getBackendEntries();
+    return this.applicationStore.config.backendOverrides.map((override) => ({
+      ...override,
+      label:
+        entries.find((entry) => entry.configPath === override.configPath)
+          ?.label ?? override.configPath,
+    }));
   }
 
   /** The application's backends that are configured */
@@ -125,7 +146,7 @@ export class BackendOverrideService {
 
   open(): void {
     this.drafts.clear();
-    this.activeOverrides.forEach((entry) => {
+    this.entries.forEach((entry) => {
       if (entry.override) {
         this.drafts.set(entry.entry.key, entry.override.url);
       }
@@ -149,7 +170,10 @@ export class BackendOverrideService {
     this.drafts.clear();
   }
 
-  /** Saves the URLs typed in the dialog and reloads the application to use them */
+  /**
+   * Saves the URLs typed in the dialog and reloads the application to use
+   * them. Overrides of backends the application doesn't declare are dropped.
+   */
   saveAndReload(): void {
     if (this.hasDraftErrors) {
       return;
@@ -190,6 +214,7 @@ export class BackendOverrideService {
     }
     // NOTE: the application's own navigation blocking (e.g. Studio's unsaved
     // changes) still applies, so the user can stay and keep their work
+    this.isOpen = false;
     this.applicationStore.navigationService.navigator.reload();
   }
 }

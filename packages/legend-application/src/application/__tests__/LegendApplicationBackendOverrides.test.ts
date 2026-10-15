@@ -115,7 +115,7 @@ const getConfigData = (
   env: 'local',
   sdlc: { url: 'http://localhost:6100/api' },
   engine: { url: 'http://localhost:6300/api' },
-  application: backendOverrides ? { backendOverrides } : undefined,
+  ...(backendOverrides ? { application: { backendOverrides } } : {}),
 });
 
 const createConfig = (
@@ -323,9 +323,39 @@ describe('Backend override service', () => {
       ['sdlc', 'http://sdlc.test/api', 'http://localhost:6100/api'],
       ['engine', 'http://localhost:6300/api', 'http://localhost:6300/api'],
     ]);
-    expect(service.activeOverrides.map((entry) => entry.entry.key)).toEqual([
-      'sdlc',
+    expect(service.activeOverrides).toEqual([
+      {
+        label: 'SDLC Server',
+        configPath: 'sdlc.url',
+        configuredUrl: 'http://localhost:6100/api',
+        url: 'http://sdlc.test/api',
+      },
     ]);
+  });
+
+  test('Shows overrides of backends the application does not declare, and drops them on save', () => {
+    const applicationStore = createApplicationStore(
+      createConfig(getConfigData({ enabled: true }), [
+        {
+          configPath: 'legacy.url',
+          configuredUrl: 'http://localhost:7000/api',
+          url: 'http://legacy.test/api',
+        },
+      ]),
+    );
+    applicationStore.navigationService.navigator.reload = jest.fn();
+    writeBackendOverrides(window.localStorage, 'test', 'local', {
+      'legacy.url': 'http://legacy.test/api',
+    });
+    const service = applicationStore.backendOverrideService;
+    expect(service.activeOverrides.map((override) => override.label)).toEqual([
+      'legacy.url',
+    ]);
+    service.open();
+    service.saveAndReload();
+    expect(readBackendOverrides(window.localStorage, 'test', 'local')).toEqual(
+      {},
+    );
   });
 
   test('Is not enabled unless the deployment allows it', () => {
@@ -374,6 +404,7 @@ describe('Backend override service', () => {
       'sdlc.url': 'http://sdlc-2.test/api',
     });
     expect(reload).toHaveBeenCalledTimes(1);
+    expect(service.isOpen).toBe(false);
 
     service.resetAndReload();
     expect(readBackendOverrides(window.localStorage, 'test', 'local')).toEqual(

@@ -130,9 +130,9 @@ export const BackendOverridesDialog = observer(() => {
                 );
               })}
               <div className="backend-overrides__note">
-                Changes apply after a reload. They are saved in this browser for{' '}
-                {config.appName} ({config.env}). If a server keeps the
-                application from loading, open it with{' '}
+                Saved changes apply when the application reloads. They are kept
+                in this browser for {config.appName} ({config.env}). If a server
+                keeps the application from loading, open it with{' '}
                 <code>
                   ?{LEGEND_APPLICATION_RESET_BACKEND_OVERRIDES_QUERY_PARAM}
                 </code>{' '}
@@ -187,12 +187,15 @@ export const BackendOverridesBanner = observer(() => {
       <div
         className="backend-overrides__banner__label"
         title={overrides
-          .map((entry) => `${entry.entry.label}: ${entry.url}`)
+          .map(
+            (override) =>
+              `${override.label}: ${override.url} (configured: ${override.configuredUrl})`,
+          )
           .join('\n')}
       >
         Overridden backend servers:{' '}
         {overrides
-          .map((entry) => `${entry.entry.label} → ${entry.url}`)
+          .map((override) => `${override.label} → ${override.url}`)
           .join(', ')}
       </div>
       <button
