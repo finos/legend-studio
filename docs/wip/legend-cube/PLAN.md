@@ -5165,6 +5165,18 @@ V.8 folded it into the sections it names (see "Supersessions").
     - **Import Pure reads it back:** the reader takes `lateral` in Explode Array's form, and refuses another.
     - **The example** "Order lines from JSON": the orders parsed, their `items` exploded, then each line's product and
       quantity, 12 rows (10 lines, and once each the order with no lines and the one with no document).
+- **A JSON column's fields in the expression editors (V.9, user, 2026-10-15, after a mockup):**
+  - **Where:** a Variant input column's chip in the Extend and Filter by Expression editors gets `{}` and a caret,
+    which open its fields in place, under the chips. The grid's Explore JSON stays as a second way in (user).
+  - **The sample:** read when opened, just before the step being edited, as Explore JSON reads one (listed in
+    Runs, Stop, Read every row), so no run of the cube is needed and stale rows don't matter; kept while the editor
+    is open. Refused, the caret greyed with the reason, where the database has no Variant functions.
+  - **A field clicked** writes its expression where the chips write theirs (the Extend's expression last used, the
+    condition): a value as its suggested type, an object or array as JSON, the column itself at the root. Its other
+    forms (counts, lists, contains, the first element's fields, totals) are listed under it; one row per element is
+    greyed: it is a step of its own. In the Extend editor, "+ column" adds the field as a new column, named as
+    Explore JSON names it, replacing a new row still empty.
+  - **Variant columns get a tree icon** (`SitemapIcon`) wherever a column's type icon shows.
 - **A Variant column itself stays not sortable, groupable or comparable,** with Count only and empty tests (§11.4).
   Grouping or sorting on a raw Variant isn't probed on legend-engine, and extracting a field first covers the need.
 - **Samples:**
@@ -5181,16 +5193,17 @@ V.8 folded it into the sections it names (see "Supersessions").
 
 **Steps:**
 
-| Step | Deliverable                                                                       | Done when                                                           |
-| ---- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| V.1  | This section, PROGRESS-VARIANT.md, ISSUES.md's engine drafts, a draft PR          | Pushed                                                              |
-| V.2  | The readable Variant cell, and Open JSON's tree dialog                            | Unit and component tests                                            |
-| V.3  | Shape inference and the offers                                                    | Unit tests: lossless numbers, conservative types, each offer's Pure |
-| V.4  | Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend | Store and component tests; engine test of each offer's Pure         |
-| V.5  | Parse as JSON, and the DuckDB `demo.orders` sample with its example               | Tests; the example runs on the engine                               |
-| V.6  | Explode Array: core node, codec, emission, database refusal, editor, palette      | Core and builder tests; engine tests (DuckDB) and conformance       |
-| V.7  | Verification: an inline review, a browser rehearsal; a demo video                 | Findings fixed; every caption true on screen                        |
-| V.8  | Fold the supersessions in                                                         | §7.8, §9, §11.4 and the builder docs read as built                  |
+| Step | Deliverable                                                                              | Done when                                                           |
+| ---- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| V.1  | This section, PROGRESS-VARIANT.md, ISSUES.md's engine drafts, a draft PR                 | Pushed                                                              |
+| V.2  | The readable Variant cell, and Open JSON's tree dialog                                   | Unit and component tests                                            |
+| V.3  | Shape inference and the offers                                                           | Unit tests: lossless numbers, conservative types, each offer's Pure |
+| V.4  | Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend        | Store and component tests; engine test of each offer's Pure         |
+| V.5  | Parse as JSON, and the DuckDB `demo.orders` sample with its example                      | Tests; the example runs on the engine                               |
+| V.6  | Explode Array: core node, codec, emission, database refusal, editor, palette             | Core and builder tests; engine tests (DuckDB) and conformance       |
+| V.7  | Verification: an inline review, a browser rehearsal; a demo video                        | Findings fixed; every caption true on screen                        |
+| V.8  | Fold the supersessions in                                                                | §7.8, §9, §11.4 and the builder docs read as built                  |
+| V.9  | A JSON column's fields in the Extend and Filter by Expression editors (user, 2026-10-15) | Store and component tests; the video                                |
 
 **Risks:**
 

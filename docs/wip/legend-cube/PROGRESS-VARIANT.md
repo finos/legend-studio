@@ -4,7 +4,7 @@ PLAN §11.20. Built on `cube-variant`, from `master` (`dd0b62af9`), in a PR into
 
 ## Current state
 
-V.8 done (2026-10-15): the milestone is complete. PR #5698 stays a draft until the user says it is ready.
+V.9 done (2026-10-15): a JSON column's fields in the Extend and Filter by Expression editors, asked for by the user after the milestone. PR #5698 stays a draft until the user says it is ready.
 
 ## Steps
 
@@ -16,6 +16,7 @@ V.8 done (2026-10-15): the milestone is complete. PR #5698 stays a draft until t
 - [x] V.6 Explode Array: core node, codec, emission, database refusal, editor, palette
 - [x] V.7 Verification, and a demo video
 - [x] V.8 Fold the supersessions in
+- [x] V.9 A JSON column's fields in the Extend and Filter by Expression editors
 
 ## Commits
 
@@ -29,9 +30,28 @@ V.8 done (2026-10-15): the milestone is complete. PR #5698 stays a draft until t
 | V.6  | `5bf49334d` | Explode Array                |
 | V.6  | `b7ca6d5c3` | After review                 |
 | V.7  | `07da55e56` | Review, rehearsal, video     |
-| V.8  | this commit | Supersessions folded         |
+| V.8  | `33a02c282` | Supersessions folded         |
+| V.9  | `d5f68fabf` | Fields in the editors        |
+| V.9  | this commit | Polish, docs, video 32       |
 
 ## Notes
+
+- V.9 (user, 2026-10-15: "can't the Extend's Variant column have an explore tool, with an ad hoc query, so no
+  execution is needed?", shown a mockup first; Filter by Expression too; the grid's dialog kept):
+
+  - **The state** `stores/variant/CubeJsonFieldsState.ts`, one per Extend or Filter by Expression draft: the column
+    open, its sample read just before the node through `readCubeJsonSample` (listed in Runs), the search, folded
+    fields, the field whose forms show; refused where the database has no Variant functions.
+  - **The tree** `components/editors/CubeJsonFieldsTree.tsx`: `{}` and a caret beside a Variant chip, then under the
+    chips the status (Read again, Read every row, Stop), Find a field, and the fields: a click writes the field's
+    expression (`getCubeJsonFieldDefault`), "+ column" adds it as an Extend column (`CubeExtendDraft.addColumn`),
+    "···" lists its other forms, one row per element greyed. The field filter moved to `filterCubeJsonFields`,
+    shared with the dialog.
+  - **Rebased** on master `bcbea2a1d` (#5697, the release #5672, #5699): clean; `check:changeset` passes against
+    finos master (the fork's `origin/master` is behind, so it lists every bumped package there).
+  - **Tests:** the state (4), the editors (5). **Video 32** (`videos/32-variant-json-editors.webm`, script
+    `demo/variant/demo-variant-editors.mjs`): Order lines from JSON; the second Extend's `{}` on `item`, its fields
+    read before the step; + column on price, validated and run; Filter by Expression on qty > 1, 6 lines.
 
 - V.8: §11.20 folded into §7.8 (`jsonViewer`, `jsonExplorer`, Runs' JSON samples), §9 (a Variant block: the one-line
   cell, the menus, Explore JSON), §11.4 (Explode Array, the one operation that takes a Variant column) and §10.3 (the

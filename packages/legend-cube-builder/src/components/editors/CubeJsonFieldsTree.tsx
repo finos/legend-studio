@@ -135,7 +135,7 @@ const CubeJsonFieldsRow = observer(
           {onAddColumn && byDefault.column && (
             <button
               type="button"
-              className="shrink-0 rounded-sm border border-[var(--color-border-subtle)] px-1 text-xs enabled:hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
+              className="shrink-0 rounded-sm border border-[var(--color-border-subtle)] px-1 text-sm enabled:hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
               aria-label={`Add ${label} as a column`}
               title={`A new column ${byDefault.column.name}: ${byDefault.column.code}`}
               disabled={disabled}
@@ -152,7 +152,7 @@ const CubeJsonFieldsRow = observer(
             <button
               type="button"
               className={clsx(
-                'shrink-0 rounded-sm border px-1 text-xs enabled:hover:bg-[var(--color-bg-hover)]',
+                'shrink-0 rounded-sm border px-1 text-sm enabled:hover:bg-[var(--color-bg-hover)]',
                 formsShown
                   ? 'border-[var(--color-accent)]'
                   : 'border-[var(--color-border-subtle)]',
