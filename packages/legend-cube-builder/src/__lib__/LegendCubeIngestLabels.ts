@@ -47,11 +47,14 @@ export const getProducerLabel = (
 ): string =>
   name ? `${name} (${deploymentId})` : `Deployment ${deploymentId}`;
 
-/** The producer deployment a cube's data sets come from: its id, then its name when known */
+/** The producer deployment a cube's data sets come from, named as the producer list names it */
 export const getFixedProducerLabel = (
   deploymentId: string,
   name: string | undefined,
-): string => (name ? `${deploymentId} (${name})` : deploymentId);
+): string =>
+  name
+    ? `producer ${name} (${deploymentId})`
+    : `producer deployment ${deploymentId}`;
 
 /** Each class of ingest environment, as the Ingest tab names it */
 export const CUBE_INGEST_ENVIRONMENT_CLASS_LABELS: Readonly<
