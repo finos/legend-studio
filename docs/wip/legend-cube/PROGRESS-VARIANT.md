@@ -4,7 +4,7 @@ PLAN §11.20. Built on `cube-variant`, from `master` (`dd0b62af9`), in a PR into
 
 ## Current state
 
-V.4 done (2026-10-15): Explore JSON. Next: V.5, Parse as JSON and the DuckDB sample.
+V.5 done (2026-10-15): Parse as JSON and the DuckDB sample. Next: V.6, the Explode Array node.
 
 ## Steps
 
@@ -12,7 +12,7 @@ V.4 done (2026-10-15): Explore JSON. Next: V.5, Parse as JSON and the DuckDB sam
 - [x] V.2 The readable Variant cell, and Open JSON's tree dialog
 - [x] V.3 Shape inference and the offers
 - [x] V.4 Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend
-- [ ] V.5 Parse as JSON, and the DuckDB `demo.events` sample with its example
+- [x] V.5 Parse as JSON, and the DuckDB `demo.orders` sample with its example
 - [ ] V.6 Explode Array: core node, codec, emission, database refusal, editor, palette
 - [ ] V.7 Verification, and a demo video
 - [ ] V.8 Fold the supersessions in
@@ -24,9 +24,29 @@ V.4 done (2026-10-15): Explore JSON. Next: V.5, Parse as JSON and the DuckDB sam
 | V.1  | `39db34ea9` | The plan                     |
 | V.2  | `4fd4b5cd4` | The readable cell, Open JSON |
 | V.3  | `bdb5acd53` | Shape inference, the offers  |
-| V.4  | this commit | Explore JSON                 |
+| V.4  | `b1439c2e7` | Explore JSON                 |
+| V.5  | this commit | Parse as JSON, the sample    |
 
 ## Notes
+
+- V.5:
+
+  - **Parse as JSON** (`stores/variant/CubeJsonParse.ts`) is offered on a text cell holding a JSON object or array,
+    so plain text columns get no item. It adds `<name>_json: $x.<name>->toOne()->fromJson()` as an Extend after the
+    node that ran, once the engine parses it. It is refused where JSON isn't read, and blocked as the quick actions
+    are.
+  - **The sample:** Sales (DuckDB) gains `demo.orders`, 8 orders as JSON text, one with no document. The example
+    "Orders from JSON" carries the Extend with the engine's parse of its text.
+  - **Fixes:** the examples' engine test types each Extend before checking validity, and allows an Extend column's
+    wider nullability (§11.7). `CubeExamplesState.openExample` now waits for expressions to be typed before it
+    runs: the example didn't run on open.
+  - **Seen in the browser on :9002:**
+    - the example runs on open: 8 rows, `document_json` on one line;
+    - the cell menu shows Open JSON and Explore JSON…;
+    - the JSON tree;
+    - Explore JSON reads all 7 documents: tier at 86%, placed a date, paid true or false;
+    - the offers of `items`;
+    - Add 2 columns adds an Extend that types and runs: the first order's quantity total is 3.
 
 - V.4:
 

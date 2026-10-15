@@ -19,6 +19,7 @@ import {
   AggregationFunction,
   buildSchemasAndValidity,
   createNodeRegistry,
+  Extend,
   Group,
   Query,
   QueryEmitter,
@@ -32,6 +33,10 @@ import {
 } from '../__test-utils__/CubeOperationsTestUtils.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
+import {
+  buildCubeExtendTypingLambdas,
+  readCubeExtendTyping,
+} from '../stores/CubeExtendTyping.js';
 import { CUBE_EXAMPLES, type CubeExample } from '../stores/CubeExamples.js';
 import { CUBE_SPORTS_MODEL } from '../stores/fixtures/CubeSportsModel.js';
 import { CUBE_TRADES_MODEL } from '../stores/fixtures/CubeTradesModel.js';
@@ -81,7 +86,42 @@ const openExample = async (example: CubeExample) => {
     document.query.connections,
     document.query.selected,
   );
-  return { model, runtime, query };
+  // each Extend typed by the engine, as the editor types it in the background
+  // (an Extend parsing JSON, PLAN §11.20)
+  let typedQuery = query;
+  for (const node of query.nodes) {
+    if (node instanceof Extend) {
+      const registry = createNodeRegistry();
+      const columns = node.columns.map(({ name, lambda }) => ({
+        name,
+        lambda: lambda as NonNullable<typeof lambda>,
+      }));
+      const [inputId] = typedQuery.getInputIds(node.id);
+      const answers = await engine.typeLambdas(
+        model,
+        buildCubeExtendTypingLambdas(
+          typedQuery,
+          node,
+          columns,
+          registry,
+          false,
+        ),
+      );
+      const { typing } = readCubeExtendTyping(
+        answers,
+        node,
+        buildSchemasAndValidity(typedQuery, registry.queryRules).schemas.get(
+          inputId ?? '',
+        ) as Schema,
+        columns,
+        undefined,
+      );
+      typedQuery = typedQuery.replace(
+        new Extend(node.id, node.columns, typing, node.rest),
+      );
+    }
+  }
+  return { model, runtime, query: typedQuery };
 };
 
 /**
@@ -102,6 +142,12 @@ const sumsAndAverages = (query: Query): string[] =>
       : [],
   );
 
+/** An Extend's columns, which Cube takes as nullable whatever the engine says (PLAN §11.7) */
+const extendColumns = (query: Query): string[] =>
+  query.nodes.flatMap((node) =>
+    node instanceof Extend ? node.columns.map((column) => column.name) : [],
+  );
+
 /** The rows each example shows */
 const ROW_COUNTS = new Map([
   // the ten customers with most orders
@@ -118,6 +164,8 @@ const ROW_COUNTS = new Map([
   // the four countries, pivoted on DuckDB
   ['sales-by-year', 4],
   ['sales-by-product', 4],
+  // the eight orders, one with no document
+  ['sales-orders-json', 8],
 ]);
 
 describe('Example cubes, on the engine', () => {
@@ -161,7 +209,12 @@ describe('Example cubes, on the engine', () => {
             key,
             schemas.get(nodeId),
             engineSchemas.get(key),
-            { widerNullable: sumsAndAverages(query) },
+            {
+              widerNullable: [
+                ...sumsAndAverages(query),
+                ...extendColumns(query),
+              ],
+            },
           ),
         ),
       ).toEqual([]);

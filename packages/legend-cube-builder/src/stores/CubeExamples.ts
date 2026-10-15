@@ -15,6 +15,7 @@
  */
 
 import {
+  Extend,
   AggregationFunction,
   Pivot,
   ColumnComparisonFilter,
@@ -59,6 +60,7 @@ import {
 import {
   CUBE_SALES_DATABASE,
   CUBE_SALES_MODEL,
+  CUBE_SALES_ORDERS_TABLE,
   CUBE_SALES_RUNTIME,
   CUBE_SALES_SCHEMA,
 } from './fixtures/CubeSalesDuckDbModel.js';
@@ -131,8 +133,8 @@ const SALES: CubeExampleDataset = {
   id: 'sales',
   name: 'Sales (DuckDB)',
   description:
-    'Made-up sales of tea and coffee by country and year, on DuckDB, which runs Pivot',
-  tables: ['sales'],
+    'Made-up sales of tea and coffee by country and year, and orders as JSON documents, on DuckDB, which runs Pivot and reads JSON',
+  tables: ['sales', 'orders'],
   model: CUBE_SALES_MODEL,
   runtime: CUBE_SALES_RUNTIME,
   database: CUBE_SALES_DATABASE,
@@ -521,6 +523,48 @@ export const CUBE_EXAMPLES: readonly CubeExample[] = Object.freeze([
         ]),
       ],
       connections: chain(['relational101', 'pivot101', 'sort101']),
+    }),
+  ),
+  example(
+    SALES,
+    'sales-orders-json',
+    'Orders from JSON',
+    "Reads each order's JSON document as a Variant column: explore its fields from the column's menu",
+    (table) => ({
+      nodes: [
+        table('relational101', CUBE_SALES_ORDERS_TABLE),
+        new Extend('extend101', [
+          {
+            name: 'document_json',
+            code: 'x | $x.document->toOne()->fromJson()',
+            // as the engine parses the text (PLAN §11.20, Parse as JSON)
+            lambda: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'fromJson',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'toOne',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [{ _type: 'var', name: 'x' }],
+                          property: 'document',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              parameters: [{ _type: 'var', name: 'x' }],
+            },
+          },
+        ]),
+      ],
+      connections: chain(['relational101', 'extend101']),
     }),
   ),
 ]);

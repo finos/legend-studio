@@ -5126,10 +5126,14 @@ This subsection overrides the sections it names until V.8 folds it into them (se
 - **A Variant column itself stays not sortable, groupable or comparable,** with Count only and empty tests (§11.4).
   Grouping or sorting on a raw Variant isn't probed on legend-engine, and extracting a field first covers the need.
 - **Samples:**
-  - **The DuckDB Sales dataset gains a table `demo.events`,** with a VARCHAR column of JSON documents: orders, each
-    with a customer object and an array of items.
-  - **An example cube runs Parse as JSON then Explode Array.** No other local source can show a Variant column: H2
-    has none, and the DuckDB direct connection hides `JSON` columns.
+  - **The DuckDB Sales dataset gains a table `demo.orders`** (V.5), with a VARCHAR column `document` of JSON
+    documents: each order has a customer object, an array of items, a flag, a date and tags. One order has no
+    document.
+  - **Examples:** "Orders from JSON" parses them (an Extend `document_json`), and V.6 adds one that runs Explode
+    Array. No other local source can show a Variant column: H2 has none, and the DuckDB direct connection hides
+    `JSON` columns.
+  - **An example runs** once its expressions are typed as well as its tables (V.5): an Extend waits for the
+    engine's typing.
   - **The engine tests** do what the probe does: create a DuckDB file through a direct connection, then read it
     through a text model declaring `SEMISTRUCTURED`.
 
@@ -5141,7 +5145,7 @@ This subsection overrides the sections it names until V.8 folds it into them (se
 | V.2  | The readable Variant cell, and Open JSON's tree dialog                            | Unit and component tests                                            |
 | V.3  | Shape inference and the offers                                                    | Unit tests: lossless numbers, conservative types, each offer's Pure |
 | V.4  | Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend | Store and component tests; engine test of each offer's Pure         |
-| V.5  | Parse as JSON, and the DuckDB `demo.events` sample with its example               | Tests; the example runs on the engine                               |
+| V.5  | Parse as JSON, and the DuckDB `demo.orders` sample with its example               | Tests; the example runs on the engine                               |
 | V.6  | Explode Array: core node, codec, emission, database refusal, editor, palette      | Core and builder tests; engine tests (DuckDB) and conformance       |
 | V.7  | Verification: an inline review, a browser rehearsal; a demo video                 | Findings fixed; every caption true on screen                        |
 | V.8  | Fold the supersessions in                                                         | §7.8, §9, §11.4 and the builder docs read as built                  |

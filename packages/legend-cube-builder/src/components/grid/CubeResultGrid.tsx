@@ -46,8 +46,15 @@ import {
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
-import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
+import {
+  CubeEngineError,
+  type CubeResultValue,
+} from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import {
+  addCubeJsonParseColumn,
+  isCubeJsonDocumentText,
+} from '../../stores/variant/CubeJsonParse.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
 import { getCubeExportFileName } from '../../stores/CubeExportState.js';
 import {
@@ -200,8 +207,10 @@ export const getCubeExploreJsonItem = <Row extends CubeAnyRow>(
 };
 
 /**
- * A Variant cell's items (PLAN §11.20): Open JSON shows a run row's document
- * as a tree; a group row's cell, or an empty one, has none to show
+ * A JSON cell's items (PLAN §11.20): on a Variant cell, Open JSON shows a run
+ * row's document as a tree (a group row's cell, or an empty one, has none to
+ * show), and Explore JSON…; on a text cell holding a JSON object or array,
+ * Parse as JSON
  */
 const getCubeVariantMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
@@ -209,6 +218,35 @@ const getCubeVariantMenuItems = <Row extends CubeAnyRow>(
   cell: CubeResultValue,
   kind: CubeGridCellKind,
 ): DataGridMenuItemDef<Row>[] => {
+  // a text cell holding a JSON object or array: Parse as JSON
+  if (
+    column.type.family === TypeFamily.STRING &&
+    kind === CubeGridCellKind.VALUE &&
+    typeof cell === 'string' &&
+    isCubeJsonDocumentText(cell)
+  ) {
+    const reason = editorState.jsonExplorer.getDisabledReason();
+    const { applicationStore } = editorState.host;
+    return [
+      {
+        name: 'Parse as JSON',
+        disabled: reason !== undefined,
+        ...(reason === undefined ? {} : { tooltip: reason }),
+        action: () => {
+          if (reason === undefined) {
+            addCubeJsonParseColumn(editorState, column.name).catch(
+              (error: unknown) =>
+                applicationStore.notificationService.notifyError(
+                  error instanceof CubeEngineError
+                    ? error.firstLine
+                    : String(error),
+                ),
+            );
+          }
+        },
+      },
+    ];
+  }
   if (column.type.family !== TypeFamily.VARIANT) {
     return [];
   }

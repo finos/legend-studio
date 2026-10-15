@@ -94,7 +94,15 @@ export class CubeExamplesState {
     this.close();
     const document = example.createDocument();
     this.editorState.importDocument(document, false);
-    yield when(() => !this.editorState.isResolvingSources);
+    // its tables typed, and its expressions checked by the engine, as an
+    // example's Extend parsing JSON is (PLAN §11.20)
+    yield when(
+      () =>
+        !this.editorState.isResolvingSources &&
+        !this.editorState.document.query.nodes.some((node) =>
+          this.editorState.isTypingNode(node),
+        ),
+    );
     const { execution } = this.editorState;
     // not if the user has moved on, e.g. undone the opening: typing the
     // tables replaces the document but keeps its context, which is this

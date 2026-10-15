@@ -75,6 +75,7 @@ describe('Examples dialog', () => {
       'Sales (DuckDB)',
       'Sales by country and year',
       'Sales count by country and product',
+      'Orders from JSON',
     ]);
     expect(
       within(grid).getByLabelText(
