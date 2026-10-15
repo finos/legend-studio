@@ -143,7 +143,10 @@ describe("An ingest data set's panel", () => {
     );
     expect(ingest.resolveSchemas.mock.calls).toEqual([
       [
-        CubeDataProductEnvironmentType.PRODUCTION,
+        {
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+          name: undefined,
+        },
         new Map([
           [
             'ingestDataset101',

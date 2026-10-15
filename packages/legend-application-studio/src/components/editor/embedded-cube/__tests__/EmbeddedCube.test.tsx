@@ -385,12 +385,20 @@ describe('Legend Cube in Studio', () => {
       expect((await catalog.getDefinitionElement(urn))._type).toBe(
         'ingestDefinition',
       );
-      const environment = await catalog.resolveEnvironment(PRODUCTION);
+      const environment = await catalog.resolveEnvironment({
+        environmentType: PRODUCTION,
+      });
       expect(environment.runtimeEnvironment).toBe('demo-dev');
       expect(environment.warehouse).toBe('DEMO_WH');
+      // the project's runtime is the one environment listed
+      expect(
+        (await catalog.listEnvironments()).map(
+          (each) => each.runtimeEnvironment,
+        ),
+      ).toEqual(['demo-dev']);
       expect(await catalog.getRuntimeEnvironment()).toBe('demo-dev');
       const schemas = await catalog.resolveSchemas(
-        PRODUCTION,
+        { environmentType: PRODUCTION },
         new Map([
           [
             'ingest101',
@@ -428,7 +436,9 @@ describe('Legend Cube in Studio', () => {
       const workspace = new LegendStudioCubeWorkspace(editorStore);
       const catalog = new LegendStudioCubeIngestCatalog(editorStore, workspace);
       await expect(
-        catalog.resolveEnvironment(CubeDataProductEnvironmentType.PRODUCTION),
+        catalog.resolveEnvironment({
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        }),
       ).rejects.toMatchObject({
         detail: LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE.NO_RUNTIME,
       });

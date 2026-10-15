@@ -54,6 +54,7 @@ import {
   getCubeIngestSettings,
   isCubeIngestModel,
 } from '../../../CubeIngest.js';
+import { getCubeIngestEnvironmentKey } from '../../../CubeIngestCatalog.js';
 import type { CubeEngineClientSettings } from '../../../CubeEngineClientSettings.js';
 import type { CubeDataProductModelSource } from '../../../CubeDataProductCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
@@ -384,7 +385,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
                 urn,
                 await source.getDefinitionElement(
                   urn,
-                  settings.environmentType,
+                  getCubeIngestEnvironmentKey(settings),
                 ),
               ];
             } catch (error) {
@@ -1132,7 +1133,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
     let environment: string;
     try {
       environment = await source.getRuntimeEnvironment(
-        settings.environmentType,
+        getCubeIngestEnvironmentKey(settings),
       );
     } catch (error) {
       throw toIngestError(error, CubeEngineErrorKind.EXECUTION, captureId);

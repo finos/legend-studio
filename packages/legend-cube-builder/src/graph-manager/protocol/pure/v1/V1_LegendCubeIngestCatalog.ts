@@ -41,6 +41,7 @@ import {
   CubeIngestDefinitionCandidate,
   type CubeIngestDefinitionList,
   CubeIngestEnvironment,
+  type CubeIngestEnvironmentKey,
   CubeIngestProducer,
 } from '../../../CubeIngestCatalog.js';
 import { V1_readCubeDeploymentNames } from './V1_CubeDeploymentName.js';
@@ -48,8 +49,9 @@ import { V1_readCubeIngestDataSets } from './V1_CubeIngestDefinition.js';
 import type { V1_CubeIngestDefinitionSource } from './V1_CubeIngestModel.js';
 
 // The deployed ingest definitions (PLAN §6.7), read as Data Cube's producer
-// source reads them: the platform's ingest environments, the one named by
-// the viewer's environment in the class, its ingest server's producer
+// source reads them: the platform's ingest environments, the one picked, by
+// default the one named by the viewer's environment in the class, its
+// ingest server's producer
 // deployments, a deployment's definitions, and a definition's grammar, which
 // the engine parses; and, with a deployment directory, the producers' names.
 // Everything is read once per page visit; `fresh` reads a definition again
@@ -68,6 +70,17 @@ const CLASSIFICATIONS: Readonly<
   [CubeDataProductEnvironmentType.PRODUCTION_PARALLEL]:
     V1_IngestEnvironmentClassification.PROD_PARALLEL,
 };
+
+/** The class the platform's classification names, or none for one Cube doesn't read */
+const environmentTypeOf = (
+  classification: string,
+): CubeDataProductEnvironmentType | undefined =>
+  (
+    Object.entries(CLASSIFICATIONS) as [
+      CubeDataProductEnvironmentType,
+      string,
+    ][]
+  ).find(([, each]) => each === classification)?.[0];
 
 const CLASS_LABELS: Readonly<Record<CubeDataProductEnvironmentType, string>> = {
   [CubeDataProductEnvironmentType.PRODUCTION]: 'production',
@@ -133,10 +146,8 @@ export class V1_LegendCubeIngestCatalog
   private readonly getAccessToken: () => string | undefined;
 
   private summaries: Promise<IngestDeploymentServerConfig[]> | undefined;
-  private readonly producers = new Map<
-    CubeDataProductEnvironmentType,
-    Promise<CubeIngestProducer[]>
-  >();
+  /** By ingest environment, as `keyOf` names it */
+  private readonly producers = new Map<string, Promise<CubeIngestProducer[]>>();
   private readonly definitionLists = new Map<
     string,
     Promise<CubeIngestDefinitionList>
@@ -205,13 +216,14 @@ export class V1_LegendCubeIngestCatalog
     return this.summaries;
   }
 
-  /** The ingest environment of the class named by the viewer's environment */
+  /** The ingest environment of the class with the name given, else the one named by the viewer's environment */
   private async summaryOf(
-    environmentType: CubeDataProductEnvironmentType,
+    key: CubeIngestEnvironmentKey,
   ): Promise<IngestDeploymentServerConfig> {
+    const { environmentType } = key;
     const [summaries, environment] = await Promise.all([
       this.readSummaries(),
-      this.resolveBaseEnvironment(),
+      key.name ?? this.resolveBaseEnvironment(),
     ]);
     const summary = summaries.find(
       (each) =>
@@ -231,10 +243,11 @@ export class V1_LegendCubeIngestCatalog
     return summary;
   }
 
-  async resolveEnvironment(
+  /** The ingest environment of a class a platform's row describes */
+  private static environmentOf(
+    summary: IngestDeploymentServerConfig,
     environmentType: CubeDataProductEnvironmentType,
-  ): Promise<CubeIngestEnvironment> {
-    const summary = await this.summaryOf(environmentType);
+  ): CubeIngestEnvironment {
     return new CubeIngestEnvironment({
       environmentType,
       name: summary.environmentName,
@@ -244,20 +257,56 @@ export class V1_LegendCubeIngestCatalog
     });
   }
 
-  async getRuntimeEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
-  ): Promise<string> {
-    return (await this.resolveEnvironment(environmentType)).runtimeEnvironment;
+  /** What the caches know an environment by: its class and its name */
+  private static keyOf(summary: IngestDeploymentServerConfig): string {
+    return JSON.stringify([
+      summary.environmentClassification,
+      summary.environmentName,
+    ]);
   }
 
-  listProducers(
-    environmentType: CubeDataProductEnvironmentType,
+  /** Every ingest environment of the platform in the classes Cube reads, by name, production first */
+  async listEnvironments(): Promise<readonly CubeIngestEnvironment[]> {
+    return (await this.readSummaries())
+      .flatMap((summary) => {
+        const environmentType = environmentTypeOf(
+          summary.environmentClassification as string,
+        );
+        return environmentType
+          ? [V1_LegendCubeIngestCatalog.environmentOf(summary, environmentType)]
+          : [];
+      })
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(b.name) ||
+          this.environmentTypes.indexOf(a.environmentType) -
+            this.environmentTypes.indexOf(b.environmentType),
+      );
+  }
+
+  async resolveEnvironment(
+    environment: CubeIngestEnvironmentKey,
+  ): Promise<CubeIngestEnvironment> {
+    return V1_LegendCubeIngestCatalog.environmentOf(
+      await this.summaryOf(environment),
+      environment.environmentType,
+    );
+  }
+
+  async getRuntimeEnvironment(
+    environment: CubeIngestEnvironmentKey,
+  ): Promise<string> {
+    return (await this.resolveEnvironment(environment)).runtimeEnvironment;
+  }
+
+  async listProducers(
+    environment: CubeIngestEnvironmentKey,
   ): Promise<readonly CubeIngestProducer[]> {
+    const summary = await this.summaryOf(environment);
     return V1_LegendCubeIngestCatalog.once(
       this.producers,
-      environmentType,
+      V1_LegendCubeIngestCatalog.keyOf(summary),
       async () => {
-        const summary = await this.summaryOf(environmentType);
         let urns: string[];
         try {
           urns = await this.ingestServerClient.getProducerEnvironments(
@@ -319,18 +368,20 @@ export class V1_LegendCubeIngestCatalog
     );
   }
 
-  listDefinitions(
-    environmentType: CubeDataProductEnvironmentType,
+  async listDefinitions(
+    environment: CubeIngestEnvironmentKey,
     producerDeploymentId: string,
   ): Promise<CubeIngestDefinitionList> {
+    const { environmentType } = environment;
+    const summary = await this.summaryOf(environment);
     return V1_LegendCubeIngestCatalog.once(
       this.definitionLists,
-      JSON.stringify([environmentType, producerDeploymentId]),
+      JSON.stringify([
+        V1_LegendCubeIngestCatalog.keyOf(summary),
+        producerDeploymentId,
+      ]),
       async () => {
-        const [summary, producers] = await Promise.all([
-          this.summaryOf(environmentType),
-          this.listProducers(environmentType),
-        ]);
+        const producers = await this.listProducers(environment);
         const producer = producers.find(
           (each) => each.deploymentId === producerDeploymentId,
         );
@@ -375,10 +426,9 @@ export class V1_LegendCubeIngestCatalog
   /** A definition's element, from the ingest server's grammar, which the engine parses */
   private async readElement(
     urn: string,
-    environmentType: CubeDataProductEnvironmentType,
+    summary: IngestDeploymentServerConfig,
   ): Promise<PlainObject> {
     const definition = parseCubeIngestUrn(urn)?.definition ?? urn;
-    const summary = await this.summaryOf(environmentType);
     let grammar: string;
     try {
       grammar = await this.ingestServerClient.getIngestDefinitionGrammar(
@@ -427,29 +477,30 @@ export class V1_LegendCubeIngestCatalog
     return element;
   }
 
-  getDefinitionElement(
+  async getDefinitionElement(
     urn: string,
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     options?: { readonly fresh?: boolean | undefined },
   ): Promise<PlainObject> {
+    const summary = await this.summaryOf(environment);
+    const key = JSON.stringify([
+      V1_LegendCubeIngestCatalog.keyOf(summary),
+      urn,
+    ]);
     if (options?.fresh) {
-      this.elements.delete(urn);
+      this.elements.delete(key);
     }
-    return V1_LegendCubeIngestCatalog.once(this.elements, urn, () =>
-      this.readElement(urn, environmentType),
+    return V1_LegendCubeIngestCatalog.once(this.elements, key, () =>
+      this.readElement(urn, summary),
     );
   }
 
   async describe(
     urn: string,
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     options?: { readonly fresh?: boolean | undefined },
   ): Promise<readonly CubeIngestDataSet[]> {
-    const element = await this.getDefinitionElement(
-      urn,
-      environmentType,
-      options,
-    );
+    const element = await this.getDefinitionElement(urn, environment, options);
     try {
       return V1_readCubeIngestDataSets(element);
     } catch {
@@ -461,7 +512,7 @@ export class V1_LegendCubeIngestCatalog
   }
 
   async resolveSchemas(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
     options?: { readonly fresh?: boolean | undefined },
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
@@ -477,7 +528,7 @@ export class V1_LegendCubeIngestCatalog
             [string, readonly CubeIngestDataSet[] | CubeEngineError]
           > => {
             try {
-              return [urn, await this.describe(urn, environmentType, options)];
+              return [urn, await this.describe(urn, environment, options)];
             } catch (error) {
               return [urn, toNetworkError(error)];
             }
