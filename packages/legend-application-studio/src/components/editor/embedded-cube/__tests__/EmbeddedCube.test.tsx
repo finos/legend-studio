@@ -525,13 +525,31 @@ describe('Legend Cube in Studio', () => {
 
   test(
     integrationTest(
-      "Add MatView asks for the view's name, a classification of its data, and a primary key among the columns of the step that runs",
+      "Add MatView asks for the view's name, a classification of its data, and a primary key among the columns of the step that runs, but the milestoning ones",
     ),
     async () => {
+      // TRADES batch-milestoned: its rows have the LAKE_* columns its write
+      // mode adds
       const { editorStore, renderResult } = await setUp([
-        TRADES_INGEST,
+        {
+          ...TRADES_INGEST,
+          content: {
+            ...(TRADES_INGEST.content as PlainObject),
+            writeMode: { _type: 'batch_milestoned' },
+          },
+        },
         LAKEHOUSE_RUNTIME,
       ]);
+      expect(
+        editorStore.embeddedCubeState.getMaterializedViewKeyColumns([
+          'TRADE_ID',
+          'LAKE_DIGEST',
+          'LAKE_IN_ID',
+          'LAKE_OUT_ID',
+          'LAKE_FROM',
+          'LAKE_THRU',
+        ]),
+      ).toEqual(['TRADE_ID']);
       const dataProductConfig = new DataProductConfig();
       dataProductConfig.classifications = ['DP00', 'DP10', 'DP20'];
       editorStore.applicationStore.config.options.dataProductConfig =
@@ -591,7 +609,8 @@ describe('Legend Cube in Studio', () => {
       expect(add.disabled).toBe(true);
       fireEvent.change(classification, { target: { value: 'DP10' } });
       expect(add.disabled).toBe(false);
-      // the key is any of the cube's columns, kept in their order
+      // the key is any of the cube's columns but LAKE_DIGEST, LAKE_IN_ID and
+      // LAKE_OUT_ID, kept in their order
       const keyColumns = within(form).getByRole('list', {
         name: 'Primary key columns',
       });
@@ -698,13 +717,13 @@ describe('Legend Cube in Studio', () => {
 
   test(
     integrationTest(
-      "Save MatView asks again for what a view can't be saved with as it was: a classification of its data it lacks, and a primary key whose column is gone",
+      "Save MatView asks again for what a view can't be saved with as it was: a classification of its data it lacks, and a primary key with a column that is gone or a milestoning one",
     ),
     async () => {
       // as Studio wrote a view before it asked for a classification, keyed
-      // by a column the view's rows no longer have
+      // by a column the view's rows no longer have and a milestoning one
       const { editorStore, renderResult } = await setUp([
-        tradesIngestWithView({ primaryKey: ['TRADE_ID'] }),
+        tradesIngestWithView({ primaryKey: ['TRADE_ID', 'LAKE_IN_ID'] }),
         LAKEHOUSE_RUNTIME,
       ]);
       await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
@@ -719,6 +738,7 @@ describe('Legend Cube in Studio', () => {
       const problems = [
         'BIG_TRADES has no classification of its data.',
         "Its primary key's TRADE_ID is no longer a column of the cube.",
+        "Its primary key's LAKE_IN_ID is a milestoning column, which a key leaves out.",
       ];
       expect(
         embeddedCubeState.getMaterializedViewSaveProblems([
@@ -726,10 +746,11 @@ describe('Legend Cube in Studio', () => {
           'TOTAL_USD',
         ]),
       ).toEqual(problems);
-      // the key isn't checked when Cube doesn't know the step's columns
+      // whether a key column is gone isn't checked when Cube doesn't know the
+      // step's columns
       expect(
         embeddedCubeState.getMaterializedViewSaveProblems(undefined),
-      ).toEqual(['BIG_TRADES has no classification of its data.']);
+      ).toEqual([problems[0], problems[2]]);
 
       const saveMatView = await renderResult.findByRole('button', {
         name: 'Save MatView',

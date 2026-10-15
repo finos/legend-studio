@@ -139,14 +139,16 @@ screen over the editor, as the embedded query builder does, with `LegendStudioCu
   which starts as the runtime's.
 - **Add MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
   as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, a classification of
-  its data and a primary key among the step's columns (`analysis.schemas` of the selected step), and appends a
+  its data and a primary key among the step's columns (`analysis.schemas` of the selected step), but the
+  milestoning columns a write mode adds (`LAKE_IN_ID`, `LAKE_DIGEST`, …), and appends a
   `FunctionSource` data set to the definition. Studio sees it as a local change; Lineage and View SQL work on it.
 - **Edit MatView:** the button's menu lists the definition's materialized views. Cube opens on one, read back into
   its steps (`initialLambda` on `CubeEditor`, Import Pure, PLAN §11.18): the host binds its sources as the source
   dialog would add them, and a banner says when Cube writes the view another way. The header button is then
   **Save MatView**, which replaces that view's lambda in place, keeping its name, place and other keys, and adding
   the empty lists the engine reads that it lacks. When the view has no classification of its data, or its primary
-  key has a column the step no longer has, Save MatView first asks for them again in Add MatView's dialog.
+  key has a column the step no longer has or a milestoning one, Save MatView first asks for them again in Add
+  MatView's dialog.
 - **Loading:** Studio loads Cube with the dialog, on its first opening (`React.lazy`), so Cube's code stays out of
   Studio's main bundle.
 

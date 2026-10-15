@@ -4912,7 +4912,8 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
   `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`), a local change in Studio. The dialog asks for the
   name, the data's classification (one of `dataProductConfig.classifications`, as a data product's access points
   offer, or typed when the config gives none) and the primary key, any of the step's columns, kept in their order
-  (2026-10-14: a view without a classification failed with a NullPointerException).
+  (2026-10-14: a view without a classification failed with a NullPointerException), but the milestoning columns a
+  write mode adds, `LAKE_DIGEST`, `LAKE_IN_ID`, `LAKE_OUT_ID`, `LAKE_FROM` and `LAKE_THRU` (user, 2026-10-14).
 - **The light theme:** the demo is shown in Studio's light theme; Cube's dialogs draw their primary button as an
   accent button in every theme.
 
@@ -4945,9 +4946,11 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
 - **Save MatView asks again only when it must** (after #5695's classification and primary key, 2026-10-14): a view
   is saved at once unless its data has no classification (Studio wrote views without one before #5695, the cause of
   its NullPointerException) or one the config doesn't list, or its primary key has a column the step that runs no
-  longer has. Then Add MatView's dialog opens as Save MatView, on the view's own classification and the key columns
-  the step still has, and says why. A view saved gains the empty lists the engine reads (`ingestPartitionColumns`,
-  `preprocessors`, `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`) that it lacks.
+  longer has, or a milestoning one. Then Add MatView's dialog opens as Save MatView, on the view's own classification
+  and the key columns it can keep, and says why. A view saved gains the empty lists the engine reads
+  (`ingestPartitionColumns`, `preprocessors`, `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`) that it
+  lacks. The user keeps Save MatView one click: a view's classification and key are otherwise set when it is added
+  (2026-10-14).
 
 **Reading a lambda:**
 
