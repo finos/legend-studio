@@ -76,6 +76,7 @@ describe('Examples dialog', () => {
       'Sales by country and year',
       'Sales count by country and product',
       'Orders from JSON',
+      'Order lines from JSON',
     ]);
     expect(
       within(grid).getByLabelText(

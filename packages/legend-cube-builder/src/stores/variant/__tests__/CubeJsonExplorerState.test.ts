@@ -16,6 +16,7 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  Explode,
   Extend,
   type IR,
   MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
@@ -26,6 +27,7 @@ import { CUBE_QUICK_ACTION_DISABLED_REASON } from '../../../__lib__/LegendCubeLa
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
   TEST__PAYLOAD,
+  TEST__payloadSample,
   TEST__setUpPayloadRun,
 } from '../../../__test-utils__/CubeVariantTestUtils.js';
 import {
@@ -35,7 +37,7 @@ import {
 import {
   CUBE_JSON_RUN_LABEL,
   CUBE_JSON_SAMPLE_SIZE,
-} from '../CubeJsonExplorerState.js';
+} from '../CubeJsonSampling.js';
 
 const PAYLOAD = TEST__PAYLOAD;
 const setUp = TEST__setUpPayloadRun;
@@ -124,6 +126,72 @@ describe('Explore JSON (PLAN §11.20)', () => {
     expect(state.history.length).toBe(history + 1);
     expect(fake.parseExpression).toHaveBeenCalledTimes(2);
     expect(explorer.isOpen).toBe(false);
+  });
+
+  test('Adds one row per element as an Explode Array after the Extend, one undo step, its element named freely', async () => {
+    const { state, fake } = await setUp();
+    const explorer = state.jsonExplorer;
+    await flowResult(explorer.open(PAYLOAD));
+    explorer.select(['tags']);
+    const offers = explorer.selectedField?.offers ?? [];
+    const explode = offers.find((offer) => offer.key === 'explode');
+    expect(explode).toMatchObject({
+      label: 'one row per element',
+      name: 'tags_element',
+      code: undefined,
+      explode: { column: 'PAYLOAD', path: ['tags'] },
+    });
+    explorer.toggle(['tags'], explode as never);
+    explorer.toggle(
+      ['tags'],
+      offers.find((offer) => offer.key === 'count') as never,
+    );
+    fake.parseExpression.mockImplementation(async (code) =>
+      Promise.resolve({
+        lambda: { _type: 'lambda', parameters: [], body: [], code },
+        located: {},
+      }),
+    );
+    const history = state.history.length;
+    await flowResult(explorer.add());
+    const { query } = state.document;
+    const added = query.getNode(query.selected ?? '');
+    expect(added).toBeInstanceOf(Explode);
+    expect([
+      (added as Explode).column,
+      (added as Explode).path,
+      (added as Explode).name,
+    ]).toEqual(['PAYLOAD', ['tags'], 'tags_element']);
+    const [extendId] = query.getInputIds(added?.id ?? '');
+    const extend = query.getNode(extendId ?? '');
+    expect(extend).toBeInstanceOf(Extend);
+    expect(query.getInputIds(extend?.id ?? '')).toEqual(['relational101']);
+    expect(state.history.length).toBe(history + 1);
+    expect(explorer.isOpen).toBe(false);
+  });
+
+  test('Ticks one row per element for one array at a time, and adds it alone', async () => {
+    const { state } = await setUp(
+      'DuckDB',
+      TEST__payloadSample(['{"a":[1],"b":[2]}']),
+    );
+    const explorer = state.jsonExplorer;
+    await flowResult(explorer.open(PAYLOAD));
+    const explodeOf = (key: string): never =>
+      explorer.fields?.children
+        .find((field) => field.path[0] === key)
+        ?.offers.find((offer) => offer.key === 'explode') as never;
+    explorer.toggle(['a'], explodeOf('a'));
+    explorer.toggle(['b'], explodeOf('b'));
+    expect(explorer.tickedOffers.map((offer) => offer.name)).toEqual([
+      'b_element',
+    ]);
+    await flowResult(explorer.add());
+    const { query } = state.document;
+    const added = query.getNode(query.selected ?? '') as Explode;
+    expect(added).toBeInstanceOf(Explode);
+    expect(added.path).toEqual(['b']);
+    expect(query.getInputIds(added.id)).toEqual(['relational101']);
   });
 
   test("Keeps the dialog open with the engine's message when a column doesn't parse, adding nothing", async () => {

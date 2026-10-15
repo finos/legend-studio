@@ -15,15 +15,12 @@
  */
 
 import {
-  ColumnComparisonFilter,
   type CubeDocument,
+  Explode,
   Extend,
   type ExtendColumn,
-  Filter,
-  FilterOperator,
   getVariantDatabaseProblem,
-  Restrict,
-  Schema,
+  type QueryNode,
   type SchemaColumn,
 } from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
@@ -41,30 +38,15 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { getCubeGridActionBlocker } from '../CubeGridQuickActions.js';
-import {
-  CubeQueryRunAborted,
-  type CubeQueryRunResult,
-  runCubeQuery,
-} from '../CubeQueryRun.js';
+import { CubeQueryRunAborted } from '../CubeQueryRun.js';
 import {
   type CubeJsonField,
   type CubeJsonOffer,
   getCubeJsonFields,
   getFreeCubeColumnName,
 } from './CubeJsonOffers.js';
-import { type CubeJsonSample, inferCubeJsonShape } from './CubeJsonShape.js';
-
-/** How many values Explore JSON reads first (user, 2026-10-14) */
-export const CUBE_JSON_SAMPLE_SIZE = 1000;
-
-/** No limit: Read every row (the run's `limit(rowLimit + 1)` then takes them all) */
-const EVERY_ROW = Number.MAX_SAFE_INTEGER;
-
-/** The runs Explore JSON makes, as Runs lists them */
-export const CUBE_JSON_RUN_LABEL = {
-  sample: (column: string): string => `Sample of ${column}`,
-  everyRow: (column: string): string => `Every value of ${column}`,
-};
+import { readCubeJsonSample } from './CubeJsonSampling.js';
+import type { CubeJsonSample } from './CubeJsonShape.js';
 
 /** A field's path as one key, for ticking */
 const pathKey = (path: readonly string[]): string => JSON.stringify(path);
@@ -77,8 +59,9 @@ const offerKey = (path: readonly string[], offer: CubeJsonOffer): string =>
  * Explore JSON (PLAN §11.20): a Variant column's documents, sampled through
  * the cube's own query path (the query up to the node that ran, the column
  * alone, its non-empty values), so the sample is listed in Runs and can be
- * stopped; their fields as a tree; and the offers ticked, added as one Extend
- * after the node that ran, as one undo step. The engine parses each column's
+ * stopped; their fields as a tree; and the offers ticked, added after the
+ * node that ran as one undo step: an Extend of the columns, then an Explode
+ * Array for one row per element of an array. The engine parses each column's
  * text first; the background check types the Extend, as any typed in the
  * editor.
  */
@@ -227,12 +210,11 @@ export class CubeJsonExplorerState {
   /** Reads the column's first values, or every row: either replaces what was read */
   *read(everyRow: boolean): GeneratorFn<void> {
     const { editorState, column, document, afterId } = this;
-    const context = document?.context;
     if (
       !column ||
       !document ||
       afterId === undefined ||
-      context?.runtime === undefined ||
+      document.context?.runtime === undefined ||
       this.isReading
     ) {
       return;
@@ -242,38 +224,17 @@ export class CubeJsonExplorerState {
     this.isReading = true;
     this.error = undefined;
     try {
-      const { query } = document;
-      // the query up to the node that ran, then the column alone and its
-      // non-empty values, each after the one before; the query isn't kept
-      const restrict = new Restrict(query.generateId(Restrict.TYPE), [
-        column.name,
-      ]);
-      const nonEmpty = new Filter(
-        query.generateId(Filter.TYPE),
-        new ColumnComparisonFilter(column.name, FilterOperator.IS_NOT_EMPTY),
-      );
-      const values = [restrict, nonEmpty].reduce(
-        (built, node) => built.add(node, built.selected),
-        query.selected === afterId ? query : query.select(afterId),
-      );
-      const result = (yield runCubeQuery(editorState, {
-        query: values,
-        model: context.model,
-        runtime: context.runtime,
-        schema: new Schema([column]),
-        rowLimit: everyRow ? EVERY_ROW : CUBE_JSON_SAMPLE_SIZE,
+      const sample = (yield readCubeJsonSample(editorState, {
+        document,
+        afterId,
+        column,
+        everyRow,
         abortController: controller,
-        label: everyRow
-          ? CUBE_JSON_RUN_LABEL.everyRow(column.name)
-          : CUBE_JSON_RUN_LABEL.sample(column.name),
-      })) as CubeQueryRunResult;
+      })) as CubeJsonSample | undefined;
       if (this.controller !== controller) {
         return;
       }
-      this.sample = inferCubeJsonShape(
-        result.rows.map((row) => row[0] ?? null),
-        !result.limited,
-      );
+      this.sample = sample;
     } catch (error) {
       if (
         this.controller !== controller ||
@@ -307,31 +268,46 @@ export class CubeJsonExplorerState {
     this.selectedPath = path;
   }
 
+  /**
+   * Ticks or unticks an offer. One row per element can be ticked for one
+   * array at a time: two would give a row for each pair of their elements.
+   */
   toggle(path: readonly string[], offer: CubeJsonOffer): void {
     const key = offerKey(path, offer);
     if (this.ticked.has(key)) {
       this.ticked.delete(key);
-    } else {
-      this.ticked.set(key, offer);
+      return;
     }
+    if (offer.explode) {
+      [...this.ticked].forEach(([other, ticked]) => {
+        if (ticked.explode) {
+          this.ticked.delete(other);
+        }
+      });
+    }
+    this.ticked.set(key, offer);
   }
 
   /**
-   * Adds the ticked offers as one Extend after the node that ran, one undo
-   * step, each column under its default name or the next free one: the
-   * engine parses each column's text first, and the dialog stays open with
-   * the error if it can't. Nothing is added if the cube changed meanwhile.
+   * Adds the ticked offers after the node that ran, one undo step: an Extend
+   * of the columns, each under its default name or the next free one, then
+   * an Explode Array for the array ticked for one row per element, its
+   * element named the same way. The engine parses each column's text first,
+   * and the dialog stays open with the error if it can't. Nothing is added if
+   * the cube changed meanwhile.
    */
   *add(): GeneratorFn<void> {
     const { editorState, document, afterId } = this;
-    const offers = this.tickedOffers.filter(
+    const ticked = this.tickedOffers;
+    const offers = ticked.filter(
       (offer): offer is CubeJsonOffer & { code: string } =>
         offer.code !== undefined,
     );
+    const exploded = ticked.find((offer) => offer.explode !== undefined);
     if (
       !document ||
       afterId === undefined ||
-      !offers.length ||
+      (!offers.length && !exploded) ||
       this.isAdding ||
       editorState.document !== document
     ) {
@@ -361,7 +337,23 @@ export class CubeJsonExplorerState {
       if (editorState.document !== document) {
         return;
       }
-      editorState.addConfiguredNode(new Extend(extendId, columns), afterId);
+      const nodes: QueryNode[] = columns.length
+        ? [new Extend(extendId, columns)]
+        : [];
+      if (exploded?.explode) {
+        nodes.push(
+          new Explode(
+            query.generateId(Explode.TYPE),
+            exploded.explode.column,
+            exploded.explode.path,
+            getFreeCubeColumnName(exploded.name, [
+              ...taken,
+              ...columns.map((column) => column.name),
+            ]),
+          ),
+        );
+      }
+      editorState.addConfiguredNodes(nodes, afterId);
       this.close();
     } catch (error) {
       assertErrorThrown(error);

@@ -20,6 +20,7 @@ import { join } from 'node:path';
 import {
   buildSchemasAndValidity,
   createNodeRegistry,
+  Explode,
   Extend,
   type ModelContext,
   type Query,
@@ -29,7 +30,11 @@ import {
   Schema,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
-import { TEST__chainOf } from '../__test-utils__/CubeOperationsTestUtils.js';
+import {
+  TEST__chainOf,
+  TEST__inferredSchema,
+  TEST__typingDifferences,
+} from '../__test-utils__/CubeOperationsTestUtils.js';
 import { CubeDirectDatabaseType } from '../graph-manager/CubeConnectionExplorer.js';
 import {
   createCubeDirectModel,
@@ -135,17 +140,19 @@ const run = async (query: Query): Promise<CubeResult> =>
     }),
   );
 
-/** The events, then an Extend of one offer typed by the engine, run: the new column's values by id */
-const runOffer = async (
-  offer: CubeJsonOffer,
-): Promise<{ type: string; values: CubeResultValue[] }> => {
+/** An Extend of one column after the nodes, typed by the engine, and the column's type */
+const typedExtend = async (
+  before: readonly QueryNode[],
+  name: string,
+  code: string,
+  id = 'extend101',
+): Promise<{ node: Extend; type: string }> => {
   const { engine } = V1_createEngineBackedCubeEngine();
-  const code = offer.code as string;
-  const { lambda } = await engine.parseExpression(code, 'extend101:0');
-  const stored = [{ name: 'v', code, lambda }];
-  const bare = new Extend('extend101', stored);
-  const query = TEST__chainOf([source, bare]);
-  const columns = [{ name: 'v', lambda }];
+  const { lambda } = await engine.parseExpression(code, `${id}:0`);
+  const stored = [{ name, code, lambda }];
+  const bare = new Extend(id, stored);
+  const query = TEST__chainOf([...before, bare]);
+  const columns = [{ name, lambda }];
   const answers = await engine.typeLambdas(
     MODEL,
     buildCubeExtendTypingLambdas(query, bare, columns, registry, false),
@@ -154,7 +161,7 @@ const runOffer = async (
     answers,
     bare,
     buildSchemasAndValidity(query, registry.queryRules).schemas.get(
-      'relational101',
+      before[before.length - 1]?.id ?? '',
     ) as Schema,
     columns,
     undefined,
@@ -162,15 +169,35 @@ const runOffer = async (
   if (typing.kind !== 'typed') {
     throw new Error(`${code} didn't type: ${error?.firstLine}`);
   }
-  const typed = TEST__chainOf([
-    source,
-    new Extend('extend101', stored, typing),
-  ] as QueryNode[]);
-  const result = await run(typed);
+  return {
+    node: new Extend(id, stored, typing),
+    type: typing.types[0]?.displayName ?? '',
+  };
+};
+
+/** The values of some columns, the rows sorted by their text */
+const rowsOf = (
+  result: CubeResult,
+  columns: readonly string[],
+): CubeResultValue[][] =>
+  result.rows
+    .map((row) =>
+      columns.map((column) => row[result.columns.indexOf(column)] ?? null),
+    )
+    .sort((left, right) =>
+      JSON.stringify(left).localeCompare(JSON.stringify(right)),
+    );
+
+/** The events, then an Extend of one offer typed by the engine, run: the new column's values by id */
+const runOffer = async (
+  offer: CubeJsonOffer,
+): Promise<{ type: string; values: CubeResultValue[] }> => {
+  const { node, type } = await typedExtend([source], 'v', offer.code as string);
+  const result = await run(TEST__chainOf([source, node] as QueryNode[]));
   const id = result.columns.indexOf('id');
   const v = result.columns.indexOf('v');
   return {
-    type: typing.types[0]?.displayName ?? '',
+    type,
     values: [...result.rows]
       .sort((left, right) => Number(left[id]) - Number(right[id]))
       .map((row) => row[v] ?? null),
@@ -305,4 +332,80 @@ describe('Explore JSON’s offers on DuckDB (PLAN §11.20)', () => {
       values: ['{"sku":"x","qty":2}', '{"sku":"z","qty":5}', null, null],
     });
   }, 300000);
+});
+
+describe('Explode Array on DuckDB (PLAN §11.20)', () => {
+  test('Gives one row per element, a row whose array is empty or whose document is missing kept once with no element', async () => {
+    const result = await run(
+      TEST__chainOf([
+        source,
+        new Explode('explode101', 'payload', ['items'], 'item'),
+      ]),
+    );
+    expect(result.columns).toEqual(['id', 'payload', 'item']);
+    expect(rowsOf(result, ['id', 'item'])).toEqual([
+      ['1', '{"sku":"x","qty":2}'],
+      ['1', '{"sku":"y","qty":1}'],
+      ['2', '{"sku":"z","qty":5}'],
+      ['3', null],
+      ['4', null],
+    ]);
+  }, 120000);
+
+  test('Explodes a column that is the array itself, and reads the elements as any Variant', async () => {
+    const tags = await typedExtend(
+      [source],
+      'tags',
+      "x | $x.payload->get('tags')",
+    );
+    expect(tags.type).toBe('Variant');
+    const explode = new Explode('explode101', 'tags', [], 'tag');
+    const tag = await typedExtend(
+      [source, tags.node, explode],
+      'tag_text',
+      'x | $x.tag->to(@String)',
+      'extend102',
+    );
+    const result = await run(
+      TEST__chainOf([source, tags.node, explode, tag.node] as QueryNode[]),
+    );
+    expect(rowsOf(result, ['id', 'tag_text'])).toEqual([
+      ['1', 'a'],
+      ['1', 'b'],
+      ['2', 'a'],
+      ['3', null],
+      ['4', null],
+    ]);
+  }, 120000);
+
+  test('Is typed by the engine as Cube infers it, its element a Variant that Cube says can be empty', async () => {
+    const { engine } = V1_createEngineBackedCubeEngine();
+    const query = TEST__chainOf([
+      source,
+      new Explode('explode101', 'payload', ['items'], 'item'),
+    ]);
+    const typed = await engine.typeLambdas(
+      MODEL,
+      new Map([
+        [
+          'explode101',
+          new QueryEmitter(query, registry).emitTypingLambda('explode101'),
+        ],
+      ]),
+    );
+    const inferred = TEST__inferredSchema(query);
+    expect(
+      inferred.columns.map(
+        ({ name, type, nullable }) =>
+          `${name} ${type.displayName}${nullable ? '?' : ''}`,
+      ),
+    ).toEqual(['id Int', 'payload Variant?', 'item Variant?']);
+    // the engine types the element [1], though an empty array or a missing
+    // document gives a row without one (the first test): Cube says nullable
+    expect(
+      TEST__typingDifferences('explode101', inferred, typed.get('explode101'), {
+        widerNullable: ['item'],
+      }),
+    ).toEqual([]);
+  }, 120000);
 });

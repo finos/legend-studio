@@ -480,6 +480,13 @@ export const MESSAGE_VARIANT_UNSUPPORTED_DATABASE = (
 ): string =>
   `JSON is not supported on ${databaseType}: Variant functions run on Snowflake, Databricks, Postgres and DuckDB.`;
 
+/** Added by Cube: Explode Array reads an array in a JSON document, so its column must be a Variant (PLAN §11.20) */
+export const MESSAGE_EXPLODE_COLUMN_NOT_VARIANT = (
+  column: string,
+  typeName: string,
+): string =>
+  `Explode column ${quote(column)} of type ${typeName} is not a Variant (JSON) column.`;
+
 /** Added by Cube: the aggregated column is consumed by the pivot, so it can't make rows or columns (PLAN §11.12) */
 export const MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN = (
   column: string,

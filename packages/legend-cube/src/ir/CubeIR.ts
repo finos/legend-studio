@@ -236,6 +236,8 @@ export enum EmitRole {
   EXTEND = 'extend',
   /** an Extend: a new column's expression, every value specification in it */
   EXPRESSION = 'expression',
+  /** an Explode Array: its lateral, and the column, keys, `toMany` and `flatten` in it (PLAN §11.20) */
+  EXPLODE = 'explode',
 }
 
 // -------------------- constructors --------------------

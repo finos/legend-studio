@@ -34,6 +34,7 @@ import { Concat } from '../../nodes/transforms/Concat.js';
 import { Difference } from '../../nodes/transforms/Difference.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
+import { Explode } from '../../nodes/transforms/Explode.js';
 import {
   ExpressionFilter,
   getExpressionFilterSignature,
@@ -58,6 +59,7 @@ import {
   SortDirection,
 } from '../../nodes/transforms/Sort.js';
 import type { Schema } from '../../schema/Schema.js';
+import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import type { LiteralValue } from '../../values/LiteralValue.js';
 import type { JsonObject } from '../../utils/Json.js';
 import type { IR } from '../CubeIR.js';
@@ -111,6 +113,8 @@ export const CUBE_QUERY_READER_MESSAGE = {
   WINDOW:
     "Cube reads a window as its Partition writes one: over() one window, the aggregates, ranks and other rows' values in up to three extends.",
   RESTRICT: 'its columns must be some of its input, in order.',
+  EXPLODE:
+    "Cube reads a lateral as its Explode Array writes one: x | $x.column->get('key')…->toMany(@Variant)->flatten(~name).",
   CONCAT: 'both inputs need the same columns, in the same order.',
 };
 
@@ -205,6 +209,7 @@ const RELATION_INPUTS: ReadonlyMap<string, number> = new Map([
   ['extend', 1],
   ['pivot', 1],
   ['cast', 1],
+  ['lateral', 1],
   ['join', 2],
   ['concatenate', 2],
 ]);
@@ -350,6 +355,63 @@ const sortKeysOf = (ir: IR | undefined): ColumnDirection[] | undefined => {
   });
   return read.length && read.every((key) => key !== undefined)
     ? read
+    : undefined;
+};
+
+/**
+ * `x | $x.<column>->get('<key>')…->toMany(@Variant)->flatten(~<name>)`, a
+ * lateral's function as Explode Array writes it (PLAN §11.20)
+ */
+const readExplodeFunction = (
+  ir: IR | undefined,
+): { column: string; path: string[]; name: string } | undefined => {
+  if (ir?.k !== 'lambda' || ir.params.length !== 1 || ir.body.length !== 1) {
+    return undefined;
+  }
+  const [row] = ir.params as [string];
+  const [flatten] = ir.body as [IR];
+  if (
+    flatten.k !== 'func' ||
+    getCubeFunctionName(flatten.name) !== 'flatten' ||
+    flatten.params.length !== 2
+  ) {
+    return undefined;
+  }
+  const [many, spec] = flatten.params as [IR, IR];
+  if (
+    spec.k !== 'colSpec' ||
+    spec.fn1 ||
+    many.k !== 'func' ||
+    getCubeFunctionName(many.name) !== 'toMany' ||
+    many.params.length !== 2
+  ) {
+    return undefined;
+  }
+  const [array, type] = many.params as [IR, IR];
+  if (
+    type.k !== 'genericType' ||
+    (type.path !== PRIMITIVE_TYPE_PATH.VARIANT && type.path !== 'Variant')
+  ) {
+    return undefined;
+  }
+  const path: string[] = [];
+  let at = array;
+  while (
+    at.k === 'func' &&
+    getCubeFunctionName(at.name) === 'get' &&
+    at.params.length === 2
+  ) {
+    const [receiver, key] = at.params as [IR, IR];
+    if (key.k !== 'literal' || key.value.kind !== 'string') {
+      return undefined;
+    }
+    path.unshift(key.value.value);
+    at = receiver;
+  }
+  return at.k === 'property' &&
+    at.receiver.k === 'var' &&
+    at.receiver.name === row
+    ? { column: at.name, path, name: spec.name }
     : undefined;
 };
 
@@ -782,6 +844,31 @@ class CubeQueryReader {
           ir,
           CUBE_QUERY_READER_MESSAGE.NO_STEP(name),
         );
+      case 'lateral': {
+        const explode = readExplodeFunction(settings[0]);
+        if (!explode || settings.length !== 1) {
+          return refuse(CUBE_QUERY_READER_MESSAGE.EXPLODE);
+        }
+        return this.choose(
+          [
+            {
+              node: new Explode(
+                this.nextId(Explode.TYPE),
+                explode.column,
+                explode.path,
+                explode.name,
+              ),
+              takenUnchecked: true,
+            },
+          ],
+          inputs,
+          ir,
+          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+            name,
+            CUBE_QUERY_READER_MESSAGE.EXPLODE,
+          ),
+        );
+      }
       default:
         throw new CubeLambdaReadError(CUBE_QUERY_READER_MESSAGE.NOT_YET(name));
     }

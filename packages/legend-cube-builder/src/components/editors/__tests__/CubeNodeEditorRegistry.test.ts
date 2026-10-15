@@ -78,6 +78,8 @@ describe('Node editor registries', () => {
         'Compares numeric values of specified columns from two previous data sets.',
       distinct: 'Removes duplicate rows from the previous data set.',
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
+      explode:
+        'Makes a row for each element of an array in a JSON (Variant) column of the previous data set, keeping its columns and adding the element as a new column. A row whose array is empty, or missing, is kept once, with an empty element.',
       expressionFilter:
         'Reduces the number of rows in the previous data set, keeping only rows for which the expression is true.',
       extend:

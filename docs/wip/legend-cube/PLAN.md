@@ -5123,6 +5123,24 @@ This subsection overrides the sections it names until V.8 folds it into them (se
     type is refused with a message, as Pivot is; typing lambdas carry no type.
   - **Its editor** picks the column, the path from the column's sampled shape (or typed keys), and the name. Explore
     JSON's "one row per element" adds one, prefilled.
+  - **As built (V.6):**
+    - **Every database keeps the row** of an empty array or a null document, once, with no element 📄🧪:
+      Snowflake writes `flatten(…, outer => true)`, Databricks `explode_outer`, Postgres `left join lateral … on true`,
+      DuckDB `unnest` of `[NULL]` for an empty list. Read from each dialect's source and pinned by plans
+      (`LegendCubeDialects` engine test); run on DuckDB.
+    - **The engine types the element `[1]`** though it can be empty 🧪: Cube says nullable, the conformance and
+      example tests declare it wider, and an engine issue is drafted in ISSUES.md.
+    - **Postgres may fail on an array of strings** 📄: its plan reads each element as text (`#>> '{}'`), then casts
+      it to `jsonb`. Not run here; drafted in ISSUES.md to confirm.
+    - **Its editor:** a column picker that greys columns that aren't Variant ("not JSON"), the keys as rows, and
+      Find arrays, which reads the column's first values after the node's input, as Explore JSON does (listed in
+      Runs), and lists the arrays they hold. The name follows the keys (`<last key>_element`, free in the input)
+      until typed.
+    - **Explore JSON** adds its Extend, then the Explode, as one undo step (`addConfiguredNodes`). One array is
+      ticked for one row per element at a time: two would give a row for each pair of their elements.
+    - **Import Pure reads it back:** the reader takes `lateral` in Explode Array's form, and refuses another.
+    - **The example** "Order lines from JSON": the orders parsed, their `items` exploded, then each line's product and
+      quantity, 12 rows (10 lines, and once each the order with no lines and the one with no document).
 - **A Variant column itself stays not sortable, groupable or comparable,** with Count only and empty tests (§11.4).
   Grouping or sorting on a raw Variant isn't probed on legend-engine, and extracting a field first covers the need.
 - **Samples:**

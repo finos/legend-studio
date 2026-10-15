@@ -712,6 +712,7 @@ describe(unitTest('Query emission'), () => {
       'let',
       'extend',
       'expression',
+      'explode',
     ]);
     expect(new Set(roles).size).toBe(roles.length);
     roles.forEach((role) => expect(role).not.toContain(':'));

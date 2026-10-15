@@ -4,7 +4,7 @@ PLAN §11.20. Built on `cube-variant`, from `master` (`dd0b62af9`), in a PR into
 
 ## Current state
 
-V.5 done (2026-10-15): Parse as JSON and the DuckDB sample. Next: V.6, the Explode Array node.
+V.6 done (2026-10-15): the Explode Array node. Next: V.7, an inline review, a browser rehearsal and the demo video.
 
 ## Steps
 
@@ -13,7 +13,7 @@ V.5 done (2026-10-15): Parse as JSON and the DuckDB sample. Next: V.6, the Explo
 - [x] V.3 Shape inference and the offers
 - [x] V.4 Explore JSON: the sample through Runs, Read every row, the dialog, the new Extend
 - [x] V.5 Parse as JSON, and the DuckDB `demo.orders` sample with its example
-- [ ] V.6 Explode Array: core node, codec, emission, database refusal, editor, palette
+- [x] V.6 Explode Array: core node, codec, emission, database refusal, editor, palette
 - [ ] V.7 Verification, and a demo video
 - [ ] V.8 Fold the supersessions in
 
@@ -25,9 +25,34 @@ V.5 done (2026-10-15): Parse as JSON and the DuckDB sample. Next: V.6, the Explo
 | V.2  | `4fd4b5cd4` | The readable cell, Open JSON |
 | V.3  | `bdb5acd53` | Shape inference, the offers  |
 | V.4  | `b1439c2e7` | Explore JSON                 |
-| V.5  | this commit | Parse as JSON, the sample    |
+| V.5  | `c24a80119` | Parse as JSON, the sample    |
+| V.6  | this commit | Explode Array                |
 
 ## Notes
+
+- V.6:
+
+  - **The core node** `Explode` (`explode`, "Explode Array", after Extend): a Variant column, keys to its array (none
+    when the column is the array), the new column's name. Its schema is the input's plus the element, a nullable
+    Variant. It validates the column (named, in the input, a Variant), no empty key, and the name (valid, no input
+    column's, folded). No row order: the engine writes a lateral join.
+  - **Emission:** `lateral(x | $x.<col>->get('k')…->toMany(@Variant)->flatten(~<name>))`, origins `explode`. Refused
+    outside `VARIANT_DATABASE_TYPES` in the palette, the node's problems and the emitter; it makes a run load the
+    database type.
+  - **Saved spec:** `column`, `path`, `name`, always written. Import Pure's reader reads `lateral` in this form.
+  - **The builder:** a draft and an editor (Find arrays from a sample, keys as rows, the name following the keys
+    until typed), help text, the split-arrows icon. Explore JSON's "one row per element" adds the Explode after its
+    Extend, one undo step (`CubeEditorState.addConfiguredNodes`), one array at a time. The sample read is shared
+    (`stores/variant/CubeJsonSampling.ts`).
+  - **The example** "Order lines from JSON" (Sales, DuckDB): 12 rows.
+  - **Engine:** every dialect keeps an empty array's row (source and plans); run on DuckDB, with an empty path, an
+    Extend reading the element, and the typing. The engine types the element `[1]` (drafted in ISSUES.md), and
+    Postgres's plan reads elements as text, which may fail for strings (drafted, unconfirmed).
+  - **A V.5 gap fixed:** the Import Pure read-back engine test skipped "Orders from JSON"'s untyped Extend. Both
+    engine tests now type each Extend as opening an example does (`__test-utils__/CubeExampleTestUtils.ts`).
+  - **Tests:** the node (10), emission and databases (7), the spec (5) and validity, the reader, the draft (4), the
+    editor (3), Explore JSON (3), conformance, the DuckDB engine tests (3), the plans on 4 databases and the refusal
+    on 16.
 
 - V.5:
 

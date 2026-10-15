@@ -19,24 +19,20 @@ import {
   AggregationFunction,
   buildSchemasAndValidity,
   createNodeRegistry,
+  Explode,
   Extend,
   Group,
-  Query,
+  type Query,
   QueryEmitter,
-  RelationalTableSource,
-  Schema,
 } from '@finos/legend-cube';
 import { CUBE_ENGINE_TEST__compile } from '../__test-utils__/CubeEngineTestSupport.js';
+import { TEST__openExampleOnEngine } from '../__test-utils__/CubeExampleTestUtils.js';
 import {
   TEST__emittableNodes,
   TEST__typingDifferences,
 } from '../__test-utils__/CubeOperationsTestUtils.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
-import {
-  buildCubeExtendTypingLambdas,
-  readCubeExtendTyping,
-} from '../stores/CubeExtendTyping.js';
 import { CUBE_EXAMPLES, type CubeExample } from '../stores/CubeExamples.js';
 import { CUBE_SPORTS_MODEL } from '../stores/fixtures/CubeSportsModel.js';
 import { CUBE_TRADES_MODEL } from '../stores/fixtures/CubeTradesModel.js';
@@ -51,78 +47,9 @@ beforeEach(() => {
   ({ engine } = V1_createEngineBackedCubeEngine());
 });
 
-/** The example's cube with its tables typed by the engine, as opening it does */
-const openExample = async (example: CubeExample) => {
-  const document = example.createDocument();
-  const model = document.context?.model;
-  const runtime = document.context?.runtime;
-  if (!model || !runtime) {
-    throw new Error(`Example ${example.id} has no model or runtime`);
-  }
-  const sources = document.query.nodes.filter(
-    (node): node is RelationalTableSource =>
-      node instanceof RelationalTableSource,
-  );
-  const typed = await engine.resolveSchemas(
-    model,
-    new Map(
-      sources.map((source) => [
-        source.id,
-        [source.database, source.schema, source.table] as const,
-      ]),
-    ),
-  );
-  const query = new Query(
-    document.query.nodes.map((node) => {
-      if (!(node instanceof RelationalTableSource)) {
-        return node;
-      }
-      const schema = typed.get(node.id);
-      if (!(schema instanceof Schema)) {
-        throw schema ?? new Error(`No schema for ${node.id}`);
-      }
-      return node.withResolution({ kind: 'resolved', schema });
-    }),
-    document.query.connections,
-    document.query.selected,
-  );
-  // each Extend typed by the engine, as the editor types it in the background
-  // (an Extend parsing JSON, PLAN §11.20)
-  let typedQuery = query;
-  for (const node of query.nodes) {
-    if (node instanceof Extend) {
-      const registry = createNodeRegistry();
-      const columns = node.columns.map(({ name, lambda }) => ({
-        name,
-        lambda: lambda as NonNullable<typeof lambda>,
-      }));
-      const [inputId] = typedQuery.getInputIds(node.id);
-      const answers = await engine.typeLambdas(
-        model,
-        buildCubeExtendTypingLambdas(
-          typedQuery,
-          node,
-          columns,
-          registry,
-          false,
-        ),
-      );
-      const { typing } = readCubeExtendTyping(
-        answers,
-        node,
-        buildSchemasAndValidity(typedQuery, registry.queryRules).schemas.get(
-          inputId ?? '',
-        ) as Schema,
-        columns,
-        undefined,
-      );
-      typedQuery = typedQuery.replace(
-        new Extend(node.id, node.columns, typing, node.rest),
-      );
-    }
-  }
-  return { model, runtime, query: typedQuery };
-};
+/** The example's cube as opening it types it */
+const openExample = async (example: CubeExample) =>
+  TEST__openExampleOnEngine(engine, example);
 
 /**
  * The Sum and Average outputs of the query's groups, which the engine types
@@ -142,10 +69,18 @@ const sumsAndAverages = (query: Query): string[] =>
       : [],
   );
 
-/** An Extend's columns, which Cube takes as nullable whatever the engine says (PLAN §11.7) */
+/**
+ * An Extend's columns, which Cube takes as nullable whatever the engine says
+ * (PLAN §11.7), and an Explode Array's element, which the engine types [1]
+ * though an empty array gives none (§11.20)
+ */
 const extendColumns = (query: Query): string[] =>
   query.nodes.flatMap((node) =>
-    node instanceof Extend ? node.columns.map((column) => column.name) : [],
+    node instanceof Extend
+      ? node.columns.map((column) => column.name)
+      : node instanceof Explode
+        ? [node.name]
+        : [],
   );
 
 /** The rows each example shows */
@@ -166,6 +101,8 @@ const ROW_COUNTS = new Map([
   ['sales-by-product', 4],
   // the eight orders, one with no document
   ['sales-orders-json', 8],
+  // their ten lines, and once each the order with none and the one with no document
+  ['sales-order-lines-json', 12],
 ]);
 
 describe('Example cubes, on the engine', () => {

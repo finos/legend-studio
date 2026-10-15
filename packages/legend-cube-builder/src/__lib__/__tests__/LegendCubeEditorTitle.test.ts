@@ -41,6 +41,7 @@ const TITLES: Record<string, string> = {
   difference: 'Compare Column Values',
   partition: 'Apply Window Functions',
   extend: 'Extend Columns',
+  explode: 'Explode Array',
 };
 
 describe("A node editor's title", () => {

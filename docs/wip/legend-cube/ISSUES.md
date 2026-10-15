@@ -443,6 +443,37 @@ fails on DuckDB with "Cannot cast a collection of size 0 to multiplicity [1]" (p
 condition through filter(...)->size() > 0 plans and runs.
 ```
 
+### `lateral(…flatten(~c))` types the element `[1]`, though a row with an empty array gets none
+
+Found building Explode Array (V.6), run on the local engine 🧪 (`CubeVariant.engine-roundtrip-test.ts`). On DuckDB, a row
+whose array is empty, or whose document is null, comes back once with the element null, as every dialect's SQL writes
+it (Snowflake `outer => true`, Databricks `explode_outer`, Postgres `left join lateral`, DuckDB `[NULL]` 📄), yet
+`lambdaRelationType` types the element `Variant[1]`. Cube says nullable. Draft issue for finos/legend-engine:
+
+```text
+Title: The column flatten() adds inside lateral() is typed [1], but is empty for an empty or missing array
+
+|#>{db.s.t}#->lateral(x|$x.payload->get('items')->toMany(@Variant)->flatten(~item)) types item as Variant[1]. Every
+dialect keeps a row whose array is empty or null (outer flatten, explode_outer, left join lateral, unnest of [NULL]),
+with item NULL, so the column should be [0..1].
+```
+
+### On Postgres, `flatten` reads each element as text, then casts it to `jsonb`
+
+Read from the plan only 📄 (`LegendCubeDialects.engine-roundtrip-test.ts`, Explode Array): Postgres writes the lateral as
+`select "value" #>> '{}' as value from jsonb_array_elements(…)` and the element as `cast(value as jsonb)`. `#>> '{}'`
+gives a string element without its quotes, so an array of strings (`["a","b"]`) would cast `a` to `jsonb`, which isn't
+JSON: likely an error. Not run, as no Postgres is set up here. Draft issue for finos/legend-engine, once confirmed:
+
+```text
+Title: Postgres: flatten() of a string array casts the unquoted text to jsonb
+
+|#>{db.s.t}#->lateral(x|$x.payload->get('tags')->toMany(@Variant)->flatten(~tag)) plans on Postgres as
+left join lateral (select "value" #>> '{}' as value from jsonb_array_elements(...)) ... cast(value as jsonb). For
+tags = ["a"], #>> '{}' yields a (no quotes), and cast('a' as jsonb) is invalid JSON. Selecting "value" itself, a jsonb,
+would keep each element as JSON.
+```
+
 ## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns

@@ -44,7 +44,8 @@ export const TEST__PAYLOAD = new SchemaColumn(
   true,
 );
 
-const COLUMNS = [
+/** ORDERS' columns in these tests: an id, PAYLOAD, and a number */
+export const TEST__PAYLOAD_COLUMNS = [
   new SchemaColumn(
     'ORDER_ID',
     PrimitiveType.get('meta::pure::precisePrimitives::Int'),
@@ -77,7 +78,7 @@ export const TEST__setUpPayloadRun = async (
 ): Promise<{ state: CubeEditorState; fake: FakeCubeEngine }> => {
   const { host, fake } = TEST__createCubeHost({
     result: {
-      columns: COLUMNS.map((column) => column.name),
+      columns: TEST__PAYLOAD_COLUMNS.map((column) => column.name),
       rows: [['1', TEST__PAYLOAD_DOCUMENTS[0] ?? null, '2']],
       sql: [],
       durationMs: 1,
@@ -89,7 +90,7 @@ export const TEST__setUpPayloadRun = async (
     new CubeDocument({
       context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
       query: new Query(
-        [northwindTable('relational101', 'ORDERS', COLUMNS)],
+        [northwindTable('relational101', 'ORDERS', TEST__PAYLOAD_COLUMNS)],
         [],
         'relational101',
       ),

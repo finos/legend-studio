@@ -20,6 +20,7 @@ import {
   AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
+  ArrowsSplitIcon,
   CalculatorIcon,
   CodeIcon,
   CompareIcon,
@@ -63,6 +64,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   sort: SortIcon,
   difference: CompareIcon,
   extend: CalculatorIcon,
+  explode: ArrowsSplitIcon,
   partition: SigmaIcon,
 };
 

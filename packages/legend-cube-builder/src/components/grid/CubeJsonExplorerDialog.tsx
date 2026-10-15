@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { CUBE_JSON_EXPLODE_OFFER_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeJsonExplorerState } from '../../stores/variant/CubeJsonExplorerState.js';
@@ -171,8 +172,7 @@ const CubeJsonFieldOffers = observer(
     if (!field) {
       return null;
     }
-    // an array's elements as rows: Explode Array, not an Extend column
-    const offers = field.offers.filter((offer) => offer.code !== undefined);
+    const { offers } = field;
     const share = percentOf(field.presence);
     return (
       <div className="flex flex-col gap-2 p-2">
@@ -196,7 +196,7 @@ const CubeJsonFieldOffers = observer(
               <label
                 key={offer.key}
                 className="flex cursor-pointer items-baseline gap-2 py-0.5 text-sm"
-                title={offer.code}
+                title={offer.code ?? CUBE_JSON_EXPLODE_OFFER_TITLE}
               >
                 <input
                   type="checkbox"
@@ -207,7 +207,7 @@ const CubeJsonFieldOffers = observer(
                   {offer.label}
                 </span>
                 <span className="text-xs text-[var(--color-text-muted)]">
-                  {offer.type} · {offer.name}
+                  {offer.explode ? 'Explode Array' : offer.type} · {offer.name}
                 </span>
               </label>
             ))}
@@ -239,9 +239,7 @@ export const CubeJsonExplorerDialog = observer(
     const fields = explorer.fields
       ? filterFields(explorer.fields, explorer.search)
       : undefined;
-    const count = explorer.tickedOffers.filter(
-      (offer) => offer.code !== undefined,
-    ).length;
+    const count = explorer.tickedOffers.length;
     const add = (): void => {
       flowResult(explorer.add()).catch(applicationStore.alertUnhandledError);
     };

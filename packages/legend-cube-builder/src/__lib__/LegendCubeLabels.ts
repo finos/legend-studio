@@ -349,6 +349,27 @@ export const PIVOT_EDITOR_NOTES = [
   "Pivot runs on Snowflake, Databricks, SingleStore and DuckDB; other databases, such as H2 and Postgres, can't run it.",
 ] as const;
 
+/** Why the Explode Array editor won't pick a column (PLAN §11.20) */
+export const EXPLODE_COLUMN_DISABLED_REASON = {
+  /** a column of another type than Variant */
+  NOT_JSON: 'not JSON',
+} as const;
+
+/** Under the Explode Array editor (PLAN §11.20) */
+export const EXPLODE_EDITOR_NOTES = [
+  'One row per element of the array, the other columns repeated on each. A row whose array is empty, or that has none, is kept once, with an empty element.',
+  "Find arrays reads the column's first values, as Explore JSON does, and lists the arrays they hold. Keys can be typed too: none when the column is the array.",
+  'The element is JSON: Explore JSON, in its column menu, makes columns of its fields. Explode Array runs on Snowflake, Databricks, Postgres and DuckDB.',
+] as const;
+
+/** Explore JSON's one row per element offer, as its tooltip explains it (PLAN §11.20) */
+export const CUBE_JSON_EXPLODE_OFFER_TITLE =
+  'Adds an Explode Array node: a row for each element, the element as a new JSON column. One array at a time.';
+
+/** Says that Find arrays found none in the values read (PLAN §11.20) */
+export const EXPLODE_NO_ARRAYS_NOTICE =
+  'No array in the values read: type the keys to one.';
+
 /** Says that Load values found no value to list (PLAN §11.12) */
 export const PIVOT_NO_VALUES_NOTICE =
   'The pivot column has no value to list: its rows are all empty, or there are none.';

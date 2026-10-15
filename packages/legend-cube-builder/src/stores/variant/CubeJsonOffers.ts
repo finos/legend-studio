@@ -81,6 +81,12 @@ const nameOf = (parts: readonly string[]): string =>
     .replace(/_+/gu, '_')
     .replace(/^_|_$/gu, '') || 'value';
 
+/** The default name of an array's element, as Explode Array makes it: its last key's, or its column's, then `_element` */
+export const getCubeJsonElementName = (
+  column: string,
+  path: readonly string[],
+): string => nameOf([path[path.length - 1] ?? column, 'element']);
+
 /** `$x.c->get('a')->get('b')` */
 const pathOf = (column: string, path: readonly string[]): string =>
   path.reduce(
@@ -130,7 +136,7 @@ const arrayOffers = (
     {
       key: 'explode',
       label: 'one row per element',
-      name: nameOf([names[names.length - 1] ?? column, 'element']),
+      name: getCubeJsonElementName(column, path),
       type: VARIANT,
       code: undefined,
       explode: { column, path },

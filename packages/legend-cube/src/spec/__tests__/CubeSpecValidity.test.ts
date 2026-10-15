@@ -49,6 +49,7 @@ import {
   MESSAGE_CONCAT_COLUMN_TYPE,
   MESSAGE_DIFFERENT_DATABASES,
   MESSAGE_DOES_NOT_HAVE_A_NAME,
+  MESSAGE_EXPLODE_COLUMN_NOT_VARIANT,
   MESSAGE_FILTER_EMPTY,
   MESSAGE_FILTER_OPERATOR_UNSUPPORTED,
   MESSAGE_FILTER_VALUE_INVALID,
@@ -194,6 +195,29 @@ const restrictSpec = (columns: string[]): JsonObject => ({
         id: 'restrict101',
         inputs: ['relational101'],
         columns,
+      },
+    ],
+  },
+});
+
+/** A saved spec: `relational101` feeding `explode101`, of these settings */
+const explodeSpec = (
+  column: string,
+  path: string[],
+  name: string,
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'explode101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'explode',
+        id: 'explode101',
+        inputs: ['relational101'],
+        column,
+        path,
+        name,
       },
     ],
   },
@@ -796,6 +820,18 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       'a valid rename',
       renameSpec([{ from: 'QTY', to: 'Quantity' }]),
       { relational101: [], rename101: [] },
+    ],
+    [
+      'an explode of a column that is not JSON, into an input column, with an empty key',
+      explodeSpec('COUNTRY', ['a', ''], 'qty'),
+      {
+        relational101: [],
+        explode101: [
+          MESSAGE_EXPLODE_COLUMN_NOT_VARIANT('COUNTRY', 'String'),
+          MESSAGE_CANNOT_BE_EMPTY('Path key'),
+          MESSAGE_ALREADY_IN_INPUT_SCHEMA('Column', 'qty'),
+        ],
+      },
     ],
   ];
 

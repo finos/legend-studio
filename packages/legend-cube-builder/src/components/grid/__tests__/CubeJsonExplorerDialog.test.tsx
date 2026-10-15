@@ -78,6 +78,22 @@ describe('The Explore JSON dialog (PLAN §11.20)', () => {
     expect(within(dialog).getByText('Add 1 column')).not.toBeNull();
   });
 
+  test("Offers an array's elements as rows, as an Explode Array", async () => {
+    const { dialog } = await renderExplorer();
+    fireEvent.click(within(dialog).getByLabelText('Field PAYLOAD.tags'));
+    const offers = within(dialog).getByRole('group', {
+      name: 'Columns it can become',
+    });
+    const explode = within(offers).getByText('one row per element');
+    expect(explode.nextElementSibling?.textContent).toBe(
+      'Explode Array · tags_element',
+    );
+    fireEvent.click(
+      within(explode.closest('label') as HTMLElement).getByRole('checkbox'),
+    );
+    expect(within(dialog).getByText('Add 1 column')).not.toBeNull();
+  });
+
   test('Finds fields by their keys, keeping the fields they are in', async () => {
     const { dialog } = await renderExplorer();
     fireEvent.change(within(dialog).getByLabelText('Find a field'), {

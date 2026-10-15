@@ -322,6 +322,7 @@ export class CubeEditorState implements CommandRegistrar {
       connect: action,
       addNode: action,
       addConfiguredNode: action,
+      addConfiguredNodes: action,
       dropNode: action,
       removeNode: action,
       copiedNode: observable.ref,
@@ -1512,11 +1513,29 @@ export class CubeEditorState implements CommandRegistrar {
    * read-only cube, or when the query can't take it.
    */
   addConfiguredNode(node: QueryNode, afterId?: string): void {
-    const { query } = this.document;
-    if (this.readOnly || !query.canAdd(node, afterId)) {
+    this.addConfiguredNodes([node], afterId);
+  }
+
+  /**
+   * Adds nodes made elsewhere one after another, the first spliced in after
+   * `afterId`, as one undo step, the last then running when that one did
+   * (Explore JSON's Extend then Explode Array). Does nothing in a read-only
+   * cube, or when the query can't take one of them.
+   */
+  addConfiguredNodes(nodes: readonly QueryNode[], afterId?: string): void {
+    if (this.readOnly || !nodes.length) {
       return;
     }
-    this.applyQuery(query.add(node, afterId));
+    let query = this.document.query;
+    let after = afterId;
+    for (const node of nodes) {
+      if (!query.canAdd(node, after)) {
+        return;
+      }
+      query = query.add(node, after);
+      after = node.id;
+    }
+    this.applyQuery(query);
   }
 
   /** Whether dropping a node on another does anything: connect it, or else move it after it */

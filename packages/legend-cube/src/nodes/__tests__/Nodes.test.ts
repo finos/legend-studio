@@ -42,6 +42,7 @@ import {
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DIFFERENCE_DEFINITION,
   EXPRESSION_FILTER_DEFINITION,
+  EXPLODE_DEFINITION,
   EXTEND_DEFINITION,
   INGEST_DATASET_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
@@ -69,6 +70,7 @@ import {
 import { Concat } from '../transforms/Concat.js';
 import { Partition } from '../transforms/Partition.js';
 import { Difference } from '../transforms/Difference.js';
+import { Explode } from '../transforms/Explode.js';
 import { Extend } from '../transforms/Extend.js';
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
@@ -213,7 +215,7 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Group, Pivot (Cube's), Filter, Filter by Expression (Cube's), Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend
+    // transforms in the spec's menu order (§7): Sort, Group, Pivot (Cube's), Filter, Filter by Expression (Cube's), Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join, Difference, Partition, then Extend and Explode Array (Cube's)
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
       GROUP_DEFINITION,
@@ -231,6 +233,7 @@ describe(unitTest('Node registry'), () => {
       DIFFERENCE_DEFINITION,
       PARTITION_DEFINITION,
       EXTEND_DEFINITION,
+      EXPLODE_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('group')).toBe(GROUP_DEFINITION);
@@ -242,6 +245,7 @@ describe(unitTest('Node registry'), () => {
     expect(registry.get('difference')).toBe(DIFFERENCE_DEFINITION);
     expect(registry.get('partition')).toBe(PARTITION_DEFINITION);
     expect(registry.get('extend')).toBe(EXTEND_DEFINITION);
+    expect(registry.get('explode')).toBe(EXPLODE_DEFINITION);
     expect(registry.get('pivot')).toBe(PIVOT_DEFINITION);
     expect(PIVOT_DEFINITION).toMatchObject({
       kind: 'transform',
@@ -296,6 +300,20 @@ describe(unitTest('Node registry'), () => {
     expect(node).toBeInstanceOf(Extend);
     expect(node.columns).toEqual([]);
     expect(node.typing.kind).toBe('unresolved');
+  });
+
+  test('Creates an explode with nothing picked yet', () => {
+    expect(EXPLODE_DEFINITION).toMatchObject({
+      kind: 'transform',
+      type: 'explode',
+      label: 'Explode Array',
+      icon: 'explode',
+      beta: false,
+    });
+    expect(EXPLODE_DEFINITION.isolationBoundary).toBe(undefined);
+    const node = EXPLODE_DEFINITION.create('explode101');
+    expect(node).toBeInstanceOf(Explode);
+    expect([node.column, node.path, node.name]).toEqual(['', [], '']);
   });
 
   test('Creates a difference with no key and no difference column yet', () => {
@@ -978,6 +996,7 @@ describe('Nodes not set yet', () => {
     expect(new Restrict('restrict101').isUnset()).toBe(true);
     expect(new Rename('rename101').isUnset()).toBe(true);
     expect(new Extend('extend101').isUnset()).toBe(true);
+    expect(new Explode('explode101').isUnset()).toBe(true);
     expect(new Partition('partition101').isUnset()).toBe(true);
     expect(new Difference('difference101').isUnset()).toBe(true);
     expect(new Distinct('distinct101').isUnset()).toBe(false);

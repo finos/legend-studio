@@ -106,7 +106,15 @@ describe('Examples', () => {
           'trades-largest-buys',
         ],
       ],
-      ['sales', ['sales-by-year', 'sales-by-product', 'sales-orders-json']],
+      [
+        'sales',
+        [
+          'sales-by-year',
+          'sales-by-product',
+          'sales-orders-json',
+          'sales-order-lines-json',
+        ],
+      ],
     ]);
     expect(examples.isOpen).toBe(false);
   });
