@@ -114,7 +114,7 @@ describe('The Ingest tab', () => {
     // every environment of both classes, the viewer's own production one picked
     await waitFor(() =>
       expect(
-        (screen.getByLabelText('Environment') as HTMLSelectElement)
+        screen.getByLabelText<HTMLSelectElement>('Environment')
           .selectedOptions[0]?.textContent,
       ).toBe('env-a · Production'),
     );
