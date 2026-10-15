@@ -42,11 +42,13 @@ import {
   type CubeEntrySource,
   CubeEntrySourceState,
 } from '../stores/CubeEntrySource.js';
+import type { CubeInitialLambda } from '../stores/CubeLambdaImportState.js';
 import { type CubeHost, isCubeSampleDataOffered } from '../stores/CubeHost.js';
 import { CubeAddItemsMenu } from './CubeAddItems.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
 import { CubeEntrySourceBanner } from './CubeEntrySourceBanner.js';
+import { CubeLambdaImportBanner } from './CubeLambdaImportBanner.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubePalette } from './palette/CubePalette.js';
 import { CubeDevSettingsDialog } from './dev-settings/CubeDevSettings.js';
@@ -55,6 +57,7 @@ import { CubeExamplesDialog } from './examples/CubeExamplesDialog.js';
 import { CubeFileMenu } from './CubeFileMenu.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
+import { CubeImportPureDialog } from './spec-transfer/CubeImportPureDialog.js';
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
@@ -201,6 +204,7 @@ const CubeGraphHeader = observer(
         <CubeSourcePicker editorState={editorState} />
         <CubeExamplesDialog editorState={editorState} />
         <CubeSpecTransferDialog editorState={editorState} />
+        <CubeImportPureDialog editorState={editorState} />
         <CubeShowPureDialog editorState={editorState} />
         <CubeDevSettingsDialog editorState={editorState} />
       </div>
@@ -222,7 +226,12 @@ export const CubeEditor = observer(
     initialDocument?: CubeDocument | undefined;
     /** A source a link asks the page to start with, on an empty cube (spec §17.15) */
     initialSource?: CubeEntrySource | undefined;
-    /** The host's own buttons, at the end of the header, e.g. Studio's Add as MatView */
+    /**
+     * A lambda the host opens the page on, read into the cube (Import Pure,
+     * PLAN §11.18), e.g. Studio's materialized view to edit
+     */
+    initialLambda?: CubeInitialLambda | undefined;
+    /** The host's own buttons, at the end of the header, e.g. Studio's Add MatView */
     headerActions?: CubeHeaderActions | undefined;
   }) => {
     const [editorState] = useState(
@@ -230,10 +239,15 @@ export const CubeEditor = observer(
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
     const [entry] = useState(() => new CubeEntrySourceState(editorState));
-    const { initialSource } = props;
+    const { initialSource, initialLambda } = props;
     useEffect(() => {
       if (initialSource) {
         flowResult(entry.open(initialSource)).catch(
+          editorState.host.applicationStore.alertUnhandledError,
+        );
+      }
+      if (initialLambda) {
+        flowResult(editorState.lambdaImport.open(initialLambda)).catch(
           editorState.host.applicationStore.alertUnhandledError,
         );
       }
@@ -259,6 +273,7 @@ export const CubeEditor = observer(
             headerActions={props.headerActions}
           />
           <CubeEntrySourceBanner entry={entry} />
+          <CubeLambdaImportBanner lambdaImport={editorState.lambdaImport} />
           <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel
               {...graphPanel.collapsiblePanel}

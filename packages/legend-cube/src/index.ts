@@ -103,6 +103,11 @@ export * from './ir/emitters/RowNumberEmitter.js';
 export * from './ir/CubeDialects.js';
 export * from './ir/TemporaryColumns.js';
 export * from './ir/QueryEmitter.js';
+export * from './ir/reader/CubeLambdaReadError.js';
+export * from './ir/reader/CubeIRComparison.js';
+export * from './ir/reader/CubeLambdaParts.js';
+export * from './ir/reader/FilterReader.js';
+export * from './ir/reader/QueryReader.js';
 
 export * from './messages/CubeMessages.js';
 

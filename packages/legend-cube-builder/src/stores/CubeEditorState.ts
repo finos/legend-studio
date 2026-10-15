@@ -123,6 +123,7 @@ import { getCubeExtendUpstream } from './CubeExtendTyping.js';
 import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
+import { CubeLambdaImportState } from './CubeLambdaImportState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
 
@@ -198,6 +199,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly specTransfer: CubeSpecTransferState;
   readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
+  /** Import Pure: the lambda the page opened on, read into the cube (PLAN §11.18) */
+  readonly lambdaImport: CubeLambdaImportState;
   readonly nodeEditor: CubeNodeEditorState;
 
   document: CubeDocument;
@@ -303,6 +306,7 @@ export class CubeEditorState implements CommandRegistrar {
       applyDocument: action,
       undo: action,
       importDocument: action,
+      openDocument: action,
       startNewCube: action,
       isEmptyCube: computed,
       reresolveSources: flow,
@@ -364,6 +368,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.specTransfer = new CubeSpecTransferState(this);
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
+    this.lambdaImport = new CubeLambdaImportState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
     this.rechecking = reaction(
       () => this.nodesToCheck,
@@ -924,6 +929,21 @@ export class CubeEditorState implements CommandRegistrar {
     if (!this.isEmptyCube) {
       this.importDocument(new CubeDocument(), false);
     }
+  }
+
+  /**
+   * Opens the page on a cube read for it, as `initialDocument` opens one:
+   * no undo step, as there was no cube before it (Import Pure's
+   * `initialLambda`, PLAN §11.18). Its sources come typed; its expressions
+   * are checked as any are.
+   */
+  openDocument(next: CubeDocument): void {
+    this.execution.reset();
+    this.sourcePicker.close();
+    this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    this.hostIssues = new Map();
+    this.document = next;
+    this.readOnly = false;
   }
 
   importDocument(next: CubeDocument, readOnly: boolean): void {

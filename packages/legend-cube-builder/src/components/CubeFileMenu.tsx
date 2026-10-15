@@ -34,7 +34,7 @@ interface CubeFileMenuItem {
 
 /**
  * 'Cube ▾' in the graph's header (the review of the demo, 2026-10-13): what
- * acts on the cube as a whole, New, Import and Export, under one button, so
+ * acts on the cube as a whole, New, Import, Import Pure and Export, under one button, so
  * the header keeps the actions used while building. A disabled item says why
  * on hover.
  */
@@ -59,6 +59,12 @@ export const CubeFileMenu = observer(
         run: () => editorState.specTransfer.openImport(),
       },
       {
+        label: 'Import Pure',
+        title: 'Read a Pure query into steps, in place of this cube',
+        disabled: false,
+        run: () => editorState.lambdaImport.openDialog(),
+      },
+      {
         label: 'Export',
         title: readOnly
           ? READ_ONLY_CUBE_TITLE
@@ -76,7 +82,7 @@ export const CubeFileMenu = observer(
         <button
           type="button"
           className="flex h-6 shrink-0 items-center gap-1 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-2 text-base text-[var(--color-text-primary)] enabled:cursor-pointer enabled:hover:bg-[var(--color-bg-hover)]"
-          title="New, Import and Export"
+          title="New, Import, Import Pure and Export"
           aria-haspopup="menu"
           aria-expanded={isOpen}
           onClick={openMenu}

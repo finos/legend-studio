@@ -3,7 +3,7 @@
 A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Legend Query is the
 main host: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page (`src/components/cube/`) of
 `@finos/legend-application-query`. Legend Studio hosts it too, from an ingest definition's editor (see
-[Legend Studio](#legend-studio-create-matview-with-cube)).
+[Legend Studio](#legend-studio-create-matview)).
 
 ## The host
 
@@ -115,9 +115,9 @@ lives as long as the page; Legend Query makes a new host on each visit.
 in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
 run.
 
-## Legend Studio: Create MatView with Cube
+## Legend Studio: Create MatView
 
-An ingest definition's editor in Studio offers **Create MatView with Cube** where `NonProductionFeatureFlag` is on
+An ingest definition's editor in Studio offers **Create MatView** where `NonProductionFeatureFlag` is on
 (`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
 screen over the editor, as the embedded query builder does, with `LegendStudioCubeHost`:
 
@@ -137,10 +137,18 @@ screen over the editor, as the embedded query builder does, with `LegendStudioCu
   (`dataProductModelSource`), in place of the deployed definitions and the project's deployed version. A run adds
   Cube's lakehouse runtime, in the project runtime's environment (`lakehouseEnvironment`), on the cube's warehouse,
   which starts as the runtime's.
-- **Add as MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
+- **Add MatView:** a button the host adds to the header (`headerActions` on `CubeEditor`) takes the step that runs
   as a lambda with no runtime and no row limit (`buildCubeRunningStepLambda`), asks for a name, a classification of
   its data and a primary key among the step's columns (`analysis.schemas` of the selected step), and appends a
   `FunctionSource` data set to the definition. Studio sees it as a local change; Lineage and View SQL work on it.
+- **Edit MatView:** the button's menu lists the definition's materialized views. Cube opens on one, read back into
+  its steps (`initialLambda` on `CubeEditor`, Import Pure, PLAN §11.18): the host binds its sources as the source
+  dialog would add them, and a banner says when Cube writes the view another way. The header button is then
+  **Save MatView**, which replaces that view's lambda in place, keeping its name, place and other keys, and adding
+  the empty lists the engine reads that it lacks. When the view has no classification of its data, or its primary
+  key has a column the step no longer has, Save MatView first asks for them again in Add MatView's dialog.
+- **Loading:** Studio loads Cube with the dialog, on its first opening (`React.lazy`), so Cube's code stays out of
+  Studio's main bundle.
 
 While the page is open, Studio's own shortcuts are off (its F9 compiles), and Cube's are on: Studio's core plugin
 contributes `LEGEND_CUBE_COMMAND_CONFIG`. The floating step editor is placed in the dialog that hosts the page, so the

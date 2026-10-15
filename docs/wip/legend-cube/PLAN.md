@@ -81,7 +81,8 @@ CubeSpec JSON ◄────────────────────►
 ```
 
 - The **query graph** is the only source of truth. Everything else is derived from it, or round-trips through it.
-- The **executed lambda** is derived one way and never parsed back.
+- The **executed lambda** is derived from the graph. Since §11.18, Import Pure also reads a lambda back into a graph:
+  one canonical cube per lambda, which then holds the truth again.
 - **UI state** is derived (layout) or ephemeral. Only presentation metadata is saved (§10.4).
 
 ---
@@ -2404,13 +2405,13 @@ Every engine defect is listed in Appendix B.
 
 ### 10.2 Executed lambda / value specification
 
-| Aspect     | Answer                                                                                                                                                                                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Shape      | Cube IR (core) → protocol JSON (builder `v1/`)                                                                                                                                                                                                         |
-| Owner      | Core emits it; builder serializes it                                                                                                                                                                                                                   |
-| Round trip | **One-way.** Nothing parses lambdas back into graphs, because there is no unique inverse, user-written Pure is limited to Extend expressions, and dotted names don't survive text ✅. Shown read-only via "Show Pure" (`JSONToGrammar_lambda`, PRETTY) |
-| Versioning | N/A. Regenerated from the graph every time; deterministic for a given graph and emitter version                                                                                                                                                        |
-| Storage    | **Not persisted.** The future Cube store may keep a generated copy for search or impact analysis, but never as the source of truth                                                                                                                     |
+| Aspect     | Answer                                                                                                                                                                                                                                                                                           |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Shape      | Cube IR (core) → protocol JSON (builder `v1/`)                                                                                                                                                                                                                                                   |
+| Owner      | Core emits it; builder serializes it                                                                                                                                                                                                                                                             |
+| Round trip | **Read back by Import Pure (§11.18).** There is no unique inverse, so a lambda reads into one canonical cube, checked by writing it again; text with a quoted dotted name is refused, as the grammar reads it as another table. Shown read-only via "Show Pure" (`JSONToGrammar_lambda`, PRETTY) |
+| Versioning | N/A. Regenerated from the graph every time; deterministic for a given graph and emitter version                                                                                                                                                                                                  |
+| Storage    | **Not persisted.** The future Cube store may keep a generated copy for search or impact analysis, but never as the source of truth                                                                                                                                                               |
 
 ### 10.3 Saved spec: `CubeSpec` format v1 (the persisted artifact; D1: defined now, stored later)
 
@@ -4886,16 +4887,16 @@ sends nothing.
 - §8.7 (Show Pure): a run's Pure shows its row limit.
 - Appendix A: §12.6 (failed runs recorded).
 
-### 11.17 Legend Cube in Studio: Create MatView with Cube
+### 11.17 Legend Cube in Studio: Create MatView
 
 Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/legend-studio#5690), for a demo (user,
 2026-10-14): an ingest definition's editor opens Cube to build a materialized view of the project's own sources.
 
 **Settled** (user, 2026-10-14):
 
-- **The button:** "Create MatView with Cube" in the ingest definition editor's header, beside Lineage and View SQL,
-  where `NonProductionFeatureFlag` is on. Cube opens full screen over the editor, as Studio's embedded query builder
-  does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
+- **The button:** "Create MatView" (first "Create MatView with Cube", shortened: user, 2026-10-14) in the ingest
+  definition editor's header, beside Lineage and View SQL, where `NonProductionFeatureFlag` is on. Cube opens full
+  screen over the editor, as Studio's embedded query builder does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
 - **Sources:** the ingest definitions and data products of the project being edited, as the workspace holds them,
   and nothing else (no sample data, examples, databases or services). One kind of source per cube, as in Legend Query.
 - **The source dialog in Studio:** a screen of its own for each: the project's definitions, or products, by name,
@@ -4904,8 +4905,9 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
 - **Runs:** as Studio's own queries of an ingest definition or a data product run: the workspace as the model, on
   the project's first lakehouse runtime's environment, the cube's warehouse starting as the runtime's
   (`LegendStudioCubeWorkspace`, the engine's `ingestDefinitionSource` and `dataProductModelSource`).
-- **Add as MatView:** the step that runs, as a lambda with no runtime and no row limit, becomes a data set of the
-  definition: `{name, primaryKey, privacyClassification: {sensitivity}, source: {_type: 'FunctionSource', function}}`
+- **Add MatView** (named Add as MatView until §11.18): the step that runs, as a lambda with no runtime and no row
+  limit, becomes a data set of the definition:
+  `{name, primaryKey, privacyClassification: {sensitivity}, source: {_type: 'FunctionSource', function}}`
   with the empty lists the engine gives every data set it parses (`ingestPartitionColumns`, `preprocessors`,
   `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`), a local change in Studio. The dialog asks for the
   name, the data's classification (one of `dataProductConfig.classifications`, as a data product's access points
@@ -4920,6 +4922,73 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
 only with a tab that reads it; the Ingest tab picks the only producer deployment, starts on the environment's
 warehouse, and hides Mode with one class; the floating step editor goes into the dialog that hosts the page; the
 canvas takes xyflow 12's colours back where React Flow 11's stylesheet is loaded too (Risks).
+
+### 11.18 Import Pure, and Edit MatView in Studio
+
+Built on `cube-import-pure`, from master (`b33fba599`, after #5690), in a PR into master (user, 2026-10-14). Steps
+and status in `PROGRESS-IMPORT-PURE.md`.
+
+**Settled** (user, 2026-10-14):
+
+- **Import Pure is a standard Cube feature:** in the Cube ▾ menu beside Import and Export, in every host. It reads a
+  Pure lambda, as text or as the engine's JSON, into steps. The canvas lays them out as it always does, and each step
+  takes its defaults for what Pure doesn't carry: grid column widths, formats, drill-down, step ids.
+- **Edit MatView in Studio:** the ingest definition editor opens Cube on one of the definition's materialized views,
+  read by Import Pure's reader; that view is the input Studio opens Cube with (`EmbeddedCubeState.open(ingest,
+matView)`). Cube's header button is **Add MatView** for a new view and **Save MatView** for one opened, which
+  replaces that view's lambda in place, keeping its name, place and other keys.
+- **What is saved doesn't change:** the step that runs, with no runtime and no row limit
+  (`buildCubeRunningStepLambda`, which only Studio's button calls); a Limit step the user adds stays.
+- **Cube loads lazily in Studio,** with its dialog on the first opening, as Legend Query loads its Cube page.
+- **A view Cube reads but writes differently** opens with a note that saving rewrites it the way Cube writes it
+  (recommended to the user, 2026-10-14).
+- **Save MatView asks again only when it must** (after #5695's classification and primary key, 2026-10-14): a view
+  is saved at once unless its data has no classification (Studio wrote views without one before #5695, the cause of
+  its NullPointerException) or one the config doesn't list, or its primary key has a column the step that runs no
+  longer has. Then Add MatView's dialog opens as Save MatView, on the view's own classification and the key columns
+  the step still has, and says why. A view saved gains the empty lists the engine reads (`ingestPartitionColumns`,
+  `preprocessors`, `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`) that it lacks.
+
+**Reading a lambda:**
+
+1. **Protocol JSON to IR** (`V1_readCubeLambda`, builder `v1/`): the inverse of `V1_serializeCubeLambda`, tolerant of
+   the shapes the engine's grammar gives (source information, multiplicities, short enumeration paths). What Cube
+   has no IR for is refused.
+2. **The run's own parts come off by position.** A run's lambda has two shapes (§8.6): without lets
+   `<relation>->sort(…)->limit(n)->from(<runtime>)`, with lets `{| <lets>; <relation>}->from(<runtime>)->sort(…)->limit(n)`.
+   `from()` comes off and its runtime is the cube's; the capture's sort becomes a last Sort; lets are put back where
+   they are read. A `limit` beside `from()` may be the grid's row limit (the Runs panel's Pure has one) or the user's:
+   it is kept as a Limit step, with a note saying so. A matview has none of these parts.
+3. **Sources are bound before the steps are read,** by the host: each accessor becomes a source step, typed where the
+   host can. A host with a project (Studio) binds the project's own; another host binds within the cube's current
+   model and source. An accessor that can't be bound is named in the error.
+4. **IR to steps** (`readCubeQuery`, core, host-free), from the sources up. A step Cube writes as several functions
+   is recognised whole: a Join's temporary key renames, FULL merge and last `select`; a Difference; a Concat that
+   converts types; a Partition's `extend`s and `select`. Where the reading depends on the columns (the `select`
+   that ends a Join or a Partition, a negation on a column that can be empty), the candidate step is written again by
+   Cube's emitter, on the inferred schemas, and kept only when it gives the same Pure. A filter Cube can't read as
+   its own becomes a Filter by Expression, an `extend` that isn't a window an Extend; anything else is refused,
+   naming the function. Nothing is imported in part.
+5. **Exactness:** once read, and once its sources and expressions are typed, the cube is written again, in the form
+   the lambda came in (a matview's relation, or a run's lambda with no row limit), and compared with it at one level:
+   protocol JSON without source information, number literals by value. Exact, rewritten, or unchecked; Studio's note
+   shows for the last two.
+6. **Binding rules:** one kind of source per cube, so a lambda mixing `#I`, `#P` and `#>` is refused; a matview that
+   reads another matview is refused with a message of its own, as matview data sets are never sources.
+7. **Expressions:** an Extend column's and a Filter by Expression's lambda is stored as the editor stores one (no
+   source information, number literals as digit strings), its code the engine's grammar of it; an Extend is typed
+   during the read, through the host's engine, so the steps after it can be checked.
+
+**Not in the first cut:** the per-database rewrites (SQL Server, Sybase, DB2, ClickHouse, SingleStore), refused with
+a message (Snowflake and Databricks have none); services, which Cube doesn't emit yet; a `select` that reorders
+columns outside a Join or a Partition, which no Cube step does. The known gaps are in ISSUES.md, Import Pure.
+
+**Built** (2026-10-14, steps IP.1–IP.12 in `PROGRESS-IMPORT-PURE.md`): the reader (`V1_readCubeLambda`,
+`splitCubeLambda`, `readCubeQuery`, `StepPatterns.ts`, `isSameCubeIR`), the binding (`bindCubeLambdaSources`), the
+import (`CubeLambdaImportState`: `CubeEditor`'s `initialLambda`, and the Cube ▾ menu's Import Pure dialog), the banner,
+Studio's Edit MatView and Save MatView, and Cube loaded lazily in Studio. Every node of the core's samples and of the
+nine examples reads back into the steps that wrote it, written the same, from Cube's JSON and through the engine's
+grammar. Videos `28-edit-matview.webm` and `29-import-pure.webm`.
 
 ## 12. G. Risks and open questions
 

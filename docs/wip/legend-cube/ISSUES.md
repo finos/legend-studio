@@ -523,7 +523,7 @@ New features suggested by the review:
 
 - **Runs in Studio are untested.** The local engine has no Lakehouse support, so a Studio cube's runs, the typing of a
   data product's access points, the ingest editor's grammar text, and Lineage and View SQL on a new materialized
-  view were never seen working. The catalogs, the source dialog's screens, the canvas and Add as MatView were (videos
+  view were never seen working. The catalogs, the source dialog's screens, the canvas and Add MatView were (videos
   `25-studio-matview.webm` and `26-studio-matview-light.webm`, with a mock SDLC server and, for the access points'
   types only, a stand-in for the engine: `demo/studio-matview/` in the evidence folder). Check on an engine with
   Lakehouse support: a cube of one data set, or one access point, should return the rows Studio's own query of it
@@ -534,13 +534,31 @@ New features suggested by the review:
 - **The run's runtime is rebuilt from the project's.** A run takes only the environment and the warehouse of the
   project's first lakehouse runtime; anything else on it (a connection pointer) is left out, and a project with two
   lakehouse runtimes can't pick the other.
-- **A materialized view's windows aren't isolated.** The lambda Add as MatView saves is the typing lambda's shape: it
+- **A materialized view's windows aren't isolated.** The lambda Add MatView saves is the typing lambda's shape: it
   binds no window with a `let` as a run does (§8.6), so a filter over a window, written by the lakehouse, may read
   differently from the cube's run.
 - **The workspace is sent whole.** Each typing and run sends every element of the workspace and its dependencies, as
   Studio's own queries do; a large project makes larger requests.
 - **Secondary buttons in a light theme** (Cancel, Close) keep legend-art's light look, grey: its theme-aware variant
   would draw their text on a background of the same colour.
+
+## Import Pure (2026-10-14, PLAN §11.18)
+
+- **Per-database rewrites aren't read back.** A lambda Cube wrote for SQL Server, Sybase, Sybase IQ, DB2, ClickHouse
+  or SingleStore (row numbers for a Drop, Slice or Limit, a padded Distinct) reads as other steps or is refused.
+  Snowflake and Databricks have no rewrites, so Studio's matviews read back.
+- **Not read:** services (Cube doesn't emit them yet); a `select` that reorders columns outside a Join or a
+  Partition (no step does); a `distinct(~[…])` of some columns; a lambda with parameters; lets that bind something
+  other than a step.
+- **Query's sources from text alone:** in Query, a table binds on the cube's own model (a new cube asks for a table
+  first), an ingest data set only when the cube's class and producer deployment are known (or the host has one of
+  each), and a data product by its path through the catalog's search, which may not find it by path.
+- **Rewritten, not refused:** a lambda Cube reads but writes another way (a sort before a filter, a hand-written
+  join without Cube's select) is imported, with a banner; Save MatView then writes Cube's Pure, which reads the same
+  rows. A plain negation on a column whose nullability isn't known is kept as a Filter by Expression.
+- **Untested on a Lakehouse engine:** the local engine has no `#I{}#` or `#P{}#` grammar, so pasting such Pure as
+  text, and typing an Extend over an ingest data set during the read, weren't seen working (the JSON of a matview
+  was, in Studio, with the mock SDLC: `demo/studio-matview/probe-edit-matview.mjs`).
 
 ## Test gaps
 
