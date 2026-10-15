@@ -2988,7 +2988,9 @@ Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows
 2. Pick a definition: its data sets list with their column counts; a materialized view is disabled and says why. Pick
    a data set: its columns show, the declared ones then `LAKE_DIGEST`, `LAKE_IN_ID` and `LAKE_OUT_ID` (and
    `LAKE_FROM`, `LAKE_THRU` for a business-temporal one). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the
-   one you last used); change it if needed.
+   one you last used); change it if needed. Tick another definition's checkbox (or Cmd-click it): it opens beside the
+   first, each one's data sets under its name and its only data set picked, so one Add adds data sets of both; a plain
+   click opens one alone again (user, 2026-10-15; Studio's project screen too).
 3. Add the data set. Open the dialog again: the Mode, producer deployment and warehouse are fixed, and the Model,
    Direct Connection and Data Product tabs are disabled. Add a second data set of the same producer.
 4. Join the two on a shared key, add a Filter `LAKE_OUT_ID` **is** `999999999` (or the current-rows marker your

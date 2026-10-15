@@ -16,7 +16,7 @@
 
 import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useId } from 'react';
+import { Fragment, useId } from 'react';
 import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
 import { getDroppedDefinitionsLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import {
@@ -62,11 +62,16 @@ const CubeIngestTabAlert: React.FC<{
 );
 
 /**
- * A definition's data sets, as both Ingest screens list them, each picked or
- * ticked to add; the one picked last previewed
+ * The data sets of the opened definitions, as both Ingest screens list them,
+ * each picked or ticked to add, under its definition's name when several are
+ * opened; the one picked last previewed
  */
 const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
+  const read = tab.definitions.filter(
+    (definition) => tab.getDataSets(definition.urn) !== undefined,
+  );
+  const grouped = tab.definitions.length > 1;
   return (
     <>
       {tab.isDescribing && (
@@ -74,34 +79,56 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
           reading the definition
         </div>
       )}
-      {tab.dataSets && (
+      {read.length > 0 && (
         <ul
-          className={`max-h-40 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
+          className={`max-h-48 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
           aria-label="Data sets"
         >
-          {tab.dataSets.map((dataSet) => (
-            <CubePickerListItem
-              key={dataSet.name}
-              picked={tab.isDataSetPicked(dataSet.name)}
-              disabled={!dataSet.isPickable}
-              title={dataSet.disabledReason}
-              adds={true}
-              onPick={() => tab.selectDataSet(dataSet.name)}
-              onToggle={() => tab.toggleDataSet(dataSet.name)}
-              toggleLabel={dataSet.name}
-            >
-              <span className="min-w-0 flex-1 truncate">{dataSet.name}</span>
-              <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                {dataSet.isPickable
-                  ? `${dataSet.schema?.columns.length ?? 0} columns`
-                  : dataSet.disabledReason}
-              </span>
-            </CubePickerListItem>
+          {read.map((definition) => (
+            <Fragment key={definition.urn}>
+              {grouped && (
+                <li className="px-2 pt-1 text-sm text-[var(--color-text-muted)]">
+                  {definition.name}
+                </li>
+              )}
+              {(tab.getDataSets(definition.urn) ?? []).map((dataSet) => (
+                <CubePickerListItem
+                  key={dataSet.name}
+                  picked={tab.isDataSetPicked(dataSet.name, definition.urn)}
+                  disabled={!dataSet.isPickable}
+                  title={dataSet.disabledReason}
+                  adds={true}
+                  onPick={() => tab.selectDataSet(dataSet.name, definition.urn)}
+                  onToggle={() =>
+                    tab.toggleDataSet(dataSet.name, definition.urn)
+                  }
+                  toggleLabel={
+                    grouped
+                      ? `${dataSet.name} of ${definition.name}`
+                      : dataSet.name
+                  }
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {dataSet.name}
+                  </span>
+                  <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                    {dataSet.isPickable
+                      ? `${dataSet.schema?.columns.length ?? 0} columns`
+                      : dataSet.disabledReason}
+                  </span>
+                </CubePickerListItem>
+              ))}
+            </Fragment>
           ))}
         </ul>
       )}
       {tab.dataSet?.schema && (
-        <section aria-label="Data set preview">
+        <section aria-label="Data set preview" className="flex flex-col gap-1">
+          {grouped && (
+            <span className="text-sm text-[var(--color-text-muted)]">
+              {`${tab.dataSet.name} of ${tab.previewedDefinition?.name ?? ''}`}
+            </span>
+          )}
           <CubeSchemaColumnsTable schema={tab.dataSet.schema} />
         </section>
       )}
@@ -111,8 +138,9 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
 
 /**
  * The Ingest tab on a host reading one project's definitions (Studio): the
- * project's definitions by name, each path muted beside it, then a
- * definition's data sets; the runtime its runs use is named, not picked
+ * project's definitions by name, each path muted beside it, then the data
+ * sets of the one picked, or of several ticked; the runtime its runs use is
+ * named, not picked
  */
 const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
@@ -142,9 +170,11 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
           {candidates.map((candidate) => (
             <CubePickerListItem
               key={candidate.urn}
-              picked={tab.definition?.urn === candidate.urn}
+              picked={tab.isDefinitionOpened(candidate)}
               title={candidate.definition}
               onPick={() => tab.selectDefinition(candidate)}
+              onToggle={() => tab.toggleDefinition(candidate)}
+              toggleLabel={candidate.name}
             >
               <span className="shrink-0">{candidate.name}</span>
               <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-muted)]">
@@ -178,8 +208,8 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
 
 /**
  * The source dialog's Ingest tab (PLAN §6.7): Mode, the viewer's
- * environment (read-only), a producer deployment, one of its definitions,
- * then a data set with its columns. The cube's first data set fixes the
+ * environment (read-only), a producer deployment, one of its definitions, or
+ * several ticked, then data sets with their columns. The cube's first data set fixes the
  * Mode, the producer deployment and the warehouse.
  */
 export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
@@ -256,13 +286,15 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
           aria-label="Ingest definitions"
         >
           {tab.shownDefinitions.map((candidate) => {
-            const isPicked = tab.definition?.urn === candidate.urn;
+            const isPicked = tab.isDefinitionOpened(candidate);
             return (
               <CubePickerListItem
                 key={candidate.urn}
                 picked={isPicked}
                 title={candidate.definition}
                 onPick={() => tab.selectDefinition(candidate)}
+                onToggle={() => tab.toggleDefinition(candidate)}
+                toggleLabel={candidate.name}
               >
                 <span className="min-w-0 flex-1 truncate">
                   {candidate.name}

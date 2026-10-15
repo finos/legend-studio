@@ -67,6 +67,12 @@ export const CUBE_INGEST_TAB_MESSAGE = {
     'The cube changed while the data set was being added; pick it again.',
 } as const;
 
+/** A data set picked to add: the URN of its definition, and its name */
+export interface CubeIngestPick {
+  readonly definitionUrn: string;
+  readonly dataSet: string;
+}
+
 const toError = (error: unknown): CubeIngestTabError => {
   if (error instanceof CubeEngineError) {
     return {
@@ -80,10 +86,11 @@ const toError = (error: unknown): CubeIngestTabError => {
 /**
  * The source dialog's Ingest tab (PLAN §6.7), as Data Cube's producer
  * source picks: the Mode (class), the viewer's environment for it, a
- * producer deployment, one of its SDLC-deployed definitions, then one or
- * several of its data sets, typed from what the definition declares. The
- * first Add saves the class, the producer deployment and the warehouse as
- * the cube's model; then the tab offers only that deployment's definitions.
+ * producer deployment, one of its SDLC-deployed definitions, or several
+ * ticked, then one or several of their data sets, typed from what each
+ * definition declares. The first Add saves the class, the producer
+ * deployment and the warehouse as the cube's model; then the tab offers only
+ * that deployment's definitions.
  */
 export class CubeIngestTabState implements CubeSourcePickerTab {
   readonly key = CubeSourcePickerTabKey.INGEST;
@@ -96,20 +103,24 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   producerDeploymentId: string | undefined;
   definitionList: CubeIngestDefinitionList | undefined;
   definitionSearch = '';
-  definition: CubeIngestDefinitionCandidate | undefined;
-  dataSets: readonly CubeIngestDataSet[] | undefined;
-  /** The picked data sets, by name, in the order picked; several are added at once */
-  dataSetNames: readonly string[] = [];
+  /** The definitions opened, in the order opened: one picked alone, or several ticked */
+  definitions: readonly CubeIngestDefinitionCandidate[] = [];
+  /** The data sets of each opened definition, by its URN, once read */
+  dataSetsByDefinition: ReadonlyMap<string, readonly CubeIngestDataSet[]> =
+    new Map();
+  /** The picked data sets, in the order picked, of any opened definition; several are added at once */
+  picks: readonly CubeIngestPick[] = [];
   /** The warehouse of a cube without one yet: the one the viewer last picked, else the default */
   warehouse = CUBE_DEFAULT_CONSUMER_WAREHOUSE;
   isLoadingEnvironment = false;
   isListingDefinitions = false;
-  isDescribing = false;
   isAdding = false;
   error: CubeIngestTabError | undefined;
 
   /** The class the environment and producers were read for */
   private loadedEnvironmentType: CubeDataProductEnvironmentType | undefined;
+  /** The definitions whose data sets are being read, by URN, each with its request */
+  private describing: ReadonlyMap<string, number> = new Map();
   /** Each counts its calls: a later call, or closing the dialog, drops an earlier answer */
   private environmentRequest = 0;
   private definitionsRequest = 0;
@@ -117,46 +128,55 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   private confirmRequest = 0;
 
   constructor(editorState: CubeEditorState) {
-    makeObservable<CubeIngestTabState, 'loadedEnvironmentType'>(this, {
-      environmentType: observable,
-      environment: observable.ref,
-      producers: observable.ref,
-      producerDeploymentId: observable,
-      definitionList: observable.ref,
-      definitionSearch: observable,
-      definition: observable.ref,
-      dataSets: observable.ref,
-      dataSetNames: observable.ref,
-      dataSetName: computed,
-      pickedDataSets: computed,
-      warehouse: observable,
-      isLoadingEnvironment: observable,
-      isListingDefinitions: observable,
-      isDescribing: observable,
-      isAdding: observable,
-      error: observable.ref,
-      loadedEnvironmentType: observable,
-      fixedSettings: computed,
-      isAvailable: computed,
-      isBusy: computed,
-      shownDefinitions: computed,
-      dataSet: computed,
-      canConfirm: computed,
-      setEnvironmentType: action,
-      selectProducer: action,
-      setDefinitionSearch: action,
-      selectDefinition: action,
-      selectDataSet: action,
-      toggleDataSet: action,
-      setWarehouse: action,
-      retry: action,
-      open: action,
-      close: action,
-      loadEnvironment: flow,
-      listDefinitions: flow,
-      describeDefinition: flow,
-      confirm: flow,
-    });
+    makeObservable<CubeIngestTabState, 'loadedEnvironmentType' | 'describing'>(
+      this,
+      {
+        environmentType: observable,
+        environment: observable.ref,
+        producers: observable.ref,
+        producerDeploymentId: observable,
+        definitionList: observable.ref,
+        definitionSearch: observable,
+        definitions: observable.ref,
+        dataSetsByDefinition: observable.ref,
+        picks: observable.ref,
+        definition: computed,
+        dataSets: computed,
+        dataSetNames: computed,
+        dataSetName: computed,
+        pickedDataSets: computed,
+        previewedDefinition: computed,
+        warehouse: observable,
+        isLoadingEnvironment: observable,
+        isListingDefinitions: observable,
+        isDescribing: computed,
+        isAdding: observable,
+        error: observable.ref,
+        loadedEnvironmentType: observable,
+        describing: observable.ref,
+        fixedSettings: computed,
+        isAvailable: computed,
+        isBusy: computed,
+        shownDefinitions: computed,
+        dataSet: computed,
+        canConfirm: computed,
+        setEnvironmentType: action,
+        selectProducer: action,
+        setDefinitionSearch: action,
+        selectDefinition: action,
+        toggleDefinition: action,
+        selectDataSet: action,
+        toggleDataSet: action,
+        setWarehouse: action,
+        retry: action,
+        open: action,
+        close: action,
+        loadEnvironment: flow,
+        listDefinitions: flow,
+        describeDefinition: flow,
+        confirm: flow,
+      },
+    );
     this.editorState = editorState;
   }
 
@@ -173,6 +193,11 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   get fixedSettings(): CubeIngestSettings | undefined {
     const model = this.editorState.document.context?.model;
     return model ? getCubeIngestSettings(model) : undefined;
+  }
+
+  /** Whether data sets of an opened definition are being read */
+  get isDescribing(): boolean {
+    return this.describing.size > 0;
   }
 
   get isBusy(): boolean {
@@ -199,34 +224,77 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     );
   }
 
+  /** The definition opened last */
+  get definition(): CubeIngestDefinitionCandidate | undefined {
+    return this.definitions.at(-1);
+  }
+
+  /** The data sets of the definition opened last, once read */
+  get dataSets(): readonly CubeIngestDataSet[] | undefined {
+    const { definition } = this;
+    return definition
+      ? this.dataSetsByDefinition.get(definition.urn)
+      : undefined;
+  }
+
+  isDefinitionOpened(candidate: CubeIngestDefinitionCandidate): boolean {
+    return this.definitions.some((each) => each.urn === candidate.urn);
+  }
+
+  /** The data sets of an opened definition, once read */
+  getDataSets(definitionUrn: string): readonly CubeIngestDataSet[] | undefined {
+    return this.dataSetsByDefinition.get(definitionUrn);
+  }
+
+  /** The names of the picked data sets, in the order picked */
+  get dataSetNames(): readonly string[] {
+    return this.picks.map((pick) => pick.dataSet);
+  }
+
   /** The data set picked last, the one previewed */
   get dataSetName(): string | undefined {
-    return this.dataSetNames.at(-1);
+    return this.picks.at(-1)?.dataSet;
   }
 
   /** The data set picked last, the one previewed */
   get dataSet(): CubeIngestDataSet | undefined {
-    return this.findDataSet(this.dataSetName);
+    return this.findDataSet(this.picks.at(-1));
+  }
+
+  /** The definition of the data set picked last */
+  get previewedDefinition(): CubeIngestDefinitionCandidate | undefined {
+    const urn = this.picks.at(-1)?.definitionUrn;
+    return this.definitions.find((each) => each.urn === urn);
   }
 
   /** The picked data sets, in the order picked */
   get pickedDataSets(): readonly (CubeIngestDataSet | undefined)[] {
-    return this.dataSetNames.map((name) => this.findDataSet(name));
+    return this.picks.map((pick) => this.findDataSet(pick));
   }
 
   /** How many data sets Add adds */
   get pickedCount(): number {
-    return this.dataSetNames.length;
+    return this.picks.length;
   }
 
-  isDataSetPicked(name: string): boolean {
-    return this.dataSetNames.includes(name);
+  /** Whether a data set of an opened definition, by default the one opened last, is picked */
+  isDataSetPicked(
+    name: string,
+    definitionUrn: string | undefined = this.definition?.urn,
+  ): boolean {
+    return this.picks.some(
+      (pick) => pick.definitionUrn === definitionUrn && pick.dataSet === name,
+    );
   }
 
-  private findDataSet(name: string | undefined): CubeIngestDataSet | undefined {
-    return name === undefined
-      ? undefined
-      : this.dataSets?.find((each) => each.name === name);
+  private findDataSet(
+    pick: CubeIngestPick | undefined,
+  ): CubeIngestDataSet | undefined {
+    return pick
+      ? this.dataSetsByDefinition
+          .get(pick.definitionUrn)
+          ?.find((each) => each.name === pick.dataSet)
+      : undefined;
   }
 
   get canConfirm(): boolean {
@@ -236,7 +304,6 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       !this.isDescribing &&
       !this.isAdding &&
       this.producerDeploymentId !== undefined &&
-      this.definition !== undefined &&
       this.pickedDataSets.length > 0 &&
       this.pickedDataSets.every((each) => each?.isPickable === true) &&
       this.warehouse.trim() !== ''
@@ -273,33 +340,66 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     this.definitionSearch = search;
   }
 
-  /** Picks a definition and reads its data sets */
+  /**
+   * Opens a definition alone, in place of any opened, and reads its data
+   * sets; one already opened among others keeps its data sets and picks
+   */
   selectDefinition(candidate: CubeIngestDefinitionCandidate | undefined): void {
-    if (candidate?.urn === this.definition?.urn) {
+    if (
+      this.definitions.length <= 1 &&
+      candidate?.urn === this.definition?.urn
+    ) {
+      return;
+    }
+    if (candidate && this.isDefinitionOpened(candidate)) {
+      this.closeDefinitions((each) => each.urn !== candidate.urn);
       return;
     }
     this.resetDefinition();
-    this.definition = candidate;
     if (candidate) {
-      flowResult(this.describeDefinition(candidate)).catch(
-        this.editorState.host.applicationStore.alertUnhandledError,
-      );
+      this.openDefinition(candidate);
+    }
+  }
+
+  /**
+   * Opens a definition beside those opened, to add data sets of several at
+   * once, and reads its data sets; or closes it, its picks dropped
+   */
+  toggleDefinition(candidate: CubeIngestDefinitionCandidate): void {
+    if (this.isDefinitionOpened(candidate)) {
+      this.closeDefinitions((each) => each.urn === candidate.urn);
+    } else {
+      this.openDefinition(candidate);
     }
   }
 
   /** Picks a data set that can be added, alone, in place of any picked */
-  selectDataSet(name: string): void {
-    if (this.findDataSet(name)?.isPickable) {
-      this.dataSetNames = [name];
+  selectDataSet(
+    name: string,
+    definitionUrn: string | undefined = this.definition?.urn,
+  ): void {
+    if (
+      definitionUrn !== undefined &&
+      this.findDataSet({ definitionUrn, dataSet: name })?.isPickable
+    ) {
+      this.picks = [{ definitionUrn, dataSet: name }];
     }
   }
 
   /** Adds a data set that can be added to the picked ones, or takes it out */
-  toggleDataSet(name: string): void {
-    if (this.isDataSetPicked(name)) {
-      this.dataSetNames = this.dataSetNames.filter((each) => each !== name);
-    } else if (this.findDataSet(name)?.isPickable) {
-      this.dataSetNames = [...this.dataSetNames, name];
+  toggleDataSet(
+    name: string,
+    definitionUrn: string | undefined = this.definition?.urn,
+  ): void {
+    if (definitionUrn === undefined) {
+      return;
+    }
+    if (this.isDataSetPicked(name, definitionUrn)) {
+      this.picks = this.picks.filter(
+        (pick) => pick.definitionUrn !== definitionUrn || pick.dataSet !== name,
+      );
+    } else if (this.findDataSet({ definitionUrn, dataSet: name })?.isPickable) {
+      this.picks = [...this.picks, { definitionUrn, dataSet: name }];
     }
   }
 
@@ -321,10 +421,16 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       !this.definitionList
     ) {
       flowResult(this.listDefinitions()).catch(alertUnhandledError);
-    } else if (this.definition && !this.dataSets) {
-      flowResult(this.describeDefinition(this.definition)).catch(
-        alertUnhandledError,
-      );
+    } else {
+      this.definitions
+        .filter(
+          (each) =>
+            !this.dataSetsByDefinition.has(each.urn) &&
+            !this.describing.has(each.urn),
+        )
+        .forEach((each) => {
+          flowResult(this.describeDefinition(each)).catch(alertUnhandledError);
+        });
     }
   }
 
@@ -374,10 +480,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     this.isListingDefinitions = false;
     this.isAdding = false;
     // a definition whose data sets haven't arrived would show none
-    if (this.definition && !this.dataSets) {
-      this.resetDefinition();
-    }
-    this.isDescribing = false;
+    this.describing = new Map();
+    this.closeDefinitions((each) => !this.dataSetsByDefinition.has(each.urn));
     // read again on reopening
     if (!this.environment || !this.producers) {
       this.loadedEnvironmentType = undefined;
@@ -463,7 +567,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     }
   }
 
-  /** Reads the definition's data sets */
+  /** Reads an opened definition's data sets */
   *describeDefinition(
     candidate: CubeIngestDefinitionCandidate,
   ): GeneratorFn<void> {
@@ -472,29 +576,45 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       return;
     }
     const request = ++this.describeRequest;
-    this.isDescribing = true;
+    this.describing = new Map([...this.describing, [candidate.urn, request]]);
     this.error = undefined;
+    // an answer counts while the definition is open and this is its last read
+    const isCurrent = (): boolean =>
+      this.describing.get(candidate.urn) === request;
     try {
       const dataSets = (yield catalog.describe(
         candidate.urn,
         this.environmentType,
       )) as readonly CubeIngestDataSet[];
-      if (request === this.describeRequest) {
-        this.dataSets = dataSets;
-        // the only data set that can be added is picked
+      if (isCurrent()) {
+        this.dataSetsByDefinition = new Map([
+          ...this.dataSetsByDefinition,
+          [candidate.urn, dataSets],
+        ]);
+        // the only data set of it that can be added is picked
         const [onlyPickable, ...otherPickable] = dataSets.filter(
           (each) => each.isPickable,
         );
-        this.dataSetNames =
-          onlyPickable && !otherPickable.length ? [onlyPickable.name] : [];
+        if (
+          onlyPickable &&
+          !otherPickable.length &&
+          !this.isDataSetPicked(onlyPickable.name, candidate.urn)
+        ) {
+          this.picks = [
+            ...this.picks,
+            { definitionUrn: candidate.urn, dataSet: onlyPickable.name },
+          ];
+        }
       }
     } catch (error) {
-      if (request === this.describeRequest) {
+      if (isCurrent()) {
         this.error = toError(error);
       }
     } finally {
-      if (request === this.describeRequest) {
-        this.isDescribing = false;
+      if (isCurrent()) {
+        this.describing = new Map(
+          [...this.describing].filter(([urn]) => urn !== candidate.urn),
+        );
       }
     }
   }
@@ -510,8 +630,13 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       return false;
     }
     const { editorState } = this;
-    const definition = this.definition as CubeIngestDefinitionCandidate;
-    const picked = this.pickedDataSets as readonly CubeIngestDataSet[];
+    // each picked data set with its definition, as picked
+    const picked = this.picks.map((pick) => ({
+      definition: this.definitions.find(
+        (each) => each.urn === pick.definitionUrn,
+      ) as CubeIngestDefinitionCandidate,
+      dataSet: this.findDataSet(pick) as CubeIngestDataSet,
+    }));
     const producerDeploymentId = this.producerDeploymentId as string;
     const warehouse = this.warehouse.trim();
     const request = ++this.confirmRequest;
@@ -529,7 +654,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         IngestDatasetSource.TYPE,
         picked.length,
       );
-      const nodes = picked.map((dataSet, index) =>
+      const nodes = picked.map(({ definition, dataSet }, index) =>
         INGEST_DATASET_SOURCE_DEFINITION.resolve(
           INGEST_DATASET_SOURCE_DEFINITION.fromCoordinates(
             ids[index] as string,
@@ -580,8 +705,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       if (!settings) {
         editorState.dataProductRuntime.remember(warehouse);
       }
-      // the definition stays open, to add others of its data sets
-      this.dataSetNames = [];
+      // the definitions stay open, to add others of their data sets
+      this.picks = [];
       return true;
     } catch (error) {
       if (request === this.confirmRequest) {
@@ -616,10 +741,36 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   }
 
   private resetDefinition(): void {
-    this.describeRequest++;
-    this.isDescribing = false;
-    this.definition = undefined;
-    this.dataSets = undefined;
-    this.dataSetNames = [];
+    this.describing = new Map();
+    this.definitions = [];
+    this.dataSetsByDefinition = new Map();
+    this.picks = [];
+  }
+
+  private openDefinition(candidate: CubeIngestDefinitionCandidate): void {
+    this.definitions = [...this.definitions, candidate];
+    flowResult(this.describeDefinition(candidate)).catch(
+      this.editorState.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /** Closes the opened definitions given, their data sets, reads and picks dropped */
+  private closeDefinitions(
+    closes: (candidate: CubeIngestDefinitionCandidate) => boolean,
+  ): void {
+    const closed = new Set(
+      this.definitions.filter(closes).map((each) => each.urn),
+    );
+    if (!closed.size) {
+      return;
+    }
+    this.definitions = this.definitions.filter((each) => !closed.has(each.urn));
+    this.dataSetsByDefinition = new Map(
+      [...this.dataSetsByDefinition].filter(([urn]) => !closed.has(urn)),
+    );
+    this.describing = new Map(
+      [...this.describing].filter(([urn]) => !closed.has(urn)),
+    );
+    this.picks = this.picks.filter((pick) => !closed.has(pick.definitionUrn));
   }
 }
