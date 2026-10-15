@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { Explode, Schema } from '@finos/legend-cube';
+import {
+  type Explode,
+  getVariantDatabaseProblem,
+  type Schema,
+} from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
@@ -93,6 +97,7 @@ export class CubeExplodeDraft extends CubeNodeDraft<Explode> {
       namedByDefault: observable,
       touched: observable,
       arrays: computed,
+      sampleProblem: computed,
       setColumn: action,
       setKey: action,
       addKey: action,
@@ -106,7 +111,39 @@ export class CubeExplodeDraft extends CubeNodeDraft<Explode> {
     this.column = original.column;
     this.path = original.path;
     this.name = original.name;
-    this.namedByDefault = original.name === '';
+    // a new node's, or one still named as Explore JSON names it
+    this.namedByDefault =
+      original.name === '' ||
+      original.name === this.defaultName(original.column, original.path);
+  }
+
+  /** The element's default name for a column and keys: `<last key>_element`, free in the input */
+  private defaultName(column: string, path: readonly string[]): string {
+    return column
+      ? getFreeCubeColumnName(
+          getCubeJsonElementName(column, path),
+          this.input?.schema.names() ?? [],
+        )
+      : '';
+  }
+
+  /**
+   * Why Find arrays can't read the column: the database the node's input
+   * runs on has no JSON functions; `undefined` when it can, or isn't known
+   */
+  get sampleProblem(): string | undefined {
+    const { editorState, input } = this;
+    const { context, query } = editorState.document;
+    return input === undefined || context?.runtime === undefined
+      ? undefined
+      : getVariantDatabaseProblem(
+          editorState.getRunDatabaseType(
+            query,
+            input.id,
+            context.model,
+            context.runtime,
+          ),
+        );
   }
 
   /** The node's input: its id and schema, once known */
@@ -128,12 +165,7 @@ export class CubeExplodeDraft extends CubeNodeDraft<Explode> {
   private edited(): void {
     this.touched = true;
     if (this.namedByDefault) {
-      this.name = this.column
-        ? getFreeCubeColumnName(
-            getCubeJsonElementName(this.column, this.path),
-            this.input?.schema.names() ?? [],
-          )
-        : '';
+      this.name = this.defaultName(this.column, this.path);
     }
   }
 
@@ -192,7 +224,7 @@ export class CubeExplodeDraft extends CubeNodeDraft<Explode> {
   *readSample(): GeneratorFn<void> {
     const { editorState, column, input } = this;
     const picked = column ? input?.schema.lookup(column) : undefined;
-    if (this.isSampling || !input || !picked) {
+    if (this.isSampling || !input || !picked || this.sampleProblem) {
       return;
     }
     const controller = new AbortController();

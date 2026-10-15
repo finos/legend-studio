@@ -195,11 +195,16 @@ describe('Explode Array editor (PLAN §11.20)', () => {
     );
   });
 
-  test("Shows on an H2 cube that its database can't read JSON", async () => {
+  test("Shows on an H2 cube that its database can't read JSON, and reads no sample there", async () => {
     await render('H2');
     type('Explode column', 'PAYLOAD');
     await waitFor(() =>
       expect(problems()).toContain(MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2')),
     );
+    const find = within(panel()).getByRole<HTMLButtonElement>('button', {
+      name: 'Find arrays',
+    });
+    expect(find.disabled).toBe(true);
+    expect(find.title).toBe(MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2'));
   });
 });

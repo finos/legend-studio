@@ -53,6 +53,12 @@ V.6 done (2026-10-15): the Explode Array node. Next: V.7, an inline review, a br
   - **Tests:** the node (10), emission and databases (7), the spec (5) and validity, the reader, the draft (4), the
     editor (3), Explore JSON (3), conformance, the DuckDB engine tests (3), the plans on 4 databases and the refusal
     on 16.
+  - **After review (advisor):** what follows an Explode is run on DuckDB too: Explore JSON's read of the element (3
+    rows: the rows kept without one drop out), a Group sum of an element's field, a Filter on an input column, a
+    Sort then a Limit; the element read is planned on all four databases. A data product cube (Snowflake) allows
+    Explode and Explore JSON, H2 refuses them. A node named as Explore JSON names it still follows its keys, and Find
+    arrays is greyed, with the reason, where JSON isn't read. Postgres isn't available here (no Docker), so its
+    string-array suspicion stays a draft.
 
 - V.5:
 

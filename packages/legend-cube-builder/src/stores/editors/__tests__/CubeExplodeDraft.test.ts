@@ -87,6 +87,12 @@ describe('Explode Array draft (PLAN §11.20)', () => {
     );
     named.draft.pickArray([]);
     expect(named.draft.name).toBe('tag');
+    // one named as Explore JSON names it still follows the keys
+    const offered = await setUp(
+      new Explode('explode101', 'PAYLOAD', ['tags'], 'tags_element'),
+    );
+    offered.draft.pickArray([]);
+    expect(offered.draft.name).toBe('PAYLOAD_element');
   });
 
   test("Finds the arrays in the column's first values, read after its input through Runs", async () => {

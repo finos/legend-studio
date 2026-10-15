@@ -18,16 +18,25 @@ import { beforeAll, describe, expect, test } from '@jest/globals';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+  AggregationFunction,
   buildSchemasAndValidity,
+  ColumnComparisonFilter,
   createNodeRegistry,
   Explode,
   Extend,
+  Filter,
+  FilterOperator,
+  Group,
+  Limit,
   type ModelContext,
   type Query,
   type QueryNode,
   QueryEmitter,
   RelationalTableSource,
+  Restrict,
   Schema,
+  Sort,
+  SortDirection,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
@@ -373,6 +382,94 @@ describe('Explode Array on DuckDB (PLAN §11.20)', () => {
       ['1', 'a'],
       ['1', 'b'],
       ['2', 'a'],
+      ['3', null],
+      ['4', null],
+    ]);
+  }, 120000);
+
+  test('Reads the elements as Explore JSON samples them: the element alone and not empty, which drops the rows kept without one', async () => {
+    const result = await run(
+      TEST__chainOf([
+        source,
+        new Explode('explode101', 'payload', ['items'], 'item'),
+        new Restrict('restrict101', ['item']),
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('item', FilterOperator.IS_NOT_EMPTY),
+        ),
+      ]),
+    );
+    const cells = result.rows.map((row) => row[0] ?? null);
+    expect([...cells].sort()).toEqual([
+      '{"sku":"x","qty":2}',
+      '{"sku":"y","qty":1}',
+      '{"sku":"z","qty":5}',
+    ]);
+    // the fields Explore JSON then finds in them
+    expect(
+      getCubeJsonFields('item', inferCubeJsonShape(cells)).children.map(
+        (field) => field.path.join('.'),
+      ),
+    ).toEqual(['qty', 'sku']);
+  }, 120000);
+
+  test("Groups the elements' fields, filters and takes rows after it", async () => {
+    const explode = new Explode('explode101', 'payload', ['items'], 'item');
+    const sku = await typedExtend(
+      [source, explode],
+      'sku',
+      "x | $x.item->get('sku')->to(@String)",
+      'extend101',
+    );
+    const qty = await typedExtend(
+      [source, explode, sku.node],
+      'qty',
+      "x | $x.item->get('qty')->to(@Integer)",
+      'extend102',
+    );
+    const bySku = await run(
+      TEST__chainOf([
+        source,
+        explode,
+        sku.node,
+        qty.node,
+        new Group(
+          'group101',
+          ['sku'],
+          [{ column: 'qty', function: AggregationFunction.SUM, name: 'total' }],
+        ),
+      ] as QueryNode[]),
+    );
+    // the rows kept without an element make one group, empty
+    expect(rowsOf(bySku, ['sku', 'total'])).toEqual([
+      ['x', '2'],
+      ['y', '1'],
+      ['z', '5'],
+      [null, null],
+    ]);
+    const firstOrder = await run(
+      TEST__chainOf([
+        source,
+        explode,
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('id', FilterOperator.EQUAL, {
+            kind: 'integer',
+            value: '1',
+          }),
+        ),
+      ]),
+    );
+    expect(firstOrder.rows).toHaveLength(2);
+    const firstTwo = await run(
+      TEST__chainOf([
+        source,
+        explode,
+        new Sort('sort101', [{ column: 'id', direction: SortDirection.DESC }]),
+        new Limit('limit101', 2),
+      ]),
+    );
+    expect(rowsOf(firstTwo, ['id', 'item'])).toEqual([
       ['3', null],
       ['4', null],
     ]);

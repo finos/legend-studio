@@ -73,8 +73,16 @@ export const CubeExplodeEditor = observer((props: CubeNodeEditorProps) => {
             {[draft.column || '…', ...draft.path].join(' › ')}
           </span>
           <CubeButton
-            title="Read the column's first values, and list the arrays they hold"
-            disabled={readOnly || !draft.column || draft.isSampling}
+            title={
+              draft.sampleProblem ??
+              "Read the column's first values, and list the arrays they hold"
+            }
+            disabled={
+              readOnly ||
+              !draft.column ||
+              draft.isSampling ||
+              draft.sampleProblem !== undefined
+            }
             onClick={findArrays}
           >
             {draft.isSampling ? 'Reading…' : 'Find arrays'}

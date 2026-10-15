@@ -1751,6 +1751,26 @@ describe('Explode Array, as each database plans it', () => {
     },
   );
 
+  test.each([...VARIANT_DATABASE_TYPES])(
+    'Plans the element alone and not empty, as Explore JSON reads it, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        ordersThen(
+          ...explodeThen().nodes.slice(1),
+          new Restrict('restrict101', ['item']),
+          new Filter(
+            'filter101',
+            new ColumnComparisonFilter('item', FilterOperator.IS_NOT_EMPTY),
+          ),
+        ),
+        databaseType,
+      );
+      expect(sql).toMatch(/\blateral\b/u);
+      // the element's emptiness tested after the lateral: `where not … is null`
+      expect(sql).toMatch(/\bwhere not .*\bis null\b|\bis not null\b/u);
+    },
+  );
+
   test.each(
     PLANNED_DATABASE_TYPES.filter((type) => !VARIANT_DATABASE_TYPES.has(type)),
   )(
