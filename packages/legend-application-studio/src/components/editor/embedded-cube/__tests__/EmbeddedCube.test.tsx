@@ -291,8 +291,8 @@ const BIG_TRADES_LAMBDA = serializeCubeLambdaForHost(
   ),
 );
 
-/** TradesIngest with a materialized view Cube wrote */
-const TRADES_INGEST_WITH_VIEW: PlainObject<Entity> = {
+/** TradesIngest with a materialized view Cube wrote, BIG_TRADES, its data set saying what's given */
+const tradesIngestWithView = (view: PlainObject): PlainObject<Entity> => ({
   ...TRADES_INGEST,
   content: {
     ...(TRADES_INGEST.content as PlainObject),
@@ -300,12 +300,18 @@ const TRADES_INGEST_WITH_VIEW: PlainObject<Entity> = {
       ...((TRADES_INGEST.content as PlainObject).datasets as object[]),
       {
         name: 'BIG_TRADES',
-        primaryKey: ['DESK_ID'],
         source: { _type: 'FunctionSource', function: BIG_TRADES_LAMBDA },
+        ...view,
       },
     ],
   },
-};
+});
+
+/** TradesIngest with a materialized view keyed and classified */
+const TRADES_INGEST_WITH_VIEW = tradesIngestWithView({
+  primaryKey: ['DESK_ID'],
+  privacyClassification: { sensitivity: 'DP10' },
+});
 
 const setUp = async (
   entities: PlainObject<Entity>[],
@@ -645,6 +651,14 @@ describe('Legend Cube in Studio', () => {
         renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
       ).toBeNull();
       await renderResult.findByRole('button', { name: 'Save MatView' });
+      // its classification and its key, among the step's columns, are kept:
+      // nothing to ask again
+      expect(
+        embeddedCubeState.getMaterializedViewSaveProblems([
+          'DESK_ID',
+          'TOTAL_USD',
+        ]),
+      ).toEqual([]);
 
       const ingest = ingestOf(editorStore);
       const hashBefore = ingest.hashCode;
@@ -652,7 +666,8 @@ describe('Legend Cube in Studio', () => {
         embeddedCubeState.saveMaterializedView(TRADES_LAMBDA);
       });
       expect(embeddedCubeState.isOpen).toBe(false);
-      // replaced where it was, its other keys kept
+      // replaced where it was, its other keys kept, with the lists the
+      // engine reads that it lacked
       expect(getIngestDataSetNames(ingest)).toEqual([
         'TRADES',
         'DESKS',
@@ -661,7 +676,12 @@ describe('Legend Cube in Studio', () => {
       expect((ingest.content.datasets as object[]).at(-1)).toEqual({
         name: 'BIG_TRADES',
         primaryKey: ['DESK_ID'],
+        privacyClassification: { sensitivity: 'DP10' },
         source: { _type: 'FunctionSource', function: TRADES_LAMBDA },
+        ingestPartitionColumns: [],
+        preprocessors: [],
+        storageLayoutClusterColumns: [],
+        storageLayoutPartitionColumns: [],
       });
       expect(
         ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map((each) => [
@@ -670,6 +690,105 @@ describe('Legend Cube in Studio', () => {
         ]),
       ).toEqual([['BIG_TRADES', TRADES_LAMBDA.body]]);
       expect(ingest.hashCode).not.toBe(hashBefore);
+      await renderResult.findByText(
+        'Saved materialized view BIG_TRADES of TradesIngest',
+      );
+    },
+  );
+
+  test(
+    integrationTest(
+      "Save MatView asks again for what a view can't be saved with as it was: a classification of its data it lacks, and a primary key whose column is gone",
+    ),
+    async () => {
+      // as Studio wrote a view before it asked for a classification, keyed
+      // by a column the view's rows no longer have
+      const { editorStore, renderResult } = await setUp([
+        tradesIngestWithView({ primaryKey: ['TRADE_ID'] }),
+        LAKEHOUSE_RUNTIME,
+      ]);
+      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      fireEvent.click(
+        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
+      );
+      fireEvent.click(await renderResult.findByText('Edit MatView BIG_TRADES'));
+      const { embeddedCubeState } = editorStore;
+      const problems = [
+        'BIG_TRADES has no classification of its data.',
+        "Its primary key's TRADE_ID is no longer a column of the cube.",
+      ];
+      expect(
+        embeddedCubeState.getMaterializedViewSaveProblems([
+          'DESK_ID',
+          'TOTAL_USD',
+        ]),
+      ).toEqual(problems);
+      // the key isn't checked when Cube doesn't know the step's columns
+      expect(
+        embeddedCubeState.getMaterializedViewSaveProblems(undefined),
+      ).toEqual(['BIG_TRADES has no classification of its data.']);
+
+      const saveMatView = await renderResult.findByRole('button', {
+        name: 'Save MatView',
+      });
+      await waitFor(() =>
+        expect((saveMatView as HTMLButtonElement).disabled).toBe(false),
+      );
+      fireEvent.click(saveMatView);
+      const form = await renderResult.findByTestId(
+        EMBEDDED_CUBE_TEST_ID.SAVE_MATERIALIZED_VIEW,
+      );
+      expect(
+        within(
+          within(form).getByRole('list', { name: 'Why Save MatView asks' }),
+        )
+          .getAllByRole('listitem')
+          .map((item) => item.textContent),
+      ).toEqual(problems);
+      const saveDialog = form.closest('[role="dialog"]') as HTMLElement;
+      const save = within(saveDialog).getByRole<HTMLButtonElement>('button', {
+        name: 'Save',
+      });
+      // its data must be classified: typed, as Studio's config gives no
+      // classifications to pick from
+      expect(save.disabled).toBe(true);
+      fireEvent.change(within(form).getByLabelText('Data classification'), {
+        target: { value: 'DP20' },
+      });
+      expect(save.disabled).toBe(false);
+      // the key starts on the columns of it the step still has: none
+      const keyColumns = within(form).getByRole('list', {
+        name: 'Primary key columns',
+      });
+      expect(
+        within(keyColumns)
+          .getAllByRole<HTMLInputElement>('checkbox')
+          .map((box) => [box.closest('label')?.textContent, box.checked]),
+      ).toEqual([
+        ['DESK_ID', false],
+        ['TOTAL_USD', false],
+      ]);
+      fireEvent.click(within(keyColumns).getByLabelText('DESK_ID'));
+      fireEvent.click(save);
+
+      const ingest = ingestOf(editorStore);
+      expect(embeddedCubeState.isOpen).toBe(false);
+      expect((ingest.content.datasets as PlainObject[]).at(-1)).toMatchObject({
+        name: 'BIG_TRADES',
+        primaryKey: ['DESK_ID'],
+        privacyClassification: { sensitivity: 'DP20' },
+        source: {
+          _type: 'FunctionSource',
+          function: { _type: 'lambda', parameters: [] },
+        },
+        ingestPartitionColumns: [],
+        preprocessors: [],
+        storageLayoutClusterColumns: [],
+        storageLayoutPartitionColumns: [],
+      });
       await renderResult.findByText(
         'Saved materialized view BIG_TRADES of TradesIngest',
       );

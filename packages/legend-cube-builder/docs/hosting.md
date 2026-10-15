@@ -144,7 +144,9 @@ screen over the editor, as the embedded query builder does, with `LegendStudioCu
 - **Edit MatView:** the button's menu lists the definition's materialized views. Cube opens on one, read back into
   its steps (`initialLambda` on `CubeEditor`, Import Pure, PLAN §11.18): the host binds its sources as the source
   dialog would add them, and a banner says when Cube writes the view another way. The header button is then
-  **Save MatView**, which replaces that view's lambda in place, keeping its name, place and other keys.
+  **Save MatView**, which replaces that view's lambda in place, keeping its name, place and other keys, and adding
+  the empty lists the engine reads that it lacks. When the view has no classification of its data, or its primary
+  key has a column the step no longer has, Save MatView first asks for them again in Add MatView's dialog.
 - **Loading:** Studio loads Cube with the dialog, on its first opening (`React.lazy`), so Cube's code stays out of
   Studio's main bundle.
 

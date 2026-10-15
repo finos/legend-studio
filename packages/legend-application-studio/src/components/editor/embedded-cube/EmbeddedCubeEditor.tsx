@@ -40,6 +40,7 @@ import { LegendStudioCubeHost } from '../../../stores/editor/embedded-cube/Legen
 export const EMBEDDED_CUBE_TEST_ID = {
   DIALOG: 'embedded-cube__dialog',
   ADD_MATERIALIZED_VIEW: 'embedded-cube__add-materialized-view',
+  SAVE_MATERIALIZED_VIEW: 'embedded-cube__save-materialized-view',
 };
 
 /**
@@ -127,33 +128,70 @@ const MaterializedViewPrimaryKey: React.FC<{
   </fieldset>
 );
 
+/** What a header button gives its dialog */
+interface MaterializedViewDialogInput {
+  /** The step that runs, as a lambda with no runtime and no row limit */
+  readonly lambda: PlainObject;
+  /** The columns of the step that runs, the view's; none when Cube doesn't know them */
+  readonly columns: readonly string[] | undefined;
+  /** Why Save MatView asks again; none to add a new view */
+  readonly saveProblems?: readonly string[] | undefined;
+}
+
 /**
  * Names the materialized view, classifies its data and picks its primary
- * key, then adds it to the ingest definition
+ * key, then adds it to the ingest definition (Add MatView). For the view
+ * opened to edit, asks again for what it can't be saved with as it was, the
+ * classification of its data or a primary key whose column is gone, then
+ * saves it in place (Save MatView)
  */
-const MaterializedViewNameDialog = observer(
+const MaterializedViewDialog = observer(
   (props: {
     embeddedCubeState: EmbeddedCubeState;
-    lambda: PlainObject;
-    /** The columns of the step that runs, the view's */
-    columns: readonly string[];
+    input: MaterializedViewDialogInput;
     close: () => void;
   }) => {
-    const { embeddedCubeState, lambda, columns, close } = props;
-    // as Cube's dialogs: the dialog follows the theme, and Add is an accent
-    // button in every theme (legend-art's light Add is a legacy grey)
+    const { embeddedCubeState, input, close } = props;
+    const { lambda, saveProblems } = input;
+    const saved = saveProblems ? embeddedCubeState.matViewDataSet : undefined;
+    // a view saved when Cube doesn't know the step's columns keeps its key
+    const columns = input.columns ?? saved?.primaryKey ?? [];
+    // as Cube's dialogs: the dialog follows the theme, and its primary button
+    // is an accent button in every theme (legend-art's light one is grey)
     const darkMode =
       !embeddedCubeState.editorStore.applicationStore.layoutService
         .TEMPORARY__isLightColorThemeEnabled;
     const [name, setName] = useState('');
-    const [sensitivity, setSensitivity] = useState('');
-    const [primaryKey, setPrimaryKey] = useState<string[]>([]);
-    const nameProblem = embeddedCubeState.getMaterializedViewNameProblem(name);
+    // a view saved again starts on its own classification, if it can keep it,
+    // and on the columns of its key the step still has
+    const [sensitivity, setSensitivity] = useState(() =>
+      saved?.sensitivity !== undefined &&
+      embeddedCubeState.getMaterializedViewClassificationProblem(
+        saved.sensitivity,
+      ) === undefined
+        ? saved.sensitivity
+        : '',
+    );
+    const [primaryKey, setPrimaryKey] = useState(() =>
+      columns.filter((column) => saved?.primaryKey.includes(column)),
+    );
+    const nameProblem = saveProblems
+      ? undefined
+      : embeddedCubeState.getMaterializedViewNameProblem(name);
     const problem =
       nameProblem ??
       embeddedCubeState.getMaterializedViewClassificationProblem(sensitivity);
-    const add = (): void => {
-      if (problem === undefined) {
+    const verb = saveProblems ? 'Save' : 'Add';
+    const confirm = (): void => {
+      if (problem !== undefined) {
+        return;
+      }
+      if (saveProblems) {
+        embeddedCubeState.saveMaterializedView(lambda, {
+          primaryKey,
+          sensitivity,
+        });
+      } else {
         embeddedCubeState.addMaterializedView(name, lambda, {
           primaryKey,
           sensitivity,
@@ -164,33 +202,55 @@ const MaterializedViewNameDialog = observer(
       <Dialog open={true} onClose={close}>
         <Modal darkMode={darkMode} className="w-[440px] max-w-full">
           <ModalHeader>
-            <div className="modal__title">Add MatView</div>
+            <div className="modal__title">{`${verb} MatView`}</div>
           </ModalHeader>
           <ModalBody>
             <form
               className="flex flex-col gap-2"
-              data-testid={EMBEDDED_CUBE_TEST_ID.ADD_MATERIALIZED_VIEW}
+              data-testid={
+                saveProblems
+                  ? EMBEDDED_CUBE_TEST_ID.SAVE_MATERIALIZED_VIEW
+                  : EMBEDDED_CUBE_TEST_ID.ADD_MATERIALIZED_VIEW
+              }
               onSubmit={(event) => {
                 event.preventDefault();
-                add();
+                confirm();
               }}
             >
-              <label className="flex flex-col gap-1 text-base">
-                {`A data set of ${embeddedCubeState.ingest?.name ?? 'the ingest definition'}, whose rows are the cube's`}
-                <input
-                  className="input--dark h-8 rounded-sm px-2"
-                  aria-label="Materialized view name"
-                  placeholder="Name"
-                  spellCheck={false}
-                  autoFocus={true}
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </label>
-              {name.trim() && nameProblem && (
-                <div className="text-sm text-[var(--color-status-error)]">
-                  {nameProblem}
-                </div>
+              {saveProblems ? (
+                <>
+                  <div className="text-base">
+                    {`${embeddedCubeState.matView} of ${embeddedCubeState.ingest?.name ?? 'the ingest definition'} can't be saved as it was:`}
+                  </div>
+                  <ul
+                    aria-label="Why Save MatView asks"
+                    className="list-disc pl-5 text-sm text-[var(--color-status-warn)]"
+                  >
+                    {saveProblems.map((each) => (
+                      <li key={each}>{each}</li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <label className="flex flex-col gap-1 text-base">
+                    {`A data set of ${embeddedCubeState.ingest?.name ?? 'the ingest definition'}, whose rows are the cube's`}
+                    <input
+                      className="input--dark h-8 rounded-sm px-2"
+                      aria-label="Materialized view name"
+                      placeholder="Name"
+                      spellCheck={false}
+                      autoFocus={true}
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                    />
+                  </label>
+                  {name.trim() && nameProblem && (
+                    <div className="text-sm text-[var(--color-status-error)]">
+                      {nameProblem}
+                    </div>
+                  )}
+                </>
               )}
               <MaterializedViewClassification
                 embeddedCubeState={embeddedCubeState}
@@ -208,10 +268,10 @@ const MaterializedViewNameDialog = observer(
             <ModalFooterButton
               darkMode={true}
               formatText={false}
-              text="Add"
-              title={problem ?? 'Add the materialized view'}
+              text={verb}
+              title={problem ?? `${verb} the materialized view`}
               disabled={problem !== undefined}
-              onClick={add}
+              onClick={confirm}
             />
             <ModalFooterButton
               darkMode={darkMode}
@@ -231,7 +291,8 @@ const MaterializedViewNameDialog = observer(
  * Cube's header button: the step that runs, as a lambda with no runtime and
  * no row limit, becomes a materialized view of the ingest definition (Add
  * MatView, named, classified and keyed in a dialog), or replaces the one
- * opened to edit (Save MatView)
+ * opened to edit (Save MatView), at once unless its classification or its
+ * key must be asked again
  */
 const MaterializedViewButton = observer(
   (props: {
@@ -241,8 +302,8 @@ const MaterializedViewButton = observer(
     const { embeddedCubeState, editorState } = props;
     const { execution } = editorState;
     const { matView } = embeddedCubeState;
-    const [view, setView] = useState<
-      { lambda: PlainObject; columns: readonly string[] } | undefined
+    const [dialogInput, setDialogInput] = useState<
+      MaterializedViewDialogInput | undefined
     >();
     const [isBuilding, setIsBuilding] = useState(false);
     const start = (): void => {
@@ -259,11 +320,19 @@ const MaterializedViewButton = observer(
       )?.columns.map((column) => column.name);
       setIsBuilding(true);
       buildCubeRunningStepLambda(editorState)
-        .then((lambda) =>
-          matView === undefined
-            ? setView({ lambda, columns: columns ?? [] })
-            : embeddedCubeState.saveMaterializedView(lambda),
-        )
+        .then((lambda) => {
+          if (matView === undefined) {
+            setDialogInput({ lambda, columns });
+            return;
+          }
+          const saveProblems =
+            embeddedCubeState.getMaterializedViewSaveProblems(columns);
+          if (saveProblems.length) {
+            setDialogInput({ lambda, columns, saveProblems });
+          } else {
+            embeddedCubeState.saveMaterializedView(lambda);
+          }
+        })
         .catch(editorState.host.applicationStore.alertUnhandledError)
         .finally(() => setIsBuilding(false));
     };
@@ -283,12 +352,11 @@ const MaterializedViewButton = observer(
         >
           {matView === undefined ? 'Add MatView' : 'Save MatView'}
         </CubeButton>
-        {view && (
-          <MaterializedViewNameDialog
+        {dialogInput && (
+          <MaterializedViewDialog
             embeddedCubeState={embeddedCubeState}
-            lambda={view.lambda}
-            columns={view.columns}
-            close={() => setView(undefined)}
+            input={dialogInput}
+            close={() => setDialogInput(undefined)}
           />
         )}
       </>

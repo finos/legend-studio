@@ -4942,6 +4942,12 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
 - **Cube loads lazily in Studio,** with its dialog on the first opening, as Legend Query loads its Cube page.
 - **A view Cube reads but writes differently** opens with a note that saving rewrites it the way Cube writes it
   (recommended to the user, 2026-10-14).
+- **Save MatView asks again only when it must** (after #5695's classification and primary key, 2026-10-14): a view
+  is saved at once unless its data has no classification (Studio wrote views without one before #5695, the cause of
+  its NullPointerException) or one the config doesn't list, or its primary key has a column the step that runs no
+  longer has. Then Add MatView's dialog opens as Save MatView, on the view's own classification and the key columns
+  the step still has, and says why. A view saved gains the empty lists the engine reads (`ingestPartitionColumns`,
+  `preprocessors`, `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`) that it lacks.
 
 **Reading a lambda:**
 
