@@ -402,31 +402,45 @@ export class DataProductAPGState {
 
       // Also surface users whose access came from a completed data request
       // (rather than a data contract), via the completed-requests approved
-      // users endpoint.
-      const rawRequestsResponse =
-        (yield lakehouseContractServerClient.getDataRequestsForDataProduct(
-          details.dataProduct.name,
-          details.deploymentId,
-          token,
-        )) as PlainObject<V1_LiteDataRequestsResponse>;
-      const plugins =
-        this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
-      const completedRequestIds = V1_deserializeDataRequestsResponse(
-        rawRequestsResponse,
-        plugins,
-      )
-        .filter((request) => request.state === V1_RequestState.COMPLETED)
-        .map((request) => request.guid);
-
-      if (completedRequestIds.length > 0) {
-        const rawApprovedUsersByRequestId =
-          (yield lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
-            completedRequestIds,
+      // users endpoint. Isolated in its own try/catch so a failure here
+      // (e.g. these newer endpoints not yet deployed in an environment)
+      // doesn't discard the contract-based approved users fetched above.
+      try {
+        const rawRequestsResponse =
+          (yield lakehouseContractServerClient.getDataRequestsForDataProduct(
+            details.dataProduct.name,
+            details.deploymentId,
             token,
-          )) as Record<string, { name: string }[]>;
-        Object.values(rawApprovedUsersByRequestId)
-          .flat()
-          .forEach((user) => approvedUserNames.add(user.name));
+          )) as PlainObject<V1_LiteDataRequestsResponse>;
+        const plugins =
+          this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
+        const completedRequestIds = V1_deserializeDataRequestsResponse(
+          rawRequestsResponse,
+          plugins,
+        )
+          .filter(
+            (request) =>
+              request.state === V1_RequestState.COMPLETED &&
+              request.resource instanceof V1_AccessPointGroupReference &&
+              request.resource.accessPointGroup === this.apg.id,
+          )
+          .map((request) => request.guid);
+
+        if (completedRequestIds.length > 0) {
+          const rawApprovedUsersByRequestId =
+            (yield lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
+              completedRequestIds,
+              token,
+            )) as Record<string, { name: string }[]>;
+          Object.values(rawApprovedUsersByRequestId)
+            .flat()
+            .forEach((user) => approvedUserNames.add(user.name));
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyWarning(
+          `Could not fetch approved users from completed data requests: ${error.message}`,
+        );
       }
 
       this.setApprovedWorkforceUsers(Array.from(approvedUserNames));
