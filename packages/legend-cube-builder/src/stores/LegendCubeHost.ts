@@ -70,6 +70,8 @@ export interface LegendCubeHostConfig {
   readonly enterpriseStereotype?: CubeLakehouseServices['enterpriseStereotype'];
   /** The lakehouse environment the host remembers for the viewer */
   readonly getPreferredEnvironment?: (() => string | undefined) | undefined;
+  /** The engine path of the Legend user service naming producer deployments, as Marketplace configures it */
+  readonly deploymentNameServiceUrl?: string | undefined;
 }
 
 /**
@@ -125,6 +127,7 @@ export const buildLegendCubeLakehouseServices = (
     getCurrentUser: () => applicationStore.identityService.currentUser,
     getPreferredEnvironment: config.getPreferredEnvironment,
     enterpriseStereotype: config.enterpriseStereotype,
+    deploymentNameServiceUrl: config.deploymentNameServiceUrl,
     // the marketplace of the deployment's class, where its deployment is
     getMarketplaceLink: (target) => {
       const marketplaceUrl =

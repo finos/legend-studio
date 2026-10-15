@@ -363,6 +363,33 @@ describe('Legend Query as the Cube host', () => {
     ).toBeUndefined();
   });
 
+  test("Names producer deployments with the Legend user service Marketplace's producer info reads", () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    expect(
+      buildLegendQueryCubeLakehouseServices(
+        createApplicationStore({
+          lakehouse,
+          extensions: {
+            core: {
+              dataProductConfig: {
+                producer: {
+                  operationalUrl: 'ignored by Query',
+                  deploymentLegendServiceUrl: '/directory/deploymentNames',
+                  deploymentViewUrl: 'ignored by Query',
+                },
+              },
+            },
+          },
+        }),
+      )?.deploymentNameServiceUrl,
+    ).toBe('/directory/deploymentNames');
+    expect(
+      buildLegendQueryCubeLakehouseServices(
+        createApplicationStore({ lakehouse }),
+      )?.deploymentNameServiceUrl,
+    ).toBeUndefined();
+  });
+
   test('Prefers the lakehouse environment Query remembers for the viewer', () => {
     const applicationStore = createApplicationStore({
       lakehouse: { url: 'https://lakehouse.test' },

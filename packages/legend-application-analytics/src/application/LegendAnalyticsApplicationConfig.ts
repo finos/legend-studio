@@ -46,17 +46,39 @@ export class LegendAnalyticsOIDCConfiguration {
 }
 
 /**
+ * The producers of data products, as Legend Marketplace configures them:
+ * Analytics reads only the engine path of the Legend user service naming
+ * producer deployments, which Legend Cube's Ingest tab labels its producers
+ * with
+ */
+export class LegendAnalyticsDataProductProducerConfig {
+  deploymentLegendServiceUrl: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendAnalyticsDataProductProducerConfig, {
+      deploymentLegendServiceUrl: optional(primitive()),
+    }),
+  );
+}
+
+/**
  * Data products, as Legend Studio, Marketplace and Query configure them:
  * Analytics reads only the stereotype that marks access point groups open to
  * everyone in the organization, which Legend Cube's access badges use
  */
 export class LegendAnalyticsDataProductConfig {
   publicStereotype: StereotypeConfig | undefined;
+  producer: LegendAnalyticsDataProductProducerConfig | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegendAnalyticsDataProductConfig, {
       publicStereotype: optional(
         usingModelSchema(StereotypeConfig.serialization.schema),
+      ),
+      producer: optional(
+        usingModelSchema(
+          LegendAnalyticsDataProductProducerConfig.serialization.schema,
+        ),
       ),
     }),
   );

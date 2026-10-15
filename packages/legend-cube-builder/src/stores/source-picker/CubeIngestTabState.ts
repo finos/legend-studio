@@ -33,6 +33,7 @@ import {
   CubeDataProductEnvironmentType,
   getEffectiveCubeWarehouse,
 } from '../../graph-manager/CubeDataProduct.js';
+import { getProducerLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
 import {
   createCubeIngestModel,
@@ -100,6 +101,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   environmentType = CubeDataProductEnvironmentType.PRODUCTION;
   environment: CubeIngestEnvironment | undefined;
   producers: readonly CubeIngestProducer[] | undefined;
+  /** The producers' names the host's deployment directory knows, by deployment id */
+  producerNames: ReadonlyMap<string, string> = new Map();
   producerDeploymentId: string | undefined;
   definitionList: CubeIngestDefinitionList | undefined;
   definitionSearch = '';
@@ -134,6 +137,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         environmentType: observable,
         environment: observable.ref,
         producers: observable.ref,
+        producerNames: observable.ref,
         producerDeploymentId: observable,
         definitionList: observable.ref,
         definitionSearch: observable,
@@ -172,6 +176,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         open: action,
         close: action,
         loadEnvironment: flow,
+        loadProducerNames: flow,
         listDefinitions: flow,
         describeDefinition: flow,
         confirm: flow,
@@ -308,6 +313,11 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       this.pickedDataSets.every((each) => each?.isPickable === true) &&
       this.warehouse.trim() !== ''
     );
+  }
+
+  /** A producer deployment as the tab shows it: its name and id, else its id alone */
+  getProducerLabel(deploymentId: string): string {
+    return getProducerLabel(deploymentId, this.producerNames.get(deploymentId));
   }
 
   /** The class of a cube without one yet: its environment and producers are read again */
@@ -509,6 +519,9 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       }
       this.environment = environment;
       this.producers = producers;
+      flowResult(
+        this.loadProducerNames(producers.map((each) => each.deploymentId)),
+      ).catch(this.editorState.host.applicationStore.alertUnhandledError);
       // a new cube starts on the environment's own warehouse, when it has one
       if (!this.fixedSettings && environment.warehouse) {
         this.warehouse = environment.warehouse;
@@ -536,6 +549,27 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     }
     if (this.producerDeploymentId !== undefined && !this.definitionList) {
       yield flowResult(this.listDefinitions());
+    }
+  }
+
+  /**
+   * Asks the host's deployment directory for the names of producers not
+   * named yet; without an answer, producers show their ids alone
+   */
+  *loadProducerNames(deploymentIds: readonly string[]): GeneratorFn<void> {
+    const { catalog } = this;
+    const unnamed = deploymentIds.filter((id) => !this.producerNames.has(id));
+    if (!catalog?.getProducerNames || unnamed.length === 0) {
+      return;
+    }
+    try {
+      const names = (yield catalog.getProducerNames(unnamed)) as ReadonlyMap<
+        string,
+        string
+      >;
+      this.producerNames = new Map([...this.producerNames, ...names]);
+    } catch {
+      // the names only label the producers, which their ids still do
     }
   }
 

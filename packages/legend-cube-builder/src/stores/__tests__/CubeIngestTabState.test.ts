@@ -145,6 +145,41 @@ describe('The Ingest tab', () => {
     expect(tab.canConfirm).toBe(false);
   });
 
+  test("Labels the producers with the names the host's deployment directory knows, else their ids, and asks once", async () => {
+    const { state, ingest } = setUp();
+    const tab = await openOnOrders(state);
+    expect(tab.getProducerLabel('1234')).toBe('Sales Feed (1234)');
+    expect(tab.getProducerLabel('5678')).toBe('Deployment 5678');
+    expect(ingest.getProducerNames.mock.calls).toEqual([[['1234', '5678']]]);
+    // a producer already named isn't asked of the directory again
+    await flowResult(tab.loadProducerNames(['1234']));
+    expect(ingest.getProducerNames).toHaveBeenCalledTimes(1);
+  });
+
+  test("Labels the producers with their ids when the directory can't answer, and on a host without one", async () => {
+    const failing = setUp();
+    failing.ingest.getProducerNames.mockRejectedValue(
+      new CubeEngineError(CubeEngineErrorKind.NETWORK, 'directory down'),
+    );
+    const tab = await openOnOrders(failing.state);
+    expect(tab.getProducerLabel('1234')).toBe('Deployment 1234');
+    // the tab still works
+    expect(tab.error).toBeUndefined();
+    expect(tab.dataSetName).toBe('TRADES');
+
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const { getProducerNames, ...withoutDirectory } = ingest.catalog;
+    const state = new CubeEditorState({
+      ...host,
+      ingestCatalog: withoutDirectory,
+    });
+    expect(getProducerNames).toBeDefined();
+    expect((await openOnOrders(state)).getProducerLabel('1234')).toBe(
+      'Deployment 1234',
+    );
+  });
+
   test("Adds the data set, typed, and saves the cube's class, producer deployment and warehouse in the same step", async () => {
     const { state } = setUp();
     const tab = await openOnOrders(state);
