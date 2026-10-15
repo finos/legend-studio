@@ -35,6 +35,7 @@ import {
   type DataGridGetContextMenuItemsParams,
   type DataGridIAggFuncParams,
   type DataGridMenuItemDef,
+  type DataGridOptions,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { memo, useCallback, useMemo } from 'react';
@@ -173,13 +174,31 @@ const CUBE_GRID_MENU_ITEMS: readonly DataGridDefaultMenuItem[] = [
 ];
 
 /**
- * The grid's context menu (spec §12.4, PLAN §11.10), curated: on a cell,
- * 'Drilldown by' its column and the quick actions, then a separator; then,
- * anywhere, sizing and resetting the columns, copying, and Cube's Export. Not
- * ag-grid's cut, paste or client export, which would export the fetched rows
- * only. Read when the menu opens, so it reflects the cube and the run as they
- * are then.
+ * Explore JSON… on a Variant column (PLAN §11.20), in its cells' menu and its
+ * header's: the column's fields, and the columns they can become
  */
+export const getCubeExploreJsonItem = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  columnName: string,
+): DataGridMenuItemDef<Row> => {
+  const column = editorState.execution.result?.schema.columns.find(
+    ({ name }) => name === columnName,
+  );
+  const reason = editorState.jsonExplorer.getDisabledReason();
+  return {
+    name: 'Explore JSON…',
+    disabled: reason !== undefined || !column,
+    ...(reason === undefined ? {} : { tooltip: reason }),
+    action: () => {
+      if (column && reason === undefined) {
+        flowResult(editorState.jsonExplorer.open(column)).catch(
+          editorState.host.applicationStore.alertUnhandledError,
+        );
+      }
+    },
+  };
+};
+
 /**
  * A Variant cell's items (PLAN §11.20): Open JSON shows a run row's document
  * as a tree; a group row's cell, or an empty one, has none to show
@@ -210,9 +229,47 @@ const getCubeVariantMenuItems = <Row extends CubeAnyRow>(
         }
       },
     },
+    getCubeExploreJsonItem<Row>(editorState, column.name),
   ];
 };
 
+/** What ag-grid gives a column header's menu */
+export type CubeGridHeaderMenuParams<Row extends CubeAnyRow> = Parameters<
+  NonNullable<DataGridOptions<Row>['getMainMenuItems']>
+>[0];
+
+/**
+ * A column header's menu: ag-grid's own items, after Explore JSON… on a
+ * Variant column (PLAN §11.20)
+ */
+export const getCubeGridHeaderMenuItems = <Row extends CubeAnyRow>(
+  editorState: CubeEditorState,
+  params: CubeGridHeaderMenuParams<Row>,
+): (DataGridDefaultMenuItem | DataGridMenuItemDef<Row>)[] => {
+  const defaults = params.defaultItems;
+  const colId = params.column?.getColId();
+  const column = colId?.startsWith(COLUMN_ID_PREFIX)
+    ? editorState.execution.result?.schema.columns[
+        Number(colId.slice(COLUMN_ID_PREFIX.length))
+      ]
+    : undefined;
+  return column?.type.family === TypeFamily.VARIANT
+    ? [
+        getCubeExploreJsonItem<Row>(editorState, column.name),
+        'separator',
+        ...defaults,
+      ]
+    : defaults;
+};
+
+/**
+ * The grid's context menu (spec §12.4, PLAN §11.10), curated: on a cell,
+ * 'Drilldown by' its column and the quick actions, then a separator; then,
+ * anywhere, sizing and resetting the columns, copying, and Cube's Export. Not
+ * ag-grid's cut, paste or client export, which would export the fetched rows
+ * only. Read when the menu opens, so it reflects the cube and the run as they
+ * are then.
+ */
 export const getCubeGridContextMenuItems = <Row extends CubeAnyRow>(
   editorState: CubeEditorState,
   params: DataGridGetContextMenuItemsParams<Row>,
@@ -533,6 +590,11 @@ export const CubeResultGrid = memo(
         getCubeGridContextMenuItems(editorState, params),
       [editorState],
     );
+    const getMainMenuItems = useCallback(
+      (params: CubeGridHeaderMenuParams<CubeRow>) =>
+        getCubeGridHeaderMenuItems(editorState, params),
+      [editorState],
+    );
     const columnDefs = useMemo(
       () =>
         buildCubeColumnDefs<CubeRow>(
@@ -572,6 +634,7 @@ export const CubeResultGrid = memo(
           suppressFieldDotNotation={true}
           tooltipShowDelay={500}
           getContextMenuItems={getContextMenuItems}
+          getMainMenuItems={getMainMenuItems}
           // local mode (spec §12.1): ag-grid's own grouping, pivot and
           // filters on the run's rows, with their panels and totals
           defaultColDef={LOCAL_COLUMN_DEFAULTS}

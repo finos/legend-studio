@@ -29,6 +29,7 @@ import {
   MESSAGE_FILTER_VALUE_WILDCARD,
   MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
 } from '../../messages/CubeMessages.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import {
@@ -51,6 +52,8 @@ import {
   CUBE_DIALECT_WORKAROUNDS,
   dependsOnDatabaseType,
   getDatabaseProblemOfType,
+  getVariantDatabaseProblem,
+  VARIANT_DATABASE_TYPES,
   getDatabaseProblems,
   getDialectWorkarounds,
   getEmitPatternProblem,
@@ -734,5 +737,26 @@ describe(unitTest('Pivot on each database'), () => {
     expect(printIR(lambda('DuckDB') as never)).toContain('->pivot(');
     expect(printIR(lambda() as never)).toContain('->pivot(');
     expect(() => emitter.emitRelation('pivot101')).not.toThrow();
+  });
+});
+
+describe(unitTest('JSON by database (PLAN §11.20)'), () => {
+  test('Reads JSON on Snowflake, Databricks, Postgres and DuckDB, or where the database is unknown, and refuses it elsewhere', () => {
+    expect([...VARIANT_DATABASE_TYPES]).toEqual([
+      'Snowflake',
+      'Databricks',
+      'Postgres',
+      'DuckDB',
+    ]);
+    VARIANT_DATABASE_TYPES.forEach((type) =>
+      expect(getVariantDatabaseProblem(type)).toBeUndefined(),
+    );
+    expect(getVariantDatabaseProblem(undefined)).toBeUndefined();
+    expect(getVariantDatabaseProblem('H2')).toBe(
+      MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2'),
+    );
+    expect(getVariantDatabaseProblem('SqlServer')).toBe(
+      MESSAGE_VARIANT_UNSUPPORTED_DATABASE('SqlServer'),
+    );
   });
 });

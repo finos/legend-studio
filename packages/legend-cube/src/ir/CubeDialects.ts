@@ -23,6 +23,7 @@ import {
   MESSAGE_FILTER_VALUE_WILDCARD,
   MESSAGE_PATTERN_NOT_LITERAL,
   MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
 } from '../messages/CubeMessages.js';
 import { Distinct } from '../nodes/transforms/Distinct.js';
 import { Drop } from '../nodes/transforms/Drop.js';
@@ -244,6 +245,32 @@ export const PIVOT_UNSUPPORTED_DATABASE_TYPES: ReadonlySet<string> = new Set([
   'ClickHouse',
   'Composite',
 ]);
+
+/**
+ * The database types whose engine dialect writes the Variant (JSON) functions,
+ * `get`, `to`, `toMany`, `fromJson` and `lateral` with `flatten`, to SQL
+ * (PLAN §11.20, from legend-engine's PCT manifests): H2 writes none of them,
+ * and the other dialects implement none or a few. A `Set`: the type comes
+ * from the model.
+ */
+export const VARIANT_DATABASE_TYPES: ReadonlySet<string> = new Set([
+  'Snowflake',
+  'Databricks',
+  'Postgres',
+  'DuckDB',
+]);
+
+/**
+ * Why JSON can't be read on the database type (PLAN §11.20): Explore JSON,
+ * Parse as JSON and Explode Array need the Variant functions.
+ * `undefined` where they run, or no type is known.
+ */
+export const getVariantDatabaseProblem = (
+  databaseType: string | undefined,
+): string | undefined =>
+  databaseType === undefined || VARIANT_DATABASE_TYPES.has(databaseType)
+    ? undefined
+    : MESSAGE_VARIANT_UNSUPPORTED_DATABASE(databaseType);
 
 /** Whether a node of the type can run on the database type: a Pivot only where it isn't known to fail; any type when none is known */
 const getTypeProblem = (

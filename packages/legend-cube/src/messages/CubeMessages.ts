@@ -474,6 +474,12 @@ export const MESSAGE_PIVOT_UNSUPPORTED_DATABASE = (
   databaseType: string,
 ): string => `Pivot is not supported on ${databaseType}.`;
 
+/** Added by Cube: the database has no Variant (JSON) functions (PLAN §11.20) */
+export const MESSAGE_VARIANT_UNSUPPORTED_DATABASE = (
+  databaseType: string,
+): string =>
+  `JSON is not supported on ${databaseType}: Variant functions run on Snowflake, Databricks, Postgres and DuckDB.`;
+
 /** Added by Cube: the aggregated column is consumed by the pivot, so it can't make rows or columns (PLAN §11.12) */
 export const MESSAGE_PIVOT_AGGREGATION_COLUMN_TAKEN = (
   column: string,

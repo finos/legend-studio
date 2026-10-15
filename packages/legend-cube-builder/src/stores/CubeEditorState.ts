@@ -124,6 +124,7 @@ import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeJsonViewerState } from './variant/CubeJsonViewerState.js';
+import { CubeJsonExplorerState } from './variant/CubeJsonExplorerState.js';
 import { CubeLambdaImportState } from './CubeLambdaImportState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
@@ -202,6 +203,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly showPure: CubeShowPureState;
   /** Open JSON: a Variant cell's document as a tree (PLAN §11.20) */
   readonly jsonViewer = new CubeJsonViewerState();
+  /** Explore JSON: a Variant column's fields, and the columns they can become (PLAN §11.20) */
+  readonly jsonExplorer: CubeJsonExplorerState;
   /** Import Pure: the lambda the page opened on, read into the cube (PLAN §11.18) */
   readonly lambdaImport: CubeLambdaImportState;
   readonly nodeEditor: CubeNodeEditorState;
@@ -371,6 +374,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.specTransfer = new CubeSpecTransferState(this);
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
+    this.jsonExplorer = new CubeJsonExplorerState(this);
     this.lambdaImport = new CubeLambdaImportState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
     this.rechecking = reaction(

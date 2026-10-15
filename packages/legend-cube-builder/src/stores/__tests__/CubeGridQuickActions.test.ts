@@ -25,6 +25,7 @@ import {
   FilterOperator,
   type Group,
   Limit,
+  MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
   OpaqueType,
   PrimitiveType,
   Query,
@@ -50,7 +51,11 @@ import {
   northwindTable,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
-import { getCubeGridContextMenuItems } from '../../components/grid/CubeResultGrid.js';
+import {
+  type CubeGridHeaderMenuParams,
+  getCubeGridContextMenuItems,
+  getCubeGridHeaderMenuItems,
+} from '../../components/grid/CubeResultGrid.js';
 import type {
   CubeResult,
   CubeResultValue,
@@ -661,12 +666,13 @@ describe('Grid context menu', () => {
     const names = items.map((item) =>
       typeof item === 'string' ? item : item.name,
     );
-    expect(names.slice(0, 6)).toEqual([
+    expect(names.slice(0, 7)).toEqual([
       'Drilldown by "PAYLOAD"',
       'Sort by "PAYLOAD"',
       'Group by "PAYLOAD"',
       'Filter by "PAYLOAD"',
       'Open JSON',
+      'Explore JSON…',
       'separator',
     ]);
     const openJson = items[4];
@@ -686,6 +692,30 @@ describe('Grid context menu', () => {
         (item) => typeof item === 'object' && item.name === 'Open JSON',
       ),
     ).toBe(false);
+  });
+
+  test("Puts Explore JSON… first in a Variant column's header menu, before ag-grid's own items, disabled on H2, and nothing in another's", async () => {
+    const { state } = await setUp();
+    const header = (
+      colId: string,
+    ): CubeGridHeaderMenuParams<readonly CubeResultValue[]> =>
+      ({
+        column: { getColId: () => colId },
+        defaultItems: ['pinSubMenu', 'autoSizeThis'],
+      }) as unknown as CubeGridHeaderMenuParams<readonly CubeResultValue[]>;
+    const items = getCubeGridHeaderMenuItems(state, header('c5'));
+    expect(
+      items.map((item) => (typeof item === 'string' ? item : item.name)),
+    ).toEqual(['Explore JSON…', 'separator', 'pinSubMenu', 'autoSizeThis']);
+    // these rows run on H2, which can't read JSON
+    expect(items[0]).toMatchObject({
+      disabled: true,
+      tooltip: MESSAGE_VARIANT_UNSUPPORTED_DATABASE('H2'),
+    });
+    expect(getCubeGridHeaderMenuItems(state, header('c1'))).toEqual([
+      'pinSubMenu',
+      'autoSizeThis',
+    ]);
   });
 
   test('Disables Open JSON on an empty Variant cell, saying why', async () => {

@@ -5102,8 +5102,9 @@ This subsection overrides the sections it names until V.8 folds it into them (se
   - **The sample:** the query up to the node that ran, then a Restrict to the column and an Is Not Empty filter,
     1,000 rows. It is run through `runCubeQuery` as the Pivot editor's values are, so it is listed in Runs ("Sample
     of payload") and can be stopped.
-  - **"Read every row":** reads the same query with no row limit, through the engine's CSV export (as Export → CSV
-    does), parsing the column's cells. It is listed in Runs ("Every value of payload") and can be stopped.
+  - **"Read every row":** runs the same query with no row limit, through `runCubeQuery` too (V.4: simpler than
+    parsing the CSV export, and its cells arrive as the grid's do). It is listed in Runs ("Every value of payload")
+    and can be stopped.
   - **The dialog:** a searchable field tree, each field with its kind and share ("in 83% of the rows read"). The
     picked field's offers show on the right, and ticked offers become the columns of one new Extend, added after the
     node that ran as one undo step. The engine parses each column's text before it is added; the background check
