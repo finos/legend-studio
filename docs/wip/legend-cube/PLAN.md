@@ -2988,7 +2988,9 @@ Ingest data sets (Query's `lakehouse.platformUrl` set; without it the page shows
 2. Pick a definition: its data sets list with their column counts; a materialized view is disabled and says why. Pick
    a data set: its columns show, the declared ones then `LAKE_DIGEST`, `LAKE_IN_ID` and `LAKE_OUT_ID` (and
    `LAKE_FROM`, `LAKE_THRU` for a business-temporal one). The warehouse reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the
-   one you last used); change it if needed.
+   one you last used); change it if needed. Tick another definition's checkbox (or Cmd-click it): it opens beside the
+   first, each one's data sets under its name and its only data set picked, so one Add adds data sets of both; a plain
+   click opens one alone again (user, 2026-10-15; Studio's project screen too).
 3. Add the data set. Open the dialog again: the Mode, producer deployment and warehouse are fixed, and the Model,
    Direct Connection and Data Product tabs are disabled. Add a second data set of the same producer.
 4. Join the two on a shared key, add a Filter `LAKE_OUT_ID` **is** `999999999` (or the current-rows marker your
@@ -4800,8 +4802,9 @@ new features; the whole list is the "UX backlog" in [ISSUES.md](ISSUES.md).
 - **Plain row-step names** (5): "Drop first rows", "Take first rows", "Take a range of rows", in place of the
   internal app's `<x>` placeholders (Appendix A, §7.0); editor titles keep `a`, `an` and `of` in lower case.
 - **Types by the kind of value** (6): the editors' column lists say Text, Whole number, Number, Decimal, Date, Date and
-  time, Time, True or false, and ", can be empty"; the exact type is on hover, and messages that compare types (Join,
-  Concat, a table that changed) keep it (`getColumnTypeLabel`, `getExactColumnTypeLabel`).
+  time, Time, True or false, and ", optional" (", can be empty" until 2026-10-15, user); the exact type is on hover, and
+  messages that compare types (Join, Concat, a table that changed) keep it (`getColumnTypeLabel`,
+  `getExactColumnTypeLabel`).
 - **Run this step** (10): the node menu's and editor's Select is "Run this step"; the step that runs carries a "▶
   Runs" badge on the canvas and in its editor. `selected` and the saved spec are unchanged (Appendix A, §17.9's
   tooltip).
@@ -4912,7 +4915,8 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
   `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`), a local change in Studio. The dialog asks for the
   name, the data's classification (one of `dataProductConfig.classifications`, as a data product's access points
   offer, or typed when the config gives none) and the primary key, any of the step's columns, kept in their order
-  (2026-10-14: a view without a classification failed with a NullPointerException).
+  (2026-10-14: a view without a classification failed with a NullPointerException), but the milestoning columns a
+  write mode adds, `LAKE_DIGEST`, `LAKE_IN_ID`, `LAKE_OUT_ID`, `LAKE_FROM` and `LAKE_THRU` (user, 2026-10-14).
 - **The light theme:** the demo is shown in Studio's light theme; Cube's dialogs draw their primary button as an
   accent button in every theme.
 
@@ -4945,9 +4949,11 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
 - **Save MatView asks again only when it must** (after #5695's classification and primary key, 2026-10-14): a view
   is saved at once unless its data has no classification (Studio wrote views without one before #5695, the cause of
   its NullPointerException) or one the config doesn't list, or its primary key has a column the step that runs no
-  longer has. Then Add MatView's dialog opens as Save MatView, on the view's own classification and the key columns
-  the step still has, and says why. A view saved gains the empty lists the engine reads (`ingestPartitionColumns`,
-  `preprocessors`, `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`) that it lacks.
+  longer has, or a milestoning one. Then Add MatView's dialog opens as Save MatView, on the view's own classification
+  and the key columns it can keep, and says why. A view saved gains the empty lists the engine reads
+  (`ingestPartitionColumns`, `preprocessors`, `storageLayoutClusterColumns`, `storageLayoutPartitionColumns`) that it
+  lacks. The user keeps Save MatView one click: a view's classification and key are otherwise set when it is added
+  (2026-10-14).
 
 **Reading a lambda:**
 

@@ -202,10 +202,10 @@ describe('Difference editor', () => {
     await openDifference();
     expect(listed()).toEqual([
       'ORDER_IDWhole number (a join column)',
-      'SHIP_VIAWhole number, can be empty',
-      'SHIP_CITYText, can be empty (not a number)',
-      'FREIGHTNumber, can be empty',
-      'DISCOUNTNumber, can be empty (Float4 in the Right input)',
+      'SHIP_VIAWhole number, optional',
+      'SHIP_CITYText, optional (not a number)',
+      'FREIGHTNumber, optional',
+      'DISCOUNTNumber, optional (Float4 in the Right input)',
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(true);
     expect(checkbox('SHIP_VIA').disabled).toBe(false);
@@ -224,7 +224,7 @@ describe('Difference editor', () => {
     );
     await openDifference();
     expect(listed()).toContain(
-      'DISCOUNTNumber, can be empty (not in the Right input)',
+      'DISCOUNTNumber, optional (not in the Right input)',
     );
   });
 

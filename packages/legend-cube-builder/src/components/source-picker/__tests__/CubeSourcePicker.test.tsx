@@ -436,7 +436,7 @@ describe('Cube source picker', () => {
     expect(rows).toHaveLength(ORDERS_COLUMNS.length);
     expect(rows.slice(0, 2)).toEqual([
       'ORDER_ID Whole number',
-      'CUSTOMER_ID Text, can be empty',
+      'CUSTOMER_ID Text, optional',
     ]);
   });
 

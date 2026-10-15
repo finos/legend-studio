@@ -22,6 +22,7 @@ import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.j
 import {
   createFakeCubeIngestCatalog,
   FAKE_INGEST_DESKS,
+  FAKE_INGEST_DESKS_SCHEMA,
   FAKE_INGEST_FILLS_SCHEMA,
   FAKE_INGEST_ORDERS,
   FAKE_INGEST_ORDERS_WITH_FILLS,
@@ -230,6 +231,63 @@ describe('The Ingest tab', () => {
     );
     expect(tab.dataSetNames).toEqual([]);
     await settle();
+    expect(tab.dataSetNames).toEqual(['DESKS']);
+  });
+
+  test('Opens several definitions, ticked, and adds data sets of each in one undo step; a plain pick opens one alone again', async () => {
+    const { state } = setUp();
+    const tab = await openOnOrders(state);
+    const orders = guaranteeNonNullable(tab.definition);
+    const desks = guaranteeNonNullable(
+      tab.shownDefinitions.find(
+        (candidate) => candidate.definition === FAKE_INGEST_DESKS,
+      ),
+    );
+    // ticked beside the orders definition: its only data set is picked too
+    tab.toggleDefinition(desks);
+    expect(tab.definitions).toEqual([orders, desks]);
+    await settle();
+    expect(tab.picks).toEqual([
+      { definitionUrn: orders.urn, dataSet: 'TRADES' },
+      { definitionUrn: desks.urn, dataSet: 'DESKS' },
+    ]);
+    expect(tab.getDataSets(orders.urn)?.map((each) => each.name)).toEqual([
+      'TRADES',
+      'DAILY',
+    ]);
+    // the preview shows the data set picked last, of its definition
+    expect(tab.dataSet?.schema).toBe(FAKE_INGEST_DESKS_SCHEMA);
+    expect(tab.previewedDefinition).toBe(desks);
+    expect(tab.pickedCount).toBe(2);
+
+    // unticked, a definition's picks go with it; ticked again, they come back
+    tab.toggleDefinition(desks);
+    expect(tab.definitions).toEqual([orders]);
+    expect(tab.dataSetNames).toEqual(['TRADES']);
+    tab.toggleDefinition(desks);
+    await settle();
+    expect(tab.dataSetNames).toEqual(['TRADES', 'DESKS']);
+
+    await flowResult(state.sourcePicker.confirm());
+    const nodes = state.document.query.nodes as IngestDatasetSource[];
+    expect(
+      nodes.map((node) => [node.ingestDefinitionUrn, node.dataSet]),
+    ).toEqual([
+      [orders.urn, 'TRADES'],
+      [desks.urn, 'DESKS'],
+    ]);
+    expect(nodes.map((node) => node.resolution)).toEqual([
+      { kind: 'resolved', schema: FAKE_INGEST_TRADES_SCHEMA },
+      { kind: 'resolved', schema: FAKE_INGEST_DESKS_SCHEMA },
+    ]);
+    expect(state.history).toHaveLength(1);
+
+    // a plain pick of an opened definition opens it alone, its data sets kept
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    tab.toggleDataSet('DESKS', desks.urn);
+    tab.selectDefinition(desks);
+    expect(tab.definitions).toEqual([desks]);
     expect(tab.dataSetNames).toEqual(['DESKS']);
   });
 

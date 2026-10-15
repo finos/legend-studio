@@ -236,7 +236,7 @@ describe('Extend draft', () => {
     await flowResult(draft.validate());
     expect(draft.rows[0]?.problem).toBeUndefined();
     expect(draft.rows[1]?.problem?.hint).toBe(
-      'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.',
+      'An optional column needs ->toOne() first, such as $x.QTY->toOne() + 1.',
     );
     expect(draft.typing?.kind).toBe('failed');
     expect(fake.planLambda).not.toHaveBeenCalled();

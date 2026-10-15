@@ -90,8 +90,9 @@ const MaterializedViewClassification = observer(
 );
 
 /**
- * The view's primary key: none or some of the columns of the step that
- * runs, kept in the order of the columns
+ * The view's primary key: none or some of the columns it can take, those of
+ * the step that runs but the milestoning ones, kept in the order of the
+ * columns
  */
 const MaterializedViewPrimaryKey: React.FC<{
   columns: readonly string[];
@@ -154,8 +155,11 @@ const MaterializedViewDialog = observer(
     const { embeddedCubeState, input, close } = props;
     const { lambda, saveProblems } = input;
     const saved = saveProblems ? embeddedCubeState.matViewDataSet : undefined;
-    // a view saved when Cube doesn't know the step's columns keeps its key
-    const columns = input.columns ?? saved?.primaryKey ?? [];
+    // the columns the key can take; a view saved when Cube doesn't know the
+    // step's columns keeps its key
+    const columns = embeddedCubeState.getMaterializedViewKeyColumns(
+      input.columns ?? saved?.primaryKey ?? [],
+    );
     // as Cube's dialogs: the dialog follows the theme, and its primary button
     // is an accent button in every theme (legend-art's light one is grey)
     const darkMode =

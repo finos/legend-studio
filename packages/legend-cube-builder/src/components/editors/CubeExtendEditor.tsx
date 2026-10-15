@@ -94,8 +94,8 @@ const CubeExtendRowStatus = observer((props: { row: CubeExtendRow }) => {
   return row.type ? (
     <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
       <CubeColumnTypeIcon type={row.type} />
-      {/* every new column can be empty (PLAN §11.7) */}
-      {`${row.type.displayName}, can be empty`}
+      {/* every new column is optional (PLAN §11.7) */}
+      {`${row.type.displayName}, optional`}
     </div>
   ) : null;
 });

@@ -361,21 +361,21 @@ describe('Partition editor', () => {
     await openPartition();
     expect(columnItems().map((item) => item.textContent)).toEqual([
       'ORDER_IDWhole number',
-      'CUSTOMER_IDText, can be empty',
-      'EMPLOYEE_IDWhole number, can be empty',
-      'ORDER_DATEDate, can be empty',
-      'REQUIRED_DATEDate, can be empty',
-      'SHIPPED_DATEDate, can be empty',
-      'SHIP_VIAWhole number, can be empty',
-      'FREIGHTNumber, can be empty',
-      'SHIP_NAMEText, can be empty',
-      'SHIP_ADDRESSText, can be empty',
-      'SHIP_CITYText, can be empty',
-      'SHIP_REGIONText, can be empty',
-      'SHIP_POSTAL_CODEText, can be empty',
-      'SHIP_COUNTRYText, can be empty',
-      "PAYLOADVariant, can be empty (can't be partitioned by)",
-      "SHAPEShape, can be empty (can't be partitioned by)",
+      'CUSTOMER_IDText, optional',
+      'EMPLOYEE_IDWhole number, optional',
+      'ORDER_DATEDate, optional',
+      'REQUIRED_DATEDate, optional',
+      'SHIPPED_DATEDate, optional',
+      'SHIP_VIAWhole number, optional',
+      'FREIGHTNumber, optional',
+      'SHIP_NAMEText, optional',
+      'SHIP_ADDRESSText, optional',
+      'SHIP_CITYText, optional',
+      'SHIP_REGIONText, optional',
+      'SHIP_POSTAL_CODEText, optional',
+      'SHIP_COUNTRYText, optional',
+      "PAYLOADVariant, optional (can't be partitioned by)",
+      "SHAPEShape, optional (can't be partitioned by)",
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(false);
     expect(checkbox('PAYLOAD').disabled).toBe(true);
@@ -796,13 +796,13 @@ describe('Partition editor', () => {
     expect(sortOption(2, 'SHIP_COUNTRY').disabled).toBe(false);
     // each says why
     expect(sortOption(2, 'PAYLOAD').textContent).toBe(
-      "PAYLOAD: Variant, can be empty (can't be sorted)",
+      "PAYLOAD: Variant, optional (can't be sorted)",
     );
     expect(sortOption(2, 'ORDER_ID').textContent).toBe(
       'ORDER_ID: Whole number (already sorted on)',
     );
     expect(sortOption(2, 'SHIP_COUNTRY').textContent).toBe(
-      'SHIP_COUNTRY: Text, can be empty',
+      'SHIP_COUNTRY: Text, optional',
     );
     // a row keeps its own column
     expect(sortOption(1, 'ORDER_ID').disabled).toBe(false);

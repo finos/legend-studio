@@ -256,4 +256,52 @@ describe('The Ingest tab', () => {
     ).toBe(false);
     expect(state.sourcePicker.ingestTab.pickedCount).toBe(1);
   });
+
+  test('On a host reading one project, as Studio, ticks several definitions and adds data sets of each, listed under their names', async () => {
+    const { host } = createProjectHost();
+    await TEST__renderInCubeApplication(
+      <CubeEditor host={host} />,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Ingest Dataset/u }));
+    const dialog = await screen.findByRole('dialog');
+    const definitions = await within(dialog).findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    fireEvent.click(within(definitions).getByText('OrdersIngest'));
+    await within(dialog).findByLabelText('Pick TRADES');
+    // ticked beside it: each one's data sets under its name, its only one picked
+    fireEvent.click(within(definitions).getByLabelText('Pick DesksIngest'));
+    await within(dialog).findByLabelText('Pick DESKS of DesksIngest');
+    const dataSets = within(dialog).getByRole('list', { name: 'Data sets' });
+    expect(
+      within(dataSets)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual([
+      'OrdersIngest',
+      expect.stringContaining('TRADES'),
+      expect.stringContaining('DAILY'),
+      'DesksIngest',
+      expect.stringContaining('DESKS'),
+    ]);
+    expect(
+      within(dataSets)
+        .getAllByRole<HTMLInputElement>('checkbox')
+        .map((box) => [box.getAttribute('aria-label'), box.checked]),
+    ).toEqual([
+      ['Pick TRADES of OrdersIngest', true],
+      ['Pick DAILY of OrdersIngest', false],
+      ['Pick DESKS of DesksIngest', true],
+    ]);
+    // the data set picked last is previewed, with its definition
+    within(
+      within(dialog).getByRole('region', { name: 'Data set preview' }),
+    ).getByText('DESKS of DesksIngest');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add 2' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await TEST__findCanvasNode('ingestDataset101')).toBeDefined();
+    expect(await TEST__findCanvasNode('ingestDataset102')).toBeDefined();
+  });
 });

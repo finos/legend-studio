@@ -164,7 +164,7 @@ describe('Extend editor', () => {
     const draft = draftOf(state);
     act(() => draft.setCode(draft.rows[0]?.key ?? 0, 'x | $x.ORDER_ID + 1'));
     fireEvent.click(button('Validate'));
-    await within(panel()).findByText('Integer, can be empty');
+    await within(panel()).findByText('Integer, optional');
     expect(fake.planLambda).toHaveBeenCalledTimes(1);
     expect(button('Apply').disabled).toBe(false);
     fireEvent.click(button('Apply'));
@@ -200,7 +200,7 @@ describe('Extend editor', () => {
     );
     expect(
       within(panel()).getByText(
-        'A column that can be empty needs ->toOne() first, such as $x.QTY->toOne() + 1.',
+        'An optional column needs ->toOne() first, such as $x.QTY->toOne() + 1.',
       ),
     ).toBeTruthy();
     await waitFor(() => expect(button('Validate').disabled).toBe(false));

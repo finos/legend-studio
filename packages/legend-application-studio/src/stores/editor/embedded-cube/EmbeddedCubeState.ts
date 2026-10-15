@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { IngestDefinition } from '@finos/legend-graph';
+import {
+  MILESTONE_INGEST_COLUMNS,
+  type IngestDefinition,
+} from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import { action, computed, flowResult, makeObservable, observable } from 'mobx';
 import {
@@ -30,6 +33,15 @@ import { IngestDefinitionEditorState } from '../editor-state/element-editor-stat
 
 /** A data set's name: a letter or an underscore, then letters, digits and underscores */
 const DATA_SET_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/u;
+
+/**
+ * The columns a batch-milestoned data set's write mode adds, `LAKE_IN_ID`,
+ * `LAKE_DIGEST` and the like, which a materialized view's primary key leaves
+ * out
+ */
+const MILESTONING_COLUMNS: readonly string[] = Object.values(
+  MILESTONE_INGEST_COLUMNS,
+);
 
 /**
  * Legend Cube, opened full screen from an ingest definition's editor to build
@@ -132,6 +144,14 @@ export class EmbeddedCubeState {
   }
 
   /**
+   * The columns of the step that runs a materialized view's primary key can
+   * take: all but the milestoning columns a write mode adds
+   */
+  getMaterializedViewKeyColumns(columns: readonly string[]): string[] {
+    return columns.filter((column) => !MILESTONING_COLUMNS.includes(column));
+  }
+
+  /**
    * Adds the lambda to the ingest definition as a materialized view, with
    * its primary key and the classification of its data, closes the cube and
    * shows the definition with it
@@ -165,8 +185,8 @@ export class EmbeddedCubeState {
    * edit with the step that runs, given the step's columns (unknown, the key
    * isn't checked): its data has no classification, as Studio wrote a view
    * before it asked for one, or one that isn't among the classifications; or
-   * its primary key has a column the step no longer has. None when the view
-   * can be saved as it is
+   * its primary key has a column the step no longer has, or a milestoning
+   * column. None when the view can be saved as it is
    */
   getMaterializedViewSaveProblems(
     columns: readonly string[] | undefined,
@@ -183,14 +203,27 @@ export class EmbeddedCubeState {
     if (classificationProblem !== undefined) {
       problems.push(classificationProblem);
     }
+    const milestoning = view.primaryKey.filter((column) =>
+      MILESTONING_COLUMNS.includes(column),
+    );
     const gone = columns
-      ? view.primaryKey.filter((column) => !columns.includes(column))
+      ? view.primaryKey.filter(
+          (column) =>
+            !columns.includes(column) && !milestoning.includes(column),
+        )
       : [];
     if (gone.length) {
       problems.push(
         gone.length === 1
           ? `Its primary key's ${gone.join(', ')} is no longer a column of the cube.`
           : `Its primary key's ${gone.join(', ')} are no longer columns of the cube.`,
+      );
+    }
+    if (milestoning.length) {
+      problems.push(
+        milestoning.length === 1
+          ? `Its primary key's ${milestoning.join(', ')} is a milestoning column, which a key leaves out.`
+          : `Its primary key's ${milestoning.join(', ')} are milestoning columns, which a key leaves out.`,
       );
     }
     return problems;
