@@ -33,7 +33,7 @@ import {
 } from '../../stores/editors/CubeExpressionFilterDraft.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
-import { columnAccessOf } from './CubeExtendEditor.js';
+import { columnAccessOf } from '../../stores/CubePureText.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */

@@ -38,18 +38,13 @@ import {
   type CubeExtendRow,
   CubeExtendDraft,
 } from '../../stores/editors/CubeExtendDraft.js';
+import { columnAccessOf } from '../../stores/CubePureText.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */
 const PURE = 'pure';
-
-/** How an expression reads a column: `$x.NAME`, or `$x.'a name'` for one that isn't an identifier */
-export const columnAccessOf = (name: string): string =>
-  /^[A-Za-z_][A-Za-z0-9_]*$/u.test(name)
-    ? `$x.${name}`
-    : `$x.'${name.replace(/\\/gu, '\\\\').replace(/'/gu, "\\'")}'`;
 
 /** The error the code editor marks, from a row's problem located in its code */
 const markerOf = (row: CubeExtendRow): CompilationError | undefined => {
