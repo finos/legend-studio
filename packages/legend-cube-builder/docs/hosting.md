@@ -1,9 +1,16 @@
 # Hosting the Cube page
 
-A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Legend Query is the
-main host: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page (`src/components/cube/`) of
-`@finos/legend-application-query`. Legend Studio hosts it too, from an ingest definition's editor (see
-[Legend Studio](#legend-studio-create-matview)).
+A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Three applications
+host it today:
+
+- **Legend Query**, at `/query/cube`: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page
+  (`src/components/cube/`) of `@finos/legend-application-query`.
+- **Legend Analytics**, at `/analytics/`, an application of its own: `createLegendAnalyticsCubeHost`
+  (`src/stores/`) and the page at its root (`src/components/`) of `@finos/legend-application-analytics`, with its
+  bootstrap and deployment (PLAN §11.19).
+- **Legend Studio**, from an ingest definition's editor (see [Legend Studio](#legend-studio-create-matview)).
+
+Legend Query and Legend Analytics build their hosts on one `LegendCubeHost` (below).
 
 ## The host
 
@@ -19,8 +26,20 @@ interface CubeHost {
   readonly serviceCatalog?: CubeServiceCatalog | undefined;
   /** False to leave out the Sample Data tab and the Examples, as Studio does */
   readonly offersSampleData?: boolean | undefined;
+  readonly engineClientSettings?: CubeEngineClientSettings | undefined;
 }
 ```
+
+**A Legend deployment's host:** `new LegendCubeHost(applicationStore, config, parts?)` builds every part below from
+a plain `LegendCubeHostConfig`, the deployment's servers: `engine` (a `CubeEngineConfig`), and `depotServerUrl`,
+`lakehouseContractUrl`, `lakehousePlatformUrl`, `marketplaceServerUrl`, `marketplaceApplicationUrl`,
+`marketplaceProductionParallelUrl`, `enterpriseStereotype` and `getPreferredEnvironment`, each only where the
+deployment has it. It offers each source by the rules below (no lakehouse, no data products; no platform, no ingest
+data sets; no depot, no projects), links data products to the marketplace of their deployment's class, and registers
+every engine client with its `engineClientSettings`, which Dev Settings changes. Tests give an engine, a connection
+explorer or a project catalog as `parts`. Legend Query passes `buildLegendQueryCubeHostConfig`, Legend Analytics
+`buildLegendAnalyticsCubeHostConfig`; a host whose sources are its own builds its parts
+with the functions below instead.
 
 - **The application store** gives the page its commands, user data, clipboard, theme, notifications and alerts, and
   its telemetry service, which Cube doesn't use yet: it sends no events. Cube keeps no auth or config of its own.
@@ -64,6 +83,9 @@ interface CubeHost {
   released versions, and a version's own Databases with the runtimes of it and its dependencies, for the source
   dialog's Project tab (PLAN §6.3). It reads nothing until the tab opens. Project cubes save the engine's pointer, so
   the engine must fetch from the same depot. Legend Query builds it from `depot.url`.
+
+Legend Analytics mounts the page at its root with no flag: deploying the application is the opt-in. Its config takes
+the keys below as Legend Query's does, with `depot` optional too, and only `engine` required.
 
 Legend Query mounts the Cube page at `/query/cube` only where its config turns on non-production features,
 since Cube is still a proof of concept: `"extensions": { "core": { "NonProductionFeatureFlag": true } }`. Without
@@ -178,6 +200,11 @@ The page registers the commands while it is open: F9 runs the query, and Ctrl+Z 
   scans `../legend-*/src/**/*.tsx`. So Tailwind classes go in `.tsx` files only.
 - React Flow's stylesheet comes with the canvas. Load the page lazily, as Legend Query does, to keep it and the page's
   libraries out of the host's main bundle.
+- In the legacy light theme, the legend-art components the page uses (dialogs, menus, form fields, inputs, tooltips,
+  notifications) take their light look from the application's own stylesheet: Legend Query's light mode
+  (`legend-application-query/style/light-mode.scss`), whose matching rules Legend Analytics copies into
+  `legend-application-analytics-bootstrap/style/light-mode.scss`, imported after every other style. A new host
+  defaulting to the light theme needs the same.
 
 ## The dev loop
 
@@ -186,7 +213,9 @@ The page registers the commands while it is open: F9 runs the query, and Ctrl+Z 
    (`fixtures/legend-docker-setup/grammar-test-setup/grammar-test-setup-docker-compose.yml`). Check it with
    `curl -s localhost:6300/api/server/v1/info`.
 2. Run `yarn build` once: `yarn dev:ts` doesn't build the stylesheets.
-3. Run `yarn dev:ts` and `yarn dev:query`, and open `http://localhost:9001/query/cube`.
+3. Run `yarn dev:ts` and `yarn dev:query`, and open `http://localhost:9001/query/cube`; or `yarn dev:analytics`, and
+   open `http://localhost:9009/analytics/` (run `yarn workspace @finos/legend-application-analytics-deployment setup`
+   once for its local config).
 4. Run `yarn workspace @finos/legend-cube-builder dev:sass` to rebuild the stylesheet as you change it (the root
    `yarn dev:ts` already rebuilds the TypeScript).
 

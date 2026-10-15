@@ -272,8 +272,15 @@ What the repo actually enforces:
   - The Cube page registers the commands with `applicationStore.commandService`, as the query builder's
     `useCommands` does.
   - The undo command's `trigger` returns `false` while focus is in an input, textarea or contenteditable.
+- **Hosts** (§11.19, folded in at AN.6): Legend Query (`/query/cube`) and Legend Analytics (`/analytics/`, its own
+  application, `@finos/legend-application-analytics`) host the page through one `LegendCubeHost` in the builder, built
+  from a plain `LegendCubeHostConfig` of the deployment's servers (the engine; the depot, lakehouse, platform and
+  marketplace where it has them), so both offer the same sources by the same rules. Each app keeps only its config,
+  its shell and its shortcuts' plugin; Analytics also copies the rules of Query's light mode that the page's
+  legend-art components use. Studio's embedded cube (#5690) keeps a host of its own.
 - **Host code:** `legend-application-query/src/components/cube/` and `src/stores/cube/` hold a thin
-  `LegendQueryCubeHost`. It implements `CubeHost` (defined in the builder) from Query's application store:
+  `LegendQueryCubeHost`, now a subclass of the builder's `LegendCubeHost` given Query's config
+  (`buildLegendQueryCubeHostConfig`). It implements `CubeHost` (defined in the builder) from Query's application store:
 
   - engine server client config (Query's `engineServerUrl`, as at
     [QueryEditorStore.ts:629](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L629));
@@ -3066,6 +3073,7 @@ project with a Database and a runtime.
 | M7   | Grid and presentation                      | Server-side mode by default (enterprise SSRM) with a drill-down derived as Cube's own nodes, whole levels cut at the row limit, local mode as a toggle; CSV of the whole query through the engine, XLSX of the rows shown; the curated menu, the Runs panel, §13 column formatting with the §21 fixes, widths (§11.10)                                                                                                                                                                                                                                               |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| AN   | Legend Analytics                           | Cube as its own application (§11.19): `legend-application-analytics`, its bootstrap and deployment at `/analytics/`, one `LegendCubeHost` shared with Legend Query; later, saved cubes and deep links after M8, Data Cube's grid and the Legend Query node                                                                                                                                                                                                                                                                                                           |
 | —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points
@@ -5022,6 +5030,146 @@ import (`CubeLambdaImportState`: `CubeEditor`'s `initialLambda`, and the Cube �
 Studio's Edit MatView and Save MatView, and Cube loaded lazily in Studio. Every node of the core's samples and of the
 nine examples reads back into the steps that wrote it, written the same, from Cube's JSON and through the engine's
 grammar. Videos `28-edit-matview.webm` and `29-import-pure.webm`.
+
+### 11.19 Legend Analytics: Cube as its own application
+
+Built on `cube-analytics`, from `master` (`1cc69259a`), in a PR into `master`. Its status is in
+[PROGRESS-ANALYTICS.md](PROGRESS-ANALYTICS.md). The demo review (`DEMO-RECAP.md` on the fork's `cube-demo-feedback`,
+"Discussion points" 1) proposed that Cube become Legend Analytics, which later takes in Data Cube's grid and Legend
+Query's builder. On 2026-10-14 the user decided that Cube is the first iteration of Legend Analytics, run as an
+application of its own. This section covers that first iteration only: today's Cube page, hosted by its own app.
+
+This subsection overrides the sections it names until AN.6 folds it into them (see "Supersessions").
+
+**Settled** (user, 2026-10-14):
+
+1. **A separate application, Legend Analytics,** whose first iteration is the Cube page as it is today.
+2. **`/query/cube` stays** in Legend Query, on the same shared host. Whether it later redirects to Analytics is decided
+   later.
+3. **M8's store stays as #5679 has it** (`pure/v1/query/cube`, the `cube` collections). The user updates that PR when
+   the time comes.
+4. **Start now, from `master`.**
+
+**Decided without asking** (precedents in the repo; for review):
+
+- **The libraries keep their names,** `legend-cube` and `legend-cube-builder`. The user asked what makes more sense;
+  this was the recommendation, for three reasons:
+  - The repo names apps after products and libraries after the parts inside them: `legend-application-data-cube` over
+    `legend-data-cube`, `legend-application-query` over `legend-query-builder`.
+  - Analytics is where Cube's canvas, Data Cube's grid and Query's builder meet, so the product name belongs on the
+    app. A library called `legend-analytics` would hold only the canvas.
+  - A rename now (274 files import the core, both packages are on npm at 0.0.4) would conflict with #5690 and #5679
+    for no change in behaviour. If the libraries ever become where the three merge, a rename is one mechanical PR.
+- **Three packages,** as Data Cube and Marketplace have:
+
+  - `@finos/legend-application-analytics`: the config, plugin manager, plugins, base store, routes and page.
+  - `@finos/legend-application-analytics-bootstrap`: `LegendAnalyticsWebApplication.run`, the dev setup script and
+    the styles.
+  - `@finos/legend-application-analytics-deployment`: private; webpack, Tailwind and `analytics.config.js`.
+
+  The two library packages start at `0.0.0`, with a patch changeset.
+
+- **The address:** base `/analytics/`, dev port 9009, with the Cube page at the root. 9000 (Studio), 9001 (Query),
+  9004 (Pure IDE), 9005 (REPL), 9007 (Data Cube) and 9008 (Marketplace) are taken.
+- **One host for both deployments:** `LegendCubeHost` in legend-cube-builder, built from a plain `LegendCubeHostConfig`.
+  - The config holds the engine's config and, all optional:
+    - the depot, lakehouse, lakehouse platform and marketplace server URLs;
+    - the marketplace application URLs;
+    - the enterprise stereotype;
+    - the lakehouse environment the host remembers for the viewer.
+  - It builds what `LegendQueryCubeHost` builds today, by the same rules: no lakehouse, no data products; no
+    platform, no ingest data sets; no depot, no projects.
+  - Query's host becomes a subclass that passes Query's config. Tests still hand it an engine, an explorer and a
+    project catalog, and M8 adds its store there on rebase.
+  - Studio's host (#5690) stays its own, since its only sources are the project's ingest definitions.
+- **Marketplace links** are built in the builder from the marketplace application URLs, the same address as Query's
+  `EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl`, which stays as part of Query's public API.
+  Query's remembered lakehouse environment (`LegendQueryUserDataHelper.getLakehouseUserInfo`) stays Query's: its host
+  passes it in, and Analytics remembers none.
+- **The config,** as Query's minus what is Query's own:
+  - `engine` is required.
+  - `depot`, `lakehouse` (`url`, `platformUrl`) and `marketplace` (`url`, `productionParallelUrl`, `serverUrl`) are
+    optional. Data Cube's config requires `lakehouse`; Cube doesn't need one.
+  - `extensions.core` has `oidcConfig`, `enableOauthFlow` and `dataProductConfig.publicStereotype`, as Query's has.
+  - There are no Studio, Data Cube or Legend AI URLs.
+  - The storage key is `legend-analytics`, so what Cube keeps per user (row limit, grid mode, compression, warehouse)
+    starts fresh.
+- **Auth, as Query has it:**
+  - OIDC is optional: `AuthProvider` and `LegendTokenSync`, with `withAuthenticationRequired` under `enableOauthFlow`.
+  - The token client follows `enableTokenClient`.
+  - The base store reads the current user from the engine and sets up telemetry, as Query's does.
+- **No feature flag:** deploying the app is the opt-in (D11). Query's `/query/cube` keeps the `NonProductionFeatureFlag`
+  gate it has on `master`.
+- **The app's plugins** register Cube's shortcuts (`LEGEND_CUBE_COMMAND_CONFIG`) and set up the code editor, which
+  Cube's expression editors, SQL dialog and spec transfer use, as Query's plugins do. The browser tab reads "Legend
+  Analytics".
+- **The light theme, as Query draws it** (found at AN.3): the theme defaults to light, as in Query and Data Cube. But
+  much of Query's light look is Query's own stylesheet (`legend-application-query/style/light-mode.scss`, "a poor-man
+  version of theming for Legend Query"), which Analytics can't import. Without it, Cube's dialogs had blue headers.
+  - Measured on Query's Cube page (:9002): the rules of that stylesheet that match the page as each surface opens. The
+    surfaces were the Examples, Show Pure, Show SQL and source dialogs, Dev Settings, a node editor and its tooltip,
+    the canvas and grid context menus, and a notification.
+  - 27 rules match. The shared theme already gives Analytics one of them (the colour variables). The other 26 (inputs,
+    menus, form fields, modals, the tooltip, notifications, the assistant's button, scrollbars, the splitter) are
+    copied into the bootstrap's `light-mode.scss`, which its `index.scss` imports after every other style, as Query's bootstrap does its own.
+  - Not copied: the results grid's font. Query's styles load ag-grid's base stylesheet a second time after Balham's,
+    so Query's grid shows 14px Helvetica Neue. Analytics shows Balham's own 12px.
+- **No download helper:** Cube downloads its files through data URIs (`downloadFileUsingDataURI`), so the bootstrap
+  registers no service worker (`withDownloadHelper`), as Data Cube's doesn't.
+- **No deep links in this iteration:**
+  - `?sourceType=…&sourceId=…` (Query's `LegendQueryCubeEntry`) and M8's `/:cubeId` move into the builder once M8
+    lands, so both apps read them the same way.
+  - Moving them now would conflict with #5679, which rewrites them.
+- **No Docker image in this iteration:** publishing `finos/legend-analytics` needs the maintainers (the Docker Hub
+  repository and the release workflows). Marketplace and REPL publish none either. The deployment is built by
+  `check-build`.
+
+**Facts** (✅ read in the code):
+
+- ✅ The builder uses no graph manager: Cube writes its lambda JSON itself and talks to the engine through its own
+  clients. The app needs no graph presets.
+- ✅ `LegendQueryCubeHost` (234 lines) builds the engine and every catalog from Query's config, and uses two of
+  Query's helpers: the marketplace link and the remembered lakehouse environment.
+- ✅ Query and Data Cube both use react-oidc-context's `AuthProvider` with `LegendTokenSync`. Query keeps OIDC in
+  `extensions.core.oidcConfig`, Data Cube at the top level.
+- ✅ Query's `/cube` route is mounted only with `extensions.core.NonProductionFeatureFlag` (on `master` since #5685).
+- ✅ Cube's dialogs and menus are legend-art's (`Modal`, `ModalHeader`, `MenuContentItem`, `PanelFormTextField`), whose
+  light look comes from each application's own stylesheet (see "The light theme, as Query draws it").
+
+**Steps:**
+
+| Step | Deliverable                                                                                             | Done when                                                                            |
+| ---- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| AN.1 | This section, PROGRESS-ANALYTICS.md, a draft PR                                                         | Pushed                                                                               |
+| AN.2 | The shared host: `LegendCubeHost` and `LegendCubeHostConfig` in the builder; Query's host built on it   | Builder unit tests; Query's host tests pass unchanged                                |
+| AN.3 | The app: three packages, registered (root `dev:analytics`, `tsconfig.json`, `check-build`), a changeset | The app's tests (config, the page at the root, shortcuts); `dev:analytics` serves it |
+| AN.4 | Verification: an inline review; a browser rehearsal on :9009 against the engine on :6300                | Findings fixed                                                                       |
+| AN.5 | A demo video                                                                                            | Every caption true on screen; sent to the user                                       |
+| AN.6 | Fold the supersessions in                                                                               | §3.5 and the builder's `docs/hosting.md` read as built                               |
+
+**Later** (each its own PR, not this one):
+
+- After M8: saved cubes and deep links in Analytics (`/analytics/:cubeId`, `?sourceType=…`), with the entry helpers
+  moved into the builder.
+- Links to Analytics from Marketplace and Studio (an `analyticsApplicationUrl` in their configs).
+- A Docker image, with the maintainers.
+- Whether `/query/cube` redirects to Analytics.
+- One shared legacy light stylesheet for Query and Analytics, in place of the rules Analytics copies from Query's.
+- Data Cube's grid as the results grid, and Legend Query's builder as a node (data spaces), each its own milestone
+  (DEMO-RECAP discussion points 1 and 2).
+
+**Risks:**
+
+- **Conflicts.** #5679 changes Query's host: its store moves into the subclass. #5690 also adds a PLAN section before
+  §12; keep both.
+- **Two apps drifting apart:** the shared host keeps the sources and their rules in one place. Each app keeps only its
+  config and its shell.
+
+**Supersessions** (folded in at AN.6, 2026-10-14):
+
+- §3.5: Cube has three hosts:
+  - Legend Query (`/query/cube`) and Legend Analytics (`/analytics/`), which share `LegendCubeHost`;
+  - Studio's embedded cube (#5690).
 
 ### 11.20 Variant (JSON) columns: a readable cell, Explore JSON, Explode Array, Parse as JSON
 

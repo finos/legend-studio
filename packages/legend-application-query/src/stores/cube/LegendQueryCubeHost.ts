@@ -15,35 +15,15 @@
  */
 
 import {
-  buildCubeConnectionExplorer,
-  buildCubeDataProductCatalog,
-  buildCubeEngine,
-  buildCubeIngestCatalog,
-  buildCubeLakehouseEnvironment,
-  buildCubeProjectCatalog,
-  buildCubeServiceCatalog,
-  CubeDataProductEnvironmentType,
-  CubeEngineClientSettings,
-  getCubeRememberedWarehouse,
+  buildLegendCubeLakehouseServices,
+  LegendCubeHost,
   type CubeConnectionExplorer,
-  type CubeDataProductCatalog,
   type CubeEngine,
-  type CubeIngestCatalog,
+  type CubeEngineConfig,
   type CubeLakehouseServices,
   type CubeProjectCatalog,
-  type CubeServiceCatalog,
-  type CubeEngineConfig,
-  type CubeHost,
-  LocalModelCatalog,
+  type LegendCubeHostConfig,
 } from '@finos/legend-cube-builder';
-import { DepotServerClient } from '@finos/legend-server-depot';
-import {
-  LakehouseContractServerClient,
-  LakehouseIngestServerClient,
-  LakehousePlatformServerClient,
-} from '@finos/legend-server-lakehouse';
-import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl } from '../../__lib__/LegendQueryNavigation.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import type { LegendQueryApplicationConfig } from '../../application/LegendQueryApplicationConfig.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
@@ -60,60 +40,24 @@ export const buildLegendQueryCubeEngineConfig = (
 });
 
 /**
- * What Cube needs to read and run data products (PLAN §6.8), with Query's
- * lakehouse and depot, configured as Query's own: none when Query has no
- * lakehouse, so an open-source deployment without one offers no data
- * products. With a marketplace server too, its search is used
+ * Query's servers, as Cube's host reads them (PLAN §11.18): Query's engine,
+ * depot, lakehouse and marketplace, configured as Query's own, and the
+ * lakehouse environment Query remembers for the viewer
  */
-export const buildLegendQueryCubeLakehouseServices = (
+export const buildLegendQueryCubeHostConfig = (
   applicationStore: LegendQueryApplicationStore,
-): CubeLakehouseServices | undefined => {
-  const { config, tracerService } = applicationStore;
-  if (!config.lakehouseContractUrl || !config.depotServerUrl) {
-    return undefined;
-  }
-  const contractServerClient = new LakehouseContractServerClient({
-    baseUrl: config.lakehouseContractUrl,
-  });
-  contractServerClient.setTracerService(tracerService);
-  const depotServerClient = new DepotServerClient({
-    serverUrl: config.depotServerUrl,
-  });
-  depotServerClient.setTracerService(tracerService);
-  let marketplaceServerClient: MarketplaceServerClient | undefined;
-  if (config.marketplaceServerUrl) {
-    marketplaceServerClient = new MarketplaceServerClient({
-      serverUrl: config.marketplaceServerUrl,
-      // the client only stores it, never reading it, and Cube calls no subscription route
-      subscriptionUrl: '',
-    });
-    marketplaceServerClient.setTracerService(tracerService);
-  }
-  // ingest data sets need the platform, which names the ingest servers; the
-  // ingest client has no server of its own: each call names one
-  let platformServerClient: LakehousePlatformServerClient | undefined;
-  let ingestServerClient: LakehouseIngestServerClient | undefined;
-  if (config.lakehousePlatformUrl) {
-    platformServerClient = new LakehousePlatformServerClient(
-      config.lakehousePlatformUrl,
-    );
-    platformServerClient.setTracerService(tracerService);
-    ingestServerClient = new LakehouseIngestServerClient(undefined);
-    ingestServerClient.setTracerService(tracerService);
-  }
+): LegendCubeHostConfig => {
+  const { config } = applicationStore;
   return {
-    platformServerClient,
-    ingestServerClient,
-    contractServerClient,
-    depotServerClient,
-    marketplaceServerClient,
-    getAccessToken: () => applicationStore.getAccessToken(),
-    getCurrentUser: () => applicationStore.identityService.currentUser,
-    // the environment Query remembers for the viewer, as Query's editor uses it
-    getPreferredEnvironment: () =>
-      LegendQueryUserDataHelper.getLakehouseUserInfo(
-        applicationStore.userDataService,
-      )?.env,
+    engine: buildLegendQueryCubeEngineConfig(config),
+    depotServerUrl: config.depotServerUrl,
+    lakehouseContractUrl: config.lakehouseContractUrl,
+    lakehousePlatformUrl: config.lakehousePlatformUrl,
+    marketplaceServerUrl: config.marketplaceServerUrl,
+    // a data product links to the marketplace of its deployment's class;
+    // Query's own links choose by a SNAPSHOT version instead
+    marketplaceApplicationUrl: config.marketplaceApplicationUrl,
+    marketplaceProductionParallelUrl: config.marketplaceProductionParallelUrl,
     // the stereotype Studio and Marketplace mark groups open to everyone with
     enterpriseStereotype: config.options.dataProductConfig?.publicStereotype
       ? {
@@ -121,59 +65,33 @@ export const buildLegendQueryCubeLakehouseServices = (
           value: config.options.dataProductConfig.publicStereotype.stereotype,
         }
       : undefined,
-    // the marketplace of the deployment's class, where its deployment is;
-    // Query's own links choose by a SNAPSHOT version instead
-    getMarketplaceLink: (target) => {
-      const marketplaceUrl =
-        target.environmentType ===
-        CubeDataProductEnvironmentType.PRODUCTION_PARALLEL
-          ? config.marketplaceProductionParallelUrl
-          : config.marketplaceApplicationUrl;
-      return marketplaceUrl
-        ? EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl(
-            marketplaceUrl,
-            target.dataProductId,
-            target.deploymentId,
-            target.accessPointGroup,
-          )
-        : undefined;
-    },
+    // the environment Query remembers for the viewer, as Query's editor uses it
+    getPreferredEnvironment: () =>
+      LegendQueryUserDataHelper.getLakehouseUserInfo(
+        applicationStore.userDataService,
+      )?.env,
   };
 };
 
-/** The published projects in Query's depot, or none without a depot */
-export const buildLegendQueryCubeProjectCatalog = (
+/**
+ * What Cube needs to read and run data products (PLAN §6.8), with Query's
+ * lakehouse and depot: none when Query has no lakehouse, so an open-source
+ * deployment without one offers no data products
+ */
+export const buildLegendQueryCubeLakehouseServices = (
   applicationStore: LegendQueryApplicationStore,
-): CubeProjectCatalog | undefined => {
-  const { config, tracerService } = applicationStore;
-  if (!config.depotServerUrl) {
-    return undefined;
-  }
-  const depotServerClient = new DepotServerClient({
-    serverUrl: config.depotServerUrl,
-  });
-  depotServerClient.setTracerService(tracerService);
-  return buildCubeProjectCatalog(depotServerClient);
-};
+): CubeLakehouseServices | undefined =>
+  buildLegendCubeLakehouseServices(
+    applicationStore,
+    buildLegendQueryCubeHostConfig(applicationStore),
+  );
 
 /**
- * Legend Query as the host of the Cube page (PLAN §3.5): Query's engine and
- * application store, the bundled models, direct database connections read
- * through Query's engine, and, when Query has a lakehouse, its deployed data
- * products (PLAN §6.8). One per visit to the page.
+ * Legend Query as the host of the Cube page (PLAN §3.5): the host a Legend
+ * deployment gives Cube (PLAN §11.18), from Query's config. One per visit to
+ * the page.
  */
-export class LegendQueryCubeHost implements CubeHost {
-  readonly applicationStore: LegendQueryApplicationStore;
-  readonly engine: CubeEngine;
-  readonly modelCatalog: LocalModelCatalog;
-  readonly connectionExplorer: CubeConnectionExplorer;
-  readonly dataProductCatalog: CubeDataProductCatalog | undefined;
-  readonly ingestCatalog: CubeIngestCatalog | undefined;
-  readonly projectCatalog: CubeProjectCatalog | undefined;
-  readonly serviceCatalog: CubeServiceCatalog;
-  /** The engine URL and compression Cube's engine clients share, which Dev Settings changes */
-  readonly engineClientSettings: CubeEngineClientSettings;
-
+export class LegendQueryCubeHost extends LegendCubeHost {
   /**
    * Tests give an engine, an explorer and a project catalog; otherwise each
    * is built from Query's config
@@ -184,51 +102,10 @@ export class LegendQueryCubeHost implements CubeHost {
     connectionExplorer?: CubeConnectionExplorer,
     projectCatalog?: CubeProjectCatalog,
   ) {
-    this.applicationStore = applicationStore;
-    const config = buildLegendQueryCubeEngineConfig(applicationStore.config);
-    this.engineClientSettings = new CubeEngineClientSettings(config);
-    const lakehouse = buildLegendQueryCubeLakehouseServices(applicationStore);
-    this.ingestCatalog = lakehouse
-      ? buildCubeIngestCatalog(
-          config,
-          applicationStore.tracerService,
-          lakehouse,
-          this.engineClientSettings,
-        )
-      : undefined;
-    this.engine =
-      engine ??
-      buildCubeEngine(config, applicationStore.tracerService, {
-        ingestCatalog: this.ingestCatalog,
-        lakehouseEnvironment: lakehouse
-          ? buildCubeLakehouseEnvironment(lakehouse)
-          : undefined,
-        getRememberedWarehouse: () =>
-          getCubeRememberedWarehouse(applicationStore.userDataService),
-        clientSettings: this.engineClientSettings,
-      });
-    this.dataProductCatalog = lakehouse
-      ? buildCubeDataProductCatalog(lakehouse)
-      : undefined;
-    this.modelCatalog = new LocalModelCatalog(this.engine);
-    // its own client, configured as the engine's
-    this.connectionExplorer =
-      connectionExplorer ??
-      buildCubeConnectionExplorer(
-        config,
-        applicationStore.tracerService,
-        this.engineClientSettings,
-      );
-    // the published projects in Query's depot (PLAN §6.3); it reads nothing
-    // until the source dialog's Project tab opens
-    this.projectCatalog =
-      projectCatalog ?? buildLegendQueryCubeProjectCatalog(applicationStore);
-    // the services in the registry of Query's engine (PLAN §6.4), in
-    // progress; it reads nothing until the source dialog's Service tab opens
-    this.serviceCatalog = buildCubeServiceCatalog(
-      config,
-      applicationStore.tracerService,
-      this.engineClientSettings,
-    );
+    super(applicationStore, buildLegendQueryCubeHostConfig(applicationStore), {
+      engine,
+      connectionExplorer,
+      projectCatalog,
+    });
   }
 }

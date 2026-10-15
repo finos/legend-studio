@@ -4,7 +4,7 @@ This document is designed to help AI agents understand the structure, workflows,
 
 ## Project Overview
 
-`legend-studio` is the codebase for Legend applications, including Legend Studio, Legend Query, Legend DataCube, Legend Marketplace, Legend Pure IDE, and Legend REPL. It is a monorepo managed with Yarn workspaces.
+`legend-studio` is the codebase for Legend applications, including Legend Studio, Legend Query, Legend DataCube, Legend Analytics, Legend Marketplace, Legend Pure IDE, and Legend REPL. It is a monorepo managed with Yarn workspaces.
 
 ## Environment Setup
 
@@ -30,6 +30,7 @@ Each application has a dedicated `dev:*` script that runs the corresponding `*-d
 - **Legend Studio**: `yarn dev` (alias for `yarn dev:studio`)
 - **Legend Query**: `yarn dev:query`
 - **Legend DataCube**: `yarn dev:datacube`
+- **Legend Analytics**: `yarn dev:analytics` (runs Legend Cube, the canvas query builder, on its own)
 - **Legend Marketplace**: `yarn dev:marketplace`
 - **Legend Pure IDE**: `yarn dev:pure`
 - **Legend REPL**: `yarn dev:repl`
@@ -99,7 +100,7 @@ For unit-level work, prefer the in-repo mock server in [fixtures/legend-mock-ser
 
 The flat [packages/](packages) directory is large. Quick legend for picking the right package:
 
-- `legend-application-<app>` — application shell (studio, query, datacube, marketplace, pure-ide, repl).
+- `legend-application-<app>` — application shell (studio, query, datacube, analytics, marketplace, pure-ide, repl).
 - `legend-application-<app>-bootstrap` — shared bootstrap wiring for that app.
 - `legend-application-<app>-deployment` — webpack/vite entry points; this is what `yarn dev:*` runs.
 - `legend-extension-dsl-*` / `legend-extension-store-*` — pluggable DSL / store extensions. See [docs/technical/extension-authoring.md](docs/technical/extension-authoring.md) and [docs/technical/instructions-add-plugin.md](docs/technical/instructions-add-plugin.md).
