@@ -134,3 +134,28 @@ export const openCubeExample = async (
   // the pointer away from the controls, so none shows its hover
   await page.mouse.move(1300, 120);
 };
+
+/**
+ * Saves the part of the page around the regions, with a margin for the
+ * callouts' numbers beside them, inside the window
+ */
+export const saveRegion = async (
+  page: Page,
+  path: string,
+  regions: readonly Locator[],
+  margin = 44,
+): Promise<void> => {
+  const box = union(await Promise.all(regions.map(boxOf)));
+  const viewport = page.viewportSize() ?? { width: 1440, height: 900 };
+  const x = Math.max(0, box.x - margin);
+  const y = Math.max(0, box.y - margin);
+  await page.screenshot({
+    path,
+    clip: {
+      x,
+      y,
+      width: Math.min(viewport.width, box.x + box.width + margin) - x,
+      height: Math.min(viewport.height, box.y + box.height + margin) - y,
+    },
+  });
+};

@@ -5,6 +5,9 @@ sidebar_position: 2
 
 # The editor
 
+New to Legend Cube? **Take the tour**, in the ☰ menu at the top left or on an empty cube's canvas: it walks through the
+editor one part at a time, on an example when the cube is empty.
+
 The editor below shows the example **Top customers by orders** (Examples, then Northwind): it joins orders to
 customers, counts each customer's orders and keeps the ten customers with the most. The query is on top, as a graph of
 steps; its rows are below.
@@ -33,7 +36,8 @@ Click the image to see it full size.
 
 ## The graph
 
-9. **A step**: click it to edit it. Its editor opens beside it (see [A step's editor](#a-steps-editor)).
+9. **A step**: click it to edit it. Its editor opens beside it (see [A step's editor](#a-steps-editor), and each step's
+   page under [Steps](./steps/index.md)).
 10. **Runs**: marks the step Execute runs up to. A step's editor has **Run this step** to move it.
 11. **Zoom in**, **zoom out** and **fit the graph to the view**.
 
@@ -47,7 +51,7 @@ Click the image to see it full size.
 15. **Runs**: the latest runs, fetches and exports, each with its SQL.
 16. **A column's menu** (⋮): sort, pin, autosize, choose the columns shown, or reset them. Right-click a cell for
     more: drill down by its column; sort, group or filter by it, as a new step; format a number column; copy; or
-    export the rows.
+    export the rows. See [The results](./results.md).
 
 ## A step's editor
 
