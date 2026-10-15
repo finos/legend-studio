@@ -117,8 +117,8 @@ run.
 
 ## Legend Studio: Create MatView
 
-An ingest definition's editor in Studio offers **Create MatView** where `NonProductionFeatureFlag` is on
-(`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
+An ingest definition's editor in Studio offers **Create MatView** in every deployment: unlike Legend Query's
+`/query/cube`, it doesn't depend on `NonProductionFeatureFlag` (`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
 screen over the editor, as the embedded query builder does, with `LegendStudioCubeHost`:
 
 - **The project:** `CubeHost.project` (`LegendStudioCubeWorkspace`) says the page reads one project's own sources. The

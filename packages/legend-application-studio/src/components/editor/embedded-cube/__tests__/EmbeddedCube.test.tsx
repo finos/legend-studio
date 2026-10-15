@@ -322,7 +322,10 @@ const setUp = async (
   >;
 }> => {
   const editorStore = TEST__provideMockedEditorStore();
-  editorStore.applicationStore.config.options.NonProductionFeatureFlag = true;
+  // Create MatView shows in production too: the non-production flag is off
+  expect(
+    editorStore.applicationStore.config.options.NonProductionFeatureFlag,
+  ).toBe(false);
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(editorStore, {
     entities,
   });

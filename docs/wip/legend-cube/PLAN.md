@@ -4922,7 +4922,9 @@ Built on `cube-studio`, now on master (`a8532a256`), in a PR into master (finos/
 **Settled** (user, 2026-10-14):
 
 - **The button:** "Create MatView" (first "Create MatView with Cube", shortened: user, 2026-10-14) in the ingest
-  definition editor's header, beside Lineage and View SQL, where `NonProductionFeatureFlag` is on. Cube opens full
+  definition editor's header, beside Lineage and View SQL, where `NonProductionFeatureFlag` is on _(2026-10-15, the
+  user: approved for production; the button no longer depends on the flag, which still gates Legend Query's
+  `/query/cube`, D11)_. Cube opens full
   screen over the editor, as Studio's embedded query builder does (`EmbeddedCubeState`, `LegendStudioCubeHost`).
 - **Sources:** the ingest definitions and data products of the project being edited, as the workspace holds them,
   and nothing else (no sample data, examples, databases or services). One kind of source per cube, as in Legend Query.

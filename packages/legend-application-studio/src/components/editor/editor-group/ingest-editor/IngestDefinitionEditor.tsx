@@ -313,63 +313,60 @@ export const IngestDefinitionEditor = observer(() => {
                           </button>
                         </div>
                       )}
-                      {editorStore.applicationStore.config.options
-                        .NonProductionFeatureFlag && (
-                        // sized to its label, longer than the other buttons'
-                        <div className="btn__dropdown-combo btn__dropdown-combo--primary !w-auto">
-                          <button
-                            className="btn__dropdown-combo__label !w-auto"
-                            onClick={() =>
-                              editorStore.embeddedCubeState.open(ingestDef)
-                            }
-                            tabIndex={-1}
+                      {/* sized to its label, longer than the other buttons' */}
+                      <div className="btn__dropdown-combo btn__dropdown-combo--primary !w-auto">
+                        <button
+                          className="btn__dropdown-combo__label !w-auto"
+                          onClick={() =>
+                            editorStore.embeddedCubeState.open(ingestDef)
+                          }
+                          tabIndex={-1}
+                          disabled={ingestDefinitionEditorState.isReadOnly}
+                          title="Build a materialized view of the project's ingest data sets in Legend Cube"
+                        >
+                          <CubeIcon className="btn__dropdown-combo__label__icon" />
+                          <div className="btn__dropdown-combo__label__title whitespace-nowrap pr-2">
+                            Create MatView
+                          </div>
+                        </button>
+                        {materializedViews.length > 0 && (
+                          <ControlledDropdownMenu
+                            className="btn__dropdown-combo__dropdown-btn"
+                            title="Edit a materialized view with Cube"
                             disabled={ingestDefinitionEditorState.isReadOnly}
-                            title="Build a materialized view of the project's ingest data sets in Legend Cube"
+                            content={
+                              <MenuContent>
+                                {materializedViews.map(({ name }) => (
+                                  <MenuContentItem
+                                    key={name}
+                                    className="btn__dropdown-combo__option"
+                                    onClick={() =>
+                                      editorStore.embeddedCubeState.open(
+                                        ingestDef,
+                                        name,
+                                      )
+                                    }
+                                  >
+                                    {`Edit MatView ${name}`}
+                                  </MenuContentItem>
+                                ))}
+                              </MenuContent>
+                            }
+                            menuProps={{
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'right',
+                              },
+                            }}
                           >
-                            <CubeIcon className="btn__dropdown-combo__label__icon" />
-                            <div className="btn__dropdown-combo__label__title whitespace-nowrap pr-2">
-                              Create MatView
-                            </div>
-                          </button>
-                          {materializedViews.length > 0 && (
-                            <ControlledDropdownMenu
-                              className="btn__dropdown-combo__dropdown-btn"
-                              title="Edit a materialized view with Cube"
-                              disabled={ingestDefinitionEditorState.isReadOnly}
-                              content={
-                                <MenuContent>
-                                  {materializedViews.map(({ name }) => (
-                                    <MenuContentItem
-                                      key={name}
-                                      className="btn__dropdown-combo__option"
-                                      onClick={() =>
-                                        editorStore.embeddedCubeState.open(
-                                          ingestDef,
-                                          name,
-                                        )
-                                      }
-                                    >
-                                      {`Edit MatView ${name}`}
-                                    </MenuContentItem>
-                                  ))}
-                                </MenuContent>
-                              }
-                              menuProps={{
-                                anchorOrigin: {
-                                  vertical: 'bottom',
-                                  horizontal: 'right',
-                                },
-                                transformOrigin: {
-                                  vertical: 'top',
-                                  horizontal: 'right',
-                                },
-                              }}
-                            >
-                              <CaretDownIcon />
-                            </ControlledDropdownMenu>
-                          )}
-                        </div>
-                      )}
+                            <CaretDownIcon />
+                          </ControlledDropdownMenu>
+                        )}
+                      </div>
                     </div>
                   </PanelHeaderActions>
                 </PanelHeader>
