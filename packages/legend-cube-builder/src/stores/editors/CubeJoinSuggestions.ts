@@ -113,7 +113,8 @@ const isSameSuggestion = (
  * the database's joins between their columns' tables, either way round;
  * a primary key of either side that the other names alike; a `<table>_ID`
  * against that table's `ID` or single primary key; then each column both
- * sides name alike, key-like names first. Only comparable types.
+ * sides name alike, key-like names first, and the others only when nothing
+ * better is suggested. Only comparable types.
  */
 export const suggestJoinKeys = (
   input: CubeJoinSuggestionInput,
@@ -241,6 +242,20 @@ export const suggestJoinKeys = (
         : [];
     });
   };
+  // a column one of whose table columns is in its table's primary key
+  const isPrimaryKeyColumn = (
+    name: string,
+    originsOf: (column: string) => readonly CubeColumnOrigin[],
+  ): boolean =>
+    originsOf(name).some(({ source, column }) =>
+      Boolean(
+        outline?.databases
+          .find((each) => each.path === source.database)
+          ?.schemas.find((each) => each.name === source.schema)
+          ?.tables.find((each) => each.name === source.table)
+          ?.primaryKey?.includes(column),
+      ),
+    );
   const sameNamed = (name: string, schema: Schema): string | undefined =>
     schema
       .names()
@@ -345,13 +360,25 @@ export const suggestJoinKeys = (
       leftColumns: [left],
       rightColumns: [right],
       reason: CubeJoinSuggestionReason.SAME_NAME,
-      isKeyLike: isKeyLikeColumnName(left),
+      // a key by its name, or a column of either side's primary key
+      isKeyLike:
+        isKeyLikeColumnName(left) ||
+        isPrimaryKeyColumn(left, input.leftOrigins) ||
+        isPrimaryKeyColumn(right, input.rightOrigins),
     }));
   [
     ...alike.filter((each) => each.isKeyLike),
     ...alike.filter((each) => !each.isKeyLike),
   ].forEach(add);
-  return suggestions;
+  // a column both sides name alike that isn't a key, e.g. NAME, only when
+  // nothing better is suggested: else it is noise, often a column the join
+  // has to rename
+  const isBetter = (each: CubeJoinKeySuggestion): boolean =>
+    each.reason !== CubeJoinSuggestionReason.SAME_NAME ||
+    each.isKeyLike === true;
+  return suggestions.some(isBetter)
+    ? suggestions.filter(isBetter)
+    : suggestions;
 };
 
 /**

@@ -5418,6 +5418,38 @@ while the tour shows.
 | T.1  | The tour: steps, anchors, the card, the menu item and the offer | Store and component tests; a browser walk |
 | T.2  | A demo video                                                    | Every caption true on screen              |
 
+### 11.22 Join: the other input from the menu, and suggested join columns (feedback, 2026-10-16)
+
+Feedback on the Join node after an audit: adding one left its Right input empty, to fill by dragging a node onto it,
+and its join columns were picked from whole column lists, with nothing suggested.
+
+- **The other input from the menu (user: Join only, for now).** On the canvas's menu, hovering Join Another Input (or
+  the right arrow key) opens "Join with": the end of each other chain that wouldn't close a loop (a node feeds one
+  other only), labelled as on the canvas, a step with the sources it reads (`Distinct Values · from CUSTOMERS`).
+  Picking one adds the Join after the node with it as the Right input, as one step to undo, the model's outline read
+  first. A click on the item adds the Join alone, as before, and its editor then offers the input it waits for.
+  Concatenate and Compare Column Values keep dragging for now. The submenu opens in a popper above MUI's modal menu,
+  whose focus trap is lifted on the canvas's menus.
+- **Suggested join columns** (`CubeJoinSuggestions`), strongest first, comparable types only, each pair once:
+  1. a join the database defines between the tables the inputs' columns come from (`findColumnOrigins`, through
+     Renames and other steps), either way round, every pair of a compound join mapped; the outline now reads a
+     Database's joins (equality of columns, ANDed; self-joins and other operations left out) and its tables'
+     primary keys;
+  2. a table's whole primary key that the other side names alike;
+  3. `<table>_ID` (or `<table>Id`) against that table's `ID` or single-column primary key;
+  4. a column both sides name alike, key-like names (and primary key columns) first; others only when nothing better
+     is suggested, as they are mostly columns the join must rename.
+     Sources other than relational tables (data products, ingest, functions) get the name-based ones only: their
+     columns are not traced to tables, and an ingest data set's primary key is not on its node.
+- **Filled in when clear (user: yes).** A Join that gets its second input with no join columns (from the menu, the
+  editor's input picker, a drop or a drag) takes a suggestion when one is clearly it: the only database join, else
+  the only primary key both sides name alike, else the only key-like column both sides name alike. Never over its
+  own columns, never on Swap Inputs.
+- **The editor** lists the suggestions not taken (four at most) with their reason and Use, which replaces blank pairs
+  or adds after the picked ones; the column pickers list the suggested columns first, in a Suggested group.
+- Verified in Chromium against the local engine on Northwind (`ORDERS ⋈ SHIPPERS` on the database's `SHIP_VIA =
+SHIPPER_ID`, then `⋈ CUSTOMERS` on `CUSTOMER_ID` through the first Join), and by keyboard; video 35.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks

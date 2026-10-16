@@ -55,19 +55,41 @@ import { CubeNodeIcon } from './CubeNodeIcon.js';
 const CUBE_SUBMENU_Z_INDEX = 1400;
 
 /**
- * Each node as a menu lists it: its canvas label and the muted second line,
+ * Each node as a menu lists it: its canvas label and the muted second line;
+ * a step, the sources it reads from (`Distinct Values · from CUSTOMERS`);
  * its id added when another node of the list shows the same
  */
 export const getCubeNodeMenuLabels = (
   editorState: CubeEditorState,
   nodes: readonly QueryNode[],
 ): Map<string, string> => {
+  const { query } = editorState.document;
+  const titleOf = (
+    node: QueryNode,
+  ): ReturnType<typeof getCubeCanvasNodeLabel> =>
+    getCubeCanvasNodeLabel(node, editorState.registry.get(node.type)?.label);
+  // the sources upstream of a node, in input order
+  const sourcesOf = (nodeId: string): QueryNode[] => {
+    const node = query.getNode(nodeId);
+    if (!node) {
+      return [];
+    }
+    const inputIds = query
+      .getInputIds(nodeId)
+      .filter((id): id is string => id !== undefined);
+    return inputIds.length ? inputIds.flatMap(sourcesOf) : [node];
+  };
   const labels = nodes.map((node) => {
-    const { title, detail } = getCubeCanvasNodeLabel(
-      node,
-      editorState.registry.get(node.type)?.label,
-    );
-    return [node.id, detail ? `${title} · ${detail}` : title] as const;
+    const { title, detail } = titleOf(node);
+    const sources = query.getInputIds(node.id).some((id) => id !== undefined)
+      ? sourcesOf(node.id).map((source) => titleOf(source).title)
+      : [];
+    const label = sources.length
+      ? `${title} · from ${[...new Set(sources)].join(', ')}`
+      : detail
+        ? `${title} · ${detail}`
+        : title;
+    return [node.id, label] as const;
   });
   return new Map(
     labels.map(([id, label]) => [

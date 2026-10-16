@@ -128,11 +128,23 @@ describe('The join columns the Join editor suggests', () => {
       rightOrigins: originsOf(CUSTOMERS_SOURCE),
       outline,
     });
-    // the same pair is suggested once, for its strongest reason
+    // the same pair is suggested once, for its strongest reason; SHIP_NAME,
+    // no key, isn't, as a better one is
     expect(keysOf(suggestions)).toEqual([
       [DATABASE_JOIN, ['CUSTOMER_ID'], ['CUSTOMER_ID']],
-      [SAME_NAME, ['SHIP_NAME'], ['SHIP_NAME']],
     ]);
+    // with nothing better, a column both sides name alike is
+    expect(
+      keysOf(
+        suggestJoinKeys({
+          leftSchema: schemaOf([['SHIP_NAME', STRING]]),
+          rightSchema: schemaOf([['SHIP_NAME', STRING]]),
+          leftOrigins: originsOf(ORDERS_SOURCE),
+          rightOrigins: originsOf(CUSTOMERS_SOURCE),
+          outline,
+        }),
+      ),
+    ).toEqual([[SAME_NAME, ['SHIP_NAME'], ['SHIP_NAME']]]);
     expect(suggestions[0]?.detail).toBe('Orders_Customers');
     expect(getClearJoinKeySuggestion(suggestions)).toBe(suggestions[0]);
     // the other way round, the join is read from its other end
@@ -268,8 +280,9 @@ describe('The join columns the Join editor suggests', () => {
       ),
     ).toEqual([
       [PRIMARY_KEY, ['ORDER_ID', 'LINE'], ['ORDER_ID', 'LINE']],
-      [SAME_NAME, ['ORDER_ID'], ['ORDER_ID']],
+      // each a column of SHIPMENTS' key, in the left's order
       [SAME_NAME, ['LINE'], ['LINE']],
+      [SAME_NAME, ['ORDER_ID'], ['ORDER_ID']],
     ]);
     const toProducts = suggestJoinKeys({
       leftSchema: lines,
