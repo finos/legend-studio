@@ -228,6 +228,12 @@ export interface LegendStudioApplicationConfigurationData
   showcase?: { url: string };
   pct?: { reportUrl: string };
   legendAI?: { url: string };
+  /**
+   * The lakehouse contract server, as Legend Query and Legend Marketplace
+   * configure it: Studio reads the viewer's lakehouse environment from its
+   * entitlements
+   */
+  lakehouse?: { url: string };
 }
 
 export class LegendStudioApplicationConfig extends LegendApplicationConfig {
@@ -248,6 +254,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
   readonly legendAIUrl?: string | undefined;
+  readonly lakehouseContractUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
@@ -340,6 +347,13 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     if (input.configData.legendAI?.url) {
       this.legendAIUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.legendAI.url,
+      );
+    }
+
+    // lakehouse
+    if (input.configData.lakehouse?.url) {
+      this.lakehouseContractUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.lakehouse.url,
       );
     }
 

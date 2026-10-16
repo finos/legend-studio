@@ -132,7 +132,10 @@ import {
 } from '../lazy-text-editor/LazyTextEditorStore.js';
 import type { QueryBuilderDataCubeViewerState } from '@finos/legend-query-builder';
 import { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
-import { LakehouseIngestionManager } from '@finos/legend-server-lakehouse';
+import {
+  LakehouseContractServerClient,
+  LakehouseIngestionManager,
+} from '@finos/legend-server-lakehouse';
 import { DevMetadataState } from './sidebar-state/dev-metadata/DevMetadataState.js';
 
 export abstract class EditorExtensionState {
@@ -150,6 +153,10 @@ export class EditorStore implements CommandRegistrar {
   readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly ingestionManager: LakehouseIngestionManager | undefined;
+  /** The lakehouse contract server, when Studio's config names one (`lakehouse.url`) */
+  readonly lakehouseContractServerClient:
+    | LakehouseContractServerClient
+    | undefined;
   readonly pluginManager: LegendStudioPluginManager;
 
   /**
@@ -340,6 +347,16 @@ export class EditorStore implements CommandRegistrar {
         ingestionConifg.deployment.defaultServer,
         ingestionConifg.deployment.useDefaultServer,
         this.applicationStore.tracerService,
+      );
+    }
+    // lakehouse contracts, e.g. the viewer's lakehouse environment
+    const { lakehouseContractUrl } = applicationStore.config;
+    if (lakehouseContractUrl) {
+      this.lakehouseContractServerClient = new LakehouseContractServerClient({
+        baseUrl: lakehouseContractUrl,
+      });
+      this.lakehouseContractServerClient.setTracerService(
+        applicationStore.tracerService,
       );
     }
 
