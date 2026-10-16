@@ -164,9 +164,9 @@ export const CubeExpressionFilterEditor = observer(
               lineNumbers: 'off',
               wordWrap: 'on',
               scrollBeyondLastLine: false,
-              // the completions show over the panel, not cut by the code box
-              fixedOverflowWidgets: true,
             }}
+            // the completions show over the editor's popper, not cut by it
+            floatingWidgetsInBody={true}
           />
         </div>
         <CubeConditionStatus draft={draft} />

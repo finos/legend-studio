@@ -160,7 +160,7 @@ const COMPLETION_KINDS: Readonly<
   [CodeEditorCompletionKind.TEXT]: monacoLanguagesAPI.CompletionItemKind.Text,
 };
 
-/** The completions as Monaco shows them, each replacing the word being typed */
+/** The completions as Monaco shows them, in the order given, each replacing the word being typed */
 const toMonacoCompletions = async (
   source: CodeEditorCompletionSource,
   model: monacoEditorAPI.ITextModel,
@@ -179,9 +179,10 @@ const toMonacoCompletions = async (
     // no completions when they can't be read
   }
   return {
-    suggestions: completions.map((completion) => ({
+    suggestions: completions.map((completion, index) => ({
       label: completion.label,
       insertText: completion.insertText,
+      sortText: String(index).padStart(5, '0'),
       ...(completion.isSnippet
         ? {
             insertTextRules:
@@ -201,6 +202,36 @@ const toMonacoCompletions = async (
       },
     })),
   };
+};
+
+const OVERFLOW_WIDGETS_ROOT_ID = 'legend-code-editor-overflow-widgets';
+
+/**
+ * Where editors render their floating widgets (completions, hovers) when
+ * asked to: in the page's body, above everything, since Monaco places them
+ * with `position: fixed`, which a CSS-transformed container around the
+ * editor (a popper, a dialog) would misplace.
+ * See https://github.com/microsoft/monaco-editor/issues/2793#issuecomment-999337740
+ */
+const getOverflowWidgetsRoot = (): HTMLElement => {
+  const existing = document.getElementById(OVERFLOW_WIDGETS_ROOT_ID);
+  if (existing) {
+    return existing;
+  }
+  const root = document.createElement('div');
+  root.id = OVERFLOW_WIDGETS_ROOT_ID;
+  // the class Monaco's widget styles hang on
+  root.className = 'monaco-editor';
+  Object.assign(root.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '0',
+    height: '0',
+    zIndex: '999999',
+  });
+  document.body.appendChild(root);
+  return root;
 };
 
 export const CodeEditor: React.FC<{
@@ -225,6 +256,11 @@ export const CodeEditor: React.FC<{
    * other editors of the language never offer them
    */
   completions?: CodeEditorCompletionSource | undefined;
+  /**
+   * Renders the floating widgets (completions, hovers) in the page's body,
+   * for an editor inside a CSS-transformed container, e.g. a popper
+   */
+  floatingWidgetsInBody?: boolean | undefined;
 }> = (props) => {
   const {
     inputValue,
@@ -241,6 +277,7 @@ export const CodeEditor: React.FC<{
     error,
     rightActions,
     completions,
+    floatingWidgetsInBody,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
@@ -291,10 +328,22 @@ export const CodeEditor: React.FC<{
 
         formatOnType: true,
         formatOnPaste: true,
+        ...(floatingWidgetsInBody
+          ? {
+              fixedOverflowWidgets: true,
+              overflowWidgetsDomNode: getOverflowWidgetsRoot(),
+            }
+          : {}),
       });
       setEditor(_editor);
     }
-  }, [applicationStore, lightTheme, hidePadding, editor]);
+  }, [
+    applicationStore,
+    lightTheme,
+    hidePadding,
+    editor,
+    floatingWidgetsInBody,
+  ]);
 
   useEffect(() => {
     if (editor) {
