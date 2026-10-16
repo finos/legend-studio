@@ -361,12 +361,16 @@ describe('Data product tab', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  test('On a host reading one project, as Studio, lists its products by name with their paths, under the runtime its runs use', async () => {
+  test('On a host reading one project, as Studio, lists its products by name with their paths, under the runtime its runs of the class use', async () => {
     await renderPage((host) => ({
       ...host,
       project: {
-        resolveRuntime: async () => ({
-          label: 'demo-dev, from demo::Runtime',
+        resolveRuntime: async (environmentType) => ({
+          label:
+            environmentType ===
+            CubeDataProductEnvironmentType.PRODUCTION_PARALLEL
+              ? 'demo-dev-pp, from demo::Runtime'
+              : 'demo-dev, from demo::Runtime',
           warehouse: 'DEMO_WH',
         }),
       },
@@ -377,8 +381,12 @@ describe('Data product tab', () => {
         'Runs on demo-dev, from demo::Runtime',
       ),
     );
-    // no class, search or warehouse to pick
-    expect(within(dialog).queryByLabelText('Mode')).toBeNull();
+    // no search or warehouse to pick; the class, when the host's runs read either
+    expect(
+      within(within(dialog).getByLabelText('Mode'))
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Production', 'Production (parallel)']);
     expect(
       within(dialog).queryByRole('textbox', { name: 'Search data products' }),
     ).toBeNull();
@@ -394,6 +402,15 @@ describe('Data product tab', () => {
     expect(row?.textContent).toBe(`${first.title}${first.dataProductPath}`);
     fireEvent.click(within(products).getByText(first.title));
     await within(dialog).findByRole('list', { name: 'Access points' });
+    // another class names the runtime its runs use
+    fireEvent.change(within(dialog).getByLabelText('Mode'), {
+      target: { value: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL },
+    });
+    await waitFor(() =>
+      expect(within(dialog).getByLabelText('Runtime').textContent).toBe(
+        'Runs on demo-dev-pp, from demo::Runtime',
+      ),
+    );
   });
 
   test('On a host reading one project, as Studio, picks several access points with their checkboxes, or a Cmd click, and adds them all', async () => {

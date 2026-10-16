@@ -205,6 +205,31 @@ describe('Opening the page on a lambda', () => {
     );
   });
 
+  test("Reads a lambda on a host reading one project, as Studio, in the catalog's default class", async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
+    await renderOn(
+      {
+        ...host,
+        dataProductCatalog: undefined,
+        ingestCatalog: {
+          ...ingest.catalog,
+          environmentTypes: [PRODUCTION_PARALLEL, PRODUCTION],
+          // one producer, the project
+          listProducers: async (environment) =>
+            (await ingest.catalog.listProducers(environment)).slice(0, 1),
+        },
+        project: { resolveRuntime: async () => ({ label: 'demo-dev-pp' }) },
+      },
+      BIG_TRADES,
+    );
+    await TEST__findCanvasNode('limit101');
+    expect(ingest.listDefinitions.mock.calls).toEqual([
+      [{ environmentType: PRODUCTION_PARALLEL, name: undefined }, '1234'],
+    ]);
+  });
+
   test('Refuses a lambda reading two kinds of source', async () => {
     await renderOn(
       ingestHost(),

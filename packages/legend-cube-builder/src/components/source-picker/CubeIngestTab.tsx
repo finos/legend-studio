@@ -26,6 +26,8 @@ import {
   CUBE_PENDING_LABEL,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
+import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
+import type { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
 import {
   type CubeIngestTabError,
   type CubeIngestTabState,
@@ -148,8 +150,26 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
 const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
   const candidates = tab.definitionList?.candidates;
+  const environmentTypes = tab.catalog?.environmentTypes ?? [];
   return (
     <div className="flex flex-col gap-2">
+      {/* a host whose runs read either class, as Studio, asks which */}
+      {environmentTypes.length > 1 && (
+        <CubePickerStep
+          label="Mode"
+          value={tab.environmentType}
+          options={environmentTypes.map((type) => ({
+            value: type,
+            label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
+          }))}
+          disabled={tab.fixedSettings !== undefined}
+          onChange={(value) => {
+            if (value) {
+              tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
+            }
+          }}
+        />
+      )}
       <span
         className="text-sm text-[var(--color-text-muted)]"
         aria-label="Runtime"

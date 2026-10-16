@@ -17,6 +17,7 @@
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { ModelContext } from '@finos/legend-cube';
 import type { CubeConnectionExplorer } from '../graph-manager/CubeConnectionExplorer.js';
+import type { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
 import type { CubeDataProductCatalog } from '../graph-manager/CubeDataProductCatalog.js';
 import type { CubeEngineClientSettings } from '../graph-manager/CubeEngineClientSettings.js';
 import type { CubeIngestCatalog } from '../graph-manager/CubeIngestCatalog.js';
@@ -102,8 +103,13 @@ export interface CubeHostProjectRuntime {
 
 /** The one project a host's page reads the sources of (`CubeHost.project`) */
 export interface CubeHostProject {
-  /** Its lakehouse runtime; fails with a `CubeEngineError` saying why when it has none */
-  resolveRuntime(): Promise<CubeHostProjectRuntime>;
+  /**
+   * The lakehouse runtime its runs of a class use, by default production;
+   * fails with a `CubeEngineError` saying why when it has none
+   */
+  resolveRuntime(
+    environmentType?: CubeDataProductEnvironmentType,
+  ): Promise<CubeHostProjectRuntime>;
 }
 
 /** Whether the host's page reads one project's own sources, as Studio's does */

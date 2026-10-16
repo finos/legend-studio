@@ -41,6 +41,7 @@ import {
   getCubeIngestSettings,
 } from '../graph-manager/CubeIngest.js';
 import type { CubeIngestDataSet } from '../graph-manager/CubeIngestCatalog.js';
+import { isCubeProjectHost } from './CubeHost.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 
 // Import Pure's sources (PLAN §11.18): each accessor of a lambda bound to the
@@ -137,9 +138,12 @@ const bindIngestDataSets = async (
   }
   const { context } = editorState.document;
   const current = context ? getCubeIngestSettings(context.model) : undefined;
+  // a host with one class, or reading one project (Studio), whose one
+  // producer is the project, reads it as the catalog's default class
   const environmentType =
     current?.environmentType ??
-    (catalog.environmentTypes.length === 1
+    (catalog.environmentTypes.length === 1 ||
+    isCubeProjectHost(editorState.host)
       ? catalog.environmentTypes[0]
       : undefined);
   if (environmentType === undefined) {

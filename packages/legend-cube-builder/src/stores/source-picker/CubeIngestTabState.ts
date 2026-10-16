@@ -105,6 +105,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   readonly editorState: CubeEditorState;
 
   environmentType = CubeDataProductEnvironmentType.PRODUCTION;
+  /** Whether the viewer picked the class or an environment; until then a new cube starts on the catalog's default class, its first */
+  private environmentChosen = false;
   /** The environment picked, by name; none for the viewer's own of the class */
   environmentName: string | undefined;
   /** Every environment the viewer can pick, once listed */
@@ -348,6 +350,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     if (this.fixedSettings || environmentType === this.environmentType) {
       return;
     }
+    this.environmentChosen = true;
     this.environmentType = environmentType;
     this.environmentName = undefined;
     this.resetEnvironment();
@@ -366,6 +369,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     ) {
       return;
     }
+    this.environmentChosen = true;
     this.environmentType = environment.environmentType;
     this.environmentName = environment.name;
     this.resetEnvironment();
@@ -511,6 +515,17 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       this.warehouse = getEffectiveCubeWarehouse(settings, remembered);
     } else {
       this.warehouse = remembered ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+      // a new cube starts on the catalog's default class, unless the viewer picked one
+      const [defaultType] = this.catalog?.environmentTypes ?? [];
+      if (
+        !this.environmentChosen &&
+        defaultType !== undefined &&
+        defaultType !== this.environmentType
+      ) {
+        this.environmentType = defaultType;
+        this.environmentName = undefined;
+        this.resetEnvironment();
+      }
     }
     if (
       this.loadedEnvironmentId !==

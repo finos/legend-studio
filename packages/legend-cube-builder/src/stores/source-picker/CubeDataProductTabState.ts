@@ -131,6 +131,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   readonly editorState: CubeEditorState;
 
   environmentType = CubeDataProductEnvironmentType.PRODUCTION;
+  /** Whether the viewer picked the class; until then a new cube starts on the catalog's default, its first */
+  private environmentTypeChosen = false;
   search = '';
   /** On a cube with a project, whether the list shows other projects' products too, greyed */
   showAllProjects = false;
@@ -451,7 +453,15 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     if (this.fixedProject || environmentType === this.environmentType) {
       return;
     }
+    this.environmentTypeChosen = true;
     this.environmentType = environmentType;
+    // a project host's runs of the class use its own runtime
+    if (this.editorState.host.project) {
+      this.projectRuntime = undefined;
+      flowResult(this.readProjectRuntime()).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      );
+    }
     this.resetCandidate();
     this.error = undefined;
     this.candidates = undefined;
@@ -537,6 +547,17 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         this.resetCandidate();
       }
     } else if (this.warehouseFromProject || !this.candidate) {
+      // a new cube starts on the catalog's default class, unless the viewer picked one
+      const [defaultType] = this.catalog?.environmentTypes ?? [];
+      if (
+        !this.environmentTypeChosen &&
+        defaultType !== undefined &&
+        defaultType !== this.environmentType
+      ) {
+        this.environmentType = defaultType;
+        this.resetCandidate();
+        this.projectRuntime = undefined;
+      }
       // a new cube starts on the project host's runtime's warehouse, else
       // the viewer's, not a previous cube's
       this.warehouse =
@@ -594,11 +615,17 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     if (!project) {
       return;
     }
+    const { environmentType } = this;
     this.isReadingProjectRuntime = true;
     this.projectRuntimeError = undefined;
     try {
-      const runtime =
-        (yield project.resolveRuntime()) as CubeHostProjectRuntime;
+      const runtime = (yield project.resolveRuntime(
+        environmentType,
+      )) as CubeHostProjectRuntime;
+      // a class picked meanwhile reads its own
+      if (environmentType !== this.environmentType) {
+        return;
+      }
       this.projectRuntime = runtime;
       if (
         !this.fixedProject &&

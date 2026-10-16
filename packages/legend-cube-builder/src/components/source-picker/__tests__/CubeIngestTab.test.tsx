@@ -182,8 +182,13 @@ describe('The Ingest tab', () => {
         'Runs on demo-dev, from demo::Runtime',
       ),
     );
-    // no class, deployment or warehouse to pick
-    expect(screen.queryByLabelText('Mode')).toBeNull();
+    // the class of a host whose runs read either, starting on its first;
+    // no deployment or warehouse to pick
+    expect(
+      within(screen.getByLabelText('Mode'))
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Production', 'Production (parallel)']);
     expect(screen.queryByLabelText('Producer')).toBeNull();
     expect(screen.queryByLabelText('Warehouse')).toBeNull();
     const definitions = await screen.findByRole('list', {

@@ -450,6 +450,30 @@ describe('The Ingest tab', () => {
     expect(tab.producers).toHaveLength(2);
   });
 
+  test("Starts a new cube on the catalog's default class, its first, and keeps to a class the viewer picks", async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const state = new CubeEditorState({
+      ...host,
+      ingestCatalog: {
+        ...ingest.catalog,
+        environmentTypes: [PRODUCTION_PARALLEL, PRODUCTION],
+      },
+    });
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    const tab = state.sourcePicker.ingestTab;
+    expect(tab.environmentType).toBe(PRODUCTION_PARALLEL);
+    expect(ingest.listProducers.mock.calls.at(-1)).toEqual([
+      { environmentType: PRODUCTION_PARALLEL, name: undefined },
+    ]);
+    tab.setEnvironmentType(PRODUCTION);
+    state.sourcePicker.close();
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    expect(tab.environmentType).toBe(PRODUCTION);
+  });
+
   test('Reads the class the Mode names, and starts over on another', async () => {
     const { state, ingest } = setUp();
     const tab = await openOnOrders(state);
