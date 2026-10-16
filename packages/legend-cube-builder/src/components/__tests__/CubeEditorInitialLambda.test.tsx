@@ -303,9 +303,30 @@ describe('Import Pure, from the Cube menu', () => {
       );
       expect(status()).toBe(CubeCodeCheckStatus.PROBLEM);
 
+      // closed and opened again: the text left is checked again
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await waitFor(() =>
+        expect(
+          screen.queryByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE),
+        ).toBeNull(),
+      );
+      await TEST__chooseCubeMenuItem('Import Pure');
+      const reopened = await screen.findByTestId(
+        LEGEND_CUBE_TEST_ID.IMPORT_PURE,
+      );
+      const reopenedBox = within(reopened).getByLabelText('Pure query');
+      expect(
+        (await within(reopened).findByRole('alert')).textContent,
+      ).toContain('It is a materialized view');
+      expect(reopenedBox.getAttribute('data-check-status')).toBe(
+        CubeCodeCheckStatus.PROBLEM,
+      );
+
       typePure(JSON.stringify(BIG_TRADES));
-      await within(dialog).findByText(CUBE_LAMBDA_IMPORT_MESSAGE.READABLE(4));
-      expect(status()).toBe(CubeCodeCheckStatus.READY);
+      await within(reopened).findByText(CUBE_LAMBDA_IMPORT_MESSAGE.READABLE(4));
+      expect(reopenedBox.getAttribute('data-check-status')).toBe(
+        CubeCodeCheckStatus.READY,
+      );
       // checked, nothing imported yet
       expect(TEST__getCanvasNodes()).toHaveLength(0);
       fireEvent.click(screen.getByRole('button', { name: 'Import' }));

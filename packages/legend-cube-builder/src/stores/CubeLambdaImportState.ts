@@ -384,6 +384,10 @@ export class CubeLambdaImportState {
   openDialog(): void {
     this.isDialogOpen = true;
     this.dialogError = undefined;
+    // the text left from before, checked again
+    if (this.text.trim()) {
+      this.autoCheck.now();
+    }
   }
 
   closeDialog(): void {
