@@ -819,7 +819,8 @@ export class CubeEditorState implements CommandRegistrar {
           isFocusInNodeEditor(),
         ),
     });
-    // F10 in the Extend and Filter by Expression editors (PLAN §11.7, §11.11)
+    // F10 in the Extend and Filter by Expression editors (PLAN §11.7,
+    // §11.11): checks the code at once, not waiting for typing to pause
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS,
       trigger: () => {
@@ -838,9 +839,7 @@ export class CubeEditorState implements CommandRegistrar {
           draft instanceof CubeExtendDraft ||
           draft instanceof CubeExpressionFilterDraft
         ) {
-          flowResult(draft.validate()).catch(
-            this.host.applicationStore.alertUnhandledError,
-          );
+          draft.checkNow();
         }
       },
     });

@@ -59,6 +59,10 @@ import {
   readCubeExtendTyping,
   withoutEngineContext,
 } from '../CubeExtendTyping.js';
+import {
+  CubeCodeCheckStatus,
+  CubeExpressionAutoCheck,
+} from './CubeExpressionAutoCheck.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
 /** What the engine made of a row's code the last time it was validated */
@@ -102,13 +106,18 @@ const problemOf = (error: CubeEngineError): CubeExtendRowProblem => ({
   hint: NEEDS_TO_ONE.test(error.detail) ? EXTEND_TO_ONE_HINT : undefined,
 });
 
+/** The rows as the engine is asked about them: their names and codes, in order */
+const askedOf = (rows: readonly CubeExtendRow[]): string =>
+  JSON.stringify(rows.map(({ key, name, code }) => [key, name, code]));
+
 /**
  * The Extend editor's draft (PLAN §11.7): a row per new column, its name and
- * its code, `x | …`. Validate (F10) has the engine check each changed code,
- * type the columns as a chain after the input, located so an error points
- * into the code, and plan the query for the cube's database. Apply waits
- * until every row's code is the one validated; the node then holds the
- * engine's lambdas and their typing, so it needn't be typed again.
+ * its code, `x | …`, checked once typing pauses (user, 2026-10-16), or at
+ * once on F10: the engine checks each changed code, types the columns as a
+ * chain after the input, located so an error points into the code, and
+ * plans the query for the cube's database. Apply waits until every row's
+ * code is the one checked; the node then holds the engine's lambdas and
+ * their typing, so it needn't be typed again.
  */
 export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   readonly editorState: CubeEditorState;
@@ -122,6 +131,8 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   private touched = false;
   /** The database type the last plan was for, named in its problem */
   private planDatabaseType: string | undefined;
+  /** Checks the rows once typing pauses */
+  private readonly autoCheck: CubeExpressionAutoCheck;
 
   constructor(original: Extend, editorState: CubeEditorState) {
     super(original);
@@ -156,6 +167,38 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
     if (!this.rows.length) {
       this.rows = [this.newRow()];
     }
+    this.autoCheck = new CubeExpressionAutoCheck(() =>
+      flowResult(this.validate()).catch(
+        editorState.host.applicationStore.alertUnhandledError,
+      ),
+    );
+  }
+
+  /**
+   * Where a row's check stands, for its code box's border: a new row never
+   * edited isn't checked until it is
+   */
+  getRowCheckStatus(row: CubeExtendRow): CubeCodeCheckStatus {
+    if (row.problem) {
+      return CubeCodeCheckStatus.PROBLEM;
+    }
+    if (this.validating || row.checked?.code !== row.code) {
+      return !this.touched && !row.checked
+        ? CubeCodeCheckStatus.UNEDITED
+        : CubeCodeCheckStatus.CHECKING;
+    }
+    return row.type !== undefined || !this.inputSchema
+      ? CubeCodeCheckStatus.READY
+      : CubeCodeCheckStatus.CHECKING;
+  }
+
+  /** Checks the rows at once (F10), not waiting for typing to pause */
+  checkNow(): void {
+    this.autoCheck.now();
+  }
+
+  override dispose(): void {
+    this.autoCheck.dispose();
   }
 
   /** The input's schema, when the input is valid */
@@ -211,9 +254,13 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
         : EXTEND_APPLY_DISABLED_REASON.NOT_VALIDATED;
   }
 
+  /** An edit: the rows are checked once typing pauses */
   private change(rows: readonly CubeExtendRow[]): void {
     this.rows = rows;
     this.touched = true;
+    if (!this.editorState.readOnly) {
+      this.autoCheck.schedule();
+    }
   }
 
   addRow(): void {
@@ -331,6 +378,9 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       return;
     }
     this.validating = true;
+    // the rows as asked about: an edit meanwhile has its own check follow
+    const asked = askedOf(this.rows);
+    const isStale = (): boolean => askedOf(this.rows) !== asked;
     try {
       const nodeId = this.original.id;
       const sourceIdOf = (row: CubeExtendRow): string => `${nodeId}:${row.key}`;
@@ -358,6 +408,9 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
                 ),
         ),
       )) as (CubeExtendCheckedCode | CubeEngineError)[];
+      if (isStale()) {
+        return;
+      }
       const rows = this.rows.map((row, index) => {
         const result = parsed[index];
         return result instanceof CubeEngineError
@@ -398,6 +451,9 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
           true,
         ),
       )) as ReadonlyMap<NodeId, Schema | CubeEngineError>;
+      if (isStale()) {
+        return;
+      }
       const { typing, error } = readCubeExtendTyping(
         answers,
         candidate,
@@ -432,6 +488,9 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
         typing,
         input,
       )) as { column: number | undefined; error: CubeEngineError } | undefined;
+      if (isStale()) {
+        return;
+      }
       if (failure) {
         this.putProblem(failure.column, failure.error, true);
       }

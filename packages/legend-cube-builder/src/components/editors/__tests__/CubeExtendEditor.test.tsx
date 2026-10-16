@@ -54,6 +54,8 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeExtendDraft } from '../../../stores/editors/CubeExtendDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { CubeCodeCheckStatus } from '../../../stores/editors/CubeExpressionAutoCheck.js';
+import { CUBE_CODE_CHECK_LABEL } from '../CubeCodeCheck.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
@@ -129,19 +131,33 @@ beforeEach(() => {
 });
 
 describe('Extend editor', () => {
-  test('Shows a new column to write, and waits for a Validate before Apply', async () => {
+  test('Shows a new column to write, and waits for its check before Apply', async () => {
     const { state } = await render();
     expect(
       within(panel()).getByLabelText<HTMLInputElement>('Column name 1').value,
     ).toBe('col_1');
     expect(within(panel()).getByLabelText('Expression 1')).toBeTruthy();
-    expect(within(panel()).getByText('Not validated yet')).toBeTruthy();
+    expect(
+      within(panel()).getByText(CUBE_CODE_CHECK_LABEL.UNEDITED),
+    ).toBeTruthy();
+    // a new column, never edited, isn't checked, nor marked
+    expect(
+      within(panel())
+        .getByLabelText('Expression 1')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.UNEDITED);
+    // no button: the code is checked once typing pauses
+    expect(
+      within(panel()).queryByRole('button', { name: 'Validate' }),
+    ).toBeNull();
     const apply = button('Apply');
     expect(apply.disabled).toBe(true);
-    expect(apply.title).toBe('Validate the expressions first (F10)');
+    expect(apply.title).toBe(
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
+    );
     // in place of the problems
     expect(within(panel()).getByRole('status').textContent).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
     EXTEND_EDITOR_NOTES.forEach((note) =>
       expect(within(panel()).getByText(note)).toBeTruthy(),
@@ -159,12 +175,16 @@ describe('Extend editor', () => {
     expect(draftOf(state).rows[0]?.code).toBe('x | $x.ORDER_ID');
   });
 
-  test('Validates, shows each type, then Apply stores the typed node', async () => {
+  test('Checks the expressions once typing pauses, shows each type with a green border, then Apply stores the typed node', async () => {
     const { state, fake } = await render();
     const draft = draftOf(state);
     act(() => draft.setCode(draft.rows[0]?.key ?? 0, 'x | $x.ORDER_ID + 1'));
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText('Integer, optional');
+    expect(
+      within(panel())
+        .getByLabelText('Expression 1')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.READY);
     expect(fake.planLambda).toHaveBeenCalledTimes(1);
     expect(button('Apply').disabled).toBe(false);
     fireEvent.click(button('Apply'));
@@ -194,7 +214,6 @@ describe('Extend editor', () => {
     );
     const draft = draftOf(state);
     act(() => draft.setCode(draft.rows[0]?.key ?? 0, 'x | $x.SHIP_VIA + 1'));
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText(
       'Collection element must have a multiplicity [1]',
     );
@@ -203,7 +222,7 @@ describe('Extend editor', () => {
         'An optional column needs ->toOne() first, such as $x.QTY->toOne() + 1.',
       ),
     ).toBeTruthy();
-    await waitFor(() => expect(button('Validate').disabled).toBe(false));
+    await waitFor(() => expect(draftOf(state).validating).toBe(false));
   });
 
   test('Underlines a problem the engine located in its code', async () => {
@@ -227,7 +246,6 @@ describe('Extend editor', () => {
       ),
     );
     MockedMonacoEditorAPI.setModelMarkers.mockClear();
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText("no viable alternative at input '+'");
     await waitFor(() =>
       expect(MockedMonacoEditorAPI.setModelMarkers).toHaveBeenCalledWith(

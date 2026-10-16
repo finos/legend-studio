@@ -128,7 +128,7 @@ describe('Extend draft', () => {
     expect(draft.build() === draft.original).toBe(true);
     expect(draft.isValidated).toBe(false);
     expect(draft.applyDisabledReason).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
     draft.addRow();
     expect(draft.rows.map(({ name }) => name)).toEqual(['col_1', 'col_2']);
@@ -171,7 +171,7 @@ describe('Extend draft', () => {
     // a code edit asks for another Validate, and drops the type
     draft.setCode(second, 'x | $x.col_1 * 3');
     expect(draft.applyDisabledReason).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
     expect(draft.rows[1]?.type).toBeUndefined();
     expect(draft.build().columns[1]?.lambda).toBeUndefined();
@@ -213,7 +213,7 @@ describe('Extend draft', () => {
       expect.objectContaining({ size: 1 }),
     );
     expect(draft.applyDisabledReason).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
   });
 
@@ -385,7 +385,7 @@ describe('Extend editor panel', () => {
     expect(nodeEditor.notice).toBe(
       getEditorKeptOpenNotice(
         'extend101',
-        'Validate the expressions first (F10)',
+        'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
       ),
     );
     // another node

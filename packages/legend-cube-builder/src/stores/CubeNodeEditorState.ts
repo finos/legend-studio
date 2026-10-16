@@ -554,15 +554,18 @@ export class CubeNodeEditorState {
   /** Stops following the cube; call when the page closes */
   dispose(): void {
     this.disposeSync();
+    this.draft?.dispose();
   }
 
   private bind(node: QueryNode): void {
+    this.draft?.dispose();
     this.nodeId = node.id;
     this.nodeKey = node.key;
     this.draft = createCubeNodeDraft(node, this.editorState);
   }
 
   private reset(): void {
+    this.draft?.dispose();
     this.nodeId = undefined;
     this.nodeKey = undefined;
     this.draft = undefined;

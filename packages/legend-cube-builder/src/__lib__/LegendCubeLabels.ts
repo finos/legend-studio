@@ -446,14 +446,15 @@ export const DIFFERENCE_EDITOR_NOTES = [
 export const EXTEND_EDITOR_NOTES = [
   'Write each expression as a lambda of one row, such as x | $x.PRICE * $x.QTY: $x.PRICE reads the column PRICE. A column can use the new columns above it.',
   'An optional column needs ->toOne() before arithmetic, such as $x.QTY->toOne() * 2; an empty value still gives an empty result. Every new column is optional.',
-  "Validate (F10) checks the expressions with the engine, types them, and plans them for this cube's database: some functions type, but not every database runs them.",
+  "Each expression is checked once you stop typing: the engine types it and plans it for this cube's database, as some functions type but not every database runs them. A green border means it is ready; F10 checks it at once.",
   'A JSON (Variant) column’s {} opens its fields, read from its first values just before this step: a field clicked is written into the expression last used, and + column adds it as a new column.',
 ];
 
 /** Why the Extend editor's Apply waits (PLAN §11.7) */
 export const EXTEND_APPLY_DISABLED_REASON = Object.freeze({
-  NOT_VALIDATED: 'Validate the expressions first (F10)',
-  VALIDATING: 'Validating the expressions',
+  NOT_VALIDATED:
+    'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
+  VALIDATING: 'Checking the expressions',
 });
 
 /** The warning on an Extend whose saved types the engine couldn't check again, e.g. offline (PLAN §11.7) */
@@ -473,8 +474,9 @@ export const getEditorKeptOpenNotice = (
 
 /** Why the Filter by Expression editor's Apply waits (PLAN §11.11) */
 export const EXPRESSION_FILTER_APPLY_DISABLED_REASON = Object.freeze({
-  NOT_VALIDATED: 'Validate the condition first (F10)',
-  VALIDATING: 'Validating the condition',
+  NOT_VALIDATED:
+    'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
+  VALIDATING: 'Checking the condition',
 });
 
 /**
@@ -490,7 +492,7 @@ export const EXPRESSION_FILTER_EDITOR_NOTES = [
   "A condition of one row, written as in Query's text mode: x | $x.SHIPPED_DATE > $x.REQUIRED_DATE. The rows for which it is true are kept, in their order.",
   'Put each comparison in parentheses when you combine them: ($x.A > 1) && ($x.B > 3). In Pure, &&, || and ! bind as tightly as >, <, >= and <=; == binds tighter.',
   'An optional column, compared directly ($x.A > 6), fails the condition when it is empty and passes its negation. After ->toOne(), an empty value fails both.',
-  "Validate (F10) checks the condition with the engine and plans it for the cube's database.",
+  "The condition is checked once you stop typing: the engine checks it and plans it for the cube's database. A green border means it is ready; F10 checks it at once.",
   "startsWith, endsWith and contains can't take a value with a backslash (\\) yet, nor, on DuckDB, one with % or _.",
   'A JSON (Variant) column’s {} opens its fields, read from its first values just before this step: a field clicked is written into the condition.',
 ] as const;
