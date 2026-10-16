@@ -32,6 +32,7 @@ import {
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { getCubeExpressionCompletionSource } from './CubeExpressionCompletions.js';
 import {
   CubeJsonFieldsToggle,
   CubeJsonFieldsTree,
@@ -158,10 +159,13 @@ export const CubeExpressionFilterEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(draft.problem)}
+            completions={getCubeExpressionCompletionSource(schema.columns)}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
               scrollBeyondLastLine: false,
+              // the completions show over the panel, not cut by the code box
+              fixedOverflowWidgets: true,
             }}
           />
         </div>

@@ -46,6 +46,10 @@ import {
   isCubeJsonColumn,
 } from './CubeJsonFieldsTree.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
+import {
+  type CubeCompletionColumn,
+  getCubeExpressionCompletionSource,
+} from './CubeExpressionCompletions.js';
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 
@@ -115,10 +119,12 @@ const CubeExtendRowEditor = observer(
     row: CubeExtendRow;
     position: number;
     count: number;
+    /** The columns its expression can read: the input's, and the rows' above it */
+    columns: readonly CubeCompletionColumn[];
     readOnly: boolean;
     onFocus: () => void;
   }) => {
-    const { draft, row, position, count, readOnly, onFocus } = props;
+    const { draft, row, position, count, columns, readOnly, onFocus } = props;
     const [expanded, setExpanded] = useState(false);
     // typing goes on while the rows are checked
     const disabled = readOnly;
@@ -187,10 +193,13 @@ const CubeExtendRowEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(row)}
+            completions={getCubeExpressionCompletionSource(columns)}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
               scrollBeyondLastLine: false,
+              // the completions show over the panel, not cut by the code box
+              fixedOverflowWidgets: true,
             }}
           />
         </div>
@@ -232,6 +241,14 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
             row={row}
             position={index + 1}
             count={draft.rows.length}
+            columns={[
+              ...schema.columns,
+              // every new column is optional (PLAN §11.7)
+              ...draft.rows
+                .slice(0, index)
+                .filter(({ name }) => name)
+                .map(({ name, type }) => ({ name, type, nullable: true })),
+            ]}
             readOnly={readOnly}
             onFocus={() => setFocusedKey(row.key)}
           />

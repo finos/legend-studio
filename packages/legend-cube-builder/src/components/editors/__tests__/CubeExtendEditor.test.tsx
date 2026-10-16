@@ -28,6 +28,7 @@ import {
 import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,
+  MockedMonacoEditorLanguagesAPI,
 } from '@finos/legend-lego/code-editor/test';
 import {
   act,
@@ -173,6 +174,42 @@ describe('Extend editor', () => {
       ).getByRole('button', { name: /^ORDER_ID/u }),
     );
     expect(draftOf(state).rows[0]?.code).toBe('x | $x.ORDER_ID');
+  });
+
+  test("Offers the columns an expression can read as it is typed, the input's and the new ones above it, while its editor has the focus", async () => {
+    const { state } = await render();
+    act(() =>
+      draftOf(state).setName(draftOf(state).rows[0]?.key ?? 0, 'TOTAL'),
+    );
+    MockedMonacoEditorInstance.onDidFocusEditorText.mockClear();
+    MockedMonacoEditorLanguagesAPI.registerCompletionItemProvider.mockClear();
+    fireEvent.click(button('Add column'));
+    await within(panel()).findByLabelText('Expression 2');
+    // the second row's editor gets the focus
+    const [onFocus] = MockedMonacoEditorInstance.onDidFocusEditorText.mock
+      .calls[0] as [() => void];
+    act(() => onFocus());
+    const [language, provider] = MockedMonacoEditorLanguagesAPI
+      .registerCompletionItemProvider.mock.calls[0] as [
+      string,
+      {
+        triggerCharacters: string[];
+        provideCompletionItems: (
+          model: unknown,
+          position: unknown,
+        ) => Promise<{ suggestions: { label: string; detail?: string }[] }>;
+      },
+    ];
+    expect(language).toBe('pure');
+    expect(provider.triggerCharacters).toEqual(['.', '>', '$']);
+    const { suggestions } = await provider.provideCompletionItems(
+      { getValueInRange: () => 'x | $x.' },
+      { lineNumber: 1, column: 8 },
+    );
+    expect(suggestions.map((each) => each.label)).toEqual([
+      ...ORDERS_COLUMNS.map((column) => column.name),
+      'TOTAL',
+    ]);
   });
 
   test('Checks the expressions once typing pauses, shows each type with a green border, then Apply stores the typed node', async () => {
