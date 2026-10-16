@@ -18,8 +18,13 @@ import { describe, test, expect, jest } from '@jest/globals';
 import {
   type V1_LiteDataContractWithUserStatus,
   V1_AccessPointGroup,
+  V1_AccessPointGroupReferenceType,
   V1_EnrichedUserApprovalStatus,
+  V1_OrganizationalScopeType,
+  V1_RequestState,
+  V1_RequestType,
   V1_ResourceType,
+  V1_UserType,
 } from '@finos/legend-graph';
 import {
   ApplicationStore,
@@ -35,6 +40,8 @@ import {
   DataProductAPGState,
 } from '../DataProductAPGState.js';
 import type { DataProductViewerState } from '../DataProductViewerState.js';
+import type { DataProductDataAccessState } from '../DataProductDataAccessState.js';
+import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import {
   DSL_DATAPRODUCT_EVENT,
   DSL_DATAPRODUCT_EVENT_STATUS,
@@ -203,6 +210,45 @@ const createState = (
   return new DataProductAPGState(apg, mockViewerState);
 };
 
+const buildRawDataRequest = (
+  guid: string,
+  state: V1_RequestState,
+  accessPointGroup: string,
+) => ({
+  _type: V1_RequestType.DataRequest,
+  businessJustification: 'Testing',
+  guid,
+  version: 1,
+  state,
+  resource: {
+    _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+    accessPointGroup,
+    dataProduct: {
+      name: TEST_DATA_PRODUCT_NAME,
+      owner: { appDirId: 12345 },
+    },
+  },
+  resourceEnvType: 'PRODUCTION',
+  consumer: {
+    _type: V1_OrganizationalScopeType.AdHocTeam,
+    users: [{ name: TEST_CURRENT_USER, type: V1_UserType.WORKFORCE_USER }],
+  },
+  createdBy: 'creator',
+  userDigest: '',
+});
+
+const createOrgMembershipPlugin = (
+  matchedKerberos = TEST_CURRENT_USER,
+): DataProductDataAccess_LegendApplicationPlugin_Extension =>
+  ({
+    getOrganizationalNodeCode: () => 'ORG_NODE_CODE',
+    getOrgMembers: jest.fn(async () =>
+      Promise.resolve({
+        data: [{ kerberos: matchedKerberos }],
+      } as PlainObject<unknown>),
+    ),
+  }) as unknown as DataProductDataAccess_LegendApplicationPlugin_Extension;
+
 // -------------------------------- Tests --------------------------------
 
 describe('DataProductAPGState', () => {
@@ -315,6 +361,195 @@ describe('DataProductAPGState', () => {
       expect(state.access).not.toBe(
         AccessPointGroupAccess.PENDING_MANAGER_APPROVAL,
       );
+    });
+  });
+
+  describe('fetchDataRequestAccessFallback', () => {
+    // Regression: the data-request fallback fetches every request for the
+    // whole data product, not just this access point group's. Without
+    // filtering by access point group, an APG the user never requested access
+    // to could inherit a different APG's "submitted for approvals" status
+    // (and request guid) just because the current user happens to be an org
+    // member of that other request's consumer.
+    test("regression: does not inherit another access point group's data request status", async () => {
+      const state = createState();
+      const client = createMockLakehouseClient();
+      const tokenProvider = (): string => 'test-token';
+      const otherGroupRequest = buildRawDataRequest(
+        'other-group-request-guid',
+        V1_RequestState.SUBMITTED_FOR_APPROVALS,
+        'OTHER_GROUP',
+      );
+      (
+        client as unknown as {
+          getDataRequestsForDataProduct: jest.Mock;
+        }
+      ).getDataRequestsForDataProduct = jest.fn(async () =>
+        Promise.resolve({ dataRequests: [otherGroupRequest] }),
+      );
+      const plugin = createOrgMembershipPlugin();
+
+      await state.fetchDataRequestAccessFallback(
+        client as unknown as LakehouseContractServerClient,
+        tokenProvider,
+        [plugin],
+      );
+
+      expect(state.dataRequestAccess).toBeUndefined();
+      expect(state.dataRequestGuid).toBeUndefined();
+    });
+
+    test("picks up this access point group's own request even when another group's request is listed first", async () => {
+      const state = createState();
+      const client = createMockLakehouseClient();
+      const tokenProvider = (): string => 'test-token';
+      const otherGroupRequest = buildRawDataRequest(
+        'other-group-request-guid',
+        V1_RequestState.SUBMITTED_FOR_APPROVALS,
+        'OTHER_GROUP',
+      );
+      const ownGroupRequest = buildRawDataRequest(
+        'own-group-request-guid',
+        V1_RequestState.SUBMITTED_FOR_APPROVALS,
+        TEST_APG_ID,
+      );
+      (
+        client as unknown as {
+          getDataRequestsForDataProduct: jest.Mock;
+        }
+      ).getDataRequestsForDataProduct = jest.fn(async () =>
+        Promise.resolve({
+          dataRequests: [otherGroupRequest, ownGroupRequest],
+        }),
+      );
+      const plugin = createOrgMembershipPlugin();
+
+      await state.fetchDataRequestAccessFallback(
+        client as unknown as LakehouseContractServerClient,
+        tokenProvider,
+        [plugin],
+      );
+
+      expect(state.dataRequestAccess).toBe(
+        V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS,
+      );
+      expect(state.dataRequestGuid).toBe('own-group-request-guid');
+    });
+
+    test.each([
+      ['denied request listed before the pending one', true],
+      ['denied request listed after the pending one', false],
+    ])(
+      // Regression: a user can have more than one data request for the same
+      // access point group (e.g. an earlier request was denied and a new one
+      // was later submitted). The fallback must surface whichever request is
+      // furthest along in the approval process, not just whichever one
+      // happens to come first in the server response.
+      'regression: prefers the pending request over a denied duplicate for the same access point group (%s)',
+      async (_label, deniedFirst) => {
+        const state = createState();
+        const client = createMockLakehouseClient();
+        const tokenProvider = (): string => 'test-token';
+        const deniedRequest = buildRawDataRequest(
+          'denied-request-guid',
+          V1_RequestState.REJECTED,
+          TEST_APG_ID,
+        );
+        const pendingRequest = buildRawDataRequest(
+          'pending-request-guid',
+          V1_RequestState.SUBMITTED_FOR_APPROVALS,
+          TEST_APG_ID,
+        );
+        (
+          client as unknown as {
+            getDataRequestsForDataProduct: jest.Mock;
+          }
+        ).getDataRequestsForDataProduct = jest.fn(async () =>
+          Promise.resolve({
+            dataRequests: deniedFirst
+              ? [deniedRequest, pendingRequest]
+              : [pendingRequest, deniedRequest],
+          }),
+        );
+        const plugin = createOrgMembershipPlugin();
+
+        await state.fetchDataRequestAccessFallback(
+          client as unknown as LakehouseContractServerClient,
+          tokenProvider,
+          [plugin],
+        );
+
+        expect(state.dataRequestAccess).toBe(
+          V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS,
+        );
+        expect(state.dataRequestGuid).toBe('pending-request-guid');
+      },
+    );
+  });
+
+  describe('handleContractClick', () => {
+    // Regression: a user can have a stale/denied contract for an access
+    // point group while a newer data request is the one actually driving the
+    // currently-displayed "submitted for approvals" status (contract denied,
+    // then a fresh request was submitted). Clicking the button must open
+    // the current data request, not the old denied contract.
+    test('regression: opens the current data request viewer, not a stale denied contract, when the request is further along', () => {
+      const state = createState();
+      state.setUserAccessStatus(V1_EnrichedUserApprovalStatus.DENIED);
+      // Assigned directly (rather than via setAssociatedUserContract) to
+      // avoid triggering its fetchUserAccessStatus side effect, which is
+      // irrelevant to this test and would overwrite the DENIED status set
+      // above.
+      state.associatedUserContract = { guid: 'stale-denied-contract' } as never;
+      state.setDataRequestAccess(
+        V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS,
+        'current-data-request-guid',
+      );
+
+      expect(state.access).toBe(AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS);
+
+      const setContractViewerContractAndSubscription = jest.fn();
+      const setDataAccessRequestViewerState = jest.fn();
+      const dataAccessState = {
+        lakehouseContractServerClient: {} as LakehouseContractServerClient,
+        permitWorkflowServerClient: undefined,
+        getTaskPageUrl: undefined,
+        setContractViewerContractAndSubscription,
+        setDataAccessRequestViewerState,
+      } as unknown as DataProductDataAccessState;
+
+      state.handleContractClick(dataAccessState);
+
+      expect(setContractViewerContractAndSubscription).not.toHaveBeenCalled();
+      expect(setDataAccessRequestViewerState).toHaveBeenCalledTimes(1);
+      expect(setDataAccessRequestViewerState.mock.calls[0]?.[0]).toBeDefined();
+    });
+
+    test('still opens the contract viewer when the contract is the one that is active', () => {
+      const state = createState();
+      state.setUserAccessStatus(V1_EnrichedUserApprovalStatus.APPROVED);
+      state.associatedUserContract = {
+        guid: 'active-approved-contract',
+      } as never;
+
+      expect(state.access).toBe(AccessPointGroupAccess.APPROVED);
+
+      const setContractViewerContractAndSubscription = jest.fn();
+      const setDataAccessRequestViewerState = jest.fn();
+      const dataAccessState = {
+        lakehouseContractServerClient: {} as LakehouseContractServerClient,
+        permitWorkflowServerClient: undefined,
+        getTaskPageUrl: undefined,
+        setContractViewerContractAndSubscription,
+        setDataAccessRequestViewerState,
+      } as unknown as DataProductDataAccessState;
+
+      state.handleContractClick(dataAccessState);
+
+      expect(setDataAccessRequestViewerState).not.toHaveBeenCalled();
+      expect(setContractViewerContractAndSubscription).toHaveBeenCalledWith({
+        dataContract: { guid: 'active-approved-contract' },
+      });
     });
   });
 

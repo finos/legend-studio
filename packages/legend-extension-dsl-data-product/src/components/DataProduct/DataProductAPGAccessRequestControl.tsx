@@ -343,17 +343,18 @@ export const DataProductAPGAccessRequestControl = observer(
             contractErrors={apgContractErrors}
           />
         )}
-        {dataAccessRequestViewerState && (
-          <DataAccessRequestViewer
-            open={true}
-            onClose={() =>
-              dataAccessState.setDataAccessRequestViewerState(undefined)
-            }
-            viewerState={dataAccessRequestViewerState}
-            getDataProductUrl={dataAccessState.getDataProductUrl}
-            contractErrors={apgContractErrors}
-          />
-        )}
+        {dataAccessRequestViewerState &&
+          dataAccessRequestViewerState.accessPointGroup === apgState.apg.id && (
+            <DataAccessRequestViewer
+              open={true}
+              onClose={() =>
+                dataAccessState.setDataAccessRequestViewerState(undefined)
+              }
+              viewerState={dataAccessRequestViewerState}
+              getDataProductUrl={dataAccessState.getDataProductUrl}
+              contractErrors={apgContractErrors}
+            />
+          )}
         {apgState.associatedUserContract !== false && (
           <DataProductSubscriptionViewer
             open={showSubscriptionsModal}

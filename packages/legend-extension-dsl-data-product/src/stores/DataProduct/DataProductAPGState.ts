@@ -662,6 +662,10 @@ export class DataProductAPGState {
       const dataRequests = V1_deserializeDataRequestsResponse(
         rawResponse,
         plugins,
+      ).filter(
+        (request) =>
+          request.resource instanceof V1_AccessPointGroupReference &&
+          request.resource.accessPointGroup === this.apg.id,
       );
 
       if (dataRequests.length === 0) {
@@ -681,6 +685,10 @@ export class DataProductAPGState {
       const getOrgMembers =
         orgMembersPlugin.getOrgMembers.bind(orgMembersPlugin);
 
+      const candidates: {
+        access: V1_EnrichedUserApprovalStatus;
+        guid: string;
+      }[] = [];
       for (const request of dataRequests) {
         const orgNodeCode = dataAccessPlugins
           .map((p) => p.getOrganizationalNodeCode?.(request.consumer))
@@ -694,12 +702,29 @@ export class DataProductAPGState {
           token,
           currentUser,
         );
-        if (matched) {
-          this.setAccessFromRequestState(request.state, request.guid);
-          if (this.dataRequestAccess) {
-            return;
-          }
+        if (!matched) {
+          continue;
         }
+        const access = this.mapRequestStateToAccess(request.state);
+        if (access) {
+          candidates.push({ access, guid: request.guid });
+        }
+      }
+      const best = candidates.reduce<(typeof candidates)[number] | undefined>(
+        (bestSoFar, candidate) => {
+          if (
+            !bestSoFar ||
+            V1_USER_APPROVAL_STAGE_PRIORITY[candidate.access] >
+              V1_USER_APPROVAL_STAGE_PRIORITY[bestSoFar.access]
+          ) {
+            return candidate;
+          }
+          return bestSoFar;
+        },
+        undefined,
+      );
+      if (best) {
+        this.setDataRequestAccess(best.access, best.guid);
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -861,8 +886,16 @@ export class DataProductAPGState {
       case AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS:
       case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
       case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
-      case AccessPointGroupAccess.APPROVED:
-        if (this.associatedUserContract) {
+      case AccessPointGroupAccess.APPROVED: {
+        const contractRank = this.userAccessStatus
+          ? V1_USER_APPROVAL_STAGE_PRIORITY[this.userAccessStatus]
+          : V1_UserApprovalPriority.NO_PRIORITY;
+        const requestRank = this.dataRequestAccess
+          ? V1_USER_APPROVAL_STAGE_PRIORITY[this.dataRequestAccess]
+          : V1_UserApprovalPriority.NO_PRIORITY;
+        if (this.dataRequestGuid && requestRank > contractRank) {
+          this.handleDataRequestClick(dataAccessState);
+        } else if (this.associatedUserContract) {
           dataAccessState.setContractViewerContractAndSubscription({
             dataContract: this.associatedUserContract,
           });
@@ -870,6 +903,7 @@ export class DataProductAPGState {
           this.handleDataRequestClick(dataAccessState);
         }
         break;
+      }
       default:
         break;
     }

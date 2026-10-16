@@ -1060,7 +1060,15 @@ export const DataAccessRequestViewer = observer(
 
     const isRequestInProgress = viewerState.isInProgress;
     return (
-      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullWidth={true}
+        maxWidth="md"
+        slotProps={{
+          backdrop: { invisible: isRequestInProgress },
+        }}
+      >
         <DialogTitle>
           <Box className="marketplace-lakehouse-entitlements__data-access-request-viewer__title">
             <span>
