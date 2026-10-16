@@ -46,12 +46,17 @@ import {
 // Legend Cube in Studio: a cube reads the data products of the project being
 // edited, as the workspace holds them, never the platform's deployed ones.
 // Their lakehouse access points are typed by Cube's engine on the workspace,
-// as Studio types them for its own queries, and run on the project's
-// lakehouse runtime.
+// as Studio types them for its own queries, and run in the lakehouse
+// environment of the class the viewer picks (`LegendStudioCubeWorkspace`).
 
-/** The one class a Studio cube reads the project's data products as, so the tab offers no other */
-const STUDIO_CUBE_DATA_PRODUCT_CLASS =
-  CubeDataProductEnvironmentType.PRODUCTION;
+/**
+ * The classes a Studio cube's data product runs read, the default first:
+ * production parallel, as the workspace isn't released (user, 2026-10-16)
+ */
+const STUDIO_CUBE_DATA_PRODUCT_CLASSES = [
+  CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+  CubeDataProductEnvironmentType.PRODUCTION,
+];
 
 /** The deployment a workspace data product is picked from: none yet */
 const NO_DEPLOYMENT_ID = '0';
@@ -79,7 +84,7 @@ const typingLambdaOf = (dataProduct: string, accessPoint: string): IR =>
 export class LegendStudioCubeDataProductCatalog
   implements CubeDataProductCatalog
 {
-  readonly environmentTypes = [STUDIO_CUBE_DATA_PRODUCT_CLASS];
+  readonly environmentTypes = STUDIO_CUBE_DATA_PRODUCT_CLASSES;
   readonly editorStore: EditorStore;
   readonly workspace: LegendStudioCubeWorkspace;
   private readonly engine: CubeEngine;
@@ -99,16 +104,21 @@ export class LegendStudioCubeDataProductCatalog
     return this.editorStore.graphManagerState.graph.ownDataProducts;
   }
 
-  /** The model a cube of the workspace's data products names */
-  private get model(): ModelContext {
+  /** The model a cube of the workspace's data products of a class names */
+  private modelOf(
+    environmentType: CubeDataProductEnvironmentType,
+  ): ModelContext {
     return createCubeDataProductModel({
       ...this.workspace.project,
       versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
-      environmentType: STUDIO_CUBE_DATA_PRODUCT_CLASS,
+      environmentType,
     });
   }
 
-  private candidateOf(dataProduct: DataProduct): CubeDataProductCandidate {
+  private candidateOf(
+    dataProduct: DataProduct,
+    environmentType: CubeDataProductEnvironmentType,
+  ): CubeDataProductCandidate {
     return new CubeDataProductCandidate({
       id: dataProduct.path,
       deploymentId: NO_DEPLOYMENT_ID,
@@ -117,7 +127,7 @@ export class LegendStudioCubeDataProductCatalog
       description: dataProduct.description,
       ...this.workspace.project,
       versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
-      environmentType: STUDIO_CUBE_DATA_PRODUCT_CLASS,
+      environmentType,
     });
   }
 
@@ -132,9 +142,14 @@ export class LegendStudioCubeDataProductCatalog
     return dataProduct;
   }
 
-  /** Every data product of the project; the tab matches the text itself */
-  async search(): Promise<readonly CubeDataProductCandidate[]> {
-    return this.dataProducts.map((each) => this.candidateOf(each));
+  /** Every data product of the project, in the class asked for; the tab matches the text itself */
+  async search(search: {
+    readonly text?: string;
+    readonly environmentType: CubeDataProductEnvironmentType;
+  }): Promise<readonly CubeDataProductCandidate[]> {
+    return this.dataProducts.map((each) =>
+      this.candidateOf(each, search.environmentType),
+    );
   }
 
   /** A product's access point groups, its lakehouse access points typed on the workspace */
@@ -154,7 +169,10 @@ export class LegendStudioCubeDataProductCatalog
         ),
     );
     const schemas = lambdas.size
-      ? await this.engine.typeLambdas(this.model, lambdas)
+      ? await this.engine.typeLambdas(
+          this.modelOf(candidate.environmentType),
+          lambdas,
+        )
       : new Map<NodeId, Schema | CubeEngineError>();
     return new CubeDataProductDescription(
       candidate,

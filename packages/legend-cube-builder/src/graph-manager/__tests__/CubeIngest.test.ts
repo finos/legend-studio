@@ -41,8 +41,10 @@ describe("An ingest cube's model", () => {
       producerDeploymentId: '1234',
     });
     expect(isCubeIngestModel(model)).toBe(true);
+    // a cube saved before environments could be picked names none: the viewer's own
     expect(getCubeIngestSettings(model)).toEqual({
       environmentType: PRODUCTION,
+      environment: undefined,
       producerDeploymentId: '1234',
       warehouse: undefined,
     });
@@ -62,6 +64,24 @@ describe("An ingest cube's model", () => {
     });
   });
 
+  test('Saves the ingest environment picked, by name, kept on another warehouse', () => {
+    const model = createCubeIngestModel({
+      environmentType: PRODUCTION,
+      environment: 'env-b',
+      producerDeploymentId: '1234',
+    });
+    expect(model).toEqual({
+      _type: CUBE_INGEST_MODEL_TYPE,
+      environmentType: 'PRODUCTION',
+      environment: 'env-b',
+      producerDeploymentId: '1234',
+    });
+    expect(getCubeIngestSettings(model)?.environment).toBe('env-b');
+    expect(
+      getCubeIngestSettings(withCubeIngestWarehouse(model, 'W'))?.environment,
+    ).toBe('env-b');
+  });
+
   test('Says what is wrong with one Cube cannot use', () => {
     const model = (fields: Record<string, unknown>): ModelContext =>
       ({ _type: CUBE_INGEST_MODEL_TYPE, ...fields }) as ModelContext;
@@ -69,12 +89,14 @@ describe("An ingest cube's model", () => {
       checkCubeIngestModel(
         model({
           environmentType: 'DEVELOPMENT',
+          environment: '',
           producerDeploymentId: 'me',
           warehouse: '',
         }),
       ),
     ).toEqual([
       `Cube doesn't know the environment type "DEVELOPMENT"`,
+      `The cube's ingest environment must be a name`,
       `The cube's producer deployment must be a deployment id`,
       `The cube's warehouse must be a name`,
     ]);

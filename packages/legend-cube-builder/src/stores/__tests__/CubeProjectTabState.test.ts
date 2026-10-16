@@ -40,7 +40,7 @@ import { UNSERVED_SOURCE_KIND_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
-const { MODEL, PROJECT } = CubeSourcePickerTabKey;
+const { MODEL, DATA_PRODUCT, PROJECT } = CubeSourcePickerTabKey;
 
 const SALES = 'com.example:sales';
 
@@ -62,15 +62,15 @@ const settle = async (): Promise<void> => {
 };
 
 describe('Project tab', () => {
-  test('Is offered after the Model tab only on a host with a project catalog', () => {
+  test('Is offered after the Model and Data Product tabs only on a host with a project catalog', () => {
     expect(setUp().state.sourcePicker.tabs.map((tab) => tab.key)).toContain(
       PROJECT,
     );
     expect(
       setUp()
         .state.sourcePicker.tabs.map((tab) => tab.key)
-        .slice(0, 2),
-    ).toEqual([MODEL, PROJECT]);
+        .slice(0, 3),
+    ).toEqual([MODEL, DATA_PRODUCT, PROJECT]);
     const { host } = TEST__createCubeHost();
     expect(
       new CubeEditorState(host).sourcePicker.tabs.map((tab) => tab.key),

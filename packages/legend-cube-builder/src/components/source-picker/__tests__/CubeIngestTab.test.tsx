@@ -109,16 +109,31 @@ const createProjectHost = (): {
 };
 
 describe('The Ingest tab', () => {
-  test('Walks Mode, environment, producer, definition and data set, then shows its columns', async () => {
+  test('Walks environment, producer, definition and data set, then shows its columns', async () => {
     const state = renderTab();
+    // every environment of both classes, the viewer's own production one picked
     await waitFor(() =>
-      expect(screen.getByLabelText('Environment').textContent).toBe('env-a'),
+      expect(
+        screen.getByLabelText<HTMLSelectElement>('Environment')
+          .selectedOptions[0]?.textContent,
+      ).toBe('env-a · Production'),
     );
     expect(
-      within(screen.getByLabelText('Mode'))
+      within(screen.getByLabelText('Environment'))
         .getAllByRole('option')
         .map((option) => option.textContent),
-    ).toEqual(['Production', 'Production (parallel)']);
+    ).toEqual([
+      'env-a · Production',
+      'env-a · Production parallel',
+      'env-b · Production',
+    ]);
+    expect(screen.queryByLabelText('Mode')).toBeNull();
+    // producers are named as the deployment directory knows them
+    expect(
+      within(screen.getByLabelText('Producer'))
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Choose…', 'Sales Feed (1234)', 'Deployment 5678']);
     fireEvent.change(screen.getByLabelText('Producer'), {
       target: { value: '1234' },
     });
@@ -167,8 +182,13 @@ describe('The Ingest tab', () => {
         'Runs on demo-dev, from demo::Runtime',
       ),
     );
-    // no class, deployment or warehouse to pick
-    expect(screen.queryByLabelText('Mode')).toBeNull();
+    // the class of a host whose runs read either, starting on its first;
+    // no deployment or warehouse to pick
+    expect(
+      within(screen.getByLabelText('Mode'))
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Production', 'Production (parallel)']);
     expect(screen.queryByLabelText('Producer')).toBeNull();
     expect(screen.queryByLabelText('Warehouse')).toBeNull();
     const definitions = await screen.findByRole('list', {

@@ -30,7 +30,8 @@ import { CubeEditorState } from '../CubeEditorState.js';
 import { CubeModelReadKind } from '../source-picker/CubeInlineModelTabState.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
-const { MODEL, PROJECT, PROJECT_FUNCTION } = CubeSourcePickerTabKey;
+const { MODEL, PROJECT, DIRECT_CONNECTION, DATA_PRODUCT, PROJECT_FUNCTION } =
+  CubeSourcePickerTabKey;
 
 /** Lets the flows started by an action run */
 const settle = async (): Promise<void> => {
@@ -57,11 +58,13 @@ const setUp = (withCatalog = true): CubeEditorState => {
 };
 
 describe('Project Function tab (PLAN §6.5)', () => {
-  test('Is a tab of its own after Project Database, on a host with a project catalog; Project Database reads tables only', () => {
+  test('Is a tab of its own after the data product and table tabs, on a host with a project catalog; Project Database reads tables only', () => {
     const state = setUp();
-    expect(state.sourcePicker.tabs.map((tab) => tab.key).slice(0, 3)).toEqual([
+    expect(state.sourcePicker.tabs.map((tab) => tab.key)).toEqual([
       MODEL,
+      DATA_PRODUCT,
       PROJECT,
+      DIRECT_CONNECTION,
       PROJECT_FUNCTION,
     ]);
     const { projectTab, projectFunctionTab, modelTab } = state.sourcePicker;

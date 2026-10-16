@@ -15,6 +15,7 @@
  */
 
 import type { SchemaDiff } from '@finos/legend-cube';
+import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
 import { getSchemaChangeList } from './LegendCubeLabels.js';
 
 // The text of ingest data set sources (PLAN §6.7): the source dialog's
@@ -38,3 +39,37 @@ export const getDroppedDefinitionsLabel = (
   count === 0
     ? undefined
     : `${count} ${count === 1 ? 'definition' : 'definitions'} not deployed from a project, or deployed to another environment, not shown`;
+
+/** A producer deployment as the Ingest tab shows it: its name and id, else its id alone */
+export const getProducerLabel = (
+  deploymentId: string,
+  name: string | undefined,
+): string =>
+  name ? `${name} (${deploymentId})` : `Deployment ${deploymentId}`;
+
+/** The producer deployment a cube's data sets come from, named as the producer list names it */
+export const getFixedProducerLabel = (
+  deploymentId: string,
+  name: string | undefined,
+): string =>
+  name
+    ? `producer ${name} (${deploymentId})`
+    : `producer deployment ${deploymentId}`;
+
+/** Each class of ingest environment, as the Ingest tab names it */
+export const CUBE_INGEST_ENVIRONMENT_CLASS_LABELS: Readonly<
+  Record<CubeDataProductEnvironmentType, string>
+> = {
+  [CubeDataProductEnvironmentType.PRODUCTION]: 'Production',
+  [CubeDataProductEnvironmentType.PRODUCTION_PARALLEL]: 'Production parallel',
+};
+
+/** An ingest environment as the Ingest tab lists it: its name and class; the class alone for the viewer's own, unnamed */
+export const getIngestEnvironmentLabel = (environment: {
+  readonly environmentType: CubeDataProductEnvironmentType;
+  readonly name?: string | undefined;
+}): string => {
+  const label =
+    CUBE_INGEST_ENVIRONMENT_CLASS_LABELS[environment.environmentType];
+  return environment.name ? `${environment.name} · ${label}` : label;
+};

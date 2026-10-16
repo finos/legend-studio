@@ -17,6 +17,7 @@
 import type { Schema } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import type { CubeDataProductEnvironmentType } from './CubeDataProduct.js';
+import type { CubeIngestSettings } from './CubeIngest.js';
 import type { CubeEngineError, NodeId } from './CubeEngine.js';
 
 // The deployed ingest definitions of a host's lakehouse (PLAN §6.7), as Data
@@ -50,8 +51,25 @@ export class CubeIngestDataSet {
   }
 }
 
-/** The viewer's ingest environment for a class: shown in the Ingest tab, never saved */
-export class CubeIngestEnvironment {
+/**
+ * An ingest environment, by its class and its name: none for the viewer's
+ * own environment of the class
+ */
+export interface CubeIngestEnvironmentKey {
+  readonly environmentType: CubeDataProductEnvironmentType;
+  readonly name?: string | undefined;
+}
+
+/** The ingest environment a cube's settings name: the viewer's own of the class when they name none */
+export const getCubeIngestEnvironmentKey = (
+  settings: Pick<CubeIngestSettings, 'environmentType' | 'environment'>,
+): CubeIngestEnvironmentKey => ({
+  environmentType: settings.environmentType,
+  name: settings.environment,
+});
+
+/** An ingest environment of the platform, as the Ingest tab lists it; a cube saves its name and class */
+export class CubeIngestEnvironment implements CubeIngestEnvironmentKey {
   readonly environmentType: CubeDataProductEnvironmentType;
   /** The environment's name, as the platform lists it */
   readonly name: string;
@@ -76,7 +94,7 @@ export class CubeIngestEnvironment {
   }
 }
 
-/** A producer deployment of the viewer's ingest environment */
+/** A producer deployment of an ingest environment */
 export class CubeIngestProducer {
   /** Its deployment id, as text */
   readonly deploymentId: string;
@@ -139,19 +157,32 @@ export interface CubeIngestCatalog {
   /** The classes the host lists, the default first */
   readonly environmentTypes: readonly CubeDataProductEnvironmentType[];
 
-  /** The viewer's ingest environment for a class */
+  /** Every ingest environment of the classes the host lists, for the viewer to pick one */
+  listEnvironments(): Promise<readonly CubeIngestEnvironment[]>;
+
+  /** An ingest environment: the one named, else the viewer's own of the class, which the Ingest tab starts on */
   resolveEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
   ): Promise<CubeIngestEnvironment>;
 
-  /** The producer deployments of the viewer's ingest environment for a class */
+  /** The producer deployments of an ingest environment */
   listProducers(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
   ): Promise<readonly CubeIngestProducer[]>;
 
-  /** A producer deployment's SDLC-deployed definitions of the class */
+  /**
+   * The names of producer deployments, by deployment id, from the host's
+   * deployment directory: none for an id it doesn't know. Only the Ingest
+   * tab reads them, to label its producers; hosts without a directory leave
+   * it out, and producers show their ids alone
+   */
+  getProducerNames?(
+    deploymentIds: readonly string[],
+  ): Promise<ReadonlyMap<string, string>>;
+
+  /** A producer deployment's SDLC-deployed definitions of the environment's class */
   listDefinitions(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     producerDeploymentId: string,
   ): Promise<CubeIngestDefinitionList>;
 
@@ -161,7 +192,7 @@ export interface CubeIngestCatalog {
    */
   describe(
     urn: string,
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     options?: { readonly fresh?: boolean | undefined },
   ): Promise<readonly CubeIngestDataSet[]>;
 
@@ -170,7 +201,7 @@ export interface CubeIngestCatalog {
    * entry per key, failures included. `fresh` reads the definitions again
    */
   resolveSchemas(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
     options?: { readonly fresh?: boolean | undefined },
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
@@ -183,15 +214,13 @@ export interface CubeIngestCatalog {
  * Studio's workspace. Calls fail with a `CubeEngineError`
  */
 export interface CubeIngestDefinitionSource {
-  /** A definition's element, as protocol JSON, by its URN, for the cube's class */
+  /** A definition's element, as protocol JSON, by its URN, in the cube's ingest environment */
   getDefinitionElement(
     urn: string,
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
   ): Promise<PlainObject>;
-  /** The environment a run's lakehouse runtime names, for the cube's class */
-  getRuntimeEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
-  ): Promise<string>;
+  /** The environment a run's lakehouse runtime names, for the cube's ingest environment */
+  getRuntimeEnvironment(environment: CubeIngestEnvironmentKey): Promise<string>;
   /**
    * Every element a typing's or a run's model holds, as protocol JSON, when
    * the host has more than the definitions, e.g. Studio's whole workspace,

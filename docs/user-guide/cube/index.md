@@ -5,8 +5,8 @@ sidebar_position: 1
 
 # Legend Cube
 
-Legend Cube builds a query as a chain of steps on a graph: a source of rows, such as a database table, a function or a
-data product, then steps that sort, group, filter, join or reshape them. You run it, and its rows show in a grid below
+Legend Cube builds a query as a chain of steps on a graph: a source of rows, such as a database table, a data product or a
+function, then steps that sort, group, filter, join or reshape them. You run it, and its rows show in a grid below
 the graph. The query it runs is Pure, and Show Pure shows it.
 
 ## Pages

@@ -167,7 +167,9 @@ describe('Legend Query as the Cube host', () => {
       new LegendQueryCubeHost(applicationStore).ingestCatalog,
     );
     await expect(
-      catalog.listProducers(CubeDataProductEnvironmentType.PRODUCTION),
+      catalog.listProducers({
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
     ).rejects.toThrow('No server in tests');
     expect(
       fetchSpy.mock.calls
@@ -360,6 +362,33 @@ describe('Legend Query as the Cube host', () => {
       buildLegendQueryCubeLakehouseServices(
         createApplicationStore({ lakehouse }),
       )?.enterpriseStereotype,
+    ).toBeUndefined();
+  });
+
+  test("Names producer deployments with the Legend user service Marketplace's producer info reads", () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    expect(
+      buildLegendQueryCubeLakehouseServices(
+        createApplicationStore({
+          lakehouse,
+          extensions: {
+            core: {
+              dataProductConfig: {
+                producer: {
+                  operationalUrl: 'ignored by Query',
+                  deploymentLegendServiceUrl: '/directory/deploymentNames',
+                  deploymentViewUrl: 'ignored by Query',
+                },
+              },
+            },
+          },
+        }),
+      )?.deploymentNameServiceUrl,
+    ).toBe('/directory/deploymentNames');
+    expect(
+      buildLegendQueryCubeLakehouseServices(
+        createApplicationStore({ lakehouse }),
+      )?.deploymentNameServiceUrl,
     ).toBeUndefined();
   });
 

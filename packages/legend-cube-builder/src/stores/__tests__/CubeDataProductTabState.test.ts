@@ -263,8 +263,8 @@ describe('Data product tab', () => {
       ]),
     ).toEqual([
       [CubeSourcePickerTabKey.MODEL, false],
-      [CubeSourcePickerTabKey.DIRECT_CONNECTION, false],
       [CubeSourcePickerTabKey.DATA_PRODUCT, true],
+      [CubeSourcePickerTabKey.DIRECT_CONNECTION, false],
     ]);
     expect(reopened.canAddNode('relational')).toBe(false);
     expect(reopened.canAddNode('dataProductAccessPoint')).toBe(true);

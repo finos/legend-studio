@@ -33,6 +33,7 @@ import {
   CubeDataProductEnvironmentType,
   getEffectiveCubeWarehouse,
 } from '../../graph-manager/CubeDataProduct.js';
+import { getProducerLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
 import {
   createCubeIngestModel,
@@ -47,6 +48,7 @@ import type {
   CubeIngestDefinitionCandidate,
   CubeIngestDefinitionList,
   CubeIngestEnvironment,
+  CubeIngestEnvironmentKey,
   CubeIngestProducer,
 } from '../../graph-manager/CubeIngestCatalog.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
@@ -67,6 +69,11 @@ export const CUBE_INGEST_TAB_MESSAGE = {
     'The cube changed while the data set was being added; pick it again.',
 } as const;
 
+/** What the tab knows an ingest environment by: its class and its name, none for the viewer's own */
+export const getCubeIngestEnvironmentId = (
+  environment: CubeIngestEnvironmentKey,
+): string => JSON.stringify([environment.environmentType, environment.name]);
+
 /** A data set picked to add: the URN of its definition, and its name */
 export interface CubeIngestPick {
   readonly definitionUrn: string;
@@ -85,12 +92,12 @@ const toError = (error: unknown): CubeIngestTabError => {
 
 /**
  * The source dialog's Ingest tab (PLAN §6.7), as Data Cube's producer
- * source picks: the Mode (class), the viewer's environment for it, a
- * producer deployment, one of its SDLC-deployed definitions, or several
- * ticked, then one or several of their data sets, typed from what each
- * definition declares. The first Add saves the class, the producer
- * deployment and the warehouse as the cube's model; then the tab offers only
- * that deployment's definitions.
+ * source picks: an ingest environment of any class, by default the viewer's
+ * own production one, a producer deployment, one of its SDLC-deployed
+ * definitions, or several ticked, then one or several of their data sets,
+ * typed from what each definition declares. The first Add saves the
+ * environment, the producer deployment and the warehouse as the cube's
+ * model; then the tab offers only that deployment's definitions.
  */
 export class CubeIngestTabState implements CubeSourcePickerTab {
   readonly key = CubeSourcePickerTabKey.INGEST;
@@ -98,8 +105,17 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   readonly editorState: CubeEditorState;
 
   environmentType = CubeDataProductEnvironmentType.PRODUCTION;
+  /** Whether the viewer picked the class or an environment; until then a new cube starts on the catalog's default class, its first */
+  private environmentChosen = false;
+  /** The environment picked, by name; none for the viewer's own of the class */
+  environmentName: string | undefined;
+  /** Every environment the viewer can pick, once listed */
+  environments: readonly CubeIngestEnvironment[] | undefined;
+  /** The environment read, the one picked or the viewer's own */
   environment: CubeIngestEnvironment | undefined;
   producers: readonly CubeIngestProducer[] | undefined;
+  /** The producers' names the host's deployment directory knows, by deployment id */
+  producerNames: ReadonlyMap<string, string> = new Map();
   producerDeploymentId: string | undefined;
   definitionList: CubeIngestDefinitionList | undefined;
   definitionSearch = '';
@@ -117,8 +133,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   isAdding = false;
   error: CubeIngestTabError | undefined;
 
-  /** The class the environment and producers were read for */
-  private loadedEnvironmentType: CubeDataProductEnvironmentType | undefined;
+  /** The environment the producers were read for, as `getCubeIngestEnvironmentId` names it */
+  private loadedEnvironmentId: string | undefined;
   /** The definitions whose data sets are being read, by URN, each with its request */
   private describing: ReadonlyMap<string, number> = new Map();
   /** Each counts its calls: a later call, or closing the dialog, drops an earlier answer */
@@ -128,12 +144,16 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   private confirmRequest = 0;
 
   constructor(editorState: CubeEditorState) {
-    makeObservable<CubeIngestTabState, 'loadedEnvironmentType' | 'describing'>(
+    makeObservable<CubeIngestTabState, 'loadedEnvironmentId' | 'describing'>(
       this,
       {
         environmentType: observable,
+        environmentName: observable,
+        environments: observable.ref,
         environment: observable.ref,
+        environmentKey: computed,
         producers: observable.ref,
+        producerNames: observable.ref,
         producerDeploymentId: observable,
         definitionList: observable.ref,
         definitionSearch: observable,
@@ -152,7 +172,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         isDescribing: computed,
         isAdding: observable,
         error: observable.ref,
-        loadedEnvironmentType: observable,
+        loadedEnvironmentId: observable,
         describing: observable.ref,
         fixedSettings: computed,
         isAvailable: computed,
@@ -161,6 +181,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         dataSet: computed,
         canConfirm: computed,
         setEnvironmentType: action,
+        setEnvironment: action,
         selectProducer: action,
         setDefinitionSearch: action,
         selectDefinition: action,
@@ -172,6 +193,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         open: action,
         close: action,
         loadEnvironment: flow,
+        loadProducerNames: flow,
         listDefinitions: flow,
         describeDefinition: flow,
         confirm: flow,
@@ -310,12 +332,46 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     );
   }
 
-  /** The class of a cube without one yet: its environment and producers are read again */
+  /** A producer deployment as the tab shows it: its name and id, else its id alone */
+  getProducerLabel(deploymentId: string): string {
+    return getProducerLabel(deploymentId, this.producerNames.get(deploymentId));
+  }
+
+  /** The environment picked: by default the viewer's own of the class */
+  get environmentKey(): CubeIngestEnvironmentKey {
+    return {
+      environmentType: this.environmentType,
+      name: this.environmentName,
+    };
+  }
+
+  /** The class of a cube without one yet, on the viewer's own environment of it: its producers are read again */
   setEnvironmentType(environmentType: CubeDataProductEnvironmentType): void {
     if (this.fixedSettings || environmentType === this.environmentType) {
       return;
     }
+    this.environmentChosen = true;
     this.environmentType = environmentType;
+    this.environmentName = undefined;
+    this.resetEnvironment();
+    flowResult(this.loadEnvironment()).catch(
+      this.editorState.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /** The environment of a cube without one yet: its producers are read again */
+  setEnvironment(environment: CubeIngestEnvironmentKey): void {
+    if (
+      this.fixedSettings ||
+      (this.environment !== undefined &&
+        getCubeIngestEnvironmentId(environment) ===
+          getCubeIngestEnvironmentId(this.environment))
+    ) {
+      return;
+    }
+    this.environmentChosen = true;
+    this.environmentType = environment.environmentType;
+    this.environmentName = environment.name;
     this.resetEnvironment();
     flowResult(this.loadEnvironment()).catch(
       this.editorState.host.applicationStore.alertUnhandledError,
@@ -444,8 +500,12 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     const remembered = this.editorState.dataProductRuntime.rememberedWarehouse;
     this.error = undefined;
     if (settings) {
-      if (this.environmentType !== settings.environmentType) {
+      if (
+        this.environmentType !== settings.environmentType ||
+        this.environmentName !== settings.environment
+      ) {
         this.environmentType = settings.environmentType;
+        this.environmentName = settings.environment;
         this.resetEnvironment();
       }
       if (this.producerDeploymentId !== settings.producerDeploymentId) {
@@ -455,8 +515,22 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       this.warehouse = getEffectiveCubeWarehouse(settings, remembered);
     } else {
       this.warehouse = remembered ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+      // a new cube starts on the catalog's default class, unless the viewer picked one
+      const [defaultType] = this.catalog?.environmentTypes ?? [];
+      if (
+        !this.environmentChosen &&
+        defaultType !== undefined &&
+        defaultType !== this.environmentType
+      ) {
+        this.environmentType = defaultType;
+        this.environmentName = undefined;
+        this.resetEnvironment();
+      }
     }
-    if (this.loadedEnvironmentType !== this.environmentType) {
+    if (
+      this.loadedEnvironmentId !==
+      getCubeIngestEnvironmentId(this.environmentKey)
+    ) {
       flowResult(this.loadEnvironment()).catch(
         this.editorState.host.applicationStore.alertUnhandledError,
       );
@@ -484,7 +558,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     this.closeDefinitions((each) => !this.dataSetsByDefinition.has(each.urn));
     // read again on reopening
     if (!this.environment || !this.producers) {
-      this.loadedEnvironmentType = undefined;
+      this.loadedEnvironmentId = undefined;
     }
   }
 
@@ -494,21 +568,45 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     if (!catalog) {
       return;
     }
-    const environmentType = this.environmentType;
+    const key = this.environmentKey;
     const request = ++this.environmentRequest;
     this.isLoadingEnvironment = true;
-    this.loadedEnvironmentType = environmentType;
+    this.loadedEnvironmentId = getCubeIngestEnvironmentId(key);
     this.error = undefined;
+    // every environment, listed once: without them, only the one read is offered
+    if (!this.environments) {
+      const environments = (yield catalog
+        .listEnvironments()
+        .catch(() => undefined)) as
+        | readonly CubeIngestEnvironment[]
+        | undefined;
+      if (request !== this.environmentRequest) {
+        return;
+      }
+      this.environments = environments;
+    }
     try {
       const [environment, producers] = (yield Promise.all([
-        catalog.resolveEnvironment(environmentType),
-        catalog.listProducers(environmentType),
+        catalog.resolveEnvironment(key),
+        catalog.listProducers(key),
       ])) as [CubeIngestEnvironment, readonly CubeIngestProducer[]];
       if (request !== this.environmentRequest) {
         return;
       }
       this.environment = environment;
+      if (
+        !this.environments?.some(
+          (each) =>
+            getCubeIngestEnvironmentId(each) ===
+            getCubeIngestEnvironmentId(environment),
+        )
+      ) {
+        this.environments = [...(this.environments ?? []), environment];
+      }
       this.producers = producers;
+      flowResult(
+        this.loadProducerNames(producers.map((each) => each.deploymentId)),
+      ).catch(this.editorState.host.applicationStore.alertUnhandledError);
       // a new cube starts on the environment's own warehouse, when it has one
       if (!this.fixedSettings && environment.warehouse) {
         this.warehouse = environment.warehouse;
@@ -525,7 +623,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       }
     } catch (error) {
       if (request === this.environmentRequest) {
-        this.loadedEnvironmentType = undefined;
+        this.loadedEnvironmentId = undefined;
         this.error = toError(error);
       }
       return;
@@ -536,6 +634,27 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     }
     if (this.producerDeploymentId !== undefined && !this.definitionList) {
       yield flowResult(this.listDefinitions());
+    }
+  }
+
+  /**
+   * Asks the host's deployment directory for the names of producers not
+   * named yet; without an answer, producers show their ids alone
+   */
+  *loadProducerNames(deploymentIds: readonly string[]): GeneratorFn<void> {
+    const { catalog } = this;
+    const unnamed = deploymentIds.filter((id) => !this.producerNames.has(id));
+    if (!catalog?.getProducerNames || unnamed.length === 0) {
+      return;
+    }
+    try {
+      const names = (yield catalog.getProducerNames(unnamed)) as ReadonlyMap<
+        string,
+        string
+      >;
+      this.producerNames = new Map([...this.producerNames, ...names]);
+    } catch {
+      // the names only label the producers, which their ids still do
     }
   }
 
@@ -550,7 +669,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     this.error = undefined;
     try {
       const list = (yield catalog.listDefinitions(
-        this.environmentType,
+        this.environmentKey,
         producerDeploymentId,
       )) as CubeIngestDefinitionList;
       if (request === this.definitionsRequest) {
@@ -584,7 +703,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     try {
       const dataSets = (yield catalog.describe(
         candidate.urn,
-        this.environmentType,
+        this.environmentKey,
       )) as readonly CubeIngestDataSet[];
       if (isCurrent()) {
         this.dataSetsByDefinition = new Map([
@@ -675,6 +794,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         document.context !== undefined &&
         (!settings ||
           settings.environmentType !== this.environmentType ||
+          settings.environment !== this.environmentName ||
           settings.producerDeploymentId !== producerDeploymentId)
       ) {
         throw new Error(CUBE_INGEST_TAB_MESSAGE.CUBE_CHANGED);
@@ -695,6 +815,9 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
               .withContext({
                 model: createCubeIngestModel({
                   environmentType: this.environmentType,
+                  // the environment picked, by name; none when left on the
+                  // viewer's own, so each viewer reads theirs (user, 2026-10-16)
+                  environment: this.environmentName,
                   producerDeploymentId,
                   warehouse,
                 }),
@@ -723,7 +846,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   private resetEnvironment(): void {
     this.environmentRequest++;
     this.isLoadingEnvironment = false;
-    this.loadedEnvironmentType = undefined;
+    this.loadedEnvironmentId = undefined;
     this.environment = undefined;
     this.producers = undefined;
     if (!this.fixedSettings) {

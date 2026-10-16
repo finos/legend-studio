@@ -34,6 +34,7 @@ import {
 } from '@finos/legend-cube-builder';
 import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 import type { IngestDefinition } from '@finos/legend-graph';
+import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import type { Entity } from '@finos/legend-storage';
 import {
   aggregationColSpec,
@@ -60,6 +61,7 @@ import {
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
+  getLegendStudioCubeIngestClasses,
   LEGEND_STUDIO_CUBE_MESSAGE,
   LEGEND_STUDIO_CUBE_PROJECT_PRODUCER,
   LegendStudioCubeIngestCatalog,
@@ -350,8 +352,13 @@ describe('Legend Cube in Studio', () => {
       const { editorStore } = await setUp([TRADES_INGEST, LAKEHOUSE_RUNTIME]);
       const workspace = new LegendStudioCubeWorkspace(editorStore);
       const catalog = new LegendStudioCubeIngestCatalog(editorStore, workspace);
-      const { PRODUCTION } = CubeDataProductEnvironmentType;
-      expect(catalog.environmentTypes).toEqual([PRODUCTION]);
+      const { PRODUCTION, PRODUCTION_PARALLEL } =
+        CubeDataProductEnvironmentType;
+      // production parallel first, as the workspace isn't released
+      expect(catalog.environmentTypes).toEqual([
+        PRODUCTION_PARALLEL,
+        PRODUCTION,
+      ]);
       // one producer, the project, whatever the definitions' deployments
       expect(
         (await catalog.listProducers()).map((each) => each.deploymentId),
@@ -362,8 +369,27 @@ describe('Legend Cube in Studio', () => {
         artifactId: 'string',
         definition: INGEST_PATH,
       });
-      const list = await catalog.listDefinitions();
+      const list = await catalog.listDefinitions({
+        environmentType: PRODUCTION,
+      });
       expect(list.candidates.map((each) => each.urn)).toEqual([urn]);
+      // in production parallel, the URN names that class, and reads the same definition
+      const parallelUrn = formatCubeIngestUrn({
+        environmentType: PRODUCTION_PARALLEL,
+        groupId: 'com.test',
+        artifactId: 'string',
+        definition: INGEST_PATH,
+      });
+      expect(
+        (
+          await catalog.listDefinitions({
+            environmentType: PRODUCTION_PARALLEL,
+          })
+        ).candidates.map((each) => each.urn),
+      ).toEqual([parallelUrn]);
+      expect(
+        (await catalog.describe(parallelUrn)).map((each) => each.name),
+      ).toEqual(['TRADES', 'DESKS']);
       // typing and runs read the whole workspace
       expect(
         (await catalog.getModelElements()).map(
@@ -385,12 +411,28 @@ describe('Legend Cube in Studio', () => {
       expect((await catalog.getDefinitionElement(urn))._type).toBe(
         'ingestDefinition',
       );
-      const environment = await catalog.resolveEnvironment(PRODUCTION);
+      const environment = await catalog.resolveEnvironment({
+        environmentType: PRODUCTION,
+      });
       expect(environment.runtimeEnvironment).toBe('demo-dev');
       expect(environment.warehouse).toBe('DEMO_WH');
-      expect(await catalog.getRuntimeEnvironment()).toBe('demo-dev');
+      // without the contract server, the project runtime's environment, with
+      // production parallel's realm
+      expect(
+        (await catalog.listEnvironments()).map(
+          (each) => each.runtimeEnvironment,
+        ),
+      ).toEqual(['demo-dev-pp', 'demo-dev']);
+      expect(
+        await catalog.getRuntimeEnvironment({ environmentType: PRODUCTION }),
+      ).toBe('demo-dev');
+      expect(
+        await catalog.getRuntimeEnvironment({
+          environmentType: PRODUCTION_PARALLEL,
+        }),
+      ).toBe('demo-dev-pp');
       const schemas = await catalog.resolveSchemas(
-        PRODUCTION,
+        { environmentType: PRODUCTION },
         new Map([
           [
             'ingest101',
@@ -428,7 +470,9 @@ describe('Legend Cube in Studio', () => {
       const workspace = new LegendStudioCubeWorkspace(editorStore);
       const catalog = new LegendStudioCubeIngestCatalog(editorStore, workspace);
       await expect(
-        catalog.resolveEnvironment(CubeDataProductEnvironmentType.PRODUCTION),
+        catalog.resolveEnvironment({
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        }),
       ).rejects.toMatchObject({
         detail: LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE.NO_RUNTIME,
       });
@@ -836,7 +880,10 @@ describe('Legend Cube in Studio', () => {
         workspace,
         engine,
       );
-      const [candidate, ...others] = await catalog.search();
+      const [candidate, ...others] = await catalog.search({
+        text: '',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      });
       expect(others).toEqual([]);
       expect(candidate).toMatchObject({
         dataProductPath: DATA_PRODUCT_PATH,
@@ -931,7 +978,23 @@ describe('Legend Cube in Studio', () => {
         label: 'demo-dev, from demo::ingest::LakehouseRuntime',
         warehouse: 'DEMO_WH',
       });
-      expect(await workspace.resolveEnvironment()).toBe('demo-dev');
+      const project = {
+        groupId: 'com.test',
+        artifactId: 'string',
+        versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+      };
+      expect(
+        await workspace.resolveEnvironment({
+          ...project,
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        }),
+      ).toBe('demo-dev');
+      expect(
+        await workspace.resolveEnvironment({
+          ...project,
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+        }),
+      ).toBe('demo-dev-pp');
       const model = await workspace.getProjectModel();
       expect(model._type).toBe('data');
       expect(
@@ -947,6 +1010,132 @@ describe('Legend Cube in Studio', () => {
           'demo::ingest::LakehouseRuntime',
         ].sort(),
       );
+    },
+  );
+});
+
+describe("Legend Cube's lakehouse environment in Studio", () => {
+  const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
+
+  /** Gives the editor a contract server whose entitlements name env-a */
+  const withContractServer = (
+    editorStore: EditorStore,
+  ): jest.Mock<LakehouseContractServerClient['getUserEntitlementEnvs']> => {
+    const client = new LakehouseContractServerClient({
+      baseUrl: 'https://lakehouse.test/api',
+    });
+    const entitlements = jest
+      .spyOn(client, 'getUserEntitlementEnvs')
+      .mockResolvedValue({
+        users: [{ lakehouseEnvironment: 'env-a' }],
+      } as never);
+    Object.assign(editorStore, { lakehouseContractServerClient: client });
+    return entitlements as unknown as jest.Mock<
+      LakehouseContractServerClient['getUserEntitlementEnvs']
+    >;
+  };
+
+  test(
+    integrationTest(
+      'Starts an ingest cube on production parallel, unless the definition it was opened from names only a production DID',
+    ),
+    async () => {
+      const { editorStore } = await setUp([TRADES_INGEST, LAKEHOUSE_RUNTIME]);
+      const ingest = ingestOf(editorStore);
+      const withOwner = (owner: object | undefined): IngestDefinition =>
+        Object.assign(Object.create(ingest) as IngestDefinition, {
+          content: { ...ingest.content, owner },
+        });
+      expect(getLegendStudioCubeIngestClasses(undefined)).toEqual([
+        PRODUCTION_PARALLEL,
+        PRODUCTION,
+      ]);
+      expect(
+        getLegendStudioCubeIngestClasses(
+          withOwner({ production: { appDirId: 1 } }),
+        ),
+      ).toEqual([PRODUCTION, PRODUCTION_PARALLEL]);
+      expect(
+        getLegendStudioCubeIngestClasses(
+          withOwner({
+            production: { appDirId: 1 },
+            prodParallel: { appDirId: 2 },
+          }),
+        ),
+      ).toEqual([PRODUCTION_PARALLEL, PRODUCTION]);
+      expect(
+        getLegendStudioCubeIngestClasses(
+          withOwner({ prodParallel: { appDirId: 2 } }),
+        ),
+      ).toEqual([PRODUCTION_PARALLEL, PRODUCTION]);
+      // the definition Cube is opened from: its owner names no DID
+      expect(
+        new LegendStudioCubeIngestCatalog(
+          editorStore,
+          new LegendStudioCubeWorkspace(editorStore),
+          ingest,
+        ).environmentTypes,
+      ).toEqual([PRODUCTION_PARALLEL, PRODUCTION]);
+    },
+  );
+
+  test(
+    integrationTest(
+      "Runs in the viewer's environment from their entitlements, with production parallel's realm, the project runtime giving only the warehouse",
+    ),
+    async () => {
+      const { editorStore } = await setUp([TRADES_INGEST, LAKEHOUSE_RUNTIME]);
+      const entitlements = withContractServer(editorStore);
+      const workspace = new LegendStudioCubeWorkspace(editorStore);
+      expect(await workspace.resolveRuntime(PRODUCTION)).toEqual({
+        environment: 'env-a',
+        label: 'env-a, your lakehouse environment',
+        warehouse: 'DEMO_WH',
+      });
+      expect(
+        (await workspace.resolveRuntime(PRODUCTION_PARALLEL)).environment,
+      ).toBe('env-a-pp');
+      const catalog = new LegendStudioCubeIngestCatalog(editorStore, workspace);
+      expect(
+        await catalog.getRuntimeEnvironment({
+          environmentType: PRODUCTION_PARALLEL,
+        }),
+      ).toBe('env-a-pp');
+      // data product runs too
+      expect(
+        await workspace.resolveEnvironment({
+          groupId: 'com.test',
+          artifactId: 'string',
+          versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+          environmentType: PRODUCTION_PARALLEL,
+        }),
+      ).toBe('env-a-pp');
+      // read once a visit
+      expect(entitlements).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test(
+    integrationTest(
+      'Needs no lakehouse runtime in the project with the contract server, and says to add one without it',
+    ),
+    async () => {
+      const { editorStore } = await setUp([TRADES_INGEST]);
+      await expect(
+        new LegendStudioCubeWorkspace(editorStore).resolveRuntime(PRODUCTION),
+      ).rejects.toMatchObject({
+        detail: LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE.NO_RUNTIME,
+      });
+      withContractServer(editorStore);
+      expect(
+        await new LegendStudioCubeWorkspace(editorStore).resolveRuntime(
+          PRODUCTION_PARALLEL,
+        ),
+      ).toEqual({
+        environment: 'env-a-pp',
+        label: 'env-a-pp, your lakehouse environment',
+        warehouse: undefined,
+      });
     },
   );
 });

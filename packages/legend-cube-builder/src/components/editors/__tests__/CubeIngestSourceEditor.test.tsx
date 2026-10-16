@@ -128,7 +128,8 @@ describe("An ingest data set's panel", () => {
     );
     expect(within(panel()).getByText('TRADES')).toBeTruthy();
     expect(within(panel()).getByText('Production')).toBeTruthy();
-    expect(within(panel()).getByText('Deployment 1234')).toBeTruthy();
+    // named as the host's deployment directory knows it
+    expect(await within(panel()).findByText('Sales Feed (1234)')).toBeTruthy();
     expect(
       within(panel()).getByLabelText<HTMLInputElement>('Warehouse').value,
     ).toBe('CUBE_WH');
@@ -142,7 +143,10 @@ describe("An ingest data set's panel", () => {
     );
     expect(ingest.resolveSchemas.mock.calls).toEqual([
       [
-        CubeDataProductEnvironmentType.PRODUCTION,
+        {
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+          name: undefined,
+        },
         new Map([
           [
             'ingestDataset101',

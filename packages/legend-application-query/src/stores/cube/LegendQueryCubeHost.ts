@@ -65,6 +65,9 @@ export const buildLegendQueryCubeHostConfig = (
           value: config.options.dataProductConfig.publicStereotype.stereotype,
         }
       : undefined,
+    // the deployment directory Marketplace's producer info reads
+    deploymentNameServiceUrl:
+      config.options.dataProductConfig?.producer?.deploymentLegendServiceUrl,
     // the environment Query remembers for the viewer, as Query's editor uses it
     getPreferredEnvironment: () =>
       LegendQueryUserDataHelper.getLakehouseUserInfo(

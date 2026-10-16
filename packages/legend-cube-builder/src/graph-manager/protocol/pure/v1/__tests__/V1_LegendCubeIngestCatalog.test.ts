@@ -21,6 +21,7 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
+import { V1_EngineServerClient } from '@finos/legend-graph';
 import {
   NetworkClientError,
   type PlainObject,
@@ -42,6 +43,9 @@ import {
 // legend-server-lakehouse's models and Marketplace's test data
 
 const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
+/** The viewer's own ingest environment of each class */
+const PROD = { environmentType: PRODUCTION };
+const PP = { environmentType: PRODUCTION_PARALLEL };
 
 const PROD_SERVER = 'https://lakehouse-ingest-env-a-server.example.com';
 const PP_SERVER = 'https://lakehouse-ingest-env-a-pp-server.example.com';
@@ -186,22 +190,20 @@ const errorOf = async (
 describe('The deployed ingest definitions of a lakehouse', () => {
   test("Finds the viewer's ingest environment of each class, and the environment runs name, from its server", async () => {
     const { catalog, summaries } = setUp();
-    const production = await catalog.resolveEnvironment(PRODUCTION);
+    const production = await catalog.resolveEnvironment(PROD);
     expect(production.name).toBe('env-a');
     expect(production.runtimeEnvironment).toBe('lakehouse-ingest-env-a');
-    expect(
-      (await catalog.resolveEnvironment(PRODUCTION_PARALLEL))
-        .runtimeEnvironment,
-    ).toBe('lakehouse-ingest-env-a-pp');
-    expect(await catalog.getRuntimeEnvironment(PRODUCTION)).toBe(
+    expect((await catalog.resolveEnvironment(PP)).runtimeEnvironment).toBe(
+      'lakehouse-ingest-env-a-pp',
+    );
+    expect(await catalog.getRuntimeEnvironment(PROD)).toBe(
       'lakehouse-ingest-env-a',
     );
     expect(summaries).toHaveBeenCalledTimes(1);
     expect(summaries).toHaveBeenCalledWith('token');
     const elsewhere = setUp('env-c');
     expect(
-      (await errorOf(() => elsewhere.catalog.resolveEnvironment(PRODUCTION)))
-        .detail,
+      (await errorOf(() => elsewhere.catalog.resolveEnvironment(PROD))).detail,
     ).toBe(V1_CUBE_INGEST_CATALOG_MESSAGE.NO_ENVIRONMENT('env-c', PRODUCTION));
     expect(
       V1_CUBE_INGEST_CATALOG_MESSAGE.NO_ENVIRONMENT('env-c', PRODUCTION),
@@ -210,17 +212,83 @@ describe('The deployed ingest definitions of a lakehouse', () => {
 
   test('Lists the producer deployments of the environment, numeric ones only, once per class', async () => {
     const { catalog, producers } = setUp();
-    const listed = await catalog.listProducers(PRODUCTION);
+    const listed = await catalog.listProducers(PROD);
     expect(listed.map((each) => each.deploymentId)).toEqual(['1234', '5678']);
-    await catalog.listProducers(PRODUCTION);
+    await catalog.listProducers(PROD);
     expect(producers.mock.calls).toEqual([[PROD_SERVER, 'token']]);
-    await catalog.listProducers(PRODUCTION_PARALLEL);
+    await catalog.listProducers(PP);
     expect(producers.mock.calls[1]).toEqual([PP_SERVER, 'token']);
+  });
+
+  test('Lists every ingest environment of both classes, by name, production first', async () => {
+    const { catalog, summaries } = setUp();
+    summaries.mockImplementation((async () => [
+      ...SUMMARIES,
+      {
+        ingestEnvironmentUrn: 'urn:a-dev',
+        environmentName: 'env-a',
+        environmentClassification: 'dev',
+        ingestServerUrl:
+          'https://lakehouse-ingest-env-a-dev-server.example.com',
+      },
+    ]) as never);
+    expect(
+      (await catalog.listEnvironments()).map((each) => [
+        each.name,
+        each.environmentType,
+        each.runtimeEnvironment,
+      ]),
+    ).toEqual([
+      ['env-a', PRODUCTION, 'lakehouse-ingest-env-a'],
+      ['env-a', PRODUCTION_PARALLEL, 'lakehouse-ingest-env-a-pp'],
+      ['env-b', PRODUCTION, 'lakehouse-ingest-env-b'],
+    ]);
+  });
+
+  test('Reads the ingest environment named rather than the viewer’s, each read apart', async () => {
+    const { catalog, producers, grammar } = setUp();
+    const envB = { environmentType: PRODUCTION, name: 'env-b' };
+    expect((await catalog.resolveEnvironment(envB)).runtimeEnvironment).toBe(
+      'lakehouse-ingest-env-b',
+    );
+    expect(await catalog.getRuntimeEnvironment(envB)).toBe(
+      'lakehouse-ingest-env-b',
+    );
+    await catalog.listProducers(envB);
+    await catalog.listProducers(PROD);
+    // the viewer's, named, is the one already read
+    await catalog.listProducers({ environmentType: PRODUCTION, name: 'env-a' });
+    expect(producers.mock.calls.map(([server]) => server)).toEqual([
+      'https://lakehouse-ingest-env-b-server.example.com',
+      PROD_SERVER,
+    ]);
+    await catalog.describe(ORDERS_URN, envB);
+    await catalog.describe(ORDERS_URN, PROD);
+    await catalog.describe(ORDERS_URN, envB);
+    expect(grammar.mock.calls.map((call) => call[1])).toEqual([
+      'https://lakehouse-ingest-env-b-server.example.com',
+      PROD_SERVER,
+    ]);
+    expect(
+      (
+        await errorOf(() =>
+          catalog.listProducers({
+            environmentType: PRODUCTION_PARALLEL,
+            name: 'env-b',
+          }),
+        )
+      ).detail,
+    ).toBe(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.NO_ENVIRONMENT(
+        'env-b',
+        PRODUCTION_PARALLEL,
+      ),
+    );
   });
 
   test("Lists a producer's SDLC-deployed definitions of the class, counting the others", async () => {
     const { catalog, definitions } = setUp();
-    const list = await catalog.listDefinitions(PRODUCTION, '1234');
+    const list = await catalog.listDefinitions(PROD, '1234');
     expect(
       list.candidates.map((each) => [
         each.definition,
@@ -236,13 +304,13 @@ describe('The deployed ingest definitions of a lakehouse', () => {
       ['urn:lakehouse:prod:producer:deployment:1234', PROD_SERVER, 'token'],
     ]);
     expect(
-      (await errorOf(() => catalog.listDefinitions(PRODUCTION, '9999'))).detail,
+      (await errorOf(() => catalog.listDefinitions(PROD, '9999'))).detail,
     ).toBe(V1_CUBE_INGEST_CATALOG_MESSAGE.NO_PRODUCER('9999'));
   });
 
   test("Reads a definition's data sets from its grammar, which the engine parses, once a visit unless fresh", async () => {
     const { catalog, grammar, parse } = setUp();
-    const dataSets = await catalog.describe(ORDERS_URN, PRODUCTION);
+    const dataSets = await catalog.describe(ORDERS_URN, PROD);
     expect(dataSets.map((each) => [each.name, each.isPickable])).toEqual([
       ['TRADES', true],
       ['DAILY', false],
@@ -252,11 +320,9 @@ describe('The deployed ingest definitions of a lakehouse', () => {
       ['###Lakehouse\nIngest sales::ingest::OrdersIngest …'],
     ]);
     // the engine types and runs on the same element
-    expect(await catalog.getDefinitionElement(ORDERS_URN, PRODUCTION)).toBe(
-      ELEMENT,
-    );
+    expect(await catalog.getDefinitionElement(ORDERS_URN, PROD)).toBe(ELEMENT);
     expect(grammar).toHaveBeenCalledTimes(1);
-    await catalog.describe(ORDERS_URN, PRODUCTION, { fresh: true });
+    await catalog.describe(ORDERS_URN, PROD, { fresh: true });
     expect(grammar).toHaveBeenCalledTimes(2);
   });
 
@@ -265,15 +331,13 @@ describe('The deployed ingest definitions of a lakehouse', () => {
     grammar.mockImplementationOnce(async () => {
       throw notFound();
     });
-    const gone = await errorOf(() => catalog.describe(ORDERS_URN, PRODUCTION));
+    const gone = await errorOf(() => catalog.describe(ORDERS_URN, PROD));
     expect(gone.kind).toBe(CubeEngineErrorKind.NETWORK);
     expect(gone.detail).toBe(V1_CUBE_INGEST_CATALOG_MESSAGE.GONE(ORDERS));
     parse.mockImplementationOnce(async () => {
       throw new Error("Parser error: 'Lakehouse' is not a known section\nat 1");
     });
-    const unparsable = await errorOf(() =>
-      catalog.describe(ORDERS_URN, PRODUCTION),
-    );
+    const unparsable = await errorOf(() => catalog.describe(ORDERS_URN, PROD));
     expect(unparsable.kind).toBe(CubeEngineErrorKind.COMPILE);
     expect(unparsable.detail).toBe(
       V1_CUBE_INGEST_CATALOG_MESSAGE.UNPARSABLE(
@@ -286,10 +350,10 @@ describe('The deployed ingest definitions of a lakehouse', () => {
       elements: [{ ...ELEMENT, name: 'Other' }],
     }));
     expect(
-      (await errorOf(() => catalog.describe(ORDERS_URN, PRODUCTION))).detail,
+      (await errorOf(() => catalog.describe(ORDERS_URN, PROD))).detail,
     ).toBe(V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_ONE_DEFINITION(ORDERS));
     expect(
-      (await catalog.describe(ORDERS_URN, PRODUCTION)).map((each) => each.name),
+      (await catalog.describe(ORDERS_URN, PROD)).map((each) => each.name),
     ).toEqual(['TRADES', 'DAILY']);
   });
 
@@ -303,7 +367,7 @@ describe('The deployed ingest definitions of a lakehouse', () => {
       return 'Ingest …';
     }) as never);
     const resolved = await catalog.resolveSchemas(
-      PRODUCTION,
+      PROD,
       new Map([
         [
           'ingestDataset101',
@@ -368,6 +432,97 @@ describe('The deployed ingest definitions of a lakehouse', () => {
     });
     // one read per definition
     expect(grammar).toHaveBeenCalledTimes(2);
+  });
+
+  test("Names producer deployments from the deployment directory, asking once for those it hasn't asked, again after a failure", async () => {
+    const read = jest.fn(async (ids: readonly string[]) =>
+      Promise.resolve(
+        [
+          { 'Deployment Id': 1234, 'Deployment Name': 'Sales Feed' },
+          { 'Deployment Id': 5678, 'Deployment Name': ' ' },
+          'not a row',
+        ].filter(
+          (row) =>
+            typeof row !== 'object' ||
+            ids.includes(String(row['Deployment Id'])),
+        ),
+      ),
+    );
+    const platform = new LakehousePlatformServerClient('http://platform.test');
+    const catalog = new V1_LegendCubeIngestCatalog(
+      platform,
+      new LakehouseIngestServerClient(undefined),
+      async () => 'env-a',
+      async () => ({}),
+      () => 'token',
+      { readDeploymentNames: read },
+    );
+    // one call for both; a blank name is no name
+    expect([...(await catalog.getProducerNames(['1234', '5678']))]).toEqual([
+      ['1234', 'Sales Feed'],
+    ]);
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(read).toHaveBeenCalledWith(['1234', '5678']);
+    // asked already, whatever the answer
+    await catalog.getProducerNames(['5678', '1234']);
+    expect(read).toHaveBeenCalledTimes(1);
+    // only the new one is asked
+    await catalog.getProducerNames(['1234', '9999']);
+    expect(read).toHaveBeenLastCalledWith(['9999']);
+
+    read.mockRejectedValueOnce(new Error('directory down'));
+    expect((await errorOf(() => catalog.getProducerNames(['4321']))).kind).toBe(
+      CubeEngineErrorKind.NETWORK,
+    );
+    await catalog.getProducerNames(['4321']);
+    expect(read).toHaveBeenLastCalledWith(['4321']);
+    expect(read).toHaveBeenCalledTimes(4);
+
+    // without a directory, no names, nothing called
+    expect((await setUp().catalog.getProducerNames(['1234'])).size).toBe(0);
+  });
+
+  test('Asks the Legend user service Marketplace configures for the names, several deployments at once', async () => {
+    const execute = jest
+      .spyOn(V1_EngineServerClient.prototype, 'get')
+      .mockImplementation((async () => [
+        { 'Deployment Id': 1234, 'Deployment Name': 'Sales Feed' },
+      ]) as never);
+    try {
+      const catalog = buildCubeIngestCatalog(
+        { baseUrl: 'http://engine.test' },
+        new TracerService(),
+        {
+          contractServerClient: new LakehouseContractServerClient({
+            baseUrl: 'http://contract.test',
+          }),
+          depotServerClient: {} as never,
+          getAccessToken: () => 'token',
+          getCurrentUser: () => 'someone',
+          platformServerClient: new LakehousePlatformServerClient(
+            'http://platform.test',
+          ),
+          ingestServerClient: new LakehouseIngestServerClient(undefined),
+          deploymentNameServiceUrl: '/directory/deploymentNames',
+        },
+      );
+      expect([
+        ...((await catalog?.getProducerNames?.(['1234', '5678'])) ?? []),
+      ]).toEqual([['1234', 'Sales Feed']]);
+      // as Marketplace's producer info asks: one id per repeated parameter
+      expect(execute).toHaveBeenCalledWith(
+        'http://engine.test/user/directory/deploymentNames',
+        {},
+        undefined,
+        {
+          env: 'PROD',
+          deploymentIds: [1234, 5678],
+          serializationFormat: expect.any(String),
+        },
+      );
+    } finally {
+      execute.mockRestore();
+    }
   });
 
   test('Is built only for a host with a lakehouse platform and its ingest servers', () => {

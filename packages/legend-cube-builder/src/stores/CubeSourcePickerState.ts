@@ -118,11 +118,11 @@ export class CubeSourcePickerState {
   get tabs(): readonly CubeSourcePickerTab[] {
     return [
       this.modelTab,
-      this.projectTab,
-      this.projectFunctionTab,
-      this.directTab,
       this.dataProductTab,
       this.ingestTab,
+      this.projectTab,
+      this.directTab,
+      this.projectFunctionTab,
       this.serviceTab,
     ].filter((tab) => tab.isAvailable);
   }
@@ -135,11 +135,11 @@ export class CubeSourcePickerState {
     const { context } = this.editorState.document;
     return context
       ? ([
-          this.projectTab,
-          this.projectFunctionTab,
-          this.directTab,
           this.dataProductTab,
           this.ingestTab,
+          this.projectTab,
+          this.directTab,
+          this.projectFunctionTab,
           this.serviceTab,
         ].find((tab) => tab.ownsContext(context)) ?? this.modelTab)
       : undefined;

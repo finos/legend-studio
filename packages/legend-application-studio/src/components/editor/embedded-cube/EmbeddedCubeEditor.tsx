@@ -382,7 +382,9 @@ export const EmbeddedCubeEditor = observer(
     const { embeddedCubeState, ingest } = props;
     const { editorStore } = embeddedCubeState;
     // a new host for each opening, so each starts on an empty cube
-    const [host] = useState(() => new LegendStudioCubeHost(editorStore));
+    const [host] = useState(
+      () => new LegendStudioCubeHost(editorStore, ingest),
+    );
     const { matView } = embeddedCubeState;
     // the view as it was when opened: the cube is read from it once
     const [initialLambda] = useState(() => {

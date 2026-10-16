@@ -15,13 +15,20 @@
  */
 
 import {
+  buildCubeLakehouseEnvironment,
+  CubeDataProductEnvironmentType,
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeDataProductModelSource,
+  type CubeDataProductProject,
   type CubeHostProject,
   type CubeHostProjectRuntime,
   type CubeLakehouseEnvironment,
 } from '@finos/legend-cube-builder';
+import {
+  decorateEnvWithRealm,
+  LakehouseEnvironmentType,
+} from '@finos/legend-server-lakehouse';
 import {
   LakehouseBaseRuntime,
   LakehouseRuntime,
@@ -34,10 +41,15 @@ import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
 
 // The project Studio edits, as Legend Cube reads it: its coordinates, the
-// lakehouse runtime its runs use, and the model its typing and runs read,
-// the workspace as it is now. A cube in Studio reads only the project's own
-// ingest definitions and data products, which aren't deployed: they are
-// typed and run on the workspace, as Studio's own queries of them are.
+// lakehouse environment its runs use, and the model its typing and runs
+// read, the workspace as it is now. A cube in Studio reads only the
+// project's own ingest definitions and data products, which aren't
+// deployed: they are typed and run on the workspace, as Studio's own
+// queries of them are. Runs use the viewer's lakehouse environment, read
+// from their entitlements when Studio has the lakehouse contract server
+// (`lakehouse.url`), as Legend Query reads it; else the environment of the
+// project's lakehouse runtime. Production parallel adds its realm (`-pp`).
+// A project runtime, when there is one, gives a new cube its warehouse.
 
 /** The project's coordinates when Studio has no project configuration, which Cube's sources still name */
 const UNKNOWN_PROJECT = { groupId: 'studio', artifactId: 'workspace' };
@@ -52,11 +64,23 @@ export const LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE = {
     `The project's lakehouse runtime ${runtime} names no environment.`,
 };
 
-/** The lakehouse runtime a run uses, read from the project */
+/** What a run of a class uses: the lakehouse environment, and the project runtime it was read from, when it was */
 export interface LegendStudioCubeRuntime extends CubeHostProjectRuntime {
-  readonly path: string;
   readonly environment: string;
+  readonly path?: string | undefined;
 }
+
+/** The environment of a class: production parallel's adds its realm */
+const environmentOfClass = (
+  environment: string,
+  environmentType: CubeDataProductEnvironmentType,
+): string =>
+  environmentType === CubeDataProductEnvironmentType.PRODUCTION_PARALLEL
+    ? decorateEnvWithRealm(
+        environment,
+        LakehouseEnvironmentType.PRODUCTION_PARALLEL,
+      )
+    : environment;
 
 export class LegendStudioCubeWorkspace
   implements
@@ -65,9 +89,20 @@ export class LegendStudioCubeWorkspace
     CubeDataProductModelSource
 {
   readonly editorStore: EditorStore;
+  /** The viewer's lakehouse environment, from their entitlements, when Studio has the contract server */
+  private readonly viewerEnvironment: CubeLakehouseEnvironment | undefined;
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
+    const { applicationStore, lakehouseContractServerClient } = editorStore;
+    this.viewerEnvironment = lakehouseContractServerClient
+      ? buildCubeLakehouseEnvironment({
+          contractServerClient: lakehouseContractServerClient,
+          depotServerClient: editorStore.depotServerClient,
+          getAccessToken: () => applicationStore.getAccessToken(),
+          getCurrentUser: () => applicationStore.identityService.currentUser,
+        })
+      : undefined;
   }
 
   /** The project's coordinates, which the URNs and models of Cube's sources carry */
@@ -93,7 +128,55 @@ export class LegendStudioCubeWorkspace
     );
   }
 
-  async resolveRuntime(): Promise<LegendStudioCubeRuntime> {
+  /**
+   * What a run of a class uses: the viewer's environment, with the project
+   * runtime's warehouse when there is one; without the contract server, the
+   * project runtime's environment, which it then needs
+   */
+  async resolveRuntime(
+    environmentType = CubeDataProductEnvironmentType.PRODUCTION,
+  ): Promise<LegendStudioCubeRuntime> {
+    const runtime = this.lakehouseRuntime;
+    const value = runtime?.runtimeValue as LakehouseBaseRuntime | undefined;
+    const warehouse =
+      value instanceof LakehouseRuntime ? value.warehouse : undefined;
+    if (this.viewerEnvironment) {
+      const environment = await this.viewerEnvironment.resolveEnvironment(
+        this.workspaceProjectOf(environmentType),
+      );
+      return {
+        environment,
+        label: `${environment}, your lakehouse environment`,
+        warehouse,
+      };
+    }
+    const project = await this.resolveProjectRuntime();
+    const environment = environmentOfClass(
+      project.environment,
+      environmentType,
+    );
+    return {
+      ...project,
+      environment,
+      label: `${environment}, from ${project.path}`,
+    };
+  }
+
+  /** The workspace's data products of a class, as the viewer's environment resolver reads a project */
+  private workspaceProjectOf(
+    environmentType: CubeDataProductEnvironmentType,
+  ): CubeDataProductProject {
+    return {
+      ...this.project,
+      versionId: LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
+      environmentType,
+    };
+  }
+
+  /** The project's lakehouse runtime, which a run needs without the contract server */
+  private async resolveProjectRuntime(): Promise<
+    LegendStudioCubeRuntime & { readonly path: string }
+  > {
     const runtime = this.lakehouseRuntime;
     if (!runtime) {
       throw new CubeEngineError(
@@ -117,9 +200,9 @@ export class LegendStudioCubeWorkspace
     };
   }
 
-  /** The environment a data product run's lakehouse runtime names: the project runtime's */
-  async resolveEnvironment(): Promise<string> {
-    return (await this.resolveRuntime()).environment;
+  /** The environment a data product run's lakehouse runtime names, for the cube's class */
+  async resolveEnvironment(project: CubeDataProductProject): Promise<string> {
+    return (await this.resolveRuntime(project.environmentType)).environment;
   }
 
   /**

@@ -58,6 +58,9 @@ describe('Legend Analytics as the Cube host', () => {
               profile: 'meta::pure::profiles::access',
               stereotype: 'enterprise',
             },
+            producer: {
+              deploymentLegendServiceUrl: '/directory/deploymentNames',
+            },
           },
         },
       },
@@ -80,6 +83,7 @@ describe('Legend Analytics as the Cube host', () => {
         profile: 'meta::pure::profiles::access',
         value: 'enterprise',
       },
+      deploymentNameServiceUrl: '/directory/deploymentNames',
     });
   });
 

@@ -21,6 +21,7 @@ import {
   type CubeHost,
 } from '@finos/legend-cube-builder';
 import type { LegendStudioApplicationStore } from '../../LegendStudioBaseStore.js';
+import type { IngestDefinition } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import { LegendStudioCubeDataProductCatalog } from './LegendStudioCubeDataProductCatalog.js';
 import { LegendStudioCubeIngestCatalog } from './LegendStudioCubeIngestCatalog.js';
@@ -42,7 +43,11 @@ export class LegendStudioCubeHost implements CubeHost {
   readonly dataProductCatalog: LegendStudioCubeDataProductCatalog;
   readonly offersSampleData = false;
 
-  constructor(editorStore: EditorStore) {
+  constructor(
+    editorStore: EditorStore,
+    /** The ingest definition Cube was opened from (Create MatView), whose owner sets the default class */
+    opened?: IngestDefinition,
+  ) {
     const { applicationStore } = editorStore;
     const { config } = applicationStore;
     this.applicationStore = applicationStore;
@@ -50,6 +55,7 @@ export class LegendStudioCubeHost implements CubeHost {
     this.ingestCatalog = new LegendStudioCubeIngestCatalog(
       editorStore,
       this.project,
+      opened,
     );
     // the engine Studio's own editor uses, configured the same way; a run
     // reads the workspace, and names the project's lakehouse environment

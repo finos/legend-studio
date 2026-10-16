@@ -41,6 +41,7 @@ import {
   getCubeIngestSettings,
 } from '../graph-manager/CubeIngest.js';
 import type { CubeIngestDataSet } from '../graph-manager/CubeIngestCatalog.js';
+import { isCubeProjectHost } from './CubeHost.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 
 // Import Pure's sources (PLAN §11.18): each accessor of a lambda bound to the
@@ -137,17 +138,25 @@ const bindIngestDataSets = async (
   }
   const { context } = editorState.document;
   const current = context ? getCubeIngestSettings(context.model) : undefined;
+  // a host with one class, or reading one project (Studio), whose one
+  // producer is the project, reads it as the catalog's default class
   const environmentType =
     current?.environmentType ??
-    (catalog.environmentTypes.length === 1
+    (catalog.environmentTypes.length === 1 ||
+    isCubeProjectHost(editorState.host)
       ? catalog.environmentTypes[0]
       : undefined);
   if (environmentType === undefined) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
   }
+  // the cube's ingest environment, else the viewer's own of the class
+  const environment = {
+    environmentType,
+    name: current?.environment,
+  };
   let producerDeploymentId = current?.producerDeploymentId;
   if (producerDeploymentId === undefined) {
-    const producers = await catalog.listProducers(environmentType);
+    const producers = await catalog.listProducers(environment);
     producerDeploymentId =
       producers.length === 1 ? producers[0]?.deploymentId : undefined;
   }
@@ -155,7 +164,7 @@ const bindIngestDataSets = async (
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
   }
   const { candidates } = await catalog.listDefinitions(
-    environmentType,
+    environment,
     producerDeploymentId,
   );
   const steps = new Map<string, CubeSourceStep>();
@@ -170,7 +179,7 @@ const bindIngestDataSets = async (
     }
     const dataSets =
       described.get(candidate.urn) ??
-      (await catalog.describe(candidate.urn, environmentType));
+      (await catalog.describe(candidate.urn, environment));
     described.set(candidate.urn, dataSets);
     const dataSet = dataSets.find((each) => each.name === dataSetName);
     if (!dataSet) {
@@ -203,11 +212,12 @@ const bindIngestDataSets = async (
   }
   const warehouse =
     current?.warehouse ??
-    (await catalog.resolveEnvironment(environmentType)).warehouse;
+    (await catalog.resolveEnvironment(environment)).warehouse;
   return bindingOf(
     {
       model: createCubeIngestModel({
         environmentType,
+        environment: current?.environment,
         producerDeploymentId,
         warehouse: await newCubeWarehouse(editorState, warehouse),
       }),

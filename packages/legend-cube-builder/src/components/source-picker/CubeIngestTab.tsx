@@ -17,16 +17,21 @@
 import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useId } from 'react';
-import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
-import { getDroppedDefinitionsLabel } from '../../__lib__/LegendCubeIngestLabels.js';
+import {
+  getDroppedDefinitionsLabel,
+  getFixedProducerLabel,
+  getIngestEnvironmentLabel,
+} from '../../__lib__/LegendCubeIngestLabels.js';
 import {
   CUBE_PENDING_LABEL,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
+import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../__lib__/LegendCubeDataProductLabels.js';
 import type { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
-import type {
-  CubeIngestTabError,
-  CubeIngestTabState,
+import {
+  type CubeIngestTabError,
+  type CubeIngestTabState,
+  getCubeIngestEnvironmentId,
 } from '../../stores/source-picker/CubeIngestTabState.js';
 import {
   CUBE_PICKER_LIST_CLASS,
@@ -145,8 +150,26 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
 const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
   const candidates = tab.definitionList?.candidates;
+  const environmentTypes = tab.catalog?.environmentTypes ?? [];
   return (
     <div className="flex flex-col gap-2">
+      {/* a host whose runs read either class, as Studio, asks which */}
+      {environmentTypes.length > 1 && (
+        <CubePickerStep
+          label="Mode"
+          value={tab.environmentType}
+          options={environmentTypes.map((type) => ({
+            value: type,
+            label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
+          }))}
+          disabled={tab.fixedSettings !== undefined}
+          onChange={(value) => {
+            if (value) {
+              tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
+            }
+          }}
+        />
+      )}
       <span
         className="text-sm text-[var(--color-text-muted)]"
         aria-label="Runtime"
@@ -207,10 +230,11 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
 });
 
 /**
- * The source dialog's Ingest tab (PLAN §6.7): Mode, the viewer's
- * environment (read-only), a producer deployment, one of its definitions, or
- * several ticked, then data sets with their columns. The cube's first data set fixes the
- * Mode, the producer deployment and the warehouse.
+ * The source dialog's Ingest tab (PLAN §6.7): an ingest environment of any
+ * class, the viewer's own production one first picked, a producer
+ * deployment, one of its definitions, or several ticked, then data sets
+ * with their columns. The cube's first data set fixes the environment, the
+ * producer deployment and the warehouse.
  */
 export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
@@ -227,43 +251,45 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   }
   return (
     <div className="flex flex-col gap-2">
-      {/* a host with one class, as Studio, offers no choice of Mode */}
-      {(tab.catalog?.environmentTypes.length ?? 0) > 1 && (
-        <CubePickerStep
-          label="Mode"
-          value={tab.environmentType}
-          options={(tab.catalog?.environmentTypes ?? []).map((type) => ({
-            value: type,
-            label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
-          }))}
-          disabled={settings !== undefined}
-          onChange={(value) => {
-            if (value) {
-              tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
-            }
-          }}
-        />
-      )}
-      <div className="flex items-center gap-2 text-base">
-        <span className="w-20 shrink-0">Environment</span>
-        <span aria-label="Environment">
-          {tab.environment?.name ??
-            (tab.isLoadingEnvironment ? 'reading your environment' : '')}
+      <CubePickerStep
+        label="Environment"
+        value={
+          tab.environment
+            ? getCubeIngestEnvironmentId(tab.environment)
+            : undefined
+        }
+        options={(tab.environments ?? []).map((environment) => ({
+          value: getCubeIngestEnvironmentId(environment),
+          label: getIngestEnvironmentLabel(environment),
+        }))}
+        disabled={settings !== undefined}
+        onChange={(value) => {
+          const picked = tab.environments?.find(
+            (environment) => getCubeIngestEnvironmentId(environment) === value,
+          );
+          if (picked) {
+            tab.setEnvironment(picked);
+          }
+        }}
+      />
+      {tab.isLoadingEnvironment && !tab.environment && (
+        <span className="text-sm text-[var(--color-text-muted)]">
+          reading the ingest environments
         </span>
-      </div>
+      )}
       <CubePickerStep
         label="Producer"
         value={tab.producerDeploymentId}
         options={(tab.producers ?? []).map((producer) => ({
           value: producer.deploymentId,
-          label: `Deployment ${producer.deploymentId}`,
+          label: tab.getProducerLabel(producer.deploymentId),
         }))}
         disabled={settings !== undefined}
         onChange={(value) => tab.selectProducer(value)}
       />
       {settings && (
         <span className="text-sm text-[var(--color-text-muted)]">
-          {`All of the cube's data sets come from producer deployment ${settings.producerDeploymentId}.`}
+          {`All of the cube's data sets come from ${getFixedProducerLabel(settings.producerDeploymentId, tab.producerNames.get(settings.producerDeploymentId))}.`}
         </span>
       )}
       {tab.producerDeploymentId !== undefined && (

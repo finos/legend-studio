@@ -30,6 +30,7 @@ import {
   type CubeIngestDataSetLocation,
   type CubeIngestDefinitionList,
   type CubeIngestDefinitionSource,
+  type CubeIngestEnvironmentKey,
   type NodeId,
 } from '@finos/legend-cube-builder';
 import type { IngestDefinition } from '@finos/legend-graph';
@@ -38,14 +39,41 @@ import type { EditorStore } from '../EditorStore.js';
 import type { LegendStudioCubeWorkspace } from './LegendStudioCubeWorkspace.js';
 
 // Legend Cube in Studio: a cube reads the ingest definitions of the project
-// being edited, as the workspace holds them, and runs on the project's
-// lakehouse runtime, as Studio's own queries of an ingest definition do. The
-// Ingest tab lists every definition of the project, under one producer that
-// stands for the project, each named by the URN it would have if this
-// project deployed it.
+// being edited, as the workspace holds them, and runs in the lakehouse
+// environment of the class the viewer picks (Mode), production or
+// production parallel (`LegendStudioCubeWorkspace`). The Ingest tab lists
+// every definition of the project, under one producer that stands for the
+// project, each named by the URN it would have if this project deployed it
+// in that class.
 
-/** The one class a Studio cube reads the project's definitions as, so the Ingest tab offers no other */
-const STUDIO_CUBE_INGEST_CLASS = CubeDataProductEnvironmentType.PRODUCTION;
+const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
+
+/** The DIDs an ingest definition's owner names, as its content holds them */
+const ownerDeploymentsOf = (
+  definition: IngestDefinition,
+): { production: boolean; prodParallel: boolean } => {
+  const owner = (definition.content as { owner?: unknown }).owner;
+  const has = (key: string): boolean =>
+    typeof owner === 'object' &&
+    owner !== null &&
+    (owner as Record<string, unknown>)[key] !== undefined &&
+    (owner as Record<string, unknown>)[key] !== null;
+  return { production: has('production'), prodParallel: has('prodParallel') };
+};
+
+/**
+ * The classes a Studio cube's runs read, the default first: production
+ * parallel, as the workspace isn't released, unless the definition Cube
+ * was opened from names only a production DID (user, 2026-10-16)
+ */
+export const getLegendStudioCubeIngestClasses = (
+  opened: IngestDefinition | undefined,
+): CubeDataProductEnvironmentType[] => {
+  const owner = opened ? ownerDeploymentsOf(opened) : undefined;
+  return owner?.production && !owner.prodParallel
+    ? [PRODUCTION, PRODUCTION_PARALLEL]
+    : [PRODUCTION_PARALLEL, PRODUCTION];
+};
 
 /** The one producer deployment the tab lists: the project itself, whatever its definitions' deployments */
 export const LEGEND_STUDIO_CUBE_PROJECT_PRODUCER = '0';
@@ -66,13 +94,19 @@ export const LEGEND_STUDIO_CUBE_MESSAGE = {
 export class LegendStudioCubeIngestCatalog
   implements CubeIngestCatalog, CubeIngestDefinitionSource
 {
-  readonly environmentTypes = [STUDIO_CUBE_INGEST_CLASS];
+  readonly environmentTypes: readonly CubeDataProductEnvironmentType[];
   readonly editorStore: EditorStore;
   readonly workspace: LegendStudioCubeWorkspace;
 
-  constructor(editorStore: EditorStore, workspace: LegendStudioCubeWorkspace) {
+  constructor(
+    editorStore: EditorStore,
+    workspace: LegendStudioCubeWorkspace,
+    /** The definition Cube was opened from, whose owner sets the default class */
+    opened?: IngestDefinition,
+  ) {
     this.editorStore = editorStore;
     this.workspace = workspace;
+    this.environmentTypes = getLegendStudioCubeIngestClasses(opened);
   }
 
   /** The project's own definitions, not its dependencies' */
@@ -80,19 +114,22 @@ export class LegendStudioCubeIngestCatalog
     return this.editorStore.graphManagerState.graph.ownIngests;
   }
 
-  /** The URN a cube names the project's definition by */
-  urnOf(definition: IngestDefinition): string {
+  /** The URN a cube of a class names the project's definition by */
+  urnOf(
+    definition: IngestDefinition,
+    environmentType: CubeDataProductEnvironmentType = PRODUCTION,
+  ): string {
     return formatCubeIngestUrn({
-      environmentType: STUDIO_CUBE_INGEST_CLASS,
+      environmentType,
       ...this.workspace.project,
       definition: definition.path,
     });
   }
 
+  /** The project's definition a URN of either class names */
   private definitionOf(urn: string): IngestDefinition {
-    const definition = this.definitions.find(
-      (each) => this.urnOf(each) === urn,
-    );
+    const path = parseCubeIngestUrn(urn)?.definition;
+    const definition = this.definitions.find((each) => each.path === path);
     if (!definition) {
       throw new CubeEngineError(
         CubeEngineErrorKind.COMPILE,
@@ -104,21 +141,35 @@ export class LegendStudioCubeIngestCatalog
     return definition;
   }
 
-  /** The project's lakehouse runtime, which a run names, with its warehouse */
+  /** The environment of each class, as a run of it reads */
+  async listEnvironments(): Promise<readonly CubeIngestEnvironment[]> {
+    return Promise.all(
+      this.environmentTypes.map((environmentType) =>
+        this.resolveEnvironment({ environmentType }),
+      ),
+    );
+  }
+
+  /** The environment a run of the class names, with the project runtime's warehouse; a name given is not read */
   async resolveEnvironment(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
   ): Promise<CubeIngestEnvironment> {
-    const runtime = await this.workspace.resolveRuntime();
+    const runtime = await this.workspace.resolveRuntime(
+      environment.environmentType,
+    );
     return new CubeIngestEnvironment({
-      environmentType,
+      environmentType: environment.environmentType,
       name: runtime.label,
       runtimeEnvironment: runtime.environment,
       warehouse: runtime.warehouse,
     });
   }
 
-  async getRuntimeEnvironment(): Promise<string> {
-    return (await this.workspace.resolveRuntime()).environment;
+  async getRuntimeEnvironment(
+    environment: CubeIngestEnvironmentKey,
+  ): Promise<string> {
+    return (await this.workspace.resolveRuntime(environment.environmentType))
+      .environment;
   }
 
   /** One producer, the project, so the tab lists every definition at once */
@@ -132,13 +183,15 @@ export class LegendStudioCubeIngestCatalog
     ];
   }
 
-  /** Every definition of the project, whatever its app directory deployment */
-  async listDefinitions(): Promise<CubeIngestDefinitionList> {
+  /** Every definition of the project, whatever its app directory deployment, named by its URN in the class */
+  async listDefinitions(
+    environment: CubeIngestEnvironmentKey,
+  ): Promise<CubeIngestDefinitionList> {
     return {
       candidates: this.definitions.map(
         (each) =>
           new CubeIngestDefinitionCandidate({
-            urn: this.urnOf(each),
+            urn: this.urnOf(each, environment.environmentType),
             definition: each.path,
             ...this.workspace.project,
           }),
@@ -173,7 +226,7 @@ export class LegendStudioCubeIngestCatalog
   }
 
   async resolveSchemas(
-    environmentType: CubeDataProductEnvironmentType,
+    environment: CubeIngestEnvironmentKey,
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
     const described = new Map<

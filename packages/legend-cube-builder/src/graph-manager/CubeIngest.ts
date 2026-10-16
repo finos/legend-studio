@@ -32,6 +32,11 @@ export const CUBE_INGEST_RUNTIME_PATH = 'cube::ingest::Runtime';
 /** What an ingest cube runs on, as its model saves it */
 export interface CubeIngestSettings {
   readonly environmentType: CubeDataProductEnvironmentType;
+  /**
+   * The ingest environment the cube reads, by name; none for the viewer's
+   * own, as cubes saved before the Ingest tab let the viewer pick one
+   */
+  readonly environment?: string | undefined;
   /** The producer deployment whose definitions the cube reads, as text */
   readonly producerDeploymentId: string;
   /** The warehouse the cube runs on; none until one is picked */
@@ -51,6 +56,9 @@ export const createCubeIngestModel = (
   ({
     _type: CUBE_INGEST_MODEL_TYPE,
     environmentType: settings.environmentType,
+    ...(settings.environment !== undefined
+      ? { environment: settings.environment }
+      : {}),
     producerDeploymentId: settings.producerDeploymentId,
     ...(settings.warehouse !== undefined
       ? { warehouse: settings.warehouse }
@@ -76,6 +84,9 @@ export const checkCubeIngestModel = (
       `Cube doesn't know the environment type "${String(model.environmentType)}"`,
     );
   }
+  if (model.environment !== undefined && !isNonEmptyString(model.environment)) {
+    problems.push(`The cube's ingest environment must be a name`);
+  }
   if (
     typeof model.producerDeploymentId !== 'string' ||
     !/^\d+$/u.test(model.producerDeploymentId)
@@ -96,6 +107,7 @@ export const getCubeIngestSettings = (
     ? {
         environmentType:
           model.environmentType as CubeDataProductEnvironmentType,
+        environment: model.environment as string | undefined,
         producerDeploymentId: model.producerDeploymentId as string,
         warehouse: model.warehouse as string | undefined,
       }

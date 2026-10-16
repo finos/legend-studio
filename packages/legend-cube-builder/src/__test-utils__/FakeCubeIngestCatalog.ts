@@ -30,12 +30,15 @@ import {
 } from '../graph-manager/CubeIngestCatalog.js';
 
 // A fake of the deployed ingest definitions, for the Ingest tab's and the
-// editor's tests: producer deployment 1234 deploys two definitions from
-// com.example:sales, 5678 none
+// editor's tests: producer deployment 1234, named Sales Feed in the
+// deployment directory, deploys two definitions from com.example:sales;
+// 5678, which the directory doesn't know, none
 
 const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
 
 export const FAKE_INGEST_ORDERS = 'sales::ingest::OrdersIngest';
+export const FAKE_INGEST_PRODUCER_ID = '1234';
+export const FAKE_INGEST_PRODUCER_NAME = 'Sales Feed';
 export const FAKE_INGEST_DESKS = 'sales::ingest::DesksIngest';
 
 export const fakeIngestUrnOf = (
@@ -107,26 +110,46 @@ const definitionOf = (urn: string): string =>
 
 export interface FakeCubeIngestCatalog {
   catalog: CubeIngestCatalog;
+  listEnvironments: jest.Mock<CubeIngestCatalog['listEnvironments']>;
   resolveEnvironment: jest.Mock<CubeIngestCatalog['resolveEnvironment']>;
   listProducers: jest.Mock<CubeIngestCatalog['listProducers']>;
+  getProducerNames: jest.Mock<
+    NonNullable<CubeIngestCatalog['getProducerNames']>
+  >;
   listDefinitions: jest.Mock<CubeIngestCatalog['listDefinitions']>;
   describe: jest.Mock<CubeIngestCatalog['describe']>;
   resolveSchemas: jest.Mock<CubeIngestCatalog['resolveSchemas']>;
 }
 
+/** The viewer's own ingest environment, in each class */
+export const FAKE_INGEST_VIEWER_ENVIRONMENT = 'env-a';
+
+/** An ingest environment of the fake platform: the runtime its runs name follows its name and class */
+export const fakeIngestEnvironmentOf = (
+  environmentType: CubeDataProductEnvironmentType,
+  name = FAKE_INGEST_VIEWER_ENVIRONMENT,
+): CubeIngestEnvironment =>
+  new CubeIngestEnvironment({
+    environmentType,
+    name,
+    runtimeEnvironment: `lakehouse-ingest-${name}${environmentType === PRODUCTION_PARALLEL ? '-pp' : ''}`,
+  });
+
 /** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
 export const createFakeCubeIngestCatalog = (): FakeCubeIngestCatalog => {
+  // env-a in both classes, the viewer's; env-b in production only
+  const listEnvironments = jest.fn<CubeIngestCatalog['listEnvironments']>(
+    async () =>
+      Promise.resolve([
+        fakeIngestEnvironmentOf(PRODUCTION),
+        fakeIngestEnvironmentOf(PRODUCTION_PARALLEL),
+        fakeIngestEnvironmentOf(PRODUCTION, 'env-b'),
+      ]),
+  );
   const resolveEnvironment = jest.fn<CubeIngestCatalog['resolveEnvironment']>(
-    async (environmentType) =>
+    async (environment) =>
       Promise.resolve(
-        new CubeIngestEnvironment({
-          environmentType,
-          name: 'env-a',
-          runtimeEnvironment:
-            environmentType === PRODUCTION_PARALLEL
-              ? 'lakehouse-ingest-env-a-pp'
-              : 'lakehouse-ingest-env-a',
-        }),
+        fakeIngestEnvironmentOf(environment.environmentType, environment.name),
       ),
   );
   const listProducers = jest.fn<CubeIngestCatalog['listProducers']>(async () =>
@@ -140,8 +163,19 @@ export const createFakeCubeIngestCatalog = (): FakeCubeIngestCatalog => {
       ),
     ),
   );
+  const getProducerNames = jest.fn<
+    NonNullable<CubeIngestCatalog['getProducerNames']>
+  >(async (deploymentIds) =>
+    Promise.resolve(
+      new Map(
+        deploymentIds.includes(FAKE_INGEST_PRODUCER_ID)
+          ? [[FAKE_INGEST_PRODUCER_ID, FAKE_INGEST_PRODUCER_NAME]]
+          : [],
+      ),
+    ),
+  );
   const listDefinitions = jest.fn<CubeIngestCatalog['listDefinitions']>(
-    async (environmentType, producerDeploymentId) =>
+    async ({ environmentType }, producerDeploymentId) =>
       Promise.resolve(
         producerDeploymentId === '1234'
           ? {
@@ -183,14 +217,18 @@ export const createFakeCubeIngestCatalog = (): FakeCubeIngestCatalog => {
   return {
     catalog: {
       environmentTypes: [PRODUCTION, PRODUCTION_PARALLEL],
+      listEnvironments,
       resolveEnvironment,
       listProducers,
+      getProducerNames,
       listDefinitions,
       describe,
       resolveSchemas,
     },
+    listEnvironments,
     resolveEnvironment,
     listProducers,
+    getProducerNames,
     listDefinitions,
     describe,
     resolveSchemas,
