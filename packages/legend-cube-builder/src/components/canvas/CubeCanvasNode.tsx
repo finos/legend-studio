@@ -96,7 +96,8 @@ export const CubeCanvasNode = observer(
         content={
           <CubeCanvasContextMenu editorState={editorState} nodeId={node.id} />
         }
-        menuProps={{ elevation: 7 }}
+        // a submenu opens outside the menu (Join with): focus may go there
+        menuProps={{ elevation: 7, disableEnforceFocus: true }}
       >
         {node.ports.map((port, index) => (
           <Handle

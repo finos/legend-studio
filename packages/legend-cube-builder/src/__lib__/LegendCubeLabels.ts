@@ -20,6 +20,10 @@ import {
   TypeFamily,
 } from '@finos/legend-cube';
 import { CubeTableFlag } from '../graph-manager/CubeEngine.js';
+import {
+  type CubeJoinKeySuggestion,
+  CubeJoinSuggestionReason,
+} from '../stores/editors/CubeJoinSuggestions.js';
 
 // The page's own text and settings; validation messages live in the core's
 // CubeMessages (PLAN §4.11)
@@ -536,3 +540,21 @@ export const getCubeNodeBadge = (definition: {
   readonly wip?: boolean | undefined;
 }): 'WIP' | 'BETA' | undefined =>
   definition.wip ? 'WIP' : definition.beta ? 'BETA' : undefined;
+
+/** Why the Join editor suggests a pair of join columns (user, 2026-10-16) */
+const JOIN_SUGGESTION_REASON_LABELS: Readonly<
+  Record<CubeJoinSuggestionReason, (detail: string | undefined) => string>
+> = {
+  [CubeJoinSuggestionReason.DATABASE_JOIN]: (detail) =>
+    `the database's join ${detail ?? ''}`.trim(),
+  [CubeJoinSuggestionReason.PRIMARY_KEY]: (detail) =>
+    `${detail ?? 'the table'}'s primary key`,
+  [CubeJoinSuggestionReason.NAME_PATTERN]: (detail) =>
+    `names ${detail ?? 'the table'}`,
+  [CubeJoinSuggestionReason.SAME_NAME]: () => 'same name',
+};
+
+export const getJoinSuggestionReasonLabel = (
+  suggestion: CubeJoinKeySuggestion,
+): string =>
+  JOIN_SUGGESTION_REASON_LABELS[suggestion.reason](suggestion.detail);

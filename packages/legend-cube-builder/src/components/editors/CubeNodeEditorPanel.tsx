@@ -19,6 +19,7 @@ import {
   isIncompleteError,
   isSchemasError,
   isTypingError,
+  Join,
   type QueryNode,
   type Schema,
   UnknownNode,
@@ -41,6 +42,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_NODE_DRAFT_FACTORIES } from '../../stores/editors/CubeNodeDraftRegistry.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
+import { getCubeNodeMenuLabels } from '../CubeAddItems.js';
 import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
 import { CUBE_NODE_EDITORS } from './CubeNodeEditorRegistry.js';
 
@@ -55,6 +57,48 @@ const validateEdited = (
   // is no problem (PLAN §11.7, §11.11)
   return [...new Set(errors)].filter((error) => !isTypingError(error));
 };
+
+/**
+ * The input a Join waits for (user, 2026-10-16): the other nodes that can
+ * feed its empty port, each the end of another chain; picking one connects
+ * it, and the Join takes the join columns that are clearly them
+ */
+const CubeJoinInputPicker = observer(
+  (props: { editorState: CubeEditorState; join: Join }) => {
+    const { editorState, join } = props;
+    const [leftId, rightId] = editorState.document.query.getInputIds(join.id);
+    const candidates = editorState.getInputCandidates(join.id);
+    if (leftId !== undefined && rightId !== undefined) {
+      return null;
+    }
+    const labels = getCubeNodeMenuLabels(editorState, candidates);
+    const side = leftId === undefined ? 'Left' : 'Right';
+    return candidates.length ? (
+      <label className="mt-2 flex items-center gap-2 text-base">
+        {`${side} input`}
+        <select
+          className="h-6 min-w-0 flex-1 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base"
+          value=""
+          onChange={(event) => {
+            if (event.target.value) {
+              // on the first free port: the one it waits for
+              editorState.connect(event.target.value, join.id);
+            }
+          }}
+        >
+          <option value="" disabled={true}>
+            Pick the node to join
+          </option>
+          {candidates.map((candidate) => (
+            <option key={candidate.id} value={candidate.id}>
+              {labels.get(candidate.id) ?? candidate.id}
+            </option>
+          ))}
+        </select>
+      </label>
+    ) : null;
+  },
+);
 
 /**
  * The node editor's frame (spec §17.5, PLAN §11.8): a title bar with the
@@ -213,14 +257,19 @@ export const CubeNodeEditorPanel = observer(
             </div>
           ))}
           {inputProblems.length ? (
-            <div
-              className="text-base text-[var(--color-status-warn)]"
-              role="alert"
-            >
-              {inputProblems.map((problem) => (
-                <div key={problem}>{problem}</div>
-              ))}
-            </div>
+            <>
+              <div
+                className="text-base text-[var(--color-status-warn)]"
+                role="alert"
+              >
+                {inputProblems.map((problem) => (
+                  <div key={problem}>{problem}</div>
+                ))}
+              </div>
+              {node instanceof Join && !readOnly && (
+                <CubeJoinInputPicker editorState={editorState} join={node} />
+              )}
+            </>
           ) : Editor ? (
             <Editor
               editorState={editorState}

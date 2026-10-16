@@ -31,6 +31,7 @@ import type {
   CubeJoinKeyPair,
   CubeJoinKeysDraft,
 } from '../../stores/editors/CubeJoinKeyPairs.js';
+import type { CubeJoinKeySuggestion } from '../../stores/editors/CubeJoinSuggestions.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnPicker } from './CubeColumnPicker.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -45,8 +46,25 @@ const CubeJoinKeyRow = observer(
     index: number;
     leftSchema: Schema;
     rightSchema: Schema;
+    /** The suggested pairs of columns, each side listed first in its picker */
+    suggestedPairs: readonly (readonly [string, string])[];
   }) => {
-    const { editorProps, draft, pair, index, leftSchema, rightSchema } = props;
+    const {
+      editorProps,
+      draft,
+      pair,
+      index,
+      leftSchema,
+      rightSchema,
+      suggestedPairs,
+    } = props;
+    // each side's suggested columns, those paired with the other side's pick when there is one
+    const leftSuggested = suggestedPairs
+      .filter(([, right]) => !pair.right || right === pair.right)
+      .map(([left]) => left);
+    const rightSuggested = suggestedPairs
+      .filter(([left]) => !pair.left || left === pair.left)
+      .map(([, right]) => right);
     const { editorState, readOnly } = editorProps;
     const { query } = editorState.document;
     const { analysis, modelOutline } = editorState;
@@ -78,6 +96,7 @@ const CubeJoinKeyRow = observer(
             label={`Left join column ${position}`}
             schema={leftSchema}
             value={pair.left}
+            suggested={leftSuggested}
             invalid={isIncompatible}
             disabled={readOnly}
             onChange={(name) => draft.setLeftColumn(pair.key, name)}
@@ -87,6 +106,7 @@ const CubeJoinKeyRow = observer(
             label={`Right join column ${position}`}
             schema={rightSchema}
             value={pair.right}
+            suggested={rightSuggested}
             invalid={isIncompatible}
             disabled={readOnly}
             onChange={(name) => draft.setRightColumn(pair.key, name)}
@@ -137,8 +157,16 @@ export const CubeJoinKeyRows = observer(
     draft: CubeJoinKeysDraft;
     leftSchema: Schema;
     rightSchema: Schema;
+    /** The join columns suggested, listed first in the pickers; a Join's, none for a Difference */
+    suggestions?: readonly CubeJoinKeySuggestion[] | undefined;
   }) => {
-    const { editorProps, draft, leftSchema, rightSchema } = props;
+    const { editorProps, draft, leftSchema, rightSchema, suggestions } = props;
+    const suggestedPairs = (suggestions ?? []).flatMap((suggestion) =>
+      suggestion.leftColumns.map(
+        (left, position) =>
+          [left, suggestion.rightColumns[position] ?? ''] as const,
+      ),
+    );
     const canAddPair =
       !editorProps.readOnly &&
       draft.pairs.length <
@@ -161,6 +189,7 @@ export const CubeJoinKeyRows = observer(
               index={index}
               leftSchema={leftSchema}
               rightSchema={rightSchema}
+              suggestedPairs={suggestedPairs}
             />
           ))}
         </ul>
