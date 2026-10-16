@@ -148,6 +148,18 @@ jest.mock('@finos/legend-application', () => ({
     disconnect: jest.fn(),
   }));
 
+// The ResizeObserver polyfill of the test setup calls `getComputedStyle` on every
+// observed element after every DOM change, and jsdom answers that by matching
+// every style rule of the page: it took most of these tests' time, enough for
+// them to time out on slower machines. No test here needs a resize.
+(global as unknown as { ResizeObserver: unknown }).ResizeObserver = jest
+  .fn()
+  .mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
+
 const createdViewerStates: Awaited<
   ReturnType<typeof TEST__getDataProductViewerState>
 >[] = [];
