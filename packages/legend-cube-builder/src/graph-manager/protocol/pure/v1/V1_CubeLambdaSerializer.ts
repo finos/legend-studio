@@ -92,7 +92,7 @@ const NUMBER_LITERAL_TYPES: readonly unknown[] = [
  * literal written digit for digit from the string Cube keeps, and with an
  * origin, any source information replaced by it on every value
  * specification; with none, the JSON's own source information kept, so a
- * lambda parsed with its locations is typed with them (the editor's Validate)
+ * lambda parsed with its locations is typed with them (the editor's check)
  */
 const serializeLambdaJson = (
   json: unknown,

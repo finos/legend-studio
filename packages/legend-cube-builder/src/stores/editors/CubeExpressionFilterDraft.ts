@@ -74,7 +74,7 @@ export interface CubeConditionCheckedCode {
   readonly located: JsonObject;
 }
 
-/** The condition's problem from the last Validate: a message, where it is in the code, and a hint */
+/** The condition's problem from the last check: a message, where it is in the code, and a hint */
 export interface CubeConditionProblem {
   readonly message: string;
   readonly location?: CubeSourceLocation | undefined;
@@ -131,9 +131,9 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   code: string;
   /** What the engine made of the code the last time it parsed it */
   checked: CubeConditionCheckedCode | undefined;
-  /** The problem from the last Validate, while the code is the one validated */
+  /** The problem from the last check, while the code is the one validated */
   problem: CubeConditionProblem | undefined;
-  /** The check the last Validate gave, for the code as it was then */
+  /** The check the last check gave, for the code as it was then */
   check: ExpressionCheck | undefined;
   validating = false;
   /** Anything was changed; until then, `build()` gives the original back */
@@ -300,7 +300,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
 
   /**
    * Checks the condition with the engine (F10): parses the code when it
-   * changed since the last Validate, checks Cube's own rules and the
+   * changed since the last check, checks Cube's own rules and the
    * database's, then, when the input is valid, checks the condition after
    * the input, located in the code, and plans the query up to this node for
    * the cube's database

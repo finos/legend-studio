@@ -77,7 +77,7 @@ export interface CubeExtendCheckedCode {
   readonly located: JsonObject;
 }
 
-/** A row's problem from the last Validate: the engine's message, where it is in the code, and a hint */
+/** A row's problem from the last check: the engine's message, where it is in the code, and a hint */
 export interface CubeExtendRowProblem {
   readonly message: string;
   readonly location?: CubeSourceLocation | undefined;
@@ -129,7 +129,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   /** A Variant input column's fields, opened from its chip (PLAN §11.20, V.9) */
   readonly jsonFields: CubeJsonFieldsState;
   rows: readonly CubeExtendRow[];
-  /** The typing the last Validate gave, for the rows as they were then */
+  /** The typing the last check gave, for the rows as they were then */
   typing: ExtendTyping | undefined;
   validating = false;
   /** Anything was changed; until then, `build()` gives the original back */
@@ -351,7 +351,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
     );
   }
 
-  /** A code edit drops the row's problem and type, until the next Validate */
+  /** A code edit drops the row's problem and type, until it is checked again */
   setCode(key: number, code: string): void {
     this.change(
       this.rows.map((row) =>
@@ -401,7 +401,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
 
   /**
    * Checks every row with the engine (F10): parses each code changed since
-   * the last Validate, then, when every code parses and the input is valid,
+   * the last check, then, when every code parses and the input is valid,
    * types the columns after the input, located in their codes, and plans the
    * query up to this node for the cube's database; a plan that fails is
    * planned again column by column to find the first that fails. Each

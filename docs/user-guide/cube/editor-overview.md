@@ -27,7 +27,7 @@ Click the image to see it full size.
 ## The header
 
 3. **Cube**: **New** starts an empty cube, **Import** opens a cube from its spec, **Import Pure** reads a Pure query
-   into steps, and **Export** shows this cube's spec, to copy or download.
+   into steps (its border turns green once Cube can read it), and **Export** shows this cube's spec, to copy or download.
 4. **Add Items**: the palette's sources and steps, as a menu.
 5. **Examples**: ready-made cubes on sample data, to try things out.
 6. **Undo** and **Redo**: every change, opening an example included (Ctrl+Z and Ctrl+Shift+Z, or Cmd on a Mac).

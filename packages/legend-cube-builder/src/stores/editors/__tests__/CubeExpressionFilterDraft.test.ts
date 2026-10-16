@@ -205,14 +205,14 @@ describe('Filter by Expression draft', () => {
     expect(built.check.kind).toBe('checked');
     state.applyQuery(state.document.query.replace(built));
     expect(state.analysis.validity.get('expressionFilter101')).toEqual([]);
-    // a code edit asks for another Validate, and the node gets no lambda
+    // a code edit asks for another check, and the node gets no lambda
     draft.setCode('x | $x.SHIPPED_DATE >= $x.REQUIRED_DATE');
     expect(draft.applyDisabledReason).toBe(
       'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
     );
     expect(draft.isChecked).toBe(false);
     expect(draft.build().lambda).toBeUndefined();
-    // parsed again on the next Validate only
+    // parsed again on the next check only
     await flowResult(draft.validate());
     await flowResult(draft.validate());
     expect(fake.parseExpression).toHaveBeenCalledTimes(2);
@@ -439,7 +439,7 @@ describe('Filter by Expression draft', () => {
     );
   });
 
-  test('Stays open while its condition waits for Validate, rather than storing or dropping it', async () => {
+  test('Stays open while its condition waits for its check, rather than storing or dropping it', async () => {
     const { state } = open();
     const { nodeEditor } = state;
     nodeEditor.open('expressionFilter101');
