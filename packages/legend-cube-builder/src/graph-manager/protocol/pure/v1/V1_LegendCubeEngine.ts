@@ -138,8 +138,28 @@ const EXECUTION_CLIENT_VERSION = 'vX_X_X';
 /** The engine client's trace name for its grammar-to-JSON calls */
 const GRAMMAR_TO_JSON_TRACE = 'transform Pure code to protocol';
 
-/** How an engine without code completion answers it */
 const NOT_FOUND = 404;
+
+/** What an engine's server says of a route it doesn't have, as an error of its own */
+const ROUTE_NOT_FOUND = /NotFoundException: HTTP 404/u;
+
+/**
+ * Whether the engine has no code completion: it answers 404, or, as
+ * legend-engine's server does, 500 with the 404 it met as the message
+ */
+const isNoCodeCompletion = (error: unknown): boolean => {
+  if (!(error instanceof NetworkClientError)) {
+    return false;
+  }
+  const { payload } = error;
+  const message =
+    typeof payload === 'string'
+      ? payload
+      : typeof payload?.message === 'string'
+        ? payload.message
+        : '';
+  return error.response.status === NOT_FOUND || ROUTE_NOT_FOUND.test(message);
+};
 
 /** How many relations' Pure text and model completion keeps, before forgetting them all */
 const COMPLETION_BASES_KEPT = 32;
@@ -1403,10 +1423,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
         display,
       }));
     } catch (error) {
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === NOT_FOUND
-      ) {
+      if (isNoCodeCompletion(error)) {
         this.completesNoCode = true;
         return undefined;
       }

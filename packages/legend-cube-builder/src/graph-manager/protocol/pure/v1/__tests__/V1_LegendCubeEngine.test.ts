@@ -743,6 +743,34 @@ describe('Legend Cube engine: code completion', () => {
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
+  test("Completes no code once the engine's server says, as an error of its own, it has no such route", async () => {
+    const engine = newEngine();
+    const complete = jest
+      .spyOn(engine.client, 'completeCode')
+      .mockRejectedValue(
+        new NetworkClientError(
+          {
+            status: 500,
+            statusText: 'Internal Server Error',
+            url: 'http://engine',
+          } as Response,
+          {
+            code: -1,
+            message: 'NotFoundException: HTTP 404 Not Found',
+            status: 'error',
+          },
+        ),
+      );
+    expect(await engine.completeCode(MODEL, undefined, '#>{')).toBeUndefined();
+    expect(await engine.completeCode(MODEL, undefined, '#>{a')).toBeUndefined();
+    expect(complete).toHaveBeenCalledTimes(1);
+    // code on its own, on the model as it is
+    expect(complete.mock.calls[0]?.[0]).toEqual({
+      codeBlock: '#>{',
+      model: MODEL,
+    });
+  });
+
   test("Rejects on code the engine can't complete, and asks again next time", async () => {
     const engine = newEngine();
     jest.spyOn(engine.client, 'JSONToGrammar_lambda').mockResolvedValue('|1');
