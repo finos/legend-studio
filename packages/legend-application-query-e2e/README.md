@@ -111,10 +111,22 @@ The mock depot server holds a single data space with a single execution
 context. Rather than growing that shared fixture — it backs local development
 for every Legend app — [`DepotMock.ts`](./src/support/DepotMock.ts) intercepts
 its responses and enriches them per-test: `mockAdditionalDataSpaces()` pads the
-listing out to N data spaces, and `mockSecondExecutionContext()` gives the
-fixture's data space a second execution context (patched into the project
-entities the graph is built from, not the analytics artifact). See
-`QueryBuilderDataSpaceSetup.spec.ts`.
+listing out to N data spaces, `mockSecondExecutionContext()` gives the
+fixture's data space a second execution context, and `mockTemplateQueries()`
+curates two template queries on it (both patched into the project entities
+the graph is built from, not the analytics artifact — so they can't be
+combined with each other or with `mockEnrichedModel()`). See
+`QueryBuilderDataSpaceSetup.spec.ts` and `QueryBuilderTemplateQueries.spec.ts`.
+`mockSDLCProject()` reports the SDLC project the fixture is built from, which
+links into Studio need.
+
+### Links that open a new tab
+
+The app opens other Legend applications (Studio, Marketplace) and some of its
+own routes in a new tab, through `window.open`. Call `recordOpenedWindows()`
+before the page loads to stub it: it returns a function reading the addresses
+opened, so a test asserts where a link leads without anything being served
+there (see `QueryEditorAboutPanels.spec.ts`).
 
 Two things to know about the setup panel's selectors: they are virtualized
 with `react-window`, so only the options in view exist in the DOM — assert on
