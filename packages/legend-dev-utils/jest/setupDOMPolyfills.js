@@ -14,11 +14,29 @@
  * limitations under the License.
  */
 
-import { ResizeObserver } from '@juggle/resize-observer';
 import { TextEncoder, TextDecoder } from 'util';
 
 // Polyfills
-window.ResizeObserver = ResizeObserver;
+
+/**
+ * jsdom has no `ResizeObserver`, so we install one that observes nothing:
+ * code that creates observers runs, but no resize callback ever fires.
+ *
+ * NOTE: this is what a real polyfill (e.g. `@juggle/resize-observer`) amounts to
+ * in jsdom anyway: jsdom has no layout, every element reports a zero size and no
+ * client rects, so the polyfill treats them all as hidden and never calls back.
+ * It still calls `getComputedStyle()` on every observed element after every DOM
+ * mutation though, and jsdom answers that by matching every style rule on the
+ * page, which made large component tests several times slower.
+ *
+ * A test that mocks element sizes and needs resize callbacks can opt in to the
+ * polyfill with `@finos/legend-dev-utils/jest/setupResizeObserverPolyfill`.
+ */
+window.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 // https://github.com/jsdom/jsdom/issues/2524
 window.TextEncoder = TextEncoder;
