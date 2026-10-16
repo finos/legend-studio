@@ -30,7 +30,7 @@ import {
   Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
-import { flowResult } from 'mobx';
+import { flowResult, when } from 'mobx';
 import {
   NORTHWIND_RUNTIME,
   northwindTable,
@@ -58,6 +58,7 @@ import {
   CubeExpressionFilterDraft,
   NEW_CONDITION_CODE,
 } from '../CubeExpressionFilterDraft.js';
+import { CubeCodeCheckStatus } from '../CubeExpressionAutoCheck.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -159,6 +160,18 @@ describe('Filter by Expression draft', () => {
     expect(draft.applyDisabledReason).toBe(
       'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
     );
+  });
+
+  test('Checks a condition never checked, e.g. a cube spec imported, as it opens, with no edit', async () => {
+    const { draft, fake } = open(
+      new ExpressionFilter('expressionFilter101', 'x | $x.ORDER_ID > 10300'),
+    );
+    expect(draft.checkStatus).toBe(CubeCodeCheckStatus.CHECKING);
+    await when(() => draft.checkStatus === CubeCodeCheckStatus.READY, {
+      timeout: 5000,
+    });
+    expect(fake.parseExpression).toHaveBeenCalledTimes(1);
+    expect(draft.applyDisabledReason).toBeUndefined();
   });
 
   test('Validates: parses the code, checks it located, plans it, then Apply stores a checked node', async () => {

@@ -138,6 +138,8 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   validating = false;
   /** Anything was changed; until then, `build()` gives the original back */
   private touched = false;
+  /** Its code was never checked, e.g. a cube's spec imported: it is checked as the editor opens */
+  private readonly checksOnOpen: boolean;
   /** The database type the last plan was for, named in its problem */
   private planDatabaseType: string | undefined;
   /** Checks the code once typing pauses */
@@ -171,6 +173,13 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
         editorState.host.applicationStore.alertUnhandledError,
       ),
     );
+    this.checksOnOpen =
+      !this.checked &&
+      this.code.trim() !== NEW_CONDITION_CODE.trim() &&
+      !editorState.readOnly;
+    if (this.checksOnOpen) {
+      this.autoCheck.schedule();
+    }
   }
 
   /** Where the check stands, for the code box's border */
@@ -180,7 +189,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
     }
     if (this.validating || !this.isValidated) {
       // a new condition, never edited, isn't checked until it is
-      return this.touched || this.checked
+      return this.touched || this.checked || this.checksOnOpen
         ? CubeCodeCheckStatus.CHECKING
         : CubeCodeCheckStatus.UNEDITED;
     }

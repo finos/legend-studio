@@ -134,6 +134,8 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   validating = false;
   /** Anything was changed; until then, `build()` gives the original back */
   private touched = false;
+  /** A row's code was never checked, e.g. a cube's spec imported: the rows are checked as the editor opens */
+  private readonly checksOnOpen: boolean;
   /** The database type the last plan was for, named in its problem */
   private planDatabaseType: string | undefined;
   /** Checks the rows once typing pauses */
@@ -177,6 +179,14 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
         editorState.host.applicationStore.alertUnhandledError,
       ),
     );
+    this.checksOnOpen =
+      !editorState.readOnly &&
+      this.rows.some(
+        (row) => !row.checked && row.code.trim() !== NEW_EXPRESSION_CODE.trim(),
+      );
+    if (this.checksOnOpen) {
+      this.autoCheck.schedule();
+    }
   }
 
   /**
@@ -188,7 +198,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       return CubeCodeCheckStatus.PROBLEM;
     }
     if (this.validating || row.checked?.code !== row.code) {
-      return !this.touched && !row.checked
+      return !this.touched && !row.checked && !this.checksOnOpen
         ? CubeCodeCheckStatus.UNEDITED
         : CubeCodeCheckStatus.CHECKING;
     }
