@@ -386,16 +386,15 @@ export const CodeEditor: React.FC<{
       registered = undefined;
     };
     // possibly none, as an editor mocked in tests gives
-    const onFocus: IDisposable | undefined =
-      editor.onDidFocusEditorText(register);
-    const onBlur: IDisposable | undefined =
-      editor.onDidBlurEditorText(unregister);
+    const subscriptions = [
+      editor.onDidFocusEditorText(register),
+      editor.onDidBlurEditorText(unregister),
+    ] as (IDisposable | undefined)[];
     if (editor.hasTextFocus()) {
       register();
     }
     return () => {
-      onFocus?.dispose();
-      onBlur?.dispose();
+      subscriptions.forEach((subscription) => subscription?.dispose());
       unregister();
     };
   }, [editor, language, hasCompletions, completionTriggerCharacters]);
