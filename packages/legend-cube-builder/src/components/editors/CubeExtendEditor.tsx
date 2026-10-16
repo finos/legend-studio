@@ -30,6 +30,7 @@ import { useState } from 'react';
 import {
   COLUMN_NAME_RULES_HINT,
   EXTEND_EDITOR_NOTES,
+  EXTEND_ROW_WAITING_ON_OTHERS,
   getExactColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -87,6 +88,13 @@ const CubeExtendRowStatus = observer(
               {row.problem.hint}
             </div>
           )}
+        </div>
+      );
+    }
+    if (draft.isRowWaitingOnOthers(row)) {
+      return (
+        <div className="text-sm text-[var(--color-text-muted)]">
+          {EXTEND_ROW_WAITING_ON_OTHERS}
         </div>
       );
     }

@@ -101,9 +101,12 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
   /** What the banner calls a lambda imported from the Import Pure dialog */
   IMPORTED: 'the Pure imported',
   NOT_JSON: (reason: string): string => `Can't read the JSON: ${reason}`,
-  /** The dialog's text checked as it is typed, once Cube can read it */
+  /** The dialog's text checked as it is typed, once Cube can read it and the engine types it */
   READABLE: (steps: number): string =>
-    `Cube reads it as ${steps} ${steps === 1 ? 'step' : 'steps'}, which Import puts in place of this cube`,
+    `Cube reads it as ${steps} ${steps === 1 ? 'step' : 'steps'}, which the engine compiles: Import puts them in place of this cube`,
+  /** The dialog's text read, but into a step Cube can't write */
+  NOT_VALID:
+    "Cube reads it, but one of its steps isn't valid: import it to see which",
 };
 
 /** The source id the engine's grammar gives what Import Pure parses, so its errors name it */
@@ -441,8 +444,31 @@ export class CubeLambdaImportState {
   }
 
   /**
+   * The cube a reading gives, typed by the engine as the editor would type
+   * it: throws the engine's error, or says a step Cube can't write
+   */
+  private async typeReading(reading: CubeLambdaReading): Promise<void> {
+    const { query, context } = reading.document;
+    const selected = query.selected;
+    const emitter = new QueryEmitter(query, this.editorState.registry);
+    if (!context || selected === undefined || !emitter.canEmit(selected)) {
+      throw new CubeLambdaReadError(CUBE_LAMBDA_IMPORT_MESSAGE.NOT_VALID);
+    }
+    const typed = (
+      await this.editorState.host.engine.typeLambdas(
+        context.model,
+        new Map([[selected, lambda([], [emitter.emitRelation(selected)])]]),
+      )
+    ).get(selected);
+    if (typed instanceof CubeEngineError) {
+      throw typed;
+    }
+  }
+
+  /**
    * Checks the dialog's text, once typing pauses: reads it into a cube, as
-   * Import would, without importing it; says why it can't be read
+   * Import would, without importing it, and has the engine type the cube;
+   * says why it can't be read or doesn't compile
    */
   *check(): GeneratorFn<void> {
     const text = this.text.trim();
@@ -452,6 +478,9 @@ export class CubeLambdaImportState {
     this.isChecking = true;
     try {
       const reading = (yield this.readText(text)) as CubeLambdaReading;
+      if (this.text.trim() === text) {
+        yield this.typeReading(reading);
+      }
       // the text changed meanwhile: its own check follows
       if (this.text.trim() === text) {
         this.checked = { text, reading };

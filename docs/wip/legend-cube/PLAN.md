@@ -5484,8 +5484,11 @@ complete from both Cube and the engine; give Import Pure the same editor.
     them with `position: fixed`, and the node editor's popper (a CSS transform) put them off screen.
   - The node editor leaves alone a press in that root (`isInCodeEditorFloatingWidgets`).
 - **Import Pure** is a code editor too:
-  - Its text is read into steps as Import would, once typing pauses, with nothing imported. Its border is green once
-    Cube can read it ("Cube reads it as N steps…"), and red with the reason otherwise.
+  - Its text is read into steps as Import would, once typing pauses, with nothing imported, and the engine types the
+    cube read. Its border is green once Cube reads it and the engine compiles it ("Cube reads it as N steps, which the
+    engine compiles…"), and red with the reason otherwise (a step Cube can't write is "import it to see which").
+  - Extend says a column read but waiting on another column's problem ("Typed once the other columns' expressions are
+    fixed"), as the columns are typed together, in place of "Checking…".
   - Import takes the reading, and the text left from before is checked again when the dialog opens again.
   - The engine completes its Pure on the cube's model.
 - Verified in Chromium on the Sports sample (Analytics :9010):

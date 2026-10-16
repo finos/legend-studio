@@ -37,7 +37,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { EXTEND_EDITOR_NOTES } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  EXTEND_EDITOR_NOTES,
+  EXTEND_ROW_WAITING_ON_OTHERS,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -272,6 +275,33 @@ describe('Extend editor', () => {
       ),
     ).toBeTruthy();
     await waitFor(() => expect(draftOf(state).validating).toBe(false));
+  });
+
+  test("Says a column read waits on another column's problem, as the columns are typed together", async () => {
+    const { state, fake } = await render();
+    const draft = draftOf(state);
+    act(() => draft.addRow());
+    const [first, second] = draft.rows.map((row) => row.key);
+    fake.parseExpression.mockImplementation(async (code) => {
+      if (code.endsWith('+')) {
+        throw new CubeEngineError(
+          CubeEngineErrorKind.COMPILE,
+          "no viable alternative at input '+'",
+        );
+      }
+      return { lambda: lambdaOf(code), located: lambdaOf(code) };
+    });
+    act(() => {
+      draft.setCode(first ?? 0, 'x | $x.ORDER_ID + 1');
+      draft.setCode(second ?? 0, 'x | $x.ORDER_ID +');
+    });
+    await within(panel()).findByText("no viable alternative at input '+'");
+    expect(
+      within(panel()).getByText(EXTEND_ROW_WAITING_ON_OTHERS),
+    ).toBeTruthy();
+    expect(
+      within(panel()).queryByText(CUBE_CODE_CHECK_LABEL.CHECKING),
+    ).toBeNull();
   });
 
   test('Underlines a problem the engine located in its code', async () => {

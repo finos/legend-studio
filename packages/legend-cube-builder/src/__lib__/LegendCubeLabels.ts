@@ -442,6 +442,10 @@ export const DIFFERENCE_EDITOR_NOTES = [
   'A difference column needs the same number type in both inputs; the difference of integers is an Integer, of floats a Float, and of decimals a Number.',
 ];
 
+/** What a new column's code says when it was read, but another column's problem keeps them all from being typed */
+export const EXTEND_ROW_WAITING_ON_OTHERS =
+  "Typed once the other columns' expressions are fixed";
+
 /** What the Extend editor says about its expressions (PLAN §11.7) */
 export const EXTEND_EDITOR_NOTES = [
   'Write each expression as a lambda of one row, such as x | $x.PRICE * $x.QTY: $x.PRICE reads the column PRICE. A column can use the new columns above it.',

@@ -207,6 +207,20 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       : CubeCodeCheckStatus.CHECKING;
   }
 
+  /**
+   * Whether a row's code was read but waits on another row's problem: the
+   * rows are typed together, once each one's code is right
+   */
+  isRowWaitingOnOthers(row: CubeExtendRow): boolean {
+    return (
+      !this.validating &&
+      !row.problem &&
+      row.checked?.code === row.code &&
+      row.type === undefined &&
+      this.rows.some((other) => other.key !== row.key && other.problem)
+    );
+  }
+
   /** Checks the rows at once (F10), not waiting for typing to pause */
   checkNow(): void {
     this.autoCheck.now();
