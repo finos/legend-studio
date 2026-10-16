@@ -16,3 +16,4 @@
 
 export * from './components/__test-utils__/BrowserEnvironmentTestUtils.js';
 export * from './stores/__test-utils__/ApplicationStoreTestUtils.js';
+export * from './application/__test-utils__/BackendOverridesTestUtils.js';

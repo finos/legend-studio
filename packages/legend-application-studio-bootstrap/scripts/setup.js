@@ -41,6 +41,13 @@ export const setup = (outputDir) => {
       {
         appName: 'studio',
         env: 'local',
+        application: {
+          // lets developers point Studio at other backend servers (e.g. SDLC)
+          // from Developer Tools' backend servers
+          backendOverrides: {
+            enabled: true,
+          },
+        },
         sdlc: {
           url: 'http://localhost:6100/api',
         },
