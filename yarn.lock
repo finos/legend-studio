@@ -3026,7 +3026,7 @@ __metadata:
     "@types/react": "npm:19.0.10"
     "@types/react-dom": "npm:19.0.4"
     "@xyflow/react": "npm:12.4.4"
-    axios: "npm:1.16.0"
+    axios: "npm:1.20.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
     jest: "npm:29.7.0"
@@ -8035,17 +8035,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.16.0":
-  version: 1.16.0
-  resolution: "axios@npm:1.16.0"
-  dependencies:
-    follow-redirects: "npm:^1.16.0"
-    form-data: "npm:^4.0.5"
-    proxy-from-env: "npm:^2.1.0"
-  checksum: 10/cf8b521ff732c21550b38c8739aef556ea5e14b268468bb89e4307416ab262b462e582474e810963a3d61c2392ab47ad35c11d05eff027de7c97113bc7411623
-  languageName: node
-  linkType: hard
-
 "axios@npm:1.20.0":
   version: 1.20.0
   resolution: "axios@npm:1.20.0"
@@ -11825,7 +11814,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.5, form-data@npm:^4.0.6":
+"form-data@npm:^4.0.6":
   version: 4.0.6
   resolution: "form-data@npm:4.0.6"
   dependencies:
