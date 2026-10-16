@@ -196,8 +196,15 @@
   }
 
   &__type.background--primitive {
+    // Primitive type names (String, Integer, Float, ...) are short, so on narrow
+    // rows this box yields width to long property names by shrinking down to a
+    // 12rem minimum (still fits the label and the "Click to edit" hover hint).
+    // When there is room, it grows back to the standard 20rem used for
+    // class/enumeration types.
     border-radius: 0.2rem;
+    flex: 0 1 20rem;
     width: 20rem;
+    min-width: 12rem;
     background: var(--color-category-primitive);
   }
 
