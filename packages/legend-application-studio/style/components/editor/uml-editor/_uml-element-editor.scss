@@ -44,7 +44,7 @@
     }
 
     &__content {
-      height: calc(100% - 5.6rem);
+      height: calc(100% - 7.2rem);
       background: var(--color-bg-panel);
     }
 
@@ -122,18 +122,37 @@
 
   &__tabs__header {
     padding-left: 0;
+
+    // Taller than a standard panel header so that, when the tab strip
+    // overflows horizontally, the scrollbar has its own room below the tabs
+    // instead of overlapping the active-tab indicator and clipping labels.
+    height: 4.4rem;
+    min-height: 4.4rem;
   }
 
   &__tabs {
-    height: 2.8rem;
+    height: 4.4rem;
     z-index: 1;
     display: flex;
+    // Pin tabs to the top, but pad the top edge so labels aren't clipped and
+    // read as vertically centered; the horizontal scrollbar then sits in the
+    // space below the labels and the active-tab underline.
+    align-items: flex-start;
+    padding-top: 0.6rem;
     overflow-x: auto;
     overflow-y: hidden;
+
+    &::-webkit-scrollbar {
+      height: 0.45rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      margin: 0 8rem 0 1rem;
+    }
   }
 
   &__tab {
-    height: 100%;
+    height: 2.9rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -141,6 +160,11 @@
     border-right: 0.1rem solid var(--color-border-default);
     white-space: nowrap;
     cursor: pointer;
+    user-select: none;
+  }
+
+  &__tab:hover {
+    background: var(--color-dark-grey-100);
   }
 
   &__tab--active {
@@ -151,7 +175,8 @@
   &__tab--active::after {
     content: '';
     height: 0.4rem;
-    width: 100%;
+    left: 1rem;
+    right: 1rem;
     position: absolute;
     bottom: 0;
     background: var(--color-active-indicator);
