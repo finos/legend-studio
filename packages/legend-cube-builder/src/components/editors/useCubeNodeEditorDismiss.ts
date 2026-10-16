@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { isInCodeEditorFloatingWidgets } from '@finos/legend-lego/code-editor';
 import { useEffect } from 'react';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
@@ -25,7 +26,8 @@ import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
  * (a plain click on the background closes it, through the canvas); the
  * splitter above the results, as the editor follows its node when the
  * canvas is resized; and MUI's layers, where a dropdown, menu or dialog
- * opened from the editor lives.
+ * opened from the editor lives; and its code editors' completions and
+ * hovers, shown in the page's body.
  */
 const LEFT_ALONE =
   '.react-flow__node, .react-flow__pane, .react-flow__controls, .react-flow__minimap, .reflex-splitter, .MuiModal-root, .MuiPopover-root, .MuiPopper-root';
@@ -40,7 +42,8 @@ export const isCubeNodeEditorDismissedBy = (
 ): boolean =>
   target instanceof Element &&
   !editor?.contains(target) &&
-  target.closest(LEFT_ALONE) === null;
+  target.closest(LEFT_ALONE) === null &&
+  !isInCodeEditorFloatingWidgets(target);
 
 /**
  * Closes the floating node editor, applying its edits, on a press of the

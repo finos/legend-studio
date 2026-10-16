@@ -234,6 +234,14 @@ const getOverflowWidgetsRoot = (): HTMLElement => {
   return root;
 };
 
+/**
+ * Whether the target is in the floating widgets editors render in the page's
+ * body (`floatingWidgetsInBody`): a press there is in the editor, for a
+ * container closing on a press outside it
+ */
+export const isInCodeEditorFloatingWidgets = (target: Element): boolean =>
+  target.closest(`#${OVERFLOW_WIDGETS_ROOT_ID}`) !== null;
+
 export const CodeEditor: React.FC<{
   inputValue: string;
   isReadOnly?: boolean | undefined;
