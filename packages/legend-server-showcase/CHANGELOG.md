@@ -1,5 +1,11 @@
 # @finos/legend-server-showcase
 
+## 0.2.74
+
+### Patch Changes
+
+- [#5719](https://github.com/finos/legend-studio/pull/5719) [`7002c11`](https://github.com/finos/legend-studio/commit/7002c11228f2b75ef88edbae013e9af7882d4cc4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Update dependencies to address security advisories (`swiper`, `fast-xml-parser`, `axios`, `lodash`, `lodash-es`, `dompurify`, `postcss`, `fastify`) and refresh transitive dependencies in the lockfile.
+
 ## 0.2.73
 
 ## 0.2.72

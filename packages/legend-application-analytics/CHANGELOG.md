@@ -1,5 +1,11 @@
 # @finos/legend-application-analytics
 
+## 0.0.2
+
+### Patch Changes
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Name the producer deployments in Legend Cube's Ingest tab with the Legend user service Marketplace's producer info reads (`dataProductConfig.producer.deploymentLegendServiceUrl`), falling back to their ids.
+
 ## 0.0.1
 
 ### Patch Changes

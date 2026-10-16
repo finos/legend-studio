@@ -1,5 +1,43 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.2
+
+### Patch Changes
+
+- [#5721](https://github.com/finos/legend-studio/pull/5721) [`3bc202a`](https://github.com/finos/legend-studio/commit/3bc202acbe562acedd5ebde8cb572c69e8505442) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Stub `ResizeObserver` in the `DataProductViewer` tests, whose polyfill took most of their time and made them time out on slower machines.
+
+- [#5719](https://github.com/finos/legend-studio/pull/5719) [`7002c11`](https://github.com/finos/legend-studio/commit/7002c11228f2b75ef88edbae013e9af7882d4cc4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Update dependencies to address security advisories (`swiper`, `fast-xml-parser`, `axios`, `lodash`, `lodash-es`, `dompurify`, `postcss`, `fastify`) and refresh transitive dependencies in the lockfile.
+
+- [#5713](https://github.com/finos/legend-studio/pull/5713) [`2749e96`](https://github.com/finos/legend-studio/commit/2749e96cc404ac00ad05496adedc46fb575d6a31) ([@jackp5150](https://github.com/jackp5150)) - Fix related dataspaces url for studio preview
+
+- [#5714](https://github.com/finos/legend-studio/pull/5714) [`16e9da1`](https://github.com/finos/legend-studio/commit/16e9da1fbce9cb47ed0ea2eb9822ef3bda857529) ([@TharunRajeev](https://github.com/TharunRajeev)) - 1. **Cross-APG status leak** (`DataProductAPGState.ts`,
+  `fetchDataRequestAccessFallback`): this fallback fetches every data
+  request for the whole data product, but never filtered the list down to
+  the current APG before matching on org membership. The first request
+  where the user's org happened to match was blindly attributed to
+  whichever APG ran the fallback, regardless of which APG the request was
+  actually for.
+
+  2. **Duplicate requests not ranked** (same method): once filtered to the
+     correct APG, the fallback also stopped at the _first_ org-matched request
+     instead of picking the most advanced one among duplicates (e.g. an
+     earlier denied request vs. a newer pending one) — unlike the existing,
+     correct handling for duplicate _contracts_ elsewhere in the same file.
+  3. **Wrong popup on click** (`DataProductAPGState.ts`,
+     `handleContractClick`): the click handler opened the contract viewer
+     whenever _any_ contract existed for the APG, regardless of whether it was
+     stale/denied, instead of checking which source (contract vs.
+     request) actually produced the currently-displayed access status.
+  4. **Missing per-APG guard on the request dialog**
+     (`DataProductAPGAccessRequestControl.tsx`): the request viewer dialog
+     read off state shared across all APGs in the list, without the same
+     per-APG ownership check the contract viewer already had.
+  5. **Backdrop blackout** (`DataAccessRequestViewer.tsx`): the dialog used
+     MUI's default opaque backdrop for the pending/in-progress data access
+     request popup.
+
+     Fix APG-specific access status resolution, request dialog ownership/routing, and pending request viewer backdrop behavior for data products.
+
 ## 0.2.1
 
 ### Patch Changes
