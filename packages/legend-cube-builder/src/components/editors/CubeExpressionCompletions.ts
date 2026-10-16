@@ -21,12 +21,14 @@ import {
   CodeEditorCompletionKind,
 } from '@finos/legend-lego/code-editor';
 import { getColumnTypeLabel } from '../../__lib__/LegendCubeLabels.js';
+import type { CubeCodeCompletion } from '../../graph-manager/CubeEngine.js';
 import { pureStringLiteral } from '../../stores/CubePureText.js';
 
 // The completions of a Pure expression of one row, `x | …` (user,
-// 2026-10-16), from what Cube knows without the engine: after `$x.` the
-// columns the expression can read, with their types, after `$` the same as
-// `x.COLUMN`, and after `$x.COLUMN->` the functions of its type.
+// 2026-10-16): Cube's own, from what it knows without the engine (after
+// `$x.` the columns the expression can read, with their types, after `$`
+// the same as `x.COLUMN`, and after `$x.COLUMN->` the functions of its
+// type), then the engine's, where it completes code.
 
 /** A column an expression can read: the input's, or a new column above it */
 export interface CubeCompletionColumn {
@@ -222,11 +224,83 @@ export const getCubeExpressionCompletions = (
   return [];
 };
 
-/** A code editor's completions of a Pure expression reading these columns */
+/** The engine's completions of the code typed so far: undefined when it completes no code */
+export type CubeEngineCompletionSource = (
+  textBeforeCursor: string,
+) => Promise<readonly CubeCodeCompletion[] | undefined>;
+
+/** How long the completions wait for the engine's, before showing Cube's own alone */
+export const CUBE_ENGINE_COMPLETIONS_WAIT_MS = 1000;
+
+/** A completion's name, to tell the engine's that Cube already offers: `contains` of `contains(…)` */
+const keyOf = (label: string): string =>
+  label.replace(/\(.*$/su, '').replace(/^'|'$/gu, '').trim();
+
+/** The engine's completions after Cube's own, but those Cube offers already */
+export const mergeCubeEngineCompletions = (
+  own: readonly CodeEditorCompletion[],
+  engine: readonly CubeCodeCompletion[],
+  textBeforeCursor: string,
+): CodeEditorCompletion[] => {
+  const offered = new Set(own.map((each) => keyOf(each.label)));
+  // the engine completes the word being typed
+  const replaceLength = /[A-Za-z0-9_]*$/u.exec(textBeforeCursor)?.[0].length;
+  return [
+    ...own,
+    ...engine
+      .filter(({ display }) => !offered.has(keyOf(display)))
+      .map(({ completion, display }) => ({
+        label: display,
+        insertText: completion,
+        kind: CodeEditorCompletionKind.TEXT,
+        replaceLength,
+      })),
+  ];
+};
+
+/** The engine's completions, or none once they take too long or fail */
+const engineCompletionsWithin = async (
+  engine: CubeEngineCompletionSource,
+  textBeforeCursor: string,
+): Promise<readonly CubeCodeCompletion[]> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return (
+      (await Promise.race([
+        engine(textBeforeCursor),
+        new Promise<undefined>((resolve) => {
+          timer = setTimeout(
+            () => resolve(undefined),
+            CUBE_ENGINE_COMPLETIONS_WAIT_MS,
+          );
+        }),
+      ])) ?? []
+    );
+  } catch {
+    // half-typed code the engine can't complete: Cube's own only
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+/**
+ * A code editor's completions of a Pure expression reading these columns:
+ * Cube's own, then the engine's, when given
+ */
 export const getCubeExpressionCompletionSource = (
   columns: readonly CubeCompletionColumn[],
+  engine?: CubeEngineCompletionSource | undefined,
 ): CodeEditorCompletionSource => ({
   triggerCharacters: TRIGGERS,
-  getCompletions: (textBeforeCursor) =>
-    getCubeExpressionCompletions(textBeforeCursor, columns),
+  getCompletions: async (textBeforeCursor) => {
+    const own = getCubeExpressionCompletions(textBeforeCursor, columns);
+    return engine
+      ? mergeCubeEngineCompletions(
+          own,
+          await engineCompletionsWithin(engine, textBeforeCursor),
+          textBeforeCursor,
+        )
+      : own;
+  },
 });

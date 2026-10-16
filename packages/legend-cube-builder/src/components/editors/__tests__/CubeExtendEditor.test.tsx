@@ -176,8 +176,12 @@ describe('Extend editor', () => {
     expect(draftOf(state).rows[0]?.code).toBe('x | $x.ORDER_ID');
   });
 
-  test("Offers the columns an expression can read as it is typed, the input's and the new ones above it, while its editor has the focus", async () => {
-    const { state } = await render();
+  test("Offers the columns an expression can read as it is typed, the input's and the new ones above it, while its editor has the focus, then the engine's completions", async () => {
+    const { state, fake } = await render();
+    fake.completeCode.mockResolvedValue([
+      { completion: 'ORDER_ID', display: 'ORDER_ID' },
+      { completion: 'meta::pure::functions', display: 'meta' },
+    ]);
     act(() =>
       draftOf(state).setName(draftOf(state).rows[0]?.key ?? 0, 'TOTAL'),
     );
@@ -209,7 +213,15 @@ describe('Extend editor', () => {
     expect(suggestions.map((each) => each.label)).toEqual([
       ...ORDERS_COLUMNS.map((column) => column.name),
       'TOTAL',
+      // the engine's, but those Cube offers already
+      'meta',
     ]);
+    // written as a new column of the input, after the rows above it
+    expect(fake.completeCode).toHaveBeenCalledWith(
+      CONTEXT.model,
+      expect.anything(),
+      '->extend(~TOTAL:x | )->extend(~col_1:x | $x.',
+    );
   });
 
   test('Checks the expressions once typing pauses, shows each type with a green border, then Apply stores the typed node', async () => {

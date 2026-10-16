@@ -118,6 +118,7 @@ export interface FakeCubeEngine {
   readonly serializeLambda: jest.Mock<CubeEngine['serializeLambda']>;
   readonly parseExpression: jest.Mock<CubeEngine['parseExpression']>;
   readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
+  readonly completeCode: jest.Mock<CubeEngine['completeCode']>;
 }
 
 /** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
@@ -171,6 +172,10 @@ export const createFakeCubeEngine = (
   const planLambda = jest.fn<CubeEngine['planLambda']>(async () =>
     Promise.resolve(),
   );
+  // by default, an engine that completes no code
+  const completeCode = jest.fn<CubeEngine['completeCode']>(async () =>
+    Promise.resolve(undefined),
+  );
   return {
     engine: {
       loadModel,
@@ -182,6 +187,7 @@ export const createFakeCubeEngine = (
       serializeLambda,
       parseExpression,
       planLambda,
+      completeCode,
     },
     loadModel,
     resolveSchemas,
@@ -192,5 +198,6 @@ export const createFakeCubeEngine = (
     serializeLambda,
     parseExpression,
     planLambda,
+    completeCode,
   };
 };

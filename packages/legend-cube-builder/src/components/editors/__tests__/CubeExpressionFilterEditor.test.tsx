@@ -25,11 +25,13 @@ import {
   PrimitiveType,
   Query,
   Schema,
+  QueryEmitter,
   SchemaColumn,
 } from '@finos/legend-cube';
 import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,
+  MockedMonacoEditorLanguagesAPI,
 } from '@finos/legend-lego/code-editor/test';
 import {
   act,
@@ -172,6 +174,45 @@ describe('Filter by Expression editor', () => {
     );
     expect(state.nodeEditor.draft).toBeInstanceOf(CubeExpressionFilterDraft);
     expect(draftOf(state).code).toBe('x | ');
+  });
+
+  test("Offers the input's columns as the condition is typed, then the engine's completions of it written as the input's filter", async () => {
+    const { state, fake } = await render();
+    fake.completeCode.mockResolvedValue([
+      { completion: 'SHIPPED_DATE', display: 'SHIPPED_DATE' },
+      { completion: 'isAfterDay(', display: 'isAfterDay' },
+    ]);
+    MockedMonacoEditorLanguagesAPI.registerCompletionItemProvider.mockClear();
+    const [onFocus] =
+      MockedMonacoEditorInstance.onDidFocusEditorText.mock.calls.at(-1) as [
+        () => void,
+      ];
+    act(() => onFocus());
+    const [, provider] = MockedMonacoEditorLanguagesAPI
+      .registerCompletionItemProvider.mock.calls[0] as [
+      string,
+      {
+        provideCompletionItems: (
+          model: unknown,
+          position: unknown,
+        ) => Promise<{ suggestions: { label: string }[] }>;
+      },
+    ];
+    const { suggestions } = await provider.provideCompletionItems(
+      { getValueInRange: () => 'x | $x.' },
+      { lineNumber: 1, column: 8 },
+    );
+    expect(suggestions.map((each) => each.label)).toEqual([
+      ...ORDERS_COLUMNS.map((column) => column.name),
+      'isAfterDay',
+    ]);
+    expect(fake.completeCode).toHaveBeenCalledWith(
+      CONTEXT.model,
+      new QueryEmitter(state.document.query, state.registry).emitRelation(
+        'relational101',
+      ),
+      '->filter(x | $x.',
+    );
   });
 
   test("Writes an input column's access at the end of the condition", async () => {

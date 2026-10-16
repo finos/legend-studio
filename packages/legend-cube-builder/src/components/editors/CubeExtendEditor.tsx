@@ -193,7 +193,9 @@ const CubeExtendRowEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(row)}
-            completions={getCubeExpressionCompletionSource(columns)}
+            completions={getCubeExpressionCompletionSource(columns, (text) =>
+              draft.getEngineCompletions(row.key, text),
+            )}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',

@@ -159,7 +159,10 @@ export const CubeExpressionFilterEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(draft.problem)}
-            completions={getCubeExpressionCompletionSource(schema.columns)}
+            completions={getCubeExpressionCompletionSource(
+              schema.columns,
+              (text) => draft.getEngineCompletions(text),
+            )}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',

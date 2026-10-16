@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { PrimitiveType, SchemaColumn } from '@finos/legend-cube';
-import { getCubeExpressionCompletions } from '../CubeExpressionCompletions.js';
+import type { CodeEditorCompletion } from '@finos/legend-lego/code-editor';
+import type { CubeCodeCompletion } from '../../../graph-manager/CubeEngine.js';
+import {
+  CUBE_ENGINE_COMPLETIONS_WAIT_MS,
+  getCubeExpressionCompletions,
+  getCubeExpressionCompletionSource,
+  mergeCubeEngineCompletions,
+} from '../CubeExpressionCompletions.js';
 
 const COLUMNS = [
   new SchemaColumn('ORDER_ID', PrimitiveType.get('Integer'), false),
@@ -132,6 +139,67 @@ describe("A Pure expression's completions as it is typed", () => {
       'isNotEmpty',
       'in',
       'toOne',
+    ]);
+  });
+});
+
+describe("The engine's completions, after Cube's own", () => {
+  const ENGINE: CubeCodeCompletion[] = [
+    { completion: 'CITY', display: 'CITY' },
+    { completion: 'contains(', display: 'contains(String[1])' },
+    { completion: 'matches(', display: 'matches' },
+  ];
+
+  test('Come after them, those Cube offers already left out, completing the word being typed', () => {
+    const own = getCubeExpressionCompletions('x | $x.CITY->', COLUMNS);
+    const merged = mergeCubeEngineCompletions(own, ENGINE, 'x | $x.CITY->ma');
+    expect(merged.slice(0, own.length)).toEqual(own);
+    // contains is Cube's already
+    expect(merged.slice(own.length)).toEqual([
+      expect.objectContaining({ label: 'CITY', insertText: 'CITY' }),
+      expect.objectContaining({
+        label: 'matches',
+        insertText: 'matches(',
+        replaceLength: 2,
+      }),
+    ]);
+  });
+
+  const labelsOf = async (
+    completions:
+      | Promise<readonly CodeEditorCompletion[]>
+      | readonly CodeEditorCompletion[],
+  ): Promise<string[]> => (await completions).map((each) => each.label);
+
+  test("Show Cube's own alone when the engine fails, completes no code, or takes too long", async () => {
+    const own = labels('x | $x.');
+    const failing = getCubeExpressionCompletionSource(COLUMNS, () =>
+      Promise.reject(new Error('Unexpected token')),
+    );
+    expect(await labelsOf(failing.getCompletions('x | $x.'))).toEqual(own);
+    const none = getCubeExpressionCompletionSource(COLUMNS, () =>
+      Promise.resolve(undefined),
+    );
+    expect(await labelsOf(none.getCompletions('x | $x.'))).toEqual(own);
+    jest.useFakeTimers();
+    try {
+      const slow = getCubeExpressionCompletionSource(
+        COLUMNS,
+        () => new Promise(() => undefined),
+      );
+      const completions = slow.getCompletions('x | $x.');
+      jest.advanceTimersByTime(CUBE_ENGINE_COMPLETIONS_WAIT_MS);
+      expect(await labelsOf(completions)).toEqual(own);
+    } finally {
+      jest.useRealTimers();
+    }
+    const engine = getCubeExpressionCompletionSource(COLUMNS, () =>
+      Promise.resolve(ENGINE),
+    );
+    expect(await labelsOf(engine.getCompletions('x | $x.'))).toEqual([
+      ...own,
+      'contains(String[1])',
+      'matches',
     ]);
   });
 });

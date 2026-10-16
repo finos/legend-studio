@@ -692,6 +692,72 @@ describe('Legend Cube engine: Pure text', () => {
   });
 });
 
+describe('Legend Cube engine: code completion', () => {
+  const RELATION = storeAccessor(ACCESSOR);
+
+  const notFound = (): NetworkClientError =>
+    new NetworkClientError(
+      {
+        status: 404,
+        statusText: 'Not Found',
+        url: 'http://engine',
+      } as Response,
+      undefined,
+    );
+
+  test("Completes code written after the relation's Pure text, its bar left out, on the cube's model, the relation rendered once", async () => {
+    const engine = newEngine();
+    const render = jest
+      .spyOn(engine.client, 'JSONToGrammar_lambda')
+      .mockResolvedValue('|#>{test::Db.S.T}#');
+    const complete = jest
+      .spyOn(engine.client, 'completeCode')
+      .mockResolvedValue(
+        answer(
+          '{"completions":[{"completion":"CITY","display":"CITY"},{"completion":"contains(","display":"contains"}]}',
+        ),
+      );
+    expect(
+      await engine.completeCode(MODEL, RELATION, '->filter(x | $x.'),
+    ).toEqual([
+      { completion: 'CITY', display: 'CITY' },
+      { completion: 'contains(', display: 'contains' },
+    ]);
+    expect(complete.mock.calls[0]?.[0]).toEqual({
+      codeBlock: '#>{test::Db.S.T}#->filter(x | $x.',
+      model: MODEL,
+    });
+    await engine.completeCode(MODEL, RELATION, '->filter(x | $x.C');
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(complete).toHaveBeenCalledTimes(2);
+  });
+
+  test('Completes no code once the engine answers it has no code completion, and asks it no more', async () => {
+    const engine = newEngine();
+    jest.spyOn(engine.client, 'JSONToGrammar_lambda').mockResolvedValue('|1');
+    const complete = jest
+      .spyOn(engine.client, 'completeCode')
+      .mockRejectedValue(notFound());
+    expect(await engine.completeCode(MODEL, RELATION, '->')).toBeUndefined();
+    expect(await engine.completeCode(MODEL, RELATION, '->f')).toBeUndefined();
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  test("Rejects on code the engine can't complete, and asks again next time", async () => {
+    const engine = newEngine();
+    jest.spyOn(engine.client, 'JSONToGrammar_lambda').mockResolvedValue('|1');
+    const complete = jest
+      .spyOn(engine.client, 'completeCode')
+      .mockRejectedValueOnce(networkError({ message: 'Unexpected token' }))
+      .mockResolvedValue(answer('{"completions":[]}'));
+    await expect(
+      engine.completeCode(MODEL, RELATION, '->filter(x |'),
+    ).rejects.toBeInstanceOf(CubeEngineError);
+    expect(await engine.completeCode(MODEL, RELATION, '->filter(')).toEqual([]);
+    expect(complete).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('Debugging a run (PLAN §11.16)', () => {
   test('Gives a lambda as the engine receives it, pretty-printed, its numbers exact', () => {
     const text = newEngine().serializeLambda(

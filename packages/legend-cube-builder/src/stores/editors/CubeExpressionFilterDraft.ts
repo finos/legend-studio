@@ -45,6 +45,7 @@ import {
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeCodeCompletion,
   type CubeParsedExpression,
   type CubeSourceLocation,
   type NodeId,
@@ -63,6 +64,7 @@ import {
   CubeCodeCheckStatus,
   CubeExpressionAutoCheck,
 } from './CubeExpressionAutoCheck.js';
+import { getCubeEngineCompletions } from './CubeEngineCompletions.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
 /** What the engine made of the condition's code the last time it was validated */
@@ -190,6 +192,17 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   /** Checks the code at once (F10), not waiting for typing to pause */
   checkNow(): void {
     this.autoCheck.now();
+  }
+
+  /** The engine's completions of the condition typed so far, written as the input's filter */
+  getEngineCompletions(
+    textBeforeCursor: string,
+  ): Promise<readonly CubeCodeCompletion[] | undefined> {
+    return getCubeEngineCompletions(
+      this.editorState,
+      this.original.id,
+      `->filter(${textBeforeCursor}`,
+    );
   }
 
   override dispose(): void {

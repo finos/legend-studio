@@ -46,6 +46,7 @@ import {
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeCodeCompletion,
   type CubeParsedExpression,
   type CubeSourceLocation,
   type NodeId,
@@ -63,6 +64,10 @@ import {
   CubeCodeCheckStatus,
   CubeExpressionAutoCheck,
 } from './CubeExpressionAutoCheck.js';
+import {
+  colSpecOf,
+  getCubeEngineCompletions,
+} from './CubeEngineCompletions.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
 /** What the engine made of a row's code the last time it was validated */
@@ -195,6 +200,27 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   /** Checks the rows at once (F10), not waiting for typing to pause */
   checkNow(): void {
     this.autoCheck.now();
+  }
+
+  /**
+   * The engine's completions of a row's code typed so far, written as a new
+   * column of the input after the rows above it, which it can use
+   */
+  getEngineCompletions(
+    key: number,
+    textBeforeCursor: string,
+  ): Promise<readonly CubeCodeCompletion[] | undefined> {
+    const index = this.rows.findIndex((row) => row.key === key);
+    const row = this.rows[index];
+    const above = this.rows
+      .slice(0, Math.max(index, 0))
+      .map(({ name, code }) => `->extend(${colSpecOf(name)}:${code})`)
+      .join('');
+    return getCubeEngineCompletions(
+      this.editorState,
+      this.original.id,
+      `${above}->extend(${colSpecOf(row?.name ?? '')}:${textBeforeCursor}`,
+    );
   }
 
   override dispose(): void {
