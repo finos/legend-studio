@@ -20,20 +20,24 @@ import { noop } from '@finos/legend-shared';
 import {
   Background,
   type Connection as FlowConnection,
+  ControlButton,
   Controls,
   type Edge,
+  getViewportForBounds,
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  type Rect,
   useNodesInitialized,
   useReactFlow,
   useStore,
+  type Viewport,
 } from '@xyflow/react';
 // imported here, not in the builder's stylesheet, so it loads with the Cube
 // page's chunk: Query's reactflow 11 lineage viewer uses the same class names
 import '@xyflow/react/dist/style.css';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
@@ -73,6 +77,41 @@ const PRO_OPTIONS = { hideAttribution: true };
 const MINI_MAP_STYLE = { width: 120, height: 80 };
 // little padding, so a long flow keeps its text as large as it can
 const FIT_VIEW_OPTIONS = { padding: 0.1, maxZoom: 1 };
+const CANVAS_MIN_ZOOM = 0.2;
+/** The space left of the graph once fitted to the left (feedback, 2026-10-16) */
+export const CUBE_CANVAS_LEFT_MARGIN = 32;
+
+/**
+ * The viewport that shows the graph whole, zoomed as fitting it would, but
+ * against the canvas's left edge rather than centred (feedback, 2026-10-16,
+ * as the internal application lays its graphs out); centred top to bottom
+ */
+export const getCubeCanvasLeftAlignedViewport = (
+  bounds: Rect,
+  width: number,
+  height: number,
+): Viewport => {
+  const { zoom, y } = getViewportForBounds(
+    bounds,
+    width,
+    height,
+    CANVAS_MIN_ZOOM,
+    FIT_VIEW_OPTIONS.maxZoom,
+    FIT_VIEW_OPTIONS.padding,
+  );
+  return { x: CUBE_CANVAS_LEFT_MARGIN - bounds.x * zoom, y, zoom };
+};
+
+/** React Flow's fit view icon, for the button that fits the graph to the left */
+const FitViewIcon: React.FC = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 32 30"
+    aria-hidden={true}
+  >
+    <path d="M3.692 4.63c0-.53.4-.938.939-.938h5.215V0H4.708C2.13 0 0 2.054 0 4.63v5.216h3.692V4.631zM27.354 0h-5.2v3.692h5.17c.53 0 .984.4.984.939v5.215H32V4.631A4.624 4.624 0 0027.354 0zm.954 24.83c0 .532-.4.94-.939.94h-5.215v3.768h5.215c2.577 0 4.631-2.13 4.631-4.707v-5.139h-3.692v5.139zm-23.677.94c-.531 0-.939-.4-.939-.94v-5.138H0v5.139c0 2.577 2.13 4.707 4.708 4.707h5.138V25.77H4.631z" />
+  </svg>
+);
 
 /**
  * Whether dragging from one handle to another may connect the two nodes: out
@@ -94,16 +133,16 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const { editorState } = props;
   const { query } = editorState.document;
   const { readOnly } = editorState;
-  const { fitView } = useReactFlow();
+  const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const positions = useMemo(() => layoutCubeQuery(query), [query]);
   const nodes = useMemo(
     () => buildCubeCanvasNodes(query, positions),
     [query, positions],
   );
   const edges = useMemo(() => buildCubeCanvasEdges(query), [query]);
-  // the view fits the graph again whenever the layout moves a node, or the
-  // canvas changes size (e.g. the splitter above the grid moves), once React
-  // Flow has measured every node: it fits only measured ones
+  // the view fits the graph again, to the left, whenever the layout moves a
+  // node, or the canvas changes size (e.g. the splitter above the grid
+  // moves), once React Flow has measured every node
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
     [positions],
@@ -111,15 +150,26 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const nodesInitialized = useNodesInitialized();
   const canvasWidth = useStore((state) => state.width);
   const canvasHeight = useStore((state) => state.height);
+  const fitToLeft = useCallback((): void => {
+    const shown = getNodes();
+    if (!shown.length || !canvasWidth || !canvasHeight) {
+      return;
+    }
+    setViewport(
+      getCubeCanvasLeftAlignedViewport(
+        getNodesBounds(shown),
+        canvasWidth,
+        canvasHeight,
+      ),
+    ).catch(noop());
+  }, [getNodes, getNodesBounds, setViewport, canvasWidth, canvasHeight]);
   useEffect(() => {
     if (!nodesInitialized) {
       return undefined;
     }
-    const timer = window.setTimeout(() => {
-      fitView(FIT_VIEW_OPTIONS).catch(noop());
-    }, 0);
+    const timer = window.setTimeout(fitToLeft, 0);
     return () => window.clearTimeout(timer);
-  }, [layoutSignature, canvasWidth, canvasHeight, nodesInitialized, fitView]);
+  }, [layoutSignature, nodesInitialized, fitToLeft]);
 
   return (
     <ReactFlow<CubeCanvasFlowNode, CubeCanvasFlowEdge>
@@ -242,13 +292,21 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           : 'dark'
       }
       proOptions={PRO_OPTIONS}
-      fitView={true}
-      fitViewOptions={FIT_VIEW_OPTIONS}
-      minZoom={0.2}
+      minZoom={CANVAS_MIN_ZOOM}
       maxZoom={1.5}
     >
       <Background />
-      <Controls showInteractive={false} />
+      <Controls showInteractive={false} showFitView={false}>
+        {/* in place of React Flow's, which centres the graph */}
+        <ControlButton
+          className="react-flow__controls-fitview"
+          title="fit view"
+          aria-label="fit view"
+          onClick={fitToLeft}
+        >
+          <FitViewIcon />
+        </ControlButton>
+      </Controls>
       <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
       <CubeNodeEditorPopper editorState={editorState} positions={positions} />
     </ReactFlow>
