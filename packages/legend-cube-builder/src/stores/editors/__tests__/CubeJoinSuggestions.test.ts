@@ -386,11 +386,46 @@ describe('The join columns the Join editor suggests', () => {
     ).toEqual([]);
   });
 
-  test('Takes ID, CUSTOMER_ID, CustomerId and ORDER_KEY for keys, not NAME', () => {
+  test('Takes ID, CUSTOMER_ID, CustomerId, ORDER_KEY and ORDER_NO for keys, not NAME, VALID, PAID or GRID', () => {
     expect(
-      ['ID', 'CUSTOMER_ID', 'CustomerId', 'ORDER_KEY', 'NAME', 'IDEA'].map(
-        isKeyLikeColumnName,
-      ),
-    ).toEqual([true, true, true, true, false, false]);
+      [
+        'ID',
+        'id',
+        'CUSTOMER_ID',
+        'CustomerId',
+        'ORDER_KEY',
+        'ORDER_NO',
+        'NAME',
+        'IDEA',
+        'VALID',
+        'PAID',
+        'GRID',
+      ].map(isKeyLikeColumnName),
+    ).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+  });
+
+  test("Doesn't join on a column both sides name alike that only ends like a key", () => {
+    const suggestions = suggestJoinKeys({
+      leftSchema: schemaOf([['VALID', STRING]]),
+      rightSchema: schemaOf([['VALID', STRING]]),
+      leftOrigins: originsOf(tableSource('relational101', 'L')),
+      rightOrigins: originsOf(tableSource('relational102', 'R')),
+      outline: undefined,
+    });
+    // suggested, as nothing better is, but not taken without asking
+    expect(keysOf(suggestions)).toEqual([[SAME_NAME, ['VALID'], ['VALID']]]);
+    expect(getClearJoinKeySuggestion(suggestions)).toBeUndefined();
   });
 });

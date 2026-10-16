@@ -63,11 +63,16 @@ export interface CubeJoinSuggestionInput {
   readonly outline: CubeModelOutline | undefined;
 }
 
-/** A name that looks like a key: `ID`, `CUSTOMER_ID`, `CustomerId`, `ORDER_KEY`, `CODE` */
-const KEY_LIKE = /(?:^|_)(?:id|key|code|no|num|number)$|[a-z]Id$|ID$/u;
+/**
+ * A name that looks like a key: `ID`, `CUSTOMER_ID`, `ORDER_KEY`, `CODE`,
+ * `ORDER_NO`, camel case `CustomerId`; not a word that merely ends so, e.g.
+ * `VALID`, `PAID` or `GRID`
+ */
+const KEY_LIKE = /(?:^|_)(?:id|key|code|no|num|number)$/iu;
+const CAMEL_KEY_LIKE = /[a-z](?:Id|Key|Code)$/u;
 
 export const isKeyLikeColumnName = (name: string): boolean =>
-  KEY_LIKE.test(name) || KEY_LIKE.test(name.toLowerCase());
+  KEY_LIKE.test(name) || CAMEL_KEY_LIKE.test(name);
 
 const originKey = (
   database: string,
@@ -120,6 +125,22 @@ export const suggestJoinKeys = (
   input: CubeJoinSuggestionInput,
 ): CubeJoinKeySuggestion[] => {
   const { leftSchema, rightSchema, outline } = input;
+  // each column's origins, traced once per call: a wide table is asked many times
+  const cached = (
+    originsOf: (column: string) => readonly CubeColumnOrigin[],
+  ): ((column: string) => readonly CubeColumnOrigin[]) => {
+    const known = new Map<string, readonly CubeColumnOrigin[]>();
+    return (column) => {
+      let origins = known.get(column);
+      if (origins === undefined) {
+        origins = originsOf(column);
+        known.set(column, origins);
+      }
+      return origins;
+    };
+  };
+  const leftOrigins = cached(input.leftOrigins);
+  const rightOrigins = cached(input.rightOrigins);
   const comparable = (left: string, right: string): boolean => {
     const leftType = leftSchema.type(left);
     const rightType = rightSchema.type(right);
@@ -150,8 +171,8 @@ export const suggestJoinKeys = (
     );
     return columns;
   };
-  const leftByOrigin = byOrigin(leftSchema, input.leftOrigins);
-  const rightByOrigin = byOrigin(rightSchema, input.rightOrigins);
+  const leftByOrigin = byOrigin(leftSchema, leftOrigins);
+  const rightByOrigin = byOrigin(rightSchema, rightOrigins);
   const suggestions: CubeJoinKeySuggestion[] = [];
   const add = (suggestion: CubeJoinKeySuggestion): void => {
     if (
@@ -260,20 +281,18 @@ export const suggestJoinKeys = (
     schema
       .names()
       .find((each) => foldColumnName(each) === foldColumnName(name));
-  primaryKeysOf(rightSchema, input.rightOrigins).forEach(
-    ({ table, columns }) => {
-      const lefts = columns.map((column) => sameNamed(column, leftSchema));
-      if (lefts.every((left): left is string => left !== undefined)) {
-        add({
-          leftColumns: lefts,
-          rightColumns: columns,
-          reason: CubeJoinSuggestionReason.PRIMARY_KEY,
-          detail: table,
-        });
-      }
-    },
-  );
-  primaryKeysOf(leftSchema, input.leftOrigins).forEach(({ table, columns }) => {
+  primaryKeysOf(rightSchema, rightOrigins).forEach(({ table, columns }) => {
+    const lefts = columns.map((column) => sameNamed(column, leftSchema));
+    if (lefts.every((left): left is string => left !== undefined)) {
+      add({
+        leftColumns: lefts,
+        rightColumns: columns,
+        reason: CubeJoinSuggestionReason.PRIMARY_KEY,
+        detail: table,
+      });
+    }
+  });
+  primaryKeysOf(leftSchema, leftOrigins).forEach(({ table, columns }) => {
     const rights = columns.map((column) => sameNamed(column, rightSchema));
     if (rights.every((right): right is string => right !== undefined)) {
       add({
@@ -330,7 +349,7 @@ export const suggestJoinKeys = (
       );
     });
   };
-  patterns(leftSchema, rightSchema, input.rightOrigins).forEach(
+  patterns(leftSchema, rightSchema, rightOrigins).forEach(
     ([left, right, table]) =>
       add({
         leftColumns: [left],
@@ -339,7 +358,7 @@ export const suggestJoinKeys = (
         detail: table,
       }),
   );
-  patterns(rightSchema, leftSchema, input.leftOrigins).forEach(
+  patterns(rightSchema, leftSchema, leftOrigins).forEach(
     ([right, left, table]) =>
       add({
         leftColumns: [left],
@@ -363,8 +382,8 @@ export const suggestJoinKeys = (
       // a key by its name, or a column of either side's primary key
       isKeyLike:
         isKeyLikeColumnName(left) ||
-        isPrimaryKeyColumn(left, input.leftOrigins) ||
-        isPrimaryKeyColumn(right, input.rightOrigins),
+        isPrimaryKeyColumn(left, leftOrigins) ||
+        isPrimaryKeyColumn(right, rightOrigins),
     }));
   [
     ...alike.filter((each) => each.isKeyLike),
