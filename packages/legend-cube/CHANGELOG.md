@@ -1,5 +1,11 @@
 # @finos/legend-cube
 
+## 0.0.7
+
+### Patch Changes
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Order the sources as Relational Database Table, Data Product, Ingest, Function and Service, and the source dialog's tabs as Sample Data, Data Product, Ingest, Project Database, Direct Connection, Project Function and Service.
+
 ## 0.0.6
 
 ### Patch Changes

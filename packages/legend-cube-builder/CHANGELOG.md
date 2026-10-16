@@ -1,5 +1,23 @@
 # @finos/legend-cube-builder
 
+## 0.0.7
+
+### Patch Changes
+
+- [#5719](https://github.com/finos/legend-studio/pull/5719) [`7002c11`](https://github.com/finos/legend-studio/commit/7002c11228f2b75ef88edbae013e9af7882d4cc4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Update dependencies to address security advisories (`swiper`, `fast-xml-parser`, `axios`, `lodash`, `lodash-es`, `dompurify`, `postcss`, `fastify`) and refresh transitive dependencies in the lockfile.
+
+- [#5722](https://github.com/finos/legend-studio/pull/5722) [`3055561`](https://github.com/finos/legend-studio/commit/3055561593cda8033d1d0aba093fb08f50001a2d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fit Legend Cube's graph to the left of the canvas, as the internal application lays its graphs out, in place of centring it; the fit view button does the same.
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Let the Ingest tab of Legend Cube read any ingest environment, production or production parallel, from one dropdown that starts on the viewer's own production environment; a cube on another environment saves its name, while one left on the viewer's own saves none, so each viewer reads theirs.
+
+- [#5720](https://github.com/finos/legend-studio/pull/5720) [`9707461`](https://github.com/finos/legend-studio/commit/970746124254c44bdef1cbbf38cacb7f5edc689d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Pick a Join's other input from the canvas's menu (Join Another Input ▸) or its editor, and suggest its join columns: the database's joins between the inputs' tables, primary keys, `<table>_ID` names and same-named columns, a clear one filled in. The model outline now reads a Database's joins and its tables' primary keys.
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Name the producer deployments in Legend Cube's Ingest tab with the Legend user service Marketplace's producer info reads (`dataProductConfig.producer.deploymentLegendServiceUrl`), falling back to their ids.
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Order the sources as Relational Database Table, Data Product, Ingest, Function and Service, and the source dialog's tabs as Sample Data, Data Product, Ingest, Project Database, Direct Connection, Project Function and Service.
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Let Legend Cube in Studio run ingest data sets and data products in production or production parallel, picked in each tab (Mode), starting on production parallel unless the ingest definition Cube was opened from names only a production DID. With the lakehouse contract server configured, runs use the viewer's lakehouse environment from their entitlements, `-pp` added in production parallel, and need no lakehouse runtime in the project; without it, they use the project runtime's environment as before.
+
 ## 0.0.6
 
 ### Patch Changes
