@@ -1334,8 +1334,8 @@ source for now; the user plans to improve it later.
 
 - **Picking (an "Ingest" tab of its own, with an "Ingest Dataset" BETA palette item):** the environment, one dropdown
   of every ingest environment the platform lists in both classes, production and production parallel (user,
-  2026-10-15), starting on the viewer's own production one; the cube saves its name beside its class, and a cube saved
-  before names none and reads the viewer's own. Then a producer deployment (numeric deployment ids only; the viewer's
+  2026-10-15), starting on the viewer's own production one. A cube on another environment saves its name beside its class; one left
+  on the viewer's own saves none, so each viewer reads their own (user, 2026-10-16), as cubes saved before do. Then a producer deployment (numeric deployment ids only; the viewer's
   own user-id environments are left out for now), labelled with its name from the deployment directory Marketplace's
   producer info reads (`dataProductConfig.producer.deploymentLegendServiceUrl`), else its id; then one of its
   deployed definitions, then a data set. Only definitions deployed from SDLC (`alloy-git:<group>~<artifact>~<path>`
