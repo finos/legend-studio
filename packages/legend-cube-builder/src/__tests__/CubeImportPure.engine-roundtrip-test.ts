@@ -34,6 +34,7 @@ import {
   CubeLambdaFidelity,
 } from '../stores/CubeLambdaImportState.js';
 import { CUBE_LAMBDA_SOURCES_MESSAGE } from '../stores/CubeLambdaSources.js';
+import { CubeCodeCheckStatus } from '../stores/editors/CubeExpressionAutoCheck.js';
 import {
   CUBE_NORTHWIND_DATABASE,
   CUBE_NORTHWIND_MODEL,
@@ -146,6 +147,30 @@ describe('Import Pure, on the engine', () => {
     ]);
     expect(state.lambdaImport.notes).toEqual([
       CUBE_LAMBDA_IMPORT_MESSAGE.GRID_LIMIT,
+    ]);
+  });
+
+  test('Checks the Pure as it is typed, nothing imported: ready once read and compiled, its expressions included, else the reason', async () => {
+    const state = await setUp();
+    const { lambdaImport } = state;
+    const check = async (text: string): Promise<CubeCodeCheckStatus> => {
+      lambdaImport.openDialog();
+      lambdaImport.setText(text);
+      await flowResult(lambdaImport.check());
+      return lambdaImport.checkStatus;
+    };
+    expect(
+      await check(
+        `|${ORDERS}->filter(x|$x.FREIGHT->toOne() * 2 > 100.0)->extend(~DOUBLE_ID: x|$x.ORDER_ID * 2)->limit(5)`,
+      ),
+    ).toBe(CubeCodeCheckStatus.READY);
+    expect(await check(`|${ORDERS}->extend(~D: x|$x.NOT_A_COLUMN * 2)`)).toBe(
+      CubeCodeCheckStatus.PROBLEM,
+    );
+    expect(lambdaImport.dialogError?.message).toContain('NOT_A_COLUMN');
+    // checked only: the cube is as it was
+    expect(state.document.query.nodes.map((node) => node.id)).toEqual([
+      'relational101',
     ]);
   });
 

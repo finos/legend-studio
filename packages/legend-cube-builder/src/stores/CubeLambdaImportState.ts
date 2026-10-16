@@ -104,9 +104,6 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
   /** The dialog's text checked as it is typed, once Cube can read it and the engine types it */
   READABLE: (steps: number): string =>
     `Cube reads it as ${steps} ${steps === 1 ? 'step' : 'steps'}, which the engine compiles: Import puts them in place of this cube`,
-  /** The dialog's text read, but into a step Cube can't write */
-  NOT_VALID:
-    "Cube reads it, but one of its steps isn't valid: import it to see which",
 };
 
 /** The source id the engine's grammar gives what Import Pure parses, so its errors name it */
@@ -444,24 +441,29 @@ export class CubeLambdaImportState {
   }
 
   /**
-   * The cube a reading gives, typed by the engine as the editor would type
-   * it: throws the engine's error, or says a step Cube can't write
+   * The lambda read, typed by the engine: a matview's relation as it is, a
+   * run's without `from()`; throws the engine's error. A run with lets is
+   * left to the editor, which checks the cube once imported.
    */
   private async typeReading(reading: CubeLambdaReading): Promise<void> {
-    const { query, context } = reading.document;
-    const selected = query.selected;
-    const emitter = new QueryEmitter(query, this.editorState.registry);
-    if (!context || selected === undefined || !emitter.canEmit(selected)) {
-      throw new CubeLambdaReadError(CUBE_LAMBDA_IMPORT_MESSAGE.NOT_VALID);
+    const { context } = reading.document;
+    const parts = splitCubeLambda(reading.lambda);
+    const typed = !reading.isRun
+      ? reading.lambda
+      : parts.lets.size
+        ? undefined
+        : lambda([], [parts.relation]);
+    if (!context || !typed) {
+      return;
     }
-    const typed = (
+    const answer = (
       await this.editorState.host.engine.typeLambdas(
         context.model,
-        new Map([[selected, lambda([], [emitter.emitRelation(selected)])]]),
+        new Map([[CUBE_IMPORT_PURE_SOURCE_ID, typed]]),
       )
-    ).get(selected);
-    if (typed instanceof CubeEngineError) {
-      throw typed;
+    ).get(CUBE_IMPORT_PURE_SOURCE_ID);
+    if (answer instanceof CubeEngineError) {
+      throw answer;
     }
   }
 
