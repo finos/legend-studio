@@ -40,6 +40,7 @@ import {
   joinKeyPairsOf,
 } from './CubeJoinKeyPairs.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
+import type { CubeJoinKeySuggestion } from './CubeJoinSuggestions.js';
 
 /**
  * The Join editor's draft (spec §17.6): the join type and the key column
@@ -71,6 +72,7 @@ export class CubeJoinDraft
       removePair: action,
       setLeftColumn: action,
       setRightColumn: action,
+      useSuggestion: action,
     });
     this.joinType = original.joinType;
     this.pairs = joinKeyPairsOf(original.leftColumns, original.rightColumns);
@@ -103,6 +105,39 @@ export class CubeJoinDraft
     this.pairs = this.pairs.map((pair) =>
       pair.key === key ? { ...pair, right } : pair,
     );
+    this.touched = true;
+  }
+
+  /** Whether every pair of the suggestion is already one of the pairs */
+  hasSuggestion(suggestion: CubeJoinKeySuggestion): boolean {
+    return suggestion.leftColumns.every((left, index) =>
+      this.pairs.some(
+        (pair) =>
+          pair.left === left && pair.right === suggestion.rightColumns[index],
+      ),
+    );
+  }
+
+  /**
+   * Takes a suggestion's pairs: in place of the pairs when none has a column
+   * picked, else after them, but for those already there
+   */
+  useSuggestion(suggestion: CubeJoinKeySuggestion): void {
+    const suggested = suggestion.leftColumns.map((left, index) => ({
+      ...blankJoinKeyPair(),
+      left,
+      right: suggestion.rightColumns[index] ?? '',
+    }));
+    const kept = this.pairs.filter((pair) => pair.left || pair.right);
+    this.pairs = [
+      ...kept,
+      ...suggested.filter(
+        (pair) =>
+          !kept.some(
+            (each) => each.left === pair.left && each.right === pair.right,
+          ),
+      ),
+    ];
     this.touched = true;
   }
 

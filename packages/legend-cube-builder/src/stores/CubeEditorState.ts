@@ -45,6 +45,7 @@ import {
   FunctionSource,
   copyQueryNode,
   type CubeContext,
+  Join,
   SourceNode,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
@@ -112,6 +113,12 @@ import { CubeDevSettingsState } from './CubeDevSettingsState.js';
 import { CubeRunStatsState } from './CubeRunStatsState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import { CubeExpressionFilterDraft } from './editors/CubeExpressionFilterDraft.js';
+import { findColumnOrigins } from './editors/CubeJoinDraft.js';
+import {
+  type CubeJoinKeySuggestion,
+  getClearJoinKeySuggestion,
+  suggestJoinKeys,
+} from './editors/CubeJoinSuggestions.js';
 import { CubeExtendDraft } from './editors/CubeExtendDraft.js';
 import {
   buildCubeEngineCheckRequest,
@@ -292,6 +299,7 @@ export class CubeEditorState implements CommandRegistrar {
       modelOutlines: observable.ref,
       modelOutline: computed,
       loadModelOutline: flow,
+      addJoinWith: flow,
       document: observable.ref,
       history: observable.ref,
       redoStack: observable.ref,
@@ -1420,8 +1428,130 @@ export class CubeEditorState implements CommandRegistrar {
   connect(sourceId: string, targetId: string, port?: string): void {
     const { query } = this.document;
     if (!this.readOnly && query.canConnect(sourceId, targetId, port)) {
-      this.applyQuery(query.connect(sourceId, targetId, port));
+      this.applyQuery(
+        this.withSuggestedJoinKeys(
+          query.connect(sourceId, targetId, port),
+          targetId,
+        ),
+      );
     }
+  }
+
+  /** The nodes that can feed a node's free port: each the end of another chain, not downstream of it */
+  getInputCandidates(targetId: string): QueryNode[] {
+    const { query } = this.document;
+    return this.readOnly
+      ? []
+      : query.nodes.filter((node) => query.canConnect(node.id, targetId));
+  }
+
+  /**
+   * The nodes that can be a Join's Right input when one is added after
+   * `afterId` (user, 2026-10-16): the end of each other chain that wouldn't
+   * close a loop
+   */
+  getJoinInputCandidates(afterId: string): QueryNode[] {
+    if (!this.canAddNode(Join.TYPE, afterId)) {
+      return [];
+    }
+    const { query } = this.document;
+    const join = new Join(query.generateId(Join.TYPE));
+    const added = query.add(join, afterId);
+    return added.nodes.filter(
+      (node) => node.id !== join.id && added.canConnect(node.id, join.id),
+    );
+  }
+
+  /**
+   * The join columns to suggest for two nodes joined, strongest first (user,
+   * 2026-10-16), from their output schemas, the tables their columns come
+   * from and the model's outline, when loaded; none until both are typed
+   */
+  getJoinKeySuggestions(
+    leftId: string,
+    rightId: string,
+  ): CubeJoinKeySuggestion[] {
+    const { analysis } = this;
+    const { query } = this.document;
+    const leftSchema = analysis.schemas.get(leftId);
+    const rightSchema = analysis.schemas.get(rightId);
+    return leftSchema && rightSchema
+      ? suggestJoinKeys({
+          leftSchema,
+          rightSchema,
+          leftOrigins: (column) =>
+            findColumnOrigins(query, analysis, leftId, column),
+          rightOrigins: (column) =>
+            findColumnOrigins(query, analysis, rightId, column),
+          outline: this.modelOutline,
+        })
+      : [];
+  }
+
+  /**
+   * The query with a Join that has both inputs and no join columns yet
+   * taking the suggestion that is clearly it (user, 2026-10-16); else as it
+   * is. Its inputs are nodes of the cube as it is, typed already.
+   */
+  private withSuggestedJoinKeys(query: Query, joinId: string): Query {
+    const join = query.getNode(joinId);
+    if (
+      !(join instanceof Join) ||
+      join.leftColumns.length > 0 ||
+      join.rightColumns.length > 0
+    ) {
+      return query;
+    }
+    const [leftId, rightId] = query.getInputIds(joinId);
+    if (leftId === undefined || rightId === undefined) {
+      return query;
+    }
+    const clear = getClearJoinKeySuggestion(
+      this.getJoinKeySuggestions(leftId, rightId),
+    );
+    return clear
+      ? query.replace(
+          join.withSettings({
+            joinType: join.joinType,
+            leftColumns: [...clear.leftColumns],
+            rightColumns: [...clear.rightColumns],
+          }),
+        )
+      : query;
+  }
+
+  /**
+   * Adds a Join after `afterId` with `rightId` as its Right input, as one
+   * step to undo (user, 2026-10-16), after the node editor's edits are
+   * applied: it takes the join columns that are clearly it, the model's
+   * outline read first for the database's joins, and its editor opens.
+   * Gives the Join's id, or nothing when it can't be added any more.
+   */
+  *addJoinWith(
+    afterId: string,
+    rightId: string,
+  ): GeneratorFn<string | undefined> {
+    const canAdd = (): boolean =>
+      !this.readOnly &&
+      this.getJoinInputCandidates(afterId).some((node) => node.id === rightId);
+    if (!canAdd() || !this.nodeEditor.finishApplied()) {
+      return undefined;
+    }
+    yield flowResult(this.loadModelOutline());
+    // the cube may have changed while the outline loaded
+    if (!canAdd()) {
+      return undefined;
+    }
+    const { query } = this.document;
+    const id = query.generateId(Join.TYPE);
+    this.applyQuery(
+      this.withSuggestedJoinKeys(
+        query.add(new Join(id), afterId).connect(rightId, id),
+        id,
+      ),
+    );
+    this.nodeEditor.open(id);
+    return id;
   }
 
   /**
@@ -1563,7 +1693,7 @@ export class CubeEditorState implements CommandRegistrar {
     const { query } = this.document;
     this.applyQuery(
       query.canConnect(nodeId, targetId)
-        ? query.connect(nodeId, targetId)
+        ? this.withSuggestedJoinKeys(query.connect(nodeId, targetId), targetId)
         : query.move(nodeId, targetId),
     );
   }

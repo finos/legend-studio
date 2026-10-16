@@ -514,3 +514,162 @@ describe('Cube model outline: database types', () => {
     ).toBeUndefined();
   });
 });
+
+describe("A database's primary keys and joins, for the Join editor's suggestions", () => {
+  // as the engine's grammarToJson/model gives them (2026-10-16): table names
+  // as stored, quotes included, columns quoted, a table outside a schema in
+  // `default`
+  const tableRef = (schema: string, table: string): object => ({
+    _type: 'Table',
+    database: 'demo::Db',
+    mainTableDb: 'demo::Db',
+    schema,
+    table,
+  });
+  const col = (schema: string, table: string, name: string): object => ({
+    _type: 'column',
+    column: name,
+    table: tableRef(schema, table),
+    tableAlias: table,
+  });
+  const equal = (left: object, right: object): object => ({
+    _type: 'dynaFunc',
+    funcName: 'equal',
+    parameters: [left, right],
+  });
+  const keyed = (name: string, primaryKey: string[]): object => ({
+    name,
+    columns: primaryKey.map((key) => column(key, { _type: 'Integer' })),
+    primaryKey,
+    milestoning: [],
+  });
+  const database = V1_buildCubeModelOutline({
+    _type: 'data',
+    elements: [
+      {
+        _type: 'relational',
+        package: 'demo',
+        name: 'Db',
+        schemas: [
+          {
+            name: 'S',
+            tables: [
+              keyed('ORDERS', ['ID']),
+              keyed('CUSTOMERS', ['CUSTOMER_ID']),
+              { name: 'NO_KEY', columns: [], milestoning: [] },
+            ],
+            views: [],
+          },
+          {
+            name: 'default',
+            tables: [keyed('"ORDER.LINES"', ['"ORDER ID"', 'LINE'])],
+            views: [],
+          },
+        ],
+        joins: [
+          {
+            name: 'Orders_Customers',
+            operation: equal(
+              col('S', 'ORDERS', 'CUSTOMER_ID'),
+              col('S', 'CUSTOMERS', 'CUSTOMER_ID'),
+            ),
+          },
+          {
+            // two pairs, the second written the other way round
+            name: 'Lines',
+            operation: {
+              _type: 'dynaFunc',
+              funcName: 'and',
+              parameters: [
+                equal(
+                  col('S', 'ORDERS', 'ID'),
+                  col('default', '"ORDER.LINES"', '"ORDER ID"'),
+                ),
+                equal(
+                  col('default', '"ORDER.LINES"', 'LINE'),
+                  col('S', 'ORDERS', 'LINE_NO'),
+                ),
+              ],
+            },
+          },
+          {
+            name: 'Self',
+            operation: equal(
+              col('S', 'ORDERS', 'ID'),
+              col('S', '{target}', 'PARENT_ID'),
+            ),
+          },
+          {
+            name: 'SameTable',
+            operation: equal(
+              col('S', 'ORDERS', 'ID'),
+              col('S', 'ORDERS', 'PARENT_ID'),
+            ),
+          },
+          {
+            name: 'NotEqual',
+            operation: {
+              _type: 'dynaFunc',
+              funcName: 'greaterThan',
+              parameters: [
+                col('S', 'ORDERS', 'ID'),
+                col('S', 'CUSTOMERS', 'CUSTOMER_ID'),
+              ],
+            },
+          },
+          {
+            name: 'WithALiteral',
+            operation: {
+              _type: 'dynaFunc',
+              funcName: 'and',
+              parameters: [
+                equal(
+                  col('S', 'ORDERS', 'CUSTOMER_ID'),
+                  col('S', 'CUSTOMERS', 'CUSTOMER_ID'),
+                ),
+                equal(col('S', 'ORDERS', 'ID'), { _type: 'literal', value: 1 }),
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  }).databases[0];
+
+  test("Reads a table's primary key unquoted, and none for a table without one", () => {
+    const tables = database?.schemas.flatMap((schema) => schema.tables);
+    expect(tables?.map((table) => [table.name, table.primaryKey])).toEqual([
+      ['ORDERS', ['ID']],
+      ['CUSTOMERS', ['CUSTOMER_ID']],
+      ['NO_KEY', undefined],
+      ['"ORDER.LINES"', ['ORDER ID', 'LINE']],
+    ]);
+  });
+
+  test('Reads the joins that compare columns of two tables for equality, each pair in one order', () => {
+    expect(database?.joins).toEqual([
+      {
+        name: 'Orders_Customers',
+        pairs: [
+          [
+            { schema: 'S', table: 'ORDERS', column: 'CUSTOMER_ID' },
+            { schema: 'S', table: 'CUSTOMERS', column: 'CUSTOMER_ID' },
+          ],
+        ],
+      },
+      {
+        name: 'Lines',
+        pairs: [
+          [
+            { schema: 'S', table: 'ORDERS', column: 'ID' },
+            { schema: 'default', table: '"ORDER.LINES"', column: 'ORDER ID' },
+          ],
+          [
+            { schema: 'S', table: 'ORDERS', column: 'LINE_NO' },
+            { schema: 'default', table: '"ORDER.LINES"', column: 'LINE' },
+          ],
+        ],
+      },
+    ]);
+  });
+});

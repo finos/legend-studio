@@ -15,7 +15,9 @@
  */
 
 import {
+  BasePopper,
   CaretDownIcon,
+  CaretRightIcon,
   clsx,
   DropdownMenu,
   DropdownMenuItem,
@@ -25,8 +27,14 @@ import {
   MenuContentItemLabel,
   useDropdownMenu,
 } from '@finos/legend-art';
-import type { AnyNodeDefinition } from '@finos/legend-cube';
+import {
+  type AnyNodeDefinition,
+  Join,
+  type QueryNode,
+} from '@finos/legend-cube';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { useRef, useState } from 'react';
 import {
   getCubeNodeBadge,
   OTHER_SOURCE_KIND_TITLE,
@@ -36,10 +44,195 @@ import { CUBE_TOUR_ANCHOR, cubeTourAnchor } from '../__lib__/LegendCubeTour.js';
 import {
   addCubeNode,
   canAddCubeNode,
+  getCubeAddAfterId,
   getCubeAddDatabaseProblem,
 } from '../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../stores/CubeEditorState.js';
+import { getCubeCanvasNodeLabel } from './canvas/CubeCanvasElements.js';
 import { CubeNodeIcon } from './CubeNodeIcon.js';
+
+/** The z-index of a menu opened from a menu: above MUI's menus, which are modals (1300) */
+const CUBE_SUBMENU_Z_INDEX = 1400;
+
+/**
+ * Each node as a menu lists it: its canvas label and the muted second line;
+ * a step, the sources it reads from (`Distinct Values · from CUSTOMERS`);
+ * its id added when another node of the list shows the same
+ */
+export const getCubeNodeMenuLabels = (
+  editorState: CubeEditorState,
+  nodes: readonly QueryNode[],
+): Map<string, string> => {
+  const { query } = editorState.document;
+  const titleOf = (
+    node: QueryNode,
+  ): ReturnType<typeof getCubeCanvasNodeLabel> =>
+    getCubeCanvasNodeLabel(node, editorState.registry.get(node.type)?.label);
+  // the sources upstream of a node, in input order
+  const sourcesOf = (nodeId: string): QueryNode[] => {
+    const node = query.getNode(nodeId);
+    if (!node) {
+      return [];
+    }
+    const inputIds = query
+      .getInputIds(nodeId)
+      .filter((id): id is string => id !== undefined);
+    return inputIds.length ? inputIds.flatMap(sourcesOf) : [node];
+  };
+  const labels = nodes.map((node) => {
+    const { title, detail } = titleOf(node);
+    const sources = query.getInputIds(node.id).some((id) => id !== undefined)
+      ? sourcesOf(node.id).map((source) => titleOf(source).title)
+      : [];
+    const label = sources.length
+      ? `${title} · from ${[...new Set(sources)].join(', ')}`
+      : detail
+        ? `${title} · ${detail}`
+        : title;
+    return [node.id, label] as const;
+  });
+  return new Map(
+    labels.map(([id, label]) => [
+      id,
+      labels.filter(([, other]) => other === label).length > 1
+        ? `${label} (${id})`
+        : label,
+    ]),
+  );
+};
+
+/**
+ * 'Join Another Input' in the canvas's context menu (user, 2026-10-16): a
+ * click adds the Join with its Right input to connect later, as before;
+ * hovering it, or the right arrow key, opens the other nodes it can join
+ * with, each the end of another chain, and picking one adds the Join with
+ * that node as its Right input, its join columns filled in when one
+ * suggestion is clearly them
+ */
+const CubeJoinMenuItem = observer(
+  (props: {
+    editorState: CubeEditorState;
+    nodeId?: string | undefined;
+    children: React.ReactNode;
+  }) => {
+    const { editorState, nodeId, children } = props;
+    const anchorRef = useRef<HTMLDivElement>(null);
+    const submenuRef = useRef<HTMLDivElement>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+      undefined,
+    );
+    const afterId = getCubeAddAfterId(editorState, Join.TYPE, nodeId);
+    const candidates =
+      afterId === undefined ? [] : editorState.getJoinInputCandidates(afterId);
+    const labels = getCubeNodeMenuLabels(editorState, candidates);
+    const open = (): void => {
+      clearTimeout(closeTimer.current);
+      setIsOpen(candidates.length > 0);
+    };
+    // leaving the item for its submenu crosses a gap: wait before closing
+    const closeSoon = (): void => {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = setTimeout(() => setIsOpen(false), 150);
+    };
+    const back = (): void => {
+      setIsOpen(false);
+      anchorRef.current?.querySelector('button')?.focus();
+    };
+    return (
+      <div
+        ref={anchorRef}
+        className="relative"
+        onMouseEnter={open}
+        onMouseLeave={closeSoon}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowRight' && candidates.length > 0) {
+            event.preventDefault();
+            event.stopPropagation();
+            setIsOpen(true);
+            setTimeout(
+              () => submenuRef.current?.querySelector('button')?.focus(),
+              0,
+            );
+          }
+        }}
+      >
+        {children}
+        {candidates.length > 0 && (
+          <span
+            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
+            aria-hidden={true}
+          >
+            <CaretRightIcon />
+          </span>
+        )}
+        <BasePopper
+          open={isOpen && anchorRef.current !== null}
+          anchorEl={anchorRef.current}
+          placement="right-start"
+          style={{ zIndex: CUBE_SUBMENU_Z_INDEX }}
+        >
+          <div
+            ref={submenuRef}
+            className="menu"
+            role="menu"
+            aria-label="Join with"
+            onMouseEnter={open}
+            onMouseLeave={closeSoon}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowLeft' || event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                back();
+              } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                event.stopPropagation();
+                const items = Array.from(
+                  event.currentTarget.querySelectorAll('button'),
+                );
+                const index = items.indexOf(
+                  document.activeElement as HTMLButtonElement,
+                );
+                items[
+                  (index + (event.key === 'ArrowDown' ? 1 : items.length - 1)) %
+                    items.length
+                ]?.focus();
+              }
+            }}
+          >
+            <div className="menu__item text-sm text-[var(--color-text-secondary)]">
+              Join with
+            </div>
+            {candidates.map((candidate) => (
+              <MenuContentItem
+                key={candidate.id}
+                title={`Add a Join with ${labels.get(candidate.id) ?? candidate.id} as its Right input`}
+                onClick={() => {
+                  if (afterId !== undefined) {
+                    flowResult(
+                      editorState.addJoinWith(afterId, candidate.id),
+                    ).catch(
+                      editorState.host.applicationStore.alertUnhandledError,
+                    );
+                  }
+                }}
+              >
+                <MenuContentItemIcon>
+                  <CubeNodeIcon
+                    icon={editorState.registry.get(candidate.type)?.icon}
+                  />
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>
+                  {labels.get(candidate.id) ?? candidate.id}
+                </MenuContentItemLabel>
+              </MenuContentItem>
+            ))}
+          </div>
+        </BasePopper>
+      </div>
+    );
+  },
+);
 
 /** An item that adds a node, as the palette, the context menu and 'Add Items' list it */
 interface CubeAddItem {
@@ -91,19 +284,33 @@ export const CubeAddMenuItems = observer(
       props.editorState,
       props.nodeId,
     );
-    const menuItem = (item: CubeAddItem): React.ReactNode => (
-      <MenuContentItem
-        key={item.definition.type}
-        disabled={item.disabled}
-        title={item.title}
-        onClick={item.add}
-      >
-        <MenuContentItemIcon>
-          <CubeNodeIcon icon={item.definition.icon} />
-        </MenuContentItemIcon>
-        <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
-      </MenuContentItem>
-    );
+    const menuItem = (item: CubeAddItem): React.ReactNode => {
+      const entry = (
+        <MenuContentItem
+          key={item.definition.type}
+          disabled={item.disabled}
+          title={item.title}
+          onClick={item.add}
+        >
+          <MenuContentItemIcon>
+            <CubeNodeIcon icon={item.definition.icon} />
+          </MenuContentItemIcon>
+          <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
+        </MenuContentItem>
+      );
+      // a Join can be added with the node it joins (user, 2026-10-16)
+      return item.definition.type === Join.TYPE && !item.disabled ? (
+        <CubeJoinMenuItem
+          key={item.definition.type}
+          editorState={props.editorState}
+          nodeId={props.nodeId}
+        >
+          {entry}
+        </CubeJoinMenuItem>
+      ) : (
+        entry
+      );
+    };
     return (
       <>
         {sources.map(menuItem)}

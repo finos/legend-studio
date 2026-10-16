@@ -21,6 +21,8 @@ import {
   type CubeModelOutline,
   type CubeOutlineConnection,
   type CubeOutlineDatabase,
+  type CubeOutlineJoin,
+  type CubeOutlineJoinColumn,
   type CubeOutlineRuntime,
   type CubeOutlineSchema,
   type CubeOutlineTable,
@@ -28,9 +30,11 @@ import {
 import { V1_buildCubeFunctionOutlines } from './V1_CubeFunctionOutlineBuilder.js';
 
 // The databases and runtimes of a parsed model (`{_type: 'data', elements}`),
-// for the source picker (PLAN §6.2.3-§6.2.6). Read as plain JSON: only names,
-// column types and store paths are needed, and an element's full protocol
-// deserializer needs the graph manager's plugins.
+// for the source picker (PLAN §6.2.3-§6.2.6), and the databases' primary keys
+// and joins, which the Join editor suggests join columns from. Read as plain
+// JSON: only names, column types, keys, joins and store paths are needed,
+// and an element's full protocol deserializer needs the graph manager's
+// plugins.
 
 const DATABASE_TYPE = 'relational';
 const RUNTIME_TYPE = 'runtime';
@@ -85,13 +89,91 @@ const buildTable = (json: unknown): CubeOutlineTable => {
       );
     }
   });
+  const primaryKey = asList(table.primaryKey)
+    .map(asString)
+    .filter((name): name is string => name !== undefined)
+    .map(getRelationalDisplayName);
   return {
     name: asString(table.name) ?? '',
     isView: false,
     columnCount: columns.length,
     flags: Object.values(CubeTableFlag).filter((flag) => flags.has(flag)),
     untypedColumns,
+    // unquoted, as the engine names the columns in the table's schema;
+    // left out when there is none, as an outline from before has none
+    ...(primaryKey.length ? { primaryKey } : {}),
   };
+};
+
+/** A column a join operation names, unless it names no real table, e.g. `{target}` */
+const buildJoinColumn = (
+  json: PlainObject,
+): CubeOutlineJoinColumn | undefined => {
+  const table = asObject(json.table);
+  const tableName = asString(table.table);
+  const column = asString(json.column);
+  return json._type === 'column' &&
+    tableName !== undefined &&
+    !tableName.startsWith('{') &&
+    column !== undefined
+    ? {
+        schema: asString(table.schema) ?? 'default',
+        table: tableName,
+        column: getRelationalDisplayName(column),
+      }
+    : undefined;
+};
+
+/** The column pairs a join operation compares for equality, ANDed; none for any other operation */
+const buildJoinPairs = (
+  json: unknown,
+): (readonly [CubeOutlineJoinColumn, CubeOutlineJoinColumn])[] | undefined => {
+  const operation = asObject(json);
+  if (operation._type !== 'dynaFunc') {
+    return undefined;
+  }
+  const parameters = asList(operation.parameters).map(asObject);
+  if (operation.funcName === 'and') {
+    const pairs = parameters.map(buildJoinPairs);
+    return pairs.every((each) => each !== undefined) ? pairs.flat() : undefined;
+  }
+  const [left, right] = parameters.map(buildJoinColumn);
+  return operation.funcName === 'equal' &&
+    parameters.length === 2 &&
+    left &&
+    right
+    ? [[left, right]]
+    : undefined;
+};
+
+const tableKey = (column: CubeOutlineJoinColumn): string =>
+  JSON.stringify([column.schema, column.table]);
+
+/** A join of two tables comparing columns for equality, each pair from one table to the other */
+const buildJoin = (json: unknown): CubeOutlineJoin | undefined => {
+  const join = asObject(json);
+  const pairs = buildJoinPairs(join.operation);
+  const [first] = pairs ?? [];
+  if (!pairs || !first) {
+    return undefined;
+  }
+  const [a, b] = first;
+  // a table joined with itself has no other table to suggest
+  if (tableKey(a) === tableKey(b)) {
+    return undefined;
+  }
+  // each pair in the first pair's order, from the same two tables
+  const oriented = pairs.map(([left, right]) =>
+    tableKey(left) === tableKey(a)
+      ? ([left, right] as const)
+      : ([right, left] as const),
+  );
+  return oriented.every(
+    ([left, right]) =>
+      tableKey(left) === tableKey(a) && tableKey(right) === tableKey(b),
+  )
+    ? { name: asString(join.name) ?? '', pairs: oriented }
+    : undefined;
 };
 
 const buildView = (json: unknown): CubeOutlineTable => {
@@ -116,11 +198,18 @@ const buildSchema = (json: unknown): CubeOutlineSchema => {
   };
 };
 
-const buildDatabase = (element: PlainObject): CubeOutlineDatabase => ({
-  path: elementPath(element),
-  // included stores are not followed (v1)
-  schemas: asList(element.schemas).map(buildSchema),
-});
+const buildDatabase = (element: PlainObject): CubeOutlineDatabase => {
+  const joins = asList(element.joins)
+    .map(buildJoin)
+    .filter((join): join is CubeOutlineJoin => join !== undefined);
+  return {
+    path: elementPath(element),
+    // included stores are not followed (v1)
+    schemas: asList(element.schemas).map(buildSchema),
+    // left out when there is none, as an outline from before has none
+    ...(joins.length ? { joins } : {}),
+  };
+};
 
 /** The database type of a relational connection value: its `type`, else its `databaseType` */
 const getRelationalDatabaseType = (value: PlainObject): string | undefined =>

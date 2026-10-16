@@ -52,6 +52,8 @@ export interface CubeOutlineTable {
    * (OTHER or ARRAY), unquoted as in the table's schema
    */
   readonly untypedColumns: readonly string[];
+  /** Its primary key's columns, unquoted as in the table's schema; none for a view, optional, as an outline from before has none */
+  readonly primaryKey?: readonly string[];
 }
 
 export interface CubeOutlineSchema {
@@ -59,9 +61,32 @@ export interface CubeOutlineSchema {
   readonly tables: readonly CubeOutlineTable[];
 }
 
+/** A column a database join compares: its table as stored, quotes included, and its name unquoted */
+export interface CubeOutlineJoinColumn {
+  readonly schema: string;
+  readonly table: string;
+  readonly column: string;
+}
+
+/**
+ * A join the database defines between two tables that compares columns for
+ * equality, one pair or several ANDed, e.g. `ORDERS.CUSTOMER_ID =
+ * CUSTOMERS.CUSTOMER_ID`; joins of any other kind, or of a table with
+ * itself, are left out
+ */
+export interface CubeOutlineJoin {
+  readonly name: string;
+  readonly pairs: readonly (readonly [
+    CubeOutlineJoinColumn,
+    CubeOutlineJoinColumn,
+  ])[];
+}
+
 export interface CubeOutlineDatabase {
   readonly path: string;
   readonly schemas: readonly CubeOutlineSchema[];
+  /** Its joins Cube can suggest join columns from; optional, as an outline from before has none */
+  readonly joins?: readonly CubeOutlineJoin[];
 }
 
 /** A relational connection of a runtime, for the operations some databases take another way (PLAN §11.4) */

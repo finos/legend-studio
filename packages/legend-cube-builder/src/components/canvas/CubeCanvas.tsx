@@ -354,7 +354,8 @@ export const CubeCanvas = observer(
           // an empty query has no menu: there is nothing to add after (U3)
           disabled={editorState.document.query.isEmpty}
           content={<CubeCanvasContextMenu editorState={editorState} />}
-          menuProps={{ elevation: 7 }}
+          // a submenu opens outside the menu (Join with): focus may go there
+          menuProps={{ elevation: 7, disableEnforceFocus: true }}
         >
           {editorState.document.query.isEmpty ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-base text-[var(--color-text-secondary)]">

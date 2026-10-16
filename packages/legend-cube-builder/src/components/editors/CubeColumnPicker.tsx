@@ -85,6 +85,8 @@ export const CubeColumnPicker: React.FC<{
    * column, or one another row has; `undefined` when it can be
    */
   isColumnDisabled?: ((column: SchemaColumn) => string | undefined) | undefined;
+  /** Columns to list first, under "Suggested", e.g. a Join's suggested join columns; the rest follow */
+  suggested?: readonly string[] | undefined;
 }> = (props) => {
   const {
     label,
@@ -94,8 +96,28 @@ export const CubeColumnPicker: React.FC<{
     disabled,
     invalid,
     isColumnDisabled,
+    suggested,
   } = props;
   const picked = value ? schema.lookup(value) : undefined;
+  const suggestedColumns = (suggested ?? [])
+    .map((name) => schema.lookup(name))
+    .filter(
+      (column, index, all): column is SchemaColumn =>
+        column !== undefined && all.indexOf(column) === index,
+    );
+  const renderOption = (column: SchemaColumn): React.ReactNode => {
+    const reason = isColumnDisabled?.(column);
+    return (
+      <option
+        key={column.name}
+        value={column.name}
+        title={`${getExactColumnTypeLabel(column)} (${column.type.fullName})`}
+        disabled={reason !== undefined}
+      >
+        {`${column.name}: ${getColumnTypeLabel(column)}${reason === undefined ? '' : ` (${reason})`}`}
+      </option>
+    );
+  };
   return (
     <div className="flex min-w-0 items-center gap-1">
       <select
@@ -116,19 +138,20 @@ export const CubeColumnPicker: React.FC<{
             {value ? `${value} (not in the input)` : 'Pick a column'}
           </option>
         )}
-        {schema.columns.map((column) => {
-          const reason = isColumnDisabled?.(column);
-          return (
-            <option
-              key={column.name}
-              value={column.name}
-              title={`${getExactColumnTypeLabel(column)} (${column.type.fullName})`}
-              disabled={reason !== undefined}
-            >
-              {`${column.name}: ${getColumnTypeLabel(column)}${reason === undefined ? '' : ` (${reason})`}`}
-            </option>
-          );
-        })}
+        {suggestedColumns.length > 0 ? (
+          <>
+            <optgroup label="Suggested">
+              {suggestedColumns.map(renderOption)}
+            </optgroup>
+            <optgroup label="Other columns">
+              {schema.columns
+                .filter((column) => !suggestedColumns.includes(column))
+                .map(renderOption)}
+            </optgroup>
+          </>
+        ) : (
+          schema.columns.map(renderOption)
+        )}
       </select>
       {picked && (
         <span

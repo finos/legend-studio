@@ -28,7 +28,10 @@ import { guaranteeType, noop } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
+import {
+  getJoinSuggestionReasonLabel,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { CubeJoinDraft } from '../../stores/editors/CubeJoinDraft.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeJoinKeyRows } from './CubeJoinKeyRows.js';
@@ -53,9 +56,14 @@ const describeFix = (fix: JoinDuplicateFix, name: string): string => {
   ].join(', ');
 };
 
+/** How many suggestions the Join editor shows at most, strongest first */
+const SHOWN_SUGGESTIONS = 4;
+
 /**
  * The Join editor (spec §17.6): the join type, pairs of key columns
- * (`CubeJoinKeyRows`), and Swap Inputs.
+ * (`CubeJoinKeyRows`), and Swap Inputs, with the join columns suggested for
+ * its inputs (user, 2026-10-16), each taken with one click, and listed first
+ * in the column pickers.
  */
 export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
   const { editorState, inputSchemas, readOnly } = props;
@@ -65,6 +73,17 @@ export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
   useEffect(() => {
     flowResult(editorState.loadModelOutline()).catch(noop());
   }, [editorState, model]);
+  const [leftId, rightId] = editorState.document.query.getInputIds(
+    draft.original.id,
+  );
+  const suggestions =
+    leftId !== undefined && rightId !== undefined
+      ? editorState.getJoinKeySuggestions(leftId, rightId)
+      : [];
+  // the ones not taken yet
+  const shownSuggestions = suggestions
+    .filter((suggestion) => !draft.hasSuggestion(suggestion))
+    .slice(0, SHOWN_SUGGESTIONS);
   const edited = draft.build();
   const duplicates = getDuplicateJoinColumns(
     leftSchema,
@@ -107,11 +126,49 @@ export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
           Swap Inputs
         </CubeButton>
       </div>
+      {shownSuggestions.length > 0 && !readOnly && (
+        <ul
+          className="flex flex-col gap-1 rounded-sm border border-[var(--color-border-subtle)] p-1"
+          aria-label="Suggested join columns"
+        >
+          {shownSuggestions.map((suggestion) => {
+            const pairs = suggestion.leftColumns
+              .map(
+                (left, index) =>
+                  `${left} = ${suggestion.rightColumns[index] ?? ''}`,
+              )
+              .join(', ');
+            return (
+              <li
+                key={`${suggestion.reason}:${pairs}`}
+                className="flex items-center gap-2"
+              >
+                <span
+                  className="min-w-0 flex-1 truncate font-mono"
+                  title={pairs}
+                >
+                  {pairs}
+                </span>
+                <span className="shrink-0 text-sm text-[var(--color-text-secondary)]">
+                  {getJoinSuggestionReasonLabel(suggestion)}
+                </span>
+                <CubeButton
+                  title={`Join on ${pairs}`}
+                  onClick={() => draft.useSuggestion(suggestion)}
+                >
+                  Use
+                </CubeButton>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <CubeJoinKeyRows
         editorProps={props}
         draft={draft}
         leftSchema={leftSchema}
         rightSchema={rightSchema}
+        suggestions={suggestions}
       />
       {duplicates.length > 0 && (
         <div className="text-sm text-[var(--color-status-warn)]">
