@@ -800,8 +800,9 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
               .withContext({
                 model: createCubeIngestModel({
                   environmentType: this.environmentType,
-                  // the environment read, by name: whoever opens the cube reads it too
-                  environment: this.environment?.name ?? this.environmentName,
+                  // the environment picked, by name; none when left on the
+                  // viewer's own, so each viewer reads theirs (user, 2026-10-16)
+                  environment: this.environmentName,
                   producerDeploymentId,
                   warehouse,
                 }),
@@ -811,13 +812,6 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       );
       if (!settings) {
         editorState.dataProductRuntime.remember(warehouse);
-        // the cube now names the environment it was read from
-        this.environmentName = this.environment?.name ?? this.environmentName;
-        if (this.environment) {
-          this.loadedEnvironmentId = getCubeIngestEnvironmentId(
-            this.environmentKey,
-          );
-        }
       }
       // the definitions stay open, to add others of their data sets
       this.picks = [];

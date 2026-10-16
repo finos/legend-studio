@@ -195,8 +195,7 @@ describe('The Ingest tab', () => {
       model: {
         _type: CUBE_INGEST_MODEL_TYPE,
         environmentType: 'PRODUCTION',
-        // the environment read, by name, for whoever opens the cube
-        environment: 'env-a',
+        // left on the viewer's own environment, it names none: each viewer reads theirs
         producerDeploymentId: '1234',
         warehouse: 'SALES_WH',
       },
