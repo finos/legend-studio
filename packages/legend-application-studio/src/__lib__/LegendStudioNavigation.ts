@@ -366,4 +366,4 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig = (
 
 export const EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataSpaceViewUrl =
   (marketplaceApplicationUrl: string, gavPath: string): string =>
-    `${marketplaceApplicationUrl}dataProduct/legacy/${gavPath}`;
+    `${marketplaceApplicationUrl}/dataProduct/legacy/${gavPath}`;

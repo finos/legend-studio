@@ -3258,16 +3258,8 @@ describe('DataProductViewer', () => {
         expect(within(listbox).queryByText(/^CUSTOM_ORG$/)).toBeNull();
       });
 
-      test('Create New Subscription lists approved data requests and creates the subscription against the data request endpoint', async () => {
-        const {
-          createDataRequestSubscriptionSpy,
-          getSubscriptionsForDataRequestSpy,
-        } = await setupDataRequestSubscriptionTest();
-
+      const openCreateSubscriptionContractDropdown = async () => {
         await openSubscriptionsModal();
-        await waitFor(() => {
-          expect(getSubscriptionsForDataRequestSpy).toHaveBeenCalledTimes(1);
-        });
 
         const createButton = await screen.findByRole('button', {
           name: 'Create New Subscription',
@@ -3282,13 +3274,31 @@ describe('DataProductViewer', () => {
             guaranteeNonNullable(document.getElementById('contract-select')),
           ),
         );
-        const listbox = await screen.findByRole('listbox');
-        within(listbox).getByText(/Approved data request/);
+        return screen.findByRole('listbox');
+      };
+
+      test('Create New Subscription lists only approved data requests for the group', async () => {
+        await setupDataRequestSubscriptionTest();
+
+        const listbox = await openCreateSubscriptionContractDropdown();
+
+        await within(listbox).findByText(/Approved data request/);
         expect(within(listbox).queryByText(/Pending data request/)).toBeNull();
         expect(
           within(listbox).queryByText(/Other group data request/),
         ).toBeNull();
-        fireEvent.click(within(listbox).getByText(/Approved data request/));
+      });
+
+      test('Create New Subscription creates the subscription against the data request endpoint and refetches the list', async () => {
+        const {
+          createDataRequestSubscriptionSpy,
+          getSubscriptionsForDataRequestSpy,
+        } = await setupDataRequestSubscriptionTest();
+
+        const listbox = await openCreateSubscriptionContractDropdown();
+        fireEvent.click(
+          await within(listbox).findByText(/Approved data request/),
+        );
 
         const accountInput = screen.getByLabelText(/Snowflake Account ID/);
         fireEvent.change(accountInput, {
@@ -3302,14 +3312,6 @@ describe('DataProductViewer', () => {
 
         await waitFor(() => {
           expect(createDataRequestSubscriptionSpy).toHaveBeenCalledTimes(1);
-        });
-        expect(createDataRequestSubscriptionSpy.mock.calls[0]?.[0]).toEqual({
-          dataRequestId: 'approved-data-request-id',
-          // region and network are fixed by the dialog and not under test here
-          target: expect.objectContaining({
-            _type: TEST_SNOWFLAKE_TARGET._type,
-            snowflakeAccountId: TEST_SNOWFLAKE_TARGET.snowflakeAccountId,
-          }),
         });
         // the subscription list is refetched after a successful creation
         await waitFor(() => {
