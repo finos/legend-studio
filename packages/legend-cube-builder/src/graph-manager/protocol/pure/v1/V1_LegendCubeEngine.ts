@@ -1382,14 +1382,16 @@ export class V1_LegendCubeEngine implements CubeEngine {
 
   async completeCode(
     model: ModelContext,
-    relation: IR,
+    relation: IR | undefined,
     text: string,
   ): Promise<readonly CubeCodeCompletion[] | undefined> {
     if (this.completesNoCode) {
       return undefined;
     }
     try {
-      const base = await this.completionBaseOf(model, relation);
+      const base = relation
+        ? await this.completionBaseOf(model, relation)
+        : { text: '', model };
       const result = CodeCompletionResult.serialization.fromJson(
         await this.client.completeCode({
           codeBlock: `${base.text}${text}`,

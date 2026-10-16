@@ -291,13 +291,14 @@ export interface CubeEngine {
   planLambda(model: ModelContext, lambda: IR): Promise<void>;
   /**
    * The engine's completions of Pure code written after a relation, e.g.
-   * `->filter(x | $x.` after a node's input (user, 2026-10-16): undefined
-   * when the engine completes no code, as an engine without the service
-   * answers, and from then on; rejects with a `CubeEngineError`
+   * `->filter(x | $x.` after a node's input (user, 2026-10-16), or of code
+   * on its own, on the model as it is: undefined when the engine completes
+   * no code, as an engine without the service answers, and from then on;
+   * rejects with a `CubeEngineError`
    */
   completeCode(
     model: ModelContext,
-    relation: IR,
+    relation: IR | undefined,
     text: string,
   ): Promise<readonly CubeCodeCompletion[] | undefined>;
 }
