@@ -29,7 +29,12 @@ import type { GenericTypeReference } from './GenericTypeReference.js';
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable
 {
-  readonly _UUID = uuid();
+  _lazyUUID: string | undefined;
+  // created on first read: a graph holds millions of these objects and most ids are never read
+  get _UUID(): string {
+    this._lazyUUID ??= uuid();
+    return this._lazyUUID;
+  }
   readonly _OWNER: PropertyOwner;
 
   name: string;

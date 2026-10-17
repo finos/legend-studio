@@ -104,7 +104,12 @@ export abstract class PackageableElement
   extends ModelElement
   implements Hashable
 {
-  readonly _UUID = uuid();
+  _lazyUUID: string | undefined;
+  // created on first read: a graph holds millions of these objects and most ids are never read
+  get _UUID(): string {
+    this._lazyUUID ??= uuid();
+    return this._lazyUUID;
+  }
   protected _isDeleted = false;
   protected _isDisposed = false;
 

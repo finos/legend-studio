@@ -19,7 +19,12 @@ import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { TagReference } from './TagReference.js';
 
 export class TaggedValue implements Hashable {
-  readonly _UUID = uuid();
+  _lazyUUID: string | undefined;
+  // created on first read: a graph holds millions of these objects and most ids are never read
+  get _UUID(): string {
+    this._lazyUUID ??= uuid();
+    return this._lazyUUID;
+  }
 
   tag: TagReference;
   value: string;
