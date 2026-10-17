@@ -28,7 +28,12 @@ import type { EnumValueReference } from '../domain/EnumValueReference.js';
 export type SourceValueType = Enum | string | number | undefined;
 
 export class SourceValue {
-  readonly _UUID = uuid();
+  _lazyUUID: string | undefined;
+  // created on first read: a graph holds millions of these objects and most ids are never read
+  get _UUID(): string {
+    this._lazyUUID ??= uuid();
+    return this._lazyUUID;
+  }
 
   value: SourceValueType;
 
