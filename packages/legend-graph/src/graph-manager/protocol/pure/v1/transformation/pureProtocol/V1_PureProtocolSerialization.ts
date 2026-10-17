@@ -31,6 +31,7 @@ import {
   assertErrorThrown,
   usingModelSchema,
   guaranteeNonNullable,
+  yieldToEventLoop,
 } from '@finos/legend-shared';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer.js';
@@ -108,7 +109,7 @@ export const V1_entitiesToPureModelContextData = async (
       const results: V1_PackageableElement[] = [];
       for (let i = 0; i < entities.length; i += DESERIALIZATION_BATCH_SIZE) {
         if (i > 0) {
-          await new Promise<void>((resolve) => setTimeout(resolve, 0));
+          await yieldToEventLoop();
         }
         const end = Math.min(i + DESERIALIZATION_BATCH_SIZE, entities.length);
         for (let j = i; j < end; j++) {

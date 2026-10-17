@@ -288,6 +288,33 @@ export const mergeObjects = <T, V>(
     },
   );
 
+/**
+ * Gives the event loop a turn during a long loop, so the browser can paint
+ * and handle input.
+ *
+ * NOTE: `setTimeout(0)` is clamped to at least 4ms once nested 5 levels deep
+ * (and throttled further in background tabs), which adds up to seconds when
+ * a loop yields thousands of times. A MessageChannel message is not clamped,
+ * and unlike `scheduler.yield()` continuations, it does not jump ahead of
+ * other queued tasks such as React renders.
+ */
+let yieldChannel: MessageChannel | undefined;
+const yieldQueue: (() => void)[] = [];
+export const yieldToEventLoop = (): Promise<void> => {
+  if (typeof window === 'undefined' || typeof MessageChannel === 'undefined') {
+    return new Promise<void>((resolve) => setTimeout(resolve, 0));
+  }
+  if (!yieldChannel) {
+    yieldChannel = new MessageChannel();
+    yieldChannel.port1.onmessage = (): void => yieldQueue.shift()?.();
+  }
+  const channel = yieldChannel;
+  return new Promise<void>((resolve) => {
+    yieldQueue.push(resolve);
+    channel.port2.postMessage(null);
+  });
+};
+
 export const promisify = <T>(func: () => T): Promise<T> =>
   new Promise<T>((resolve, reject) =>
     setTimeout(() => {
