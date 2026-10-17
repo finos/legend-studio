@@ -44,7 +44,6 @@ import { QueryCreator } from './data-space/DataProductQueryCreator.js';
 import { IngestQueryCreator } from './ingest/IngestQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
 import { DataSpaceArtifactInspector } from './DataSpaceArtifactInspector.js';
-import { LegendQueryCubeRoute } from './cube/LegendQueryCubeRoute.js';
 import {
   AuthProvider,
   withAuthenticationRequired,
@@ -137,19 +136,6 @@ const LegendQueryWebApplicationRouter = observer(() => {
             path={LEGEND_QUERY_ROUTE_PATTERN.DEV_DATA_SPACE_INSPECTOR}
             element={<DataSpaceArtifactInspector />}
           />
-
-          {/*
-            Legend Cube is a proof of concept: it is only mounted where the
-            config turns on non-production features
-            (`extensions.core.NonProductionFeatureFlag`), so production
-            deployments don't show it yet.
-          */}
-          {applicationStore.config.options.NonProductionFeatureFlag && (
-            <Route
-              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
-              element={<LegendQueryCubeRoute />}
-            />
-          )}
 
           {/* LEGACY DATA SPACE */}
           <Route

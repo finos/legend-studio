@@ -16,7 +16,6 @@
     { "path": "../legend-application" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-data-cube" },
-    { "path": "../legend-cube-builder" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-art" },
     { "path": "../legend-code-editor" },

@@ -18,12 +18,12 @@ import { defineConfig } from '@playwright/test';
 
 /**
  * The user guides' screenshots (docs/user-guide), not tests: each script
- * opens a page of a running Legend Query, marks its controls and writes the
- * images the guide shows. They need the real engine, which the end-to-end
- * tests mock, so nothing is started here: run Legend Query (`yarn dev:query`,
- * with NonProductionFeatureFlag on for Legend Cube) and the engine (port
- * 6300) first, then `yarn workspace @finos/legend-application-query-e2e
- * user-guide:screenshots`. USER_GUIDE_QUERY_URL points at another Query.
+ * opens a page of a running Legend Analytics, marks its controls and writes
+ * the images the guide shows. They need the real engine, so nothing is
+ * started here: run Legend Analytics (`yarn dev:analytics`) and the engine
+ * (port 6300) first, then `yarn workspace
+ * @finos/legend-application-analytics-e2e user-guide:screenshots`.
+ * USER_GUIDE_ANALYTICS_URL points at another Legend Analytics.
  */
 export default defineConfig({
   testDir: './src/user-guide',
@@ -37,7 +37,9 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: process.env.USER_GUIDE_QUERY_URL ?? 'http://localhost:9001/query/',
+    baseURL:
+      process.env.USER_GUIDE_ANALYTICS_URL ??
+      'http://localhost:9009/analytics/',
     // the guide's images: a laptop's window, sharp on a high-density screen
     viewport: { width: 1440, height: 900 },
     deviceScaleFactor: 2,

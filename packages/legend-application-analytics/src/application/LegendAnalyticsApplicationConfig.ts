@@ -98,7 +98,7 @@ class LegendAnalyticsApplicationCoreOptions {
    */
   enableOauthFlow = false;
 
-  /** Data products, as Studio, Marketplace and Query configure them (`options.dataProductConfig`) */
+  /** Data products, as Studio and Marketplace configure them (`options.dataProductConfig`) */
   dataProductConfig: LegendAnalyticsDataProductConfig | undefined;
 
   private static readonly serialization = new SerializationFactory(

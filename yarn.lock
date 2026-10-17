@@ -2409,6 +2409,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-analytics-e2e@workspace:packages/legend-application-analytics-e2e":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-analytics-e2e@workspace:packages/legend-application-analytics-e2e"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@playwright/test": "npm:1.61.0"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:9.22.0"
+    rimraf: "npm:6.0.1"
+    typescript: "npm:5.8.2"
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application-analytics@workspace:*, @finos/legend-application-analytics@workspace:packages/legend-application-analytics":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-analytics@workspace:packages/legend-application-analytics"
@@ -2748,7 +2761,6 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
-    "@finos/legend-cube-builder": "workspace:*"
     "@finos/legend-data-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"

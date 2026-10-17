@@ -5497,6 +5497,28 @@ complete from both Cube and the engine; give Import Pure the same editor.
   - Import Pure turns green or red with the reason, and Escape with the list open closes only the list.
     The guide's Filter by Expression and Extend pages and images were updated; video 36.
 
+### 11.24 Legend Cube out of Legend Query (2026-10-17)
+
+The user's call: Legend Cube runs as an application of its own (Legend Analytics, §11.19) and in Legend Studio
+(Create MatView, §11.17), so Legend Query no longer hosts it.
+
+- **Taken out of `@finos/legend-application-query`:**
+  - the `/query/cube` route, mounted under `NonProductionFeatureFlag`;
+  - `LegendQueryCubeHost`, the page and its lazy route, and the link entry (`?sourceType=…&sourceId=…`);
+  - Cube's shortcuts in the core plugin;
+  - the `@finos/legend-cube-builder` dependency and its project references;
+  - the config Cube alone read: `marketplace.serverUrl`, `lakehouse.platformUrl` and
+    `extensions.core.dataProductConfig` (`LegendQueryDataProductConfig`, `LegendQueryDataProductProducerConfig`). A
+    deployment's config may keep those keys: Query ignores them now.
+  - The plugin, the config and the bootstrap stylesheet are as they were before Cube (fbde4379f^).
+- **The user guide's screenshot scripts** move from `legend-application-query-e2e` to a new private package,
+  `@finos/legend-application-analytics-e2e`, and run against Legend Analytics (`yarn dev:analytics`,
+  `USER_GUIDE_ANALYTICS_URL`, default `http://localhost:9009/analytics/`).
+- **Docs:** the builder's README, hosting and demo pages and the user guide's README name Legend Analytics and Studio
+  as the hosts.
+- **Not carried over:** the link entry (`?sourceType=dataProductAccessPoint&sourceId=…`), which nothing linked to.
+  `CubeEditor`'s `initialSource` still takes one, should Legend Analytics read the link.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks

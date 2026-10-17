@@ -23,7 +23,7 @@ import { lazy, Suspense } from 'react';
 import { useEditorStore } from '../EditorStoreProvider.js';
 
 // Loaded on the first opening, so Cube and its host stay out of Studio's
-// main bundle, as Legend Query loads its Cube page (`LegendQueryCubeRoute`)
+// main bundle
 const LazyEmbeddedCubeEditor = lazy(() =>
   import('./EmbeddedCubeEditor.js').then((module) => ({
     default: module.EmbeddedCubeEditor,
