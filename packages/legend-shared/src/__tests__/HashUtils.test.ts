@@ -16,7 +16,12 @@
 
 import { test, expect } from '@jest/globals';
 import { unitTest } from '../__test-utils__/TestUtils.js';
-import { fastHash, hashArray, hashValue } from '../application/HashUtils.js';
+import {
+  fastHash,
+  hashArray,
+  hashValue,
+  stableStringify,
+} from '../application/HashUtils.js';
 
 test(unitTest('Fast hash is a stable 64-bit hex hash'), () => {
   const values = [
@@ -46,4 +51,21 @@ test(unitTest('Numbers and booleans count in hashes'), () => {
   // a primitive is hashed as its string form
   expect(hashValue(1)).toEqual(hashValue('1'));
   expect(hashValue(true)).toEqual(hashValue('true'));
+});
+
+test(unitTest('Stable stringify ignores key order and excluded keys'), () => {
+  const excludeKey = (key: string): boolean =>
+    key.endsWith('sourceInformation');
+  const a = { b: 1, a: [{ y: 'y', x: null }], c: undefined };
+  const b = {
+    a: [{ x: null, y: 'y', sourceInformation: { line: 1 } }],
+    b: 1,
+  };
+  expect(stableStringify(a, excludeKey)).toEqual(
+    stableStringify(b, excludeKey),
+  );
+  expect(stableStringify(a)).toEqual('{"a":[{"x":null,"y":"y"}],"b":1}');
+  // arrays keep their order, and types are kept apart
+  expect(stableStringify([1, 2])).not.toEqual(stableStringify([2, 1]));
+  expect(stableStringify({ a: 1 })).not.toEqual(stableStringify({ a: '1' }));
 });
