@@ -26,7 +26,6 @@ import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
-  StereotypeConfig,
 } from '@finos/legend-application';
 import {
   createModelSchema,
@@ -65,45 +64,6 @@ export class ServiceRegistrationEnvironmentConfig {
       executionUrl: primitive(),
       managementUrl: primitive(),
       modes: list(primitive()),
-    }),
-  );
-}
-
-/**
- * The producers of data products, as Legend Marketplace configures them:
- * Query reads only the engine path of the Legend user service naming
- * producer deployments, which Legend Cube's Ingest tab labels its producers
- * with
- */
-export class LegendQueryDataProductProducerConfig {
-  deploymentLegendServiceUrl: string | undefined;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendQueryDataProductProducerConfig, {
-      deploymentLegendServiceUrl: optional(primitive()),
-    }),
-  );
-}
-
-/**
- * Data products, as Legend Studio and Legend Marketplace configure them:
- * Query reads only the stereotype that marks access point groups open to
- * everyone in the organization, which Legend Cube's access badges use
- */
-export class LegendQueryDataProductConfig {
-  publicStereotype: StereotypeConfig | undefined;
-  producer: LegendQueryDataProductProducerConfig | undefined;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendQueryDataProductConfig, {
-      publicStereotype: optional(
-        usingModelSchema(StereotypeConfig.serialization.schema),
-      ),
-      producer: optional(
-        usingModelSchema(
-          LegendQueryDataProductProducerConfig.serialization.schema,
-        ),
-      ),
     }),
   );
 }
@@ -148,9 +108,6 @@ class LegendQueryApplicationCoreOptions {
    */
   enableOauthFlow = false;
 
-  /** Data products, as Studio and Marketplace configure them (`options.dataProductConfig`) */
-  dataProductConfig: LegendQueryDataProductConfig | undefined;
-
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__serviceRegistrationConfig: list(
@@ -165,9 +122,6 @@ class LegendQueryApplicationCoreOptions {
         usingModelSchema(LegendQueryOIDCConfiguration.serialization.schema),
       ),
       enableOauthFlow: optional(primitive()),
-      dataProductConfig: optional(
-        usingModelSchema(LegendQueryDataProductConfig.serialization.schema),
-      ),
     }),
   );
 
@@ -204,19 +158,9 @@ export interface LegendQueryApplicationConfigurationData
   marketplace?: {
     url: string;
     productionParallelUrl: string;
-    /**
-     * The marketplace server, whose search Legend Cube's data product tab
-     * uses: the URL Legend Marketplace's own config names `marketplace.url`
-     */
-    serverUrl?: string;
   };
   lakehouse?: {
     url: string;
-    /**
-     * The lakehouse platform, which names the ingest servers: Legend Cube's
-     * ingest data sets need it, as Data Cube's and Marketplace's do
-     */
-    platformUrl?: string;
   };
   legendAI?: {
     url?: string;
@@ -236,9 +180,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly dataCubeApplicationUrl?: string;
   readonly marketplaceApplicationUrl?: string;
   readonly marketplaceProductionParallelUrl?: string;
-  readonly marketplaceServerUrl?: string;
   readonly lakehouseContractUrl?: string;
-  readonly lakehousePlatformUrl?: string;
   readonly legendAIUrl?: string;
   readonly legendAIAgentUrl?: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
@@ -318,21 +260,11 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
           input.configData.marketplace.productionParallelUrl,
         );
     }
-    if (input.configData.marketplace?.serverUrl) {
-      this.marketplaceServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.marketplace.serverUrl,
-      );
-    }
 
     // lakehouse
     if (input.configData.lakehouse?.url) {
       this.lakehouseContractUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.lakehouse.url,
-      );
-    }
-    if (input.configData.lakehouse?.platformUrl) {
-      this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.lakehouse.platformUrl,
       );
     }
 

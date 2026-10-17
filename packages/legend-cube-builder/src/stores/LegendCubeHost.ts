@@ -49,8 +49,7 @@ import { LocalModelCatalog } from './LocalModelCatalog.js';
 /**
  * The servers of a Legend deployment hosting the Cube page, as its config
  * names them (PLAN §11.18): the engine, and each of the others only where the
- * deployment has one. Legend Query and Legend Analytics each read theirs from
- * their own config.
+ * deployment has one. Legend Analytics reads them from its config.
  */
 export interface LegendCubeHostConfig {
   readonly engine: CubeEngineConfig;
@@ -174,8 +173,7 @@ export interface LegendCubeHostParts {
  * application's store, the engine and the bundled models, direct database
  * connections read through the engine, the services in its registry, and
  * the deployment's projects, data products and ingest data sets where it has
- * the servers for them. Legend Query and Legend Analytics each build one per
- * visit to the page, from their own config.
+ * the servers for them. Legend Analytics builds one from its config.
  */
 export class LegendCubeHost implements CubeHost {
   readonly applicationStore: GenericLegendApplicationStore;

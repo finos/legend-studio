@@ -18,9 +18,9 @@ imported cube opens without running.
 
 ## Before the demo
 
-- A local engine, and the Query dev server (`yarn dev:query`) with Cube enabled (see [hosting](../hosting.md)).
+- A local engine, and the Legend Analytics dev server (`yarn dev:analytics`; see [hosting](../hosting.md)).
 - Open each example once to warm the engine up.
-- Browser at about 1440×900, 100% zoom, a fresh `/query/cube` page.
+- Browser at about 1440×900, 100% zoom, a fresh `/analytics/` page.
 
 ## 1. An example (about 1 min)
 

@@ -4,10 +4,5 @@
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
     "noEmit": true
   },
-  "include": [
-    "playwright.config.ts",
-    "playwright.user-guide.config.ts",
-    "src/**/*.ts",
-    "src/**/*.json"
-  ]
+  "include": ["playwright.config.ts", "src/**/*.ts", "src/**/*.json"]
 }

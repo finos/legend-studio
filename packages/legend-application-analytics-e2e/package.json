@@ -1,0 +1,34 @@
+{
+  "name": "@finos/legend-application-analytics-e2e",
+  "private": true,
+  "description": "Legend Analytics web application: the Legend Cube user guide's screenshots",
+  "keywords": [
+    "legend",
+    "legend-application",
+    "legend-analytics",
+    "legend-cube",
+    "user-guide"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-application-analytics-e2e"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
+    "user-guide:screenshots": "playwright test --config playwright.user-guide.config.ts",
+    "user-guide:setup": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@playwright/test": "1.61.0",
+    "cross-env": "7.0.3",
+    "eslint": "9.22.0",
+    "rimraf": "6.0.1",
+    "typescript": "5.8.2"
+  }
+}

@@ -59,7 +59,7 @@ export const useLegendAnalyticsBaseStore = (): LegendAnalyticsBaseStore =>
     `Can't find Legend Analytics base store in context`,
   );
 
-/** The application's services, as Legend Query gives the Cube page them */
+/** The application's services, as Legend Query gives its pages them */
 export const LegendAnalyticsFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (

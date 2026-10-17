@@ -24,8 +24,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report build/playwright-report",
     "test:e2e:setup": "playwright install chromium",
-    "test:e2e:ui": "playwright test --ui",
-    "user-guide:screenshots": "playwright test --config playwright.user-guide.config.ts"
+    "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
