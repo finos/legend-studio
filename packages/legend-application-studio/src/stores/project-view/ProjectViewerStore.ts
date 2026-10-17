@@ -24,6 +24,7 @@ import {
   LogEvent,
   IllegalStateError,
   StopWatch,
+  noop,
 } from '@finos/legend-shared';
 import {
   type ProjectViewerPathParams,
@@ -166,19 +167,19 @@ export class ProjectViewerStore {
     stubWorkspace.workspaceId = '';
     this.editorStore.sdlcState.setCurrentWorkspace(stubWorkspace);
 
-    // get current revision so we can show how "outdated" the `current view` of the project is
-    this.currentRevision = Revision.serialization.fromJson(
-      (yield this.editorStore.sdlcServerClient.getRevision(
+    // get current revision and latest version so we can show how "outdated" the `current view` of the project is
+    const [currentRevision, latestVersion] = (yield Promise.all([
+      this.editorStore.sdlcServerClient.getRevision(
         this.editorStore.sdlcState.activeProject.projectId,
         undefined,
         RevisionAlias.CURRENT,
-      )) as PlainObject<Revision>,
-    );
-    this.latestVersion = Version.serialization.fromJson(
-      (yield this.editorStore.sdlcServerClient.getLatestVersion(
+      ),
+      this.editorStore.sdlcServerClient.getLatestVersion(
         this.editorStore.sdlcState.activeProject.projectId,
-      )) as PlainObject<Version>,
-    );
+      ),
+    ])) as [PlainObject<Revision>, PlainObject<Version>];
+    this.currentRevision = Revision.serialization.fromJson(currentRevision);
+    this.latestVersion = Version.serialization.fromJson(latestVersion);
 
     // ensure only either version or revision is specified
     if (versionId && revisionId) {
@@ -270,12 +271,15 @@ export class ProjectViewerStore {
       projectConfiguration,
     );
 
-    // fetch project versions
-    yield Promise.all([
+    // fetch project versions and authorized actions, which only feed the side
+    // panels, without holding up the dependencies, which the graph needs
+    const sidePanelInformation = Promise.all([
       this.editorStore.sdlcState.fetchProjectVersions(),
       this.editorStore.sdlcState.fetchPublishedProjectVersions(),
       this.editorStore.sdlcState.fetchAuthorizedActions(),
     ]);
+    // awaited below, unless fetching the dependencies fails first
+    sidePanelInformation.catch(noop());
 
     // fetch entities
     const entities = graphBuildingMaterial[0];
@@ -293,6 +297,7 @@ export class ProjectViewerStore {
         EntitiesWithOrigin
       >;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
+    yield sidePanelInformation;
 
     return {
       entities,
