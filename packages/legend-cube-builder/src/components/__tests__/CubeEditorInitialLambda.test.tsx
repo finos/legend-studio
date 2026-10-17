@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, type jest, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   act,
   fireEvent,
@@ -56,7 +56,6 @@ import {
 } from '../../__test-utils__/FakeCubeIngestCatalog.js';
 import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
 import {
-  type CubeEngine,
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../../graph-manager/CubeEngine.js';
@@ -328,22 +327,21 @@ describe('Import Pure, from the Cube menu', () => {
       );
 
       // read, but the engine doesn't compile it: red, with the engine's reason
-      const typeLambdas = host.engine.typeLambdas as jest.Mock<
-        CubeEngine['typeLambdas']
-      >;
-      typeLambdas.mockImplementationOnce(
-        async (_model, lambdas) =>
-          new Map(
-            [...lambdas.keys()].map((key) => [
-              key,
-              new CubeEngineError(
-                CubeEngineErrorKind.COMPILE,
-                "Can't find the property 'TRADE_ID'",
+      jest
+        .spyOn(host.engine, 'typeLambdas')
+        .mockImplementationOnce(
+          async (_model, lambdas) =>
+            new Map(
+              [...lambdas.keys()].map((key) => [
                 key,
-              ),
-            ]),
-          ),
-      );
+                new CubeEngineError(
+                  CubeEngineErrorKind.COMPILE,
+                  "Can't find the property 'TRADE_ID'",
+                  key,
+                ),
+              ]),
+            ),
+        );
       typePure(JSON.stringify(BIG_TRADES));
       expect(
         (await within(reopened).findByRole('alert')).textContent,
