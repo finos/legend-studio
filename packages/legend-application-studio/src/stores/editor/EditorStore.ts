@@ -58,6 +58,7 @@ import {
   guaranteeType,
   type Clazz,
   returnUndefOnError,
+  noop,
 } from '@finos/legend-shared';
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
@@ -1132,6 +1133,14 @@ export class EditorStore implements CommandRegistrar {
     const startTime = Date.now();
     let entities: Entity[];
 
+    // the dependencies only need the project configuration, which is loaded:
+    // fetch them while the workspace entities are fetched, not after
+    const dependencyEntitiesIndex =
+      this.graphState.getIndexedDependencyEntities();
+    // building the graph reports their errors; it doesn't run when fetching
+    // the entities fails
+    dependencyEntitiesIndex.catch(noop());
+
     this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
@@ -1167,7 +1176,9 @@ export class EditorStore implements CommandRegistrar {
         // NOTE: if graph entities are provided, we will use that to build the graph.
         // We use this method as a way to fully reset the application with the entities, but we still use
         // the workspace entities for hashing as those are the base entities.
-        this.graphState.buildGraph(graphEntities ?? entities),
+        this.graphState.buildGraph(graphEntities ?? entities, {
+          dependencyEntitiesIndex,
+        }),
       )) as GraphBuilderResult;
 
       if (result.error) {
