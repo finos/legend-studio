@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { unitTest } from '../__test-utils__/TestUtils.js';
-import { fastHash } from '../application/HashUtils.js';
+import { fastHash, hashArray, hashValue } from '../application/HashUtils.js';
 
 test(unitTest('Fast hash is a stable 64-bit hex hash'), () => {
   const values = [
@@ -34,4 +34,16 @@ test(unitTest('Fast hash is a stable 64-bit hex hash'), () => {
   hashes.forEach((hash) => expect(hash).toMatch(/^[0-9a-f]{16}$/u));
   expect(new Set(hashes).size).toBe(values.length);
   expect(values.map(fastHash)).toEqual(hashes);
+});
+
+test(unitTest('Numbers and booleans count in hashes'), () => {
+  expect(hashValue(1)).not.toEqual(hashValue(2));
+  expect(hashValue(0)).not.toEqual(hashValue(''));
+  expect(hashValue(true)).not.toEqual(hashValue(false));
+  expect(hashValue(false)).not.toEqual(hashValue(''));
+  expect(hashArray(['x', true])).not.toEqual(hashArray(['x', false]));
+  expect(hashArray(['x', 1.5])).not.toEqual(hashArray(['x', 2.5]));
+  // a primitive is hashed as its string form
+  expect(hashValue(1)).toEqual(hashValue('1'));
+  expect(hashValue(true)).toEqual(hashValue('true'));
 });

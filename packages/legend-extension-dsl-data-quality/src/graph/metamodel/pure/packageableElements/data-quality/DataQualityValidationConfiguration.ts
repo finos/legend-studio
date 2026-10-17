@@ -255,7 +255,7 @@ export class DataQualityRelationComparisonConfiguration
       hashArray(this.keys),
       hashArray(this.columnsToCompare),
       hashArray(this.additionalColumnsToPersist),
-      this.expectedMatch ?? '',
+      String(this.expectedMatch ?? ''),
       this.strategy,
       this.persistenceStrategy ?? '',
     ]);
