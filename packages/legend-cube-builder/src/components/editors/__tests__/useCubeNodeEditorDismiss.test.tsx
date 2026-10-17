@@ -59,7 +59,8 @@ describe('What a press outside the floating node editor closes it on', () => {
   beforeEach(() => {
     root = document.createElement('div');
     document.body.appendChild(root);
-    // an editor, the canvas's parts and MUI's layers, and a plain button
+    // an editor, the canvas's parts, MUI's layers, legend-lego's root of code
+    // editors' floating widgets, and a plain button
     root.innerHTML = `
       <div id="editor"><input id="in-editor" /></div>
       <div class="react-flow__pane" id="pane">
@@ -71,6 +72,9 @@ describe('What a press outside the floating node editor closes it on', () => {
       <div class="MuiPopover-root"><ul><li id="in-popover"></li></ul></div>
       <div class="MuiPopper-root"><div id="in-popper"></div></div>
       <div class="reflex-splitter"><span id="on-splitter"></span></div>
+      <div id="legend-code-editor-overflow-widgets">
+        <div class="suggest-widget"><span id="in-completions"></span></div>
+      </div>
       <div><button id="elsewhere"></button></div>
     `;
   });
@@ -103,6 +107,12 @@ describe('What a press outside the floating node editor closes it on', () => {
     ['in-modal', 'in-popover', 'in-popper'].forEach((id) =>
       expect(isCubeNodeEditorDismissedBy(byId(id), editor)).toBe(false),
     );
+  });
+
+  test("Not in its code editors' completions or hovers, which show in the page's body", () => {
+    expect(
+      isCubeNodeEditorDismissedBy(byId('in-completions'), byId('editor')),
+    ).toBe(false);
   });
 
   test('On a press anywhere else', () => {

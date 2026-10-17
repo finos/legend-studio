@@ -25,11 +25,13 @@ import {
   PrimitiveType,
   Query,
   Schema,
+  QueryEmitter,
   SchemaColumn,
 } from '@finos/legend-cube';
 import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,
+  MockedMonacoEditorLanguagesAPI,
 } from '@finos/legend-lego/code-editor/test';
 import {
   act,
@@ -59,6 +61,8 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeExpressionFilterDraft } from '../../../stores/editors/CubeExpressionFilterDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { CubeCodeCheckStatus } from '../../../stores/editors/CubeExpressionAutoCheck.js';
+import { CUBE_CODE_CHECK_LABEL } from '../CubeCodeCheck.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
@@ -140,22 +144,75 @@ beforeEach(() => {
 });
 
 describe('Filter by Expression editor', () => {
-  test('Shows a condition to write, and waits for a Validate before Apply', async () => {
+  test('Shows a condition to write, and waits for its check before Apply', async () => {
     const { state } = await render();
     expect(within(panel()).getByLabelText('Condition')).toBeTruthy();
-    expect(within(panel()).getByText('Not validated yet')).toBeTruthy();
+    expect(
+      within(panel()).getByText(CUBE_CODE_CHECK_LABEL.UNEDITED),
+    ).toBeTruthy();
+    // a new condition, never edited, isn't checked, nor marked
+    expect(
+      within(panel())
+        .getByLabelText('Condition')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.UNEDITED);
+    // no button: the code is checked once typing pauses
+    expect(
+      within(panel()).queryByRole('button', { name: 'Validate' }),
+    ).toBeNull();
     const apply = button('Apply');
     expect(apply.disabled).toBe(true);
-    expect(apply.title).toBe('Validate the condition first (F10)');
+    expect(apply.title).toBe(
+      'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
+    );
     // in place of the problems
     expect(within(panel()).getByRole('status').textContent).toBe(
-      'Validate the condition first (F10)',
+      'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
     );
     EXPRESSION_FILTER_EDITOR_NOTES.forEach((note) =>
       expect(within(panel()).getByText(note)).toBeTruthy(),
     );
     expect(state.nodeEditor.draft).toBeInstanceOf(CubeExpressionFilterDraft);
     expect(draftOf(state).code).toBe('x | ');
+  });
+
+  test("Offers the input's columns as the condition is typed, then the engine's completions of it written as the input's filter", async () => {
+    const { state, fake } = await render();
+    fake.completeCode.mockResolvedValue([
+      { completion: 'SHIPPED_DATE', display: 'SHIPPED_DATE' },
+      { completion: 'isAfterDay(', display: 'isAfterDay' },
+    ]);
+    MockedMonacoEditorLanguagesAPI.registerCompletionItemProvider.mockClear();
+    const [onFocus] =
+      MockedMonacoEditorInstance.onDidFocusEditorText.mock.calls.at(-1) as [
+        () => void,
+      ];
+    act(() => onFocus());
+    const [, provider] = MockedMonacoEditorLanguagesAPI
+      .registerCompletionItemProvider.mock.calls[0] as [
+      string,
+      {
+        provideCompletionItems: (
+          model: unknown,
+          position: unknown,
+        ) => Promise<{ suggestions: { label: string }[] }>;
+      },
+    ];
+    const { suggestions } = await provider.provideCompletionItems(
+      { getValueInRange: () => 'x | $x.' },
+      { lineNumber: 1, column: 8 },
+    );
+    expect(suggestions.map((each) => each.label)).toEqual([
+      ...ORDERS_COLUMNS.map((column) => column.name),
+      'isAfterDay',
+    ]);
+    expect(fake.completeCode).toHaveBeenCalledWith(
+      CONTEXT.model,
+      new QueryEmitter(state.document.query, state.registry).emitRelation(
+        'relational101',
+      ),
+      '->filter(x | $x.',
+    );
   });
 
   test("Writes an input column's access at the end of the condition", async () => {
@@ -168,13 +225,24 @@ describe('Filter by Expression editor', () => {
     expect(draftOf(state).code).toBe('x | $x.SHIPPED_DATE');
   });
 
-  test('Validates, says the condition is checked, then Apply stores the checked node', async () => {
+  test('Checks the condition once typing pauses, says so with a green border, then Apply stores the checked node', async () => {
     const { state, fake } = await render();
     act(() => draftOf(state).setCode('x | $x.SHIPPED_DATE > $x.REQUIRED_DATE'));
-    fireEvent.click(button('Validate'));
+    // checking, then ready
+    expect(
+      within(panel())
+        .getByLabelText('Condition')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.CHECKING);
     await within(panel()).findByText(
       'One Boolean of a row: the rows for which it is true are kept',
     );
+    expect(
+      within(panel())
+        .getByLabelText('Condition')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.READY);
+    expect(fake.parseExpression).toHaveBeenCalledTimes(1);
     expect(fake.planLambda).toHaveBeenCalledTimes(1);
     expect(button('Apply').disabled).toBe(false);
     fireEvent.click(button('Apply'));
@@ -207,14 +275,13 @@ describe('Filter by Expression editor', () => {
         ),
     );
     act(() => draftOf(state).setCode('x | $x.ORDER_ID + 1'));
-    fireEvent.click(button('Validate'));
     // under the code, and in the problems Apply would leave the node with
     expect(
       await within(panel()).findAllByText(
         MESSAGE_CONDITION_NOT_BOOLEAN('Integer'),
       ),
     ).toHaveLength(2);
-    await waitFor(() => expect(button('Validate').disabled).toBe(false));
+    await waitFor(() => expect(draftOf(state).validating).toBe(false));
 
     const precedence = noMatch(
       "Can't find a match for function 'and(Boolean[1],SmallInt[1])'",
@@ -224,7 +291,6 @@ describe('Filter by Expression editor', () => {
         new Map([...lambdas.keys()].map((key) => [key, precedence])),
     );
     act(() => draftOf(state).setCode('x | $x.ORDER_ID > 1 && $x.SHIP_VIA > 3'));
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText(EXPRESSION_FILTER_PARENTHESES_HINT);
   });
 
@@ -247,7 +313,6 @@ describe('Filter by Expression editor', () => {
     };
     fake.parseExpression.mockResolvedValueOnce({ lambda: like, located: like });
     act(() => draftOf(state).setCode("x | $x.SHIP_NAME->startsWith('a\\\\')"));
-    fireEvent.click(button('Validate'));
     await waitFor(() =>
       expect(
         within(panel()).getAllByText(MESSAGE_CONDITION_BACKSLASH('startsWith')),
@@ -275,8 +340,12 @@ describe('Filter by Expression editor', () => {
       ),
     );
     MockedMonacoEditorAPI.setModelMarkers.mockClear();
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText("no viable alternative at input '>'");
+    expect(
+      within(panel())
+        .getByLabelText('Condition')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.PROBLEM);
     await waitFor(() =>
       expect(MockedMonacoEditorAPI.setModelMarkers).toHaveBeenCalledWith(
         expect.anything(),

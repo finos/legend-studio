@@ -30,7 +30,7 @@ import {
   Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
-import { flowResult } from 'mobx';
+import { flowResult, when } from 'mobx';
 import {
   NORTHWIND_RUNTIME,
   northwindTable,
@@ -58,6 +58,7 @@ import {
   CubeExpressionFilterDraft,
   NEW_CONDITION_CODE,
 } from '../CubeExpressionFilterDraft.js';
+import { CubeCodeCheckStatus } from '../CubeExpressionAutoCheck.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -151,14 +152,26 @@ const COMPILE = (message: string): CubeEngineError =>
   );
 
 describe('Filter by Expression draft', () => {
-  test('Starts a new filter with a lambda to finish, waiting for a Validate', () => {
+  test('Starts a new filter with a lambda to finish, waiting for its check', () => {
     const { draft } = open();
     expect(draft.code).toBe(NEW_CONDITION_CODE);
     expect(draft.build() === draft.original).toBe(true);
     expect(draft.isValidated).toBe(false);
     expect(draft.applyDisabledReason).toBe(
-      'Validate the condition first (F10)',
+      'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
     );
+  });
+
+  test('Checks a condition never checked, e.g. a cube spec imported, as it opens, with no edit', async () => {
+    const { draft, fake } = open(
+      new ExpressionFilter('expressionFilter101', 'x | $x.ORDER_ID > 10300'),
+    );
+    expect(draft.checkStatus).toBe(CubeCodeCheckStatus.CHECKING);
+    await when(() => draft.checkStatus === CubeCodeCheckStatus.READY, {
+      timeout: 5000,
+    });
+    expect(fake.parseExpression).toHaveBeenCalledTimes(1);
+    expect(draft.applyDisabledReason).toBeUndefined();
   });
 
   test('Validates: parses the code, checks it located, plans it, then Apply stores a checked node', async () => {
@@ -192,14 +205,14 @@ describe('Filter by Expression draft', () => {
     expect(built.check.kind).toBe('checked');
     state.applyQuery(state.document.query.replace(built));
     expect(state.analysis.validity.get('expressionFilter101')).toEqual([]);
-    // a code edit asks for another Validate, and the node gets no lambda
+    // a code edit asks for another check, and the node gets no lambda
     draft.setCode('x | $x.SHIPPED_DATE >= $x.REQUIRED_DATE');
     expect(draft.applyDisabledReason).toBe(
-      'Validate the condition first (F10)',
+      'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
     );
     expect(draft.isChecked).toBe(false);
     expect(draft.build().lambda).toBeUndefined();
-    // parsed again on the next Validate only
+    // parsed again on the next check only
     await flowResult(draft.validate());
     await flowResult(draft.validate());
     expect(fake.parseExpression).toHaveBeenCalledTimes(2);
@@ -232,6 +245,37 @@ describe('Filter by Expression draft', () => {
     });
     expect(fake.typeLambdas).not.toHaveBeenCalled();
     expect(draft.isValidated).toBe(false);
+  });
+
+  test("Drops a check's answer when the code changed while it ran, and keeps typing open", async () => {
+    const { fake, draft } = open();
+    draft.setCode('x | $x.ORDER_ID >');
+    let failParse: ((error: unknown) => void) | undefined;
+    fake.parseExpression.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          failParse = reject;
+        }),
+    );
+    const checking = flowResult(draft.validate());
+    expect(draft.validating).toBe(true);
+    // typing goes on while it is checked
+    draft.setCode('x | $x.ORDER_ID > 1');
+    failParse?.(
+      new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        "no viable alternative at input '>'",
+      ),
+    );
+    await checking;
+    // the answer was for the code before: no problem shown for the code now
+    expect(draft.problem).toBeUndefined();
+    expect(draft.isValidated).toBe(false);
+    // the code now is then checked
+    await flowResult(draft.validate());
+    expect(draft.isValidated).toBe(true);
+    expect(draft.checked?.code).toBe('x | $x.ORDER_ID > 1');
+    draft.dispose();
   });
 
   test("Refuses a backslash in a LIKE function's literal before asking the engine", async () => {
@@ -395,7 +439,7 @@ describe('Filter by Expression draft', () => {
     );
   });
 
-  test('Stays open while its condition waits for Validate, rather than storing or dropping it', async () => {
+  test('Stays open while its condition waits for its check, rather than storing or dropping it', async () => {
     const { state } = open();
     const { nodeEditor } = state;
     nodeEditor.open('expressionFilter101');
@@ -406,7 +450,7 @@ describe('Filter by Expression draft', () => {
     expect(nodeEditor.notice).toBe(
       getEditorKeptOpenNotice(
         'expressionFilter101',
-        'Validate the condition first (F10)',
+        'Wait for the condition to be checked, once you stop typing (F10 checks it at once)',
       ),
     );
     expect(state.history).toHaveLength(0);

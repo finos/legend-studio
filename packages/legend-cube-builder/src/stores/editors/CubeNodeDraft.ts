@@ -56,6 +56,11 @@ export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
   follow(node: QueryNode): boolean {
     return false;
   }
+
+  /** The editor closed on the draft: stops what it does in the background, e.g. checking code */
+  dispose(): void {
+    // nothing by default
+  }
 }
 
 /** A node with nothing to edit in the panel, such as a source or an Unknown node */

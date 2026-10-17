@@ -93,6 +93,7 @@ describe('Legend Query as the Cube host', () => {
       parseExpression: jest.fn<CubeEngine['parseExpression']>(),
       planLambda: jest.fn<CubeEngine['planLambda']>(),
       exportCsv: jest.fn<CubeEngine['exportCsv']>(),
+      completeCode: jest.fn<CubeEngine['completeCode']>(),
     };
     const host = new LegendQueryCubeHost(applicationStore, engine);
     expect(host.applicationStore).toBe(applicationStore);

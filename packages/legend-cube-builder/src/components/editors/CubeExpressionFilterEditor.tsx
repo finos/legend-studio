@@ -19,20 +19,20 @@ import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { guaranteeType } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
   EXPRESSION_FILTER_EDITOR_NOTES,
   getExactColumnTypeLabel,
-  READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import {
   type CubeConditionProblem,
   CubeExpressionFilterDraft,
 } from '../../stores/editors/CubeExpressionFilterDraft.js';
-import { CubeButton } from '../CubeButton.js';
+import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
+import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { getCubeExpressionCompletionSource } from './CubeExpressionCompletions.js';
 import {
   CubeJsonFieldsToggle,
   CubeJsonFieldsTree,
@@ -65,7 +65,8 @@ const markerOf = (
 
 /**
  * What the editor says under the code: its problem, but one Cube refused,
- * which the panel's problems show; that it is checked, or that it waits
+ * which the panel's problems show; that it is ready, being checked, or not
+ * edited yet
  */
 const CubeConditionStatus = observer(
   (props: { draft: CubeExpressionFilterDraft }) => {
@@ -86,25 +87,36 @@ const CubeConditionStatus = observer(
         </div>
       );
     }
-    if (!draft.isValidated) {
-      return (
-        <div className="text-sm text-[var(--color-text-muted)]">
-          Not validated yet
-        </div>
-      );
+    switch (draft.checkStatus) {
+      case CubeCodeCheckStatus.READY:
+        return (
+          <div className="text-sm text-[var(--color-status-success)]">
+            One Boolean of a row: the rows for which it is true are kept
+          </div>
+        );
+      case CubeCodeCheckStatus.CHECKING:
+        return (
+          <div className="text-sm text-[var(--color-text-muted)]">
+            {CUBE_CODE_CHECK_LABEL.CHECKING}
+          </div>
+        );
+      case CubeCodeCheckStatus.UNEDITED:
+        return (
+          <div className="text-sm text-[var(--color-text-muted)]">
+            {CUBE_CODE_CHECK_LABEL.UNEDITED}
+          </div>
+        );
+      default:
+        return null;
     }
-    return draft.isChecked ? (
-      <div className="text-sm text-[var(--color-text-secondary)]">
-        One Boolean of a row: the rows for which it is true are kept
-      </div>
-    ) : null;
   },
 );
 
 /**
  * The Filter by Expression editor (PLAN §11.11): the condition's code in a
- * code editor, Validate (F10), which the engine does, and the input's
- * columns, which a click writes at the end of the code.
+ * code editor, checked once typing pauses (F10 at once), its border green
+ * when ready (user, 2026-10-16), and the input's columns, which a click
+ * writes at the end of the code.
  */
 export const CubeExpressionFilterEditor = observer(
   (props: CubeNodeEditorProps) => {
@@ -112,7 +124,8 @@ export const CubeExpressionFilterEditor = observer(
     const draft = guaranteeType(props.draft, CubeExpressionFilterDraft);
     const [schema] = inputSchemas as [Schema];
     const [expanded, setExpanded] = useState(false);
-    const disabled = readOnly || draft.validating;
+    // typing goes on while the code is checked
+    const disabled = readOnly;
     /** Writes text at the end of the condition, as the chips do */
     const write = (text: string): void => {
       const separator = /\s$/u.test(draft.code) ? '' : ' ';
@@ -133,7 +146,8 @@ export const CubeExpressionFilterEditor = observer(
         </div>
         <div
           aria-label="Condition"
-          className="overflow-hidden rounded-sm border border-[var(--color-border-default)]"
+          data-check-status={draft.checkStatus}
+          className={getCubeCodeBoxClass(draft.checkStatus)}
           style={{ height: expanded ? 240 : 96 }}
         >
           <CodeEditor
@@ -145,32 +159,20 @@ export const CubeExpressionFilterEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(draft.problem)}
+            completions={getCubeExpressionCompletionSource(
+              schema.columns,
+              (text) => draft.getEngineCompletions(text),
+            )}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
               scrollBeyondLastLine: false,
             }}
+            // the completions show over the editor's popper, not cut by it
+            floatingWidgetsInBody={true}
           />
         </div>
         <CubeConditionStatus draft={draft} />
-        <div className="flex items-center gap-2">
-          <CubeButton
-            primary={!draft.isValidated}
-            title={
-              readOnly
-                ? READ_ONLY_CUBE_TITLE
-                : "Check the condition with the engine, and plan it for this cube's database (F10)"
-            }
-            disabled={disabled}
-            onClick={() => {
-              flowResult(draft.validate()).catch(
-                props.editorState.host.applicationStore.alertUnhandledError,
-              );
-            }}
-          >
-            {draft.validating ? 'Validating…' : 'Validate'}
-          </CubeButton>
-        </div>
         <span>Input columns</span>
         <ul aria-label="Input columns" className="flex flex-wrap gap-1">
           {schema.columns.map((column) => (

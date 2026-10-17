@@ -233,6 +233,12 @@ export interface CubeResult {
   readonly durationMs: number;
 }
 
+/** One of the engine's completions of Pure code: what it writes, and what it shows */
+export interface CubeCodeCompletion {
+  readonly completion: string;
+  readonly display: string;
+}
+
 export interface CubeEngine {
   /** The databases and runtimes of a model, parsed once */
   loadModel(model: ModelContext): Promise<CubeModelOutline>;
@@ -283,4 +289,16 @@ export interface CubeEngine {
    * §11.7). Rejects with a `CubeEngineError`
    */
   planLambda(model: ModelContext, lambda: IR): Promise<void>;
+  /**
+   * The engine's completions of Pure code written after a relation, e.g.
+   * `->filter(x | $x.` after a node's input (user, 2026-10-16), or of code
+   * on its own, on the model as it is: undefined when the engine completes
+   * no code, as an engine without the service answers, and from then on;
+   * rejects with a `CubeEngineError`
+   */
+  completeCode(
+    model: ModelContext,
+    relation: IR | undefined,
+    text: string,
+  ): Promise<readonly CubeCodeCompletion[] | undefined>;
 }

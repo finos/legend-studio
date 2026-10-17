@@ -38,14 +38,29 @@ import {
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable, when } from 'mobx';
-import { CubeEngineError } from '../graph-manager/CubeEngine.js';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+  when,
+} from 'mobx';
+import {
+  type CubeCodeCompletion,
+  CubeEngineError,
+} from '../graph-manager/CubeEngine.js';
 import {
   CUBE_EXPRESSION_CODEC,
   readCubeLambdaJson,
 } from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import { bindCubeLambdaSources } from './CubeLambdaSources.js';
+import {
+  CubeCodeCheckStatus,
+  CubeExpressionAutoCheck,
+} from './editors/CubeExpressionAutoCheck.js';
 
 // Import Pure (PLAN §11.18): a lambda read into a cube, its sources bound by
 // the host, each step checked by writing it again. A host can open the page
@@ -86,6 +101,9 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
   /** What the banner calls a lambda imported from the Import Pure dialog */
   IMPORTED: 'the Pure imported',
   NOT_JSON: (reason: string): string => `Can't read the JSON: ${reason}`,
+  /** The dialog's text checked as it is typed, once Cube can read it and the engine types it */
+  READABLE: (steps: number): string =>
+    `Cube reads it as ${steps} ${steps === 1 ? 'step' : 'steps'}, which the engine compiles: Import puts them in place of this cube`,
 };
 
 /** The source id the engine's grammar gives what Import Pure parses, so its errors name it */
@@ -285,11 +303,20 @@ export class CubeLambdaImportState {
   /** Whether Cube writes the cube back as the lambda; none until checked */
   fidelity: CubeLambdaFidelity | undefined;
   notes: readonly string[] = [];
-  /** Import Pure, from the Cube menu: the dialog, its text, why its last import failed */
+  /** Import Pure, from the Cube menu: the dialog, its text, why its last check or import failed */
   isDialogOpen = false;
   text = '';
   isImporting = false;
   dialogError: CubeLambdaImportError | undefined;
+  /**
+   * The dialog's text as last checked, once typing paused (user,
+   * 2026-10-16), and Cube's reading of it, which Import takes
+   */
+  checked:
+    | { readonly text: string; readonly reading: CubeLambdaReading }
+    | undefined;
+  isChecking = false;
+  private readonly autoCheck: CubeExpressionAutoCheck;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
@@ -302,14 +329,23 @@ export class CubeLambdaImportState {
       text: observable,
       isImporting: observable,
       dialogError: observable.ref,
+      checked: observable.ref,
+      isChecking: observable,
+      checkStatus: computed,
       open: flow,
       dismiss: action,
       openDialog: action,
       closeDialog: action,
       setText: action,
+      check: flow,
       importText: flow,
     });
     this.editorState = editorState;
+    this.autoCheck = new CubeExpressionAutoCheck(() =>
+      flowResult(this.check()).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      ),
+    );
   }
 
   *open(initial: CubeInitialLambda): GeneratorFn<void> {
@@ -348,6 +384,10 @@ export class CubeLambdaImportState {
   openDialog(): void {
     this.isDialogOpen = true;
     this.dialogError = undefined;
+    // the text left from before, checked again
+    if (this.text.trim()) {
+      this.autoCheck.now();
+    }
   }
 
   closeDialog(): void {
@@ -358,6 +398,124 @@ export class CubeLambdaImportState {
   setText(text: string): void {
     this.text = text;
     this.dialogError = undefined;
+    this.autoCheck.schedule();
+  }
+
+  /**
+   * Where the dialog's check stands, for its code box's border: green once
+   * Cube can read the text into steps
+   */
+  get checkStatus(): CubeCodeCheckStatus {
+    const text = this.text.trim();
+    return !text
+      ? CubeCodeCheckStatus.UNEDITED
+      : this.checked?.text === text
+        ? CubeCodeCheckStatus.READY
+        : this.dialogError
+          ? CubeCodeCheckStatus.PROBLEM
+          : CubeCodeCheckStatus.CHECKING;
+  }
+
+  /** The text, Pure or the engine's JSON of a lambda, read into a cube */
+  private async readText(text: string): Promise<CubeLambdaReading> {
+    const { editorState } = this;
+    let json: unknown;
+    if (text.startsWith('{')) {
+      try {
+        json = parseLosslessJSON(text);
+      } catch (error) {
+        assertErrorThrown(error);
+        throw new CubeLambdaReadError(
+          CUBE_LAMBDA_IMPORT_MESSAGE.NOT_JSON(error.message),
+        );
+      }
+    } else {
+      json = (
+        await editorState.host.engine.parseExpression(
+          text,
+          CUBE_IMPORT_PURE_SOURCE_ID,
+        )
+      ).lambda;
+    }
+    return readCubeLambdaDocument(editorState, json);
+  }
+
+  /**
+   * The lambda read, typed by the engine: a matview's relation as it is, a
+   * run's without `from()`; throws the engine's error. A run with lets is
+   * left to the editor, which checks the cube once imported.
+   */
+  private async typeReading(reading: CubeLambdaReading): Promise<void> {
+    const { context } = reading.document;
+    const parts = splitCubeLambda(reading.lambda);
+    const typed = !reading.isRun
+      ? reading.lambda
+      : parts.lets.size
+        ? undefined
+        : lambda([], [parts.relation]);
+    if (!context || !typed) {
+      return;
+    }
+    const answer = (
+      await this.editorState.host.engine.typeLambdas(
+        context.model,
+        new Map([[CUBE_IMPORT_PURE_SOURCE_ID, typed]]),
+      )
+    ).get(CUBE_IMPORT_PURE_SOURCE_ID);
+    if (answer instanceof CubeEngineError) {
+      throw answer;
+    }
+  }
+
+  /**
+   * Checks the dialog's text, once typing pauses: reads it into a cube, as
+   * Import would, without importing it, and has the engine type the cube;
+   * says why it can't be read or doesn't compile
+   */
+  *check(): GeneratorFn<void> {
+    const text = this.text.trim();
+    if (!text || !this.isDialogOpen || this.checked?.text === text) {
+      return;
+    }
+    this.isChecking = true;
+    try {
+      const reading = (yield this.readText(text)) as CubeLambdaReading;
+      if (this.text.trim() === text) {
+        yield this.typeReading(reading);
+      }
+      // the text changed meanwhile: its own check follows
+      if (this.text.trim() === text) {
+        this.checked = { text, reading };
+        this.dialogError = undefined;
+      }
+    } catch (error) {
+      if (this.text.trim() === text) {
+        this.checked = undefined;
+        this.dialogError = toImportError(error);
+      }
+    } finally {
+      this.isChecking = false;
+    }
+  }
+
+  /**
+   * The engine's completions of the Pure typed so far, on the cube's model:
+   * none for JSON, or before the cube has a model
+   */
+  getEngineCompletions(
+    textBeforeCursor: string,
+  ): Promise<readonly CubeCodeCompletion[] | undefined> {
+    const { context } = this.editorState.document;
+    const text = textBeforeCursor.trimStart();
+    if (!context || text.startsWith('{')) {
+      return Promise.resolve([]);
+    }
+    return this.editorState.host.engine.completeCode(
+      context.model,
+      undefined,
+      // the code of the lambda's body
+      text.replace(/^\|/u, ''),
+    );
   }
 
   /**
@@ -375,30 +533,11 @@ export class CubeLambdaImportState {
     this.isImporting = true;
     this.dialogError = undefined;
     try {
-      let json: unknown;
-      if (text.startsWith('{')) {
-        try {
-          json = parseLosslessJSON(text);
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new CubeLambdaReadError(
-            CUBE_LAMBDA_IMPORT_MESSAGE.NOT_JSON(error.message),
-          );
-        }
-      } else {
-        json = (
-          (yield editorState.host.engine.parseExpression(
-            text,
-            CUBE_IMPORT_PURE_SOURCE_ID,
-          )) as Awaited<
-            ReturnType<typeof editorState.host.engine.parseExpression>
-          >
-        ).lambda;
-      }
-      const reading = (yield readCubeLambdaDocument(
-        editorState,
-        json,
-      )) as CubeLambdaReading;
+      // as checked once typing paused, or read now
+      const reading =
+        this.checked?.text === text
+          ? this.checked.reading
+          : ((yield this.readText(text)) as CubeLambdaReading);
       if (!this.isDialogOpen) {
         // closed while it was read
         return;
@@ -406,6 +545,7 @@ export class CubeLambdaImportState {
       editorState.importDocument(reading.document, false);
       this.isDialogOpen = false;
       this.text = '';
+      this.checked = undefined;
       this.label = CUBE_LAMBDA_IMPORT_MESSAGE.IMPORTED;
       this.error = undefined;
       this.fidelity = undefined;

@@ -23,19 +23,56 @@ import {
   ModalHeader,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+import {
+  CUBE_LAMBDA_IMPORT_MESSAGE,
+  type CubeLambdaImportState,
+} from '../../stores/CubeLambdaImportState.js';
+import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
+import {
+  CUBE_CODE_CHECK_LABEL,
+  getCubeCodeBoxClass,
+} from '../editors/CubeCodeCheck.js';
+import { getCubeExpressionCompletionSource } from '../editors/CubeExpressionCompletions.js';
 
-const TEXT_AREA_CLASS_NAME =
-  'h-80 w-full resize-none rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] p-1 font-mono text-sm text-[var(--color-text-primary)]';
+/** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */
+const PURE = 'pure';
+
+/** What the text's check says under it, but a problem, which the alert says */
+const CubeImportPureStatus = observer(
+  (props: { lambdaImport: CubeLambdaImportState }) => {
+    const { lambdaImport } = props;
+    switch (lambdaImport.checkStatus) {
+      case CubeCodeCheckStatus.READY:
+        return (
+          <div className="text-sm text-[var(--color-status-success)]">
+            {CUBE_LAMBDA_IMPORT_MESSAGE.READABLE(
+              lambdaImport.checked?.reading.document.query.nodes.length ?? 0,
+            )}
+          </div>
+        );
+      case CubeCodeCheckStatus.CHECKING:
+        return (
+          <div className="text-sm text-[var(--color-text-muted)]">
+            {CUBE_CODE_CHECK_LABEL.CHECKING}
+          </div>
+        );
+      default:
+        return null;
+    }
+  },
+);
 
 /**
  * Import Pure (PLAN §11.18): a lambda pasted as Pure, as Show Pure shows one,
  * or as the engine's JSON, read into the steps Cube writes it with, in
- * place of this cube
+ * place of this cube; in a code editor, checked once typing pauses, its
+ * border green once Cube can read it (user, 2026-10-16)
  */
 export const CubeImportPureDialog = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -73,14 +110,31 @@ export const CubeImportPureDialog = observer(
                 Undo brings it back. Its sources are read where the source
                 dialog reads them.
               </div>
-              <textarea
-                className={TEXT_AREA_CLASS_NAME}
+              <div
                 aria-label="Pure query"
-                placeholder="Pure query"
-                spellCheck={false}
-                value={lambdaImport.text}
-                onChange={(event) => lambdaImport.setText(event.target.value)}
-              />
+                data-check-status={lambdaImport.checkStatus}
+                className={`h-80 ${getCubeCodeBoxClass(lambdaImport.checkStatus)}`}
+              >
+                <CodeEditor
+                  inputValue={lambdaImport.text}
+                  updateInput={(text) => lambdaImport.setText(text)}
+                  language={PURE}
+                  hideMinimap={true}
+                  hideGutter={true}
+                  hideActionBar={true}
+                  completions={getCubeExpressionCompletionSource([], (text) =>
+                    lambdaImport.getEngineCompletions(text),
+                  )}
+                  extraEditorOptions={{
+                    lineNumbers: 'off',
+                    wordWrap: 'on',
+                    scrollBeyondLastLine: false,
+                  }}
+                  // the completions show over the dialog
+                  floatingWidgetsInBody={true}
+                />
+              </div>
+              <CubeImportPureStatus lambdaImport={lambdaImport} />
               {lambdaImport.dialogError !== undefined && (
                 <div
                   className="break-words text-base text-[var(--color-status-error)]"

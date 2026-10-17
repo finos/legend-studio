@@ -28,6 +28,7 @@ import {
 import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,
+  MockedMonacoEditorLanguagesAPI,
 } from '@finos/legend-lego/code-editor/test';
 import {
   act,
@@ -36,7 +37,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { EXTEND_EDITOR_NOTES } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  EXTEND_EDITOR_NOTES,
+  EXTEND_ROW_WAITING_ON_OTHERS,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -54,6 +58,8 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeExtendDraft } from '../../../stores/editors/CubeExtendDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
+import { CubeCodeCheckStatus } from '../../../stores/editors/CubeExpressionAutoCheck.js';
+import { CUBE_CODE_CHECK_LABEL } from '../CubeCodeCheck.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
@@ -129,19 +135,33 @@ beforeEach(() => {
 });
 
 describe('Extend editor', () => {
-  test('Shows a new column to write, and waits for a Validate before Apply', async () => {
+  test('Shows a new column to write, and waits for its check before Apply', async () => {
     const { state } = await render();
     expect(
       within(panel()).getByLabelText<HTMLInputElement>('Column name 1').value,
     ).toBe('col_1');
     expect(within(panel()).getByLabelText('Expression 1')).toBeTruthy();
-    expect(within(panel()).getByText('Not validated yet')).toBeTruthy();
+    expect(
+      within(panel()).getByText(CUBE_CODE_CHECK_LABEL.UNEDITED),
+    ).toBeTruthy();
+    // a new column, never edited, isn't checked, nor marked
+    expect(
+      within(panel())
+        .getByLabelText('Expression 1')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.UNEDITED);
+    // no button: the code is checked once typing pauses
+    expect(
+      within(panel()).queryByRole('button', { name: 'Validate' }),
+    ).toBeNull();
     const apply = button('Apply');
     expect(apply.disabled).toBe(true);
-    expect(apply.title).toBe('Validate the expressions first (F10)');
+    expect(apply.title).toBe(
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
+    );
     // in place of the problems
     expect(within(panel()).getByRole('status').textContent).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
     EXTEND_EDITOR_NOTES.forEach((note) =>
       expect(within(panel()).getByText(note)).toBeTruthy(),
@@ -159,12 +179,64 @@ describe('Extend editor', () => {
     expect(draftOf(state).rows[0]?.code).toBe('x | $x.ORDER_ID');
   });
 
-  test('Validates, shows each type, then Apply stores the typed node', async () => {
+  test("Offers the columns an expression can read as it is typed, the input's and the new ones above it, while its editor has the focus, then the engine's completions", async () => {
+    const { state, fake } = await render();
+    fake.completeCode.mockResolvedValue([
+      { completion: 'ORDER_ID', display: 'ORDER_ID' },
+      { completion: 'meta::pure::functions', display: 'meta' },
+    ]);
+    act(() =>
+      draftOf(state).setName(draftOf(state).rows[0]?.key ?? 0, 'TOTAL'),
+    );
+    MockedMonacoEditorInstance.onDidFocusEditorText.mockClear();
+    MockedMonacoEditorLanguagesAPI.registerCompletionItemProvider.mockClear();
+    fireEvent.click(button('Add column'));
+    await within(panel()).findByLabelText('Expression 2');
+    // the second row's editor gets the focus
+    const [onFocus] = MockedMonacoEditorInstance.onDidFocusEditorText.mock
+      .calls[0] as [() => void];
+    act(() => onFocus());
+    const [language, provider] = MockedMonacoEditorLanguagesAPI
+      .registerCompletionItemProvider.mock.calls[0] as [
+      string,
+      {
+        triggerCharacters: string[];
+        provideCompletionItems: (
+          model: unknown,
+          position: unknown,
+        ) => Promise<{ suggestions: { label: string; detail?: string }[] }>;
+      },
+    ];
+    expect(language).toBe('pure');
+    expect(provider.triggerCharacters).toEqual(['.', '>', '$']);
+    const { suggestions } = await provider.provideCompletionItems(
+      { getValueInRange: () => 'x | $x.' },
+      { lineNumber: 1, column: 8 },
+    );
+    expect(suggestions.map((each) => each.label)).toEqual([
+      ...ORDERS_COLUMNS.map((column) => column.name),
+      'TOTAL',
+      // the engine's, but those Cube offers already
+      'meta',
+    ]);
+    // written as a new column of the input, after the rows above it
+    expect(fake.completeCode).toHaveBeenCalledWith(
+      CONTEXT.model,
+      expect.anything(),
+      '->extend(~TOTAL:x | )->extend(~col_1:x | $x.',
+    );
+  });
+
+  test('Checks the expressions once typing pauses, shows each type with a green border, then Apply stores the typed node', async () => {
     const { state, fake } = await render();
     const draft = draftOf(state);
     act(() => draft.setCode(draft.rows[0]?.key ?? 0, 'x | $x.ORDER_ID + 1'));
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText('Integer, optional');
+    expect(
+      within(panel())
+        .getByLabelText('Expression 1')
+        .getAttribute('data-check-status'),
+    ).toBe(CubeCodeCheckStatus.READY);
     expect(fake.planLambda).toHaveBeenCalledTimes(1);
     expect(button('Apply').disabled).toBe(false);
     fireEvent.click(button('Apply'));
@@ -194,7 +266,6 @@ describe('Extend editor', () => {
     );
     const draft = draftOf(state);
     act(() => draft.setCode(draft.rows[0]?.key ?? 0, 'x | $x.SHIP_VIA + 1'));
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText(
       'Collection element must have a multiplicity [1]',
     );
@@ -203,7 +274,34 @@ describe('Extend editor', () => {
         'An optional column needs ->toOne() first, such as $x.QTY->toOne() + 1.',
       ),
     ).toBeTruthy();
-    await waitFor(() => expect(button('Validate').disabled).toBe(false));
+    await waitFor(() => expect(draftOf(state).validating).toBe(false));
+  });
+
+  test("Says a column read waits on another column's problem, as the columns are typed together", async () => {
+    const { state, fake } = await render();
+    const draft = draftOf(state);
+    act(() => draft.addRow());
+    const [first, second] = draft.rows.map((row) => row.key);
+    fake.parseExpression.mockImplementation(async (code) => {
+      if (code.endsWith('+')) {
+        throw new CubeEngineError(
+          CubeEngineErrorKind.COMPILE,
+          "no viable alternative at input '+'",
+        );
+      }
+      return { lambda: lambdaOf(code), located: lambdaOf(code) };
+    });
+    act(() => {
+      draft.setCode(first ?? 0, 'x | $x.ORDER_ID + 1');
+      draft.setCode(second ?? 0, 'x | $x.ORDER_ID +');
+    });
+    await within(panel()).findByText("no viable alternative at input '+'");
+    expect(
+      within(panel()).getByText(EXTEND_ROW_WAITING_ON_OTHERS),
+    ).toBeTruthy();
+    expect(
+      within(panel()).queryByText(CUBE_CODE_CHECK_LABEL.CHECKING),
+    ).toBeNull();
   });
 
   test('Underlines a problem the engine located in its code', async () => {
@@ -227,7 +325,6 @@ describe('Extend editor', () => {
       ),
     );
     MockedMonacoEditorAPI.setModelMarkers.mockClear();
-    fireEvent.click(button('Validate'));
     await within(panel()).findByText("no viable alternative at input '+'");
     await waitFor(() =>
       expect(MockedMonacoEditorAPI.setModelMarkers).toHaveBeenCalledWith(

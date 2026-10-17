@@ -100,7 +100,15 @@ const STEP_CALLOUTS: Record<string, (editor: Locator) => Callout[]> = {
   expressionFilter: (editor) => [
     { n: 1, targets: [label(editor, 'Condition')], at: 'left' },
     { n: 2, targets: [label(editor, 'Expand the condition')], at: 'right' },
-    { n: 3, targets: [button(editor, 'Validate')], at: 'right' },
+    {
+      n: 3,
+      targets: [
+        editor.getByText(
+          'One Boolean of a row: the rows for which it is true are kept',
+        ),
+      ],
+      at: 'right',
+    },
     { n: 4, targets: [label(editor, 'Input columns')], at: 'left' },
   ],
   restrict: (editor) => [
@@ -199,11 +207,7 @@ const STEP_CALLOUTS: Record<string, (editor: Locator) => Callout[]> = {
       ],
       at: 'above',
     },
-    {
-      n: 4,
-      targets: [button(editor, 'Add column'), button(editor, 'Validate')],
-      at: 'right',
-    },
+    { n: 4, targets: [button(editor, 'Add column')], at: 'right' },
     { n: 5, targets: [label(editor, 'Input columns')], at: 'left' },
   ],
   explode: (editor) => [
@@ -334,9 +338,8 @@ test('Legend Cube: each step and its inputs', async ({ page }) => {
       query: { selected: step.id, nodes },
     });
     if (CUBE_STEPS_WITH_EXPRESSIONS.includes(kind)) {
-      // its expression checked by the engine, then applied
+      // its expression checked by the engine as the editor opens, then applied
       const editor = await openStep(page, step.id);
-      await button(editor, 'Validate').click();
       const apply = button(editor, 'Apply');
       await test.expect(apply).toBeEnabled();
       await apply.click();

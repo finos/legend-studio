@@ -12,12 +12,13 @@ Here it adds revenue, amount times price. The cube runs on the sample sales (cou
 [![The Extend Columns editor, its inputs numbered](../images/steps/extend.png)](../images/steps/extend.png)
 
 1. **The new column's name**.
-2. **Its expression**, a lambda of one row: `x | $x.amount->toOne() * $x.price->toOne()`. Its type shows below it once validated.
+2. **Its expression**, a lambda of one row: `x | $x.amount->toOne() * $x.price->toOne()`. It is checked once you stop typing: the engine checks and types it. Its border turns green when it is ready, red with a problem, and its type shows below it. F10 checks the expressions at once. Apply needs them checked.
 3. **Move** a column **up** or **down**: a column can use the ones above it.
-4. **Add column**, and **Validate** (F10), which checks the expressions with the engine and types them. Apply needs it.
+4. **Add column**.
 5. **Input columns**: click one to write it in the expression last used.
 
 Good to know:
 
+- As you type, `$x.` lists the columns the expression can read, the input's and the new ones above it, with their types, and `$x.COLUMN->` the functions of the column's type. Where the engine completes Pure code, its completions follow.
 - An optional column needs `->toOne()` before arithmetic; every new column is optional.
 - A JSON (Variant) column's `{}` opens its fields: a field clicked is written into the expression, and **+ column** adds it as a new column. See [JSON columns](../json.md).

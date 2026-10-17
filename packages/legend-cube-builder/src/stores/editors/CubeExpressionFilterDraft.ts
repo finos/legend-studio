@@ -45,6 +45,7 @@ import {
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeCodeCompletion,
   type CubeParsedExpression,
   type CubeSourceLocation,
   type NodeId,
@@ -59,6 +60,11 @@ import {
   getCubeExtendUpstream,
   withoutEngineContext,
 } from '../CubeExtendTyping.js';
+import {
+  CubeCodeCheckStatus,
+  CubeExpressionAutoCheck,
+} from './CubeExpressionAutoCheck.js';
+import { getCubeEngineCompletions } from './CubeEngineCompletions.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
 /** What the engine made of the condition's code the last time it was validated */
@@ -68,7 +74,7 @@ export interface CubeConditionCheckedCode {
   readonly located: JsonObject;
 }
 
-/** The condition's problem from the last Validate: a message, where it is in the code, and a hint */
+/** The condition's problem from the last check: a message, where it is in the code, and a hint */
 export interface CubeConditionProblem {
   readonly message: string;
   readonly location?: CubeSourceLocation | undefined;
@@ -111,11 +117,12 @@ const asEngineError = (error: unknown): CubeEngineError =>
 
 /**
  * The Filter by Expression editor's draft (PLAN §11.11): the condition's
- * code, `x | …`. Validate (F10) has the engine parse it, checks Cube's rules,
- * has the engine check it after the input, located so an error points into
- * the code, then plans the query up to this node for the cube's database.
- * Apply waits until the code is the one validated; the node then holds the
- * engine's lambda and its check, so it needn't be checked again.
+ * code, `x | …`, checked once typing pauses (user, 2026-10-16), or at once
+ * on F10: the engine parses it, Cube checks its rules, the engine checks it
+ * after the input, located so an error points into the code, then plans the
+ * query up to this node for the cube's database. Apply waits until the code
+ * is the one checked; the node then holds the engine's lambda and its check,
+ * so it needn't be checked again.
  */
 export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   readonly editorState: CubeEditorState;
@@ -124,15 +131,19 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   code: string;
   /** What the engine made of the code the last time it parsed it */
   checked: CubeConditionCheckedCode | undefined;
-  /** The problem from the last Validate, while the code is the one validated */
+  /** The problem from the last check, while the code is the one validated */
   problem: CubeConditionProblem | undefined;
-  /** The check the last Validate gave, for the code as it was then */
+  /** The check the last check gave, for the code as it was then */
   check: ExpressionCheck | undefined;
   validating = false;
   /** Anything was changed; until then, `build()` gives the original back */
   private touched = false;
+  /** Its code was never checked, e.g. a cube's spec imported: it is checked as the editor opens */
+  private readonly checksOnOpen: boolean;
   /** The database type the last plan was for, named in its problem */
   private planDatabaseType: string | undefined;
+  /** Checks the code once typing pauses */
+  private readonly autoCheck: CubeExpressionAutoCheck;
 
   constructor(original: ExpressionFilter, editorState: CubeEditorState) {
     super(original);
@@ -146,6 +157,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       touched: observable,
       isValidated: computed,
       isChecked: computed,
+      checkStatus: computed,
       applyDisabledReason: computed,
       setCode: action,
       validate: flow,
@@ -156,6 +168,54 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
     const { code, lambda } = original;
     this.code = code || NEW_CONDITION_CODE;
     this.checked = lambda ? { code, lambda, located: lambda } : undefined;
+    this.autoCheck = new CubeExpressionAutoCheck(() =>
+      flowResult(this.validate()).catch(
+        editorState.host.applicationStore.alertUnhandledError,
+      ),
+    );
+    this.checksOnOpen =
+      !this.checked &&
+      this.code.trim() !== NEW_CONDITION_CODE.trim() &&
+      !editorState.readOnly;
+    if (this.checksOnOpen) {
+      this.autoCheck.schedule();
+    }
+  }
+
+  /** Where the check stands, for the code box's border */
+  get checkStatus(): CubeCodeCheckStatus {
+    if (this.problem) {
+      return CubeCodeCheckStatus.PROBLEM;
+    }
+    if (this.validating || !this.isValidated) {
+      // a new condition, never edited, isn't checked until it is
+      return this.touched || this.checked || this.checksOnOpen
+        ? CubeCodeCheckStatus.CHECKING
+        : CubeCodeCheckStatus.UNEDITED;
+    }
+    return this.isChecked || !this.inputSchema
+      ? CubeCodeCheckStatus.READY
+      : CubeCodeCheckStatus.CHECKING;
+  }
+
+  /** Checks the code at once (F10), not waiting for typing to pause */
+  checkNow(): void {
+    this.autoCheck.now();
+  }
+
+  /** The engine's completions of the condition typed so far, written as the input's filter */
+  getEngineCompletions(
+    textBeforeCursor: string,
+  ): Promise<readonly CubeCodeCompletion[] | undefined> {
+    return getCubeEngineCompletions(
+      this.editorState,
+      this.original.id,
+      `->filter(${textBeforeCursor}`,
+    );
+  }
+
+  override dispose(): void {
+    this.autoCheck.dispose();
   }
 
   /** The input's schema, when the input is valid */
@@ -195,7 +255,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
         : EXPRESSION_FILTER_APPLY_DISABLED_REASON.NOT_VALIDATED;
   }
 
-  /** A code edit drops the problem, until the next Validate */
+  /** A code edit drops the problem; the code is checked once typing pauses */
   setCode(code: string): void {
     if (code === this.code) {
       return;
@@ -203,6 +263,9 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
     this.code = code;
     this.problem = undefined;
     this.touched = true;
+    if (!this.editorState.readOnly) {
+      this.autoCheck.schedule();
+    }
   }
 
   build(): ExpressionFilter {
@@ -237,7 +300,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
 
   /**
    * Checks the condition with the engine (F10): parses the code when it
-   * changed since the last Validate, checks Cube's own rules and the
+   * changed since the last check, checks Cube's own rules and the
    * database's, then, when the input is valid, checks the condition after
    * the input, located in the code, and plans the query up to this node for
    * the cube's database
@@ -262,6 +325,10 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
             (expression: CubeParsedExpression) => ({ code, ...expression }),
             asEngineError,
           )) as CubeConditionCheckedCode | CubeEngineError;
+        // the code changed meanwhile: its own check follows
+        if (this.code !== code) {
+          return;
+        }
         if (result instanceof CubeEngineError) {
           this.checked = undefined;
           this.problem = problemOf(result);
@@ -282,6 +349,9 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       const candidate = this.original.withCondition(code, parsed.lambda);
       if (dependsOnDatabaseType(candidate)) {
         yield flowResult(editorState.loadModelOutline(context.model));
+        if (this.code !== code) {
+          return;
+        }
       }
       const cubeProblem =
         candidate.getConditionProblem() ??
@@ -307,6 +377,9 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
           true,
         ),
       )) as ReadonlyMap<NodeId, Schema | CubeEngineError>;
+      if (this.code !== code) {
+        return;
+      }
       const { check, error } = readCubeConditionCheck(
         answers,
         candidate,
@@ -332,6 +405,9 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
         query.replace(candidate.withCheck(check)),
         candidate.id,
       )) as CubeEngineError | undefined;
+      if (this.code !== code) {
+        return;
+      }
       if (failure) {
         this.problem = {
           message: getExtendPlanProblem(
