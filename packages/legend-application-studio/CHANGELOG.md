@@ -1,5 +1,19 @@
 # @finos/legend-application-studio
 
+## 28.21.54
+
+### Patch Changes
+
+- [#5719](https://github.com/finos/legend-studio/pull/5719) [`7002c11`](https://github.com/finos/legend-studio/commit/7002c11228f2b75ef88edbae013e9af7882d4cc4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Update dependencies to address security advisories (`swiper`, `fast-xml-parser`, `axios`, `lodash`, `lodash-es`, `dompurify`, `postcss`, `fastify`) and refresh transitive dependencies in the lockfile.
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Let the Ingest tab of Legend Cube read any ingest environment, production or production parallel, from one dropdown that starts on the viewer's own production environment; a cube on another environment saves its name, while one left on the viewer's own saves none, so each viewer reads theirs.
+
+- [#5718](https://github.com/finos/legend-studio/pull/5718) [`ef67499`](https://github.com/finos/legend-studio/commit/ef67499133dd38e8354b625e27b1ccf910a347c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Let Legend Cube in Studio run ingest data sets and data products in production or production parallel, picked in each tab (Mode), starting on production parallel unless the ingest definition Cube was opened from names only a production DID. With the lakehouse contract server configured, runs use the viewer's lakehouse environment from their entitlements, `-pp` added in production parallel, and need no lakehouse runtime in the project; without it, they use the project runtime's environment as before.
+
+- [#5713](https://github.com/finos/legend-studio/pull/5713) [`2749e96`](https://github.com/finos/legend-studio/commit/2749e96cc404ac00ad05496adedc46fb575d6a31) ([@jackp5150](https://github.com/jackp5150)) - Fix related dataspaces url for studio preview
+
+- [#5717](https://github.com/finos/legend-studio/pull/5717) [`a508703`](https://github.com/finos/legend-studio/commit/a508703011415cbaaf562d40b92d8aa5f00ad104) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Configure the lakehouse contract server in Legend Studio (`lakehouse.url`, as Legend Query configures it), and give the editor a client of it, for reading the viewer's lakehouse environment.
+
 ## 28.21.53
 
 ### Patch Changes

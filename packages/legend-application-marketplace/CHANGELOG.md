@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.5.9
+
+### Patch Changes
+
+- [#5719](https://github.com/finos/legend-studio/pull/5719) [`7002c11`](https://github.com/finos/legend-studio/commit/7002c11228f2b75ef88edbae013e9af7882d4cc4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Update dependencies to address security advisories (`swiper`, `fast-xml-parser`, `axios`, `lodash`, `lodash-es`, `dompurify`, `postcss`, `fastify`) and refresh transitive dependencies in the lockfile.
+
 ## 0.5.8
 
 ## 0.5.7
