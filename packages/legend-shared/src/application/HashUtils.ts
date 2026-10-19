@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import hash from 'hash.js';
 import {
   default as objectHash,
   type NormalOption as HashObjectOption,
@@ -58,17 +57,9 @@ export interface Hashable {
   hashCode: string;
 }
 
-// NOTE: `hash.js` turns anything but a string or an array into no bytes, so
-// numbers and booleans must be stringified to count in the hash
-export const hashValue = (val: string | boolean | number): string =>
-  hash
-    .sha1()
-    .update(isString(val) ? val : String(val))
-    .digest('hex');
-
 /**
  * A fast, non-cryptographic 64-bit hash of a string (two 32-bit
- * multiply-xorshift lanes), about 5 times faster than `hashValue`.
+ * multiply-xorshift lanes), about 5 times faster than SHA-1 in JavaScript.
  *
  * NOTE: only use this for comparisons within the app, such as cache keys or
  * change detection: don't store or send these hashes, and don't rely on
@@ -91,6 +82,18 @@ export const fastHash = (value: string): string => {
     (h1 >>> 0).toString(16).padStart(8, '0')
   );
 };
+
+/**
+ * The hash of a string, number or boolean, used for all hashes in change
+ * detection (`hashArray`, `hashCode`).
+ *
+ * NOTE: this is the fast, non-cryptographic `fastHash`: these hashes are only
+ * compared with each other within the app, never stored or sent. Numbers and
+ * booleans are hashed as their string form.
+ */
+export const hashValue = (val: string | boolean | number): string =>
+  fastHash(isString(val) ? val : String(val));
+
 export const hashUnknownValue = (val: unknown): string => {
   assertTrue(
     isString(val) || isBoolean(val) || isNumber(val),
@@ -127,6 +130,36 @@ export const hashObject = (
 ): string => {
   assertTrue(isObject(value), `Can't hash non-object value`);
   return objectHash(value as PlainObject, options);
+};
+
+/**
+ * JSON with object keys sorted, so key order doesn't change it (as with
+ * `hashObject`), leaving out keys whose value is `undefined` and keys for which
+ * `excludeKey` returns true.
+ */
+export const stableStringify = (
+  value: unknown,
+  excludeKey?: (key: string) => boolean,
+): string => {
+  if (!isObject(value)) {
+    // `JSON.stringify` gives `undefined` for what it drops from objects
+    // (`undefined`, functions, symbols), which only gets here at the top
+    // level or in arrays
+    return (JSON.stringify(value) as string | undefined) ?? 'undefined';
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item, excludeKey)).join(',')}]`;
+  }
+  const entries: string[] = [];
+  for (const key of Object.keys(value).sort()) {
+    const item = (value as Record<string, unknown>)[key];
+    if (item !== undefined && !excludeKey?.(key)) {
+      entries.push(
+        `${JSON.stringify(key)}:${stableStringify(item, excludeKey)}`,
+      );
+    }
+  }
+  return `{${entries.join(',')}}`;
 };
 
 /**

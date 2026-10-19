@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, hashObject, hashValue } from '@finos/legend-shared';
+import { hashArray, hashValue, stableStringify } from '@finos/legend-shared';
 import { SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX } from './MetaModelConst.js';
 
 /**
@@ -435,17 +435,19 @@ export enum CORE_HASH_STRUCTURE {
   DATABRICKS_TAG = 'DATABRICKS_TAG',
 }
 
+const SOURCE_INFORMATION_KEY_SUFFIX =
+  SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase();
+
+/**
+ * NOTE: this is over-simplification as there could be source information fields with other names
+ * see note in {@link pruneSourceInformation}
+ */
+const isSourceInformationKey = (propKey: string): boolean =>
+  propKey.length >= SOURCE_INFORMATION_KEY_SUFFIX.length &&
+  propKey.toLowerCase().endsWith(SOURCE_INFORMATION_KEY_SUFFIX);
+
 export const hashObjectWithoutSourceInformation = (val: object): string =>
-  hashObject(val, {
-    /**
-     * NOTE: this is over-simplification as there could be source information fields with other names
-     * see note in {@link pruneSourceInformation}
-     */
-    excludeKeys: (propKey: string) =>
-      propKey
-        .toLowerCase()
-        .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
-  });
+  hashValue(stableStringify(val, isSourceInformationKey));
 
 export const hashRawLambda = (
   parameters: object | undefined,

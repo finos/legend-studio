@@ -221,9 +221,9 @@ describe(unitTest('Property type variable values'), () => {
       derivedProperty: getOwnProperty(_class, 'displayName').hashCode,
       class: _class.hashCode,
     }).toEqual({
-      property: '1fdec18b6bc15814e32664d9a0ddb189034da3f6',
-      derivedProperty: '09ebad9bcf82076632ed3ace4e2840535d39f90f',
-      class: 'f04fad277042777bc2275e637050236c823ecfe7',
+      property: '1202d904c073bd0d',
+      derivedProperty: '8704c5369a975a38',
+      class: '7b4760b171ff2e34',
     });
     expect(
       (await graphManagerState.graphManager.buildHashesIndex(entities)).get(
