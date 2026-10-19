@@ -60,6 +60,32 @@ export interface Hashable {
 
 export const hashValue = (val: string | boolean | number): string =>
   hash.sha1().update(val).digest('hex');
+
+/**
+ * A fast, non-cryptographic 64-bit hash of a string (two 32-bit
+ * multiply-xorshift lanes), about 5 times faster than `hashValue`.
+ *
+ * NOTE: only use this for comparisons within the app, such as cache keys or
+ * change detection: don't store or send these hashes, and don't rely on
+ * collisions being hard to produce on purpose.
+ */
+export const fastHash = (value: string): string => {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < value.length; i++) {
+    const char = value.charCodeAt(i);
+    h1 = Math.imul(h1 ^ char, 2654435761);
+    h2 = Math.imul(h2 ^ char, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (
+    (h2 >>> 0).toString(16).padStart(8, '0') +
+    (h1 >>> 0).toString(16).padStart(8, '0')
+  );
+};
 export const hashUnknownValue = (val: unknown): string => {
   assertTrue(
     isString(val) || isBoolean(val) || isNumber(val),

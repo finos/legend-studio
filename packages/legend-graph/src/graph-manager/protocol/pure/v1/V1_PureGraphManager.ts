@@ -33,6 +33,8 @@ import {
   UnsupportedOperationError,
   assertErrorThrown,
   promisify,
+  fastHash,
+  noop,
   StopWatch,
   isNonNullable,
   filterByType,
@@ -674,8 +676,59 @@ interface ServiceRegistrationInput {
   context: V1_PureModelContext;
 }
 
+/**
+ * Above this many cached entity hashes, the cache is emptied, to bound the
+ * memory a long session can use (an entry is about 200 bytes).
+ */
+const ENTITY_HASH_CACHE_SIZE_LIMIT = 100000;
+
+/**
+ * The hash of an entity that a call of `buildHashesIndex` is computing,
+ * which other calls can wait for
+ */
+class PendingEntityHash {
+  readonly key: string;
+  readonly promise: Promise<string | undefined>;
+  isSettled = false;
+  private _resolve!: (hashCode: string | undefined) => void;
+  private _reject!: (error: unknown) => void;
+
+  constructor(key: string) {
+    this.key = key;
+    this.promise = new Promise((resolve, reject) => {
+      this._resolve = resolve;
+      this._reject = reject;
+    });
+    // a rejection reaches the call that computes the hash: don't report it
+    // again for calls that may never wait for it
+    this.promise.catch(noop());
+  }
+
+  resolve(hashCode: string | undefined): void {
+    this.isSettled = true;
+    this._resolve(hashCode);
+  }
+
+  reject(error: unknown): void {
+    this.isSettled = true;
+    this._reject(error);
+  }
+}
+
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   private readonly elementClassifierPathMap = new Map<string, string>();
+  /**
+   * Entity hashes by entity path and content, shared by all calls of
+   * `buildHashesIndex`. Opening a workspace indexes its HEAD, its BASE and the
+   * project's latest revision, which mostly hold the same entities, and text
+   * mode indexes all entities on every compile: entities whose content was
+   * already hashed are not deserialized and hashed again. Values are promises,
+   * so calls running at the same time share the work.
+   */
+  private readonly entityHashCache = new Map<
+    string,
+    Promise<string | undefined>
+  >();
   private readonly subtypeInfo: SubtypeInfo = {
     storeSubtypes: [],
     functionActivatorSubtypes: [],
@@ -5179,46 +5232,97 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // --------------------------------------------- Change Detection ---------------------------------------------
 
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {
-    const hashMap = new Map<string, string>();
-    const pureModelContextData = new V1_PureModelContextData();
-    /**
-     * FIXME: to be deleted when most users have migrated to using full function signature as function name
-     * Currently, SDLC store many functions in legacy form (entity path does
-     * not contain full function signature). However, since they store function
-     * entity in text, when they parse the content to return JSON for entity
-     * content, the content is then updated to have proper `name` for function
-     * entities, this means that there's now a mismatch in the path constructed
-     * from entity content and the entity path, which is a contract that SDLC
-     * should maintain but currently not because of this change
-     * See https://github.com/finos/legend-sdlc/pull/515
-     *
-     * For that reason, during this migration, we want to respect entity path
-     * instead of the path constructed from entity content to properly
-     * reflect the renaming of function in local changes.
-     */
-    const TEMPORARY__entityPathIndex = new Map<string, string>();
-    await V1_entitiesToPureModelContextData(
-      entities,
-      pureModelContextData,
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-      this.subtypeInfo,
-      this.elementClassifierPathMap,
-      TEMPORARY__entityPathIndex,
-    );
-    await Promise.all(
-      pureModelContextData.elements.map((element) =>
-        promisify(() =>
-          hashMap.set(
-            TEMPORARY__entityPathIndex.get(element.path)
-              ? guaranteeNonNullable(
-                  TEMPORARY__entityPathIndex.get(element.path),
+    if (this.entityHashCache.size > ENTITY_HASH_CACHE_SIZE_LIMIT) {
+      this.entityHashCache.clear();
+    }
+    // the hash of each entity, in input order: from the cache, or computed below
+    const hashes: [string, Promise<string | undefined>][] = [];
+    const entitiesToHash: Entity[] = [];
+    const pendingHashes = new Map<string, PendingEntityHash[]>();
+    for (let i = 0; i < entities.length; i++) {
+      if (i > 0 && i % 100 === 0) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      }
+      const entity = guaranteeNonNullable(entities[i]);
+      const key = `${entity.path}\u0000${fastHash(JSON.stringify(entity.content))}`;
+      let hash = this.entityHashCache.get(key);
+      if (!hash) {
+        const pending = new PendingEntityHash(key);
+        hash = pending.promise;
+        this.entityHashCache.set(key, hash);
+        pendingHashes.set(entity.path, [
+          ...(pendingHashes.get(entity.path) ?? []),
+          pending,
+        ]);
+        entitiesToHash.push(entity);
+      }
+      hashes.push([entity.path, hash]);
+    }
+    try {
+      if (entitiesToHash.length) {
+        const pureModelContextData = new V1_PureModelContextData();
+        /**
+         * FIXME: to be deleted when most users have migrated to using full function signature as function name
+         * Currently, SDLC store many functions in legacy form (entity path does
+         * not contain full function signature). However, since they store function
+         * entity in text, when they parse the content to return JSON for entity
+         * content, the content is then updated to have proper `name` for function
+         * entities, this means that there's now a mismatch in the path constructed
+         * from entity content and the entity path, which is a contract that SDLC
+         * should maintain but currently not because of this change
+         * See https://github.com/finos/legend-sdlc/pull/515
+         *
+         * For that reason, during this migration, we want to respect entity path
+         * instead of the path constructed from entity content to properly
+         * reflect the renaming of function in local changes.
+         */
+        const TEMPORARY__entityPathIndex = new Map<string, string>();
+        await V1_entitiesToPureModelContextData(
+          entitiesToHash,
+          pureModelContextData,
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+          this.subtypeInfo,
+          this.elementClassifierPathMap,
+          TEMPORARY__entityPathIndex,
+        );
+        await Promise.all(
+          pureModelContextData.elements.map((element) =>
+            promisify(() => {
+              const hashCode = element.hashCode;
+              pendingHashes
+                .get(
+                  TEMPORARY__entityPathIndex.get(element.path) ?? element.path,
                 )
-              : element.path,
-            element.hashCode,
+                ?.forEach((pending) => pending.resolve(hashCode));
+            }),
           ),
-        ),
-      ),
+        );
+      }
+    } catch (error) {
+      pendingHashes.forEach((list) =>
+        list.forEach((pending) => {
+          this.entityHashCache.delete(pending.key);
+          pending.reject(error);
+        }),
+      );
+      throw error;
+    }
+    // entities that produced no element have no hash
+    pendingHashes.forEach((list) =>
+      list.forEach((pending) => {
+        if (!pending.isSettled) {
+          this.entityHashCache.delete(pending.key);
+          pending.resolve(undefined);
+        }
+      }),
     );
+    const hashMap = new Map<string, string>();
+    for (const [entityPath, hash] of hashes) {
+      const hashCode = await hash;
+      if (hashCode !== undefined) {
+        hashMap.set(entityPath, hashCode);
+      }
+    }
     return hashMap;
   }
 
