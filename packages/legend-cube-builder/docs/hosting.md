@@ -1,16 +1,14 @@
 # Hosting the Cube page
 
-A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Three applications
+A Legend application hosts the page by giving it a `CubeHost` and contributing its shortcuts. Two applications
 host it today:
 
-- **Legend Query**, at `/query/cube`: `LegendQueryCubeHost` (`src/stores/cube/`), and the lazy route and page
-  (`src/components/cube/`) of `@finos/legend-application-query`.
 - **Legend Analytics**, at `/analytics/`, an application of its own: `createLegendAnalyticsCubeHost`
   (`src/stores/`) and the page at its root (`src/components/`) of `@finos/legend-application-analytics`, with its
-  bootstrap and deployment (PLAN §11.19).
+  bootstrap and deployment (PLAN §11.19). Its host is a `LegendCubeHost` (below).
 - **Legend Studio**, from an ingest definition's editor (see [Legend Studio](#legend-studio-create-matview)).
 
-Legend Query and Legend Analytics build their hosts on one `LegendCubeHost` (below).
+Legend Query hosted the page at `/query/cube` until Legend Analytics took it over (PLAN §11.24).
 
 ## The host
 
@@ -37,15 +35,15 @@ a plain `LegendCubeHostConfig`, the deployment's servers: `engine` (a `CubeEngin
 deployment has it. It offers each source by the rules below (no lakehouse, no data products; no platform, no ingest
 data sets; no depot, no projects), links data products to the marketplace of their deployment's class, and registers
 every engine client with its `engineClientSettings`, which Dev Settings changes. Tests give an engine, a connection
-explorer or a project catalog as `parts`. Legend Query passes `buildLegendQueryCubeHostConfig`, Legend Analytics
-`buildLegendAnalyticsCubeHostConfig`; a host whose sources are its own builds its parts
+explorer or a project catalog as `parts`. Legend Analytics passes `buildLegendAnalyticsCubeHostConfig`; a host
+whose sources are its own builds its parts
 with the functions below instead.
 
 - **The application store** gives the page its commands, user data, clipboard, theme, notifications and alerts, and
   its telemetry service, which Cube doesn't use yet: it sends no events. Cube keeps no auth or config of its own.
 - **The engine:** `buildCubeEngine(config, tracerService)` builds Legend's implementation of the `CubeEngine` port.
-  `config` is the engine client's configuration (`CubeEngineConfig`); Legend Query passes its own engine server URL
-  and options, so Cube talks to the engine its query editor uses.
+  `config` is the engine client's configuration (`CubeEngineConfig`); Legend Analytics passes its own engine server
+  URL and options.
 - **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the Northwind, Sports and Trades datasets of the Sample Data tab)
   and caches each model's outline: its tables, for the source picker, and its runtimes' connections with their
   database types, which Drop, Slice, Limit and Distinct need on some databases (PLAN §11.4), and which tell DuckDB's
@@ -62,21 +60,21 @@ with the functions below instead.
   class from the lakehouse's lite list and reads a product's access points from its deployed artifact and definition in
   the depot. Pass `buildCubeLakehouseEnvironment(services)` to `buildCubeEngine` as `lakehouseEnvironment`, so data
   product cubes run in the viewer's lakehouse environment. `services` holds the host's lakehouse contract and depot
-  clients, its token getter and the viewer's id; Legend Query builds them only when its `lakehouse` is configured. With
+  clients, its token getter and the viewer's id; Legend Analytics builds them only when its `lakehouse` is configured. With
   the optional `marketplaceServerClient`, the catalog's `search` runs the marketplace's Lakehouse Access full-text
   search instead, one page of 100 matches, never reading the lite list, and its optional `isCutShort` says whether an
-  answer leaves out matches; Legend Query passes a client only when `marketplace.serverUrl` is also set. The optional
+  answer leaves out matches; Legend Analytics passes a client only when `marketplace.serverUrl` is also set. The optional
   `getMarketplaceLink` builds a product's page in the host's marketplace, for the preview, the Source panel and the
   "Request access" links; without it, no link shows. The catalog's `getAccess` reads the viewer's access to each access
   point group from their contracts, and the optional `enterpriseStereotype` names the stereotype marking groups open to
-  everyone (Legend Query reads `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do).
+  everyone (Legend Analytics reads `options.dataProductConfig.publicStereotype`, as Studio and Marketplace do).
 
 - **Ingest data sets (optional, beta):** `buildCubeIngestCatalog(config, tracerService, services)` reads the deployed
   ingest definitions as Data Cube's producer source does: the lakehouse platform's ingest environment named by the
   viewer's environment in the class, its producer deployments, a deployment's definitions deployed from SDLC, and a
   definition's grammar, which the engine Cube uses parses. It needs `services.platformServerClient` and
   `services.ingestServerClient` (an ingest client with no server of its own: each call names one), and gives none
-  without them. Pass it to `buildCubeEngine` as `ingestCatalog` too, so ingest cubes type and run. Legend Query builds
+  without them. Pass it to `buildCubeEngine` as `ingestCatalog` too, so ingest cubes type and run. Legend Analytics builds
   both clients only when `lakehouse.platformUrl` is set. With `services.deploymentNameServiceUrl`, the engine path of
   the Legend user service Marketplace's producer info reads, the Ingest tab labels each producer deployment with its
   name; without it, or when the service fails, producers show their ids alone.
@@ -84,18 +82,12 @@ with the functions below instead.
 - **Published projects (optional):** `buildCubeProjectCatalog(depotServerClient)` lists the depot's projects, their
   released versions, and a version's own Databases with the runtimes of it and its dependencies, for the source
   dialog's Project tab (PLAN §6.3). It reads nothing until the tab opens. Project cubes save the engine's pointer, so
-  the engine must fetch from the same depot. Legend Query builds it from `depot.url`.
+  the engine must fetch from the same depot. Legend Analytics builds it from `depot.url`.
 
-Legend Analytics mounts the page at its root with no flag: deploying the application is the opt-in. Its config takes
-the keys below as Legend Query's does, with `depot` optional too, and only `engine` required.
+Legend Analytics mounts the page at its root with no flag: deploying the application is the opt-in. Only `engine`
+is required in its config; each source below needs its servers.
 
-Legend Query mounts the Cube page at `/query/cube` only where its config turns on non-production features,
-since Cube is still a proof of concept: `"extensions": { "core": { "NonProductionFeatureFlag": true } }`. Without
-it, as in production, the address shows nothing. To see it locally, add it to the deployment's
-`dev/config.json`, which is ignored by git. `yarn setup` writes that file without the flag, since turning it on also
-changes the rest of Query (its data space selector lists data products too), which Query's end-to-end tests check.
-
-In Legend Query's config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
+In Legend Analytics' config file, data products need `lakehouse.url` and `depot.url`; ingest data sets need
 `lakehouse.url` and `lakehouse.platformUrl`, the key Data Cube and Marketplace use for the platform. Three keys are
 optional: `marketplace.serverUrl`, for search on the marketplace server, takes the value Legend Marketplace's own config
 gives `marketplace.url`; `extensions.core.dataProductConfig.publicStereotype`, for the "Enterprise access" badge, is the
@@ -131,14 +123,12 @@ takes the value Legend Marketplace's own config gives it.
 ```
 
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, or
-`initialSource` to start an empty cube with one data product access point, as a link to Legend Query's Cube page does:
-`?sourceType=dataProductAccessPoint&sourceId=<id>`. The id is `<class>/<data product id>/<deployment id>/<access point
+`initialSource` to start an empty cube with one data product access point, as a link would ask:
+`?sourceType=dataProductAccessPoint&sourceId=<id>` (Legend Query read that link; no host reads it now, PLAN §11.24). The id is `<class>/<data product id>/<deployment id>/<access point
 group>/<access point>`, each part URI-encoded (`formatCubeAccessPointEntryId` writes it), where `<class>` is
 `PRODUCTION` or `PRODUCTION_PARALLEL` (`CubeDataProductEnvironmentType`), and the link encodes the
-whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`). Legend Query reads the
-two parameters and takes them out of the address, keeping the others; a `?queryId=` wins and stays, for when Cube
-saves queries (M8). The page's state
-lives as long as the page; Legend Query makes a new host on each visit.
+whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`). The page's state
+lives as long as the page.
 
 **The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an
 in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
@@ -146,8 +136,8 @@ run.
 
 ## Legend Studio: Create MatView
 
-An ingest definition's editor in Studio offers **Create MatView** in every deployment: unlike Legend Query's
-`/query/cube`, it doesn't depend on `NonProductionFeatureFlag` (`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
+An ingest definition's editor in Studio offers **Create MatView** in every deployment, with no feature flag
+(`EmbeddedCubeState`, `src/stores/editor/embedded-cube/` of `@finos/legend-application-studio`). The page opens full
 screen over the editor, as the embedded query builder does, with `LegendStudioCubeHost`:
 
 - **The project:** `CubeHost.project` (`LegendStudioCubeWorkspace`) says the page reads one project's own sources. The
@@ -155,7 +145,7 @@ screen over the editor, as the embedded query builder does, with `LegendStudioCu
   muted beside it, with no class, producer deployment, search or warehouse to pick, and name the lakehouse runtime
   its runs use: the project's first, the one Studio's own queries of an ingest definition or a data product pick.
   Without one, the tabs say to add one. No sample data or examples (`offersSampleData: false`), databases or
-  services; one kind of source per cube, as in Legend Query.
+  services; one kind of source per cube, as in Legend Analytics.
 - **Ingest data sets:** `LegendStudioCubeIngestCatalog` lists the workspace's definitions under one producer that
   stands for the project, names each by the URN it would have if the project deployed it (`formatCubeIngestUrn`),
   and types their data sets from their content (`readCubeIngestDataSets`), with no engine call.
@@ -201,17 +191,16 @@ The page registers the commands while it is open: F9 runs the query, and Ctrl+Z 
 
 ## The stylesheet
 
-- Import `@finos/legend-cube-builder/lib/index.css` in the host's stylesheet (Legend Query does it in
-  `legend-application-query-bootstrap/style/index.scss`). The page's root element has the class `legend-cube`.
-- The page uses Tailwind classes. The host's Tailwind build must scan the builder's sources: Legend Query's deployment
-  scans `../legend-*/src/**/*.tsx`. So Tailwind classes go in `.tsx` files only.
-- React Flow's stylesheet comes with the canvas. Load the page lazily, as Legend Query does, to keep it and the page's
-  libraries out of the host's main bundle.
+- Import `@finos/legend-cube-builder/lib/index.css` in the host's stylesheet (Legend Analytics does it in
+  `legend-application-analytics-bootstrap/style/index.scss`). The page's root element has the class `legend-cube`.
+- The page uses Tailwind classes. The host's Tailwind build must scan the builder's sources: Legend Analytics'
+  deployment scans `../legend-*/src/**/*.tsx`. So Tailwind classes go in `.tsx` files only.
+- React Flow's stylesheet comes with the canvas. In a host where the page isn't the application, load it lazily, as
+  Legend Studio does, to keep it and the page's libraries out of the host's main bundle.
 - In the legacy light theme, the legend-art components the page uses (dialogs, menus, form fields, inputs, tooltips,
-  notifications) take their light look from the application's own stylesheet: Legend Query's light mode
-  (`legend-application-query/style/light-mode.scss`), whose matching rules Legend Analytics copies into
-  `legend-application-analytics-bootstrap/style/light-mode.scss`, imported after every other style. A new host
-  defaulting to the light theme needs the same.
+  notifications) take their light look from the application's own stylesheet: Legend Analytics copies the matching
+  rules of Legend Query's light mode into `legend-application-analytics-bootstrap/style/light-mode.scss`, imported
+  after every other style. A new host defaulting to the light theme needs the same.
 
 ## The dev loop
 
@@ -220,23 +209,22 @@ The page registers the commands while it is open: F9 runs the query, and Ctrl+Z 
    (`fixtures/legend-docker-setup/grammar-test-setup/grammar-test-setup-docker-compose.yml`). Check it with
    `curl -s localhost:6300/api/server/v1/info`.
 2. Run `yarn build` once: `yarn dev:ts` doesn't build the stylesheets.
-3. Run `yarn dev:ts` and `yarn dev:query`, and open `http://localhost:9001/query/cube`; or `yarn dev:analytics`, and
-   open `http://localhost:9009/analytics/` (run `yarn workspace @finos/legend-application-analytics-deployment setup`
-   once for its local config).
+3. Run `yarn dev:ts` and `yarn dev:analytics`, and open `http://localhost:9009/analytics/` (run
+   `yarn workspace @finos/legend-application-analytics-deployment setup` once for its local config).
 4. Run `yarn workspace @finos/legend-cube-builder dev:sass` to rebuild the stylesheet as you change it (the root
    `yarn dev:ts` already rebuilds the TypeScript).
 
 If Tailwind classes seem to do nothing, the deployment's Tailwind watcher may have stopped: it exits when
-`yarn dev:query` runs without a terminal. Restart it in a terminal of its own with
-`yarn workspace @finos/legend-application-query-deployment dev:tailwindcss`, or rebuild once with `build:tailwindcss`
-(again after each new class).
+`yarn dev:analytics` runs without a terminal. Restart it in a terminal of its own with
+`yarn workspace @finos/legend-application-analytics-deployment dev:tailwindcss`, or rebuild once with
+`build:tailwindcss` (again after each new class).
 
 **A second checkout.** To run a second copy next to the first (another git worktree, say), give it its own port and
 skip the watchers you don't need: in that checkout, run `yarn install`, `yarn build` and
-`yarn workspace @finos/legend-application-query-deployment setup` once, then
-`yarn workspace @finos/legend-application-query-deployment build:tailwindcss` and
-`yarn workspace @finos/legend-application-query-deployment dev:webpack --port 9002`, and open
-`http://localhost:9002/query/cube`. The dev server serves the packages' built `lib/`, so rebuild what you change
+`yarn workspace @finos/legend-application-analytics-deployment setup` once, then
+`yarn workspace @finos/legend-application-analytics-deployment build:tailwindcss` and
+`yarn workspace @finos/legend-application-analytics-deployment dev:webpack --port 9010 --client-web-socket-url ws://localhost:9010/ws`,
+and open `http://localhost:9010/analytics/`. The dev server serves the packages' built `lib/`, so rebuild what you change
 (`yarn workspace @finos/legend-cube-builder build:ts`, and `@finos/legend-cube`'s) before looking, or run `yarn dev:ts`.
 
 The manual check of the whole page is the plan's Part B (PLAN §11.2).

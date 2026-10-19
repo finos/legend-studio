@@ -25,12 +25,12 @@ import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { guaranteeType } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
   COLUMN_NAME_RULES_HINT,
   EXTEND_EDITOR_NOTES,
+  EXTEND_ROW_WAITING_ON_OTHERS,
   getExactColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
@@ -47,6 +47,12 @@ import {
   isCubeJsonColumn,
 } from './CubeJsonFieldsTree.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
+import {
+  type CubeCompletionColumn,
+  getCubeExpressionCompletionSource,
+} from './CubeExpressionCompletions.js';
+import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
+import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */
 const PURE = 'pure';
@@ -69,36 +75,51 @@ const markerOf = (row: CubeExtendRow): CompilationError | undefined => {
   return error;
 };
 
-/** What a row says under its code: its problem, its type once validated, or that it waits */
-const CubeExtendRowStatus = observer((props: { row: CubeExtendRow }) => {
-  const { row } = props;
-  if (row.problem) {
-    return (
-      <div className="text-sm text-[var(--color-status-error)]">
-        <div>{row.problem.message}</div>
-        {row.problem.hint && (
-          <div className="text-[var(--color-text-secondary)]">
-            {row.problem.hint}
-          </div>
-        )}
+/** What a row says under its code: its problem, its type once ready, or that it is checked */
+const CubeExtendRowStatus = observer(
+  (props: { draft: CubeExtendDraft; row: CubeExtendRow }) => {
+    const { draft, row } = props;
+    if (row.problem) {
+      return (
+        <div className="text-sm text-[var(--color-status-error)]">
+          <div>{row.problem.message}</div>
+          {row.problem.hint && (
+            <div className="text-[var(--color-text-secondary)]">
+              {row.problem.hint}
+            </div>
+          )}
+        </div>
+      );
+    }
+    if (draft.isRowWaitingOnOthers(row)) {
+      return (
+        <div className="text-sm text-[var(--color-text-muted)]">
+          {EXTEND_ROW_WAITING_ON_OTHERS}
+        </div>
+      );
+    }
+    const status = draft.getRowCheckStatus(row);
+    if (
+      status === CubeCodeCheckStatus.CHECKING ||
+      status === CubeCodeCheckStatus.UNEDITED
+    ) {
+      return (
+        <div className="text-sm text-[var(--color-text-muted)]">
+          {status === CubeCodeCheckStatus.CHECKING
+            ? CUBE_CODE_CHECK_LABEL.CHECKING
+            : CUBE_CODE_CHECK_LABEL.UNEDITED}
+        </div>
+      );
+    }
+    return row.type ? (
+      <div className="flex items-center gap-1 text-sm text-[var(--color-status-success)]">
+        <CubeColumnTypeIcon type={row.type} />
+        {/* every new column is optional (PLAN §11.7) */}
+        {`${row.type.displayName}, optional`}
       </div>
-    );
-  }
-  if (row.checked?.code !== row.code) {
-    return (
-      <div className="text-sm text-[var(--color-text-muted)]">
-        Not validated yet
-      </div>
-    );
-  }
-  return row.type ? (
-    <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
-      <CubeColumnTypeIcon type={row.type} />
-      {/* every new column is optional (PLAN §11.7) */}
-      {`${row.type.displayName}, optional`}
-    </div>
-  ) : null;
-});
+    ) : null;
+  },
+);
 
 const CubeExtendRowEditor = observer(
   (props: {
@@ -106,12 +127,16 @@ const CubeExtendRowEditor = observer(
     row: CubeExtendRow;
     position: number;
     count: number;
+    /** The columns its expression can read: the input's, and the rows' above it */
+    columns: readonly CubeCompletionColumn[];
     readOnly: boolean;
     onFocus: () => void;
   }) => {
-    const { draft, row, position, count, readOnly, onFocus } = props;
+    const { draft, row, position, count, columns, readOnly, onFocus } = props;
     const [expanded, setExpanded] = useState(false);
-    const disabled = readOnly || draft.validating;
+    // typing goes on while the rows are checked
+    const disabled = readOnly;
+    const status = draft.getRowCheckStatus(row);
     return (
       <li className="flex flex-col gap-1 border-b border-[var(--color-border-subtle)] py-1">
         <div className="flex items-center gap-1">
@@ -162,7 +187,8 @@ const CubeExtendRowEditor = observer(
         </div>
         <div
           aria-label={`Expression ${position}`}
-          className="overflow-hidden rounded-sm border border-[var(--color-border-default)]"
+          data-check-status={status}
+          className={getCubeCodeBoxClass(status)}
           style={{ height: expanded ? 240 : 72 }}
           onFocus={onFocus}
         >
@@ -175,14 +201,19 @@ const CubeExtendRowEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(row)}
+            completions={getCubeExpressionCompletionSource(columns, (text) =>
+              draft.getEngineCompletions(row.key, text),
+            )}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
               scrollBeyondLastLine: false,
             }}
+            // the completions show over the editor's popper, not cut by it
+            floatingWidgetsInBody={true}
           />
         </div>
-        <CubeExtendRowStatus row={row} />
+        <CubeExtendRowStatus draft={draft} row={row} />
       </li>
     );
   },
@@ -190,8 +221,9 @@ const CubeExtendRowEditor = observer(
 
 /**
  * The Extend editor (spec §17.6, PLAN §11.7): a row per new column, its name
- * and its expression in a code editor, Validate (F10), which the engine does,
- * and the input's columns, which a click writes into the row last used.
+ * and its expression in a code editor, checked once typing pauses (F10 at
+ * once), each border green when ready (user, 2026-10-16), and the input's
+ * columns, which a click writes into the row last used.
  */
 export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
   const { inputSchemas, readOnly } = props;
@@ -200,7 +232,7 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
   const [focusedKey, setFocusedKey] = useState<number | undefined>();
   const target =
     draft.rows.find((row) => row.key === focusedKey) ?? draft.rows.at(-1);
-  const chipsDisabled = readOnly || draft.validating || !target;
+  const chipsDisabled = readOnly || !target;
   /** Writes text at the end of the expression last used, as the chips do */
   const write = (text: string): void => {
     if (target) {
@@ -219,6 +251,14 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
             row={row}
             position={index + 1}
             count={draft.rows.length}
+            columns={[
+              ...schema.columns,
+              // every new column is optional (PLAN §11.7)
+              ...draft.rows
+                .slice(0, index)
+                .filter(({ name }) => name)
+                .map(({ name, type }) => ({ name, type, nullable: true })),
+            ]}
             readOnly={readOnly}
             onFocus={() => setFocusedKey(row.key)}
           />
@@ -227,22 +267,10 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
       <div className="flex items-center gap-2">
         <CubeButton
           title={readOnly ? READ_ONLY_CUBE_TITLE : 'Add a new column'}
-          disabled={readOnly || draft.validating}
+          disabled={readOnly}
           onClick={() => draft.addRow()}
         >
           Add column
-        </CubeButton>
-        <CubeButton
-          primary={!draft.isValidated}
-          title="Check the expressions with the engine, type them, and plan them for this cube's database (F10)"
-          disabled={readOnly || draft.validating}
-          onClick={() => {
-            flowResult(draft.validate()).catch(
-              props.editorState.host.applicationStore.alertUnhandledError,
-            );
-          }}
-        >
-          {draft.validating ? 'Validating…' : 'Validate'}
         </CubeButton>
       </div>
       <span>Input columns</span>

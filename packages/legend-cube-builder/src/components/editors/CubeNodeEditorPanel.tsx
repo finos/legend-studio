@@ -162,7 +162,7 @@ export const CubeNodeEditorPanel = observer(
       .filter((schema): schema is Schema => schema !== undefined);
     const Editor = CUBE_NODE_EDITORS.get(node.type);
     const isEditable = CUBE_NODE_DRAFT_FACTORIES.has(node.type);
-    // a draft that waits, e.g. on a Validate, says why in place of its problems
+    // a draft that waits, e.g. on its code's check, says why in place of its problems
     const waiting = draft.applyDisabledReason;
     // the node's own, then those of the database it runs on (PLAN §11.11)
     const problems =

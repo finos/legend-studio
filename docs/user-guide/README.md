@@ -18,14 +18,14 @@ section of its own. What is merged here shows there after the site's next build 
 ## Screenshots
 
 The screenshots are made by scripts, not by hand, so they can be made again when the page changes: each opens a page
-of a running Legend Query, outlines its controls, numbers them, and writes the image into the guide's `images` folder.
+of a running Legend Analytics, outlines its controls, numbers them, and writes the image into the guide's `images` folder.
 A control that is gone fails the script, so an image never points at nothing.
 
-1. Run Legend Query (`yarn dev:query`; Legend Cube needs `NonProductionFeatureFlag`) and the engine on port 6300.
-2. `yarn workspace @finos/legend-application-query-e2e user-guide:screenshots` (`USER_GUIDE_QUERY_URL` points at
-   another Legend Query; the default is `http://localhost:9001/query/`).
+1. Run Legend Analytics (`yarn dev:analytics`) and the engine on port 6300.
+2. `yarn workspace @finos/legend-application-analytics-e2e user-guide:screenshots` (`USER_GUIDE_ANALYTICS_URL` points
+   at another Legend Analytics; the default is `http://localhost:9009/analytics/`).
 3. Check each image against its page's numbered list, and commit both.
 
 The scripts are in
-[packages/legend-application-query-e2e/src/user-guide](../../packages/legend-application-query-e2e/src/user-guide);
+[packages/legend-application-analytics-e2e/src/user-guide](../../packages/legend-application-analytics-e2e/src/user-guide);
 a callout's number there is the number its page explains it under.

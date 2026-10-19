@@ -45,7 +45,7 @@ export const LEGEND_CUBE_COMMAND_CONFIG: CommandConfigData = {
     additionalKeyboardShortcuts: ['Meta+Shift+KeyZ', 'Control+KeyY'],
   },
   [LEGEND_CUBE_COMMAND_KEY.VALIDATE_EXPRESSIONS]: {
-    title: "Validate the Extend's expressions",
+    title: 'Check the Pure code being edited now, without waiting for a pause',
     defaultKeyboardShortcut: 'F10',
   },
 };

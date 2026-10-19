@@ -124,7 +124,8 @@ export const openCubeExample = async (
   page: Page,
   title: string,
 ): Promise<void> => {
-  await page.goto('cube');
+  // the Cube page, at the application's root
+  await page.goto('./');
   await page.getByRole('button', { name: 'open an example' }).click();
   await page
     .getByRole('dialog')

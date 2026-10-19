@@ -20,6 +20,7 @@ import {
   editor as monacoEditorAPI,
   KeyCode,
   KeyMod,
+  languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import {
   getBaseCodeEditorOptions,
@@ -118,6 +119,129 @@ export const disposeCodeEditor = (
   editor.getModel()?.dispose();
 };
 
+/** What a completion is: a field, a function, a variable or plain text */
+export enum CodeEditorCompletionKind {
+  FIELD = 'field',
+  FUNCTION = 'function',
+  VARIABLE = 'variable',
+  TEXT = 'text',
+}
+
+/** A completion an editor offers at its cursor */
+export interface CodeEditorCompletion {
+  readonly label: string;
+  /** What replaces the word being typed; a snippet when `isSnippet`, e.g. `contains('${1}')` */
+  readonly insertText: string;
+  readonly isSnippet?: boolean | undefined;
+  /** Shown beside the label, e.g. a column's type */
+  readonly detail?: string | undefined;
+  readonly kind?: CodeEditorCompletionKind | undefined;
+  /** How many characters before the cursor it replaces: the word being typed */
+  readonly replaceLength?: number | undefined;
+}
+
+/** Where an editor's completions come from: the text before the cursor in, completions out */
+export interface CodeEditorCompletionSource {
+  /** Characters that open the completions as they are typed, e.g. `.` */
+  readonly triggerCharacters: readonly string[];
+  getCompletions(
+    textBeforeCursor: string,
+  ): Promise<readonly CodeEditorCompletion[]> | readonly CodeEditorCompletion[];
+}
+
+const COMPLETION_KINDS: Readonly<
+  Record<CodeEditorCompletionKind, monacoLanguagesAPI.CompletionItemKind>
+> = {
+  [CodeEditorCompletionKind.FIELD]: monacoLanguagesAPI.CompletionItemKind.Field,
+  [CodeEditorCompletionKind.FUNCTION]:
+    monacoLanguagesAPI.CompletionItemKind.Function,
+  [CodeEditorCompletionKind.VARIABLE]:
+    monacoLanguagesAPI.CompletionItemKind.Variable,
+  [CodeEditorCompletionKind.TEXT]: monacoLanguagesAPI.CompletionItemKind.Text,
+};
+
+/** The completions as Monaco shows them, in the order given, each replacing the word being typed */
+const toMonacoCompletions = async (
+  source: CodeEditorCompletionSource,
+  model: monacoEditorAPI.ITextModel,
+  position: { lineNumber: number; column: number },
+): Promise<monacoLanguagesAPI.CompletionList> => {
+  const textBeforeCursor = model.getValueInRange({
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: position.lineNumber,
+    endColumn: position.column,
+  });
+  let completions: readonly CodeEditorCompletion[] = [];
+  try {
+    completions = await source.getCompletions(textBeforeCursor);
+  } catch {
+    // no completions when they can't be read
+  }
+  return {
+    suggestions: completions.map((completion, index) => ({
+      label: completion.label,
+      insertText: completion.insertText,
+      sortText: String(index).padStart(5, '0'),
+      ...(completion.isSnippet
+        ? {
+            insertTextRules:
+              monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+          }
+        : {}),
+      ...(completion.detail !== undefined ? { detail: completion.detail } : {}),
+      kind: COMPLETION_KINDS[completion.kind ?? CodeEditorCompletionKind.TEXT],
+      range: {
+        startLineNumber: position.lineNumber,
+        startColumn: Math.max(
+          1,
+          position.column - (completion.replaceLength ?? 0),
+        ),
+        endLineNumber: position.lineNumber,
+        endColumn: position.column,
+      },
+    })),
+  };
+};
+
+const OVERFLOW_WIDGETS_ROOT_ID = 'legend-code-editor-overflow-widgets';
+
+/**
+ * Where editors render their floating widgets (completions, hovers) when
+ * asked to: in the page's body, above everything, since Monaco places them
+ * with `position: fixed`, which a CSS-transformed container around the
+ * editor (a popper, a dialog) would misplace.
+ * See https://github.com/microsoft/monaco-editor/issues/2793#issuecomment-999337740
+ */
+const getOverflowWidgetsRoot = (): HTMLElement => {
+  const existing = document.getElementById(OVERFLOW_WIDGETS_ROOT_ID);
+  if (existing) {
+    return existing;
+  }
+  const root = document.createElement('div');
+  root.id = OVERFLOW_WIDGETS_ROOT_ID;
+  // the class Monaco's widget styles hang on
+  root.className = 'monaco-editor';
+  Object.assign(root.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '0',
+    height: '0',
+    zIndex: '999999',
+  });
+  document.body.appendChild(root);
+  return root;
+};
+
+/**
+ * Whether the target is in the floating widgets editors render in the page's
+ * body (`floatingWidgetsInBody`): a press there is in the editor, for a
+ * container closing on a press outside it
+ */
+export const isInCodeEditorFloatingWidgets = (target: Element): boolean =>
+  target.closest(`#${OVERFLOW_WIDGETS_ROOT_ID}`) !== null;
+
 export const CodeEditor: React.FC<{
   inputValue: string;
   isReadOnly?: boolean | undefined;
@@ -134,6 +258,17 @@ export const CodeEditor: React.FC<{
     | undefined;
   error?: ParserError | CompilationError | undefined;
   rightActions?: ReactNode;
+  /**
+   * Completions this editor offers, e.g. the columns a Pure expression can
+   * read, offered for its language only while this editor has the focus, so
+   * other editors of the language never offer them
+   */
+  completions?: CodeEditorCompletionSource | undefined;
+  /**
+   * Renders the floating widgets (completions, hovers) in the page's body,
+   * for an editor inside a CSS-transformed container, e.g. a popper
+   */
+  floatingWidgetsInBody?: boolean | undefined;
 }> = (props) => {
   const {
     inputValue,
@@ -149,6 +284,8 @@ export const CodeEditor: React.FC<{
     extraEditorOptions,
     error,
     rightActions,
+    completions,
+    floatingWidgetsInBody,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
@@ -158,6 +295,11 @@ export const CodeEditor: React.FC<{
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
+  // the source as given now, which the provider registered on focus asks
+  const completionsRef = useRef(completions);
+  completionsRef.current = completions;
+  const hasCompletions = completions !== undefined;
+  const completionTriggerCharacters = completions?.triggerCharacters.join('');
 
   /**
    * NOTE: we want to normalize line ending here since if the original
@@ -194,10 +336,22 @@ export const CodeEditor: React.FC<{
 
         formatOnType: true,
         formatOnPaste: true,
+        ...(floatingWidgetsInBody
+          ? {
+              fixedOverflowWidgets: true,
+              overflowWidgetsDomNode: getOverflowWidgetsRoot(),
+            }
+          : {}),
       });
       setEditor(_editor);
     }
-  }, [applicationStore, lightTheme, hidePadding, editor]);
+  }, [
+    applicationStore,
+    lightTheme,
+    hidePadding,
+    editor,
+    floatingWidgetsInBody,
+  ]);
 
   useEffect(() => {
     if (editor) {
@@ -208,6 +362,42 @@ export const CodeEditor: React.FC<{
       }
     }
   }, [editor, language]);
+
+  // completions, registered while this editor has the focus
+  useEffect(() => {
+    if (!editor || !hasCompletions) {
+      return undefined;
+    }
+    let registered: IDisposable | undefined;
+    const register = (): void => {
+      registered?.dispose();
+      registered = monacoLanguagesAPI.registerCompletionItemProvider(language, {
+        triggerCharacters: Array.from(completionTriggerCharacters ?? ''),
+        provideCompletionItems: (model, position) => {
+          const source = completionsRef.current;
+          return source
+            ? toMonacoCompletions(source, model, position)
+            : { suggestions: [] };
+        },
+      });
+    };
+    const unregister = (): void => {
+      registered?.dispose();
+      registered = undefined;
+    };
+    // possibly none, as an editor mocked in tests gives
+    const subscriptions = [
+      editor.onDidFocusEditorText(register),
+      editor.onDidBlurEditorText(unregister),
+    ] as (IDisposable | undefined)[];
+    if (editor.hasTextFocus()) {
+      register();
+    }
+    return () => {
+      subscriptions.forEach((subscription) => subscription?.dispose());
+      unregister();
+    };
+  }, [editor, language, hasCompletions, completionTriggerCharacters]);
 
   useEffect(() => {
     if (editor && lineToScroll !== undefined) {

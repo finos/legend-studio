@@ -5450,6 +5450,75 @@ and its join columns were picked from whole column lists, with nothing suggested
 - Verified in Chromium against the local engine on Northwind (`ORDERS ⋈ SHIPPERS` on the database's `SHIP_VIA =
 SHIPPER_ID`, then `⋈ CUSTOMERS` on `CUSTOMER_ID` through the first Join), and by keyboard; video 35.
 
+### 11.23 Pure code checked as it is typed, and completed (feedback, 2026-10-16)
+
+Feedback after an audit of how a user edits Pure: a Validate button to press before Apply, a plain text area for
+Import Pure, and nothing to say which columns an expression can read. The user's choices: check parse, type and plan;
+complete from both Cube and the engine; give Import Pure the same editor.
+
+- **Checked as it is typed** (`CubeExpressionAutoCheck`). Once typing pauses (500 ms), the editor's check runs: parse,
+  then type and plan, for Filter by Expression and Extend. An edit while it runs makes it run again once it ends, so the
+  last code is always the one checked, and an answer for older code is dropped. F10 checks at once. Code never checked
+  (a cube spec imported, with no lambda) is checked as the editor opens. The Validate button is gone.
+- **The code box's border** (`CubeCodeCheck`) shows the check: green when ready, red with a problem, the theme's own
+  while it is checked or not edited yet. A status line says the same: what the condition or column is, "Checking…", or
+  the problem.
+- **Cube's own completions** (`CubeExpressionCompletions`), with no engine call:
+  - after `$x.`, the columns the expression can read, with their types; for an Extend row, the new columns above it too;
+  - after `$`, the same as `x.COLUMN`;
+  - after `$x.COLUMN->`, a curated list of the functions of the column's type, as snippets, `toOne()` first for an
+    optional column.
+    They come in the input's order, and a name that is not an identifier is quoted.
+- **The engine's completions** (`CubeEngine.completeCode`, `/pure/v1/codeCompletion/completeCode`), after Cube's own,
+  but those Cube already offers:
+  - The code block is written the way DataCube writes it: the node's input as Pure, without the lambda's bar, then
+    `->filter(` or `->extend(~NAME:` (after the rows above it) and the text typed.
+  - The input's Pure text and model context are read once per relation and model.
+  - The engine's answer is waited for at most a second, and a failure is ignored.
+  - An engine without the completion service is asked once a session. That is a 404, or legend-engine's 500 with the
+    404 as its message, which the local engine answers.
+  - Verified with the fake engine only: the local engine lacks the service.
+- **The code editor (legend-lego)**:
+  - It takes a completion source, registered for its language only while it has the focus.
+  - With `floatingWidgetsInBody`, it renders its suggestions and hovers in a root in the page's body. Monaco places
+    them with `position: fixed`, and the node editor's popper (a CSS transform) put them off screen.
+  - The node editor leaves alone a press in that root (`isInCodeEditorFloatingWidgets`).
+- **Import Pure** is a code editor too:
+  - Its text is read into steps as Import would, once typing pauses, with nothing imported, and the engine types the
+    cube read. Its border is green once Cube reads it and the engine compiles it ("Cube reads it as N steps, which the
+    engine compiles…"), and red with the reason otherwise (a step Cube can't write is "import it to see which").
+  - Extend says a column read but waiting on another column's problem ("Typed once the other columns' expressions are
+    fixed"), as the columns are typed together, in place of "Checking…".
+  - Import takes the reading, and the text left from before is checked again when the dialog opens again.
+  - The engine completes its Pure on the cube's model.
+- Verified in Chromium on the Sports sample (Analytics :9010):
+  - the completions show under the cursor, over the popper, and a mouse click on one keeps the editor open;
+  - `contains` is inserted as a snippet, and the border turns green;
+  - Import Pure turns green or red with the reason, and Escape with the list open closes only the list.
+    The guide's Filter by Expression and Extend pages and images were updated; video 36.
+
+### 11.24 Legend Cube out of Legend Query (2026-10-17)
+
+The user's call: Legend Cube runs as an application of its own (Legend Analytics, §11.19) and in Legend Studio
+(Create MatView, §11.17), so Legend Query no longer hosts it.
+
+- **Taken out of `@finos/legend-application-query`:**
+  - the `/query/cube` route, mounted under `NonProductionFeatureFlag`;
+  - `LegendQueryCubeHost`, the page and its lazy route, and the link entry (`?sourceType=…&sourceId=…`);
+  - Cube's shortcuts in the core plugin;
+  - the `@finos/legend-cube-builder` dependency and its project references;
+  - the config Cube alone read: `marketplace.serverUrl`, `lakehouse.platformUrl` and
+    `extensions.core.dataProductConfig` (`LegendQueryDataProductConfig`, `LegendQueryDataProductProducerConfig`). A
+    deployment's config may keep those keys: Query ignores them now.
+  - The plugin, the config and the bootstrap stylesheet are as they were before Cube (fbde4379f^).
+- **The user guide's screenshot scripts** move from `legend-application-query-e2e` to a new private package,
+  `@finos/legend-application-analytics-e2e`, and run against Legend Analytics (`yarn dev:analytics`,
+  `USER_GUIDE_ANALYTICS_URL`, default `http://localhost:9009/analytics/`).
+- **Docs:** the builder's README, hosting and demo pages and the user guide's README name Legend Analytics and Studio
+  as the hosts.
+- **Not carried over:** the link entry (`?sourceType=dataProductAccessPoint&sourceId=…`), which nothing linked to.
+  `CubeEditor`'s `initialSource` still takes one, should Legend Analytics read the link.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks

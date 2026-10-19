@@ -4,8 +4,8 @@ The UI and the Legend engine adapter of Legend Cube, a canvas-based visual query
 host-free [`@finos/legend-cube`](../legend-cube).
 
 It holds the page (the canvas, the palette, the side-panel editors, the source picker and the results grid), its MobX
-stores, the engine port with its `v1/` adapter, and the bundled model catalog. Legend Query hosts the page at
-`/query/cube`.
+stores, the engine port with its `v1/` adapter, and the bundled model catalog. Legend Analytics hosts the page at
+`/analytics/`, and Legend Studio opens it from an ingest definition's editor (see [hosting](./docs/hosting.md)).
 
 **Status:** work in progress, version 0.0.x. This version has relational tables (from a model or a direct connection to H2
 or DuckDB), the access points of deployed data products and the data sets of deployed ingest definitions (both beta),

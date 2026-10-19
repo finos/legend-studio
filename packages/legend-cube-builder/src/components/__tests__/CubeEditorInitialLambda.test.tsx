@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
+import {
+  MockedMonacoEditorInstance,
+  MockedMonacoEditorModel,
+} from '@finos/legend-lego/code-editor/test';
 import {
   colSpec,
   colSpecArray,
@@ -45,10 +55,15 @@ import {
   FAKE_INGEST_ORDERS,
 } from '../../__test-utils__/FakeCubeIngestCatalog.js';
 import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../graph-manager/CubeEngine.js';
 import { serializeCubeLambdaForHost } from '../../graph-manager/protocol/pure/CubeEngineBuilder.js';
 import type { CubeHost } from '../../stores/CubeHost.js';
 import { CUBE_LAMBDA_IMPORT_MESSAGE } from '../../stores/CubeLambdaImportState.js';
 import { CUBE_LAMBDA_SOURCES_MESSAGE } from '../../stores/CubeLambdaSources.js';
+import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CubeEditor } from '../CubeEditor.js';
 
 // Import Pure (PLAN §11.18): the page opened on a host's lambda, as Studio's
@@ -252,7 +267,20 @@ describe('Opening the page on a lambda', () => {
 });
 
 describe('Import Pure, from the Cube menu', () => {
-  test('Opens from the menu, reads JSON into steps in place of the cube, and says why one it cannot read', async () => {
+  /** Types the text in the dialog's code editor, as the mocked editor reports an edit */
+  const typePure = (text: string): void => {
+    MockedMonacoEditorInstance.getValue.mockReturnValue(text);
+    MockedMonacoEditorModel.getValue.mockReturnValue(text);
+    const [onChange] =
+      MockedMonacoEditorInstance.onDidChangeModelContent.mock.calls.at(-1) as [
+        () => void,
+      ];
+    act(() => onChange());
+  };
+
+  test('Opens from the menu, checks the text once typing pauses, says why one it cannot read, then reads it into steps in place of the cube', async () => {
+    // the mocked code editor holds no text of its own
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
     const host = ingestHost();
     await TEST__renderInCubeApplication(
       <CubeEditor host={host} />,
@@ -261,31 +289,86 @@ describe('Import Pure, from the Cube menu', () => {
     );
     await TEST__chooseCubeMenuItem('Import Pure');
     const dialog = await screen.findByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE);
-    const text = within(dialog).getByLabelText('Pure query');
-
-    // a materialized view: never a source
-    fireEvent.change(text, {
-      target: {
-        value: JSON.stringify(
+    const box = within(dialog).getByLabelText('Pure query');
+    const status = (): string | null => box.getAttribute('data-check-status');
+    expect(status()).toBe(CubeCodeCheckStatus.UNEDITED);
+    try {
+      // a materialized view: never a source, which the check says
+      typePure(
+        JSON.stringify(
           serializeCubeLambdaForHost(
             lambda([], [ingestAccessor([FAKE_INGEST_ORDERS, 'DAILY'])]),
           ),
         ),
-      },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    expect((await screen.findByRole('alert')).textContent).toContain(
-      'It is a materialized view',
-    );
+      );
+      expect(status()).toBe(CubeCodeCheckStatus.CHECKING);
+      expect((await screen.findByRole('alert')).textContent).toContain(
+        'It is a materialized view',
+      );
+      expect(status()).toBe(CubeCodeCheckStatus.PROBLEM);
 
-    fireEvent.change(text, {
-      target: { value: JSON.stringify(BIG_TRADES) },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    await TEST__findCanvasNode('limit101');
-    expect(TEST__getCanvasNodes()).toHaveLength(4);
-    await waitFor(() =>
-      expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE)).toBeNull(),
-    );
+      // closed and opened again: the text left is checked again
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await waitFor(() =>
+        expect(
+          screen.queryByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE),
+        ).toBeNull(),
+      );
+      await TEST__chooseCubeMenuItem('Import Pure');
+      const reopened = await screen.findByTestId(
+        LEGEND_CUBE_TEST_ID.IMPORT_PURE,
+      );
+      const reopenedBox = within(reopened).getByLabelText('Pure query');
+      expect(
+        (await within(reopened).findByRole('alert')).textContent,
+      ).toContain('It is a materialized view');
+      expect(reopenedBox.getAttribute('data-check-status')).toBe(
+        CubeCodeCheckStatus.PROBLEM,
+      );
+
+      // read, but the engine doesn't compile it: red, with the engine's reason
+      jest
+        .spyOn(host.engine, 'typeLambdas')
+        .mockImplementationOnce(
+          async (_model, lambdas) =>
+            new Map(
+              [...lambdas.keys()].map((key) => [
+                key,
+                new CubeEngineError(
+                  CubeEngineErrorKind.COMPILE,
+                  "Can't find the property 'TRADE_ID'",
+                  key,
+                ),
+              ]),
+            ),
+        );
+      typePure(JSON.stringify(BIG_TRADES));
+      expect(
+        (await within(reopened).findByRole('alert')).textContent,
+      ).toContain("Can't find the property 'TRADE_ID'");
+      expect(reopenedBox.getAttribute('data-check-status')).toBe(
+        CubeCodeCheckStatus.PROBLEM,
+      );
+
+      // the same lambda again, which the engine now compiles: green
+      typePure(JSON.stringify(BIG_TRADES, undefined, 2));
+      await within(reopened).findByText(CUBE_LAMBDA_IMPORT_MESSAGE.READABLE(4));
+      expect(reopenedBox.getAttribute('data-check-status')).toBe(
+        CubeCodeCheckStatus.READY,
+      );
+      // checked, nothing imported yet
+      expect(TEST__getCanvasNodes()).toHaveLength(0);
+      fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+      await TEST__findCanvasNode('limit101');
+      expect(TEST__getCanvasNodes()).toHaveLength(4);
+      await waitFor(() =>
+        expect(
+          screen.queryByTestId(LEGEND_CUBE_TEST_ID.IMPORT_PURE),
+        ).toBeNull(),
+      );
+    } finally {
+      MockedMonacoEditorModel.getValue.mockReset();
+      MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    }
   });
 });

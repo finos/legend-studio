@@ -23,6 +23,7 @@ import {
   storeAccessor,
 } from '@finos/legend-cube';
 import {
+  CodeCompletionResult,
   EXECUTION_SERIALIZATION_FORMAT,
   V1_EngineServerClient,
   V1_RenderStyle,
@@ -30,6 +31,7 @@ import {
 import {
   ContentType,
   HttpHeader,
+  NetworkClientError,
   parseLosslessJSON,
   type PlainObject,
   stringifyLosslessJSON,
@@ -70,6 +72,7 @@ import {
 } from '../../../CubeDirectConnection.js';
 import {
   type AccessorPath,
+  type CubeCodeCompletion,
   type CubeEngine,
   CubeEngineError,
   CubeEngineErrorKind,
@@ -134,6 +137,38 @@ const EXECUTION_CLIENT_VERSION = 'vX_X_X';
 
 /** The engine client's trace name for its grammar-to-JSON calls */
 const GRAMMAR_TO_JSON_TRACE = 'transform Pure code to protocol';
+
+const NOT_FOUND = 404;
+
+/** What an engine's server says of a route it doesn't have, as an error of its own */
+const ROUTE_NOT_FOUND = /NotFoundException: HTTP 404/u;
+
+/**
+ * Whether the engine has no code completion: it answers 404, or, as
+ * legend-engine's server does, 500 with the 404 it met as the message
+ */
+const isNoCodeCompletion = (error: unknown): boolean => {
+  if (!(error instanceof NetworkClientError)) {
+    return false;
+  }
+  const { payload } = error;
+  const message =
+    typeof payload === 'string'
+      ? payload
+      : typeof payload?.message === 'string'
+        ? payload.message
+        : '';
+  return error.response.status === NOT_FOUND || ROUTE_NOT_FOUND.test(message);
+};
+
+/** How many relations' Pure text and model completion keeps, before forgetting them all */
+const COMPLETION_BASES_KEPT = 32;
+
+/** The Pure text code is completed after, and the model it is completed on */
+interface V1_CubeCompletionBase {
+  readonly text: string;
+  readonly model: ModelContext | PlainObject;
+}
 
 /**
  * The node an execution lambda runs: the one its outermost call is stamped
@@ -296,6 +331,13 @@ export class V1_LegendCubeEngine implements CubeEngine {
   private readonly ingestDefinitions: V1_CubeIngestDefinitionSource | undefined;
   /** The model data product cubes read their project from, when not its deployed version */
   private readonly dataProductModels: CubeDataProductModelSource | undefined;
+  /** The engine completes no code: it answered so once this session */
+  private completesNoCode = false;
+  /** Each relation's Pure text and model, as code typed after it asks them again and again */
+  private readonly completionBases = new WeakMap<
+    ModelContext,
+    Map<string, Promise<V1_CubeCompletionBase>>
+  >();
 
   constructor(
     config: V1_CubeEngineConfig,
@@ -1318,6 +1360,75 @@ export class V1_LegendCubeEngine implements CubeEngine {
       undefined,
       2,
     );
+  }
+
+  /**
+   * The Pure text of a relation, which typed code is written after, its
+   * lambda's bar left out, and the model a run of it runs on: each read
+   * once a relation and model
+   */
+  private completionBaseOf(
+    model: ModelContext,
+    relation: IR,
+  ): Promise<V1_CubeCompletionBase> {
+    const relationLambda = lambda([], [relation]);
+    const serialized = stringifyLosslessJSON(
+      V1_serializeCubeLambda(relationLambda),
+    );
+    let bases = this.completionBases.get(model);
+    if (!bases || bases.size >= COMPLETION_BASES_KEPT) {
+      bases = new Map();
+      this.completionBases.set(model, bases);
+    }
+    const known = bases.get(serialized);
+    if (known) {
+      return known;
+    }
+    const base = Promise.all([
+      this.client.JSONToGrammar_lambda(
+        serialized as unknown as PlainObject,
+        V1_RenderStyle.STANDARD,
+      ),
+      this.executionContextOf(model, relationLambda, undefined, undefined),
+    ]).then(([text, context]) => ({
+      text: text.trim().replace(/^\|/u, ''),
+      model: context,
+    }));
+    // a failure is asked again, next time
+    base.catch(() => bases.delete(serialized));
+    bases.set(serialized, base);
+    return base;
+  }
+
+  async completeCode(
+    model: ModelContext,
+    relation: IR | undefined,
+    text: string,
+  ): Promise<readonly CubeCodeCompletion[] | undefined> {
+    if (this.completesNoCode) {
+      return undefined;
+    }
+    try {
+      const base = relation
+        ? await this.completionBaseOf(model, relation)
+        : { text: '', model };
+      const result = CodeCompletionResult.serialization.fromJson(
+        await this.client.completeCode({
+          codeBlock: `${base.text}${text}`,
+          model: base.model,
+        }),
+      );
+      return result.completions.map(({ completion, display }) => ({
+        completion,
+        display,
+      }));
+    } catch (error) {
+      if (isNoCodeCompletion(error)) {
+        this.completesNoCode = true;
+        return undefined;
+      }
+      throw V1_toCubeEngineError(error, undefined, CubeEngineErrorKind.COMPILE);
+    }
   }
 
   async renderPure(lambdaIR: IR): Promise<string> {

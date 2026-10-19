@@ -27,7 +27,7 @@ import {
   Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
-import { flowResult } from 'mobx';
+import { flowResult, when } from 'mobx';
 import {
   NORTHWIND_RUNTIME,
   northwindTable,
@@ -43,7 +43,12 @@ import {
 import { getEditorKeptOpenNotice } from '../../../__lib__/LegendCubeLabels.js';
 import { CubeEditorState } from '../../CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../fixtures/CubeNorthwindModel.js';
-import { CubeExtendDraft, NEW_EXPRESSION_CODE } from '../CubeExtendDraft.js';
+import {
+  type CubeExtendRow,
+  CubeExtendDraft,
+  NEW_EXPRESSION_CODE,
+} from '../CubeExtendDraft.js';
+import { CubeCodeCheckStatus } from '../CubeExpressionAutoCheck.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const INTEGER = PrimitiveType.get('Integer');
@@ -128,10 +133,27 @@ describe('Extend draft', () => {
     expect(draft.build() === draft.original).toBe(true);
     expect(draft.isValidated).toBe(false);
     expect(draft.applyDisabledReason).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
     draft.addRow();
     expect(draft.rows.map(({ name }) => name)).toEqual(['col_1', 'col_2']);
+  });
+
+  test('Checks rows never checked, e.g. a cube spec imported, as it opens, with no edit', async () => {
+    const { draft, fake } = open(
+      new Extend('extend101', [
+        { name: 'NEXT_ID', code: 'x | $x.ORDER_ID + 1', lambda: undefined },
+      ]),
+    );
+    const [row] = draft.rows;
+    expect(draft.getRowCheckStatus(row as CubeExtendRow)).toBe(
+      CubeCodeCheckStatus.CHECKING,
+    );
+    await when(() => draft.isValidated && !draft.validating, {
+      timeout: 5000,
+    });
+    expect(fake.parseExpression).toHaveBeenCalledTimes(1);
+    expect(draft.applyDisabledReason).toBeUndefined();
   });
 
   test('Validates: parses each code under its row, types the columns located, plans them, then Apply stores a typed node', async () => {
@@ -171,7 +193,7 @@ describe('Extend draft', () => {
     // a code edit asks for another Validate, and drops the type
     draft.setCode(second, 'x | $x.col_1 * 3');
     expect(draft.applyDisabledReason).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
     expect(draft.rows[1]?.type).toBeUndefined();
     expect(draft.build().columns[1]?.lambda).toBeUndefined();
@@ -213,7 +235,7 @@ describe('Extend draft', () => {
       expect.objectContaining({ size: 1 }),
     );
     expect(draft.applyDisabledReason).toBe(
-      'Validate the expressions first (F10)',
+      'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
     );
   });
 
@@ -385,7 +407,7 @@ describe('Extend editor panel', () => {
     expect(nodeEditor.notice).toBe(
       getEditorKeptOpenNotice(
         'extend101',
-        'Validate the expressions first (F10)',
+        'Wait for the expressions to be checked, once you stop typing (F10 checks them at once)',
       ),
     );
     // another node
