@@ -31,11 +31,17 @@ import {
   type RelationalCSVDataTable,
   RelationalCSVData,
 } from '../../../graph/metamodel/pure/data/RelationalCSVData.js';
+import {
+  type DataResolver,
+  BaseDataResolver,
+  ReferenceDataResolver,
+} from '../../../graph/metamodel/pure/data/DataResolver.js';
 import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../extensions/DSL_Data_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
   observe_Abstract_PackageableElement,
+  observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
 } from './CoreObserverHelper.js';
@@ -256,5 +262,26 @@ export const observe_RelationTypeMetadata = skipObserved(
 
     relationTypeMetadata.columns.forEach(observe_RelationTypeColumnMetadata);
     return relationTypeMetadata;
+  },
+);
+
+export const observe_DataResolver = skipObservedWithContext(
+  (metamodel: DataResolver, context: ObserverContext) => {
+    if (metamodel instanceof BaseDataResolver) {
+      makeObservable(metamodel, {
+        element: observable,
+        data: observable,
+        hashCode: computed,
+      });
+      observe_PackageableElementReference(metamodel.element);
+      observe_EmbeddedData(metamodel.data, context);
+    } else if (metamodel instanceof ReferenceDataResolver) {
+      makeObservable(metamodel, {
+        element: observable,
+        hashCode: computed,
+      });
+      observe_PackageableElementReference(metamodel.element);
+    }
+    return metamodel;
   },
 );

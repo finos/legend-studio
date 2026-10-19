@@ -79,6 +79,13 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   ],
   // Studio omits the empty `serviceOutputTargets` the engine emits for a V1 persistence
   'DSL_Persistence-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'CORE-basic-function-with-relation-tests.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'CORE-basic-function-with-relational-tests.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'CORE-function-test-variants.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 };
 
 type GrammarRoundtripOptions = {

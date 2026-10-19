@@ -861,7 +861,7 @@ const FunctionTestDataPanel = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
     const dataState = functionTestSuiteState.dataState;
-    const hasTestData = Boolean(dataState.dataHolder.testData?.length);
+    const hasTestData = Boolean(dataState.baseTestData.length);
 
     const addStoreTestData = (): void => {
       dataState.setShowAddElementModal(true);
@@ -898,7 +898,7 @@ const FunctionTestDataPanel = observer(
                 </div>
               ) : (
                 <div>
-                  {(dataState.dataHolder.testData ?? []).map((td) => (
+                  {dataState.baseTestData.map((td) => (
                     <div
                       key={td.element.value.path}
                       className={clsx('testable-test-explorer__item', {

@@ -47,7 +47,7 @@ import {
   type RawLambda,
   type Association,
   type INTERNAL__UnknownFunctionActivator,
-  type FunctionTestData,
+  type BaseDataResolver,
   type ObserverContext,
   type FunctionParameterValue,
   type FunctionTest,
@@ -392,7 +392,7 @@ export const INTERNAL__UnknownFunctionActivator_setContent = action(
 
 export const functionTestable_setEmbeddedData = action(
   (
-    functionTestData: FunctionTestData,
+    functionTestData: BaseDataResolver,
     embeddedData: EmbeddedData,
     observerContext: ObserverContext,
   ): void => {
@@ -401,7 +401,7 @@ export const functionTestable_setEmbeddedData = action(
 );
 
 export const functionTestable_deleteDataStore = action(
-  (suite: FunctionTestSuite, val: FunctionTestData): void => {
+  (suite: FunctionTestSuite, val: BaseDataResolver): void => {
     deleteEntry(suite.testData ?? [], val);
   },
 );

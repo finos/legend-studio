@@ -16,6 +16,7 @@
 
 import {
   action,
+  computed,
   flow,
   flowResult,
   makeObservable,
@@ -55,7 +56,7 @@ import {
   FunctionParameterValue,
   VariableExpression,
   FunctionTest,
-  FunctionTestData,
+  BaseDataResolver,
   FunctionTestSuite,
   RawLambda,
   PackageableRuntime,
@@ -70,6 +71,7 @@ import {
   IngestDefinition,
   LakehouseBaseRuntime,
   PackageableElementExplicitReference,
+  ReferenceDataResolver,
   observe_ValueSpecification,
   observe_RelationElementsData,
   buildLambdaVariableExpressions,
@@ -230,14 +232,14 @@ const getElementDataItems = (
 export class FunctionStoreTestDataState {
   readonly editorStore: EditorStore;
   readonly testDataState: FunctionTestDataState;
-  storeTestData: FunctionTestData;
+  storeTestData: BaseDataResolver;
   embeddedEditorState: EmbeddedDataEditorState;
   dataElementModal = false;
 
   constructor(
     editorStore: EditorStore,
     testDataState: FunctionTestDataState,
-    value: FunctionTestData,
+    value: BaseDataResolver,
   ) {
     makeObservable(this, {
       storeTestData: observable,
@@ -683,6 +685,7 @@ class FunctionTestDataState {
       dataHolder: observable,
       showNewModal: observable,
       showAddElementModal: observable,
+      baseTestData: computed,
       initDefaultStore: action,
       setShowModal: action,
       setShowAddElementModal: action,
@@ -696,8 +699,14 @@ class FunctionTestDataState {
     this.initDefaultStore();
   }
 
+  get baseTestData(): BaseDataResolver[] {
+    return (this.dataHolder.testData ?? []).filter(
+      filterByType(BaseDataResolver),
+    );
+  }
+
   initDefaultStore(): void {
-    const val = this.dataHolder.testData?.[0];
+    const val = this.baseTestData[0];
     if (val) {
       this.openStoreTestData(val);
     } else {
@@ -714,7 +723,12 @@ class FunctionTestDataState {
   }
 
   get existingElementPaths(): string[] {
-    return (this.dataHolder.testData ?? []).map((td) => td.element.value.path);
+    return (this.dataHolder.testData ?? [])
+      .filter(
+        (td): td is BaseDataResolver | ReferenceDataResolver =>
+          td instanceof BaseDataResolver || td instanceof ReferenceDataResolver,
+      )
+      .map((td) => td.element.value.path);
   }
 
   get availableElementsToAdd(): PackageableElement[] {
@@ -734,7 +748,7 @@ class FunctionTestDataState {
     if (!element) {
       return;
     }
-    const data = new FunctionTestData();
+    const data = new BaseDataResolver();
     data.element = PackageableElementExplicitReference.create(
       element as AccessorOwner,
     );
@@ -756,12 +770,12 @@ class FunctionTestDataState {
     this.openStoreTestData(data);
   }
 
-  deleteStoreTestData(val: FunctionTestData): void {
+  deleteStoreTestData(val: BaseDataResolver): void {
     functionTestable_deleteDataStore(this.dataHolder, val);
     this.initDefaultStore();
   }
 
-  openStoreTestData(val: FunctionTestData): void {
+  openStoreTestData(val: BaseDataResolver): void {
     this.selectedDataState = new FunctionStoreTestDataState(
       this.editorStore,
       this,
@@ -1084,7 +1098,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
               'Only one store supported in runtime for function tests',
             );
             const store = guaranteeNonNullable(stores[0]);
-            const data = new FunctionTestData();
+            const data = new BaseDataResolver();
             if (store instanceof Database) {
               const relation = new RelationElementsData();
               data.element = PackageableElementExplicitReference.create(store);
@@ -1130,15 +1144,15 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         }
         for (const [parentPath, group] of accessorsByOwner.entries()) {
           const builtData = V1_buildRelationElementsDataFromAccessors(group);
-          const existing = functionSuite.testData.find(
-            (td) => td.element.value.path === parentPath,
-          );
+          const existing = functionSuite.testData
+            .filter(filterByType(BaseDataResolver))
+            .find((td) => td.element.value.path === parentPath);
           if (existing) {
             existing.data = builtData;
           } else {
             const element =
               this.editorStore.graphManagerState.graph.getElement(parentPath);
-            const data = new FunctionTestData();
+            const data = new BaseDataResolver();
             data.element = PackageableElementExplicitReference.create(
               element as AccessorOwner,
             );

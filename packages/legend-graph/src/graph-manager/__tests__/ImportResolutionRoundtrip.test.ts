@@ -85,6 +85,8 @@ import { TEST_DATA__ModelJoinAssociationMapping_Simple } from './roundtripTestDa
 import {
   TEST__buildGraphWithEntities,
   TEST__checkBuildingElementsRoundtrip,
+  TEST__checkBuildingResolvedElements,
+  TEST__checkGraphHashUnchanged,
   TEST__ensureObjectFieldsAreSortedAlphabetically,
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
@@ -128,6 +130,10 @@ import {
   TEST_DATA__INGEST_DEFINITION,
   TEST_DATA__INGEST_DEFINITION__TEST_SUITES,
 } from './roundtripTestData/TEST_DATA__IngestRoundtrip.js';
+import {
+  TEST_DATA__FunctionTestDataRoundtrip,
+  TEST_DATA__FunctionTestDataWithDataResolverProtocol,
+} from './roundtripTestData/TEST_DATA__FunctionTestDataRoundtrip.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -484,5 +490,41 @@ describe(unitTest('Ingest definition'), () => {
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
+  });
+});
+
+describe(unitTest('Function test data'), () => {
+  test('Function test suites with legacy function test data and reference data resolvers roundtrip', async () => {
+    await TEST__checkBuildingElementsRoundtrip(
+      TEST_DATA__FunctionTestDataRoundtrip,
+    );
+  });
+
+  test('Function test data in data resolver protocol is serialized as legacy function test data', async () => {
+    await TEST__checkBuildingResolvedElements(
+      TEST_DATA__FunctionTestDataWithDataResolverProtocol,
+      TEST_DATA__FunctionTestDataRoundtrip,
+    );
+  });
+
+  test('Function test data protocol shape does not affect change detection hashes', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__FunctionTestDataRoundtrip,
+    );
+    await TEST__checkGraphHashUnchanged(
+      graphManagerState,
+      TEST_DATA__FunctionTestDataWithDataResolverProtocol,
+    );
+    expect(
+      await graphManagerState.graphManager.buildHashesIndex(
+        TEST_DATA__FunctionTestDataWithDataResolverProtocol,
+      ),
+    ).toEqual(
+      await graphManagerState.graphManager.buildHashesIndex(
+        TEST_DATA__FunctionTestDataRoundtrip,
+      ),
+    );
   });
 });

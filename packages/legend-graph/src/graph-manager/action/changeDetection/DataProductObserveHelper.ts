@@ -37,11 +37,6 @@ import {
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { OperationalMetadata } from '../../../graph/metamodel/pure/dataProduct/OperationalMetadata.js';
 import type { AppDirNode } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
-import {
-  type DataResolver,
-  BaseDataResolver,
-  ReferenceDataResolver,
-} from '../../../graph/metamodel/pure/data/DataResolver.js';
 import type { DataProductTestSuite } from '../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 import {
   observe_Abstract_PackageableElement,
@@ -54,7 +49,7 @@ import {
   observe_StereotypeReference,
   observe_TaggedValue,
 } from './DomainObserverHelper.js';
-import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
+import { observe_DataResolver } from './DSL_Data_ObserverHelper.js';
 import { observe_AtomicTest } from './Testable_ObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 
@@ -272,27 +267,6 @@ export const observe_AppDirOwner = skipObserved(
     }
     if (metamodel.prodParallel) {
       observe_AppDirNode(metamodel.prodParallel);
-    }
-    return metamodel;
-  },
-);
-
-export const observe_DataResolver = skipObservedWithContext(
-  (metamodel: DataResolver, context: ObserverContext) => {
-    if (metamodel instanceof BaseDataResolver) {
-      makeObservable(metamodel, {
-        element: observable,
-        data: observable,
-        hashCode: computed,
-      });
-      observe_PackageableElementReference(metamodel.element);
-      observe_EmbeddedData(metamodel.data, context);
-    } else if (metamodel instanceof ReferenceDataResolver) {
-      makeObservable(metamodel, {
-        element: observable,
-        hashCode: computed,
-      });
-      observe_PackageableElementReference(metamodel.element);
     }
     return metamodel;
   },

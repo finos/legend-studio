@@ -43,6 +43,14 @@ import {
 } from '@finos/legend-shared';
 import { V1_FunctionTestData } from '../../../model/packageableElements/function/test/V1_FunctionTestData.js';
 import {
+  V1_BaseDataResolver,
+  type V1_DataResolver,
+} from '../../../model/data/V1_DataResolver.js';
+import {
+  V1_deserializeDataResolver,
+  V1_serializeDataResolver,
+} from './V1_DataResolverSerializationHelper.js';
+import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
 } from './V1_DataElementSerializationHelper.js';
@@ -132,6 +140,33 @@ const V1_deserializeFunctionTestData = (
   return functionTestData;
 };
 
+const V1_serializeFunctionTestDataResolver = (
+  protocol: V1_DataResolver,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DataResolver> => {
+  if (protocol instanceof V1_BaseDataResolver) {
+    const functionTestData = new V1_FunctionTestData();
+    functionTestData.packageableElementPointer = protocol.elementPointer;
+    functionTestData.data = protocol.data;
+    return V1_serializeFunctionTestData(functionTestData, plugins);
+  }
+  return V1_serializeDataResolver(protocol, plugins);
+};
+
+const V1_deserializeFunctionTestDataResolver = (
+  json: PlainObject<V1_DataResolver>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DataResolver => {
+  if (json._type) {
+    return V1_deserializeDataResolver(json, plugins);
+  }
+  const functionTestData = V1_deserializeFunctionTestData(json, plugins);
+  const resolver = new V1_BaseDataResolver();
+  resolver.elementPointer = functionTestData.packageableElementPointer;
+  resolver.data = functionTestData.data;
+  return resolver;
+};
+
 export const V1_functionTestSuiteModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_FunctionTestSuite> =>
@@ -140,8 +175,9 @@ export const V1_functionTestSuiteModelSchema = (
     doc: optional(primitive()),
     id: primitive(),
     testData: customList(
-      (val: V1_FunctionTestData) => V1_serializeFunctionTestData(val, plugins),
-      (val) => V1_deserializeFunctionTestData(val, plugins),
+      (val: V1_DataResolver) =>
+        V1_serializeFunctionTestDataResolver(val, plugins),
+      (val) => V1_deserializeFunctionTestDataResolver(val, plugins),
       {
         INTERNAL__forceReturnEmptyInTest: true,
       },
