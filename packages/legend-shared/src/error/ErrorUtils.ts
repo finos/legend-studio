@@ -76,6 +76,9 @@ export class EnrichedError extends Error {
         .slice(0, messageLines + 1)
         .join('\n')}\nCaused by: ${error.stack}`;
     } else {
+      // NOTE: `typeof` rather than `isFunction`: passing a method on trips
+      // `unbound-method`, and importing `AssertionUtils` here would load it
+      // before this module, which its `AssertionError` extends
       if (typeof Error.captureStackTrace === 'function') {
         // Maintains proper stack trace for where our error was thrown (only available on V8)
         // This only works in Chrome for now. Firefox (as of Feb 2020) will throw error

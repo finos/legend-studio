@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isFunction } from '@finos/legend-shared';
 import { createMock } from '@finos/legend-shared/test';
 import type {
   MessageSetter,
@@ -46,7 +46,7 @@ export const TEST__createMockSetter = (): {
 } => {
   let messages: LegendAIMessage[] = [];
   const setter: MessageSetter = (action) => {
-    if (typeof action === 'function') {
+    if (isFunction(action)) {
       messages = action(messages);
     } else {
       messages = action;

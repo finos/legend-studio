@@ -28,6 +28,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  isFunction,
   LogEvent,
 } from '@finos/legend-shared';
 import {
@@ -679,7 +680,7 @@ export class LegendMarketplaceAIChatStore {
   private createMessageSetter(): MessageSetter {
     return (updater) => {
       runInAction(() => {
-        if (typeof updater === 'function') {
+        if (isFunction(updater)) {
           this.messages = updater(this.messages);
         } else {
           this.messages = updater;
