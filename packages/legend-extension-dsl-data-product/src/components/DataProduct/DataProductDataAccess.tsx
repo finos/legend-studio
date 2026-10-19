@@ -132,6 +132,7 @@ import {
   DataProductTelemetryHelper,
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
+import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 import { flowResult } from 'mobx';
 import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 import {
@@ -1556,6 +1557,18 @@ const ServiceScreen = observer(
         .catch(dataAccessState.applicationStore.alertUnhandledError);
     };
 
+    const openComputeDeploymentDocs = (): void => {
+      const docLink =
+        dataAccessState.applicationStore.documentationService.getDocEntry(
+          DSL_DATA_PRODUCT_DOCUMENTATION_KEY.LAKEHOUSE_COMPUTE_DEPLOYMENT,
+        )?.url;
+      if (docLink) {
+        dataAccessState.applicationStore.navigationService.navigator.visitAddress(
+          docLink,
+        );
+      }
+    };
+
     return (
       <div className="data-product__viewer__service-screen">
         {hasNoAccess ? (
@@ -1565,9 +1578,13 @@ const ServiceScreen = observer(
           </Box>
         ) : (
           <Box className="data-product__viewer__service-screen__warning-banner">
-            For exploration and experimental use only. Not intended for
-            production services. Production compute selection (Compute ID)
-            coming in a future release.
+            For Production compute selection (Compute ID), see lakehouse compute
+            deployment guide.
+            <InfoCircleOutlineIcon
+              className="data-product__viewer__service-screen__warning-banner__icon"
+              title="See Documentation"
+              onClick={openComputeDeploymentDocs}
+            />
           </Box>
         )}
         <div className="data-product__viewer__service-screen__content">
