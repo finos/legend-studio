@@ -246,11 +246,6 @@
     .selector-input--dark {
       max-width: 40rem;
     }
-
-    .textarea--ai-suggested {
-      border-color: var(--color-category-ai-suggestion) !important;
-      color: var(--color-category-ai-suggestion) !important;
-    }
   }
 }
 
@@ -282,42 +277,184 @@
   }
 }
 
-.dataSpace-editor__ai-suggestion-badge {
+.dataSpace-editor__ai-suggest {
   @include flexVCenter;
 
-  display: inline-flex;
-  gap: 0.4rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-category-ai-suggestion);
+  gap: 0.8rem;
+  margin-bottom: 1rem;
 
-  svg {
+  &__hint {
     font-size: 1.2rem;
+    color: var(--color-text-muted);
   }
 }
 
-.dataSpace-editor__ai-suggestion__actions {
-  @include flexVCenter;
+// NOTE: the review modal renders in a portal, outside `.dataSpace-editor`,
+// so it is styled at the top level.
+.dataSpace-editor__ai-review {
+  width: 90rem;
+  max-width: 90vw;
 
-  gap: 0.5rem;
-  margin-top: 0.6rem;
-}
+  // the header sits on the accent fill in every theme
+  .modal__title,
+  .modal__title__label,
+  .modal__title__icon svg {
+    color: var(--color-text-on-accent);
+  }
 
-.dataSpace-editor__ai-suggestion__apply-btn {
-  height: 2.8rem;
-  padding: 0 1rem;
-  font-size: 1.2rem;
-}
+  &__body {
+    max-height: 65vh;
+    overflow-y: auto;
+  }
 
-.dataSpace-editor__ai-suggestion__dismiss-btn {
-  height: 2.8rem;
-  padding: 0 1rem;
-  font-size: 1.2rem;
-  background: var(--color-dark-grey-200);
-  color: var(--color-light-grey-200);
+  &__empty {
+    padding: 2rem 0;
+    font-size: 1.3rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
 
-  &:hover {
-    background: var(--color-dark-grey-250);
+  &__toolbar {
+    @include flexVCenter;
+
+    gap: 0.6rem;
+    padding-bottom: 0.8rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    border-bottom: 0.1rem solid var(--color-border-default);
+  }
+
+  &__checkbox {
+    @include flexCenter;
+
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+
+    svg {
+      font-size: 1.4rem;
+    }
+
+    &--checked {
+      color: var(--color-category-ai-suggestion);
+    }
+  }
+
+  &__group {
+    margin-bottom: 1.4rem;
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    &__label {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+  }
+
+  &__row {
+    padding: 0.6rem 0.8rem;
+    margin: 0 0 0.4rem 2.6rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.2rem;
+    opacity: 0.7;
+
+    &--selected {
+      border-color: var(--color-category-ai-suggestion);
+      opacity: 1;
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    &__label {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    &__compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    &__side {
+      min-width: 0;
+
+      &__label {
+        @include flexVCenter;
+
+        gap: 0.4rem;
+        margin-bottom: 0.3rem;
+        font-size: 1.1rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+
+        svg {
+          color: var(--color-category-ai-suggestion);
+        }
+      }
+    }
+
+    &__current {
+      padding: 0.4rem 0.6rem;
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--color-text-primary);
+      background: var(--color-bg-hover);
+      border: 0.1rem solid var(--color-border-subtle);
+      border-radius: 0.2rem;
+
+      &--empty {
+        font-style: italic;
+        color: var(--color-text-muted);
+      }
+
+      &--replaced {
+        text-decoration: line-through;
+        color: var(--color-text-muted);
+      }
+    }
+
+    &__suggested {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+      resize: vertical;
+      color: var(--color-category-ai-suggestion);
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-border-strong);
+      border-radius: 0.2rem;
+
+      &:focus {
+        border-color: var(--color-category-ai-suggestion);
+        outline: none;
+      }
+    }
+  }
+
+  &__footer-status {
+    flex: 1;
+    justify-content: flex-start;
+    padding-left: 1rem;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
   }
 }
 
