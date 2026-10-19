@@ -25,7 +25,7 @@ import {
   skipObservedWithContext,
 } from './CoreObserverHelper.js';
 import { observe_AtomicTest } from './Testable_ObserverHelper.js';
-import { observe_DataResolver } from './DataProductObserveHelper.js';
+import { observe_DataResolver } from './DSL_Data_ObserverHelper.js';
 
 export const observe_IngestTestSuite = skipObservedWithContext(
   (metamodel: IngestTestSuite, context: ObserverContext): IngestTestSuite => {

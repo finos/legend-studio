@@ -61,9 +61,7 @@ import { AggregationKind } from '../../../../../../../../graph/metamodel/pure/pa
 import { GraphBuilderError } from '../../../../../../../GraphManagerUtils.js';
 import type { V1_FunctionTestSuite } from '../../../../model/packageableElements/function/test/V1_FunctionTestSuite.js';
 import { FunctionTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
-import type { V1_FunctionTestData } from '../../../../model/packageableElements/function/test/V1_FunctionTestData.js';
-import { FunctionTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestData.js';
-import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
+import { V1_buildDataResolver } from './V1_DataResolverBuilderHelper.js';
 import { V1_FunctionTest } from '../../../../model/packageableElements/function/test/V1_FunctionTest.js';
 import {
   FunctionParameterValue,
@@ -420,20 +418,6 @@ const V1_buildFunctionTest = (
   return functionTest;
 };
 
-const V1_buildFunctionTestData = (
-  element: V1_FunctionTestData,
-  context: V1_GraphBuilderContext,
-): FunctionTestData => {
-  const storeTestData = new FunctionTestData();
-  storeTestData.doc = element.doc;
-  storeTestData.element = context.resolveElement(
-    element.packageableElementPointer.path,
-    false,
-  );
-  storeTestData.data = V1_buildEmbeddedData(element.data, context);
-  return storeTestData;
-};
-
 export const V1_buildFunctionSuite = (
   element: V1_FunctionTestSuite,
   context: V1_GraphBuilderContext,
@@ -443,7 +427,7 @@ export const V1_buildFunctionSuite = (
   functionSuite.doc = element.doc;
   if (element.testData?.length) {
     functionSuite.testData = element.testData.map((e) =>
-      V1_buildFunctionTestData(e, context),
+      V1_buildDataResolver(e, context),
     );
   }
   functionSuite.tests = element.tests.map((test) => {

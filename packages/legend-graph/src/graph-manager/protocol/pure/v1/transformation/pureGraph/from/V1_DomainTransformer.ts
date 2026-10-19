@@ -37,7 +37,6 @@ import {
 import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import {
   V1_initPackageableElement,
-  V1_transformElementReferencePointer,
   V1_transformMultiplicity,
 } from './V1_CoreTransformerHelper.js';
 import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
@@ -73,8 +72,7 @@ import {
   V1_FunctionTest,
 } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { V1_FunctionTestData } from '../../../model/packageableElements/function/test/V1_FunctionTestData.js';
-import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
+import { V1_transformDataResolver } from './V1_DataResolverTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
@@ -418,16 +416,9 @@ const V1_transformFunctionSuite = (
   testSuite.id = element.id;
   testSuite.doc = element.doc;
   if (element.testData?.length) {
-    testSuite.testData = element.testData.map((elementData) => {
-      const pTestData = new V1_FunctionTestData();
-      pTestData.doc = elementData.doc;
-      pTestData.packageableElementPointer = V1_transformElementReferencePointer(
-        undefined,
-        elementData.element,
-      );
-      pTestData.data = V1_transformEmbeddedData(elementData.data, context);
-      return pTestData;
-    });
+    testSuite.testData = element.testData.map((elementData) =>
+      V1_transformDataResolver(elementData, context),
+    );
   }
   testSuite.tests = element.tests.map((el) => {
     if (el instanceof FunctionTest) {
