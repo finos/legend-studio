@@ -20,7 +20,12 @@ import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import type { Class } from './Class.js';
 
 export class Constraint implements Hashable {
-  readonly _UUID = uuid();
+  _lazyUUID: string | undefined;
+  // created on first read: a graph holds millions of these objects and most ids are never read
+  get _UUID(): string {
+    this._lazyUUID ??= uuid();
+    return this._lazyUUID;
+  }
   readonly _OWNER: Class;
 
   name: string;
