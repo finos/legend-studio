@@ -58,8 +58,13 @@ export interface Hashable {
   hashCode: string;
 }
 
+// NOTE: `hash.js` turns anything but a string or an array into no bytes, so
+// numbers and booleans must be stringified to count in the hash
 export const hashValue = (val: string | boolean | number): string =>
-  hash.sha1().update(val).digest('hex');
+  hash
+    .sha1()
+    .update(isString(val) ? val : String(val))
+    .digest('hex');
 
 /**
  * A fast, non-cryptographic 64-bit hash of a string (two 32-bit

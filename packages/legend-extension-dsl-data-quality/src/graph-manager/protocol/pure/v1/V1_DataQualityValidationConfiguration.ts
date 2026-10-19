@@ -186,7 +186,7 @@ export class V1_MD5HashStrategy extends V1_ReconStrategy {
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_MD5_HASH_STRATEGY,
       this.sourceHashColumn ?? '',
       this.targetHashColumn ?? '',
-      this.aggregatedHash ?? false,
+      String(this.aggregatedHash ?? ''),
     ]);
   }
 }
