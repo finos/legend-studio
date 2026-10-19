@@ -114,6 +114,12 @@ export const isNumber = (val: unknown): val is number =>
   typeof val === 'number' && !isNaN(val);
 export const isBoolean = (val: unknown): val is boolean =>
   typeof val === 'boolean';
+// NOTE: every function type is assignable to `(...args: never[]) => unknown`,
+// so for a union such as `T | ((previous: T) => T)` this narrows to the
+// union's own function type, which keeps its parameters
+export const isFunction = (
+  val: unknown,
+): val is (...args: never[]) => unknown => typeof val === 'function';
 export const isObject = (val: unknown): val is object =>
   typeof val === 'object' && val !== null;
 export const isPlainObject = (val: unknown): val is PlainObject =>
