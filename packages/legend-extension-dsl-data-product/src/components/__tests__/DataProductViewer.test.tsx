@@ -4985,7 +4985,7 @@ describe('DataProductViewer', () => {
         .mockReturnValue(MockedMonacoEditorModel);
     });
 
-    test('shows experimental warning when user has access', async () => {
+    test('shows compute deployment guide banner when user has access', async () => {
       const mockLiteContracts: V1_LiteDataContract[] = [
         {
           description: 'Test approved contract',
@@ -5057,8 +5057,10 @@ describe('DataProductViewer', () => {
         fireEvent.click(serviceTab);
       });
 
-      // Should display the experimental warning banner (user has access)
-      await screen.findByText(/For exploration and experimental use only/);
+      // Should display the compute deployment guide banner (user has access)
+      await screen.findByText(
+        /For Production compute selection \(Compute ID\), see lakehouse/,
+      );
 
       // Should NOT display the no-access warning
       expect(
@@ -5085,11 +5087,6 @@ describe('DataProductViewer', () => {
       await screen.findByText(
         /You do not have access to this access point group/,
       );
-
-      // Should NOT display the experimental warning
-      expect(
-        screen.queryByText(/For exploration and experimental use only/),
-      ).toBeNull();
     });
 
     test('copy button copies curl command to clipboard', async () => {

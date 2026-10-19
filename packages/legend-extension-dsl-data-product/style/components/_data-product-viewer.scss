@@ -3048,6 +3048,13 @@
     margin-bottom: 0.5rem;
     font-size: 1.2rem;
     font-weight: 500;
+
+    &__icon {
+      display: inline-flex;
+      margin-left: 0.5rem;
+      cursor: pointer;
+      vertical-align: middle;
+    }
   }
 
   &__content {
