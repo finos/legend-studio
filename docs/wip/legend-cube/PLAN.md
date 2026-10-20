@@ -1524,11 +1524,17 @@ the repo (local evidence `saved-query-source/`).
 
 **Design (proposed):**
 
-- **Core:** a new source, `LegendQuerySource` (kind `legendQuery`). It holds the query's id and name, the converted
-  relation (the last expression of its lambda, as Cube IR, shown read-only), any earlier expressions, its parameters and
-  their values, and a schema snapshot. Validation needs the snapshot and every required parameter's value. The emitter
-  writes the relation as it is, and each parameter as a `let` before it, through the lets Cube already writes for
-  windows (§8.6).
+- **Core:** a new source, `LegendQuerySource` (kind `legendQuery`). The spec keeps the query's **id**, and what tells
+  whether it changed since: its name, its `lastUpdatedAt`, and a schema snapshot of its columns (plus the parameter
+  values the cube gives). The converted lambda is **not** saved: when the cube opens, the query is fetched, converted
+  if it's TDS, and typed again, so the relation Cube runs is always the saved query's. Validation needs the columns
+  and every required parameter's value. The emitter writes the relation as it is, and each parameter as a `let` before
+  it, through the lets Cube already writes for windows (§8.6).
+- **Keeping in sync:** on open, a query whose `lastUpdatedAt` is unchanged is used as fetched. One that changed is
+  converted and typed again; if its columns are still the snapshot's, the cube goes on and says so; if not, the source
+  is marked invalid, naming the columns that went or changed, and **Refresh** takes the new columns (one undo step), as
+  data products are rechecked (`CubeDataProductRecheck`). A query that's gone, or that the viewer can't see, marks the
+  source invalid with the reason.
 - **The model and the run:** the cube's model is the query's project, through the existing project pointer kind
   (`CubeProject.ts`), so tables and functions of the same project version can join it. The context gains an optional
   `mapping`; when set, the run ends in `from(mapping, runtime)` instead of `from(runtime)`. That's the one `from` A4
@@ -1545,21 +1551,26 @@ the repo (local evidence `saved-query-source/`).
 - **Engine port:** a host-given `CubeQueryCatalog`, as the data product and ingest catalogs are: search, then read one
   query into a source. The v1 adapter implements it with the engine's query endpoints, depot, the autofix endpoint and
   the type calls. No `V1_*` outside `v1/`.
-- **Reading back:** Import Pure, and Studio's Edit MatView, don't know the source and keep refusing a lambda that
-  holds one (§11.18).
+- **Reading back:** Import Pure doesn't know the source and keeps refusing a lambda that holds one (§11.18).
+- **Not in Studio** (user, 2026-10-20): the source is offered in Analytics only. Studio's embedded editor doesn't list
+  it.
 
-**Open questions for the user:**
+**Decisions (user, 2026-10-20):**
 
-1. **Snapshot or always fresh?** Recommended: keep the converted relation and its columns in the cube, check the query
-   again when the cube opens, and offer Refresh when it changed, as data products are rechecked
-   (`CubeDataProductRecheck`). The alternative, always fetching it fresh, means an edit to the saved query can break
-   the steps after it without warning.
-2. **Moving versions (A10):** a query on `latest` could be pinned to the latest released version when added, saying
-   so, and one on a SNAPSHOT refused. Or allow moving versions for this source only.
-3. **Queries with an explicit mapping and runtime:** they're simpler than data space ones (the mapping and runtime are
-   in the query). Refuse them for now as asked, or take them too?
-4. **Studio:** offer the source in Analytics only, or in Studio's embedded editor too? Studio's Cube builds ingest
-   materialized views, which run on the ingest's own data, so a saved query wouldn't fit them.
+1. **Save the query's id, not its lambda:** the conversion runs again on each open, so there's no saved copy to keep in
+   sync; the snapshot only tells whether the columns changed (see Keeping in sync).
+2. **Data space queries only:** a query whose execution context isn't a data space is refused, with the reason. Its
+   own `mapping` and `runtime`, when it has both, are used before the data space's, as legend-graph does (A8).
+3. **Analytics only, not Studio.**
+
+**Still open:**
+
+- **Moving versions (A10).** A saved query names a version of its project: a release (`1.4.0`), `latest` (the newest
+  release, which moves when a new one is cut), or a SNAPSHOT (the code under development, which moves on every
+  change). Cube has read released versions only (user, 2026-10-09) so that a saved cube's tables can't change under
+  it. A query source depends on the saved query anyway, which can change, and the sync check covers it. Recommended:
+  run the query on the version it names, whatever it is, and show that version in the source's editor (marked when it
+  moves). Or refuse SNAPSHOT queries.
 
 **Risks:** a TDS function the autofix doesn't convert (the query is then refused, naming it); a query whose lambda
 already holds `from(mapping, runtime)` (strip it, and check it against the data space's); multi-expression lambdas
@@ -1568,14 +1579,14 @@ server.
 
 **Steps:**
 
-| Step | Deliverable                                                                                                                            | Done when                                                                                           |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Q.1  | This section; the user's answers                                                                                                       | Answered                                                                                            |
-| Q.2  | Core: the source node, codec, emitter (relation, lets), validation; the optional `mapping` in the context and `from(mapping, runtime)` | Unit tests; emitted Pure pinned                                                                     |
-| Q.3  | v1 adapter: the query catalog (search, fetch, data space context, autofix, typing, parameters)                                         | Adapter tests with a fake engine; an engine-roundtrip test on an inline mapped model like the probe |
-| Q.4  | Builder: the tab, the palette item, the source editor, Refresh                                                                         | Store and component tests                                                                           |
-| Q.5  | Hosts: Analytics passes the catalog                                                                                                    | Host tests                                                                                          |
-| Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                 | Every caption true on screen                                                                        |
+| Step | Deliverable                                                                                                                                                                                   | Done when                                                                                           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Q.1  | This section; the user's answers                                                                                                                                                              | Answered                                                                                            |
+| Q.2  | Core: the source node (id, name, `lastUpdatedAt`, columns, parameter values), codec, emitter (relation, lets), validation; the optional `mapping` in the context and `from(mapping, runtime)` | Unit tests; emitted Pure pinned                                                                     |
+| Q.3  | v1 adapter: the query catalog (search, fetch, data space context, autofix, typing, parameters)                                                                                                | Adapter tests with a fake engine; an engine-roundtrip test on an inline mapped model like the probe |
+| Q.4  | Builder: the tab, the palette item, the source editor, the sync check on open and Refresh                                                                                                     | Store and component tests                                                                           |
+| Q.5  | Hosts: Analytics passes the catalog                                                                                                                                                           | Host tests                                                                                          |
+| Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                                                                        | Every caption true on screen                                                                        |
 
 ## 7. C. Canvas and editors (slice)
 
