@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.21.55
+
+### Patch Changes
+
+- [#5739](https://github.com/finos/legend-studio/pull/5739) [`e2ec249`](https://github.com/finos/legend-studio/commit/e2ec24983cdf3ba2793bc323990aa914f44209bb) ([@yash0024](https://github.com/yash0024)) - Update the function test editor to work with `BaseDataResolver` test data; reference data resolvers in a function test suite are preserved but not listed in the editor.
+
+- [#5736](https://github.com/finos/legend-studio/pull/5736) [`34a0d27`](https://github.com/finos/legend-studio/commit/34a0d2781314b4311e1254e9ffcddd42fe9f87c7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Take Legend Cube out of Legend Query: Legend Analytics runs it as an application of its own, and Legend Studio opens it from an ingest definition's editor. Query drops the `/query/cube` route (shown only with `NonProductionFeatureFlag`), its Cube host and page, Cube's shortcuts and stylesheet, the `@finos/legend-cube-builder` dependency, and the config only Cube read: `marketplace.serverUrl`, `lakehouse.platformUrl` and `extensions.core.dataProductConfig`, with its exported classes `LegendQueryDataProductConfig` and `LegendQueryDataProductProducerConfig`, which configured the experimental Cube page alone. A deployment's config may keep those keys: Query ignores them.
+
 ## 28.21.54
 
 ### Patch Changes

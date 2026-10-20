@@ -1,5 +1,7 @@
 # @finos/legend-server-showcase-deployment
 
+## 13.273.0
+
 ## 13.272.0
 
 ### Patch Changes

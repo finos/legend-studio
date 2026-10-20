@@ -1,5 +1,15 @@
 # @finos/legend-application-data-cube
 
+## 0.7.117
+
+### Patch Changes
+
+- [#5746](https://github.com/finos/legend-studio/pull/5746) [`f7fd4f8`](https://github.com/finos/legend-studio/commit/f7fd4f8b70fb14e39d6ee2838399aa055c73add6) ([@TharunRajeev](https://github.com/TharunRajeev)) - Reduce Lakehouse DataCube load time by avoiding redundant or repeated engine compile calls:
+
+  - **Lakehouse Producer:** reuse the already-deployed ingest definition's column schema instead of calling the engine's `lambdaRelationType` to re-derive it.
+  - **Lakehouse Consumer:** reuse the data product's deployed generation artifact for plain access-point queries instead of calling `lambdaRelationType`, falling back to the engine for custom queries or when no artifact is found.
+  - **Lakehouse Consumer:** run the independent entitlement-environment and data-product lookups concurrently instead of sequentially.
+
 ## 0.7.116
 
 ## 0.7.115

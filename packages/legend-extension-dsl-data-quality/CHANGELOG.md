@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.94
+
+### Patch Changes
+
+- [#5729](https://github.com/finos/legend-studio/pull/5729) [`17a4261`](https://github.com/finos/legend-studio/commit/17a4261c79e7d020e695f8399a50ae41da530c5a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Count numbers and booleans in hashes: `hashValue` gave every number and boolean the hash of the empty string, so change detection missed edits to fields such as a hosted service's `autoActivateUpdates`. Fix the data quality relation comparison hashes, whose protocol and metamodel sides only matched because of it.
+
 ## 2.1.93
 
 ## 2.1.92

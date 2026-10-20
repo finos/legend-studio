@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 13.273.0
+
+### Patch Changes
+
+- [#5736](https://github.com/finos/legend-studio/pull/5736) [`34a0d27`](https://github.com/finos/legend-studio/commit/34a0d2781314b4311e1254e9ffcddd42fe9f87c7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Take Legend Cube out of Legend Query: Legend Analytics runs it as an application of its own, and Legend Studio opens it from an ingest definition's editor. Query drops the `/query/cube` route (shown only with `NonProductionFeatureFlag`), its Cube host and page, Cube's shortcuts and stylesheet, the `@finos/legend-cube-builder` dependency, and the config only Cube read: `marketplace.serverUrl`, `lakehouse.platformUrl` and `extensions.core.dataProductConfig`, with its exported classes `LegendQueryDataProductConfig` and `LegendQueryDataProductProducerConfig`, which configured the experimental Cube page alone. A deployment's config may keep those keys: Query ignores them.
+
 ## 13.272.0
 
 ## 13.271.0

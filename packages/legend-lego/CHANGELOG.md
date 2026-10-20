@@ -1,5 +1,15 @@
 # @finos/legend-lego
 
+## 2.0.233
+
+### Patch Changes
+
+- [#5741](https://github.com/finos/legend-studio/pull/5741) [`83f740d`](https://github.com/finos/legend-studio/commit/83f740d47522b7c01b2c309a7ba497741c99cc04) ([@bojja-gs](https://github.com/bojja-gs)) - Stop the Legend AI chat launcher from covering error notifications. The launcher now sits on the floating-action-button layer, below notifications, dialogs and drawers, and while a notification is visible it lifts above it so both stay readable and clickable.
+
+- [#5736](https://github.com/finos/legend-studio/pull/5736) [`34a0d27`](https://github.com/finos/legend-studio/commit/34a0d2781314b4311e1254e9ffcddd42fe9f87c7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Check Legend Cube's Pure code as it is typed, in place of a Validate button: Filter by Expression's condition, Extend's expressions and Import Pure's text are checked once typing pauses (F10 at once), their border green when ready, red with a problem. Complete the code as it is typed: the columns an expression can read after `$x.`, with their types, the functions of a column's type after `->`, then the engine's completions where it has its code completion service. The code editor takes a completion source, offered while it has the focus, and can show its floating widgets in the page's body, above a transformed container such as a popper.
+
+- [#5738](https://github.com/finos/legend-studio/pull/5738) [`da098b9`](https://github.com/finos/legend-studio/commit/da098b94aa6bdc5508e77e530394fa1ca706cb59) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `isFunction` to `@finos/legend-shared`, next to `isString` and the other type guards, and use it instead of `typeof … === 'function'` where a value may be a function.
+
 ## 2.0.232
 
 ## 2.0.231

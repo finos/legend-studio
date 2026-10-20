@@ -1,5 +1,19 @@
 # @finos/legend-shared
 
+## 11.0.33
+
+### Patch Changes
+
+- [#5731](https://github.com/finos/legend-studio/pull/5731) [`65e33ac`](https://github.com/finos/legend-studio/commit/65e33ac8f20a0c872a4b468f9a5213ac257ff591) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Yield to the event loop with a MessageChannel message instead of `setTimeout(0)` while building and deserializing graphs: chained timeouts are clamped to at least 4ms each, which left the graph builder idle for seconds on large projects. Add `yieldToEventLoop`.
+
+- [#5730](https://github.com/finos/legend-studio/pull/5730) [`b315755`](https://github.com/finos/legend-studio/commit/b315755f1b49e0decbf7df2f5223ba7d4e4e8a80) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use a fast 64-bit non-cryptographic hash for change detection: `hashValue` (and so `hashArray` and every `hashCode`) no longer uses a pure JavaScript SHA-1, and raw lambdas are hashed from a key-sorted JSON string instead of with `object-hash`. Hashing took most of the time Studio spends starting change detection on large workspaces. Hash values change: they are only compared within the app. Add `stableStringify`.
+
+- [#5729](https://github.com/finos/legend-studio/pull/5729) [`17a4261`](https://github.com/finos/legend-studio/commit/17a4261c79e7d020e695f8399a50ae41da530c5a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Count numbers and booleans in hashes: `hashValue` gave every number and boolean the hash of the empty string, so change detection missed edits to fields such as a hosted service's `autoActivateUpdates`. Fix the data quality relation comparison hashes, whose protocol and metamodel sides only matched because of it.
+
+- [#5728](https://github.com/finos/legend-studio/pull/5728) [`840d1fb`](https://github.com/finos/legend-studio/commit/840d1fbf2d725b5a9e4813200f5de450e9e43b37) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Reuse entity hashes across calls of `buildHashesIndex`: opening a workspace indexes its HEAD, its BASE and the project's latest revision, which mostly hold the same entities, so unchanged entities are no longer deserialized and hashed three times. Add `fastHash`, a fast non-cryptographic 64-bit string hash for comparisons within the app.
+
+- [#5738](https://github.com/finos/legend-studio/pull/5738) [`da098b9`](https://github.com/finos/legend-studio/commit/da098b94aa6bdc5508e77e530394fa1ca706cb59) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `isFunction` to `@finos/legend-shared`, next to `isString` and the other type guards, and use it instead of `typeof … === 'function'` where a value may be a function.
+
 ## 11.0.32
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.3
+
+### Patch Changes
+
+- [#5740](https://github.com/finos/legend-studio/pull/5740) [`f884158`](https://github.com/finos/legend-studio/commit/f884158d5137cc4c0b406935f3139210a87f4c86) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Lakehouse Deployment compute documentation.
+
 ## 0.2.2
 
 ### Patch Changes

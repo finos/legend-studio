@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 13.8.65
+
+### Patch Changes
+
+- [#5736](https://github.com/finos/legend-studio/pull/5736) [`34a0d27`](https://github.com/finos/legend-studio/commit/34a0d2781314b4311e1254e9ffcddd42fe9f87c7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Take Legend Cube out of Legend Query: Legend Analytics runs it as an application of its own, and Legend Studio opens it from an ingest definition's editor. Query drops the `/query/cube` route (shown only with `NonProductionFeatureFlag`), its Cube host and page, Cube's shortcuts and stylesheet, the `@finos/legend-cube-builder` dependency, and the config only Cube read: `marketplace.serverUrl`, `lakehouse.platformUrl` and `extensions.core.dataProductConfig`, with its exported classes `LegendQueryDataProductConfig` and `LegendQueryDataProductProducerConfig`, which configured the experimental Cube page alone. A deployment's config may keep those keys: Query ignores them.
+
+- [#5736](https://github.com/finos/legend-studio/pull/5736) [`34a0d27`](https://github.com/finos/legend-studio/commit/34a0d2781314b4311e1254e9ffcddd42fe9f87c7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Check Legend Cube's Pure code as it is typed, in place of a Validate button: Filter by Expression's condition, Extend's expressions and Import Pure's text are checked once typing pauses (F10 at once), their border green when ready, red with a problem. Complete the code as it is typed: the columns an expression can read after `$x.`, with their types, the functions of a column's type after `->`, then the engine's completions where it has its code completion service. The code editor takes a completion source, offered while it has the focus, and can show its floating widgets in the page's body, above a transformed container such as a popper.
+
+- [#5744](https://github.com/finos/legend-studio/pull/5744) [`3034570`](https://github.com/finos/legend-studio/commit/3034570cdcf751333e0640e51eede1e50bd93e41) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remember the runtime a user picks for a data space execution context: opening the data space again, reopening a saved query on it, or switching back to the context uses that runtime instead of the context's default. The choice is kept per user in the browser, never in the saved query. A runtime other than the default always shows in the setup panel, with a button to go back to the default. A link whose runtime no longer exists now opens with a warning instead of failing to load.
+
 ## 13.8.64
 
 ### Patch Changes
