@@ -32,6 +32,7 @@ import {
   PanelHeaderActionItem,
   PanelHeaderActions,
   SearchIcon,
+  UndoIcon,
 } from '@finos/legend-art';
 import {
   ResolvedDataSpaceEntityWithOrigin,
@@ -45,10 +46,8 @@ import {
 } from '@finos/legend-extension-dsl-data-space/application-query';
 import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
   RuntimePointer,
-  type PackageableRuntime,
   type Runtime,
 } from '@finos/legend-graph';
 import {
@@ -66,25 +65,6 @@ import type { DataProductWithLegacyOption } from '../../stores/data-space/DataPr
 import { formatDataProductOrSpaceOptionLabel } from '../shared/LegendQueryDataProductOptionLabel.js';
 import type { LegendQueryDataSpaceQueryBuilderState } from '../../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 import { LegendQueryTelemetryHelper } from '../../__lib__/LegendQueryTelemetryHelper.js';
-
-const resolveExecutionContextRuntimes = (
-  queryBuilderState: LegendQueryDataSpaceQueryBuilderState,
-): PackageableRuntime[] => {
-  const currentMapping = guaranteeNonNullable(
-    resolveExecutionContextMapping(queryBuilderState.executionContext),
-    `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
-  );
-  if (queryBuilderState.dataSpaceAnalysisResult) {
-    const executionContext = Array.from(
-      queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-    ).find((e) => e.mapping.path === currentMapping.path);
-    return guaranteeNonNullable(executionContext).compatibleRuntimes;
-  }
-  return getMappingCompatibleRuntimes(
-    currentMapping,
-    queryBuilderState.graphManagerState.usableRuntimes,
-  );
-};
 
 /**
  * LegendQuery-specific DataSpace query builder setup panel. Unlike the base
@@ -194,7 +174,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     };
 
     // runtime
-    const runtimeOptions = resolveExecutionContextRuntimes(queryBuilderState)
+    const runtimeOptions = queryBuilderState.compatibleRuntimes
       .map(
         (rt) =>
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
@@ -214,8 +194,23 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
         return;
       }
       queryBuilderState.changeRuntime(option.value);
+      queryBuilderState.rememberRuntime(option.value);
       queryBuilderState.onRuntimeChange?.(option.value);
     };
+    // a runtime other than the context's default can always be undone here
+    const defaultRuntimePath = queryBuilderState.defaultRuntimePath;
+    const isUsingSavedRuntime =
+      queryBuilderState.currentRuntimePath !== undefined &&
+      queryBuilderState.currentRuntimePath ===
+        queryBuilderState.savedRuntimePath;
+    const canResetRuntime =
+      defaultRuntimePath !== undefined &&
+      queryBuilderState.currentRuntimePath !== defaultRuntimePath;
+    const resetRuntimeTitle = `${
+      isUsingSavedRuntime
+        ? 'Using the runtime you picked for this context. '
+        : ''
+    }Use the context's default runtime '${defaultRuntimePath}' instead`;
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -433,6 +428,18 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
                         .TEMPORARY__isLightColorThemeEnabled,
                   })}
                 />
+              )}
+              {canResetRuntime && !injectedLakehouseRuntime && (
+                <button
+                  tabIndex={-1}
+                  className="query-builder__setup__runtime-reset__btn btn--dark"
+                  onClick={(): void =>
+                    queryBuilderState.resetToDefaultRuntime()
+                  }
+                  title={resetRuntimeTitle}
+                >
+                  <UndoIcon />
+                </button>
               )}
             </div>
           )}

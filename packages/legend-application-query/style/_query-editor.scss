@@ -317,6 +317,14 @@
   resize: vertical;
 }
 
+.query-builder__setup__runtime-reset__btn {
+  @include flexConstantDimension;
+
+  height: 2.8rem;
+  width: 2.8rem;
+  margin-left: 0.5rem;
+}
+
 .input--ai-suggested {
   border-color: var(--color-category-ai-suggestion) !important;
   color: var(--color-category-ai-suggestion) !important;

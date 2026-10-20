@@ -15,7 +15,11 @@
  */
 
 import type { UserDataService } from '@finos/legend-application';
-import { returnUndefOnError } from '@finos/legend-shared';
+import {
+  isPlainObject,
+  isString,
+  returnUndefOnError,
+} from '@finos/legend-shared';
 import {
   createSimpleSchema,
   deserialize,
@@ -30,6 +34,7 @@ import {
   createVisitedDataProductId,
   type VisitedLegacyDataProduct,
   type VisitedDataProduct,
+  type DataSpaceRuntimePreference,
 } from './LegendQueryUserDataSpaceHelper.js';
 import type { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 
@@ -38,6 +43,7 @@ export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_LEGACY_DATAPRODUCTS = 'query-editor.recent-dataSpaces',
   RECENTLY_VIEWED_DATAPRODUCTS = 'query-editor.recent-dataProducts',
   USER_LAKEHOUSE_INFO = 'query-editor.lakehouse-info',
+  DATASPACE_RUNTIME_PREFERENCES = 'query-editor.dataSpace-runtimes',
 }
 
 export interface LakehouseUserInfo {
@@ -48,6 +54,7 @@ export interface LakehouseUserInfo {
 export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
 export const USER_DATA_QUERY_DATASPACE_LIMIT = 10;
 export const USER_DATA_QUERY_DATAPRODUCT_LIMIT = 50;
+export const USER_DATA_QUERY_DATASPACE_RUNTIME_LIMIT = 50;
 
 type SavedData = string[];
 
@@ -283,6 +290,70 @@ export class LegendQueryUserDataHelper {
       return true;
     }
     return false;
+  }
+
+  // DataSpace runtime preferences
+  static getDataSpaceRuntimePreferences(
+    service: UserDataService,
+  ): DataSpaceRuntimePreference[] {
+    const data: unknown = service.getObjectValue(
+      LEGEND_QUERY_USER_DATA_KEY.DATASPACE_RUNTIME_PREFERENCES,
+    );
+    // read on every data space load, so a malformed value is ignored rather
+    // than failing the load
+    return Array.isArray(data)
+      ? data.filter(
+          (preference): preference is DataSpaceRuntimePreference =>
+            isPlainObject(preference) &&
+            isString(preference.id) &&
+            isString(preference.runtimePath),
+        )
+      : [];
+  }
+
+  static getDataSpaceRuntimePreference(
+    service: UserDataService,
+    id: string,
+  ): string | undefined {
+    return LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(
+      service,
+    ).find((preference) => preference.id === id)?.runtimePath;
+  }
+
+  /**
+   * Saves the runtime for the given id, or marks it as used again, moving it to
+   * the front so the choices in use are not the ones dropped at the limit
+   */
+  static persistDataSpaceRuntimePreference(
+    service: UserDataService,
+    id: string,
+    runtimePath: string,
+    limit = USER_DATA_QUERY_DATASPACE_RUNTIME_LIMIT,
+  ): void {
+    const preferences =
+      LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(service).filter(
+        (preference) => preference.id !== id,
+      );
+    preferences.unshift({ id, runtimePath, lastUsedAt: Date.now() });
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.DATASPACE_RUNTIME_PREFERENCES,
+      preferences.slice(0, limit),
+    );
+  }
+
+  static removeDataSpaceRuntimePreference(
+    service: UserDataService,
+    id: string,
+  ): void {
+    const preferences =
+      LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(service);
+    const remaining = preferences.filter((preference) => preference.id !== id);
+    if (remaining.length !== preferences.length) {
+      service.persistValue(
+        LEGEND_QUERY_USER_DATA_KEY.DATASPACE_RUNTIME_PREFERENCES,
+        remaining,
+      );
+    }
   }
 
   // DataProducts
