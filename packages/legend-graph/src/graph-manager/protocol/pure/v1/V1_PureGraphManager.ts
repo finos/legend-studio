@@ -46,6 +46,7 @@ import {
   uuid,
   returnUndefOnError,
   type Parameters,
+  yieldToEventLoop,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -1850,7 +1851,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<void> {
     for (let i = 0; i < items.length; i += GRAPH_BUILDER_BATCH_SIZE) {
       if (i > 0) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        await yieldToEventLoop();
       }
       const end = Math.min(i + GRAPH_BUILDER_BATCH_SIZE, items.length);
       for (let j = i; j < end; j++) {
@@ -5241,7 +5242,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const pendingHashes = new Map<string, PendingEntityHash[]>();
     for (let i = 0; i < entities.length; i++) {
       if (i > 0 && i % 100 === 0) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        await yieldToEventLoop();
       }
       const entity = guaranteeNonNullable(entities[i]);
       const key = `${entity.path}\u0000${fastHash(JSON.stringify(entity.content))}`;
