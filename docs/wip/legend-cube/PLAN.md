@@ -1496,6 +1496,87 @@ To make Cube easy to demo and explore, it ships three small datasets and six exa
 
 ---
 
+### 6.10 A saved Legend query as a source (planned, 2026-10-20; not built)
+
+**Ask (user, 2026-10-20):** a saved Legend query as a source: fetch it from the query server, get its lambda, turn it
+into a Relation if it isn't one, and run the cube's steps on it. Data space queries only for now, run with their
+mapping and runtime. This is Legend Query's saved queries, through the engine's query server; it is not the original
+app's saved cubes, which Cube still doesn't read (§1.2).
+
+**Audit (2026-10-20).** Checked against the local engine with an inline model (a class mapped onto Northwind's
+CUSTOMERS, a runtime naming the mapping) and against legend-studio's code. The probe and its output are kept outside
+the repo (local evidence `saved-query-source/`).
+
+| #   | Question                                     | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Can a TDS query become a Relation?           | ✅ `POST /api/pure/v1/compilation/autofix/transformTdsToRelation/lambda` (`{model, lambda}`, legend-engine's `Autofix`) rewrote a Query Builder TDS lambda into `Customer.all()->project(~[Company: …, Country: …])->filter(…)`, typed as a Relation. It covers project, extend, filter, groupBy, olapGroupBy, sort, restrict, restrictDistinct, renameColumns, distinct, drop, limit, take, slice, concatenate, `from(mapping, runtime)`, and join through the relational extension. Any other function is passed through unchanged. |
+| A2  | How is a query that can't be one told apart? | ✅ `lambdaReturnType` first: `TabularDataSet` is converted, a Relation is kept, anything else is refused. A graph fetch returns `String`, the endpoint passes it through, and `lambdaRelationType` then fails with a NullPointerException, so the return type has to be checked first.                                                                                                                                                                                                                                                |
+| A3  | Its columns?                                 | ✅ `lambdaRelationType` on the converted lambda, the call Cube's `typeLambdas` already makes.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| A4  | Can Cube's steps follow it?                  | ✅ Steps after the query and one `->from(mapping, runtime)` at the end ran. The query's own `from(mapping, runtime)` inside, then steps, then `from(runtime)`, also ran. Both gave one SQL statement with the filters pushed down. A join to a table of the same database under that runtime typed and ran.                                                                                                                                                                                                                           |
+| A5  | Parameters?                                  | ✅ Kept by the conversion. Given as a `let` at the top of the run's lambda, they run, so the run lambda keeps no parameters, as today.                                                                                                                                                                                                                                                                                                                                                                                                |
+| A6  | Through the Cube IR?                         | ✅ `V1_readCubeLambda` and `V1_serializeCubeLambda` round-trip the converted lambda, and it still runs. Typed lambda parameters (`x: probe::Customer[1]`) lose their type, which the engine didn't need here.                                                                                                                                                                                                                                                                                                                         |
+| A7  | Precedent?                                   | Legend DataCube's Legend Query source (`LegendDataCubeDataCubeEngine`): query info, execution context, `grammarToJSON_lambda`, an SDLC pointer to the query's project version, autofix when TDS, the last expression as the source (earlier ones put back at run time), `lambdaRelationType`, parameter values (function-valued ones as `let`s), and `from(mapping, runtime)` appended.                                                                                                                                               |
+| A8  | Data space context in the builder?           | ❌ legend-graph resolves it through a data space plugin of its graph manager (`resolveQueryInfoExecutionContext`); the builder has no graph manager or data space plugin. The v1 adapter reads it instead, in legend-graph's order: the query's own `mapping` and `runtime` when it has both, else its `V1_QueryDataSpaceExecutionContext` (`dataSpacePath`, optional `executionKey`), the data space entity of the query's project version from depot, and that execution context's `mapping` and `defaultRuntime`.                  |
+| A9  | A mapping in Cube?                           | ❌ None: `CubeContext` is a model and a runtime, and a run ends in `from(runtime)`.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| A10 | The query's project version?                 | ⚠️ Cube's project model reads released versions only (user, 2026-10-09; `checkCubeProjectModel`). Saved queries often name `latest` or a SNAPSHOT.                                                                                                                                                                                                                                                                                                                                                                                    |
+| A11 | Finding queries?                             | The query server's search filters by term, project, tagged values, stereotypes and owner, and sorts; a light query has no execution context. So the picker lists by search, and a picked query is fetched in full before Cube can tell whether it's a data space query.                                                                                                                                                                                                                                                               |
+| A12 | Which hosts?                                 | Legend Cube runs in Analytics and in Studio's embedded editor; it left Legend Query with #5736 (§11.24). Both configure `engine.queryUrl`, and `LegendCubeHost` passes it to the engine client. Studio's Cube builds ingest materialized views, a different source family.                                                                                                                                                                                                                                                            |
+
+**Design (proposed):**
+
+- **Core:** a new source, `LegendQuerySource` (kind `legendQuery`). It holds the query's id and name, the converted
+  relation (the last expression of its lambda, as Cube IR, shown read-only), any earlier expressions, its parameters and
+  their values, and a schema snapshot. Validation needs the snapshot and every required parameter's value. The emitter
+  writes the relation as it is, and each parameter as a `let` before it, through the lets Cube already writes for
+  windows (§8.6).
+- **The model and the run:** the cube's model is the query's project, through the existing project pointer kind
+  (`CubeProject.ts`), so tables and functions of the same project version can join it. The context gains an optional
+  `mapping`; when set, the run ends in `from(mapping, runtime)` instead of `from(runtime)`. That's the one `from` A4
+  checked, as DataCube writes it. The spec stays at version 1, since the change is additive.
+- **One context:** a cube runs on one model, mapping and runtime (§6.8), so a second saved query, or a table, has to
+  share the first query's project version, mapping and runtime.
+- **Builder:**
+  - a **Legend Query** tab in the source dialog (search by name, mine or everyone's, newest first), and a palette
+    item;
+  - picking a query fetches it, refuses one that isn't a data space query or isn't tabular with the reason, and shows
+    its columns and parameters before Add;
+  - the source's editor shows the query's name and data space, a link to open it in Legend Query, its parameters'
+    values (as the Function source's are), and Refresh.
+- **Engine port:** a host-given `CubeQueryCatalog`, as the data product and ingest catalogs are: search, then read one
+  query into a source. The v1 adapter implements it with the engine's query endpoints, depot, the autofix endpoint and
+  the type calls. No `V1_*` outside `v1/`.
+- **Reading back:** Import Pure, and Studio's Edit MatView, don't know the source and keep refusing a lambda that
+  holds one (§11.18).
+
+**Open questions for the user:**
+
+1. **Snapshot or always fresh?** Recommended: keep the converted relation and its columns in the cube, check the query
+   again when the cube opens, and offer Refresh when it changed, as data products are rechecked
+   (`CubeDataProductRecheck`). The alternative, always fetching it fresh, means an edit to the saved query can break
+   the steps after it without warning.
+2. **Moving versions (A10):** a query on `latest` could be pinned to the latest released version when added, saying
+   so, and one on a SNAPSHOT refused. Or allow moving versions for this source only.
+3. **Queries with an explicit mapping and runtime:** they're simpler than data space ones (the mapping and runtime are
+   in the query). Refuse them for now as asked, or take them too?
+4. **Studio:** offer the source in Analytics only, or in Studio's embedded editor too? Studio's Cube builds ingest
+   materialized views, which run on the ingest's own data, so a saved query wouldn't fit them.
+
+**Risks:** a TDS function the autofix doesn't convert (the query is then refused, naming it); a query whose lambda
+already holds `from(mapping, runtime)` (strip it, and check it against the data space's); multi-expression lambdas
+(put back as lets); large project pointers loading slowly on the engine; queries the viewer can't see on the query
+server.
+
+**Steps:**
+
+| Step | Deliverable                                                                                                                            | Done when                                                                                           |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Q.1  | This section; the user's answers                                                                                                       | Answered                                                                                            |
+| Q.2  | Core: the source node, codec, emitter (relation, lets), validation; the optional `mapping` in the context and `from(mapping, runtime)` | Unit tests; emitted Pure pinned                                                                     |
+| Q.3  | v1 adapter: the query catalog (search, fetch, data space context, autofix, typing, parameters)                                         | Adapter tests with a fake engine; an engine-roundtrip test on an inline mapped model like the probe |
+| Q.4  | Builder: the tab, the palette item, the source editor, Refresh                                                                         | Store and component tests                                                                           |
+| Q.5  | Hosts: Analytics passes the catalog                                                                                                    | Host tests                                                                                          |
+| Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                 | Every caption true on screen                                                                        |
+
 ## 7. C. Canvas and editors (slice)
 
 ### 7.1 Layout (provisional, D7)
