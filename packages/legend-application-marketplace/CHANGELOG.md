@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.5.10
+
+### Patch Changes
+
+- [#5738](https://github.com/finos/legend-studio/pull/5738) [`da098b9`](https://github.com/finos/legend-studio/commit/da098b94aa6bdc5508e77e530394fa1ca706cb59) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `isFunction` to `@finos/legend-shared`, next to `isString` and the other type guards, and use it instead of `typeof … === 'function'` where a value may be a function.
+
 ## 0.5.9
 
 ### Patch Changes
