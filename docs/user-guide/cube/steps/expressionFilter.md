@@ -19,7 +19,7 @@ Here it keeps the sales whose amount times price is over 300. The cube runs on t
 Good to know:
 
 - As you type, `$x.` lists the input's columns with their types, and `$x.COLUMN->` the functions of the column's type. Where the engine completes Pure code, its completions follow.
-- Where the engine documents its functions, `$x.COLUMN->` lists every function of the column's type, each with its signature and what it does. Point at a function's name to read its documentation; while you write a call's arguments, its signatures show, the argument you are writing in bold.
+- Where the engine documents its functions, `$x.COLUMN->` lists every function of the column's type, each with its signature; Ctrl+Space shows what the one selected does. Point at a function's name to read its documentation; while you write a call's arguments, its signatures show, the argument you are writing in bold.
 - An optional column needs `->toOne()` before arithmetic.
 - Put each comparison in parentheses when you combine them: `($x.A > 1) && ($x.B > 3)`.
 - A JSON (Variant) column's `{}` opens its fields; a field clicked is written into the condition. See [JSON columns](../json.md).

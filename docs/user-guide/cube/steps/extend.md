@@ -20,6 +20,6 @@ Here it adds revenue, amount times price. The cube runs on the sample sales (cou
 Good to know:
 
 - As you type, `$x.` lists the columns the expression can read, the input's and the new ones above it, with their types, and `$x.COLUMN->` the functions of the column's type. Where the engine completes Pure code, its completions follow.
-- Where the engine documents its functions, `$x.COLUMN->` lists every function of the column's type, each with its signature and what it does. Point at a function's name to read its documentation; while you write a call's arguments, its signatures show, the argument you are writing in bold.
+- Where the engine documents its functions, `$x.COLUMN->` lists every function of the column's type, each with its signature; Ctrl+Space shows what the one selected does. Point at a function's name to read its documentation; while you write a call's arguments, its signatures show, the argument you are writing in bold.
 - An optional column needs `->toOne()` before arithmetic; every new column is optional.
 - A JSON (Variant) column's `{}` opens its fields: a field clicked is written into the expression, and **+ column** adds it as a new column. See [JSON columns](../json.md).
