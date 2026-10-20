@@ -121,60 +121,65 @@ const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   return genericType;
 };
 
+export interface V1_MilestoningColumnSpec {
+  name: string;
+  type: string;
+}
+
+// Milestoning system columns injected for a write mode, as plain context-free data so callers without a built graph can replicate them.
+export const V1_getMilestoningColumnsForWriteMode = (
+  writeMode: V1_WriteMode | undefined,
+): V1_MilestoningColumnSpec[] => {
+  if (
+    writeMode?._type !== V1_WriteModeType.BATCH_MILESTONED &&
+    writeMode?._type !== V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
+  ) {
+    return [];
+  }
+  const columns: V1_MilestoningColumnSpec[] = [
+    {
+      name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
+      type: PRIMITIVE_TYPE.INTEGER,
+    },
+    {
+      name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
+      type: PRIMITIVE_TYPE.INTEGER,
+    },
+    {
+      name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_DIGEST,
+      type: PRIMITIVE_TYPE.STRING,
+    },
+  ];
+  if (writeMode._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL) {
+    columns.push(
+      {
+        name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_FROM,
+        type: PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
+      },
+      {
+        name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_THRU,
+        type: PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
+      },
+    );
+  }
+  return columns;
+};
+
 const addMilestonedColumnsForWriteMode = (
   relationType: RelationType,
   writeMode: V1_WriteMode | undefined,
   context: V1_GraphBuilderContext,
 ): void => {
-  if (
-    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED ||
-    writeMode?._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
-  ) {
+  V1_getMilestoningColumnsForWriteMode(writeMode).forEach((column) => {
     relationType.columns.push(
       new RelationColumn(
-        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
+        column.name,
         context.resolveGenericTypeFromProtocolWithRelationType(
-          buildV1GenericType(PRIMITIVE_TYPE.INTEGER),
+          buildV1GenericType(column.type),
         ),
       ),
     );
-    relationType.columns.push(
-      new RelationColumn(
-        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
-        context.resolveGenericTypeFromProtocolWithRelationType(
-          buildV1GenericType(PRIMITIVE_TYPE.INTEGER),
-        ),
-      ),
-    );
-    relationType.columns.push(
-      new RelationColumn(
-        MILESTONE_INGEST_COLUMNS.INGEST_LAKE_DIGEST,
-        context.resolveGenericTypeFromProtocolWithRelationType(
-          buildV1GenericType(PRIMITIVE_TYPE.STRING),
-        ),
-      ),
-    );
-    if (
-      writeMode._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
-    ) {
-      relationType.columns.push(
-        new RelationColumn(
-          MILESTONE_INGEST_COLUMNS.INGEST_LAKE_FROM,
-          context.resolveGenericTypeFromProtocolWithRelationType(
-            buildV1GenericType(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
-          ),
-        ),
-      );
-      relationType.columns.push(
-        new RelationColumn(
-          MILESTONE_INGEST_COLUMNS.INGEST_LAKE_THRU,
-          context.resolveGenericTypeFromProtocolWithRelationType(
-            buildV1GenericType(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
-          ),
-        ),
-      );
-    }
-  }
+  });
 };
 
 /**

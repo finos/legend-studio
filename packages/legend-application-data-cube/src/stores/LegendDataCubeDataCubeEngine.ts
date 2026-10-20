@@ -82,6 +82,7 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   V1_LakehouseRuntime,
   V1_IngestDefinition,
+  V1_deserializeIngestDefinitionContent,
   V1_DataProductAccessor,
   PRECISE_PRIMITIVE_TYPE,
   CORE_PURE_PATH,
@@ -92,6 +93,11 @@ import {
   type V1_PureModelContext,
   type V1_EntitlementsDataProductDetails,
   isExecutionAccessError,
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+  V1_DataProductArtifact,
+  V1_RelationType,
+  V1_getMilestoningColumnsForWriteMode,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -146,6 +152,7 @@ import {
 import { deserialize, serialize } from 'serializr';
 import {
   resolveVersion,
+  StoreProjectData,
   type DepotServerClient,
   type VersionedProjectData,
 } from '@finos/legend-server-depot';
@@ -178,6 +185,7 @@ import { authStore } from './AuthStore.js';
 import {
   extractEntityNameFromPath,
   generateGAVCoordinates,
+  StoredFileGeneration,
 } from '@finos/legend-storage';
 import { SecondaryOAuthClient } from './model/SecondaryOauthClient.js';
 import {
@@ -185,6 +193,46 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl,
 } from '../__lib__/LegendDataCubeNavigation.js';
 import { LEGEND_DATA_CUBE_DOCUMENTATION_KEY } from '../__lib__/LegendDataCubeDocumentation.js';
+
+// Relational TIMESTAMP is excluded since its short name 'Timestamp' collides with precisePrimitives::Timestamp.
+const INGEST_COLUMN_PRIMITIVE_TYPE_PATHS: readonly string[] = [
+  ...Object.values(PRIMITIVE_TYPE),
+  ...Object.values(PRECISE_PRIMITIVE_TYPE).filter(
+    (path) => path !== PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
+  ),
+];
+
+const INGEST_COLUMN_PRIMITIVE_TYPE_PATH_BY_PATH = new Map<string, string>(
+  INGEST_COLUMN_PRIMITIVE_TYPE_PATHS.map((path) => [path, path]),
+);
+
+const INGEST_COLUMN_PRIMITIVE_TYPE_PATH_BY_SHORT_NAME = new Map<string, string>(
+  INGEST_COLUMN_PRIMITIVE_TYPE_PATHS.map((path) => [
+    extractElementNameFromPath(path),
+    path,
+  ]),
+);
+
+// Mirrors @finos/legend-cube's findPrimitiveTypeInfo, which this package can't depend on.
+const findIngestColumnPrimitiveTypePath = (
+  pathOrShortName: string,
+): string | undefined =>
+  INGEST_COLUMN_PRIMITIVE_TYPE_PATH_BY_PATH.get(pathOrShortName) ??
+  INGEST_COLUMN_PRIMITIVE_TYPE_PATH_BY_SHORT_NAME.get(pathOrShortName);
+
+// Resolves a type path to the exact string getDataType() matches on, or undefined if unresolvable.
+const normalizeIngestColumnTypePath = (
+  fullPath: string,
+): string | undefined => {
+  const resolved = findIngestColumnPrimitiveTypePath(fullPath);
+  if (resolved) {
+    return resolved;
+  }
+  // Retry qualified standard primitives (e.g. meta::pure::metamodel::type::Integer) by short name.
+  return fullPath.includes('::')
+    ? findIngestColumnPrimitiveTypePath(extractElementNameFromPath(fullPath))
+    : undefined;
+};
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -800,11 +848,75 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             source.query = query;
           }
 
-          const model = await this._synthesizeLakehouseProducerPMCD(
-            rawSource,
-            source,
-          );
+          const { model, datasets, writeMode } =
+            await this._synthesizeLakehouseProducerPMCD(rawSource, source);
           source.model = V1_serializePureModelContextData(model);
+
+          // For a plain table accessor, reuse the ingest definition's schema instead of calling lambdaRelationType.
+          const ingestedDataset = !rawSource.query
+            ? datasets?.find((dataset) => dataset.name === rawSource.paths[1])
+            : undefined;
+          const ingestedDatasetColumns = ingestedDataset?.source.schema.columns;
+          // If any column type can't be resolved, fall back to the engine rather than risk mistyping it.
+          const normalizedIngestedColumns = (ingestedDatasetColumns ?? [])
+            .map((column) => {
+              const normalizedType = normalizeIngestColumnTypePath(
+                V1_getGenericTypeFullPath(column.genericType),
+              );
+              return normalizedType
+                ? { name: column.name, type: normalizedType }
+                : undefined;
+            })
+            .filter(isNonNullable);
+          if (
+            ingestedDataset &&
+            ingestedDatasetColumns?.length &&
+            normalizedIngestedColumns.length === ingestedDatasetColumns.length
+          ) {
+            source.columns = [
+              ...normalizedIngestedColumns,
+              // The engine also injects milestoning system columns for milestoned datasets, on top of the raw declared schema.
+              ...V1_getMilestoningColumnsForWriteMode(
+                ingestedDataset.writeMode ?? writeMode,
+              ),
+            ];
+          } else {
+            try {
+              source.columns = (
+                await this._getLambdaRelationType(
+                  this.serializeValueSpecification(_lambda([], [source.query])),
+                  source.model,
+                )
+              ).columns;
+            } catch (error) {
+              assertErrorThrown(error);
+              throw new Error(
+                `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+              );
+            }
+          }
+          return source;
+        }
+      }
+      case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawLakehouseConsumerDataCubeSource.serialization.fromJson(value);
+
+        const source = new LakehouseConsumerDataCubeSource();
+        const { model: consumerModel, artifactColumns } =
+          await this._synthesizeLakehouseConsumerPMCD(rawSource, source);
+        source.model = consumerModel;
+        source.paths = rawSource.paths;
+        source.warehouse = rawSource.warehouse;
+        source.deploymentId = rawSource.deploymentId;
+        if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
+          source.dpCoordinates = rawSource.origin.dpCoordinates;
+        }
+
+        //TODO: add support for parameters
+        if (artifactColumns?.length) {
+          source.columns = artifactColumns;
+        } else {
           try {
             source.columns = (
               await this._getLambdaRelationType(
@@ -818,38 +930,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
               `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
             );
           }
-          return source;
-        }
-      }
-      case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE: {
-        const rawSource =
-          RawLakehouseConsumerDataCubeSource.serialization.fromJson(value);
-
-        const source = new LakehouseConsumerDataCubeSource();
-        source.model = await this._synthesizeLakehouseConsumerPMCD(
-          rawSource,
-          source,
-        );
-        source.paths = rawSource.paths;
-        source.warehouse = rawSource.warehouse;
-        source.deploymentId = rawSource.deploymentId;
-        if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
-          source.dpCoordinates = rawSource.origin.dpCoordinates;
-        }
-
-        //TODO: add support for parameters
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
         }
         return source;
       }
@@ -1864,7 +1944,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
 
     model.elements = [ingestDefinition, packageableRuntime];
-    return model;
+    const ingestDefinitionContent = V1_deserializeIngestDefinitionContent(
+      ingestDefinitionObject,
+    );
+    return {
+      model,
+      datasets: ingestDefinitionContent.datasets,
+      writeMode: ingestDefinitionContent.writeMode,
+    };
   }
 
   private async _synthesizeLakehouseConsumerPMCD(
@@ -1872,13 +1959,26 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     source: LakehouseConsumerDataCubeSource,
   ) {
     let pmcd: V1_PureModelContext | undefined;
+    let artifactColumns: { name: string; type: string }[] | undefined;
+    let sdlcCoordinates: VersionedProjectData | undefined;
+    const isSdlcOrigin = rawSource.origin instanceof RawLakehouseSdlcOrigin;
 
     // find user entitled environment
-    const env =
-      await this._lakehouseContractServerClient.getUserEntitlementEnvs(
+    const userEntitlementEnvsPromise =
+      this._lakehouseContractServerClient.getUserEntitlementEnvs(
         this._application.identityService.currentUser,
         this._application.getAccessToken(),
       );
+    // Independent of the entitlement lookup above, so run it concurrently.
+    const dataProductPromise =
+      !isSdlcOrigin && rawSource.paths[0]
+        ? this._lakehouseContractServerClient.getDataProduct(
+            extractEntityNameFromPath(rawSource.paths[0]),
+            this._application.getAccessToken(),
+          )
+        : undefined;
+
+    const env = await userEntitlementEnvsPromise;
     const userEnv = guaranteeNonNullable(
       env.users.map((e) => e.lakehouseEnvironment).at(0),
     );
@@ -1925,6 +2025,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     if (rawSource.origin instanceof RawLakehouseSdlcOrigin) {
       const coordinates = guaranteeNonNullable(rawSource.origin.dpCoordinates);
+      sdlcCoordinates = coordinates;
       const pointer = new V1_PureModelContextPointer(
         undefined,
         new V1_LegendSDLC(
@@ -1955,12 +2056,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           }),
       );
     } else {
-      const dataProducts = rawSource.paths[0]
+      const dataProducts = dataProductPromise
         ? V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-            await this._lakehouseContractServerClient.getDataProduct(
-              extractEntityNameFromPath(rawSource.paths[0]),
-              this._application.getAccessToken(),
-            ),
+            await dataProductPromise,
           )
         : [];
       const selectedEnv = source.userEnvironment;
@@ -2018,7 +2116,59 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       source.query = query;
     }
 
-    return V1_serializePureModelContext(pmcd);
+    // The artifact schema only applies if the parsed query is the unmodified accessor (rawSource.query is always populated).
+    const isBareDataProductAccessorQuery =
+      source.query instanceof V1_ClassInstance &&
+      source.query.type === V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR &&
+      source.query.value instanceof V1_DataProductAccessor &&
+      source.query.value.path.length === 2 &&
+      source.query.value.path[0] === dataProduct &&
+      source.query.value.path[1] === accessPoint &&
+      source.query.value.parameters.length === 0;
+
+    if (sdlcCoordinates && isBareDataProductAccessorQuery) {
+      try {
+        const storeProject = new StoreProjectData();
+        storeProject.groupId = sdlcCoordinates.groupId;
+        storeProject.artifactId = sdlcCoordinates.artifactId;
+        const files = (
+          await this._depotServerClient.getGenerationFilesByType(
+            storeProject,
+            resolveVersion(sdlcCoordinates.versionId),
+            V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+            dataProduct,
+          )
+        ).map((rawFile) =>
+          StoredFileGeneration.serialization.fromJson(rawFile),
+        );
+        const content = files.find((file) => file.path === dataProduct)?.file
+          .content;
+        if (content) {
+          const artifact = V1_DataProductArtifact.serialization.fromJson(
+            JSON.parse(content) as PlainObject,
+          );
+          const implementation = artifact.accessPointGroups
+            .flatMap((group) => group.accessPointImplementations)
+            .find((impl) => impl.id === accessPoint);
+          const relationType = implementation?.lambdaGenericType?.typeArguments
+            .map((typeArg) => typeArg.rawType)
+            .find(
+              (rawType): rawType is V1_RelationType =>
+                rawType instanceof V1_RelationType,
+            );
+          if (relationType) {
+            artifactColumns = relationType.columns.map((column) => ({
+              name: column.name,
+              type: V1_getGenericTypeFullPath(column.genericType),
+            }));
+          }
+        }
+      } catch {
+        // No usable artifact for this access point, so fall back to lambdaRelationType.
+      }
+    }
+
+    return { model: V1_serializePureModelContext(pmcd), artifactColumns };
   }
 
   // ---------------------------------- APPLICATION ----------------------------------
