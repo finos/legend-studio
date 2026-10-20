@@ -110,7 +110,7 @@
     "node-forge": "1.4.0",
     "postcss": "8.5.12",
     "serialize-javascript": "7.0.3",
-    "undici": "6.24.0",
+    "undici": "6.29.1",
     "whatwg-url": "^14.0.0"
   },
   "devDependencies": {

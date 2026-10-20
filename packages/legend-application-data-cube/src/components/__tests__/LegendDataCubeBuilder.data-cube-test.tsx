@@ -57,7 +57,10 @@ import {
   V1_CFloat,
   V1_CInteger,
   V1_CString,
+  V1_ClassInstance,
+  V1_ClassInstanceType,
   V1_DataProduct,
+  V1_DataProductAccessor,
   V1_IngestDefinition,
   V1_LakehouseRuntime,
   V1_PackageableRuntime,
@@ -67,6 +70,8 @@ import {
   V1_deserializePureModelContext,
   V1_serializeValueSpecification,
 } from '@finos/legend-graph';
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 import { LegendDataCubePluginManager } from '../../application/LegendDataCubePluginManager.js';
 import {
@@ -1978,5 +1983,599 @@ test(
     await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
 
     expect(screen.queryByText('Release Notes')).toBeNull();
+  },
+);
+
+// A minimal ingest definition grammar PMCD with one dataset, whose schema processSource should read columns from.
+const mockIngestDefinitionPMCD = (
+  datasetName: string,
+  writeMode?: string,
+  definitionWriteMode?: string,
+): PlainObject => ({
+  _type: 'data',
+  elements: [
+    {
+      _type: 'ingestDefinition',
+      package: 'test',
+      name: 'IngestDefinition',
+      ...(definitionWriteMode
+        ? { writeMode: { _type: definitionWriteMode } }
+        : {}),
+      datasets: [
+        {
+          name: datasetName,
+          primaryKey: [],
+          ...(writeMode ? { writeMode: { _type: writeMode } } : {}),
+          source: {
+            _type: 'appDirDataset',
+            schema: {
+              _type: 'relational',
+              columns: [
+                {
+                  name: 'id',
+                  genericType: {
+                    rawType: { _type: 'packageableType', fullPath: 'Integer' },
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                },
+                {
+                  name: 'name',
+                  genericType: {
+                    rawType: { _type: 'packageableType', fullPath: 'String' },
+                  },
+                  multiplicity: { lowerBound: 0, upperBound: 1 },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+  ],
+});
+const mockIngestDefinitionPMCDWithColumns = (
+  datasetName: string,
+  schemaColumns: { name: string; fullPath: string }[],
+): PlainObject => ({
+  _type: 'data',
+  elements: [
+    {
+      _type: 'ingestDefinition',
+      package: 'test',
+      name: 'IngestDefinition',
+      datasets: [
+        {
+          name: datasetName,
+          primaryKey: [],
+          source: {
+            _type: 'appDirDataset',
+            schema: {
+              _type: 'relational',
+              columns: schemaColumns.map((column) => ({
+                name: column.name,
+                genericType: {
+                  rawType: {
+                    _type: 'packageableType',
+                    fullPath: column.fullPath,
+                  },
+                },
+                multiplicity: { lowerBound: 0, upperBound: 1 },
+              })),
+            },
+          },
+        },
+      ],
+    },
+  ],
+});
+
+// A minimal deployed data product artifact with one access point, whose relation type processSource should read columns from.
+const mockDataProductArtifact = (accessPointId: string): PlainObject => ({
+  dataProduct: {
+    path: 'test::SdlcDataProduct',
+    deploymentId: 'deployment-1',
+    title: 'Test Data Product',
+    description: 'A data product for testing',
+  },
+  accessPointGroups: [
+    {
+      id: 'group-a',
+      description: 'Group A',
+      accessPointImplementations: [
+        {
+          id: accessPointId,
+          description: 'AP backed by a relation',
+          resourceBuilder: [
+            { _type: 'functionAccessPoint', functionGrammar: '|1' },
+          ],
+          lambdaGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::metamodel::relation::Relation',
+            },
+            typeArguments: [
+              {
+                rawType: {
+                  _type: 'relationType',
+                  columns: [
+                    {
+                      name: 'col1',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'String',
+                        },
+                      },
+                      multiplicity: { lowerBound: 1, upperBound: 1 },
+                    },
+                    {
+                      name: 'col2',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'Integer',
+                        },
+                      },
+                      multiplicity: { lowerBound: 0, upperBound: 1 },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+});
+
+const mockGenerationFile = (
+  path: string,
+  artifact: PlainObject,
+): PlainObject => ({
+  groupId: 'test.group',
+  artifactId: 'test-artifact',
+  versionId: '1.0.0',
+  type: 'dataProduct',
+  path,
+  file: {
+    path,
+    content: JSON.stringify(artifact),
+  },
+});
+
+const mockLakehouseConsumerSdlcDataProduct = {
+  _type: 'lakehouseConsumer',
+  warehouse: 'TEST_WAREHOUSE',
+  environment: 'dev-testEnv',
+  paths: ['test::SdlcDataProduct', 'test_access_point'],
+  origin: {
+    _type: 'SdlcDeployment',
+    dpCoordinates: {
+      groupId: 'test.group',
+      artifactId: 'test-artifact',
+      versionId: '1.0.0',
+    },
+  },
+  deploymentId: 123456,
+};
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource reads columns from the ingest definition artifact, skipping lambdaRelationType',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCD('test_data-set'),
+    );
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when the artifact covers this dataset',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      { name: 'id', type: 'Integer' },
+      { name: 'name', type: 'String' },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource falls back to lambdaRelationType when the artifact does not cover the dataset',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      // dataset name does not match the selected table (`test_data-set`)
+      mockIngestDefinitionPMCD('some_other_dataset'),
+    );
+    const fallbackColumns = [{ name: 'fallback_col', type: 'String' }];
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockResolvedValue({ columns: fallbackColumns });
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).toHaveBeenCalledTimes(1);
+    expect(source.columns).toEqual(fallbackColumns);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource adds milestoning system columns for a batch_milestoned_business_temporal dataset read from the ingest definition artifact',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCD(
+        'test_data-set',
+        'batch_milestoned_business_temporal',
+      ),
+    );
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when the artifact covers this dataset',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      { name: 'id', type: 'Integer' },
+      { name: 'name', type: 'String' },
+      { name: 'LAKE_IN_ID', type: 'Integer' },
+      { name: 'LAKE_OUT_ID', type: 'Integer' },
+      { name: 'LAKE_DIGEST', type: 'String' },
+      {
+        name: 'LAKE_FROM',
+        type: 'meta::relational::metamodel::datatype::Timestamp',
+      },
+      {
+        name: 'LAKE_THRU',
+        type: 'meta::relational::metamodel::datatype::Timestamp',
+      },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource adds only LAKE_IN_ID/LAKE_OUT_ID/LAKE_DIGEST (no LAKE_FROM/LAKE_THRU) for a plain batch_milestoned dataset',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCD('test_data-set', 'batch_milestoned'),
+    );
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when the artifact covers this dataset',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      { name: 'id', type: 'Integer' },
+      { name: 'name', type: 'String' },
+      { name: 'LAKE_IN_ID', type: 'Integer' },
+      { name: 'LAKE_OUT_ID', type: 'Integer' },
+      { name: 'LAKE_DIGEST', type: 'String' },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource adds milestoning system columns when the write mode is inherited from the ingest definition rather than set on the dataset',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      // no dataset-level writeMode - only the definition-level one should apply
+      mockIngestDefinitionPMCD('test_data-set', undefined, 'batch_milestoned'),
+    );
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when the artifact covers this dataset',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      { name: 'id', type: 'Integer' },
+      { name: 'name', type: 'String' },
+      { name: 'LAKE_IN_ID', type: 'Integer' },
+      { name: 'LAKE_OUT_ID', type: 'Integer' },
+      { name: 'LAKE_DIGEST', type: 'String' },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource normalizes bare precise-primitive and fully qualified standard primitive column types, skipping lambdaRelationType',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCDWithColumns('test_data-set', [
+        // bare precise-primitive names, as ingest dataset schemas commonly declare them
+        { name: 'col_varchar', fullPath: 'Varchar' },
+        { name: 'col_int', fullPath: 'Int' },
+        { name: 'col_bigint', fullPath: 'BigInt' },
+        // fully qualified standard primitive, as the engine sometimes emits it
+        {
+          name: 'col_integer',
+          fullPath: 'meta::pure::metamodel::type::Integer',
+        },
+        // already-canonical forms should pass through unchanged
+        { name: 'col_string', fullPath: 'String' },
+        {
+          name: 'col_precise_varchar',
+          fullPath: 'meta::pure::precisePrimitives::Varchar',
+        },
+      ]),
+    );
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when every column type resolves',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      { name: 'col_varchar', type: 'meta::pure::precisePrimitives::Varchar' },
+      { name: 'col_int', type: 'meta::pure::precisePrimitives::Int' },
+      { name: 'col_bigint', type: 'meta::pure::precisePrimitives::BigInt' },
+      { name: 'col_integer', type: 'Integer' },
+      { name: 'col_string', type: 'String' },
+      {
+        name: 'col_precise_varchar',
+        type: 'meta::pure::precisePrimitives::Varchar',
+      },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource falls back to lambdaRelationType when a column type cannot be confidently normalized',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCDWithColumns('test_data-set', [
+        { name: 'id', fullPath: 'Integer' },
+        // a custom/class type the shortcut can't resolve without a graph
+        { name: 'color', fullPath: 'test::Color' },
+      ]),
+    );
+    const fallbackColumns = [
+      { name: 'id', type: 'Integer' },
+      { name: 'color', type: 'test::Color' },
+    ];
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockResolvedValue({ columns: fallbackColumns });
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).toHaveBeenCalledTimes(1);
+    expect(source.columns).toEqual(fallbackColumns);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Consumer processSource reads columns from the deployed data product artifact for a bare accessor query, skipping lambdaRelationType',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine({
+      mockPMCD: DEFAULT_MOCK_PMCD,
+    });
+    const depotServerClient = (
+      engine as unknown as { _depotServerClient: DepotServerClient }
+    )._depotServerClient;
+    createSpy(depotServerClient, 'getGenerationFilesByType').mockResolvedValue([
+      mockGenerationFile(
+        'test::SdlcDataProduct',
+        mockDataProductArtifact('test_access_point'),
+      ),
+    ]);
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when the artifact covers this access point',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource({
+        ...mockLakehouseConsumerAdHocDataProduct,
+        paths: ['test::SdlcDataProduct', 'test_access_point'],
+        origin: {
+          _type: 'SdlcDeployment',
+          dpCoordinates: {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+        },
+      }),
+      LakehouseConsumerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      { name: 'col1', type: 'String' },
+      { name: 'col2', type: 'Integer' },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Consumer processSource falls back to lambdaRelationType for a custom query override, even with a matching artifact',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    const depotServerClient = (
+      engine as unknown as { _depotServerClient: DepotServerClient }
+    )._depotServerClient;
+    const generationFilesSpy = createSpy(
+      depotServerClient,
+      'getGenerationFilesByType',
+    ).mockResolvedValue([
+      mockGenerationFile(
+        'test::SdlcDataProduct',
+        mockDataProductArtifact('test_access_point'),
+      ),
+    ]);
+    const fallbackColumns = [{ name: 'fallback_col', type: 'String' }];
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockResolvedValue({ columns: fallbackColumns });
+    // Simulate a custom query by parsing to an accessor for a different access point.
+    const customQueryValueSpecification = new V1_ClassInstance();
+    customQueryValueSpecification.type =
+      V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
+    const customQueryAccessor = new V1_DataProductAccessor();
+    customQueryAccessor.path = [
+      'test::SdlcDataProduct',
+      'some_other_access_point',
+    ];
+    customQueryAccessor.parameters = [];
+    customQueryValueSpecification.value = customQueryAccessor;
+    createSpy(engine, 'parseValueSpecification').mockResolvedValue(
+      customQueryValueSpecification,
+    );
+
+    const source = guaranteeType(
+      await engine.processSource({
+        ...mockLakehouseConsumerSdlcDataProduct,
+        query: 'test::SdlcDataProduct.test_access_point->filter(x|true)',
+      }),
+      LakehouseConsumerDataCubeSource,
+    );
+
+    expect(generationFilesSpy).not.toHaveBeenCalled();
+    expect(relationTypeSpy).toHaveBeenCalledTimes(1);
+    expect(source.columns).toEqual(fallbackColumns);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Consumer processSource kicks off getUserEntitlementEnvs and getDataProduct concurrently rather than sequentially',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    const lakehouseContractServerClient = (
+      engine as unknown as {
+        _lakehouseContractServerClient: LakehouseContractServerClient;
+      }
+    )._lakehouseContractServerClient;
+
+    let resolveEnv: (value: PlainObject) => void = () => {
+      throw new Error('resolveEnv should have been assigned');
+    };
+    const envPromise = new Promise<PlainObject>((resolve) => {
+      resolveEnv = resolve;
+    });
+    createSpy(
+      lakehouseContractServerClient,
+      'getUserEntitlementEnvs',
+    ).mockReturnValue(
+      envPromise as unknown as ReturnType<
+        LakehouseContractServerClient['getUserEntitlementEnvs']
+      >,
+    );
+    const dataProductSpy = createSpy(
+      lakehouseContractServerClient,
+      'getDataProduct',
+    ).mockResolvedValue(DEFAULT_MOCK_ADHOC_DATA_PRODUCT);
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue({
+      _type: 'data',
+      elements: [],
+    });
+    createSpy(engine, '_getLambdaRelationType').mockResolvedValue({
+      columns: [],
+    });
+
+    const processPromise = engine.processSource(
+      mockLakehouseConsumerAdHocDataProduct,
+    );
+    // getDataProduct should fire before getUserEntitlementEnvs resolves if the calls are concurrent.
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(dataProductSpy).toHaveBeenCalledTimes(1);
+
+    resolveEnv({
+      total: 1,
+      users: [
+        {
+          name: 'TESTER',
+          userType: 'TEST_USER',
+          lakehouseEnvironment: 'testEnv1',
+        },
+      ],
+    });
+    await processPromise;
   },
 );
