@@ -16,6 +16,30 @@
 @use 'mixins' as *;
 
 .developer-tools {
+  &__backend-server {
+    display: flex;
+    line-height: 2rem;
+
+    &__label {
+      flex: 0 0 16rem;
+      color: var(--color-text-secondary);
+    }
+
+    &__url {
+      flex: 1;
+      min-width: 0;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--color-text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      &--overridden {
+        color: var(--color-yellow-200);
+      }
+    }
+  }
+
   &__action-group {
     @include flexVCenter;
 

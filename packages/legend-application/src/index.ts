@@ -18,6 +18,7 @@ export * from './stores/ApplicationConfig.js';
 export * from './components/BrowserEnvironmentProvider.js';
 export * from './application/LegendApplication.js';
 export * from './application/LegendApplicationConfig.js';
+export * from './application/LegendApplicationBackendOverrides.js';
 export * from './application/LegendApplicationPluginManager.js';
 
 export * from './__lib__/LegendApplicationEvent.js';
@@ -33,6 +34,7 @@ export * from './components/ExtensionPageBoundary.js';
 export * from './components/useApplicationNavigationContext.js';
 export * from './components/useCommands.js';
 export * from './components/ReleaseNotesManager.js';
+export * from './components/BackendOverrides.js';
 export * from './components/LegendTokenSync.js';
 
 export {
@@ -53,6 +55,7 @@ export { useSyncStateAndSearchParam } from './util/URLUtils.js';
 export * from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/SettingService.js';
+export * from './stores/BackendOverrideService.js';
 export * from './stores/UserDataService.js';
 export * from './stores/DocumentationService.js';
 export * from './stores/CommandService.js';
