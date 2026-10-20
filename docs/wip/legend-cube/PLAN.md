@@ -1588,6 +1588,79 @@ server.
 | Q.5  | Hosts: Analytics passes the catalog                                                                                                                                                           | Host tests                                                                                          |
 | Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                                                                        | Every caption true on screen                                                                        |
 
+### 6.11 A saved query's relation type, kept with it (proposed, 2026-10-20; not built)
+
+**Ask (user, 2026-10-20):** keep a saved query's relation type (its columns and their types) in the saved query, so
+that Cube's saved query source (§6.10) and Legend DataCube's Legend Query source can know a query's columns without
+asking the engine. Today both make up to three engine calls to learn them: the return type, the TDS conversion, and
+the relation type. Each compiles the query's project, which is slow for big projects.
+
+**Where it's kept:** a new field on the saved query, `relationType`. The engine's query store drops fields it doesn't
+know (`Query.java` is `@JsonIgnoreProperties(ignoreUnknown = true)`), so the field needs an engine change (draft in
+[ISSUES.md](ISSUES.md)), and the same field in legend-graph's `V1_Query`, `Query` and their transforms.
+
+```json
+"relationType": {
+  "columns": [
+    { "name": "Company", "type": "String" },
+    { "name": "Country", "type": "String" }
+  ],
+  "computedFor": {
+    "contentHash": "<SHA-256 of the query's content>",
+    "versionId": "1.4.0",
+    "executionContextHash": "<SHA-256 of its execution context, mapping and runtime>"
+  },
+  "computedAt": 1760000000000
+}
+```
+
+- **`columns`** has the shape of legend-graph's `RelationTypeMetadata`, as `getLambdaRelationType` returns it. For a
+  TDS query it's the columns of its Relation form, so every reader gets the same columns.
+- **`computedFor`** says what the columns are true for. A reader trusts them only when all three still match the
+  query, so a write that doesn't update the field never leaves a wrong one in use. `versionId` is the concrete version:
+  for a query on `latest`, the release it resolved to when computed, as Query already resolves `originalVersionId` on
+  Save As.
+
+**When Legend Query writes it** (every path that writes a saved query, `QueryEditorStore` and `V1_PureGraphManager`):
+
+| Write                                                                                    | What changes                   | The relation type                                                                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Save As (`createQuery`)                                                                  | everything                     | computed                                                                                                                  |
+| Save (`updateQuery`, also from the modal that renames or changes the version)            | the content, maybe the version | computed                                                                                                                  |
+| Update version (`updateQueryVersionId`, a `patchQuery` of `versionId` only)              | the version                    | computed for the new version and patched with it; if that fails, the old one stays, and its `versionId` no longer matches |
+| Rename (`QueryLoaderState`, `renameQuery`: get, change the name, update)                 | the name                       | kept: it's carried through the get and the update, which needs the field in `V1_Query`, or the rename would drop it       |
+| Revert to a revision (`revertQueryToRevision`: get, take the revision's content, update) | the content                    | the revision's own, when it has one; else none                                                                            |
+| Any other client, or an older Legend Query                                               | anything                       | left as it was, or dropped; `computedFor` no longer matches, and readers compute it                                       |
+
+**How Legend Query computes it** (in `buildQueryForPersistence`, beside the content and parameter values it already
+asks the engine for):
+
+1. `getLambdaReturnType(lambda, graph)`: a Relation goes on; a `TabularDataSet` is converted first with the engine's
+   `transformTdsToRelation` endpoint; anything else, such as a graph fetch, gets no relation type.
+2. `getLambdaRelationType` on the Relation form gives the columns.
+3. The calls point the engine at the query's project version (`getFullGraphModelContext` sends the SDLC pointer when
+   the graph came from a project), the same model the query runs on, so the engine's model cache usually has it.
+4. **Best-effort, never in the way:** the calls run alongside `lambdaToPureCode`, with a time limit (say 5 s). A
+   failure or a timeout saves the query without the field and is logged, as a failed default parameter value is
+   today. Saving never fails, or waits long, because of it.
+
+**How readers use it** (Cube's §6.10 source, DataCube's `LegendQueryDataCubeSource`): when `computedFor` matches the
+query's content, execution context and concrete version, they take the columns as they are, and no engine call is made
+until the cube runs. Otherwise they compute the columns as today. For a query on `latest`, matching means the latest
+release is still the one recorded, a cheap depot call. A SNAPSHOT's columns are never trusted, since its code changes
+without a new version. The run still checks the engine's columns against the ones used (Cube's `runCubeQuery`).
+
+**Order:** the engine field first, then legend-graph's, then Legend Query's writes, then the readers. Each step works
+without the next: a reader that finds no field, or one that doesn't match, computes as today.
+
+**Open questions for the user:**
+
+1. Time limit on Save: compute inline with a short limit (recommended), or save first and patch the field afterwards
+   in the background (no delay at all, but a second write, lost if the tab closes)?
+2. Should Legend Query compute it for the existing saved queries, for example when one is opened and found without it
+   (a background patch), or only on the next save?
+3. Do Studio or other clients that save queries need to write it too?
+
 ## 7. C. Canvas and editors (slice)
 
 ### 7.1 Layout (provisional, D7)

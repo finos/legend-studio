@@ -37,6 +37,31 @@ and redact it, or document that a Pivot makes values into names.
 
 Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.
 
+### A saved query keeps no relation type (a feature, for PLAN §6.11)
+
+Not a defect: a field the query store would need for PLAN §6.11. The store's `Query`
+(`legend-engine-application-query/.../model/Query.java`) is `@JsonIgnoreProperties(ignoreUnknown = true)`, so a field
+a client sends is dropped. Draft issue for finos/legend-engine:
+
+```text
+Title: Query store: keep a saved query's relation type
+
+Clients that read saved queries (Legend Query's DataCube view, Legend DataCube, Legend Cube) learn a
+query's columns by compiling its project: lambdaReturnType, then transformTdsToRelation for a TDS
+query, then lambdaRelationType. For big projects that is slow on every open.
+
+Proposal: an optional field on Query, kept and returned as given, and not part of LightQuery:
+
+  relationType: {
+    columns: [{ name: String, type: String }],
+    computedFor: { contentHash: String, versionId: String, executionContextHash: String },
+    computedAt: Long
+  }
+
+Legend Query writes it when it saves a query; readers use it only when computedFor still matches
+the query, and compute the columns otherwise. Nothing changes for clients that don't send it.
+```
+
 ### SQL Server: `distinct()` then `limit()` renders `select top N distinct`
 
 Found in M2's requirements (plan-only, not executed: no SQL Server in reach). On `SqlServer`, the engine writes a
