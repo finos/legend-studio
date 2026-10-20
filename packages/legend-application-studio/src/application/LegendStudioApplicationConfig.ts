@@ -406,6 +406,12 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
         field: 'showcaseServerUrl',
       },
       {
+        key: 'lakehouse-contract',
+        label: 'Lakehouse Contract Server',
+        configPath: 'lakehouse.url',
+        field: 'lakehouseContractUrl',
+      },
+      {
         key: 'legend-ai',
         label: 'Legend AI',
         configPath: 'legendAI.url',

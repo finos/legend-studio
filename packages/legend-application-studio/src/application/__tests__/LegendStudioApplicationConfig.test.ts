@@ -40,6 +40,7 @@ const TEST_DATA__configData: LegendStudioApplicationConfigurationData = {
   marketplace: { url: 'http://localhost:9005/marketplace' },
   showcase: { url: 'http://localhost:9003/api' },
   pct: { reportUrl: 'http://localhost:9999/pct' },
+  lakehouse: { url: 'http://localhost:9020/lakehouse/api' },
   legendAI: { url: 'http://localhost:9010/api' },
   documentation: { url: 'https://legend.finos.org' },
 };
