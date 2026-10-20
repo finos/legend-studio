@@ -1262,7 +1262,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             : undefined;
           if (runtime) {
             dataSpaceQueryBuilderState.changeRuntime(runtime);
-          } else {
+          }
+          // the runtime this user picked for the context before wins over its default
+          const isSavedRuntimeApplied =
+            dataSpaceQueryBuilderState instanceof
+              LegendQueryDataSpaceQueryBuilderState &&
+            dataSpaceQueryBuilderState.applySavedRuntime();
+          if (!runtime && !isSavedRuntimeApplied) {
             dataSpaceQueryBuilderState.applicationStore.notificationService.notifyWarning(
               `Execution context '${executionContext.name}' does not have a default runtime`,
             );

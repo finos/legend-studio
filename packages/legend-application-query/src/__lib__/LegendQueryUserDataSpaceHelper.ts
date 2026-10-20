@@ -146,3 +146,24 @@ export const createSimpleVisitedDataProduct = (
   deploymentId,
   lastViewedAt: Date.now(),
 });
+
+/**
+ * The runtime a user picked for an execution context of a data space, so it is
+ * used again the next time they query it, instead of the context's default
+ */
+export interface DataSpaceRuntimePreference {
+  id: string;
+  runtimePath: string;
+  lastUsedAt?: number | undefined;
+}
+
+export const createDataSpaceRuntimePreferenceId = (
+  groupId: string,
+  artifactId: string,
+  dataSpace: string,
+  executionContext: string,
+): string =>
+  // like visited data spaces, a choice holds for every version of the project
+  createVisitedDataSpaceId(groupId, artifactId, dataSpace) +
+  GAV_DELIMITER +
+  executionContext;

@@ -2410,6 +2410,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         dataSpaceQueryBuilderState.executionContextState.setRuntimeValue(
           matchingExecutionContextRuntime,
         );
+        // a saved query keeps no runtime, so each user gets the one they picked
+        dataSpaceQueryBuilderState.applySavedRuntime();
         return dataSpaceQueryBuilderState;
       } else {
         throw new Error(

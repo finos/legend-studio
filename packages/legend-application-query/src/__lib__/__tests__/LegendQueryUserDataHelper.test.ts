@@ -21,6 +21,8 @@ import {
   USER_DATA_QUERY_DATASPACE_LIMIT,
   USER_DATA_QUERY_DATAPRODUCT_LIMIT,
   USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
+  USER_DATA_QUERY_DATASPACE_RUNTIME_LIMIT,
+  LEGEND_QUERY_USER_DATA_KEY,
   type LakehouseUserInfo,
 } from '../LegendQueryUserDataHelper.js';
 import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
@@ -28,6 +30,7 @@ import {
   createIdFromDataSpaceInfo,
   hasDataSpaceInfoBeenVisited,
   createVisitedDataProductId,
+  createDataSpaceRuntimePreferenceId,
 } from '../LegendQueryUserDataSpaceHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -981,6 +984,136 @@ describe('LegendQueryUserDataHelper', () => {
           userDataService,
         ),
       ).toHaveLength(1);
+    });
+  });
+  describe('Data space runtime preferences', () => {
+    const contextId = createDataSpaceRuntimePreferenceId(
+      'org.finos',
+      'my-artifact',
+      'model::MyDataSpace',
+      'default',
+    );
+
+    it('keys a preference by project, data space and execution context', () => {
+      expect(contextId).toBe(
+        'org.finos:my-artifact:model::MyDataSpace:default',
+      );
+      expect(
+        createDataSpaceRuntimePreferenceId(
+          'org.finos',
+          'my-artifact',
+          'model::MyDataSpace',
+          'other',
+        ),
+      ).not.toBe(contextId);
+    });
+
+    it('saves, replaces and removes the runtime for a context', () => {
+      const userDataService = getService();
+      expect(
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreference(
+          userDataService,
+          contextId,
+        ),
+      ).toBeUndefined();
+
+      LegendQueryUserDataHelper.persistDataSpaceRuntimePreference(
+        userDataService,
+        contextId,
+        'runtime::A',
+      );
+      LegendQueryUserDataHelper.persistDataSpaceRuntimePreference(
+        userDataService,
+        contextId,
+        'runtime::B',
+      );
+      expect(
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreference(
+          userDataService,
+          contextId,
+        ),
+      ).toBe('runtime::B');
+      expect(
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(
+          userDataService,
+        ),
+      ).toHaveLength(1);
+
+      LegendQueryUserDataHelper.removeDataSpaceRuntimePreference(
+        userDataService,
+        contextId,
+      );
+      expect(
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreference(
+          userDataService,
+          contextId,
+        ),
+      ).toBeUndefined();
+    });
+
+    it('keeps the most recently used preferences up to the limit', () => {
+      const userDataService = getService();
+      for (let i = 0; i <= USER_DATA_QUERY_DATASPACE_RUNTIME_LIMIT; i++) {
+        LegendQueryUserDataHelper.persistDataSpaceRuntimePreference(
+          userDataService,
+          `context-${i}`,
+          'runtime::A',
+        );
+      }
+      const preferences =
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(
+          userDataService,
+        );
+      expect(preferences).toHaveLength(USER_DATA_QUERY_DATASPACE_RUNTIME_LIMIT);
+      // the oldest one is dropped
+      expect(preferences.map((preference) => preference.id)).not.toContain(
+        'context-0',
+      );
+
+      // saving one again moves it to the front, out of reach of the limit
+      LegendQueryUserDataHelper.persistDataSpaceRuntimePreference(
+        userDataService,
+        'context-1',
+        'runtime::A',
+      );
+      LegendQueryUserDataHelper.persistDataSpaceRuntimePreference(
+        userDataService,
+        'context-new',
+        'runtime::A',
+      );
+      const ids = LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(
+        userDataService,
+      ).map((preference) => preference.id);
+      expect(ids[0]).toBe('context-new');
+      expect(ids).toContain('context-1');
+      expect(ids).not.toContain('context-2');
+    });
+
+    it('ignores malformed saved preferences', () => {
+      const userDataService = getService();
+      userDataService.persistValue(
+        LEGEND_QUERY_USER_DATA_KEY.DATASPACE_RUNTIME_PREFERENCES,
+        { not: 'a list' },
+      );
+      expect(
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(
+          userDataService,
+        ),
+      ).toEqual([]);
+
+      userDataService.persistValue(
+        LEGEND_QUERY_USER_DATA_KEY.DATASPACE_RUNTIME_PREFERENCES,
+        [
+          { id: contextId, runtimePath: 'runtime::A' },
+          { id: 'missing-runtime' },
+          'not an object',
+        ],
+      );
+      expect(
+        LegendQueryUserDataHelper.getDataSpaceRuntimePreferences(
+          userDataService,
+        ),
+      ).toEqual([{ id: contextId, runtimePath: 'runtime::A' }]);
     });
   });
 });

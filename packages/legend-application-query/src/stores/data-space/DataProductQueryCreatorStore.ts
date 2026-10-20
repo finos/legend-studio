@@ -582,17 +582,27 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
     );
     await queryBuilderState.propagateExecutionContextChange(true);
 
-    // set runtime if already chosen
+    // set runtime if already chosen: a link's runtime wins over the one this
+    // user saved for the context, which propagating the context has applied
     if (queryableDataSpace.runtimePath) {
-      queryBuilderState.changeRuntime(
-        new RuntimePointer(
-          PackageableElementExplicitReference.create(
-            this.graphManagerState.graph.getRuntime(
-              queryableDataSpace.runtimePath,
-            ),
-          ),
-        ),
+      const runtime = this.graphManagerState.graph.getNullableRuntime(
+        queryableDataSpace.runtimePath,
       );
+      if (runtime) {
+        queryBuilderState.changeRuntime(
+          new RuntimePointer(
+            PackageableElementExplicitReference.create(runtime),
+          ),
+        );
+        if (runtime.path !== queryBuilderState.defaultRuntimePath) {
+          queryBuilderState.setShowRuntimeSelector(true);
+        }
+      } else {
+        // e.g. a link made before the runtime was removed from the project
+        this.applicationStore.notificationService.notifyWarning(
+          `Can't find runtime '${queryableDataSpace.runtimePath}' from the link: using runtime '${queryBuilderState.currentRuntimePath ?? '(none)'}' instead`,
+        );
+      }
     }
 
     // set class if already chosen
