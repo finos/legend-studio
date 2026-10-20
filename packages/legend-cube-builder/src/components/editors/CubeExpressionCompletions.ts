@@ -18,17 +18,29 @@ import { type CubeType, TypeFamily } from '@finos/legend-cube';
 import {
   type CodeEditorCompletion,
   type CodeEditorCompletionSource,
+  type CodeEditorHoverSource,
+  type CodeEditorSignature,
+  type CodeEditorSignatureHelpSource,
   CodeEditorCompletionKind,
 } from '@finos/legend-lego/code-editor';
 import { getColumnTypeLabel } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeCodeCompletion } from '../../graph-manager/CubeEngine.js';
+import type {
+  CubeFunctionCatalogue,
+  CubeFunctionOffer,
+  CubeFunctionSignature,
+} from '../../graph-manager/CubeFunctionCatalogue.js';
 import { pureStringLiteral } from '../../stores/CubePureText.js';
 
 // The completions of a Pure expression of one row, `x | …` (user,
 // 2026-10-16): Cube's own, from what it knows without the engine (after
 // `$x.` the columns the expression can read, with their types, after `$`
 // the same as `x.COLUMN`, and after `$x.COLUMN->` the functions of its
-// type), then the engine's, where it completes code.
+// type), then the engine's, where it completes code. With the engine's
+// function catalogue (EXPRESSION-EDITOR.md, round 1), a column's functions
+// are every one its type is passed to, each with its signature and
+// documentation, which a hover over a function's name and the help while
+// its arguments are written show too.
 
 /** A column an expression can read: the input's, or a new column above it */
 export interface CubeCompletionColumn {
@@ -145,6 +157,104 @@ const functionsOf = (
   ];
 };
 
+/** Functions offered first for an optional column: its one value, or another when it is empty */
+const OPTIONAL_FIRST = ['toOne', 'coalesce'];
+
+/** A signature's documentation in Markdown: how Pure writes it, then what it does */
+const documentationOf = (
+  signatures: readonly CubeFunctionSignature[],
+): string =>
+  signatures
+    .map((signature) =>
+      [`\`\`\`pure\n${signature.text}\n\`\`\``, signature.documentation.trim()]
+        .filter((part) => part.length)
+        .join('\n\n'),
+    )
+    .join('\n\n---\n\n');
+
+/** Text a snippet writes as is: its `$`, `}` and `\\` escaped */
+const snippetText = (text: string): string => text.replace(/[$}\\]/gu, '\\$&');
+
+/** The signature with the fewest parameters: the call written first */
+const shortestOf = (
+  signatures: readonly CubeFunctionSignature[],
+): CubeFunctionSignature | undefined =>
+  signatures.reduce<CubeFunctionSignature | undefined>(
+    (shortest, each) =>
+      !shortest || each.parameters.length < shortest.parameters.length
+        ? each
+        : shortest,
+    undefined,
+  );
+
+/**
+ * A call of the signature after `->`, its first parameter the value: a
+ * placeholder for each other, named as its documentation names it, a text
+ * one quoted, e.g. `lpad(${1:length}, '${2:char}')`
+ */
+const snippetOf = (signature: CubeFunctionSignature): string =>
+  `${signature.name}(${signature.parameters
+    .slice(1)
+    .map((parameter, index) => {
+      const placeholder = `\${${index + 1}:${snippetText(
+        parameter.name ?? parameter.type,
+      )}}`;
+      return parameter.type === 'String' ? `'${placeholder}'` : placeholder;
+    })
+    .join(', ')})`;
+
+/** A function's completion, from the catalogue's offer, Cube's own snippet first */
+const offerCompletion = (
+  offer: CubeFunctionOffer,
+  own: CubeFunctionCompletion | undefined,
+): CubeFunctionCompletion & { documentation: string } => {
+  const shortest = shortestOf(offer.signatures);
+  const others = offer.signatures.length - 1;
+  return {
+    name: offer.function.name,
+    snippet: own?.snippet ?? (shortest ? snippetOf(shortest) : ''),
+    detail: shortest
+      ? `${shortest.text}${others ? ` (+${others} more)` : ''}`
+      : (own?.detail ?? ''),
+    documentation: documentationOf(offer.signatures),
+  };
+};
+
+/**
+ * The functions of a column's type: without a catalogue, Cube's own
+ * (`functionsOf`); with one, every function its type is passed to, Cube's
+ * own first, then the others by name, `toOne()` and `coalesce()` first for
+ * an optional one; Cube's own the catalogue doesn't have (`substring`,
+ * `indexOf`) kept
+ */
+const functionCompletionsOf = (
+  column: CubeCompletionColumn | undefined,
+  catalogue: CubeFunctionCatalogue | undefined,
+): (CubeFunctionCompletion & { documentation?: string | undefined })[] => {
+  const own = functionsOf(column);
+  if (!catalogue) {
+    return own;
+  }
+  const offers = new Map(
+    catalogue
+      .offersFor(column?.type?.family)
+      .map((offer) => [offer.function.name, offer]),
+  );
+  const ownByName = new Map(own.map((each) => [each.name, each]));
+  const names = new Set([
+    ...(column?.nullable
+      ? OPTIONAL_FIRST.filter((name) => offers.has(name) || ownByName.has(name))
+      : []),
+    ...own.map((each) => each.name),
+    ...[...offers.keys()].sort((a, b) => a.localeCompare(b)),
+  ]);
+  return [...names].flatMap((name) => {
+    const offer = offers.get(name);
+    const ownOne = ownByName.get(name);
+    return offer ? [offerCompletion(offer, ownOne)] : ownOne ? [ownOne] : [];
+  });
+};
+
 const columnCompletion = (
   column: CubeCompletionColumn,
   insertText: string,
@@ -172,6 +282,7 @@ const columnCompletion = (
 export const getCubeExpressionCompletions = (
   textBeforeCursor: string,
   columns: readonly CubeCompletionColumn[],
+  catalogue?: CubeFunctionCatalogue | undefined,
 ): CodeEditorCompletion[] => {
   const parameter = parameterOf(textBeforeCursor);
   // `$x.COLUMN->tex`: the column's functions
@@ -183,11 +294,15 @@ export const getCubeExpressionCompletions = (
     const name = nameOf(call.groups.column ?? '');
     const column = columns.find((each) => each.name === name);
     const replaceLength = call.groups.partial?.length ?? 0;
-    return functionsOf(column).map((each) => ({
+    return functionCompletionsOf(column, catalogue).map((each) => ({
       label: each.name,
       insertText: each.snippet,
       isSnippet: true,
       detail: each.detail,
+      documentation: each.documentation,
+      // the catalogue's help, as its arguments are written
+      opensSignatureHelp:
+        catalogue !== undefined && !each.snippet.endsWith('()'),
       kind: CodeEditorCompletionKind.FUNCTION,
       replaceLength,
     }));
@@ -286,15 +401,21 @@ const engineCompletionsWithin = async (
 
 /**
  * A code editor's completions of a Pure expression reading these columns:
- * Cube's own, then the engine's, when given
+ * Cube's own, from the function catalogue when given, then the engine's,
+ * when given
  */
 export const getCubeExpressionCompletionSource = (
   columns: readonly CubeCompletionColumn[],
   engine?: CubeEngineCompletionSource | undefined,
+  catalogue?: CubeFunctionCatalogue | undefined,
 ): CodeEditorCompletionSource => ({
   triggerCharacters: TRIGGERS,
   getCompletions: async (textBeforeCursor) => {
-    const own = getCubeExpressionCompletions(textBeforeCursor, columns);
+    const own = getCubeExpressionCompletions(
+      textBeforeCursor,
+      columns,
+      catalogue,
+    );
     return engine
       ? mergeCubeEngineCompletions(
           own,
@@ -304,3 +425,170 @@ export const getCubeExpressionCompletionSource = (
       : own;
   },
 });
+
+// ---------- a function's help: its hover, and its signatures while its arguments are written ----------
+
+/**
+ * The code with its strings blanked, quote to quote, so that their text is
+ * not read as code; and whether it ends inside one
+ */
+const blankStrings = (text: string): { code: string; inString: boolean } => {
+  let code = '';
+  let inString = false;
+  for (let index = 0; index < text.length; index++) {
+    const char = text.charAt(index);
+    if (inString) {
+      if (char === '\\') {
+        code += '  ';
+        index += 1;
+        continue;
+      }
+      if (char === "'") {
+        inString = false;
+        code += char;
+        continue;
+      }
+      code += ' ';
+      continue;
+    }
+    if (char === "'") {
+      inString = true;
+    }
+    code += char;
+  }
+  return { code, inString };
+};
+
+/** A function's signatures for its help: all but the platform's own */
+const helpSignaturesOf = (
+  catalogue: CubeFunctionCatalogue,
+  name: string,
+): CubeFunctionSignature[] =>
+  catalogue.get(name)?.signatures.filter((each) => !each.isPlatformOnly) ?? [];
+
+/**
+ * The hover over a function's name, as a call writes it, after `->` or
+ * before `(`: its signatures and documentation; none without a catalogue
+ */
+export const getCubeFunctionHoverSource = (
+  catalogue: CubeFunctionCatalogue | undefined,
+): CodeEditorHoverSource | undefined =>
+  catalogue
+    ? {
+        getHover: (word, textBefore, textAfter) => {
+          if (blankStrings(textBefore).inString) {
+            return undefined;
+          }
+          const isCalled =
+            /->\s*$/u.test(textBefore) || /^\s*\(/u.test(textAfter);
+          const signatures = isCalled ? helpSignaturesOf(catalogue, word) : [];
+          return signatures.length ? documentationOf(signatures) : undefined;
+        },
+      }
+    : undefined;
+
+/** The characters that open, or move, the help of a call's arguments */
+const SIGNATURE_TRIGGERS: readonly string[] = ['(', ','];
+
+const CLOSERS: Readonly<Record<string, string>> = {
+  ')': '(',
+  ']': '[',
+  '}': '{',
+};
+
+/**
+ * The call whose arguments the cursor is in, from the code before it: the
+ * function's name, whether it is called with `->` (its first argument the
+ * value before it), and how many of its arguments are written before the
+ * cursor's
+ */
+export const readCubeCallAtCursor = (
+  textBeforeCursor: string,
+): { name: string; isArrow: boolean; argument: number } | undefined => {
+  // a string being written is an argument too: its text is blanked
+  const { code } = blankStrings(textBeforeCursor);
+  // the brackets not closed, each with the commas written in it since
+  const opened: { char: string; index: number; commas: number }[] = [];
+  for (let index = 0; index < code.length; index++) {
+    const char = code.charAt(index);
+    if (char === '(' || char === '[' || char === '{') {
+      opened.push({ char, index, commas: 0 });
+    } else if (CLOSERS[char]) {
+      if (opened.at(-1)?.char === CLOSERS[char]) {
+        opened.pop();
+      }
+    } else if (char === ',') {
+      const innermost = opened.at(-1);
+      if (innermost) {
+        innermost.commas += 1;
+      }
+    }
+  }
+  const call = opened.at(-1);
+  // in a list or a lambda, not a call's arguments
+  if (call?.char !== '(') {
+    return undefined;
+  }
+  const head = /(?<arrow>->\s*)?(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*$/u.exec(
+    code.slice(0, call.index),
+  )?.groups;
+  if (!head?.name) {
+    return undefined;
+  }
+  const isArrow = head.arrow !== undefined;
+  return {
+    name: head.name,
+    isArrow,
+    argument: call.commas + (isArrow ? 1 : 0),
+  };
+};
+
+/** A signature as the help shows it: each parameter where its label writes it */
+const helpSignatureOf = (
+  signature: CubeFunctionSignature,
+): CodeEditorSignature => {
+  const label = signature.text;
+  let from = signature.name.length + 1;
+  return {
+    label,
+    documentation: signature.documentation.trim() || undefined,
+    parameters: signature.parameters.map((parameter) => {
+      const start = label.indexOf(parameter.text, from);
+      const end = start + parameter.text.length;
+      from = end;
+      return {
+        label: [start, end] as const,
+        documentation: parameter.description,
+      };
+    }),
+  };
+};
+
+/**
+ * The help while a call's arguments are written: the function's
+ * signatures, the first that takes as many arguments as are written
+ * active; none without a catalogue
+ */
+export const getCubeFunctionSignatureHelpSource = (
+  catalogue: CubeFunctionCatalogue | undefined,
+): CodeEditorSignatureHelpSource | undefined =>
+  catalogue
+    ? {
+        triggerCharacters: SIGNATURE_TRIGGERS,
+        getSignatureHelp: (textBeforeCursor) => {
+          const call = readCubeCallAtCursor(textBeforeCursor);
+          const signatures = call ? helpSignaturesOf(catalogue, call.name) : [];
+          if (!call || !signatures.length) {
+            return undefined;
+          }
+          const active = signatures.findIndex(
+            (each) => each.parameters.length > call.argument,
+          );
+          return {
+            signatures: signatures.map(helpSignatureOf),
+            activeSignature: Math.max(active, 0),
+            activeParameter: call.argument,
+          };
+        },
+      }
+    : undefined;

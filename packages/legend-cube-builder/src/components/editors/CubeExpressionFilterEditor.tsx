@@ -17,10 +17,13 @@
 import { CompressIcon, ExpandIcon } from '@finos/legend-art';
 import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  type CodeEditorTextInserter,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   EXPRESSION_FILTER_EDITOR_NOTES,
   getExactColumnTypeLabel,
@@ -32,7 +35,11 @@ import {
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
-import { getCubeExpressionCompletionSource } from './CubeExpressionCompletions.js';
+import {
+  getCubeExpressionCompletionSource,
+  getCubeFunctionHoverSource,
+  getCubeFunctionSignatureHelpSource,
+} from './CubeExpressionCompletions.js';
 import {
   CubeJsonFieldsToggle,
   CubeJsonFieldsTree,
@@ -115,19 +122,28 @@ const CubeConditionStatus = observer(
 /**
  * The Filter by Expression editor (PLAN §11.11): the condition's code in a
  * code editor, checked once typing pauses (F10 at once), its border green
- * when ready (user, 2026-10-16), and the input's columns, which a click
- * writes at the end of the code.
+ * when ready (user, 2026-10-16), with the engine's functions' completions
+ * and help (EXPRESSION-EDITOR.md, round 1), and the input's columns, which
+ * a click writes at the cursor, or at the end before the code is clicked
+ * into.
  */
 export const CubeExpressionFilterEditor = observer(
   (props: CubeNodeEditorProps) => {
-    const { inputSchemas, readOnly } = props;
+    const { editorState, inputSchemas, readOnly } = props;
     const draft = guaranteeType(props.draft, CubeExpressionFilterDraft);
     const [schema] = inputSchemas as [Schema];
     const [expanded, setExpanded] = useState(false);
+    const inserter = useRef<CodeEditorTextInserter | undefined>(undefined);
+    const [hasCursor, setHasCursor] = useState(false);
+    const catalogue = editorState.functionCatalogue;
+    useEffect(() => editorState.loadFunctionCatalogue(), [editorState]);
     // typing goes on while the code is checked
     const disabled = readOnly;
-    /** Writes text at the end of the condition, as the chips do */
+    /** Writes text at the condition's cursor, or at its end before it is clicked into, as the chips do */
     const write = (text: string): void => {
+      if (hasCursor && inserter.current?.(text)) {
+        return;
+      }
       const separator = /\s$/u.test(draft.code) ? '' : ' ';
       draft.setCode(`${draft.code}${separator}${text}`);
     };
@@ -149,6 +165,7 @@ export const CubeExpressionFilterEditor = observer(
           data-check-status={draft.checkStatus}
           className={getCubeCodeBoxClass(draft.checkStatus)}
           style={{ height: expanded ? 240 : 96 }}
+          onFocus={() => setHasCursor(true)}
         >
           <CodeEditor
             inputValue={draft.code}
@@ -162,7 +179,11 @@ export const CubeExpressionFilterEditor = observer(
             completions={getCubeExpressionCompletionSource(
               schema.columns,
               (text) => draft.getEngineCompletions(text),
+              catalogue,
             )}
+            hover={getCubeFunctionHoverSource(catalogue)}
+            signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
+            textInserterRef={inserter}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
@@ -179,7 +200,7 @@ export const CubeExpressionFilterEditor = observer(
             <li key={column.name} className="flex items-stretch gap-0.5">
               <button
                 className="flex items-center gap-1 rounded-sm border border-[var(--color-border-subtle)] px-1 text-sm hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
-                title={`Write ${columnAccessOf(column.name)} at the end of the condition (${getExactColumnTypeLabel(column)})`}
+                title={`Write ${columnAccessOf(column.name)} at the condition's cursor (${getExactColumnTypeLabel(column)})`}
                 disabled={disabled}
                 onClick={() => write(columnAccessOf(column.name))}
               >

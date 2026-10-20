@@ -138,6 +138,10 @@ export interface CodeEditorCompletion {
   readonly kind?: CodeEditorCompletionKind | undefined;
   /** How many characters before the cursor it replaces: the word being typed */
   readonly replaceLength?: number | undefined;
+  /** Markdown, shown in the completion's details: e.g. a function's signature and what it does */
+  readonly documentation?: string | undefined;
+  /** Opens the signature help once written, as a call's `(` typed would: for a call written with its arguments to fill */
+  readonly opensSignatureHelp?: boolean | undefined;
 }
 
 /** Where an editor's completions come from: the text before the cursor in, completions out */
@@ -148,6 +152,52 @@ export interface CodeEditorCompletionSource {
     textBeforeCursor: string,
   ): Promise<readonly CodeEditorCompletion[]> | readonly CodeEditorCompletion[];
 }
+
+/** Where an editor's hover comes from: the word under the pointer, with the text before and after it, in; Markdown out, or none */
+export interface CodeEditorHoverSource {
+  getHover(
+    word: string,
+    textBefore: string,
+    textAfter: string,
+  ): Promise<string | undefined> | string | undefined;
+}
+
+/** A signature an editor shows while a call's arguments are written */
+export interface CodeEditorSignature {
+  /** e.g. `contains(source: String[1], val: String[1]): Boolean[1]` */
+  readonly label: string;
+  /** Markdown */
+  readonly documentation?: string | undefined;
+  /** Each as written in the label, e.g. `val: String[1]`, or where the label writes it: its start and end offsets */
+  readonly parameters: readonly {
+    readonly label: string | readonly [number, number];
+    /** Markdown */
+    readonly documentation?: string | undefined;
+  }[];
+}
+
+/** The signatures of the call being written, and which one and which argument the cursor is at */
+export interface CodeEditorSignatureHelp {
+  readonly signatures: readonly CodeEditorSignature[];
+  readonly activeSignature: number;
+  readonly activeParameter: number;
+}
+
+/** Where an editor's signature help comes from: the text before the cursor in, the call's signatures out, or none */
+export interface CodeEditorSignatureHelpSource {
+  /** Characters that open the help as they are typed, e.g. `(` and `,` */
+  readonly triggerCharacters: readonly string[];
+  getSignatureHelp(
+    textBeforeCursor: string,
+  ): CodeEditorSignatureHelp | undefined;
+}
+
+/**
+ * Writes text at an editor's cursor, as a click outside it asks (e.g. a
+ * column's chip), a space first after a word or an operator; false when the
+ * editor has no text or cursor to write at
+ */
+export type CodeEditorTextInserter = (text: string) => boolean;
 
 const COMPLETION_KINDS: Readonly<
   Record<CodeEditorCompletionKind, monacoLanguagesAPI.CompletionItemKind>
@@ -190,6 +240,17 @@ const toMonacoCompletions = async (
           }
         : {}),
       ...(completion.detail !== undefined ? { detail: completion.detail } : {}),
+      ...(completion.documentation !== undefined
+        ? { documentation: { value: completion.documentation } }
+        : {}),
+      ...(completion.opensSignatureHelp
+        ? {
+            command: {
+              id: 'editor.action.triggerParameterHints',
+              title: 'Show the signature',
+            },
+          }
+        : {}),
       kind: COMPLETION_KINDS[completion.kind ?? CodeEditorCompletionKind.TEXT],
       range: {
         startLineNumber: position.lineNumber,
@@ -201,6 +262,94 @@ const toMonacoCompletions = async (
         endColumn: position.column,
       },
     })),
+  };
+};
+
+/** The hover of the word under the pointer, as Monaco shows it */
+const toMonacoHover = async (
+  source: CodeEditorHoverSource,
+  model: monacoEditorAPI.ITextModel,
+  position: { lineNumber: number; column: number },
+): Promise<monacoLanguagesAPI.Hover | null> => {
+  const word = model.getWordAtPosition(position);
+  if (!word) {
+    return null;
+  }
+  const lastLine = model.getLineCount();
+  const textBefore = model.getValueInRange({
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: position.lineNumber,
+    endColumn: word.startColumn,
+  });
+  const textAfter = model.getValueInRange({
+    startLineNumber: position.lineNumber,
+    startColumn: word.endColumn,
+    endLineNumber: lastLine,
+    endColumn: model.getLineMaxColumn(lastLine),
+  });
+  let markdown: string | undefined;
+  try {
+    markdown = await source.getHover(word.word, textBefore, textAfter);
+  } catch {
+    // no hover when it can't be read
+  }
+  return markdown
+    ? {
+        range: {
+          startLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endLineNumber: position.lineNumber,
+          endColumn: word.endColumn,
+        },
+        contents: [{ value: markdown }],
+      }
+    : null;
+};
+
+/** The signature help of the call being written, as Monaco shows it */
+const toMonacoSignatureHelp = (
+  source: CodeEditorSignatureHelpSource,
+  model: monacoEditorAPI.ITextModel,
+  position: { lineNumber: number; column: number },
+): monacoLanguagesAPI.SignatureHelpResult | null => {
+  let help: CodeEditorSignatureHelp | undefined;
+  try {
+    help = source.getSignatureHelp(
+      model.getValueInRange({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column,
+      }),
+    );
+  } catch {
+    // no help when it can't be read
+  }
+  if (!help?.signatures.length) {
+    return null;
+  }
+  return {
+    value: {
+      signatures: help.signatures.map((signature) => ({
+        label: signature.label,
+        ...(signature.documentation !== undefined
+          ? { documentation: { value: signature.documentation } }
+          : {}),
+        parameters: signature.parameters.map((parameter) => ({
+          label:
+            typeof parameter.label === 'string'
+              ? parameter.label
+              : [parameter.label[0], parameter.label[1]],
+          ...(parameter.documentation !== undefined
+            ? { documentation: { value: parameter.documentation } }
+            : {}),
+        })),
+      })),
+      activeSignature: help.activeSignature,
+      activeParameter: help.activeParameter,
+    },
+    dispose: () => undefined,
   };
 };
 
@@ -264,6 +413,12 @@ export const CodeEditor: React.FC<{
    * other editors of the language never offer them
    */
   completions?: CodeEditorCompletionSource | undefined;
+  /** Hover help over this editor's text, e.g. a function's documentation */
+  hover?: CodeEditorHoverSource | undefined;
+  /** Signature help while a call's arguments are written in this editor */
+  signatureHelp?: CodeEditorSignatureHelpSource | undefined;
+  /** Set to a function writing text at this editor's cursor, while the editor exists */
+  textInserterRef?: { current: CodeEditorTextInserter | undefined } | undefined;
   /**
    * Renders the floating widgets (completions, hovers) in the page's body,
    * for an editor inside a CSS-transformed container, e.g. a popper
@@ -285,6 +440,9 @@ export const CodeEditor: React.FC<{
     error,
     rightActions,
     completions,
+    hover,
+    signatureHelp,
+    textInserterRef,
     floatingWidgetsInBody,
   } = props;
   const applicationStore = useApplicationStore();
@@ -295,9 +453,16 @@ export const CodeEditor: React.FC<{
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
-  // the source as given now, which the provider registered on focus asks
+  // the sources as given now, which the providers registered on focus ask
   const completionsRef = useRef(completions);
   completionsRef.current = completions;
+  const hoverRef = useRef(hover);
+  hoverRef.current = hover;
+  const signatureHelpRef = useRef(signatureHelp);
+  signatureHelpRef.current = signatureHelp;
+  const hasHover = hover !== undefined;
+  const hasSignatureHelp = signatureHelp !== undefined;
+  const signatureTriggerCharacters = signatureHelp?.triggerCharacters.join('');
   const hasCompletions = completions !== undefined;
   const completionTriggerCharacters = completions?.triggerCharacters.join('');
 
@@ -398,6 +563,92 @@ export const CodeEditor: React.FC<{
       unregister();
     };
   }, [editor, language, hasCompletions, completionTriggerCharacters]);
+
+  // hover and signature help, registered while this editor exists, for its own text only:
+  // a hover shows before the editor has the focus, and not over another editor of the language
+  useEffect(() => {
+    if (!editor || (!hasHover && !hasSignatureHelp)) {
+      return undefined;
+    }
+    const isOwn = (model: monacoEditorAPI.ITextModel): boolean =>
+      model === editor.getModel();
+    // possibly none, as Monaco mocked in tests gives
+    const registered: (IDisposable | undefined)[] = [];
+    if (hasHover) {
+      registered.push(
+        monacoLanguagesAPI.registerHoverProvider(language, {
+          provideHover: (model, position) => {
+            const source = hoverRef.current;
+            return source && isOwn(model)
+              ? toMonacoHover(source, model, position)
+              : null;
+          },
+        }),
+      );
+    }
+    if (hasSignatureHelp) {
+      registered.push(
+        monacoLanguagesAPI.registerSignatureHelpProvider(language, {
+          signatureHelpTriggerCharacters: Array.from(
+            signatureTriggerCharacters ?? '',
+          ),
+          signatureHelpRetriggerCharacters: Array.from(
+            signatureTriggerCharacters ?? '',
+          ),
+          provideSignatureHelp: (model, position) => {
+            const source = signatureHelpRef.current;
+            return source && isOwn(model)
+              ? toMonacoSignatureHelp(source, model, position)
+              : null;
+          },
+        }),
+      );
+    }
+    return () => {
+      registered.forEach((provider) => provider?.dispose());
+    };
+  }, [
+    editor,
+    language,
+    hasHover,
+    hasSignatureHelp,
+    signatureTriggerCharacters,
+  ]);
+
+  // writing text at the cursor, for a click outside the editor
+  useEffect(() => {
+    if (!editor || !textInserterRef) {
+      return undefined;
+    }
+    textInserterRef.current = (text: string): boolean => {
+      const model = editor.getModel();
+      const selection = editor.getSelection();
+      if (!model || !selection) {
+        return false;
+      }
+      const before =
+        selection.startColumn > 1
+          ? model.getValueInRange({
+              startLineNumber: selection.startLineNumber,
+              startColumn: selection.startColumn - 1,
+              endLineNumber: selection.startLineNumber,
+              endColumn: selection.startColumn,
+            })
+          : '';
+      // a space first but at the start, after a space, or an opening bracket: `a == $x.B`, `f($x.B`
+      const spaced = before && !/[\s([{.!]/u.test(before) ? ` ${text}` : text;
+      editor.pushUndoStop();
+      editor.executeEdits('insert', [
+        { range: selection, text: spaced, forceMoveMarkers: true },
+      ]);
+      editor.pushUndoStop();
+      editor.focus();
+      return true;
+    };
+    return () => {
+      textInserterRef.current = undefined;
+    };
+  }, [editor, textInserterRef]);
 
   useEffect(() => {
     if (editor && lineToScroll !== undefined) {

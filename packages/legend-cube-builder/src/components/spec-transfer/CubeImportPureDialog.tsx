@@ -26,6 +26,7 @@ import {
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
@@ -38,7 +39,11 @@ import {
   CUBE_CODE_CHECK_LABEL,
   getCubeCodeBoxClass,
 } from '../editors/CubeCodeCheck.js';
-import { getCubeExpressionCompletionSource } from '../editors/CubeExpressionCompletions.js';
+import {
+  getCubeExpressionCompletionSource,
+  getCubeFunctionHoverSource,
+  getCubeFunctionSignatureHelpSource,
+} from '../editors/CubeExpressionCompletions.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */
 const PURE = 'pure';
@@ -81,6 +86,13 @@ export const CubeImportPureDialog = observer(
     const { applicationStore } = editorState.host;
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+    const catalogue = editorState.functionCatalogue;
+    const isOpen = lambdaImport.isDialogOpen;
+    useEffect(() => {
+      if (isOpen) {
+        editorState.loadFunctionCatalogue();
+      }
+    }, [editorState, isOpen]);
     const importText = (): void => {
       flowResult(lambdaImport.importText()).catch(
         applicationStore.alertUnhandledError,
@@ -122,9 +134,13 @@ export const CubeImportPureDialog = observer(
                   hideMinimap={true}
                   hideGutter={true}
                   hideActionBar={true}
-                  completions={getCubeExpressionCompletionSource([], (text) =>
-                    lambdaImport.getEngineCompletions(text),
+                  completions={getCubeExpressionCompletionSource(
+                    [],
+                    (text) => lambdaImport.getEngineCompletions(text),
+                    catalogue,
                   )}
+                  hover={getCubeFunctionHoverSource(catalogue)}
+                  signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
                   extraEditorOptions={{
                     lineNumbers: 'off',
                     wordWrap: 'on',

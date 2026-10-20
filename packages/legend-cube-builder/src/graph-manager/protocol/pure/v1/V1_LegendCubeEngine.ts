@@ -81,6 +81,7 @@ import {
   type CubeResult,
   type NodeId,
 } from '../../../CubeEngine.js';
+import type { CubeFunctionCatalogue } from '../../../CubeFunctionCatalogue.js';
 import {
   V1_canonicalCubeDirectConnection,
   V1_checkCubeDirectConnection,
@@ -114,6 +115,7 @@ import {
   V1_readCubeExecutionResult,
 } from './V1_CubeExecutionResultReader.js';
 import { V1_readCubeExpression } from './V1_CubeExpression.js';
+import { V1_buildCubeFunctionCatalogue } from './V1_CubeFunctionCatalogue.js';
 import { V1_serializeCubeLambda } from './V1_CubeLambdaSerializer.js';
 import { V1_buildCubeModelOutline } from './V1_CubeModelOutlineBuilder.js';
 import { V1_buildCubeSchema } from './V1_CubeRelationTypeAdapter.js';
@@ -144,10 +146,11 @@ const NOT_FOUND = 404;
 const ROUTE_NOT_FOUND = /NotFoundException: HTTP 404/u;
 
 /**
- * Whether the engine has no code completion: it answers 404, or, as
- * legend-engine's server does, 500 with the 404 it met as the message
+ * Whether the engine has no such route, as one without code completion or
+ * the function catalogue answers: 404, or, as legend-engine's server does,
+ * 500 with the 404 it met as the message
  */
-const isNoCodeCompletion = (error: unknown): boolean => {
+const isMissingRoute = (error: unknown): boolean => {
   if (!(error instanceof NetworkClientError)) {
     return false;
   }
@@ -333,6 +336,11 @@ export class V1_LegendCubeEngine implements CubeEngine {
   private readonly dataProductModels: CubeDataProductModelSource | undefined;
   /** The engine completes no code: it answered so once this session */
   private completesNoCode = false;
+  /** The function catalogue, read once per engine URL, which Dev Settings can change */
+  private readonly functionCatalogues = new Map<
+    string,
+    Promise<CubeFunctionCatalogue | undefined>
+  >();
   /** Each relation's Pure text and model, as code typed after it asks them again and again */
   private readonly completionBases = new WeakMap<
     ModelContext,
@@ -1423,12 +1431,33 @@ export class V1_LegendCubeEngine implements CubeEngine {
         display,
       }));
     } catch (error) {
-      if (isNoCodeCompletion(error)) {
+      if (isMissingRoute(error)) {
         this.completesNoCode = true;
         return undefined;
       }
       throw V1_toCubeEngineError(error, undefined, CubeEngineErrorKind.COMPILE);
     }
+  }
+
+  getFunctionCatalogue(): Promise<CubeFunctionCatalogue | undefined> {
+    const baseUrl = this.client.baseUrl ?? '';
+    const known = this.functionCatalogues.get(baseUrl);
+    if (known) {
+      return known;
+    }
+    const read = this.client
+      .get<PlainObject>(`${baseUrl}/pct/pct-docs.json`)
+      .then((json) => V1_buildCubeFunctionCatalogue(json))
+      .catch((error: unknown) => {
+        // an engine without it, or unreachable for it, answers so for good;
+        // another failure is asked again next time
+        if (error instanceof NetworkClientError && !isMissingRoute(error)) {
+          this.functionCatalogues.delete(baseUrl);
+        }
+        return undefined;
+      });
+    this.functionCatalogues.set(baseUrl, read);
+    return read;
   }
 
   async renderPure(lambdaIR: IR): Promise<string> {
