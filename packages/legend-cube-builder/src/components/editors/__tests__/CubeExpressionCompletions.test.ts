@@ -18,11 +18,15 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { PrimitiveType, SchemaColumn } from '@finos/legend-cube';
 import type { CodeEditorCompletion } from '@finos/legend-lego/code-editor';
 import type { CubeCodeCompletion } from '../../../graph-manager/CubeEngine.js';
+import { TEST__functionCatalogue } from '../../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
 import {
   CUBE_ENGINE_COMPLETIONS_WAIT_MS,
   getCubeExpressionCompletions,
   getCubeExpressionCompletionSource,
+  getCubeFunctionHoverSource,
+  getCubeFunctionSignatureHelpSource,
   mergeCubeEngineCompletions,
+  readCubeCallAtCursor,
 } from '../CubeExpressionCompletions.js';
 
 const COLUMNS = [
@@ -201,5 +205,176 @@ describe("The engine's completions, after Cube's own", () => {
       'contains(String[1])',
       'matches',
     ]);
+  });
+});
+
+describe("The engine's function catalogue (EXPRESSION-EDITOR.md, round 1)", () => {
+  const CATALOGUE = TEST__functionCatalogue();
+  const completionsOf = (text: string): CodeEditorCompletion[] =>
+    getCubeExpressionCompletions(text, COLUMNS, CATALOGUE);
+
+  test("Offers every function of a column's type: Cube's own first, then the others by name, `toOne()` and `coalesce()` first for an optional one", () => {
+    expect(completionsOf('x | $x.CITY->').map((each) => each.label)).toEqual([
+      'toOne',
+      'coalesce',
+      'contains',
+      'startsWith',
+      'endsWith',
+      'toUpper',
+      'toLower',
+      'trim',
+      'length',
+      // Cube's own, though the catalogue hasn't them
+      'substring',
+      'indexOf',
+      'isEmpty',
+      'isNotEmpty',
+      'in',
+      'lpad',
+    ]);
+    expect(
+      completionsOf('x | $x.ORDER_ID->').map((each) => each.label),
+    ).toEqual([
+      'abs',
+      'round',
+      'floor',
+      'ceiling',
+      'toString',
+      'isEmpty',
+      'isNotEmpty',
+      'in',
+      'toOne',
+      'coalesce',
+    ]);
+  });
+
+  test('Gives each its signature and documentation, a call of its fewest parameters to fill, Cube’s own snippet first', () => {
+    const byName = new Map(
+      completionsOf('x | $x.CITY->').map((each) => [each.label, each]),
+    );
+    const contains = byName.get('contains');
+    expect(contains?.insertText).toBe("contains('${1}')");
+    expect(contains?.detail).toBe(
+      'contains(source: String[1], val: String[1]): Boolean[1]',
+    );
+    expect(contains?.documentation).toBe(
+      [
+        '```pure',
+        'contains(source: String[1], val: String[1]): Boolean[1]',
+        '```',
+        '',
+        'Whether `source` contains `val` anywhere within it.',
+      ].join('\n'),
+    );
+    // the help opens as its arguments are written
+    expect(contains?.opensSignatureHelp).toBe(true);
+    expect(byName.get('toUpper')?.opensSignatureHelp).toBe(false);
+    const lpad = byName.get('lpad');
+    expect(lpad?.insertText).toBe('lpad(${1:Integer})');
+    expect(lpad?.isSnippet).toBe(true);
+    expect(lpad?.detail).toBe(
+      'lpad(String[1], Integer[1]): String[1] (+1 more)',
+    );
+    expect(lpad?.documentation).toContain('\n\n---\n\n');
+    // a text parameter quoted, a name for each placeholder
+    const coalesce = byName.get('coalesce');
+    expect(coalesce?.insertText).toBe('coalesce(${1:otherwise})');
+    expect(
+      completionsOf('x | $x.PAYLOAD->').find((each) => each.label === 'get')
+        ?.insertText,
+    ).toBe("get('${1}')");
+  });
+
+  test('Offers the functions of any value after a column it does not know', () => {
+    expect(
+      completionsOf('x | $x.NOT_THERE->').map((each) => each.label),
+    ).toEqual(['isEmpty', 'isNotEmpty', 'in', 'toOne', 'coalesce']);
+  });
+
+  test("Shows a function's signatures and documentation over its name, as a call writes it", () => {
+    const hover = getCubeFunctionHoverSource(CATALOGUE);
+    expect(getCubeFunctionHoverSource(undefined)).toBeUndefined();
+    const contains = hover?.getHover('contains', 'x | $x.CITY->', "('a')");
+    expect(contains).toContain(
+      '```pure\ncontains(source: String[1], val: String[1]): Boolean[1]\n```',
+    );
+    expect(contains).toContain(
+      '```pure\ncontains(collection: Any[*], value: Any[1]): Boolean[1]\n```',
+    );
+    // written as `contains(…)` too
+    expect(hover?.getHover('contains', 'x | ', '($x.CITY, 1)')).toBe(contains);
+    // not a call, a column, a function it hasn't, in a string, or the platform's own
+    expect(hover?.getHover('contains', 'x | $x.', ' == 1')).toBeUndefined();
+    expect(hover?.getHover('CITY', 'x | $x.', '->')).toBeUndefined();
+    expect(hover?.getHover('nope', 'x | $x.CITY->', '()')).toBeUndefined();
+    expect(
+      hover?.getHover('contains', "x | $x.CITY == 'a->", "()'"),
+    ).toBeUndefined();
+    expect(hover?.getHover('size', 'x | $x.CITY->', '()')).toBeUndefined();
+  });
+
+  test('Reads the call whose arguments the cursor is in, and which of them', () => {
+    expect(readCubeCallAtCursor('x | $x.CITY->contains(')).toEqual({
+      name: 'contains',
+      isArrow: true,
+      argument: 1,
+    });
+    expect(readCubeCallAtCursor('x | $x.CITY->lpad(3, ')).toEqual({
+      name: 'lpad',
+      isArrow: true,
+      argument: 2,
+    });
+    expect(readCubeCallAtCursor('x | lpad($x.CITY, ')).toEqual({
+      name: 'lpad',
+      isArrow: false,
+      argument: 1,
+    });
+    // a string's commas and brackets are its text; a call closed is passed
+    expect(readCubeCallAtCursor("x | $x.CITY->contains('a, (b'")).toMatchObject(
+      { name: 'contains', argument: 1 },
+    );
+    expect(
+      readCubeCallAtCursor('x | lpad($x.CITY->toOne(), 3, '),
+    ).toMatchObject({ name: 'lpad', argument: 2 });
+    // in a list or a lambda, after a call, or in brackets of no call
+    expect(readCubeCallAtCursor('x | $x.A->in([1, ')).toBeUndefined();
+    expect(readCubeCallAtCursor("x | $x.CITY->contains('a')")).toBeUndefined();
+    expect(readCubeCallAtCursor('x | ($x.A + ')).toBeUndefined();
+  });
+
+  test("Shows a call's signatures as its arguments are written, the first that takes them active, each parameter where its signature writes it", () => {
+    const help = getCubeFunctionSignatureHelpSource(CATALOGUE);
+    expect(getCubeFunctionSignatureHelpSource(undefined)).toBeUndefined();
+    expect(help?.triggerCharacters).toEqual(['(', ',']);
+    const lpad = help?.getSignatureHelp('x | $x.CITY->lpad(3, ');
+    expect(lpad?.activeSignature).toBe(0);
+    expect(lpad?.activeParameter).toBe(2);
+    const [three, two] = lpad?.signatures ?? [];
+    expect(three?.label).toBe(
+      'lpad(str: String[1], length: Integer[1], char: String[1]): String[1]',
+    );
+    const textOf = (
+      label: string | undefined,
+      at: string | readonly [number, number] | undefined,
+    ): string | undefined =>
+      typeof at === 'string' ? at : label?.slice(at?.[0], at?.[1]);
+    expect(
+      three?.parameters.map((each) => textOf(three.label, each.label)),
+    ).toEqual(['str: String[1]', 'length: Integer[1]', 'char: String[1]']);
+    // a parameter's type, not the result's, though both are written alike
+    expect(
+      two?.parameters.map((each) => textOf(two.label, each.label)),
+    ).toEqual(['String[1]', 'Integer[1]']);
+    expect(two?.parameters[0]?.label).toEqual([5, 14]);
+    // the signature taking as many arguments as are written
+    const round = help?.getSignatureHelp('x | $x.FREIGHT->round(');
+    expect(round?.activeSignature).toBe(1);
+    const contains = help?.getSignatureHelp("x | $x.CITY->contains('");
+    expect(contains?.activeParameter).toBe(1);
+    expect(contains?.signatures[0]?.parameters[1]?.documentation).toBe(
+      'the substring to look for.',
+    );
+    expect(help?.getSignatureHelp('x | nope(')).toBeUndefined();
+    expect(help?.getSignatureHelp('x | $x.CITY')).toBeUndefined();
   });
 });

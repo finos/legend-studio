@@ -29,6 +29,7 @@ import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,
   MockedMonacoEditorLanguagesAPI,
+  MockedMonacoEditorModel,
 } from '@finos/legend-lego/code-editor/test';
 import {
   act,
@@ -177,6 +178,38 @@ describe('Extend editor', () => {
       ).getByRole('button', { name: /^ORDER_ID/u }),
     );
     expect(draftOf(state).rows[0]?.code).toBe('x | $x.ORDER_ID');
+  });
+
+  test("Writes an input column's access at the cursor of the expression last used, at the end of one never clicked into", async () => {
+    const { state } = await render();
+    fireEvent.click(button('Add column'));
+    const chip = (): HTMLElement =>
+      within(
+        within(panel()).getByRole('list', { name: 'Input columns' }),
+      ).getByRole('button', { name: /^ORDER_ID/u });
+    const cursor = {
+      startLineNumber: 1,
+      startColumn: 5,
+      endLineNumber: 1,
+      endColumn: 5,
+    };
+    MockedMonacoEditorInstance.executeEdits.mockClear();
+    // the first expression clicked into, then the second's name
+    fireEvent.focus(within(panel()).getByLabelText('Expression 1'));
+    fireEvent.focus(within(panel()).getByLabelText('Column name 2'));
+    fireEvent.click(chip());
+    expect(MockedMonacoEditorInstance.executeEdits).not.toHaveBeenCalled();
+    expect(draftOf(state).rows[1]?.code).toBe('x | $x.ORDER_ID');
+    // back to the first: at its cursor
+    fireEvent.focus(within(panel()).getByLabelText('Expression 1'));
+    MockedMonacoEditorInstance.getSelection.mockReturnValueOnce(cursor);
+    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce(' ');
+    fireEvent.click(chip());
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
+      'insert',
+      [{ range: cursor, text: '$x.ORDER_ID', forceMoveMarkers: true }],
+    );
+    expect(draftOf(state).rows[0]?.code).toBe('x | ');
   });
 
   test("Offers the columns an expression can read as it is typed, the input's and the new ones above it, while its editor has the focus, then the engine's completions", async () => {

@@ -32,6 +32,7 @@ import {
   MockedMonacoEditorAPI,
   MockedMonacoEditorInstance,
   MockedMonacoEditorLanguagesAPI,
+  MockedMonacoEditorModel,
 } from '@finos/legend-lego/code-editor/test';
 import {
   act,
@@ -54,6 +55,8 @@ import {
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
+import { TEST__functionCatalogue } from '../../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
+import type { CubeFunctionCatalogue } from '../../../graph-manager/CubeFunctionCatalogue.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -80,11 +83,14 @@ const typedAs = (type: string): Schema =>
     new SchemaColumn('cube_condition', PrimitiveType.get(type), false),
   ]);
 
-const render = async (): Promise<{
+const render = async (
+  catalogue?: CubeFunctionCatalogue,
+): Promise<{
   state: CubeEditorState;
   fake: FakeCubeEngine;
 }> => {
   const { host, fake } = TEST__createCubeHost();
+  fake.getFunctionCatalogue.mockResolvedValue(catalogue);
   fake.parseExpression.mockImplementation(async (code) => ({
     lambda: lambdaOf(code),
     located: lambdaOf(code),
@@ -223,6 +229,162 @@ describe('Filter by Expression editor', () => {
       ).getByRole('button', { name: /^SHIPPED_DATE/u }),
     );
     expect(draftOf(state).code).toBe('x | $x.SHIPPED_DATE');
+  });
+
+  test("Writes an input column's access at the condition's cursor once it has one, at its end while it can't", async () => {
+    const { state } = await render();
+    const chip = (): HTMLElement =>
+      within(
+        within(panel()).getByRole('list', { name: 'Input columns' }),
+      ).getByRole('button', { name: /^SHIPPED_DATE/u });
+    fireEvent.focus(within(panel()).getByLabelText('Condition'));
+    const cursor = {
+      startLineNumber: 1,
+      startColumn: 5,
+      endLineNumber: 1,
+      endColumn: 5,
+    };
+    MockedMonacoEditorInstance.executeEdits.mockClear();
+    MockedMonacoEditorInstance.getSelection.mockReturnValueOnce(cursor);
+    // after `x | `: no space first
+    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce(' ');
+    fireEvent.click(chip());
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
+      'insert',
+      [{ range: cursor, text: '$x.SHIPPED_DATE', forceMoveMarkers: true }],
+    );
+    // the editor's text, which the mocked editor keeps to itself
+    expect(draftOf(state).code).toBe('x | ');
+    // after a word: a space first
+    MockedMonacoEditorInstance.getSelection.mockReturnValueOnce(cursor);
+    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce('E');
+    fireEvent.click(chip());
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenLastCalledWith(
+      'insert',
+      [{ range: cursor, text: ' $x.SHIPPED_DATE', forceMoveMarkers: true }],
+    );
+    // no cursor to write at: at the end
+    fireEvent.click(chip());
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledTimes(2);
+    expect(draftOf(state).code).toBe('x | $x.SHIPPED_DATE');
+  });
+
+  test("Offers the engine's functions with their documentation, a hover over a function's name and its signatures as its arguments are written, from the catalogue it loads", async () => {
+    MockedMonacoEditorLanguagesAPI.registerHoverProvider.mockClear();
+    MockedMonacoEditorLanguagesAPI.registerSignatureHelpProvider.mockClear();
+    const { state, fake } = await render(TEST__functionCatalogue());
+    await waitFor(() => expect(state.functionCatalogue).toBeDefined());
+    expect(fake.getFunctionCatalogue).toHaveBeenCalledTimes(1);
+    // completions
+    fake.completeCode.mockResolvedValue([]);
+    MockedMonacoEditorLanguagesAPI.registerCompletionItemProvider.mockClear();
+    const [onFocus] =
+      MockedMonacoEditorInstance.onDidFocusEditorText.mock.calls.at(-1) as [
+        () => void,
+      ];
+    act(() => onFocus());
+    const [, completions] = MockedMonacoEditorLanguagesAPI
+      .registerCompletionItemProvider.mock.calls[0] as [
+      string,
+      {
+        provideCompletionItems: (
+          model: unknown,
+          position: unknown,
+        ) => Promise<{
+          suggestions: {
+            label: string;
+            documentation?: { value: string };
+            command?: { id: string };
+          }[];
+        }>;
+      },
+    ];
+    const { suggestions } = await completions.provideCompletionItems(
+      { getValueInRange: () => 'x | $x.SHIP_CITY->' },
+      { lineNumber: 1, column: 19 },
+    );
+    const contains = suggestions.find((each) => each.label === 'contains');
+    expect(contains?.documentation?.value).toContain(
+      'contains(source: String[1], val: String[1]): Boolean[1]',
+    );
+    expect(contains?.command?.id).toBe('editor.action.triggerParameterHints');
+    expect(suggestions.map((each) => each.label)).toContain('lpad');
+    // a hover, over this editor's text only
+    const [, hover] = MockedMonacoEditorLanguagesAPI.registerHoverProvider.mock
+      .calls[0] as [
+      string,
+      {
+        provideHover: (
+          model: unknown,
+          position: unknown,
+        ) => Promise<{ contents: { value: string }[] } | null> | null;
+      },
+    ];
+    MockedMonacoEditorModel.getWordAtPosition.mockReturnValueOnce({
+      word: 'contains',
+      startColumn: 19,
+      endColumn: 27,
+    });
+    MockedMonacoEditorModel.getLineCount.mockReturnValueOnce(1);
+    MockedMonacoEditorModel.getLineMaxColumn.mockReturnValueOnce(32);
+    MockedMonacoEditorModel.getValueInRange
+      .mockReturnValueOnce('x | $x.SHIP_CITY->')
+      .mockReturnValueOnce("('a')");
+    const shown = await hover.provideHover(MockedMonacoEditorModel, {
+      lineNumber: 1,
+      column: 21,
+    });
+    expect(shown?.contents[0]?.value).toContain(
+      'Whether `source` contains `val` anywhere within it.',
+    );
+    expect(
+      await hover.provideHover({}, { lineNumber: 1, column: 21 }),
+    ).toBeNull();
+    // the signatures, as the arguments are written
+    const [, signatureHelp] = MockedMonacoEditorLanguagesAPI
+      .registerSignatureHelpProvider.mock.calls[0] as [
+      string,
+      {
+        signatureHelpTriggerCharacters: string[];
+        provideSignatureHelp: (
+          model: unknown,
+          position: unknown,
+        ) => {
+          value: {
+            signatures: { label: string }[];
+            activeParameter: number;
+          };
+        } | null;
+      },
+    ];
+    expect(signatureHelp.signatureHelpTriggerCharacters).toEqual(['(', ',']);
+    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce(
+      'x | $x.SHIP_CITY->lpad(3, ',
+    );
+    const help = signatureHelp.provideSignatureHelp(MockedMonacoEditorModel, {
+      lineNumber: 1,
+      column: 27,
+    });
+    expect(help?.value.signatures[0]?.label).toBe(
+      'lpad(str: String[1], length: Integer[1], char: String[1]): String[1]',
+    );
+    expect(help?.value.activeParameter).toBe(2);
+  });
+
+  test("Offers Cube's own functions, without hover or signature help, from an engine without a catalogue", async () => {
+    MockedMonacoEditorLanguagesAPI.registerHoverProvider.mockClear();
+    MockedMonacoEditorLanguagesAPI.registerSignatureHelpProvider.mockClear();
+    const { state, fake } = await render();
+    await waitFor(() =>
+      expect(fake.getFunctionCatalogue).toHaveBeenCalledTimes(1),
+    );
+    expect(state.functionCatalogue).toBeUndefined();
+    expect(
+      MockedMonacoEditorLanguagesAPI.registerHoverProvider,
+    ).not.toHaveBeenCalled();
+    expect(
+      MockedMonacoEditorLanguagesAPI.registerSignatureHelpProvider,
+    ).not.toHaveBeenCalled();
   });
 
   test('Checks the condition once typing pauses, says so with a green border, then Apply stores the checked node', async () => {

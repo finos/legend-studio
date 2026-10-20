@@ -181,7 +181,7 @@ export class CubeFunctionCatalogue {
    * dates, Booleans, empty values, JSON) that give one value; not
    * operators (`plus`, `greaterThan`), platform-only ones, relations, or
    * functions of many values but those a row's value goes to (`isEmpty`,
-   * `toOne`); by name. Of a value of an unknown type, those of any value.
+   * `toOne`); in the catalogue's order. Of a value of an unknown type, those of any value.
    */
   offersFor(family: TypeFamily | undefined): CubeFunctionOffer[] {
     // a value of an unknown type: the functions of any value

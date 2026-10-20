@@ -49,7 +49,7 @@ typed and planned by the engine, and the border turns green or red (PLAN §11.23
 - **`[0..1]` friction.** Most scalar functions take `[1]`, so users must know to write `->toOne()`. The hint
   appears only after the engine refuses. `coalesce(value, default)` is a safer alternative, and Cube never offers
   it.
-- **The column chips append `$x.COL` at the end of the code**, not at the cursor.
+- **The column chips append `$x.COL` at the end of the code**, not at the cursor. (Fixed in I1.)
 - **Only the first error is shown**, with its location.
 
 ## 2. What the platform gives us
@@ -278,6 +278,21 @@ Each iteration is one PR into cube-dev, demoed with a video.
    - Signature help inside `fn(`.
    - Chips that insert at the cursor.
    - legend-lego's `CodeEditor` gains hover and signature-help sources, as it gained `completions` in #5725.
+   - **Built** (branch `cube-function-catalogue`):
+     - `CubeEngine.getFunctionCatalogue()` reads `{engine}/pct/pct-docs.json` once per engine. A missing route
+       (404, or the 500 that wraps one) means none for the session; another failure is asked again.
+     - `CubeFunctionCatalogue.offersFor(family)` gives the functions whose first parameter takes a value of the
+       type (or any value). It leaves out operators, platform-only signatures, lambdas, relations, and functions
+       of many values (except `isEmpty`, `isNotEmpty` and `toOne`).
+     - Completions: Cube's own list first, now with signatures and docs, then the rest by name. `toOne` and
+       `coalesce` come first for an optional column. `substring` and `indexOf` stay, though the catalogue hasn't
+       them. Picking a function with arguments opens its signature help.
+     - Hover over a function's name (after `->` or before `(`), and signature help in the innermost call, its
+       active argument counted past strings, lists and lambdas. Both are registered for the editor's lifetime,
+       answering for its own model only.
+     - The chips and the JSON fields tree write at the cursor once the code has been clicked into, else at the
+       end as before.
+     - Without the catalogue, everything is as before.
 2. **I2: help before the engine refuses.**
    - A functions panel: categories, search, docs, and click to insert at the cursor.
    - Quick fixes: wrap in `toOne()` or `coalesce(…, 0)`; add parentheses around comparisons.

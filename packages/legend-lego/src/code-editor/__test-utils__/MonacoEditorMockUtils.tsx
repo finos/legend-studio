@@ -48,6 +48,7 @@ export const MockedMonacoEditorModel = {
   getLineCount: createMock(),
   getLineMaxColumn: createMock(),
   getValueInRange: createMock(),
+  getWordAtPosition: createMock(),
   setValue: createMock(),
   pushStackElement: createMock(),
   pushEditOperations: createMock(),
