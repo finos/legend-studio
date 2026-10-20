@@ -330,7 +330,16 @@ export class EditorGraphState {
     );
   }
 
-  *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {
+  *buildGraph(
+    entities: Entity[],
+    options?: {
+      /**
+       * The dependency entities, when the caller already started fetching
+       * them; otherwise, they are fetched here
+       */
+      dependencyEntitiesIndex?: Promise<Map<string, EntitiesWithOrigin>>;
+    },
+  ): GeneratorFn<GraphBuilderResult> {
     LegendStudioTelemetryHelper.logEvent_GraphInitializationLaunched(
       this.editorStore.applicationStore.telemetryService,
       this.editorStore.editorMode.getSourceInfo(),
@@ -351,9 +360,11 @@ export class EditorGraphState {
       this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
         `Fetching dependencies...`,
       );
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.getIndexedDependencyEntities(),
-      )) as Map<string, EntitiesWithOrigin>;
+      const dependencyEntitiesIndex = (yield options?.dependencyEntitiesIndex ??
+        flowResult(this.getIndexedDependencyEntities())) as Map<
+        string,
+        EntitiesWithOrigin
+      >;
       stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
       const dependency_buildReport = createGraphBuilderReport();
