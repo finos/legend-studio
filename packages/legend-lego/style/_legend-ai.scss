@@ -1683,7 +1683,7 @@
   position: fixed;
   bottom: 3.2rem;
   right: 2.4rem;
-  z-index: 1500;
+  z-index: 1050;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1709,7 +1709,8 @@
     width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
     border-radius 0.3s ease,
     box-shadow 0.3s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    translate 0.2s ease;
   animation:
     legend-ai-toggle-halo 1.8s ease-out infinite,
     legend-ai-toggle-tint 3.6s ease-in-out infinite,
@@ -1810,6 +1811,11 @@
       display: none;
     }
   }
+}
+
+body:has(.notification__position)
+  .legend-ai-chat-toggle:not(.legend-ai-chat-toggle--docked) {
+  translate: 0 -8rem;
 }
 
 @keyframes legend-ai-toggle-halo {

@@ -82,6 +82,7 @@ describe(unitTest('LegendAIChatToggle'), () => {
       button.querySelector('.legend-ai-chat-toggle__label')?.textContent,
     ).toBe('Ask AI');
     expect(button.querySelector('.legend-ai-chat-toggle__icon')).not.toBeNull();
+    expect(button.className).not.toContain('legend-ai-chat-toggle--docked');
     firePointer(button, 'click', 0, 0);
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
@@ -95,6 +96,7 @@ describe(unitTest('LegendAIChatToggle'), () => {
     expect(button.className).toContain('legend-ai-chat-toggle--dragging');
     firePointer(button, 'pointerup', 260, 240);
     expect(button.className).not.toContain('legend-ai-chat-toggle--dragging');
+    expect(button.className).toContain('legend-ai-chat-toggle--docked');
     firePointer(button, 'click', 260, 240);
     expect(onOpen).not.toHaveBeenCalled();
     expect(button.style.left).toMatch(/px$/);

@@ -197,6 +197,7 @@ export const LegendAIChatToggle = (props: {
       type="button"
       className={clsx('legend-ai-chat-toggle', {
         'legend-ai-chat-toggle--dragging': isDragging,
+        'legend-ai-chat-toggle--docked': anchor !== undefined,
       })}
       style={style}
       title={label}
