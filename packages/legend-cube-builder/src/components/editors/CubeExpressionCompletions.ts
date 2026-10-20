@@ -189,15 +189,24 @@ const shortestOf = (
 
 /**
  * A call of the signature after `->`, its first parameter the value: a
- * placeholder for each other, named as its documentation names it, a text
- * one quoted, e.g. `lpad(${1:length}, '${2:char}')`
+ * placeholder for each other, named as its documentation names it, or as
+ * another signature names a parameter of its type there, a text one quoted,
+ * e.g. `lpad(${1:length}, '${2:char}')`
  */
-const snippetOf = (signature: CubeFunctionSignature): string =>
+const snippetOf = (
+  signature: CubeFunctionSignature,
+  others: readonly CubeFunctionSignature[],
+): string =>
   `${signature.name}(${signature.parameters
     .slice(1)
     .map((parameter, index) => {
+      const name =
+        parameter.name ??
+        others
+          .map((other) => other.parameters[index + 1])
+          .find((other) => other?.name && other.type === parameter.type)?.name;
       const placeholder = `\${${index + 1}:${snippetText(
-        parameter.name ?? parameter.type,
+        name ?? parameter.type,
       )}}`;
       return parameter.type === 'String' ? `'${placeholder}'` : placeholder;
     })
@@ -212,11 +221,16 @@ const offerCompletion = (
   const others = offer.signatures.length - 1;
   return {
     name: offer.function.name,
-    snippet: own?.snippet ?? (shortest ? snippetOf(shortest) : ''),
+    snippet:
+      own?.snippet ?? (shortest ? snippetOf(shortest, offer.signatures) : ''),
     detail: shortest
       ? `${shortest.text}${others ? ` (+${others} more)` : ''}`
       : (own?.detail ?? ''),
-    documentation: documentationOf(offer.signatures),
+    // the detail writes a lone signature already
+    documentation:
+      offer.signatures.length === 1
+        ? (offer.signatures[0]?.documentation.trim() ?? '')
+        : documentationOf(offer.signatures),
   };
 };
 
@@ -566,8 +580,8 @@ const helpSignatureOf = (
 
 /**
  * The help while a call's arguments are written: the function's
- * signatures, the first that takes as many arguments as are written
- * active; none without a catalogue
+ * signatures, the shortest that takes the arguments written active; none
+ * without a catalogue
  */
 export const getCubeFunctionSignatureHelpSource = (
   catalogue: CubeFunctionCatalogue | undefined,
@@ -581,8 +595,16 @@ export const getCubeFunctionSignatureHelpSource = (
           if (!call || !signatures.length) {
             return undefined;
           }
-          const active = signatures.findIndex(
-            (each) => each.parameters.length > call.argument,
+          // the shortest that takes the arguments written
+          const active = signatures.reduce(
+            (best, each, index) =>
+              each.parameters.length > call.argument &&
+              (best < 0 ||
+                each.parameters.length <
+                  (signatures[best]?.parameters.length ?? 0))
+                ? index
+                : best,
+            -1,
           );
           return {
             signatures: signatures.map(helpSignatureOf),

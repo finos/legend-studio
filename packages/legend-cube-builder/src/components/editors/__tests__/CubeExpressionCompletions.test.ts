@@ -257,25 +257,38 @@ describe("The engine's function catalogue (EXPRESSION-EDITOR.md, round 1)", () =
     expect(contains?.detail).toBe(
       'contains(source: String[1], val: String[1]): Boolean[1]',
     );
+    // its one signature, which the detail writes, then what it does
     expect(contains?.documentation).toBe(
-      [
-        '```pure',
-        'contains(source: String[1], val: String[1]): Boolean[1]',
-        '```',
-        '',
-        'Whether `source` contains `val` anywhere within it.',
-      ].join('\n'),
+      'Whether `source` contains `val` anywhere within it.',
     );
     // the help opens as its arguments are written
     expect(contains?.opensSignatureHelp).toBe(true);
     expect(byName.get('toUpper')?.opensSignatureHelp).toBe(false);
     const lpad = byName.get('lpad');
-    expect(lpad?.insertText).toBe('lpad(${1:Integer})');
+    // its parameter named as the other signature names it
+    expect(lpad?.insertText).toBe('lpad(${1:length})');
     expect(lpad?.isSnippet).toBe(true);
     expect(lpad?.detail).toBe(
       'lpad(String[1], Integer[1]): String[1] (+1 more)',
     );
-    expect(lpad?.documentation).toContain('\n\n---\n\n');
+    // each of its signatures, then what it does
+    expect(lpad?.documentation).toBe(
+      [
+        '```pure',
+        'lpad(str: String[1], length: Integer[1], char: String[1]): String[1]',
+        '```',
+        '',
+        'Pads the beginning of a string.',
+        '',
+        '---',
+        '',
+        '```pure',
+        'lpad(String[1], Integer[1]): String[1]',
+        '```',
+        '',
+        'As `lpad`, padding with a space.',
+      ].join('\n'),
+    );
     // a text parameter quoted, a name for each placeholder
     const coalesce = byName.get('coalesce');
     expect(coalesce?.insertText).toBe('coalesce(${1:otherwise})');
@@ -342,10 +355,14 @@ describe("The engine's function catalogue (EXPRESSION-EDITOR.md, round 1)", () =
     expect(readCubeCallAtCursor('x | ($x.A + ')).toBeUndefined();
   });
 
-  test("Shows a call's signatures as its arguments are written, the first that takes them active, each parameter where its signature writes it", () => {
+  test("Shows a call's signatures as its arguments are written, the shortest that takes them active, each parameter where its signature writes it", () => {
     const help = getCubeFunctionSignatureHelpSource(CATALOGUE);
     expect(getCubeFunctionSignatureHelpSource(undefined)).toBeUndefined();
     expect(help?.triggerCharacters).toEqual(['(', ',']);
+    // one argument: the signature of two, not the first of three
+    expect(help?.getSignatureHelp('x | $x.CITY->lpad(')?.activeSignature).toBe(
+      1,
+    );
     const lpad = help?.getSignatureHelp('x | $x.CITY->lpad(3, ');
     expect(lpad?.activeSignature).toBe(0);
     expect(lpad?.activeParameter).toBe(2);

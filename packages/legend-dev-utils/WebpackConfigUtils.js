@@ -401,6 +401,8 @@ export const getWebAppBaseWebpackConfig = (
           'gotoLine',
           'hover',
           'links',
+          // signature help, as a call's arguments are written
+          'parameterHints',
           'smartSelect',
           'multicursor',
           'snippet',

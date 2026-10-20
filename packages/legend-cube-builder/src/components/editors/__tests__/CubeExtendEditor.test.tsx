@@ -203,7 +203,9 @@ describe('Extend editor', () => {
     // back to the first: at its cursor
     fireEvent.focus(within(panel()).getByLabelText('Expression 1'));
     MockedMonacoEditorInstance.getSelection.mockReturnValueOnce(cursor);
-    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce(' ');
+    MockedMonacoEditorModel.getValueInRange
+      .mockReturnValueOnce(' ')
+      .mockReturnValueOnce('');
     fireEvent.click(chip());
     expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
       'insert',

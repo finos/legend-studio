@@ -246,8 +246,10 @@ describe('Filter by Expression editor', () => {
     };
     MockedMonacoEditorInstance.executeEdits.mockClear();
     MockedMonacoEditorInstance.getSelection.mockReturnValueOnce(cursor);
-    // after `x | `: no space first
-    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce(' ');
+    // after `x | `, at its end: no space
+    MockedMonacoEditorModel.getValueInRange
+      .mockReturnValueOnce(' ')
+      .mockReturnValueOnce('');
     fireEvent.click(chip());
     expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
       'insert',
@@ -255,13 +257,15 @@ describe('Filter by Expression editor', () => {
     );
     // the editor's text, which the mocked editor keeps to itself
     expect(draftOf(state).code).toBe('x | ');
-    // after a word: a space first
+    // after a word, before more code: a space first and after
     MockedMonacoEditorInstance.getSelection.mockReturnValueOnce(cursor);
-    MockedMonacoEditorModel.getValueInRange.mockReturnValueOnce('E');
+    MockedMonacoEditorModel.getValueInRange
+      .mockReturnValueOnce('E')
+      .mockReturnValueOnce('$');
     fireEvent.click(chip());
     expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenLastCalledWith(
       'insert',
-      [{ range: cursor, text: ' $x.SHIPPED_DATE', forceMoveMarkers: true }],
+      [{ range: cursor, text: ' $x.SHIPPED_DATE ', forceMoveMarkers: true }],
     );
     // no cursor to write at: at the end
     fireEvent.click(chip());
@@ -305,7 +309,7 @@ describe('Filter by Expression editor', () => {
     );
     const contains = suggestions.find((each) => each.label === 'contains');
     expect(contains?.documentation?.value).toContain(
-      'contains(source: String[1], val: String[1]): Boolean[1]',
+      'Whether `source` contains `val` anywhere within it.',
     );
     expect(contains?.command?.id).toBe('editor.action.triggerParameterHints');
     expect(suggestions.map((each) => each.label)).toContain('lpad');

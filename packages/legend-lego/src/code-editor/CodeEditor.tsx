@@ -194,8 +194,8 @@ export interface CodeEditorSignatureHelpSource {
 
 /**
  * Writes text at an editor's cursor, as a click outside it asks (e.g. a
- * column's chip), a space first after a word or an operator; false when the
- * editor has no text or cursor to write at
+ * column's chip), with a space before and after where code touches it;
+ * false when the editor has no text or cursor to write at
  */
 export type CodeEditorTextInserter = (text: string) => boolean;
 
@@ -635,8 +635,17 @@ export const CodeEditor: React.FC<{
               endColumn: selection.startColumn,
             })
           : '';
-      // a space first but at the start, after a space, or an opening bracket: `a == $x.B`, `f($x.B`
-      const spaced = before && !/[\s([{.!]/u.test(before) ? ` ${text}` : text;
+      const after = model.getValueInRange({
+        startLineNumber: selection.endLineNumber,
+        startColumn: selection.endColumn,
+        endLineNumber: selection.endLineNumber,
+        endColumn: selection.endColumn + 1,
+      });
+      // a space first but at the start, after a space, or an opening bracket: `a == $x.B`, `f($x.B`;
+      // a space after before more code but a space, a closing bracket or a separator: `$x.B $x.C`, `f($x.B)`
+      const spaced = `${before && !/[\s([{.!]/u.test(before) ? ' ' : ''}${text}${
+        after && !/[\s)\]},.;]/u.test(after) ? ' ' : ''
+      }`;
       editor.pushUndoStop();
       editor.executeEdits('insert', [
         { range: selection, text: spaced, forceMoveMarkers: true },
