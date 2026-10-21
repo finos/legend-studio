@@ -16,11 +16,44 @@
 
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 
-// ── Response type ─────────────────────────────────────────────────────────────
+// ── Response types ────────────────────────────────────────────────────────────
+
+export type DataSpaceExecutionContextMeta = {
+  /**
+   * The execution context's original name, unchanged.
+   */
+  name: string;
+  description: string;
+};
+
+export type DataSpaceDiagramMeta = {
+  /**
+   * The diagram's original path reference, unchanged.
+   */
+  diagram: string;
+  title: string;
+  description: string;
+};
+
+export type DataSpaceExecutableMeta = {
+  /**
+   * The executable's original id, unchanged (may be absent for executables
+   * declared without an id).
+   */
+  id: unknown;
+  title: string;
+  description: string;
+};
 
 export type DataSpaceDocResponse = {
+  title: string;
   description: string;
-  confidence: number;
+  /**
+   * Omitted (rather than empty) when the data space has none.
+   */
+  executionContexts?: DataSpaceExecutionContextMeta[] | undefined;
+  diagrams?: DataSpaceDiagramMeta[] | undefined;
+  executables?: DataSpaceExecutableMeta[] | undefined;
 };
 
 // ── Request type ──────────────────────────────────────────────────────────────
@@ -35,6 +68,12 @@ export type DataSpaceDocRequest = {
    */
   data_space_name: string;
   /**
+   * When false (the server default) existing meaningful titles and
+   * descriptions are preserved and only empty or placeholder values are
+   * filled. When true every slot is regenerated.
+   */
+  overwrite?: boolean;
+  /**
    * LLM model override (uses server default if omitted).
    */
   model?: string;
@@ -45,7 +84,9 @@ export type DataSpaceDocRequest = {
 export interface DSL_DataSpace_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
-   * Generate AI-suggested description for a data space.
+   * Generate AI-suggested documentation for a data space (title, description,
+   * and the titles/descriptions of its execution contexts, diagrams and
+   * executables).
    */
   getExtraDataSpaceDocumentationAISuggester?(
     request: DataSpaceDocRequest,
