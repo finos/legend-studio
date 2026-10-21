@@ -14,18 +14,22 @@
 
 ## 0. Decisions
 
-| #   | Decision                                                                                                                                                                                                                                                                                        | Source                        |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| D1  | Search is a **new mode of the existing Depot dashboard** (`/studio/extensions/depot`), next to today's data product view, in `@finos/legend-extension-application-studio-depot-dashboard`.                                                                                                      | user                          |
-| D2  | **Latest release of each project only.** Snapshots come later.                                                                                                                                                                                                                                  | user                          |
-| D3  | **Data comes from Depot's summary, then one call per project version.** The bulk `/classifiers/{path}/entities` call is too slow and fails for some classifiers.                                                                                                                                | user                          |
-| D4  | **Elements are queried in DuckDB in the browser** (DuckDB-WASM), one table per loaded classifier, the element's content as a JSON column that Pure sees as `Variant`. Engine only generates the plan; the plan's SQL runs in the browser. This is how DataCube's local-file source works today. | user + prototype              |
-| D5  | **Users write Pure relation queries** (`#>{…}#->filter(…)->select(…)`), not JavaScript, JSONPath or SQL.                                                                                                                                                                                        | user                          |
-| D6  | **Results open in an embedded DataCube grid**, with sorting, filters, grouping (Vertical Pivots) and export coming from DataCube.                                                                                                                                                               | user                          |
-| D7  | **No changes to DataCube** (`legend-data-cube`, `legend-application-data-cube`) in this work. Search uses DataCube's public API only and carries its own copy of the DuckDB code. Optional DataCube changes are listed in §6.3 and need the user's go-ahead each.                               | user ("don't break anything") |
-| D8  | **Off by default**, enabled per deployment through the plugin's own config (§5.1).                                                                                                                                                                                                              | recommendation                |
-| D9  | **Result columns of type `Variant` are refused** with a message showing how to extract a value (`->get('x')->to(@String)`), because DataCube's filter editor throws on them (§6.2). No DataCube change.                                                                                         | recommendation                |
-| D10 | `V1_*` code stays in a `v1/` folder inside the extension (AGENTS.md). DataCube's engine API is itself `V1_*`-based, so the DataCube engine for Search lives there too.                                                                                                                          | AGENTS.md                     |
+| #   | Decision                                                                                                                                                                                                                                                                                        | Source                                                                         |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| D1  | Search is a **new mode of the existing Depot dashboard** (`/studio/extensions/depot`), next to today's data product view, in `@finos/legend-extension-application-studio-depot-dashboard`.                                                                                                      | user                                                                           |
+| D2  | **Latest release of each project only.** Snapshots come later.                                                                                                                                                                                                                                  | user                                                                           |
+| D3  | **Data comes from Depot's summary, then one call per project version.** The bulk `/classifiers/{path}/entities` call is too slow and fails for some classifiers.                                                                                                                                | user                                                                           |
+| D4  | **Elements are queried in DuckDB in the browser** (DuckDB-WASM), one table per loaded classifier, the element's content as a JSON column that Pure sees as `Variant`. Engine only generates the plan; the plan's SQL runs in the browser. This is how DataCube's local-file source works today. | user + prototype                                                               |
+| D5  | **Users write Pure relation queries** (`#>{…}#->filter(…)->select(…)`), not JavaScript, JSONPath or SQL.                                                                                                                                                                                        | user                                                                           |
+| D6  | **Results open in an embedded DataCube grid**, with sorting, filters, grouping (Vertical Pivots) and export coming from DataCube.                                                                                                                                                               | user                                                                           |
+| D7  | **No changes to DataCube** (`legend-data-cube`, `legend-application-data-cube`) in this work. Search uses DataCube's public API only and carries its own copy of the DuckDB code. Optional DataCube changes are listed in §6.3 and need the user's go-ahead each.                               | user ("don't break anything")                                                  |
+| D8  | **Off by default**, enabled per deployment through the plugin's own config (§5.1).                                                                                                                                                                                                              | recommendation                                                                 |
+| D9  | **Result columns of type `Variant` are converted to JSON text** (`->toJson()`) before DataCube sees them, because DataCube's filter editor throws on `Variant` columns (§6.2). A query that selects `content` just works and shows the JSON. No DataCube change.                                | recommendation (Q3; user asked what it meant, convert recommended, 2026-10-21) |
+| D10 | `V1_*` code stays in a `v1/` folder inside the extension (AGENTS.md). DataCube's engine API is itself `V1_*`-based, so the DataCube engine for Search lives there too.                                                                                                                          | AGENTS.md                                                                      |
+| D11 | Load limits: `concurrency` 8, `maxElements` 20,000, deny list `Class`, `Function`, `Enumeration`, `Association`, `Profile` (revisited after S4).                                                                                                                                                | user (Q1)                                                                      |
+| D12 | **Element panel = lookup by path** outside the grid (§4.6). No DataCube change for click-a-row (C1 not planned).                                                                                                                                                                                | user (Q2)                                                                      |
+| D13 | **One PR**: this plan and the implementation together in finos/legend-studio#5754, retitled when the code lands.                                                                                                                                                                                | user (Q4)                                                                      |
+| D14 | **One demo video, at the end** (M6.2). Each milestone still ends with a check in the browser.                                                                                                                                                                                                   | user (Q5)                                                                      |
 
 ---
 
@@ -154,8 +158,10 @@ As in DataCube's local-file source (`_synthesizeMinimalModelContext`) 📄, buil
 
 1. Parse the text (`grammarToJson`); engine errors are shown in the editor at their position.
 2. Refuse a trailing `->from(…)` (Search adds the runtime itself) with a clear message.
-3. Get the column types (`lambdaRelationType`). If any column is `Variant`, refuse (D9) and suggest
-   `->extend(~x: e | $e.content->get('x')->to(@String))` or `->toJson()`.
+3. Get the column types (`lambdaRelationType`). Any `Variant` column is converted to JSON text (D9): the source
+   query gets `->extend(~<col>__json: x | $x.<col>->toJson())`, the original column is dropped and the new one renamed
+   back, so the user sees the column they asked for. 💭 That this chain generates SQL DuckDB-WASM runs is checked in
+   S3.
 4. Hand the query to DataCube as its **source** and remount DataCube with a new key (DataCube cannot change source in
    place 📄).
 5. DataCube calls back `executeQuery` with its own operations added; Search generates the plan, checks it is a simple
@@ -276,7 +282,7 @@ What could still break, and how we'd know:
 
 | Limit                                                                                            | Workaround in Search                                     |
 | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| A `Variant` column shows as text, but its filter editor throws (`_defaultPrimitiveTypeValue`) 📄 | Refuse `Variant` result columns (D9)                     |
+| A `Variant` column shows as text, but its filter editor throws (`_defaultPrimitiveTypeValue`) 📄 | Convert `Variant` result columns to JSON text (D9)       |
 | A DataCube's source cannot change in place 📄                                                    | Remount with a new key on every Run                      |
 | `spec.query` only accepts DataCube's own operation sequence 📄                                   | The user's query is the source, not the spec query       |
 | Only simple plans with one SQL node can run in the browser 📄                                    | Guard in `executeQuery` with a clear error               |
@@ -320,8 +326,8 @@ its origin, so a later C3 can fold them back.
 
 ## 8. Milestones
 
-Every UI milestone (M2–M5) ends with a check in the browser and a short demo video of what it added; M6.2 is the full
-walkthrough. One draft PR from `depot-search`, pushed after each milestone.
+Every UI milestone ends with a check in the browser; the demo video comes once, at the end (M6.2, D14). One draft PR
+from `depot-search` (D13), pushed after each milestone.
 
 ### M0 — Plan (this document)
 
@@ -335,7 +341,7 @@ walkthrough. One draft PR from `depot-search`, pushed after each milestone.
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | S1   | DuckDB-WASM inside Studio's dev build: worker and `.wasm` load from `/static`, JSON functions work with no request to `extensions.duckdb.org`, bundle size before/after (`bundle:analyze`) | Numbers recorded; decision on loading (§5.4)                            |
 | S2   | Engine from the `/depot` page: graph manager initialized, `getClassifierPathMap`, `lambdaRelationType` and a DuckDB `generatePlan` with vX_X_X                                             | All four calls succeed from the browser                                 |
-| S3   | The prototype's queries end to end in the browser, with engine #5404 built locally                                                                                                         | Same counts as the prototype                                            |
+| S3   | The prototype's queries end to end in the browser, with engine #5404 built locally; the `Variant` → `toJson()` conversion (D9) runs in DuckDB-WASM                                         | Same counts as the prototype                                            |
 | S4   | Real Depot (user): `latest=true` semantics; element and project counts for the classifiers we plan to offer                                                                                | Counts recorded; defaults for `maxElements` and the deny list confirmed |
 
 ### M2 — Shell
@@ -346,7 +352,6 @@ walkthrough. One draft PR from `depot-search`, pushed after each milestone.
 | M2.2 | Mode switch (Data Products · Search) on the dashboard; the data product view unchanged | Existing dashboard tests pass unchanged            |
 | M2.3 | Engine initialization on the page (§5.2)                                               | Engine calls work; data product view still loads   |
 | M2.4 | Classifier picker (§5.3) with the deny list                                            | Tests with a spied classifier map                  |
-| M2.5 | Demo video                                                                             | Sent                                               |
 
 ### M3 — Loading
 
@@ -356,7 +361,6 @@ walkthrough. One draft PR from `depot-search`, pushed after each milestone.
 | M3.2 | Loader store (§3.1, §3.2): summary, grouping, pool, cap with confirmation, failures, retry, cancel                                                | Unit tests for each                           |
 | M3.3 | DuckDB module (copied, §6.4) and table loading (§3.3), loaded with `import()`                                                                     | Tables created in the browser; Jest mocks it  |
 | M3.4 | Loading UI: progress, failures, loaded-classifier cards (reload, remove), columns list                                                            | Checked in the browser against the mock Depot |
-| M3.5 | Demo video                                                                                                                                        | Sent                                          |
 
 ### M4 — Query and DataCube
 
@@ -366,7 +370,6 @@ walkthrough. One draft PR from `depot-search`, pushed after each milestone.
 | M4.2 | `DepotSearchDataCubeSource` and `DepotSearchDataCubeEngine` (§4.4) with the guards | Unit tests per method and guard                             |
 | M4.3 | Query editor with typeahead and engine errors (§4.2)                               | Errors shown at their position                              |
 | M4.4 | Run → embedded DataCube (§4.5), run status, Show SQL                               | The prototype's queries give the same counts in the browser |
-| M4.5 | Demo video                                                                         | Sent                                                        |
 
 ### M5 — Lookup and helpers
 
@@ -374,7 +377,6 @@ walkthrough. One draft PR from `depot-search`, pushed after each milestone.
 | ---- | ------------------------------------- | ----------------------------------- |
 | M5.1 | Element lookup (§4.6)                 | Open in Studio lands on the element |
 | M5.2 | Fields seen in content; examples menu | Checked in the browser              |
-| M5.3 | Demo video                            | Sent                                |
 
 ### M6 — Finish
 
@@ -386,15 +388,22 @@ walkthrough. One draft PR from `depot-search`, pushed after each milestone.
 
 ---
 
-## 9. Open questions for the user
+## 9. Questions and answers
 
-| #   | Question                                                                                                                | Default if unanswered           |
-| --- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| Q1  | Defaults: `concurrency` 8, `maxElements` 20,000, deny list `Class`, `Function`, `Enumeration`, `Association`, `Profile` | As listed, revisited after S4   |
-| Q2  | Element panel: path lookup outside the grid (§4.6), or DataCube change C1 for click-a-row                               | Path lookup; C1 later if wanted |
-| Q3  | `Variant` result columns: refuse (D9), or auto-convert them to JSON text                                                | Refuse                          |
-| Q4  | PR shape: this plan and the implementation in one PR, or the plan merged first                                          | One PR, plan first              |
-| Q5  | Demo videos: one per UI milestone (M2–M5) plus the final walkthrough, or the final one only                             | One per UI milestone            |
+| #   | Question                                                             | Answer (2026-10-21)                                                  |
+| --- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Q1  | Load limits (concurrency 8, 20,000 elements, deny list)              | Yes (D11)                                                            |
+| Q2  | Element panel: lookup by path, or DataCube change C1 for click-a-row | Lookup by path (D12)                                                 |
+| Q3  | `Variant` result columns: refuse, or convert to JSON text            | Explained; convert recommended (D9), pending the user's confirmation |
+| Q4  | One PR, or the plan merged first                                     | One PR (D13)                                                         |
+| Q5  | Demo video per UI milestone, or one at the end                       | One at the end (D14)                                                 |
+
+--- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Q1 | Defaults: `concurrency` 8, `maxElements` 20,000, deny list `Class`, `Function`, `Enumeration`, `Association`, `Profile` | As listed, revisited after S4 |
+| Q2 | Element panel: path lookup outside the grid (§4.6), or DataCube change C1 for click-a-row | Path lookup; C1 later if wanted |
+| Q3 | `Variant` result columns: refuse (D9), or auto-convert them to JSON text | Refuse |
+| Q4 | PR shape: this plan and the implementation in one PR, or the plan merged first | One PR, plan first |
+| Q5 | Demo videos: one per UI milestone (M2–M5) plus the final walkthrough, or the final one only | One per UI milestone |
 
 ---
 
