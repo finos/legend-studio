@@ -19,7 +19,7 @@
 .dataSpace-editor--dark {
   &__header {
     padding-left: 0;
-    background: var(--color-dark-grey-50);
+    background: var(--color-bg-app);
 
     &__configs {
       display: flex;
@@ -27,13 +27,13 @@
     }
 
     &__name {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-0);
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-border-strong);
+      color: var(--color-text-primary);
     }
 
     &__name::placeholder {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
     }
   }
 }
@@ -587,9 +587,9 @@
   flex-direction: column;
   gap: 0.6rem;
   padding: 1rem 1.2rem;
-  border: 0.1rem solid var(--color-dark-grey-200);
+  border: 0.1rem solid var(--color-border-default);
   border-radius: 0.3rem;
-  background: var(--color-dark-grey-80);
+  background: var(--color-bg-elevated);
 
   &__header {
     display: flex;
@@ -604,12 +604,12 @@
   &__title {
     font-size: 1.4rem;
     font-weight: 600;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__hint {
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
   }
 
   &__body {
@@ -630,16 +630,16 @@
     justify-content: center;
     width: 2.6rem;
     height: 2.6rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-panel-header);
     border-radius: 0.2rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__label {
     min-width: 14rem;
     white-space: nowrap;
     font-size: 1.4rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__select {
@@ -658,7 +658,7 @@
   &__placeholder {
     flex: 1;
     font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-style: italic;
   }
 
@@ -678,7 +678,7 @@
   display: inline-flex;
   padding: 0.2rem;
   border-radius: 0.3rem;
-  background: var(--color-dark-grey-200);
+  background: var(--color-bg-panel-header);
   align-self: flex-start;
   gap: 0.2rem;
 }
@@ -687,19 +687,22 @@
   padding: 0.4rem 1rem;
   font-size: 1.4rem;
   background: transparent;
-  color: var(--color-light-grey-300);
+  color: var(--color-text-secondary);
   border: none;
   border-radius: 0.2rem;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-panel);
+    color: var(--color-text-primary);
   }
 
-  &--active {
-    background: var(--color-dark-blue-shade-100);
-    color: var(--color-blue-100);
+  // NOTE: the active tab was blue text on a translucent blue tint, which read
+  // 2.3:1 in both themes. A solid accent fill keeps it legible in both.
+  &--active,
+  &--active:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
     font-weight: 600;
   }
 
@@ -723,7 +726,7 @@
 
   &__label {
     font-size: 1.4rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -735,7 +738,7 @@
 /* ==== Read-only execution context viewer ==== */
 .dataSpace-editor__executable__pointer__path {
   font-family: 'Roboto Mono', monospace;
-  color: var(--color-light-grey-300);
+  color: var(--color-text-secondary);
   font-size: 1.4rem;
 }
 

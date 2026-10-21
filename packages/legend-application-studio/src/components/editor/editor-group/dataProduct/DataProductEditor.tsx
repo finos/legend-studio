@@ -1980,8 +1980,8 @@ const GroupTabRenderer = observer(
         })}
         style={{
           backgroundColor: isOver
-            ? 'var(--color-dark-grey-100)'
-            : 'var(--color-dark-grey-50)',
+            ? 'var(--color-bg-panel)'
+            : 'var(--color-bg-app)',
         }}
         role="tab"
       >

@@ -261,8 +261,8 @@
       &__header__suggest-btn {
         @include flexCenter;
 
-        background: var(--color-blue-200);
-        color: var(--color-text-primary);
+        background: var(--color-accent);
+        color: var(--color-text-on-accent);
         padding-left: 2rem;
         padding-right: 2rem;
         gap: 1rem;
@@ -343,9 +343,9 @@
 
       height: 100%;
       padding: 0 1rem;
-      background: var(--color-dark-grey-280);
+      background: var(--color-bg-elevated);
       border-radius: 0.2rem 0 0 0.2rem;
-      color: var(--color-light-grey-300);
+      color: var(--color-text-secondary);
       font-size: 1.2rem;
       text-transform: lowercase;
       white-space: nowrap;
@@ -355,9 +355,9 @@
       width: 7rem;
       height: 2.8rem;
       padding: 0 0.8rem;
-      color: var(--color-light-grey-150);
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-text-primary);
+      background: var(--color-bg-panel);
+      border: 0.1rem solid var(--color-border-strong);
       border-radius: 0.2rem;
     }
 
