@@ -28,6 +28,20 @@
     border-radius: 0.2rem;
     padding: 0 0.5rem;
     height: 2.8rem;
+    background: var(--color-bg-input);
+    color: var(--color-text-primary);
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+  }
+
+  // Read-only (e.g. view mode): dimmed, but still readable. `text-disabled`
+  // falls below 4.5:1 on `bg-input` in both themes.
+  &__name[disabled] {
+    color: var(--color-text-muted);
+    -webkit-text-fill-color: var(--color-text-muted);
+    opacity: 1;
   }
 
   &__name:hover {
