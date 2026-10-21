@@ -274,7 +274,10 @@ export const getCubeLambdaFidelity = (
   }
   const written =
     reading.isRun && context?.runtime !== undefined
-      ? emitter.emitExecutionLambda({ runtime: context.runtime })
+      ? emitter.emitExecutionLambda({
+          runtime: context.runtime,
+          mapping: context.mapping,
+        })
       : lambda([], [emitter.emitRelation(selected, { withRowOrder: true })]);
   if (
     isSameCubeIR(written, reading.lambda, {

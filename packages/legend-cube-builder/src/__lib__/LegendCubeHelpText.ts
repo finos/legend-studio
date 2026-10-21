@@ -17,6 +17,7 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  DataSpaceSource,
   Difference,
   IngestDatasetSource,
   Distinct,
@@ -59,6 +60,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   /** Added by Cube: the original's service source is read another way, still to come (PLAN §6.4) */
   [ServiceSource.TYPE]:
     "Sources data from a deployed service. In progress: Cube can't read services yet.",
+  /** Added by Cube: the original has no data space source (PLAN §11.25) */
+  [DataSpaceSource.TYPE]:
+    "Sources data from a class of a data space, as the query builder queries it: its columns, and the rows its filter keeps. Cube's own steps sort, group and filter them after it.",
   [Concat.TYPE]:
     'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
   [Difference.TYPE]:

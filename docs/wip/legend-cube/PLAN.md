@@ -5548,8 +5548,19 @@ query builder changes in a drastic way.
   `from(runtime)` on a runtime with no mapping, so their tabs are disabled once a data space source is in, and the data
   space tab is disabled once another kind is.
 - **The editor, provided by the host:** `legend-cube-builder` stays free of `legend-query-builder` (its README's rule).
-  `CubeHost` gains an optional `dataSpaceEditor`, which Legend Analytics provides: it opens the query builder on a
-  node's settings and hands back new ones on Apply. Only a host that provides it offers the source.
+  `CubeHost` gains an optional `dataSpaceEditor`, which Legend Analytics provides: it lists the depot's released data
+  spaces, describes one at a version (its execution contexts, with their mappings and runtimes), and opens a session
+  of the query builder on a source, which Cube shows and reads the query of. Only a host that provides it offers the
+  source.
+- **The flow (built, DS.3):** the palette's Data Space item opens the source dialog's Data Space tab: the data spaces,
+  searched by title and path, then the picked one's version (its project's released versions) and execution context.
+  Add puts an **unset** source on the canvas (data space and execution context only; the cube's context takes the
+  project at that version and the context's mapping and runtime) and opens its node editor: the query builder, in a
+  panel wider and taller than the other editors. Apply stores its query and relation, and the editor types the
+  relation with the engine as it lands. A query in another execution context changes the cube's mapping and runtime
+  in the same undo step, unless other data space sources run in the cube's; a query Cube can't run keeps the editor
+  open on closing, saying why. Once the cube has a data space source, the tab offers only its data space, version
+  and context, and the project tabs don't take the cube.
 - **What the query builder writes (spike, 2026-10-21):** Data Cube's "Open in DataCube" already gets a Relation from
   the query builder without the engine: it switches the builder to its typed writer for one `buildQuery()`. The writer
   turns every projection column the builder makes (property, relation column, derivation) into
@@ -5600,14 +5611,14 @@ else in the query builder changes; any change beyond these is raised with the us
 
 **Steps:**
 
-| Step | Deliverable                                                                                                                                                                         | Done when                                                     |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                        |
-| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned                               |
-| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor |
-| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option              |
-| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests                                      |
-| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen                                  |
+| Step | Deliverable                                                                                                                                                                         | Done when                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                                        |
+| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned ✅ (2026-10-21)                               |
+| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor ✅ (2026-10-21) |
+| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option                              |
+| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests                                                      |
+| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen                                                  |
 
 ## 12. G. Risks and open questions
 
