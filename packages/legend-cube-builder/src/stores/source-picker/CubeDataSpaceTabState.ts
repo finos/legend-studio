@@ -310,8 +310,9 @@ export class CubeDataSpaceTabState implements CubeSourcePickerTab {
 
   /**
    * Picks a data space: its project's released versions, through the host's
-   * project catalog when it has one, else only the version listed; then the
-   * data space at the version the cube fixes, else the newest
+   * project catalog when it has one and can list them, else only the version
+   * listed; then the data space at the version the cube fixes, else the one
+   * listed
    */
   *pick(key: string): GeneratorFn<void> {
     const summary = this.offeredDataSpaces?.find(
@@ -340,15 +341,15 @@ export class CubeDataSpaceTabState implements CubeSourcePickerTab {
           return;
         }
         versions = listed.length ? listed : versions;
-      } catch (error) {
-        if (request === this.pickRequest) {
-          this.error = toError(error);
-        }
-        return;
+      } catch {
+        // the version listed is released: it is offered alone
       } finally {
         if (request === this.pickRequest) {
           this.isLoadingVersions = false;
         }
+      }
+      if (request !== this.pickRequest) {
+        return;
       }
     }
     this.versions = versions;

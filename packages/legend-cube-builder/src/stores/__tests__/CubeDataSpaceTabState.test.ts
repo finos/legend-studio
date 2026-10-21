@@ -221,6 +221,17 @@ describe('The Data Space tab', () => {
     expect(state.nodeEditor.nodeId).toBe('dataSpace102');
   });
 
+  test("Offers the version listed alone when the project's versions can't be listed", async () => {
+    const { state, listVersions } = setUp();
+    listVersions.mockRejectedValueOnce(new Error('No such project'));
+    await pickTrades(state);
+    const tab = state.sourcePicker.dataSpaceTab;
+    expect(tab.error).toBeUndefined();
+    expect(tab.versions).toEqual([FAKE_TRADES_DATA_SPACE.project.versionId]);
+    expect(tab.versionId).toBe(FAKE_TRADES_DATA_SPACE.project.versionId);
+    expect(tab.canConfirm).toBe(true);
+  });
+
   test('Says why when the list or a data space cannot be read, and reads the list again on Retry', async () => {
     const { state, editor } = setUp();
     editor.listDataSpaces.mockRejectedValueOnce(new Error('Depot is down'));
