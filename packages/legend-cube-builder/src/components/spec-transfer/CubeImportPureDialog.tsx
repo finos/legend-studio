@@ -81,11 +81,13 @@ export const CubeImportPureDialog = observer(
     const { applicationStore } = editorState.host;
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const importText = (): void => {
-      flowResult(lambdaImport.importText()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
+    // the lambda replaces the cube: unsaved changes are asked about first
+    const importText = (): void =>
+      editorState.persistence.confirmDiscard(() => {
+        flowResult(lambdaImport.importText()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      });
     return (
       <Dialog
         open={lambdaImport.isDialogOpen}

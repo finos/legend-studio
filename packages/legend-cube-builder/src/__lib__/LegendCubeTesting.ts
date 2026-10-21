@@ -40,4 +40,7 @@ export enum LEGEND_CUBE_TEST_ID {
   SQL_PANEL = 'legend-cube__sql-panel',
   JSON_VIEWER = 'legend-cube__json-viewer',
   JSON_EXPLORER = 'legend-cube__json-explorer',
+  CUBE_TITLE = 'legend-cube__cube-title',
+  LOAD_ERROR = 'legend-cube__load-error',
+  LOAD_DIALOG_ROW = 'legend-cube__load-dialog-row',
 }

@@ -136,6 +136,7 @@ import { CubeJsonExplorerState } from './variant/CubeJsonExplorerState.js';
 import { CubeLambdaImportState } from './CubeLambdaImportState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
+import { CubePersistenceState } from './CubePersistenceState.js';
 
 /** An engine error placed on a node: its first line shows on the node, its detail in the grid */
 export interface CubeHostIssue {
@@ -207,6 +208,8 @@ export class CubeEditorState implements CommandRegistrar {
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
+  /** Saving and loading cubes (PLAN §11.13) */
+  readonly persistence: CubePersistenceState;
   readonly examples: CubeExamplesState;
   readonly showPure: CubeShowPureState;
   /** The editor's guided tour (PLAN §11.21) */
@@ -384,6 +387,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
+    this.persistence = new CubePersistenceState(this);
     this.examples = new CubeExamplesState(this);
     this.showPure = new CubeShowPureState(this);
     this.tour = new CubeTourState(this);
@@ -791,7 +795,8 @@ export class CubeEditorState implements CommandRegistrar {
       this.grid.formatColumn !== undefined ||
       this.specTransfer.mode !== undefined ||
       this.showPure.isOpen ||
-      this.tour.isOpen
+      this.tour.isOpen ||
+      this.persistence.isDialogOpen
     );
   }
 
@@ -843,6 +848,58 @@ export class CubeEditorState implements CommandRegistrar {
         }
       },
     });
+    // New, Load, Save, Copy and Paste (spec §17.12, PLAN §11.13), each a
+    // no-op when its menu item or button can't be used
+    const { persistence } = this;
+    const registerPersistenceCommand = (
+      key: LEGEND_CUBE_COMMAND_KEY,
+      canRun: () => boolean,
+      run: () => void,
+    ): void =>
+      commandService.registerCommand({
+        key,
+        trigger: () =>
+          !this.isDialogOpen && !this.nodeEditor.isHeld && canRun(),
+        action: () =>
+          this.nodeEditor.runFromKeyboard(
+            () => this.runPersistenceAction(run),
+            isFocusInNodeEditor(),
+          ),
+      });
+    // New, Copy and Paste leave the keys to a text field that has the focus,
+    // e.g. Alt+C, Match case in a code editor's find
+    registerPersistenceCommand(
+      LEGEND_CUBE_COMMAND_KEY.NEW,
+      () => !persistence.isPending && !this.isEmptyCube && !isTypingText(),
+      () => persistence.newCube(),
+    );
+    registerPersistenceCommand(
+      LEGEND_CUBE_COMMAND_KEY.LOAD,
+      () => persistence.loadDisabledReason === undefined,
+      () => persistence.openLoadDialog(),
+    );
+    registerPersistenceCommand(
+      LEGEND_CUBE_COMMAND_KEY.SAVE,
+      // edits the node editor would apply may make an invalid cube valid
+      () =>
+        persistence.saveDisabledReason === undefined ||
+        (this.hasEditsToApply && persistence.isSaveBlockedOnlyByProblems),
+      () => persistence.save(),
+    );
+    registerPersistenceCommand(
+      LEGEND_CUBE_COMMAND_KEY.COPY,
+      () => !this.readOnly && !isTypingText(),
+      () => {
+        persistence
+          .copy()
+          .catch(this.host.applicationStore.alertUnhandledError);
+      },
+    );
+    registerPersistenceCommand(
+      LEGEND_CUBE_COMMAND_KEY.PASTE,
+      () => !persistence.isPending && !isTypingText(),
+      () => persistence.paste(),
+    );
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.REDO,
       trigger: () =>
@@ -869,6 +926,18 @@ export class CubeEditorState implements CommandRegistrar {
           isFocusInNodeEditor(),
         ),
     });
+  }
+
+  /**
+   * New, Load, Save, Save as, Copy, Paste and Delete, from their menu items,
+   * buttons and shortcuts (PLAN §11.13): the node editor is finished first, so
+   * its edits are saved or copied, and count as unsaved changes; when they had
+   * to be dropped, nothing runs
+   */
+  runPersistenceAction(run: () => void): void {
+    if (this.nodeEditor.finishApplied()) {
+      run();
+    }
   }
 
   /** The node editor has edits that closing it would apply */
@@ -969,6 +1038,8 @@ export class CubeEditorState implements CommandRegistrar {
   importDocument(next: CubeDocument, readOnly: boolean): void {
     this.pushHistory();
     this.importedOver.add(this.document);
+    // it shows no saved cube until the one opened says so (PLAN §11.13)
+    this.persistence.handleCubeSwitch(this.document, next);
     this.execution.reset();
     this.sourcePicker.close();
     this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
@@ -1319,6 +1390,7 @@ export class CubeEditorState implements CommandRegistrar {
       // the cube before an import is another cube, as the import was
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+      this.persistence.handleCubeSwitch(this.document, previous);
     }
     const { query, meta } = this.document;
     const restored = previous.withQuery(
@@ -1355,6 +1427,7 @@ export class CubeEditorState implements CommandRegistrar {
       this.importedOver.add(this.history.at(-1) as CubeDocument);
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+      this.persistence.handleCubeSwitch(this.document, next.document);
     }
     this.readOnly = next.readOnly;
     const { query, meta } = this.document;
@@ -1901,5 +1974,6 @@ export class CubeEditorState implements CommandRegistrar {
     this.outlineLoading();
     this.execution.stop();
     this.nodeEditor.dispose();
+    this.persistence.loadDialog.close();
   }
 }
