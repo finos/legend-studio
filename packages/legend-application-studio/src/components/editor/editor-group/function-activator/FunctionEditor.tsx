@@ -1077,6 +1077,8 @@ const FunctionDefinitionEditor = observer(
               ...getTDSColumnCustomizations(execResult, colName),
             }) as DataGridColumnDefinition,
         );
+        const darkMode =
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
         return (
           <div
             data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
@@ -1084,8 +1086,8 @@ const FunctionDefinitionEditor = observer(
           >
             <div
               className={clsx('query-builder__result__tds-grid', {
-                'ag-theme-balham': true,
-                'ag-theme-balham-dark': true,
+                'ag-theme-balham': !darkMode,
+                'ag-theme-balham-dark': darkMode,
               })}
             >
               <DataGrid
