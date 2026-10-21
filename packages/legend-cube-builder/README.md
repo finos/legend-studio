@@ -57,6 +57,9 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
   `CubeIngestCatalog.ts` (the catalog port and its classes), with `buildCubeIngestCatalog`;
 - published projects: everything in `CubeProject.ts` (the pointer model and its checks) and `CubeProjectCatalog.ts`
   (the catalog port), with `buildCubeProjectCatalog`;
+- saved cubes: everything in `CubeStore.ts` (the store port, its classes and `CubeStoreError`) and `CubeSourceRefs.ts`
+  (the sources a saved cube reads), with `buildCubeStore`; `CubeEditor` takes `initialCubeId` and
+  `onSavedCubeChange` ([hosting.md](./docs/hosting.md));
 - `LocalModelCatalog` and `BUNDLED_MODELS`;
 - `LEGEND_CUBE_COMMAND_CONFIG` and `LEGEND_CUBE_COMMAND_KEY`, the page's shortcuts;
 - `LEGEND_CUBE_TEST_ID`;

@@ -130,7 +130,7 @@ export const TEST__closeAddItems = async (): Promise<void> => {
   await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
 };
 
-/** Opens 'Cube' (New, Import, Export) in the graph's header and returns its menu */
+/** Opens 'Cube' (New, Load, Save, Import, Export…) in the graph's header and returns its menu */
 export const TEST__openCubeMenu = async (): Promise<HTMLElement> => {
   fireEvent.click(
     within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByRole(
@@ -141,7 +141,7 @@ export const TEST__openCubeMenu = async (): Promise<HTMLElement> => {
   return screen.findByRole('menu');
 };
 
-/** Chooses an item of the 'Cube' menu (New, Import or Export), and waits for the menu to close */
+/** Chooses an item of the 'Cube' menu (e.g. 'New', 'Load…', 'Import'), and waits for the menu to close */
 export const TEST__chooseCubeMenuItem = async (
   label: string,
 ): Promise<void> => {

@@ -22,6 +22,7 @@ interface CubeHost {
   readonly ingestCatalog?: CubeIngestCatalog | undefined;
   readonly projectCatalog?: CubeProjectCatalog | undefined;
   readonly serviceCatalog?: CubeServiceCatalog | undefined;
+  readonly store?: CubeStore | undefined;
   /** False to leave out the Sample Data tab and the Examples, as Studio does */
   readonly offersSampleData?: boolean | undefined;
   readonly engineClientSettings?: CubeEngineClientSettings | undefined;
@@ -34,8 +35,8 @@ a plain `LegendCubeHostConfig`, the deployment's servers: `engine` (a `CubeEngin
 `marketplaceProductionParallelUrl`, `enterpriseStereotype` and `getPreferredEnvironment`, each only where the
 deployment has it. It offers each source by the rules below (no lakehouse, no data products; no platform, no ingest
 data sets; no depot, no projects), links data products to the marketplace of their deployment's class, and registers
-every engine client with its `engineClientSettings`, which Dev Settings changes. Tests give an engine, a connection
-explorer or a project catalog as `parts`. Legend Analytics passes `buildLegendAnalyticsCubeHostConfig`; a host
+every engine client with its `engineClientSettings`, which Dev Settings changes. It always builds a store, on the
+engine's query server (below). Tests give an engine, a connection explorer, a project catalog or a store as `parts`. Legend Analytics passes `buildLegendAnalyticsCubeHostConfig`; a host
 whose sources are its own builds its parts
 with the functions below instead.
 
@@ -84,6 +85,18 @@ with the functions below instead.
   dialog's Project tab (PLAN §6.3). It reads nothing until the tab opens. Project cubes save the engine's pointer, so
   the engine must fetch from the same depot. Legend Analytics builds it from `depot.url`.
 
+- **Saved cubes (optional):** `buildCubeStore(config, tracerService, engineClientSettings?)` builds Legend's
+  implementation of the `CubeStore` port over the engine's Cube store (`pure/v1/query/cube`, legend-engine's
+  `legend-engine-application-query`), on `config.queryBaseUrl`, else on `config.baseUrl`, which Dev Settings may
+  change: Legend Analytics passes `engine.queryUrl`, else `engine.url`. With it, the 'Cube' menu offers Load, Save,
+  Save as and Delete, the header a Save button and the cube's name with an asterisk while it has unsaved changes, and
+  the page asks before they are lost (PLAN §11.13). Without it, as in Studio, the page offers none of these and tracks
+  no unsaved changes; Export, Import, Copy and Paste remain. The engine's store needs a Mongo and three Vault keys
+  beside the Data Cube store's, in `query.mongo.database`: `query.mongo.collection.cube`,
+  `query.mongo.collection.cubeVersion` and `query.mongo.collection.cubeEvent`. An engine without the store, or
+  without its Mongo, makes every call fail with the engine's message. Ownership is checked against the application
+  store's current user, and the store checks it again.
+
 Legend Analytics mounts the page at its root with no flag: deploying the application is the opt-in. Only `engine`
 is required in its config; each source below needs its servers.
 
@@ -122,13 +135,20 @@ takes the value Legend Marketplace's own config gives it.
 }
 ```
 
-Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, or
+Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube, `initialCubeId`
+to open a saved cube from the store as the page opens (a failure shows "Error loading query!" in the graph area), or
 `initialSource` to start an empty cube with one data product access point, as a link would ask:
 `?sourceType=dataProductAccessPoint&sourceId=<id>` (Legend Query read that link; no host reads it now, PLAN §11.24). The id is `<class>/<data product id>/<deployment id>/<access point
 group>/<access point>`, each part URI-encoded (`formatCubeAccessPointEntryId` writes it), where `<class>` is
 `PRODUCTION` or `PRODUCTION_PARALLEL` (`CubeDataProductEnvironmentType`), and the link encodes the
-whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`). The page's state
-lives as long as the page.
+whole id once more as the parameter's value, as any query value is (`encodeURIComponent(id)`).
+`onSavedCubeChange` tells the host when the saved cube shown changes (on Load, Save, Undo and Redo, and to none on
+New, Paste, Import and an example). Legend Analytics opens the saved cube `/analytics/cube/<id>` names, or
+`?queryId=<id>`, which it moves into the path, and then replaces the address with `/analytics/cube/<id>`, or
+`/analytics/`, adding no history entry, so the address always links to the cube shown; both addresses render the same
+page, which stays mounted between them. While the cube has unsaved changes, the page blocks leaving it through the
+navigator (`blockNavigation`: the browser's `beforeunload`, and Legend's own navigation, which asks first). The page's
+state lives as long as the page.
 
 **The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an
 in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
@@ -187,7 +207,9 @@ override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
 }
 ```
 
-The page registers the commands while it is open: F9 runs the query, and Ctrl+Z or Cmd+Z undoes.
+The page registers the commands while it is open: F9 runs the query, Ctrl+Z or Cmd+Z undoes, and Alt+N, Alt+C and
+Alt+V start a new cube, copy and paste one, with Alt+L and Alt+S to load and save with a store (Option on a Mac: the
+keys are `KeyboardEvent.code` names).
 
 ## The stylesheet
 
@@ -226,5 +248,8 @@ skip the watchers you don't need: in that checkout, run `yarn install`, `yarn bu
 `yarn workspace @finos/legend-application-analytics-deployment dev:webpack --port 9010 --client-web-socket-url ws://localhost:9010/ws`,
 and open `http://localhost:9010/analytics/`. The dev server serves the packages' built `lib/`, so rebuild what you change
 (`yarn workspace @finos/legend-cube-builder build:ts`, and `@finos/legend-cube`'s) before looking, or run `yarn dev:ts`.
+
+**Saving cubes locally.** Run an engine with the Cube store and a Mongo (legend-engine's
+`legend-engine-application-query`, PLAN §11.13, M8.3), and point the deployment's `engine.queryUrl` at it.
 
 The manual check of the whole page is the plan's Part B (PLAN §11.2).
