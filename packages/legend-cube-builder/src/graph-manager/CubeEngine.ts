@@ -15,6 +15,7 @@
  */
 
 import type { IR, JsonObject, ModelContext, Schema } from '@finos/legend-cube';
+import type { CubeFunctionCatalogue } from './CubeFunctionCatalogue.js';
 
 // The engine port (PLAN §8.7): what Cube asks of an engine, in Cube's own
 // terms. Only its Legend implementation, under `protocol/pure/v1/`, knows the
@@ -301,4 +302,10 @@ export interface CubeEngine {
     relation: IR | undefined,
     text: string,
   ): Promise<readonly CubeCodeCompletion[] | undefined>;
+  /**
+   * The engine's catalogue of Pure functions, its PCT documentation, for the
+   * expression editors' completions and help: read once, undefined when the
+   * engine doesn't serve it, and from then on
+   */
+  getFunctionCatalogue(): Promise<CubeFunctionCatalogue | undefined>;
 }

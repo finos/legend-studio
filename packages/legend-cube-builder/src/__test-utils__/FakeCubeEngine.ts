@@ -119,6 +119,7 @@ export interface FakeCubeEngine {
   readonly parseExpression: jest.Mock<CubeEngine['parseExpression']>;
   readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
   readonly completeCode: jest.Mock<CubeEngine['completeCode']>;
+  readonly getFunctionCatalogue: jest.Mock<CubeEngine['getFunctionCatalogue']>;
 }
 
 /** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
@@ -176,6 +177,10 @@ export const createFakeCubeEngine = (
   const completeCode = jest.fn<CubeEngine['completeCode']>(async () =>
     Promise.resolve(undefined),
   );
+  // by default, an engine without the function catalogue
+  const getFunctionCatalogue = jest.fn<CubeEngine['getFunctionCatalogue']>(
+    async () => Promise.resolve(undefined),
+  );
   return {
     engine: {
       loadModel,
@@ -188,6 +193,7 @@ export const createFakeCubeEngine = (
       parseExpression,
       planLambda,
       completeCode,
+      getFunctionCatalogue,
     },
     loadModel,
     resolveSchemas,
@@ -199,5 +205,6 @@ export const createFakeCubeEngine = (
     parseExpression,
     planLambda,
     completeCode,
+    getFunctionCatalogue,
   };
 };

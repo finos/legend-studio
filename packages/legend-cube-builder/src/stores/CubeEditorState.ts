@@ -61,6 +61,7 @@ import {
   reaction,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
+import type { CubeFunctionCatalogue } from '../graph-manager/CubeFunctionCatalogue.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
@@ -285,6 +286,14 @@ export class CubeEditorState implements CommandRegistrar {
   private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
   /** Documents an import replaced: undoing back to one opens another cube again */
   private readonly importedOver = new WeakSet<CubeDocument>();
+  /**
+   * The engine's catalogue of Pure functions, for the expression editors'
+   * completions and help (EXPRESSION-EDITOR.md, round 1): loaded when an
+   * expression editor first opens; none until then, or while the engine
+   * doesn't serve it
+   */
+  functionCatalogue: CubeFunctionCatalogue | undefined = undefined;
+  private isLoadingFunctionCatalogue = false;
 
   constructor(host: CubeHost, document = new CubeDocument()) {
     makeObservable<
@@ -293,6 +302,8 @@ export class CubeEditorState implements CommandRegistrar {
     >(this, {
       pendingSources: observable.ref,
       checkingNodes: observable.ref,
+      functionCatalogue: observable.ref,
+      setFunctionCatalogue: action,
       nodesToCheck: computed,
       isCheckingExpressions: computed,
       checkExpressions: flow,
@@ -448,6 +459,29 @@ export class CubeEditorState implements CommandRegistrar {
   /** The source is being typed again by the engine, e.g. after an import */
   isPendingSource(node: QueryNode): boolean {
     return this.pendingSources.has(node);
+  }
+
+  /**
+   * Loads the engine's function catalogue for the expression editors, once:
+   * asked again only while the engine has none to give, which it remembers
+   * for an engine without one
+   */
+  loadFunctionCatalogue(): void {
+    if (this.functionCatalogue || this.isLoadingFunctionCatalogue) {
+      return;
+    }
+    this.isLoadingFunctionCatalogue = true;
+    this.host.engine
+      .getFunctionCatalogue()
+      .then((catalogue) => this.setFunctionCatalogue(catalogue))
+      .catch(() => undefined)
+      .finally(() => {
+        this.isLoadingFunctionCatalogue = false;
+      });
+  }
+
+  setFunctionCatalogue(catalogue: CubeFunctionCatalogue | undefined): void {
+    this.functionCatalogue = catalogue;
   }
 
   /**

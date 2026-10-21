@@ -1,0 +1,755 @@
+{
+  "functionsDocumentation": [
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::lang",
+        "name": "if",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::lang::if(Boolean[1], Function<{->T[m]}>[1], Function<{->T[m]}>[1]):T[m]",
+            "id": "meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_",
+            "documentation": "Chooses between two values according to a condition.\n\nBoth branches are passed as zero-argument functions, written `|expression`, so **only the chosen\nbranch is evaluated**. That laziness is the point: the untaken branch may safely be expensive, or\ninvalid for the current data.\n\nBoth branches must share a type and multiplicity, which becomes the result's.\n\n**Parameters**\n- `test` — the condition.\n- `valid` — evaluated when `test` is true.\n- `invalid` — evaluated when `test` is false.\n\n**Returns** the value of whichever branch was taken.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::lang::if(Pair<Function<{->Boolean[1]}>, Function<{->T[m]}>>[*], Function<{->T[m]}>[1]):T[m]",
+            "id": "meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_",
+            "documentation": "Chooses among many conditions, returning the value for the first that holds — an if/else-if chain.\n\nEach pair couples a condition with the value to use when it is true. The conditions are tested in\norder and evaluation stops at the first match; `last` supplies the fallback when none match. As with\nthe two-branch form, everything is lazy, so only the matching branch is evaluated.\n\n**Parameters**\n- `condList` — condition/value pairs, tested in order.\n- `last` — the fallback when no condition holds.\n\n**Returns** the value paired with the first true condition, or `last`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::math",
+        "name": "abs",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::math::abs(Integer[1]):Integer[1]",
+            "id": "meta::pure::functions::math::abs_Integer_1__Integer_1_",
+            "documentation": "The magnitude of a number, discarding its sign.\n\nThere is one overload per numeric type, each returning that same type, so `abs` never widens or narrows\nwhat you pass it — an `Integer` stays an `Integer`, a `Decimal` stays exact. That is why the overloads\nexist rather than a single `Number` version.\n\n**Parameters**\n- `int` — the value whose magnitude is wanted.\n\n**Returns** the value without its sign.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::abs(Float[1]):Float[1]",
+            "id": "meta::pure::functions::math::abs_Float_1__Float_1_",
+            "documentation": "The magnitude of a `Float`, returning a `Float`. See `abs(Integer[1]):Integer[1]` for details.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::abs(Number[1]):Number[1]",
+            "id": "meta::pure::functions::math::abs_Number_1__Number_1_",
+            "documentation": "The magnitude of any number, keeping only the general `Number` type. Prefer a type-specific overload\nsuch as `abs(Integer[1]):Integer[1]` when the input type is known, so the result stays that type.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::abs(Decimal[1]):Decimal[1]",
+            "id": "meta::pure::functions::math::abs_Decimal_1__Decimal_1_",
+            "documentation": "The magnitude of a `Decimal`, returning an exact `Decimal`. See `abs(Integer[1]):Integer[1]` for details.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::relation",
+        "name": "in",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::relation::in(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]",
+            "id": "meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_",
+            "documentation": "Whether a value appears in a relation's column.\n\n**The relation must have exactly one column**, of the value's type — narrow it with `select` first:\n`$d.departmentId->in($employees->select(~department))`. On relational stores this compiles to an\n`IN (subquery)` predicate.\n\n**Negating it** (`!$value->in($rel)`) answers the same two-valued question `in()` itself does, on\nevery store, including relational ones: `true` unless `value` actually matches a row. This is\n**not** the same question SQL's own `NOT IN (subquery)` asks — that operator is three-valued and\nreturns `UNKNOWN` (dropping the row) as soon as the searched column holds a null anywhere. If that\nSQL nulls-trap behavior is what's actually wanted, spell it out with `exists` instead:\n\n```pure\n// !$d.departmentId->in($employees->select(~department)) answers the two-valued question;\n// this instead reproduces SQL NOT IN's three-valued",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::collection",
+        "name": "map",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::collection::map(T[m], Function<{T[1]->V[1]}>[1]):V[m]",
+            "id": "meta::pure::functions::collection::map_T_m__Function_1__V_m_",
+            "documentation": "Applies the given function to each elements of the collection and returns the collection of the applied function result., Map always flattens the results and returns one collection even if the function returns a collection.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::collection::map(T[*], Function<{T[1]->V[*]}>[1]):V[*]",
+            "id": "meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_",
+            "documentation": "Applies a function returning a collection to each element, flattening the results into one collection.\n\n**The results are flattened, not nested.** Mapping 3 elements to 2 values each gives 6 values, not 3\ncollections — Pure collections do not nest. Wrap in `meta::pure::functions::collection::list(U[*]):List<U>[1]`\nif you need to keep the groups apart.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::collection::map(T[0..1], Function<{T[1]->V[0..1]}>[1]):V[0..1]",
+            "id": "meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_",
+            "documentation": "Applies a function to an optional value, giving an optional result.\n\nThe multiplicity is carried through: an empty input yields empty without calling the function, so this is\nthe safe way to transform a value that may be absent without an `isEmpty` check first.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::variant::navigation",
+        "name": "get",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::variant::navigation::get(Variant[0..1], String[1]):Variant[0..1]",
+            "id": "meta::pure::functions::variant::navigation::get_Variant_$0_1$__String_1__Variant_$0_1$_",
+            "documentation": "Reads a key out of a variant holding a JSON object.\n\nThe result stays a variant, so calls chain to walk a nested payload, mixing this with\n`get(Variant[0..1], Integer[1]):Variant[0..1]` to step through arrays. **A key that is absent yields\nempty rather than failing**, and an empty variant yields empty too, so navigating a path that does\nnot exist is not an error. The variant must hold an object; anything else fails.\n\n**Parameters**\n- `variant` — the variant to read, holding a JSON object.\n- `key` — the key to look up.\n\n**Returns** the value at that key, or empty when the key is absent.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::variant::navigation::get(Variant[0..1], Integer[1]):Variant[0..1]",
+            "id": "meta::pure::functions::variant::navigation::get_Variant_$0_1$__Integer_1__Variant_$0_1$_",
+            "documentation": "Reads a zero-based position out of a variant holding a JSON array.\n\nAs with `get(Variant[0..1], String[1]):Variant[0..1]`, the result stays a variant so calls chain.\nUnlike the key form, **an index outside the array fails rather than yielding empty** — this reads\nthe array through `meta::pure::functions::collection::at(T[*], Integer[1]):T[1]`. The variant must\nhold an array; anything else fails.\n\n**Parameters**\n- `variant` — the variant to read, holding a JSON array.\n- `index` — the zero-based position to read.\n\n**Returns** the value at that position.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::boolean",
+        "name": "greaterThan",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Number[1], Number[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_",
+            "documentation": "Whether the first number succeeds the second, in numeric order.\n\nWritten `>` in Pure: `$a > $b`. Both operands are present, so the comparison is always decided; it is\nstrict, so equal numbers give `false`.\n\n**Parameters**\n- `left` — the first operand.\n- `right` — the second operand.\n\n**Returns** `true` when `left` is greater than `right`.",
+            "grammarCharacter": ">",
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Number[0..1], Number[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(Number[1], Number[1]):Boolean[1]`, for `Number` operands where a value may be missing.\nEither operand may be absent.\n\nAn absent operand makes the result `false`, **not** empty — the comparison does not propagate\nemptiness the way arithmetic does. Each `[0..1]` operand is tested with `isNotEmpty()` before being\ncompared, so a missing value never satisfies the comparison and `$a > $b` is false whenever either\nside is empty. Test with `isEmpty()` first when you need to distinguish \"absent\" from \"present but\nnot greater than\". The other overloads taking `[0..1]` operands behave the same way.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Number[1], Number[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Number_1__Number_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(Number[1], Number[1]):Boolean[1]`, for `Number` operands where a value may be missing.\nThe second operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Number[0..1], Number[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Number_$0_1$__Number_1__Boolean_1_",
+            "documentation": "As `greaterThan(Number[1], Number[1]):Boolean[1]`, for `Number` operands where a value may be missing.\nThe first operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Date[0..1], Date[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Date_$0_1$__Date_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(Date[1], Date[1]):Boolean[1]`, for `Date` operands where a value may be missing.\nEither operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Date[1], Date[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Date_1__Date_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(Date[1], Date[1]):Boolean[1]`, for `Date` operands where a value may be missing.\nThe second operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Date[0..1], Date[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Date_$0_1$__Date_1__Boolean_1_",
+            "documentation": "As `greaterThan(Date[1], Date[1]):Boolean[1]`, for `Date` operands where a value may be missing.\nThe first operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(String[0..1], String[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_String_$0_1$__String_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(String[1], String[1]):Boolean[1]`, for `String` operands where a value may be missing.\nEither operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(String[1], String[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_String_1__String_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(String[1], String[1]):Boolean[1]`, for `String` operands where a value may be missing.\nThe second operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(String[0..1], String[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_String_$0_1$__String_1__Boolean_1_",
+            "documentation": "As `greaterThan(String[1], String[1]):Boolean[1]`, for `String` operands where a value may be missing.\nThe first operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Boolean[0..1], Boolean[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(Boolean[1], Boolean[1]):Boolean[1]`, for `Boolean` operands where a value may be missing.\nEither operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Boolean[1], Boolean[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_",
+            "documentation": "As `greaterThan(Boolean[1], Boolean[1]):Boolean[1]`, for `Boolean` operands where a value may be missing.\nThe second operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Boolean[0..1], Boolean[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_",
+            "documentation": "As `greaterThan(Boolean[1], Boolean[1]):Boolean[1]`, for `Boolean` operands where a value may be missing.\nThe first operand may be absent; absent operands are treated as described in\n`greaterThan(Number[0..1], Number[0..1]):Boolean[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(String[1], String[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_",
+            "documentation": "Compares two strings lexicographically, character by character.\n\nAs `greaterThan(Number[1], Number[1]):Boolean[1]`, the operator is written `>` — `$a > $b` — but the\norder is lexicographic rather than numeric.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Date[1], Date[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_",
+            "documentation": "Compares two dates chronologically. For dates of the same granularity, this is true when `left` falls\nstrictly after `right`. The general case is that it is true when `left` starts strictly after the start of\n`right`, or when they start at the same time but `left` ends strictly before `right`.\n\nAs `greaterThan(Number[1], Number[1]):Boolean[1]`, the operator is written `>` — `$a > $b` — but the\norder is chronological rather than numeric.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::greaterThan(Boolean[1], Boolean[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_1__Boolean_1_",
+            "documentation": "Orders booleans with `false` before `true`, so `true > false` is the only case that holds.\n\nAs `greaterThan(Number[1], Number[1]):Boolean[1]`, the operator is written `>` — `$a > $b` — but the\norder is over the two boolean values rather than numeric.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::collection",
+        "name": "get",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::collection::get(Map<U, V>[1], U[1]):V[0..1]",
+            "id": "meta::pure::functions::collection::get_Map_1__U_1__V_$0_1$_",
+            "documentation": "Returns the value to which the specified key is mapped, or empty if this map contains no mapping for the key",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "length",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::length(String[1]):Integer[1]",
+            "id": "meta::pure::functions::string::length_String_1__Integer_1_",
+            "documentation": "The number of characters in a string.\n\n**Parameters**\n- `str` — the string to measure.\n\n**Returns** the character count; `0` for the empty string.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::collection",
+        "name": "isEmpty",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::collection::isEmpty(Any[*]):Boolean[1]",
+            "id": "meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_",
+            "documentation": "Returns true is the collection size is 0",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::collection::isEmpty(Any[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_",
+            "documentation": "Whether an optional value is absent.\n\nThe `[0..1]` overload, for a value that may or may not be present. Note this asks whether there is *no\nvalue*: an empty `String` is still a present value, so `''->isEmpty()` is false.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::boolean",
+        "name": "between",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::boolean::between(Number[0..1], Number[0..1], Number[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::between_Number_$0_1$__Number_$0_1$__Number_$0_1$__Boolean_1_",
+            "documentation": "Whether a value falls within an inclusive range.\n\n**Both bounds are inclusive**, so a value equal to `lower` or to `upper` is between them. Written out\nit is `($value >= $lower) && ($value <= $upper)`; the point of the function is that it names the\nintent and evaluates the value once.\n\nThere are three overloads, one per comparable type — `Number`, `String` and `Date`.\nAll three arguments are `[0..1]`, and an absent operand makes the comparison false rather than\npropagating emptiness, so a missing value is never reported as being in range.\n\n**Parameters**\n- `value` — the value to test.\n- `lower` — the inclusive lower bound.\n- `upper` — the inclusive upper bound.\n\n**Returns** `true` when the value lies within the bounds.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::between(String[0..1], String[0..1], String[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::between_String_$0_1$__String_$0_1$__String_$0_1$__Boolean_1_",
+            "documentation": "As `between(Number[0..1], Number[0..1], Number[0..1]):Boolean[1]`, for `String` values, ordering strings lexicographically.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::boolean::between(Date[0..1], Date[0..1], Date[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_",
+            "documentation": "As `between(Number[0..1], Number[0..1], Number[0..1]):Boolean[1]`, for `Date` values. Accepts any\ndate — `StrictDate`, `DateTime` or a partial date — and orders them chronologically.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::relation",
+        "name": "map",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::relation::map(Relation<T>[1], Function<{T[1]->V[*]}>[1]):V[*]",
+            "id": "meta::pure::functions::relation::map_Relation_1__Function_1__V_MANY_",
+            "documentation": "Applies a function to each row and returns the results as a collection.\n\n**This leaves the relational world**: the result is a plain `V[*]`, not a relation, so it is the way\nout of a relation into ordinary Pure values. To derive a new column and stay in a relation, use\n`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]` instead.\n\nBecause the row function may return any multiplicity, the results are flattened into one collection\nrather than kept one-per-row.\n\n**Parameters**\n- `rel` — the relation to walk.\n- `f` — the function applied to each row.\n\n**Returns** the results, flattened into a single collection.",
+            "grammarCharacter": null,
+            "platformOnly": true
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::flow",
+        "name": "coalesce",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::flow::coalesce(T[0..1], T[1]):T[1]",
+            "id": "meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_",
+            "documentation": "The first argument that is not empty.\n\nThe way to supply a fallback for a value that may be absent, without writing an `if` on `isEmpty`.\nArguments are tried left to right and the first present one wins; only emptiness is considered, so a\nvalue that is present but zero, `false` or `''` is still returned.\n\n**The last argument decides the result's multiplicity.** Where it is `[1]`, as here, a result is\nguaranteed and the call satisfies a `[1]` use site with no `toOne` — which is the reason to prefer\nthis overload. Where it is `[0..1]`, as in `coalesce(T[0..1], T[0..1]):T[0..1]`, everything may be\nabsent and the result may be empty.\n\nOverloads take up to four arguments. All share these semantics; they differ only in how many values\nthey try and in the multiplicity of the last.\n\n**Parameters**\n- `value` — the value to use when present.\n- `ifEmpty` — the fallback, which must be present.\n\n**Re",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::flow::coalesce(T[0..1], T[0..1], T[1]):T[1]",
+            "id": "meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_",
+            "documentation": "As `coalesce(T[0..1], T[1]):T[1]`, trying two values before the fallback.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::flow::coalesce(T[0..1], T[0..1], T[0..1], T[1]):T[1]",
+            "id": "meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_",
+            "documentation": "As `coalesce(T[0..1], T[1]):T[1]`, trying three values before the fallback.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::flow::coalesce(T[0..1], T[0..1]):T[0..1]",
+            "id": "meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_",
+            "documentation": "As `coalesce(T[0..1], T[1]):T[1]`, but the fallback may itself be absent, so **the result may be\nempty** — `coalesce([], [])` gives empty rather than failing.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::flow::coalesce(T[0..1], T[0..1], T[0..1]):T[0..1]",
+            "id": "meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_",
+            "documentation": "As `coalesce(T[0..1], T[0..1]):T[0..1]`, trying two values before the fallback. The result may be\nempty.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::flow::coalesce(T[0..1], T[0..1], T[0..1], T[0..1]):T[0..1]",
+            "id": "meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_",
+            "documentation": "As `coalesce(T[0..1], T[0..1]):T[0..1]`, trying three values before the fallback. The result may be\nempty.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "toString",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::toString(Any[1]):String[1]",
+            "id": "meta::pure::functions::string::toString_Any_1__String_1_",
+            "documentation": "The plain textual form of any value.\n\nThis is the human-readable rendering: strings come back as their own contents, with no surrounding\nquotes or escapes. This can yield ambiguous results; e.g., `1->toString()` and `'1'->toString()` both\ngive the same result. Use `toRepresentation(Any[1]):String[1]` when you want the form a value would\ntake in Pure source, with strings quoted and escaped.\n\nIf a Class defines a qualified property `toString()` returning `String[1]`, it will be called by this\nfunction to generate string renderings for its instances.\n\n**Parameters**\n- `any` — the value to render.\n\n**Returns** the value as a string.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::math",
+        "name": "sum",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::math::sum(Number[*]):Number[1]",
+            "id": "meta::pure::functions::math::sum_Number_MANY__Number_1_",
+            "documentation": "The sum of a collection of numbers.\n\n**An empty collection gives 0, not empty**, which is why the result is `[1]` — `sum` is defined in\nterms of `plus`, whose identity is zero. That means a sum of no values is indistinguishable from a sum\nof values that happen to cancel; test the collection separately if the difference matters.\n\nThe `Integer` and `Float` variants keep their type; this one accepts a mix and returns `Number`.\n\nThis is an aggregate: it is what a relational `groupBy` or a window aggregation calls.\n\n**Parameters**\n- `numbers` — the values to total.\n\n**Returns** the total, or 0 when there are none.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::sum(Integer[*]):Integer[1]",
+            "id": "meta::pure::functions::math::sum_Integer_MANY__Integer_1_",
+            "documentation": "As `sum(Number[*]):Number[1]`, for `Integer` values, returning an `Integer`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::sum(Float[*]):Float[1]",
+            "id": "meta::pure::functions::math::sum_Float_MANY__Float_1_",
+            "documentation": "As `sum(Number[*]):Number[1]`, for `Float` values, returning a `Float`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::math",
+        "name": "round",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::math::round(Number[1]):Integer[1]",
+            "id": "meta::pure::functions::math::round_Number_1__Integer_1_",
+            "documentation": "Rounds a number to the nearest integer, breaking ties toward the even neighbour.\n\n**Rounding is half-even**, also called banker's rounding — not the half-up rule most people expect. A\nvalue exactly halfway between two integers goes to whichever neighbour is even, so `17.5` rounds to `18`\nbut `16.5` rounds to `16`. This holds for negatives too: `-16.5` gives `-16`, `-17.5` gives `-18`.\n\nHalf-even avoids the upward bias half-up introduces when summing many rounded values, which is why it is\nthe usual choice for financial arithmetic.\n\nTo round to a number of decimal places and keep the number's own type, use\n`round(Decimal[1], Integer[1]):Decimal[1]` or `round(Float[1], Integer[1]):Float[1]`.\n\n**Parameters**\n- `number` — the value to round.\n\n**Returns** the nearest integer, ties going to the even neighbour.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::round(Decimal[1], Integer[1]):Decimal[1]",
+            "id": "meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_",
+            "documentation": "Rounds a `Decimal` to a given number of decimal places, returning a `Decimal`.\n\nUnlike `round(Number[1]):Integer[1]`, the type is preserved and the fractional part is kept, so this is\nthe form to reach for with monetary amounts. A `scale` of `0` rounds to a whole number while still\nreturning a `Decimal`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::round(Float[1], Integer[1]):Float[1]",
+            "id": "meta::pure::functions::math::round_Float_1__Integer_1__Float_1_",
+            "documentation": "Rounds a `Float` to a given number of decimal places, returning a `Float`.\n\nAs `round(Decimal[1], Integer[1]):Decimal[1]` but for binary floating point, so the result is subject to\nthe usual float representation limits — prefer the `Decimal` form when exactness matters.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "contains",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::contains(String[1], String[1]):Boolean[1]",
+            "id": "meta::pure::functions::string::contains_String_1__String_1__Boolean_1_",
+            "documentation": "Whether `source` contains `val` anywhere within it.\n\nThe match is literal and case-sensitive; `val` is not treated as a regular expression.\nEvery string contains the empty string.\n\n**Parameters**\n- `source` — the string to search in.\n- `val` — the substring to look for.\n\n**Returns** `true` if `val` occurs anywhere in `source`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "startsWith",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::startsWith(String[1], String[1]):Boolean[1]",
+            "id": "meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_",
+            "documentation": "Whether `source` begins with `val`.\n\nThe match is literal and case-sensitive. Every string starts with the empty string.\n\n**Parameters**\n- `source` — the string to test.\n- `val` — the prefix to look for.\n\n**Returns** `true` if `source` begins with `val`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::math",
+        "name": "plus",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::math::plus(Integer[*]):Integer[1]",
+            "id": "meta::pure::functions::math::plus_Integer_MANY__Integer_1_",
+            "documentation": "Adds every element of an `Integer` collection, returning a single `Integer`.\n\nWritten `+` in Pure: `$a + $b` desugars to `plus([$a, $b])`, which is why the parameter is a collection\nrather than two values. The collection parameter is also what shapes the edge cases: a single value is\nreturned unchanged, so unary `+1` is just `1`, and an empty collection gives `0` — the additive\nidentity, so that adding nothing changes nothing.\n\n**Parameters**\n- `ints` — the values to add.\n\n**Returns** the sum of the collection.",
+            "grammarCharacter": "+",
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::plus(Float[*]):Float[1]",
+            "id": "meta::pure::functions::math::plus_Float_MANY__Float_1_",
+            "documentation": "Adding every element of a `Float` collection, returning a `Float`.\n\nThe `+` operator desugars to this: `$a + $b` is `plus([$a, $b])`, which is why the parameter is a\ncollection rather than two values. The result keeps the `Float` type.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::plus(Decimal[*]):Decimal[1]",
+            "id": "meta::pure::functions::math::plus_Decimal_MANY__Decimal_1_",
+            "documentation": "Adding every element of a `Decimal` collection, returning a `Decimal`.\n\nThe `+` operator desugars to this: `$a + $b` is `plus([$a, $b])`, which is why the parameter is a\ncollection rather than two values. The result keeps the `Decimal` type.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::math::plus(Number[*]):Number[1]",
+            "id": "meta::pure::functions::math::plus_Number_MANY__Number_1_",
+            "documentation": "Adding every element of a `Number` collection, returning a `Number`.\n\nThe `+` operator desugars to this: `$a + $b` is `plus([$a, $b])`, which is why the parameter is a\ncollection rather than two values. The result keeps the `Number` type.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::collection",
+        "name": "in",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::collection::in(Any[0..1], Any[*]):Boolean[1]",
+            "id": "meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_",
+            "documentation": "Whether a value appears in a collection.\n\nMembership by equality. **An absent `value` gives `false` rather than empty or an error**, so a\nmissing value is never considered a member even if the collection is empty too — the emptiness is\ntested explicitly before the search.\n\n**Parameters**\n- `value` — the value to look for, possibly absent.\n- `collection` — the values to search.\n\n**Returns** `true` when the value appears in the collection.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::collection::in(Any[1], Any[*]):Boolean[1]",
+            "id": "meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_",
+            "documentation": "As `in(Any[0..1], Any[*]):Boolean[1]`, for a value known to be present, so the absent case cannot\narise.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "toUpper",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::toUpper(String[1]):String[1]",
+            "id": "meta::pure::functions::string::toUpper_String_1__String_1_",
+            "documentation": "Converts every character in a string to upper case.\n\nCharacters that have no upper-case form, such as digits and punctuation, are left unchanged, so a\nstring that is already upper case comes back identical.\n\n**Parameters**\n- `source` — the string to convert.\n\n**Returns** the upper-cased string.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "plus",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::plus(String[*]):String[1]",
+            "id": "meta::pure::functions::string::plus_String_MANY__String_1_",
+            "documentation": "Concatenate two strings",
+            "grammarCharacter": "+",
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::multiplicity",
+        "name": "toOne",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::multiplicity::toOne(T[*]):T[1]",
+            "id": "meta::pure::functions::multiplicity::toOne_T_MANY__T_1_",
+            "documentation": "Asserts a collection holds exactly one value and returns it.\n\nThe way to move from a collection to a single value where the surrounding code requires `[1]` — after\n`filter`, after `first`, or on a property whose declared multiplicity is wider than the use site needs.\n\n**It fails rather than yielding empty when the collection does not hold exactly one value**, so it is an\nassertion and not a conversion: both `[]->toOne()` and `['a', 'b', 'c']->toOne()` raise. Reach for\n`meta::pure::functions::collection::first(T[*]):T[0..1]` when an empty collection is an acceptable\noutcome, and for `toOne(T[*], String[1]):T[1]` when the failure deserves a message of its own.\n\n**Parameters**\n- `values` — the collection expected to hold exactly one value.\n\n**Returns** the single value.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::multiplicity::toOne(T[*], String[1]):T[1]",
+            "id": "meta::pure::functions::multiplicity::toOne_T_MANY__String_1__T_1_",
+            "documentation": "As `toOne(T[*]):T[1]`, but you supply the error message. Worth using wherever the failure would otherwise\nbe hard to trace back — the default message says only that the multiplicity was wrong, not which value\nwas missing or why it mattered.\n\n**Parameters**\n- `values` — the collection expected to hold exactly one value.\n- `message` — the error to raise when it does not.\n\n**Returns** the single value.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::variant::convert",
+        "name": "to",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::variant::convert::to(Variant[0..1], T[0..1]):T[0..1]",
+            "id": "meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_",
+            "documentation": "Reads a variant back out as a value of the given type.\n\nCoercion is across JSON types, not merely a check: a JSON string parses into the target primitive\nwhere it can, so `'\"1\"'` reads as `1` for `@Integer` and `'\"1.25\"'` reads as `1.25` for `@Float`.\nIt does not truncate — a JSON number with a fractional part fails against `@Integer`. **Anything\nthat cannot be coerced fails rather than returning empty**; the one empty result is JSON `null`,\nwhich reads back as empty for every target type.\n\nComplex targets are supported as well as primitives: a JSON object reads into a `Class`, a\n`Map<String, …>` or a `List<…>`, resolving a subtype from a `_type` key in the payload. Use\n`toMany(Variant[0..1], T[0..1]):T[*]` when the variant holds an array whose elements you want\nindividually rather than as a `List`.\n\n**Parameters**\n- `variant` — the variant to read.\n- `type` — the target type, given as a",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::variant::convert::to(Variant[0..1], T[0..1], String[1], Pair<String, Class<Any>>[*]):T[0..1]",
+            "id": "meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_$0_1$_",
+            "documentation": "As `to(Variant[0..1], T[0..1]):T[0..1]`, but resolves a subtype using `typeKeyName` and `typeLookup`\nrather than the defaults that variant applies, which are the key `_type` and an empty lookup.\n\n**Parameters**\n- `variant` — the variant to read.\n- `type` — the target type, given as a type literal such as `@Integer`.\n- `typeKeyName` — the payload key naming the concrete subtype.\n- `typeLookup` — the subtype names to resolve against, paired with their classes.\n\n**Returns** the value, or empty when the variant holds JSON `null`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::relation",
+        "name": "toString",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::relation::toString(Relation<T>[1]):String[1]",
+            "id": "meta::pure::functions::relation::toString_Relation_1__String_1_",
+            "documentation": "Renders a relation in the `#TDS` literal format.\n\nThe format `#TDS ... #` accepts as input, so the output can be pasted back into Pure — which is why\nalmost every PCT test in this repository asserts against a `toString` result rather than inspecting\nrows. Values are escaped as `toCSVString(String[1]):String[1]` describes, and an absent value prints\nas `null`.\n\n**Row order is whatever the relation happens to have**, so sort before rendering when comparing\nagainst a fixed expectation.\n\n**Parameters**\n- `rel` — the relation to render.\n\n**Returns** the relation as `#TDS` text.",
+            "grammarCharacter": null,
+            "platformOnly": true
+          },
+          {
+            "simple": "meta::pure::functions::relation::toString(Relation<T>[1], Boolean[1]):String[1]",
+            "id": "meta::pure::functions::relation::toString_Relation_1__Boolean_1__String_1_",
+            "documentation": "As `toString(Relation<T>[1]):String[1]`, optionally annotating each column in the header with its\ntype and multiplicity — `val:Integer[1]` rather than `val`. Pass `true` when the point of printing is\nto check the relation's shape rather than its contents.",
+            "grammarCharacter": null,
+            "platformOnly": true
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::collection",
+        "name": "isNotEmpty",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::collection::isNotEmpty(Any[*]):Boolean[1]",
+            "id": "meta::pure::functions::collection::isNotEmpty_Any_MANY__Boolean_1_",
+            "documentation": "Returns true is the collection size is strictly greater than 0",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::collection::isNotEmpty(Any[0..1]):Boolean[1]",
+            "id": "meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_",
+            "documentation": "Whether an optional value is present.\n\nThe `[0..1]` overload, and the negation of `isEmpty(Any[0..1]):Boolean[1]`. Commonly the guard before\n`meta::pure::functions::multiplicity::toOne(T[*]):T[1]`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::date",
+        "name": "year",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::date::year(Date[1]):Integer[1]",
+            "id": "meta::pure::functions::date::year_Date_1__Integer_1_",
+            "documentation": "The year component of a date.\n\nPure dates carry **variable granularity** — `%2015`, `%2015-04`, `%2015-04-15`, `%2015-04-15T17` and\nso on are all valid `Date` values, each knowing only as much as was written. Every date has a year, so this is the one extractor that never fails.\n\n**Parameters**\n- `d` — the date to read.\n\n**Returns** its year.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::boolean",
+        "name": "eq",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::boolean::eq(Any[1], Any[1]):Boolean[1]",
+            "id": "meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_",
+            "documentation": "Identity or primitive equality (e.g., numeric equality)",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::collection",
+        "name": "contains",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::collection::contains(Any[*], Any[1]):Boolean[1]",
+            "id": "meta::pure::functions::collection::contains_Any_MANY__Any_1__Boolean_1_",
+            "documentation": "Whether a collection contains a given value, compared with `==`.\n\nThe collection is untyped, so a mixed collection may be searched for a value of any type. An empty\ncollection contains nothing.\n\n**Parameters**\n- `collection` — the collection to search.\n- `value` — the value to look for.\n\n**Returns** `true` if any element equals `value`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          },
+          {
+            "simple": "meta::pure::functions::collection::contains(Z[*], Z[1], Function<{Z[1], Z[1]->Boolean[1]}>[1]):Boolean[1]",
+            "id": "meta::pure::functions::collection::contains_Z_MANY__Z_1__Function_1__Boolean_1_",
+            "documentation": "Whether a collection contains a given value, compared with a supplied equality function.\n\nUse this when `==` is not the comparison you want — for example matching objects on one property,\nor comparing strings case-insensitively. The comparator is called as\n`comparator($value, $element)`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::relation",
+        "name": "greaterThan",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::relation::greaterThan(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]",
+            "id": "meta::pure::functions::relation::greaterThan_U_$0_1$__Relation_1__Boolean_1_",
+            "documentation": "Whether the given value is greater than the single value in the single column of the given relation.\n\nThis is the scalar subquery comparison — `x > (select max(y) from t)` — as distinct from the\nquantified forms. The relation must hold at most one row; more than one is an error.\n\nThe relation must carry exactly one column, of the same type as the value; the compiler rejects\nanything else. A null in that column is ignored rather than making the comparison undecided —\n`Boolean[1]` is two-valued and has no UNKNOWN to return.\n\nAn empty relation, a column holding only a null, and an empty value all answer `false`.\n\n**Parameters**\n- `value` — the value to compare; may be empty.\n- `rel` — a relation with a single column of the same type as `value`, holding at most one row.\n\n**Returns** `true` when the column's single non-null value `c` satisfies `value > c`.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    },
+    {
+      "functionDefinition": {
+        "_package": "meta::pure::functions::string",
+        "name": "split",
+        "signatures": [
+          {
+            "simple": "meta::pure::functions::string::split(String[1], String[1]):String[*]",
+            "id": "meta::pure::functions::string::split_String_1__String_1__String_MANY_",
+            "documentation": "Splits a string into a collection of pieces around each occurrence of a separator.\n\nThe separator is matched literally, not as a regular expression, and is not itself included in the\nresult. If the separator never occurs, the result is a single-element collection holding the\noriginal string — not an empty collection.\n\n**Parameters**\n- `str` — the string to split.\n- `token` — the literal separator to split on.\n\n**Returns** the pieces, in order.",
+            "grammarCharacter": null,
+            "platformOnly": false
+          }
+        ]
+      }
+    }
+  ]
+}

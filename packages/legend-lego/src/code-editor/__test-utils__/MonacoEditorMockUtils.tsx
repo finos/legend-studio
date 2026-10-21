@@ -48,6 +48,7 @@ export const MockedMonacoEditorModel = {
   getLineCount: createMock(),
   getLineMaxColumn: createMock(),
   getValueInRange: createMock(),
+  getWordAtPosition: createMock(),
   setValue: createMock(),
   pushStackElement: createMock(),
   pushEditOperations: createMock(),
@@ -77,6 +78,9 @@ export const MockedMonacoEditorInstance = {
   onDidFocusEditorText: createMock(),
   onDidBlurEditorText: createMock(),
   onDidFocusEditorWidget: createMock(),
+  executeEdits: createMock(),
+  getSelection: createMock(),
+  pushUndoStop: createMock(),
 };
 
 export const MockedMonacoEditorAPI = {
@@ -113,6 +117,7 @@ export const MockedMonacoEditorLanguagesAPI = {
   registerCodeLensProvider: createMock(),
   registerHoverProvider: createMock(),
   registerCompletionItemProvider: createMock(),
+  registerSignatureHelpProvider: createMock(),
   CompletionItemKind: MockedMonacoLanguageCompletionItemKind,
   CompletionItemInsertTextRule: MockedMonacoLanguageCompletionItemKind,
 };

@@ -23,10 +23,13 @@ import {
 } from '@finos/legend-art';
 import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
-import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  type CodeEditorTextInserter,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   COLUMN_NAME_RULES_HINT,
   EXTEND_EDITOR_NOTES,
@@ -50,7 +53,10 @@ import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 import {
   type CubeCompletionColumn,
   getCubeExpressionCompletionSource,
+  getCubeFunctionHoverSource,
+  getCubeFunctionSignatureHelpSource,
 } from './CubeExpressionCompletions.js';
+import type { CubeFunctionCatalogue } from '../../graph-manager/CubeFunctionCatalogue.js';
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 
@@ -129,10 +135,26 @@ const CubeExtendRowEditor = observer(
     count: number;
     /** The columns its expression can read: the input's, and the rows' above it */
     columns: readonly CubeCompletionColumn[];
+    catalogue: CubeFunctionCatalogue | undefined;
+    /** Set to what writes text at the expression's cursor */
+    textInserterRef: { current: CodeEditorTextInserter | undefined };
     readOnly: boolean;
     onFocus: () => void;
+    /** The expression's code was clicked or tabbed into: it has a cursor */
+    onCodeFocus: () => void;
   }) => {
-    const { draft, row, position, count, columns, readOnly, onFocus } = props;
+    const {
+      draft,
+      row,
+      position,
+      count,
+      columns,
+      catalogue,
+      textInserterRef,
+      readOnly,
+      onFocus,
+      onCodeFocus,
+    } = props;
     const [expanded, setExpanded] = useState(false);
     // typing goes on while the rows are checked
     const disabled = readOnly;
@@ -190,7 +212,10 @@ const CubeExtendRowEditor = observer(
           data-check-status={status}
           className={getCubeCodeBoxClass(status)}
           style={{ height: expanded ? 240 : 72 }}
-          onFocus={onFocus}
+          onFocus={() => {
+            onFocus();
+            onCodeFocus();
+          }}
         >
           <CodeEditor
             inputValue={row.code}
@@ -201,9 +226,14 @@ const CubeExtendRowEditor = observer(
             hideGutter={true}
             hideActionBar={true}
             error={markerOf(row)}
-            completions={getCubeExpressionCompletionSource(columns, (text) =>
-              draft.getEngineCompletions(row.key, text),
+            completions={getCubeExpressionCompletionSource(
+              columns,
+              (text) => draft.getEngineCompletions(row.key, text),
+              catalogue,
             )}
+            hover={getCubeFunctionHoverSource(catalogue)}
+            signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
+            textInserterRef={textInserterRef}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
@@ -222,23 +252,49 @@ const CubeExtendRowEditor = observer(
 /**
  * The Extend editor (spec §17.6, PLAN §11.7): a row per new column, its name
  * and its expression in a code editor, checked once typing pauses (F10 at
- * once), each border green when ready (user, 2026-10-16), and the input's
- * columns, which a click writes into the row last used.
+ * once), each border green when ready (user, 2026-10-16), with the engine's
+ * functions' completions and help (EXPRESSION-EDITOR.md, round 1), and the
+ * input's columns, which a click writes into the row last used: at its
+ * cursor, or at its end before its code is clicked into.
  */
 export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
-  const { inputSchemas, readOnly } = props;
+  const { editorState, inputSchemas, readOnly } = props;
   const draft = guaranteeType(props.draft, CubeExtendDraft);
   const [schema] = inputSchemas as [Schema];
   const [focusedKey, setFocusedKey] = useState<number | undefined>();
+  // each row's writer at its cursor, and the rows whose code has one
+  const inserters = useRef(
+    new Map<number, { current: CodeEditorTextInserter | undefined }>(),
+  );
+  const [cursorKeys, setCursorKeys] = useState<ReadonlySet<number>>(
+    () => new Set(),
+  );
+  const catalogue = editorState.functionCatalogue;
+  useEffect(() => editorState.loadFunctionCatalogue(), [editorState]);
+  const inserterOf = (
+    key: number,
+  ): { current: CodeEditorTextInserter | undefined } => {
+    let inserter = inserters.current.get(key);
+    if (!inserter) {
+      inserter = { current: undefined };
+      inserters.current.set(key, inserter);
+    }
+    return inserter;
+  };
   const target =
     draft.rows.find((row) => row.key === focusedKey) ?? draft.rows.at(-1);
   const chipsDisabled = readOnly || !target;
-  /** Writes text at the end of the expression last used, as the chips do */
+  /** Writes text at the cursor of the expression last used, or at its end before it is clicked into, as the chips do */
   const write = (text: string): void => {
-    if (target) {
-      const separator = /\s$/u.test(target.code) ? '' : ' ';
-      draft.setCode(target.key, `${target.code}${separator}${text}`);
+    if (!target) {
+      return;
     }
+    const inserter = inserters.current.get(target.key)?.current;
+    if (cursorKeys.has(target.key) && inserter?.(text)) {
+      return;
+    }
+    const separator = /\s$/u.test(target.code) ? '' : ' ';
+    draft.setCode(target.key, `${target.code}${separator}${text}`);
   };
   return (
     <div className="flex flex-col gap-2 text-base">
@@ -259,8 +315,15 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
                 .filter(({ name }) => name)
                 .map(({ name, type }) => ({ name, type, nullable: true })),
             ]}
+            catalogue={catalogue}
+            textInserterRef={inserterOf(row.key)}
             readOnly={readOnly}
             onFocus={() => setFocusedKey(row.key)}
+            onCodeFocus={() => {
+              if (!cursorKeys.has(row.key)) {
+                setCursorKeys(new Set([...cursorKeys, row.key]));
+              }
+            }}
           />
         ))}
       </ul>
@@ -279,7 +342,7 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
           <li key={column.name} className="flex items-stretch gap-0.5">
             <button
               className="flex items-center gap-1 rounded-sm border border-[var(--color-border-subtle)] px-1 text-sm hover:bg-[var(--color-bg-hover)] disabled:text-[var(--color-text-disabled)]"
-              title={`Write ${columnAccessOf(column.name)} at the end of the expression last used (${getExactColumnTypeLabel(column)})`}
+              title={`Write ${columnAccessOf(column.name)} at the cursor of the expression last used (${getExactColumnTypeLabel(column)})`}
               disabled={chipsDisabled}
               onClick={() => write(columnAccessOf(column.name))}
             >
