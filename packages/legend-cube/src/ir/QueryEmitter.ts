@@ -51,6 +51,11 @@ export interface ExecutionOptions {
   /** The path of the runtime to run the query with */
   readonly runtime: string;
   /**
+   * The path of the mapping to run the query with, when its sources read
+   * classes (PLAN §11.25): the lambda then ends in `from(mapping, runtime)`
+   */
+  readonly mapping?: string | undefined;
+  /**
    * The engine's name for the type of the database it runs on, e.g.
    * `SqlServer`, for the operations some write another way
    * (`getDialectWorkarounds`); without one, every operation is written the
@@ -145,7 +150,8 @@ export class QueryEmitter {
   /**
    * The lambda that runs the query up to its capture node (the selected
    * node): `{| <relation>->limit(rowLimit + 1)->from(runtime)}`, with no
-   * `limit` when `rowLimit` is left out. The relation
+   * `limit` when `rowLimit` is left out, and `from(mapping, runtime)` with a
+   * mapping. The relation
    * is written with its rows' order where it is used, and the capture's own
    * order, if any, as a sort before the limit, so the rows shown are in it.
    *
@@ -158,7 +164,7 @@ export class QueryEmitter {
    * databases don't keep. Typing lambdas never bind: they type the same.
    */
   emitExecutionLambda(options: ExecutionOptions): IR {
-    const { rowLimit, runtime, databaseType } = options;
+    const { rowLimit, runtime, mapping, databaseType } = options;
     if (
       rowLimit !== undefined &&
       (!Number.isSafeInteger(rowLimit) || rowLimit < 1)
@@ -213,7 +219,9 @@ export class QueryEmitter {
     const from = (rows: IR): IR =>
       func(
         'from',
-        [rows, elementPtr(runtime)],
+        mapping
+          ? [rows, elementPtr(mapping), elementPtr(runtime)]
+          : [rows, elementPtr(runtime)],
         originOf(captureId, EmitRole.FROM),
       );
     return lambda(

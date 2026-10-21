@@ -194,7 +194,7 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table, data product, ingest data set, function and service sources and the transforms, in menu order, by default', () => {
+  test('Has the relational table, data product, ingest data set, function, service and data space sources and the transforms, in menu order, by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
@@ -206,6 +206,7 @@ describe(unitTest('Node registry'), () => {
       'ingestDataset',
       'function',
       'service',
+      'dataSpace',
     ]);
     const dataProduct = registry.get('dataProductAccessPoint');
     expect(dataProduct).toBe(DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION);
@@ -260,8 +261,9 @@ describe(unitTest('Node registry'), () => {
         .filter((transform) => transform.isolationBoundary)
         .map((transform) => transform.type),
     ).toEqual(['partition']);
-    // the relational sources' database rule, and the one-kind rule once
-    expect(registry.queryRules).toHaveLength(2);
+    // the relational sources' database rule, the one-kind rule once, and
+    // the data space sources' context rule
+    expect(registry.queryRules).toHaveLength(3);
   });
 
   test('Creates a sort with no key yet', () => {

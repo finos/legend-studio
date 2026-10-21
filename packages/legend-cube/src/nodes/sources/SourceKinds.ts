@@ -22,6 +22,7 @@ import { IngestDatasetSource } from './IngestDatasetSource.js';
 import { RelationalTableSource } from './RelationalTableSource.js';
 import { ServiceSource } from './ServiceSource.js';
 import { FunctionSource } from './FunctionSource.js';
+import { DataSpaceSource } from './DataSpaceSource.js';
 
 /**
  * The kinds of source a query reads, one per query (PLAN §6.8): each kind's
@@ -40,6 +41,8 @@ const SOURCE_KINDS: readonly {
   { name: 'data products', types: [DataProductAccessPointSource.TYPE] },
   { name: 'ingest data sets', types: [IngestDatasetSource.TYPE] },
   { name: 'services', types: [ServiceSource.TYPE] },
+  // a data space's classes run with its mapping (PLAN §11.25)
+  { name: 'data spaces', types: [DataSpaceSource.TYPE] },
 ];
 
 /** The index of a node type's kind in SOURCE_KINDS, or -1 for a node of none */
