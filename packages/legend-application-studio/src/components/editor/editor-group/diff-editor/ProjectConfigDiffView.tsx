@@ -40,12 +40,6 @@ export const ProjectConfigDiffView = observer(
                 {getPrettyLabelForRevision(configDiffState.toRevision)}
               </div>
             </div>
-            <div className="entity-diff-view__header__info__revision-summary__icon">
-              <CompareIcon />
-            </div>
-            <div className="entity-diff-view__header__info__revision-summary__revision">
-              {getPrettyLabelForRevision(configDiffState.toRevision)}
-            </div>
           </div>
         </div>
         <div className="entity-diff-view__content">

@@ -228,12 +228,12 @@
 
   &__label__icon {
     font-size: 1.2rem;
-    color: var(--color-text-on-accent);
+    color: var(--color-text-primary);
   }
 
   &__label__title {
     margin-left: 0.7rem;
-    color: var(--color-text-on-accent);
+    color: var(--color-text-primary);
     font-size: 1.2rem;
     font-weight: 500;
   }
@@ -252,14 +252,17 @@
     }
   }
 
+  // The default combo sits on --color-bg-tag, so its text pairs with
+  // --color-text-primary; --primary fills it with the accent color, so its
+  // text pairs with --color-text-on-accent.
   &--primary &__label,
   &--primary &__dropdown-btn {
     background: var(--color-accent);
   }
 
-  &__label:hover &__label__icon,
-  &__label:hover &__label__title,
-  &__dropdown-btn:hover svg {
+  &--primary &__label__icon,
+  &--primary &__label__title,
+  &--primary &__dropdown-btn svg {
     color: var(--color-text-on-accent);
   }
 
