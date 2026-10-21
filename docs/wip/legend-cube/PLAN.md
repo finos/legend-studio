@@ -5531,50 +5531,83 @@ query builder changes in a drastic way.
 **Design:**
 
 - **The node:** `DataSpaceSource` (kind `dataSpace`), a source. It holds the data space's path, the execution context's
-  key, the entity's path (for its label), the query builder's lambda (protocol JSON, kept to open the query builder on
-  it again), the same query as a Relation (protocol JSON, what Cube runs), and a schema snapshot of its columns. The
-  core never reads either lambda: the emitter writes the Relation as `raw` IR, passed through as is.
-- **The cube's context:** the model is the data space's project at a released version (the existing project pointer,
-  `CubeProject.ts`), the runtime its execution context's runtime, and a new optional **`mapping`**, its mapping. A run
-  then ends in `from(mapping, runtime)` instead of `from(runtime)`, which the engine runs as one SQL statement with the
-  steps after it (checked for the saved query plan, finos/legend-studio#5742). The spec stays at version 1: the field
-  is additive.
-- **One context:** every source of a cube shares the model, mapping and runtime, as now (§6.8). A second data space
-  node must name the same data space, version and execution context (another entity is fine, e.g. to join two classes).
+  key, the entity's path (for its label), two lambdas the editor writes together on Apply, and a schema snapshot of its
+  columns. The two lambdas are `query`, the query builder's own lambda, which the editor opens again, and `relation`,
+  the same query as a Relation, which is what Cube runs. Both are protocol JSON that the core never reads. The emitter
+  writes `relation`'s body as `raw` IR, passed through as is. `raw` gains an optional origin, stamped on each value
+  specification as an Extend's lambda is, so that an engine error in the node's part points at the node.
+- **The cube's context:**
+  - The model is the data space's project at a released version (the existing project pointer, `CubeProject.ts`).
+  - The runtime is its execution context's runtime.
+  - A new optional **`mapping`** holds its mapping. A run then ends in `from(mapping, runtime)` instead of
+    `from(runtime)`; the engine runs that as one SQL statement with the steps after it (checked for the saved query
+    plan, finos/legend-studio#5742).
+  - The spec stays at version 1: the field is additive.
+- **One context, no mixing:** a cube with a data space source takes only data space sources of the same data space,
+  version and execution context (another entity is fine, e.g. to join two classes). The other source kinds run with
+  `from(runtime)` on a runtime with no mapping, so their tabs are disabled once a data space source is in, and the data
+  space tab is disabled once another kind is.
 - **The editor, provided by the host:** `legend-cube-builder` stays free of `legend-query-builder` (its README's rule).
   `CubeHost` gains an optional `dataSpaceEditor`, which Legend Analytics provides: it opens the query builder on a
   node's settings and hands back new ones on Apply. Only a host that provides it offers the source.
-- **What the query builder writes:** a TDS query (`Class.all()->filter(…)->project([…])`), converted to a Relation by the
-  engine's `transformTdsToRelation` endpoint, then typed for its columns, both through Cube's engine port (both checked
-  for #5742). A lambda that already is a Relation (the query builder's typed mode) is only typed.
-- **In Analytics:** a `DataSpaceQueryBuilderState` subclass for Cube, built like Legend Query's
-  (`DataProductQueryCreatorStore`): the data space's graph, light from its precomputed analysis when depot has it, else
-  the project's full graph; the data spaces listed from depot; the results panel hidden (`isResultPanelHidden`, an
-  existing getter). Analytics' plugin manager gains the graph plugins Legend Query registers (data space, diagram, text
-  and the rest), which building any project's graph needs.
+- **What the query builder writes (spike, 2026-10-21):** Data Cube's "Open in DataCube" already gets a Relation from
+  the query builder without the engine: it switches the builder to its typed writer for one `buildQuery()`. The writer
+  turns every projection column the builder makes (property, relation column, derivation) into
+  `project(~[…])`, and adds `from(mapping, runtime)`, which the editor strips. So `relation` needs no engine conversion
+  (the `transformTdsToRelation` endpoint isn't used). Cube types it through its engine port, as it does a function
+  source.
+- **Milestoned classes:** the query builder gives a date-versioned class's dates as parameters, with a value that
+  follows the current date. The editor writes that value in place of each parameter in `relation`, so a cube reads the
+  class as of the day it runs. Picking another date is a later step. Any other parameter is refused, with the reason.
+- **Refused on Apply:** the query builder's state is checked, not only its controls. Aggregates, query options, a
+  post-filter, window functions, constants, a graph fetch and text it can't show are each refused with the reason, in
+  case one comes back from a spec edited by hand.
+- **In Analytics:**
+  - A `DataSpaceQueryBuilderState` subclass for Cube, built as Legend Query builds one (`DataProductQueryCreatorStore`).
+  - The data space's graph: light from its precomputed analysis when depot has one, else the project's full graph.
+  - The data spaces are listed from depot.
+  - The results panel is hidden (`isResultPanelHidden`, an existing getter).
+  - Analytics' plugin manager gains the graph plugins Legend Query registers (data space, diagram, text and the rest),
+    which building any project's graph needs. Their application plugins are left out, so the query builder shows no
+    template queries and has no keyboard commands.
 
-**Changes to `legend-query-builder` (not drastic):** small additive options on its existing workflow seam
-(`QueryBuilderWorkflowState`), each defaulting to today's behaviour: hide the header's actions and menus (Advanced,
-Help), the per-column aggregate buttons, and the query options button. Nothing else in the query builder changes; any
-change beyond these is raised with the user first.
+**The query builder's controls (spike, 2026-10-21):**
+
+| Control                                                                                                                                                           | What it could add                                        | Hidden by                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
+| The header's Advanced menu (functions, parameters, constants, fetch structure, windows, post-filter, calendar, typed mode, entitlements, Edit Pure, Show Pure, …) | Windows, post-filters, parameters, constants, text edits | New: `showHeaderMenus`                                        |
+| The header's Help menu (documentation, virtual assistant)                                                                                                         | Nothing                                                  | New: `showHeaderMenus`                                        |
+| Undo and redo                                                                                                                                                     | Nothing                                                  | Kept                                                          |
+| The fetch structure switch (projection or graph fetch)                                                                                                            | A graph fetch                                            | Existing: `getFetchStructureLayoutConfig().showInFetchPanel`  |
+| A column's aggregate operator (Σ)                                                                                                                                 | A group-by                                               | New: `showProjectionAggregation`                              |
+| Query Options (sort, distinct, limit, dates)                                                                                                                      | Sorts, a distinct, a limit                               | New: `showQueryOptions`                                       |
+| The status bar (diff, compile, JSON and Pure text modes)                                                                                                          | Text edits                                               | Existing: `showStatusBar`                                     |
+| The results panel (run, plan, export)                                                                                                                             | Nothing in the query                                     | Existing: `isResultPanelHidden`                               |
+| The query assistant's chat                                                                                                                                        | Text edits                                               | Existing config: `TEMPORARY__disableQueryBuilderAgentChat`    |
+| Template queries                                                                                                                                                  | Anything                                                 | Not shown: the data space application plugin isn't registered |
+| The data space, context, runtime and entity selectors; the explorer; columns, derivations; the filter                                                             | The node's settings                                      | Kept                                                          |
+
+**Changes to `legend-query-builder` (not drastic):** the three new options are getters on its existing workflow seam
+(`QueryBuilderWorkflowState`), each defaulting to today's behaviour, and read where the controls are rendered. Nothing
+else in the query builder changes; any change beyond these is raised with the user first.
 
 **Not in this milestone:**
 
-- **Parameters:** a lambda with parameters (e.g. the business date of a date-versioned class) is refused, with the
-  reason; a run has no parameters to give (#5742 found that `let`s could give them, later).
+- **Parameters other than milestoning dates:** refused; a run has no parameters to give (#5742 found that `let`s could
+  give them, later).
 - **Studio:** not offered, as the user decided for the saved query source (2026-10-20).
 - **Import Pure** doesn't read the node back: it refuses a lambda holding a class query, as it does now.
 
 **Steps:**
 
-| Step | Deliverable                                                                                                                                                                                        | Done when                                                                    |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| DS.1 | This section, a draft PR                                                                                                                                                                           | Pushed                                                                       |
-| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; `DataSpaceSource` (node, codec, emitter as `raw`, validation, registry, help text)                                                      | Unit tests; emitted Pure pinned                                              |
-| DS.3 | Builder: the engine port's conversion and typing (`transformTdsToRelation`, relation type) in the v1 adapter; the `dataSpaceEditor` seam; the node's editor shell; the palette item and source tab | Store, component and adapter tests with a fake host editor and a fake engine |
-| DS.4 | Query builder: the workflow options, defaulting to today's behaviour                                                                                                                               | Its tests pass unchanged; new tests for each option                          |
-| DS.5 | Analytics: the plugins, the data space graph, the Cube query builder state and the editor component                                                                                                | Host and component tests                                                     |
-| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                                  | Every caption true on screen                                                 |
+| Step | Deliverable                                                                                                                                                                         | Done when                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                        |
+| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned                               |
+| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor |
+| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option              |
+| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests                                      |
+| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen                                  |
 
 ## 12. G. Risks and open questions
 
