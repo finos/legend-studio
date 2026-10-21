@@ -301,10 +301,12 @@
     &__label {
       &--query {
         background: var(--color-accent) !important;
+        color: var(--color-text-on-accent);
       }
 
       &--test {
         background: var(--color-pink-500) !important;
+        color: var(--color-text-on-accent);
       }
     }
 

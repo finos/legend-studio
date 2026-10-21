@@ -70,14 +70,17 @@
     color: var(--color-text-disabled);
   }
 
+  // The selected row sits on --color-bg-selected, which is a pale tint in
+  // light themes, so its text pairs with the regular text tokens rather than
+  // --color-text-on-accent (which stays light in every theme).
   .side-bar__panel__item--selected &__item__info-name,
   .side-bar__panel__item--selected &__item__type {
-    color: var(--color-text-on-accent);
+    color: var(--color-text-primary);
   }
 
   .side-bar__panel__item--selected &__item__info,
   .side-bar__panel__item--selected &__item__info-path {
-    color: var(--color-text-on-accent);
+    color: var(--color-text-secondary);
   }
 
   &__item-section-separator {
