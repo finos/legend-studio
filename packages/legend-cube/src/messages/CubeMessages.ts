@@ -123,6 +123,13 @@ export const MESSAGE_DIFFERENT_DATABASES = (
 ): string =>
   `Sources from different databases are not supported yet; ${quote(database)} differs from ${quote(firstDatabase)}.`;
 
+/** Added by Cube: a query's data space sources read one data space, in one execution context (PLAN §11.25) */
+export const MESSAGE_DIFFERENT_DATA_SPACES = (
+  dataSpace: string,
+  firstDataSpace: string,
+): string =>
+  `Sources from different data spaces or execution contexts are not supported yet; ${quote(dataSpace)} differs from ${quote(firstDataSpace)}.`;
+
 /**
  * Added by Cube: a query reads one kind of source (PLAN §6.8). Names the two
  * kinds in a fixed order, then the kind the query reads.

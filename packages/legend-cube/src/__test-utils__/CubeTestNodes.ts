@@ -16,6 +16,10 @@
 
 import { BinaryNode, type QueryNode, UnaryNode } from '../graph/QueryNode.js';
 import { ensureSchemas, validate } from '../inference/ValidationUtils.js';
+import {
+  type DataSpaceCoordinates,
+  DataSpaceSource,
+} from '../nodes/sources/DataSpaceSource.js';
 import { RelationalTableSource } from '../nodes/sources/RelationalTableSource.js';
 import { Schema, SchemaColumn } from '../schema/Schema.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
@@ -52,6 +56,115 @@ export const resolvedTable = (
     { database, schema: 'NORTHWIND', table },
     { kind: 'resolved', schema: new Schema(columns) },
   );
+
+const property = (name: string): Record<string, unknown> => ({
+  _type: 'property',
+  property: name,
+  parameters: [{ _type: 'var', name: 'x' }],
+});
+
+const columnLambda = (name: string): Record<string, unknown> => ({
+  _type: 'lambda',
+  body: [property(name)],
+  parameters: [{ _type: 'var', name: 'x' }],
+});
+
+/** `trading::Trade.all()->filter(x|$x.quantity > 100)`, as the query builder writes it */
+const FILTERED_TRADES = {
+  _type: 'func',
+  function: 'filter',
+  parameters: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        { _type: 'packageableElementPtr', fullPath: 'trading::Trade' },
+      ],
+    },
+    {
+      _type: 'lambda',
+      body: [
+        {
+          _type: 'func',
+          function: 'greaterThan',
+          parameters: [property('quantity'), { _type: 'integer', value: 100 }],
+        },
+      ],
+      parameters: [{ _type: 'var', name: 'x' }],
+    },
+  ],
+};
+
+/**
+ * A data space source's coordinates, as the host's editor writes them (PLAN
+ * §11.25): the query builder's TDS query of trades and its relation,
+ * `…->project(~[id: x|$x.id, quantity: x|$x.quantity])`
+ */
+export const TRADES_DATA_SPACE: DataSpaceCoordinates = {
+  dataSpace: 'trading::TradesDataSpace',
+  executionContext: 'production',
+  entity: 'trading::Trade',
+  query: {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          FILTERED_TRADES,
+          {
+            _type: 'collection',
+            multiplicity: { lowerBound: 2, upperBound: 2 },
+            values: [columnLambda('id'), columnLambda('quantity')],
+          },
+          {
+            _type: 'collection',
+            multiplicity: { lowerBound: 2, upperBound: 2 },
+            values: [
+              { _type: 'string', value: 'id' },
+              { _type: 'string', value: 'quantity' },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  },
+  relation: {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          FILTERED_TRADES,
+          {
+            _type: 'classInstance',
+            type: 'colSpecArray',
+            value: {
+              colSpecs: [
+                { name: 'id', function1: columnLambda('id') },
+                { name: 'quantity', function1: columnLambda('quantity') },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  },
+} as unknown as DataSpaceCoordinates;
+
+/** A data space source on trades, resolved to a schema with the given columns */
+export const resolvedDataSpace = (
+  id: string,
+  columns: SchemaColumn[],
+  coordinates: DataSpaceCoordinates = TRADES_DATA_SPACE,
+): DataSpaceSource =>
+  new DataSpaceSource(id, coordinates, {
+    kind: 'resolved',
+    schema: new Schema(columns),
+  });
 
 /** A test-only unary transform: passes its input schema through, valid unless given an error */
 export class TestUnaryNode extends UnaryNode {

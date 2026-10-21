@@ -48,6 +48,8 @@ const label = (node: IR): string | undefined => {
       return `let ${node.name}`;
     case 'lambdaJson':
       return 'lambda';
+    case 'raw':
+      return 'raw';
     case 'property':
       return `.${node.name}`;
     case 'literal':
@@ -62,8 +64,8 @@ const label = (node: IR): string | undefined => {
 };
 
 /**
- * Every IR node that can carry an origin (func, property, literal, enumValue
- * and the accessors), in tree order, as `<label>@<nodeId>:<role>`, or
+ * Every IR node that can carry an origin (func, property, literal, enumValue,
+ * raw JSON and the accessors), in tree order, as `<label>@<nodeId>:<role>`, or
  * `<label>@-` without one; e.g. `filter@filter101:filter`, `.CITY@filter101:column`,
  * `'France'@filter101:value`. Tests compare the whole list, so each site's
  * role is pinned.
