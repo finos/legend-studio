@@ -186,11 +186,18 @@ export class BrowserNavigator implements ApplicationNavigator {
     return this.window.location.origin + this.baseUrl + location;
   }
 
-  updateCurrentLocation(location: NavigationLocation): void {
+  updateCurrentLocation(
+    location: NavigationLocation,
+    options?: { replace?: boolean | undefined },
+  ): void {
     // `react-router` NavigateFunction returns promise and non-promise type, so we need to wrap it
     // to avoid unhandled promise rejection if any. This might get resolved in the future.
     // See https://github.com/remix-run/react-router/issues/12348
-    Promise.resolve(this.navigate(location)).catch(noop());
+    Promise.resolve(
+      options?.replace
+        ? this.navigate(location, { replace: true })
+        : this.navigate(location),
+    ).catch(noop());
   }
 
   updateCurrentZone(zone: NavigationZone): void {
