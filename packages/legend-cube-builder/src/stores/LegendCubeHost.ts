@@ -31,6 +31,7 @@ import { CubeEngineClientSettings } from '../graph-manager/CubeEngineClientSetti
 import type { CubeIngestCatalog } from '../graph-manager/CubeIngestCatalog.js';
 import type { CubeProjectCatalog } from '../graph-manager/CubeProjectCatalog.js';
 import type { CubeServiceCatalog } from '../graph-manager/CubeServiceCatalog.js';
+import type { CubeStore } from '../graph-manager/CubeStore.js';
 import {
   buildCubeConnectionExplorer,
   buildCubeDataProductCatalog,
@@ -39,6 +40,7 @@ import {
   buildCubeLakehouseEnvironment,
   buildCubeProjectCatalog,
   buildCubeServiceCatalog,
+  buildCubeStore,
   type CubeEngineConfig,
   type CubeLakehouseServices,
 } from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
@@ -166,6 +168,7 @@ export interface LegendCubeHostParts {
   readonly engine?: CubeEngine | undefined;
   readonly connectionExplorer?: CubeConnectionExplorer | undefined;
   readonly projectCatalog?: CubeProjectCatalog | undefined;
+  readonly store?: CubeStore | undefined;
 }
 
 /**
@@ -184,6 +187,8 @@ export class LegendCubeHost implements CubeHost {
   readonly ingestCatalog: CubeIngestCatalog | undefined;
   readonly projectCatalog: CubeProjectCatalog | undefined;
   readonly serviceCatalog: CubeServiceCatalog;
+  /** Saved cubes: the engine's Cube store, on the host's query server (PLAN §11.13) */
+  readonly store: CubeStore;
   /** The engine URL and compression Cube's engine clients share, which Dev Settings changes */
   readonly engineClientSettings: CubeEngineClientSettings;
 
@@ -240,5 +245,9 @@ export class LegendCubeHost implements CubeHost {
       tracerService,
       this.engineClientSettings,
     );
+    // an engine without the store, or its Mongo, says so on the first call
+    this.store =
+      parts?.store ??
+      buildCubeStore(config.engine, tracerService, this.engineClientSettings);
   }
 }

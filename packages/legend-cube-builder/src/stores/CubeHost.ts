@@ -33,6 +33,7 @@ import {
   isCubeProjectModel,
 } from '../graph-manager/CubeProject.js';
 import type { CubeProjectCatalog } from '../graph-manager/CubeProjectCatalog.js';
+import type { CubeStore } from '../graph-manager/CubeStore.js';
 import type { CubeServiceCatalog } from '../graph-manager/CubeServiceCatalog.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
@@ -91,6 +92,11 @@ export interface CubeHost {
    * platform, and says which lakehouse runtime its runs use
    */
   readonly project?: CubeHostProject | undefined;
+  /**
+   * Where cubes are saved (PLAN §11.13); without one, the page offers no
+   * Save, Load or Delete, and tracks no unsaved changes, as in Studio
+   */
+  readonly store?: CubeStore | undefined;
 }
 
 /** The lakehouse runtime a project's runs use, as the source dialog shows it */
