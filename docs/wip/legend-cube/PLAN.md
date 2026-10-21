@@ -5550,8 +5550,8 @@ query builder changes in a drastic way.
 - **The editor, provided by the host:** `legend-cube-builder` stays free of `legend-query-builder` (its README's rule).
   `CubeHost` gains an optional `dataSpaceEditor`, which Legend Analytics provides: it lists the depot's released data
   spaces, describes one at a version (its execution contexts, with their mappings and runtimes), and opens a session
-  of the query builder on a source, which Cube shows and reads the query of. Only a host that provides it offers the
-  source.
+  of the query builder on a source, which Cube shows and reads the query of, with the query builder's own undo and
+  redo, which Cube's shortcuts use while it shows. Only a host that provides it offers the source.
 - **The flow (built, DS.3):** the palette's Data Space item opens the source dialog's Data Space tab: the data spaces,
   searched by title and path, then the picked one's version (its project's released versions) and execution context.
   Add puts an **unset** source on the canvas (data space and execution context only; the cube's context takes the
@@ -5575,7 +5575,9 @@ query builder changes in a drastic way.
   case one comes back from a spec edited by hand.
 - **In Analytics:**
   - A `DataSpaceQueryBuilderState` subclass for Cube, built as Legend Query builds one (`DataProductQueryCreatorStore`).
-  - The data space's graph: light from its precomputed analysis when depot has one, else the project's full graph.
+  - The data space's graph: the project's full graph at the version, built once per version and shared by the
+    editor's sessions. The light graph from depot's precomputed analysis, which Legend Query uses for large
+    projects, is a follow-up.
   - The data spaces are listed from depot.
   - The results panel is hidden (`isResultPanelHidden`, an existing getter).
   - Analytics' plugin manager gains the graph plugins Legend Query registers (data space, diagram, text and the rest),
@@ -5609,16 +5611,51 @@ else in the query builder changes; any change beyond these is raised with the us
 - **Studio:** not offered, as the user decided for the saved query source (2026-10-20).
 - **Import Pure** doesn't read the node back: it refuses a lambda holding a class query, as it does now.
 
+**Verification (DS.6, 2026-10-21):**
+
+- **The engine (:6300), through the project pointer the mock depot (:6200) serves:** the typed writer's relation types
+  without a mapping (`Id Integer[1]`, `Cases Float[0..1]`), and with a Cube filter, a limit and
+  `from(mapping, runtime)` its plan is one SQL statement:
+  `select top 11 "root".ID as "Id", "root".CASES as "Cases" from COVID_DATA as "root" where "root".CASE_TYPE = 'Confirmed' and "root".CASES is not null and "root".CASES > cast(0.0 as float)`.
+- **A browser rehearsal** on Legend Analytics with the mock depot's `test::DataSpace`
+  (`org.finos.legend.test:legend-query-test:0.0.1`): the tab, the editor with only undo and redo in the query
+  builder's header, no Σ and no Query Options, columns from the explorer, a dragged filter, Apply, the engine's
+  typing, a Filter by Column after it, and Show Pure:
+  `|test::COVIDData.all()->filter(x|$x.caseType == 'Confirmed')->project(~['Case Type': x|$x.caseType, Cases: x|$x.cases, Date: x|$x.date])->filter(row|$row.Cases > 100.0)->from(test::CovidDataMapping, test::H2Runtime)`.
+- **Fixed on the way:**
+  - The tab offers the version listed alone when the project catalog can't list the project's versions (the mock
+    depot lists none), instead of an error.
+  - A set source waiting for the engine is pending (`ERR_TYPING`), not a problem: "Required schema of this source could
+    not be resolved." showed before the engine answered.
+  - The node says its data space and entity before the engine types it, and once typed shows its entity with its data
+    space below, as the other sources show their name and where it comes from.
+  - The data space the list read is described from that content at the version listed: one depot call fewer.
+  - Legend Analytics had none of the query builder's light-mode styles (its filter rows were dark): Legend Query's are
+    copied into the Analytics bootstrap's `light-mode.scss`, as its own Cube rules were (§11.18).
+  - An Escape in one of the query builder's fields closed the node editor, applying it: the explorer's search, which
+    says "ESC to clear", lost the whole editor. An Escape in a field of the host's editor is now the field's (the
+    editor's wrapper marks it used); an Escape elsewhere still closes the editor, as in every node editor.
+  - Ctrl+Z outside a text field ran Cube's undo, which drops every change made in the open editor, while the query
+    builder's own Undo says "Undo(ctrl + z)". The session now has the query builder's undo and redo
+    (`changeHistoryState`), which Cube's undo and redo shortcuts step through while its editor shows; Cube's Undo
+    button stays Cube's. The query builder doesn't change.
+- **Every way the editor opens and closes** (Add, its node, Escape, Cancel, Apply, a click on the canvas, Undo, a
+  Filter's editor and back) walks without a console error on a fresh load (`probe-editor-paths.mjs` in the evidence
+  folder). An assertion that the editor's draft is a data space draft showed only after hot reloads of the libraries,
+  once per rebuild: a class from before the reload.
+- **Not checked yet:** execution. The engine answered 500 to every relational execution that day, Cube's plain table
+  queries too, so the video's Execute scene waits for a restart.
+
 **Steps:**
 
-| Step | Deliverable                                                                                                                                                                         | Done when                                                                     |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                                        |
-| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned ✅ (2026-10-21)                               |
-| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor ✅ (2026-10-21) |
-| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option ✅ (2026-10-21)              |
-| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests                                                      |
-| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen                                                  |
+| Step | Deliverable                                                                                                                                                                         | Done when                                                                                          |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                                                             |
+| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned ✅ (2026-10-21)                                                    |
+| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor ✅ (2026-10-21)                      |
+| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option ✅ (2026-10-21)                                   |
+| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests ✅ (2026-10-21)                                                           |
+| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen (rehearsal ✅ 2026-10-21; the video waits for the engine's execution) |
 
 ## 12. G. Risks and open questions
 
