@@ -26,10 +26,10 @@ import { Query } from '../../graph/Query.js';
 import { UNRESOLVED } from '../../graph/QueryNode.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
+  ERR_TYPING,
   MESSAGE_DATA_SPACE_SOURCE_UNSET,
   MESSAGE_DIFFERENT_DATA_SPACES,
   MESSAGE_SOURCE_KINDS_MIXED,
-  MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
 } from '../../messages/CubeMessages.js';
 import { Schema } from '../../schema/Schema.js';
 import { createNodeRegistry } from '../NodeRegistry.js';
@@ -110,6 +110,7 @@ describe(unitTest('Data space source'), () => {
       executionContext: TRADES_DATA_SPACE.executionContext,
     });
     expect(unset.isUnset()).toBe(true);
+    expect(unset.describe()).toBe('Data space "TradesDataSpace"');
     expect(unset.entity).toBeUndefined();
     expect(unset.entityName).toBeUndefined();
     expect(unset.query).toBeUndefined();
@@ -120,7 +121,8 @@ describe(unitTest('Data space source'), () => {
     const applied = unset.withCoordinates(TRADES_DATA_SPACE);
     expect(applied.isUnset()).toBe(false);
     expect(applied.entityName).toBe('Trade');
-    expect(errorsOf(applied)).toEqual([MESSAGE_SOURCE_SCHEMA_UNRESOLVED]);
+    // waiting for the engine, which the editor asks as it lands
+    expect(errorsOf(applied)).toEqual([ERR_TYPING]);
   });
 
   test('Takes a relation only as a lambda with no parameters and one expression', () => {
@@ -154,9 +156,12 @@ describe(unitTest('Data space source'), () => {
 
   test('Is valid once resolved, its schema the one resolved, and reports a failure by its first line', () => {
     const node = new DataSpaceSource('dataSpace101', TRADES_DATA_SPACE);
-    expect(errorsOf(node)).toEqual([MESSAGE_SOURCE_SCHEMA_UNRESOLVED]);
+    expect(errorsOf(node)).toEqual([ERR_TYPING]);
     expect(node.schematize([])).toBeUndefined();
-    expect(node.describe()).toBe('(unknown)');
+    // known before the engine types it
+    expect(node.describe()).toBe(
+      'Entity "Trade" from data space "TradesDataSpace"',
+    );
     const resolved = node.withResolution({ kind: 'resolved', schema: SCHEMA });
     expect(resolved.id).toBe('dataSpace101');
     expect(resolved.relation).toBe(node.relation);
