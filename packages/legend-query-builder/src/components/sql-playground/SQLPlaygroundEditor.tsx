@@ -20,8 +20,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCommands } from '@finos/legend-application';
 import {
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
+  getCodeEditorThemeForAppTheme,
 } from '@finos/legend-code-editor';
 import {
   editor as monacoEditorAPI,
@@ -79,10 +79,11 @@ export const PlaygroundSQLCodeEditor = observer(
         playgroundState.setTheme(enableDarkMode ? 'dark' : 'light');
         const newEditor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
-          theme:
-            playgroundState.theme === 'light'
-              ? CODE_EDITOR_THEME.GITHUB_LIGHT
-              : CODE_EDITOR_THEME.DEFAULT_DARK,
+          // NOTE: Monaco themes are global, so this theme applies to every
+          // editor on the page and must match the application's theme
+          theme: getCodeEditorThemeForAppTheme(
+            playgroundState.theme === 'light',
+          ),
           language: CODE_EDITOR_LANGUAGE.SQL,
           padding: {
             top: 10,
