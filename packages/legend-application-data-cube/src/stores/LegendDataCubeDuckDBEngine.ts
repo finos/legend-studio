@@ -173,9 +173,12 @@ export class LegendDataCubeDuckDBEngine {
           break;
         }
         case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-        case CORE_PURE_PATH.VARIANT:
         case PRIMITIVE_TYPE.STRING: {
           colType = 'VARCHAR';
+          break;
+        }
+        case CORE_PURE_PATH.VARIANT: {
+          colType = 'JSON';
           break;
         }
         default: {

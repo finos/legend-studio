@@ -20,6 +20,7 @@ import {
   DataCubeColumnKind,
   DataCubeQuerySortDirection,
   isPivotResultColumnName,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import {
@@ -53,7 +54,8 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !_findCol(this._editor.groupExtendColumns, col.name),
+          !_findCol(this._editor.groupExtendColumns, col.name) &&
+          !isVariantType(col.type),
       )
       .map(
         (col) =>

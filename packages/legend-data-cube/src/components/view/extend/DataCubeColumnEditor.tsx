@@ -38,6 +38,7 @@ import { useMemo, useRef } from 'react';
 import { debounce } from '@finos/legend-shared';
 import { DataCubeCodeEditor } from './DataCubeCodeEditor.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
+import { DataCubeJsonFieldsWindow } from './DataCubeJsonFieldsWindow.js';
 
 enum DataCubeExtendedColumnKind {
   LEAF_LEVEL_MEASURE = 'Leaf Level Measure',
@@ -70,6 +71,14 @@ export const DataCubeColumnCreator = observer(
       typeDropdownProps,
       typeDropPropsOpen,
     ] = useDropdownMenu();
+    const [
+      openJsonColumnDropdown,
+      closeJsonColumnDropdown,
+      jsonColumnDropdownProps,
+      jsonColumnDropdownPropsOpen,
+    ] = useDropdownMenu();
+    const jsonColumns = state.jsonColumns;
+    const jsonColumn = state.jsonFields.column;
 
     const logAddingNewColumn = (): void => {
       view.dataCube.telemetryService.sendTelemetry(
@@ -92,8 +101,10 @@ export const DataCubeColumnCreator = observer(
       <>
         <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
           <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
-            <div className="h-full w-full select-none p-0">
-              <div className="h-24 w-full p-2">
+            <div className="flex h-full w-full select-none flex-col p-0">
+              <div
+                className={`${jsonColumns.length > 0 ? 'h-[124px]' : 'h-[96px]'} w-full flex-shrink-0 p-2`}
+              >
                 <div className="mt-1 flex h-5 w-full items-center">
                   <div className="flex h-full w-24 flex-shrink-0 items-center text-sm">
                     Column Name:
@@ -205,6 +216,9 @@ export const DataCubeColumnCreator = observer(
                       DataCubeColumnDataType.TEXT,
                       DataCubeColumnDataType.NUMBER,
                       DataCubeColumnDataType.DATE,
+                      DataCubeColumnDataType.TIME,
+                      DataCubeColumnDataType.BOOLEAN,
+                      DataCubeColumnDataType.VARIANT,
                     ].map((dataType) => (
                       <FormDropdownMenuItem
                         key={dataType}
@@ -219,8 +233,61 @@ export const DataCubeColumnCreator = observer(
                     ))}
                   </FormDropdownMenu>
                 </div>
+                {jsonColumns.length > 0 && (
+                  <div className="mt-2 flex h-5 w-full items-center">
+                    <div className="flex h-full w-24 flex-shrink-0 items-center text-sm">
+                      From JSON:
+                    </div>
+                    <FormDropdownMenuTrigger
+                      className="w-32"
+                      onClick={openJsonColumnDropdown}
+                      open={jsonColumnDropdownPropsOpen}
+                      showAsPlaceholder={!jsonColumn}
+                      disabled={
+                        state.isGroupLevel ||
+                        state.finalizationState.isInProgress
+                      }
+                      title={
+                        state.isGroupLevel
+                          ? 'Fields of a JSON column can only be read by a leaf-level column'
+                          : undefined
+                      }
+                    >
+                      {jsonColumn?.name ?? 'Pick a JSON column...'}
+                    </FormDropdownMenuTrigger>
+                    <FormDropdownMenu
+                      className="w-32"
+                      {...jsonColumnDropdownProps}
+                    >
+                      {jsonColumns.map((column) => (
+                        <FormDropdownMenuItem
+                          key={column.name}
+                          onClick={() => {
+                            state.jsonFields.setColumn(column);
+                            state.jsonFields
+                              .read(false)
+                              .catch((error) =>
+                                dataCube.alertService.alertUnhandledError(
+                                  error,
+                                ),
+                              );
+                            closeJsonColumnDropdown();
+                          }}
+                          autoFocus={column.name === jsonColumn?.name}
+                        >
+                          {column.name}
+                        </FormDropdownMenuItem>
+                      ))}
+                    </FormDropdownMenu>
+                  </div>
+                )}
               </div>
-              <div className="h-[calc(100%_-_96px)] w-full p-2 pt-1">
+              {jsonColumn && !state.isGroupLevel && (
+                <div className="h-[45%] min-h-[180px] w-full flex-shrink-0 px-2">
+                  <DataCubeJsonFieldsWindow jsonFields={state.jsonFields} />
+                </div>
+              )}
+              <div className="min-h-0 w-full flex-1 p-2 pt-1">
                 <DataCubeCodeEditor state={state} />
               </div>
             </div>

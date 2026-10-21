@@ -45,6 +45,7 @@ import {
   DataCubeColumnDataType,
   DataCubeColumnKind,
   getDataType,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import { newColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
@@ -126,11 +127,22 @@ export class DataCubeExtendManagerState extends DataCubeSnapshotController {
 
   async openNewColumnEditor(
     referenceColumn?: DataCubeColumnConfiguration | undefined,
+    options?:
+      | {
+          parseAsJson?: boolean | undefined;
+        }
+      | undefined,
   ) {
-    const editor = new DataCubeNewColumnState(this, referenceColumn);
+    const editor = new DataCubeNewColumnState(this, referenceColumn, options);
     await editor.initialize();
     this.newColumnEditors.push(editor);
     editor.display.open();
+    if (
+      referenceColumn &&
+      (options?.parseAsJson ?? isVariantType(referenceColumn.type))
+    ) {
+      await editor.getReturnType();
+    }
   }
 
   async openExistingColumnEditor(columnName: string) {
@@ -212,23 +224,46 @@ export class DataCubeExtendManagerState extends DataCubeSnapshotController {
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();
-    tempSnapshot.data.leafExtendedColumns =
-      tempSnapshot.data.leafExtendedColumns.filter(
-        (col) => col.name !== columnName,
-      );
-    tempSnapshot.data.groupExtendedColumns =
-      tempSnapshot.data.groupExtendedColumns.filter(
-        (col) => col.name !== columnName,
-      );
-    tempSnapshot.data.selectColumns = tempSnapshot.data.selectColumns.filter(
-      (col) => col.name !== columnName,
+    const isLevelUnchanged = Boolean(
+      _findCol(
+        isGroupLevel ? this.groupExtendedColumns : this.leafExtendedColumns,
+        columnName,
+      ),
     );
-    if (isGroupLevel) {
-      tempSnapshot.data.groupExtendedColumns.push(updatedColumn);
+    if (isLevelUnchanged) {
+      if (isGroupLevel) {
+        tempSnapshot.data.groupExtendedColumns =
+          tempSnapshot.data.groupExtendedColumns.map((col) =>
+            col.name === columnName ? updatedColumn : col,
+          );
+      } else {
+        tempSnapshot.data.leafExtendedColumns =
+          tempSnapshot.data.leafExtendedColumns.map((col) =>
+            col.name === columnName ? updatedColumn : col,
+          );
+        tempSnapshot.data.selectColumns = tempSnapshot.data.selectColumns.map(
+          (col) => (col.name === columnName ? _toCol(updatedColumn) : col),
+        );
+      }
     } else {
-      tempSnapshot.data.leafExtendedColumns.push(updatedColumn);
-      if (columnConfiguration.isSelected) {
-        tempSnapshot.data.selectColumns.push(_toCol(updatedColumn));
+      tempSnapshot.data.leafExtendedColumns =
+        tempSnapshot.data.leafExtendedColumns.filter(
+          (col) => col.name !== columnName,
+        );
+      tempSnapshot.data.groupExtendedColumns =
+        tempSnapshot.data.groupExtendedColumns.filter(
+          (col) => col.name !== columnName,
+        );
+      tempSnapshot.data.selectColumns = tempSnapshot.data.selectColumns.filter(
+        (col) => col.name !== columnName,
+      );
+      if (isGroupLevel) {
+        tempSnapshot.data.groupExtendedColumns.push(updatedColumn);
+      } else {
+        tempSnapshot.data.leafExtendedColumns.push(updatedColumn);
+        if (columnConfiguration.isSelected) {
+          tempSnapshot.data.selectColumns.push(_toCol(updatedColumn));
+        }
       }
     }
     tempSnapshot.data.configuration = {
@@ -276,36 +311,59 @@ export class DataCubeExtendManagerState extends DataCubeSnapshotController {
       this.view.taskService.endTask(task);
     }
 
-    this.setLeafExtendedColumns(
-      this.leafExtendedColumns.filter((col) => col.name !== columnName),
-    );
-    this.setGroupExtendedColumns(
-      this.groupExtendedColumns.filter((col) => col.name !== columnName),
-    );
-    this.selectColumns = this.selectColumns.filter(
-      (col) => col.name !== columnName,
-    );
-    if (isGroupLevel) {
-      this.setGroupExtendedColumns([
-        ...this.groupExtendedColumns,
-        new DataCubeQueryExtendedColumnState(updatedColumn),
-      ]);
+    if (isLevelUnchanged) {
+      if (isGroupLevel) {
+        this.setGroupExtendedColumns(
+          this.groupExtendedColumns.map((col) =>
+            col.name === columnName
+              ? new DataCubeQueryExtendedColumnState(updatedColumn)
+              : col,
+          ),
+        );
+      } else {
+        this.setLeafExtendedColumns(
+          this.leafExtendedColumns.map((col) =>
+            col.name === columnName
+              ? new DataCubeQueryExtendedColumnState(updatedColumn)
+              : col,
+          ),
+        );
+        this.selectColumns = this.selectColumns.map((col) =>
+          col.name === columnName ? _toCol(updatedColumn) : col,
+        );
+      }
     } else {
-      this.setLeafExtendedColumns([
-        ...this.leafExtendedColumns,
-        new DataCubeQueryExtendedColumnState(updatedColumn),
-      ]);
-      if (columnConfiguration.isSelected) {
-        this.selectColumns.push(_toCol(updatedColumn));
+      this.setLeafExtendedColumns(
+        this.leafExtendedColumns.filter((col) => col.name !== columnName),
+      );
+      this.setGroupExtendedColumns(
+        this.groupExtendedColumns.filter((col) => col.name !== columnName),
+      );
+      this.selectColumns = this.selectColumns.filter(
+        (col) => col.name !== columnName,
+      );
+      if (isGroupLevel) {
+        this.setGroupExtendedColumns([
+          ...this.groupExtendedColumns,
+          new DataCubeQueryExtendedColumnState(updatedColumn),
+        ]);
+      } else {
+        this.setLeafExtendedColumns([
+          ...this.leafExtendedColumns,
+          new DataCubeQueryExtendedColumnState(updatedColumn),
+        ]);
+        if (columnConfiguration.isSelected) {
+          this.selectColumns.push(_toCol(updatedColumn));
+        }
       }
     }
     this.columnConfigurations = this.columnConfigurations.map((col) => {
       if (col.name === columnName) {
         col.kind =
-          (columnKind ??
-          getDataType(updatedColumn.type) === DataCubeColumnDataType.NUMBER)
+          columnKind ??
+          (getDataType(updatedColumn.type) === DataCubeColumnDataType.NUMBER
             ? DataCubeColumnKind.MEASURE
-            : DataCubeColumnKind.DIMENSION;
+            : DataCubeColumnKind.DIMENSION);
         col.name = updatedColumn.name;
         col.type = updatedColumn.type;
         col.excludedFromPivot = col.kind === DataCubeColumnKind.DIMENSION;

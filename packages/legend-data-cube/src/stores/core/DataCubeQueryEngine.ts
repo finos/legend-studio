@@ -16,6 +16,7 @@
 
 import { TailwindCSSPalette } from '@finos/legend-art';
 import {
+  CORE_PURE_PATH,
   DATE_FORMAT,
   PRIMITIVE_TYPE,
   PRECISE_PRIMITIVE_TYPE,
@@ -276,6 +277,7 @@ export enum DataCubeColumnDataType {
   DATE = 'Date',
   TIME = 'Time',
   BOOLEAN = 'Boolean',
+  VARIANT = 'Variant',
 }
 
 export enum DataCubeGridMode {
@@ -309,6 +311,7 @@ export enum DataCubeOpenEditorSource {
 }
 
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
+export const VARIANT_TYPE_NAME = 'Variant';
 
 export const TREE_COLUMN_VALUE_SEPARATOR = '__/__';
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
@@ -449,6 +452,9 @@ export function getDataType(type: string): DataCubeColumnDataType {
       return DataCubeColumnDataType.TIME;
     case PRIMITIVE_TYPE.BOOLEAN:
       return DataCubeColumnDataType.BOOLEAN;
+    case CORE_PURE_PATH.VARIANT:
+    case VARIANT_TYPE_NAME:
+      return DataCubeColumnDataType.VARIANT;
     case PRIMITIVE_TYPE.STRING:
     case PRECISE_PRIMITIVE_TYPE.VARCHAR:
     default:
@@ -461,6 +467,10 @@ export function ofDataType(
   dataTypes: DataCubeColumnDataType[],
 ): boolean {
   return dataTypes.includes(getDataType(type));
+}
+
+export function isVariantType(type: string) {
+  return type === CORE_PURE_PATH.VARIANT || type === VARIANT_TYPE_NAME;
 }
 
 export function isDimensionalGridMode(gridMode: DataCubeGridMode) {

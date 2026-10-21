@@ -39,6 +39,7 @@ import {
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
   isDimensionalGridMode,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import type {
   DefaultMenuItem,
@@ -231,7 +232,8 @@ export class DataCubeGridControllerState extends DataCubeSnapshotController {
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !_findCol(this.groupExtendedColumns, col.name),
+          !_findCol(this.groupExtendedColumns, col.name) &&
+          !isVariantType(col.type),
       ),
       colName,
     );

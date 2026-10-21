@@ -62,6 +62,7 @@ import {
   getDataType,
   getPivotResultColumnBaseColumnName,
   isPivotResultColumnName,
+  isVariantType,
   TREE_COLUMN_VALUE_SEPARATOR,
   type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
@@ -787,6 +788,14 @@ export function _validatePivot(
     (colName) =>
       `Can't process pivot() expression: found duplicate cast columns '${colName}'`,
   );
+
+  pivotColumns.forEach((col) => {
+    if (isVariantType(col.type)) {
+      throw new Error(
+        `Can't process pivot() expression: can't pivot on column '${col.name}' since it holds JSON. Pivot on a value extracted from it instead, e.g. an extended column such as x|$x.${col.name}->get('key')->to(@String)`,
+      );
+    }
+  });
 
   // check pivot columns are not aggregated on
   pivotAggColumns.forEach((col) => {
