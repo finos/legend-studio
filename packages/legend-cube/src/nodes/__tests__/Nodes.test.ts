@@ -194,7 +194,7 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table, data product, ingest data set, function, service and data space sources and the transforms, in menu order, by default', () => {
+  test('Has the relational table, data product, ingest data set, data space, function and service sources and the transforms, in menu order, by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
@@ -204,9 +204,9 @@ describe(unitTest('Node registry'), () => {
       'relational',
       'dataProductAccessPoint',
       'ingestDataset',
+      'dataSpace',
       'function',
       'service',
-      'dataSpace',
     ]);
     const dataProduct = registry.get('dataProductAccessPoint');
     expect(dataProduct).toBe(DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION);

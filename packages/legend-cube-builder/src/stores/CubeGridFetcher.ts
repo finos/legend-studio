@@ -242,6 +242,7 @@ export class CubeGridFetcher {
         query: level.query,
         model,
         runtime,
+        mapping: result.context.mapping,
         schema,
         rowLimit: result.rowLimit,
         abortController: controller,

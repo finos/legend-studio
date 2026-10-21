@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  DataSpaceSource,
   FunctionSource,
   IngestDatasetSource,
   RelationalTableSource,
@@ -36,6 +37,7 @@ import {
 } from '../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
+import { CubeDataSpaceTabState } from './source-picker/CubeDataSpaceTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeIngestTabState } from './source-picker/CubeIngestTabState.js';
 import {
@@ -67,6 +69,7 @@ export class CubeSourcePickerState {
   readonly projectTab: CubeProjectTabState;
   readonly projectFunctionTab: CubeProjectFunctionTabState;
   readonly serviceTab: CubeServiceTabState;
+  readonly dataSpaceTab: CubeDataSpaceTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -103,6 +106,7 @@ export class CubeSourcePickerState {
     this.projectTab = new CubeProjectTabState(editorState);
     this.projectFunctionTab = new CubeProjectFunctionTabState(editorState);
     this.serviceTab = new CubeServiceTabState(editorState);
+    this.dataSpaceTab = new CubeDataSpaceTabState(editorState);
   }
 
   /** The tabs that add their own kind of source, each from its palette item */
@@ -111,6 +115,7 @@ export class CubeSourcePickerState {
       [DataProductAccessPointSource.TYPE, this.dataProductTab],
       [IngestDatasetSource.TYPE, this.ingestTab],
       [ServiceSource.TYPE, this.serviceTab],
+      [DataSpaceSource.TYPE, this.dataSpaceTab],
     ]);
   }
 
@@ -120,6 +125,7 @@ export class CubeSourcePickerState {
       this.modelTab,
       this.dataProductTab,
       this.ingestTab,
+      this.dataSpaceTab,
       this.projectTab,
       this.directTab,
       this.projectFunctionTab,
@@ -137,6 +143,8 @@ export class CubeSourcePickerState {
       ? ([
           this.dataProductTab,
           this.ingestTab,
+          // before the project tabs: a data space's cube is on a project too
+          this.dataSpaceTab,
           this.projectTab,
           this.directTab,
           this.projectFunctionTab,
@@ -315,6 +323,7 @@ export class CubeSourcePickerState {
     this.projectTab.close();
     this.projectFunctionTab.close();
     this.serviceTab.close();
+    this.dataSpaceTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

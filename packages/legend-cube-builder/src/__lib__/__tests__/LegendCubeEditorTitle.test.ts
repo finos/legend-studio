@@ -24,6 +24,7 @@ const TITLES: Record<string, string> = {
   function: 'Function',
   dataProductAccessPoint: 'Data Product',
   ingestDataset: 'Ingest Dataset',
+  dataSpace: 'Data Space',
   service: 'Service',
   sort: 'Sort By Column',
   group: 'Group By Column',

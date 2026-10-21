@@ -44,7 +44,10 @@ import { CubeButton } from '../CubeButton.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import { getCubeNodeMenuLabels } from '../CubeAddItems.js';
 import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
-import { CUBE_NODE_EDITORS } from './CubeNodeEditorRegistry.js';
+import {
+  CUBE_NODE_EDITORS,
+  CUBE_WIDE_NODE_EDITORS,
+} from './CubeNodeEditorRegistry.js';
 
 /** The problems of the edited node against its inputs, as Apply would leave it */
 const validateEdited = (
@@ -103,7 +106,8 @@ const CubeJoinInputPicker = observer(
 /**
  * The node editor's frame (spec §17.5, PLAN §11.8): a title bar with the
  * node's label and id, its help and Select; a body of 80px to a third of
- * the window, which scrolls, with its type's editor; then its problems and
+ * the window, which scrolls, with its type's editor, or for a wide editor
+ * 60% of the window, which the editor fills (PLAN §11.25); then its problems and
  * Apply and Cancel, which stay in view. Edits stay in the editor until
  * Apply or closing it; Cancel drops them. While an input is missing or
  * invalid, the body shows why instead of the editor, since there would be
@@ -245,7 +249,14 @@ export const CubeNodeEditorPanel = observer(
             <TimesIcon />
           </button>
         </div>
-        <div className="max-h-[33vh] min-h-[80px] overflow-y-auto p-2">
+        <div
+          className={
+            CUBE_WIDE_NODE_EDITORS.has(node.type)
+              ? // the editor fills it and scrolls itself, e.g. the query builder
+                'h-[60vh] min-h-[320px] overflow-hidden p-2'
+              : 'max-h-[33vh] min-h-[80px] overflow-y-auto p-2'
+          }
+        >
           {warnings.map((warning) => (
             <div
               key={warning}

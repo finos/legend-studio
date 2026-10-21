@@ -25,6 +25,7 @@ export enum LEGEND_CUBE_TEST_ID {
   PALETTE = 'legend-cube__palette',
   PALETTE_ITEM = 'legend-cube__palette-item',
   NODE_EDITOR = 'legend-cube__node-editor',
+  DATA_SPACE_EDITOR = 'legend-cube__data-space-editor',
   EDITOR_NOTICE = 'legend-cube__editor-notice',
   ENTRY_SOURCE_ERROR = 'legend-cube__entry-source-error',
   LAMBDA_IMPORT = 'legend-cube__lambda-import',

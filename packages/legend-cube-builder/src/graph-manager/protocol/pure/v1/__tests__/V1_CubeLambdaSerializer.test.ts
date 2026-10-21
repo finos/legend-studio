@@ -36,6 +36,7 @@ import {
   NotFilter,
   type Origin,
   QueryEmitter,
+  raw,
   storeAccessor,
   variable,
 } from '@finos/legend-cube';
@@ -556,6 +557,39 @@ describe('Cube lambda serializer: shapes', () => {
   test('Writes raw JSON as it is', () => {
     const json = { _type: 'string', value: 'from M6' };
     expect(bodyOf({ k: 'raw', json })).toEqual(json);
+  });
+
+  test("Writes raw JSON with an origin of its own, a data space source's relation, with the origin on every value specification (PLAN §11.25)", () => {
+    const SOURCE: Origin = { nodeId: 'dataSpace101', role: EmitRole.ACCESSOR };
+    const stamp = { sourceId: V1_buildCubeSourceId(SOURCE) };
+    const relation = {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'trading::Trade',
+          sourceInformation: { sourceId: 'query builder', startLine: 1 },
+        },
+      ],
+    };
+    expect(bodyOf(raw(relation, SOURCE))).toEqual({
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'trading::Trade',
+          sourceInformation: stamp,
+        },
+      ],
+      sourceInformation: stamp,
+    });
+    // the source's JSON, as it saved it, is left as it is
+    expect(relation.parameters[0]?.sourceInformation).toEqual({
+      sourceId: 'query builder',
+      startLine: 1,
+    });
   });
 
   test("Writes an expression's lambda with its numbers digit for digit, and its origin on every value specification in place of any source information", () => {

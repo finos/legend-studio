@@ -297,6 +297,7 @@ export class CubePivotDraft extends CubeNodeDraft<Pivot> {
         query: values,
         model: context.model,
         runtime: context.runtime,
+        mapping: context.mapping,
         schema: new Schema([pivotColumn]),
         rowLimit: PIVOT_MAX_VALUES,
         abortController: load.abortController,
