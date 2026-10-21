@@ -489,6 +489,12 @@ describe('Cube keyboard shortcuts', () => {
       shiftKey: true,
     });
     expect([session.undone, session.redone]).toEqual([2, 1]);
+    expect(within(graph()).getByText('Undo').title).toBe(
+      'Undo the last change (in the open editor, Ctrl+Z / Cmd+Z undoes its own)',
+    );
+    expect(within(graph()).getByText('Redo').title).toBe(
+      'Redo the last change undone (in the open editor, Ctrl+Shift+Z / Cmd+Shift+Z redoes its own)',
+    );
     // the editor stays open, its query not applied
     expect(
       screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),

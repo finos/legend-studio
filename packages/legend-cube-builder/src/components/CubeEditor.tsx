@@ -94,6 +94,9 @@ const CubeGraphHeader = observer(
   }) => {
     const { editorState, headerActions } = props;
     const { readOnly } = editorState;
+    // an editor with its own history takes the shortcuts while it is open (PLAN §11.25)
+    const editorHasHistory =
+      editorState.nodeEditor.draft?.history !== undefined;
     const { showGraph } = editorState.document.meta.presentation;
     return (
       <div
@@ -130,7 +133,9 @@ const CubeGraphHeader = observer(
             title={
               readOnly
                 ? READ_ONLY_CUBE_TITLE
-                : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
+                : editorHasHistory
+                  ? `Undo the last change (in the open editor, ${UNDO_SHORTCUT_LABEL} undoes its own)`
+                  : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
             }
             disabled={!editorState.canUndo && !editorState.hasEditsToApply}
             onClick={() => editorState.undoEdited()}
@@ -139,7 +144,11 @@ const CubeGraphHeader = observer(
           </CubeButton>
           <CubeButton
             {...cubeTourAnchor(CUBE_TOUR_ANCHOR.VIEW)}
-            title={`Redo the last change undone (${REDO_SHORTCUT_LABEL})`}
+            title={
+              editorHasHistory
+                ? `Redo the last change undone (in the open editor, ${REDO_SHORTCUT_LABEL} redoes its own)`
+                : `Redo the last change undone (${REDO_SHORTCUT_LABEL})`
+            }
             disabled={!editorState.canRedo}
             onClick={() => editorState.redoEdited()}
           >
