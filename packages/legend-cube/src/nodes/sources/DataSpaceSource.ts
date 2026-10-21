@@ -24,6 +24,7 @@ import {
 import type { QueryRule } from '../../inference/SchemaInference.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
 import {
+  MESSAGE_DATA_SPACE_SOURCE_UNSET,
   MESSAGE_DIFFERENT_DATA_SPACES,
   MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
 } from '../../messages/CubeMessages.js';
@@ -34,7 +35,9 @@ import type { SnapshotColumnRest } from './RelationalTableSource.js';
 /**
  * What a data space source reads (PLAN §11.25): a class of a data space, as
  * the host's query builder queried it. Cube never reads either lambda: the
- * host's editor writes both, and the emitter passes `relation` through.
+ * host's editor writes both, and the emitter passes `relation` through. A
+ * source added from the source dialog has neither until its editor applies
+ * one: it is unset.
  */
 export interface DataSpaceCoordinates {
   /** The data space's path, e.g. `trading::TradesDataSpace` */
@@ -42,19 +45,28 @@ export interface DataSpaceCoordinates {
   /** The key of the data space's execution context the query runs in */
   readonly executionContext: string;
   /** The path of the class the query starts from, e.g. `trading::Trade` */
-  readonly entity: string;
+  readonly entity?: string | undefined;
   /** The query builder's lambda, as protocol JSON: what the editor opens */
-  readonly query: JsonObject;
+  readonly query?: JsonObject | undefined;
   /**
    * The same query as a Relation, as protocol JSON: a lambda with no
    * parameters and one expression, which is what Cube runs
    */
+  readonly relation?: JsonObject | undefined;
+}
+
+/** The coordinates of a set source: its query too, as its editor applies it */
+export interface DataSpaceQueryCoordinates extends DataSpaceCoordinates {
+  readonly entity: string;
+  readonly query: JsonObject;
   readonly relation: JsonObject;
 }
 
 const NO_COLUMN_REST: ReadonlyMap<string, SnapshotColumnRest> = new Map();
 
-const COORDINATES_REQUIRED = `A data space source needs a data space, an execution context, an entity, a query and its relation`;
+const COORDINATES_REQUIRED = `A data space source needs a data space and an execution context`;
+
+const QUERY_PARTS = `A data space source has an entity, a query and its relation together, or none of them`;
 
 const RELATION_SHAPE = `A data space source's relation must be a lambda with no parameters and one expression`;
 
@@ -91,14 +103,18 @@ const readCoordinates = (value: unknown): DataSpaceCoordinates => {
     throw new Error(COORDINATES_REQUIRED);
   }
   const { dataSpace, executionContext, entity, query, relation } = value;
+  if (!isNonEmptyString(dataSpace) || !isNonEmptyString(executionContext)) {
+    throw new Error(COORDINATES_REQUIRED);
+  }
+  if (entity === undefined && query === undefined && relation === undefined) {
+    return { dataSpace, executionContext };
+  }
   if (
-    !isNonEmptyString(dataSpace) ||
-    !isNonEmptyString(executionContext) ||
     !isNonEmptyString(entity) ||
     !isJsonObject(query) ||
     !isJsonObject(relation)
   ) {
-    throw new Error(COORDINATES_REQUIRED);
+    throw new Error(QUERY_PARTS);
   }
   readRelationExpression(relation);
   return { dataSpace, executionContext, entity, query, relation };
@@ -121,9 +137,10 @@ export class DataSpaceSource extends SourceNode {
 
   readonly dataSpace: string;
   readonly executionContext: string;
-  readonly entity: string;
-  readonly query: JsonObject;
-  readonly relation: JsonObject;
+  /** None while the source is unset */
+  readonly entity: string | undefined;
+  readonly query: JsonObject | undefined;
+  readonly relation: JsonObject | undefined;
   readonly resolution: SourceResolution;
   /**
    * Unknown keys of the saved schema snapshot's columns, by column name. They
@@ -166,14 +183,24 @@ export class DataSpaceSource extends SourceNode {
     return nameOf(this.dataSpace);
   }
 
-  /** The entity's name: the last segment of its path */
-  get entityName(): string {
-    return nameOf(this.entity);
+  /** The entity's name: the last segment of its path; none while unset */
+  get entityName(): string | undefined {
+    return this.entity === undefined ? undefined : nameOf(this.entity);
   }
 
-  /** The relation's one expression, which the emitter writes */
+  /** The relation's one expression, which the emitter writes; the source must be set */
   get relationExpression(): JsonObject {
+    if (this.relation === undefined) {
+      throw new Error(
+        `Data space source "${this.id}" has no query yet: its editor writes one`,
+      );
+    }
     return readRelationExpression(this.relation);
+  }
+
+  /** No query has been applied from its editor yet */
+  override isUnset(): boolean {
+    return this.relation === undefined;
   }
 
   /** A new source, with the same id and coordinates, and this resolution */
@@ -202,11 +229,14 @@ export class DataSpaceSource extends SourceNode {
   }
 
   /**
-   * Valid once resolved to a schema. A failed resolution reports the first
-   * line of its error.
+   * Valid once set and resolved to a schema. A failed resolution reports the
+   * first line of its error.
    */
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     ensureSchemas(inputSchemas, this.ports);
+    if (this.isUnset()) {
+      return validate(false, MESSAGE_DATA_SPACE_SOURCE_UNSET, errors);
+    }
     if (this.resolution.kind === 'failed') {
       const [firstLine] = this.resolution.message.split('\n');
       return validate(
@@ -233,7 +263,7 @@ export class DataSpaceSource extends SourceNode {
   describe(): string {
     return this.resolution.kind === 'unresolved'
       ? '(unknown)'
-      : `Entity "${this.entityName}" from data space "${this.dataSpaceName}"`;
+      : `Entity "${this.entityName ?? ''}" from data space "${this.dataSpaceName}"`;
   }
 }
 

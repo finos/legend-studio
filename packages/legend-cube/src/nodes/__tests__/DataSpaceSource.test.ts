@@ -26,6 +26,7 @@ import { Query } from '../../graph/Query.js';
 import { UNRESOLVED } from '../../graph/QueryNode.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
+  MESSAGE_DATA_SPACE_SOURCE_UNSET,
   MESSAGE_DIFFERENT_DATA_SPACES,
   MESSAGE_SOURCE_KINDS_MIXED,
   MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
@@ -39,6 +40,7 @@ import {
   isDataSpaceRelation,
 } from '../sources/DataSpaceSource.js';
 import { isResolvableSource } from '../sources/ResolvableSource.js';
+import type { JsonObject } from '../../utils/Json.js';
 import { sourcesAreOneKind } from '../sources/SourceKinds.js';
 
 const SCHEMA = new Schema([column('id'), column('quantity', 'Float')]);
@@ -81,16 +83,44 @@ describe(unitTest('Data space source'), () => {
       [],
       { ...TRADES_DATA_SPACE, dataSpace: '' },
       { ...TRADES_DATA_SPACE, executionContext: undefined },
+    ].forEach((coordinates) =>
+      expect(() =>
+        DataSpaceSource.fromCoordinates('dataSpace101', coordinates),
+      ).toThrow(
+        'A data space source needs a data space and an execution context',
+      ),
+    );
+    [
       { ...TRADES_DATA_SPACE, entity: 3 },
+      { ...TRADES_DATA_SPACE, entity: undefined },
       { ...TRADES_DATA_SPACE, query: 'trading::Trade.all()' },
       { ...TRADES_DATA_SPACE, relation: undefined },
     ].forEach((coordinates) =>
       expect(() =>
         DataSpaceSource.fromCoordinates('dataSpace101', coordinates),
       ).toThrow(
-        'A data space source needs a data space, an execution context, an entity, a query and its relation',
+        'A data space source has an entity, a query and its relation together, or none of them',
       ),
     );
+  });
+
+  test('Is unset, and invalid, until its editor applies a query; then it is typed as any source', () => {
+    const unset = DataSpaceSource.fromCoordinates('dataSpace101', {
+      dataSpace: TRADES_DATA_SPACE.dataSpace,
+      executionContext: TRADES_DATA_SPACE.executionContext,
+    });
+    expect(unset.isUnset()).toBe(true);
+    expect(unset.entity).toBeUndefined();
+    expect(unset.entityName).toBeUndefined();
+    expect(unset.query).toBeUndefined();
+    expect(errorsOf(unset)).toEqual([MESSAGE_DATA_SPACE_SOURCE_UNSET]);
+    expect(() => unset.relationExpression).toThrow(
+      'Data space source "dataSpace101" has no query yet: its editor writes one',
+    );
+    const applied = unset.withCoordinates(TRADES_DATA_SPACE);
+    expect(applied.isUnset()).toBe(false);
+    expect(applied.entityName).toBe('Trade');
+    expect(errorsOf(applied)).toEqual([MESSAGE_SOURCE_SCHEMA_UNRESOLVED]);
   });
 
   test('Takes a relation only as a lambda with no parameters and one expression', () => {
@@ -106,7 +136,7 @@ describe(unitTest('Data space source'), () => {
         parameters: [{ _type: 'var', name: 'businessDate' }],
       },
     ].forEach((relation) => {
-      expect(isDataSpaceRelation(relation)).toBe(false);
+      expect(isDataSpaceRelation(relation as JsonObject)).toBe(false);
       expect(
         () => new DataSpaceSource('dataSpace101', withRelation(relation)),
       ).toThrow(
@@ -114,9 +144,12 @@ describe(unitTest('Data space source'), () => {
       );
     });
     // parameters can be left out
-    expect(isDataSpaceRelation({ _type: 'lambda', body: [expression] })).toBe(
-      true,
-    );
+    expect(
+      isDataSpaceRelation({
+        _type: 'lambda',
+        body: [expression as JsonObject],
+      }),
+    ).toBe(true);
   });
 
   test('Is valid once resolved, its schema the one resolved, and reports a failure by its first line', () => {

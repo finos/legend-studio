@@ -81,6 +81,12 @@ const SPEC: JsonObject = {
         query: TRADES_DATA_SPACE.query,
         relation: TRADES_DATA_SPACE.relation,
       },
+      {
+        kind: 'dataSpace',
+        id: 'dataSpace103',
+        dataSpace: TRADES_DATA_SPACE.dataSpace,
+        executionContext: TRADES_DATA_SPACE.executionContext,
+      },
     ],
   },
 };
@@ -102,7 +108,7 @@ describe(unitTest('Saved specs of data space cubes'), () => {
     const { document } = decodeCubeSpec(SPEC, { registry: REGISTRY });
     expect(document.context?.mapping).toBe('trading::TradeMapping');
     expect(document.context?.runtime).toBe('trading::TradeRuntime');
-    const [first, second] = document.query.nodes as DataSpaceSource[];
+    const [first, second, third] = document.query.nodes as DataSpaceSource[];
     expect(first).toBeInstanceOf(DataSpaceSource);
     expect(first?.dataSpace).toBe('trading::TradesDataSpace');
     expect(first?.executionContext).toBe('production');
@@ -112,6 +118,8 @@ describe(unitTest('Saved specs of data space cubes'), () => {
     expect(first?.rest).toEqual({ laterKey: 'kept' });
     expect(second?.entityName).toBe('Position');
     expect(second?.resolution.kind).toBe('unresolved');
+    // added from the source dialog, its query not applied yet
+    expect(third?.isUnset()).toBe(true);
     expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
       JSON.stringify(SPEC),
     );
@@ -145,7 +153,9 @@ describe(unitTest('Saved specs of data space cubes'), () => {
     ['without a data space', 'dataSpace', undefined],
     ['whose execution context is a number', 'executionContext', 12],
     ['whose entity is empty', 'entity', ''],
+    ['without an entity', 'entity', undefined],
     ['whose query is text', 'query', 'trading::Trade.all()'],
+    ['without a query', 'query', undefined],
     ['without a relation', 'relation', undefined],
     [
       'whose relation is no lambda',

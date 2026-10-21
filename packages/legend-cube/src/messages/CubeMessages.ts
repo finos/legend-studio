@@ -123,6 +123,10 @@ export const MESSAGE_DIFFERENT_DATABASES = (
 ): string =>
   `Sources from different databases are not supported yet; ${quote(database)} differs from ${quote(firstDatabase)}.`;
 
+/** Added by Cube: a data space source added from the source dialog has no query until its editor applies one (PLAN §11.25) */
+export const MESSAGE_DATA_SPACE_SOURCE_UNSET =
+  'Pick an entity and its columns in the editor, then Apply.';
+
 /** Added by Cube: a query's data space sources read one data space, in one execution context (PLAN §11.25) */
 export const MESSAGE_DIFFERENT_DATA_SPACES = (
   dataSpace: string,
