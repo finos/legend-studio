@@ -18,6 +18,7 @@ import { BinaryNode, type QueryNode, UnaryNode } from '../graph/QueryNode.js';
 import { ensureSchemas, validate } from '../inference/ValidationUtils.js';
 import {
   type DataSpaceCoordinates,
+  type DataSpaceQueryCoordinates,
   DataSpaceSource,
 } from '../nodes/sources/DataSpaceSource.js';
 import { RelationalTableSource } from '../nodes/sources/RelationalTableSource.js';
@@ -100,7 +101,7 @@ const FILTERED_TRADES = {
  * §11.25): the query builder's TDS query of trades and its relation,
  * `…->project(~[id: x|$x.id, quantity: x|$x.quantity])`
  */
-export const TRADES_DATA_SPACE: DataSpaceCoordinates = {
+export const TRADES_DATA_SPACE: DataSpaceQueryCoordinates = {
   dataSpace: 'trading::TradesDataSpace',
   executionContext: 'production',
   entity: 'trading::Trade',
@@ -153,7 +154,7 @@ export const TRADES_DATA_SPACE: DataSpaceCoordinates = {
     ],
     parameters: [],
   },
-} as unknown as DataSpaceCoordinates;
+} as unknown as DataSpaceQueryCoordinates;
 
 /** A data space source on trades, resolved to a schema with the given columns */
 export const resolvedDataSpace = (

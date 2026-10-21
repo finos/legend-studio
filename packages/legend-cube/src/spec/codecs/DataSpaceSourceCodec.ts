@@ -20,6 +20,7 @@ import {
   DataSpaceSource,
   isDataSpaceRelation,
 } from '../../nodes/sources/DataSpaceSource.js';
+import type { JsonObject } from '../../utils/Json.js';
 import type { NodeSpecCodec } from '../NodeSpecCodec.js';
 import { fail, pathTo, readObject, readString } from '../SpecReader.js';
 import {
@@ -27,10 +28,31 @@ import {
   encodeSchemaSnapshot,
 } from './SchemaSnapshotCodec.js';
 
+/** The query a set source holds: its entity, and both lambdas, the relation of the shape Cube runs */
+const readQueryParts = (
+  json: JsonObject,
+  path: string,
+): Pick<DataSpaceCoordinates, 'entity' | 'query' | 'relation'> => {
+  const relationPath = pathTo(path, 'relation');
+  const relation = readObject(json.relation, relationPath);
+  if (!isDataSpaceRelation(relation)) {
+    return fail(
+      relationPath,
+      'must be a lambda with no parameters and one expression',
+    );
+  }
+  return {
+    entity: readString(json, 'entity', path),
+    query: readObject(json.query, pathTo(path, 'query')),
+    relation,
+  };
+};
+
 /**
  * A data space source (PLAN §11.25): its data space, execution context and
  * entity, the query builder's lambda and its relation, each as the engine's
- * JSON, and once resolved its schema snapshot, so inference works offline.
+ * JSON, all three left out while it is unset, and once resolved its schema
+ * snapshot, so inference works offline.
  * Unresolved and failed sources have no snapshot and load unresolved: the
  * host resolves them again.
  */
@@ -43,39 +65,42 @@ export const DATA_SPACE_SOURCE_CODEC: NodeSpecCodec<DataSpaceSource> = {
     'relation',
     'schemaSnapshot',
   ],
-  encode: (node) => ({
-    dataSpace: node.dataSpace,
-    executionContext: node.executionContext,
-    entity: node.entity,
-    query: node.query,
-    relation: node.relation,
-    ...(node.resolution.kind === 'resolved'
-      ? {
-          schemaSnapshot: encodeSchemaSnapshot(
-            node.resolution.schema,
-            node.columnRest,
-          ),
-        }
-      : {}),
-  }),
+  encode: (node) => {
+    const { entity, query, relation } = node;
+    return {
+      dataSpace: node.dataSpace,
+      executionContext: node.executionContext,
+      // all three, or none while unset
+      ...(entity === undefined || query === undefined || relation === undefined
+        ? {}
+        : { entity, query, relation }),
+      ...(node.resolution.kind === 'resolved'
+        ? {
+            schemaSnapshot: encodeSchemaSnapshot(
+              node.resolution.schema,
+              node.columnRest,
+            ),
+          }
+        : {}),
+    };
+  },
   decode: (id, json, path, rest) => {
-    const relationPath = pathTo(path, 'relation');
-    const relation = readObject(json.relation, relationPath);
-    if (!isDataSpaceRelation(relation)) {
-      return fail(
-        relationPath,
-        'must be a lambda with no parameters and one expression',
-      );
-    }
     const coordinates: DataSpaceCoordinates = {
       dataSpace: readString(json, 'dataSpace', path),
       executionContext: readString(json, 'executionContext', path),
-      entity: readString(json, 'entity', path),
-      query: readObject(json.query, pathTo(path, 'query')),
-      relation,
     };
+    const isSet =
+      json.entity !== undefined ||
+      json.query !== undefined ||
+      json.relation !== undefined;
+    const set = isSet ? readQueryParts(json, path) : {};
     if (json.schemaSnapshot === undefined) {
-      return new DataSpaceSource(id, coordinates, UNRESOLVED, rest);
+      return new DataSpaceSource(
+        id,
+        { ...coordinates, ...set },
+        UNRESOLVED,
+        rest,
+      );
     }
     const { schema, columnRest } = decodeSchemaSnapshot(
       json.schemaSnapshot,
@@ -83,7 +108,7 @@ export const DATA_SPACE_SOURCE_CODEC: NodeSpecCodec<DataSpaceSource> = {
     );
     return new DataSpaceSource(
       id,
-      coordinates,
+      { ...coordinates, ...set },
       { kind: 'resolved', schema },
       rest,
       columnRest,
