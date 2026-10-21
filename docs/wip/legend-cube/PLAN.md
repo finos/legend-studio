@@ -5519,6 +5519,63 @@ The user's call: Legend Cube runs as an application of its own (Legend Analytics
 - **Not carried over:** the link entry (`?sourceType=dataProductAccessPoint&sourceId=…`), which nothing linked to.
   `CubeEditor`'s `initialSource` still takes one, should Legend Analytics read the link.
 
+### 11.25 A data space as a source, through the query builder (option B; user, 2026-10-21)
+
+**Ask:** a cube starts from a data space, picking an entity and its columns and filtering it in Legend Query's query
+builder, reused rather than written again. The user chose option B of the proposal
+(`docs/wip/legend-cube/DATA-SPACE-SOURCE.md`, finos/legend-studio#5758, which stays a proposal): **one node**, whose
+editor is the query builder's data space, entity, explorer, columns and filter. Aggregates, query options, post-filters,
+window functions and results stay out: Cube's own steps do them after the node. The user asked to be told before the
+query builder changes in a drastic way.
+
+**Design:**
+
+- **The node:** `DataSpaceSource` (kind `dataSpace`), a source. It holds the data space's path, the execution context's
+  key, the entity's path (for its label), the query builder's lambda (protocol JSON, kept to open the query builder on
+  it again), the same query as a Relation (protocol JSON, what Cube runs), and a schema snapshot of its columns. The
+  core never reads either lambda: the emitter writes the Relation as `raw` IR, passed through as is.
+- **The cube's context:** the model is the data space's project at a released version (the existing project pointer,
+  `CubeProject.ts`), the runtime its execution context's runtime, and a new optional **`mapping`**, its mapping. A run
+  then ends in `from(mapping, runtime)` instead of `from(runtime)`, which the engine runs as one SQL statement with the
+  steps after it (checked for the saved query plan, finos/legend-studio#5742). The spec stays at version 1: the field
+  is additive.
+- **One context:** every source of a cube shares the model, mapping and runtime, as now (§6.8). A second data space
+  node must name the same data space, version and execution context (another entity is fine, e.g. to join two classes).
+- **The editor, provided by the host:** `legend-cube-builder` stays free of `legend-query-builder` (its README's rule).
+  `CubeHost` gains an optional `dataSpaceEditor`, which Legend Analytics provides: it opens the query builder on a
+  node's settings and hands back new ones on Apply. Only a host that provides it offers the source.
+- **What the query builder writes:** a TDS query (`Class.all()->filter(…)->project([…])`), converted to a Relation by the
+  engine's `transformTdsToRelation` endpoint, then typed for its columns, both through Cube's engine port (both checked
+  for #5742). A lambda that already is a Relation (the query builder's typed mode) is only typed.
+- **In Analytics:** a `DataSpaceQueryBuilderState` subclass for Cube, built like Legend Query's
+  (`DataProductQueryCreatorStore`): the data space's graph, light from its precomputed analysis when depot has it, else
+  the project's full graph; the data spaces listed from depot; the results panel hidden (`isResultPanelHidden`, an
+  existing getter). Analytics' plugin manager gains the graph plugins Legend Query registers (data space, diagram, text
+  and the rest), which building any project's graph needs.
+
+**Changes to `legend-query-builder` (not drastic):** small additive options on its existing workflow seam
+(`QueryBuilderWorkflowState`), each defaulting to today's behaviour: hide the header's actions and menus (Advanced,
+Help), the per-column aggregate buttons, and the query options button. Nothing else in the query builder changes; any
+change beyond these is raised with the user first.
+
+**Not in this milestone:**
+
+- **Parameters:** a lambda with parameters (e.g. the business date of a date-versioned class) is refused, with the
+  reason; a run has no parameters to give (#5742 found that `let`s could give them, later).
+- **Studio:** not offered, as the user decided for the saved query source (2026-10-20).
+- **Import Pure** doesn't read the node back: it refuses a lambda holding a class query, as it does now.
+
+**Steps:**
+
+| Step | Deliverable                                                                                                                                                                                        | Done when                                                                    |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| DS.1 | This section, a draft PR                                                                                                                                                                           | Pushed                                                                       |
+| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; `DataSpaceSource` (node, codec, emitter as `raw`, validation, registry, help text)                                                      | Unit tests; emitted Pure pinned                                              |
+| DS.3 | Builder: the engine port's conversion and typing (`transformTdsToRelation`, relation type) in the v1 adapter; the `dataSpaceEditor` seam; the node's editor shell; the palette item and source tab | Store, component and adapter tests with a fake host editor and a fake engine |
+| DS.4 | Query builder: the workflow options, defaulting to today's behaviour                                                                                                                               | Its tests pass unchanged; new tests for each option                          |
+| DS.5 | Analytics: the plugins, the data space graph, the Cube query builder state and the editor component                                                                                                | Host and component tests                                                     |
+| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                                  | Every caption true on screen                                                 |
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
