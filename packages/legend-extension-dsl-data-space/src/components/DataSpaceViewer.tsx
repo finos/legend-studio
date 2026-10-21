@@ -205,6 +205,7 @@ const DataSpaceHeader = observer(
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const viewerRef = useRef<HTMLDivElement>(null);
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
     const [scrollPercentage, setScrollPercentage] = useState(0);
@@ -230,10 +231,11 @@ export const DataSpaceViewer = observer(
         if (!isResizing.current) {
           return;
         }
-        const newWidth = window.innerWidth - ev.clientX;
-        setPanelWidth(
-          Math.max(320, Math.min(newWidth, window.innerWidth * 0.6)),
-        );
+        const viewerRect = viewerRef.current?.getBoundingClientRect();
+        const containerRight = viewerRect?.right ?? window.innerWidth;
+        const containerWidth = viewerRect?.width ?? window.innerWidth;
+        const newWidth = containerRight - ev.clientX;
+        setPanelWidth(Math.max(320, Math.min(newWidth, containerWidth * 0.6)));
       };
       const onMouseUp = (): void => {
         isResizing.current = false;
@@ -292,6 +294,7 @@ export const DataSpaceViewer = observer(
 
     return (
       <div
+        ref={viewerRef}
         className={clsx('data-space__viewer', {
           'data-space__viewer--chat-open': isAIChatOpen,
         })}
@@ -413,9 +416,12 @@ export const DataSpaceViewer = observer(
                 onMouseDown={handleResizeMouseDown}
                 onKeyDown={(e): void => {
                   const step = 20;
+                  const containerWidth =
+                    viewerRef.current?.getBoundingClientRect().width ??
+                    window.innerWidth;
                   if (e.key === 'ArrowLeft') {
                     setPanelWidth((w) =>
-                      Math.min(w + step, window.innerWidth * 0.6),
+                      Math.min(w + step, containerWidth * 0.6),
                     );
                   } else if (e.key === 'ArrowRight') {
                     setPanelWidth((w) => Math.max(w - step, 320));

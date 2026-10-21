@@ -19,8 +19,6 @@
 .data-space__viewer {
   height: 100%;
   width: 100%;
-  max-width: 150rem;
-  margin: 0 auto;
   position: relative;
   font-family: Roboto, sans-serif;
   display: flex;
@@ -28,7 +26,7 @@
 
   &__header {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     position: absolute;
     top: 0;
     left: 0;
@@ -48,6 +46,7 @@
     &__content {
       display: flex;
       justify-content: space-between;
+      gap: 1.5rem;
       width: 100%;
       min-width: 80rem;
       max-width: 140rem;
@@ -68,6 +67,8 @@
       user-select: none;
       background: var(--color-blue-200);
       max-width: 50vw;
+      min-width: 0;
+      flex-shrink: 1;
 
       &__label {
         @include ellipsisTextOverflow;
@@ -82,6 +83,7 @@
       @include flexVCenter;
 
       gap: 0.8rem;
+      flex-shrink: 0;
     }
 
     &__actions {
@@ -219,7 +221,7 @@
 
   &__body {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     flex-direction: column;
     height: 100%;
     flex: 1;
@@ -1326,7 +1328,6 @@
     &__tab__header {
       @include flexVCenter;
 
-      justify-content: space-between;
       height: 3.8rem;
       border-bottom: 0.1rem solid var(--color-border-default);
       border-top: 0.1rem solid var(--color-border-default);
@@ -1335,7 +1336,8 @@
     &__tabs {
       @include flexVCenter;
 
-      width: calc(100% - 19rem);
+      flex: 0 1 auto;
+      min-width: 0;
       overflow-x: auto;
     }
 
@@ -1396,7 +1398,7 @@
 
     &__action-tab-group {
       display: flex;
-      width: 19rem;
+      flex-shrink: 0;
       border-left: 0.1rem solid var(--color-border-default);
     }
   }
