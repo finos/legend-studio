@@ -89,6 +89,13 @@ export interface CubeDataSpaceEditorSession {
    * is a Cube step after the source
    */
   readonly editProblem: string | undefined;
+  /**
+   * The query builder's own undo and redo, as its buttons do them: Cube's
+   * shortcuts step through them while the session shows, in place of
+   * Cube's undo, which would drop every change made in it
+   */
+  undo(): void;
+  redo(): void;
   /** The editor closed: stops what the session does */
   dispose(): void;
 }

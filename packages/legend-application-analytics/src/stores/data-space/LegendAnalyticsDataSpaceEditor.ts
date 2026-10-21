@@ -290,6 +290,22 @@ export class LegendAnalyticsDataSpaceEditorSession
     }
   }
 
+  /** The query builder's undo, as its button does it, while it can show the query */
+  undo(): void {
+    const state = this.queryBuilderState;
+    if (state?.isQuerySupported) {
+      state.changeHistoryState.undo();
+    }
+  }
+
+  /** The query builder's redo, as its button does it, while it can show the query */
+  redo(): void {
+    const state = this.queryBuilderState;
+    if (state?.isQuerySupported) {
+      state.changeHistoryState.redo();
+    }
+  }
+
   /** The editor closed: the project's graph stays, for the next one */
   dispose(): void {
     this.isDisposed = true;

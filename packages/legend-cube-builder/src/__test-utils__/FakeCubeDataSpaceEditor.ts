@@ -183,6 +183,9 @@ export class FakeCubeDataSpaceEditorSession
   edit: CubeDataSpaceEdit | undefined;
   editProblem: string | undefined;
   isDisposed = false;
+  /** How many times its own undo and redo ran */
+  undone = 0;
+  redone = 0;
 
   constructor(target: CubeDataSpaceEditorTarget) {
     makeObservable(this, {
@@ -221,6 +224,14 @@ export class FakeCubeDataSpaceEditorSession
     this.hasChanges = true;
     this.edit = undefined;
     this.editProblem = problem;
+  }
+
+  undo(): void {
+    this.undone += 1;
+  }
+
+  redo(): void {
+    this.redone += 1;
   }
 
   dispose(): void {
@@ -274,11 +285,18 @@ export const createFakeCubeDataSpaceEditor = (
         sessions.push(session);
         return session;
       },
+      // its text, a field to type in, as the explorer's search, and a control
       renderSession: (session) =>
         createElement(
           'div',
           { 'data-testid': 'fake-query-builder' },
-          `The query builder on ${(session as FakeCubeDataSpaceEditorSession).target.dataSpace}`,
+          createElement(
+            'span',
+            undefined,
+            `The query builder on ${(session as FakeCubeDataSpaceEditorSession).target.dataSpace}`,
+          ),
+          createElement('input', { 'aria-label': 'Search properties' }),
+          createElement('button', { 'aria-label': 'Remove column' }),
         ),
     },
     sessions,

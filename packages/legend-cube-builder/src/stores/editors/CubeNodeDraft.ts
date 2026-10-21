@@ -16,6 +16,12 @@
 
 import type { CubeContext, QueryNode } from '@finos/legend-cube';
 
+/** A node editor's own undo and redo, as its buttons do them */
+export interface CubeNodeDraftHistory {
+  undo(): void;
+  redo(): void;
+}
+
 /**
  * The edits of one node in the node editor, kept until Apply or closing it
  * (PLAN §7.4, §11.8, spec §17.5). A node type's editor edits its draft,
@@ -54,6 +60,16 @@ export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
    * (PLAN §11.25); by default none, as the context stays
    */
   get editedContext(): CubeContext | undefined {
+    return undefined;
+  }
+
+  /**
+   * The editor's own history, when it has one, e.g. a data space source's
+   * query builder (PLAN §11.25): Cube's undo and redo shortcuts step
+   * through it while the editor is open, in place of Cube's undo, which
+   * would drop every change made in it; by default none
+   */
+  get history(): CubeNodeDraftHistory | undefined {
     return undefined;
   }
 

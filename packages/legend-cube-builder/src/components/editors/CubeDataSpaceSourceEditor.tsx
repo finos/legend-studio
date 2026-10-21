@@ -25,11 +25,34 @@ import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import { CubeDataSpaceDraft } from '../../stores/editors/CubeDataSpaceDraft.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
+/** The inputs a key press doesn't type in */
+const NON_TEXT_INPUT_TYPES = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+]);
+
+/** Whether an element takes typing, so that an Escape there is its own */
+const isTextField = (target: EventTarget): boolean =>
+  target instanceof HTMLTextAreaElement ||
+  (target instanceof HTMLInputElement &&
+    !NON_TEXT_INPUT_TYPES.has(target.type)) ||
+  (target instanceof HTMLElement && target.isContentEditable);
+
 /**
  * A data space source's editor (PLAN §11.25): the host's query builder on
  * its data space, filling the panel's body, with its data space, execution
  * context and entity, its explorer, columns and filter. What else a query
  * does, Cube's own steps do after the source, as the line above it says.
+ * An Escape in one of its fields is the field's, as the query builder's
+ * explorer search clears on it: it doesn't close the node editor
+ * (`useCubeNodeEditorDismiss`), which an Escape elsewhere does.
  */
 export const CubeDataSpaceSourceEditor = observer(
   (props: CubeNodeEditorProps) => {
@@ -44,6 +67,11 @@ export const CubeDataSpaceSourceEditor = observer(
         <div
           className="relative min-h-0 flex-1"
           data-testid={LEGEND_CUBE_TEST_ID.DATA_SPACE_EDITOR}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && isTextField(event.target)) {
+              event.preventDefault();
+            }
+          }}
         >
           {!session || !dataSpaceEditor ? (
             <div
