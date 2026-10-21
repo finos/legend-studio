@@ -30,7 +30,7 @@ import {
   type CODE_EDITOR_LANGUAGE,
   setErrorMarkers,
   clearMarkers,
-  CODE_EDITOR_THEME,
+  type CODE_EDITOR_THEME,
   configureCodeEditor,
   getCodeEditorThemeForAppTheme,
 } from '@finos/legend-code-editor';
@@ -325,10 +325,14 @@ export const CodeEditor: React.FC<{
       const element = textInputRef.current;
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
-        theme: applicationStore.layoutService
-          .TEMPORARY__isLightColorThemeEnabled
-          ? (lightTheme ?? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT)
-          : CODE_EDITOR_THEME.DEFAULT_DARK,
+        theme:
+          applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled &&
+          lightTheme
+            ? lightTheme
+            : getCodeEditorThemeForAppTheme(
+                applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled,
+              ),
 
         // layout
         glyphMargin: !hidePadding,

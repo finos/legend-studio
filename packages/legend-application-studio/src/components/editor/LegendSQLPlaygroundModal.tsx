@@ -26,10 +26,12 @@ import {
 } from '@finos/legend-art';
 import type { LegendSQLStudioPlaygroundState } from '../../stores/editor/LegendSQLStudioPlaygroundState.js';
 import { SQLPlaygroundEditorResultPanel } from '@finos/legend-query-builder';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const LegendSQLPlaygroundModal = observer(
   (props: { playgroundState: LegendSQLStudioPlaygroundState }) => {
     const { playgroundState } = props;
+    const applicationStore = useApplicationStore();
     const accessorExplorerState = playgroundState.accessorExplorerState;
 
     const close = (): void => {
@@ -46,7 +48,12 @@ export const LegendSQLPlaygroundModal = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal sql-playground-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal sql-playground-modal"
+        >
           <ModalHeader title="SQL PLAYGROUND" />
           <ModalBody>
             <PanelLoadingIndicator
@@ -57,7 +64,6 @@ export const LegendSQLPlaygroundModal = observer(
                 <SQLPlaygroundEditorResultPanel
                   playgroundState={playgroundState}
                   advancedMode={true}
-                  enableDarkMode={true}
                   showAccessorExplorer={true}
                   accessorExplorerState={accessorExplorerState}
                 />

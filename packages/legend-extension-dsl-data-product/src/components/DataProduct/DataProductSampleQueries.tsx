@@ -45,10 +45,7 @@ import {
 } from '@finos/legend-lego/data-grid';
 import { isNonNullable, uuid } from '@finos/legend-shared';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
-} from '@finos/legend-code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { DataAccessOverview } from '@finos/legend-query-builder';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import {
@@ -288,11 +285,6 @@ const getTDSSampleQueryTabs =
             isReadOnly={true}
             hideMinimap={true}
             hideGutter={true}
-            lightTheme={
-              context.darkMode
-                ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_DARK
-                : CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-            }
           />
         </div>
       ),
@@ -404,11 +396,6 @@ const getRelationSampleQueryTabs =
             isReadOnly={true}
             hideMinimap={true}
             hideGutter={true}
-            lightTheme={
-              context.darkMode
-                ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_DARK
-                : CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-            }
           />
         </div>
       ),

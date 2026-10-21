@@ -262,7 +262,6 @@ export const SQLPlaygroundPanel = observer(() => {
                 <SQLPlaygroundEditorResultPanel
                   playgroundState={playgroundState}
                   advancedMode={true}
-                  enableDarkMode={true}
                 />
               </div>
             </ResizablePanel>

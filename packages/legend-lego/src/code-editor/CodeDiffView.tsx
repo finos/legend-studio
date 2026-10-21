@@ -29,8 +29,8 @@ import {
 } from '@finos/legend-shared';
 import {
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
+  getCodeEditorThemeForAppTheme,
 } from '@finos/legend-code-editor';
 
 export const disposeDiffCodeEditor = (
@@ -60,10 +60,9 @@ export const CodeDiffView = observer(
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
           ...getBaseCodeEditorOptions(),
-          theme: applicationStore.layoutService
-            .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.DEFAULT_DARK,
+          theme: getCodeEditorThemeForAppTheme(
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+          ),
           readOnly: true,
         });
         setEditor(_editor);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
+import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -22,15 +22,12 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const packageJson = loadJSON(resolve(__dirname, './package.json'));
-const base = getBaseJestProjectConfig(
+/**
+ * NOTE: as in `legend-art`, `setupDOMPolyfills` assigns `window.*` at the top
+ * level, so it only runs under `jsdom`, which `getBaseJestDOMProjectConfig`
+ * supplies along with the polyfills
+ */
+export default getBaseJestDOMProjectConfig(
   packageJson.name,
   'packages/legend-code-editor',
 );
-
-export default {
-  ...base,
-  setupFiles: [
-    ...base.setupFiles,
-    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
-  ],
-};

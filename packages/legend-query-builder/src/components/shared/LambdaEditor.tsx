@@ -42,8 +42,8 @@ import {
   clearMarkers,
   setErrorMarkers,
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   PURE_CODE_EDITOR_WORD_SEPARATORS,
+  getCodeEditorThemeForAppTheme,
   type CompletionItem,
 } from '@finos/legend-code-editor';
 import { disposeCodeEditor } from '@finos/legend-lego/code-editor';
@@ -273,10 +273,9 @@ const LambdaEditor_Inner = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
           language: CODE_EDITOR_LANGUAGE.PURE,
-          theme: applicationStore.layoutService
-            .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.DEFAULT_DARK,
+          theme: getCodeEditorThemeForAppTheme(
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+          ),
           ...lambdaEditorOptions,
         });
         setEditor(_editor);
@@ -311,10 +310,9 @@ const LambdaEditor_Inner = observer(
     useEffect(() => {
       if (editor) {
         editor.updateOptions({
-          theme: applicationStore.layoutService
-            .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.DEFAULT_DARK,
+          theme: getCodeEditorThemeForAppTheme(
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+          ),
         });
       }
     }, [
@@ -608,10 +606,9 @@ const LambdaEditor_PopUp = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
           language: CODE_EDITOR_LANGUAGE.PURE,
-          theme: applicationStore.layoutService
-            .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.DEFAULT_DARK,
+          theme: getCodeEditorThemeForAppTheme(
+            applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+          ),
         });
         setEditor(_editor);
       }
