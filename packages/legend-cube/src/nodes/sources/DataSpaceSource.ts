@@ -24,6 +24,7 @@ import {
 import type { QueryRule } from '../../inference/SchemaInference.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
 import {
+  ERR_TYPING,
   MESSAGE_DATA_SPACE_SOURCE_UNSET,
   MESSAGE_DIFFERENT_DATA_SPACES,
   MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
@@ -229,8 +230,10 @@ export class DataSpaceSource extends SourceNode {
   }
 
   /**
-   * Valid once set and resolved to a schema. A failed resolution reports the
-   * first line of its error.
+   * Valid once set and resolved to a schema. Set but not resolved, it waits
+   * for the engine, which the editor asks as it lands (`ERR_TYPING`, pending
+   * rather than a problem); a failed resolution reports the first line of
+   * its error.
    */
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     ensureSchemas(inputSchemas, this.ports);
@@ -245,11 +248,7 @@ export class DataSpaceSource extends SourceNode {
         errors,
       );
     }
-    return validate(
-      this.resolution.kind === 'resolved',
-      MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
-      errors,
-    );
+    return validate(this.resolution.kind === 'resolved', ERR_TYPING, errors);
   }
 
   schematize(inputSchemas: readonly Schema[]): Schema | undefined {
@@ -259,11 +258,15 @@ export class DataSpaceSource extends SourceNode {
       : undefined;
   }
 
-  /** The entity and the data space, by name */
+  /**
+   * The entity and the data space, by name; the data space alone while
+   * unset. Both are known before the engine types the source.
+   */
   describe(): string {
-    return this.resolution.kind === 'unresolved'
-      ? '(unknown)'
-      : `Entity "${this.entityName ?? ''}" from data space "${this.dataSpaceName}"`;
+    const { entityName } = this;
+    return entityName === undefined
+      ? `Data space "${this.dataSpaceName}"`
+      : `Entity "${entityName}" from data space "${this.dataSpaceName}"`;
   }
 }
 
