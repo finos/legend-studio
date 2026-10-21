@@ -81,7 +81,10 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
       `master` ([PROGRESS-VARIANT.md](PROGRESS-VARIANT.md), PLAN §11.20)
 - [ ] Legend Analytics: Cube as its own application, complete on `cube-analytics`, draft #5692 into `master`
       ([PROGRESS-ANALYTICS.md](PROGRESS-ANALYTICS.md), PLAN §11.19)
-- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
+- [x] M8 Persistence (engine Cube store), built on `cube-m8` in #5679 for `cube-dev`, Legend Analytics its host after
+      the rebase of 2026-10-21; the engine store in finos/legend-engine#5355 ([PROGRESS-M8.md](PROGRESS-M8.md), PLAN
+      §11.13)
+- [ ] M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
 

@@ -16,14 +16,14 @@ a tooltip that opened stays during the drag and after the drop, until the pointe
 with the tooltip open leaves it where it was, a few pixels over the grown node. Both clear on the next pointer move.
 A fix controls the tooltip's `open` from react-dnd's `isDragging` and closes it on React Flow's `onMoveStart`.
 
-### Entry links: the address keeps a history entry, a malformed one stops Legend Query, and search may miss the product
+### Entry links: a malformed one stops Legend Query, and search may miss the product
 
-M3b.12's link (`?sourceType=dataProductAccessPoint&sourceId=…`) is taken out of the address with the navigator's
-`updateCurrentLocation`, which pushes rather than replaces: Back returns to the link (the page, still mounted, doesn't
-read it again; a reload there opens it again). A parameter with a malformed `%` stops Legend Query from loading before
-Cube runs (the framework decodes the parameters as it loads). And the linked product is found with the catalog's
-`search` for its id: a full-text search that ranks or cuts its answers could miss it, though the id is exact. Fixes:
-a `replace` option on the navigator port; a lookup by id on the catalog port (`CubeDataProductCatalog`).
+A parameter of M3b.12's link (`?sourceType=dataProductAccessPoint&sourceId=…`) with a malformed `%` stops Legend Query
+from loading before Cube runs (the framework decodes the parameters as it loads). And the linked product is found
+with the catalog's `search` for its id: a full-text search that ranks or cuts its answers could miss it, though the
+id is exact. Fix: a lookup by id on the catalog port (`CubeDataProductCatalog`). (The link used to leave a history
+entry, Back returning to it; since M8 the navigator's `updateCurrentLocation` takes `{replace}`. No host reads the
+link now, PLAN §11.24.)
 
 ### Redacted printing shows a Pivot's values, as column names
 
