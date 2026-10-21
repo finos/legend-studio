@@ -327,8 +327,9 @@ describe('Explore JSON’s offers on DuckDB (PLAN §11.20)', () => {
       type: 'Boolean',
       values: [true, false, false, false],
     });
+    // a sum of no elements is 0, as their count is
     expect(await values('items/total:qty')).toMatchObject({
-      values: ['3', '5', null, null],
+      values: ['3', '5', '0', '0'],
     });
     expect(await values('items/first:sku')).toMatchObject({
       values: ['x', 'z', null, null],
