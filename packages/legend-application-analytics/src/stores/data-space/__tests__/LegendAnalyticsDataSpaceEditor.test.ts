@@ -179,6 +179,60 @@ describe("Legend Analytics' data space editor", () => {
   });
 });
 
+describe("Depot's data spaces, through the editor", () => {
+  test('Are described from the content the list read at the version listed, and from depot at another', async () => {
+    const editor = new LegendAnalyticsDataSpaceEditor(
+      TEST__createAnalyticsApplicationStore(),
+      new DepotServerClient({ serverUrl: 'https://depot.test' }),
+    );
+    const content = {
+      executionContexts: [
+        {
+          name: 'prod',
+          mapping: { path: 'trading::Mapping' },
+          defaultRuntime: { path: 'trading::Runtime' },
+        },
+      ],
+      defaultExecutionContext: 'prod',
+    };
+    jest
+      .spyOn(editor.depotServerClient, 'getEntitiesByClassifier')
+      .mockResolvedValue([
+        {
+          groupId: 'com.example',
+          artifactId: 'trading',
+          versionId: '2.3.0',
+          entity: { path: 'trading::Trades', classifierPath: 'x', content },
+        },
+      ]);
+    const getVersionEntity = jest
+      .spyOn(editor.depotServerClient, 'getVersionEntity')
+      .mockResolvedValue({ path: 'trading::Trades', content });
+    const [summary] = await editor.listDataSpaces();
+    expect(summary?.project.versionId).toBe('2.3.0');
+    const project = {
+      groupId: 'com.example',
+      artifactId: 'trading',
+      versionId: '2.3.0',
+    };
+    expect(
+      (await editor.describeDataSpace(project, 'trading::Trades'))
+        .defaultExecutionContext,
+    ).toBe('prod');
+    expect(getVersionEntity).not.toHaveBeenCalled();
+    await editor.describeDataSpace(
+      { ...project, versionId: '2.2.0' },
+      'trading::Trades',
+    );
+    expect(getVersionEntity).toHaveBeenCalledWith(
+      'com.example',
+      'trading',
+      '2.2.0',
+      'trading::Trades',
+    );
+  });
+});
+
 describe("Depot's data spaces", () => {
   const stored = (
     artifactId: string,

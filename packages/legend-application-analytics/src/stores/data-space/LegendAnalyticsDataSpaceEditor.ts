@@ -308,6 +308,8 @@ export class LegendAnalyticsDataSpaceEditor implements CubeDataSpaceEditor {
   readonly depotServerClient: DepotServerClient;
   /** Each project's graph, by version: one build per visit, shared by the sessions */
   private readonly graphs = new Map<string, Promise<GraphManagerState>>();
+  /** The content of each data space the list read, by project version and path */
+  private readonly listedContents = new Map<string, unknown>();
 
   constructor(
     applicationStore: LegendAnalyticsApplicationStore,
@@ -323,20 +325,35 @@ export class LegendAnalyticsDataSpaceEditor implements CubeDataSpaceEditor {
         DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
         { scope: DepotScope.RELEASES },
       )) as unknown as StoredEntity[];
+    storedEntities.forEach((stored) =>
+      this.listedContents.set(
+        `${getProjectKey(stored)}:${stored.entity.path}`,
+        stored.entity.content,
+      ),
+    );
     return readCubeDataSpaceSummaries(storedEntities);
   }
 
+  /**
+   * A data space at a version: from the content the list read when it is
+   * the version listed, else from depot
+   */
   async describeDataSpace(
     project: CubeProjectCoordinates,
     dataSpace: string,
   ): Promise<CubeDataSpaceDescription> {
-    const entity = await this.depotServerClient.getVersionEntity(
-      project.groupId,
-      project.artifactId,
-      project.versionId,
-      dataSpace,
-    );
-    return readCubeDataSpaceDescription(dataSpace, entity.content);
+    const key = `${getProjectKey(project)}:${dataSpace}`;
+    const content = this.listedContents.has(key)
+      ? this.listedContents.get(key)
+      : (
+          await this.depotServerClient.getVersionEntity(
+            project.groupId,
+            project.artifactId,
+            project.versionId,
+            dataSpace,
+          )
+        ).content;
+    return readCubeDataSpaceDescription(dataSpace, content);
   }
 
   /**
