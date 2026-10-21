@@ -873,7 +873,10 @@ export class CubeEditorState implements CommandRegistrar {
    * 2026-10-07), or while something opened from the node editor holds it
    * open. Like their buttons, they finish the node editor first (PLAN §11.8):
    * F9 runs the edited query, and Ctrl+Z undoes what finishing applied. Undo
-   * leaves Ctrl+Z to a text field that has the focus.
+   * leaves Ctrl+Z to a text field that has the focus. An editor with its own
+   * history, the query builder of a data space source (PLAN §11.25), takes
+   * undo and redo while it is open instead: Cube's undo would drop every
+   * change made in it.
    */
   registerCommands(): void {
     const { commandService } = this.host.applicationStore;
@@ -919,26 +922,40 @@ export class CubeEditorState implements CommandRegistrar {
       trigger: () =>
         !this.isDialogOpen &&
         !this.nodeEditor.isHeld &&
-        this.canRedo &&
+        (this.nodeEditor.draft?.history !== undefined || this.canRedo) &&
         !isTypingText(),
-      action: () =>
+      action: () => {
+        const history = this.nodeEditor.draft?.history;
+        if (history) {
+          history.redo();
+          return;
+        }
         this.nodeEditor.runFromKeyboard(
           () => this.redoEdited(),
           isFocusInNodeEditor(),
-        ),
+        );
+      },
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
       trigger: () =>
         !this.isDialogOpen &&
         !this.nodeEditor.isHeld &&
-        (this.canUndo || this.hasEditsToApply) &&
+        (this.nodeEditor.draft?.history !== undefined ||
+          this.canUndo ||
+          this.hasEditsToApply) &&
         !isTypingText(),
-      action: () =>
+      action: () => {
+        const history = this.nodeEditor.draft?.history;
+        if (history) {
+          history.undo();
+          return;
+        }
         this.nodeEditor.runFromKeyboard(
           () => this.undoEdited(),
           isFocusInNodeEditor(),
-        ),
+        );
+      },
     });
   }
 

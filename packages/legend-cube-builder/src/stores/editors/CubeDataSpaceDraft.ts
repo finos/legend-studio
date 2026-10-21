@@ -26,7 +26,7 @@ import type {
   CubeDataSpaceEditorSession,
 } from '../CubeDataSpaceEditor.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
-import { CubeNodeDraft } from './CubeNodeDraft.js';
+import { CubeNodeDraft, type CubeNodeDraftHistory } from './CubeNodeDraft.js';
 
 /** What Apply would change of a source: its coordinates, as saved */
 const getCoordinatesKey = (source: DataSpaceSource): string =>
@@ -85,6 +85,14 @@ export class CubeDataSpaceDraft extends CubeNodeDraft<DataSpaceSource> {
       session.hasChanges &&
       session.edit === undefined
     );
+  }
+
+  /** The query builder's own undo and redo, once it shows */
+  override get history(): CubeNodeDraftHistory | undefined {
+    const { session } = this;
+    return session && !session.isLoading && session.loadError === undefined
+      ? session
+      : undefined;
   }
 
   /** The session's query, once it is one Cube can run and differs from the source's */

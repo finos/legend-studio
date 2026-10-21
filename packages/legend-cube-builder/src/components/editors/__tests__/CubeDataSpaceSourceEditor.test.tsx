@@ -147,6 +147,29 @@ describe("A data space source's editor", () => {
     await waitFor(() => expect(applied().resolution.kind).toBe('resolved'));
   });
 
+  test("Leaves an Escape in the query builder's fields to them, and closes on one elsewhere", async () => {
+    const { editor } = await renderCube();
+    fireEvent.click(await TEST__findCanvasNode('dataSpace101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const [session] = editor.sessions;
+    act(() => session?.load());
+    // the explorer's search clears on Escape
+    const search = within(panel()).getByRole('textbox', {
+      name: 'Search properties',
+    });
+    search.focus();
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(
+      screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),
+    ).not.toBeNull();
+    const remove = within(panel()).getByRole('button', {
+      name: 'Remove column',
+    });
+    remove.focus();
+    fireEvent.keyDown(remove, { key: 'Escape' });
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+  });
+
   test("Says why Apply waits: the query builder's reason, and the data space that can't load", async () => {
     const { editor } = await renderCube();
     fireEvent.click(await TEST__findCanvasNode('dataSpace101'));

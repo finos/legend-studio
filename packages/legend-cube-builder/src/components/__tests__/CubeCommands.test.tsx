@@ -24,6 +24,7 @@ import {
 import {
   Connection,
   CubeDocument,
+  DataSpaceSource,
   ExpressionFilter,
   Extend,
   type IR,
@@ -63,8 +64,15 @@ import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
 } from '../../__test-utils__/CubeTestApplication.js';
+import {
+  buildFakeDataSpaceEdit,
+  createFakeCubeDataSpaceEditor,
+  FAKE_TRADES_DATA_SPACE,
+} from '../../__test-utils__/FakeCubeDataSpaceEditor.js';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
 import type { CubeResult } from '../../graph-manager/CubeEngine.js';
+import { createCubeProjectModel } from '../../graph-manager/CubeProject.js';
+import type { CubeHost } from '../../stores/CubeHost.js';
 import { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../CubeEditor.js';
@@ -106,6 +114,7 @@ const renderPage = async (
       'relational101',
     ),
   }),
+  adaptHost: (host: CubeHost) => CubeHost = (host) => host,
 ): Promise<{
   fake: FakeCubeEngine;
   host: ReturnType<typeof TEST__createCubeHost>['host'];
@@ -124,7 +133,7 @@ const renderPage = async (
   const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
   try {
     const { unmount } = await TEST__renderInCubeApplication(
-      <CubeEditor host={host} initialDocument={document} />,
+      <CubeEditor host={adaptHost(host)} initialDocument={document} />,
       applicationStore,
       LEGEND_CUBE_TEST_ID.EDITOR,
     );
@@ -440,6 +449,60 @@ describe('Cube keyboard shortcuts', () => {
     ).toBeNull();
     expect(editorState.document.query.getNode('limit101')).toBe(limit);
     expect(editorState.history).toHaveLength(0);
+  });
+
+  test("Steps through a data space source's query builder on Ctrl+Z and Ctrl+Shift+Z while it shows, and leaves Undo to the cube", async () => {
+    const editor = createFakeCubeDataSpaceEditor();
+    const { editorState } = await renderPage(
+      new CubeDocument({
+        context: {
+          model: createCubeProjectModel(FAKE_TRADES_DATA_SPACE.project),
+          runtime: 'trading::TradeRuntime',
+          mapping: 'trading::TradeMapping',
+        },
+        query: new Query(
+          [
+            new DataSpaceSource('dataSpace101', {
+              dataSpace: FAKE_TRADES_DATA_SPACE.path,
+              executionContext: 'production',
+            }),
+          ],
+          [],
+          'dataSpace101',
+        ),
+      }),
+      (host) => ({ ...host, dataSpaceEditor: editor.editor }),
+    );
+    fireEvent.click(await TEST__findCanvasNode('dataSpace101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const session = guaranteeNonNullable(editor.sessions[0]);
+    act(() => {
+      session.load();
+      session.setEdit(buildFakeDataSpaceEdit('trading::Trade', ['id']));
+    });
+    pressUndo();
+    pressUndo(document, 'metaKey');
+    fireEvent.keyDown(document, {
+      key: 'Z',
+      code: 'KeyZ',
+      ctrlKey: true,
+      shiftKey: true,
+    });
+    expect([session.undone, session.redone]).toEqual([2, 1]);
+    // the editor stays open, its query not applied
+    expect(
+      screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),
+    ).not.toBeNull();
+    expect(editorState.document.query.getNode('dataSpace101')?.isUnset()).toBe(
+      true,
+    );
+    expect(editorState.history).toHaveLength(0);
+    // Undo, the button, is the cube's: it leaves the cube as it was
+    fireEvent.click(within(graph()).getByText('Undo'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.document.query.getNode('dataSpace101')?.isUnset()).toBe(
+      true,
+    );
   });
 
   test('Enables Undo while the open editor has edits and there is no history, and Undo then leaves the cube as it was', async () => {

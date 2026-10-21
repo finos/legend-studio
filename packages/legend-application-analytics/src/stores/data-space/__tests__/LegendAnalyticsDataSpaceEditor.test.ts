@@ -17,6 +17,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { CubeProjectCoordinates } from '@finos/legend-cube-builder';
 import { RawLambda } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DepotServerClient,
   type StoredEntity,
@@ -126,6 +127,39 @@ describe("Legend Analytics' data space editor", () => {
     expect(JSON.stringify(session.edit?.coordinates.relation)).toContain(
       '"Cases"',
     );
+  });
+
+  test("Undoes and redoes the query builder's changes, as its buttons do", async () => {
+    const { editor } = await setUp();
+    const session = await openSession(editor);
+    const state = guaranteeNonNullable(session.queryBuilderState);
+    const queries = [
+      [['cases', 'Cases']],
+      [
+        ['cases', 'Cases'],
+        ['id', 'Id'],
+      ],
+    ].map((columns) =>
+      TEST__covidQuery(
+        TEST__project(TEST__COVID_DATA, columns as [string, string][]),
+      ),
+    );
+    // the user's changes, each cached as the query builder's view does
+    state.changeHistoryState.cacheNewQuery(state.buildQuery());
+    queries.forEach((query) => {
+      state.rebuildWithQuery(
+        new RawLambda(query.parameters as object, query.body as object),
+      );
+      state.changeHistoryState.cacheNewQuery(state.buildQuery());
+    });
+    const columns = (): string =>
+      JSON.stringify(session.edit?.coordinates.relation);
+    expect(columns()).toContain('"Id"');
+    session.undo();
+    expect(columns()).not.toContain('"Id"');
+    expect(columns()).toContain('"Cases"');
+    session.redo();
+    expect(columns()).toContain('"Id"');
   });
 
   test('Opens on the query a source saved, with no change until the query does', async () => {
