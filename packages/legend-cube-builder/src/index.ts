@@ -39,6 +39,8 @@ export * from './graph-manager/CubeEngine.js';
 export * from './graph-manager/CubeEngineClientSettings.js';
 export * from './graph-manager/CubeProject.js';
 export * from './graph-manager/CubeProjectCatalog.js';
+export * from './graph-manager/CubeStore.js';
+export * from './graph-manager/CubeSourceRefs.js';
 export * from './graph-manager/CubeService.js';
 export * from './graph-manager/CubeServiceCatalog.js';
 export { getRuntimesForDatabase } from './graph-manager/CubeModelOutlineHelper.js';
@@ -50,6 +52,7 @@ export {
   buildCubeLakehouseEnvironment,
   buildCubeProjectCatalog,
   buildCubeServiceCatalog,
+  buildCubeStore,
   readCubeIngestDataSets,
   serializeCubeLambdaForHost,
   type CubeEngineConfig,

@@ -19,6 +19,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { createFakeCubeConnectionExplorer } from '../../__test-utils__/FakeCubeConnectionExplorer.js';
 import { createFakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
 import { createFakeCubeProjectCatalog } from '../../__test-utils__/FakeCubeProjectCatalog.js';
+import { InMemoryCubeStore } from '../../__test-utils__/InMemoryCubeStore.js';
 import { TEST__createCubeApplicationStore } from '../../__test-utils__/CubeTestApplication.js';
 import { CubeDirectDatabaseType } from '../../graph-manager/CubeConnectionExplorer.js';
 import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
@@ -54,6 +55,8 @@ describe("A Legend deployment as Cube's host", () => {
     expect(host.projectCatalog).toBeUndefined();
     expect(host.dataProductCatalog).toBeUndefined();
     expect(host.ingestCatalog).toBeUndefined();
+    // saved cubes, in the engine's Cube store (PLAN §11.13)
+    expect(host.store).toBeDefined();
     expect(host.engineClientSettings.defaultBaseUrl).toBe(ENGINE.baseUrl);
     expect(host.engineClientSettings.requestCompression).toBe(true);
   });
@@ -80,18 +83,20 @@ describe("A Legend deployment as Cube's host", () => {
     ).toBeDefined();
   });
 
-  test('Uses the engine, the connection explorer and the project catalog it is given', () => {
+  test('Uses the engine, the connection explorer, the project catalog and the store it is given', () => {
     const { engine } = createFakeCubeEngine();
     const { explorer: connectionExplorer } = createFakeCubeConnectionExplorer();
     const { catalog: projectCatalog } = createFakeCubeProjectCatalog();
+    const store = new InMemoryCubeStore('alice');
     const host = new LegendCubeHost(
       TEST__createCubeApplicationStore(),
       { engine: ENGINE },
-      { engine, connectionExplorer, projectCatalog },
+      { engine, connectionExplorer, projectCatalog, store },
     );
     expect(host.engine).toBe(engine);
     expect(host.connectionExplorer).toBe(connectionExplorer);
     expect(host.projectCatalog).toBe(projectCatalog);
+    expect(host.store).toBe(store);
   });
 
   test("Links a data product to the marketplace of its deployment's class, and to none without one", () => {
