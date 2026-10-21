@@ -20,6 +20,14 @@ import type {
   TypeTreeNodeData,
   PackageTreeNodeData,
 } from './TreeUtils.js';
+import {
+  type DerivedProperty,
+  type GraphManagerState,
+  type Type,
+  generateDefaultParameterValueForType,
+  VariableExpression,
+} from '@finos/legend-graph';
+import type { PlainObject } from '@finos/legend-shared';
 
 export enum CORE_DND_TYPE {
   NONE = 'NONE',
@@ -89,6 +97,42 @@ export class MappingElementDragSource {
     this.data = data;
   }
 }
+
+/**
+ * Generate the argument list, including the surrounding parentheses, to append
+ * when a derived property is dropped into a lambda editor, e.g. `('', 0)`.
+ *
+ * Similar to how we generate the call-string for functions, each parameter
+ * is filled with a default value based on its type, so the generated call
+ * matches the signature of the derived property.
+ */
+export const generateDerivedPropertyCallArguments = (
+  derivedProperty: DerivedProperty,
+  graphManagerState: GraphManagerState,
+): string => {
+  // NOTE: parameters of derived properties are kept in raw JSON form in the metamodel
+  // and they do not include the `this` parameter
+  const parameters = Array.isArray(derivedProperty.parameters)
+    ? (derivedProperty.parameters as PlainObject[])
+    : [];
+  const values = parameters.map((parameter, idx) => {
+    let type: Type | undefined;
+    try {
+      const variable = graphManagerState.graphManager.buildValueSpecification(
+        parameter,
+        graphManagerState.graph,
+      );
+      type =
+        variable instanceof VariableExpression
+          ? variable.genericType?.value.rawType
+          : undefined;
+    } catch {
+      // the type of the parameter cannot be resolved, use a placeholder value instead
+    }
+    return generateDefaultParameterValueForType(type, idx);
+  });
+  return `(${values.join(', ')})`;
+};
 
 // TODO: disperse all of these to the editor, we should probably remove all of these
 export type FlatDataPropertyMappingTransformDropTarget =

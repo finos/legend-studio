@@ -20,6 +20,7 @@ import {
   type TransformDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
+  generateDerivedPropertyCallArguments,
 } from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   type MappingElement,
@@ -357,7 +358,10 @@ export const PurePropertyMappingEditor = observer(
                 toAppend = dropItem.data.id;
               }
               if (dropItem.data?.property instanceof DerivedProperty) {
-                toAppend += '()';
+                toAppend += generateDerivedPropertyCallArguments(
+                  dropItem.data.property,
+                  purePropertyMappingState.editorStore.graphManagerState,
+                );
               }
             }
             if (toAppend) {
