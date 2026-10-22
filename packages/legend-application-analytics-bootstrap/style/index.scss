@@ -19,6 +19,9 @@
 @import url('@finos/legend-art/lib/muiOverrides.css');
 @import url('@finos/legend-application/lib/index.css');
 @import url('@finos/legend-lego/lib/index.css');
+// a data space source's editor is the query builder (PLAN §11.25)
+@import url('@finos/legend-query-builder/lib/index.css');
+@import url('@finos/legend-extension-dsl-data-space/lib/index.css');
 @import url('@finos/legend-cube-builder/lib/index.css');
 
 // Legend Query's light mode, for the shared components the Cube page shows: last,
