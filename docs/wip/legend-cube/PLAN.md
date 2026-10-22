@@ -5603,8 +5603,8 @@ query builder changes in a drastic way.
 **Changes to `legend-query-builder` (not drastic):** the three new options are getters on its existing workflow seam
 (`QueryBuilderWorkflowState`), each defaulting to today's behaviour, and read where the controls are rendered. Nothing
 else in the query builder changes; any change beyond these is raised with the user first. With the export of
-`QueryBuilderTDSState` and the test helper's optional workflow state, they are their own PR, finos/legend-studio#5764,
-to merge first (user, 2026-10-22). This branch carries them until it merges, then is rebased on master.
+`QueryBuilderTDSState` and the test helper's optional workflow state, they merged first as their own PR,
+finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no longer changes the query builder.
 
 **Not in this milestone:**
 
