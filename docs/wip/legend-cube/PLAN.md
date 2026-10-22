@@ -5649,6 +5649,9 @@ finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no long
   `where`, and the one matching row:
   `select top 1001 "root".CASE_TYPE as "Case Type", "root".CASES as "Cases", "root".DATE as "Date" from COVID_DATA as "root" where "root".CASE_TYPE = 'Confirmed' and "root".CASES is not null and "root".CASES > cast(100.0 as float)`.
   The demo video (39) is on the PR.
+- **Engine-backed tests:** `CubeDataSpaceSource.engine-roundtrip-test.ts` types a source's relation and runs it with a
+  Cube Filter after it through `from(mapping, runtime)`, on Legend Query's COVID data (a class, its mapping and an H2
+  runtime); the inference conformance suite lists the type as typed there.
 
 **Steps:**
 
