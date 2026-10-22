@@ -31,6 +31,23 @@ import { TEST_DATA__GenerationSpecificationStages } from './TEST_DATA__Generatio
 
 const SPEC_PATH = 'test::tGenSpec';
 
+/**
+ * The nodes exactly as the specification was written, to compare an untouched node against.
+ */
+const TEST_DATA__writtenNodes = (
+  guaranteeNonNullable(
+    TEST_DATA__GenerationSpecificationStages.find(
+      (entity) => entity.path === SPEC_PATH,
+    ),
+  ).content as unknown as {
+    generationNodes: {
+      id: string;
+      generationElement?: string;
+      generationElements?: string[];
+    }[];
+  }
+).generationNodes;
+
 let editorStore: EditorStore;
 let specState: GenerationSpecificationEditorState;
 
@@ -87,14 +104,14 @@ test(unitTest('Stages are the generation nodes, in the declared order'), () => {
 });
 
 test(
-  unitTest('An untouched node keeps the form it was written in'),
-  async () => {
+  unitTest('An untouched node written with the singular field keeps that form'),
+  () => {
     // change something unrelated: a third element joins the stage that was already a group
     specState.addElementToStage(getStage(0), getElement('test::tMapping3'));
 
     const nodes = getSerializedNodes();
     expect(nodes).toHaveLength(2);
-    expect(nodes[0]).toEqual({
+    expect(nodes[0]).toStrictEqual({
       generationElements: [
         'test::tMapping',
         'test::tMapping2',
@@ -103,10 +120,17 @@ test(
       id: 'theGroup',
     });
     // the node nothing was done to is serialized exactly as it was written
-    expect(nodes[1]).toEqual({
-      generationElement: 'test::tMapping3',
-      id: 'theSingleElement',
-    });
+    expect(nodes[1]).toStrictEqual(TEST_DATA__writtenNodes[1]);
+  },
+);
+
+test(
+  unitTest('An untouched node written with the plural field keeps that form'),
+  () => {
+    // change something unrelated: the other stage, the one written as a single element
+    specState.addElementToStage(getStage(1), getElement('test::tMapping'));
+
+    expect(getSerializedNodes()[0]).toStrictEqual(TEST_DATA__writtenNodes[0]);
   },
 );
 

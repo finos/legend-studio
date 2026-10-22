@@ -28,7 +28,7 @@ import {
   type PureModel,
   PureGraphManagerPlugin,
 } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST__openElementFromExplorerTree,
@@ -82,6 +82,47 @@ const setUpEditor = async (
   return (await waitFor(() =>
     renderResult.baseElement.querySelector('.generation-spec-editor'),
   )) as HTMLElement;
+};
+
+const getStages = (editor: HTMLElement): HTMLElement[] =>
+  Array.from(
+    editor.querySelectorAll('.generation-spec-editor__stage'),
+  ) as HTMLElement[];
+
+const getCard = (editor: HTMLElement, name: string): HTMLElement =>
+  guaranteeNonNullable(
+    (
+      Array.from(
+        editor.querySelectorAll('.generation-spec-editor__card'),
+      ) as HTMLElement[]
+    ).find(
+      (card) =>
+        card.querySelector('.generation-spec-editor__card__name')
+          ?.textContent === name,
+    ),
+    `Can't find card '${name}'`,
+  );
+
+const getPaletteItem = (editor: HTMLElement, path: string): HTMLElement =>
+  guaranteeNonNullable(
+    (
+      Array.from(
+        editor.querySelectorAll('.generation-spec-editor__palette__item'),
+      ) as HTMLElement[]
+    ).find(
+      (item) =>
+        item.querySelector('.generation-spec-editor__palette__item__name')
+          ?.textContent === path,
+    ),
+    `Can't find palette item '${path}'`,
+  );
+
+const dragAndDrop = (source: HTMLElement, target: HTMLElement): void => {
+  fireEvent.dragStart(source);
+  fireEvent.dragEnter(target);
+  fireEvent.dragOver(target);
+  fireEvent.drop(target);
+  fireEvent.dragEnd(source);
 };
 
 test(
@@ -167,5 +208,95 @@ test(
     );
     // the stages themselves still render: a specification can be read without the extension
     getByText(editor, '2 stages, 2 recompiles');
+  },
+);
+
+test(
+  integrationTest('A card dropped on another stage joins that stage'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+
+    // the last card of stage 2 moves up into stage 1, which is how two stages are merged
+    dragAndDrop(
+      getCard(editor, 'tMapping3'),
+      guaranteeNonNullable(getStages(editor)[0]),
+    );
+
+    await waitFor(() => getByText(editor, '1 stage, 1 recompile'));
+    expect(getStages(editor)).toHaveLength(1);
+    getByText(
+      editor,
+      '3 generations, run together against the same compiled model',
+    );
+    // the stage that lost its last card took its divider with it
+    expect(
+      editor.querySelectorAll('.generation-spec-editor__divider__label'),
+    ).toHaveLength(1);
+  },
+);
+
+test(
+  integrationTest('A card dropped on the strip at the end gets its own stage'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+
+    dragAndDrop(
+      getCard(editor, 'tMapping2'),
+      guaranteeNonNullable(
+        editor.querySelector(
+          '.generation-spec-editor__new-stage',
+        ) as HTMLElement,
+      ),
+    );
+
+    await waitFor(() => getByText(editor, '3 stages, 3 recompiles'));
+    const stages = getStages(editor);
+    expect(stages).toHaveLength(3);
+    getByText(guaranteeNonNullable(stages[2]), 'tMapping2');
+  },
+);
+
+test(
+  integrationTest('A palette element dropped on a stage joins that stage'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+
+    // the same element may run in more than one stage, so this is a legal drop
+    dragAndDrop(
+      getPaletteItem(editor, 'test::tMapping'),
+      guaranteeNonNullable(getStages(editor)[1]),
+    );
+
+    await waitFor(() =>
+      getByText(
+        guaranteeNonNullable(getStages(editor)[1]),
+        '2 generations, run together against the same compiled model',
+      ),
+    );
+    // still two stages: a drop lands in the stage it was dropped on
+    getByText(editor, '2 stages, 2 recompiles');
+  },
+);
+
+test(
+  integrationTest('A file generation cannot be dropped into a stage'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+
+    dragAndDrop(
+      getPaletteItem(editor, 'test::tFileGen'),
+      guaranteeNonNullable(getStages(editor)[0]),
+    );
+
+    getByText(editor, '2 stages, 2 recompiles');
+    expect(
+      guaranteeNonNullable(getStages(editor)[0]).querySelectorAll(
+        '.generation-spec-editor__card',
+      ),
+    ).toHaveLength(2);
   },
 );
