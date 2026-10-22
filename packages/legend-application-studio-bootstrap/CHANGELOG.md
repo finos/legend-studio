@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-bootstrap
 
+## 13.274.0
+
+### Patch Changes
+
+- [#5710](https://github.com/finos/legend-studio/pull/5710) [`022f425`](https://github.com/finos/legend-studio/commit/022f425d36688d95a6eaf3e71ed9cf8399e72f25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Studio declares its backend servers (SDLC, engine, engine query, depot, showcase, lakehouse contract, Legend AI) so they can be overridden from the backend servers dialog, reached from Developer Tools' new Backend Servers section; overriding the SDLC server also points SDLC authorization at it. The local development config enables backend overrides.
+
 ## 13.273.0
 
 ## 13.272.0

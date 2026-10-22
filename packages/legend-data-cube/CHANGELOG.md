@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.132
+
+### Patch Changes
+
+- [#5765](https://github.com/finos/legend-studio/pull/5765) [`465fa28`](https://github.com/finos/legend-studio/commit/465fa28f615ffc72d01fec0d681eb420b9ff7241) ([@jackp5150](https://github.com/jackp5150)) - Added variants to data-cube UI allowing them to be displayed and interacted with.
+
 ## 0.3.131
 
 ## 0.3.130
