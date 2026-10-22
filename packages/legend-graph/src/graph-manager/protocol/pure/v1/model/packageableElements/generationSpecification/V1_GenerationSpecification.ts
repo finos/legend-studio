@@ -40,10 +40,9 @@ export class V1_GenerationTreeNode {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE_NODE,
-      ...(this.generationElement !== undefined &&
-      this.generationElement !== null
-        ? [this.generationElement]
-        : this.generationElements),
+      ...(this.generationElements.length
+        ? this.generationElements
+        : [this.generationElement ?? '']),
       this.id,
     ]);
   }

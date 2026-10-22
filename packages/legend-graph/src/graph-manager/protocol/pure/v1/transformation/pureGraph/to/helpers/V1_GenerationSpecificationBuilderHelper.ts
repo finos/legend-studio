@@ -30,21 +30,23 @@ export const V1_buildGenerationTreeNode = (
   generationNode: V1_GenerationTreeNode,
   context: V1_GraphBuilderContext,
 ): GenerationTreeNode => {
-  const holdsSingleElement =
-    generationNode.generationElement !== undefined &&
-    generationNode.generationElement !== null;
+  const holdsGroup = generationNode.generationElements.length > 0;
   assertTrue(
-    holdsSingleElement !== generationNode.generationElements.length > 0,
+    holdsGroup !== Boolean(generationNode.generationElement),
     `Generation tree node must specify either 'generationElement' or 'generationElements', not both`,
   );
   assertNonEmptyString(
     generationNode.id,
     `Generation tree node 'id' field is missing or empty`,
   );
-  const genNode = holdsSingleElement
+  const genNode = !holdsGroup
     ? new GenerationTreeNode(
         context.resolveElement(
-          guaranteeNonNullable(generationNode.generationElement),
+          // engine leaves this null, rather than unset, for a node holding a group
+          guaranteeNonNullable(
+            generationNode.generationElement,
+            `Generation tree node 'generationElement' field is missing or empty`,
+          ),
           false,
         ),
       )
