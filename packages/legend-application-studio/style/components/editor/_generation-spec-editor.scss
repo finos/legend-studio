@@ -157,7 +157,10 @@
         height: 1.6rem;
         border-radius: 0.3rem;
         background: var(--color-bg-tag);
-        color: var(--color-text-secondary);
+
+        // on `--color-bg-tag`, `--color-text-secondary` is only 4.45:1 in the default light theme
+        // and 4.05:1 in the legacy one; the primary text colour clears 4.5:1 in all three
+        color: var(--color-text-primary);
         font-size: 1rem;
         white-space: nowrap;
       }
@@ -217,7 +220,9 @@
         padding: 0 0.7rem;
         border-radius: 0.3rem;
         background: var(--color-bg-tag);
-        color: var(--color-text-secondary);
+
+        // see the note on the palette's usage chip: secondary text does not clear 4.5:1 here
+        color: var(--color-text-primary);
         font-size: 1.1rem;
         font-weight: 700;
         white-space: nowrap;
@@ -262,7 +267,7 @@
         height: 2.2rem;
         border-radius: 0.2rem;
         background: var(--color-bg-tag);
-        color: var(--color-text-secondary);
+        color: var(--color-text-primary);
         cursor: pointer;
 
         svg {
@@ -284,7 +289,7 @@
 
         &[disabled]:hover {
           background: var(--color-bg-tag);
-          color: var(--color-text-secondary);
+          color: var(--color-text-primary);
         }
       }
     }
@@ -439,10 +444,13 @@
       text-transform: uppercase;
     }
 
+    // `--color-border-strong` is 1.73:1 against the board's ground in the default light theme, and
+    // this rule is the one piece of the board that carries meaning on its own, so it is drawn in a
+    // text colour (6.3:1 at worst) and kept to a hairline so it reads without shouting
     &__line {
       flex: 1 1 auto;
-      height: 0.2rem;
-      background: var(--color-border-strong);
+      height: 0.1rem;
+      background: var(--color-text-secondary);
     }
 
     &__note {
