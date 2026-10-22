@@ -5645,19 +5645,21 @@ finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no long
   Filter's editor and back) walks without a console error on a fresh load (`probe-editor-paths.mjs` in the evidence
   folder). An assertion that the editor's draft is a data space draft showed only after hot reloads of the libraries,
   once per rebuild: a class from before the reload.
-- **Not checked yet:** execution. The engine answered 500 to every relational execution that day, Cube's plain table
-  queries too, so the video's Execute scene waits for a restart.
+- **Execution (2026-10-22, the engine restarted):** one SQL statement, the query builder's filter and Cube's both in its
+  `where`, and the one matching row:
+  `select top 1001 "root".CASE_TYPE as "Case Type", "root".CASES as "Cases", "root".DATE as "Date" from COVID_DATA as "root" where "root".CASE_TYPE = 'Confirmed' and "root".CASES is not null and "root".CASES > cast(100.0 as float)`.
+  The demo video (39) is on the PR.
 
 **Steps:**
 
-| Step | Deliverable                                                                                                                                                                         | Done when                                                                                          |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                                                             |
-| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned ✅ (2026-10-21)                                                    |
-| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor ✅ (2026-10-21)                      |
-| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option ✅ (2026-10-21)                                   |
-| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests ✅ (2026-10-21)                                                           |
-| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen (rehearsal ✅ 2026-10-21; the video waits for the engine's execution) |
+| Step | Deliverable                                                                                                                                                                         | Done when                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                                        |
+| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned ✅ (2026-10-21)                               |
+| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor ✅ (2026-10-21) |
+| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option ✅ (2026-10-21)              |
+| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests ✅ (2026-10-21)                                      |
+| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen ✅ (2026-10-22, video 39 on the PR)              |
 
 ## 12. G. Risks and open questions
 
