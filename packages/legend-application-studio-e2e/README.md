@@ -35,6 +35,27 @@ The compose file names its container `engine`. If you already have a container b
 
 The debugging commands are the same as the Legend Query suite's (`test:e2e:ui`, `test:e2e:headed`, `test:e2e:report`, `--debug`, `--trace on`); see its [README](../legend-application-query-e2e/README.md#debugging-failures).
 
+## Screenshots
+
+[`playwright.screenshots.config.ts`](./playwright.screenshots.config.ts) is a screenshot-and-recording run rather than a test run, and no CI job uses it. It reuses everything the tests set up — above all the in-browser SDLC mock, which is why the only backend it needs is the engine — and writes images of a feature in each colour theme, so a change to an editor can be shown as it looks rather than described:
+
+```sh
+yarn workspace @finos/legend-application-studio-e2e screenshots:generation-spec
+```
+
+Images land in `build/screenshots`, or wherever `GENERATION_SPEC_SHOT_DIR` points. Each run also leaves a `video.webm` of every script under `build/screenshots-output`, which `ffmpeg` turns into a GIF for a pull request:
+
+```sh
+ffmpeg -ss 2.8 -i video.webm -vf "crop=920:620:348:28,fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=96[p];[s1][p]paletteuse" -loop 0 gestures.gif
+```
+
+A script lives in [`src/screenshots/`](./src/screenshots/) and is named `<Feature>.screenshots.ts`, so the test run never picks it up. Two things to know when writing one:
+
+- **The colour theme** is seeded into `localStorage` with `addInitScript()` before the app loads, under the application's storage key — there is no UI step for it. [`GenerationSpecification.screenshots.ts`](./src/screenshots/GenerationSpecification.screenshots.ts) loops over `default-dark`, `default-light` and `legacy-light`, which is what catches a token that only works against one ground.
+- **`devices['Desktop Chrome']` carries its own viewport**, so a viewport set in the top-level `use` is overridden: set it in the project's `use`, after the device is spread in.
+
+Drag-and-drop goes through react-dnd's HTML5 backend, so a gesture is driven with the real drag events (`dragstart` / `dragenter` / `dragover` / `drop`) with mouse moves in between — the moves are what makes the recording legible, and a pause before the drop is what captures the drop target's own treatment.
+
 ## Adding new tests
 
 1. Create a spec in [`src/tests/`](./src/tests/) named `<Feature>.spec.ts`.
