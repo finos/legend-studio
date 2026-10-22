@@ -349,22 +349,24 @@ const DatabaseDiagramCanvasInner = observer(
           // Build with `exactOptionalPropertyTypes` in mind — only attach
           // `style` when actually overriding it, so TS doesn't see `undefined`
           // assigned to an optional-but-not-undefined-allowed prop.
+          // Label colors follow the theme; `--database-editor-*` is defined
+          // per theme in `_database-editor.scss`.
           const styled: Edge<DatabaseEdgeData> = {
             ...e,
             labelStyle: {
               fontSize: 10,
               fill: isSelected
-                ? 'var(--color-yellow-200)'
-                : 'var(--color-light-grey-200)',
+                ? 'var(--database-editor-yellow)'
+                : 'var(--color-text-secondary)',
             },
             labelBgStyle: {
-              fill: 'var(--color-dark-grey-100)',
+              fill: 'var(--color-bg-panel)',
             },
             zIndex: isSelected ? 10 : 0,
           };
           if (isSelected) {
             styled.style = {
-              stroke: 'var(--color-yellow-200)',
+              stroke: 'var(--database-editor-yellow)',
               strokeWidth: 2,
             };
           }
@@ -577,12 +579,12 @@ const DatabaseDiagramCanvasInner = observer(
                 | DatabaseForeignRelationStubNodeData
                 | undefined;
               if (data?.isJoinEndpoint) {
-                return 'var(--color-yellow-200)';
+                return 'var(--database-editor-yellow)';
               }
               if ((data as DatabaseTableNodeData | undefined)?.isSelected) {
-                return 'var(--color-blue-200)';
+                return 'var(--database-editor-blue)';
               }
-              return 'var(--color-dark-grey-200)';
+              return 'var(--color-text-muted)';
             }}
             maskColor="rgba(0, 0, 0, 0.6)"
           />
