@@ -65,6 +65,7 @@ import {
   GenerationTreeNode,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   buildElementOption,
   type PackageableElementOption,
@@ -89,10 +90,19 @@ const ModelGenerationItem = observer(
     const generationTreeNode = nodeState.node;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
-    const modelGenerationRef = generationTreeNode.generationElement;
+    // this editor shows one element per node; a node holding a parallel group shows its first
+    // element and how many more it holds, until the editor can author groups
+    const modelGenerationRef = guaranteeNonNullable(
+      generationTreeNode.generationElements[0],
+      `Generation tree node must hold at least one generation element`,
+    );
     const modelGeneration = modelGenerationRef.value;
+    const otherElementCount = generationTreeNode.generationElements.length - 1;
     const value = {
-      label: modelGeneration.name,
+      label:
+        otherElementCount > 0
+          ? `${modelGeneration.name} (+${otherElementCount} in parallel)`
+          : modelGeneration.name,
       value: modelGeneration,
     } as PackageableElementOption<FileGenerationSpecification>;
     const onChange = (
@@ -113,7 +123,9 @@ const ModelGenerationItem = observer(
       ).length < 2;
     const isDefault =
       generationTreeNode.id ===
-        generationTreeNode.generationElement.value.path && isUnique;
+        generationTreeNode.generationElements
+          .map((element) => element.value.path)
+          .join(',') && isUnique;
     const changeNodeId: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       generationSpecification_setId(generationTreeNode, event.target.value);
     // Drag and Drop
@@ -321,7 +333,9 @@ const ModelGenerationSpecifications = observer(
               <div className="generation-spec-model-generation-editor__items">
                 <DragPreviewLayer
                   labelGetter={(item: GenerationSpecNodeDragSource): string =>
-                    item.nodeState.node.generationElement.value.name
+                    item.nodeState.node.generationElements
+                      .map((element) => element.value.name)
+                      .join(', ')
                   }
                   types={[GENERATION_SPEC_NODE_DND_TYPE]}
                 />
