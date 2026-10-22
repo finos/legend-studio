@@ -413,11 +413,11 @@ const GenerationStage = observer(
                 : `Stage id '${node.id}' is used by another stage`
             }
           />
+          {/* the only way to reorder stages that does not need a pointer */}
           <button
             className="generation-spec-editor__stage__header__action"
             onClick={(): void => specState.moveStage(index, index - 1)}
             disabled={index === 0}
-            tabIndex={-1}
             title="Run this stage earlier"
           >
             <ArrowUpIcon />
@@ -426,7 +426,6 @@ const GenerationStage = observer(
             className="generation-spec-editor__stage__header__action"
             onClick={(): void => specState.moveStage(index, index + 1)}
             disabled={isLastStage}
-            tabIndex={-1}
             title="Run this stage later"
           >
             <ArrowDownIcon />
