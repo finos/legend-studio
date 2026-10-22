@@ -705,377 +705,404 @@ export const QueryBuilder = observer(
                       {actionConfig.renderer(queryBuilderState)}
                     </Fragment>
                   ))}
-                <ControlledDropdownMenu
-                  className="query-builder__header__advanced-dropdown"
-                  title="Show Advanced Menu..."
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        onClick={toggleShowFunctionPanel}
-                        disabled={!queryBuilderState.isQuerySupported}
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.showFunctionsExplorerPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Function(s)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      {!queryBuilderState.isParameterSupportDisabled && (
-                        <MenuContentItem
-                          onClick={toggleShowParameterPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            queryBuilderState.parametersState.parameterStates.filter(
-                              (paramState) =>
-                                !queryBuilderState.milestoningState.isMilestoningParameter(
-                                  paramState.parameter,
-                                ),
-                            ).length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {queryBuilderState.showParametersPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Show Parameter(s)
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      {
-                        <MenuContentItem
-                          onClick={toggleConstantPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            queryBuilderState.constantState.constants.length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {queryBuilderState.constantState
-                              .showConstantPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Show Constant(s)
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      }
-                      <MenuContentItem
-                        onClick={toggleShowFilterPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          Array.from(
-                            queryBuilderState.filterState.nodes.values(),
-                          ).length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.filterState.showPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>Show Filter</MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={onChangeFetchStructureImplementation(
-                          isTDSState
-                            ? FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH
-                            : FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
-                          fetchStructureState,
-                        )}
-                        disabled={!queryBuilderState.isQuerySupported}
-                      >
-                        <MenuContentItemIcon>
-                          {isTDSState ? <CheckIcon /> : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Tabular Data Structure
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentDivider />
-                      <MenuContentItem
-                        onClick={toggleShowOLAPGroupByPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          ) ||
-                          queryBuilderState.fetchStructureState.implementation
-                            .windowState.windowColumns.length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {isTDSState &&
-                          guaranteeType(
-                            queryBuilderState.fetchStructureState
-                              .implementation,
-                            QueryBuilderTDSState,
-                          ).showWindowFuncPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Window Function(s)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleShowPostFilterPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          ) ||
-                          Array.from(
-                            queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
-                          ).length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Post-Filter
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleEnableCalendar}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          )
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.isCalendarEnabled ? (
-                            <CheckIcon />
-                          ) : (
-                            <CalendarClockIcon />
+                {queryBuilderState.workflowState.showHeaderMenus && (
+                  <>
+                    <ControlledDropdownMenu
+                      className="query-builder__header__advanced-dropdown"
+                      title="Show Advanced Menu..."
+                      content={
+                        <MenuContent>
+                          <MenuContentItem
+                            onClick={toggleShowFunctionPanel}
+                            disabled={!queryBuilderState.isQuerySupported}
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.showFunctionsExplorerPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Function(s)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          {!queryBuilderState.isParameterSupportDisabled && (
+                            <MenuContentItem
+                              onClick={toggleShowParameterPanel}
+                              disabled={
+                                !queryBuilderState.isQuerySupported ||
+                                queryBuilderState.parametersState.parameterStates.filter(
+                                  (paramState) =>
+                                    !queryBuilderState.milestoningState.isMilestoningParameter(
+                                      paramState.parameter,
+                                    ),
+                                ).length > 0
+                              }
+                            >
+                              <MenuContentItemIcon>
+                                {queryBuilderState.showParametersPanel ? (
+                                  <CheckIcon />
+                                ) : null}
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Show Parameter(s)
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
                           )}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Enable Calendar
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleTypedRelation}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          )
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.isFetchStructureTyped ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Enable Typed TDS (BETA)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentDivider />
-                      {!(
-                        queryBuilderState instanceof
-                        DataProductQueryBuilderState
-                      ) && (
-                        <MenuContentItem
-                          onClick={openCheckEntitlmentsEditor}
-                          disabled={
-                            (queryBuilderState.isQuerySupported &&
+                          {
+                            <MenuContentItem
+                              onClick={toggleConstantPanel}
+                              disabled={
+                                !queryBuilderState.isQuerySupported ||
+                                queryBuilderState.constantState.constants
+                                  .length > 0
+                              }
+                            >
+                              <MenuContentItemIcon>
+                                {queryBuilderState.constantState
+                                  .showConstantPanel ? (
+                                  <CheckIcon />
+                                ) : null}
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Show Constant(s)
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
+                          }
+                          <MenuContentItem
+                            onClick={toggleShowFilterPanel}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              Array.from(
+                                queryBuilderState.filterState.nodes.values(),
+                              ).length > 0
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.filterState.showPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Filter
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem
+                            onClick={onChangeFetchStructureImplementation(
+                              isTDSState
+                                ? FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH
+                                : FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
+                              fetchStructureState,
+                            )}
+                            disabled={!queryBuilderState.isQuerySupported}
+                          >
+                            <MenuContentItemIcon>
+                              {isTDSState ? <CheckIcon /> : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Tabular Data Structure
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentDivider />
+                          <MenuContentItem
+                            onClick={toggleShowOLAPGroupByPanel}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              !(
+                                queryBuilderState.fetchStructureState
+                                  .implementation instanceof
+                                QueryBuilderTDSState
+                              ) ||
                               queryBuilderState.fetchStructureState
+                                .implementation.windowState.windowColumns
+                                .length > 0
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {isTDSState &&
+                              guaranteeType(
+                                queryBuilderState.fetchStructureState
+                                  .implementation,
+                                QueryBuilderTDSState,
+                              ).showWindowFuncPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Window Function(s)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem
+                            onClick={toggleShowPostFilterPanel}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              !(
+                                queryBuilderState.fetchStructureState
+                                  .implementation instanceof
+                                QueryBuilderTDSState
+                              ) ||
+                              Array.from(
+                                queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
+                              ).length > 0
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.fetchStructureState
                                 .implementation instanceof
                                 QueryBuilderTDSState &&
                               queryBuilderState.fetchStructureState
-                                .implementation.projectionColumns.length ===
-                                0) ||
-                            !queryBuilderState.canBuildQuery
-                          }
-                          title={
-                            !queryBuilderState.canBuildQuery
-                              ? 'Please fix query errors to check entitlements'
-                              : ''
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            <DataAccessIcon />
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Check Entitlements
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      <MenuContentItem
-                        onClick={editPure}
-                        disabled={!queryBuilderState.canBuildQuery}
-                        title={
-                          !queryBuilderState.canBuildQuery
-                            ? 'Please fix query errors to edit in Pure'
-                            : undefined
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          <HackerIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>Edit Pure</MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={showPure}
-                        disabled={!queryBuilderState.canBuildQuery}
-                        title={
-                          !queryBuilderState.canBuildQuery
-                            ? 'Please fix query errors to edit in Pure'
-                            : undefined
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          <CodeIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>Show Pure</MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={showProtocol}
-                        disabled={!queryBuilderState.canBuildQuery}
-                        title={
-                          !queryBuilderState.canBuildQuery
-                            ? 'Please fix query errors to show query protocol'
-                            : undefined
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          <SerializeIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Protocol
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem onClick={compileQuery}>
-                        <MenuContentItemIcon>
-                          <HammerIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Compile Query (F9)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      {queryBuilderState.changeDetectionState.initState
-                        .hasCompleted && (
-                        <MenuContentItem
-                          disabled={
-                            !queryBuilderState.changeDetectionState.hasChanged
-                          }
-                          onClick={showDiff}
-                          title={
-                            queryBuilderState.changeDetectionState.hasChanged
-                              ? 'Show changes'
-                              : 'Query has not been changed'
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            <DiffIcon />
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Show Query Diff
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                    elevation: 7,
-                  }}
-                >
-                  <div className="query-builder__header__advanced-dropdown__label">
-                    Advanced
-                  </div>
-                  <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
-                </ControlledDropdownMenu>
-                <ControlledDropdownMenu
-                  className="query-builder__header__advanced-dropdown"
-                  content={
-                    <MenuContent>
-                      {extraHelpMenuContentItems}
-                      {queryDocEntry && (
-                        <MenuContentItem onClick={openQueryTutorial}>
-                          <MenuContentItemIcon>
-                            <DocumentationIcon />
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Open Documentation
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      {frequentlyAskedQuestionEntry && (
-                        <MenuContentItem onClick={openFrequentlyAskedQuestions}>
-                          <MenuContentItemIcon>
-                            <QuestionIcon />
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Frequently Asked Questions
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      {supportTicketsEntry && (
-                        <MenuContentItem onClick={openSupportTickets}>
-                          <MenuContentItemIcon>
-                            <QuestionIcon />
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Open Support Tickets
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      <MenuContentItem
-                        onClick={toggleAssistant}
-                        disabled={
-                          queryBuilderState.applicationStore.assistantService
-                            .isDisabled
-                        }
-                        title={
-                          queryBuilderState.applicationStore.assistantService
-                            .isDisabled
-                            ? 'Virtual Assistant is disabled'
-                            : ''
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {!applicationStore.assistantService.isHidden ? (
-                            <CheckIcon />
-                          ) : (
-                            <AssistantIcon />
+                                .implementation.showPostFilterPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Post-Filter
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem
+                            onClick={toggleEnableCalendar}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              !(
+                                queryBuilderState.fetchStructureState
+                                  .implementation instanceof
+                                QueryBuilderTDSState
+                              )
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.isCalendarEnabled ? (
+                                <CheckIcon />
+                              ) : (
+                                <CalendarClockIcon />
+                              )}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Enable Calendar
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem
+                            onClick={toggleTypedRelation}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              !(
+                                queryBuilderState.fetchStructureState
+                                  .implementation instanceof
+                                QueryBuilderTDSState
+                              )
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.isFetchStructureTyped ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Enable Typed TDS (BETA)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentDivider />
+                          {!(
+                            queryBuilderState instanceof
+                            DataProductQueryBuilderState
+                          ) && (
+                            <MenuContentItem
+                              onClick={openCheckEntitlmentsEditor}
+                              disabled={
+                                (queryBuilderState.isQuerySupported &&
+                                  queryBuilderState.fetchStructureState
+                                    .implementation instanceof
+                                    QueryBuilderTDSState &&
+                                  queryBuilderState.fetchStructureState
+                                    .implementation.projectionColumns.length ===
+                                    0) ||
+                                !queryBuilderState.canBuildQuery
+                              }
+                              title={
+                                !queryBuilderState.canBuildQuery
+                                  ? 'Please fix query errors to check entitlements'
+                                  : ''
+                              }
+                            >
+                              <MenuContentItemIcon>
+                                <DataAccessIcon />
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Check Entitlements
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
                           )}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Virtual Assistant
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                >
-                  <div
-                    className="query-builder__header__advanced-dropdown__label"
-                    title="See more options"
-                  >
-                    Help...
-                  </div>
-                  <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
-                </ControlledDropdownMenu>
+                          <MenuContentItem
+                            onClick={editPure}
+                            disabled={!queryBuilderState.canBuildQuery}
+                            title={
+                              !queryBuilderState.canBuildQuery
+                                ? 'Please fix query errors to edit in Pure'
+                                : undefined
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              <HackerIcon />
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Edit Pure
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem
+                            onClick={showPure}
+                            disabled={!queryBuilderState.canBuildQuery}
+                            title={
+                              !queryBuilderState.canBuildQuery
+                                ? 'Please fix query errors to edit in Pure'
+                                : undefined
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              <CodeIcon />
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Pure
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem
+                            onClick={showProtocol}
+                            disabled={!queryBuilderState.canBuildQuery}
+                            title={
+                              !queryBuilderState.canBuildQuery
+                                ? 'Please fix query errors to show query protocol'
+                                : undefined
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              <SerializeIcon />
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Protocol
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          <MenuContentItem onClick={compileQuery}>
+                            <MenuContentItemIcon>
+                              <HammerIcon />
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Compile Query (F9)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                          {queryBuilderState.changeDetectionState.initState
+                            .hasCompleted && (
+                            <MenuContentItem
+                              disabled={
+                                !queryBuilderState.changeDetectionState
+                                  .hasChanged
+                              }
+                              onClick={showDiff}
+                              title={
+                                queryBuilderState.changeDetectionState
+                                  .hasChanged
+                                  ? 'Show changes'
+                                  : 'Query has not been changed'
+                              }
+                            >
+                              <MenuContentItemIcon>
+                                <DiffIcon />
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Show Query Diff
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
+                          )}
+                        </MenuContent>
+                      }
+                      menuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right',
+                        },
+                        elevation: 7,
+                      }}
+                    >
+                      <div className="query-builder__header__advanced-dropdown__label">
+                        Advanced
+                      </div>
+                      <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
+                    </ControlledDropdownMenu>
+                    <ControlledDropdownMenu
+                      className="query-builder__header__advanced-dropdown"
+                      content={
+                        <MenuContent>
+                          {extraHelpMenuContentItems}
+                          {queryDocEntry && (
+                            <MenuContentItem onClick={openQueryTutorial}>
+                              <MenuContentItemIcon>
+                                <DocumentationIcon />
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Open Documentation
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
+                          )}
+                          {frequentlyAskedQuestionEntry && (
+                            <MenuContentItem
+                              onClick={openFrequentlyAskedQuestions}
+                            >
+                              <MenuContentItemIcon>
+                                <QuestionIcon />
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Frequently Asked Questions
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
+                          )}
+                          {supportTicketsEntry && (
+                            <MenuContentItem onClick={openSupportTickets}>
+                              <MenuContentItemIcon>
+                                <QuestionIcon />
+                              </MenuContentItemIcon>
+                              <MenuContentItemLabel>
+                                Open Support Tickets
+                              </MenuContentItemLabel>
+                            </MenuContentItem>
+                          )}
+                          <MenuContentItem
+                            onClick={toggleAssistant}
+                            disabled={
+                              queryBuilderState.applicationStore
+                                .assistantService.isDisabled
+                            }
+                            title={
+                              queryBuilderState.applicationStore
+                                .assistantService.isDisabled
+                                ? 'Virtual Assistant is disabled'
+                                : ''
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {!applicationStore.assistantService.isHidden ? (
+                                <CheckIcon />
+                              ) : (
+                                <AssistantIcon />
+                              )}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel>
+                              Show Virtual Assistant
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        </MenuContent>
+                      }
+                    >
+                      <div
+                        className="query-builder__header__advanced-dropdown__label"
+                        title="See more options"
+                      >
+                        Help...
+                      </div>
+                      <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
+                    </ControlledDropdownMenu>
+                  </>
+                )}
               </div>
             </div>
             <div className="query-builder__main">

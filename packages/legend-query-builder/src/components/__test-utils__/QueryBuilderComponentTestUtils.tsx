@@ -65,6 +65,7 @@ import { expect } from '@jest/globals';
 import {
   QueryBuilderActionConfig,
   QueryBuilderAdvancedWorkflowState,
+  type QueryBuilderWorkflowState,
 } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 import { AccessorQueryBuilderState } from '../../stores/workflows/accessor/AccessorQueryBuilderState.js';
 import { Route, Routes } from '@finos/legend-application/browser';
@@ -238,6 +239,7 @@ export const TEST__setUpQueryBuilder = async (
   mappingPath: string,
   runtimePath: string,
   rawMappingModelCoverageAnalysisResult?: RawMappingModelCoverageAnalysisResult,
+  workflowState: QueryBuilderWorkflowState = QueryBuilderAdvancedWorkflowState.INSTANCE,
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
@@ -256,7 +258,7 @@ export const TEST__setUpQueryBuilder = async (
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
     MOCK__applicationStore,
     graphManagerState,
-    QueryBuilderAdvancedWorkflowState.INSTANCE,
+    workflowState,
     undefined,
   );
   const mapping = graphManagerState.graph.getMapping(mappingPath);
