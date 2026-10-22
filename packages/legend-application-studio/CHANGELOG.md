@@ -1,5 +1,29 @@
 # @finos/legend-application-studio
 
+## 28.22.0
+
+### Minor Changes
+
+- [#5753](https://github.com/finos/legend-studio/pull/5753) [`4ff0a22`](https://github.com/finos/legend-studio/commit/4ff0a22bf8e4b0998c8faf4f196fcee3b4c5d3c4) ([@gs-gunjan](https://github.com/gs-gunjan)) - Data space Suggest with AI now fills the data space title and description along with the descriptions of its execution contexts, diagrams, and executables. Suggestions open in a review dialog that shows each current value next to the suggested one: pick, edit, or deselect them before applying, or regenerate every field.
+
+### Patch Changes
+
+- [#5756](https://github.com/finos/legend-studio/pull/5756) [`bd6317c`](https://github.com/finos/legend-studio/commit/bd6317ceaff851051a1ae19b0fcb0ab5493de8db) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix code editors turning dark in the light theme after the SQL Playground opens: the playground now follows the application theme, and every code editor uses the same light theme, since a Monaco theme applies to every editor on the page.
+
+- [#5732](https://github.com/finos/legend-studio/pull/5732) [`d680fd1`](https://github.com/finos/legend-studio/commit/d680fd125099f60876df776c78a034b81a482b76) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - When a workspace opens, fetch the project's dependencies at the same time as the workspace entities instead of after them: they only need the project configuration, which is already loaded.
+
+- [#5762](https://github.com/finos/legend-studio/pull/5762) [`06fc327`](https://github.com/finos/legend-studio/commit/06fc327d8f24011f3d4ab230c1beb85dd32e7e8e) ([@ywiamnog](https://github.com/ywiamnog)) - Remove timezone Z from DEFAULT_INGEST_COMPLETED_TS_UTC for availability test suite
+
+- [#5710](https://github.com/finos/legend-studio/pull/5710) [`022f425`](https://github.com/finos/legend-studio/commit/022f425d36688d95a6eaf3e71ed9cf8399e72f25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Studio declares its backend servers (SDLC, engine, engine query, depot, showcase, lakehouse contract, Legend AI) so they can be overridden from the backend servers dialog, reached from Developer Tools' new Backend Servers section; overriding the SDLC server also points SDLC authorization at it. The local development config enables backend overrides.
+
+- [#5757](https://github.com/finos/legend-studio/pull/5757) [`bfcea9e`](https://github.com/finos/legend-studio/commit/bfcea9e2161d8b61bf598c67e2f96587fae4e24d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Replace hardcoded dark palette colors with theme tokens so the light theme no longer shows dark blocks in the data space execution contexts and executables, the function editor result grid, the data product access point group tabs and test parameters, the AI suggestion dismiss buttons, and the data quality row limit and Suggest Validations button. The data space Mapping / Mapping Provider toggle's active tab is now legible in both themes.
+
+- [#5763](https://github.com/finos/legend-studio/pull/5763) [`3645313`](https://github.com/finos/legend-studio/commit/36453132ea191fe1294fd773140cdf191ebf426c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix inputs and labels that were unreadable or off-theme in the light and dark themes. Enumeration value inputs and profile tag and stereotype inputs now use the theme's input colors instead of the browser's white box. In the database editor, primary keys, foreign keys and schema names keep their yellow, blue and purple but use a shade per theme. Counts, nullable columns and join formulas use muted text instead of disabled text. The diagram's edge labels and minimap follow the theme.
+
+- [#5755](https://github.com/finos/legend-studio/pull/5755) [`8de8fca`](https://github.com/finos/legend-studio/commit/8de8fca003c398a24b0d553940a0c2d01f9c22bf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix unreadable text in the light and dark themes by pairing text and background tokens: the selected row in Local Changes, Review and Update Workspace; the diff view's revision labels (and drop the duplicate label that followed the chip); the hover state of class, enumeration, association and profile editor tabs; the service editor's "query" and "context" chips; and the welcome screen's documentation link.
+
+- [#5733](https://github.com/finos/legend-studio/pull/5733) [`7fcbc64`](https://github.com/finos/legend-studio/commit/7fcbc6470d1d4344a8e88b27140c3c7b2440fa44) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - When viewing a project, fetch its current revision and latest version at the same time, and fetch its dependencies without waiting for the project versions and authorized actions, which only feed the side panels.
+
 ## 28.21.55
 
 ### Patch Changes

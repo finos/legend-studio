@@ -1,5 +1,13 @@
 # @finos/legend-cube-builder
 
+## 0.0.9
+
+### Patch Changes
+
+- [#5745](https://github.com/finos/legend-studio/pull/5745) [`393ac49`](https://github.com/finos/legend-studio/commit/393ac491269fb95c1e94b2f0f05940cc1f82d32e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The expression editors of Filter by Expression, Extend Columns and Import Pure read the engine's function catalogue (`/api/pct/pct-docs.json`). Their completions now offer every function a column's type is passed to, each with its signature and documentation. A hover over a function's name shows its documentation, and its signatures show while a call's arguments are written. The column chips write at the cursor. Without the catalogue, the editors work as before.
+
+- [#5761](https://github.com/finos/legend-studio/pull/5761) [`e5de75f`](https://github.com/finos/legend-studio/commit/e5de75f359347b5875da4b3d9ffaea5bb7713c06) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Expect Explore JSON's "total of" an array to be 0, not empty, for a row whose array is empty or missing, as the engine now sums no elements to 0 on DuckDB.
+
 ## 0.0.8
 
 ### Patch Changes

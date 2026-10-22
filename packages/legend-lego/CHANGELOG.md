@@ -1,5 +1,13 @@
 # @finos/legend-lego
 
+## 2.0.234
+
+### Patch Changes
+
+- [#5745](https://github.com/finos/legend-studio/pull/5745) [`393ac49`](https://github.com/finos/legend-studio/commit/393ac491269fb95c1e94b2f0f05940cc1f82d32e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - `CodeEditor` takes a completion's Markdown `documentation`, and can open the signature help once a completion is written. It also takes a `hover` source, a `signatureHelp` source, and a `textInserterRef` that writes text at its cursor. Hover and signature help answer for the editor's own text only.
+
+- [#5756](https://github.com/finos/legend-studio/pull/5756) [`bd6317c`](https://github.com/finos/legend-studio/commit/bd6317ceaff851051a1ae19b0fcb0ab5493de8db) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix code editors turning dark in the light theme after the SQL Playground opens: the playground now follows the application theme, and every code editor uses the same light theme, since a Monaco theme applies to every editor on the page.
+
 ## 2.0.233
 
 ### Patch Changes

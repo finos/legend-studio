@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 2.2.12
+
+### Patch Changes
+
+- [#5745](https://github.com/finos/legend-studio/pull/5745) [`393ac49`](https://github.com/finos/legend-studio/commit/393ac491269fb95c1e94b2f0f05940cc1f82d32e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The Monaco editor bundle includes the `parameterHints` feature, the signature help shown as a call's arguments are written.
+
 ## 2.2.11
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.19.23
+
+### Patch Changes
+
+- [#5756](https://github.com/finos/legend-studio/pull/5756) [`bd6317c`](https://github.com/finos/legend-studio/commit/bd6317ceaff851051a1ae19b0fcb0ab5493de8db) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix code editors turning dark in the light theme after the SQL Playground opens: the playground now follows the application theme, and every code editor uses the same light theme, since a Monaco theme applies to every editor on the page.
+
+- [#5764](https://github.com/finos/legend-studio/pull/5764) [`34655a8`](https://github.com/finos/legend-studio/commit/34655a8233e8a2f5dadf1935c7aea4e1008731d3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - `QueryBuilderWorkflowState` gains three options, each on by default, for a workflow that embeds the query builder for a part of a query, as Legend Cube's data space source does: `showHeaderMenus` (the Advanced and Help menus), `showProjectionAggregation` (a column's aggregate operator) and `showQueryOptions` (sort, distinct, limit and dates).
+
 ## 4.19.22
 
 ## 4.19.21
