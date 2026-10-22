@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
+/**
+ * NOTE on surfaces and the light themes: `--color-bg-elevated` and `--color-bg-panel` are both
+ * white in both light themes, so a card filled with the former inside a lane filled with the latter
+ * is invisible there. The board therefore reads the other way round - the lane is the paper
+ * (`--color-bg-panel`) and a card is recessed towards the board's own ground (`--color-bg-app`) -
+ * which keeps the three surfaces distinct in the dark theme and in both light ones.
+ * Dashed placeholder borders and the stage dividers use `--color-border-strong`, since
+ * `--color-border-default` is #ddd on a #f3f3f3 ground in the default light theme and so does not
+ * read at all; and text uses `--color-text-secondary` rather than `--color-text-muted`, which is
+ * #95a0a8 on white (2.6:1) in the legacy light theme.
+ */
+
 @use 'mixins' as *;
 
 .generation-spec-editor {
@@ -38,7 +50,7 @@
     }
 
     &__header__action {
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
     &__header__action[disabled] svg {
@@ -58,8 +70,8 @@
 
     margin-left: 0.5rem;
     padding-left: 1rem;
-    border-left: 0.1rem solid var(--color-border-default);
-    color: var(--color-text-muted);
+    border-left: 0.1rem solid var(--color-border-strong);
+    color: var(--color-text-secondary);
     font-size: 1.1rem;
     font-weight: 400;
     white-space: nowrap;
@@ -79,7 +91,7 @@
       margin-bottom: 2rem;
 
       &__title {
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         font-size: 1.1rem;
         font-weight: 700;
         letter-spacing: 0.08em;
@@ -88,7 +100,7 @@
       }
 
       &__hint {
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         font-size: 1.1rem;
         line-height: 1.5rem;
         margin-bottom: 1rem;
@@ -107,11 +119,13 @@
       padding: 0.6rem 0.7rem;
       border: 0.1rem solid var(--color-border-default);
       border-radius: 0.4rem;
-      background: var(--color-bg-elevated);
+      background: var(--color-bg-app);
       cursor: grab;
 
+      // `--color-bg-hover` is within 4 units of the item's own fill in the light themes, so the
+      // hover is carried by the accent tint instead
       &:hover {
-        background: var(--color-bg-hover);
+        background: var(--color-accent-subtle);
       }
 
       &__icon {
@@ -127,7 +141,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        color: var(--color-text-secondary);
+        color: var(--color-text-primary);
         font-family: 'Roboto Mono', monospace;
         font-size: 1.1rem;
       }
@@ -143,7 +157,7 @@
         height: 1.6rem;
         border-radius: 0.3rem;
         background: var(--color-bg-tag);
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         font-size: 1rem;
         white-space: nowrap;
       }
@@ -151,9 +165,9 @@
 
     &__empty {
       padding: 1rem;
-      border: 0.1rem dashed var(--color-border-default);
+      border: 0.1rem dashed var(--color-border-strong);
       border-radius: 0.4rem;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
       line-height: 1.6rem;
     }
@@ -171,22 +185,30 @@
 
   // a stage: the elements of one generation node, generated against the same compiled graph
   &__stage {
-    border: 0.1rem solid var(--color-border-default);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0.5rem;
     background: var(--color-bg-panel);
     padding: 1rem 1.2rem 1.2rem;
 
     &--drag-over {
-      border-color: var(--color-accent);
-      box-shadow: 0 0 0 0.2rem var(--color-accent-subtle);
+      border-color: var(--color-border-focus);
+      background: var(--color-accent-subtle);
+
+      // an inset ring instead of a thicker border, so taking a drop does not reflow the board
+      box-shadow: inset 0 0 0 0.1rem var(--color-border-focus);
     }
 
     &__header {
       @include flexVCenter;
 
+      // the id and the buttons drop to a second line rather than squeezing the summary, which is
+      // what says whether the stage runs its generations together
+      flex-wrap: wrap;
       gap: 0.8rem;
       margin-bottom: 1rem;
 
+      // the stage's name chip; the band at the end carries the same chip in the success surface, and
+      // the two always differ by their text as well as their fill
       &__badge {
         @include flexCenter;
 
@@ -194,7 +216,7 @@
         height: 2rem;
         padding: 0 0.7rem;
         border-radius: 0.3rem;
-        background: var(--color-accent-subtle);
+        background: var(--color-bg-tag);
         color: var(--color-text-secondary);
         font-size: 1.1rem;
         font-weight: 700;
@@ -206,17 +228,19 @@
       }
 
       &__summary {
-        flex: 1 1 auto;
+        flex: 1 1 20rem;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        color: var(--color-text-muted);
+        color: var(--color-text-secondary);
         font-size: 1.1rem;
         font-weight: 400;
       }
 
       &__id {
-        flex: 0 0 16rem;
+        flex: 0 1 14rem;
+        min-width: 8rem;
         height: 2.2rem;
         padding: 0 0.5rem;
         background: var(--color-bg-input);
@@ -237,7 +261,7 @@
         flex: 2.2rem 0 0;
         height: 2.2rem;
         border-radius: 0.2rem;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-tag);
         color: var(--color-text-secondary);
         cursor: pointer;
 
@@ -245,10 +269,22 @@
           font-size: 1rem;
         }
 
-        &[disabled],
-        &[disabled] svg {
-          color: var(--color-text-disabled);
+        &:hover {
+          background: var(--color-accent-subtle);
+          color: var(--color-text-primary);
+        }
+
+        // `--color-text-disabled` is the same value as `--color-bg-tag` in the legacy light theme,
+        // which makes the arrow vanish rather than look disabled; dimming the whole button instead
+        // keeps it legible in every theme
+        &[disabled] {
+          opacity: 0.4;
           cursor: not-allowed;
+        }
+
+        &[disabled]:hover {
+          background: var(--color-bg-tag);
+          color: var(--color-text-secondary);
         }
       }
     }
@@ -267,7 +303,7 @@
     max-width: 32rem;
     border: 0.1rem solid var(--color-border-default);
     border-radius: 0.4rem;
-    background: var(--color-bg-elevated);
+    background: var(--color-bg-app);
     padding: 0.8rem 0.9rem;
     cursor: grab;
 
@@ -312,7 +348,7 @@
       flex: 2rem 0 0;
       height: 2rem;
       border-radius: 0.2rem;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       cursor: pointer;
 
       svg {
@@ -321,7 +357,7 @@
 
       &:hover {
         color: var(--color-text-primary);
-        background: var(--color-bg-hover);
+        background: var(--color-accent-subtle);
       }
     }
 
@@ -330,7 +366,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-size: 1rem;
     }
 
@@ -338,7 +374,7 @@
     &__failure {
       margin-top: 0.7rem;
       padding-top: 0.7rem;
-      border-top: 0.1rem solid var(--color-border-subtle);
+      border-top: 0.1rem solid var(--color-border-strong);
 
       &__message {
         display: flex;
@@ -365,13 +401,13 @@
         padding: 0.3rem 0.7rem;
         border: 0.1rem solid var(--color-border-strong);
         border-radius: 0.2rem;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
         color: var(--color-text-secondary);
         font-size: 1rem;
         cursor: pointer;
 
         &:hover {
-          background: var(--color-bg-hover);
+          background: var(--color-accent-subtle);
           color: var(--color-text-primary);
         }
       }
@@ -380,7 +416,8 @@
 
   // ---------------------------------- dividers ----------------------------------
 
-  // a stage boundary is a recompile, and that is the only reason to have one
+  // a stage boundary is a recompile, and that is the only reason to have one - this divider is the
+  // one piece of the board carrying that, so its rule is drawn in the strong border colour
   &__divider {
     @include flexVCenter;
 
@@ -389,7 +426,7 @@
 
     &__icon {
       flex: 0 0 auto;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
     }
 
@@ -404,13 +441,13 @@
 
     &__line {
       flex: 1 1 auto;
-      height: 0.1rem;
-      background: var(--color-border-default);
+      height: 0.2rem;
+      background: var(--color-border-strong);
     }
 
     &__note {
       flex: 0 0 auto;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
     }
 
@@ -429,17 +466,18 @@
     margin-top: 1rem;
     min-height: 3.4rem;
     padding: 0.9rem 1.2rem;
-    border: 0.1rem dashed var(--color-border-default);
+    border: 0.1rem dashed var(--color-border-strong);
     border-radius: 0.4rem;
-    background: var(--color-bg-panel);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     font-size: 1.1rem;
     text-align: center;
 
     &--drag-over {
-      border-color: var(--color-accent);
+      border-color: var(--color-border-focus);
+      border-style: solid;
       background: var(--color-accent-subtle);
-      color: var(--color-text-secondary);
+      box-shadow: inset 0 0 0 0.1rem var(--color-border-focus);
+      color: var(--color-text-primary);
     }
   }
 
@@ -452,15 +490,16 @@
     padding: 1rem 1.2rem 1.2rem;
 
     &--drag-over {
-      border-color: var(--color-accent);
-      box-shadow: 0 0 0 0.2rem var(--color-accent-subtle);
+      border-color: var(--color-border-focus);
+      background: var(--color-accent-subtle);
+      box-shadow: inset 0 0 0 0.1rem var(--color-border-focus);
     }
 
     &__empty {
       padding: 1rem;
-      border: 0.1rem dashed var(--color-border-default);
+      border: 0.1rem dashed var(--color-border-strong);
       border-radius: 0.4rem;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
     }
   }
