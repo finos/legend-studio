@@ -64,10 +64,11 @@ export const observe_GenerationTreeNode = skipObserved(
   (metamodel: GenerationTreeNode): GenerationTreeNode => {
     makeObservable(metamodel, {
       id: observable,
+      generationElements: observable,
       hashCode: computed,
     });
 
-    observe_PackageableElementReference(metamodel.generationElement);
+    metamodel.generationElements.forEach(observe_PackageableElementReference);
 
     return metamodel;
   },

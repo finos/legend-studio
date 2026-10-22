@@ -395,28 +395,32 @@ export class GraphGenerationState {
       const generationNodes = generationSpec.generationNodes;
       for (let i = 0; i < generationNodes.length; i++) {
         const node = generationNodes[i] as GenerationTreeNode;
-        let generatedEntities: Entity[] = [];
-        try {
-          generatedEntities =
-            (yield this.editorStore.graphManagerState.graphManager.generateModel(
-              node.generationElement.value,
-              this.editorStore.graphManagerState.graph,
-              this.editorStore.graphEditorMode.getGraphTextInputOption(),
-            )) as Entity[];
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't generate models: failure occured at step ${
-              i + 1
-            } with specification '${
-              node.generationElement.value.path
-            }'. Error: ${error.message}`,
+        // every element of a node is generated against the same graph; the graph is updated once
+        // the whole node is done, which is what lets the next node use what this one produced
+        for (const generationElement of node.generationElements) {
+          let generatedEntities: Entity[] = [];
+          try {
+            generatedEntities =
+              (yield this.editorStore.graphManagerState.graphManager.generateModel(
+                generationElement.value,
+                this.editorStore.graphManagerState.graph,
+                this.editorStore.graphEditorMode.getGraphTextInputOption(),
+              )) as Entity[];
+          } catch (error) {
+            assertErrorThrown(error);
+            throw new Error(
+              `Can't generate models: failure occured at step ${
+                i + 1
+              } with specification '${generationElement.value.path}'. Error: ${
+                error.message
+              }`,
+            );
+          }
+          this.generatedEntities.set(
+            generationElement.value.path,
+            generatedEntities,
           );
         }
-        this.generatedEntities.set(
-          node.generationElement.value.path,
-          generatedEntities,
-        );
         yield flowResult(
           this.editorStore.graphState.updateGenerationGraphAndApplication(),
         );

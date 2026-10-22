@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { assertNonEmptyString } from '@finos/legend-shared';
+import {
+  assertNonEmptyString,
+  assertTrue,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { GenerationTreeNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type { FileGenerationSpecification } from '../../../../../../../../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
@@ -26,17 +30,33 @@ export const V1_buildGenerationTreeNode = (
   generationNode: V1_GenerationTreeNode,
   context: V1_GraphBuilderContext,
 ): GenerationTreeNode => {
-  assertNonEmptyString(
-    generationNode.generationElement,
-    `Generation tree node 'generationElement' field is missing or empty`,
+  const holdsSingleElement =
+    generationNode.generationElement !== undefined &&
+    generationNode.generationElement !== null;
+  assertTrue(
+    holdsSingleElement !== generationNode.generationElements.length > 0,
+    `Generation tree node must specify either 'generationElement' or 'generationElements', not both`,
   );
   assertNonEmptyString(
     generationNode.id,
     `Generation tree node 'id' field is missing or empty`,
   );
-  const genNode = new GenerationTreeNode(
-    context.resolveElement(generationNode.generationElement, false),
-  );
+  const genNode = holdsSingleElement
+    ? new GenerationTreeNode(
+        context.resolveElement(
+          guaranteeNonNullable(generationNode.generationElement),
+          false,
+        ),
+      )
+    : GenerationTreeNode.createGroup(
+        generationNode.generationElements.map((generationElement) => {
+          assertNonEmptyString(
+            generationElement,
+            `Generation tree node 'generationElements' entry is missing or empty`,
+          );
+          return context.resolveElement(generationElement, false);
+        }),
+      );
   genNode.id = generationNode.id;
   return genNode;
 };
