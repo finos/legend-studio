@@ -50,168 +50,418 @@
       background: var(--color-bg-app);
       position: relative;
     }
-
-    &__content > div:first-child {
-      margin-top: 0;
-    }
-
-    &__content__lists {
-      height: 100%;
-      width: 100%;
-      padding: 1rem;
-      overflow: auto;
-    }
   }
 
-  &__explorer {
-    &__content {
-      overflow-y: auto;
-      height: 100%;
-      width: 100%;
-      padding: 2rem !important;
-      background: var(--color-bg-app);
-    }
-  }
+  // "N stages, N recompiles": the cost of the specification, shown permanently
+  &__stat {
+    @include flexVCenter;
 
-  &__generation-element {
-    display: flex;
-
-    &__icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      min-width: 2rem;
-    }
-  }
-
-  &__item:hover {
-    background: var(--color-bg-hover);
-  }
-
-  // Non-editable warning badge — yellow status surface, dark text.
-  &__non-editable {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    color: var(--color-text-inverted);
-    background: var(--color-status-warn);
-    height: 2rem;
-    margin-right: 0.5rem;
-    border-radius: 0.3rem;
-    font-weight: 700;
-    padding: 0 0.7rem;
+    margin-left: 0.5rem;
+    padding-left: 1rem;
+    border-left: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    font-weight: 400;
+    white-space: nowrap;
     cursor: default;
   }
 
-  &__dnd__placeholder {
-    border: 0.2rem dashed var(--color-border-default);
+  // ---------------------------------- palette ----------------------------------
+
+  &__palette {
     height: 100%;
     width: 100%;
-  }
-}
+    overflow: auto;
+    padding: 1.5rem 1rem;
+    background: var(--color-bg-panel);
 
-.generation-spec-file-generation-editor {
-  border-top: 0.1rem solid var(--color-border-default);
+    &__section {
+      margin-bottom: 2rem;
 
-  &__items {
-    padding: 1.5rem 1rem 1rem;
-    height: 100%;
-    width: 100%;
-  }
+      &__title {
+        color: var(--color-text-muted);
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
 
-  &__item {
-    display: flex;
-    width: 100%;
-    margin-bottom: 1rem;
-
-    &__label {
-      @include flexCenter;
-
-      background: var(--color-bg-panel);
-      margin-right: 0.5rem;
+      &__hint {
+        color: var(--color-text-muted);
+        font-size: 1.1rem;
+        line-height: 1.5rem;
+        margin-bottom: 1rem;
+      }
     }
 
-    &__dropdown {
-      width: 100%;
-      margin-right: 0.5rem;
-    }
-
-    &__remove-btn {
+    &__items {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 2.8rem 0 0;
-      height: 2.8rem;
-      color: var(--color-text-secondary);
-      background: var(--color-bg-panel-header);
-      border-radius: 0.2rem;
-      margin-left: 0.5rem;
-      cursor: pointer;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    &__item {
+      @include flexVCenter;
+
+      padding: 0.6rem 0.7rem;
+      border: 0.1rem solid var(--color-border-default);
+      border-radius: 0.4rem;
+      background: var(--color-bg-elevated);
+      cursor: grab;
+
+      &:hover {
+        background: var(--color-bg-hover);
+      }
+
+      &__icon {
+        @include flexCenter;
+
+        width: 1.8rem;
+        min-width: 1.8rem;
+        margin-right: 0.6rem;
+      }
+
+      &__name {
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-secondary);
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1.1rem;
+      }
+
+      // an element already in the specification is marked, not hidden: the same element may run in
+      // more than one stage
+      &__usage {
+        @include flexCenter;
+
+        flex: 0 0 auto;
+        margin-left: 0.5rem;
+        padding: 0 0.5rem;
+        height: 1.6rem;
+        border-radius: 0.3rem;
+        background: var(--color-bg-tag);
+        color: var(--color-text-muted);
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+    }
+
+    &__empty {
+      padding: 1rem;
+      border: 0.1rem dashed var(--color-border-default);
+      border-radius: 0.4rem;
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6rem;
     }
   }
-}
 
-.generation-spec-model-generation-editor {
-  &__items {
-    padding: 1.5rem 1rem 1rem;
+  // ---------------------------------- board ----------------------------------
+
+  &__board {
     height: 100%;
     width: 100%;
+    overflow: auto;
+    padding: 1.5rem 2rem 2.5rem;
+    background: var(--color-bg-app);
   }
 
-  &__item {
-    @include flexVCenter;
-    @include flexHSpaceBetween;
+  // a stage: the elements of one generation node, generated against the same compiled graph
+  &__stage {
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.5rem;
+    background: var(--color-bg-panel);
+    padding: 1rem 1.2rem 1.2rem;
 
-    height: 2.8rem;
-    color: var(--color-text-muted);
-    margin-bottom: 0.5rem;
-
-    &__id {
-      padding: 0.5rem;
-      width: 50%;
-      height: 2.8rem;
-      line-height: 2.2rem;
-      background: var(--color-bg-panel);
-      border: 0.1rem solid var(--color-border-strong);
-      color: var(--color-text-secondary);
-      margin-right: 0.5rem;
+    &--drag-over {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 0.2rem var(--color-accent-subtle);
     }
 
-    &__id--has-error {
-      background: var(--color-status-error-bg);
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+
+      &__badge {
+        @include flexCenter;
+
+        flex: 0 0 auto;
+        height: 2rem;
+        padding: 0 0.7rem;
+        border-radius: 0.3rem;
+        background: var(--color-accent-subtle);
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+        font-weight: 700;
+        white-space: nowrap;
+
+        &--file-generation {
+          background: var(--color-status-success-bg);
+        }
+      }
+
+      &__summary {
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-muted);
+        font-size: 1.1rem;
+        font-weight: 400;
+      }
+
+      &__id {
+        flex: 0 0 16rem;
+        height: 2.2rem;
+        padding: 0 0.5rem;
+        background: var(--color-bg-input);
+        border: 0.1rem solid var(--color-border-strong);
+        border-radius: 0.2rem;
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+
+        &--has-error {
+          background: var(--color-status-error-bg);
+          border-color: var(--color-status-error);
+        }
+      }
+
+      &__action {
+        @include flexCenter;
+
+        flex: 2.2rem 0 0;
+        height: 2.2rem;
+        border-radius: 0.2rem;
+        background: var(--color-bg-panel-header);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+
+        svg {
+          font-size: 1rem;
+        }
+
+        &[disabled],
+        &[disabled] svg {
+          color: var(--color-text-disabled);
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    &__cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+  }
+
+  // ---------------------------------- cards ----------------------------------
+
+  &__card {
+    flex: 1 1 20rem;
+    max-width: 32rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.4rem;
+    background: var(--color-bg-elevated);
+    padding: 0.8rem 0.9rem;
+    cursor: grab;
+
+    &--dragging {
+      opacity: 0.4;
+    }
+
+    &--failed {
       border-color: var(--color-status-error);
     }
 
-    &:hover {
-      display: flex;
-      background: var(--color-accent-subtle);
+    &--file-generation {
+      cursor: default;
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.4rem;
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      width: 1.8rem;
+      min-width: 1.8rem;
+    }
+
+    &__name {
+      flex: 1 1 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-text-primary);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      flex: 2rem 0 0;
+      height: 2rem;
+      border-radius: 0.2rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+
+      svg {
+        font-size: 1.1rem;
+      }
+
+      &:hover {
+        color: var(--color-text-primary);
+        background: var(--color-bg-hover);
+      }
+    }
+
+    &__package {
+      margin-top: 0.4rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+    }
+
+    // a generation that failed is reported on the card that caused it
+    &__failure {
+      margin-top: 0.7rem;
+      padding-top: 0.7rem;
+      border-top: 0.1rem solid var(--color-border-subtle);
+
+      &__message {
+        display: flex;
+        gap: 0.5rem;
+        color: var(--color-status-error);
+        font-size: 1rem;
+        line-height: 1.4rem;
+
+        svg {
+          flex: 0 0 auto;
+          margin-top: 0.2rem;
+        }
+
+        span {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      }
+
+      &__action {
+        margin-top: 0.6rem;
+        padding: 0.3rem 0.7rem;
+        border: 0.1rem solid var(--color-border-strong);
+        border-radius: 0.2rem;
+        background: var(--color-bg-panel-header);
+        color: var(--color-text-secondary);
+        font-size: 1rem;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--color-bg-hover);
+          color: var(--color-text-primary);
+        }
+      }
+    }
+  }
+
+  // ---------------------------------- dividers ----------------------------------
+
+  // a stage boundary is a recompile, and that is the only reason to have one
+  &__divider {
+    @include flexVCenter;
+
+    gap: 1rem;
+    padding: 0.9rem 0.2rem;
+
+    &__icon {
+      flex: 0 0 auto;
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
     }
 
     &__label {
-      @include flexCenter;
-
-      background: var(--color-bg-panel);
-      margin-right: 0.5rem;
-    }
-
-    &__dropdown {
-      width: 100%;
-      margin-right: 0.5rem;
-    }
-
-    &__remove-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 2.8rem 0 0;
-      height: 2.8rem;
+      flex: 0 0 auto;
       color: var(--color-text-secondary);
-      background: var(--color-bg-panel-header);
-      border-radius: 0.2rem;
-      margin-left: 0.5rem;
-      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    &__line {
+      flex: 1 1 auto;
+      height: 0.1rem;
+      background: var(--color-border-default);
+    }
+
+    &__note {
+      flex: 0 0 auto;
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+    }
+
+    &--model-generation-complete {
+      padding-top: 1.6rem;
+    }
+  }
+
+  // ---------------------------------- new stage ----------------------------------
+
+  // there is no "add stage" button: an empty stage cannot be written, so a stage comes into being
+  // only with something in it
+  &__new-stage {
+    @include flexCenter;
+
+    margin-top: 1rem;
+    min-height: 3.4rem;
+    padding: 0.9rem 1.2rem;
+    border: 0.1rem dashed var(--color-border-default);
+    border-radius: 0.4rem;
+    background: var(--color-bg-panel);
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    text-align: center;
+
+    &--drag-over {
+      border-color: var(--color-accent);
+      background: var(--color-accent-subtle);
+      color: var(--color-text-secondary);
+    }
+  }
+
+  // ---------------------------------- file generations ----------------------------------
+
+  &__file-generations {
+    border: 0.1rem solid var(--color-status-success);
+    border-radius: 0.5rem;
+    background: var(--color-bg-panel);
+    padding: 1rem 1.2rem 1.2rem;
+
+    &--drag-over {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 0.2rem var(--color-accent-subtle);
+    }
+
+    &__empty {
+      padding: 1rem;
+      border: 0.1rem dashed var(--color-border-default);
+      border-radius: 0.4rem;
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
     }
   }
 }
