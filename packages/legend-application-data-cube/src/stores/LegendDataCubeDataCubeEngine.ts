@@ -65,6 +65,7 @@ import {
   V1_Table,
   V1_TestAuthenticationStrategy,
   V1_VarChar,
+  V1_SemiStructured,
   V1_Bit,
   V1_Float,
   PackageableElementPointerType,
@@ -1542,9 +1543,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
               break;
             }
             case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-            case CORE_PURE_PATH.VARIANT:
             case PRIMITIVE_TYPE.STRING: {
               column.type = new V1_VarChar();
+              break;
+            }
+            case CORE_PURE_PATH.VARIANT: {
+              column.type = new V1_SemiStructured();
               break;
             }
             default: {

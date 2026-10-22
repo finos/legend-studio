@@ -34,11 +34,14 @@ import {
   getPivotResultColumnBaseColumnName,
   DataCubeOperationAdvancedValueType,
   DataCubeOpenEditorSource,
+  isVariantType,
+  VARIANT_TYPE_NAME,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   guaranteeIsNumber,
   guaranteeNonNullable,
   isNonNullable,
+  isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
@@ -47,7 +50,11 @@ import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  CORE_PURE_PATH,
+  PRECISE_PRIMITIVE_TYPE,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
@@ -57,6 +64,8 @@ import { FormBadge_WIP } from '../../../components/core/DataCubeFormUtils.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 import type { DataCubeDimensionalMetadata } from './DataCubeGridDimensionalTree.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
+import { openDataCubeJsonViewer } from '../../../components/view/grid/DataCubeJsonViewer.js';
+import { isDataCubeJsonDocumentText } from '../../core/variant/DataCubeJson.js';
 
 export function WIP_GridMenuItem({
   name,
@@ -85,7 +94,7 @@ export function WIP_GridMenuItem({
 function toFilterValue(
   value: unknown,
   columnConfiguration: DataCubeColumnConfiguration,
-): { label: string; value: DataCubeOperationValue } {
+): { label: string; value: DataCubeOperationValue } | undefined {
   const label = `${columnConfiguration.type === PRIMITIVE_TYPE.STRING ? `'${value}'` : value}`;
   let val: unknown;
   switch (columnConfiguration.type) {
@@ -109,6 +118,10 @@ function toFilterValue(
     case PRIMITIVE_TYPE.BOOLEAN: {
       val = value;
       break;
+    }
+    case CORE_PURE_PATH.VARIANT:
+    case VARIANT_TYPE_NAME: {
+      return undefined;
     }
     default: {
       throw new UnsupportedOperationError(
@@ -459,6 +472,7 @@ export function generateMenuBuilder(
     ] satisfies (DefaultMenuItem | MenuItemDef)[];
 
     let newFilterMenu: MenuItemDef[] = [];
+    let viewJsonMenu: MenuItemDef[] = [];
     if (column && value !== undefined) {
       let _columnConfiguration = columnConfiguration;
       if (
@@ -480,7 +494,21 @@ export function generateMenuBuilder(
           const filterOperations =
             getColumnFilterOperations(_columnConfiguration);
 
+          if (!fromHeader && isVariantType(_columnConfiguration.type)) {
+            const jsonColumnName = _columnConfiguration.name;
+            viewJsonMenu = [
+              {
+                name: 'View JSON...',
+                action: () => {
+                  openDataCubeJsonViewer(view, jsonColumnName, String(value));
+                  logMenuItem('View JSON');
+                },
+              },
+            ];
+          }
+
           if (
+            filterValue &&
             filterOperations.length &&
             filterOperations.includes(DataCubeQueryFilterOperator.EQUAL)
           ) {
@@ -698,6 +726,7 @@ export function generateMenuBuilder(
           },
         ],
       },
+      ...viewJsonMenu,
       'separator',
       ...sortMenu,
       {
@@ -869,6 +898,30 @@ export function generateMenuBuilder(
                         dataCube.alertService.alertUnhandledError(error),
                       );
                     logMenuItem('Extended Columns', 'Extend Column');
+                  },
+                },
+              ]
+            : []),
+          ...(columnConfiguration &&
+          columnName &&
+          !fromHeader &&
+          (columnConfiguration.type === PRIMITIVE_TYPE.STRING ||
+            columnConfiguration.type === PRECISE_PRIMITIVE_TYPE.VARCHAR) &&
+          !_findCol(controller.groupExtendedColumns, columnName) &&
+          isString(value) &&
+          isDataCubeJsonDocumentText(value)
+            ? [
+                {
+                  name: `Parse Column ${columnName} as JSON...`,
+                  action: () => {
+                    extend
+                      .openNewColumnEditor(columnConfiguration, {
+                        parseAsJson: true,
+                      })
+                      .catch((error) =>
+                        dataCube.alertService.alertUnhandledError(error),
+                      );
+                    logMenuItem('Extended Columns', 'Parse Column as JSON');
                   },
                 },
               ]

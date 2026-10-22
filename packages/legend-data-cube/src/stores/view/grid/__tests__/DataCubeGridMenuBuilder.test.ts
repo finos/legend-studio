@@ -22,7 +22,13 @@ import type {
   MenuItemDef,
 } from 'ag-grid-community';
 import { generateMenuBuilder } from '../DataCubeGridMenuBuilder.js';
-import type { DataCubeGridControllerState } from '../DataCubeGridControllerState.js';
+import { DataCubeGridControllerState } from '../DataCubeGridControllerState.js';
+import { CORE_PURE_PATH, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  DataCubeColumnConfiguration,
+  DataCubeConfiguration,
+} from '../../../core/model/DataCubeConfiguration.js';
+import { INTERNAL__GRID_CLIENT_MISSING_VALUE } from '../DataCubeGridClientEngine.js';
 
 // ---------------------------------------------------------------------------
 // Helpers — minimal fakes for the grid client API and the controller/view
@@ -246,5 +252,149 @@ describe('generateMenuBuilder — Copy menu', () => {
 
     expect(api.addCellRange).not.toHaveBeenCalled();
     expect(api.copySelectedRangeToClipboard).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+const makeColumnController = (
+  configurations: DataCubeColumnConfiguration[],
+): DataCubeGridControllerState => {
+  const controller = makeController();
+  Object.assign(controller, {
+    getColumnConfiguration: jest.fn((name: string | undefined) =>
+      configurations.find((configuration) => configuration.name === name),
+    ),
+  });
+  Object.assign(controller.view.engine, {
+    getFilterOperation: jest.fn((operator: string) => ({
+      textLabel: operator,
+    })),
+  });
+  return controller;
+};
+
+const buildCellMenu = (
+  configuration: DataCubeColumnConfiguration,
+  value: unknown,
+  fromHeader = false,
+) => {
+  const controller = makeColumnController([configuration]);
+  const params = {
+    api: makeMockApi(null),
+    column: {
+      getColId: () => configuration.name,
+      isPinned: () => false,
+      isPinnedLeft: () => false,
+      isPinnedRight: () => false,
+    } as unknown as Column,
+    node: null,
+    value,
+  } as unknown as GetContextMenuItemsParams;
+  return generateMenuBuilder(controller)(params, fromHeader);
+};
+
+const menuItemNames = (items: (DefaultMenuItem | MenuItemDef | undefined)[]) =>
+  items
+    .filter(
+      (item): item is MenuItemDef =>
+        item !== undefined && typeof item !== 'string',
+    )
+    .map((item) => item.name);
+
+const subMenuItemNames = (
+  items: (DefaultMenuItem | MenuItemDef)[],
+  name: string,
+): string[] =>
+  menuItemNames(
+    (items.find(
+      (item): item is MenuItemDef =>
+        typeof item !== 'string' && item.name === name,
+    )?.subMenu ?? []) as (DefaultMenuItem | MenuItemDef)[],
+  );
+
+describe('generateMenuBuilder — Variant (JSON) column', () => {
+  const variantColumn = new DataCubeColumnConfiguration(
+    'payload',
+    CORE_PURE_PATH.VARIANT,
+  );
+
+  test('a JSON cell offers to view its JSON value', () => {
+    const items = buildCellMenu(variantColumn, '{"a":1}');
+    expect(menuItemNames(items)).toContain('View JSON...');
+    expect(subMenuItemNames(items, 'Filter')).toEqual([
+      'Filters...',
+      'Clear All Filters',
+    ]);
+  });
+
+  test('an empty JSON cell, or the column header, offers no JSON view', () => {
+    expect(
+      menuItemNames(
+        buildCellMenu(variantColumn, INTERNAL__GRID_CLIENT_MISSING_VALUE),
+      ),
+    ).not.toContain('View JSON...');
+    expect(
+      subMenuItemNames(
+        buildCellMenu(variantColumn, INTERNAL__GRID_CLIENT_MISSING_VALUE),
+        'Filter',
+      ),
+    ).toEqual([
+      'Add Filter: payload is null',
+      'Add Filter: payload is not null',
+      'Filters...',
+      'Clear All Filters',
+    ]);
+    expect(
+      menuItemNames(buildCellMenu(variantColumn, '{"a":1}', true)),
+    ).not.toContain('View JSON...');
+  });
+
+  test('a text cell holding a JSON object or array can be parsed as JSON', () => {
+    const textColumn = new DataCubeColumnConfiguration(
+      'note',
+      PRIMITIVE_TYPE.STRING,
+    );
+    expect(
+      subMenuItemNames(
+        buildCellMenu(textColumn, '{"a":[1,2]}'),
+        'Extended Columns',
+      ),
+    ).toContain('Parse Column note as JSON...');
+    expect(
+      subMenuItemNames(
+        buildCellMenu(textColumn, 'plain text'),
+        'Extended Columns',
+      ),
+    ).not.toContain('Parse Column note as JSON...');
+    expect(
+      subMenuItemNames(
+        buildCellMenu(variantColumn, '{"a":1}'),
+        'Extended Columns',
+      ),
+    ).not.toContain('Parse Column payload as JSON...');
+    expect(
+      subMenuItemNames(
+        buildCellMenu(textColumn, '{"a":[1,2]}', true),
+        'Extended Columns',
+      ),
+    ).not.toContain('Parse Column note as JSON...');
+  });
+
+  test('a JSON column can be pivoted vertically but not horizontally', () => {
+    const controller = Object.create(
+      DataCubeGridControllerState.prototype,
+    ) as DataCubeGridControllerState;
+    const configuration = new DataCubeConfiguration();
+    configuration.columns = [variantColumn];
+    Object.assign(controller, {
+      configuration,
+      groupExtendedColumns: [],
+      horizontalPivotColumns: [],
+    });
+    expect(controller.getVerticalPivotableColumn('payload')).toBe(
+      variantColumn,
+    );
+    expect(controller.getHorizontalPivotableColumn('payload')).toBeUndefined();
   });
 });

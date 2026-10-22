@@ -1912,6 +1912,23 @@ const cases: TestCase[] = [
     error: `Can't process configuration: pivot sort direction mismatch for column 'a' (expected: 'ascending', found: 'none')`,
   }),
 
+  // --------------------------------- VARIANT ---------------------------------
+
+  _case(`Variant: Filter isEmpty()`, {
+    query: `filter(x|$x.doc->isEmpty())`,
+    columns: ['doc:Variant'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IS_NULL),
+  }),
+  _case(`Variant: GroupBy with a JSON column aggregated by unique value`, {
+    query: `select(~[a, doc])->groupBy(~[a], ~[doc:x|$x.doc:x|$x->uniqueValueOnly()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'doc:Variant'],
+  }),
+  _case(`Variant: ERROR - Pivot on a JSON column`, {
+    query: `select(~[doc, b])->sort([~doc->ascending()])->pivot(~[doc], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['doc:Variant', 'b:Integer'],
+    error: `Can't process pivot() expression: can't pivot on column 'doc' since it holds JSON. Pivot on a value extracted from it instead, e.g. an extended column such as x|$x.doc->get('key')->to(@String)`,
+  }),
+
   // --------------------------------- GENERAL ---------------------------------
 
   _case(`GENERAL: Composition - extend()->filter()->sort()->limit()`, {

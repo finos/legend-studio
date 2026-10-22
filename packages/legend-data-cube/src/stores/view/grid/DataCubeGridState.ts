@@ -32,6 +32,7 @@ import {
   computeHashCodeForDataFetchManualTrigger,
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING,
   fetchDimensionalQueryRows,
+  autoSizeNonVariantColumns,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
@@ -279,7 +280,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
   async configureClient(val: GridApi | undefined) {
     this._client = val;
     this.debouncedAutoResizeColumns = debounce(
-      () => val?.autoSizeAllColumns(),
+      () => val && autoSizeNonVariantColumns(val, this.configuration.columns),
       100,
     );
 
@@ -294,7 +295,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
   async configureDimensionGridClient(val: GridApi | undefined) {
     this._client = val;
     this.debouncedAutoResizeColumns = debounce(
-      () => val?.autoSizeAllColumns(),
+      () => val && autoSizeNonVariantColumns(val, this.configuration.columns),
       100,
     );
     const latestSnapshot = this.getLatestSnapshot();

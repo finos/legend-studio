@@ -89,7 +89,9 @@ import {
   isPivotResultColumnName,
   TREE_COLUMN_VALUE_SEPARATOR,
   DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
+  DEFAULT_COLUMN_WIDTH,
 } from '../../core/DataCubeQueryEngine.js';
+import { formatDataCubeJsonLine } from '../../core/variant/DataCubeJson.js';
 import type { CustomLoadingCellRendererProps } from 'ag-grid-react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
@@ -379,11 +381,19 @@ function _displaySpec(columnData: ColumnData) {
             }
             return displayValue;
           }
-        : (params) =>
-            params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
-              ? (column.missingValueDisplayText ??
-                DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
-              : params.value,
+        : dataType === DataCubeColumnDataType.VARIANT
+          ? (params) =>
+              isNullable(params.value) ||
+              params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+                ? (column.missingValueDisplayText ??
+                  DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
+                : formatDataCubeJsonLine(String(params.value))
+          : (params) =>
+              params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+                ? (column.missingValueDisplayText ??
+                  DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
+                : params.value,
+    useValueFormatterForExport: dataType !== DataCubeColumnDataType.VARIANT,
     tooltipValueGetter: (params) =>
       isNonNullable(params.value) &&
       params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
@@ -471,7 +481,12 @@ function _sizeSpec(columnData: ColumnData) {
     resizable: column.fixedWidth === undefined,
     suppressAutoSize: column.fixedWidth !== undefined,
     suppressSizeToFit: column.fixedWidth !== undefined,
-    width: column.fixedWidth,
+    width:
+      column.fixedWidth ??
+      (column.maxWidth === undefined &&
+      getDataType(column.type) === DataCubeColumnDataType.VARIANT
+        ? DEFAULT_COLUMN_WIDTH
+        : undefined),
     minWidth: Math.max(
       column.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
       INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
@@ -518,7 +533,9 @@ function _aggregationSpec(columnData: ColumnData) {
           : rowGroupIndex
         : null,
     enablePivot:
-      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
+      !isGroupExtendedColumn &&
+      column.kind === DataCubeColumnKind.DIMENSION &&
+      getDataType(column.type) !== DataCubeColumnDataType.VARIANT,
     pivot: !isGroupExtendedColumn && Boolean(pivotCol),
     pivotIndex:
       !isGroupExtendedColumn && pivotCol

@@ -21,6 +21,7 @@ import {
 import {
   DataCubeColumnKind,
   DataCubeGridMode,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
@@ -120,7 +121,8 @@ export class DataCubeEditorDimensionsPanelState
           !_findCol(
             this._editor.horizontalPivots.selector.selectedColumns,
             column.name,
-          ),
+          ) &&
+          !isVariantType(column.type),
       )
       .map(
         (col) =>

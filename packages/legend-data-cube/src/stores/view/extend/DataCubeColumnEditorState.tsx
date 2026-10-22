@@ -34,6 +34,7 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   getDataType,
   isPrimitiveType,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -48,9 +49,25 @@ import {
 import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { DataCubeSnapshotExtendedColumn } from '../../core/DataCubeSnapshot.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
-import { _findCol } from '../../core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  _toCol,
+  type DataCubeColumn,
+} from '../../core/model/DataCubeColumn.js';
 import { DataCubeCodeEditorState } from '../../../components/view/extend/DataCubeCodeEditorState.js';
 import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
+import { DataCubeJsonFieldsState } from './DataCubeJsonFieldsState.js';
+import {
+  getFreeDataCubeColumnName,
+  _pureColumnAccess,
+  type DataCubeJsonOffer,
+} from '../../core/variant/DataCubeJsonOffers.js';
+
+function hasJsonColumns(manager: DataCubeExtendManagerState) {
+  return [...manager.sourceColumns, ...manager.leafExtendedColumns].some(
+    (column) => isVariantType(column.type),
+  );
+}
 
 export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorState {
   protected override readonly uuid = uuid();
@@ -64,11 +81,14 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
   readonly validationState = ActionState.create();
 
   name: string;
+  isNameEdited = false;
   expectedType: string;
   isGroupLevel: boolean;
   columnKind?: DataCubeColumnKind | undefined;
 
   codeSuffix: string;
+
+  readonly jsonFields: DataCubeJsonFieldsState;
 
   override model: DataCubeSource;
   queryLambda: () => V1_Lambda;
@@ -83,6 +103,7 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
     super(manager.view.engine);
     makeObservable(this, {
       name: observable,
+      isNameEdited: observable,
       setName: action,
       isNameValid: computed,
 
@@ -93,6 +114,8 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
       isGroupLevel: observable,
       columnKind: observable,
       setColumnKind: action,
+
+      jsonColumns: computed,
 
       editor: observable.ref,
       setEditor: action,
@@ -118,6 +141,7 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
 
     this.codePrefix = `->extend(~${this._name}:`;
     this.codeSuffix = `)`;
+    this.jsonFields = new DataCubeJsonFieldsState(this);
 
     this.editorModelUri = Uri.file(`/${this.uuid}.pure`);
     this.editorModel = monacoEditorAPI.createModel(
@@ -137,14 +161,20 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
   async initialize() {
     this.code = await this.getInitialCode();
     this.editorModel.setValue(this.code);
+    if (this.jsonFields.column) {
+      this.jsonFields.read(false).catch(this.alertHandler);
+    }
   }
 
   protected abstract newDisplay(
     state: DataCubeColumnBaseEditorState,
   ): DisplayState;
 
-  setName(value: string) {
+  setName(value: string, isEditedByUser = true) {
     this.name = value;
+    if (isEditedByUser) {
+      this.isNameEdited = true;
+    }
   }
 
   get isNameValid(): boolean {
@@ -168,6 +198,41 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
   ) {
     this.isGroupLevel = isGroupLevel;
     this.columnKind = columnKind;
+  }
+
+  getPrecedingLeafExtendedColumns<T extends DataCubeColumn>(columns: T[]): T[] {
+    return columns;
+  }
+
+  get jsonColumns(): DataCubeColumn[] {
+    return [
+      ...this._manager.sourceColumns,
+      ...this.getPrecedingLeafExtendedColumns(
+        this._manager.leafExtendedColumns,
+      ),
+    ]
+      .filter((column) => isVariantType(column.type))
+      .map(_toCol);
+  }
+
+  getLatestSnapshot() {
+    return this._manager.getLatestSnapshot();
+  }
+
+  async applyJsonOffer(offer: DataCubeJsonOffer) {
+    if (!this.isNameEdited) {
+      this.setName(
+        getFreeDataCubeColumnName(offer.name, this._manager.allColumnNames),
+        false,
+      );
+    }
+    this.setExpectedType(getDataType(offer.type));
+    this.setColumnKind(false, offer.kind);
+    this.code = offer.code;
+    this.editorModel.setValue(offer.code);
+    this.clearError();
+    this.setReturnType(undefined);
+    await this.getReturnType();
   }
 
   showError(error: EngineError) {
@@ -195,7 +260,9 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
     );
     const snapshot = currentSnapshot.clone();
     if (!this.isGroupLevel) {
-      snapshot.data.leafExtendedColumns = [];
+      snapshot.data.leafExtendedColumns = this.getPrecedingLeafExtendedColumns(
+        snapshot.data.leafExtendedColumns,
+      );
       snapshot.data.selectColumns = [];
       snapshot.data.filter = undefined;
       snapshot.data.groupBy = undefined;
@@ -230,7 +297,9 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
         );
       let returnType = _findCol(returnRelationType.columns, this._name)?.type;
       returnType =
-        returnType && isPrimitiveType(returnType) ? returnType : undefined;
+        returnType && (isPrimitiveType(returnType) || isVariantType(returnType))
+          ? returnType
+          : undefined;
       this.setReturnType(returnType);
       return returnType;
     } catch (error) {
@@ -277,6 +346,7 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
   abstract applyChanges(): Promise<void>;
 
   close() {
+    this.jsonFields.stop();
     // dispose the editor and its model to avoid memory leak
     this.editorModel.dispose();
     this.editor?.dispose();
@@ -291,22 +361,49 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
   constructor(
     manager: DataCubeExtendManagerState,
     referenceColumn?: DataCubeColumnConfiguration | undefined,
+    options?:
+      | {
+          parseAsJson?: boolean | undefined;
+        }
+      | undefined,
   ) {
+    const parseAsJson = Boolean(referenceColumn && options?.parseAsJson);
     super(
       manager,
-      `col_${manager.allColumnNames.length + 1}`,
-      referenceColumn
-        ? getDataType(referenceColumn.type)
-        : DataCubeColumnDataType.NUMBER,
+      referenceColumn && parseAsJson
+        ? getFreeDataCubeColumnName(
+            `${referenceColumn.name}_json`,
+            manager.allColumnNames,
+          )
+        : `col_${manager.allColumnNames.length + 1}`,
+      parseAsJson
+        ? DataCubeColumnDataType.VARIANT
+        : referenceColumn
+          ? getDataType(referenceColumn.type)
+          : DataCubeColumnDataType.NUMBER,
       false,
-      referenceColumn ? referenceColumn.kind : DataCubeColumnKind.MEASURE,
+      parseAsJson
+        ? DataCubeColumnKind.DIMENSION
+        : referenceColumn
+          ? referenceColumn.kind
+          : DataCubeColumnKind.MEASURE,
     );
 
     this.initialCode = referenceColumn
-      ? hasWhiteSpace(referenceColumn.name)
-        ? `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.'${referenceColumn.name}'`
-        : `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`
+      ? parseAsJson
+        ? `x|${_pureColumnAccess(referenceColumn.name)}->toOne()->fromJson()`
+        : hasWhiteSpace(referenceColumn.name)
+          ? `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.'${referenceColumn.name}'`
+          : `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`
       : `${DEFAULT_LAMBDA_VARIABLE_NAME}|`;
+
+    if (
+      referenceColumn &&
+      !parseAsJson &&
+      isVariantType(referenceColumn.type)
+    ) {
+      this.jsonFields.setColumn(_toCol(referenceColumn));
+    }
   }
 
   override async getInitialCode(): Promise<string> {
@@ -317,15 +414,25 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     return this.view.dataCube.layoutService.newDisplay(
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
-      {
-        x: 50,
-        y: 50,
-        width: 500,
-        height: 300,
-        minWidth: 300,
-        minHeight: 200,
-        center: false,
-      },
+      hasJsonColumns(this._manager)
+        ? {
+            x: 50,
+            y: 50,
+            width: 800,
+            height: 560,
+            minWidth: 500,
+            minHeight: 400,
+            center: false,
+          }
+        : {
+            x: 50,
+            y: 50,
+            width: 500,
+            height: 330,
+            minWidth: 300,
+            minHeight: 230,
+            center: false,
+          },
     );
   }
 
@@ -415,6 +522,16 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       isGroupLevel: isGroupLevel,
       mapFn: column.mapFn,
     };
+    this.isNameEdited = true;
+  }
+
+  override getPrecedingLeafExtendedColumns<T extends DataCubeColumn>(
+    columns: T[],
+  ): T[] {
+    const index = columns.findIndex(
+      (column) => column.name === this.initialData.name,
+    );
+    return index === -1 ? columns : columns.slice(0, index);
   }
 
   override get isNameValid(): boolean {
@@ -434,15 +551,25 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     return this.view.dataCube.layoutService.newDisplay(
       'Edit Column',
       () => <DataCubeColumnCreator state={this} />,
-      {
-        x: 50,
-        y: 50,
-        width: 500,
-        height: 300,
-        minWidth: 300,
-        minHeight: 200,
-        center: false,
-      },
+      hasJsonColumns(this._manager)
+        ? {
+            x: 50,
+            y: 50,
+            width: 800,
+            height: 560,
+            minWidth: 500,
+            minHeight: 400,
+            center: false,
+          }
+        : {
+            x: 50,
+            y: 50,
+            width: 500,
+            height: 330,
+            minWidth: 300,
+            minHeight: 230,
+            center: false,
+          },
     );
   }
 
