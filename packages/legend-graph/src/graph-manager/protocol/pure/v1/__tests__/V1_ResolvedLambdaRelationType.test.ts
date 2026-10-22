@@ -44,9 +44,20 @@ import type { V1_BatchLambdaRelationTypeResponse } from '../engine/compilation/V
 import { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import type { RelationColumn } from '../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { PrecisePrimitiveType } from '../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveInstanceValue } from '../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
 import { CompilationError } from '../../../../action/EngineError.js';
 import { CORE_PURE_PATH } from '../../../../../graph/MetaModelConst.js';
+import {
+  AccessPointGroup,
+  DataProduct,
+  LakehouseAccessPoint,
+} from '../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import { IngestDefinition } from '../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import {
+  DataProductAccessor,
+  IngestionAccessor,
+} from '../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 
 const TEST_DATA__entities: Entity[] = [
   {
@@ -125,6 +136,25 @@ const UNRESOLVABLE_RELATION_TYPE: PlainObject<V1_RelationType> = {
       },
       multiplicity: { lowerBound: 1, upperBound: 1 },
     },
+    {
+      name: 'MISSING',
+      genericType: {
+        multiplicityArguments: [],
+        rawType: { _type: 'packageableType', fullPath: 'my::Missing' },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
+      multiplicity: { lowerBound: 0, upperBound: 1 },
+    },
+  ],
+};
+
+// `ENGINE_RELATION_TYPE` plus a nullable column whose type the graph doesn't
+// know
+const PARTLY_UNRESOLVABLE_RELATION_TYPE: PlainObject<V1_RelationType> = {
+  _type: 'relationType',
+  columns: [
+    ...(ENGINE_RELATION_TYPE.columns as PlainObject[]),
     {
       name: 'MISSING',
       genericType: {
@@ -236,6 +266,17 @@ const expectUnresolvedColumnTypedAny = (columns: RelationColumn[]): void => {
   expect(missing.genericType.value.rawType.path).toBe(CORE_PURE_PATH.ANY);
   expect(missing.multiplicity.lowerBound).toBe(0);
   expect(missing.multiplicity.upperBound).toBe(1);
+};
+
+const expectPartlyUnresolvableColumns = (columns: RelationColumn[]): void => {
+  // the resolvable columns are built as when every type resolves
+  expectLosslessColumns(columns.slice(0, 2));
+  // the other one is typed `Any` and keeps its name and multiplicity
+  const missing = guaranteeNonNullable(columns[2]);
+  expect(missing.name).toBe('MISSING');
+  expect(missing.genericType.value.rawType.path).toBe(CORE_PURE_PATH.ANY);
+  expect(missing.multiplicity).toBe(Multiplicity.ZERO_ONE);
+  expect(columns).toHaveLength(3);
 };
 
 beforeAll(async () => {
@@ -357,6 +398,61 @@ describe(unitTest('getBatchLambdasResolvedRelationType'), () => {
     expect(guaranteeType(error, CompilationError).message).toBe(
       "The store 'test::Db' can't be found.",
     );
+  });
+});
+
+describe(unitTest('Accessors typed from a lambda by the engine'), () => {
+  const accessorLambda = new RawLambda([], [{ _type: 'integer', value: 1 }]);
+
+  test('DataProductAccessor keeps Varchar(n), nullability and column metadata', async () => {
+    const dataProduct = new DataProduct('LakehouseDP');
+    const group = new AccessPointGroup();
+    group.id = 'lhGroup';
+    group.accessPoints = [
+      new LakehouseAccessPoint('lhAP', 'Snowflake', accessorLambda, group),
+    ];
+    dataProduct.accessPointGroups = [group];
+    const spy = jest
+      .spyOn(getEngineServerClient(), 'lambdaRelationType')
+      .mockResolvedValue(PARTLY_UNRESOLVABLE_RELATION_TYPE);
+
+    const accessor = guaranteeType(
+      await graphManagerState.graphManager.buildDataProductAccessor(
+        dataProduct,
+        graphManagerState.graph,
+        { tableName: 'lhAP' },
+      ),
+      DataProductAccessor,
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(accessor.accessor).toBe('lhAP');
+    // a column type the graph doesn't know becomes `Any`
+    expectPartlyUnresolvableColumns(accessor.relationType.columns);
+  });
+
+  test('matview IngestionAccessor keeps Varchar(n), nullability and column metadata', async () => {
+    const ingest = new IngestDefinition('MatviewIngest');
+    ingest.content = {};
+    ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = [
+      { name: 'matview_ds', source: { function: accessorLambda } },
+    ];
+    const spy = jest
+      .spyOn(getEngineServerClient(), 'lambdaRelationType')
+      .mockResolvedValue(PARTLY_UNRESOLVABLE_RELATION_TYPE);
+
+    const accessor = guaranteeType(
+      await graphManagerState.graphManager.createAccessorFromPackageableElement(
+        ingest,
+        graphManagerState.graph,
+        { schemaName: undefined, tableName: 'matview_ds' },
+      ),
+      IngestionAccessor,
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(accessor.accessor).toBe('matview_ds');
+    expectPartlyUnresolvableColumns(accessor.relationType.columns);
   });
 });
 
