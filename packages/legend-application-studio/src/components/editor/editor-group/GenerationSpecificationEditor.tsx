@@ -85,7 +85,9 @@ const getDraggedElement = (
   if (itemType === GENERATION_SPEC_ELEMENT_CARD_DND_TYPE) {
     return (item as GenerationSpecElementDragSource).elementRef.value;
   }
-  return (item as ElementDragSource).data?.packageableElement;
+  // a plugin's drag source is the shared element drag source, but `item` is whatever the backend
+  // handed us, so the shape is checked rather than asserted
+  return (item as Partial<ElementDragSource>).data?.packageableElement;
 };
 
 const PaletteItem = observer(
