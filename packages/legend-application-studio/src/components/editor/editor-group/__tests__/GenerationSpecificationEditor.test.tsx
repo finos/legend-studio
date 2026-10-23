@@ -17,11 +17,16 @@
 import { test, expect } from '@jest/globals';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
+  act,
   fireEvent,
   getAllByText,
+  getByLabelText,
   getByText,
+  queryByLabelText,
+  queryByText,
   waitFor,
 } from '@testing-library/react';
+import { runInAction } from 'mobx';
 import {
   type DSL_Generation_PureGraphManagerPlugin_Extension,
   type ModelGenerationSpecification,
@@ -36,6 +41,8 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../application/LegendStudioPluginManager.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { GenerationSpecificationEditorState } from '../../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
 import { TEST_DATA__GenerationSpecificationStages } from '../../../../stores/editor/editor-state/__tests__/TEST_DATA__GenerationSpecificationStages.js';
 
 /**
@@ -61,6 +68,8 @@ class TEST__ModelGenerationPlugin
   }
 }
 
+let MOCK__editorStore: EditorStore;
+
 const setUpEditor = async (
   withModelGenerationPlugin: boolean,
 ): Promise<HTMLElement> => {
@@ -70,7 +79,7 @@ const setUpEditor = async (
       new TEST__ModelGenerationPlugin(),
     );
   }
-  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
     MOCK__editorStore,
     {
@@ -294,5 +303,131 @@ test(
         '.generation-spec-editor__card',
       ),
     ).toHaveLength(2);
+  },
+);
+
+test(
+  integrationTest(
+    'A read-only specification can be read but offers nothing to change',
+  ),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+    await act(async () => {
+      runInAction(() => {
+        MOCK__editorStore.tabManagerState.getCurrentEditorState(
+          GenerationSpecificationEditorState,
+        ).isReadOnly = true;
+      });
+    });
+
+    await waitFor(() =>
+      expect(
+        editor.querySelector('[title="This specification is read-only"]'),
+      ).not.toBeNull(),
+    );
+    // the stages still read as they did
+    getByText(editor, '2 stages, 2 recompiles');
+    getByText(editor, 'tMapping3');
+    // but there is nothing to drag from, nothing to drop on, and nothing to remove or reorder
+    expect(queryByText(editor, 'Elements')).toBeNull();
+    expect(
+      editor.querySelector('.generation-spec-editor__new-stage'),
+    ).toBeNull();
+    expect(
+      queryByLabelText(editor, 'Remove test::tMapping from this stage'),
+    ).toBeNull();
+    expect(queryByLabelText(editor, 'Remove test::tFileGen')).toBeNull();
+    expect(queryByLabelText(editor, 'Run stage 2 earlier')).toBeNull();
+    expect(
+      getByLabelText<HTMLInputElement>(editor, 'Stage 1 id').disabled,
+    ).toBe(true);
+    // a card can still be opened
+    getByLabelText(editor, 'Open test::tMapping');
+
+    // and a card cannot be picked up at all: when editable, dragstart puts a card into its
+    // dragging state; here the drag never begins (so no drop can follow it)
+    const card = getCard(editor, 'tMapping3');
+    await act(async () => {
+      fireEvent.dragStart(card);
+    });
+    expect(card.className).not.toContain('--dragging');
+    getByText(editor, '2 stages, 2 recompiles');
+  },
+);
+
+test(
+  integrationTest('An unnamed stage can be named, and cleared back to DEFAULT'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+    // a stage the editor creates is unnamed
+    dragAndDrop(
+      getCard(editor, 'tMapping2'),
+      guaranteeNonNullable(
+        editor.querySelector<HTMLElement>('.generation-spec-editor__new-stage'),
+      ),
+    );
+    await waitFor(() => getByText(editor, '3 stages, 3 recompiles'));
+
+    const idInput = getByLabelText<HTMLInputElement>(editor, 'Stage 3 id');
+    // DEFAULT is a placeholder, not a disabled value, so the field can be typed into
+    expect(idInput.disabled).toBe(false);
+    expect(idInput.value).toBe('');
+    expect(idInput.placeholder).toBe('DEFAULT');
+
+    fireEvent.focus(idInput);
+    fireEvent.change(idInput, { target: { value: 'bindings' } });
+    fireEvent.blur(idInput);
+    await waitFor(() => expect(idInput.value).toBe('bindings'));
+
+    // clearing it returns it to the default rather than saving an empty id
+    fireEvent.focus(idInput);
+    fireEvent.change(idInput, { target: { value: '' } });
+    fireEvent.blur(idInput);
+    await waitFor(() => expect(idInput.value).toBe(''));
+    expect(
+      MOCK__editorStore.tabManagerState
+        .getCurrentEditorState(GenerationSpecificationEditorState)
+        .spec.generationNodes.map((node) => node.id),
+    ).toEqual(['theGroup', 'theSingleElement', 'test::tMapping2']);
+  },
+);
+
+test(
+  integrationTest('A divider names every stage whose output is available'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+    dragAndDrop(
+      getCard(editor, 'tMapping2'),
+      guaranteeNonNullable(
+        editor.querySelector<HTMLElement>('.generation-spec-editor__new-stage'),
+      ),
+    );
+
+    // generated output builds up, so stage 3 sees stages 1 and 2, not only stage 2
+    await waitFor(() =>
+      getByText(editor, 'Stage 3 can use everything stages 1-2 produced'),
+    );
+    getByText(editor, 'Stage 2 can use everything stage 1 produced');
+  },
+);
+
+test(
+  integrationTest('Every card action can be reached from the keyboard'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+
+    for (const label of [
+      'Open test::tMapping',
+      'Remove test::tMapping from this stage',
+      'Open test::tFileGen',
+      'Remove test::tFileGen',
+      'Run stage 1 later',
+    ]) {
+      expect(getByLabelText(editor, label).getAttribute('tabindex')).toBeNull();
+    }
   },
 );
