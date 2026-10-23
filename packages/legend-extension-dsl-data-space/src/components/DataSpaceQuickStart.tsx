@@ -54,10 +54,7 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
-} from '@finos/legend-code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -673,7 +670,6 @@ const DataSpaceExecutableResultView = observer(
                   <CodeEditor
                     inputValue={queryText}
                     isReadOnly={true}
-                    lightTheme={CODE_EDITOR_THEME.ONE_DARK_PRO}
                     language={CODE_EDITOR_LANGUAGE.PURE}
                     hideMinimap={true}
                     hideGutter={true}
