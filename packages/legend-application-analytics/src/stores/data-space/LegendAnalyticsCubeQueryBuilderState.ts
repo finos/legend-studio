@@ -17,12 +17,17 @@
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type DataSpace,
+  type DataSpaceAnalysisResult,
   type DataSpaceExecutionContext,
   DataSpaceQueryBuilderState,
   resolveExecutionContextMapping,
   resolveUsableDataSpaceClasses,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { type GraphManagerState, RuntimePointer } from '@finos/legend-graph';
+import {
+  type GraphManagerState,
+  type PureModel,
+  RuntimePointer,
+} from '@finos/legend-graph';
 import {
   type FetchStructureLayoutConfig,
   QueryBuilderActionConfig,
@@ -78,13 +83,28 @@ const buildCubeQueryBuilderConfig = (): QueryBuilderConfig => {
  * A data space's query builder for a Legend Cube data space source (PLAN
  * §11.25): on one data space, which its setup panel doesn't change, and
  * with no results panel: the cube runs the source with the steps after it.
+ * Its graph is the light graph of the data space's analytics, for one
+ * mapping, whose classes the analysis says.
  */
 export class LegendAnalyticsCubeQueryBuilderState extends DataSpaceQueryBuilderState {
+  /** Builds into a new graph the light graph of another execution context */
+  private readonly buildContextGraph: (
+    graph: PureModel,
+    executionContext: string,
+  ) => Promise<void>;
+  /** The mapping whose classes the graph holds */
+  private graphMapping: string | undefined;
+
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     dataSpace: DataSpace,
     executionContext: DataSpaceExecutionContext,
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult,
+    buildContextGraph: (
+      graph: PureModel,
+      executionContext: string,
+    ) => Promise<void>,
   ) {
     super(
       applicationStore,
@@ -93,16 +113,18 @@ export class LegendAnalyticsCubeQueryBuilderState extends DataSpaceQueryBuilderS
       QueryBuilderActionConfig.INSTANCE,
       dataSpace,
       executionContext,
-      false,
+      true,
       undefined,
       // its data space is fixed: the setup panel doesn't offer another
       async () => Promise.resolve(),
-      undefined,
+      dataSpaceAnalysisResult,
       undefined,
       undefined,
       undefined,
       buildCubeQueryBuilderConfig(),
     );
+    this.buildContextGraph = buildContextGraph;
+    this.graphMapping = resolveExecutionContextMapping(executionContext)?.path;
     this.setRestrictToCurrentDataSpace(true);
   }
 
@@ -111,15 +133,33 @@ export class LegendAnalyticsCubeQueryBuilderState extends DataSpaceQueryBuilderS
   }
 
   /**
-   * After the execution context changes, as Legend Query does it on a data
-   * space's full graph: its mapping and default runtime, and a class of the
-   * mapping if the one picked isn't. A context whose mapping comes from a
-   * data product is left as it is: Cube can't run it, and says so.
+   * After the execution context changes, as Legend Query does it on a light
+   * graph: a context of another mapping gets that mapping's light graph,
+   * which starts the query again on one of its classes, while a context of
+   * the same mapping keeps the query; then the context's mapping and default
+   * runtime, the explorer's mapped properties, and a class of the mapping if
+   * the one picked isn't. A context whose mapping comes from a data product
+   * is left as it is: Cube can't run it, and says so.
    */
   override async propagateExecutionContextChange(): Promise<void> {
     const mapping = resolveExecutionContextMapping(this.executionContext);
     if (!mapping) {
       return;
+    }
+    const sameMapping =
+      mapping.path === this.executionContextState.mapping?.path;
+    if (mapping.path !== this.graphMapping) {
+      const graph = this.graphManagerState.createNewGraph();
+      await this.buildContextGraph(graph, this.executionContext.name);
+      this.graphManagerState.graph = graph;
+      this.graphMapping = mapping.path;
+    }
+    const coverage =
+      this.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+        mapping.path,
+      );
+    if (coverage) {
+      this.explorerState.mappingModelCoverageAnalysisResult = coverage;
     }
     const classes = resolveUsableDataSpaceClasses(
       this.dataSpace,
@@ -127,7 +167,7 @@ export class LegendAnalyticsCubeQueryBuilderState extends DataSpaceQueryBuilderS
       this.graphManagerState,
       this,
     );
-    this.changeMapping(mapping);
+    this.changeMapping(mapping, { keepQueryContent: sameMapping });
     const { defaultRuntime } = this.executionContext;
     if (defaultRuntime) {
       this.changeRuntime(new RuntimePointer(defaultRuntime));

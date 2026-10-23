@@ -30,25 +30,7 @@
       "path": "../legend-query-builder"
     },
     {
-      "path": "../legend-extension-assortment"
-    },
-    {
-      "path": "../legend-extension-dsl-data-quality"
-    },
-    {
       "path": "../legend-extension-dsl-data-space"
-    },
-    {
-      "path": "../legend-extension-dsl-diagram"
-    },
-    {
-      "path": "../legend-extension-dsl-persistence"
-    },
-    {
-      "path": "../legend-extension-dsl-text"
-    },
-    {
-      "path": "../legend-extension-store-service-store"
     }
   ]
 }

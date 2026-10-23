@@ -27,9 +27,17 @@ import type {
 } from '@finos/legend-cube-builder';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+  DATASPACE_ANALYTICS_FILE_NAME,
+  type DataSpaceAnalysisResult,
+  DSL_DataSpace_getGraphManagerExtension,
   getDataSpace,
+  retrieveDataspaceArtifactsCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { GraphManagerState, LegendSDLC, RawLambda } from '@finos/legend-graph';
+import {
+  GraphManagerState,
+  type PureModel,
+  RawLambda,
+} from '@finos/legend-graph';
 import { QueryBuilderTDSState } from '@finos/legend-query-builder';
 import {
   DepotScope,
@@ -37,8 +45,12 @@ import {
   type StoredEntity,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
-import type { Entity, EntitiesWithOrigin } from '@finos/legend-storage';
+import {
+  assertErrorThrown,
+  type GeneratorFn,
+  type PlainObject,
+} from '@finos/legend-shared';
+import type { Entity, StoredFileGeneration } from '@finos/legend-storage';
 import {
   action,
   flow,
@@ -142,6 +154,75 @@ export const readCubeDataSpaceSummaries = (
 const getProjectKey = (project: CubeProjectCoordinates): string =>
   `${project.groupId}:${project.artifactId}:${project.versionId}`;
 
+/** Why a data space can't be opened: depot has none of its analytics, which a release generates */
+export const getCubeDataSpaceNoAnalyticsMessage = (
+  project: CubeProjectCoordinates,
+  dataSpace: string,
+): string =>
+  `Depot has no analytics for data space "${dataSpace}" at ${getProjectKey(project)}, which Legend Cube opens a data space from: a release of its project generates them`;
+
+/** A file of a data space's analytics, read: its path, and its content as JSON */
+const readArtifactFile = (
+  artifact: PlainObject<StoredFileGeneration>,
+): { path: string; content: unknown } | undefined => {
+  const { file } = artifact;
+  return isJsonObject(file) &&
+    typeof file.path === 'string' &&
+    typeof file.content === 'string'
+    ? { path: file.path, content: JSON.parse(file.content) as unknown }
+    : undefined;
+};
+
+/**
+ * What a data space's analytics describe: each execution context's name and
+ * mapping, and the mappings whose classes they hold (a mapping model
+ * coverage partition each); none without the analysis itself
+ */
+export const readCubeDataSpaceAnalytics = (
+  artifacts: readonly PlainObject<StoredFileGeneration>[],
+):
+  | {
+      executionContexts: { name: string; mapping: string | undefined }[];
+      coveredMappings: Set<string>;
+    }
+  | undefined => {
+  const files = artifacts
+    .map(readArtifactFile)
+    .filter((file) => file !== undefined);
+  const analysis = files.find((file) =>
+    file.path.endsWith(DATASPACE_ANALYTICS_FILE_NAME),
+  )?.content;
+  if (!isJsonObject(analysis)) {
+    return undefined;
+  }
+  const contexts = Array.isArray(analysis.executionContexts)
+    ? analysis.executionContexts
+    : [];
+  return {
+    executionContexts: contexts.filter(isJsonObject).flatMap((context) => {
+      const name = textOf(context.name);
+      return name === undefined
+        ? []
+        : [{ name, mapping: textOf(context.mapping) }];
+    }),
+    coveredMappings: new Set(
+      files.flatMap(({ content }) =>
+        isJsonObject(content) &&
+        content._type === 'MappingModelCoveragePartition' &&
+        isJsonObject(content.model) &&
+        typeof content.mapping === 'string'
+          ? [content.mapping]
+          : [],
+      ),
+    ),
+  };
+};
+
+/** The data space's functions and runtimes, which the light graph doesn't need: the editor shows neither */
+const NO_ENTITIES = async (): Promise<
+  [PlainObject<Entity>[], PlainObject<Entity>[]]
+> => Promise.resolve([[], []]);
+
 /**
  * A data space source's query builder (PLAN §11.25), while the source's
  * node editor shows it: it loads the data space's project, then opens the
@@ -218,11 +299,17 @@ export class LegendAnalyticsDataSpaceEditorSession
   }
 
   *load(): GeneratorFn<void> {
-    const { target } = this;
+    const { target, editor } = this;
     try {
-      const graphManagerState = (yield this.editor.loadGraph(
+      const graphManagerState =
+        (yield editor.createGraphManagerState()) as GraphManagerState;
+      const analysis = (yield editor.buildLightGraph(
         target.project,
-      )) as GraphManagerState;
+        target.dataSpace,
+        target.executionContext,
+        graphManagerState.graph,
+        graphManagerState,
+      )) as DataSpaceAnalysisResult;
       if (this.isDisposed) {
         return;
       }
@@ -237,10 +324,21 @@ export class LegendAnalyticsDataSpaceEditorSession
         );
       }
       const state = new LegendAnalyticsCubeQueryBuilderState(
-        this.editor.applicationStore,
+        editor.applicationStore,
         graphManagerState,
         dataSpace,
         executionContext,
+        analysis,
+        // another context's mapping covers other classes: its own light graph
+        async (graph, context) => {
+          await editor.buildLightGraph(
+            target.project,
+            target.dataSpace,
+            context,
+            graph,
+            graphManagerState,
+          );
+        },
       );
       yield state.propagateExecutionContextChange();
       if (target.query) {
@@ -315,15 +413,21 @@ export class LegendAnalyticsDataSpaceEditorSession
 
 /**
  * Legend Analytics' data space editor for Legend Cube (PLAN §11.25): the
- * depot's released data spaces, and each source's query builder on its data
- * space's project, whose graph is built once per version for the visit,
- * as Legend Query builds a data space's full graph
+ * depot's released data spaces, and each source's query builder on the light
+ * graph of its data space's analytics, as Legend Query builds it: the
+ * classes the execution context's mapping covers, the data space, and stubs
+ * of its mappings and runtimes. A data space whose release has no analytics
+ * can't be opened: the project's full graph, and the graph plugins of every
+ * element type it could hold, are never built.
  */
 export class LegendAnalyticsDataSpaceEditor implements CubeDataSpaceEditor {
   readonly applicationStore: LegendAnalyticsApplicationStore;
   readonly depotServerClient: DepotServerClient;
-  /** Each project's graph, by version: one build per visit, shared by the sessions */
-  private readonly graphs = new Map<string, Promise<GraphManagerState>>();
+  /** Each data space's analytics, by project version and path: read once per visit, again after a failure */
+  private readonly artifacts = new Map<
+    string,
+    Promise<PlainObject<StoredFileGeneration>[]>
+  >();
   /** The content of each data space the list read, by project version and path */
   private readonly listedContents = new Map<string, unknown>();
 
@@ -372,29 +476,9 @@ export class LegendAnalyticsDataSpaceEditor implements CubeDataSpaceEditor {
     return readCubeDataSpaceDescription(dataSpace, content);
   }
 
-  /**
-   * The project's graph at the version: its entities and its dependencies'
-   * from depot, built once and shared; a build that failed is built again
-   * when asked again
-   */
-  loadGraph(project: CubeProjectCoordinates): Promise<GraphManagerState> {
-    const key = getProjectKey(project);
-    const loaded = this.graphs.get(key);
-    if (loaded) {
-      return loaded;
-    }
-    const loading = this.buildGraph(project).catch((error: unknown) => {
-      this.graphs.delete(key);
-      throw error;
-    });
-    this.graphs.set(key, loading);
-    return loading;
-  }
-
-  private async buildGraph(
-    project: CubeProjectCoordinates,
-  ): Promise<GraphManagerState> {
-    const { applicationStore, depotServerClient } = this;
+  /** A graph manager state for one session, its system built, its graph empty */
+  async createGraphManagerState(): Promise<GraphManagerState> {
+    const { applicationStore } = this;
     const { config } = applicationStore;
     const graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
@@ -415,39 +499,89 @@ export class LegendAnalyticsDataSpaceEditor implements CubeDataSpaceEditor {
       { tracerService: applicationStore.tracerService },
     );
     await graphManagerState.initializeSystem();
-    const storeProject = StoreProjectData.serialization.fromJson(
-      await depotServerClient.getProject(project.groupId, project.artifactId),
-    );
-    const [entities, dependencyEntitiesIndex] = (await Promise.all([
-      depotServerClient.getEntities(storeProject, project.versionId),
-      depotServerClient.getIndexedDependencyEntities(
-        storeProject,
-        project.versionId,
-      ),
-    ])) as unknown as [Entity[], Map<string, EntitiesWithOrigin>];
-    const dependencyManager =
-      graphManagerState.graphManager.createDependencyManager();
-    graphManagerState.graph.dependencyManager = dependencyManager;
-    await graphManagerState.graphManager.buildDependencies(
-      graphManagerState.coreModel,
-      graphManagerState.systemModel,
-      dependencyManager,
-      dependencyEntitiesIndex,
-      graphManagerState.dependenciesBuildState,
-    );
-    await graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-      graphManagerState.graphBuildState,
-      {
-        origin: new LegendSDLC(
+    return graphManagerState;
+  }
+
+  /** The data space's analytics at the version, as depot's release generated them */
+  getDataSpaceArtifacts(
+    project: CubeProjectCoordinates,
+    dataSpace: string,
+  ): Promise<PlainObject<StoredFileGeneration>[]> {
+    const key = `${getProjectKey(project)}:${dataSpace}`;
+    const read = this.artifacts.get(key);
+    if (read) {
+      return read;
+    }
+    const reading = (async () => {
+      const storeProject = StoreProjectData.serialization.fromJson(
+        await this.depotServerClient.getProject(
           project.groupId,
           project.artifactId,
-          project.versionId,
         ),
-      },
+      );
+      return retrieveDataspaceArtifactsCache(
+        storeProject,
+        project.versionId,
+        dataSpace,
+        this.depotServerClient,
+      );
+    })().catch((error: unknown) => {
+      this.artifacts.delete(key);
+      throw error;
+    });
+    this.artifacts.set(key, reading);
+    return reading;
+  }
+
+  /**
+   * Builds into the graph the light graph of the data space's analytics for
+   * the execution context, and returns the analysis, which covers every
+   * context's mapping. Refuses a data space with no analytics, or none for
+   * the context, rather than build anything else.
+   */
+  async buildLightGraph(
+    project: CubeProjectCoordinates,
+    dataSpace: string,
+    executionContext: string,
+    graph: PureModel,
+    graphManagerState: GraphManagerState,
+  ): Promise<DataSpaceAnalysisResult> {
+    const artifacts = await this.getDataSpaceArtifacts(project, dataSpace);
+    const analytics = readCubeDataSpaceAnalytics(artifacts);
+    // as the extension requires to build a light graph: the analysis, and
+    // the classes of every context's mapping; else it builds another graph
+    if (
+      !analytics?.executionContexts.every(
+        (context) =>
+          context.mapping !== undefined &&
+          analytics.coveredMappings.has(context.mapping),
+      )
+    ) {
+      throw new Error(getCubeDataSpaceNoAnalyticsMessage(project, dataSpace));
+    }
+    if (
+      !analytics.executionContexts.some(
+        (context) => context.name === executionContext,
+      )
+    ) {
+      throw new Error(
+        `The analytics of data space "${dataSpace}" at ${getProjectKey(project)} have no execution context "${executionContext}"`,
+      );
+    }
+    return DSL_DataSpace_getGraphManagerExtension(
+      graphManagerState.graphManager,
+    ).analyzeDataSpaceCoverage(
+      dataSpace,
+      NO_ENTITIES,
+      NO_ENTITIES,
+      async () => Promise.resolve(artifacts),
+      undefined,
+      undefined,
+      graph,
+      executionContext,
+      undefined,
+      project,
     );
-    return graphManagerState;
   }
 
   openSession(
