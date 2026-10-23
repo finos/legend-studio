@@ -85,16 +85,12 @@ const setUpEditor = async (
 };
 
 const getStages = (editor: HTMLElement): HTMLElement[] =>
-  Array.from(
-    editor.querySelectorAll('.generation-spec-editor__stage'),
-  ) as HTMLElement[];
+  Array.from(editor.querySelectorAll('.generation-spec-editor__stage'));
 
 const getCard = (editor: HTMLElement, name: string): HTMLElement =>
   guaranteeNonNullable(
-    (
-      Array.from(
-        editor.querySelectorAll('.generation-spec-editor__card'),
-      ) as HTMLElement[]
+    Array.from(
+      editor.querySelectorAll<HTMLElement>('.generation-spec-editor__card'),
     ).find(
       (card) =>
         card.querySelector('.generation-spec-editor__card__name')
@@ -105,10 +101,10 @@ const getCard = (editor: HTMLElement, name: string): HTMLElement =>
 
 const getPaletteItem = (editor: HTMLElement, path: string): HTMLElement =>
   guaranteeNonNullable(
-    (
-      Array.from(
-        editor.querySelectorAll('.generation-spec-editor__palette__item'),
-      ) as HTMLElement[]
+    Array.from(
+      editor.querySelectorAll<HTMLElement>(
+        '.generation-spec-editor__palette__item',
+      ),
     ).find(
       (item) =>
         item.querySelector('.generation-spec-editor__palette__item__name')
