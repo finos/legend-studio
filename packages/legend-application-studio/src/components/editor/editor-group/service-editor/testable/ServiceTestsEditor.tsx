@@ -412,7 +412,7 @@ const ServiceTestSetupEditor = observer(
               </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
               <div
@@ -588,7 +588,7 @@ const TestAssertionsEditor = observer(
                 )}
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel>
                 {selectedAsertionState && (
@@ -864,7 +864,7 @@ export const ServiceTestsEditor = observer(
               )}
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel>
               {suiteState.selectedTestState && (

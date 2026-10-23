@@ -805,7 +805,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
             </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel>
             {connectionEditorState && identifiedConnection && (
@@ -1049,7 +1049,7 @@ export const RuntimeEditor = observer(
             />
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel>
             <RuntimeEditorPanel

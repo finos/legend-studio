@@ -257,7 +257,7 @@ export const FileSystemViewer = observer(
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel>
           <div className="panel generation-result-viewer__file">

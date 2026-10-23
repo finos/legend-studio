@@ -642,7 +642,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel minSize={200}>
                 <div className="data-quality-relation-comparison-editor__query-panel">

@@ -265,7 +265,7 @@ export const Editor = withEditorStore(
                           color={
                             editorStore.panelGroupDisplayState.isMaximized
                               ? 'transparent'
-                              : 'var(--color-dark-grey-250)'
+                              : 'var(--color-border-default)'
                           }
                         />
                       </ResizablePanelSplitter>

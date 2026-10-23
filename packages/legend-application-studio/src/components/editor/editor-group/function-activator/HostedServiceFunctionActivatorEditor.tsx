@@ -203,7 +203,7 @@ const HostedServicesActionEditor = observer(
       <div className="action-editor">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel>
             <div className="action-editor__content">
@@ -280,7 +280,7 @@ const HostedServicesActionEditor = observer(
                   </Panel>
                 </ResizablePanel>
                 <ResizablePanelSplitter>
-                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  <ResizablePanelSplitterLine />
                 </ResizablePanelSplitter>
                 <ResizablePanel>
                   {editorState.selectedAction &&

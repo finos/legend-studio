@@ -53,7 +53,7 @@ export const DataQualityRelationValidationContainer = observer(
           />
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel
           {...collapsibleSuggestionPanelGroupProps.collapsiblePanel}

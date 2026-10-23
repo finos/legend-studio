@@ -1360,7 +1360,7 @@ const PostProcessorRelationalConnectionEditor = observer(
       <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel>
             <div className="relational-connection-editor__content">
@@ -1438,7 +1438,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                   </Panel>
                 </ResizablePanel>
                 <ResizablePanelSplitter>
-                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  <ResizablePanelSplitterLine />
                 </ResizablePanelSplitter>
                 <ResizablePanel>
                   {postProcessorState?.postProcessor &&

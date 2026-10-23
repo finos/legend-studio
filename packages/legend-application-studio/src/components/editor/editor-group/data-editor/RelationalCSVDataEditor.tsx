@@ -402,7 +402,7 @@ export const RelationalCSVDataEditor = observer(
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel>
           <div className="relational-data-editor">

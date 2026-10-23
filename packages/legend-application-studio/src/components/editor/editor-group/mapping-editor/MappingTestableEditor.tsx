@@ -1009,7 +1009,7 @@ const MappingTestEditor = observer(
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel>
                 <ResizablePanelGroup orientation="vertical">
@@ -1043,7 +1043,7 @@ const MappingTestEditor = observer(
                     </div>
                   </ResizablePanel>
                   <ResizablePanelSplitter>
-                    <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                    <ResizablePanelSplitterLine />
                   </ResizablePanelSplitter>
                   <ResizablePanel>
                     {mappingTestState.selectedAsertionState && (
@@ -1229,7 +1229,7 @@ const MappingTestSuiteEditor = observer(
           />
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel minSize={56}>
           <ResizablePanelGroup orientation="vertical">
@@ -1279,7 +1279,7 @@ const MappingTestSuiteEditor = observer(
               </PanelContent>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={28}>
               {renderMappingTestEditor()}
@@ -1489,7 +1489,7 @@ export const MappingTestableEditor = observer(
               )}
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
               <div className="panel mapping-testable-editorr">

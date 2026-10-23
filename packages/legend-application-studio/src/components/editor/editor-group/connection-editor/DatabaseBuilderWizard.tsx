@@ -188,9 +188,7 @@ export const DatabaseBuilderModalContent = observer(
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine
-                  color={'var(--color-dark-grey-250)'}
-                />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel>
                 <div className="database-builder__config">

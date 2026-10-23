@@ -178,7 +178,7 @@ export const DatabaseEditor = observer(() => {
                   </div>
                 </ResizablePanel>
                 <ResizablePanelSplitter>
-                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  <ResizablePanelSplitterLine />
                 </ResizablePanelSplitter>
                 <ResizablePanel
                   {...sidePanelCollapseProps.remainingPanel}

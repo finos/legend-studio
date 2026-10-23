@@ -184,7 +184,7 @@ export const ElementGenerationEditor = observer(
                 />
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel>
                 <FileSystemViewer

@@ -870,7 +870,7 @@ export const MappingExecutionBuilder = observer(
               />
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              <ResizablePanelSplitterLine color="var(--color-bg-app)" />
             </ResizablePanelSplitter>
             <ResizablePanel size={250} minSize={28}>
               <MappingExecutionInputDataBuilder
@@ -879,7 +879,7 @@ export const MappingExecutionBuilder = observer(
               />
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              <ResizablePanelSplitterLine color="var(--color-bg-app)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={28}>
               <Panel className="mapping-execution-builder__result-panel">

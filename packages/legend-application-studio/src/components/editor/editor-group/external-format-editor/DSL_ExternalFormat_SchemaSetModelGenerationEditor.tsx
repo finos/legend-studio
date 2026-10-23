@@ -165,7 +165,7 @@ export const SchemaSetModelGenerationEditor = observer(
             </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel>
             <Panel className="generation-result-viewer__file">

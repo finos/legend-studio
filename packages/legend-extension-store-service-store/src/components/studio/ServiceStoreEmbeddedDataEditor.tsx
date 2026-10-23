@@ -703,7 +703,7 @@ export const ServiceRequestPatternEditor = observer(
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel>
             <div className="service-request-pattern-editor__tabs">
@@ -963,7 +963,7 @@ export const ServiceStoreEmbeddedDataEditor = observer(
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel>
           <Panel>
