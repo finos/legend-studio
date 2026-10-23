@@ -1324,3 +1324,73 @@ export const PMCD = {
     },
   ],
 };
+
+/** A class of the test project's model, as its release's analytics hold it */
+const classContent = (path: string): Record<string, unknown> => {
+  const found = ENTITIES.find((entity) => entity.path === path);
+  if (!found) {
+    throw new Error(`No class ${path} in the test project`);
+  }
+  return found.content;
+};
+
+const COVID_MAPPING = 'test::CovidDataMapping';
+
+/** The mapping's entities, as its analysis has them: each the root entity of its class */
+const MAPPED_ENTITIES =
+  DATA_SPACE_ANALYTICS_FILE_CONTENT.mappingToMappingCoverageResult[
+    COVID_MAPPING
+  ].mappedEntities.map((entity) => ({
+    ...entity,
+    info: { classPath: entity.path, isRootEntity: true, subClasses: [] },
+  }));
+
+/**
+ * The test data space's analytics, as a release of its project generates
+ * them (`dataSpace-analytics`): the analysis, and its mapping's analysis and
+ * model coverage, the classes the mapping covers. Legend Cube builds the
+ * data space's light graph from them (PLAN §11.25).
+ */
+export const DATA_SPACE_ARTIFACTS = (
+  [
+    [
+      'AnalyticsResult.json',
+      {
+        ...DATA_SPACE_ANALYTICS_FILE_CONTENT,
+        mappingToMappingCoverageResult: {
+          [COVID_MAPPING]: { mappedEntities: MAPPED_ENTITIES },
+        },
+      },
+    ],
+    [
+      'MappingAnalysis_1.json',
+      {
+        _type: 'MappingAnalysisCoveragePartition',
+        mapping: COVID_MAPPING,
+        analysisResult: {
+          mappedEntities: MAPPED_ENTITIES,
+          model: { _type: 'data', elements: [] },
+        },
+      },
+    ],
+    [
+      'MappingModel_1.json',
+      {
+        _type: 'MappingModelCoveragePartition',
+        mapping: COVID_MAPPING,
+        model: {
+          _type: 'data',
+          elements: ['test::COVIDData', 'test::Demographics'].map(classContent),
+        },
+      },
+    ],
+  ] as const
+).map(([name, content]) => ({
+  ...PROJECT_DATA,
+  path: 'test::DataSpace',
+  type: 'dataSpace-analytics',
+  file: {
+    path: `test/DataSpace/dataSpace-analytics/${name}`,
+    content: JSON.stringify(content),
+  },
+}));

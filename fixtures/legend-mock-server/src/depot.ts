@@ -18,6 +18,7 @@ import { fastify, type RequestGenericInterface } from 'fastify';
 import { fastifyCors } from '@fastify/cors';
 import {
   DATA_SPACE_ANALYTICS_FILE_CONTENT,
+  DATA_SPACE_ARTIFACTS,
   DATA_SPACE_STORED_ENTITIES,
   ENTITIES,
   PMCD,
@@ -32,7 +33,10 @@ import {
   getCubeProjectVersions,
 } from './cube-depot.js';
 
-const PORT = 6200;
+// `--port <port>` for a second copy, e.g. a worktree's beside the one on 6200
+const PORT_ARGUMENT = process.argv.indexOf('--port');
+const PORT =
+  PORT_ARGUMENT === -1 ? 6200 : Number(process.argv[PORT_ARGUMENT + 1]);
 const API_BASE_URL = '/depot/api';
 
 const server = fastify({
@@ -227,6 +231,36 @@ server.get<
   `${API_BASE_URL}/generationFileContent/:groupId/:artifactId/versions/:versionId/file/:filePath`,
   async (request, reply) => {
     await reply.send(JSON.stringify(DATA_SPACE_ANALYTICS_FILE_CONTENT));
+  },
+);
+
+// a release's generated files of a type: the test data space's analytics
+server.get<
+  RequestGenericInterface & {
+    Params: {
+      groupId: string;
+      artifactId: string;
+      versionId: string;
+      type: string;
+    };
+    Querystring: {
+      elementPath?: string;
+    };
+  }
+>(
+  `${API_BASE_URL}/generations/:groupId/:artifactId/:versionId/types/:type`,
+  async (request, reply) => {
+    const { groupId, artifactId, type } = request.params;
+    const { elementPath } = request.query;
+    await reply.send(
+      DATA_SPACE_ARTIFACTS.filter(
+        (artifact) =>
+          artifact.groupId === groupId &&
+          artifact.artifactId === artifactId &&
+          artifact.type === type &&
+          (elementPath === undefined || artifact.path === elementPath),
+      ),
+    );
   },
 );
 
