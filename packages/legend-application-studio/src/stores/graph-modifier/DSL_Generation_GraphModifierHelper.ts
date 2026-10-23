@@ -32,6 +32,7 @@ import {
   addUniqueEntry,
   changeEntry,
   deleteEntry,
+  guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -120,6 +121,93 @@ export const generationSpecification_addNode = action(
     addUniqueEntry(genSpec.generationNodes, observe_GenerationTreeNode(value));
   },
 );
+
+export const generationSpecification_addNodeAt = action(
+  (
+    genSpec: GenerationSpecification,
+    value: GenerationTreeNode,
+    index: number,
+  ): void => {
+    if (genSpec.generationNodes.includes(value)) {
+      return;
+    }
+    genSpec.generationNodes.splice(
+      Math.max(0, Math.min(index, genSpec.generationNodes.length)),
+      0,
+      observe_GenerationTreeNode(value),
+    );
+  },
+);
+
+export const generationSpecification_moveNode = action(
+  (
+    genSpec: GenerationSpecification,
+    fromIndex: number,
+    toIndex: number,
+  ): void => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      fromIndex >= genSpec.generationNodes.length ||
+      toIndex < 0 ||
+      toIndex >= genSpec.generationNodes.length
+    ) {
+      return;
+    }
+    const node = guaranteeNonNullable(genSpec.generationNodes[fromIndex]);
+    genSpec.generationNodes.splice(fromIndex, 1);
+    genSpec.generationNodes.splice(toIndex, 0, node);
+  },
+);
+
+/**
+ * A node holding more than one element can only be written with the plural `generationElements`
+ * field, so the singular form is given up as soon as a second element joins the node. Without this,
+ * the transformer would write the first element and silently drop the rest.
+ */
+const generationTreeNode_syncWrittenForm = (node: GenerationTreeNode): void => {
+  if (node.generationElements.length > 1) {
+    node.writtenAsSingleElement = false;
+  }
+};
+
+/**
+ * A node whose id is still the one derived from its elements is unnamed, so its id follows the
+ * elements it holds. An id its author chose is left alone.
+ */
+const generationTreeNode_syncDefaultId = (
+  node: GenerationTreeNode,
+  previousDefaultId: string,
+): void => {
+  if (node.id === previousDefaultId) {
+    node.id = node.defaultId;
+  }
+};
+
+export const generationTreeNode_addGenerationElement = action(
+  (node: GenerationTreeNode, element: PackageableElement): void => {
+    const previousDefaultId = node.defaultId;
+    addUniqueEntry(
+      node.generationElements,
+      observe_PackageableElementReference(
+        PackageableElementExplicitReference.create(element),
+      ),
+    );
+    generationTreeNode_syncWrittenForm(node);
+    generationTreeNode_syncDefaultId(node, previousDefaultId);
+  },
+);
+
+export const generationTreeNode_deleteGenerationElement = action(
+  (
+    node: GenerationTreeNode,
+    value: PackageableElementReference<PackageableElement>,
+  ): void => {
+    const previousDefaultId = node.defaultId;
+    deleteEntry(node.generationElements, value);
+    generationTreeNode_syncDefaultId(node, previousDefaultId);
+  },
+);
 export const generationSpecification_addFileGeneration = action(
   (
     genSpec: GenerationSpecification,
@@ -176,12 +264,14 @@ export const generationSpecification_addGenerationElement = action(
     if (element instanceof FileGenerationSpecification) {
       generationSpecification_addFileGeneration(genSpec, element);
     } else {
+      // the element gets a stage of its own at the end, where it can see everything the stages
+      // before it produced; joining an existing stage would be a guess that could break a build
       generationSpecification_addNode(
         genSpec,
         observe_GenerationTreeNode(
-          new GenerationTreeNode(
+          GenerationTreeNode.createGroup([
             PackageableElementExplicitReference.create(element),
-          ),
+          ]),
         ),
       );
     }

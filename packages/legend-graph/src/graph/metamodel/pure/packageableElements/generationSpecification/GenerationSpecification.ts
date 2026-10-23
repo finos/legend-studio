@@ -18,7 +18,11 @@ import {
   CORE_HASH_STRUCTURE,
   hashElementPointer,
 } from '../../../../../graph/Core_HashUtils.js';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
@@ -27,24 +31,63 @@ import type { PackageableElementReference } from '../PackageableElementReference
 import type { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification.js';
 import { PackageableElementPointerType } from '../../../../MetaModelConst.js';
 
-// NOTE: As of now the tree only supports a linear order of generation. This is because the only use case is linear,
-// but the shape has been left as a tree to support 'branching' off in the future.
+// NOTE: nodes run in a linear order, but a node may hold several generation elements, which are
+// generated against the same compiled graph and so cannot consume each other's output.
 export class GenerationTreeNode implements Hashable {
-  generationElement: PackageableElementReference<PackageableElement>;
+  generationElements: PackageableElementReference<PackageableElement>[];
+  /**
+   * A node written with the singular `generationElement` field keeps that form, so a specification
+   * round-trips as its author wrote it rather than being rewritten to the plural form on save.
+   */
+  writtenAsSingleElement: boolean;
   id: string;
 
   constructor(
     generationElement: PackageableElementReference<PackageableElement>,
     id?: string,
   ) {
-    this.generationElement = generationElement;
+    this.generationElements = [generationElement];
+    this.writtenAsSingleElement = true;
     this.id = id ?? generationElement.value.path;
+  }
+
+  static createGroup(
+    generationElements: PackageableElementReference<PackageableElement>[],
+    id?: string,
+  ): GenerationTreeNode {
+    const node = new GenerationTreeNode(
+      guaranteeNonNullable(
+        generationElements[0],
+        `Generation tree node must hold at least one generation element`,
+      ),
+      id,
+    );
+    node.generationElements = generationElements;
+    node.writtenAsSingleElement = false;
+    node.id = id ?? GenerationTreeNode.buildDefaultId(generationElements);
+    return node;
+  }
+
+  /**
+   * The id a node carries when its author did not name it: the paths of the elements it holds.
+   * A node whose id still matches this is shown as unnamed, and follows its elements as they change.
+   */
+  static buildDefaultId(
+    generationElements: PackageableElementReference<PackageableElement>[],
+  ): string {
+    return generationElements.map((element) => element.value.path).join(',');
+  }
+
+  get defaultId(): string {
+    return GenerationTreeNode.buildDefaultId(this.generationElements);
   }
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE_NODE,
-      this.generationElement.valueForSerialization ?? '',
+      ...this.generationElements.map(
+        (element) => element.valueForSerialization ?? '',
+      ),
       this.id,
     ]);
   }
@@ -60,7 +103,7 @@ export class GenerationSpecification
 
   findGenerationElementById(id: string): PackageableElement | undefined {
     return this.generationNodes.find((node) => node.id === id)
-      ?.generationElement.value;
+      ?.generationElements[0]?.value;
   }
 
   protected override get _elementHashCode(): string {

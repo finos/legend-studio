@@ -42,6 +42,8 @@ import {
   type GenerationOutput,
   type DSL_Generation_PureGraphManagerPlugin_Extension,
   type GenerationTreeNode,
+  type PackageableElement,
+  type PackageableElementReference,
   ArtifactGenerationExtensionResult,
   Class,
   Enumeration,
@@ -246,6 +248,12 @@ export class DEPREACTED_GlobalFileGenerationState {
   }
 }
 
+export type ModelGenerationFailure = {
+  node: GenerationTreeNode;
+  elementRef: PackageableElementReference<PackageableElement>;
+  message: string;
+};
+
 export class GraphGenerationState {
   editorStore: EditorStore;
   isRunningGlobalGenerate = false;
@@ -261,6 +269,12 @@ export class GraphGenerationState {
   // This is to explore the performance impact of inlcuding this in the generation action and whether we always
   // generate artifacts or add inputs to the api to choose which ones we generate.
   enableArtifactGeneration = false;
+  /**
+   * Which generation element a run failed on, so the failure can be shown on the card that caused
+   * it and not only in a notification. Keyed by the node and the element reference rather than by
+   * path or index, since the same element may sit in more than one stage.
+   */
+  modelGenerationFailures: ModelGenerationFailure[] = [];
 
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {
@@ -269,6 +283,7 @@ export class GraphGenerationState {
       clearingGenerationEntitiesState: observable,
       externalFormatState: observable,
       enableArtifactGeneration: observable,
+      modelGenerationFailures: observable.shallow,
       globalFileGenerationState: observable,
       rootFileDirectory: observable,
       filesIndex: observable,
@@ -276,6 +291,8 @@ export class GraphGenerationState {
       processGenerationResult: action,
       reprocessGenerationFileState: action,
       setEnableArtifactGeneration: action,
+      clearModelGenerationFailures: action,
+      clearModelGenerationFailure: action,
       reprocessNodeTree: action,
       onTreeNodeSelect: action,
       setSelectedNode: action,
@@ -300,6 +317,29 @@ export class GraphGenerationState {
 
   setEnableArtifactGeneration(val: boolean): void {
     this.enableArtifactGeneration = val;
+  }
+
+  clearModelGenerationFailures(): void {
+    this.modelGenerationFailures = [];
+  }
+
+  clearModelGenerationFailure(
+    node: GenerationTreeNode,
+    elementRef: PackageableElementReference<PackageableElement>,
+  ): void {
+    this.modelGenerationFailures = this.modelGenerationFailures.filter(
+      (failure) =>
+        !(failure.node === node && failure.elementRef === elementRef),
+    );
+  }
+
+  getModelGenerationFailure(
+    node: GenerationTreeNode,
+    elementRef: PackageableElementReference<PackageableElement>,
+  ): ModelGenerationFailure | undefined {
+    return this.modelGenerationFailures.find(
+      (failure) => failure.node === node && failure.elementRef === elementRef,
+    );
   }
 
   findGenerationParentPath(genChildPath: string): string | undefined {
@@ -382,6 +422,7 @@ export class GraphGenerationState {
   *generateModels(): GeneratorFn<Error | undefined> {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
+      this.clearModelGenerationFailures();
       const generationSpecs =
         this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
@@ -395,28 +436,39 @@ export class GraphGenerationState {
       const generationNodes = generationSpec.generationNodes;
       for (let i = 0; i < generationNodes.length; i++) {
         const node = generationNodes[i] as GenerationTreeNode;
-        let generatedEntities: Entity[] = [];
-        try {
-          generatedEntities =
-            (yield this.editorStore.graphManagerState.graphManager.generateModel(
-              node.generationElement.value,
-              this.editorStore.graphManagerState.graph,
-              this.editorStore.graphEditorMode.getGraphTextInputOption(),
-            )) as Entity[];
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't generate models: failure occured at step ${
-              i + 1
-            } with specification '${
-              node.generationElement.value.path
-            }'. Error: ${error.message}`,
+        // every element of a node is generated against the same graph; the graph is updated once
+        // the whole node is done, which is what lets the next node use what this one produced
+        for (const generationElement of node.generationElements) {
+          let generatedEntities: Entity[] = [];
+          try {
+            generatedEntities =
+              (yield this.editorStore.graphManagerState.graphManager.generateModel(
+                generationElement.value,
+                this.editorStore.graphManagerState.graph,
+                this.editorStore.graphEditorMode.getGraphTextInputOption(),
+              )) as Entity[];
+          } catch (error) {
+            assertErrorThrown(error);
+            // the failure belongs to the element that caused it, so the editor can show it on that
+            // card and offer a way out of a stage the element cannot run in
+            this.modelGenerationFailures.push({
+              node,
+              elementRef: generationElement,
+              message: error.message,
+            });
+            throw new Error(
+              `Can't generate models: failure occured at stage ${
+                i + 1
+              } with specification '${generationElement.value.path}'. Error: ${
+                error.message
+              }`,
+            );
+          }
+          this.generatedEntities.set(
+            generationElement.value.path,
+            generatedEntities,
           );
         }
-        this.generatedEntities.set(
-          node.generationElement.value.path,
-          generatedEntities,
-        );
         yield flowResult(
           this.editorStore.graphState.updateGenerationGraphAndApplication(),
         );
