@@ -96,6 +96,7 @@ export const MockedMonacoEditorAPI = {
   setModelMarkers: createMock(),
   setModelLanguage: createMock(),
   defineTheme: createMock(),
+  setTheme: createMock(),
   EndOfLinePreference: MockedMonacoEditorEndOfLinePreference,
   removeAllMarkers: createMock(),
   remeasureFonts: createMock(),
