@@ -15,97 +15,92 @@
  */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import type { CubeProjectCoordinates } from '@finos/legend-cube-builder';
 import { RawLambda } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DepotServerClient,
   type StoredEntity,
 } from '@finos/legend-server-depot';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { CUBE_DATA_SPACE_QUERY_PROBLEM } from '../LegendAnalyticsCubeDataSpaceQuery.js';
+import type { LegendAnalyticsCubeQueryBuilderState } from '../LegendAnalyticsCubeQueryBuilderState.js';
 import {
+  getCubeDataSpaceNoAnalyticsMessage,
   LegendAnalyticsDataSpaceEditor,
-  type LegendAnalyticsDataSpaceEditorSession,
   readCubeDataSpaceDescription,
   readCubeDataSpaceSummaries,
 } from '../LegendAnalyticsDataSpaceEditor.js';
 import {
-  TEST__buildCovidGraph,
+  TEST__COVID_ARTIFACTS,
   TEST__COVID_DATA,
   TEST__COVID_DATA_SPACE,
+  TEST__COVID_PROJECT,
   TEST__covidQuery,
   TEST__createAnalyticsApplicationStore,
+  TEST__createDataSpaceEditor,
+  TEST__openSession,
   TEST__project,
+  TEST__withSecondMapping,
 } from './LegendAnalyticsDataSpaceTestUtils.js';
 
-/** Lets the flows an action started finish */
-const settle = async (): Promise<void> => {
-  for (let i = 0; i < 10; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }
-};
+/** The paths of the classes the graph builds itself, its own: not the system's */
+const ownClasses = (state: LegendAnalyticsCubeQueryBuilderState): string[] =>
+  state.graphManagerState.graph.ownClasses.map((each) => each.path).sort();
 
-const PROJECT: CubeProjectCoordinates = {
-  groupId: 'com.example',
-  artifactId: 'covid',
-  versionId: '1.0.0',
-};
-
-const setUp = async (): Promise<{
-  editor: LegendAnalyticsDataSpaceEditor;
-  loadGraph: jest.SpiedFunction<LegendAnalyticsDataSpaceEditor['loadGraph']>;
-}> => {
-  const applicationStore = TEST__createAnalyticsApplicationStore();
-  const graphManagerState = await TEST__buildCovidGraph(applicationStore);
-  const editor = new LegendAnalyticsDataSpaceEditor(
-    applicationStore,
-    new DepotServerClient({ serverUrl: 'https://depot.test' }),
+/** Switches the query builder's execution context, as its setup panel does */
+const switchContext = async (
+  state: LegendAnalyticsCubeQueryBuilderState,
+  name: string,
+): Promise<void> => {
+  state.setExecutionContext(
+    guaranteeNonNullable(
+      (state.dataSpace.executionContexts ?? []).find(
+        (context) => context.name === name,
+      ),
+    ),
   );
-  const loadGraph = jest
-    .spyOn(editor, 'loadGraph')
-    .mockResolvedValue(graphManagerState);
-  return { editor, loadGraph };
-};
-
-const openSession = async (
-  editor: LegendAnalyticsDataSpaceEditor,
-  query?: ReturnType<typeof TEST__covidQuery>,
-): Promise<LegendAnalyticsDataSpaceEditorSession> => {
-  const session = editor.openSession({
-    project: PROJECT,
-    dataSpace: TEST__COVID_DATA_SPACE,
-    executionContext: 'dummyContext2',
-    query,
-  });
-  expect(session.isLoading).toBe(true);
-  await settle();
-  expect(session.isLoading).toBe(false);
-  expect(session.loadError).toBeUndefined();
-  return session;
+  await state.propagateExecutionContextChange();
 };
 
 describe("Legend Analytics' data space editor", () => {
-  test("Opens the query builder on the source's execution context, its class picked, and nothing to apply yet", async () => {
-    const { editor, loadGraph } = await setUp();
-    const session = await openSession(editor);
-    expect(loadGraph).toHaveBeenCalledWith(PROJECT);
-    const state = session.queryBuilderState;
-    expect(state?.executionContext.name).toBe('dummyContext2');
-    expect(state?.restrictToCurrentDataSpace).toBe(true);
-    expect(state?.isResultPanelHidden).toBe(true);
-    // the mapping's first class
-    expect(state?.sourceClass?.path).toBe('domain::Demographics');
-    expect(state?.executionContextState.mapping?.path).toBe(
+  test("Opens the query builder on the light graph of the source's execution context, never reading the project's entities or dependencies", async () => {
+    const { editor, depot } = TEST__createDataSpaceEditor();
+    const session = await TEST__openSession(editor);
+    expect(session.loadError).toBeUndefined();
+    const state = guaranteeNonNullable(session.queryBuilderState);
+    expect(depot.getGenerationFilesByType).toHaveBeenCalledWith(
+      expect.objectContaining({ groupId: 'test.group' }),
+      '0.0.0',
+      'dataSpace-analytics',
+      TEST__COVID_DATA_SPACE,
+    );
+    expect(depot.getEntities).not.toHaveBeenCalled();
+    expect(depot.getIndexedDependencyEntities).not.toHaveBeenCalled();
+    // the classes the context's mapping covers, and no other
+    expect(ownClasses(state)).toEqual([
+      'domain::COVIDData',
+      'domain::Demographics',
+    ]);
+    expect(state.isLightGraphEnabled).toBe(true);
+    expect(state.restrictToCurrentDataSpace).toBe(true);
+    expect(state.isResultPanelHidden).toBe(true);
+    expect(state.executionContext.name).toBe('dummyContext');
+    expect(state.executionContextState.mapping?.path).toBe(
       'mapping::CovidDataMapping',
     );
+    expect(state.explorerState.mappingModelCoverageAnalysisResult).toBe(
+      state.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+        'mapping::CovidDataMapping',
+      ),
+    );
+    expect(state.sourceClass).toBeDefined();
     expect(session.hasChanges).toBe(false);
     expect(session.edit).toBeUndefined();
     expect(session.editProblem).toBe(CUBE_DATA_SPACE_QUERY_PROBLEM.NO_COLUMN);
   });
 
   test('Builds the source again as the query changes, and stops when it is disposed', async () => {
-    const { editor } = await setUp();
-    const session = await openSession(editor);
+    const { editor } = TEST__createDataSpaceEditor();
+    const session = await TEST__openSession(editor);
     const query = TEST__covidQuery(
       TEST__project(TEST__COVID_DATA, [['cases', 'Cases']]),
     );
@@ -115,7 +110,9 @@ describe("Legend Analytics' data space editor", () => {
     expect(session.hasChanges).toBe(true);
     expect(session.editProblem).toBeUndefined();
     expect(session.edit?.coordinates.entity).toBe('domain::COVIDData');
-    expect(session.edit?.coordinates.executionContext).toBe('dummyContext2');
+    expect(session.edit?.coordinates.executionContext).toBe('dummyContext');
+    expect(session.edit?.mapping).toBe('mapping::CovidDataMapping');
+    expect(session.edit?.runtime).toBe('runtime::H2Runtime');
     session.dispose();
     const other = TEST__covidQuery(
       TEST__project(TEST__COVID_DATA, [['id', 'Id']]),
@@ -130,8 +127,8 @@ describe("Legend Analytics' data space editor", () => {
   });
 
   test("Undoes and redoes the query builder's changes, as its buttons do", async () => {
-    const { editor } = await setUp();
-    const session = await openSession(editor);
+    const { editor } = TEST__createDataSpaceEditor();
+    const session = await TEST__openSession(editor);
     const state = guaranteeNonNullable(session.queryBuilderState);
     const queries = [
       [['cases', 'Cases']],
@@ -163,53 +160,98 @@ describe("Legend Analytics' data space editor", () => {
   });
 
   test('Opens on the query a source saved, with no change until the query does', async () => {
-    const { editor } = await setUp();
+    const { editor } = TEST__createDataSpaceEditor();
     const saved = TEST__covidQuery(
       TEST__project(TEST__COVID_DATA, [['cases', 'Cases']]),
     );
-    const session = await openSession(editor, saved);
+    const session = await TEST__openSession(editor, {
+      query: { _type: 'lambda', ...saved },
+    });
+    expect(session.loadError).toBeUndefined();
     expect(session.hasChanges).toBe(false);
     expect(session.edit?.coordinates.entity).toBe('domain::COVIDData');
   });
 
-  test('Says why when the data space cannot be loaded', async () => {
-    const { editor, loadGraph } = await setUp();
-    loadGraph.mockRejectedValueOnce(new Error('Depot has no project covid'));
-    const session = editor.openSession({
-      project: PROJECT,
-      dataSpace: TEST__COVID_DATA_SPACE,
-      executionContext: 'dummyContext',
-    });
-    await settle();
-    expect(session.isLoading).toBe(false);
-    expect(session.loadError).toBe('Depot has no project covid');
+  test('Keeps the graph when the context changes to one of the same mapping', async () => {
+    const { editor } = TEST__createDataSpaceEditor();
+    const session = await TEST__openSession(editor);
+    const state = guaranteeNonNullable(session.queryBuilderState);
+    const query = TEST__covidQuery(
+      TEST__project(TEST__COVID_DATA, [['cases', 'Cases']]),
+    );
+    state.initializeWithQuery(
+      new RawLambda(query.parameters as object, query.body as object),
+    );
+    const graph = state.graphManagerState.graph;
+    await switchContext(state, 'dummyContext2');
+    expect(state.graphManagerState.graph === graph).toBe(true);
+    // the query goes on, in the other context
+    expect(session.edit?.coordinates.executionContext).toBe('dummyContext2');
+    expect(session.edit?.coordinates.entity).toBe('domain::COVIDData');
   });
 
-  test("Builds a project version's graph once, shared, and again only after it failed", async () => {
-    const applicationStore = TEST__createAnalyticsApplicationStore();
-    const editor = new LegendAnalyticsDataSpaceEditor(
-      applicationStore,
-      new DepotServerClient({ serverUrl: 'https://depot.test' }),
+  test("Builds another mapping's light graph when the context changes to it, and starts the query on one of its classes", async () => {
+    const { editor, depot } = TEST__createDataSpaceEditor(
+      TEST__withSecondMapping(TEST__COVID_ARTIFACTS),
     );
-    const graphManagerState = await TEST__buildCovidGraph(applicationStore);
-    const buildGraph = jest
-      .spyOn(
-        editor as unknown as {
-          buildGraph: LegendAnalyticsDataSpaceEditor['loadGraph'];
-        },
-        'buildGraph',
-      )
-      .mockRejectedValueOnce(new Error('Depot is down'))
-      .mockResolvedValue(graphManagerState);
-    await expect(editor.loadGraph(PROJECT)).rejects.toThrow('Depot is down');
-    // built again, and kept
-    const built = editor.loadGraph(PROJECT);
-    expect(await built).toBe(graphManagerState);
-    expect(editor.loadGraph(PROJECT)).toBe(built);
-    expect(editor.loadGraph({ ...PROJECT, versionId: '1.1.0' })).not.toBe(
-      built,
+    const session = await TEST__openSession(editor);
+    expect(session.loadError).toBeUndefined();
+    const state = guaranteeNonNullable(session.queryBuilderState);
+    const graph = state.graphManagerState.graph;
+    await switchContext(state, 'dummyContext2');
+    expect(state.graphManagerState.graph === graph).toBe(false);
+    expect(ownClasses(state)).toEqual(['domain::Demographics']);
+    expect(state.executionContextState.mapping?.path).toBe(
+      'mapping::CovidDataMapping2',
     );
-    expect(buildGraph).toHaveBeenCalledTimes(3);
+    expect(state.sourceClass?.path).toBe('domain::Demographics');
+    // from the analytics read once
+    expect(depot.getGenerationFilesByType).toHaveBeenCalledTimes(1);
+  });
+
+  test('Refuses a data space whose release has no analytics, or none of a mapping, building no other graph', async () => {
+    const message = getCubeDataSpaceNoAnalyticsMessage(
+      TEST__COVID_PROJECT,
+      TEST__COVID_DATA_SPACE,
+    );
+    const none = TEST__createDataSpaceEditor([]);
+    const session = await TEST__openSession(none.editor);
+    expect(session.isLoading).toBe(false);
+    expect(session.loadError).toBe(message);
+    expect(session.queryBuilderState).toBeUndefined();
+    expect(none.depot.getEntities).not.toHaveBeenCalled();
+    // the analysis, but not its mapping's classes
+    const partial = TEST__createDataSpaceEditor(
+      TEST__COVID_ARTIFACTS.filter(
+        (artifact) =>
+          !(artifact.file as { path: string }).path.endsWith(
+            'MappingModel_1.json',
+          ),
+      ),
+    );
+    expect((await TEST__openSession(partial.editor)).loadError).toBe(message);
+  });
+
+  test('Says why when depot cannot be read, and reads the analytics again on the next session', async () => {
+    const { editor, depot } = TEST__createDataSpaceEditor();
+    depot.getGenerationFilesByType.mockRejectedValueOnce(
+      new Error('Depot is down'),
+    );
+    expect((await TEST__openSession(editor)).loadError).toBe('Depot is down');
+    expect((await TEST__openSession(editor)).loadError).toBeUndefined();
+    // and once read, kept for the visit
+    expect((await TEST__openSession(editor)).loadError).toBeUndefined();
+    expect(depot.getGenerationFilesByType).toHaveBeenCalledTimes(2);
+  });
+
+  test('Says why when the source names a context the analytics have not', async () => {
+    const { editor } = TEST__createDataSpaceEditor();
+    const session = await TEST__openSession(editor, {
+      executionContext: 'retired',
+    });
+    expect(session.loadError).toBe(
+      'The analytics of data space "domain::COVIDDatapace" at test.group:test-artifact:0.0.0 have no execution context "retired"',
+    );
   });
 });
 

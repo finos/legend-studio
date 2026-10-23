@@ -15,12 +15,6 @@
  */
 
 import { LegendAnalytics } from '@finos/legend-application-analytics';
-import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
-import { DSL_DataQuality_GraphManagerPreset } from '@finos/legend-extension-dsl-data-quality/graph';
-import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
-import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
-import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
-import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
 import {
   type AbstractPlugin,
   type AbstractPreset,
@@ -29,20 +23,13 @@ import {
 
 export class LegendAnalyticsWebApplication {
   /**
-   * The graph managers of the elements a project can hold, as Legend Query
-   * registers them: a Legend Cube data space source's query builder builds
-   * the data space's project (PLAN §11.25). The data space's own is a base
-   * preset of Legend Analytics.
+   * None: a Legend Cube data space source's query builder builds only the
+   * light graph of its data space's analytics (PLAN §11.25), its classes,
+   * the data space and stubs of its mappings and runtimes, which Legend
+   * Analytics' base presets (core, query builder, data space) cover
    */
   static getPresetCollection(): AbstractPreset[] {
-    return [
-      new Assortment_GraphManagerPreset(),
-      new DSL_Text_GraphManagerPreset(),
-      new DSL_Diagram_GraphManagerPreset(),
-      new DSL_Persistence_GraphManagerPreset(),
-      new STO_ServiceStore_GraphManagerPreset(),
-      new DSL_DataQuality_GraphManagerPreset(),
-    ];
+    return [];
   }
 
   static getPluginCollection(): AbstractPlugin[] {
