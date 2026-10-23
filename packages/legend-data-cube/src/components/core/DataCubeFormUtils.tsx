@@ -38,8 +38,8 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { isString } from '@finos/legend-shared';
 import { useDataCube } from '../DataCubeProvider.js';
 import {
-  getDataCubeCodeEditorTheme,
   getDataCubeColorThemeClassName,
+  useDataCubeCodeEditorTheme,
   useDataCubeColorTheme,
 } from './DataCubeColorTheme.js';
 import {
@@ -700,7 +700,7 @@ export const FormCodeEditor: React.FC<{
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
   const [isWordWrap, setIsWordWrap] = useState(false);
-  const colorTheme = useDataCubeColorTheme();
+  useDataCubeCodeEditorTheme();
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -730,7 +730,6 @@ export const FormCodeEditor: React.FC<{
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         fontSize: 12,
-        theme: getDataCubeCodeEditorTheme(colorTheme),
         // layout
         glyphMargin: !hidePadding,
         padding: !hidePadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
@@ -740,7 +739,7 @@ export const FormCodeEditor: React.FC<{
       });
       setEditor(_editor);
     }
-  }, [hidePadding, editor, colorTheme]);
+  }, [hidePadding, editor]);
 
   useEffect(() => {
     if (editor) {

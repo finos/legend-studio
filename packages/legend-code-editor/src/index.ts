@@ -20,3 +20,4 @@ export * from './PureLanguageCodeEditorSupport.js';
 
 export * from './CodeEditorUtils.js';
 export * from './CodeEditorTheme.js';
+export * from './CodeEditorThemeScope.js';

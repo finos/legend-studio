@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { getCodeEditorThemeForAppTheme } from '@finos/legend-code-editor';
+import { createContext, useContext, useEffect, useRef } from 'react';
+import {
+  type CodeEditorThemeClaim,
+  claimCodeEditorTheme,
+  getCodeEditorThemeForAppTheme,
+} from '@finos/legend-code-editor';
 import {
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_FOREGROUND_COLOR,
@@ -54,6 +58,36 @@ export const getDataCubeColorThemeClassName = (
 
 export const getDataCubeCodeEditorTheme = (theme: DataCubeColorTheme) =>
   getCodeEditorThemeForAppTheme(theme !== DataCubeColorTheme.DARK);
+
+/**
+ * Applies the DataCube code editor theme while the calling component (i.e. one which renders a
+ * code editor) is mounted, following theme changes, and restores the hosting application's theme
+ * once it's gone.
+ *
+ * NOTE: editors must not be created with the `theme` option, since Monaco has a single theme per
+ * page and setting it directly would leak into the hosting application's editors.
+ * See `claimCodeEditorTheme()`
+ */
+export const useDataCubeCodeEditorTheme = (): void => {
+  const theme = getDataCubeCodeEditorTheme(useDataCubeColorTheme());
+  const claimRef = useRef<CodeEditorThemeClaim | undefined>(undefined);
+
+  useEffect(() => {
+    if (claimRef.current) {
+      claimRef.current.update(theme);
+    } else {
+      claimRef.current = claimCodeEditorTheme(theme);
+    }
+  }, [theme]);
+
+  useEffect(
+    () => () => {
+      claimRef.current?.release();
+      claimRef.current = undefined;
+    },
+    [],
+  );
+};
 
 /**
  * The configuration stores concrete default colors (e.g. a black foreground), which would be
