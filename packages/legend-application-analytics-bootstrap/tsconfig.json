@@ -25,6 +25,12 @@
     },
     {
       "path": "../legend-application-analytics"
+    },
+    {
+      "path": "../legend-query-builder"
+    },
+    {
+      "path": "../legend-extension-dsl-data-space"
     }
   ]
 }

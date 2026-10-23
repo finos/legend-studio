@@ -93,7 +93,7 @@ export interface CubeSpecDecodeOptions {
 }
 
 const TOP_LEVEL_KEYS = ['formatVersion', 'name', 'context', 'query', 'meta'];
-const CONTEXT_KEYS = ['model', 'runtime'];
+const CONTEXT_KEYS = ['model', 'runtime', 'mapping'];
 const QUERY_KEYS = ['selected', 'nodes'];
 const NODE_KEYS = ['kind', 'id', 'inputs'];
 const META_KEYS = ['presentation', 'drilldown'];
@@ -152,6 +152,7 @@ export const migrateCubeSpec = (
 const encodeContext = (context: CubeContext): JsonObject => ({
   model: copyJson(context.model),
   ...(context.runtime !== undefined ? { runtime: context.runtime } : {}),
+  ...(context.mapping !== undefined ? { mapping: context.mapping } : {}),
   ...restOf(context.rest, CONTEXT_KEYS),
 });
 
@@ -299,12 +300,14 @@ const decodeModel = (value: unknown, path: string): ModelContext => {
 const decodeContext = (value: unknown, path: string): CubeContext => {
   const json = readObject(value, path);
   const runtime = readOptionalString(json, 'runtime', path);
+  const mapping = readOptionalString(json, 'mapping', path);
   return {
     model: decodeModel(
       json.model ?? fail(pathTo(path, 'model'), 'is required'),
       pathTo(path, 'model'),
     ),
     ...(runtime !== undefined ? { runtime } : {}),
+    ...(mapping !== undefined ? { mapping } : {}),
     ...readRest(json, CONTEXT_KEYS),
   };
 };

@@ -28,6 +28,7 @@ import {
   createNodeRegistry,
   Difference,
   DataProductAccessPointSource,
+  DataSpaceSource,
   Distinct,
   Drop,
   Explode,
@@ -315,9 +316,15 @@ const NOT_TYPED_BY_THE_ENGINE: readonly string[] = [
 /**
  * The registered types typed against the engine elsewhere, on a model of
  * their own: a function, which the Northwind fixture has none of
- * (`CubeFunctionSource.engine-roundtrip-test.ts`, on the Trades sample)
+ * (`CubeFunctionSource.engine-roundtrip-test.ts`, on the Trades sample),
+ * and a data space source, which needs a class, its mapping and a runtime
+ * (`CubeDataSpaceSource.engine-roundtrip-test.ts`, on Legend Query's COVID
+ * data)
  */
-const TYPED_ELSEWHERE: readonly string[] = [FunctionSource.TYPE];
+const TYPED_ELSEWHERE: readonly string[] = [
+  FunctionSource.TYPE,
+  DataSpaceSource.TYPE,
+];
 
 const ORDERS: CaseTable = ['relational101', 'ORDERS'];
 const CUSTOMERS: CaseTable = ['relational102', 'CUSTOMERS'];

@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  DataSpaceSource,
   FunctionSource,
   getLiteralText,
   getRelationalDisplayName,
@@ -191,7 +192,8 @@ export const getCubeCanvasNodeLabel = (
       node instanceof DataProductAccessPointSource ||
       node instanceof IngestDatasetSource ||
       node instanceof ServiceSource ||
-      node instanceof FunctionSource) &&
+      node instanceof FunctionSource ||
+      node instanceof DataSpaceSource) &&
     node.resolution.kind === 'unresolved'
   ) {
     return { title: node.describe() };
@@ -227,6 +229,9 @@ export const getCubeCanvasNodeLabel = (
   }
   if (node instanceof ServiceSource) {
     return { title: node.serviceName, detail: node.pattern };
+  }
+  if (node instanceof DataSpaceSource && node.entityName !== undefined) {
+    return { title: node.entityName, detail: node.dataSpaceName };
   }
   return { title: node.describe() };
 };

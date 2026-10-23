@@ -28,6 +28,7 @@ import {
 import {
   createCubeProjectModel,
   getCubeProjectCoordinates,
+  isCubeDataSpaceContext,
   isCubeProjectModel,
 } from '../../graph-manager/CubeProject.js';
 import type { CubeProjectSummary } from '../../graph-manager/CubeProjectCatalog.js';
@@ -102,7 +103,10 @@ export class CubeProjectTabState extends CubeInlineModelTabState {
 
   /** A cube on a project model is this tab's, whether or not Cube can run it */
   override ownsContext(context: CubeContext): boolean {
-    return isCubeProjectModel(context.model);
+    // a data space's cube runs with its mapping: the Data Space tab's
+    return (
+      isCubeProjectModel(context.model) && !isCubeDataSpaceContext(context)
+    );
   }
 
   /** The cube's project, fixed by its first table */
