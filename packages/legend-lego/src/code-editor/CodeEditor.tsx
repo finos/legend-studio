@@ -33,6 +33,7 @@ import {
   type CODE_EDITOR_THEME,
   configureCodeEditor,
   getCodeEditorThemeForAppTheme,
+  setBaseCodeEditorTheme,
 } from '@finos/legend-code-editor';
 import { autorun } from 'mobx';
 import {
@@ -98,8 +99,12 @@ export const configureCodeEditorComponent = async (
   //
   // This is intentionally a long-lived subscription with no disposer — it's
   // application lifetime, the editor module is initialized once per app boot.
+  //
+  // NOTE: this sets the base theme, so embedded components which claim their own
+  // theme (e.g. DataCube) restore the application's theme once they're gone.
+  // See `claimCodeEditorTheme()`
   autorun(() => {
-    monacoEditorAPI.setTheme(
+    setBaseCodeEditorTheme(
       getCodeEditorThemeForAppTheme(
         applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
       ),
