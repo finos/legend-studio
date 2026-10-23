@@ -314,7 +314,7 @@ export const LakehouseTestDataEditor = observer(
               )}
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={200}>
               {testDataState.selectedElementTestDataState ? (
@@ -517,7 +517,7 @@ export const LakehouseTestsEditor = observer(
               </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
               {selectedTest ? (
@@ -566,7 +566,7 @@ export const LakehouseTestSuiteEditor = observer(
             />
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={56}>
             <LakehouseTestsEditor

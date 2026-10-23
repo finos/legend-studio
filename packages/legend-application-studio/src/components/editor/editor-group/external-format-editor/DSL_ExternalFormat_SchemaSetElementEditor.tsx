@@ -319,7 +319,7 @@ export const SchemaSetGeneralEditor = observer(
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel>
           <div className="schema-set-panel">

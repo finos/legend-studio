@@ -210,7 +210,7 @@ export const MapperPostProcessorEditor = observer(
               </Panel>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel>
               <Panel>

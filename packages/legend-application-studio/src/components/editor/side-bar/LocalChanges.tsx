@@ -340,7 +340,7 @@ export const LocalChanges = observer(() => {
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
+            <ResizablePanelSplitterLine color="var(--color-border-subtle)" />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={28}>
             <div className="panel side-bar__panel">
@@ -378,7 +378,7 @@ export const LocalChanges = observer(() => {
           </ResizablePanel>
 
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
+            <ResizablePanelSplitterLine color="var(--color-border-subtle)" />
           </ResizablePanelSplitter>
 
           <ResizablePanel minSize={28}>

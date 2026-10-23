@@ -65,10 +65,13 @@
     align-items: center;
   }
 
+  // The fills are saturated colors (blue, red, green, grey), so the text is
+  // picked per fill rather than per theme: text-primary turned dark on the
+  // light theme's blue (2.6:1) and stayed light on green (2.9:1).
   &__header__report__overview__stat {
     @include flexCenter;
 
-    color: var(--color-text-primary);
+    color: var(--color-text-on-accent);
     font-size: 1rem;
     height: 1.8rem;
     border-radius: 0.3rem;
@@ -82,10 +85,12 @@
 
     &--failed {
       background: var(--color-test--error);
+      color: var(--color-dark-grey-50);
     }
 
     &--passed {
       background: var(--color-test--passed);
+      color: var(--color-dark-grey-50);
     }
 
     &--skipped {

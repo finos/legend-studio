@@ -275,7 +275,7 @@ const IngestionDefinitionArtifactContent = observer(
                     </div>
                   </ResizablePanel>
                   <ResizablePanelSplitter>
-                    <ResizablePanelSplitterLine color="var(--color-border-default)" />
+                    <ResizablePanelSplitterLine />
                   </ResizablePanelSplitter>
                   <ResizablePanel minSize={320}>
                     <div className="ingest-artifact-viewer__matview-detail">

@@ -229,7 +229,7 @@ const ServicePostValidationEditor = observer(
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          <ResizablePanelSplitterLine />
         </ResizablePanelSplitter>
         <ResizablePanel minSize={56}>
           <ResizablePanelGroup orientation="horizontal">
@@ -273,7 +273,7 @@ const ServicePostValidationEditor = observer(
               </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
               <div className="service-test-data-editor panel">
@@ -545,7 +545,7 @@ export const ServicePostValidationsEditor = observer(
               </PanelContent>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel>
               <Panel className="service-test-editor">

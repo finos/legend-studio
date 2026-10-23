@@ -1159,7 +1159,7 @@ export const FileGenerationEditor = observer(() => {
               />
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel>
               <FileSystemViewer

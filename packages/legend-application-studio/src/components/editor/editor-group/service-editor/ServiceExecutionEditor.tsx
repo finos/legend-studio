@@ -769,7 +769,7 @@ const MultiPureExecutionEditor = observer(
             )}
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={56}>
             {multiExecutionState.selectedExecutionContextState ? (
@@ -857,7 +857,7 @@ const ServicePureExecutionEditor = observer(
               />
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
               <div className="service-execution-editor__content">

@@ -992,7 +992,7 @@ export const ServiceTestDataEditor = observer(
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel minSize={600}>
                 {testDataState.selectedDataState && (

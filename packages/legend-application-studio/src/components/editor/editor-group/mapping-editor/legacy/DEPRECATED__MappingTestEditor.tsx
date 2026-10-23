@@ -686,7 +686,7 @@ export const DEPRECATED__MappingTestBuilder = observer(
             />
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            <ResizablePanelSplitterLine color="var(--color-bg-app)" />
           </ResizablePanelSplitter>
           <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
@@ -697,7 +697,7 @@ export const DEPRECATED__MappingTestBuilder = observer(
             />
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            <ResizablePanelSplitterLine color="var(--color-bg-app)" />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={28}>
             <DEPRECATED__MappingTestAssertionBuilder

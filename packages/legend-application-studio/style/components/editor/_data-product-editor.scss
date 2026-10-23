@@ -554,13 +554,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--color-red-300);
+    color: var(--color-status-error);
     padding: 0.5rem;
     font-size: 1.2rem;
   }
 
   &--no-data {
-    border: 0.1rem solid var(--color-red-300);
+    border: 0.1rem solid var(--color-status-error);
     border-radius: 0.2rem;
   }
 }
