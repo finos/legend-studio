@@ -63,7 +63,10 @@
   --color-text-secondary: var(--color-light-grey-200); // sub-text
   // labels, hints, placeholders
   --color-text-muted: var(--color-light-grey-400);
-  // disabled controls (dimmer than muted; blends toward bg)
+  // placeholders, empty states, secondary labels and disabled controls:
+  // dimmer than muted, but still 3:1 on every panel, header and hover surface.
+  // NOTE: this fallback stays #737373 although default-dark uses #9a9a9a: the
+  // high-contrast themes have no token mapping and inherit it on light surfaces
   --color-text-disabled: var(--color-dark-grey-400);
   // text on inverted-luminance bg (flips with theme)
   --color-text-inverted: var(--color-dark-grey-50);

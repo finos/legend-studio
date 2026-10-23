@@ -28,6 +28,9 @@
  * Palette source values are chosen to match current studio dark UI exactly,
  * so that Phase-2 component migrations (replacing physical → semantic tokens)
  * produce zero visual diff.
+ *
+ * Exception: `--color-text-disabled` is brighter here than the `:root`
+ * fallback, which the high-contrast themes inherit on light surfaces.
  * ============================================================================ */
 
 .theme__default-dark {
@@ -47,7 +50,9 @@
   --color-text-primary: var(--color-light-grey-0);
   --color-text-secondary: var(--color-light-grey-200);
   --color-text-muted: var(--color-light-grey-400);
-  --color-text-disabled: var(--color-dark-grey-400);
+  // dark-grey-400 (#737373) dropped to 2.3–2.9:1 on panel, header and hover
+  // surfaces; #9a9a9a keeps it below muted (#bbb) at 3.8:1 or more on them.
+  --color-text-disabled: var(--color-dark-grey-500);
   --color-text-inverted: var(--color-dark-grey-50);
   --color-text-on-accent: var(--color-light-grey-50);
   --color-text-link: var(--color-blue-100);
