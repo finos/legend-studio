@@ -64,6 +64,13 @@
     }
   }
 
+  &__lock {
+    @include flexCenter;
+
+    margin-right: 0.5rem;
+    color: var(--color-text-secondary);
+  }
+
   // "N stages, N recompiles": the cost of the specification, shown permanently
   &__stat {
     @include flexVCenter;
@@ -320,7 +327,8 @@
       border-color: var(--color-status-error);
     }
 
-    &--file-generation {
+    &--file-generation,
+    &--read-only {
       cursor: default;
     }
 

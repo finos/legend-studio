@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   GENERATION_SPEC_ELEMENT_CARD_DND_TYPE,
@@ -33,6 +33,7 @@ import {
   DragPreviewLayer,
   ExclamationTriangleIcon,
   FireIcon,
+  LockIcon,
   LongArrowRightIcon,
   Panel,
   PanelContent,
@@ -66,7 +67,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
-  generationSpecification_setId,
 } from '../../../stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
 import type { GraphGenerationState } from '../../../stores/editor/editor-state/GraphGenerationState.js';
 
@@ -224,7 +224,8 @@ const StageElementCard = observer(
       node,
       elementRef,
     );
-    const canSplitOut = node.generationElements.length > 1;
+    const isReadOnly = specState.isReadOnly;
+    const canSplitOut = !isReadOnly && node.generationElements.length > 1;
     const [{ isBeingDragged }, dragConnector, dragPreviewConnector] = useDrag<
       GenerationSpecElementDragSource,
       void,
@@ -233,9 +234,10 @@ const StageElementCard = observer(
       () => ({
         type: GENERATION_SPEC_ELEMENT_CARD_DND_TYPE,
         item: () => ({ node, elementRef }),
+        canDrag: () => !isReadOnly,
         collect: (monitor) => ({ isBeingDragged: monitor.isDragging() }),
       }),
-      [node, elementRef],
+      [node, elementRef, isReadOnly],
     );
     dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
@@ -246,6 +248,7 @@ const StageElementCard = observer(
         className={clsx('generation-spec-editor__card', {
           'generation-spec-editor__card--dragging': isBeingDragged,
           'generation-spec-editor__card--failed': Boolean(failure),
+          'generation-spec-editor__card--read-only': isReadOnly,
         })}
       >
         <div className="generation-spec-editor__card__header">
@@ -263,19 +266,21 @@ const StageElementCard = observer(
             onClick={(): void =>
               editorStore.graphEditorMode.openElement(element)
             }
-            tabIndex={-1}
             title="Open element"
+            aria-label={`Open ${element.path}`}
           >
             <LongArrowRightIcon />
           </button>
-          <button
-            className="generation-spec-editor__card__action"
-            onClick={(): void => specState.deleteElement(node, elementRef)}
-            tabIndex={-1}
-            title="Remove from this stage"
-          >
-            <TimesIcon />
-          </button>
+          {!isReadOnly && (
+            <button
+              className="generation-spec-editor__card__action"
+              onClick={(): void => specState.deleteElement(node, elementRef)}
+              title="Remove from this stage"
+              aria-label={`Remove ${element.path} from this stage`}
+            >
+              <TimesIcon />
+            </button>
+          )}
         </div>
         <div
           className="generation-spec-editor__card__package"
@@ -323,8 +328,12 @@ const GenerationStage = observer(
       modelGenerationDnDTypes,
     } = props;
     const ref = useRef<HTMLDivElement>(null);
+    const isReadOnly = specState.isReadOnly;
     const elementCount = node.generationElements.length;
     const isLastStage = index === specState.stageCount - 1;
+    // what the field shows while it has focus, so typing is never replaced under the cursor - e.g.
+    // by the placeholder, when what is typed happens to spell the default id
+    const [idDraft, setIdDraft] = useState<string | undefined>(undefined);
     const isIdUnique =
       specState.spec.generationNodes.filter(
         (otherNode) => otherNode.id === node.id,
@@ -353,6 +362,9 @@ const GenerationStage = observer(
       () => ({
         accept: modelGenerationDnDTypes,
         canDrop: (item, monitor): boolean => {
+          if (isReadOnly) {
+            return false;
+          }
           const itemType = monitor.getItemType();
           if (itemType === GENERATION_SPEC_ELEMENT_CARD_DND_TYPE) {
             const card = item as GenerationSpecElementDragSource;
@@ -378,7 +390,7 @@ const GenerationStage = observer(
           isDragOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
         }),
       }),
-      [handleDrop, modelGenerationDnDTypes, node, specState],
+      [handleDrop, modelGenerationDnDTypes, node, specState, isReadOnly],
     );
     dropConnector(ref);
 
@@ -398,17 +410,24 @@ const GenerationStage = observer(
               ? `${elementCount} generations, run together against the same compiled model`
               : `1 generation`}
           </div>
+          {/* an unnamed stage shows DEFAULT as a placeholder, not as a value, so it can be named;
+              clearing the field returns it to the default rather than saving an empty id */}
           <input
             className={clsx('generation-spec-editor__stage__header__id', {
               'generation-spec-editor__stage__header__id--has-error':
                 !isIdUnique,
             })}
             spellCheck={false}
-            value={isIdDefault ? 'DEFAULT' : node.id}
-            onChange={(event): void =>
-              generationSpecification_setId(node, event.target.value)
-            }
-            disabled={isIdDefault}
+            aria-label={`Stage ${index + 1} id`}
+            placeholder="DEFAULT"
+            value={idDraft ?? (isIdDefault ? '' : node.id)}
+            onFocus={(): void => setIdDraft(isIdDefault ? '' : node.id)}
+            onChange={(event): void => {
+              setIdDraft(event.target.value);
+              specState.setStageId(node, event.target.value);
+            }}
+            onBlur={(): void => setIdDraft(undefined)}
+            disabled={isReadOnly}
             title={
               isIdUnique
                 ? `Stage id: ${node.id}`
@@ -416,22 +435,28 @@ const GenerationStage = observer(
             }
           />
           {/* the only way to reorder stages that does not need a pointer */}
-          <button
-            className="generation-spec-editor__stage__header__action"
-            onClick={(): void => specState.moveStage(index, index - 1)}
-            disabled={index === 0}
-            title="Run this stage earlier"
-          >
-            <ArrowUpIcon />
-          </button>
-          <button
-            className="generation-spec-editor__stage__header__action"
-            onClick={(): void => specState.moveStage(index, index + 1)}
-            disabled={isLastStage}
-            title="Run this stage later"
-          >
-            <ArrowDownIcon />
-          </button>
+          {!isReadOnly && (
+            <>
+              <button
+                className="generation-spec-editor__stage__header__action"
+                onClick={(): void => specState.moveStage(index, index - 1)}
+                disabled={index === 0}
+                title="Run this stage earlier"
+                aria-label={`Run stage ${index + 1} earlier`}
+              >
+                <ArrowUpIcon />
+              </button>
+              <button
+                className="generation-spec-editor__stage__header__action"
+                onClick={(): void => specState.moveStage(index, index + 1)}
+                disabled={isLastStage}
+                title="Run this stage later"
+                aria-label={`Run stage ${index + 1} later`}
+              >
+                <ArrowDownIcon />
+              </button>
+            </>
+          )}
         </div>
         <div className="generation-spec-editor__stage__cards">
           {node.generationElements.map((elementRef) => (
@@ -449,14 +474,20 @@ const GenerationStage = observer(
   },
 );
 
+/**
+ * Generated output builds up across stages - the graph is rebuilt from everything generated so far -
+ * so a stage can use what every stage above it produced, not only the one directly above.
+ */
 const StageDivider: React.FC<{ nextStageIndex: number }> = (props) => (
   <div className="generation-spec-editor__divider">
     <ArrowDownIcon className="generation-spec-editor__divider__icon" />
     <div className="generation-spec-editor__divider__label">Recompile</div>
     <div className="generation-spec-editor__divider__line" />
     <div className="generation-spec-editor__divider__note">
-      {`Stage ${props.nextStageIndex + 1} can use everything stage ${
-        props.nextStageIndex
+      {`Stage ${props.nextStageIndex + 1} can use everything ${
+        props.nextStageIndex === 1
+          ? 'stage 1'
+          : `stages 1-${props.nextStageIndex}`
       } produced`}
     </div>
   </div>
@@ -535,6 +566,7 @@ const FileGenerationCard = observer(
   }) => {
     const { specState, fileGenerationRef } = props;
     const editorStore = useEditorStore();
+    const isReadOnly = specState.isReadOnly;
     const fileGeneration = fileGenerationRef.value;
     return (
       <div className="generation-spec-editor__card generation-spec-editor__card--file-generation">
@@ -553,24 +585,26 @@ const FileGenerationCard = observer(
             onClick={(): void =>
               editorStore.graphEditorMode.openElement(fileGeneration)
             }
-            tabIndex={-1}
             title="Open element"
+            aria-label={`Open ${fileGeneration.path}`}
           >
             <LongArrowRightIcon />
           </button>
-          <button
-            className="generation-spec-editor__card__action"
-            onClick={(): void =>
-              generationSpecification_deleteFileGeneration(
-                specState.spec,
-                fileGenerationRef,
-              )
-            }
-            tabIndex={-1}
-            title="Remove"
-          >
-            <TimesIcon />
-          </button>
+          {!isReadOnly && (
+            <button
+              className="generation-spec-editor__card__action"
+              onClick={(): void =>
+                generationSpecification_deleteFileGeneration(
+                  specState.spec,
+                  fileGenerationRef,
+                )
+              }
+              title="Remove"
+              aria-label={`Remove ${fileGeneration.path}`}
+            >
+              <TimesIcon />
+            </button>
+          )}
         </div>
         <div className="generation-spec-editor__card__package">
           {fileGeneration.type}
@@ -584,6 +618,7 @@ const FileGenerationBand = observer(
   (props: { specState: GenerationSpecificationEditorState }) => {
     const { specState } = props;
     const ref = useRef<HTMLDivElement>(null);
+    const isReadOnly = specState.isReadOnly;
     const generationSpec = specState.spec;
     const fileGenerations = generationSpec.fileGenerations.map(
       (fileGeneration) => fileGeneration.value,
@@ -611,6 +646,9 @@ const FileGenerationBand = observer(
           CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION,
         ],
         canDrop: (item, monitor): boolean => {
+          if (isReadOnly) {
+            return false;
+          }
           const element = getDraggedElement(item, monitor.getItemType());
           return Boolean(
             element instanceof FileGenerationSpecification &&
@@ -626,7 +664,7 @@ const FileGenerationBand = observer(
           isDragOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
         }),
       }),
-      [handleDrop, fileGenerations],
+      [handleDrop, fileGenerations, isReadOnly],
     );
     dropConnector(ref);
 
@@ -667,7 +705,9 @@ const FileGenerationBand = observer(
             </div>
           ) : (
             <div className="generation-spec-editor__file-generations__empty">
-              Drop file generations here - they run after all model generation.
+              {isReadOnly
+                ? 'No file generations.'
+                : 'Drop file generations here - they run after all model generation.'}
             </div>
           )}
         </div>
@@ -715,10 +755,12 @@ const GenerationStageBoard = observer(
             />
           </div>
         ))}
-        <NewStageDropZone
-          specState={specState}
-          modelGenerationDnDTypes={modelGenerationDnDTypes}
-        />
+        {!specState.isReadOnly && (
+          <NewStageDropZone
+            specState={specState}
+            modelGenerationDnDTypes={modelGenerationDnDTypes}
+          />
+        )}
         <FileGenerationBand specState={specState} />
       </div>
     );
@@ -769,12 +811,28 @@ export const GenerationSpecificationEditor = observer(() => {
     [editorStore],
   );
   const stageCount = specState.stageCount;
+  const isReadOnly = specState.isReadOnly;
+  const board = (
+    <GenerationStageBoard
+      specState={specState}
+      generationGenerationState={generationGenerationState}
+      modelGenerationDnDTypes={modelGenerationDnDTypes}
+    />
+  );
 
   return (
     <div className="generation-spec-editor">
       <Panel>
         <PanelHeader>
           <div className="panel__header__title">
+            {isReadOnly && (
+              <div
+                className="generation-spec-editor__lock"
+                title="This specification is read-only"
+              >
+                <LockIcon />
+              </div>
+            )}
             <div className="panel__header__title__label">
               Generation Specification
             </div>
@@ -823,24 +881,23 @@ export const GenerationSpecificationEditor = observer(() => {
           </PanelHeaderActions>
         </PanelHeader>
         <PanelContent className="generation-spec-editor__content">
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel size={280} minSize={200}>
-              <GenerationElementPalette
-                specState={specState}
-                modelGenerationElements={modelGenerationElements}
-              />
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-border-default)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={300}>
-              <GenerationStageBoard
-                specState={specState}
-                generationGenerationState={generationGenerationState}
-                modelGenerationDnDTypes={modelGenerationDnDTypes}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
+          {/* the palette is only a source of drags, so a read-only board does without it */}
+          {isReadOnly ? (
+            board
+          ) : (
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel size={280} minSize={200}>
+                <GenerationElementPalette
+                  specState={specState}
+                  modelGenerationElements={modelGenerationElements}
+                />
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-border-default)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel minSize={300}>{board}</ResizablePanel>
+            </ResizablePanelGroup>
+          )}
         </PanelContent>
       </Panel>
     </div>

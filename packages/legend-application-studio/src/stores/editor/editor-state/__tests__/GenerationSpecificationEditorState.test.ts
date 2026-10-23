@@ -311,3 +311,39 @@ test(
     ).toBeUndefined();
   },
 );
+
+test(
+  unitTest('Clearing a stage id returns it to the default, never to empty'),
+  () => {
+    // the graph builder rejects an empty id, so a specification saved with one would not load
+    const stage = getStage(0);
+    specState.setStageId(stage, '');
+    expect(stage.id).toBe('test::tMapping,test::tMapping2');
+    expect(stage.id).toBe(stage.defaultId);
+
+    specState.setStageId(stage, '   ');
+    expect(stage.id).toBe(stage.defaultId);
+
+    // a stage can be named, and the name is kept as written
+    specState.setStageId(stage, 'schemas');
+    expect(stage.id).toBe('schemas');
+    expect(getSerializedNodes()[0]?.id).toBe('schemas');
+  },
+);
+
+test(
+  unitTest(
+    'A cleared id that would collide with another stage gets a distinct one',
+  ),
+  () => {
+    specState.addElementAsNewStage(getElement('test::tMapping'));
+    specState.addElementAsNewStage(getElement('test::tMapping'));
+    const named = getStage(3);
+    specState.setStageId(named, 'named');
+
+    // its default is taken by the stage before it, so clearing it must not reuse that id
+    specState.setStageId(named, '');
+    expect(getStage(2).id).toBe('test::tMapping');
+    expect(named.id).toBe('test::tMapping (2)');
+  },
+);

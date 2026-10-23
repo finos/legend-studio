@@ -30,6 +30,7 @@ import {
   generationSpecification_addNodeAt,
   generationSpecification_deleteGenerationNode,
   generationSpecification_moveNode,
+  generationSpecification_setId,
   generationTreeNode_addGenerationElement,
   generationTreeNode_deleteGenerationElement,
 } from '../../graph-modifier/DSL_Generation_GraphModifierHelper.js';
@@ -94,6 +95,7 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
       moveElementToNewStage: action,
       deleteElement: action,
       moveStage: action,
+      setStageId: action,
       deleteGenerationTreeNode: action,
       addGenerationTreeNode: action,
     });
@@ -139,14 +141,19 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
   }
 
   /**
-   * An id for a stage the editor creates: the default derived from its elements, kept distinct from
-   * the ids already in the specification.
+   * An id for a stage the editor creates, or for one whose id was cleared: the default derived from
+   * its elements, kept distinct from the ids the other stages already hold.
    */
   private buildNodeId(
     elementRefs: PackageableElementReference<PackageableElement>[],
+    forNode?: GenerationTreeNode,
   ): string {
     const defaultId = GenerationTreeNode.buildDefaultId(elementRefs);
-    const takenIds = new Set(this.spec.generationNodes.map((node) => node.id));
+    const takenIds = new Set(
+      this.spec.generationNodes
+        .filter((node) => node !== forNode)
+        .map((node) => node.id),
+    );
     if (!takenIds.has(defaultId)) {
       return defaultId;
     }
@@ -276,6 +283,20 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
 
   moveStage(fromIndex: number, toIndex: number): void {
     generationSpecification_moveNode(this.spec, fromIndex, toIndex);
+  }
+
+  /**
+   * A stage cannot be saved without an id - the graph builder rejects an empty one, so a
+   * specification saved that way would not load again. Clearing the field therefore means "go back
+   * to the default", rather than writing an empty id.
+   */
+  setStageId(node: GenerationTreeNode, value: string): void {
+    generationSpecification_setId(
+      node,
+      value.trim() === ''
+        ? this.buildNodeId(node.generationElements, node)
+        : value,
+    );
   }
 
   deleteGenerationTreeNode(node: GenerationTreeNode): void {
