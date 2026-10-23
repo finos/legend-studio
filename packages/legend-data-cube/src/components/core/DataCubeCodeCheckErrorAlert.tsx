@@ -17,7 +17,6 @@
 import { DataCubeIcon } from '@finos/legend-art';
 import {
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
   moveCursorToPosition,
   PURE_CODE_EDITOR_WORD_SEPARATORS,
@@ -25,7 +24,10 @@ import {
 } from '@finos/legend-code-editor';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
-import { MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID } from './DataCubePureCodeEditorUtils.js';
+import {
+  getDataCubeCodeEditorTheme,
+  MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
+} from './DataCubePureCodeEditorUtils.js';
 import type { EngineError } from '@finos/legend-graph';
 import { isNonNullable } from '@finos/legend-shared';
 
@@ -51,7 +53,7 @@ export function DataCubeCodeCheckErrorAlert(props: {
         ...getBaseCodeEditorOptions(),
         fontSize: 12,
         language: CODE_EDITOR_LANGUAGE.PURE,
-        theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
+        theme: getDataCubeCodeEditorTheme(),
         wordSeparators: PURE_CODE_EDITOR_WORD_SEPARATORS,
         // Make sure the widgets (tooltips, menus) are not clipped by the container bounds
         // and fix the problem where widgets are rendered with position=fixed not working well with parent

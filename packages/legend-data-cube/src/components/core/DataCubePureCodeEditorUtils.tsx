@@ -26,6 +26,18 @@ import type {
 import type { V1_Lambda } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import type { DataCubeSource } from '../../stores/core/model/DataCubeSource.js';
+import {
+  CODE_EDITOR_THEME,
+  getApplicationCodeEditorTheme,
+} from '@finos/legend-code-editor';
+
+/**
+ * `monaco-editor` themes are global, so if DataCube created its editors with a theme
+ * of its own, every code editor of the application embedding DataCube would switch
+ * to that theme. Use the application's theme when there is one instead.
+ */
+export const getDataCubeCodeEditorTheme = (): CODE_EDITOR_THEME =>
+  getApplicationCodeEditorTheme() ?? CODE_EDITOR_THEME.GITHUB_LIGHT;
 
 // Since we render the editor in a window which has been CSS transformed, and monaco-editor renders
 // the widgets with position=fixed, the position of the widgets will be off, we need to move the root

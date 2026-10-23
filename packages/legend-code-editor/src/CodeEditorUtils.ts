@@ -169,6 +169,27 @@ export const resetLineNumberGutterWidth = (
   });
 };
 
+let applicationCodeEditorTheme: CODE_EDITOR_THEME | undefined;
+
+/**
+ * Set the code editor theme of the application.
+ *
+ * NOTE: `monaco-editor` themes are global: setting one, here or with the `theme`
+ * option when creating an editor, restyles every editor on the page. So a component
+ * embedded in an application with its own choice of theme (e.g. DataCube) should
+ * use the application's theme when there is one, see {@link getApplicationCodeEditorTheme}
+ */
+export const setApplicationCodeEditorTheme = (
+  theme: CODE_EDITOR_THEME,
+): void => {
+  applicationCodeEditorTheme = theme;
+  monacoEditorAPI.setTheme(theme);
+};
+
+export const getApplicationCodeEditorTheme = ():
+  | CODE_EDITOR_THEME
+  | undefined => applicationCodeEditorTheme;
+
 export const configureCodeEditor = async (
   fontFamily: string,
   onError: (error: Error) => void,

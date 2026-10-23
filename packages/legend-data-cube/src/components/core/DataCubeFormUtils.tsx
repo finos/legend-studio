@@ -39,7 +39,6 @@ import { isString } from '@finos/legend-shared';
 import { useDataCube } from '../DataCubeProvider.js';
 import {
   clearMarkers,
-  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
   getCodeEditorValue,
   normalizeLineEnding,
@@ -47,6 +46,7 @@ import {
   setErrorMarkers,
 } from '@finos/legend-code-editor';
 import { AlertType } from '../../stores/services/DataCubeAlertService.js';
+import { getDataCubeCodeEditorTheme } from './DataCubePureCodeEditorUtils.js';
 
 export function FormBadge_WIP() {
   return (
@@ -721,7 +721,7 @@ export const FormCodeEditor: React.FC<{
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         fontSize: 12,
-        theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
+        theme: getDataCubeCodeEditorTheme(),
         // layout
         glyphMargin: !hidePadding,
         padding: !hidePadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
