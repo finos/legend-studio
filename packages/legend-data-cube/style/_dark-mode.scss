@@ -1,0 +1,100 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// ---------------------------------------- DARK THEME ----------------------------------------
+// The palette variables are redefined (rather than adding dark variants to every component)
+// since both Tailwind utilities and these stylesheets read colors from `--tw-color-*`.
+//
+// NOTE: the palette names keep their roles rather than their shades, i.e. `white` is the surface,
+// `black` is the ink, and the neutral ramp runs the other way, so that components styled against
+// the palette read right in both themes without any change.
+//
+// NOTE: popups are portaled outside of DataCube, see `getDataCubeColorThemeClassName()`.
+
+.data-cube-theme--dark {
+  color-scheme: dark;
+
+  --tw-color-white: #1e2023;
+  --tw-color-black: #e8eaed;
+  --tw-color-neutral-50: #232528;
+  --tw-color-neutral-100: #282b2f;
+  --tw-color-neutral-200: #33373c;
+  --tw-color-neutral-300: #43484e;
+  --tw-color-neutral-400: #63686f;
+  --tw-color-neutral-500: #8d939a;
+  --tw-color-neutral-600: #b0b5bb;
+  --tw-color-neutral-700: #c9cdd2;
+  --tw-color-neutral-800: #dde0e3;
+  --tw-color-neutral-900: #eceef0;
+  --tw-color-neutral-950: #f5f6f7;
+  --tw-color-sky-50: #10293a;
+  --tw-color-sky-100: #14354a;
+  --tw-color-sky-200: #1b4a66;
+  --tw-color-sky-300: #2a6a90;
+  --tw-color-sky-400: #3a9ad6;
+  --tw-color-sky-500: #42b4f0;
+  --tw-color-sky-600: #4aa8e0;
+  --tw-color-sky-700: #8ccdf2;
+  --tw-color-red-50: #3a1d1f;
+  --tw-color-red-500: #f87171;
+  --tw-color-red-600: #f28b8b;
+  --tw-color-green-500: #4ade80;
+  --tw-color-amber-500: #fbbf24;
+  --tw-color-orange-500: #fb923c;
+  --tw-color-blue-600: #7aa7f5;
+
+  // only redefined since the pivot result column group headers use them
+  --tw-color-blue-50: #172636;
+  --tw-color-blue-200: #1f3a5f;
+  --tw-color-emerald-50: #13281f;
+  --tw-color-emerald-200: #1a4733;
+  --tw-color-rose-50: #2c171c;
+  --tw-color-rose-200: #4f2330;
+  --tw-color-teal-50: #12282a;
+  --tw-color-teal-200: #1a4547;
+  --tw-color-yellow-50: #2a2612;
+  --tw-color-yellow-200: #4a4119;
+
+  color: var(--tw-color-black);
+
+  .data-cube-grid.ag-theme-quartz,
+  .data-cube-grid .ag-theme-quartz,
+  .data-cube-column-selector .ag-theme-quartz {
+    --ag-foreground-color: var(--tw-color-black);
+    --ag-data-color: var(--tw-color-black);
+    --ag-row-hover-color: #ffffff0d;
+    --ag-selected-row-background-color: var(--tw-color-sky-100);
+    --ag-popup-shadow: 2px 2px 8px rgb(0 0 0 / 55%);
+    --ag-card-shadow: 0 1px 8px rgb(0 0 0 / 55%);
+    --ag-checkbox-unchecked-color: var(--tw-color-neutral-500);
+    --ag-input-border-color: var(--tw-color-neutral-400);
+    --ag-input-disabled-background-color: var(--tw-color-neutral-100);
+
+    // these custom icons are SVG data URIs with a hard-coded black stroke, so they can't
+    // follow the palette and are inverted instead
+    .ag-icon-group::before,
+    .ag-icon-pivot::before,
+    .ag-icon-columns::before {
+      filter: invert(0.9);
+    }
+  }
+}
+
+// MUI papers (e.g. popovers, menus) set their own white background, which ignores the palette
+.data-cube-theme--dark .MuiPaper-root {
+  background-color: var(--tw-color-white);
+  color: var(--tw-color-black);
+}

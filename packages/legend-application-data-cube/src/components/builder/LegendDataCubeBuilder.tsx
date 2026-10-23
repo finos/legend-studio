@@ -27,6 +27,8 @@ import {
   DataCubeEvent,
   DataCubeTitleBarMenuItems,
   FormLoadingIndicator,
+  DataCubeColorTheme,
+  DataCubeSettingKey,
 } from '@finos/legend-data-cube';
 import {
   useLegendDataCubeBuilderStore,
@@ -328,6 +330,17 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
     const store = useLegendDataCubeBuilderStore();
     const builder = store.builder;
     const application = store.application;
+    const dataCubeSettingValues = application.settingService.getObjectValue(
+      LegendDataCubeSettingStorageKey.DATA_CUBE,
+    ) as DataCubeSettingValues | undefined;
+    // NOTE: the placeholder is shown before DataCube (and its setting service) is loaded,
+    // so the persisted setting is read directly to avoid flashing the light theme
+    const colorTheme =
+      dataCubeSettingValues?.[
+        DataCubeSettingKey.APPEARANCE__ENABLE_DARK_MODE
+      ] === true
+        ? DataCubeColorTheme.DARK
+        : DataCubeColorTheme.LIGHT;
     const params = useParams<LegendDataCubeBuilderPathParams>();
     const dataCubeId =
       params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID];
@@ -385,6 +398,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           title="[ Legend DataCube ]"
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
+          colorTheme={colorTheme}
           headerContent={<LegendDataCubeBuilderHeader />}
           menuItems={generateMenuItems(store)}
         >
@@ -408,6 +422,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           title="[ Legend DataCube ]"
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
+          colorTheme={colorTheme}
           headerContent={<LegendDataCubeBuilderHeader />}
           menuItems={generateMenuItems(store)}
         >
@@ -445,9 +460,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           getHeaderMenuItems: () => generateMenuItems(store),
           settingsData: {
             configurations: store.baseStore.settings,
-            values: application.settingService.getObjectValue(
-              LegendDataCubeSettingStorageKey.DATA_CUBE,
-            ) as DataCubeSettingValues | undefined,
+            values: dataCubeSettingValues,
           },
           onSettingsChanged(event) {
             application.settingService.persistValue(

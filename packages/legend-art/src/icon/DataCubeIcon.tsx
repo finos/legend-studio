@@ -62,6 +62,7 @@ import {
   TbCaretDownFilled,
   TbLoader2,
   TbSettingsBolt,
+  TbSunMoon,
   TbSettings,
   TbChevronDown,
   TbCaretRightFilled,
@@ -98,6 +99,7 @@ import {
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
   AlertError: VscError,
+  Appearance: TbSunMoon,
   AlertInfo: VscInfo,
   AlertSuccess: VscPass,
   AlertWarning: VscWarning,

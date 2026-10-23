@@ -27,6 +27,10 @@ import {
 } from '../stores/DataCubeOptions.js';
 import { useState } from 'react';
 import { isObject } from '@finos/legend-shared';
+import {
+  getDataCubeColorThemeClassName,
+  useDataCubeColorTheme,
+} from './core/DataCubeColorTheme.js';
 
 export const DataCubeTitleBar = observer(
   (props: {
@@ -38,6 +42,7 @@ export const DataCubeTitleBar = observer(
       | undefined;
   }) => {
     const { children, title, menuItems, getMenuItems } = props;
+    const colorTheme = useDataCubeColorTheme();
     const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
       useDropdownMenu();
     const [items, setItems] = useState([...(menuItems ?? [])]);
@@ -67,6 +72,7 @@ export const DataCubeTitleBar = observer(
           <DropdownMenu
             {...menuDropdownProps}
             menuProps={{
+              className: getDataCubeColorThemeClassName(colorTheme),
               anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
               transformOrigin: { vertical: 'top', horizontal: 'left' },
               classes: {
