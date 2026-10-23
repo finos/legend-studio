@@ -5575,14 +5575,26 @@ query builder changes in a drastic way.
   case one comes back from a spec edited by hand.
 - **In Analytics:**
   - A `DataSpaceQueryBuilderState` subclass for Cube, built as Legend Query builds one (`DataProductQueryCreatorStore`).
-  - The data space's graph: the project's full graph at the version, built once per version and shared by the
-    editor's sessions. The light graph from depot's precomputed analysis, which Legend Query uses for large
-    projects, is a follow-up.
+  - The data space's graph is only ever the **light graph** (user, 2026-10-23), as Legend Query builds it with
+    `TEMPORARY__enableMinimalGraph`: from the data space's analytics, which a release of its project generates
+    (depot's `dataSpace-analytics` files), the classes the execution context's mapping covers, the data space, and
+    stubs of its mappings and runtimes. The data space extension's `analyzeDataSpaceCoverage` builds it; the explorer
+    and the entity list read what is mapped from the analysis' coverage, and Cube runs through the project pointer.
+    The project's entities and dependencies are never read, so a large project opens as fast as a small one.
+  - A data space whose release has no analytics, or none for a mapping of its contexts, is refused with the reason,
+    rather than falling back to the full graph as Legend Query does.
+  - Each editor session builds its own light graph; the analytics are read once per data space version. A context of
+    another mapping gets that mapping's light graph, which starts the query again on one of its classes, as in Legend
+    Query; a context of the same mapping keeps the query.
   - The data spaces are listed from depot.
   - The results panel is hidden (`isResultPanelHidden`, an existing getter).
-  - Analytics' plugin manager gains the graph plugins Legend Query registers (data space, diagram, text and the rest),
-    which building any project's graph needs. Their application plugins are left out, so the query builder shows no
-    template queries and has no keyboard commands.
+  - Analytics registers only the core, query builder and data space graph presets: the light graph holds nothing
+    else. Building a project's full graph would need the graph plugins of every element type it could hold (the
+    Assortment, Text, Diagram, Persistence, Service Store and Data Quality extensions Legend Query registers). No
+    application plugins are registered, so the query builder shows no template queries and has no keyboard
+    commands.
+  - The mock depot serves the test data space's analytics (`/generations/:g/:a/:v/types/:type`), and takes
+    `--port`, so a worktree's copy can run beside another.
 
 **The query builder's controls (spike, 2026-10-21):**
 
