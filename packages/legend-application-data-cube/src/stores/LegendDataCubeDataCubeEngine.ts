@@ -123,6 +123,7 @@ import {
   isPrimitiveType,
   _property,
   DataCubeGridClientExportFormat,
+  type DataCubeColumnRelationType,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -530,7 +531,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  override async processSource(value: PlainObject): Promise<DataCubeSource> {
+  override async processSource(
+    value: PlainObject,
+    cachedColumns?: DataCubeColumnRelationType,
+  ): Promise<DataCubeSource> {
     switch (value._type) {
       case FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
@@ -746,18 +750,22 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         // be prepended to the transformed query when it is executed.
         source.query = at(source.lambda.body, source.lambda.body.length - 1);
 
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(source.lambda),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
-          );
+        if (cachedColumns) {
+          source.columns = cachedColumns;
+        } else {
+          try {
+            source.columns = (
+              await this._getLambdaRelationType(
+                this.serializeValueSpecification(source.lambda),
+                source.model,
+              )
+            ).columns;
+          } catch (error) {
+            assertErrorThrown(error);
+            throw new Error(
+              `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
+            );
+          }
         }
 
         source.parameterValues = await this._getQueryParameterValues(

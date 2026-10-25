@@ -72,7 +72,11 @@ import { DataCubeQueryFilterOperation__IsNull } from './filter/DataCubeQueryFilt
 import { DataCubeQueryFilterOperation__IsNotNull } from './filter/DataCubeQueryFilterOperation__IsNotNull.js';
 import { DataCubeSnapshot } from './DataCubeSnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
-import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
+import {
+  _toCol,
+  type DataCubeColumn,
+  type DataCubeColumnRelationType,
+} from './model/DataCubeColumn.js';
 import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
@@ -247,7 +251,10 @@ export abstract class DataCubeEngine {
 
   // ---------------------------------- PROCESSOR ----------------------------------
 
-  abstract processSource(sourceData: PlainObject): Promise<DataCubeSource>;
+  abstract processSource(
+    sourceData: PlainObject,
+    cachedColumns?: DataCubeColumnRelationType,
+  ): Promise<DataCubeSource>;
 
   abstract getDataFromSource(source?: DataCubeSource): PlainObject;
 
