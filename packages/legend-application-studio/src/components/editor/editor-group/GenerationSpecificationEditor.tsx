@@ -14,441 +14,618 @@
  * limitations under the License.
  */
 
-import { useRef, useCallback } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  GENERATION_SPEC_ELEMENT_CARD_DND_TYPE,
+  GENERATION_SPEC_PALETTE_ELEMENT_DND_TYPE,
+  GENERATION_SPEC_PALETTE_FILE_GENERATION_DND_TYPE,
   GenerationSpecificationEditorState,
-  type GenerationSpecNodeDragSource,
-  type GenerationSpecNodeDropTarget,
-  type GenerationTreeNodeState,
+  type GenerationSpecElementDragSource,
+  type GenerationSpecPaletteElementDragSource,
 } from '../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import {
   clsx,
-  BlankPanelContent,
-  CustomSelectorInput,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  DragPreviewLayer,
+  ExclamationTriangleIcon,
+  FireIcon,
+  LockIcon,
+  LongArrowRightIcon,
+  Panel,
+  PanelContent,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PURE_FileGenerationIcon,
+  RefreshIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  PURE_FileGenerationIcon,
-  RefreshIcon,
-  FireIcon,
   TimesIcon,
-  PlusIcon,
-  LongArrowRightIcon,
-  PanelDropZone,
-  DragPreviewLayer,
   useDragPreviewLayer,
-  Panel,
-  PanelContent,
-  PanelDnDEntry,
-  PanelHeader,
-  PanelHeaderActions,
-  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
-  type FileGenerationSourceDropTarget,
 } from '../../../stores/editor/utils/DnDUtils.js';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
+  type DSL_Generation_PureGraphManagerPlugin_Extension,
+  type GenerationTreeNode,
   type PackageableElement,
   type PackageableElementReference,
-  type DSL_Generation_PureGraphManagerPlugin_Extension,
   FileGenerationSpecification,
-  PackageableElementExplicitReference,
-  GenerationTreeNode,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '@finos/legend-lego/graph-editor';
-import { packageableElementReference_setValue } from '../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
-  generationSpecification_setId,
 } from '../../../stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
+import type { GraphGenerationState } from '../../../stores/editor/editor-state/GraphGenerationState.js';
 
-const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
+/**
+ * The item shapes the board accepts differ by where the drag started: the palette drags an element,
+ * a card drags itself out of the stage it is in, and a plugin's project-explorer drag uses the
+ * shared element drag source.
+ */
+const getDraggedElement = (
+  item: unknown,
+  itemType: string | symbol | null,
+): PackageableElement | undefined => {
+  if (itemType === GENERATION_SPEC_PALETTE_ELEMENT_DND_TYPE) {
+    return (item as GenerationSpecPaletteElementDragSource).element;
+  }
+  if (itemType === GENERATION_SPEC_ELEMENT_CARD_DND_TYPE) {
+    return (item as GenerationSpecElementDragSource).elementRef.value;
+  }
+  // a plugin's drag source is the shared element drag source, but `item` is whatever the backend
+  // handed us, so the shape is checked rather than asserted
+  return (item as Partial<ElementDragSource>).data?.packageableElement;
+};
 
-const ModelGenerationItem = observer(
+const PaletteItem = observer(
   (props: {
-    specState: GenerationSpecificationEditorState;
-    nodeState: GenerationTreeNodeState;
-    options: PackageableElementOption<PackageableElement>[];
+    element: PackageableElement;
+    dndType: string;
+    usageCount: number;
   }) => {
+    const { element, dndType, usageCount } = props;
     const ref = useRef<HTMLDivElement>(null);
-    const { nodeState, specState, options } = props;
-    const generationTreeNode = nodeState.node;
     const editorStore = useEditorStore();
-    const applicationStore = editorStore.applicationStore;
-    // this editor shows one element per node; a node holding a parallel group shows its first
-    // element and how many more it holds, until the editor can author groups
-    const modelGenerationRef = guaranteeNonNullable(
-      generationTreeNode.generationElements[0],
-      `Generation tree node must hold at least one generation element`,
-    );
-    const modelGeneration = modelGenerationRef.value;
-    const otherElementCount = generationTreeNode.generationElements.length - 1;
-    const value = {
-      label:
-        otherElementCount > 0
-          ? `${modelGeneration.name} (+${otherElementCount} in parallel)`
-          : modelGeneration.name,
-      value: modelGeneration,
-    } as PackageableElementOption<FileGenerationSpecification>;
-    const onChange = (
-      val: PackageableElementOption<FileGenerationSpecification> | null,
-    ): void => {
-      if (val !== null) {
-        packageableElementReference_setValue(modelGenerationRef, val.value);
-      }
-    };
-    const deleteNode = (): void =>
-      specState.deleteGenerationTreeNode(generationTreeNode);
-    const visitModelGeneration = (): void =>
-      editorStore.graphEditorMode.openElement(modelGeneration);
-    // generation id
-    const isUnique =
-      specState.spec.generationNodes.filter(
-        (n) => n.id === generationTreeNode.id,
-      ).length < 2;
-    const isDefault =
-      generationTreeNode.id ===
-        generationTreeNode.generationElements
-          .map((element) => element.value.path)
-          .join(',') && isUnique;
-    const changeNodeId: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      generationSpecification_setId(generationTreeNode, event.target.value);
-    // Drag and Drop
-    const handleHover = useCallback(
-      (
-        item: GenerationSpecNodeDropTarget,
-        monitor: DropTargetMonitor,
-      ): void => {
-        const dragIndex = specState.generationTreeNodeStates.findIndex(
-          (e) => e === item.nodeState,
-        );
-        const hoverIndex = specState.generationTreeNodeStates.findIndex(
-          (e) => e === nodeState,
-        );
-        if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
-          return;
-        }
-        // move the item being hovered on when the dragged item position is beyond the its middle point
-        const hoverBoundingReact = ref.current?.getBoundingClientRect();
-        const distanceThreshold =
-          ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
-          2;
-        const dragDistance =
-          (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
-        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
-          return;
-        }
-        if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
-          return;
-        }
-        specState.moveGenerationNode(dragIndex, hoverIndex);
-      },
-      [nodeState, specState],
-    );
-    const [{ nodeBeingDragged }, dropConnector] = useDrop<
-      GenerationSpecNodeDragSource,
-      void,
-      { nodeBeingDragged: GenerationTreeNode | undefined }
-    >(
-      () => ({
-        accept: [GENERATION_SPEC_NODE_DND_TYPE],
-        hover: (item, monitor): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { nodeBeingDragged: GenerationTreeNode | undefined } => ({
-          /**
-           * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
-           */
-          nodeBeingDragged:
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            (monitor.getItem() as GenerationSpecNodeDragSource | null)
-              ?.nodeState.node,
-        }),
-      }),
-      [handleHover],
-    );
-    const isBeingDragged = nodeState.node === nodeBeingDragged;
     const [, dragConnector, dragPreviewConnector] =
-      useDrag<GenerationSpecNodeDragSource>(
+      useDrag<GenerationSpecPaletteElementDragSource>(
         () => ({
-          type: GENERATION_SPEC_NODE_DND_TYPE,
-          item: () => ({ nodeState }),
+          type: dndType,
+          item: () => ({ element }),
         }),
-        [nodeState],
+        [element, dndType],
       );
-    dragConnector(dropConnector(ref));
-
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <PanelDnDEntry
+      <div
         ref={ref}
-        className="generation-spec-model-generation-editor__item"
-        showPlaceholder={isBeingDragged}
+        className="generation-spec-editor__palette__item"
+        title={`${element.path}${
+          usageCount ? ` - already in ${usageCount} stage(s)` : ''
+        }`}
       >
-        <div className="btn--sm generation-spec-model-generation-editor__item__label">
-          {getElementIcon(modelGeneration, editorStore)}
+        <div className="generation-spec-editor__palette__item__icon">
+          {getElementIcon(element, editorStore)}
         </div>
-        <input
-          className={clsx('generation-spec-model-generation-editor__item__id', {
-            'generation-spec-model-generation-editor__item__id--has-error':
-              !isUnique,
-          })}
-          spellCheck={false}
-          value={isDefault ? 'DEFAULT' : generationTreeNode.id}
-          onChange={changeNodeId}
-          disabled={isDefault}
-        />
-        <CustomSelectorInput
-          className="generation-spec-model-generation-editor__item__dropdown"
-          options={
-            options as PackageableElementOption<FileGenerationSpecification>[]
-          }
-          onChange={onChange}
-          value={value}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-        />
-        <button
-          className="btn--dark btn--sm"
-          onClick={visitModelGeneration}
-          tabIndex={-1}
-          title="See mapping"
-        >
-          <LongArrowRightIcon />
-        </button>
-        <button
-          className="generation-spec-model-generation-editor__item__remove-btn"
-          onClick={deleteNode}
-          tabIndex={-1}
-          title="Remove"
-        >
-          <TimesIcon />
-        </button>
-      </PanelDnDEntry>
-    );
-  },
-);
-
-const ModelGenerationSpecifications = observer(
-  (props: { specState: GenerationSpecificationEditorState }) => {
-    const { specState } = props;
-    const specNodesStates = specState.generationTreeNodeStates;
-    const editorStore = useEditorStore();
-    const modelGenerationElementsInGraph = editorStore.pluginManager
-      .getPureGraphManagerPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_Generation_PureGraphManagerPlugin_Extension
-          ).getExtraModelGenerationElementGetters?.() ?? [],
-      )
-      .flatMap((getter) => getter(editorStore.graphManagerState.graph));
-    const extraModelGenerationSpecificationElementDnDTypes =
-      editorStore.pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
-            ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
-        );
-    const modelGenerationElementOptions =
-      modelGenerationElementsInGraph.map(buildElementOption);
-    const addModelGeneration = (): void => {
-      const option = modelGenerationElementOptions[0];
-      if (option) {
-        specState.addGenerationTreeNode(
-          new GenerationTreeNode(
-            PackageableElementExplicitReference.create(option.value),
-          ),
-        );
-      }
-    };
-    // Drag and Drop
-    const handleDrop = useCallback(
-      (item: ElementDragSource): void =>
-        specState.addGenerationTreeNode(
-          new GenerationTreeNode(
-            PackageableElementExplicitReference.create(
-              item.data.packageableElement,
-            ),
-          ),
-        ),
-      [specState],
-    );
-    const [{ isDragOver }, dropConnector] = useDrop<
-      ElementDragSource,
-      void,
-      { isDragOver: boolean }
-    >(
-      () => ({
-        accept: extraModelGenerationSpecificationElementDnDTypes,
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop(item);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-        collect: (monitor) => ({
-          isDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDrop],
-    );
-    return (
-      <Panel>
-        <PanelHeader title="Model Generations">
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={addModelGeneration}
-              disabled={!modelGenerationElementsInGraph.length}
-              title="Add File Generation"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
-        <PanelContent>
-          <PanelDropZone
-            isDragOver={isDragOver}
-            dropTargetConnector={dropConnector}
+        <div className="generation-spec-editor__palette__item__name">
+          {element.path}
+        </div>
+        {usageCount > 0 && (
+          <div
+            className="generation-spec-editor__palette__item__usage"
+            title={`This element is already in ${usageCount} stage(s). The same element may appear in more than one stage - engine warns and the first result wins - but it cannot appear twice in one stage.`}
           >
-            {specNodesStates.length ? (
-              <div className="generation-spec-model-generation-editor__items">
-                <DragPreviewLayer
-                  labelGetter={(item: GenerationSpecNodeDragSource): string =>
-                    item.nodeState.node.generationElements
-                      .map((element) => element.value.name)
-                      .join(', ')
-                  }
-                  types={[GENERATION_SPEC_NODE_DND_TYPE]}
-                />
-                {specNodesStates.map((nodeState) => (
-                  <ModelGenerationItem
-                    key={nodeState.uuid}
-                    specState={specState}
-                    nodeState={nodeState}
-                    options={modelGenerationElementOptions}
-                  />
-                ))}
-              </div>
-            ) : (
-              <BlankPanelContent>
-                {modelGenerationElementsInGraph.length
-                  ? 'No model generation included in spec'
-                  : 'Create a model generation element to include in spec'}
-              </BlankPanelContent>
-            )}
-          </PanelDropZone>
-        </PanelContent>
-      </Panel>
-    );
-  },
-);
-
-const FileGenerationItem = observer(
-  (props: {
-    generationSpecificationEditorState: GenerationSpecificationEditorState;
-    fileGeneraitonRef: PackageableElementReference<FileGenerationSpecification>;
-    options: PackageableElementOption<FileGenerationSpecification>[];
-  }) => {
-    const { fileGeneraitonRef, generationSpecificationEditorState, options } =
-      props;
-    const editorStore = useEditorStore();
-    const applicationStore = editorStore.applicationStore;
-    const fileGeneration = fileGeneraitonRef.value;
-    const value = { label: fileGeneration.name, value: fileGeneration };
-    const onChange = (
-      val: PackageableElementOption<FileGenerationSpecification> | null,
-    ): void => {
-      if (val !== null) {
-        packageableElementReference_setValue(fileGeneraitonRef, val.value);
-      }
-    };
-    const deleteColumnSort = (): void =>
-      generationSpecification_deleteFileGeneration(
-        generationSpecificationEditorState.spec,
-        fileGeneraitonRef,
-      );
-    const visitFileGen = (): void =>
-      editorStore.graphEditorMode.openElement(fileGeneration);
-    return (
-      <div className="generation-spec-file-generation-editor__item">
-        <div className="btn--sm generation-spec-file-generation-editor__item__label">
-          <PURE_FileGenerationIcon />
-        </div>
-        <CustomSelectorInput
-          className="generation-spec-file-generation-editor__item__dropdown"
-          options={options}
-          onChange={onChange}
-          value={value}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-        />
-        <button
-          className="btn--dark btn--sm"
-          onClick={visitFileGen}
-          tabIndex={-1}
-          title="See mapping"
-        >
-          <LongArrowRightIcon />
-        </button>
-        <button
-          className="generation-spec-file-generation-editor__item__remove-btn"
-          onClick={deleteColumnSort}
-          tabIndex={-1}
-          title="Remove"
-        >
-          <TimesIcon />
-        </button>
+            {usageCount > 1 ? `in ${usageCount} stages` : 'in use'}
+          </div>
+        )}
       </div>
     );
   },
 );
 
-const FileGenerationSpecifications = observer(
+const GenerationElementPalette = observer(
   (props: {
-    generationSpecificationEditorState: GenerationSpecificationEditorState;
+    specState: GenerationSpecificationEditorState;
+    modelGenerationElements: PackageableElement[];
   }) => {
-    const { generationSpecificationEditorState } = props;
-    const generationSpec = generationSpecificationEditorState.spec;
+    const { specState, modelGenerationElements } = props;
     const editorStore = useEditorStore();
-    const fileGenerations =
-      generationSpecificationEditorState.spec.fileGenerations.map(
-        (f) => f.value,
-      );
-    const fileGenerationInGraph =
+    const usageIndex = specState.elementUsageIndex;
+    const fileGenerationsInSpec = specState.spec.fileGenerations.map(
+      (fileGeneration) => fileGeneration.value,
+    );
+    const fileGenerationElements =
       editorStore.graphManagerState.graph.ownFileGenerations;
-    const fileGenerationsOptions = fileGenerationInGraph
-      .filter((f) => !fileGenerations.includes(f))
-      .map(buildElementOption);
-    const addFileGeneration = (): void => {
-      const option = fileGenerationsOptions[0];
-      if (option) {
-        generationSpecification_addFileGeneration(generationSpec, option.value);
-      }
-    };
-    // drag and drop
+
+    return (
+      <div className="generation-spec-editor__palette">
+        <div className="generation-spec-editor__palette__section">
+          <div className="generation-spec-editor__palette__section__title">
+            Elements
+          </div>
+          <div className="generation-spec-editor__palette__section__hint">
+            Drag onto a stage to add it there. Anything in one stage runs
+            together.
+          </div>
+          {modelGenerationElements.length ? (
+            <div className="generation-spec-editor__palette__items">
+              {modelGenerationElements.map((element) => (
+                <PaletteItem
+                  key={element.path}
+                  element={element}
+                  dndType={GENERATION_SPEC_PALETTE_ELEMENT_DND_TYPE}
+                  usageCount={usageIndex.get(element.path) ?? 0}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="generation-spec-editor__palette__empty">
+              No model generation elements. These come from Studio extensions,
+              so this list stays empty unless a DSL extension that generates
+              models is installed.
+            </div>
+          )}
+        </div>
+        <div className="generation-spec-editor__palette__section">
+          <div className="generation-spec-editor__palette__section__title">
+            File generations
+          </div>
+          <div className="generation-spec-editor__palette__section__hint">
+            Only drop into the band at the end.
+          </div>
+          {fileGenerationElements.length ? (
+            <div className="generation-spec-editor__palette__items">
+              {fileGenerationElements.map((element) => (
+                <PaletteItem
+                  key={element.path}
+                  element={element}
+                  dndType={GENERATION_SPEC_PALETTE_FILE_GENERATION_DND_TYPE}
+                  usageCount={fileGenerationsInSpec.includes(element) ? 1 : 0}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="generation-spec-editor__palette__empty">
+              No file generations in this project.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+const StageElementCard = observer(
+  (props: {
+    specState: GenerationSpecificationEditorState;
+    generationGenerationState: GraphGenerationState;
+    node: GenerationTreeNode;
+    elementRef: PackageableElementReference<PackageableElement>;
+  }) => {
+    const { specState, generationGenerationState, node, elementRef } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const editorStore = useEditorStore();
+    const element = elementRef.value;
+    const failure = generationGenerationState.getModelGenerationFailure(
+      node,
+      elementRef,
+    );
+    const isReadOnly = specState.isReadOnly;
+    const canSplitOut = !isReadOnly && node.generationElements.length > 1;
+    const [{ isBeingDragged }, dragConnector, dragPreviewConnector] = useDrag<
+      GenerationSpecElementDragSource,
+      void,
+      { isBeingDragged: boolean }
+    >(
+      () => ({
+        type: GENERATION_SPEC_ELEMENT_CARD_DND_TYPE,
+        item: () => ({ node, elementRef }),
+        canDrag: () => !isReadOnly,
+        collect: (monitor) => ({ isBeingDragged: monitor.isDragging() }),
+      }),
+      [node, elementRef, isReadOnly],
+    );
+    dragConnector(ref);
+    useDragPreviewLayer(dragPreviewConnector);
+
+    return (
+      <div
+        ref={ref}
+        className={clsx('generation-spec-editor__card', {
+          'generation-spec-editor__card--dragging': isBeingDragged,
+          'generation-spec-editor__card--failed': Boolean(failure),
+          'generation-spec-editor__card--read-only': isReadOnly,
+        })}
+      >
+        <div className="generation-spec-editor__card__header">
+          <div className="generation-spec-editor__card__icon">
+            {getElementIcon(element, editorStore)}
+          </div>
+          <div
+            className="generation-spec-editor__card__name"
+            title={element.path}
+          >
+            {element.name}
+          </div>
+          <button
+            className="generation-spec-editor__card__action"
+            onClick={(): void =>
+              editorStore.graphEditorMode.openElement(element)
+            }
+            title="Open element"
+            aria-label={`Open ${element.path}`}
+          >
+            <LongArrowRightIcon />
+          </button>
+          {!isReadOnly && (
+            <button
+              className="generation-spec-editor__card__action"
+              onClick={(): void => specState.deleteElement(node, elementRef)}
+              title="Remove from this stage"
+              aria-label={`Remove ${element.path} from this stage`}
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
+        <div
+          className="generation-spec-editor__card__package"
+          title={element.path}
+        >
+          {element.package?.path ?? ''}
+        </div>
+        {failure && (
+          <div className="generation-spec-editor__card__failure">
+            <div className="generation-spec-editor__card__failure__message">
+              <ExclamationTriangleIcon />
+              <span title={failure.message}>{failure.message}</span>
+            </div>
+            {canSplitOut && (
+              <button
+                className="generation-spec-editor__card__failure__action"
+                onClick={(): void =>
+                  specState.moveElementToNewStage(node, elementRef)
+                }
+                title="Everything in a stage is generated against the same model, so nothing in this stage can use what another element of it produces. If this generation needs one of them, a stage of its own - right after this one - gives it that output."
+              >
+                Move to a new stage
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const GenerationStage = observer(
+  (props: {
+    specState: GenerationSpecificationEditorState;
+    generationGenerationState: GraphGenerationState;
+    node: GenerationTreeNode;
+    index: number;
+    modelGenerationDnDTypes: string[];
+  }) => {
+    const {
+      specState,
+      generationGenerationState,
+      node,
+      index,
+      modelGenerationDnDTypes,
+    } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const isReadOnly = specState.isReadOnly;
+    const elementCount = node.generationElements.length;
+    const isLastStage = index === specState.stageCount - 1;
+    // what the field shows while it has focus, so typing is never replaced under the cursor - e.g.
+    // by the placeholder, when what is typed happens to spell the default id
+    const [idDraft, setIdDraft] = useState<string | undefined>(undefined);
+    const isIdUnique =
+      specState.spec.generationNodes.filter(
+        (otherNode) => otherNode.id === node.id,
+      ).length < 2;
+    const isIdDefault = node.id === node.defaultId && isIdUnique;
+
     const handleDrop = useCallback(
-      (item: FileGenerationSourceDropTarget): void => {
-        const element = item.data.packageableElement;
+      (item: unknown, itemType: string | symbol | null): void => {
+        if (itemType === GENERATION_SPEC_ELEMENT_CARD_DND_TYPE) {
+          const card = item as GenerationSpecElementDragSource;
+          specState.moveElementToStage(card.node, card.elementRef, node);
+          return;
+        }
+        const element = getDraggedElement(item, itemType);
+        if (element && !(element instanceof FileGenerationSpecification)) {
+          specState.addElementToStage(node, element);
+        }
+      },
+      [node, specState],
+    );
+    const [{ isDragOver }, dropConnector] = useDrop<
+      unknown,
+      void,
+      { isDragOver: boolean }
+    >(
+      () => ({
+        accept: modelGenerationDnDTypes,
+        canDrop: (item, monitor): boolean => {
+          if (isReadOnly) {
+            return false;
+          }
+          const itemType = monitor.getItemType();
+          if (itemType === GENERATION_SPEC_ELEMENT_CARD_DND_TYPE) {
+            const card = item as GenerationSpecElementDragSource;
+            if (card.node === node) {
+              return false;
+            }
+          }
+          const element = getDraggedElement(item, itemType);
+          // the same element twice in one stage would generate the same output twice against the
+          // same model, which is a hard failure rather than a warning
+          return Boolean(
+            element &&
+              !(element instanceof FileGenerationSpecification) &&
+              !specState.nodeHoldsElement(node, element),
+          );
+        },
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item, monitor.getItemType());
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
+        }),
+      }),
+      [handleDrop, modelGenerationDnDTypes, node, specState, isReadOnly],
+    );
+    dropConnector(ref);
+
+    return (
+      <div
+        ref={ref}
+        className={clsx('generation-spec-editor__stage', {
+          'generation-spec-editor__stage--drag-over': isDragOver,
+        })}
+      >
+        <div className="generation-spec-editor__stage__header">
+          <div className="generation-spec-editor__stage__header__badge">
+            {`Stage ${index + 1}`}
+          </div>
+          <div className="generation-spec-editor__stage__header__summary">
+            {elementCount > 1
+              ? `${elementCount} generations, run together against the same compiled model`
+              : `1 generation`}
+          </div>
+          {/* an unnamed stage shows DEFAULT as a placeholder, not as a value, so it can be named;
+              clearing the field returns it to the default rather than saving an empty id */}
+          <input
+            className={clsx('generation-spec-editor__stage__header__id', {
+              'generation-spec-editor__stage__header__id--has-error':
+                !isIdUnique,
+            })}
+            spellCheck={false}
+            aria-label={`Stage ${index + 1} id`}
+            placeholder="DEFAULT"
+            value={idDraft ?? (isIdDefault ? '' : node.id)}
+            onFocus={(): void => setIdDraft(isIdDefault ? '' : node.id)}
+            onChange={(event): void => {
+              setIdDraft(event.target.value);
+              specState.setStageId(node, event.target.value);
+            }}
+            onBlur={(): void => setIdDraft(undefined)}
+            disabled={isReadOnly}
+            title={
+              isIdUnique
+                ? `Stage id: ${node.id}`
+                : `Stage id '${node.id}' is used by another stage`
+            }
+          />
+          {/* the only way to reorder stages that does not need a pointer */}
+          {!isReadOnly && (
+            <>
+              <button
+                className="generation-spec-editor__stage__header__action"
+                onClick={(): void => specState.moveStage(index, index - 1)}
+                disabled={index === 0}
+                title="Run this stage earlier"
+                aria-label={`Run stage ${index + 1} earlier`}
+              >
+                <ArrowUpIcon />
+              </button>
+              <button
+                className="generation-spec-editor__stage__header__action"
+                onClick={(): void => specState.moveStage(index, index + 1)}
+                disabled={isLastStage}
+                title="Run this stage later"
+                aria-label={`Run stage ${index + 1} later`}
+              >
+                <ArrowDownIcon />
+              </button>
+            </>
+          )}
+        </div>
+        <div className="generation-spec-editor__stage__cards">
+          {node.generationElements.map((elementRef) => (
+            <StageElementCard
+              key={elementRef.value.path}
+              specState={specState}
+              generationGenerationState={generationGenerationState}
+              node={node}
+              elementRef={elementRef}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  },
+);
+
+/**
+ * Generated output builds up across stages - the graph is rebuilt from everything generated so far -
+ * so a stage can use what every stage above it produced, not only the one directly above.
+ */
+const StageDivider: React.FC<{ nextStageIndex: number }> = (props) => (
+  <div className="generation-spec-editor__divider">
+    <ArrowDownIcon className="generation-spec-editor__divider__icon" />
+    <div className="generation-spec-editor__divider__label">Recompile</div>
+    <div className="generation-spec-editor__divider__line" />
+    <div className="generation-spec-editor__divider__note">
+      {`Stage ${props.nextStageIndex + 1} can use everything ${
+        props.nextStageIndex === 1
+          ? 'stage 1'
+          : `stages 1-${props.nextStageIndex}`
+      } produced`}
+    </div>
+  </div>
+);
+
+const NewStageDropZone = observer(
+  (props: {
+    specState: GenerationSpecificationEditorState;
+    modelGenerationDnDTypes: string[];
+  }) => {
+    const { specState, modelGenerationDnDTypes } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const handleDrop = useCallback(
+      (item: unknown, itemType: string | symbol | null): void => {
+        if (itemType === GENERATION_SPEC_ELEMENT_CARD_DND_TYPE) {
+          const card = item as GenerationSpecElementDragSource;
+          specState.moveElementToNewStage(
+            card.node,
+            card.elementRef,
+            specState.stageCount,
+          );
+          return;
+        }
+        const element = getDraggedElement(item, itemType);
+        if (element && !(element instanceof FileGenerationSpecification)) {
+          specState.addElementAsNewStage(element);
+        }
+      },
+      [specState],
+    );
+    const [{ isDragOver }, dropConnector] = useDrop<
+      unknown,
+      void,
+      { isDragOver: boolean }
+    >(
+      () => ({
+        accept: modelGenerationDnDTypes,
+        canDrop: (item, monitor): boolean => {
+          const element = getDraggedElement(item, monitor.getItemType());
+          return Boolean(
+            element && !(element instanceof FileGenerationSpecification),
+          );
+        },
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item, monitor.getItemType());
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
+        }),
+      }),
+      [handleDrop, modelGenerationDnDTypes],
+    );
+    dropConnector(ref);
+
+    return (
+      <div
+        ref={ref}
+        className={clsx('generation-spec-editor__new-stage', {
+          'generation-spec-editor__new-stage--drag-over': isDragOver,
+        })}
+      >
+        {specState.stageCount
+          ? 'Drop here for a new stage - runs after everything above'
+          : 'Drag generation elements here. Anything you drop together runs together; drop below a stage to make it wait for everything above.'}
+      </div>
+    );
+  },
+);
+
+const FileGenerationCard = observer(
+  (props: {
+    specState: GenerationSpecificationEditorState;
+    fileGenerationRef: PackageableElementReference<FileGenerationSpecification>;
+  }) => {
+    const { specState, fileGenerationRef } = props;
+    const editorStore = useEditorStore();
+    const isReadOnly = specState.isReadOnly;
+    const fileGeneration = fileGenerationRef.value;
+    return (
+      <div className="generation-spec-editor__card generation-spec-editor__card--file-generation">
+        <div className="generation-spec-editor__card__header">
+          <div className="generation-spec-editor__card__icon">
+            <PURE_FileGenerationIcon />
+          </div>
+          <div
+            className="generation-spec-editor__card__name"
+            title={fileGeneration.path}
+          >
+            {fileGeneration.name}
+          </div>
+          <button
+            className="generation-spec-editor__card__action"
+            onClick={(): void =>
+              editorStore.graphEditorMode.openElement(fileGeneration)
+            }
+            title="Open element"
+            aria-label={`Open ${fileGeneration.path}`}
+          >
+            <LongArrowRightIcon />
+          </button>
+          {!isReadOnly && (
+            <button
+              className="generation-spec-editor__card__action"
+              onClick={(): void =>
+                generationSpecification_deleteFileGeneration(
+                  specState.spec,
+                  fileGenerationRef,
+                )
+              }
+              title="Remove"
+              aria-label={`Remove ${fileGeneration.path}`}
+            >
+              <TimesIcon />
+            </button>
+          )}
+        </div>
+        <div className="generation-spec-editor__card__package">
+          {fileGeneration.type}
+        </div>
+      </div>
+    );
+  },
+);
+
+const FileGenerationBand = observer(
+  (props: { specState: GenerationSpecificationEditorState }) => {
+    const { specState } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const isReadOnly = specState.isReadOnly;
+    const generationSpec = specState.spec;
+    const fileGenerations = generationSpec.fileGenerations.map(
+      (fileGeneration) => fileGeneration.value,
+    );
+    const handleDrop = useCallback(
+      (item: unknown, itemType: string | symbol | null): void => {
+        const element = getDraggedElement(item, itemType);
         if (
           element instanceof FileGenerationSpecification &&
           !fileGenerations.includes(element)
@@ -459,67 +636,133 @@ const FileGenerationSpecifications = observer(
       [fileGenerations, generationSpec],
     );
     const [{ isDragOver }, dropConnector] = useDrop<
-      ElementDragSource,
+      unknown,
       void,
       { isDragOver: boolean }
     >(
       () => ({
-        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION],
+        accept: [
+          GENERATION_SPEC_PALETTE_FILE_GENERATION_DND_TYPE,
+          CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION,
+        ],
+        canDrop: (item, monitor): boolean => {
+          if (isReadOnly) {
+            return false;
+          }
+          const element = getDraggedElement(item, monitor.getItemType());
+          return Boolean(
+            element instanceof FileGenerationSpecification &&
+              !fileGenerations.includes(element),
+          );
+        },
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item);
+            handleDrop(item, monitor.getItemType());
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
-          isDragOver: monitor.isOver({ shallow: true }),
+          isDragOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
         }),
       }),
-      [handleDrop],
+      [handleDrop, fileGenerations, isReadOnly],
     );
+    dropConnector(ref);
+
     return (
-      <Panel className="generation-spec-file-generation-editor">
-        <PanelHeader>
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">File Generations</div>
+      <>
+        <div className="generation-spec-editor__divider generation-spec-editor__divider--model-generation-complete">
+          <div className="generation-spec-editor__divider__label">
+            {specState.stageCount
+              ? 'Model generation complete'
+              : 'Nothing to compile'}
           </div>
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={addFileGeneration}
-              disabled={!fileGenerationsOptions.length}
-              title="Add File Generation"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
-        <PanelContent>
-          <PanelDropZone
-            isDragOver={isDragOver}
-            dropTargetConnector={dropConnector}
-          >
-            {generationSpec.fileGenerations.length ? (
-              <div className="generation-spec-file-generation-editor__items">
-                {generationSpec.fileGenerations.map((fileGen) => (
-                  <FileGenerationItem
-                    key={fileGen.value.path}
-                    generationSpecificationEditorState={
-                      generationSpecificationEditorState
-                    }
-                    fileGeneraitonRef={fileGen}
-                    options={fileGenerationsOptions}
-                  />
-                ))}
-              </div>
-            ) : (
-              <BlankPanelContent>
-                {fileGenerationInGraph.length
-                  ? 'Add file generation to spec'
-                  : 'Create a file generation to include in spec'}
-              </BlankPanelContent>
-            )}
-          </PanelDropZone>
-        </PanelContent>
-      </Panel>
+          <div className="generation-spec-editor__divider__line" />
+        </div>
+        <div
+          ref={ref}
+          className={clsx('generation-spec-editor__file-generations', {
+            'generation-spec-editor__file-generations--drag-over': isDragOver,
+          })}
+        >
+          <div className="generation-spec-editor__stage__header">
+            <div className="generation-spec-editor__stage__header__badge generation-spec-editor__stage__header__badge--file-generation">
+              File generations
+            </div>
+            <div className="generation-spec-editor__stage__header__summary">
+              always after model generation, always together, no order between
+              them
+            </div>
+          </div>
+          {generationSpec.fileGenerations.length ? (
+            <div className="generation-spec-editor__stage__cards">
+              {generationSpec.fileGenerations.map((fileGenerationRef) => (
+                <FileGenerationCard
+                  key={fileGenerationRef.value.path}
+                  specState={specState}
+                  fileGenerationRef={fileGenerationRef}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="generation-spec-editor__file-generations__empty">
+              {isReadOnly
+                ? 'No file generations.'
+                : 'Drop file generations here - they run after all model generation.'}
+            </div>
+          )}
+        </div>
+      </>
+    );
+  },
+);
+
+const GenerationStageBoard = observer(
+  (props: {
+    specState: GenerationSpecificationEditorState;
+    generationGenerationState: GraphGenerationState;
+    modelGenerationDnDTypes: string[];
+  }) => {
+    const { specState, generationGenerationState, modelGenerationDnDTypes } =
+      props;
+    const nodeStates = specState.generationTreeNodeStates;
+
+    return (
+      <div className="generation-spec-editor__board">
+        <DragPreviewLayer
+          labelGetter={(item: GenerationSpecElementDragSource): string =>
+            item.elementRef.value.name
+          }
+          types={[GENERATION_SPEC_ELEMENT_CARD_DND_TYPE]}
+        />
+        <DragPreviewLayer
+          labelGetter={(item: GenerationSpecPaletteElementDragSource): string =>
+            item.element.name
+          }
+          types={[
+            GENERATION_SPEC_PALETTE_ELEMENT_DND_TYPE,
+            GENERATION_SPEC_PALETTE_FILE_GENERATION_DND_TYPE,
+          ]}
+        />
+        {nodeStates.map((nodeState, index) => (
+          <div key={nodeState.uuid}>
+            {index > 0 && <StageDivider nextStageIndex={index} />}
+            <GenerationStage
+              specState={specState}
+              generationGenerationState={generationGenerationState}
+              node={nodeState.node}
+              index={index}
+              modelGenerationDnDTypes={modelGenerationDnDTypes}
+            />
+          </div>
+        ))}
+        {!specState.isReadOnly && (
+          <NewStageDropZone
+            specState={specState}
+            modelGenerationDnDTypes={modelGenerationDnDTypes}
+          />
+        )}
+        <FileGenerationBand specState={specState} />
+      </div>
     );
   },
 );
@@ -527,17 +770,54 @@ const FileGenerationSpecifications = observer(
 export const GenerationSpecificationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const generationSpecificationState =
-    editorStore.tabManagerState.getCurrentEditorState(
-      GenerationSpecificationEditorState,
-    );
-  const modelGenerationState = editorStore.graphState.graphGenerationState;
-  const generationSpec = generationSpecificationState.spec;
+  const specState = editorStore.tabManagerState.getCurrentEditorState(
+    GenerationSpecificationEditorState,
+  );
+  const generationGenerationState = editorStore.graphState.graphGenerationState;
+  const generationSpec = specState.spec;
   const generate = applicationStore.guardUnhandledError(() =>
-    flowResult(modelGenerationState.globalGenerate()),
+    flowResult(generationGenerationState.globalGenerate()),
   );
   const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
-    flowResult(modelGenerationState.clearGenerations()),
+    flowResult(generationGenerationState.clearGenerations()),
+  );
+  /**
+   * What may appear in a stage, and what the stages accept, both come from the extensions that
+   * own those element types. Nothing in open-source Studio implements either, so a vanilla build
+   * has an empty palette.
+   */
+  const modelGenerationElements = editorStore.pluginManager
+    .getPureGraphManagerPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_Generation_PureGraphManagerPlugin_Extension
+        ).getExtraModelGenerationElementGetters?.() ?? [],
+    )
+    .flatMap((getter) => getter(editorStore.graphManagerState.graph));
+  const modelGenerationDnDTypes = useMemo(
+    () => [
+      GENERATION_SPEC_PALETTE_ELEMENT_DND_TYPE,
+      GENERATION_SPEC_ELEMENT_CARD_DND_TYPE,
+      ...editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
+            ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
+        ),
+    ],
+    [editorStore],
+  );
+  const stageCount = specState.stageCount;
+  const isReadOnly = specState.isReadOnly;
+  const board = (
+    <GenerationStageBoard
+      specState={specState}
+      generationGenerationState={generationGenerationState}
+      modelGenerationDnDTypes={modelGenerationDnDTypes}
+    />
   );
 
   return (
@@ -545,11 +825,29 @@ export const GenerationSpecificationEditor = observer(() => {
       <Panel>
         <PanelHeader>
           <div className="panel__header__title">
+            {isReadOnly && (
+              <div
+                className="generation-spec-editor__lock"
+                title="This specification is read-only"
+              >
+                <LockIcon />
+              </div>
+            )}
             <div className="panel__header__title__label">
               Generation Specification
             </div>
             <div className="panel__header__title__content">
               {generationSpec.name}
+            </div>
+            <div
+              className="generation-spec-editor__stat"
+              title="Every stage ends in a recompile of the graph, which is what lets the next stage use what it produced. Elements in one stage share a single recompile."
+            >
+              {`${stageCount} ${
+                stageCount === 1 ? 'stage' : 'stages'
+              }, ${stageCount} ${
+                stageCount === 1 ? 'recompile' : 'recompiles'
+              }`}
             </div>
           </div>
           <PanelHeaderActions>
@@ -558,7 +856,7 @@ export const GenerationSpecificationEditor = observer(() => {
                 'editor__status-bar__action editor__status-bar__generate-btn',
                 {
                   'editor__status-bar__generate-btn--wiggling':
-                    modelGenerationState.isRunningGlobalGenerate,
+                    generationGenerationState.isRunningGlobalGenerate,
                 },
               )}
               onClick={generate}
@@ -571,7 +869,7 @@ export const GenerationSpecificationEditor = observer(() => {
                 'editor__status-bar__action editor__status-bar__generate-btn',
                 {
                   'local-changes__refresh-btn--loading':
-                    modelGenerationState.clearingGenerationEntitiesState
+                    generationGenerationState.clearingGenerationEntitiesState
                       .isInProgress,
                 },
               )}
@@ -583,23 +881,23 @@ export const GenerationSpecificationEditor = observer(() => {
           </PanelHeaderActions>
         </PanelHeader>
         <PanelContent className="generation-spec-editor__content">
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel size={400} minSize={25}>
-              <ModelGenerationSpecifications
-                specState={generationSpecificationState}
-              />
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel>
-              <FileGenerationSpecifications
-                generationSpecificationEditorState={
-                  generationSpecificationState
-                }
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
+          {/* the palette is only a source of drags, so a read-only board does without it */}
+          {isReadOnly ? (
+            board
+          ) : (
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel size={280} minSize={200}>
+                <GenerationElementPalette
+                  specState={specState}
+                  modelGenerationElements={modelGenerationElements}
+                />
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-border-default)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel minSize={300}>{board}</ResizablePanel>
+            </ResizablePanelGroup>
+          )}
         </PanelContent>
       </Panel>
     </div>

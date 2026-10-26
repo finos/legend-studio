@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
+/**
+ * NOTE on surfaces and the light themes: `--color-bg-elevated` and `--color-bg-panel` are both
+ * white in both light themes, so a card filled with the former inside a lane filled with the latter
+ * is invisible there. The board therefore reads the other way round - the lane is the paper
+ * (`--color-bg-panel`) and a card is recessed towards the board's own ground (`--color-bg-app`) -
+ * which keeps the three surfaces distinct in the dark theme and in both light ones.
+ * Dashed placeholder borders and the stage dividers use `--color-border-strong`, since
+ * `--color-border-default` is #ddd on a #f3f3f3 ground in the default light theme and so does not
+ * read at all; and text uses `--color-text-secondary` rather than `--color-text-muted`, which is
+ * #95a0a8 on white (2.6:1) in the legacy light theme.
+ */
+
 @use 'mixins' as *;
 
 .generation-spec-editor {
@@ -38,7 +50,7 @@
     }
 
     &__header__action {
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
     }
 
     &__header__action[disabled] svg {
@@ -50,168 +62,461 @@
       background: var(--color-bg-app);
       position: relative;
     }
-
-    &__content > div:first-child {
-      margin-top: 0;
-    }
-
-    &__content__lists {
-      height: 100%;
-      width: 100%;
-      padding: 1rem;
-      overflow: auto;
-    }
   }
 
-  &__explorer {
-    &__content {
-      overflow-y: auto;
-      height: 100%;
-      width: 100%;
-      padding: 2rem !important;
-      background: var(--color-bg-app);
-    }
-  }
+  &__lock {
+    @include flexCenter;
 
-  &__generation-element {
-    display: flex;
-
-    &__icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      min-width: 2rem;
-    }
-  }
-
-  &__item:hover {
-    background: var(--color-bg-hover);
-  }
-
-  // Non-editable warning badge — yellow status surface, dark text.
-  &__non-editable {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    color: var(--color-text-inverted);
-    background: var(--color-status-warn);
-    height: 2rem;
     margin-right: 0.5rem;
-    border-radius: 0.3rem;
-    font-weight: 700;
-    padding: 0 0.7rem;
+    color: var(--color-text-secondary);
+  }
+
+  // "N stages, N recompiles": the cost of the specification, shown permanently
+  &__stat {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+    padding-left: 1rem;
+    border-left: 0.1rem solid var(--color-border-strong);
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    font-weight: 400;
+    white-space: nowrap;
     cursor: default;
   }
 
-  &__dnd__placeholder {
-    border: 0.2rem dashed var(--color-border-default);
+  // ---------------------------------- palette ----------------------------------
+
+  &__palette {
     height: 100%;
     width: 100%;
-  }
-}
+    overflow: auto;
+    padding: 1.5rem 1rem;
+    background: var(--color-bg-panel);
 
-.generation-spec-file-generation-editor {
-  border-top: 0.1rem solid var(--color-border-default);
+    &__section {
+      margin-bottom: 2rem;
 
-  &__items {
-    padding: 1.5rem 1rem 1rem;
-    height: 100%;
-    width: 100%;
-  }
+      &__title {
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
 
-  &__item {
-    display: flex;
-    width: 100%;
-    margin-bottom: 1rem;
-
-    &__label {
-      @include flexCenter;
-
-      background: var(--color-bg-panel);
-      margin-right: 0.5rem;
+      &__hint {
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+        line-height: 1.5rem;
+        margin-bottom: 1rem;
+      }
     }
 
-    &__dropdown {
-      width: 100%;
-      margin-right: 0.5rem;
-    }
-
-    &__remove-btn {
+    &__items {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 2.8rem 0 0;
-      height: 2.8rem;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    &__item {
+      @include flexVCenter;
+
+      padding: 0.6rem 0.7rem;
+      border: 0.1rem solid var(--color-border-default);
+      border-radius: 0.4rem;
+      background: var(--color-bg-app);
+      cursor: grab;
+
+      // `--color-bg-hover` is within 4 units of the item's own fill in the light themes, so the
+      // hover is carried by the accent tint instead
+      &:hover {
+        background: var(--color-accent-subtle);
+      }
+
+      &__icon {
+        @include flexCenter;
+
+        width: 1.8rem;
+        min-width: 1.8rem;
+        margin-right: 0.6rem;
+      }
+
+      &__name {
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-primary);
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1.1rem;
+      }
+
+      // an element already in the specification is marked, not hidden: the same element may run in
+      // more than one stage
+      &__usage {
+        @include flexCenter;
+
+        flex: 0 0 auto;
+        margin-left: 0.5rem;
+        padding: 0 0.5rem;
+        height: 1.6rem;
+        border-radius: 0.3rem;
+        background: var(--color-bg-tag);
+
+        // on `--color-bg-tag`, `--color-text-secondary` is only 4.45:1 in the default light theme
+        // and 4.05:1 in the legacy one; the primary text colour clears 4.5:1 in all three
+        color: var(--color-text-primary);
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+    }
+
+    &__empty {
+      padding: 1rem;
+      border: 0.1rem dashed var(--color-border-strong);
+      border-radius: 0.4rem;
       color: var(--color-text-secondary);
-      background: var(--color-bg-panel-header);
-      border-radius: 0.2rem;
-      margin-left: 0.5rem;
-      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1.6rem;
     }
   }
-}
 
-.generation-spec-model-generation-editor {
-  &__items {
-    padding: 1.5rem 1rem 1rem;
+  // ---------------------------------- board ----------------------------------
+
+  &__board {
     height: 100%;
     width: 100%;
+    overflow: auto;
+    padding: 1.5rem 2rem 2.5rem;
+    background: var(--color-bg-app);
   }
 
-  &__item {
-    @include flexVCenter;
-    @include flexHSpaceBetween;
+  // a stage: the elements of one generation node, generated against the same compiled graph
+  &__stage {
+    border: 0.1rem solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-bg-panel);
+    padding: 1rem 1.2rem 1.2rem;
 
-    height: 2.8rem;
-    color: var(--color-text-muted);
-    margin-bottom: 0.5rem;
+    &--drag-over {
+      border-color: var(--color-border-focus);
+      background: var(--color-accent-subtle);
 
-    &__id {
-      padding: 0.5rem;
-      width: 50%;
-      height: 2.8rem;
-      line-height: 2.2rem;
-      background: var(--color-bg-panel);
-      border: 0.1rem solid var(--color-border-strong);
-      color: var(--color-text-secondary);
-      margin-right: 0.5rem;
+      // an inset ring instead of a thicker border, so taking a drop does not reflow the board
+      box-shadow: inset 0 0 0 0.1rem var(--color-border-focus);
     }
 
-    &__id--has-error {
-      background: var(--color-status-error-bg);
+    &__header {
+      @include flexVCenter;
+
+      // the id and the buttons drop to a second line rather than squeezing the summary, which is
+      // what says whether the stage runs its generations together
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+
+      // the stage's name chip; the band at the end carries the same chip in the success surface, and
+      // the two always differ by their text as well as their fill
+      &__badge {
+        @include flexCenter;
+
+        flex: 0 0 auto;
+        height: 2rem;
+        padding: 0 0.7rem;
+        border-radius: 0.3rem;
+        background: var(--color-bg-tag);
+
+        // see the note on the palette's usage chip: secondary text does not clear 4.5:1 here
+        color: var(--color-text-primary);
+        font-size: 1.1rem;
+        font-weight: 700;
+        white-space: nowrap;
+
+        &--file-generation {
+          background: var(--color-status-success-bg);
+        }
+      }
+
+      &__summary {
+        flex: 1 1 20rem;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+        font-weight: 400;
+      }
+
+      &__id {
+        flex: 0 1 14rem;
+        min-width: 8rem;
+        height: 2.2rem;
+        padding: 0 0.5rem;
+        background: var(--color-bg-input);
+        border: 0.1rem solid var(--color-border-strong);
+        border-radius: 0.2rem;
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+
+        &--has-error {
+          background: var(--color-status-error-bg);
+          border-color: var(--color-status-error);
+        }
+      }
+
+      &__action {
+        @include flexCenter;
+
+        flex: 2.2rem 0 0;
+        height: 2.2rem;
+        border-radius: 0.2rem;
+        background: var(--color-bg-tag);
+        color: var(--color-text-primary);
+        cursor: pointer;
+
+        svg {
+          font-size: 1rem;
+        }
+
+        &:hover {
+          background: var(--color-accent-subtle);
+          color: var(--color-text-primary);
+        }
+
+        // `--color-text-disabled` is the same value as `--color-bg-tag` in the legacy light theme,
+        // which makes the arrow vanish rather than look disabled; dimming the whole button instead
+        // keeps it legible in every theme
+        &[disabled] {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        &[disabled]:hover {
+          background: var(--color-bg-tag);
+          color: var(--color-text-primary);
+        }
+      }
+    }
+
+    &__cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+  }
+
+  // ---------------------------------- cards ----------------------------------
+
+  &__card {
+    flex: 1 1 20rem;
+    max-width: 32rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.4rem;
+    background: var(--color-bg-app);
+    padding: 0.8rem 0.9rem;
+    cursor: grab;
+
+    &--dragging {
+      opacity: 0.4;
+    }
+
+    &--failed {
       border-color: var(--color-status-error);
     }
 
-    &:hover {
-      display: flex;
-      background: var(--color-accent-subtle);
+    &--file-generation,
+    &--read-only {
+      cursor: default;
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.4rem;
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      width: 1.8rem;
+      min-width: 1.8rem;
+    }
+
+    &__name {
+      flex: 1 1 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-text-primary);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      flex: 2rem 0 0;
+      height: 2rem;
+      border-radius: 0.2rem;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+
+      svg {
+        font-size: 1.1rem;
+      }
+
+      &:hover {
+        color: var(--color-text-primary);
+        background: var(--color-accent-subtle);
+      }
+    }
+
+    &__package {
+      margin-top: 0.4rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-text-secondary);
+      font-size: 1rem;
+    }
+
+    // a generation that failed is reported on the card that caused it
+    &__failure {
+      margin-top: 0.7rem;
+      padding-top: 0.7rem;
+      border-top: 0.1rem solid var(--color-border-strong);
+
+      &__message {
+        display: flex;
+        gap: 0.5rem;
+        color: var(--color-status-error);
+        font-size: 1rem;
+        line-height: 1.4rem;
+
+        svg {
+          flex: 0 0 auto;
+          margin-top: 0.2rem;
+        }
+
+        span {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      }
+
+      &__action {
+        margin-top: 0.6rem;
+        padding: 0.3rem 0.7rem;
+        border: 0.1rem solid var(--color-border-strong);
+        border-radius: 0.2rem;
+        background: var(--color-bg-panel);
+        color: var(--color-text-secondary);
+        font-size: 1rem;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--color-accent-subtle);
+          color: var(--color-text-primary);
+        }
+      }
+    }
+  }
+
+  // ---------------------------------- dividers ----------------------------------
+
+  // a stage boundary is a recompile, and that is the only reason to have one - this divider is the
+  // one piece of the board carrying that, so its rule is drawn in the strong border colour
+  &__divider {
+    @include flexVCenter;
+
+    gap: 1rem;
+    padding: 0.9rem 0.2rem;
+
+    &__icon {
+      flex: 0 0 auto;
+      color: var(--color-text-secondary);
+      font-size: 1.1rem;
     }
 
     &__label {
-      @include flexCenter;
-
-      background: var(--color-bg-panel);
-      margin-right: 0.5rem;
-    }
-
-    &__dropdown {
-      width: 100%;
-      margin-right: 0.5rem;
-    }
-
-    &__remove-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 2.8rem 0 0;
-      height: 2.8rem;
+      flex: 0 0 auto;
       color: var(--color-text-secondary);
-      background: var(--color-bg-panel-header);
-      border-radius: 0.2rem;
-      margin-left: 0.5rem;
-      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    // `--color-border-strong` is 1.73:1 against the board's ground in the default light theme, and
+    // this rule is the one piece of the board that carries meaning on its own, so it is drawn in a
+    // text colour (6.3:1 at worst) and kept to a hairline so it reads without shouting
+    &__line {
+      flex: 1 1 auto;
+      height: 0.1rem;
+      background: var(--color-text-secondary);
+    }
+
+    &__note {
+      flex: 0 0 auto;
+      color: var(--color-text-secondary);
+      font-size: 1.1rem;
+    }
+
+    &--model-generation-complete {
+      padding-top: 1.6rem;
+    }
+  }
+
+  // ---------------------------------- new stage ----------------------------------
+
+  // there is no "add stage" button: an empty stage cannot be written, so a stage comes into being
+  // only with something in it
+  &__new-stage {
+    @include flexCenter;
+
+    margin-top: 1rem;
+    min-height: 3.4rem;
+    padding: 0.9rem 1.2rem;
+    border: 0.1rem dashed var(--color-border-strong);
+    border-radius: 0.4rem;
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    text-align: center;
+
+    &--drag-over {
+      border-color: var(--color-border-focus);
+      border-style: solid;
+      background: var(--color-accent-subtle);
+      box-shadow: inset 0 0 0 0.1rem var(--color-border-focus);
+      color: var(--color-text-primary);
+    }
+  }
+
+  // ---------------------------------- file generations ----------------------------------
+
+  &__file-generations {
+    border: 0.1rem solid var(--color-status-success);
+    border-radius: 0.5rem;
+    background: var(--color-bg-panel);
+    padding: 1rem 1.2rem 1.2rem;
+
+    &--drag-over {
+      border-color: var(--color-border-focus);
+      background: var(--color-accent-subtle);
+      box-shadow: inset 0 0 0 0.1rem var(--color-border-focus);
+    }
+
+    &__empty {
+      padding: 1rem;
+      border: 0.1rem dashed var(--color-border-strong);
+      border-radius: 0.4rem;
+      color: var(--color-text-secondary);
+      font-size: 1.1rem;
     }
   }
 }

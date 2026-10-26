@@ -64,9 +64,22 @@ export class GenerationTreeNode implements Hashable {
     );
     node.generationElements = generationElements;
     node.writtenAsSingleElement = false;
-    node.id =
-      id ?? generationElements.map((element) => element.value.path).join(',');
+    node.id = id ?? GenerationTreeNode.buildDefaultId(generationElements);
     return node;
+  }
+
+  /**
+   * The id a node carries when its author did not name it: the paths of the elements it holds.
+   * A node whose id still matches this is shown as unnamed, and follows its elements as they change.
+   */
+  static buildDefaultId(
+    generationElements: PackageableElementReference<PackageableElement>[],
+  ): string {
+    return generationElements.map((element) => element.value.path).join(',');
+  }
+
+  get defaultId(): string {
+    return GenerationTreeNode.buildDefaultId(this.generationElements);
   }
 
   get hashCode(): string {
@@ -87,11 +100,6 @@ export class GenerationSpecification
   generationNodes: GenerationTreeNode[] = [];
   fileGenerations: PackageableElementReference<FileGenerationSpecification>[] =
     [];
-
-  findGenerationElementById(id: string): PackageableElement | undefined {
-    return this.generationNodes.find((node) => node.id === id)
-      ?.generationElements[0]?.value;
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([
