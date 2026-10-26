@@ -171,10 +171,22 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-
       - name: Build
         run: yarn build:ts && yarn build:sass
+      # NOTE: we install the browser without `--with-deps`: the runner image already has the
+      # libraries Chromium needs, and the extra packages that flag pulls from the apt mirrors
+      # (mostly fonts, which these tests don't depend on as they don't compare screenshots)
+      # made this step time out whenever the mirrors were slow. The browser is cached, keyed
+      # by the Playwright version so that upgrading Playwright downloads the matching browser
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('./packages/legend-application-query-e2e/package.json').devDependencies['@playwright/test']")" >> $GITHUB_OUTPUT
+      - name: Setup Playwright browser cache
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-${{ env.ImageOS }}-playwright-${{ steps.playwright-version.outputs.version }}
       - name: Install Playwright browser
-        # NOTE: this normally takes under a minute, but can hang when the apt mirrors are slow
         timeout-minutes: 10
-        run: yarn workspace @finos/legend-application-query-e2e exec playwright install --with-deps chromium
+        run: yarn workspace @finos/legend-application-query-e2e exec playwright install chromium
       - name: Run end-to-end tests
         run: yarn workspace @finos/legend-application-query-e2e test:e2e
       - name: Upload end-to-end test report
@@ -230,10 +242,22 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-
       - name: Build
         run: yarn build:ts && yarn build:sass
+      # NOTE: we install the browser without `--with-deps`: the runner image already has the
+      # libraries Chromium needs, and the extra packages that flag pulls from the apt mirrors
+      # (mostly fonts, which these tests don't depend on as they don't compare screenshots)
+      # made this step time out whenever the mirrors were slow. The browser is cached, keyed
+      # by the Playwright version so that upgrading Playwright downloads the matching browser
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('./packages/legend-application-studio-e2e/package.json').devDependencies['@playwright/test']")" >> $GITHUB_OUTPUT
+      - name: Setup Playwright browser cache
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-${{ env.ImageOS }}-playwright-${{ steps.playwright-version.outputs.version }}
       - name: Install Playwright browser
-        # NOTE: this normally takes under a minute, but can hang when the apt mirrors are slow
         timeout-minutes: 10
-        run: yarn workspace @finos/legend-application-studio-e2e exec playwright install --with-deps chromium
+        run: yarn workspace @finos/legend-application-studio-e2e exec playwright install chromium
       - name: Wait for engine server
         run: |
           fail() {
