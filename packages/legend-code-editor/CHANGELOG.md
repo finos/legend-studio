@@ -1,5 +1,11 @@
 # @finos/legend-code-editor
 
+## 2.0.214
+
+### Patch Changes
+
+- [#5756](https://github.com/finos/legend-studio/pull/5756) [`bd6317c`](https://github.com/finos/legend-studio/commit/bd6317ceaff851051a1ae19b0fcb0ab5493de8db) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Color Pure code in the light code editor theme as in the dark one (properties, packages, parser headers, identifiers, types, multiplicities and string escapes), with colors readable on white, and keep SQL strings and operators readable in the light theme.
+
 ## 2.0.213
 
 ## 2.0.212

@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.2.0
+
+### Minor Changes
+
+- [#5753](https://github.com/finos/legend-studio/pull/5753) [`4ff0a22`](https://github.com/finos/legend-studio/commit/4ff0a22bf8e4b0998c8faf4f196fcee3b4c5d3c4) ([@gs-gunjan](https://github.com/gs-gunjan)) - Data space Suggest with AI now fills the data space title and description along with the descriptions of its execution contexts, diagrams, and executables. Suggestions open in a review dialog that shows each current value next to the suggested one: pick, edit, or deselect them before applying, or regenerate every field.
+
+### Patch Changes
+
+- [#5757](https://github.com/finos/legend-studio/pull/5757) [`bfcea9e`](https://github.com/finos/legend-studio/commit/bfcea9e2161d8b61bf598c67e2f96587fae4e24d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Replace hardcoded dark palette colors with theme tokens so the light theme no longer shows dark blocks in the data space execution contexts and executables, the function editor result grid, the data product access point group tabs and test parameters, the AI suggestion dismiss buttons, and the data quality row limit and Suggest Validations button. The data space Mapping / Mapping Provider toggle's active tab is now legible in both themes.
+
 ## 0.1.364
 
 ## 0.1.363

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.95
+
+### Patch Changes
+
+- [#5757](https://github.com/finos/legend-studio/pull/5757) [`bfcea9e`](https://github.com/finos/legend-studio/commit/bfcea9e2161d8b61bf598c67e2f96587fae4e24d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Replace hardcoded dark palette colors with theme tokens so the light theme no longer shows dark blocks in the data space execution contexts and executables, the function editor result grid, the data product access point group tabs and test parameters, the AI suggestion dismiss buttons, and the data quality row limit and Suggest Validations button. The data space Mapping / Mapping Provider toggle's active tab is now legible in both themes.
+
 ## 2.1.94
 
 ### Patch Changes
