@@ -146,6 +146,10 @@ const FAMILY_TYPES: Readonly<Record<TypeFamily, readonly string[]>> = {
 const isAnyType = (type: string): boolean =>
   type === 'Any' || /^[A-Z]$/u.test(type);
 
+/** A parameter of the Pure type takes a value of the family: of its own types, or any value's */
+export const acceptsCubeFamily = (type: string, family: TypeFamily): boolean =>
+  isAnyType(type) || FAMILY_TYPES[family].includes(type);
+
 /** The packages of functions a row's value is passed to: not relations, metadata or the language's own machinery */
 const VALUE_PACKAGES = [
   'meta::pure::functions::string',
@@ -185,7 +189,6 @@ export class CubeFunctionCatalogue {
    */
   offersFor(family: TypeFamily | undefined): CubeFunctionOffer[] {
     // a value of an unknown type: the functions of any value
-    const types = family !== undefined ? FAMILY_TYPES[family] : [];
     return [...this.functions.values()].flatMap((each) => {
       if (
         WRITTEN_AS_OPERATORS.has(each.name) ||
@@ -200,7 +203,9 @@ export class CubeFunctionCatalogue {
           !signature.isOperator &&
           !signature.isPlatformOnly &&
           VALUE_PACKAGES.some((path) => signature.id.startsWith(`${path}::`)) &&
-          (isAnyType(first.type) || types.includes(first.type)) &&
+          (family !== undefined
+            ? acceptsCubeFamily(first.type, family)
+            : isAnyType(first.type)) &&
           (!first.isMany || TAKE_ONE_AS_MANY.has(each.name)) &&
           !isManyMultiplicity(signature.returnMultiplicity) &&
           // a lambda to write, as `map` takes, is for code, not a completion
