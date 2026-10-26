@@ -199,6 +199,29 @@ export interface CodeEditorSignatureHelpSource {
  */
 export type CodeEditorTextInserter = (text: string) => boolean;
 
+/** A range of an editor's text: lines and columns from 1, its end column excluded, as Monaco counts them */
+export interface CodeEditorRange {
+  readonly startLineNumber: number;
+  readonly startColumn: number;
+  readonly endLineNumber: number;
+  readonly endColumn: number;
+}
+
+/** Text written over a range of an editor's text: an empty range writes it at a position */
+export interface CodeEditorTextEdit {
+  readonly range: CodeEditorRange;
+  readonly text: string;
+}
+
+/**
+ * Writes edits into an editor's text as one step, which Undo takes back,
+ * each range as the text was before; false when the editor has no text to
+ * edit
+ */
+export type CodeEditorTextEditor = (
+  edits: readonly CodeEditorTextEdit[],
+) => boolean;
+
 const COMPLETION_KINDS: Readonly<
   Record<CodeEditorCompletionKind, monacoLanguagesAPI.CompletionItemKind>
 > = {
@@ -419,6 +442,10 @@ export const CodeEditor: React.FC<{
   signatureHelp?: CodeEditorSignatureHelpSource | undefined;
   /** Set to a function writing text at this editor's cursor, while the editor exists */
   textInserterRef?: { current: CodeEditorTextInserter | undefined } | undefined;
+  /** Set to a function writing edits into this editor's text, while the editor exists, e.g. a quick fix */
+  textEditorRef?: { current: CodeEditorTextEditor | undefined } | undefined;
+  /** A range of the text to highlight, e.g. the part of an expression pointed at elsewhere */
+  highlightedRange?: CodeEditorRange | undefined;
   /**
    * Renders the floating widgets (completions, hovers) in the page's body,
    * for an editor inside a CSS-transformed container, e.g. a popper
@@ -443,6 +470,8 @@ export const CodeEditor: React.FC<{
     hover,
     signatureHelp,
     textInserterRef,
+    textEditorRef,
+    highlightedRange,
     floatingWidgetsInBody,
   } = props;
   const applicationStore = useApplicationStore();
@@ -662,6 +691,50 @@ export const CodeEditor: React.FC<{
       textInserterRef.current = undefined;
     };
   }, [editor, textInserterRef]);
+
+  // writing edits, for a click outside the editor
+  useEffect(() => {
+    if (!editor || !textEditorRef) {
+      return undefined;
+    }
+    textEditorRef.current = (edits: readonly CodeEditorTextEdit[]): boolean => {
+      if (!editor.getModel()) {
+        return false;
+      }
+      editor.pushUndoStop();
+      editor.executeEdits(
+        'edit',
+        edits.map((edit) => ({
+          range: edit.range,
+          text: edit.text,
+          forceMoveMarkers: true,
+        })),
+      );
+      editor.pushUndoStop();
+      return true;
+    };
+    return () => {
+      textEditorRef.current = undefined;
+    };
+  }, [editor, textEditorRef]);
+
+  // the highlighted range, while it is given
+  const highlightedRangeRef = useRef(highlightedRange);
+  highlightedRangeRef.current = highlightedRange;
+  const highlightKey = highlightedRange
+    ? `${highlightedRange.startLineNumber}:${highlightedRange.startColumn}:${highlightedRange.endLineNumber}:${highlightedRange.endColumn}`
+    : undefined;
+  useEffect(() => {
+    const range = highlightedRangeRef.current;
+    if (!editor || !range || highlightKey === undefined) {
+      return undefined;
+    }
+    // possibly none, as an editor mocked in tests gives
+    const decorations = editor.createDecorationsCollection([
+      { range, options: { className: 'code-editor__highlighted-range' } },
+    ]) as monacoEditorAPI.IEditorDecorationsCollection | undefined;
+    return () => decorations?.clear();
+  }, [editor, highlightKey]);
 
   useEffect(() => {
     if (editor && lineToScroll !== undefined) {

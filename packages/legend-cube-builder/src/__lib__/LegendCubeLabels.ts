@@ -143,6 +143,10 @@ const TYPE_FAMILY_LABELS: Partial<Record<TypeFamily, string>> = {
   [TypeFamily.VARIANT]: 'Variant',
 };
 
+/** The kind of value a type family holds, as the editors name it; none for an enumeration or a type Cube doesn't know */
+export const getTypeFamilyLabel = (family: TypeFamily): string | undefined =>
+  TYPE_FAMILY_LABELS[family];
+
 /**
  * A column's type as the editors show it: the kind of value, and whether it
  * is optional (can be empty), e.g. `Text, optional`; an enumeration, or a
@@ -500,6 +504,42 @@ export const EXPRESSION_FILTER_EDITOR_NOTES = [
   "startsWith, endsWith and contains can't take a value with a backslash (\\) yet, nor, on DuckDB, one with % or _.",
   'A JSON (Variant) column’s {} opens its fields, read from its first values just before this step: a field clicked is written into the condition.',
 ] as const;
+
+/** What an expression's outline says (EXPRESSION-EDITOR.md, round 2) */
+export const CUBE_OUTLINE_LABEL = Object.freeze({
+  TITLE: 'Outline',
+  DESCRIPTION: 'How Pure reads the code, part by part',
+  SHOW: 'Show how Pure reads the code',
+  HIDE: 'Hide the outline',
+  CAN_BE_EMPTY: 'can be empty',
+  CAN_BE_EMPTY_TITLE:
+    'It can be empty, where one value is needed: take its one value, or give a value for when it is empty',
+  TO_ONE: '->toOne()',
+  TO_ONE_TITLE: 'Assume it has a value: ->toOne() fails the row if it is empty',
+  COALESCE: (fallback: string): string => `->coalesce(${fallback})`,
+  COALESCE_TITLE: (fallback: string): string =>
+    `Use ${fallback} when it is empty: ->coalesce(${fallback})`,
+});
+
+/** Why Pure reads a precedence trap as it does, by its kind (`CubePrecedenceTrapKind`) */
+export const CUBE_PRECEDENCE_TRAP_EXPLANATIONS: Readonly<
+  Record<string, string>
+> = Object.freeze({
+  ARITHMETIC_THEN_COMPARISON:
+    'Pure compares first, then does the arithmetic with the comparison’s true or false, which fails. Put the arithmetic in parentheses to do it first.',
+  LOGIC_THEN_COMPARISON:
+    'In Pure, && and || bind as tightly as a comparison, so the comparison takes all that is before it. Put each comparison in parentheses.',
+  NOT_THEN_COMPARISON:
+    'In Pure, ! negates the value right after it, before the comparison. Put the comparison in parentheses to negate it.',
+});
+
+/** How Pure reads code with a precedence trap */
+export const getCubePrecedenceTrapTitle = (readAs: string): string =>
+  `Pure reads this as ${readAs}`;
+
+/** The button that puts in the parentheses: what the code becomes, for one trap */
+export const getCubePrecedenceFixLabel = (meants: readonly string[]): string =>
+  meants.length === 1 ? `Use ${meants[0]}` : 'Add the parentheses';
 
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
 export const EXTEND_TO_ONE_HINT =

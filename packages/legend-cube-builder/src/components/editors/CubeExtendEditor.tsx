@@ -24,6 +24,7 @@ import {
 import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
 import {
+  type CodeEditorTextEditor,
   type CodeEditorTextInserter,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
@@ -57,6 +58,17 @@ import {
   getCubeFunctionSignatureHelpSource,
 } from './CubeExpressionCompletions.js';
 import type { CubeFunctionCatalogue } from '../../graph-manager/CubeFunctionCatalogue.js';
+import {
+  type CubeCodeEdit,
+  type CubeCodeRange,
+  applyCubeCodeEdits,
+} from '../../graph-manager/CubeExpressionOutline.js';
+import {
+  CubeExpressionOutlineView,
+  CubePrecedenceWarning,
+  toCodeEditorEdits,
+  toCodeEditorRange,
+} from './CubeExpressionOutline.js';
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 
@@ -156,9 +168,20 @@ const CubeExtendRowEditor = observer(
       onCodeFocus,
     } = props;
     const [expanded, setExpanded] = useState(false);
+    const textEditor = useRef<CodeEditorTextEditor | undefined>(undefined);
+    // the part of the outline pointed at
+    const [pointed, setPointed] = useState<CubeCodeRange | undefined>();
     // typing goes on while the rows are checked
     const disabled = readOnly;
     const status = draft.getRowCheckStatus(row);
+    const outline = draft.getRowOutline(row);
+    /** Writes a fix into the expression, as one step Undo takes back */
+    const edit = (edits: readonly CubeCodeEdit[]): void => {
+      setPointed(undefined);
+      if (!textEditor.current?.(toCodeEditorEdits(edits))) {
+        draft.setCode(row.key, applyCubeCodeEdits(row.code, edits));
+      }
+    };
     return (
       <li className="flex flex-col gap-1 border-b border-[var(--color-border-subtle)] py-1">
         <div className="flex items-center gap-1">
@@ -234,6 +257,8 @@ const CubeExtendRowEditor = observer(
             hover={getCubeFunctionHoverSource(catalogue)}
             signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
             textInserterRef={textInserterRef}
+            textEditorRef={textEditor}
+            highlightedRange={pointed ? toCodeEditorRange(pointed) : undefined}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
@@ -244,6 +269,22 @@ const CubeExtendRowEditor = observer(
           />
         </div>
         <CubeExtendRowStatus draft={draft} row={row} />
+        <CubePrecedenceWarning
+          traps={draft.getRowPrecedenceTraps(row)}
+          disabled={disabled}
+          onEdit={edit}
+        />
+        {outline && (
+          <CubeExpressionOutlineView
+            outline={outline}
+            columns={columns}
+            catalogue={catalogue}
+            name={`expression ${position}`}
+            disabled={disabled}
+            onEdit={edit}
+            onPoint={setPointed}
+          />
+        )}
       </li>
     );
   },
@@ -253,8 +294,9 @@ const CubeExtendRowEditor = observer(
  * The Extend editor (spec §17.6, PLAN §11.7): a row per new column, its name
  * and its expression in a code editor, checked once typing pauses (F10 at
  * once), each border green when ready (user, 2026-10-16), with the engine's
- * functions' completions and help (EXPRESSION-EDITOR.md, round 1), and the
- * input's columns, which a click writes into the row last used: at its
+ * functions' completions and help (EXPRESSION-EDITOR.md, round 1), each
+ * row's outline with a warning where Pure's precedence reads it other than
+ * likely meant, and fixes (round 2), and the input's columns, which a click writes into the row last used: at its
  * cursor, or at its end before its code is clicked into.
  */
 export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {

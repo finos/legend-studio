@@ -19,6 +19,12 @@
   height: 100%;
   width: 100%;
 
+  // a range highlighted from outside the editor, e.g. a part of an expression pointed at
+  &__highlighted-range {
+    background: var(--color-accent-subtle);
+    border-radius: 0.2rem;
+  }
+
   &__content {
     height: 100%;
     width: 100%;
