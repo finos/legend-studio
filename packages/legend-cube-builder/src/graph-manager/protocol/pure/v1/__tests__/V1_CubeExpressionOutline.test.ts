@@ -272,7 +272,7 @@ describe("The outline's parts: roles, types, and a value that can be empty where
       row.needsValue ? 'needs a value' : '',
     ]);
 
-  test('Flags an optional column in arithmetic, not one taken by toOne() nor one compared', () => {
+  test('Flags an optional number in arithmetic and an optional Boolean in ||, not one taken by toOne(), one compared, nor a number in &&', () => {
     expect(summary(rowsOf('x | $x.price->toOne() * $x.amount'))).toEqual([
       [0, '', '*', TypeFamily.NUMBER, ''],
       [1, 'left', 'toOne', TypeFamily.FLOAT, ''],
@@ -285,7 +285,8 @@ describe("The outline's parts: roles, types, and a value that can be empty where
       [2, 'left', '>', TypeFamily.BOOLEAN, ''],
       [3, 'left', 'A', TypeFamily.INTEGER, ''],
       [3, 'right', '0', TypeFamily.INTEGER, ''],
-      [2, 'right', 'A', TypeFamily.INTEGER, 'needs a value'],
+      // a number in &&: the trap's problem, not that it can be empty
+      [2, 'right', 'A', TypeFamily.INTEGER, ''],
       [1, 'right', '30', TypeFamily.INTEGER, ''],
     ]);
     expect(summary(rowsOf('x | true || $x.B'))).toEqual([

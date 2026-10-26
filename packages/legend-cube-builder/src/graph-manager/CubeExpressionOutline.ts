@@ -91,6 +91,74 @@ export const CUBE_OPERATORS: Readonly<
   not: { symbol: '!', kind: CubeOperatorKind.LOGIC },
 };
 
+// ---------- the code, by line and column ----------
+
+/** The offset in the code of a position, its column past its line's end kept on that line */
+export const getCubeCodeOffset = (
+  code: string,
+  position: CubeCodePosition,
+): number => {
+  const lines = code.split('\n');
+  let offset = 0;
+  for (let index = 0; index < position.line - 1; index++) {
+    offset += (lines[index]?.length ?? 0) + 1;
+  }
+  return offset + position.column - 1;
+};
+
+/** The code in a range, its end column included */
+export const getCubeCodeText = (code: string, range: CubeCodeRange): string =>
+  code.slice(
+    getCubeCodeOffset(code, {
+      line: range.startLine,
+      column: range.startColumn,
+    }),
+    getCubeCodeOffset(code, { line: range.endLine, column: range.endColumn }) +
+      1,
+  );
+
+/** The position just after a range's end */
+export const getCubePositionAfter = (
+  range: CubeCodeRange,
+): CubeCodePosition => ({ line: range.endLine, column: range.endColumn + 1 });
+
+/** The position of a range's start */
+export const getCubePositionOf = (range: CubeCodeRange): CubeCodePosition => ({
+  line: range.startLine,
+  column: range.startColumn,
+});
+
+const comparePositions = (
+  first: CubeCodePosition,
+  second: CubeCodePosition,
+): number => first.line - second.line || first.column - second.column;
+
+/** The code with the edits written, each at its position in the code as it was */
+export const applyCubeCodeEdits = (
+  code: string,
+  edits: readonly CubeCodeEdit[],
+): string =>
+  [...edits]
+    // from the end, so each position still holds; at one position, in order
+    .map((edit, index) => ({ edit, index }))
+    .sort(
+      (first, second) =>
+        comparePositions(second.edit.at, first.edit.at) ||
+        second.index - first.index,
+    )
+    .reduce((text, { edit }) => {
+      const offset = getCubeCodeOffset(text, edit.at);
+      return `${text.slice(0, offset)}${edit.text}${text.slice(offset)}`;
+    }, code);
+
+/** The code between two positions, the first included, the second not */
+const textBetween = (
+  code: string,
+  from: CubeCodePosition,
+  to: CubeCodePosition,
+): string =>
+  code.slice(getCubeCodeOffset(code, from), getCubeCodeOffset(code, to));
+
 /** A part of an expression */
 export class CubeOutlinePart {
   readonly kind: CubeOutlinePartKind;
@@ -170,74 +238,6 @@ export class CubeExpressionOutline {
       : part.label;
   }
 }
-
-// ---------- the code, by line and column ----------
-
-/** The offset in the code of a position, its column past its line's end kept on that line */
-export const getCubeCodeOffset = (
-  code: string,
-  position: CubeCodePosition,
-): number => {
-  const lines = code.split('\n');
-  let offset = 0;
-  for (let index = 0; index < position.line - 1; index++) {
-    offset += (lines[index]?.length ?? 0) + 1;
-  }
-  return offset + position.column - 1;
-};
-
-/** The code in a range, its end column included */
-export const getCubeCodeText = (code: string, range: CubeCodeRange): string =>
-  code.slice(
-    getCubeCodeOffset(code, {
-      line: range.startLine,
-      column: range.startColumn,
-    }),
-    getCubeCodeOffset(code, { line: range.endLine, column: range.endColumn }) +
-      1,
-  );
-
-/** The position just after a range's end */
-export const getCubePositionAfter = (
-  range: CubeCodeRange,
-): CubeCodePosition => ({ line: range.endLine, column: range.endColumn + 1 });
-
-/** The position of a range's start */
-export const getCubePositionOf = (range: CubeCodeRange): CubeCodePosition => ({
-  line: range.startLine,
-  column: range.startColumn,
-});
-
-const comparePositions = (
-  first: CubeCodePosition,
-  second: CubeCodePosition,
-): number => first.line - second.line || first.column - second.column;
-
-/** The code with the edits written, each at its position in the code as it was */
-export const applyCubeCodeEdits = (
-  code: string,
-  edits: readonly CubeCodeEdit[],
-): string =>
-  [...edits]
-    // from the end, so each position still holds; at one position, in order
-    .map((edit, index) => ({ edit, index }))
-    .sort(
-      (first, second) =>
-        comparePositions(second.edit.at, first.edit.at) ||
-        second.index - first.index,
-    )
-    .reduce((text, { edit }) => {
-      const offset = getCubeCodeOffset(text, edit.at);
-      return `${text.slice(0, offset)}${edit.text}${text.slice(offset)}`;
-    }, code);
-
-/** The code between two positions, the first included, the second not */
-const textBetween = (
-  code: string,
-  from: CubeCodePosition,
-  to: CubeCodePosition,
-): string =>
-  code.slice(getCubeCodeOffset(code, from), getCubeCodeOffset(code, to));
 
 // ---------- precedence traps ----------
 
@@ -502,25 +502,29 @@ const takesOneValue = (
   );
 };
 
-/**
- * The outline's parts, each with its role, the kind of value it gives where
- * Cube can tell (the engine stays the judge), and whether it can be empty
- * where one value is needed: the operand of arithmetic or of `&&`, `||` and
- * `!`, or the argument of a function whose every signature of its arity takes
- * one value there; never a comparison's, which takes an empty value
- */
-export const getCubeOutlineRows = (
-  outline: CubeExpressionOutline,
-  columns: readonly CubeOutlineColumn[],
-  catalogue: CubeFunctionCatalogue | undefined,
-): CubeOutlineRow[] => {
-  const rows: CubeOutlineRow[] = [];
-  const typeOf = (
+/** Types an outline's parts, the parts of a part first, as rows in the outline's order */
+class CubeOutlineTyper {
+  readonly rows: CubeOutlineRow[] = [];
+  private readonly columns: readonly CubeOutlineColumn[];
+  private readonly catalogue: CubeFunctionCatalogue | undefined;
+
+  constructor(
+    columns: readonly CubeOutlineColumn[],
+    catalogue: CubeFunctionCatalogue | undefined,
+  ) {
+    this.columns = columns;
+    this.catalogue = catalogue;
+  }
+
+  /** Adds the part's row, and its parts', and gives its type */
+  typeOf(
     part: CubeOutlinePart,
     depth: number,
     role: string | undefined,
-    needsOne: boolean,
-  ): PartType => {
+    /** It must give one value there, given what it gives */
+    needsOne: (type: PartType) => boolean,
+  ): PartType {
+    const { rows } = this;
     const index = rows.length;
     // a placeholder, its type known once its parts are
     rows.push({
@@ -531,21 +535,22 @@ export const getCubeOutlineRows = (
       isOptional: false,
       needsValue: false,
     });
-    const type = typePart(part, depth);
+    const type = this.typePart(part, depth);
     rows[index] = {
       part,
       depth,
       role,
       family: type.family,
       isOptional: type.isOptional,
-      needsValue: needsOne && type.isOptional,
+      needsValue: type.isOptional && needsOne(type),
     };
     return type;
-  };
-  const typePart = (part: CubeOutlinePart, depth: number): PartType => {
+  }
+
+  private typePart(part: CubeOutlinePart, depth: number): PartType {
     switch (part.kind) {
       case CubeOutlinePartKind.COLUMN: {
-        const column = columns.find((each) => each.name === part.label);
+        const column = this.columns.find((each) => each.name === part.label);
         return {
           family: column?.type?.family,
           isOptional: column?.nullable ?? false,
@@ -556,87 +561,117 @@ export const getCubeOutlineRows = (
           family: part.valueType ? LITERAL_FAMILIES[part.valueType] : undefined,
           isOptional: false,
         };
-      case CubeOutlinePartKind.OPERATOR: {
-        const kind = part.operatorKind;
-        const needsOne =
-          kind === CubeOperatorKind.ARITHMETIC ||
-          kind === CubeOperatorKind.LOGIC;
-        const binary = part.parts.length === 2;
-        const types = part.parts.map((each, position) =>
-          typeOf(
-            each,
-            depth + 1,
-            binary ? (position === 0 ? 'left' : 'right') : undefined,
-            needsOne,
-          ),
-        );
-        if (kind !== CubeOperatorKind.ARITHMETIC) {
-          return { family: TypeFamily.BOOLEAN, isOptional: false };
-        }
-        const families = types.map((each) => each.family);
-        return {
-          family:
-            part.parts.length === 1
-              ? families[0]
-              : families.every((each) => each === TypeFamily.INTEGER) &&
-                  part.functionName !== 'divide'
-                ? TypeFamily.INTEGER
-                : families.every(
-                      (each) => each !== undefined && NUMBER_FAMILIES.has(each),
-                    )
-                  ? TypeFamily.NUMBER
-                  : undefined,
-          isOptional: false,
-        };
-      }
-      case CubeOutlinePartKind.CALL: {
-        const arity = part.parts.length;
-        // the arguments' types first, to pick the signature that names them
-        const placeholders = part.parts.map((each, position) => {
-          const at = rows.length;
-          const type = typeOf(
-            each,
-            depth + 1,
-            undefined,
-            takesOneValue(catalogue, part.functionName, arity, position),
-          );
-          return { at, type };
-        });
-        const signature = signatureOf(
-          catalogue,
-          part.functionName,
-          placeholders.map((each) => each.type),
-        );
-        placeholders.forEach(({ at }, position) => {
-          const row = rows[at];
-          const name = signature?.parameters[position]?.name;
-          if (row && name) {
-            rows[at] = { ...row, role: name };
-          }
-        });
-        if (!signature) {
-          return { family: undefined, isOptional: false };
-        }
-        const first = placeholders[0]?.type;
-        // `T` is the first argument's type, as `coalesce` and `toOne` give
-        const family = /^[A-Z]$/u.test(signature.returnType)
-          ? first?.family
-          : familyOfType(signature.returnType);
-        const multiplicity = signature.returnMultiplicity;
-        return {
-          family,
-          isOptional:
-            multiplicity === '0..1' ||
-            (/^[a-z]+$/u.test(multiplicity) && Boolean(first?.isOptional)),
-        };
-      }
+      case CubeOutlinePartKind.OPERATOR:
+        return this.typeOperator(part, depth);
+      case CubeOutlinePartKind.CALL:
+        return this.typeCall(part, depth);
       default:
-        part.parts.forEach((each) => typeOf(each, depth + 1, undefined, false));
+        part.parts.forEach((each) =>
+          this.typeOf(each, depth + 1, undefined, () => false),
+        );
         return { family: undefined, isOptional: false };
     }
-  };
-  typeOf(outline.root, 0, undefined, false);
-  return rows;
+  }
+
+  private typeOperator(part: CubeOutlinePart, depth: number): PartType {
+    const kind = part.operatorKind;
+    // arithmetic of numbers and logic of Booleans take one value: a value of
+    // another kind has another problem, as a trap gives
+    const needsOne = ({ family }: PartType): boolean =>
+      kind === CubeOperatorKind.ARITHMETIC
+        ? family === undefined || NUMBER_FAMILIES.has(family)
+        : kind === CubeOperatorKind.LOGIC
+          ? family === undefined || family === TypeFamily.BOOLEAN
+          : false;
+    const binary = part.parts.length === 2;
+    const families = part.parts.map(
+      (each, position) =>
+        this.typeOf(
+          each,
+          depth + 1,
+          binary ? (position === 0 ? 'left' : 'right') : undefined,
+          needsOne,
+        ).family,
+    );
+    if (kind !== CubeOperatorKind.ARITHMETIC) {
+      return { family: TypeFamily.BOOLEAN, isOptional: false };
+    }
+    return {
+      family:
+        part.parts.length === 1
+          ? families[0]
+          : families.every((each) => each === TypeFamily.INTEGER) &&
+              part.functionName !== 'divide'
+            ? TypeFamily.INTEGER
+            : families.every(
+                  (each) => each !== undefined && NUMBER_FAMILIES.has(each),
+                )
+              ? TypeFamily.NUMBER
+              : undefined,
+      isOptional: false,
+    };
+  }
+
+  private typeCall(part: CubeOutlinePart, depth: number): PartType {
+    const { rows, catalogue } = this;
+    const arity = part.parts.length;
+    // the arguments' types first, to pick the signature that names them
+    const placeholders = part.parts.map((each, position) => {
+      const at = rows.length;
+      const takesOne = takesOneValue(
+        catalogue,
+        part.functionName,
+        arity,
+        position,
+      );
+      const type = this.typeOf(each, depth + 1, undefined, () => takesOne);
+      return { at, type };
+    });
+    const signature = signatureOf(
+      catalogue,
+      part.functionName,
+      placeholders.map((each) => each.type),
+    );
+    placeholders.forEach(({ at }, position) => {
+      const row = rows[at];
+      const name = signature?.parameters[position]?.name;
+      if (row && name) {
+        rows[at] = { ...row, role: name };
+      }
+    });
+    if (!signature) {
+      return { family: undefined, isOptional: false };
+    }
+    const first = placeholders[0]?.type;
+    // `T` is the first argument's type, as `coalesce` and `toOne` give
+    const family = /^[A-Z]$/u.test(signature.returnType)
+      ? first?.family
+      : familyOfType(signature.returnType);
+    const multiplicity = signature.returnMultiplicity;
+    return {
+      family,
+      isOptional:
+        multiplicity === '0..1' ||
+        (/^[a-z]+$/u.test(multiplicity) && Boolean(first?.isOptional)),
+    };
+  }
+}
+
+/**
+ * The outline's parts, each with its role, the kind of value it gives where
+ * Cube can tell (the engine stays the judge), and whether it can be empty
+ * where one value is needed: a number in arithmetic, a Boolean in `&&`, `||`
+ * or `!`, or the argument of a function whose every signature of its arity
+ * takes one value there; never a comparison's, which takes an empty value
+ */
+export const getCubeOutlineRows = (
+  outline: CubeExpressionOutline,
+  columns: readonly CubeOutlineColumn[],
+  catalogue: CubeFunctionCatalogue | undefined,
+): CubeOutlineRow[] => {
+  const typer = new CubeOutlineTyper(columns, catalogue);
+  typer.typeOf(outline.root, 0, undefined, () => false);
+  return typer.rows;
 };
 
 /** The edit that takes a part's one value, assuming it has one: `->toOne()` after it */
