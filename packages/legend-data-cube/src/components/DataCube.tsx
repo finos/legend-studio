@@ -35,10 +35,25 @@ import {
 } from './DataCubePlaceholder.js';
 import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
 import { FormLoadingIndicator } from './core/DataCubeFormUtils.js';
+import {
+  DataCubeColorTheme,
+  DataCubeColorThemeProvider,
+  getDataCubeColorThemeClassName,
+} from './core/DataCubeColorTheme.js';
+import { DataCubeSettingKey } from '../__lib__/DataCubeSetting.js';
+import { cn } from '@finos/legend-art';
+
+const getColorTheme = (dataCube: DataCubeState) =>
+  dataCube.settingService.getBooleanValue(
+    DataCubeSettingKey.APPEARANCE__ENABLE_DARK_MODE,
+  )
+    ? DataCubeColorTheme.DARK
+    : DataCubeColorTheme.LIGHT;
 
 const DataCubeRoot = observer(() => {
   const dataCube = useDataCube();
   const view = dataCube.view;
+  const colorTheme = getColorTheme(dataCube);
 
   const logMenuItem = (menuName: string) => {
     view.dataCube.telemetryService.sendTelemetry(
@@ -57,44 +72,52 @@ const DataCubeRoot = observer(() => {
   }, [dataCube]);
 
   return (
-    <div className="data-cube relative flex h-full w-full flex-col bg-white">
-      <DataCubeTitleBar
-        title={view.info.name}
-        menuItems={[
-          {
-            label: DataCubeTitleBarMenuItems.UNDO,
-            action: () => {
-              dataCube.view.snapshotService.undo();
-              logMenuItem(DataCubeTitleBarMenuItems.UNDO);
-            },
-            disabled: !dataCube.view.snapshotService.canUndo,
-          },
-          {
-            label: DataCubeTitleBarMenuItems.REDO,
-            action: () => {
-              dataCube.view.snapshotService.redo();
-              logMenuItem(DataCubeTitleBarMenuItems.REDO);
-            },
-            disabled: !dataCube.view.snapshotService.canRedo,
-          },
-          {
-            label: DataCubeTitleBarMenuItems.SETTINGS,
-            action: () => {
-              dataCube.settingService.display.open();
-              logMenuItem(DataCubeTitleBarMenuItems.SETTINGS);
-            },
-          },
-        ]}
-        getMenuItems={dataCube.options?.getHeaderMenuItems}
+    <DataCubeColorThemeProvider value={colorTheme}>
+      <div
+        className={cn(
+          'data-cube relative flex h-full w-full flex-col bg-white',
+          getDataCubeColorThemeClassName(colorTheme),
+        )}
       >
-        {dataCube.options?.innerHeaderRenderer?.({ api: dataCube.api }) ?? null}
-      </DataCubeTitleBar>
+        <DataCubeTitleBar
+          title={view.info.name}
+          menuItems={[
+            {
+              label: DataCubeTitleBarMenuItems.UNDO,
+              action: () => {
+                dataCube.view.snapshotService.undo();
+                logMenuItem(DataCubeTitleBarMenuItems.UNDO);
+              },
+              disabled: !dataCube.view.snapshotService.canUndo,
+            },
+            {
+              label: DataCubeTitleBarMenuItems.REDO,
+              action: () => {
+                dataCube.view.snapshotService.redo();
+                logMenuItem(DataCubeTitleBarMenuItems.REDO);
+              },
+              disabled: !dataCube.view.snapshotService.canRedo,
+            },
+            {
+              label: DataCubeTitleBarMenuItems.SETTINGS,
+              action: () => {
+                dataCube.settingService.display.open();
+                logMenuItem(DataCubeTitleBarMenuItems.SETTINGS);
+              },
+            },
+          ]}
+          getMenuItems={dataCube.options?.getHeaderMenuItems}
+        >
+          {dataCube.options?.innerHeaderRenderer?.({ api: dataCube.api }) ??
+            null}
+        </DataCubeTitleBar>
 
-      <DataCubeView view={view} />
+        <DataCubeView view={view} />
 
-      <DataCubeLayout layout={dataCube.layoutService.manager} />
-      <INTERNAL__MonacoEditorWidgetsRoot />
-    </div>
+        <DataCubeLayout layout={dataCube.layoutService.manager} />
+        <INTERNAL__MonacoEditorWidgetsRoot />
+      </div>
+    </DataCubeColorThemeProvider>
   );
 });
 
@@ -126,6 +149,7 @@ export const DataCube = observer(
           }
           layoutManager={dataCube.layoutService.manager}
           taskManager={dataCube.taskService.manager}
+          colorTheme={getColorTheme(dataCube)}
         >
           {!dataCube.initializeState.hasFailed && (
             <div className="h-full w-full p-2">

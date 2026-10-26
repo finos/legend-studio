@@ -36,8 +36,10 @@ import {
   FormDropdownMenuTrigger,
   FormLoadingIndicator,
   FormTextInput,
+  getDataCubeColorThemeClassName,
 } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
+import { useLegendDataCubeColorTheme } from '../LegendDataCubeFrameworkProvider.js';
 import {
   DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   DataCubeSortByType,
@@ -255,6 +257,7 @@ export const LegendDataCubeLoader = observer(() => {
   const selectedResult = state.selectedResult;
   const [openManageDropdown, closeManageDropdown, manageDropdownProps] =
     useDropdownMenu();
+  const colorTheme = useLegendDataCubeColorTheme();
 
   return (
     <>
@@ -330,6 +333,8 @@ export const LegendDataCubeLoader = observer(() => {
                     <DropdownMenu
                       {...manageDropdownProps}
                       menuProps={{
+                        // NOTE: the menu is portaled outside of DataCube
+                        className: getDataCubeColorThemeClassName(colorTheme),
                         classes: {
                           paper: 'rounded-none mt-[1px]',
                           list: 'w-[138px] p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',

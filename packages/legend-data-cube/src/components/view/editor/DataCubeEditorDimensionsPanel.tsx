@@ -215,7 +215,7 @@ const DimensionLabel = observer(
             />
             {isNameValid && (
               <button
-                className="text-2xs absolute right-0.5 flex h-3 w-5 items-center justify-center rounded-sm bg-sky-600 text-white"
+                className="text-2xs absolute right-0.5 flex h-3 w-5 items-center justify-center rounded-sm bg-sky-600 text-[var(--color-text-on-accent)]"
                 onClick={(event) => {
                   event.stopPropagation();
                   updateName();

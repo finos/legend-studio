@@ -71,6 +71,10 @@ import { evaluate } from 'mathjs';
 import { useDataCube } from '../../DataCubeProvider.js';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
+import {
+  getDataCubeColorThemeClassName,
+  useDataCubeColorTheme,
+} from '../../core/DataCubeColorTheme.js';
 
 const FILTER_TREE_OFFSET = 10;
 const FILTER_TREE_INDENTATION_SPACE = 36;
@@ -437,6 +441,7 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
       items.map((it) => ({ id: makeId(), value: it })),
     );
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const colorTheme = useDataCubeColorTheme();
     const inputRef = useRef<HTMLInputElement>(null);
     const [newInput, setNewInput] = useState('');
 
@@ -574,6 +579,7 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
           {summary}
         </button>
         <BasePopover
+          className={getDataCubeColorThemeClassName(colorTheme)}
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
