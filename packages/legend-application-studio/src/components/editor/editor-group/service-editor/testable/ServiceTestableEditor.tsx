@@ -68,7 +68,7 @@ export const ServiceTestSuiteEditor = observer(
               )}
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
               <ServiceTestsEditor suiteState={serviceTestSuiteState} />

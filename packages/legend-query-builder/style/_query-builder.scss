@@ -226,7 +226,9 @@
 
     height: 2.2rem;
     background: var(--color-blue-100);
-    color: var(--color-text-primary);
+    // the bar is the same blue in every theme, so its icons use the on-accent
+    // color: text-primary turns dark in light themes (3.7:1 on this blue)
+    color: var(--color-text-on-accent);
     padding: 0 0.5rem 0 1rem;
 
     &__left {
@@ -249,18 +251,20 @@
       height: 100%;
       width: 3rem;
 
+      // off: dark ink, 3.3:1 on the bar (dark-shade-300 was 2:1); on: light
+      // ink, so the two states differ in lightness in every theme
       &__toggler {
-        color: var(--color-dark-shade-300);
+        color: var(--color-dark-shade-800);
 
         &--toggled {
-          color: var(--color-text-primary);
+          color: var(--color-text-on-accent);
         }
       }
     }
 
     &__view-diff-btn {
       &:not([disabled]) {
-        color: var(--color-text-primary);
+        color: var(--color-text-on-accent);
       }
 
       svg {
@@ -272,7 +276,7 @@
       @include flexCenter;
 
       background: none;
-      color: var(--color-text-primary);
+      color: var(--color-text-on-accent);
       cursor: pointer;
       padding: 0 0.5rem;
 
@@ -347,6 +351,12 @@
       text-decoration-style: solid;
     }
   }
+}
+
+// blue-40 is 5.9:1 on the dark panels but 2.6:1 on white: use the light theme's
+// link blue there
+.theme__default-light .query-builder .editable-value {
+  color: var(--color-text-link);
 }
 
 .query-builder__diff-panel {
@@ -1927,8 +1937,9 @@
         color: var(--color-text-on-accent);
       }
 
+      // green-100 was 2.75:1 under the light label
       &--green {
-        background: var(--color-green-100);
+        background: var(--color-green-150);
       }
 
       &--green[disabled] {

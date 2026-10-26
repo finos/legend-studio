@@ -179,7 +179,7 @@ export const ElementXTGenerationEditor = observer(
                 />
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                <ResizablePanelSplitterLine />
               </ResizablePanelSplitter>
               <ResizablePanel>
                 <FileSystemViewer generatedFileState={xtGenerationState} />

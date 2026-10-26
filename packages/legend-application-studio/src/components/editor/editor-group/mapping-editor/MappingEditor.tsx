@@ -229,7 +229,7 @@ const MappingClassMappingEditor = observer(() => {
                 <MappingExplorer isReadOnly={isReadOnly} />
               </ResizablePanel>
               <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-light-grey-400)" />
+                <ResizablePanelSplitterLine color="var(--color-border-strong)" />
               </ResizablePanelSplitter>
               <ResizablePanel minSize={36}>
                 <MappingTestsExplorer isReadOnly={isReadOnly} />

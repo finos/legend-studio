@@ -51,13 +51,16 @@
     height: 100%;
     width: 3.8rem;
 
+    // The header is the warn yellow in both themes (#fbbc05 dark, #c58105
+    // light), so its ink is dark in both. The disabled-on-accent overlay
+    // (2.2-2.5:1) is kept for disabled actions only.
     svg {
       font-size: 1.6rem;
-      color: var(--color-state-disabled-on-accent);
+      color: var(--color-dark-shade-800);
     }
 
     &:hover svg {
-      color: var(--color-state-disabled-on-accent);
+      color: var(--color-dark-grey-50);
     }
   }
 
@@ -69,9 +72,9 @@
     border-radius: 0.2rem;
     font-size: 1.4rem;
     margin-right: 1rem;
-    color: var(--color-state-disabled-on-accent);
+    color: var(--color-dark-grey-50);
     font-weight: 500;
-    border: 0.1rem solid var(--color-state-disabled-on-accent);
+    border: 0.1rem solid var(--color-dark-shade-800);
 
     &:not([disabled]):hover {
       background: var(--color-state-hover-on-accent);

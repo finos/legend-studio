@@ -1882,7 +1882,7 @@ export const ClassFormEditor = observer(
             </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel
             {...propertyEditorCollapsiblePanelGroupProps.collapsiblePanel}

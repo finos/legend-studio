@@ -131,13 +131,17 @@ export const ResizablePanelSplitter =
     ? (MockedReactComponent as unknown as typeof ReflexSplitter)
     : ReflexSplitter;
 
-export const ResizablePanelSplitterLine: React.FC<{ color: string }> = (
+/**
+ * The line defaults to the theme's border color. Pass `color` only for a line
+ * that should look different, e.g. `transparent` while a panel is maximized.
+ */
+export const ResizablePanelSplitterLine: React.FC<{ color?: string }> = (
   props,
 ) => (
   <div
     className="resizable-panel__splitter-line"
     style={{
-      background: props.color,
+      background: props.color ?? 'var(--color-border-default)',
     }}
   />
 );

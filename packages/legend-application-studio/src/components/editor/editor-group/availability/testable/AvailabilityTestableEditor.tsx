@@ -587,7 +587,7 @@ const AvailabilityTestsEditor = observer(
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={56}>
             {selectedTestState ? (
@@ -630,7 +630,7 @@ const AvailabilitySuiteEditor = observer(
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            <ResizablePanelSplitterLine />
           </ResizablePanelSplitter>
           <ResizablePanel minSize={56}>
             <AvailabilityTestsEditor

@@ -825,7 +825,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                   </div>
                 </ResizablePanel>
                 <ResizablePanelSplitter>
-                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  <ResizablePanelSplitterLine />
                 </ResizablePanelSplitter>
                 <ResizablePanel>
                   {(propertySearchState.initializationState.isInProgress ||

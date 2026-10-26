@@ -590,7 +590,7 @@ export const GenerationSpecificationEditor = observer(() => {
               />
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine />
             </ResizablePanelSplitter>
             <ResizablePanel>
               <FileGenerationSpecifications

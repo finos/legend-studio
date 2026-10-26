@@ -314,7 +314,7 @@ const AccessPointTitle = observer(
             style={{
               borderColor:
                 accessPoint.id === newNamePlaceholder
-                  ? 'var(--color-red-300)'
+                  ? 'var(--color-status-error)'
                   : 'transparent',
             }}
           />
@@ -400,7 +400,7 @@ const AccessPointClassification = observer(
               borderWidth: 'thin',
               borderColor:
                 currentClassification.label === DEFAULT_CLASSIFICATION_LABEL
-                  ? 'var(--color-red-300)'
+                  ? 'var(--color-status-error)'
                   : 'transparent',
             }}
           >
@@ -1609,7 +1609,7 @@ const AccessPointGroupEditor = observer(
                 padding: '0.25rem',
                 borderColor:
                   groupState.value.id === newNamePlaceholder
-                    ? 'var(--color-red-300)'
+                    ? 'var(--color-status-error)'
                     : 'transparent',
                 borderWidth: 'thin',
               }}
@@ -1846,7 +1846,7 @@ const AccessPointGroupEditor = observer(
             {groupState.accessPointStates.length === 0 && (
               <div
                 className="access-point-editor__group-container__description--warning"
-                style={{ color: 'var(--color-red-300)' }}
+                style={{ color: 'var(--color-status-error)' }}
               >
                 <WarningIcon />
                 This group needs at least one access point defined.
@@ -1990,7 +1990,7 @@ const GroupTabRenderer = observer(
         {group.hasErrors() && (
           <ErrorWarnIcon
             title="Resolve Access Point Group error(s)"
-            style={{ color: 'var(--color-red-300)' }}
+            style={{ color: 'var(--color-status-error)' }}
           />
         )}
       </div>
@@ -2527,8 +2527,8 @@ const HomeTab = observer(
                 color:
                   product.description === '' ||
                   product.description === undefined
-                    ? 'var(--color-red-300)'
-                    : 'var(--color-light-grey-400)',
+                    ? 'var(--color-status-error)'
+                    : 'var(--color-text-muted)',
                 width: '45rem',
               }}
             >
@@ -2548,7 +2548,7 @@ const HomeTab = observer(
                 borderColor:
                   product.description === '' ||
                   product.description === undefined
-                    ? 'var(--color-red-300)'
+                    ? 'var(--color-status-error)'
                     : 'transparent',
                 resize: 'vertical',
                 maxHeight: '100%',
