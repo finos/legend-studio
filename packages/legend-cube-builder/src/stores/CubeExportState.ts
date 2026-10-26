@@ -143,7 +143,11 @@ export class CubeExportState {
       lambda = new QueryEmitter(
         query,
         editorState.registry,
-      ).emitExecutionLambda({ runtime, databaseType });
+      ).emitExecutionLambda({
+        runtime,
+        mapping: result.context.mapping,
+        databaseType,
+      });
       const csv = (yield editorState.host.engine.exportCsv(model, lambda, {
         abortController: controller,
       })) as string;

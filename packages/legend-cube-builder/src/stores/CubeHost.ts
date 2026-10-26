@@ -34,6 +34,7 @@ import {
 } from '../graph-manager/CubeProject.js';
 import type { CubeProjectCatalog } from '../graph-manager/CubeProjectCatalog.js';
 import type { CubeServiceCatalog } from '../graph-manager/CubeServiceCatalog.js';
+import type { CubeDataSpaceEditor } from './CubeDataSpaceEditor.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
 /**
@@ -72,6 +73,11 @@ export interface CubeHost {
    * dialog offers no services
    */
   readonly serviceCatalog?: CubeServiceCatalog | undefined;
+  /**
+   * The data spaces and their editor, the host's query builder (PLAN
+   * §11.25); without one, the source dialog offers no data spaces
+   */
+  readonly dataSpaceEditor?: CubeDataSpaceEditor | undefined;
   /**
    * The engine URL and request compression its engine clients share, which
    * Dev Settings changes (PLAN §11.16); without them, Dev Settings can't

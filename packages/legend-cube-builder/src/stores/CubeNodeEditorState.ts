@@ -148,13 +148,21 @@ export class CubeNodeEditorState {
     return this.draft?.build();
   }
 
-  /** The draft saves differently from the node it was made from */
+  /**
+   * The draft saves differently from the node it was made from, or holds
+   * edits it can't make a node of yet (`hasEditsNotBuilt`)
+   */
   get hasChanges(): boolean {
     const { draft, edited } = this;
     return (
       draft !== undefined &&
-      edited !== undefined &&
-      !isSameNodeContent(this.editorState.registry, edited, draft.original)
+      (draft.hasEditsNotBuilt ||
+        (edited !== undefined &&
+          !isSameNodeContent(
+            this.editorState.registry,
+            edited,
+            draft.original,
+          )))
     );
   }
 
@@ -184,22 +192,42 @@ export class CubeNodeEditorState {
    * is read-only.
    */
   apply(): void {
-    const { node, edited } = this;
+    const stored = this.store();
+    if (stored) {
+      this.bind(stored);
+    }
+  }
+
+  /**
+   * Stores the draft in place of the node, with the cube's context the
+   * draft changes, if any (PLAN §11.25), as one undo step; gives the node
+   * stored, if one was
+   */
+  private store(): QueryNode | undefined {
+    const { node, edited, draft } = this;
     if (
       !node ||
       !edited ||
+      !draft ||
       node.key !== this.nodeKey ||
       !this.hasChanges ||
       this.editorState.readOnly ||
-      this.draft?.applyDisabledReason !== undefined
+      draft.applyDisabledReason !== undefined
     ) {
-      return;
+      return undefined;
     }
-    const { query } = this.editorState.document;
-    if (query.canReplace(edited)) {
-      this.editorState.applyQuery(query.replace(edited));
-      this.bind(edited);
+    const { document } = this.editorState;
+    if (!document.query.canReplace(edited)) {
+      return undefined;
     }
+    const query = document.query.replace(edited);
+    const context = draft.editedContext;
+    this.editorState.applyDocument(
+      context
+        ? document.withContext(context).withQuery(query)
+        : document.withQuery(query),
+    );
+    return edited;
   }
 
   get canSwapInputs(): boolean {
@@ -386,7 +414,8 @@ export class CubeNodeEditorState {
     if (this.keepOpenWhileWaiting()) {
       return;
     }
-    this.apply();
+    // no new draft for the node stored: the editor closes
+    this.store();
     this.reset();
     this.notice = undefined;
   }

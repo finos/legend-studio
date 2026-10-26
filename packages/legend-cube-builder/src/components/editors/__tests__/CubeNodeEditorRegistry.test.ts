@@ -72,6 +72,8 @@ describe('Node editor registries', () => {
         'Sources data from a data set of a deployed ingest definition.',
       service:
         "Sources data from a deployed service. In progress: Cube can't read services yet.",
+      dataSpace:
+        "Sources data from a class of a data space, as the query builder queries it: its columns, and the rows its filter keeps. Cube's own steps sort, group and filter them after it.",
       concat:
         'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
       difference:

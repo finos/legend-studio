@@ -195,6 +195,7 @@ export class CubeExecutionState {
         query,
         model,
         runtime,
+        mapping: context.mapping,
         schema,
         rowLimit,
         abortController: controller,

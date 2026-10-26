@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ModelContext } from '@finos/legend-cube';
+import type { CubeContext, ModelContext } from '@finos/legend-cube';
 
 // A cube on a published project's Database (PLAN §6.2.2, §6.3) saves the
 // project at one released version as its model: the engine's alloy pointer,
@@ -111,6 +111,14 @@ export const getCubeProjectCoordinates = (
     versionId: sdlcInfo.version as string,
   };
 };
+
+/**
+ * Whether a cube's context is a data space's (PLAN §11.25): a project, and
+ * the mapping of the data space's execution context, which a project's
+ * tables and functions don't have
+ */
+export const isCubeDataSpaceContext = (context: CubeContext): boolean =>
+  context.mapping !== undefined && isCubeProjectModel(context.model);
 
 /** The project as people read it: `group:artifact` at its version */
 export const formatCubeProject = (project: CubeProjectCoordinates): string =>

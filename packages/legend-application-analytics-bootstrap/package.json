@@ -48,7 +48,9 @@
     "@finos/legend-application-analytics": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-cube-builder": "workspace:*",
+    "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-lego": "workspace:*",
+    "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "19.0.10",
     "react": "19.0.1"

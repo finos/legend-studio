@@ -367,7 +367,12 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
       );
     }
     case 'raw':
-      return ir.json as PlainObject;
+      // as it is, unless it has an origin of its own, e.g. a data space
+      // source's relation (PLAN §11.25): then stamped on each value
+      // specification, so an engine error in it points at its node
+      return (
+        ir.origin ? serializeLambdaJson(ir.json, ir.origin) : ir.json
+      ) as PlainObject;
     case 'lambdaJson':
       return serializeLambdaJson(
         ir.json,

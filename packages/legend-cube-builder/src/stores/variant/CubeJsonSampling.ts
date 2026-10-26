@@ -76,6 +76,7 @@ export const readCubeJsonSample = async (
     query: values,
     model: context.model,
     runtime: context.runtime,
+    mapping: context.mapping,
     schema: new Schema([column]),
     rowLimit: everyRow ? EVERY_ROW : CUBE_JSON_SAMPLE_SIZE,
     abortController,

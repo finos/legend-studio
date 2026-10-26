@@ -23,6 +23,12 @@
     },
     {
       "path": "../legend-application-analytics/tsconfig.build.json"
+    },
+    {
+      "path": "../legend-query-builder/tsconfig.build.json"
+    },
+    {
+      "path": "../legend-extension-dsl-data-space/tsconfig.build.json"
     }
   ]
 }
