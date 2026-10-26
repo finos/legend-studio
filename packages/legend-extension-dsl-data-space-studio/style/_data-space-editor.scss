@@ -528,6 +528,12 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+
+  // The add (+) buttons sit in the tab strip, where no ancestor sets a text
+  // color, so they would inherit the browser's default black.
+  .panel__header__action {
+    color: var(--color-text-muted);
+  }
 }
 
 .dataSpace-editor__tab {

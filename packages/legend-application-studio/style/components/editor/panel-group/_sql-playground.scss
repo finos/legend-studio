@@ -72,11 +72,14 @@
         height: 1.8rem;
       }
 
+      // The chips carry information (connection type, element path), so their
+      // text needs 4.5:1 in both themes; --color-text-disabled doesn't reach it
+      // either as the text or as the type chip's fill.
       &__type {
         @include flexVCenter;
 
         color: var(--color-text-inverted);
-        background: var(--color-text-disabled);
+        background: var(--color-text-muted);
         margin-left: 0.5rem;
         border-radius: 0.2rem;
         font-size: 1rem;
@@ -88,7 +91,7 @@
       &__path {
         @include flexVCenter;
 
-        color: var(--color-text-disabled);
+        color: var(--color-text-primary);
         background: var(--color-bg-tag);
         margin-left: 0.5rem;
         border-radius: 0.2rem;

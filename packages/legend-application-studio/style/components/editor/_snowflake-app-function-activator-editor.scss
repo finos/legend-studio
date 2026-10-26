@@ -143,7 +143,10 @@
         }
       }
 
+      // Accent fill: pair it with --color-text-on-accent, since the inherited
+      // --color-text-primary is dark in light theme.
       &__action--primary {
+        color: var(--color-text-on-accent);
         background: var(--color-accent);
       }
     }
