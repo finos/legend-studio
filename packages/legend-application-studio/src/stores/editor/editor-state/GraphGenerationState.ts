@@ -218,11 +218,24 @@ export class DEPREACTED_GlobalFileGenerationState {
     this.fileGenerationConfigurations = fileGenerationConfigurations;
   }
 
+  /**
+   * NOTE: the descriptions come from the engine, so a file generation in the graph
+   * may have none, e.g. when the engine doesn't support its type or the descriptions
+   * failed to load
+   */
+  getNullableFileGenerationConfiguration(
+    type: string,
+  ): GenerationConfigurationDescription | undefined {
+    return this.fileGenerationConfigurations.find(
+      (config) => config.key === type,
+    );
+  }
+
   getFileGenerationConfiguration(
     type: string,
   ): GenerationConfigurationDescription {
     return guaranteeNonNullable(
-      this.fileGenerationConfigurations.find((config) => config.key === type),
+      this.getNullableFileGenerationConfiguration(type),
       `Can't find configuration description for file generation type '${type}'`,
     );
   }
