@@ -101,11 +101,6 @@ export class GenerationSpecification
   fileGenerations: PackageableElementReference<FileGenerationSpecification>[] =
     [];
 
-  findGenerationElementById(id: string): PackageableElement | undefined {
-    return this.generationNodes.find((node) => node.id === id)
-      ?.generationElements[0]?.value;
-  }
-
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE,
