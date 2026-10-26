@@ -56,6 +56,7 @@ import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageT
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import { TEST__functionCatalogue } from '../../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
+import { TEST__parsedExpression } from '../../../__test-utils__/CubeExpressionParseTestUtils.js';
 import type { CubeFunctionCatalogue } from '../../../graph-manager/CubeFunctionCatalogue.js';
 import {
   CubeEngineError,
@@ -91,10 +92,14 @@ const render = async (
 }> => {
   const { host, fake } = TEST__createCubeHost();
   fake.getFunctionCatalogue.mockResolvedValue(catalogue);
-  fake.parseExpression.mockImplementation(async (code) => ({
-    lambda: lambdaOf(code),
-    located: lambdaOf(code),
-  }));
+  // the engine's own parse, where it was captured
+  fake.parseExpression.mockImplementation(
+    async (code) =>
+      TEST__parsedExpression(code) ?? {
+        lambda: lambdaOf(code),
+        located: lambdaOf(code),
+      },
+  );
   fake.typeLambdas.mockImplementation(
     async (_model, lambdas) =>
       new Map(
@@ -389,6 +394,145 @@ describe('Filter by Expression editor', () => {
     expect(
       MockedMonacoEditorLanguagesAPI.registerSignatureHelpProvider,
     ).not.toHaveBeenCalled();
+  });
+
+  test("Warns where Pure's precedence reads the condition other than likely meant, and one click puts in the parentheses", async () => {
+    const { state, fake } = await render();
+    fake.typeLambdas.mockImplementation(
+      async (_model, lambdas) =>
+        new Map(
+          [...lambdas.keys()].map((key) => [
+            key,
+            new CubeEngineError(
+              CubeEngineErrorKind.COMPILE,
+              "Can't find a match for function 'and(Boolean[1],SmallInt[1])'",
+              'expressionFilter101',
+            ),
+          ]),
+        ),
+    );
+    act(() => draftOf(state).setCode('x | $x.ORDER_ID > 1 && $x.SHIP_VIA < 3'));
+    const warning = await within(panel()).findByLabelText('Precedence warning');
+    expect(
+      within(warning).getByText(
+        'Pure reads this as ($x.ORDER_ID > 1 && $x.SHIP_VIA) < 3',
+      ),
+    ).toBeTruthy();
+    await waitFor(() => expect(draftOf(state).validating).toBe(false));
+    // the warning says it: the engine's hint isn't said again
+    expect(
+      within(panel()).queryByText(EXPRESSION_FILTER_PARENTHESES_HINT),
+    ).toBeNull();
+    MockedMonacoEditorInstance.executeEdits.mockClear();
+    fireEvent.click(
+      within(warning).getByRole('button', {
+        name: 'Use $x.ORDER_ID > 1 && ($x.SHIP_VIA < 3)',
+      }),
+    );
+    // one step, which Undo takes back
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
+      'edit',
+      [
+        {
+          range: {
+            startLineNumber: 1,
+            startColumn: 24,
+            endLineNumber: 1,
+            endColumn: 24,
+          },
+          text: '(',
+          forceMoveMarkers: true,
+        },
+        {
+          range: {
+            startLineNumber: 1,
+            startColumn: 39,
+            endLineNumber: 1,
+            endColumn: 39,
+          },
+          text: ')',
+          forceMoveMarkers: true,
+        },
+      ],
+    );
+  });
+
+  test('Shows how Pure reads the condition, part by part, a part pointed at highlighted in the code', async () => {
+    const { state } = await render();
+    act(() => draftOf(state).setCode('x | $x.ORDER_ID > 1 && $x.SHIP_VIA < 3'));
+    const toggle = await within(panel()).findByRole('button', {
+      name: 'Outline of the condition',
+    });
+    // nothing in it to fix: behind its toggle
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(toggle);
+    const outline = within(panel()).getByRole('list', {
+      name: 'Outline of the condition',
+    });
+    const rows = within(outline).getAllByRole('listitem');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      '<True or false',
+      'left&&True or false',
+      'left>True or false',
+      'leftORDER_IDWhole number',
+      'right1Whole number',
+      'rightSHIP_VIAWhole number',
+      'right3Whole number',
+    ]);
+    MockedMonacoEditorInstance.createDecorationsCollection.mockClear();
+    fireEvent.mouseEnter(rows[5] as HTMLElement);
+    expect(
+      MockedMonacoEditorInstance.createDecorationsCollection,
+    ).toHaveBeenCalledWith([
+      {
+        range: {
+          startLineNumber: 1,
+          startColumn: 24,
+          endLineNumber: 1,
+          endColumn: 35,
+        },
+        options: { className: 'code-editor__highlighted-range' },
+      },
+    ]);
+  });
+
+  test('Flags a column that can be empty where a value is needed, with its fixes', async () => {
+    const { state } = await render();
+    act(() => draftOf(state).setCode('x | $x.FREIGHT * 2 > 10'));
+    // something to fix: shown at once
+    const outline = await within(panel()).findByRole('list', {
+      name: 'Outline of the condition',
+    });
+    const freight = within(outline)
+      .getAllByRole('listitem')
+      .find((row) => row.textContent?.startsWith('leftFREIGHT'));
+    expect(freight?.textContent).toContain('can be empty');
+    MockedMonacoEditorInstance.executeEdits.mockClear();
+    fireEvent.click(
+      within(freight as HTMLElement).getByRole('button', {
+        name: '->toOne()',
+      }),
+    );
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
+      'edit',
+      [
+        {
+          range: {
+            startLineNumber: 1,
+            startColumn: 15,
+            endLineNumber: 1,
+            endColumn: 15,
+          },
+          text: '->toOne()',
+          forceMoveMarkers: true,
+        },
+      ],
+    );
+    expect(
+      within(freight as HTMLElement).getByRole('button', {
+        name: '->coalesce(0)',
+      }),
+    ).toBeTruthy();
   });
 
   test('Checks the condition once typing pauses, says so with a green border, then Apply stores the checked node', async () => {
