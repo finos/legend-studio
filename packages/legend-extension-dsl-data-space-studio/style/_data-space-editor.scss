@@ -164,6 +164,13 @@
     gap: 0.5rem;
   }
 
+  // The "+" buttons that add an execution context or an executable sit in the
+  // tab strips with no color of their own, so their icons fell back to the
+  // browser's black button text. Match the tabs' close icons.
+  .panel__header__action {
+    color: var(--color-text-muted);
+  }
+
   &__general {
     display: flex;
     flex-direction: row;
