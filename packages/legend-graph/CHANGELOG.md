@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.9.1
+
+### Patch Changes
+
+- [#5766](https://github.com/finos/legend-studio/pull/5766) [`386b289`](https://github.com/finos/legend-studio/commit/386b289ba04522997848d464684e2d676c177aba) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Keep a `GenerationSpecification` node that holds several generation elements. A node written with `generationElements` loads, round-trips and generates as written, instead of failing to build the graph; a node written with the singular `generationElement` keeps that form on save. The elements of one node generate against the same graph, which is updated once the node is done.
+
 ## 32.9.0
 
 ### Minor Changes

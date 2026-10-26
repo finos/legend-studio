@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.4
+
+### Patch Changes
+
+- [#5756](https://github.com/finos/legend-studio/pull/5756) [`bd6317c`](https://github.com/finos/legend-studio/commit/bd6317ceaff851051a1ae19b0fcb0ab5493de8db) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix code editors turning dark in the light theme after the SQL Playground opens: the playground now follows the application theme, and every code editor uses the same light theme, since a Monaco theme applies to every editor on the page.
+
 ## 0.2.3
 
 ### Patch Changes

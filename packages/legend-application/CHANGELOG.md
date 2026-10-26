@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.1.0
+
+### Minor Changes
+
+- [#5710](https://github.com/finos/legend-studio/pull/5710) [`022f425`](https://github.com/finos/legend-studio/commit/022f425d36688d95a6eaf3e71ed9cf8399e72f25) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Backend overrides: when `application.backendOverrides.enabled` is set in `config.json`, users can override the URLs of the backend servers an application declares (`LegendApplicationConfig.getBackendEntries()`) from a backend servers dialog. Overrides are saved in the browser per application and environment and applied to `config.json` when the application starts, so every server client built from the config uses them; a banner shows while any override is in use, and `?resetBackendOverrides` clears them.
+
 ## 16.0.130
 
 ## 16.0.129
