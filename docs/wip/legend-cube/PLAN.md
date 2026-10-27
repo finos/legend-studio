@@ -5676,6 +5676,14 @@ finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no long
 | DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests ✅ (2026-10-21)                                      |
 | DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen ✅ (2026-10-22, video 39 on the PR)              |
 
+### 11.26 Legend DataCube as the results grid (plan, 2026-10-27)
+
+**Ask (user, 2026-10-27):** a deep dive on replacing the results grid with Legend DataCube, and a plan. The plan is
+[DATACUBE-GRID.md](DATACUBE-GRID.md): decisions D1-D7 first (recommended: DataCube as a view of the run, with "Add this
+view as steps"), the 2026-10-09 study's findings revisited, the engine facts (DataCube's stages compose with Cube's
+queries, the `let` form included, as one SQL statement), the adapter under the builder's `v1/` folder, five small
+DataCube PRs (C1-C5) before DataCube can be the default, and steps DC.0-DC.6. Nothing is built until the user decides.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
