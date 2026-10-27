@@ -19,9 +19,12 @@ import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 import type { EmbeddedData } from '../../data/EmbeddedData.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { Store } from '../store/Store.js';
+import type { IngestDefinition } from '../ingest/IngestDefinition.js';
+import type { DataProduct } from '../../dataProduct/DataProduct.js';
 
 export class StoreTestData implements Hashable {
-  store!: PackageableElementReference<Store>;
+  // Can also be an `IngestDefinition`/`DataProduct` when sourcing from a Lakehouse relation function
+  store!: PackageableElementReference<Store | IngestDefinition | DataProduct>;
   data!: EmbeddedData;
 
   get hashCode(): string {

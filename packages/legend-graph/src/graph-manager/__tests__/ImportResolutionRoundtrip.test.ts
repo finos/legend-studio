@@ -69,6 +69,8 @@ import {
   TEST_DATA__MappingRoundtrip,
   TEST_DATA__LocalPropertyMapping,
   TEST_DATA__MappingTestSuiteRoundtrip,
+  TEST_DATA__MappingTestSuiteWithIngestDefinitionStoreRoundtrip,
+  TEST_DATA__MappingTestSuiteWithDataProductStoreRoundtrip,
   TEST_DATA__MappingOtherwisePropertyRoundtrip,
   TEST_DATA__RelationFunctionMappingWithPrimaryKey,
   TEST_DATA__RelationFunctionMappingEmptyPrimaryKey,
@@ -231,8 +233,21 @@ describe(unitTest('Mapping import resolution roundtrip'), () => {
   });
 });
 
-// TODO: Readd once mapping test suite model is finalized
 describe(unitTest('Mapping test suite roundtrip'), () => {
+  test.each([
+    [
+      'mapping test suite with store sourced from an ingest definition',
+      TEST_DATA__MappingTestSuiteWithIngestDefinitionStoreRoundtrip,
+    ],
+    [
+      'mapping test suite with store sourced from a data product',
+      TEST_DATA__MappingTestSuiteWithDataProductStoreRoundtrip,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
+
+  // TODO: Readd once mapping test suite model is finalized
   test.skip.each([
     ['mapping test suite', TEST_DATA__MappingTestSuiteRoundtrip],
   ])('%s', async (testName, entities) => {
