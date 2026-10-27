@@ -36,6 +36,7 @@ import { DataCubeSpecification } from '../core/model/DataCubeSpecification.js';
 import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
 import type { DataCubeLogService } from '../services/DataCubeLogService.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
+import { _toCol } from '../core/model/DataCubeColumn.js';
 import {
   DEFAULT_ALERT_WINDOW_CONFIG,
   type DataCubeLayoutService,
@@ -107,6 +108,7 @@ export class DataCubeViewState {
     );
     query.query = await this.engine.getPartialQueryCode(snapshot);
     query.dimensionalTree = snapshot.data.dimensionalTree;
+    query.relationType = this.source.columns.map(_toCol);
     return query;
   }
 
@@ -254,7 +256,10 @@ export class DataCubeViewState {
           this.snapshotService.registerSubscriber(state);
         }),
       );
-      const source = await this.engine.processSource(specification.source);
+      const source = await this.engine.processSource(
+        specification.source,
+        specification.relationType,
+      );
       this._source = source;
       this._initialSource = source;
       this._initialSpecification = specification;
