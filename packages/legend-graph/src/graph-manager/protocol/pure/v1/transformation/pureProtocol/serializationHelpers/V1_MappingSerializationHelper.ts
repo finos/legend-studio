@@ -1028,8 +1028,8 @@ export const V1_mappingTestSuiteModelSchema = (
   createModelSchema(V1_MappingTestSuite, {
     _type: usingConstantValueSchema(V1_TestSuiteType.MAPPING_TEST_SUITE),
     doc: optional(primitive()),
-    id: primitive(),
     func: usingModelSchema(V1_rawLambdaModelSchema),
+    id: primitive(),
     tests: list(
       custom(
         (val) => V1_serializeAtomicTest(val, plugins),

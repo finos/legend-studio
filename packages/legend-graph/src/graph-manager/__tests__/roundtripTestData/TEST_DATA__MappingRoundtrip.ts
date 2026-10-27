@@ -1928,6 +1928,475 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
   },
 ];
 
+// A mapping test suite whose `storeTestData.store` points at a Lakehouse
+// `IngestDefinition` rather than a classic `Store` - this only builds
+// correctly with `V1_GraphBuilderContext.resolveMappingTestDataStore()`.
+export const TEST_DATA__MappingTestSuiteWithIngestDefinitionStoreRoundtrip = [
+  {
+    path: 'data::RelationalData',
+    content: {
+      _type: 'dataElement',
+      data: {
+        _type: 'relationalCSVData',
+        tables: [
+          {
+            schema: 'default',
+            table: 'PersonTable',
+            values: 'id,firstName\n1,John\n2,Nicole\n',
+          },
+        ],
+      },
+      name: 'RelationalData',
+      package: 'data',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'execution::RelationalMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'model::Person',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::TestDB',
+            mainTableDb: 'store::TestDB',
+            schema: 'default',
+            table: 'PersonTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'id',
+              table: {
+                _type: 'Table',
+                database: 'store::TestDB',
+                mainTableDb: 'store::TestDB',
+                schema: 'default',
+                table: 'PersonTable',
+              },
+              tableAlias: 'PersonTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Person',
+                property: 'firstName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'firstName',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'RelationalMapping',
+      package: 'execution',
+      testSuites: [
+        {
+          _type: 'mappingTestSuite',
+          id: 'testSuite1',
+          func: {
+            _type: 'lambda',
+            body: [
+              {
+                _type: 'func',
+                function: 'getAll',
+                parameters: [
+                  {
+                    _type: 'packageableElementPtr',
+                    fullPath: 'model::Person',
+                  },
+                ],
+              },
+            ],
+            parameters: [],
+          },
+          tests: [
+            {
+              _type: 'mappingTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"columns":[{"name":"First Name","type":"String"}],"rows":[{"values":["John"]},{"values":["Nicole"]}]}',
+                  },
+                  id: 'shouldPass',
+                },
+              ],
+              id: 'test1',
+              storeTestData: [
+                {
+                  data: {
+                    _type: 'reference',
+                    dataElement: {
+                      path: 'data::RelationalData',
+                      type: 'DATA',
+                    },
+                  },
+                  store: {
+                    path: 'lakehouse::PersonIngest',
+                    type: 'STORE',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firstName',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'store::TestDB',
+    content: {
+      _type: 'relational',
+      filters: [],
+      joins: [],
+      name: 'TestDB',
+      package: 'store',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'id',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'PersonTable',
+              primaryKey: ['id'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'lakehouse::PersonIngest',
+    content: {
+      _type: 'ingestDefinition',
+      datasets: [
+        {
+          name: 'Person',
+          primaryKey: ['id'],
+          source: {
+            _type: 'serializedSource',
+            schema: {
+              _type: 'relationType',
+              columns: [
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Integer',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                  name: 'id',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'String',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                  name: 'firstName',
+                },
+              ],
+            },
+          },
+        },
+      ],
+      name: 'PersonIngest',
+      package: 'lakehouse',
+    },
+    classifierPath:
+      'meta::external::ingest::specification::metamodel::IngestDefinition',
+  },
+];
+
+// Same as `TEST_DATA__MappingTestSuiteWithIngestDefinitionStoreRoundtrip`,
+// except `storeTestData.store` points at a Lakehouse `DataProduct`.
+export const TEST_DATA__MappingTestSuiteWithDataProductStoreRoundtrip = [
+  {
+    path: 'data::RelationalData',
+    content: {
+      _type: 'dataElement',
+      data: {
+        _type: 'relationalCSVData',
+        tables: [
+          {
+            schema: 'default',
+            table: 'PersonTable',
+            values: 'id,firstName\n1,John\n2,Nicole\n',
+          },
+        ],
+      },
+      name: 'RelationalData',
+      package: 'data',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'execution::RelationalMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'model::Person',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'store::TestDB',
+            mainTableDb: 'store::TestDB',
+            schema: 'default',
+            table: 'PersonTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'id',
+              table: {
+                _type: 'Table',
+                database: 'store::TestDB',
+                mainTableDb: 'store::TestDB',
+                schema: 'default',
+                table: 'PersonTable',
+              },
+              tableAlias: 'PersonTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Person',
+                property: 'firstName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'firstName',
+                table: {
+                  _type: 'Table',
+                  database: 'store::TestDB',
+                  mainTableDb: 'store::TestDB',
+                  schema: 'default',
+                  table: 'PersonTable',
+                },
+                tableAlias: 'PersonTable',
+              },
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'RelationalMapping',
+      package: 'execution',
+      testSuites: [
+        {
+          _type: 'mappingTestSuite',
+          id: 'testSuite1',
+          func: {
+            _type: 'lambda',
+            body: [
+              {
+                _type: 'func',
+                function: 'getAll',
+                parameters: [
+                  {
+                    _type: 'packageableElementPtr',
+                    fullPath: 'model::Person',
+                  },
+                ],
+              },
+            ],
+            parameters: [],
+          },
+          tests: [
+            {
+              _type: 'mappingTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"columns":[{"name":"First Name","type":"String"}],"rows":[{"values":["John"]},{"values":["Nicole"]}]}',
+                  },
+                  id: 'shouldPass',
+                },
+              ],
+              id: 'test1',
+              storeTestData: [
+                {
+                  data: {
+                    _type: 'reference',
+                    dataElement: {
+                      path: 'data::RelationalData',
+                      type: 'DATA',
+                    },
+                  },
+                  store: {
+                    path: 'lakehouse::PersonDataProduct',
+                    type: 'STORE',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firstName',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'store::TestDB',
+    content: {
+      _type: 'relational',
+      filters: [],
+      joins: [],
+      name: 'TestDB',
+      package: 'store',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'id',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 200,
+                  },
+                },
+              ],
+              name: 'PersonTable',
+              primaryKey: ['id'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'lakehouse::PersonDataProduct',
+    content: {
+      _type: 'dataProduct',
+      name: 'PersonDataProduct',
+      package: 'lakehouse',
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+];
+
 export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
   {
     path: 'domain::ComplexClassTypeOfPropertyBelongs',
