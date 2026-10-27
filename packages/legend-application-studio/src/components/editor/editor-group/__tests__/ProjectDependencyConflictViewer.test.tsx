@@ -118,7 +118,7 @@ test.skip(integrationTest('Test Project Report With Conflicts'), async () => {
   const editorGroup = await renderResult.findByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
-  const updateButton = getByText(editorGroup, 'Update');
+  const updateButton = getByText(editorGroup, 'Update configuration');
   expect(updateButton.getAttribute('disabled')).not.toBeNull();
   await waitFor(() => renderResult.getByText('Project Structure'));
   await findByText(editorGroup, 'Project Dependencies');

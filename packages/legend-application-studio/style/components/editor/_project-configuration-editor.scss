@@ -140,23 +140,42 @@
     }
   }
 
-  &__update-btn {
-    background: var(--color-accent);
-    color: var(--color-text-on-accent);
-    border-radius: 0.2rem;
-    width: 10rem;
-    cursor: pointer;
-    height: 2rem;
-    font-size: 1.2rem;
+  // the header's save action: quiet until there are unsaved configuration changes
+  &__save {
+    @include flexVCenter;
+
+    gap: 1rem;
     margin-right: 0.3rem;
 
-    &:hover {
-      background: var(--color-accent-hover);
+    &__hint {
+      font-size: 1.2rem;
+      color: var(--color-status-warn);
     }
 
-    &[disabled]:hover,
-    &[disabled] {
-      background: var(--color-bg-tag);
+    &__btn {
+      height: 2.2rem;
+      padding: 0 1rem;
+      border: 0.1rem solid var(--color-border-default);
+      border-radius: 0.3rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: transparent;
+      cursor: pointer;
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
+
+      &--active {
+        border-color: var(--color-accent);
+        color: var(--color-text-on-accent);
+        background: var(--color-accent);
+      }
+
+      &--active:hover {
+        background: var(--color-accent-hover);
+      }
     }
   }
 
@@ -1179,5 +1198,105 @@
     font-weight: 600;
     color: var(--color-status-warn);
     margin-left: 1rem;
+  }
+}
+
+// Project structure tab: coordinates and structure version as form sections
+.project-structure-editor {
+  &__coordinates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.6rem;
+  }
+
+  &__published-as {
+    @include flexVCenter;
+
+    gap: 0.8rem;
+    font-size: 1.3rem;
+    color: var(--color-text-muted);
+
+    code {
+      padding: 0.2rem 0.8rem;
+      border-radius: 0.3rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--color-text-primary);
+      background: var(--color-bg-tag);
+    }
+  }
+
+  &__warning {
+    @include flexVCenter;
+
+    gap: 0.6rem;
+    padding: 0.8rem 1.2rem;
+    border-left: 0.3rem solid var(--color-status-warn);
+    border-radius: 0.3rem;
+    font-size: 1.3rem;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-app);
+  }
+
+  &__version {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    gap: 1.2rem;
+
+    &__current {
+      @include flexVCenter;
+
+      gap: 1rem;
+    }
+
+    &__label {
+      font-size: 1.3rem;
+      color: var(--color-text-muted);
+    }
+
+    &__value {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+  }
+
+  &__status {
+    @include flexVCenter;
+
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    border: 0.1rem solid currentcolor;
+    border-radius: 1rem;
+    line-height: 2rem;
+    font-size: 1.2rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+
+    &--current {
+      color: var(--color-status-success);
+    }
+
+    &--outdated {
+      color: var(--color-status-warn);
+    }
+  }
+
+  &__update-btn {
+    height: 2.8rem;
+    padding: 0 1.2rem;
+    border-radius: 0.4rem;
+    font-weight: 500;
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-accent-hover);
+    }
   }
 }
