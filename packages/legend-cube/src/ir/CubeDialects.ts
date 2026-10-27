@@ -220,10 +220,11 @@ export const getNonLiteralPatternProblem = (
 
 /**
  * The database types known not to run the engine's static `pivot()` (PLAN
- * §11.12): H2 can't translate it, 13 types assert "pivot is not supported",
+ * §11.12): H2 can't translate it, 12 types assert "pivot is not supported",
  * Aurora asserts it too (the engine writes Aurora's SQL as Postgres's: read
  * from its source, since the open-source engine loads no Aurora extension to
- * plan with), and Trino and Athena plan it with no PIVOT. Snowflake,
+ * plan with), Trino and Athena plan it with no PIVOT, and BigQuery writes a
+ * PIVOT which Cube has yet to run against it (legend-engine#5108). Snowflake,
  * Databricks, MemSQL (SingleStore) and DuckDB run it; a type in neither list
  * is allowed, for the engine to judge. A `Set`: the type comes from the model.
  */

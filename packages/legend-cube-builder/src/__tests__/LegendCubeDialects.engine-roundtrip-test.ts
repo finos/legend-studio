@@ -37,6 +37,7 @@ import {
   Explode,
   Partition,
   MESSAGE_PATTERN_NOT_LITERAL,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
   MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
   Pivot,
   printIR,
@@ -1656,9 +1657,11 @@ describe('A pattern that is not a literal, as each database plans it', () => {
 });
 
 // Pivot (PLAN §11.12): the engine's static pivot(), which four types plan.
-// Trino and Athena plan it with no PIVOT (ISSUES.md), and every other type
-// refuses it: Cube refuses all 16, so these plan the native form to pin the
-// engine's behaviour. When it changes, these fail, and the list can change.
+// Trino and Athena plan it with no PIVOT (ISSUES.md), BigQuery writes a PIVOT
+// that Cube has yet to run against it (legend-engine#5108 still records static
+// pivot failures there), and every other type refuses it: Cube refuses all 16,
+// so these plan the native form to pin the engine's behaviour. When it
+// changes, these fail, and the list can change.
 describe('Pivot, as each database plans it', () => {
   /** SHIP_VIA's 1, 2 and 3 by SHIP_COUNTRY, Sum of FREIGHT */
   const pivotThen = (): Query =>
@@ -1700,10 +1703,31 @@ describe('Pivot, as each database plans it', () => {
     },
   );
 
+  test.each(['BigQuery'])(
+    'Writes a PIVOT on %s, whose names the outer select reads, which Cube refuses',
+    async (databaseType) => {
+      const sql = await planSql(pivotThen(), databaseType, { native: true });
+      expect(sql).toMatch(/\bpivot\b/u);
+      ['1', '2', '3'].forEach((value) =>
+        expect(sql).toMatch(
+          new RegExp(`'${value}__\\|__cube_pivot'\` as \`${value}\``, 'u'),
+        ),
+      );
+      expect(() =>
+        new QueryEmitter(pivotThen()).emitExecutionLambda({
+          rowLimit: 1000,
+          runtime: `test::plan::${databaseType}Runtime`,
+          databaseType,
+        }),
+      ).toThrow(MESSAGE_PIVOT_UNSUPPORTED_DATABASE(databaseType));
+    },
+  );
+
   test.each(
     PLANNED_DATABASE_TYPES.filter(
       (type) =>
-        !PIVOTING.includes(type) && type !== 'Trino' && type !== 'Athena',
+        !PIVOTING.includes(type) &&
+        !['Trino', 'Athena', 'BigQuery'].includes(type),
     ),
   )('Refuses it on %s', async (databaseType) => {
     await expect(
@@ -1881,7 +1905,10 @@ describe('Window functions, as each database plans them', () => {
       );
       expect(sql).not.toMatch(/\blast_value\(|\bnth_value\(/u);
       // reversed, the sort puts empty values at the other end too: where
-      // the database's own default wouldn't, the engine writes it
+      // the database's own default wouldn't, the engine writes it. BigQuery
+      // is the exception: it refuses the clause outside a ROWS frame, so the
+      // engine leaves it out and the order is BigQuery's own, empty values
+      // low, either way (legend-engine#5108)
       const ascending =
         /\border by [^()]*order_date[`"]? asc(?<nulls> nulls last)?\)/u.exec(
           sql,
@@ -1891,7 +1918,7 @@ describe('Window functions, as each database plans them', () => {
           sql,
         );
       expect(Boolean(ascending?.groups?.nulls)).toBe(
-        ['MemSQL', 'Databricks', 'Hive', 'BigQuery'].includes(databaseType),
+        ['MemSQL', 'Databricks', 'Hive'].includes(databaseType),
       );
       expect(Boolean(descending?.groups?.nulls)).toBe(
         ![
@@ -1904,6 +1931,7 @@ describe('Window functions, as each database plans them', () => {
           'Snowflake',
           'Oracle',
           'Redshift',
+          'BigQuery',
         ].includes(databaseType),
       );
     },
