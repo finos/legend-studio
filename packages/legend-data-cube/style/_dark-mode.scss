@@ -1,0 +1,228 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// ---------------------------------------- DARK THEME ----------------------------------------
+// The palette variables are redefined (rather than adding dark variants to every component)
+// since both Tailwind utilities and these stylesheets read colors from `--tw-color-*`.
+//
+// NOTE: the palette names keep their roles rather than their shades, i.e. `white` is the surface,
+// `black` is the ink, and the neutral ramp runs the other way, so that components styled against
+// the palette read right in both themes without any change.
+//
+// NOTE: to look consistent with the other Legend applications, the palette is mapped onto the
+// shared palette of `@finos/legend-art` used by their default dark theme (i.e. the VSCode-like
+// greys, blue accent, etc.), see `_theme-default-dark.scss`.
+//
+// NOTE: popups are portaled outside of DataCube, see `getDataCubeColorThemeClassName()`.
+// Popups portaled by shared components (e.g. selector menus, value specification editor popovers)
+// can't carry that class, so they pick up the theme while a dark DataCube is on the page.
+
+// The browser can briefly show the page background through content which is not painted yet
+// (e.g. when switching between editor tabs), which flashes white behind a dark DataCube
+html:has(.data-cube-theme--dark) {
+  background-color: var(--color-dark-grey-50);
+}
+
+.data-cube-theme--dark,
+body:has(.data-cube-theme--dark) > .selector-input__menu-portal,
+body:has(.data-cube-theme--dark) > .MuiPopover-root,
+body:has(.data-cube-theme--dark) > .ag-dnd-ghost {
+  color-scheme: dark;
+
+  --tw-color-white: var(--color-dark-grey-50);
+  --tw-color-black: var(--color-light-grey-0);
+  --tw-color-neutral-50: var(--color-dark-grey-80);
+  --tw-color-neutral-100: var(--color-dark-grey-100);
+  --tw-color-neutral-200: var(--color-dark-grey-200);
+  --tw-color-neutral-300: var(--color-dark-grey-250);
+  --tw-color-neutral-400: var(--color-dark-grey-300);
+  --tw-color-neutral-500: var(--color-dark-grey-500);
+  --tw-color-neutral-600: var(--color-light-grey-400);
+  --tw-color-neutral-700: var(--color-light-grey-300);
+  --tw-color-neutral-800: var(--color-light-grey-200);
+  --tw-color-neutral-900: var(--color-light-grey-100);
+  --tw-color-neutral-950: var(--color-light-grey-50);
+  --tw-color-sky-50: var(--color-blue-500);
+  --tw-color-sky-100: var(--color-light-blue-450);
+  --tw-color-sky-200: var(--color-light-blue-400);
+  --tw-color-sky-300: var(--color-light-blue-200);
+  --tw-color-sky-400: var(--color-blue-50);
+  --tw-color-sky-500: var(--color-blue-40);
+  --tw-color-sky-600: var(--color-blue-100);
+  --tw-color-sky-700: var(--color-blue-40);
+  --tw-color-red-50: var(--color-dark-red-shade-100);
+  --tw-color-red-500: var(--color-red-100);
+  --tw-color-red-600: var(--color-red-50);
+  --tw-color-green-500: var(--color-green-100);
+  --tw-color-amber-500: var(--color-yellow-200);
+  --tw-color-orange-500: var(--color-orange-100);
+  --tw-color-blue-600: var(--color-light-blue-50);
+
+  // only redefined since the pivot result column group headers use them
+  --tw-color-blue-50: #172636;
+  --tw-color-blue-200: #1f3a5f;
+  --tw-color-emerald-50: #13281f;
+  --tw-color-emerald-200: #1a4733;
+  --tw-color-rose-50: #2c171c;
+  --tw-color-rose-200: #4f2330;
+  --tw-color-teal-50: #12282a;
+  --tw-color-teal-200: #1a4547;
+  --tw-color-yellow-50: #2a2612;
+  --tw-color-yellow-200: #4a4119;
+
+  // shared components (e.g. selectors, value specification editors used in source forms) are
+  // styled with the application's semantic tokens, which the hosting application sets to its
+  // own (light) theme, so they are set to the values of the default dark theme
+  // See `_theme-default-dark.scss` in `@finos/legend-art`
+  --color-bg-app: var(--color-dark-grey-50);
+  --color-bg-panel: var(--color-dark-grey-100);
+  --color-bg-panel-header: var(--color-dark-grey-200);
+  --color-bg-chrome: var(--color-dark-grey-250);
+  --color-bg-elevated: var(--color-dark-grey-80);
+  --color-bg-input: var(--color-dark-grey-100);
+  --color-bg-hover: var(--color-dark-grey-250);
+  --color-bg-selected: var(--color-light-blue-450);
+  --color-bg-tag: var(--color-dark-grey-300);
+  --color-bg-overlay: var(--color-dark-shade-300);
+  --color-text-primary: var(--color-light-grey-0);
+  --color-text-secondary: var(--color-light-grey-200);
+  --color-text-muted: var(--color-light-grey-400);
+  --color-text-disabled: var(--color-dark-grey-400);
+  --color-text-inverted: var(--color-dark-grey-50);
+  --color-text-on-accent: var(--color-light-grey-50);
+  --color-text-link: var(--color-blue-100);
+  --color-border-subtle: var(--color-dark-grey-100);
+  --color-border-default: var(--color-dark-grey-200);
+  --color-border-strong: var(--color-dark-grey-300);
+  --color-border-focus: var(--color-blue-200);
+  --color-accent: var(--color-blue-200);
+  --color-accent-hover: var(--color-blue-100);
+  --color-accent-subtle: var(--color-dark-blue-shade-100);
+  --color-active-indicator: var(--color-yellow-200);
+  --color-status-error: var(--color-red-100);
+  --color-status-error-bg: var(--color-dark-red-shade-100);
+  --color-status-warn: var(--color-yellow-200);
+  --color-status-warn-bg: var(--color-dark-yellow-500);
+  --color-status-success: var(--color-green-100);
+  --color-status-success-bg: var(--color-green-200);
+  --color-status-info: var(--color-blue-100);
+  --color-state-hover-on-accent: var(--color-light-shade-50);
+  --color-state-disabled-on-accent: var(--color-dark-shade-300);
+  --color-shadow: var(--color-dark-shade-280);
+  --color-input-border: var(--color-dark-grey-250);
+  --color-input-border--hover: var(--color-dark-grey-300);
+  --color-input-border--focus: var(--color-blue-200);
+
+  color: var(--tw-color-black);
+
+  .data-cube-grid.ag-theme-quartz,
+  .data-cube-grid .ag-theme-quartz,
+  .data-cube-column-selector .ag-theme-quartz {
+    --ag-foreground-color: var(--tw-color-black);
+    --ag-data-color: var(--tw-color-black);
+    --ag-row-hover-color: #ffffff0d;
+    --ag-selected-row-background-color: var(--tw-color-sky-100);
+    --ag-popup-shadow: 2px 2px 8px rgb(0 0 0 / 55%);
+    --ag-card-shadow: 0 1px 8px rgb(0 0 0 / 55%);
+    --ag-checkbox-unchecked-color: var(--tw-color-neutral-500);
+    --ag-input-border-color: var(--tw-color-neutral-400);
+    --ag-input-disabled-background-color: var(--tw-color-neutral-100);
+    // defaults to a translucent white, which shows as a light grey sheet over the dark grid
+    --ag-modal-overlay-background-color: color-mix(
+      in srgb,
+      transparent,
+      var(--tw-color-white) 66%
+    );
+
+    // the scrolling viewports are transparent, so give them a solid background to not flash
+    // whatever is behind while they are being painted
+    .ag-body-viewport,
+    .ag-center-cols-viewport {
+      background-color: var(--ag-background-color);
+    }
+
+    // these custom icons are SVG data URIs with a hard-coded black stroke, so they can't
+    // follow the palette and are inverted instead
+    .ag-icon-group::before,
+    .ag-icon-pivot::before,
+    .ag-icon-columns::before {
+      filter: invert(0.9);
+    }
+  }
+}
+
+// The faint shades (i.e. `neutral-300`, `neutral-400`) are mostly used for borders, but also for
+// disabled and placeholder text, which barely shows on the dark surfaces, so such text uses the
+// disabled text color of the other applications instead
+.data-cube-theme--dark {
+  .text-neutral-300,
+  .text-neutral-400,
+  .disabled\:text-neutral-300:disabled,
+  .disabled\:text-neutral-400:disabled,
+  .group:disabled .group-disabled\:text-neutral-400,
+  .data-cube-editor-checkbox--disabled svg {
+    color: var(--color-text-disabled);
+  }
+}
+
+// The drag image (e.g. when dragging columns to pivot) is appended to the page body, outside of
+// DataCube, and does not pick up the theme colors of the grid it is dragged from
+body:has(.data-cube-theme--dark) > .ag-dnd-ghost {
+  --ag-foreground-color: var(--tw-color-black);
+  --ag-icon-font-color: var(--tw-color-neutral-500);
+
+  border: 1px solid var(--tw-color-neutral-300);
+  background-color: var(--tw-color-neutral-100);
+  color: var(--tw-color-black);
+  box-shadow: 0 1px 8px rgb(0 0 0 / 55%);
+}
+
+// MUI papers (e.g. popovers, menus) set their own white background, which ignores the palette
+.data-cube-theme--dark .MuiPaper-root,
+body:has(.data-cube-theme--dark) > .MuiPopover-root .MuiPaper-root {
+  background-color: var(--tw-color-white);
+  color: var(--tw-color-black);
+}
+
+// selectors (i.e. `react-select`) set their own white background and dark text, which only
+// the dark variant of the selector overrides
+.data-cube-theme--dark .selector-input {
+  &__control,
+  &__control--is-disabled {
+    background: var(--color-bg-input);
+  }
+
+  &__single-value,
+  &__input-container,
+  &__multi-value__label {
+    color: var(--color-text-primary);
+  }
+
+  &__placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &__multi-value {
+    background: var(--color-bg-tag);
+  }
+}
+
+body:has(.data-cube-theme--dark)
+  > .selector-input__menu-portal
+  .selector-input__menu {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}

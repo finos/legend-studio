@@ -15,6 +15,55 @@
  */
 
 import defaultTheme from 'tailwindcss/defaultTheme';
+import tailwindColors from 'tailwindcss/colors';
+
+// Skipped since these palettes were renamed in Tailwind v3 and merely accessing them
+// logs a deprecation warning
+const DEPRECATED_TAILWIND_COLORS = new Set([
+  'lightBlue',
+  'warmGray',
+  'trueGray',
+  'coolGray',
+  'blueGray',
+]);
+// Kept as-is since keyword colors (e.g. `transparent`, `currentColor`) cannot be mixed
+const TAILWIND_COLOR_KEYWORDS = new Set(['inherit', 'current', 'transparent']);
+
+const TAILWIND_COLOR_PALETTE = Object.fromEntries(
+  Object.keys(tailwindColors)
+    .filter((key) => !DEPRECATED_TAILWIND_COLORS.has(key))
+    .map((key) => [key, tailwindColors[key]]),
+);
+
+/**
+ * Color utilities reference the `--tw-color-*` variables rather than hard-coded values so a
+ * subtree (e.g. DataCube in dark mode) can be re-themed by redefining the variables, without
+ * affecting the rest of the application.
+ *
+ * NOTE: `color-mix()` is used, rather than the usual `rgb(var(...) / <alpha-value>)`, so each
+ * color only needs a single variable (which our stylesheets already use) while opacity
+ * modifiers (e.g. `bg-black/50`) keep working.
+ */
+function buildThemedColors(colorObj, colorGroup = '') {
+  return Object.fromEntries(
+    Object.keys(colorObj).map((colorKey) => {
+      const value = colorObj[colorKey];
+      if (typeof value !== 'string') {
+        return [
+          colorKey,
+          buildThemedColors(value, `${colorGroup}-${colorKey}`),
+        ];
+      }
+      if (!colorGroup && TAILWIND_COLOR_KEYWORDS.has(colorKey)) {
+        return [colorKey, value];
+      }
+      return [
+        colorKey,
+        `color-mix(in srgb, var(--tw-color${colorGroup}-${colorKey}) calc(<alpha-value> * 100%), transparent)`,
+      ];
+    }),
+  );
+}
 
 // A simple and naive utility to convert rem to px in Tailwind CSS theme
 // Adapted from https://github.com/odestry/tailwindcss-rem-to-px
@@ -85,13 +134,14 @@ export function getBaseConfig(patterns) {
           'monospace',
         ],
       },
+      colors: buildThemedColors(TAILWIND_COLOR_PALETTE),
     },
     // Expose Tailwind color as CSS variables
     // See https://gist.github.com/Merott/d2a19b32db07565e94f10d13d11a8574
     // TODO: the better solution is to use theme() and PostCSS
     // See https://gist.github.com/Merott/d2a19b32db07565e94f10d13d11a8574?permalink_comment_id=4729744#gistcomment-4729744
     plugins: [
-      function ({ addBase, theme }) {
+      function ({ addBase }) {
         function extractColorVars(colorObj, colorGroup = '') {
           return Object.keys(colorObj).reduce((vars, colorKey) => {
             const value = colorObj[colorKey];
@@ -105,8 +155,10 @@ export function getBaseConfig(patterns) {
           }, {});
         }
 
+        // NOTE: computed from the raw palette since `theme('colors')` now references these
+        // very variables
         addBase({
-          ':root': extractColorVars(theme('colors')),
+          ':root': extractColorVars(TAILWIND_COLOR_PALETTE),
         });
       },
     ],

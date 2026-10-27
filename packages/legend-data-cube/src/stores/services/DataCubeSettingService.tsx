@@ -54,6 +54,7 @@ export type DataCubeSettingValues = {
 };
 
 export enum DataCubeSettingGroup {
+  APPEARANCE = 'Appearance',
   DEBUG = 'Debug',
   EDITOR = 'Editor',
   GRID = 'Grid',
@@ -137,6 +138,14 @@ export class DataCubeSettingService {
     );
 
     const CORE_SETTINGS: DataCubeSetting[] = [
+      {
+        key: DataCubeSettingKey.APPEARANCE__ENABLE_DARK_MODE,
+        title: `Dark Mode: Enabled`,
+        description: `Displays DataCube using a dark color theme. Colors which have been customized (e.g. via the properties editor) are kept as-is.`,
+        group: DataCubeSettingGroup.APPEARANCE,
+        type: DataCubeSettingType.BOOLEAN,
+        defaultValue: false,
+      } satisfies DataCubeSetting<boolean>,
       {
         key: DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
         title: `Debug Mode: Enabled`,

@@ -170,7 +170,7 @@ export const Window = (props: {
         >
           <div className="px-2">{windowState.configuration.title}</div>
           <button
-            className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
+            className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-[var(--color-text-on-accent)]"
             onClick={() => layout.closeWindow(windowState)}
           >
             <DataCubeIcon.X />

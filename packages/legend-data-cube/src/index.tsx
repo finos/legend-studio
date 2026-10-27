@@ -62,6 +62,12 @@ export * from './components/DataCube.js';
 
 export * from './components/core/DataCubeFormUtils.js';
 export * from './components/DataCubePlaceholder.js';
+export {
+  DataCubeColorTheme,
+  DataCubeColorThemeProvider,
+  getDataCubeColorThemeClassName,
+} from './components/core/DataCubeColorTheme.js';
+export { DataCubeSettingKey } from './__lib__/DataCubeSetting.js';
 
 // some low-level/core utilities we expose for building DataCube extensions
 // or implementing DataCube engine
