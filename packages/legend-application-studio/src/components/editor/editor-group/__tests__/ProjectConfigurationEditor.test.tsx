@@ -17,14 +17,18 @@
 import { test, expect, beforeEach } from '@jest/globals';
 import {
   type RenderResult,
+  act,
   getByDisplayValue,
   waitFor,
   fireEvent,
   getByText,
   getByTitle,
+  getByLabelText,
   queryByText,
+  queryAllByText,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+import { createSpy, integrationTest } from '@finos/legend-shared/test';
+import { Platform, PlatformConfiguration } from '@finos/legend-server-sdlc';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
@@ -109,5 +113,128 @@ test(
         'disabled',
       ),
     ).toBeNull();
+  },
+);
+
+const TEST_DATA__Platforms = [
+  new Platform('legend-engine', 'org.finos.legend.engine', '4.95.1'),
+  new Platform('legend-sdlc', 'org.finos.legend.sdlc', '0.201.0'),
+];
+
+const openConfigurationTab = (tab: string): HTMLElement => {
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'platforms',
+    'get',
+  ).mockReturnValue(TEST_DATA__Platforms);
+  const editorGroupContent = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
+  );
+  fireEvent.click(getByText(editorGroupContent, tab));
+  return editorGroupContent;
+};
+
+const getPlatformVersions = (): string[] | undefined =>
+  MOCK__editorStore.projectConfigurationEditorState.currentProjectConfiguration.platformConfigurations?.map(
+    (platform) => `${platform.name}:${platform.version}`,
+  );
+
+test(
+  integrationTest('Platform versions can be frozen at the latest versions'),
+  async () => {
+    const editorGroupContent = openConfigurationTab('Platform Configurations');
+    await waitFor(() => getByText(editorGroupContent, 'legend-engine'));
+    getByText(editorGroupContent, '4.95.1');
+    expect(queryAllByText(editorGroupContent, 'Latest')).toHaveLength(2);
+    expect(
+      (
+        getByLabelText(
+          editorGroupContent,
+          /Use the latest versions/,
+        ) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+
+    fireEvent.click(getByLabelText(editorGroupContent, /Freeze versions/));
+
+    expect(getPlatformVersions()).toEqual([
+      'legend-engine:4.95.1',
+      'legend-sdlc:0.201.0',
+    ]);
+    await waitFor(() =>
+      expect(queryAllByText(editorGroupContent, 'Up to date')).toHaveLength(2),
+    );
+    getByText(editorGroupContent, 'Unsaved configuration changes');
+  },
+);
+
+test(
+  integrationTest('Each frozen platform version shows whether it is behind'),
+  async () => {
+    act(() =>
+      MOCK__editorStore.projectConfigurationEditorState.currentProjectConfiguration.setPlatformConfigurations(
+        [
+          new PlatformConfiguration('legend-engine', '4.80.0'),
+          new PlatformConfiguration('legend-sdlc', '0.201.0'),
+        ],
+      ),
+    );
+    const editorGroupContent = openConfigurationTab('Platform Configurations');
+
+    // only the engine is behind
+    const updateButton = await waitFor(() =>
+      getByText(editorGroupContent, '4.95.1 available'),
+    );
+    expect(queryAllByText(editorGroupContent, 'Up to date')).toHaveLength(1);
+    getByText(editorGroupContent, 'Update all to latest');
+
+    fireEvent.click(updateButton);
+
+    expect(getPlatformVersions()).toEqual([
+      'legend-engine:4.95.1',
+      'legend-sdlc:0.201.0',
+    ]);
+    await waitFor(() =>
+      expect(queryAllByText(editorGroupContent, 'Up to date')).toHaveLength(2),
+    );
+    expect(queryByText(editorGroupContent, 'Update all to latest')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Platform versions entered by hand change nothing until they are applied',
+  ),
+  async () => {
+    const editorGroupContent = openConfigurationTab('Platform Configurations');
+    await waitFor(() => getByText(editorGroupContent, 'legend-engine'));
+    const enterVersionsManually = async (): Promise<void> => {
+      fireEvent.click(getByText(editorGroupContent, 'Enter versions manually'));
+      fireEvent.click(await renderResult.findByText('Continue'));
+      fireEvent.change(
+        await waitFor(() =>
+          getByTitle(editorGroupContent, 'legend-engine version'),
+        ),
+        { target: { value: '4.96.0' } },
+      );
+    };
+
+    // cancelling drops what was typed
+    await enterVersionsManually();
+    expect(getPlatformVersions()).toBeUndefined();
+    fireEvent.click(getByText(editorGroupContent, 'Cancel'));
+    await waitFor(() =>
+      getByText(editorGroupContent, 'Enter versions manually'),
+    );
+    expect(getPlatformVersions()).toBeUndefined();
+
+    await enterVersionsManually();
+    fireEvent.click(getByText(editorGroupContent, 'Freeze at these versions'));
+
+    expect(getPlatformVersions()).toEqual([
+      'legend-engine:4.96.0',
+      'legend-sdlc:0.201.0',
+    ]);
+    await waitFor(() => getByText(editorGroupContent, '4.95.1 available'));
   },
 );
