@@ -431,3 +431,73 @@ test(
     }
   },
 );
+
+test(
+  integrationTest(
+    'Every stage can be flattened into one, after a confirmation',
+  ),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+
+    // cancelling changes nothing
+    fireEvent.click(getByText(editor, 'Flatten into one stage'));
+    await waitFor(() =>
+      getByText(document.body, 'Run all 3 generations in one stage?'),
+    );
+    fireEvent.click(getByText(document.body, 'Cancel'));
+    getByText(editor, '2 stages, 2 recompiles');
+
+    fireEvent.click(getByText(editor, 'Flatten into one stage'));
+    await waitFor(() =>
+      getByText(document.body, 'Run all 3 generations in one stage?'),
+    );
+    fireEvent.click(getByText(document.body, 'Flatten'));
+
+    await waitFor(() => getByText(editor, '1 stage, 1 recompile'));
+    getByText(
+      editor,
+      '3 generations, run together against the same compiled model',
+    );
+    // one stage has nothing left to flatten
+    expect(queryByText(editor, 'Flatten into one stage')).toBeNull();
+  },
+);
+
+test(
+  integrationTest('Stages that share an element cannot be flattened'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+    // tMapping is in stage 1; putting it in stage 2 as well is legal
+    dragAndDrop(
+      getPaletteItem(editor, 'test::tMapping'),
+      guaranteeNonNullable(getStages(editor)[1]),
+    );
+
+    const flatten = await waitFor(() =>
+      getByText<HTMLButtonElement>(editor, 'Flatten into one stage'),
+    );
+    await waitFor(() => expect(flatten.disabled).toBe(true));
+    expect(flatten.title).toContain('test::tMapping is in more than one stage');
+  },
+);
+
+test(
+  integrationTest('A read-only specification offers no flatten'),
+  async () => {
+    const editor = await setUpEditor(true);
+    await waitFor(() => getByText(editor, 'Stage 2'));
+    await act(async () => {
+      runInAction(() => {
+        MOCK__editorStore.tabManagerState.getCurrentEditorState(
+          GenerationSpecificationEditorState,
+        ).isReadOnly = true;
+      });
+    });
+
+    await waitFor(() =>
+      expect(queryByText(editor, 'Flatten into one stage')).toBeNull(),
+    );
+  },
+);

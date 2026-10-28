@@ -85,6 +85,37 @@
     cursor: default;
   }
 
+  // runs every generation in one stage; text on `--color-bg-tag` uses the primary colour, which is
+  // the one that clears 4.5:1 on it in all three themes
+  &__flatten {
+    @include flexCenter;
+
+    height: 2rem;
+    margin-left: 0.8rem;
+    padding: 0 0.8rem;
+    border: 0.1rem solid var(--color-border-strong);
+    border-radius: 0.3rem;
+    background: var(--color-bg-tag);
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+    font-weight: 400;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-accent-subtle);
+    }
+
+    &[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &[disabled]:hover {
+      background: var(--color-bg-tag);
+    }
+  }
+
   // ---------------------------------- palette ----------------------------------
 
   &__palette {
