@@ -310,9 +310,14 @@
     min-width: 0;
 
     .input--with-validation {
-      flex: 0 0 var(--uml-table-name-width);
+      flex: 1 1 auto;
       min-width: 0;
     }
+  }
+
+  // enumeration values have a documentation column beside the name
+  .enum-basic-editor .input--with-validation {
+    flex: 0 0 var(--uml-table-name-width);
   }
 
   // names read as text until hovered or focused

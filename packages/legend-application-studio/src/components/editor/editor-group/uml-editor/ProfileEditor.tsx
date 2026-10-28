@@ -34,17 +34,11 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  type AnnotatedElement,
   type Profile,
-  type PureModel,
   type Stereotype,
   stub_Tag,
   stub_Stereotype,
   type Tag,
-  Association,
-  Class,
-  ConcreteFunctionDefinition,
-  Enumeration,
 } from '@finos/legend-graph';
 import {
   ElementEditorEmptyState,
@@ -65,97 +59,6 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__
 import { useRef, useCallback } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
 
-type ProfileValueUser = {
-  label: string;
-  path: string;
-};
-
-/**
- * Where each tag and stereotype of the profile is used in the project's own model: on its
- * elements, and on the properties of its classes and associations and the values of its
- * enumerations
- */
-const collectProfileUsage = (
-  graph: PureModel,
-  profile: Profile,
-): Map<Tag | Stereotype, ProfileValueUser[]> => {
-  const usage = new Map<Tag | Stereotype, ProfileValueUser[]>();
-  const addUser = (value: Tag | Stereotype, user: ProfileValueUser): void => {
-    const users = usage.get(value) ?? [];
-    if (!users.some((existing) => existing.path === user.path)) {
-      usage.set(value, [...users, user]);
-    }
-  };
-  const record = (
-    annotatedElement: AnnotatedElement,
-    user: ProfileValueUser,
-  ): void => {
-    annotatedElement.taggedValues.forEach((taggedValue) => {
-      if (taggedValue.tag.value._OWNER === profile) {
-        addUser(taggedValue.tag.value, user);
-      }
-    });
-    annotatedElement.stereotypes.forEach((stereotype) => {
-      if (stereotype.value._OWNER === profile) {
-        addUser(stereotype.value, user);
-      }
-    });
-  };
-  graph.allOwnElements.forEach((element) => {
-    const label =
-      element instanceof ConcreteFunctionDefinition
-        ? element.functionName
-        : element.name;
-    record(element, { label, path: element.path });
-    const parts: (AnnotatedElement & { name: string })[] =
-      element instanceof Class
-        ? [...element.properties, ...element.derivedProperties]
-        : element instanceof Association
-          ? element.properties
-          : element instanceof Enumeration
-            ? element.values
-            : [];
-    parts.forEach((part) =>
-      record(part, {
-        label: `${label}.${part.name}`,
-        path: `${element.path}.${part.name}`,
-      }),
-    );
-  });
-  usage.forEach((users) =>
-    users.sort((a, b) => a.label.localeCompare(b.label)),
-  );
-  return usage;
-};
-
-const ProfileValueUsage = (props: {
-  users: ProfileValueUser[];
-}): React.ReactNode => {
-  const { users } = props;
-  if (!users.length) {
-    return (
-      <div className="profile-table__usage profile-table__usage--none">
-        Not used
-      </div>
-    );
-  }
-  return (
-    <div
-      className="profile-table__usage"
-      title={users.map((user) => user.path).join('\n')}
-    >
-      {users.slice(0, 2).map((user) => (
-        <span key={user.path} className="profile-table__usage__item">
-          {user.label}
-        </span>
-      ))}
-      {users.length > 2 && (
-        <span className="profile-table__usage__more">+{users.length - 2}</span>
-      )}
-    </div>
-  );
-};
-
 type TagDragSource = {
   tag: Tag;
 };
@@ -168,12 +71,11 @@ const TagBasicEditor = observer(
     deleteValue: () => void;
     _profile: Profile;
     isReadOnly: boolean;
-    users: ProfileValueUser[];
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);
 
-    const { tag, _profile, deleteValue, isReadOnly, users } = props;
+    const { tag, _profile, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(tag, event.target.value);
     };
@@ -240,7 +142,6 @@ const TagBasicEditor = observer(
             placeholder="Tag value"
             error={isTagDuplicated(tag) ? 'Duplicated tag' : undefined}
           />
-          <ProfileValueUsage users={users} />
           {!isReadOnly && (
             <button
               className="uml-element-editor__remove-btn"
@@ -270,12 +171,11 @@ const StereotypeBasicEditor = observer(
     deleteStereotype: () => void;
     _profile: Profile;
     isReadOnly: boolean;
-    users: ProfileValueUser[];
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);
 
-    const { stereotype, _profile, deleteStereotype, isReadOnly, users } = props;
+    const { stereotype, _profile, deleteStereotype, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(stereotype, event.target.value);
     };
@@ -349,7 +249,6 @@ const StereotypeBasicEditor = observer(
                 : undefined
             }
           />
-          <ProfileValueUsage users={users} />
           {!isReadOnly && (
             <button
               className="uml-element-editor__remove-btn"
@@ -413,10 +312,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     [UML_EDITOR_TAB.TAGS]: profile.p_tags.length,
     [UML_EDITOR_TAB.STEREOTYPES]: profile.p_stereotypes.length,
   };
-  const usage = collectProfileUsage(
-    editorStore.graphManagerState.graph,
-    profile,
-  );
   const renderEmptyState = (): React.ReactNode => (
     <ElementEditorEmptyState
       title={`No ${prettyCONSTName(selectedTab).toLowerCase()} yet`}
@@ -457,8 +352,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
               {profile.p_tags.length ? (
                 <div className="uml-table__header">
                   <div className="uml-table__header__name">Tag</div>
-                  <div className="uml-table__header__detail">Used by</div>
-                  <div className="uml-table__header__actions" />
                 </div>
               ) : (
                 renderEmptyState()
@@ -476,7 +369,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   _profile={profile}
                   deleteValue={deleteTag(tag)}
                   isReadOnly={isReadOnly}
-                  users={usage.get(tag) ?? []}
                 />
               ))}
             </PanelContentLists>
@@ -486,8 +378,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
               {profile.p_stereotypes.length ? (
                 <div className="uml-table__header">
                   <div className="uml-table__header__name">Stereotype</div>
-                  <div className="uml-table__header__detail">Used by</div>
-                  <div className="uml-table__header__actions" />
                 </div>
               ) : (
                 renderEmptyState()
@@ -507,7 +397,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
                   isReadOnly={isReadOnly}
-                  users={usage.get(stereotype) ?? []}
                 />
               ))}
             </PanelContentLists>

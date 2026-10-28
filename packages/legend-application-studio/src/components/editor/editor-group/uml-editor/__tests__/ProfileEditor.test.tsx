@@ -19,7 +19,6 @@ import {
   type RenderResult,
   fireEvent,
   getAllByTitle,
-  getByDisplayValue,
   getByPlaceholderText,
   getByRole,
   getByTestId,
@@ -61,17 +60,9 @@ const getTab = (editor: HTMLElement, name: RegExp): HTMLElement =>
     { name },
   );
 
-// the row of the tag or stereotype with the given value
-const getRow = (editor: HTMLElement, value: string): HTMLElement =>
-  guaranteeNonNullable(
-    getByDisplayValue(editor, value).closest<HTMLElement>(
-      '.tag-basic-editor, .stereotype-basic-editor',
-    ),
-  );
-
 test(
   integrationTest(
-    'Profile editor shows where each tag and stereotype is used in the model',
+    'Profile editor shows an empty state, with the action that adds the first item',
   ),
   async () => {
     const editor = await openProfileTest();
@@ -79,62 +70,21 @@ test(
       'true',
     );
     getTab(editor, /^Stereotypes\s*2$/);
-    getByText(editor, 'Used by');
-
-    // the first two users, sorted, then how many more; every user in the tooltip
-    const tag1 = getRow(editor, 'tag1');
-    getByText(tag1, 'Anyone');
-    getByText(tag1, 'TestAssociation');
-    getByText(tag1, '+4');
-    expect(queryByText(tag1, 'TestClass')).toBeNull();
-    expect(
-      guaranteeNonNullable(getByText(tag1, 'Anyone').parentElement).title,
-    ).toBe(
-      [
-        'ui::test1::Anyone',
-        'ui::TestAssociation',
-        'ui::TestAssociation.testClassSibling',
-        'ui::TestClass',
-        'ui::TestEnumeration',
-        'ui::TestEnumeration.enumA',
-      ].join('\n'),
-    );
-    // used on a class property
-    getByText(getRow(editor, 'tag2'), 'TestClass.b');
-    getByText(getRow(editor, 'tag3'), 'Not used');
-
-    fireEvent.click(getTab(editor, /^Stereotypes/));
-    // used on an enum value and on an association property
-    const stereotype1 = getRow(editor, 'stereotype1');
-    getByText(stereotype1, 'TestAssociation.testClassSibling');
-    getByText(stereotype1, 'TestClass');
-    getByText(stereotype1, '+2');
-    const stereotype2 = getRow(editor, 'stereotype2');
-    getByText(stereotype2, 'TestAssociation');
-    getByText(stereotype2, 'TestEnumeration');
-  },
-);
-
-test(
-  integrationTest(
-    'Profile editor shows an empty state, with the action that adds the first item',
-  ),
-  async () => {
-    const editor = await openProfileTest();
     getByTitle(editor, 'Add tag');
     fireEvent.click(getTab(editor, /^Stereotypes/));
+    getByText(editor, 'Stereotype');
     expect(queryByText(editor, 'No stereotypes yet')).toBeNull();
 
     fireEvent.click(guaranteeNonNullable(getAllByTitle(editor, 'Remove')[0]));
     fireEvent.click(guaranteeNonNullable(getAllByTitle(editor, 'Remove')[0]));
     getByText(editor, 'No stereotypes yet');
     getTab(editor, /^Stereotypes\s*0$/);
-    expect(queryByText(editor, 'Used by')).toBeNull();
+    expect(queryByText(editor, 'Stereotype')).toBeNull();
 
     fireEvent.click(getByText(editor, 'Add stereotype'));
     expect(queryByText(editor, 'No stereotypes yet')).toBeNull();
     getByPlaceholderText(editor, 'Stereotype value');
-    getByText(editor, 'Used by');
+    getByText(editor, 'Stereotype');
     getTab(editor, /^Stereotypes\s*1$/);
   },
 );
