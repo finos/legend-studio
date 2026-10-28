@@ -66,6 +66,10 @@ import {
 } from '@finos/legend-code-editor';
 import { disposeCodeEditor } from '@finos/legend-lego/code-editor';
 import {
+  type GrammarElementDeclaration,
+  getGrammarElementDeclarations,
+} from './GrammarTextEditorOutline.js';
+import {
   type ElementDragSource,
   CORE_DND_TYPE,
 } from '../../../stores/editor/utils/DnDUtils.js';
@@ -842,10 +846,102 @@ const FileSystem_FileModal = observer(
   },
 );
 
+// cached per model and model version, so moving the cursor does not rescan the text
+const elementDeclarationsCache = new WeakMap<
+  monacoEditorAPI.ITextModel,
+  { versionId: number; declarations: GrammarElementDeclaration[] }
+>();
+
+const getElementDeclarations = (
+  model: monacoEditorAPI.ITextModel,
+): GrammarElementDeclaration[] => {
+  const versionId = model.getVersionId();
+  const cached = elementDeclarationsCache.get(model);
+  if (cached?.versionId === versionId) {
+    return cached.declarations;
+  }
+  const declarations = getGrammarElementDeclarations(model.getLinesContent());
+  elementDeclarationsCache.set(model, { versionId, declarations });
+  return declarations;
+};
+
+const getElementSymbolKind = (
+  keyword: string,
+): monacoLanguagesAPI.SymbolKind => {
+  switch (keyword) {
+    case 'Class':
+      return monacoLanguagesAPI.SymbolKind.Class;
+    case 'Enum':
+      return monacoLanguagesAPI.SymbolKind.Enum;
+    case 'function':
+      return monacoLanguagesAPI.SymbolKind.Function;
+    default:
+      return monacoLanguagesAPI.SymbolKind.Object;
+  }
+};
+
+const getElementSymbols = (
+  model: monacoEditorAPI.ITextModel,
+): monacoLanguagesAPI.DocumentSymbol[] =>
+  getElementDeclarations(model).map((declaration) => ({
+    name: declaration.path,
+    detail: declaration.keyword,
+    kind: getElementSymbolKind(declaration.keyword),
+    tags: [],
+    range: {
+      startLineNumber: declaration.startLine,
+      startColumn: 1,
+      endLineNumber: declaration.endLine,
+      endColumn: model.getLineMaxColumn(declaration.endLine),
+    },
+    selectionRange: {
+      startLineNumber: declaration.startLine,
+      startColumn: 1,
+      endLineNumber: declaration.startLine,
+      endColumn: model.getLineMaxColumn(declaration.startLine),
+    },
+  }));
+
+const ElementBreadcrumb = (props: {
+  declaration: GrammarElementDeclaration;
+}): React.ReactNode => {
+  const { declaration } = props;
+  const parts = declaration.path.split(ELEMENT_PATH_DELIMITER);
+  return (
+    <div
+      className="editor-group__text-mode__breadcrumb"
+      title={`Cursor is in ${declaration.path}`}
+    >
+      <span className="editor-group__text-mode__breadcrumb__keyword">
+        {declaration.keyword}
+      </span>
+      {parts.map((part, idx) => (
+        <span
+          key={`${part}-${idx.toString()}`}
+          className={
+            idx === parts.length - 1
+              ? 'editor-group__text-mode__breadcrumb__name'
+              : 'editor-group__text-mode__breadcrumb__package'
+          }
+        >
+          {part}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 export const GrammarTextEditor = observer(() => {
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
+  // the element under the cursor, shown as a breadcrumb in the header
+  const [currentDeclaration, setCurrentDeclaration] = useState<
+    GrammarElementDeclaration | undefined
+  >();
+  const documentSymbolProviderDisposer = useRef<IDisposable | undefined>(
+    undefined,
+  );
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const grammarModeState = editorStore.getGraphEditorMode(
@@ -895,6 +991,24 @@ export const GrammarTextEditor = observer(() => {
         renderValidationDecorations: 'on',
         wordWrap: grammarTextEditorState.wordWrapOtion,
         readOnly: editorStore.editorMode.disableEditing,
+        // keep the declaration of the element being read pinned at the top
+        stickyScroll: { enabled: true, maxLineCount: 1 },
+      });
+      _editor.onDidChangeCursorPosition((event) => {
+        const model = _editor.getModel();
+        const lineNumber = event.position.lineNumber;
+        const declaration = model
+          ? getElementDeclarations(model).find(
+              (d) => d.startLine <= lineNumber && lineNumber <= d.endLine,
+            )
+          : undefined;
+        // only re-render when the cursor moves to another element
+        setCurrentDeclaration((current) =>
+          current?.path === declaration?.path &&
+          current?.startLine === declaration?.startLine
+            ? current
+            : declaration,
+        );
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(getCodeEditorValue(_editor));
@@ -1183,6 +1297,25 @@ export const GrammarTextEditor = observer(() => {
     }
   }
 
+  // element outline: drives the sticky element header while scrolling and the
+  // quick outline (Ctrl/Cmd + Shift + O)
+  useEffect(() => {
+    if (editor) {
+      documentSymbolProviderDisposer.current?.dispose();
+      documentSymbolProviderDisposer.current =
+        monacoLanguagesAPI.registerDocumentSymbolProvider(
+          CODE_EDITOR_LANGUAGE.PURE,
+          {
+            displayName: 'Pure elements',
+            provideDocumentSymbols: (model) => getElementSymbols(model),
+          },
+        );
+    }
+    return (): void => {
+      documentSymbolProviderDisposer.current?.dispose();
+    };
+  }, [editor]);
+
   // below use effects watch over `forcedCursorPosition`, `wordWrapOtion`, `error`, `warnings` and reset them to the editor as needed
   useEffect(() => {
     if (editor && forcedCursorPosition) {
@@ -1311,6 +1444,9 @@ export const GrammarTextEditor = observer(() => {
               {grammarModeState.headerLabel}
             </div>
           </ContextMenu>
+          {currentDeclaration && (
+            <ElementBreadcrumb declaration={currentDeclaration} />
+          )}
         </div>
         <div className="editor-group__header__actions">
           <div className="editor-group__text-mode__action">
