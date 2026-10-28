@@ -17,6 +17,7 @@
 import { test, expect } from '@jest/globals';
 import {
   type RenderResult,
+  act,
   fireEvent,
   getAllByText,
   getAllByTitle,
@@ -40,10 +41,16 @@ import {
   TEST__openElementFromExplorerTree,
 } from '@finos/legend-application-studio/test';
 import {
+  DataProduct,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
+import {
   DataSpace,
+  DataSpaceMappingProvider,
   DataSpaceSupportCombinedInfo,
   DSL_DataSpace_GraphManagerPreset,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import { runInAction } from 'mobx';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_LegendStudioApplicationPlugin } from '../DSL_DataSpace_LegendStudioApplicationPlugin.js';
 import { TEST_DATA__DataSpaceEditor } from './TEST_DATA__DataSpaceEditor.js';
@@ -284,5 +291,102 @@ test(
         ),
       ).toBe(true),
     );
+  },
+);
+
+test(
+  integrationTest(
+    'Data space execution context: switching from a mapping to a mapping provider asks first',
+  ),
+  async () => {
+    const { renderResult, editor, dataSpace } = await setUpDataSpaceEditor();
+    const context = guaranteeNonNullable(dataSpace.executionContexts?.[0]);
+    fireEvent.click(getByTitle(editor, 'Execution Contexts'));
+    const mappingTab = await waitFor(() =>
+      getByRole(editor, 'button', { name: 'Mapping' }),
+    );
+    const mappingProviderTab = getByRole(editor, 'button', {
+      name: 'Mapping Provider',
+    });
+    const ACTIVE_TAB_CLASS = 'dataSpace-editor__tab-toggle__tab--active';
+    expect(mappingTab.classList).toContain(ACTIVE_TAB_CLASS);
+
+    // cancelling keeps the mapping
+    fireEvent.click(mappingProviderTab);
+    await waitFor(() =>
+      renderResult.getByText('Switch to a mapping provider?'),
+    );
+    renderResult.getByText(
+      `An execution context takes either a mapping or a mapping provider. This removes mapping 'model::DummyMapping' from 'Context 1'.`,
+    );
+    fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() =>
+      expect(
+        renderResult.queryByText('Switch to a mapping provider?'),
+      ).toBeNull(),
+    );
+    expect(context.mapping?.value.path).toBe('model::DummyMapping');
+    expect(mappingTab.classList).toContain(ACTIVE_TAB_CLASS);
+
+    // confirming drops the mapping and shows the mapping provider picker
+    fireEvent.click(mappingProviderTab);
+    fireEvent.click(
+      await waitFor(() =>
+        renderResult.getByRole('button', { name: 'Remove mapping' }),
+      ),
+    );
+    await waitFor(() => getByText(editor, 'Select a mapping provider...'));
+    expect(context.mapping).toBeUndefined();
+    expect(mappingProviderTab.classList).toContain(ACTIVE_TAB_CLASS);
+
+    // with nothing to drop, switching back asks nothing
+    fireEvent.click(mappingTab);
+    await waitFor(() => getByText(editor, 'Select a mapping...'));
+    expect(renderResult.queryByText('Switch to a mapping?')).toBeNull();
+    expect(mappingTab.classList).toContain(ACTIVE_TAB_CLASS);
+  },
+);
+
+test(
+  integrationTest(
+    'Data space execution context: a context with both a mapping and a mapping provider keeps the one clicked',
+  ),
+  async () => {
+    const { renderResult, editor, dataSpace } = await setUpDataSpaceEditor();
+    const context = guaranteeNonNullable(dataSpace.executionContexts?.[0]);
+    fireEvent.click(getByTitle(editor, 'Execution Contexts'));
+    await waitFor(() => getByRole(editor, 'button', { name: 'Mapping' }));
+
+    // grammar can set both, which the modifiers never do
+    const provider = new DataSpaceMappingProvider();
+    provider.element = PackageableElementExplicitReference.create(
+      new DataProduct('DummyDataProduct'),
+    );
+    provider.keys = ['group'];
+    act(() =>
+      runInAction(() => {
+        context.mappingProvider = provider;
+      }),
+    );
+    await waitFor(() =>
+      getByText(editor, 'Only one of mapping and mapping provider can be set.'),
+    );
+
+    fireEvent.click(getByRole(editor, 'button', { name: 'Mapping' }));
+    fireEvent.click(
+      await waitFor(() =>
+        renderResult.getByRole('button', { name: 'Remove mapping provider' }),
+      ),
+    );
+    await waitFor(() =>
+      expect(
+        queryByText(
+          editor,
+          'Only one of mapping and mapping provider can be set.',
+        ),
+      ).toBeNull(),
+    );
+    expect(context.mappingProvider).toBeUndefined();
+    expect(context.mapping?.value.path).toBe('model::DummyMapping');
   },
 );
