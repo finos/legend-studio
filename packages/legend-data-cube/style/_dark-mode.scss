@@ -164,6 +164,10 @@ body.data-cube-page:has(.data-cube-theme--dark) > .ag-dnd-ghost {
     .ag-icon-columns::before {
       filter: invert(0.9);
     }
+
+    .ag-column-drop-list .ag-column-drop-empty-message {
+      color: var(--color-text-disabled);
+    }
   }
 }
 
