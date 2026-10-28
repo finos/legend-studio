@@ -66,6 +66,7 @@ export {
   DataCubeColorTheme,
   DataCubeColorThemeProvider,
   getDataCubeColorThemeClassName,
+  useDataCubeOwnsPage,
 } from './components/core/DataCubeColorTheme.js';
 export { DataCubeSettingKey } from './__lib__/DataCubeSetting.js';
 

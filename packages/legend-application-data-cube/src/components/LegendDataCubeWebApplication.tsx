@@ -31,6 +31,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
+import { useDataCubeOwnsPage } from '@finos/legend-data-cube';
 import type { LegendDataCubeOidcConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import {
   type AuthProviderProps,
@@ -43,6 +44,7 @@ import { authStore } from '../stores/AuthStore.js';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
   const store = useLegendDataCubeBaseStore();
+  useDataCubeOwnsPage();
 
   useEffect(() => {
     store

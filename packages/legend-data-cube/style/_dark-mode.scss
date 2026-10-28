@@ -29,17 +29,20 @@
 // NOTE: popups are portaled outside of DataCube, see `getDataCubeColorThemeClassName()`.
 // Popups portaled by shared components (e.g. selector menus, value specification editor popovers)
 // can't carry that class, so they pick up the theme while a dark DataCube is on the page.
+// These page-wide rules (as well as the page background below) only apply when the page is
+// marked as owned by DataCube (i.e. `.data-cube-page` on the body, see `useDataCubeOwnsPage()`),
+// so they never re-theme the popovers and background of an application embedding DataCube.
 
 // The browser can briefly show the page background through content which is not painted yet
 // (e.g. when switching between editor tabs), which flashes white behind a dark DataCube
-html:has(.data-cube-theme--dark) {
+html:has(> body.data-cube-page .data-cube-theme--dark) {
   background-color: var(--color-dark-grey-50);
 }
 
 .data-cube-theme--dark,
-body:has(.data-cube-theme--dark) > .selector-input__menu-portal,
-body:has(.data-cube-theme--dark) > .MuiPopover-root,
-body:has(.data-cube-theme--dark) > .ag-dnd-ghost {
+body.data-cube-page:has(.data-cube-theme--dark) > .selector-input__menu-portal,
+body.data-cube-page:has(.data-cube-theme--dark) > .MuiPopover-root,
+body.data-cube-page:has(.data-cube-theme--dark) > .ag-dnd-ghost {
   color-scheme: dark;
 
   --tw-color-white: var(--color-dark-grey-50);
@@ -180,7 +183,7 @@ body:has(.data-cube-theme--dark) > .ag-dnd-ghost {
 
 // The drag image (e.g. when dragging columns to pivot) is appended to the page body, outside of
 // DataCube, and does not pick up the theme colors of the grid it is dragged from
-body:has(.data-cube-theme--dark) > .ag-dnd-ghost {
+body.data-cube-page:has(.data-cube-theme--dark) > .ag-dnd-ghost {
   --ag-foreground-color: var(--tw-color-black);
   --ag-icon-font-color: var(--tw-color-neutral-500);
 
@@ -192,7 +195,9 @@ body:has(.data-cube-theme--dark) > .ag-dnd-ghost {
 
 // MUI papers (e.g. popovers, menus) set their own white background, which ignores the palette
 .data-cube-theme--dark .MuiPaper-root,
-body:has(.data-cube-theme--dark) > .MuiPopover-root .MuiPaper-root {
+body.data-cube-page:has(.data-cube-theme--dark)
+  > .MuiPopover-root
+  .MuiPaper-root {
   background-color: var(--tw-color-white);
   color: var(--tw-color-black);
 }
@@ -220,7 +225,7 @@ body:has(.data-cube-theme--dark) > .MuiPopover-root .MuiPaper-root {
   }
 }
 
-body:has(.data-cube-theme--dark)
+body.data-cube-page:has(.data-cube-theme--dark)
   > .selector-input__menu-portal
   .selector-input__menu {
   background: var(--color-bg-elevated);
