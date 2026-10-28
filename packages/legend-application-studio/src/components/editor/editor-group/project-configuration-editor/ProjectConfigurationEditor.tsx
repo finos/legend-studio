@@ -32,7 +32,6 @@ import {
   CheckSquareIcon,
   SquareIcon,
   ExclamationTriangleIcon,
-  PanelFormSection,
   PanelListItem,
   Button,
   PencilEditIcon,
@@ -41,7 +40,6 @@ import {
   PanelHeaderActions,
   PanelContent,
   PanelHeader,
-  PanelContentLists,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
@@ -54,6 +52,7 @@ import {
   ProjectType,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
+import { EditorForm, EditorFormSection } from '../EditorForm.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
@@ -129,109 +128,118 @@ const ProjectStructureEditor = observer(
       projectConfig.setArtifactId(stringValue);
     };
 
+    const coordinates = generateGAVCoordinates(
+      projectConfig.groupId,
+      projectConfig.artifactId,
+      undefined,
+    );
+    const latestLabel = latestVersion
+      ? editorStore.projectConfigurationEditorState.isInEmbeddedMode
+        ? `${latestVersion.version}`
+        : latestVersion.fullVersion
+      : undefined;
+
     return (
-      <PanelContentLists>
-        <div className="project-configuration-editor__project__structure__version">
-          <div className="project-configuration-editor__project__structure__version__label">
-            <div className="project-configuration-editor__project__structure__version__label__status">
-              {isProjectStructureVersionOutdated ? (
-                <ExclamationCircleIcon
-                  className="project-configuration-editor__project__structure__version__label__status--outdated"
-                  title="Project structure is outdated"
-                />
-              ) : (
-                <CheckCircleIcon
-                  className="project-configuration-editor__project__structure__version__label__status--up-to-date"
-                  title="Project structure is up to date"
-                />
-              )}
+      <EditorForm>
+        <EditorFormSection
+          title="Coordinates"
+          description="How this project is identified when its versions are published. Other projects depend on it by these coordinates."
+        >
+          <div className="project-structure-editor__coordinates">
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Group ID
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                The domain the project publishes under, e.g. org.finos.legend
+              </div>
+              <input
+                className={clsx(
+                  'input input--dark input-group__input panel__content__form__section__input input--full',
+                  { 'input--caution': isGroupIdChanged },
+                )}
+                title="Group ID"
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={projectConfig.groupId}
+                onChange={changeGroupId}
+              />
             </div>
-            <div className="project-configuration-editor__project__structure__version__label__text">
-              {`PROJECT STRUCTURE VERSION ${projectConfig.projectStructureVersion.fullVersion}`}
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Artifact ID
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                The project&apos;s name within that domain
+              </div>
+              <input
+                className={clsx(
+                  'input input--dark input-group__input panel__content__form__section__input input--full',
+                  { 'input--caution': isArtifactIdChanged },
+                )}
+                title="Artifact ID"
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={projectConfig.artifactId}
+                onChange={changeArtifactId}
+              />
             </div>
           </div>
-          {isProjectStructureVersionOutdated && latestVersion && (
-            <button
-              className="project-configuration-editor__project__structure__version__update-btn"
-              disabled={isReadOnly}
-              onClick={updateVersion}
-              tabIndex={-1}
-              title={`Current project structure is outdated. Click to update to the latest version (v${latestVersion.fullVersion}})`}
-            >
-              Update to version{' '}
-              {editorStore.projectConfigurationEditorState.isInEmbeddedMode
-                ? latestVersion.version
-                : latestVersion.fullVersion}
-            </button>
+          <div className="project-structure-editor__published-as">
+            <span>Published as</span>
+            <code>{coordinates}</code>
+          </div>
+          {(isGroupIdChanged || isArtifactIdChanged) && (
+            <div className="project-structure-editor__warning">
+              Changing the coordinates starts a new artifact: earlier versions
+              stay under the old coordinates, and projects that depend on this
+              one must be updated.
+              <DocumentationLink
+                documentationKey={
+                  LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
+                }
+              />
+            </div>
           )}
-        </div>
-
-        <PanelForm>
-          <PanelFormSection>
-            <div className="panel__content__form__section__header__label">
-              Group ID
+        </EditorFormSection>
+        <EditorFormSection
+          title="Project structure"
+          description="The layout of the project's build. Newer versions bring build fixes and support for newer features."
+        >
+          <div className="project-structure-editor__version">
+            <div className="project-structure-editor__version__current">
+              <span className="project-structure-editor__version__label">
+                Version
+              </span>
+              <span className="project-structure-editor__version__value">
+                {projectConfig.projectStructureVersion.fullVersion}
+              </span>
+              {isProjectStructureVersionOutdated ? (
+                <span className="project-structure-editor__status project-structure-editor__status--outdated">
+                  <ExclamationCircleIcon />
+                  {latestLabel ? `${latestLabel} available` : 'Outdated'}
+                </span>
+              ) : (
+                <span className="project-structure-editor__status project-structure-editor__status--current">
+                  <CheckCircleIcon />
+                  Up to date
+                </span>
+              )}
             </div>
-            <div className="panel__content__form__section__header__prompt">
-              The domain for artifacts generated as part of the project build
-              pipeline and published to an artifact repository
-            </div>
-            <PanelListItem>
-              <div className="input-group project-configuration-editor__input">
-                <input
-                  className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--full',
-                    { 'input--caution': isGroupIdChanged },
-                  )}
-                  title="Group ID"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={projectConfig.groupId}
-                  onChange={changeGroupId}
-                />
-                {isGroupIdChanged && (
-                  <DocumentationLink
-                    documentationKey={
-                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
-                    }
-                  />
-                )}
-              </div>
-            </PanelListItem>
-          </PanelFormSection>
-          <PanelFormSection>
-            <div className="panel__content__form__section__header__label">
-              Artifact ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The identifier (within the domain specified by group ID) for
-              artifacts generated as part of the project build pipeline and
-              published to an artifact repository
-            </div>
-            <PanelListItem>
-              <div className="input-group project-configuration-editor__input">
-                <input
-                  className={clsx(
-                    'input input--dark input-group__input panel__content__form__section__input input--full',
-                    { 'input--caution': isArtifactIdChanged },
-                  )}
-                  title="Artifact ID"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={projectConfig.artifactId}
-                  onChange={changeArtifactId}
-                />
-                {isArtifactIdChanged && (
-                  <DocumentationLink
-                    documentationKey={
-                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES
-                    }
-                  />
-                )}
-              </div>
-            </PanelListItem>
-          </PanelFormSection>
-        </PanelForm>
-      </PanelContentLists>
+            {isProjectStructureVersionOutdated && latestLabel && (
+              <button
+                className="project-structure-editor__update-btn"
+                disabled={isReadOnly}
+                onClick={updateVersion}
+                tabIndex={-1}
+                title={`Update the project structure to version ${latestLabel}`}
+              >
+                Update to {latestLabel}
+              </button>
+            )}
+          </div>
+        </EditorFormSection>
+      </EditorForm>
     );
   },
 );
@@ -845,6 +853,9 @@ export const ProjectConfigurationEditor = observer(() => {
   if (!configState.projectConfiguration) {
     return null;
   }
+  const hasConfigChanges =
+    currentProjectConfiguration.hashCode !==
+    configState.originalConfig.hashCode;
   const isLoading =
     configState.updatingConfigurationState.isInProgress ||
     configState.fetchingProjectVersionsState.isInProgress ||
@@ -861,20 +872,34 @@ export const ProjectConfigurationEditor = observer(() => {
               {sdlcState.currentProject?.name ?? '(unknown)'}
             </div>
           </div>
-          <button
-            // TODO: remove this ugly button when we integrate project configuration into change detection flow
-            className="project-configuration-editor__update-btn"
-            disabled={
-              isReadOnly ||
-              configState.updatingConfigurationState.isInProgress ||
-              currentProjectConfiguration.hashCode ===
-                configState.originalConfig.hashCode
-            }
-            onClick={updateConfigs}
-            tabIndex={-1}
-          >
-            Update
-          </button>
+          <div className="project-configuration-editor__save">
+            {hasConfigChanges && (
+              <span className="project-configuration-editor__save__hint">
+                Unsaved configuration changes
+              </span>
+            )}
+            <button
+              // TODO: remove this button when we integrate project configuration into change detection flow
+              className={clsx('project-configuration-editor__save__btn', {
+                'project-configuration-editor__save__btn--active':
+                  hasConfigChanges,
+              })}
+              disabled={
+                isReadOnly ||
+                configState.updatingConfigurationState.isInProgress ||
+                !hasConfigChanges
+              }
+              onClick={updateConfigs}
+              tabIndex={-1}
+              title={
+                hasConfigChanges
+                  ? 'Save the configuration changes to the workspace'
+                  : 'No configuration changes to save'
+              }
+            >
+              Update configuration
+            </button>
+          </div>
         </PanelHeader>
         <PanelHeader className="project-configuration-editor__tabs__header">
           <div className="project-configuration-editor__tabs">

@@ -1,0 +1,80 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// A scrolling column of form sections (see `EditorForm` and `EditorFormSection`)
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  height: 100%;
+  padding: 2rem 2.4rem 4rem;
+  overflow-y: auto;
+  background: var(--color-bg-app);
+}
+
+.editor-form-section {
+  width: 100%;
+  max-width: 96rem;
+  padding: 1.8rem 2rem 2rem;
+  border: 0.1rem solid var(--color-border-subtle);
+  border-radius: 0.6rem;
+  background: var(--color-bg-panel);
+
+  &__header {
+    margin-bottom: 1.6rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 0.1rem solid var(--color-border-subtle);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  &__description {
+    margin: 0.4rem 0 0;
+    font-size: 1.3rem;
+    color: var(--color-text-muted);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+
+    // form sections bring their own spacing; inside a card they stack with the body's gap
+    .panel__content__form__section {
+      margin: 0;
+      padding: 0;
+    }
+
+    .panel__content__form__section + .panel__content__form__section {
+      margin-top: 0;
+    }
+
+    .panel__content__form__section__header__label {
+      margin-bottom: 0.4rem;
+      font-size: 1.3rem;
+    }
+
+    .panel__content__form__section__header__prompt {
+      margin-bottom: 0.6rem;
+      font-size: 1.25rem;
+    }
+  }
+}
