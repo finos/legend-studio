@@ -560,5 +560,9 @@ test(
     await waitFor(() => expect(renderResult.queryByRole('dialog')).toBeNull());
     expect(sdlc.createWorkspace).toHaveBeenCalledTimes(1);
     expect(sdlc.performEntityChanges).not.toHaveBeenCalled();
+    expect(sdlc.getEntities).not.toHaveBeenCalledWith(
+      PROJECT_ID,
+      expect.objectContaining({ workspaceId: 'uml-copy' }),
+    );
   },
 );

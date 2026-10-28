@@ -1044,6 +1044,12 @@ export class WorkspaceSetupStore {
           // NOTE: the workspace exists without the copy: list it, and keep the
           // modal open to try the copy again or to delete the workspace
           this.workspaces.push(newWorkspace);
+          if (this.workspaceCopyState !== copy) {
+            // the modal was closed while copying
+            this.applicationStore.notificationService.notifyWarning(
+              `Workspace '${newWorkspace.workspaceId}' is created, but copying the changes of ${copy.source.workspaceId} failed: ${error.message}`,
+            );
+          }
           this.applicationStore.logService.error(
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
             error,

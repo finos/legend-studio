@@ -146,6 +146,10 @@ export class WorkspaceCopyState {
   *copyTo(workspace: Workspace): GeneratorFn<void> {
     this.copyState.inProgress();
     this.copyError = undefined;
+    if (!this.changes.length) {
+      this.copyState.pass();
+      return;
+    }
     try {
       // NOTE: read what the new workspace holds, not what the line held when
       // the copy was previewed: the line may have moved since, or an earlier
