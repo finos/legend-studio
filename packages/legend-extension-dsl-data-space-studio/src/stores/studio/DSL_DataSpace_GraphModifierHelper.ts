@@ -170,7 +170,9 @@ export const dataSpace_removeElement = action(
   (dataSpace: DataSpace, element: DataSpaceElementPointer): void => {
     if (dataSpace.elements) {
       const index = dataSpace.elements.indexOf(element);
-      dataSpace.elements.splice(index, 1);
+      if (index !== -1) {
+        dataSpace.elements.splice(index, 1);
+      }
     }
   },
 );
@@ -194,7 +196,9 @@ export const dataSpace_removeExecutable = action(
   (dataSpace: DataSpace, executable: DataSpaceExecutable): void => {
     if (dataSpace.executables) {
       const index = dataSpace.executables.indexOf(executable);
-      dataSpace.executables.splice(index, 1);
+      if (index !== -1) {
+        dataSpace.executables.splice(index, 1);
+      }
     }
   },
 );
