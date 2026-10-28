@@ -203,23 +203,6 @@
       color: var(--color-text-on-accent);
     }
   }
-
-  &__advanced {
-    &__project-type__info {
-      padding-bottom: 0.5rem;
-    }
-
-    &__caution__btn {
-      @include flexCenter;
-
-      width: 20rem;
-      height: 3.4rem;
-      padding: 0 1rem;
-      background: var(--color-accent);
-      color: var(--color-text-on-accent);
-      cursor: pointer;
-    }
-  }
 }
 
 .project-dependency-editor {
@@ -842,6 +825,140 @@
     &[disabled] {
       cursor: not-allowed;
       opacity: 0.6;
+    }
+  }
+}
+
+// the advanced tab: dependency tests and the project type
+.project-advanced-editor {
+  &__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0;
+    text-align: left;
+    background: none;
+    cursor: pointer;
+
+    svg {
+      flex: 0 0 auto;
+      margin-top: 0.1rem;
+      font-size: 1.8rem;
+      color: var(--color-text-muted);
+    }
+
+    &--checked svg {
+      color: var(--color-accent);
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+    }
+
+    &[disabled] svg {
+      color: var(--color-text-disabled);
+    }
+
+    &__text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    &__label {
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    &__hint {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__types {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  &__type {
+    padding: 1.2rem 1.4rem;
+    border: 0.1rem solid var(--color-border-subtle);
+    border-radius: 0.6rem;
+    background: var(--color-bg-app);
+
+    &--current {
+      border-color: var(--color-accent);
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
+
+    &__name {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    &__badge {
+      padding: 0 0.7rem;
+      border-radius: 0.9rem;
+      line-height: 1.8rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--color-text-on-accent);
+      background: var(--color-accent);
+
+      &--muted {
+        color: var(--color-text-muted);
+        background: var(--color-bg-tag);
+      }
+    }
+
+    &__description {
+      margin: 0;
+      font-size: 1.3rem;
+      line-height: 1.9rem;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  &__change-type {
+    @include flexVCenter;
+
+    gap: 1.2rem;
+
+    &__btn {
+      height: 2.8rem;
+      padding: 0 1.2rem;
+      border: 0.1rem solid var(--color-status-warn);
+      border-radius: 0.4rem;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--color-status-warn);
+      background: transparent;
+      cursor: pointer;
+
+      &:hover:not([disabled]) {
+        color: var(--color-text-on-accent);
+        background: var(--color-status-warn);
+      }
+
+      &[disabled] {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+
+    &__hint {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
     }
   }
 }

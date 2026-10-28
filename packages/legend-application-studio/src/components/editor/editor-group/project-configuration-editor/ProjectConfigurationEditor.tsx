@@ -28,7 +28,6 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   Panel,
-  PanelForm,
   CheckSquareIcon,
   SquareIcon,
   PencilEditIcon,
@@ -554,6 +553,13 @@ const ProjectPlatformVersionEditor = observer(
   },
 );
 
+const PROJECT_TYPE_DESCRIPTIONS: Record<ProjectType, string> = {
+  [ProjectType.MANAGED]:
+    'The SDLC server manages the build and deployment of the project, so releases and dependency management work across Legend. Only change this if your own build can handle these operations and you know what managed projects provide.',
+  [ProjectType.EMBEDDED]:
+    "The project has its own build, managed directly in its version control system (GitLab, GitHub, and so on). The project's owners manage that build, including the steps that make releases and dependency management work. The SDLC server still decides where element files go, according to the project structure version.",
+};
+
 const ProjectAdvancedEditor = observer(
   (props: {
     projectConfig: ProjectConfiguration;
@@ -565,15 +571,14 @@ const ProjectAdvancedEditor = observer(
     const applicationStore = useApplicationStore();
     const currentProjectType = projectConfig.projectType ?? ProjectType.MANAGED;
     const isEmbeddedMode = currentProjectType === ProjectType.EMBEDDED;
-    const managedModeBlurb =
-      'Managed Projects are managed by our SDLC server, which includes managing the build and deployment of your project.This enables rich features such as releasing and dependency management work within our ecosystem.This is the recommended mode and should not be changed unless your customized build is robust to handle these operations and you are aware of the different features our managed mode provides.';
-    const embeddedModeBlurb =
-      'Embedded Projects have their own customized build. The build is managed directly on the underlying version system (gitlab, github etc) and the owners of the projects are responsible for managing their build and incorporating the necessary steps to enable features such as releasing and dependency management. Our SDLC server still manages the file structure of where the elements entities are located and correlate with the project structure version.';
+    const otherProjectType = isEmbeddedMode
+      ? ProjectType.MANAGED
+      : ProjectType.EMBEDDED;
     const managedToEmbedded =
-      'You are about to change from managed to embedded project type. This will cause your build files (pom, ci etc) to no longer be managed by our SDLC process. Your element folder structure will remain managed by us but your build will become your responsibility. Please ensure you understand the risks of changing over before continuing.';
+      'You are about to change from the managed to the embedded project type. Your build files (pom, CI, etc.) will no longer be managed by the SDLC server. Your element folder structure stays managed, but your build becomes your responsibility. Please make sure you understand the risks before continuing.';
     const embeddedToManaged =
-      'You are about to change from embedded to managed project type. Your build will now be managed by our SDLC sever in addition to your element folder structure. Your current build files will all be deleted and replaces with our own. Please ensure you understand the risks of changing over before continuing.';
-    const runDependencyMessage = `In addition to running your own tests, you can also configure to run all tests in your dependency projects.  This should be rarely used and mostly helped mitigate when you have override your dependencies. You should aim to have most of your tests in your current project.`;
+      'You are about to change from the embedded to the managed project type. The SDLC server will manage your build as well as your element folder structure. Your current build files will all be deleted and replaced with its own. Please make sure you understand the risks before continuing.';
+    const runDependencyTests = Boolean(projectConfig.runDependencyTests);
     const toggleRunDependency = (): void => {
       const newVal = !projectConfig.runDependencyTests;
       if (
@@ -610,87 +615,88 @@ const ProjectAdvancedEditor = observer(
     };
 
     return (
-      <Panel>
-        <PanelForm>
-          <div className="panel__content__form__section__header__label">
-            {`Dependency Tests`}
-          </div>
-          <div className="documentation-preview">
-            <div className="documentation-preview__text">
-              <div className="project-configuration-editor__advanced__project-type__info">
-                {runDependencyMessage}
-              </div>
-            </div>
-          </div>
-          <div className="platform-configurations-editor__dependencies">
-            <div className="platform-configurations-editor__dependencies__header">
-              <div className="platform-configurations-editor__dependencies__header__left">
-                <div
-                  className="platform-configurations-editor__toggler"
-                  onClick={toggleRunDependency}
-                >
-                  <button
-                    className={clsx(
-                      'platform-configurations-editor__toggler__btn',
-                      {
-                        'platform-configurations-editor__toggler__btn--toggled':
-                          Boolean(projectConfig.runDependencyTests),
-                      },
-                    )}
-                    disabled={isReadOnly}
-                    tabIndex={-1}
-                  >
-                    {projectConfig.runDependencyTests ? (
-                      <CheckSquareIcon />
-                    ) : (
-                      <SquareIcon />
-                    )}
-                  </button>
-                  <div className="platform-configurations-editor__toggler__prompt">
-                    {`Run Dependency Tests`}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </PanelForm>
-        <PanelForm>
-          <div className="panel__content__form__section__header__label">
-            {`Project Type: ${prettyCONSTName(currentProjectType)} `}
-          </div>
-          <div className="documentation-preview">
-            <div className="documentation-preview__text">
-              <div className="project-configuration-editor__advanced__project-type__info">
-                {managedModeBlurb}
-              </div>
-              <div className="project-configuration-editor__advanced__project-type__info">
-                {embeddedModeBlurb}
-              </div>
-            </div>
-
-            <div className="documentation-preview__hint">
-              <DocumentationLink
-                documentationKey={
-                  LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_EMBEDDED_MODE_PROJECT_TYPE
-                }
-              />
-            </div>
-          </div>
-          <div className="platform-configurations-editor__dependencies">
-            <div className="platform-configurations-editor__dependencies__header">
-              <button
-                className="btn--dark btn--conflict btn--important project-configuration-editor__advanced__caution__btn"
-                onClick={changeProjectType}
-                tabIndex={-1}
+      <EditorForm>
+        <EditorFormSection
+          title="Dependency tests"
+          description="Whether builds also run the tests of the projects this project depends on."
+        >
+          <button
+            className={clsx('project-advanced-editor__checkbox', {
+              'project-advanced-editor__checkbox--checked': runDependencyTests,
+            })}
+            role="checkbox"
+            aria-checked={runDependencyTests}
+            disabled={isReadOnly}
+            onClick={toggleRunDependency}
+          >
+            {runDependencyTests ? <CheckSquareIcon /> : <SquareIcon />}
+            <span className="project-advanced-editor__checkbox__text">
+              <span className="project-advanced-editor__checkbox__label">
+                Run dependency tests
+              </span>
+              <span className="project-advanced-editor__checkbox__hint">
+                Rarely needed: it mostly helps when you override dependency
+                versions. Keep most of your tests in this project.
+              </span>
+            </span>
+          </button>
+        </EditorFormSection>
+        <EditorFormSection
+          title="Project type"
+          description="Who builds and releases this project."
+          actions={
+            <DocumentationLink
+              documentationKey={
+                LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_EMBEDDED_MODE_PROJECT_TYPE
+              }
+            />
+          }
+        >
+          <div className="project-advanced-editor__types">
+            {[ProjectType.MANAGED, ProjectType.EMBEDDED].map((type) => (
+              <div
+                key={type}
+                className={clsx('project-advanced-editor__type', {
+                  'project-advanced-editor__type--current':
+                    type === currentProjectType,
+                })}
               >
-                {`Change to ${
-                  isEmbeddedMode ? 'Managed Type' : 'Embedded Type'
-                }`}
-              </button>
-            </div>
+                <div className="project-advanced-editor__type__header">
+                  <span className="project-advanced-editor__type__name">
+                    {prettyCONSTName(type)}
+                  </span>
+                  {type === currentProjectType && (
+                    <span className="project-advanced-editor__type__badge">
+                      Current
+                    </span>
+                  )}
+                  {type === ProjectType.MANAGED && (
+                    <span className="project-advanced-editor__type__badge project-advanced-editor__type__badge--muted">
+                      Recommended
+                    </span>
+                  )}
+                </div>
+                <p className="project-advanced-editor__type__description">
+                  {PROJECT_TYPE_DESCRIPTIONS[type]}
+                </p>
+              </div>
+            ))}
           </div>
-        </PanelForm>
-      </Panel>
+          <div className="project-advanced-editor__change-type">
+            <button
+              className="project-advanced-editor__change-type__btn"
+              disabled={isReadOnly}
+              onClick={changeProjectType}
+            >
+              Change to {prettyCONSTName(otherProjectType)}…
+            </button>
+            <span className="project-advanced-editor__change-type__hint">
+              This is saved straight away; it does not wait for Update
+              configuration.
+            </span>
+          </div>
+        </EditorFormSection>
+      </EditorForm>
     );
   },
 );

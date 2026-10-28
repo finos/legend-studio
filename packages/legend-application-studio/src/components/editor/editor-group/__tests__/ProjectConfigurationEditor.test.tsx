@@ -24,6 +24,7 @@ import {
   getByText,
   getByTitle,
   getByLabelText,
+  getByRole,
   queryByText,
   queryAllByText,
 } from '@testing-library/react';
@@ -36,6 +37,7 @@ import {
 import { TEST_DATA__EmptyProjectDependencyReport } from './TEST_DATA__ProjectDependencyReport.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { EDITOR_MODE } from '../../../../stores/editor/EditorConfig.js';
 
 let renderResult: RenderResult;
 
@@ -236,5 +238,71 @@ test(
       'legend-sdlc:0.201.0',
     ]);
     await waitFor(() => getByText(editorGroupContent, '4.95.1 available'));
+  },
+);
+
+test(
+  integrationTest('Advanced settings: dependency tests and the project type'),
+  async () => {
+    const editorGroupContent = openConfigurationTab('Advanced');
+    const runDependencyTests = await waitFor(() =>
+      getByRole(editorGroupContent, 'checkbox', {
+        name: /Run dependency tests/,
+      }),
+    );
+    expect(runDependencyTests.getAttribute('aria-checked')).toBe('false');
+
+    fireEvent.click(runDependencyTests);
+
+    expect(
+      MOCK__editorStore.projectConfigurationEditorState
+        .currentProjectConfiguration.runDependencyTests,
+    ).toBe(true);
+    await waitFor(() =>
+      expect(runDependencyTests.getAttribute('aria-checked')).toBe('true'),
+    );
+
+    // the project is managed: changing its type asks first
+    getByText(editorGroupContent, 'Current');
+    fireEvent.click(getByText(editorGroupContent, 'Change to Embedded…'));
+    await renderResult.findByText(
+      /You are about to change from the managed to the embedded project type/,
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Platform versions and advanced settings are read-only in viewer mode',
+  ),
+  async () => {
+    act(() => MOCK__editorStore.setMode(EDITOR_MODE.VIEWER));
+    const editorGroupContent = openConfigurationTab('Platform Configurations');
+    await waitFor(() => getByText(editorGroupContent, 'legend-engine'));
+    expect(
+      (
+        getByLabelText(
+          editorGroupContent,
+          /Freeze versions/,
+        ) as HTMLInputElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      getByText(editorGroupContent, 'Enter versions manually').closest('button')
+        ?.disabled,
+    ).toBe(true);
+
+    fireEvent.click(getByText(editorGroupContent, 'Advanced'));
+    await waitFor(() =>
+      expect(
+        getByRole(editorGroupContent, 'checkbox', {
+          name: /Run dependency tests/,
+        }).hasAttribute('disabled'),
+      ).toBe(true),
+    );
+    expect(
+      getByText(editorGroupContent, 'Change to Embedded…').closest('button')
+        ?.disabled,
+    ).toBe(true);
   },
 );
