@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { getCodeEditorThemeForAppTheme } from '@finos/legend-code-editor';
 import {
   DEFAULT_ERROR_FOREGROUND_COLOR,
@@ -51,6 +51,22 @@ export const useDataCubeColorTheme = () =>
 export const getDataCubeColorThemeClassName = (
   theme: DataCubeColorTheme,
 ): string => (theme === DataCubeColorTheme.DARK ? 'data-cube-theme--dark' : '');
+
+const DATA_CUBE_PAGE_CLASS_NAME = 'data-cube-page';
+
+/**
+ * Marks the page as owned by DataCube, i.e. DataCube is the whole page rather than embedded.
+ *
+ * NOTE: popups portaled by shared components (e.g. selector menus) can't carry the theme class,
+ * so the dark theme styles them with page-wide rules, as well as the page background. These rules
+ * only apply to a page marked as owned by DataCube, so they never re-theme the host's own popups.
+ */
+export const useDataCubeOwnsPage = (): void => {
+  useEffect(() => {
+    document.body.classList.add(DATA_CUBE_PAGE_CLASS_NAME);
+    return () => document.body.classList.remove(DATA_CUBE_PAGE_CLASS_NAME);
+  }, []);
+};
 
 export const getDataCubeCodeEditorTheme = (theme: DataCubeColorTheme) =>
   getCodeEditorThemeForAppTheme(theme !== DataCubeColorTheme.DARK);

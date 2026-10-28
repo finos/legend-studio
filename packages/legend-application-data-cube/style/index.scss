@@ -73,7 +73,7 @@
 // of the light palette
 :root,
 .data-cube-theme--dark,
-body:has(.data-cube-theme--dark) > .MuiPopover-root {
+body.data-cube-page:has(.data-cube-theme--dark) > .MuiPopover-root {
   --value-spec-border-color: var(--tw-color-neutral-200);
   --value-spec-error-color: var(--tw-color-red-500);
   --value-spec-btn-backgorund-color: var(--tw-color-neutral-200);
@@ -87,7 +87,7 @@ body:has(.data-cube-theme--dark) > .MuiPopover-root {
 }
 
 .data-cube-theme--dark,
-body:has(.data-cube-theme--dark) > .MuiPopover-root {
+body.data-cube-page:has(.data-cube-theme--dark) > .MuiPopover-root {
   // the faint shade used for disabled buttons barely shows on the dark surfaces
   --value-spec-btn-color-disabled: var(--color-text-disabled);
 }
