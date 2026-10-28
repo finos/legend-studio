@@ -73,10 +73,12 @@ export interface WorkspaceSourceOption {
   value: PatchOption['value'] | Workspace;
 }
 
-const HEAD_SOURCE_OPTION: WorkspaceSourceOption = {
+// NOTE: `DEFAULT_WORKSPACE_SOURCE` comes from a module that imports this one,
+// so it is only read once the modal renders
+const buildHeadSourceOption = (): WorkspaceSourceOption => ({
   label: DEFAULT_WORKSPACE_SOURCE,
   value: DEFAULT_WORKSPACE_SOURCE,
-};
+});
 
 /**
  * The line a workspace made from this source is on: `undefined` for HEAD,
@@ -335,7 +337,7 @@ export const CreateWorkspaceModal = observer(
     const [workspaceName, setWorkspaceName] = useState('');
     const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(true);
     const [selectedSourceOption, setSelectedSourceOption] =
-      useState<WorkspaceSourceOption | null>(HEAD_SOURCE_OPTION);
+      useState<WorkspaceSourceOption | null>(buildHeadSourceOption);
     const copy = setupStore.workspaceCopyState;
     const isBusy =
       setupStore.createWorkspaceState.isInProgress ||
@@ -350,7 +352,7 @@ export const CreateWorkspaceModal = observer(
     const sourceGroups = [
       {
         label: 'Start from the project',
-        options: [HEAD_SOURCE_OPTION].concat(
+        options: [buildHeadSourceOption()].concat(
           setupStore.patches.map((p) => ({
             label: `patch/${p.patchReleaseVersionId.id}`,
             value: p,
