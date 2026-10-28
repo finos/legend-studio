@@ -15,6 +15,7 @@
  */
 
 import { test, expect, beforeEach } from '@jest/globals';
+import { runInAction } from 'mobx';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import { TEST__buildGraphWithEntities } from '@finos/legend-graph/test';
@@ -345,5 +346,80 @@ test(
     specState.setStageId(named, '');
     expect(getStage(2).id).toBe('test::tMapping');
     expect(named.id).toBe('test::tMapping (2)');
+  },
+);
+
+test(unitTest('Flattening runs every generation in the first stage'), () => {
+  expect(specState.canFlattenStages).toBe(true);
+  specState.flattenStages();
+
+  expect(specState.stageCount).toBe(1);
+  // the first stage keeps its id; the elements follow in the order they ran
+  expect(getSerializedNodes()).toStrictEqual([
+    {
+      generationElements: [
+        'test::tMapping',
+        'test::tMapping2',
+        'test::tMapping3',
+      ],
+      id: 'theGroup',
+    },
+  ]);
+});
+
+test(
+  unitTest(
+    'Flattening into a stage written as a single element writes the plural form',
+  ),
+  () => {
+    // the stage written with the singular field runs first
+    specState.moveStage(1, 0);
+    specState.flattenStages();
+
+    // the singular field cannot hold three elements, so the form is given up - and the id kept
+    expect(getSerializedNodes()).toStrictEqual([
+      {
+        generationElements: [
+          'test::tMapping3',
+          'test::tMapping',
+          'test::tMapping2',
+        ],
+        id: 'theSingleElement',
+      },
+    ]);
+  },
+);
+
+test(unitTest('Stages that share an element cannot be flattened'), () => {
+  // the same element in two stages is legal, but one stage cannot run it twice
+  specState.addElementAsNewStage(getElement('test::tMapping'));
+
+  expect(specState.flattenBlockers).toEqual(['test::tMapping']);
+  expect(specState.canFlattenStages).toBe(false);
+  specState.flattenStages();
+  expect(specState.stageCount).toBe(3);
+});
+
+test(
+  unitTest('There is nothing to flatten in one stage, or when read-only'),
+  () => {
+    runInAction(() => {
+      specState.isReadOnly = true;
+    });
+    expect(specState.canFlattenStages).toBe(false);
+    specState.flattenStages();
+    expect(specState.stageCount).toBe(2);
+
+    runInAction(() => {
+      specState.isReadOnly = false;
+    });
+    const secondStage = getStage(1);
+    specState.moveElementToStage(
+      secondStage,
+      guaranteeNonNullable(secondStage.generationElements[0]),
+      getStage(0),
+    );
+    expect(specState.stageCount).toBe(1);
+    expect(specState.canFlattenStages).toBe(false);
   },
 );
