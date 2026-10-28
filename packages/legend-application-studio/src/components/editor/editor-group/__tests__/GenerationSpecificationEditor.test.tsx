@@ -23,6 +23,7 @@ import {
   getByLabelText,
   getByText,
   queryByLabelText,
+  queryByRole,
   queryByText,
   waitFor,
 } from '@testing-library/react';
@@ -432,37 +433,22 @@ test(
   },
 );
 
-test(
-  integrationTest(
-    'Every stage can be flattened into one, after a confirmation',
-  ),
-  async () => {
-    const editor = await setUpEditor(true);
-    await waitFor(() => getByText(editor, 'Stage 2'));
+test(integrationTest('One click flattens every stage into one'), async () => {
+  const editor = await setUpEditor(true);
+  await waitFor(() => getByText(editor, 'Stage 2'));
 
-    // cancelling changes nothing
-    fireEvent.click(getByText(editor, 'Flatten into one stage'));
-    await waitFor(() =>
-      getByText(document.body, 'Run all 3 generations in one stage?'),
-    );
-    fireEvent.click(getByText(document.body, 'Cancel'));
-    getByText(editor, '2 stages, 2 recompiles');
+  fireEvent.click(getByText(editor, 'Flatten into one stage'));
 
-    fireEvent.click(getByText(editor, 'Flatten into one stage'));
-    await waitFor(() =>
-      getByText(document.body, 'Run all 3 generations in one stage?'),
-    );
-    fireEvent.click(getByText(document.body, 'Flatten'));
-
-    await waitFor(() => getByText(editor, '1 stage, 1 recompile'));
-    getByText(
-      editor,
-      '3 generations, run together against the same compiled model',
-    );
-    // one stage has nothing left to flatten
-    expect(queryByText(editor, 'Flatten into one stage')).toBeNull();
-  },
-);
+  // no confirmation stands in the way
+  await waitFor(() => getByText(editor, '1 stage, 1 recompile'));
+  expect(queryByRole(document.body, 'dialog')).toBeNull();
+  getByText(
+    editor,
+    '3 generations, run together against the same compiled model',
+  );
+  // one stage has nothing left to flatten
+  expect(queryByText(editor, 'Flatten into one stage')).toBeNull();
+});
 
 test(
   integrationTest('Stages that share an element cannot be flattened'),
