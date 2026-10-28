@@ -38,6 +38,7 @@ import {
   RawProjectDependencyReport,
   buildDependencyReport,
 } from '@finos/legend-server-depot';
+import { getNewerReleasedVersion } from '../project-configuration-editor/ProjectDependencyEditor.js';
 
 let renderResult: RenderResult;
 
@@ -156,8 +157,8 @@ test(integrationTest('Test Project Report'), async () => {
   // See: https://davidwcai.medium.com/react-testing-library-and-the-not-wrapped-in-act-errors-491a5629193b
   await waitFor(() => getByText(editorGroup, 'PROD-1'));
 
-  await findByText(editorGroup, 'View Dependency Explorer');
-  fireEvent.click(getByText(editorGroup, 'View Dependency Explorer'));
+  await findByText(editorGroup, 'Dependency Explorer');
+  fireEvent.click(getByText(editorGroup, 'Dependency Explorer'));
   const rootId = 'com.company3:artifact29:2.0.0';
   const dependencyExplorer = await waitFor(() =>
     renderResult.getByRole('dialog'),
@@ -198,6 +199,34 @@ test(integrationTest('Test Project Report'), async () => {
   expect(getByText(dependencyExplorer, 'No Conflicts')).toBeDefined();
 });
 
+test(
+  integrationTest(
+    'Dependency summary shows the tree and offers newer released versions',
+  ),
+  async () => {
+    const editorGroup = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
+    );
+    fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
+    await waitFor(() => getByText(editorGroup, 'PROD-1'));
+
+    // 68 distinct projects in the report's tree, no conflicts
+    await findByText(editorGroup, '68');
+    getByText(editorGroup, 'projects in the tree');
+    getByText(editorGroup, 'conflicts');
+    expect(queryByText(editorGroup, 'See where they come from')).toBeNull();
+
+    // prod-1 is on 2.0.0 while 3.0.0 is released; prod-2 is already on 3.0.0
+    const updateButton = await findByText(editorGroup, '3.0.0 available');
+    expect(queryAllByText(editorGroup, /available$/)).toHaveLength(1);
+    fireEvent.click(updateButton);
+    await waitFor(() =>
+      expect(queryByText(editorGroup, '3.0.0 available')).toBeNull(),
+    );
+    expect(queryAllByText(editorGroup, '3.0.0')).toHaveLength(2);
+  },
+);
+
 test(integrationTest('Test Building of Dependency Report'), async () => {
   const rawdependencyReport = RawProjectDependencyReport.serialization.fromJson(
     TEST_DATA__ProjectDependencyReport,
@@ -218,3 +247,26 @@ test(integrationTest('Test Building of Dependency Report'), async () => {
   expect(rootNode.dependencies.length).toBe(5);
   expect(rootNode.dependants.length).toBe(0);
 });
+
+test(
+  integrationTest('Newer released versions ignore snapshots and prereleases'),
+  () => {
+    const versions = [
+      '1.0.0',
+      '2.0.0',
+      '2.1.0-rc1',
+      '3.0.0-SNAPSHOT',
+      'master-SNAPSHOT',
+    ];
+    expect(getNewerReleasedVersion('1.0.0', versions)).toBe('2.0.0');
+    expect(getNewerReleasedVersion('2.0.0', versions)).toBeUndefined();
+    // the dependency itself is on a snapshot: nothing to offer
+    expect(
+      getNewerReleasedVersion('master-SNAPSHOT', versions),
+    ).toBeUndefined();
+    // numeric, not alphabetical: 10.0.0 is newer than 9.0.0
+    expect(getNewerReleasedVersion('9.0.0', ['9.0.0', '10.0.0'])).toBe(
+      '10.0.0',
+    );
+  },
+);
