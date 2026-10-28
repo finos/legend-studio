@@ -110,6 +110,10 @@ export * from './stores/editor/editor-state/element-editor-state/mapping/Mapping
 export { MappingElementState } from './stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/ElementIconUtils.js';
+export {
+  EditorForm,
+  EditorFormSection,
+} from './components/editor/editor-group/EditorForm.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**
