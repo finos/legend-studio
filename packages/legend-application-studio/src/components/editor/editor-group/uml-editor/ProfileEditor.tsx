@@ -21,11 +21,8 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   InputWithInlineValidation,
-  PlusIcon,
   TimesIcon,
-  LockIcon,
   PanelEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
@@ -37,12 +34,23 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
+  type AnnotatedElement,
   type Profile,
+  type PureModel,
   type Stereotype,
   stub_Tag,
   stub_Stereotype,
   type Tag,
+  Association,
+  Class,
+  ConcreteFunctionDefinition,
+  Enumeration,
 } from '@finos/legend-graph';
+import {
+  ElementEditorEmptyState,
+  ElementEditorHeader,
+  ElementEditorTabs,
+} from '../ElementEditorLayout.js';
 import {
   profile_addTag,
   profile_addStereotype,
@@ -57,6 +65,97 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__
 import { useRef, useCallback } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
 
+type ProfileValueUser = {
+  label: string;
+  path: string;
+};
+
+/**
+ * Where each tag and stereotype of the profile is used in the project's own model: on its
+ * elements, and on the properties of its classes and associations and the values of its
+ * enumerations
+ */
+const collectProfileUsage = (
+  graph: PureModel,
+  profile: Profile,
+): Map<Tag | Stereotype, ProfileValueUser[]> => {
+  const usage = new Map<Tag | Stereotype, ProfileValueUser[]>();
+  const addUser = (value: Tag | Stereotype, user: ProfileValueUser): void => {
+    const users = usage.get(value) ?? [];
+    if (!users.some((existing) => existing.path === user.path)) {
+      usage.set(value, [...users, user]);
+    }
+  };
+  const record = (
+    annotatedElement: AnnotatedElement,
+    user: ProfileValueUser,
+  ): void => {
+    annotatedElement.taggedValues.forEach((taggedValue) => {
+      if (taggedValue.tag.value._OWNER === profile) {
+        addUser(taggedValue.tag.value, user);
+      }
+    });
+    annotatedElement.stereotypes.forEach((stereotype) => {
+      if (stereotype.value._OWNER === profile) {
+        addUser(stereotype.value, user);
+      }
+    });
+  };
+  graph.allOwnElements.forEach((element) => {
+    const label =
+      element instanceof ConcreteFunctionDefinition
+        ? element.functionName
+        : element.name;
+    record(element, { label, path: element.path });
+    const parts: (AnnotatedElement & { name: string })[] =
+      element instanceof Class
+        ? [...element.properties, ...element.derivedProperties]
+        : element instanceof Association
+          ? element.properties
+          : element instanceof Enumeration
+            ? element.values
+            : [];
+    parts.forEach((part) =>
+      record(part, {
+        label: `${label}.${part.name}`,
+        path: `${element.path}.${part.name}`,
+      }),
+    );
+  });
+  usage.forEach((users) =>
+    users.sort((a, b) => a.label.localeCompare(b.label)),
+  );
+  return usage;
+};
+
+const ProfileValueUsage = (props: {
+  users: ProfileValueUser[];
+}): React.ReactNode => {
+  const { users } = props;
+  if (!users.length) {
+    return (
+      <div className="profile-table__usage profile-table__usage--none">
+        Not used
+      </div>
+    );
+  }
+  return (
+    <div
+      className="profile-table__usage"
+      title={users.map((user) => user.path).join('\n')}
+    >
+      {users.slice(0, 2).map((user) => (
+        <span key={user.path} className="profile-table__usage__item">
+          {user.label}
+        </span>
+      ))}
+      {users.length > 2 && (
+        <span className="profile-table__usage__more">+{users.length - 2}</span>
+      )}
+    </div>
+  );
+};
+
 type TagDragSource = {
   tag: Tag;
 };
@@ -69,11 +168,12 @@ const TagBasicEditor = observer(
     deleteValue: () => void;
     _profile: Profile;
     isReadOnly: boolean;
+    users: ProfileValueUser[];
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);
 
-    const { tag, _profile, deleteValue, isReadOnly } = props;
+    const { tag, _profile, deleteValue, isReadOnly, users } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(tag, event.target.value);
     };
@@ -140,6 +240,7 @@ const TagBasicEditor = observer(
             placeholder="Tag value"
             error={isTagDuplicated(tag) ? 'Duplicated tag' : undefined}
           />
+          <ProfileValueUsage users={users} />
           {!isReadOnly && (
             <button
               className="uml-element-editor__remove-btn"
@@ -169,11 +270,12 @@ const StereotypeBasicEditor = observer(
     deleteStereotype: () => void;
     _profile: Profile;
     isReadOnly: boolean;
+    users: ProfileValueUser[];
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);
 
-    const { stereotype, _profile, deleteStereotype, isReadOnly } = props;
+    const { stereotype, _profile, deleteStereotype, isReadOnly, users } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(stereotype, event.target.value);
     };
@@ -247,6 +349,7 @@ const StereotypeBasicEditor = observer(
                 : undefined
             }
           />
+          <ProfileValueUsage users={users} />
           {!isReadOnly && (
             <button
               className="uml-element-editor__remove-btn"
@@ -281,7 +384,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   let addButtonTitle = '';
   switch (selectedTab) {
     case UML_EDITOR_TAB.TAGS:
-      addButtonTitle = 'Add tagged value';
+      addButtonTitle = 'Add tag';
       break;
     case UML_EDITOR_TAB.STEREOTYPES:
       addButtonTitle = 'Add stereotype';
@@ -306,6 +409,22 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile_deleteTag(profile, val);
+  const tabCounts: Partial<Record<UML_EDITOR_TAB, number>> = {
+    [UML_EDITOR_TAB.TAGS]: profile.p_tags.length,
+    [UML_EDITOR_TAB.STEREOTYPES]: profile.p_stereotypes.length,
+  };
+  const usage = collectProfileUsage(
+    editorStore.graphManagerState.graph,
+    profile,
+  );
+  const renderEmptyState = (): React.ReactNode => (
+    <ElementEditorEmptyState
+      title={`No ${prettyCONSTName(selectedTab).toLowerCase()} yet`}
+      description="Tags and stereotypes defined here can be applied to classes, properties, enumerations, functions and other elements."
+      actionLabel={addButtonTitle}
+      onAction={isReadOnly ? undefined : addValue}
+    />
+  );
 
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.PROFILE_EDITOR,
@@ -314,49 +433,36 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   return (
     <div className="uml-element-editor profile-editor">
       <Panel>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            {isReadOnly && (
-              <div className="uml-element-editor__header__lock">
-                <LockIcon />
-              </div>
-            )}
-            <div className="panel__header__title__label">profile</div>
-            <div className="panel__header__title__content">{profile.name}</div>
-          </div>
-        </div>
-        <div
-          data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
-          className="panel__header uml-element-editor__tabs__header"
-        >
-          <div className="uml-element-editor__tabs">
-            {tabs.map((tab) => (
-              <div
-                key={tab}
-                onClick={changeTab(tab)}
-                className={clsx('uml-element-editor__tab', {
-                  'uml-element-editor__tab--active': tab === selectedTab,
-                })}
-              >
-                {prettyCONSTName(tab)}
-              </div>
-            ))}
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              onClick={addValue}
-              disabled={isReadOnly}
-              tabIndex={-1}
-              title={addButtonTitle}
-            >
-              <PlusIcon />
-            </button>
-          </div>
-        </div>
+        <ElementEditorHeader
+          element={profile}
+          typeLabel="profile"
+          isReadOnly={isReadOnly}
+        />
+        <ElementEditorTabs
+          testId={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+          tabs={tabs.map((tab) => ({
+            id: tab,
+            label: prettyCONSTName(tab),
+            count: tabCounts[tab],
+          }))}
+          selectedTab={selectedTab}
+          onSelect={(tab): void => changeTab(tab)()}
+          addTitle={addButtonTitle}
+          onAdd={addValue}
+          disableAdd={isReadOnly}
+        />
         <PanelContent>
           {selectedTab === UML_EDITOR_TAB.TAGS && (
-            <PanelContentLists>
+            <PanelContentLists className="uml-table">
+              {profile.p_tags.length ? (
+                <div className="uml-table__header">
+                  <div className="uml-table__header__name">Tag</div>
+                  <div className="uml-table__header__detail">Used by</div>
+                  <div className="uml-table__header__actions" />
+                </div>
+              ) : (
+                renderEmptyState()
+              )}
               <DragPreviewLayer
                 labelGetter={(item: TagDragSource): string =>
                   item.tag.value === '' ? '(unknown)' : item.tag.value
@@ -370,12 +476,22 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   _profile={profile}
                   deleteValue={deleteTag(tag)}
                   isReadOnly={isReadOnly}
+                  users={usage.get(tag) ?? []}
                 />
               ))}
             </PanelContentLists>
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-            <PanelContentLists>
+            <PanelContentLists className="uml-table">
+              {profile.p_stereotypes.length ? (
+                <div className="uml-table__header">
+                  <div className="uml-table__header__name">Stereotype</div>
+                  <div className="uml-table__header__detail">Used by</div>
+                  <div className="uml-table__header__actions" />
+                </div>
+              ) : (
+                renderEmptyState()
+              )}
               <DragPreviewLayer
                 labelGetter={(item: StereotypeDragSource): string =>
                   item.stereotype.value === ''
@@ -391,6 +507,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
                   isReadOnly={isReadOnly}
+                  users={usage.get(stereotype) ?? []}
                 />
               ))}
             </PanelContentLists>
