@@ -228,12 +228,16 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       );
     }
     // navigate to the currently opened element immediately after entering text mode editor
-    if (
+    // NOTE: leaving form mode has already closed the tabs (they are cached so form mode can
+    // restore them), so fall back to the cached path of the tab that was current
+    const currentElementPath =
       this.editorStore.tabManagerState.currentTab instanceof ElementEditorState
-    ) {
+        ? this.editorStore.tabManagerState.currentTab.element.path
+        : this.editorStore.tabManagerState.cachedTabs?.currentTabElementPath;
+    if (currentElementPath) {
       const sourceInformation =
         this.grammarTextEditorState.sourceInformationIndex.get(
-          this.editorStore.tabManagerState.currentTab.element.path,
+          currentElementPath,
         );
       if (sourceInformation) {
         this.grammarTextEditorState.setForcedCursorPosition({
