@@ -176,10 +176,12 @@ const ProjectDependencyActions = observer(
       <>
         <div className="project-dependency-editor__summary">
           <div className="project-dependency-editor__stat">
-            <div className="project-dependency-editor__stat__value">
+            <span className="project-dependency-editor__stat__value">
               {props.directDependencyCount}
-            </div>
-            <div className="project-dependency-editor__stat__label">direct</div>
+            </span>
+            <span className="project-dependency-editor__stat__label">
+              direct
+            </span>
           </div>
           <button
             className="project-dependency-editor__stat"
@@ -191,12 +193,12 @@ const ProjectDependencyActions = observer(
                 : undefined
             }
           >
-            <div className="project-dependency-editor__stat__value">
+            <span className="project-dependency-editor__stat__value">
               {report ? projectsInTree : '–'}
-            </div>
-            <div className="project-dependency-editor__stat__label">
+            </span>
+            <span className="project-dependency-editor__stat__label">
               projects in the tree
-            </div>
+            </span>
           </button>
           <button
             className={clsx('project-dependency-editor__stat', {
@@ -206,12 +208,12 @@ const ProjectDependencyActions = observer(
             disabled={!hasConflicts}
             title="View any conflicts in your dependencies"
           >
-            <div className="project-dependency-editor__stat__value">
+            <span className="project-dependency-editor__stat__value">
               {report ? conflicts.length : '–'}
-            </div>
-            <div className="project-dependency-editor__stat__label">
+            </span>
+            <span className="project-dependency-editor__stat__label">
               {conflicts.length === 1 ? 'conflict' : 'conflicts'}
-            </div>
+            </span>
           </button>
           <div className="project-dependency-editor__summary__actions">
             {hasDependencyChanges && (
