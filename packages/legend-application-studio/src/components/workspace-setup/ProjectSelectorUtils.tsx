@@ -61,6 +61,13 @@ export const getProjectOptionLabelFormatter = (
       }
     };
 
+    // These buttons sit inside the selector, so keep their keys (e.g. Enter
+    // and Space) from reaching it: the selector would open its menu instead
+    const embeddedButtonProps = {
+      ...getSelectorInputOptionEmbeddedButtonProps(),
+      onKeyDown: (event: React.KeyboardEvent): void => event.stopPropagation(),
+    };
+
     return (
       <div className="project-selector__option">
         <div
@@ -86,9 +93,8 @@ export const getProjectOptionLabelFormatter = (
                 <button
                   type="button" // prevent this toggler being activated on form submission
                   className="project-selector__option__visit-btn"
-                  tabIndex={-1}
                   onClick={viewProject}
-                  {...getSelectorInputOptionEmbeddedButtonProps()}
+                  {...embeddedButtonProps}
                 >
                   <div className="project-selector__option__visit-btn__label">
                     view
@@ -102,9 +108,8 @@ export const getProjectOptionLabelFormatter = (
                 <button
                   className="project-selector__option__configure-btn"
                   type="button" // prevent this toggler being activated on form submission
-                  tabIndex={-1}
                   onClick={configure}
-                  {...getSelectorInputOptionEmbeddedButtonProps()}
+                  {...embeddedButtonProps}
                   title="The project has not been configured properly. Click to see the review and commit it to get complete the configuration."
                 >
                   <div className="project-selector__option__configure-btn__warning-icon">

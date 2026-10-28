@@ -19,7 +19,9 @@
 .project-selector__option {
   @include flexVCenter;
 
+  justify-content: space-between;
   width: 100%;
+  height: 100%;
 
   &__label {
     display: flex;
@@ -41,8 +43,8 @@
     }
   }
 
-  // Visit button — was a bright-grey chip (dark-grey-500 bg, dark-grey-200
-  // text). Folded to bg-tag with text-inverted; documented shift pattern.
+  // Visit button: a neutral chip, text-primary on bg-tag so it reads in both
+  // themes (text-inverted on bg-tag was about 2.4:1 in dark, 1.7:1 in light)
   &__visit-btn {
     display: flex;
     width: 6rem;
@@ -57,7 +59,7 @@
       background: var(--color-bg-tag);
       border-radius: 0.2rem 0 0 0.2rem;
       font-size: 1.2rem;
-      color: var(--color-text-inverted);
+      color: var(--color-text-primary);
       font-weight: 500;
     }
 
@@ -71,7 +73,7 @@
 
       svg {
         font-size: 1.6rem;
-        color: var(--color-text-inverted);
+        color: var(--color-text-primary);
       }
     }
 
