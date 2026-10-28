@@ -149,11 +149,9 @@ test(
     getByText(editorGroupContent, '4.95.1');
     expect(queryAllByText(editorGroupContent, 'Latest')).toHaveLength(2);
     expect(
-      (
-        getByLabelText(
-          editorGroupContent,
-          /Use the latest versions/,
-        ) as HTMLInputElement
+      getByLabelText<HTMLInputElement>(
+        editorGroupContent,
+        /Use the latest versions/,
       ).checked,
     ).toBe(true);
 
@@ -280,12 +278,8 @@ test(
     const editorGroupContent = openConfigurationTab('Platform Configurations');
     await waitFor(() => getByText(editorGroupContent, 'legend-engine'));
     expect(
-      (
-        getByLabelText(
-          editorGroupContent,
-          /Freeze versions/,
-        ) as HTMLInputElement
-      ).disabled,
+      getByLabelText<HTMLInputElement>(editorGroupContent, /Freeze versions/)
+        .disabled,
     ).toBe(true);
     expect(
       getByText(editorGroupContent, 'Enter versions manually').closest('button')
