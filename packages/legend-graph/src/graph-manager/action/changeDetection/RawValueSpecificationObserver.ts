@@ -58,6 +58,7 @@ export const observe_RawVariableExpression = skipObserved(
       name: observable,
       multiplicity: observable,
       typeArguments: observable,
+      typeVariableValues: observable,
       hashCode: computed,
     });
 
