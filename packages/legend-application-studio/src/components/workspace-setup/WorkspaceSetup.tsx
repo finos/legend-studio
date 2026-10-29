@@ -93,6 +93,7 @@ enum ACTION_KEYS {
   BACKSPACE = 'Backspace',
   DELETE = 'Delete',
   TAB = 'Tab',
+  ESCAPE = 'Escape',
 }
 
 const PROJECT_SELECTED_ACTION_KEYS: string[] = [
@@ -100,6 +101,10 @@ const PROJECT_SELECTED_ACTION_KEYS: string[] = [
   ACTION_KEYS.DELETE,
   ACTION_KEYS.TAB,
 ];
+
+// Height of a row in the project and workspace menus, in rem. `react-window`
+// needs it in pixels, so it is converted with the root font size on render.
+const SELECTOR_OPTION_ROW_HEIGHT_REM = 3;
 
 const handleKeyClicked = (
   event: React.KeyboardEvent<HTMLDivElement>,
@@ -629,7 +634,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
       darkMode:
         !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
       optionCustomization: {
-        rowHeight: window.innerHeight * 0.03,
+        rowHeight:
+          SELECTOR_OPTION_ROW_HEIGHT_REM *
+          parseFloat(getComputedStyle(document.documentElement).fontSize),
       },
     };
 
@@ -652,8 +659,10 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                 <div className="workspace-setup__content__main">
                   <div className="workspace-setup__title">
                     <div className="workspace-setup__logo">
+                      {/* decorative: the heading below names the page */}
                       <img
                         src={logoPath}
+                        alt=""
                         className="workspace-setup__logo__icon"
                       />
                     </div>
@@ -672,7 +681,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             <button
                               type="button"
                               className="workspace-setup__selector__header__clear-recents"
-                              tabIndex={-1}
                               onClick={() => setupStore.clearRecents()}
                               title="Clear recently-opened projects and workspaces"
                             >
@@ -707,16 +715,29 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             inputValue={projectSearchText}
                             onKeyDown={(
                               event: React.KeyboardEvent<HTMLDivElement>,
-                            ) =>
+                            ) => {
+                              // the menu is controlled, so Escape has to close it here;
+                              // with a project selected, the handler below would swallow it
+                              if (
+                                event.key === ACTION_KEYS.ESCAPE &&
+                                isProjectSelectorMenuOpen
+                              ) {
+                                event.preventDefault();
+                                setIsProjectSelectorMenuOpen(false);
+                                return;
+                              }
                               handleKeyClicked(
                                 event,
                                 Boolean(selectedProjectOption),
-                              )
-                            }
+                              );
+                            }}
                             menuIsOpen={isProjectSelectorMenuOpen}
                             onFocus={() => setIsProjectSelectorMenuOpen(true)}
                             onMenuOpen={() =>
                               setIsProjectSelectorMenuOpen(true)
+                            }
+                            onMenuClose={() =>
+                              setIsProjectSelectorMenuOpen(false)
                             }
                             onBlur={() => setIsProjectSelectorMenuOpen(false)}
                             onChange={(option: ProjectOption | null) => {
@@ -896,7 +917,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                   },
                 )}
                 onClick={toggleAssistant}
-                tabIndex={-1}
                 title="Toggle assistant"
               >
                 <AssistantIcon />
