@@ -33,6 +33,7 @@ import {
   EntitlementsDashboardState,
   ContractCreatedByUserDetails,
   TaskApprovalAction,
+  TASK_ACTION_BATCH_SIZE,
 } from '../EntitlementsDashboardState.js';
 import { LakehouseEntitlementsStore } from '../LakehouseEntitlementsStore.js';
 
@@ -284,8 +285,8 @@ describe('EntitlementsDashboardState', () => {
     });
   });
 
-  describe('approve / deny', () => {
-    test('approve on a contract task sends the justification to approveTask', async () => {
+  describe('changeTaskStatuses', () => {
+    test('approving a contract task sends the justification to approveTask', async () => {
       const dashboardState = await setupDashboardState('prod');
       const task = createMockTask('task-1', 'contract-1');
       const approveTaskSpy = createSpy(
@@ -294,7 +295,12 @@ describe('EntitlementsDashboardState', () => {
       ).mockResolvedValue({ status: V1_UserApprovalStatus.APPROVED });
 
       await flowResult(
-        dashboardState.approve(task, 'token-1', 'because I said so'),
+        dashboardState.changeTaskStatuses(
+          [task],
+          () => 'token-1',
+          TaskApprovalAction.APPROVE,
+          'because I said so',
+        ),
       );
 
       expect(approveTaskSpy).toHaveBeenCalledWith(
@@ -305,7 +311,7 @@ describe('EntitlementsDashboardState', () => {
       expect(task.status).toBe(V1_UserApprovalStatus.APPROVED);
     });
 
-    test('deny on a contract task sends the justification to denyTask', async () => {
+    test('denying a contract task sends the justification to denyTask', async () => {
       const dashboardState = await setupDashboardState('prod');
       const task = createMockTask('task-2', 'contract-2');
       const denyTaskSpy = createSpy(
@@ -314,7 +320,12 @@ describe('EntitlementsDashboardState', () => {
       ).mockResolvedValue({ status: V1_UserApprovalStatus.DENIED });
 
       await flowResult(
-        dashboardState.deny(task, 'token-2', 'does not meet policy'),
+        dashboardState.changeTaskStatuses(
+          [task],
+          () => 'token-2',
+          TaskApprovalAction.DENY,
+          'does not meet policy',
+        ),
       );
 
       expect(denyTaskSpy).toHaveBeenCalledWith(
@@ -325,7 +336,7 @@ describe('EntitlementsDashboardState', () => {
       expect(task.status).toBe(V1_UserApprovalStatus.DENIED);
     });
 
-    test('approve on a data request task sends the justification to performTaskAction', async () => {
+    test('approving a data request task sends the justification to performTaskAction', async () => {
       const dashboardState = await setupDashboardState('prod');
 
       const task = new V1_DataRequestUserEventRecord();
@@ -354,7 +365,12 @@ describe('EntitlementsDashboardState', () => {
       ).mockResolvedValue({});
 
       await flowResult(
-        dashboardState.approve(task, 'token-3', 'looks good to me'),
+        dashboardState.changeTaskStatuses(
+          [task],
+          () => 'token-3',
+          TaskApprovalAction.APPROVE,
+          'looks good to me',
+        ),
       );
 
       expect(performTaskActionSpy).toHaveBeenCalledWith(
@@ -367,7 +383,7 @@ describe('EntitlementsDashboardState', () => {
       expect(task.status).toBe(V1_UserApprovalStatus.APPROVED);
     });
 
-    test('deny on a data request task sends the justification to performTaskAction', async () => {
+    test('denying a data request task sends the justification to performTaskAction', async () => {
       const dashboardState = await setupDashboardState('prod');
 
       const task = new V1_DataRequestUserEventRecord();
@@ -395,7 +411,14 @@ describe('EntitlementsDashboardState', () => {
         'performTaskAction',
       ).mockResolvedValue({});
 
-      await flowResult(dashboardState.deny(task, 'token-4', 'not authorized'));
+      await flowResult(
+        dashboardState.changeTaskStatuses(
+          [task],
+          () => 'token-4',
+          TaskApprovalAction.DENY,
+          'not authorized',
+        ),
+      );
 
       expect(performTaskActionSpy).toHaveBeenCalledWith(
         'workflow-2',
@@ -407,21 +430,84 @@ describe('EntitlementsDashboardState', () => {
       expect(task.status).toBe(V1_UserApprovalStatus.DENIED);
     });
 
-    test('surfaces an error and does not update task status when approveTask fails', async () => {
+    test('collects failed tasks without stopping the others', async () => {
       const dashboardState = await setupDashboardState('prod');
-      const task = createMockTask('task-5', 'contract-5');
+      const failingTask = createMockTask('task-5', 'contract-5');
+      const passingTask = createMockTask('task-6', 'contract-6');
       createSpy(
         dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
         'approveTask',
-      ).mockResolvedValue({
-        status: V1_UserApprovalStatus.PENDING,
-        errorMessage: 'boom',
-      });
+      ).mockImplementation(async (taskId) =>
+        taskId === 'task-5'
+          ? { status: V1_UserApprovalStatus.PENDING, errorMessage: 'boom' }
+          : { status: V1_UserApprovalStatus.APPROVED },
+      );
 
-      await expect(
-        flowResult(dashboardState.approve(task, 'token-5', 'justification')),
-      ).rejects.toThrow(/boom/);
-      expect(task.status).toBeUndefined();
+      const result = await flowResult(
+        dashboardState.changeTaskStatuses(
+          [failingTask, passingTask],
+          () => 'token-5',
+          TaskApprovalAction.APPROVE,
+          undefined,
+        ),
+      );
+
+      expect(result.successCount).toBe(1);
+      expect(result.errorMessages).toHaveLength(1);
+      expect(result.errorMessages[0]?.[0]).toBe(failingTask);
+      expect(result.errorMessages[0]?.[1]).toMatch(/boom/);
+      expect(failingTask.status).toBeUndefined();
+      expect(passingTask.status).toBe(V1_UserApprovalStatus.APPROVED);
+    });
+
+    test('sends requests in batches and reports progress instead of per-task notifications', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const tasks = Array.from({ length: TASK_ACTION_BATCH_SIZE + 1 }, (_, i) =>
+        createMockTask(`task-${i}`, `contract-${i}`),
+      );
+      dashboardState.pendingTasks = tasks;
+      let inFlight = 0;
+      let maxInFlight = 0;
+      const approveTaskSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'approveTask',
+      ).mockImplementation(async () => {
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await Promise.resolve();
+        inFlight -= 1;
+        return { status: V1_UserApprovalStatus.APPROVED };
+      });
+      const { applicationStore } = dashboardState.lakehouseEntitlementsStore;
+      const notifySuccessSpy = createSpy(
+        applicationStore.notificationService,
+        'notifySuccess',
+      );
+      const setBlockingAlertSpy = createSpy(
+        applicationStore.alertService,
+        'setBlockingAlert',
+      );
+
+      const result = await flowResult(
+        dashboardState.changeTaskStatuses(
+          tasks,
+          () => 'token-6',
+          TaskApprovalAction.APPROVE,
+          undefined,
+        ),
+      );
+
+      expect(result.successCount).toBe(tasks.length);
+      expect(approveTaskSpy).toHaveBeenCalledTimes(tasks.length);
+      expect(maxInFlight).toBe(TASK_ACTION_BATCH_SIZE);
+      expect(notifySuccessSpy).not.toHaveBeenCalled();
+      expect(setBlockingAlertSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: `${TASK_ACTION_BATCH_SIZE} of ${tasks.length} processed`,
+        }),
+      );
+      expect(setBlockingAlertSpy).toHaveBeenLastCalledWith(undefined);
+      expect(dashboardState.pendingTasks).not.toBe(tasks);
     });
   });
 });

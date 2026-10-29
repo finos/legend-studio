@@ -32,7 +32,6 @@ import {
   type V1_EnrichedUserApprovalStatus,
   type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
-  type V1_TaskStatusChangeResponse,
   RawLambda,
   V1_DataProductAccessor,
   V1_deserializeDataContractResponse,
@@ -99,6 +98,13 @@ export type LakehouseContractSyncStatusResponse = {
 export enum TaskApprovalAction {
   APPROVE = 'approve',
   DENY = 'deny',
+}
+
+export const TASK_ACTION_BATCH_SIZE = 50;
+
+export interface TaskActionResult {
+  successCount: number;
+  errorMessages: [V1_PendingTaskRecord, string][];
 }
 
 const collectIngestSpecPathsFromOriginDp = (
@@ -232,7 +238,6 @@ export class EntitlementsDashboardState {
   readonly fetchingContractsForUserState = ActionState.create();
   readonly fetchingContractsByUserState = ActionState.create();
   readonly fetchingDataRequestsCreatedByUserState = ActionState.create();
-  readonly changingState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
     this.lakehouseEntitlementsStore = state;
@@ -250,8 +255,7 @@ export class EntitlementsDashboardState {
       allContractsCreatedByUser: computed,
       setSelectedTaskIds: action,
       init: flow,
-      approve: flow,
-      deny: flow,
+      changeTaskStatuses: flow,
       fetchPendingTasks: flow,
       fetchPendingTaskContracts: flow,
       fetchContractsForUser: flow,
@@ -1062,12 +1066,12 @@ export class EntitlementsDashboardState {
     return workflowId;
   }
 
-  private *changeTaskStatus(
+  private async changeTaskStatus(
     task: V1_PendingTaskRecord,
     token: string | undefined,
     taskAction: TaskApprovalAction,
     justification: string | undefined,
-  ): GeneratorFn<void> {
+  ): Promise<void> {
     const isApprove = taskAction === TaskApprovalAction.APPROVE;
 
     if (task instanceof V1_DataRequestUserEventRecord) {
@@ -1078,7 +1082,7 @@ export class EntitlementsDashboardState {
       if (!permitClient) {
         throw new Error('Permit workflow client is not configured');
       }
-      yield permitClient.performTaskAction(
+      await permitClient.performTaskAction(
         workflowId,
         task.taskId,
         isApprove ? V1_PermitTaskAction.APPROVE : V1_PermitTaskAction.REJECT,
@@ -1091,13 +1095,13 @@ export class EntitlementsDashboardState {
     } else {
       const contractClient =
         this.lakehouseEntitlementsStore.lakehouseContractServerClient;
-      const response = (yield isApprove
+      const response = await (isApprove
         ? contractClient.approveTask(task.taskId, token, justification)
         : contractClient.denyTask(
             task.taskId,
             token,
             guaranteeNonNullable(justification),
-          )) as PlainObject<V1_TaskStatusChangeResponse>;
+          ));
       const change = deserialize(
         V1_TaskStatusChangeResponseModelSchema,
         response,
@@ -1109,62 +1113,50 @@ export class EntitlementsDashboardState {
       }
       task.status = change.status;
     }
-    this.pendingTasks = [...(this.pendingTasks ?? [])];
-    this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
   }
 
-  *approve(
-    task: V1_PendingTaskRecord,
-    token: string | undefined,
+  *changeTaskStatuses(
+    tasks: V1_PendingTaskRecord[],
+    tokenProvider: () => string | undefined,
+    taskAction: TaskApprovalAction,
     justification: string | undefined,
-  ): GeneratorFn<void> {
+  ): GeneratorFn<TaskActionResult> {
+    const alertService =
+      this.lakehouseEntitlementsStore.applicationStore.alertService;
+    const message = `${taskAction === TaskApprovalAction.APPROVE ? 'Approving' : 'Denying'} ${tasks.length} task${tasks.length === 1 ? '' : 's'}`;
+    const result: TaskActionResult = { successCount: 0, errorMessages: [] };
     try {
-      this.changingState.inProgress();
-      this.changingState.setMessage('Approving Task');
-      yield* this.changeTaskStatus(
-        task,
-        token,
-        TaskApprovalAction.APPROVE,
-        justification,
-      );
-      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
-        `Task has been Approved`,
-      );
-    } finally {
-      this.changingState.complete();
-      this.changingState.setMessage(undefined);
-    }
-  }
-
-  *deny(
-    task: V1_PendingTaskRecord,
-    token: string | undefined,
-    justification: string,
-  ): GeneratorFn<void> {
-    try {
-      this.changingState.inProgress();
-      this.lakehouseEntitlementsStore.applicationStore.alertService.setBlockingAlert(
-        {
-          message: 'Denying Task',
-          prompt: 'Denying task...',
+      for (let i = 0; i < tasks.length; i += TASK_ACTION_BATCH_SIZE) {
+        alertService.setBlockingAlert({
+          message,
+          prompt: `${i} of ${tasks.length} processed`,
           showLoading: true,
-        },
-      );
-      yield* this.changeTaskStatus(
-        task,
-        token,
-        TaskApprovalAction.DENY,
-        justification,
-      );
-      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
-        `Task has been denied`,
-      );
+        });
+        const batch = tasks.slice(i, i + TASK_ACTION_BATCH_SIZE);
+        const token = tokenProvider();
+        const outcomes = (yield Promise.allSettled(
+          batch.map((task) =>
+            this.changeTaskStatus(task, token, taskAction, justification),
+          ),
+        )) as PromiseSettledResult<void>[];
+        outcomes.forEach((outcome, index) => {
+          if (outcome.status === 'fulfilled') {
+            result.successCount += 1;
+          } else {
+            result.errorMessages.push([
+              guaranteeNonNullable(batch[index]),
+              outcome.reason instanceof Error
+                ? outcome.reason.message
+                : String(outcome.reason),
+            ]);
+          }
+        });
+      }
     } finally {
-      this.changingState.complete();
-      this.changingState.setMessage(undefined);
-      this.lakehouseEntitlementsStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
+      this.pendingTasks = [...(this.pendingTasks ?? [])];
+      this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
+      alertService.setBlockingAlert(undefined);
     }
+    return result;
   }
 }
