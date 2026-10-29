@@ -50,6 +50,11 @@ import {
   type CubeSourceLocation,
   type NodeId,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  type CubeExpressionOutline,
+  type CubePrecedenceTrap,
+  findCubePrecedenceTraps,
+} from '../../graph-manager/CubeExpressionOutline.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeJsonFieldsState } from '../variant/CubeJsonFieldsState.js';
 import {
@@ -159,6 +164,8 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       isChecked: computed,
       checkStatus: computed,
       applyDisabledReason: computed,
+      outline: computed,
+      precedenceTraps: computed,
       setCode: action,
       validate: flow,
       follow: action,
@@ -225,6 +232,26 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
     return inputId === undefined
       ? undefined
       : this.editorState.analysis.schemas.get(inputId);
+  }
+
+  /**
+   * The code in parts, as the engine last parsed it, while the code is that
+   * (EXPRESSION-EDITOR.md, round 2)
+   */
+  get outline(): CubeExpressionOutline | undefined {
+    const { checked } = this;
+    return checked?.code === this.code
+      ? this.editorState.host.engine.readExpressionOutline(
+          checked.located,
+          checked.code,
+        )
+      : undefined;
+  }
+
+  /** Where Pure's precedence reads the code other than it was likely meant */
+  get precedenceTraps(): readonly CubePrecedenceTrap[] {
+    const { outline } = this;
+    return outline ? findCubePrecedenceTraps(outline) : [];
   }
 
   /** The code is the one the engine last parsed */

@@ -51,6 +51,11 @@ import {
   type CubeSourceLocation,
   type NodeId,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  type CubeExpressionOutline,
+  type CubePrecedenceTrap,
+  findCubePrecedenceTraps,
+} from '../../graph-manager/CubeExpressionOutline.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeJsonFieldsState } from '../variant/CubeJsonFieldsState.js';
 import { getFreeCubeColumnName } from '../variant/CubeJsonOffers.js';
@@ -187,6 +192,39 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
     if (this.checksOnOpen) {
       this.autoCheck.schedule();
     }
+  }
+
+  /** Each parse's outline, read once */
+  private readonly outlines = new WeakMap<
+    CubeExtendCheckedCode,
+    CubeExpressionOutline | undefined
+  >();
+
+  /**
+   * A row's code in parts, as the engine last parsed it, while the code is
+   * that (EXPRESSION-EDITOR.md, round 2)
+   */
+  getRowOutline(row: CubeExtendRow): CubeExpressionOutline | undefined {
+    const { checked } = row;
+    if (checked?.code !== row.code) {
+      return undefined;
+    }
+    if (!this.outlines.has(checked)) {
+      this.outlines.set(
+        checked,
+        this.editorState.host.engine.readExpressionOutline(
+          checked.located,
+          checked.code,
+        ),
+      );
+    }
+    return this.outlines.get(checked);
+  }
+
+  /** Where Pure's precedence reads a row's code other than it was likely meant */
+  getRowPrecedenceTraps(row: CubeExtendRow): CubePrecedenceTrap[] {
+    const outline = this.getRowOutline(row);
+    return outline ? findCubePrecedenceTraps(outline) : [];
   }
 
   /**

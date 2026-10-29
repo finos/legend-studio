@@ -29,6 +29,7 @@ import {
   NORTHWIND_RUNTIME,
   ORDERS_COLUMNS,
 } from './CubeNorthwindTestQueries.js';
+import { V1_buildCubeExpressionOutline } from '../graph-manager/protocol/pure/v1/V1_CubeExpressionOutline.js';
 
 // A CubeEngine for jsdom tests (PLAN §11.1 M1.8a): canned answers, no network.
 // Each method is a jest.fn, kept in its own variable so tests can read its
@@ -120,6 +121,9 @@ export interface FakeCubeEngine {
   readonly planLambda: jest.Mock<CubeEngine['planLambda']>;
   readonly completeCode: jest.Mock<CubeEngine['completeCode']>;
   readonly getFunctionCatalogue: jest.Mock<CubeEngine['getFunctionCatalogue']>;
+  readonly readExpressionOutline: jest.Mock<
+    CubeEngine['readExpressionOutline']
+  >;
 }
 
 /** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
@@ -181,6 +185,10 @@ export const createFakeCubeEngine = (
   const getFunctionCatalogue = jest.fn<CubeEngine['getFunctionCatalogue']>(
     async () => Promise.resolve(undefined),
   );
+  // the engine's own reading of an expression's JSON
+  const readExpressionOutline = jest.fn<CubeEngine['readExpressionOutline']>(
+    V1_buildCubeExpressionOutline,
+  );
   return {
     engine: {
       loadModel,
@@ -194,6 +202,7 @@ export const createFakeCubeEngine = (
       planLambda,
       completeCode,
       getFunctionCatalogue,
+      readExpressionOutline,
     },
     loadModel,
     resolveSchemas,
@@ -206,5 +215,6 @@ export const createFakeCubeEngine = (
     planLambda,
     completeCode,
     getFunctionCatalogue,
+    readExpressionOutline,
   };
 };
