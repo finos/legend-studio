@@ -17,6 +17,7 @@
 import { beforeEach, expect, jest, test } from '@jest/globals';
 import {
   type RenderResult,
+  act,
   fireEvent,
   render,
   waitFor,
@@ -381,14 +382,64 @@ test(
 
 test(
   integrationTest(
+    'Shows the copy as running, not as failed, while it is committed',
+  ),
+  async () => {
+    const baseStore = TEST__provideMockedLegendStudioBaseStore();
+    const sdlc = setUpSdlc(baseStore);
+    let finishCommit: (() => void) | undefined;
+    sdlc.performEntityChanges.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishCommit = () => resolve(undefined);
+        }),
+    );
+    const renderResult = renderSetup(baseStore);
+
+    const dialog = await fillCreateWorkspaceModal(
+      renderResult,
+      'uml',
+      'uml-copy',
+    );
+    await within(dialog).findByText('3 changes to copy');
+    fireEvent.click(within(dialog).getByText('Create'));
+
+    await waitFor(() => expect(finishCommit).toBeDefined());
+    expect(
+      within(dialog).getByText('Created the workspace uml-copy'),
+    ).not.toBeNull();
+    expect(
+      within(dialog).getByText('Copy 3 changes from uml, as one commit'),
+    ).not.toBeNull();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(within(dialog).queryByText('Retry copy')).toBeNull();
+    expect(within(dialog).getByText<HTMLButtonElement>('Create').disabled).toBe(
+      true,
+    );
+    await act(async () => {
+      finishCommit?.();
+    });
+
+    await waitFor(() => expect(renderResult.queryByRole('dialog')).toBeNull());
+  },
+);
+
+test(
+  integrationTest(
     'Keeps the workspace when the copy fails, and Retry copy commits only the copy',
   ),
   async () => {
     const baseStore = TEST__provideMockedLegendStudioBaseStore();
     const sdlc = setUpSdlc(baseStore);
+    let finishRetry: (() => void) | undefined;
     sdlc.performEntityChanges
       .mockRejectedValueOnce(new Error('could not perform entity changes'))
-      .mockResolvedValueOnce(undefined);
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRetry = () => resolve(undefined);
+          }),
+      );
     const renderResult = renderSetup(baseStore);
 
     const dialog = await fillCreateWorkspaceModal(
@@ -417,6 +468,16 @@ test(
     expect(within(dialog).queryByText('Create')).toBeNull();
 
     fireEvent.click(within(dialog).getByText('Retry copy'));
+
+    // while the copy is tried again, it is not shown as failed
+    await waitFor(() => expect(finishRetry).toBeDefined());
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(
+      within(dialog).getByText<HTMLButtonElement>('Retry copy').disabled,
+    ).toBe(true);
+    await act(async () => {
+      finishRetry?.();
+    });
 
     await waitFor(() => expect(renderResult.queryByRole('dialog')).toBeNull());
     expect(sdlc.createWorkspace).toHaveBeenCalledTimes(1);

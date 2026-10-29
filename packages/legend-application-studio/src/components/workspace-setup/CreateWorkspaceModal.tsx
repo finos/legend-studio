@@ -283,7 +283,9 @@ const WorkspaceCopySummary = observer(
 const WorkspaceCopyProgress = observer(
   (props: { copy: WorkspaceCopyState; workspaceName: string }) => {
     const { copy, workspaceName } = props;
-    const isCreated = Boolean(copy.createdWorkspace);
+    // NOTE: the copy only runs once the workspace is created
+    const isCreated =
+      Boolean(copy.createdWorkspace) || copy.copyState.isInProgress;
     const steps: {
       label: string;
       status: 'pending' | 'active' | 'done' | 'failed';
@@ -342,7 +344,8 @@ export const CreateWorkspaceModal = observer(
     const isBusy =
       setupStore.createWorkspaceState.isInProgress ||
       setupStore.createOrImportProjectState.isInProgress;
-    // the workspace was created, but copying into it failed
+    // the workspace was created, but copying into it failed: it may be tried
+    // again, or the workspace deleted
     const copyFailed = Boolean(copy?.createdWorkspace);
 
     // NOTE: a workspace created here, whose copy failed, is not a source
@@ -514,7 +517,7 @@ export const CreateWorkspaceModal = observer(
             />
             <PanelForm className="workspace-setup__create-workspace-modal__form workspace-setup__create-workspace-modal__form__workspace">
               <PanelDivider />
-              {copy?.createdWorkspace && (
+              {copy?.createdWorkspace && copy.copyError !== undefined && (
                 <div
                   className="workspace-setup__create-workspace-modal__copy-failure"
                   role="alert"
@@ -527,11 +530,9 @@ export const CreateWorkspaceModal = observer(
                         'change',
                       )} failed.`}
                     </div>
-                    {copy.copyError && (
-                      <div className="workspace-setup__create-workspace-modal__copy-failure__message">
-                        {copy.copyError}
-                      </div>
-                    )}
+                    <div className="workspace-setup__create-workspace-modal__copy-failure__message">
+                      {copy.copyError}
+                    </div>
                     <div>
                       {`The workspace exists and starts from the latest version of ${
                         copy.source.source
