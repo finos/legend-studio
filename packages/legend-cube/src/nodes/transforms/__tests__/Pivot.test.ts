@@ -266,7 +266,7 @@ describe(unitTest('Pivot'), () => {
     ).toEqual([]);
   });
 
-  test("Checks its aggregation as a Group's, but for Distinct Value and PLAN §11.27's functions, on a column neither a row nor pivoted", () => {
+  test("Checks its aggregation as a Group's, but for Distinct Value and PLAN §11.28's functions, on a column neither a row nor pivoted", () => {
     expect(
       errorsOf(
         pivot({

@@ -38,7 +38,7 @@ import { type EmitContext, originOf } from '../EmitContext.js';
 /**
  * The setting of a function as its literal: Percentile's fraction a Float
  * (`percentile(1)` doesn't type on the engine), Join Text's separator a
- * String; it throws on one validation refuses (PLAN §11.27)
+ * String; it throws on one validation refuses (PLAN §11.28)
  */
 const settingLiteral = (
   { function: fn, percentile, separator, name }: ColumnAggregation,
@@ -67,7 +67,7 @@ const settingLiteral = (
 
 /**
  * The reduce of a function over the group's values, `$y` (PLAN §8.8, §11.5,
- * §11.27): Std Dev and Variance the sample ones
+ * §11.28): Std Dev and Variance the sample ones
  */
 const reduce = (aggregation: ColumnAggregation, origin: Origin): IR => {
   const values = variable('y');

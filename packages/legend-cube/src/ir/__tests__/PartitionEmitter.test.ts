@@ -247,7 +247,7 @@ describe(unitTest('Partition emission'), () => {
     );
   });
 
-  test('Writes Std Dev and Variance as the sample ones, among the aggregates, over a sorted window too (PLAN §11.27)', () => {
+  test('Writes Std Dev and Variance as the sample ones, among the aggregates, over a sorted window too (PLAN §11.28)', () => {
     expect(
       windowedOrders(['SHIP_COUNTRY'], BY_ORDER_DATE, [
         {
@@ -268,7 +268,7 @@ describe(unitTest('Partition emission'), () => {
     );
   });
 
-  test("Doesn't emit Median, Percentile or Join Text in a window, which validation reports as unknown there (PLAN §11.27)", () => {
+  test("Doesn't emit Median, Percentile or Join Text in a window, which validation reports as unknown there (PLAN §11.28)", () => {
     [
       { column: 'FREIGHT', function: AggregationFunction.MEDIAN, name: 'n' },
       {

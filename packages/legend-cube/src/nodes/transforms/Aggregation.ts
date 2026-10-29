@@ -37,7 +37,7 @@ import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import { isSortableType } from '../../types/TypeCompatibility.js';
 import { isNumericFamily, TypeFamily } from '../../types/TypeFamily.js';
 
-// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6, §11.9 and §11.27), shared by
+// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6, §11.9 and §11.28), shared by
 // Group and Partition, whose windows also offer the rank and row functions
 
 /** An aggregation function, as saved: a Group's, and a window's but its rank functions */
@@ -51,15 +51,15 @@ export enum AggregationFunction {
   MAX = 'Max',
   /** Added by Cube (PLAN §11.5, Q1): every row, null or not, so it takes no column */
   COUNT_ROWS = 'CountRows',
-  /** Added in PLAN §11.27: the middle value, or the average of the two middle ones */
+  /** Added in PLAN §11.28: the middle value, or the average of the two middle ones */
   MEDIAN = 'Median',
-  /** Added in PLAN §11.27: the value `percentile` of the way through the sorted values, interpolated as Median is */
+  /** Added in PLAN §11.28: the value `percentile` of the way through the sorted values, interpolated as Median is */
   PERCENTILE = 'Percentile',
-  /** Added in PLAN §11.27: the sample standard deviation, over n - 1 values */
+  /** Added in PLAN §11.28: the sample standard deviation, over n - 1 values */
   STD_DEV = 'StdDev',
-  /** Added in PLAN §11.27: the sample variance, over n - 1 values */
+  /** Added in PLAN §11.28: the sample variance, over n - 1 values */
   VARIANCE = 'Variance',
-  /** Added in PLAN §11.27: the texts joined by `separator`, in no set order */
+  /** Added in PLAN §11.28: the texts joined by `separator`, in no set order */
   JOIN_TEXT = 'JoinText',
 }
 
@@ -71,7 +71,7 @@ export const isAggregationFunction = (
 ): value is AggregationFunction => AGGREGATION_FUNCTIONS.includes(value);
 
 /**
- * The functions added in PLAN §11.27, in the order a Group offers them: a
+ * The functions added in PLAN §11.28, in the order a Group offers them: a
  * Group offers them all, a window Std Dev and Variance (`isWindowFunction`),
  * and a Pivot and the grid's group rows none
  */
@@ -85,7 +85,7 @@ export const SUMMARY_AGGREGATION_FUNCTIONS: readonly AggregationFunction[] =
   ]);
 
 /**
- * The aggregation functions a window doesn't know (PLAN §11.27): Snowflake
+ * The aggregation functions a window doesn't know (PLAN §11.28): Snowflake
  * refuses a sort in their window, which a window with sort columns writes
  */
 const GROUP_ONLY_FUNCTIONS: readonly string[] = [
@@ -167,7 +167,7 @@ export const needsWindowSort = (aggregation: string): boolean =>
 /**
  * What a function sets beside its column, if anything: Lag's and Lead's
  * offset, NTile's bucket count, Percentile's percentile and Join Text's
- * separator (PLAN §11.27)
+ * separator (PLAN §11.28)
  */
 export enum AggregationSetting {
   OFFSET = 'offset',
@@ -307,7 +307,7 @@ export const isAggregationFunctionOf = (
  * function that takes none (Count rows, the rank functions) and `''` until
  * picked; `name` is `''` until given. `offset` (Lag, Lead), `buckets`
  * (NTile), `percentile` (Percentile) and `separator` (Join Text) are their
- * functions' settings (PLAN §11.9, §11.27), kept as given for validation to
+ * functions' settings (PLAN §11.9, §11.28), kept as given for validation to
  * judge, and `undefined` on every other function.
  */
 export interface ColumnAggregation extends AggregationSettings {
@@ -401,13 +401,13 @@ const NUMBERS = [
   AggregationFunction.MIN,
   AggregationFunction.MAX,
 ] as const;
-/** A window's numbers: then Std Dev and Variance, which run over a sorted window too (PLAN §11.27) */
+/** A window's numbers: then Std Dev and Variance, which run over a sorted window too (PLAN §11.28) */
 const WINDOW_NUMBERS = [
   ...NUMBERS,
   AggregationFunction.STD_DEV,
   AggregationFunction.VARIANCE,
 ] as const;
-/** A Group's numbers: then Median and Percentile, Std Dev and Variance (PLAN §11.27) */
+/** A Group's numbers: then Median and Percentile, Std Dev and Variance (PLAN §11.28) */
 const GROUP_NUMBERS = [
   ...NUMBERS,
   AggregationFunction.MEDIAN,
@@ -415,16 +415,16 @@ const GROUP_NUMBERS = [
   AggregationFunction.STD_DEV,
   AggregationFunction.VARIANCE,
 ] as const;
-/** A Group's strings: the ordered ones, then Join Text (PLAN §11.27) */
+/** A Group's strings: the ordered ones, then Join Text (PLAN §11.28) */
 const GROUP_STRINGS = [...ORDERED, AggregationFunction.JOIN_TEXT] as const;
 
 /**
  * The functions offered on a column of the type, in the spec's order
  * (§10.1): dates and Booleans add Min and Max to the distinct ones (Booleans
- * from M6d, §11.14), and strings too, with Join Text in a Group (§11.27);
+ * from M6d, §11.14), and strings too, with Join Text in a Group (§11.28);
  * numbers, DECIMAL included, get the distinct ones, Sum, Average, Min and
  * Max, then Std Dev and Variance, with Median and Percentile before them in a
- * Group (§11.27); StrictTime and enumerations the distinct ones (enumerations
+ * Group (§11.28); StrictTime and enumerations the distinct ones (enumerations
  * from M6d); VARIANT and a type Cube doesn't know Count only. Count rows
  * takes no column, so it is never in the list.
  */
@@ -507,7 +507,7 @@ const dateResultType = (family: TypeFamily): PrimitiveType => {
  * DateTime, the column's own precise type on a string or a Boolean
  * (`Varchar(10)`, PLAN §11.14); Float for Median, Number for Percentile, Std
  * Dev and Variance, and String for Join Text, whatever the column's precise
- * type (PLAN §11.27). `undefined` for a function the column's type doesn't
+ * type (PLAN §11.28). `undefined` for a function the column's type doesn't
  * offer, or a column function given no column.
  */
 export const getAggregationResultType = (
@@ -562,7 +562,7 @@ export const getAggregationResultType = (
  * functions, though the engine types Sum and Average as never null (PLAN
  * §5.7, D4), and Median, Std Dev, Variance and Join Text too, which are empty
  * on a group of empty values, and Std Dev and Variance on a group of one row
- * (PLAN §11.27); a row function's is empty when there is no such row (PLAN
+ * (PLAN §11.28); a row function's is empty when there is no such row (PLAN
  * §11.9). It decides rows: a negated filter guards with `isEmpty` only on a
  * nullable column.
  */
@@ -577,7 +577,7 @@ export const isAggregationNullable = (aggregation: WindowFunction): boolean =>
  * §10.3): `<column> <shown as>`, e.g. `ORDER_ID Count`, or for a function
  * with no column how it is shown, e.g. `Count Rows` or `Dense Rank`; a
  * Percentile with a percentile `<column> P<percent>`, e.g. `FREIGHT P90`, so
- * a column's quartiles don't clash (PLAN §11.27); `undefined` for a function
+ * a column's quartiles don't clash (PLAN §11.28); `undefined` for a function
  * the use doesn't know, or a column function with no column
  */
 export const getAggregationAutoName = (
@@ -607,7 +607,7 @@ export const getAggregationAutoName = (
  * bucket count a whole number of at least 1, a percentile a fraction from 0
  * to 1 (the engine plans 1.5, which the database refuses), and a separator
  * any text with no backslash, which Databricks and SingleStore would drop
- * (PLAN §11.27)
+ * (PLAN §11.28)
  */
 const isValidSetting = (
   setting: AggregationSetting,
@@ -636,7 +636,7 @@ const isValidSetting = (
 /**
  * Checks an aggregation's function and column against the input schema,
  * stopping at the first problem (spec §10.3, then Cube's checks, PLAN §11.5,
- * §11.6, §11.9, §11.12 and §11.27): the function is given and the use knows
+ * §11.6, §11.9, §11.12 and §11.28): the function is given and the use knows
  * it; Count rows and the rank functions have no column, any other function a
  * column of the input whose type offers it; a rank or row function's window
  * sorts its rows (with none, the database fails with no location); Lag's and

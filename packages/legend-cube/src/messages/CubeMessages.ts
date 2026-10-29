@@ -271,7 +271,7 @@ export const MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT = (
 
 /**
  * How the messages name each setting of an aggregation function, by its key,
- * then what a valid one is (PLAN §11.9, §11.27): a percentile is shown as a
+ * then what a valid one is (PLAN §11.9, §11.28): a percentile is shown as a
  * percent, as the editors show it
  */
 const AGGREGATION_SETTING_TEXTS: Readonly<
@@ -286,7 +286,7 @@ const AGGREGATION_SETTING_TEXTS: Readonly<
 const settingText = (setting: string): readonly [string, string] =>
   AGGREGATION_SETTING_TEXTS[setting] ?? [`a ${setting}`, 'that is valid'];
 
-/** Added by Cube (PLAN §11.9, §11.27): Lag's and Lead's offset, NTile's bucket count, Percentile's percentile, Join Text's separator */
+/** Added by Cube (PLAN §11.9, §11.28): Lag's and Lead's offset, NTile's bucket count, Percentile's percentile, Join Text's separator */
 export const MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID = (
   aggregation: string,
   setting: string,
@@ -295,7 +295,7 @@ export const MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID = (
   return `Aggregation function ${quote(aggregation)} needs ${named} ${valid}.`;
 };
 
-/** Added by Cube (PLAN §11.9, §11.27): a setting on a function that takes none, or another one */
+/** Added by Cube (PLAN §11.9, §11.28): a setting on a function that takes none, or another one */
 export const MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING = (
   aggregation: string,
   setting: string,
@@ -496,7 +496,7 @@ export const MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME = (value: string): string =>
 /**
  * Added by Cube: the engine's pivot of Distinct Value fails on the database
  * (PLAN §11.12), and Snowflake's pivot takes only Count, Sum, Average, Min and
- * Max, so not Median, Percentile, Std Dev, Variance or Join Text (§11.27)
+ * Max, so not Median, Percentile, Std Dev, Variance or Join Text (§11.28)
  */
 export const MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED = (
   aggregation: string,

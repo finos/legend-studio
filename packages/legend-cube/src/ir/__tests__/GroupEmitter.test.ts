@@ -194,7 +194,7 @@ describe(unitTest('Group emission'), () => {
       "joinStrings(' \\' ')",
     ],
   ])(
-    'Writes %s as its reduce of $y (PLAN §11.27)',
+    'Writes %s as its reduce of $y (PLAN §11.28)',
     (_, aggregation, reduce) => {
       expect(groupedOrders(['CUSTOMER_ID'], [aggregation])).toBe(
         `${ORDERS}->groupBy(~[CUSTOMER_ID], ~[n: x | $x.${aggregation.column} : y | $y->${reduce}])`,

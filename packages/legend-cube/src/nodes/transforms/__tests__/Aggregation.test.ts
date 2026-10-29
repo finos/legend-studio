@@ -85,7 +85,7 @@ const COLUMN_FUNCTIONS = [
   VARIANCE,
   JOIN_TEXT,
 ] as const;
-/** The functions a window doesn't know, though a Group does (PLAN §11.27) */
+/** The functions a window doesn't know, though a Group does (PLAN §11.28) */
 const GROUP_ONLY = [MEDIAN, PERCENTILE, JOIN_TEXT] as const;
 
 const type = (path: string, params: number[] = []): PrimitiveType =>
@@ -93,7 +93,7 @@ const type = (path: string, params: number[] = []): PrimitiveType =>
 
 /**
  * Per type, each column function's result type in a Group (`undefined` where
- * the type doesn't offer it), PLAN §5.7, §11.5 and §11.27: every family,
+ * the type doesn't offer it), PLAN §5.7, §11.5 and §11.28: every family,
  * every precise type
  */
 const RESULT_TYPES: readonly [
@@ -651,7 +651,7 @@ describe('Window functions', () => {
       });
       Object.values(AggregationFunction).forEach((fn) => {
         expect(isWindowRankFunction(fn)).toBe(false);
-        // all but Median, Percentile and Join Text (PLAN §11.27)
+        // all but Median, Percentile and Join Text (PLAN §11.28)
         expect(isWindowFunction(fn)).toBe(
           !(GROUP_ONLY as readonly string[]).includes(fn),
         );

@@ -49,7 +49,7 @@ const AGGREGATION_KEYS = [
  * left out for a function that takes none (PLAN §11.5), and a window
  * function's `offset` (Lag, Lead) or `buckets` (NTile), JSON numbers (PLAN
  * §11.9), or a Group's `percentile` (Percentile), a JSON number from 0 to 1,
- * or `separator` (Join Text), a text (PLAN §11.27). Texts and numbers are
+ * or `separator` (Join Text), a text (PLAN §11.28). Texts and numbers are
  * kept exactly, `''` included, for validation to judge: an unknown, empty or
  * misplaced function or setting is held, not dropped (Q4), since an invalid
  * node can't run. A name left out is read as the auto-name for the use (Q3),

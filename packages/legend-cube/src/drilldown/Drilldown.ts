@@ -97,7 +97,7 @@ export const getDefaultDrilldownAggregation = (
 
 /**
  * Whether a group row knows the function: a Group's, but those of PLAN
- * §11.27, which it doesn't offer yet (Percentile and Join Text take a
+ * §11.28, which it doesn't offer yet (Percentile and Join Text take a
  * setting, which a drill-down's aggregation has no place for)
  */
 const isDrilldownFunction = (fn: string): fn is AggregationFunction =>

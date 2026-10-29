@@ -429,7 +429,7 @@ const REDUCES: ReadonlyMap<string, AggregationFunction> = new Map([
 ]);
 
 /**
- * A reduce with a setting, as Cube writes one (PLAN §11.27): Percentile's
+ * A reduce with a setting, as Cube writes one (PLAN §11.28): Percentile's
  * `percentile($y, <Float>)` and Join Text's `joinStrings($y, <String>)`, the
  * setting a literal, kept for validation to judge
  */

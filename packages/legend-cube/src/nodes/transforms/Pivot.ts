@@ -89,8 +89,8 @@ export const DEFAULT_PIVOT_AGGREGATION: PivotAggregation = Object.freeze({
 });
 
 /**
- * The functions a Pivot takes, in a Group's order (PLAN §11.12, §11.27): not
- * Distinct Value, whose pivot DuckDB refuses, nor the functions of §11.27,
+ * The functions a Pivot takes, in a Group's order (PLAN §11.12, §11.28): not
+ * Distinct Value, whose pivot DuckDB refuses, nor the functions of §11.28,
  * as Snowflake's pivot takes only COUNT, SUM, AVG, MIN and MAX
  */
 export const PIVOT_AGGREGATION_FUNCTIONS: readonly AggregationFunction[] =

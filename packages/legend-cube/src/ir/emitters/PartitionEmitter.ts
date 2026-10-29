@@ -43,7 +43,7 @@ import {
 import { type EmitContext, originOf } from '../EmitContext.js';
 
 /**
- * How a window's values reduce, `$y` (PLAN §8.8, §11.6, §11.27): the counts
+ * How a window's values reduce, `$y` (PLAN §8.8, §11.6, §11.28): the counts
  * are `size()`, since `count()` loses its OVER clause on the engine and
  * fails; Std Dev and Variance the sample ones, which keep it
  */

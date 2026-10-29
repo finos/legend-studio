@@ -2019,7 +2019,7 @@ describe(unitTest('Saved spec encoding: groups'), () => {
     },
   );
 
-  test("Writes Percentile's percentile and Join Text's separator after the name, exactly, and reads one left out as missing (PLAN §11.27)", () => {
+  test("Writes Percentile's percentile and Join Text's separator after the name, exactly, and reads one left out as missing (PLAN §11.28)", () => {
     const aggregations = [
       { column: 'FREIGHT', function: 'Median', name: 'm' },
       { column: 'FREIGHT', function: 'Percentile', name: 'p', percentile: 0.9 },

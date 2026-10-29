@@ -94,7 +94,7 @@ describe(unitTest('Drill-down defaults'), () => {
     );
   });
 
-  test("Offers none of PLAN §11.27's functions, which a group row doesn't know yet", () => {
+  test("Offers none of PLAN §11.28's functions, which a group row doesn't know yet", () => {
     expect(getDrilldownAggregations(type('FREIGHT'))).toEqual([
       COUNT,
       DISTINCT_COUNT,
