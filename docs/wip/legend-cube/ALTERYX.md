@@ -2,8 +2,9 @@
 
 The user asked for a deep look at how Alteryx works, and which of its features make sense in Legend Cube (2026-10-28).
 This document is that study as a plan: the decisions first, then eleven ideas in build order, what comes later and what
-doesn't fit, the engine checks, and the sources. Idea 3 is being built (2026-10-29). The user decides which of the
-others to build.
+doesn't fit, the engine checks, and the sources. On 2026-10-29 the study gained feedback on the canvas (every source in
+the first column, idea 7) and a second reference, legend-lite's flow mode. Idea 3 is being built (2026-10-29). The user
+decides which of the others to build.
 
 Markers: ✅ the local engine wrote a plan (nothing ran), 📄 read in the code or in Alteryx's documentation, 💭 reasoned
 only, 🔎 seen only in a search summary, not on the page itself. Code is cited at finos/master `18a8f8fcf` (2026-10-29).
@@ -17,8 +18,12 @@ The probes and the Alteryx catalog are in the local evidence folder, under `alte
   ([NodeRegistry.ts:167-452](../../../packages/legend-cube/src/nodes/NodeRegistry.ts#L167)).
 - **What fits.** Eleven Alteryx features fit Cube, where a cube compiles to one Pure lambda and the engine plans one SQL
   statement. None needs a new engine function. The first ones help people trust a cube: row counts, the rows that didn't
-  match, more Group functions and column profiles. Then edits across many columns, Transpose, canvas notes and search, a
-  plain-English description and checks. Parameters and saved functions come after M8 (§2).
+  match, more Group functions and column profiles. Then edits across many columns, Transpose, the canvas (every source in
+  the first column, groups, notes, search), a plain-English description and checks. Parameters and saved functions come
+  after M8 (§2).
+- **A second reference.** Neema's legend-lite gained an Alteryx-style flow mode for DataCube (merged 2026-10-26 to
+  2026-10-29). Its Tidy Up and containers inform idea 7, and its branching boxes inform AX1. It has its own compiler, and
+  its browser runs use DuckDB, so a tool working there doesn't show what Legend Engine plans on Snowflake or Databricks.
 - **The structural difference.** An Alteryx output can feed several tools, and Filter, Join and Unique have two or three
   outputs each. A cube is a forest of trees: a step's output feeds at most one step
   ([Query.ts:97](../../../packages/legend-cube/src/graph/Query.ts#L97)). Every idea works with that rule except showing
@@ -34,31 +39,31 @@ The probes and the Alteryx catalog are in the local evidence folder, under `alte
 
 ## 1. Decisions for the user, most decisive first
 
-| #   | Decision                                                  | Options                                                                                                                                                                                                                                                               | Recommended                                                                                                                                                                                                                                                                                               |
-| --- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AX1 | Branching: may a step feed more than one step?            | (a) keep the forest; both sides of a filter need two copies of the chain; (b) fan-out: a shared step is bound with `let`, as Partitions are for window isolation (PLAN §8.6). (b) brings Alteryx's T/F, L/J/R and U/D outputs, and two paths compared from one source | **Open.** All eleven ideas work without it; only showing both sides of a filter at once needs it. (b) touches the graph's invariant ([Query.ts:132-136](../../../packages/legend-cube/src/graph/Query.ts#L132)), the layout, the emitter's `let` rules (never a `let` after a Sort, §8.6) and Import Pure |
-| AX2 | Counts and profiles: on demand, or after every run?       | (a) on demand: "Count rows" and "Profile" buttons; (b) after every run                                                                                                                                                                                                | **(a) first.** Each is one more warehouse query, about the price of running every step once. An analyst quoted by TechTarget said Alteryx needs a cost estimate before a warehouse run (28 Jan 2026). Revisit (b) once the cost is known                                                                  |
-| AX3 | Rows without a match: Join kinds, or a step of their own? | (a) two more Join kinds, "Left rows without a match" and "Left rows with a match"; (b) a new step                                                                                                                                                                     | **(a).** No graph rule changes; the Join editor, its key pairs and its suggested keys (§11.22) are reused                                                                                                                                                                                                 |
-| AX4 | Rolling windows: reopen frames?                           | (a) keep them declined: the user declined frames on 2026-10-09 (PLAN §11.6, `PLAN.md:3551-3560`), and M5b kept them out (§11.9, `PLAN.md:4302`); (b) reopen them                                                                                                      | **(a), until users ask.** Live Query ships a Rolling Window tool on its Snowflake and Databricks palettes 📄. The engine has `rows` and `_range` frames (§4), but an unpartitioned window can't take a rows frame ✅ (§11.6)                                                                              |
-| AX5 | Checks: Cube-only, or Legend Data Quality validations?    | (a) Cube-only: checks run with the cube in both hosts, saved in its spec once cubes are saved (M8); (b) in Studio, also saved next to the MatView as a data-quality relation validation                                                                               | **Open.** (a) needs nothing from Studio. (b) keeps producers' checks in Legend SDLC, reviewed and versioned with the MatView, each check a named `AGGREGATE` assertion 💭. It couples Studio's Create MatView flow to the Data Quality extension, and Analytics has no project to save them in            |
+| #   | Decision                                                  | Options                                                                                                                                                                                                                                                               | Recommended                                                                                                                                                                                                                                                                                                                                                                                   |
+| --- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AX1 | Branching: may a step feed more than one step?            | (a) keep the forest; both sides of a filter need two copies of the chain; (b) fan-out: a shared step is bound with `let`, as Partitions are for window isolation (PLAN §8.6). (b) brings Alteryx's T/F, L/J/R and U/D outputs, and two paths compared from one source | **Open.** All eleven ideas work without it; only showing both sides of a filter at once needs it. legend-lite's flow mode allows it (a Filter's True and False, a Join's L, J and R). (b) touches the graph's invariant ([Query.ts:132-136](../../../packages/legend-cube/src/graph/Query.ts#L132)), the layout, the emitter's `let` rules (never a `let` after a Sort, §8.6) and Import Pure |
+| AX2 | Counts and profiles: on demand, or after every run?       | (a) on demand: "Count rows" and "Profile" buttons; (b) after every run                                                                                                                                                                                                | **(a) first.** Each is one more warehouse query, about the price of running every step once. An analyst quoted by TechTarget said Alteryx needs a cost estimate before a warehouse run (28 Jan 2026). Revisit (b) once the cost is known                                                                                                                                                      |
+| AX3 | Rows without a match: Join kinds, or a step of their own? | (a) two more Join kinds, "Left rows without a match" and "Left rows with a match"; (b) a new step                                                                                                                                                                     | **(a).** No graph rule changes; the Join editor, its key pairs and its suggested keys (§11.22) are reused                                                                                                                                                                                                                                                                                     |
+| AX4 | Rolling windows: reopen frames?                           | (a) keep them declined: the user declined frames on 2026-10-09 (PLAN §11.6, `PLAN.md:3551-3560`), and M5b kept them out (§11.9, `PLAN.md:4302`); (b) reopen them                                                                                                      | **(a), until users ask.** Live Query ships a Rolling Window tool on its Snowflake and Databricks palettes 📄. The engine has `rows` and `_range` frames (§4), but an unpartitioned window can't take a rows frame ✅ (§11.6)                                                                                                                                                                  |
+| AX5 | Checks: Cube-only, or Legend Data Quality validations?    | (a) Cube-only: checks run with the cube in both hosts, saved in its spec once cubes are saved (M8); (b) in Studio, also saved next to the MatView as a data-quality relation validation                                                                               | **Open.** (a) needs nothing from Studio. (b) keeps producers' checks in Legend SDLC, reviewed and versioned with the MatView, each check a named `AGGREGATE` assertion 💭. It couples Studio's Create MatView flow to the Data Quality extension, and Analytics has no project to save them in                                                                                                |
 
 ## 2. The ideas, in build order
 
 Sizes are rough: S is a few days, M a week or two, L a milestone. Probe numbers (P01-P17) are §4's.
 
-| #   | Idea                                       | From Alteryx                                               | Plans                        | Size   | Waits on                                 |
-| --- | ------------------------------------------ | ---------------------------------------------------------- | ---------------------------- | ------ | ---------------------------------------- |
-| 1   | Row counts on every step, and join checks  | Counts on connections; Join's L, J and R outputs           | P07, P17 ✅ on all five      | S-M    | nothing (AX2: when counts run)           |
-| 2   | Rows without a match, and duplicate keys   | Join's L and R, Unique's D, Filter's F                     | P01, P03, P05 ✅ on all five | M      | AX3; AX1 only for both sides of a filter |
-| 3   | More Group functions                       | Summarize                                                  | P14, P15 ✅ on all five      | S      | nothing; **being built**                 |
-| 4   | A column profile of a step                 | Results window, Browse, Live Query's profiling             | P06 ✅ on all five           | M      | #5791's D1 (where it shows); AX2 (when)  |
-| 5   | One edit for many columns                  | Multi-Field Formula, Data Cleansing, Select, Union by name | nothing new to plan          | M      | nothing                                  |
-| 6   | Transpose (unpivot)                        | Transpose                                                  | P08 ✅ on all five           | M      | nothing                                  |
-| 7   | Notes, groups, skip a step, palette search | Tool Container, Comment, Global Search                     | nothing new to plan          | S each | M8, for notes and groups                 |
-| 8   | Describe the cube in plain English         | Ask Alteryx; Trifacta's recipe                             | nothing to plan              | S      | nothing                                  |
-| 9   | Checks on a step                           | Test, Expect Equal; Trifacta's rules                       | P06 and P17's aggregates ✅  | M-L    | AX5; Studio's Create MatView flow        |
-| 10  | Parameters                                 | Analytic Apps                                              | not probed                   | L      | M8                                       |
-| 11  | Steps saved as a function                  | Macros                                                     | not probed                   | L      | M8, and Studio                           |
+| #   | Idea                                                       | From Alteryx                                                  | Plans                        | Size   | Waits on                                 |
+| --- | ---------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------- | ------ | ---------------------------------------- |
+| 1   | Row counts on every step, and join checks                  | Counts on connections; Join's L, J and R outputs              | P07, P17 ✅ on all five      | S-M    | nothing (AX2: when counts run)           |
+| 2   | Rows without a match, and duplicate keys                   | Join's L and R, Unique's D, Filter's F                        | P01, P03, P05 ✅ on all five | M      | AX3; AX1 only for both sides of a filter |
+| 3   | More Group functions                                       | Summarize                                                     | P14, P15 ✅ on all five      | S      | nothing; **being built**                 |
+| 4   | A column profile of a step                                 | Results window, Browse, Live Query's profiling                | P06 ✅ on all five           | M      | #5791's D1 (where it shows); AX2 (when)  |
+| 5   | One edit for many columns                                  | Multi-Field Formula, Data Cleansing, Select, Union by name    | nothing new to plan          | M      | nothing                                  |
+| 6   | Transpose (unpivot)                                        | Transpose                                                     | P08 ✅ on all five           | M      | nothing                                  |
+| 7   | Canvas: sources in the first column, groups, notes, search | Tool Container, Comment, Global Search; legend-lite's Tidy Up | nothing new to plan          | S each | M8, for notes                            |
+| 8   | Describe the cube in plain English                         | Ask Alteryx; Trifacta's recipe                                | nothing to plan              | S      | nothing                                  |
+| 9   | Checks on a step                                           | Test, Expect Equal; Trifacta's rules                          | P06 and P17's aggregates ✅  | M-L    | AX5; Studio's Create MatView flow        |
+| 10  | Parameters                                                 | Analytic Apps                                                 | not probed                   | L      | M8                                       |
+| 11  | Steps saved as a function                                  | Macros                                                        | not probed                   | L      | M8, and Studio                           |
 
 ### 2.1 Row counts on every step, and join checks
 
@@ -279,9 +284,9 @@ drop and a rename.
 - **To check first 💭:** P08 reads a bare table. Transpose after a Partition or a Sort meets PLAN §8.6's `let` rules
   (only Partitions are bound; never a `let` after a Sort).
 
-### 2.7 Notes, groups, skipping a step, palette search
+### 2.7 Canvas: every source in the first column, groups, notes, palette search
 
-**Size** S each. **Waits on** M8 (#5679) for notes and groups; nothing for search and skipping.
+**Size** S each. **Waits on** M8 (#5679) for notes; nothing for the rest.
 
 - **In Alteryx 📄:** a Tool Container has a caption, colors, a collapse icon and an enable or disable switch ([Tool
   Container](https://help.alteryx.com/designer/current/en/tools/documentation/tool-container-tool.html)). A Comment
@@ -291,20 +296,38 @@ drop and a rename.
   tool and drags it onto the canvas
   ([Search](https://help.alteryx.com/designer/current/en/get-started/designer-user-interface/search.html)). Reviewers
   describe large workflows as "spaghetti" 🔎.
+- **In legend-lite 📄:** Tidy Up puts each box one column after the furthest box it reads, so every input lands in the
+  first column (`flow.ts`, `arranged`). A container is a frame drawn behind its boxes, with a title, a fold and a close
+  button, and a box belongs to it when its place is inside the frame (`Frame`, `framedBy`).
 - **In Cube today 📄:** each step shows its settings as its label, which covers Alteryx's annotations
   ([CubeCanvasElements.ts:175-181](../../../packages/legend-cube-builder/src/components/canvas/CubeCanvasElements.ts#L175)).
-  One step is selected at a time ([Query.ts:89](../../../packages/legend-cube/src/graph/Query.ts#L89)), React Flow's
-  selection and multi-select are off
+  The layout is dagre's, recomputed from the query on every edit, with no positions saved
+  ([CubeCanvasLayout.ts:42-74](../../../packages/legend-cube-builder/src/components/canvas/CubeCanvasLayout.ts#L42)).
+  dagre places a step close to the step it feeds, so a short branch's source sits beside the join, not in the first
+  column. In `source1 → join1` with `source2 → filter1 → join1`, source1 lands in column 2 (review feedback,
+  2026-10-29). One step is selected at a time ([Query.ts:89](../../../packages/legend-cube/src/graph/Query.ts#L89)),
+  React Flow's selection and multi-select are off
   ([CubeCanvas.tsx:183-186](../../../packages/legend-cube-builder/src/components/canvas/CubeCanvas.tsx#L183)), and
   there are no notes or groups. Palette search and notes on steps are on the backlog (`ISSUES.md:598-599`).
 
-**Pure:** nothing new; a skipped step is left out of the lambda.
+**Pure:** nothing new. The layout, groups and notes don't change the lambda, and a skipped step is left out of it.
 
-- **Plan results:** nothing to plan.
+- **Plan results:** nothing to plan. Two layout prototypes ran on the repo's dagre 1.1.4 (in the local evidence folder,
+  under `alteryx/canvas/`):
+  - `layout.cjs` ranks each step by its longest path from a source, and gives dagre each edge's rank difference as its
+    `minlen`. source1 moves from column 2 to column 1, and nothing else moves. With three sources at different depths,
+    all three move to the first column; separate trees don't move.
+  - `group.cjs` adds a group through dagre's compound graphs. The group's frame spans its steps (source2 and filter1),
+    and source1 stays in the first column. Columns spread wider when a group exists.
 - **Design:**
+  - **Every source in the first column.** The rank is legend-lite's Tidy Up rule, and the layout stays a pure function
+    of the query. Edges from short branches get longer.
+  - **Groups drawn as a plane.** Cube saves no positions, so a group is a list of steps, with a title and a folded
+    flag, in the spec's `meta`. dagre keeps its steps together and gives the frame to draw behind them. Folding draws
+    one box in the group's place. The spacing needs tuning.
   - Palette search can ship now.
   - "Skip this step", for a step with one input: the emitter leaves it out and the canvas dims it.
-  - Notes and groups go in the spec's `meta`. They are worth having only once cubes are saved (M8).
+  - Notes go in the spec's `meta` too. They are worth having only once cubes are saved (M8).
 
 ### 2.8 Describe the cube in plain English
 
@@ -524,6 +547,10 @@ the source of each claim, the list of claims seen only in search summaries, and 
 - finos/legend-studio#5791: Legend DataCube as the results grid (plan, DATACUBE-GRID.md, PLAN §11.26; decisions D1-D7
   open).
 - finos/legend-studio#5679: M8, saved cubes (PLAN §11.13).
+- legend-lite's flow mode: [neema2/legend-lite#75](https://github.com/neema2/legend-lite/pull/75),
+  [#76](https://github.com/neema2/legend-lite/pull/76) and [#79](https://github.com/neema2/legend-lite/pull/79), merged
+  2026-10-26 to 2026-10-29. Its design note (`DATACUBE_FLOW_MODE_2026_10_24.md`) and `flow.ts` are copied in the local
+  evidence folder, under `alteryx/reports/legend-lite/`.
 - legend-engine `3aeb3f0f7f` (2026-10-23): the relation functions under
   `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources/core_functions_relation/relation/functions/`.
 - The study's report, a page private to the user, and its local copy (`alteryx/alteryx-ideas-for-cube.html` in the
