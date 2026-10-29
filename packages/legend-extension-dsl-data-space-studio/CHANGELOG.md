@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.2.1
+
+### Patch Changes
+
+- [#5787](https://github.com/finos/legend-studio/pull/5787) [`3307670`](https://github.com/finos/legend-studio/commit/33076708dc31c3a82db8f2c8ed0d0ad51916cd33) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fixed the "+" buttons that add an execution context or an executable in the data space editor rendering black, and nearly invisible, in the dark theme: they now use the same muted color as the tabs' close icons.
+
 ## 0.2.0
 
 ### Minor Changes

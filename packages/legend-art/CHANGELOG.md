@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.172
+
+### Patch Changes
+
+- [#5773](https://github.com/finos/legend-studio/pull/5773) [`25b0c9f`](https://github.com/finos/legend-studio/commit/25b0c9f75962cba4379ab34fd7556f3b28df158d) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add a dark color theme to DataCube, toggled via the new `Dark Mode: Enabled` setting (Settings › Appearance), which uses the same palette as the default dark theme of the other Legend applications. Default grid colors (foreground, grid lines, highlighted rows, etc.) follow the theme while customized colors are kept as-is. To support this, Tailwind color utilities now read their values from the `--tw-color-*` CSS variables (the default palette is unchanged), so a subtree can be re-themed by redefining these variables.
+
 ## 7.1.171
 
 ### Patch Changes

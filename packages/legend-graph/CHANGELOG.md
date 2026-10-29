@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.9.2
+
+### Patch Changes
+
+- [#5767](https://github.com/finos/legend-studio/pull/5767) [`eb540d5`](https://github.com/finos/legend-studio/commit/eb540d5174edb6e126e973a4d99175bbe25ef981) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Author a `GenerationSpecification` node that holds several generation elements. The generation specification editor shows each node as a stage of cards, with the recompile that separates one stage from the next labelled on the divider and the specification's cost ("N stages, N recompiles") in the header. Dropping an element on a stage adds it to that stage, so generations that do not need each other run against one compiled graph by default; dropping it on the strip at the end gives it a stage of its own. A stage exists only while something is in it, and a generation that fails is reported on the card that caused it, which offers to move it into a stage of its own.
+
+  Remove `GenerationSpecification.findGenerationElementById`, which nothing calls: it was written when a node held a single element, and for a node holding several it returned only the first.
+
+- [#5796](https://github.com/finos/legend-studio/pull/5796) [`57c0753`](https://github.com/finos/legend-studio/commit/57c0753088e482bf1cfd3fa02ec828149f8b37c4) ([@ahallgs](https://github.com/ahallgs)) - Fix graph building for mapping test suites whose `storeTestData` references a Lakehouse `IngestDefinition` or `DataProduct` as the store. Previously, `V1_GraphBuilderContext.resolveStore()` only recognized classic `Store` elements (`Database`, `FlatData`, `ModelStore`), causing graph build to fail with `Can't find store '<path>'` for mappings sourced from a Lakehouse ingest's relation function.
+
+  Also fix the `V1_MappingTestSuite` protocol field order (`func` before `id`) so transformed entities' fields stay alphabetically sorted, which was blocking a protocol roundtrip test from being enabled for mapping test suites.
+
 ## 32.9.1
 
 ### Patch Changes

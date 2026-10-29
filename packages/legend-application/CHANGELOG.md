@@ -1,5 +1,7 @@
 # @finos/legend-application
 
+## 16.1.1
+
 ## 16.1.0
 
 ### Minor Changes
