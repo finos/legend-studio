@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.4.4
+
+### Patch Changes
+
+- [#5795](https://github.com/finos/legend-studio/pull/5795) [`36d899c`](https://github.com/finos/legend-studio/commit/36d899c76b72f2f3302d41e868826555af9cb726) ([@yash0024](https://github.com/yash0024)) - Read-only data contract, task and data product lookups now go to the lakehouse contract read server (`datacontractsReader` / `dataproductsReader`) instead of the contract server.
+
 ## 0.4.3
 
 ## 0.4.2

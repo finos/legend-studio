@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.516
+
+### Patch Changes
+
+- [#5781](https://github.com/finos/legend-studio/pull/5781) [`af0eab8`](https://github.com/finos/legend-studio/commit/af0eab890ffe809683f4d86a0b4a21f73744b1ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fixed creating a persistence from the New Element dialog breaking the workspace: the persistence was created without a service, so computing its hash threw and stopped change detection. The dialog now asks for the service and a documentation, and the new persistence gets a manual trigger and an empty notifier, so it hashes, serializes and builds again on the next load.
+
 ## 5.0.515
 
 ## 5.0.514
