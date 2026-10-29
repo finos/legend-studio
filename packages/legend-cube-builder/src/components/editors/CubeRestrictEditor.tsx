@@ -17,13 +17,9 @@
 import type { Schema } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import {
-  getColumnTypeLabel,
-  getExactColumnTypeLabel,
-} from '../../__lib__/LegendCubeLabels.js';
 import { CubeRestrictDraft } from '../../stores/editors/CubeRestrictDraft.js';
 import { CubeButton } from '../CubeButton.js';
-import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { CubeTypedColumnName } from './CubeColumnPicker.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 const KEEP = 'Columns to keep';
@@ -75,17 +71,10 @@ export const CubeRestrictEditor = observer((props: CubeNodeEditorProps) => {
                 disabled={readOnly}
                 onChange={() => draft.toggleColumn(column.name, schema)}
               />
-              <CubeColumnTypeIcon
-                type={column.type}
-                className="text-[var(--color-text-secondary)]"
+              <CubeTypedColumnName
+                column={column}
+                iconClassName="text-[var(--color-text-secondary)]"
               />
-              <span className="min-w-0 truncate">{column.name}</span>
-              <span
-                className="shrink-0 text-sm text-[var(--color-text-muted)]"
-                title={getExactColumnTypeLabel(column)}
-              >
-                {getColumnTypeLabel(column)}
-              </span>
             </label>
           </li>
         ))}

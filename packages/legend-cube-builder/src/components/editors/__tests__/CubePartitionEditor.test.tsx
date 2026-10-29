@@ -58,6 +58,7 @@ import {
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
   TEST__importDocument,
+  TEST__getColumnListRowText,
   TEST__renderInCubeApplication,
 } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
@@ -362,23 +363,23 @@ describe('Partition editor', () => {
   test("Lists the input's columns to partition by, with their types, a Variant or unknown type shown but not tickable", async () => {
     await render(ordersPartitioned([], [BY_DATE], [RANK_AGGREGATION]));
     await openPartition();
-    expect(columnItems().map((item) => item.textContent)).toEqual([
-      'ORDER_IDWhole number',
-      'CUSTOMER_IDText, optional',
-      'EMPLOYEE_IDWhole number, optional',
-      'ORDER_DATEDate, optional',
-      'REQUIRED_DATEDate, optional',
-      'SHIPPED_DATEDate, optional',
-      'SHIP_VIAWhole number, optional',
-      'FREIGHTNumber, optional',
-      'SHIP_NAMEText, optional',
-      'SHIP_ADDRESSText, optional',
-      'SHIP_CITYText, optional',
-      'SHIP_REGIONText, optional',
-      'SHIP_POSTAL_CODEText, optional',
-      'SHIP_COUNTRYText, optional',
-      "PAYLOADVariant, optional (can't be partitioned by)",
-      "SHAPEShape, optional (can't be partitioned by)",
+    expect(columnItems().map(TEST__getColumnListRowText)).toEqual([
+      'ORDER_ID Whole number',
+      'CUSTOMER_ID Text, optional',
+      'EMPLOYEE_ID Whole number, optional',
+      'ORDER_DATE Date, optional',
+      'REQUIRED_DATE Date, optional',
+      'SHIPPED_DATE Date, optional',
+      'SHIP_VIA Whole number, optional',
+      'FREIGHT Number, optional',
+      'SHIP_NAME Text, optional',
+      'SHIP_ADDRESS Text, optional',
+      'SHIP_CITY Text, optional',
+      'SHIP_REGION Text, optional',
+      'SHIP_POSTAL_CODE Text, optional',
+      'SHIP_COUNTRY Text, optional',
+      "PAYLOAD Variant, optional (can't be partitioned by)",
+      "SHAPE Shape, optional (can't be partitioned by)",
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(false);
     expect(checkbox('PAYLOAD').disabled).toBe(true);
@@ -799,19 +800,15 @@ describe('Partition editor', () => {
     expect(sortOption(2, 'SHIP_COUNTRY').disabled).toBe(false);
     // each says why
     expect(sortOption(2, 'PAYLOAD').textContent).toBe(
-      "PAYLOAD: Variant, optional (can't be sorted)",
+      "PAYLOAD (can't be sorted)",
     );
     expect(sortOption(2, 'ORDER_ID').textContent).toBe(
-      'ORDER_ID: Whole number (already sorted on)',
+      'ORDER_ID (already sorted on)',
     );
-    expect(sortOption(2, 'SHIP_COUNTRY').textContent).toBe(
-      'SHIP_COUNTRY: Text, optional',
-    );
+    expect(sortOption(2, 'SHIP_COUNTRY').textContent).toBe('SHIP_COUNTRY');
     // a row keeps its own column
     expect(sortOption(1, 'ORDER_ID').disabled).toBe(false);
-    expect(sortOption(1, 'ORDER_ID').textContent).toBe(
-      'ORDER_ID: Whole number',
-    );
+    expect(sortOption(1, 'ORDER_ID').textContent).toBe('ORDER_ID');
   });
 
   test('Reorders the sort rows, the first sorting first, never past either end', async () => {

@@ -66,3 +66,8 @@ Click a step on the graph to open its editor. This is the Group step's:
 5. **None**: untick every group column (one row for all the rows).
 6. The columns to group by.
 7. **Cancel** the changes, or **Apply** them to the cube.
+
+Where an editor lists columns, each shows its type as an icon: **#** a number, **Tт** text, a calendar a date or a date
+and time, a clock a time, a toggle true or false, a list an enumeration, a tree JSON. Point at the icon for the type in
+words, such as _Whole number, optional_, and the exact type. An optional column can be empty. A source's column table
+names each type in words.

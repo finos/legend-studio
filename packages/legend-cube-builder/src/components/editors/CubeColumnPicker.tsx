@@ -17,6 +17,7 @@
 import {
   CalendarIcon,
   clsx,
+  EmptyClockIcon,
   HashtagIcon,
   ListIcon,
   QuestionIcon,
@@ -32,7 +33,7 @@ import {
 } from '@finos/legend-cube';
 import {
   getColumnTypeLabel,
-  getExactColumnTypeLabel,
+  getColumnTypeTitle,
 } from '../../__lib__/LegendCubeLabels.js';
 
 const FAMILY_ICONS: Readonly<
@@ -47,6 +48,7 @@ const FAMILY_ICONS: Readonly<
   [TypeFamily.STRICT_DATE]: CalendarIcon,
   [TypeFamily.DATETIME]: CalendarIcon,
   [TypeFamily.DATE]: CalendarIcon,
+  [TypeFamily.STRICT_TIME]: EmptyClockIcon,
   [TypeFamily.ENUM]: ListIcon,
   // a JSON document: its fields as a tree (PLAN §11.20)
   [TypeFamily.VARIANT]: SitemapIcon,
@@ -62,13 +64,55 @@ export const CubeColumnTypeIcon: React.FC<{
 };
 
 /**
+ * A column's type as its family's icon alone, beside its name: the type in
+ * words, e.g. `Whole number, optional`, is the icon's accessible name, and
+ * its tooltip adds the exact type
+ */
+export const CubeColumnTypeLabelIcon: React.FC<{
+  column: SchemaColumn;
+  className?: string;
+}> = ({ column, className }) => (
+  <span
+    role="img"
+    aria-label={getColumnTypeLabel(column)}
+    title={getColumnTypeTitle(column)}
+    className={clsx('flex shrink-0 items-center', className)}
+  >
+    <CubeColumnTypeIcon type={column.type} />
+  </span>
+);
+
+/**
+ * A column's name after its type's icon, in a list row whose label names a
+ * checkbox: the type in words follows the name for screen readers only, so
+ * the checkbox is named e.g. `CATEGORY_ID Whole number, optional`, name
+ * first; the icon's tooltip has the words and the exact type
+ */
+export const CubeTypedColumnName: React.FC<{
+  column: SchemaColumn;
+  iconClassName?: string;
+}> = ({ column, iconClassName }) => (
+  <>
+    <span
+      aria-hidden={true}
+      title={getColumnTypeTitle(column)}
+      className={clsx('flex shrink-0 items-center', iconClassName)}
+    >
+      <CubeColumnTypeIcon type={column.type} />
+    </span>
+    <span className="min-w-0 truncate">{column.name}</span>
+    <span className="sr-only">{getColumnTypeLabel(column)}</span>
+  </>
+);
+
+/**
  * Picks a column of an input schema, in schema order (spec §17.5: only the
- * columns of the actual input). Each option names its type, e.g.
- * `CUSTOMER_ID: Varchar(5)?`; the picked column's type shows beside, with
- * its family's icon and its full type in the tooltip. A column the input
- * doesn't have stays shown, so the problem can be seen and fixed. A column
- * the editor can't take here is shown, with the reason `isColumnDisabled`
- * gives after its type, but can't be picked.
+ * columns of the actual input). Each option is a column's name; the picked
+ * column's type shows beside, as its family's icon, with the type in words
+ * and the exact type in the tooltip. A column the input doesn't have stays
+ * shown, so the problem can be seen and fixed. A column the editor can't
+ * take here is shown, with the reason `isColumnDisabled` gives after its
+ * name, but can't be picked.
  */
 export const CubeColumnPicker: React.FC<{
   /** What the column is for, e.g. `Left join column 1`: the picker's accessible name */
@@ -81,8 +125,8 @@ export const CubeColumnPicker: React.FC<{
   /** Marks the pick as wrong, e.g. a type that doesn't match */
   invalid?: boolean | undefined;
   /**
-   * Why a column can't be picked, shown after its type, e.g. a Sort's Variant
-   * column, or one another row has; `undefined` when it can be
+   * Why a column can't be picked, shown after its name, e.g. a Sort's
+   * Variant column, or one another row has; `undefined` when it can be
    */
   isColumnDisabled?: ((column: SchemaColumn) => string | undefined) | undefined;
   /** Columns to list first, under "Suggested", e.g. a Join's suggested join columns; the rest follow */
@@ -111,10 +155,10 @@ export const CubeColumnPicker: React.FC<{
       <option
         key={column.name}
         value={column.name}
-        title={`${getExactColumnTypeLabel(column)} (${column.type.fullName})`}
+        title={getColumnTypeTitle(column)}
         disabled={reason !== undefined}
       >
-        {`${column.name}: ${getColumnTypeLabel(column)}${reason === undefined ? '' : ` (${reason})`}`}
+        {`${column.name}${reason === undefined ? '' : ` (${reason})`}`}
       </option>
     );
   };
@@ -154,13 +198,10 @@ export const CubeColumnPicker: React.FC<{
         )}
       </select>
       {picked && (
-        <span
-          className="flex shrink-0 items-center gap-1 text-sm text-[var(--color-text-secondary)]"
-          title={`${getExactColumnTypeLabel(picked)} (${picked.type.fullName})`}
-        >
-          <CubeColumnTypeIcon type={picked.type} />
-          {getColumnTypeLabel(picked)}
-        </span>
+        <CubeColumnTypeLabelIcon
+          column={picked}
+          className="text-sm text-[var(--color-text-secondary)]"
+        />
       )}
     </div>
   );
