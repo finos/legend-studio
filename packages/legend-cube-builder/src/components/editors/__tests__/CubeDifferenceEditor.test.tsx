@@ -32,7 +32,10 @@ import {
   NORTHWIND_RUNTIME,
   northwindTable,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__getColumnListRowText,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
@@ -140,11 +143,11 @@ const checkbox = (name: string): HTMLInputElement =>
     name: new RegExp(`^${name}\\b`, 'u'),
   });
 
-/** Each column of the list with what it says after its name */
+/** Each column of the list as its checkbox is named: its name, its type, why it can't be ticked */
 const listed = (): string[] =>
   within(differenceList())
     .getAllByRole('listitem')
-    .map((item) => item.textContent ?? '');
+    .map(TEST__getColumnListRowText);
 
 beforeEach(() => {
   localStorage.clear();
@@ -201,11 +204,11 @@ describe('Difference editor', () => {
     );
     await openDifference();
     expect(listed()).toEqual([
-      'ORDER_IDWhole number (a join column)',
-      'SHIP_VIAWhole number, optional',
-      'SHIP_CITYText, optional (not a number)',
-      'FREIGHTNumber, optional',
-      'DISCOUNTNumber, optional (Float4 in the Right input)',
+      'ORDER_ID Whole number (a join column)',
+      'SHIP_VIA Whole number, optional',
+      'SHIP_CITY Text, optional (not a number)',
+      'FREIGHT Number, optional',
+      'DISCOUNT Number, optional (Float4 in the Right input)',
     ]);
     expect(checkbox('ORDER_ID').disabled).toBe(true);
     expect(checkbox('SHIP_VIA').disabled).toBe(false);
@@ -224,7 +227,7 @@ describe('Difference editor', () => {
     );
     await openDifference();
     expect(listed()).toContain(
-      'DISCOUNTNumber, optional (not in the Right input)',
+      'DISCOUNT Number, optional (not in the Right input)',
     );
   });
 
@@ -237,13 +240,13 @@ describe('Difference editor', () => {
       }),
     );
     await openDifference();
-    expect(listed()).toContain('QTY(not in the input)');
+    expect(listed()).toContain('QTY (not in the input)');
     expect(problems()).toEqual([
       'Left difference column "QTY" is not present in the input schema.',
       'Right difference column "QTY" is not present in the input schema.',
     ]);
     fireEvent.click(checkbox('QTY'));
-    expect(listed()).not.toContain('QTY(not in the input)');
+    expect(listed()).not.toContain('QTY (not in the input)');
   });
 
   test('Swaps the inputs, the join columns following them and the difference columns kept, in one undo step', async () => {

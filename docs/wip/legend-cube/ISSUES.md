@@ -615,7 +615,7 @@ user picked the items marked **this pass** for the `cube-ux-pass` branch (PLAN Â
 6. **Types in engine notation** (`Varchar(20)?`, `Numeric(18,2)`): show Text / Number / Date, "can be empty", the
    exact type on hover. _This pass._
 7. **Node editors open scrolled with their top heading clipped, and cut their help notes off**; the column picker
-   repeats the type beside the column.
+   repeats the type beside the column (the type is an icon since 2026-10-29).
 8. **Every edit needs an F9:** an "auto-run after Apply" toggle for queries under the row limit.
 9. **Expressions need `x | $x.` typed and a Validate:** column completion after `$x.`, validating on a pause.
 10. **Choosing the step that runs is hidden** (right-click â†’ Select): a visible "Run this step", a clearer marker on

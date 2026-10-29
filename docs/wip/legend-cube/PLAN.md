@@ -1589,8 +1589,9 @@ appears, unconnected, after the dialog's confirm. The empty canvas's link opens 
 - **Edits are buffered** locally. **Apply** (or any close but Cancel) emits one replacement node, so there is one undo
   entry per edit (§17.5). Cancel discards. Apply closes the editor (2026-10-11; it used to stay open, applied).
 - **If an upstream node is invalid,** the editor shows the upstream error instead of its body (§17.5).
-- **Column pickers** only offer columns from the actual input schema(s). Each column shows its type label and
-  nullable marker.
+- **Column pickers** only offer columns from the actual input schema(s). Each option is the column's name; the picked
+  column's type shows beside the picker as its family's icon, with the words and the exact type in its tooltip
+  (2026-10-29; before, each option and the picker said the type in words).
 - **Following the cube** (built in M1.8b S17, narrowing the user's answer to the panel with edits). Since M3b, user
   actions outside the editor apply it first (below), so this covers re-checks, Import and Undo's own effects:
   - an editor with unapplied edits whose node is replaced or removed underneath (Undo, a re-check, Remove) closes
@@ -4846,7 +4847,11 @@ new features; the whole list is the "UX backlog" in [ISSUES.md](ISSUES.md).
 - **Types by the kind of value** (6): the editors' column lists say Text, Whole number, Number, Decimal, Date, Date and
   time, Time, True or false, and ", optional" (", can be empty" until 2026-10-15, user); the exact type is on hover, and
   messages that compare types (Join, Concat, a table that changed) keep it (`getColumnTypeLabel`,
-  `getExactColumnTypeLabel`).
+  `getExactColumnTypeLabel`). Since 2026-10-29 (the user's manager: the words repeat on every column), pickers,
+  checklists and Restrict's list show the family's icon alone: its tooltip has the words and the exact type
+  (`getColumnTypeTitle`), and screen readers read the words after the column's name (`CubeColumnTypeLabelIcon`,
+  `CubeTypedColumnName`). A source's column table, Concatenate's exact types and Extend's result type keep the words;
+  a Time column gets a clock, not the question mark.
 - **Run this step** (10): the node menu's and editor's Select is "Run this step"; the step that runs carries a "▶
   Runs" badge on the canvas and in its editor. `selected` and the saved spec are unchanged (Appendix A, §17.9's
   tooltip).
