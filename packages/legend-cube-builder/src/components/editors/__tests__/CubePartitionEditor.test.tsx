@@ -90,6 +90,9 @@ const ALL_COLUMN_FUNCTIONS = [
   'Average',
   'Min',
   'Max',
+  // a window's of PLAN §11.28: not Median, Percentile or Join Text
+  'Std Dev',
+  'Variance',
 ];
 /** How the function select shows the functions that take no column, after the column functions */
 const NO_COLUMN_FUNCTIONS = [

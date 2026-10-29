@@ -884,9 +884,9 @@ describe(unitTest('Saved spec validity: groups'), () => {
       'an unknown function',
       groupSpec(
         ['COUNTRY'],
-        [{ column: 'QTY', function: 'Median', name: 'QTY Median' }],
+        [{ column: 'QTY', function: 'Mode', name: 'QTY Mode' }],
       ),
-      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median')],
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode')],
     ],
     [
       'a function spelled in another case',
@@ -989,13 +989,13 @@ describe(unitTest('Saved spec validity: groups'), () => {
       groupSpec(
         ['COUNTRY'],
         [
-          { column: 'QTY', function: 'Median', name: 'QTY Median' },
+          { column: 'QTY', function: 'Mode', name: 'QTY Mode' },
           COUNT_QTY,
           { column: 'QTY', function: 'CountRows', name: 'Count Rows' },
         ],
       ),
       [
-        MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+        MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode'),
         MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('CountRows'),
       ],
     ],
@@ -1031,8 +1031,8 @@ describe(unitTest('Saved spec validity: groups'), () => {
   test.each<[string, JsonObject, string]>([
     [
       'an unknown function',
-      { column: 'QTY', function: 'Median' },
-      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+      { column: 'QTY', function: 'Mode' },
+      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode'),
     ],
     [
       'a window-only function',
@@ -1153,9 +1153,9 @@ describe(unitTest('Saved spec validity: partitions'), () => {
       partitionSpec(
         ['COUNTRY'],
         [QTY_DESC],
-        [{ column: 'QTY', function: 'Median', name: 'QTY Median' }],
+        [{ column: 'QTY', function: 'Mode', name: 'QTY Mode' }],
       ),
-      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median')],
+      [MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode')],
     ],
     [
       'a rank function spelled in another case',
@@ -1273,13 +1273,13 @@ describe(unitTest('Saved spec validity: partitions'), () => {
         ['COUNTRY'],
         [QTY_DESC],
         [
-          { column: 'QTY', function: 'Median', name: 'QTY Median' },
+          { column: 'QTY', function: 'Mode', name: 'QTY Mode' },
           RANK,
           { column: 'QTY', function: 'DenseRank', name: 'Dense Rank' },
         ],
       ),
       [
-        MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+        MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode'),
         MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN('DenseRank'),
       ],
     ],
@@ -1310,8 +1310,8 @@ describe(unitTest('Saved spec validity: partitions'), () => {
       'Aggregation function "Rank" requires at least one sort column.',
     ]);
     expect(
-      errorsOfRank([QTY_DESC], { ...RANK, function: 'Median' }),
-    ).toStrictEqual(['Aggregation function "Median" is unknown.']);
+      errorsOfRank([QTY_DESC], { ...RANK, function: 'Mode' }),
+    ).toStrictEqual(['Aggregation function "Mode" is unknown.']);
     expect(errorsOfRank([QTY_DESC], { ...RANK, function: '' })).toStrictEqual([
       'Aggregation function cannot be empty.',
     ]);
@@ -1364,8 +1364,8 @@ describe(unitTest('Saved spec validity: partitions'), () => {
   test.each<[string, JsonObject, string]>([
     [
       'an unknown function',
-      { column: 'QTY', function: 'Median' },
-      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median'),
+      { column: 'QTY', function: 'Mode' },
+      MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode'),
     ],
     [
       'a rank function spelled in another case',

@@ -5682,6 +5682,75 @@ finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no long
 | DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests ✅ (2026-10-21)                                      |
 | DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen ✅ (2026-10-22, video 39 on the PR)              |
 
+### 11.28 More Group functions: Median, Percentile, Std Dev, Variance and Join Text (2026-10-29)
+
+**Ask:** idea 3 of the Alteryx study (finos/legend-studio#5809, its §2.3; §11.26 and §11.27 belong to the drafts #5791
+and #5809): Alteryx's Summarize offers Median, Percentile, Std Dev, Variance and Concatenate, and Group by Column offered
+eight functions. Built on the branch `cube-group-functions` from master `18a8f8fcf`, in one PR into master. Plans were
+made on the local engine (`aa1c755`) for Snowflake, Databricks, MemSQL, DuckDB and H2 ✅ (plans), then for every database
+type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and DuckDB ✅. Evidence:
+`legend-cube-evidence/group-functions/` (`run.mjs`, `types.mjs`, `dialects-2026-10-29.json`).
+
+**Settled with the user** (2026-10-29, all on the recommendation):
+
+1. **Percentile's p is typed as a percent** from 0 to 100, 90 by default, and saved and written as the fraction the
+   engine's `percentile()` takes (`percentile(0.9)`). The editor moves the decimal point in the text, never
+   multiplying, so nothing is rounded (33.3 / 100 is 0.33299999999999996). Its auto-name carries the percent,
+   `FREIGHT P90`, so a column's quartiles don't clash.
+2. **Std Dev and Variance are the sample ones** (`stdDevSample`, `varianceSample`, over n - 1); the population ones
+   aren't offered.
+3. **Join Text** (not "Concatenate", the Concat step's name) joins a group's texts with a separator, `, ` by default,
+   kept exactly, empty allowed. A backslash is refused: the engine writes it as it is, and Snowflake, Databricks and
+   MemSQL read it as an escape (ISSUES.md).
+4. **Windows offer Std Dev and Variance only.** Snowflake refuses an ORDER BY in the OVER of MEDIAN, PERCENTILE_CONT and
+   LISTAGG ([MEDIAN](https://docs.snowflake.com/en/sql-reference/functions/median)), and a Partition with sort columns
+   writes one for every aggregate; STDDEV_SAMP and VAR_SAMP take one, as a running window.
+
+**Decided without asking:**
+
+- **Pivot takes none of them:** Snowflake's PIVOT takes only AVG, COUNT, MAX, MIN and SUM
+  ([PIVOT](https://docs.snowflake.com/en/sql-reference/constructs/pivot)), though each plans.
+  `PIVOT_AGGREGATION_FUNCTIONS` lists what a Pivot takes, and the editor offers no other.
+- **The grid's group rows (drill-down) keep their list:** a drill-down's aggregation has no setting. A saved one of
+  these functions is reported unknown there, as before.
+- In a window, Median, Percentile and Join Text are unknown, as Rank is in a Group (§11.5, Q4).
+
+**The functions** (`Aggregation.ts`; settings `percentile` and `separator` beside `offset` and `buckets`, §11.9):
+
+| Saved        | Shown as   | Offered on           | Result type | Pure                | Snowflake                           | Databricks                          | MemSQL                           |
+| ------------ | ---------- | -------------------- | ----------- | ------------------- | ----------------------------------- | ----------------------------------- | -------------------------------- |
+| `Median`     | Median     | numbers              | Float       | `median()`          | `median`                            | `median`                            | `median`                         |
+| `Percentile` | Percentile | numbers              | Number      | `percentile(0.9)`   | `percentile_cont(0.9) within group` | the same, of a double               | `percentile_cont`                |
+| `StdDev`     | Std Dev    | numbers; windows too | Number      | `stdDevSample()`    | `stddev_samp`                       | `stddev_samp`                       | `stddev_samp`                    |
+| `Variance`   | Variance   | numbers; windows too | Number      | `varianceSample()`  | `var_samp`                          | `var_samp`                          | `var_samp`                       |
+| `JoinText`   | Join Text  | strings              | String      | `joinStrings(', ')` | `listagg(c, ', ')`                  | `array_join(collect_list(c), ', ')` | `group_concat(c separator ', ')` |
+
+- **Types** are the engine's (`lambdaRelationType` on every numeric type, `types.mjs`): Median `Float[1]`, Percentile
+  `Number[0..1]`, Std Dev and Variance `Number[1]`, Join Text `String[1]`, whatever the column's precise type. Cube
+  makes all of them nullable: a group of empty values gives none, and Std Dev and Variance give none over one value. The
+  conformance cases declare the engine's `[1]` ones wider, as Sum and Average (§5.7).
+- **Percentile's literal is a Float**: `percentile(1)` doesn't type. The engine plans 1.5, so Cube checks the range.
+- **Join Text's values come in no set order**; a group with no text gives an empty text on Snowflake (documented) and,
+  by `array_join` of an empty list, Databricks 💭, and none on H2 and DuckDB ✅.
+- **Run on the warehouses, by the engine's PCT** (its expected-failure manifests, checkout `3aeb3f0f7f`, run on
+  Snowflake and Databricks themselves): no failure is listed for `median`, `percentile`, `stdDevSample`,
+  `varianceSample` or `joinStrings` in a group, nor for Median, Std Dev and Variance in a window. The failures listed
+  are a Percentile window (Snowflake's values, DuckDB's missing window function) and Databricks' `joinStrings` with an
+  order, neither of which Cube writes. BigQuery's (legend-engine#5108) list Median ("Function not found") and
+  Percentile (a syntax error).
+- **Other databases** (plans): every function plans on Postgres, Sybase, Sybase IQ, DB2, Oracle, Redshift, BigQuery and
+  ClickHouse too. The engine refuses Join Text on SQL Server, Trino, Presto, Athena, Hive and Composite, and Std Dev on
+  Hive and Composite. ClickHouse writes Median and Percentile as estimates (`median`, `quantile`) and Join Text as a
+  function of one row (ISSUES.md). The Group editor's notes say so, BigQuery's Median and Percentile included.
+- **Import Pure** reads `median()`, `stdDevSample()`, `varianceSample()`, `percentile(<Float>)` and
+  `joinStrings(<String>)`, and refuses the other forms (an Integer p, the four-argument `percentile`, the population
+  functions); a window reads `stdDevSample()` and `varianceSample()`.
+
+**Status:** draft finos/legend-studio#5810.
+
+**Supersessions** (kept here until folded): §11.5's aggregations table and `getAvailableAggregations`; §11.6's window
+functions; §11.12's Pivot aggregations; Appendix A, §10 (functions beyond the spec) and §16 (the setting messages).
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks

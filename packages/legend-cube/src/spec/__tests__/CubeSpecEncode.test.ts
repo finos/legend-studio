@@ -1856,7 +1856,7 @@ describe(unitTest('Saved spec encoding: groups'), () => {
           ['SHIP_REGION', 'SHIP_COUNTRY', 'SHIP_COUNTRY', ''],
           [
             { column: '', function: 'Count', name: '' },
-            { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+            { column: 'ORDER_ID', function: 'Mode', name: 'ORDER_ID Mode' },
             { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
             { column: undefined, function: 'Rank', name: 'Rank' },
             { column: 'ORDER_ID', function: 'CountRows', name: 'Count Rows' },
@@ -1868,7 +1868,7 @@ describe(unitTest('Saved spec encoding: groups'), () => {
         columns: ['SHIP_REGION', 'SHIP_COUNTRY', 'SHIP_COUNTRY', ''],
         aggregations: [
           { column: '', function: 'Count', name: '' },
-          { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+          { column: 'ORDER_ID', function: 'Mode', name: 'ORDER_ID Mode' },
           { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
           { function: 'Rank', name: 'Rank' },
           { column: 'ORDER_ID', function: 'CountRows', name: 'Count Rows' },
@@ -1983,8 +1983,8 @@ describe(unitTest('Saved spec encoding: groups'), () => {
   test.each<[string, JsonObject, JsonObject]>([
     [
       'an unknown function',
-      { column: 'ORDER_ID', function: 'Median' },
-      { column: 'ORDER_ID', function: 'Median', name: '' },
+      { column: 'ORDER_ID', function: 'Mode' },
+      { column: 'ORDER_ID', function: 'Mode', name: '' },
     ],
     [
       'a window-only function',
@@ -2018,6 +2018,123 @@ describe(unitTest('Saved spec encoding: groups'), () => {
       );
     },
   );
+
+  test("Writes Percentile's percentile and Join Text's separator after the name, exactly, and reads one left out as missing (PLAN §11.28)", () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Median', name: 'm' },
+      { column: 'FREIGHT', function: 'Percentile', name: 'p', percentile: 0.9 },
+      { column: 'FREIGHT', function: 'Percentile', name: 'q', percentile: 0 },
+      { column: 'FREIGHT', function: 'StdDev', name: 's' },
+      { column: 'FREIGHT', function: 'Variance', name: 'v' },
+      { column: 'SHIP_CITY', function: 'JoinText', name: 'j', separator: ', ' },
+      // an empty separator is a separator, never dropped
+      { column: 'SHIP_CITY', function: 'JoinText', name: 'k', separator: '' },
+    ];
+    const json = groupSpec({ columns: ['SHIP_COUNTRY'], aggregations });
+    const document = decodeGroupSpec(json);
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(document, json, REGISTRY);
+    expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+      JSON.stringify(json),
+    );
+    // missing, as a Limit's cleared size: validation reports it
+    const defaulted = decodeGroupSpec(
+      groupSpec({
+        columns: [],
+        aggregations: [
+          { column: 'FREIGHT', function: 'Percentile' },
+          { column: 'SHIP_CITY', function: 'JoinText' },
+        ],
+      }),
+    );
+    expect(aggregationsOf(defaulted)).toStrictEqual([
+      { column: 'FREIGHT', function: 'Percentile', name: 'FREIGHT Percentile' },
+      {
+        column: 'SHIP_CITY',
+        function: 'JoinText',
+        name: 'SHIP_CITY Join Text',
+      },
+    ]);
+  });
+
+  test('Names a Percentile saved without a name after its percent, and writes the name', () => {
+    const document = decodeGroupSpec(
+      groupSpec({
+        columns: [],
+        aggregations: [
+          { column: 'FREIGHT', function: 'Percentile', percentile: 0.25 },
+          { column: 'FREIGHT', function: 'Percentile', percentile: 0.125 },
+        ],
+      }),
+    );
+    expect(aggregationsOf(document)).toStrictEqual([
+      {
+        column: 'FREIGHT',
+        function: 'Percentile',
+        name: 'FREIGHT P25',
+        percentile: 0.25,
+      },
+      {
+        column: 'FREIGHT',
+        function: 'Percentile',
+        name: 'FREIGHT P12.5',
+        percentile: 0.125,
+      },
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+      JSON.stringify(
+        groupSpec({
+          columns: [],
+          aggregations: [
+            {
+              column: 'FREIGHT',
+              function: 'Percentile',
+              name: 'FREIGHT P25',
+              percentile: 0.25,
+            },
+            {
+              column: 'FREIGHT',
+              function: 'Percentile',
+              name: 'FREIGHT P12.5',
+              percentile: 0.125,
+            },
+          ],
+        }),
+      ),
+    );
+  });
+
+  test('Keeps a percentile out of range, a separator with a backslash, or a setting on another function, for validation to report', () => {
+    const aggregations = [
+      { column: 'FREIGHT', function: 'Percentile', name: 'p', percentile: 1.5 },
+      { column: 'SHIP_CITY', function: 'JoinText', name: 'j', separator: '\\' },
+      { column: 'FREIGHT', function: 'Sum', name: 's', percentile: 0.5 },
+      { column: 'FREIGHT', function: 'Median', name: 'm', separator: ',' },
+    ];
+    const json = groupSpec({ columns: [], aggregations });
+    const document = decodeGroupSpec(json);
+    expect(aggregationsOf(document)).toEqual(aggregations);
+    expectEncoded(document, json, REGISTRY);
+    // a percentile that isn't a number, or a separator that isn't a text, can't be read
+    [
+      {
+        column: 'FREIGHT',
+        function: 'Percentile',
+        name: 'p',
+        percentile: '0.9',
+      },
+      { column: 'SHIP_CITY', function: 'JoinText', name: 'j', separator: 1 },
+    ].forEach((aggregation) =>
+      expect(() =>
+        decodeCubeSpec(
+          groupSpec({ columns: [], aggregations: [aggregation] }),
+          {
+            registry: REGISTRY,
+          },
+        ),
+      ).toThrow(),
+    );
+  });
 });
 
 describe(unitTest('Saved spec encoding: partitions'), () => {
@@ -2130,7 +2247,7 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
           ],
           [
             { column: '', function: 'Count', name: '' },
-            { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+            { column: 'ORDER_ID', function: 'Mode', name: 'ORDER_ID Mode' },
             { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
             { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
             { column: '', function: 'RowNumber', name: 'Row Number' },
@@ -2147,7 +2264,7 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
         ],
         aggregations: [
           { column: '', function: 'Count', name: '' },
-          { column: 'ORDER_ID', function: 'Median', name: 'ORDER_ID Median' },
+          { column: 'ORDER_ID', function: 'Mode', name: 'ORDER_ID Mode' },
           { column: 'ORDER_ID', function: '', name: 'ORDER_ID' },
           { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
           { column: '', function: 'RowNumber', name: 'Row Number' },
@@ -2300,8 +2417,8 @@ describe(unitTest('Saved spec encoding: partitions'), () => {
   test.each<[string, JsonObject, JsonObject]>([
     [
       'an unknown function',
-      { column: 'ORDER_ID', function: 'Median' },
-      { column: 'ORDER_ID', function: 'Median', name: '' },
+      { column: 'ORDER_ID', function: 'Mode' },
+      { column: 'ORDER_ID', function: 'Mode', name: '' },
     ],
     [
       'a rank function spelled in another case',

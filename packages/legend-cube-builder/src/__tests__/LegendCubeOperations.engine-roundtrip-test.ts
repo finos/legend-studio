@@ -16,6 +16,7 @@
 
 import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AGGREGATION_SETTING_DEFAULTS,
   AggregationFunction,
   type ColumnAggregation,
   ColumnComparisonFilter,
@@ -31,6 +32,7 @@ import {
   createNodeRegistry,
   Filter,
   FilterOperator,
+  getAggregationSetting,
   getAvailableAggregations,
   Group,
   NotFilter,
@@ -1058,11 +1060,22 @@ describe('Join autofix on the engine', () => {
 
 describe('Group on the engine', () => {
   const { COUNT, DISTINCT_VALUE, SUM, MAX, COUNT_ROWS } = AggregationFunction;
+  /** An aggregation, with its function's setting at its default when it takes one: the 90th percentile, a comma and a space */
   const aggregation = (
     fn: AggregationFunction,
     column: string | undefined,
     name: string,
-  ): ColumnAggregation => ({ column, function: fn, name });
+  ): ColumnAggregation => {
+    const setting = getAggregationSetting(fn);
+    return {
+      column,
+      function: fn,
+      name,
+      ...(setting === undefined
+        ? {}
+        : { [setting]: AGGREGATION_SETTING_DEFAULTS[setting] }),
+    };
+  };
 
   /** CUBETEST.ALLTYPES, resolved: three rows, ID 3 empty but for its key */
   const alltypes = async (): Promise<RelationalTableSource> => {
@@ -1189,6 +1202,35 @@ describe('Group on the engine', () => {
     expect([value('TS_Min'), value('TS_Max')]).toEqual([
       '2024-01-02T03:04:05.678000000+0000',
       '2024-01-02T13:00:00.000000000+0000',
+    ]);
+    // PLAN §11.28: the median and the 90th percentile, interpolated between
+    // the two values (ID's three), then the sample spreads, over n - 1
+    const expected: Record<string, [number, number, number, number]> = {
+      ID: [2, 2.8, 1, 1],
+      TI: [1.5, 1.9, Math.SQRT1_2, 0.5],
+      SI: [150, 190, 100 * Math.SQRT1_2, 5000],
+      F: [2, 2.4, Math.SQRT1_2, 0.5],
+      D: [1.3, 2.26, 2.4 * Math.SQRT1_2, 2.88],
+      DEC: [6.795, 11.231, 11.09 * Math.SQRT1_2, 61.49405],
+      NUM: [1.86725, 2.37345, 1.2655 * Math.SQRT1_2, 0.800745125],
+    };
+    Object.entries(expected).forEach(([column, values]) =>
+      ['Median', 'Percentile', 'StdDev', 'Variance'].forEach((fn, index) =>
+        expect([`${column}_${fn}`, Number(value(`${column}_${fn}`))]).toEqual([
+          `${column}_${fn}`,
+          expect.closeTo(values[index] as number, 6),
+        ]),
+      ),
+    );
+    // the big integer's, near enough for a Float or a Number
+    expect(Number(value('BI_Median')) / 4503599627370498.5).toBeCloseTo(1, 9);
+    expect(
+      Number(value('BI_StdDev')) / (9007199254740989 * Math.SQRT1_2),
+    ).toBeCloseTo(1, 9);
+    // the two texts, in no set order
+    expect(String(value('VC_JoinText')).split(', ').sort()).toEqual([
+      'abc',
+      'xyz',
     ]);
   });
 

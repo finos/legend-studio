@@ -269,19 +269,38 @@ export const MESSAGE_AGGREGATION_FUNCTION_NEEDS_SORT = (
 ): string =>
   `Aggregation function ${quote(aggregation)} requires at least one sort column.`;
 
-/** Added by Cube (PLAN §11.9): Lag's and Lead's offset, NTile's bucket count */
+/**
+ * How the messages name each setting of an aggregation function, by its key,
+ * then what a valid one is (PLAN §11.9, §11.28): a percentile is shown as a
+ * percent, as the editors show it
+ */
+const AGGREGATION_SETTING_TEXTS: Readonly<
+  Record<string, readonly [string, string]>
+> = {
+  offset: ['an offset', 'that is a whole number of at least 1'],
+  buckets: ['a bucket count', 'that is a whole number of at least 1'],
+  percentile: ['a percentile', 'from 0 to 100'],
+  separator: ['a separator', 'with no backslash'],
+};
+
+const settingText = (setting: string): readonly [string, string] =>
+  AGGREGATION_SETTING_TEXTS[setting] ?? [`a ${setting}`, 'that is valid'];
+
+/** Added by Cube (PLAN §11.9, §11.28): Lag's and Lead's offset, NTile's bucket count, Percentile's percentile, Join Text's separator */
 export const MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID = (
   aggregation: string,
   setting: string,
-): string =>
-  `Aggregation function ${quote(aggregation)} needs ${setting === 'offset' ? 'an offset' : 'a bucket count'} that is a whole number of at least 1.`;
+): string => {
+  const [named, valid] = settingText(setting);
+  return `Aggregation function ${quote(aggregation)} needs ${named} ${valid}.`;
+};
 
-/** Added by Cube (PLAN §11.9): an offset or a bucket count on a function that takes none */
+/** Added by Cube (PLAN §11.9, §11.28): a setting on a function that takes none, or another one */
 export const MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_SETTING = (
   aggregation: string,
   setting: string,
 ): string =>
-  `Aggregation function ${quote(aggregation)} does not take ${setting === 'offset' ? 'an offset' : 'a bucket count'}.`;
+  `Aggregation function ${quote(aggregation)} does not take ${settingText(setting)[0]}.`;
 
 export const MESSAGE_SORT_DIRECTION_EMPTY = 'Sort direction cannot be empty.';
 
@@ -474,7 +493,11 @@ export const MESSAGE_PIVOT_VALUES_DIFFER_ONLY_IN_CASE = (
 export const MESSAGE_PIVOT_VALUE_NOT_A_COLUMN_NAME = (value: string): string =>
   `Pivot value ${quote(value)} cannot name a column.`;
 
-/** Added by Cube: the engine's pivot of Distinct Value fails on the database (PLAN §11.12) */
+/**
+ * Added by Cube: the engine's pivot of Distinct Value fails on the database
+ * (PLAN §11.12), and Snowflake's pivot takes only Count, Sum, Average, Min and
+ * Max, so not Median, Percentile, Std Dev, Variance or Join Text (§11.28)
+ */
 export const MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED = (
   aggregation: string,
 ): string =>

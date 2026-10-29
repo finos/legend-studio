@@ -15,6 +15,7 @@
  */
 
 import {
+  type AggregationSetting,
   type ColumnAggregation,
   GROUP_AGGREGATION_USE,
   type Group,
@@ -33,6 +34,7 @@ import {
   withRowColumn,
   withRowFunction,
   withRowName,
+  withRowSetting,
 } from './CubeAggregationRows.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
@@ -53,10 +55,11 @@ export const isBuiltGroupRow = (row: CubeGroupRow): boolean =>
  * The Group editor's draft (spec §17.6: a multi-select of keys, then rows of
  * column, function and output name; PLAN §11.5). Picks of keys are stored in
  * the input's order, but a saved order is kept until the picks change (Q2).
- * A row's name follows its column and function until typed (Q3). Picking a
- * column first sets Count; switching to Count rows clears the column, which
- * it can't hold, and back to a column function leaves one to pick. Which
- * rows build is `isBuiltGroupRow`.
+ * A row's name follows its column and function until typed (Q3), and a
+ * Percentile's percent (PLAN §11.28). Picking a column first sets Count;
+ * switching to Count rows clears the column, which it can't hold, and back
+ * to a column function leaves one to pick. Percentile and Join Text take a
+ * setting, typed as text. Which rows build is `isBuiltGroupRow`.
  */
 export class CubeGroupDraft extends CubeNodeDraft<Group> {
   columns: readonly string[];
@@ -76,6 +79,7 @@ export class CubeGroupDraft extends CubeNodeDraft<Group> {
       removeRow: action,
       setColumn: action,
       setFunction: action,
+      setSetting: action,
       setName: action,
     });
     this.columns = original.columns;
@@ -127,6 +131,13 @@ export class CubeGroupDraft extends CubeNodeDraft<Group> {
   /** Picks the row's function: Count rows takes no column, the others one */
   setFunction(key: number, fn: string): void {
     this.update(key, (row) => withRowFunction(row, fn, GROUP_AGGREGATION_USE));
+  }
+
+  /** Types the row's setting, Percentile's percent or Join Text's separator, kept as text (PLAN §11.28) */
+  setSetting(key: number, setting: AggregationSetting, text: string): void {
+    this.update(key, (row) =>
+      withRowSetting(row, setting, text, GROUP_AGGREGATION_USE),
+    );
   }
 
   /** Types the row's name, kept exactly; the auto-name itself follows again */

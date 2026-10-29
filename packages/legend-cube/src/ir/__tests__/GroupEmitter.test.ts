@@ -53,6 +53,11 @@ const {
   MIN,
   MAX,
   COUNT_ROWS,
+  MEDIAN,
+  PERCENTILE,
+  STD_DEV,
+  VARIANCE,
+  JOIN_TEXT,
 } = AggregationFunction;
 
 /** `n`, the Count of ORDER_ID */
@@ -127,6 +132,72 @@ describe(unitTest('Group emission'), () => {
         ),
       ).toBe(
         `${ORDERS}->groupBy(~[CUSTOMER_ID], ~[n: x | $x.${aggregated} : y | $y->${reduce}])`,
+      );
+    },
+  );
+
+  test.each<[string, ColumnAggregation, string]>([
+    ['Median', { column: 'FREIGHT', function: MEDIAN, name: 'n' }, 'median()'],
+    [
+      'Std Dev, the sample one',
+      { column: 'ORDER_ID', function: STD_DEV, name: 'n' },
+      'stdDevSample()',
+    ],
+    [
+      'Variance, the sample one',
+      { column: 'FREIGHT', function: VARIANCE, name: 'n' },
+      'varianceSample()',
+    ],
+    [
+      'Percentile, its fraction a Float',
+      { column: 'FREIGHT', function: PERCENTILE, name: 'n', percentile: 0.9 },
+      'percentile(0.9)',
+    ],
+    [
+      'Percentile 100, still a Float, as an Integer does not type',
+      { column: 'FREIGHT', function: PERCENTILE, name: 'n', percentile: 1 },
+      'percentile(1.0)',
+    ],
+    [
+      'Percentile 0',
+      { column: 'ORDER_ID', function: PERCENTILE, name: 'n', percentile: 0 },
+      'percentile(0.0)',
+    ],
+    [
+      'a tiny Percentile, its exponent after a decimal point',
+      { column: 'FREIGHT', function: PERCENTILE, name: 'n', percentile: 1e-7 },
+      'percentile(1.0e-7)',
+    ],
+    [
+      'Join Text',
+      {
+        column: 'SHIP_COUNTRY',
+        function: JOIN_TEXT,
+        name: 'n',
+        separator: ', ',
+      },
+      "joinStrings(', ')",
+    ],
+    [
+      'Join Text with no separator between the texts',
+      { column: 'SHIP_COUNTRY', function: JOIN_TEXT, name: 'n', separator: '' },
+      "joinStrings('')",
+    ],
+    [
+      'Join Text with a quote in its separator, escaped',
+      {
+        column: 'SHIP_COUNTRY',
+        function: JOIN_TEXT,
+        name: 'n',
+        separator: " ' ",
+      },
+      "joinStrings(' \\' ')",
+    ],
+  ])(
+    'Writes %s as its reduce of $y (PLAN §11.28)',
+    (_, aggregation, reduce) => {
+      expect(groupedOrders(['CUSTOMER_ID'], [aggregation])).toBe(
+        `${ORDERS}->groupBy(~[CUSTOMER_ID], ~[n: x | $x.${aggregation.column} : y | $y->${reduce}])`,
       );
     },
   );
@@ -354,6 +425,47 @@ describe(unitTest('Group emission'), () => {
       ),
     ).toContain(`~[n: x | 1 : y | $y->count()]`);
   });
+
+  test.each<[string, ColumnAggregation, string]>([
+    [
+      'a Percentile with no percentile',
+      { column: 'FREIGHT', function: PERCENTILE, name: 'n' },
+      `Can't emit aggregation "n": its percentile isn't from 0 to 1`,
+    ],
+    [
+      'a percentile over 1',
+      { column: 'FREIGHT', function: PERCENTILE, name: 'n', percentile: 1.5 },
+      `Can't emit aggregation "n": its percentile isn't from 0 to 1`,
+    ],
+    [
+      'a Join Text with no separator',
+      { column: 'SHIP_COUNTRY', function: JOIN_TEXT, name: 'n' },
+      `Can't emit aggregation "n": it has no separator, or one with a backslash`,
+    ],
+    [
+      'a separator with a backslash',
+      {
+        column: 'SHIP_COUNTRY',
+        function: JOIN_TEXT,
+        name: 'n',
+        separator: '\\',
+      },
+      `Can't emit aggregation "n": it has no separator, or one with a backslash`,
+    ],
+  ])(
+    'Refuses to emit %s, which validation refuses',
+    (_, aggregation, message) => {
+      expect(() =>
+        emitGroup(group(['SHIP_COUNTRY'], [aggregation]), [ACCESSOR], {
+          inputSchemas: [new Schema(COLUMNS)],
+          schema: new Schema([
+            column('SHIP_COUNTRY', 'String'),
+            column('n', 'Number'),
+          ]),
+        }),
+      ).toThrow(message);
+    },
+  );
 
   test("Doesn't emit a Group without an aggregation, which validation doesn't let through", () => {
     const emitter = emitterOf(ordersThen(group(['SHIP_COUNTRY'], [])));

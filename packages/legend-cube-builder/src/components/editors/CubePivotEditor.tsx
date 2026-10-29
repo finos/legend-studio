@@ -24,6 +24,7 @@ import {
   isPivotableType,
   isSortableType,
   type LiteralValue,
+  PIVOT_AGGREGATION_FUNCTIONS,
   type Schema,
 } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
@@ -45,9 +46,10 @@ const ROWS = 'Row columns';
 
 /**
  * The functions the aggregation can take: those its column's type offers,
- * or every column function before one is picked, then Count rows, never
- * Distinct Value (PLAN §11.12); one it holds that isn't among them stays
- * listed, so the problem can be seen and fixed
+ * or every column function before one is picked, then Count rows, only those
+ * a Pivot takes (`PIVOT_AGGREGATION_FUNCTIONS`: never Distinct Value, PLAN
+ * §11.12, nor Median to Join Text, §11.28); one it holds that isn't among
+ * them stays listed, so the problem can be seen and fixed
  */
 const functionOptions = (
   fn: string,
@@ -61,7 +63,7 @@ const functionOptions = (
       : Object.values(AggregationFunction).filter(
           (each) => each !== AggregationFunction.COUNT_ROWS,
         )
-    ).filter((each) => each !== AggregationFunction.DISTINCT_VALUE),
+    ).filter((each) => PIVOT_AGGREGATION_FUNCTIONS.includes(each)),
     AggregationFunction.COUNT_ROWS,
   ];
   return fn && !offered.includes(fn) ? [fn, ...offered] : offered;

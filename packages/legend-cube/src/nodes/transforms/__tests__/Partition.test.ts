@@ -109,7 +109,7 @@ describe(unitTest('Partition'), () => {
       [
         { function: ROW_NUMBER, name: 'Row Number' } as ColumnAggregation,
         { function: COUNT_ROWS, name: 'Count Rows' } as ColumnAggregation,
-        agg('Median', 'FREIGHT', ''),
+        agg('Mode', 'FREIGHT', ''),
         agg('', '', ''),
         // a rank saved with a column is kept, and reported
         agg(RANK, 'ORDER_ID', 'Rank'),
@@ -123,7 +123,7 @@ describe(unitTest('Partition'), () => {
     expect(partition.aggregations).toStrictEqual([
       { column: undefined, function: 'RowNumber', name: 'Row Number' },
       { column: undefined, function: 'CountRows', name: 'Count Rows' },
-      { column: 'FREIGHT', function: 'Median', name: '' },
+      { column: 'FREIGHT', function: 'Mode', name: '' },
       { column: '', function: '', name: '' },
       { column: 'ORDER_ID', function: 'Rank', name: 'Rank' },
       { column: 'FREIGHT', function: 'Sum', name: 'FREIGHT Sum' },
@@ -743,7 +743,7 @@ describe(unitTest('Partition'), () => {
       [BY_ID],
       [
         agg('', 'ORDER_ID', 'a'),
-        agg('Median', 'FREIGHT', 'b'),
+        agg('Mode', 'FREIGHT', 'b'),
         agg('rank', undefined, 'c'),
         agg(SUM, 'FREIGHT', 'FREIGHT Sum'),
         agg(RANK, 'ORDER_ID', 'd'),
@@ -759,7 +759,7 @@ describe(unitTest('Partition'), () => {
       ],
       [
         'Aggregation function cannot be empty.',
-        'Aggregation function "Median" is unknown.',
+        'Aggregation function "Mode" is unknown.',
         'Aggregation function "rank" is unknown.',
         'Aggregation function "Rank" does not allow column.',
         'Aggregation column does not have a name.',
@@ -973,7 +973,7 @@ describe(unitTest('Partition'), () => {
     ['no window function', [], 'Apply 0 Window Functions'],
     [
       'the window functions it holds, valid or not',
-      [agg('', '', ''), agg('Median', 'FREIGHT', ''), RANK_AGG],
+      [agg('', '', ''), agg('Mode', 'FREIGHT', ''), RANK_AGG],
       'Apply 3 Window Functions',
     ],
   ])('Describes %s by their number', (_, aggregations, text) => {

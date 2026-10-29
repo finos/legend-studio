@@ -89,6 +89,22 @@ export const DEFAULT_PIVOT_AGGREGATION: PivotAggregation = Object.freeze({
 });
 
 /**
+ * The functions a Pivot takes, in a Group's order (PLAN §11.12, §11.28): not
+ * Distinct Value, whose pivot DuckDB refuses, nor the functions of §11.28,
+ * as Snowflake's pivot takes only COUNT, SUM, AVG, MIN and MAX
+ */
+export const PIVOT_AGGREGATION_FUNCTIONS: readonly AggregationFunction[] =
+  Object.freeze([
+    AggregationFunction.COUNT,
+    AggregationFunction.DISTINCT_COUNT,
+    AggregationFunction.SUM,
+    AggregationFunction.AVERAGE,
+    AggregationFunction.MIN,
+    AggregationFunction.MAX,
+    AggregationFunction.COUNT_ROWS,
+  ]);
+
+/**
  * Whether a column of the type can be pivoted (PLAN §11.12): a String, an
  * integer, a StrictDate or a Boolean, whose values the engine's static pivot
  * takes and names its columns by. A float matches its values inexactly;
@@ -246,8 +262,9 @@ export class Pivot extends UnaryNode {
    * column; its values, one to `PIVOT_MAX_VALUES`, each of its type, none
    * twice, no two differing only in case (`foldColumnName`: DuckDB, for one,
    * gives both the first one's column), each naming a column; then the aggregation, its function and column
-   * as a Group's (Distinct Value refused: the database fails its pivot), the
-   * column neither a row column nor the pivot column.
+   * as a Group's, a known function one a Pivot takes
+   * (`PIVOT_AGGREGATION_FUNCTIONS`), the column neither a row column nor the
+   * pivot column.
    */
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     // `ensureSchemas` has checked there is one schema per port
@@ -374,11 +391,11 @@ export class Pivot extends UnaryNode {
 
   private validateAggregation(schema: Schema, errors?: string[]): boolean {
     const { aggregation } = this;
-    const { column } = aggregation;
+    const { column, function: fn } = aggregation;
     return (
       validate(
-        aggregation.function !== AggregationFunction.DISTINCT_VALUE,
-        MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED(aggregation.function),
+        !isAggregationFunction(fn) || PIVOT_AGGREGATION_FUNCTIONS.includes(fn),
+        MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED(fn),
         errors,
       ) &&
       validateAggregationFunctionAndColumn(aggregation, schema, errors) &&

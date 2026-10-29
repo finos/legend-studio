@@ -35,10 +35,43 @@ import {
 } from '../CubeIR.js';
 import { type EmitContext, originOf } from '../EmitContext.js';
 
-/** The reduce of a function over the group's values, `$y` (PLAN §8.8, §11.5) */
-const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
+/**
+ * The setting of a function as its literal: Percentile's fraction a Float
+ * (`percentile(1)` doesn't type on the engine), Join Text's separator a
+ * String; it throws on one validation refuses (PLAN §11.28)
+ */
+const settingLiteral = (
+  { function: fn, percentile, separator, name }: ColumnAggregation,
+  origin: Origin,
+): IR => {
+  if (fn === AggregationFunction.PERCENTILE) {
+    if (
+      percentile === undefined ||
+      !Number.isFinite(percentile) ||
+      percentile < 0 ||
+      percentile > 1
+    ) {
+      throw new Error(
+        `Can't emit aggregation "${name}": its percentile isn't from 0 to 1`,
+      );
+    }
+    return literal({ kind: 'float', value: String(percentile) }, origin);
+  }
+  if (separator === undefined || separator.includes('\\')) {
+    throw new Error(
+      `Can't emit aggregation "${name}": it has no separator, or one with a backslash`,
+    );
+  }
+  return literal({ kind: 'string', value: separator }, origin);
+};
+
+/**
+ * The reduce of a function over the group's values, `$y` (PLAN §8.8, §11.5,
+ * §11.28): Std Dev and Variance the sample ones
+ */
+const reduce = (aggregation: ColumnAggregation, origin: Origin): IR => {
   const values = variable('y');
-  switch (aggregation) {
+  switch (aggregation.function) {
     case AggregationFunction.COUNT:
     case AggregationFunction.COUNT_ROWS:
       return func('count', [values], origin);
@@ -54,8 +87,28 @@ const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
       return func('min', [values], origin);
     case AggregationFunction.MAX:
       return func('max', [values], origin);
+    case AggregationFunction.MEDIAN:
+      return func('median', [values], origin);
+    case AggregationFunction.PERCENTILE:
+      return func(
+        'percentile',
+        [values, settingLiteral(aggregation, origin)],
+        origin,
+      );
+    case AggregationFunction.STD_DEV:
+      return func('stdDevSample', [values], origin);
+    case AggregationFunction.VARIANCE:
+      return func('varianceSample', [values], origin);
+    case AggregationFunction.JOIN_TEXT:
+      return func(
+        'joinStrings',
+        [values, settingLiteral(aggregation, origin)],
+        origin,
+      );
     default:
-      throw new Error(`Can't emit aggregation function "${aggregation}"`);
+      throw new Error(
+        `Can't emit aggregation function "${aggregation.function}"`,
+      );
   }
 };
 
@@ -64,18 +117,18 @@ const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
  * `~name: x | 1 : y | $y->count()`, which counts every row
  */
 export const emitAggregation = (
-  { column, function: fn, name }: ColumnAggregation,
+  aggregation: ColumnAggregation,
   groupId: string,
   origin: Origin,
 ): IR => {
-  const aggregation = fn as AggregationFunction;
-  if (aggregation !== AggregationFunction.COUNT_ROWS && !column) {
+  const { column, function: fn, name } = aggregation;
+  if (fn !== AggregationFunction.COUNT_ROWS && !column) {
     throw new Error(
       `Can't emit aggregation "${name}" of group "${groupId}": it has no column`,
     );
   }
   const value =
-    aggregation === AggregationFunction.COUNT_ROWS
+    fn === AggregationFunction.COUNT_ROWS
       ? literal({ kind: 'integer', value: '1' }, origin)
       : columnAccess('x', column as string, origin);
   return aggregationColSpec(

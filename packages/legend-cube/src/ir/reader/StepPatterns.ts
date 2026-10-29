@@ -383,6 +383,8 @@ const WINDOW_REDUCES: ReadonlyMap<string, AggregationFunction> = new Map([
   ['average', AggregationFunction.AVERAGE],
   ['min', AggregationFunction.MIN],
   ['max', AggregationFunction.MAX],
+  ['stdDevSample', AggregationFunction.STD_DEV],
+  ['varianceSample', AggregationFunction.VARIANCE],
 ]);
 
 const RANKS: ReadonlyMap<string, WindowRankFunction> = new Map([

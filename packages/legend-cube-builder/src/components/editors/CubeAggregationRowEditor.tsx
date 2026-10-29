@@ -39,7 +39,7 @@ const problemControl = (
     ? undefined
     : problem.startsWith('Aggregation column')
       ? 'column'
-      : /^Aggregation function "[^"]*" needs (?:an offset|a bucket count) that is a whole number of at least 1\.$/u.test(
+      : /^Aggregation function "[^"]*" needs (?:an offset|a bucket count|a percentile|a separator) /u.test(
             problem,
           )
         ? 'setting'
@@ -47,17 +47,46 @@ const problemControl = (
           ? 'function'
           : 'name';
 
-/** How a setting's field is named and explained (PLAN §11.9) */
+/**
+ * How a setting's field is named, explained and typed in (PLAN §11.9,
+ * §11.28): a number, right-aligned, a percentile with a `%` after it; a
+ * separator any text, kept exactly, which says so when empty
+ */
 const SETTING_FIELDS: Readonly<
-  Record<AggregationSetting, { label: string; title: string }>
+  Record<
+    AggregationSetting,
+    {
+      label: string;
+      title: string;
+      inputMode: 'numeric' | 'decimal' | 'text';
+      suffix?: string;
+      placeholder?: string;
+    }
+  >
 > = Object.freeze({
   [AggregationSetting.OFFSET]: {
     label: 'offset',
     title: 'How many rows back (Lag) or ahead (Lead), in the sort order',
+    inputMode: 'numeric',
   },
   [AggregationSetting.BUCKETS]: {
     label: 'buckets',
     title: 'How many buckets of near-equal size to split each partition into',
+    inputMode: 'numeric',
+  },
+  [AggregationSetting.PERCENTILE]: {
+    label: 'percentile',
+    title:
+      'The percent of the values at or below the result, from 0 to 100: 90 is the 90th percentile, 50 the median',
+    inputMode: 'decimal',
+    suffix: '%',
+  },
+  [AggregationSetting.SEPARATOR]: {
+    label: 'separator',
+    title:
+      'The text between two values, kept exactly, spaces included; it cannot hold a backslash',
+    inputMode: 'text',
+    placeholder: 'none',
   },
 });
 
@@ -66,10 +95,10 @@ const SETTING_FIELDS: Readonly<
  * for a function that takes none a short text in its place (with a button to
  * clear a column it holds anyway), then its function, its output name and a
  * remove button, then its first problem. A function that takes a setting
- * (Lag's and Lead's offset, NTile's bucket count) has a field for it before
- * the name. The control the problem is about is marked. The function list is
- * given, so each editor offers its own; a function the use doesn't know is
- * shown as unknown.
+ * (Lag's and Lead's offset, NTile's bucket count, Percentile's percentile and
+ * Join Text's separator) has a field for it before the name. The control the
+ * problem is about is marked. The function list is given, so each editor
+ * offers its own; a function the use doesn't know is shown as unknown.
  */
 export const CubeAggregationRowEditor = observer(
   (props: {
@@ -167,25 +196,36 @@ export const CubeAggregationRowEditor = observer(
             ))}
           </select>
           {setting !== undefined && onSetting && (
-            <input
-              aria-label={`Aggregation ${SETTING_FIELDS[setting].label} ${position}`}
-              aria-invalid={marked === 'setting'}
-              title={
-                marked === 'setting' ? problem : SETTING_FIELDS[setting].title
-              }
-              className={clsx(
-                'h-6 w-14 shrink-0 rounded-sm border bg-[var(--color-bg-input)] px-1 text-right text-base',
-                marked === 'setting'
-                  ? 'border-[var(--color-status-error)]'
-                  : 'border-[var(--color-border-default)]',
+            <span className="flex shrink-0 items-center gap-0.5">
+              <input
+                aria-label={`Aggregation ${SETTING_FIELDS[setting].label} ${position}`}
+                aria-invalid={marked === 'setting'}
+                title={
+                  marked === 'setting' ? problem : SETTING_FIELDS[setting].title
+                }
+                className={clsx(
+                  'h-6 shrink-0 rounded-sm border bg-[var(--color-bg-input)] px-1 text-base',
+                  SETTING_FIELDS[setting].inputMode === 'text'
+                    ? 'w-16'
+                    : 'w-14 text-right',
+                  marked === 'setting'
+                    ? 'border-[var(--color-status-error)]'
+                    : 'border-[var(--color-border-default)]',
+                )}
+                type="text"
+                inputMode={SETTING_FIELDS[setting].inputMode}
+                placeholder={SETTING_FIELDS[setting].placeholder}
+                spellCheck={false}
+                value={row.settings[setting] ?? ''}
+                disabled={readOnly}
+                onChange={(event) => onSetting(setting, event.target.value)}
+              />
+              {SETTING_FIELDS[setting].suffix && (
+                <span className="text-[var(--color-text-secondary)]">
+                  {SETTING_FIELDS[setting].suffix}
+                </span>
               )}
-              type="text"
-              inputMode="numeric"
-              spellCheck={false}
-              value={row.settings[setting] ?? ''}
-              disabled={readOnly}
-              onChange={(event) => onSetting(setting, event.target.value)}
-            />
+            </span>
           )}
           <input
             aria-label={`Aggregation output name ${position}`}
