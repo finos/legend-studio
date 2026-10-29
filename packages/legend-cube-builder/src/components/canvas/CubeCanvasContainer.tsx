@@ -103,7 +103,6 @@ const CubeCanvasContainerTitle = observer(
         className="nodrag nopan min-w-0 flex-1 rounded border border-[var(--color-accent)] bg-[var(--color-bg-input)] px-1 text-[var(--color-text-primary)]"
         aria-label="Container title"
         value={draft}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={true}
         // the whole title, to type over
         onFocus={(event) => event.target.select()}

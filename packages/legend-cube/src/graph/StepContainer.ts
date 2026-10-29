@@ -145,7 +145,10 @@ export const generateStepContainerId = (
     Math.max(
       0,
       ...containers
-        .map((container) => /^container(\d+)$/u.exec(container.id)?.[1])
+        .map(
+          (container) =>
+            /^container(?<number>\d+)$/u.exec(container.id)?.groups?.number,
+        )
         .filter((digits) => digits !== undefined)
         .map(Number),
     ) + 1
