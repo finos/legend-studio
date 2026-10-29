@@ -413,6 +413,8 @@ drop and a rename.
 
 ## 3. Later, and what doesn't fit
 
+The Alteryx tools named here are described, with their sources, in the Designer catalog (§5.1).
+
 ### 3.1 Later
 
 - **Auto-run with a cache.** Run after Apply for small results (`ISSUES.md:584`), and keep recent results in memory so
