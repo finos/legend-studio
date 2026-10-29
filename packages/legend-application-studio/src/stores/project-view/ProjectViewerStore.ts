@@ -188,7 +188,8 @@ export class ProjectViewerStore {
       );
     }
 
-    let graphBuildingMaterial: [Entity[], PlainObject<ProjectConfiguration>];
+    let fetchEntities: () => Promise<PlainObject<Entity>[]>;
+    let fetchConfiguration: () => Promise<PlainObject<ProjectConfiguration>>;
     this.editorStore.initState.setMessage(undefined);
 
     // fetch entities
@@ -205,16 +206,16 @@ export class ProjectViewerStore {
               )) as PlainObject<Version>,
             )
           : this.latestVersion;
-      graphBuildingMaterial = (yield Promise.all([
+      fetchEntities = () =>
         this.editorStore.sdlcServerClient.getEntitiesByVersion(
           this.editorStore.sdlcState.activeProject.projectId,
           versionId,
-        ),
+        );
+      fetchConfiguration = () =>
         this.editorStore.sdlcServerClient.getConfigurationByVersion(
           this.editorStore.sdlcState.activeProject.projectId,
           versionId,
-        ),
-      ])) as [Entity[], PlainObject<ProjectConfiguration>];
+        );
     } else if (revisionId && !versionId) {
       // get revision info if a revision is specified
       this.revision =
@@ -227,42 +228,44 @@ export class ProjectViewerStore {
               )) as PlainObject<Revision>,
             )
           : this.currentRevision;
-      graphBuildingMaterial = (yield Promise.all([
+      fetchEntities = () =>
         this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.editorStore.sdlcState.activeProject.projectId,
           undefined,
           revisionId,
-        ),
+        );
+      fetchConfiguration = () =>
         this.editorStore.sdlcServerClient.getConfigurationByRevision(
           this.editorStore.sdlcState.activeProject.projectId,
           undefined,
           revisionId,
-        ),
-      ])) as [Entity[], PlainObject<ProjectConfiguration>];
+        );
     }
     // if no revision ID or version ID is specified, we will just get the project HEAD
     else if (!revisionId && !versionId) {
-      graphBuildingMaterial = (yield Promise.all([
+      fetchEntities = () =>
         this.editorStore.sdlcServerClient.getEntities(
           this.editorStore.sdlcState.activeProject.projectId,
           undefined,
-        ),
+        );
+      fetchConfiguration = () =>
         this.editorStore.sdlcServerClient.getConfiguration(
           this.editorStore.sdlcState.activeProject.projectId,
           undefined,
-        ),
-      ])) as [Entity[], PlainObject<ProjectConfiguration>];
+        );
     } else {
       throw new IllegalStateError(
         `Can't initialize viewer when both 'verisonId' and 'revisionId' are provided`,
       );
     }
-    this.editorStore.initState.setMessage(undefined);
-    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
+    const entitiesRequest = fetchEntities();
+    // awaited below, unless fetching the configuration fails first
+    entitiesRequest.catch(noop());
 
-    // fetch project configuration
+    // fetch project configuration: the dependencies only need it, so they
+    // download at the same time as the entities instead of after them
     const projectConfiguration = ProjectConfiguration.serialization.fromJson(
-      graphBuildingMaterial[1],
+      (yield fetchConfiguration()) as PlainObject<ProjectConfiguration>,
     );
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
       projectConfiguration,
@@ -278,24 +281,29 @@ export class ProjectViewerStore {
       this.editorStore.sdlcState.fetchPublishedProjectVersions(),
       this.editorStore.sdlcState.fetchAuthorizedActions(),
     ]);
-    // awaited below, unless fetching the dependencies fails first
+    // awaited below, unless fetching the entities or dependencies fails first
     sidePanelInformation.catch(noop());
-
-    // fetch entities
-    const entities = graphBuildingMaterial[0];
-    this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
-      entities,
-    );
 
     // fetch dependencies
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
-    const dependencyEntitiesIndex =
-      (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
-        string,
-        EntitiesWithOrigin
-      >;
+    const dependencyEntitiesRequest =
+      this.editorStore.graphState.getIndexedDependencyEntities();
+    // awaited below, unless fetching the entities fails first
+    dependencyEntitiesRequest.catch(noop());
+
+    const entities = (yield entitiesRequest) as Entity[];
+    this.editorStore.initState.setMessage(undefined);
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
+    this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
+      entities,
+    );
+
+    const dependencyEntitiesIndex = (yield dependencyEntitiesRequest) as Map<
+      string,
+      EntitiesWithOrigin
+    >;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
     yield sidePanelInformation;
 
@@ -327,9 +335,20 @@ export class ProjectViewerStore {
     );
     this.editorStore.initState.setMessage(undefined);
 
-    // fetch entities
+    // fetch entities and dependencies at the same time: both only need the
+    // project's coordinates
     stopWatch.record();
     this.editorStore.initState.setMessage(`Fetching entities...`);
+    this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
+      `Fetching dependencies...`,
+    );
+    const dependencyEntitiesRequest =
+      this.editorStore.depotServerClient.getIndexedDependencyEntities(
+        project,
+        versionId,
+      );
+    // awaited below, unless fetching the entities fails first
+    dependencyEntitiesRequest.catch(noop());
     const entities = (yield this.editorStore.depotServerClient.getEntities(
       project,
       versionId,
@@ -337,16 +356,10 @@ export class ProjectViewerStore {
     this.editorStore.initState.setMessage(undefined);
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
-    // fetch dependencies
-    this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
-      `Fetching dependencies...`,
-    );
-    const dependencyEntitiesIndex = (yield flowResult(
-      this.editorStore.depotServerClient.getIndexedDependencyEntities(
-        project,
-        versionId,
-      ),
-    )) as Map<string, EntitiesWithOrigin>;
+    const dependencyEntitiesIndex = (yield dependencyEntitiesRequest) as Map<
+      string,
+      EntitiesWithOrigin
+    >;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
     return {
