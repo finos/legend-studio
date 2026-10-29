@@ -255,6 +255,8 @@ export function computeHashCodeForDataFetchManualTrigger(
         pivotStatisticColumnPlacement:
           configuration.pivotStatisticColumnPlacement,
         treeColumnSortDirection: configuration.treeColumnSortDirection,
+        // the grid only applies this when rows are loaded (see `isServerSideGroupOpenByDefault`)
+        initialExpandLevel: configuration.initialExpandLevel,
         columns: configuration.columns
           .map((column) => ({
             name: column.name,
