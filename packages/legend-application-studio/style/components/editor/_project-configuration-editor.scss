@@ -115,31 +115,6 @@
     background: var(--color-active-indicator);
   }
 
-  &__manual-btn,
-  &__manual-btn:focus {
-    background: none;
-    outline: none;
-
-    svg {
-      color: var(--color-text-disabled);
-    }
-  }
-
-  &__manual-btn:hover {
-    background: none;
-
-    svg {
-      color: var(--color-text-primary);
-    }
-  }
-
-  &__manual-btn--active,
-  &__manual-btn--active:hover {
-    svg {
-      color: var(--color-active-indicator) !important;
-    }
-  }
-
   // the header's save action: quiet until there are unsaved configuration changes
   &__save {
     @include flexVCenter;
@@ -226,23 +201,6 @@
       border-radius: 0.2rem;
       font-weight: 500;
       color: var(--color-text-on-accent);
-    }
-  }
-
-  &__advanced {
-    &__project-type__info {
-      padding-bottom: 0.5rem;
-    }
-
-    &__caution__btn {
-      @include flexCenter;
-
-      width: 20rem;
-      height: 3.4rem;
-      padding: 0 1rem;
-      background: var(--color-accent);
-      color: var(--color-text-on-accent);
-      cursor: pointer;
     }
   }
 }
@@ -817,145 +775,378 @@
   }
 }
 
-.platform-configurations-editor {
-  &__dependencies {
+// the platform configurations tab: use the latest platform versions or freeze them
+.platform-versions {
+  --platform-version-width: 18rem;
+  --platform-status-width: 18rem;
+
+  display: flex;
+  flex-direction: column;
+  border: 0.1rem solid var(--color-border-subtle);
+  border-radius: 0.4rem;
+
+  &__modes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  &__mode {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem 1.4rem;
     border: 0.1rem solid var(--color-border-subtle);
-    margin-top: 1rem;
-    border-radius: 0.2rem;
+    border-radius: 0.6rem;
+    background: var(--color-bg-app);
+    cursor: pointer;
+
+    &:hover:not(.platform-versions__mode--disabled) {
+      border-color: var(--color-border-default);
+    }
+
+    &--checked,
+    &--checked:hover:not(.platform-versions__mode--disabled) {
+      border-color: var(--color-accent);
+    }
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    &__radio {
+      flex: 0 0 auto;
+      margin: 0.2rem 0 0;
+      accent-color: var(--color-accent);
+      cursor: inherit;
+    }
+
+    &__text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    &__title {
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    &__description {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr) var(--platform-version-width)
+      var(--platform-status-width);
+    align-items: center;
+    gap: 1.2rem;
+    min-height: 4rem;
+    padding: 0 1.4rem;
+    border-top: 0.1rem solid var(--color-border-subtle);
+
+    &--header {
+      min-height: 3.2rem;
+      border-top: none;
+      font-size: 1.1rem;
+      font-weight: 500;
+      letter-spacing: 0.05rem;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__name {
+    @include ellipsisTextOverflow;
+
+    color: var(--color-text-primary);
+  }
+
+  &__version {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    color: var(--color-text-primary);
+  }
+
+  &__input {
+    height: 2.8rem;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+  }
+
+  &__badge {
+    @include flexVCenter;
+
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 1rem;
+    line-height: 2rem;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+
+    svg {
+      font-size: 1.2rem;
+    }
+
+    &--current {
+      border-color: currentcolor;
+      color: var(--color-status-success);
+    }
+  }
+
+  &__update-btn {
+    padding: 0 0.8rem;
+    border: 0.1rem solid var(--color-status-warn);
+    border-radius: 1rem;
+    line-height: 2rem;
+    font-size: 1.2rem;
+    white-space: nowrap;
+    color: var(--color-status-warn);
+    background: transparent;
+    cursor: pointer;
+
+    &:hover:not([disabled]) {
+      color: var(--color-text-on-accent);
+      background: var(--color-status-warn);
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+    }
+  }
+
+  &__empty {
+    padding: 1.2rem 1.4rem;
+    border: 0.1rem dashed var(--color-border-default);
+    border-radius: 0.4rem;
+    color: var(--color-text-muted);
+  }
+
+  &__footer {
+    @include flexVCenter;
+
+    gap: 1rem;
+
+    &--manual {
+      justify-content: flex-end;
+      padding: 1rem 1.2rem;
+      border-left: 0.3rem solid var(--color-status-warn);
+      border-radius: 0.3rem;
+      background: var(--color-bg-app);
+    }
+
+    &__hint {
+      flex: 1 1 auto;
+      font-size: 1.3rem;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  &__primary-btn,
+  &__secondary-btn {
+    height: 2.8rem;
+    padding: 0 1.2rem;
+    border-radius: 0.4rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  &__primary-btn {
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
+
+    &:hover:not([disabled]) {
+      background: var(--color-accent-hover);
+    }
+  }
+
+  &__secondary-btn {
+    border: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-primary);
+    background: transparent;
+
+    &:hover:not([disabled]) {
+      background: var(--color-bg-hover);
+    }
+  }
+
+  &__manual-btn {
+    @include flexVCenter;
+
+    gap: 0.6rem;
+    margin-left: auto;
+    height: 2.8rem;
+    padding: 0 0.8rem;
+    border-radius: 0.4rem;
+    font-size: 1.3rem;
+    color: var(--color-text-muted);
+    background: transparent;
+    cursor: pointer;
+
+    svg {
+      font-size: 1.2rem;
+    }
+
+    &:hover:not([disabled]) {
+      color: var(--color-text-primary);
+      background: var(--color-bg-hover);
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+}
+
+// the advanced tab: dependency tests and the project type
+.project-advanced-editor {
+  &__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0;
+    text-align: left;
+    background: none;
+    cursor: pointer;
+
+    svg {
+      flex: 0 0 auto;
+      margin-top: 0.1rem;
+      font-size: 1.8rem;
+      color: var(--color-text-muted);
+    }
+
+    &--checked svg {
+      color: var(--color-accent);
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+    }
+
+    &[disabled] svg {
+      color: var(--color-text-disabled);
+    }
+
+    &__text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    &__label {
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    &__hint {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__types {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  &__type {
+    padding: 1.2rem 1.4rem;
+    border: 0.1rem solid var(--color-border-subtle);
+    border-radius: 0.6rem;
+    background: var(--color-bg-app);
+
+    &--current {
+      border-color: var(--color-accent);
+    }
 
     &__header {
       @include flexVCenter;
 
-      justify-content: space-between;
-      height: 4.4rem;
-      padding: 0 0.5rem 0 1rem;
-      background: var(--color-bg-panel);
+      gap: 0.8rem;
+      margin-bottom: 0.6rem;
     }
 
-    &__content {
-      padding: 1rem;
+    &__name {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    &__badge {
+      padding: 0 0.7rem;
+      border-radius: 0.9rem;
+      line-height: 1.8rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--color-text-on-accent);
+      background: var(--color-accent);
+
+      &--muted {
+        color: var(--color-text-muted);
+        background: var(--color-bg-tag);
+      }
+    }
+
+    &__description {
+      margin: 0;
+      font-size: 1.3rem;
+      line-height: 1.9rem;
+      color: var(--color-text-secondary);
     }
   }
 
-  &__toggler {
+  &__change-type {
     @include flexVCenter;
 
-    cursor: pointer;
-    width: 100%;
-  }
+    gap: 1.2rem;
 
-  &__toggler__btn {
-    align-self: flex-start;
-    padding-top: 0.2rem;
-
-    svg {
-      font-size: 2rem;
-      color: var(--color-text-disabled);
-    }
-
-    &:hover svg {
-      font-size: 2rem;
-      color: var(--color-text-muted);
-    }
-
-    &[disabled] svg,
-    &[disabled]:hover svg {
-      cursor: not-allowed;
-      color: var(--color-text-disabled);
-    }
-  }
-
-  &__toggler__btn--toggled {
-    svg {
-      font-size: 2rem;
-      color: var(--color-accent);
-    }
-
-    &:hover svg {
-      font-size: 2rem;
-      color: var(--color-accent-hover);
-    }
-
-    &[disabled] svg,
-    &[disabled]:hover svg {
-      cursor: not-allowed;
-      color: var(--color-text-disabled);
-    }
-  }
-
-  &__toggler__prompt {
-    @include flexCenter;
-
-    word-break: normal;
-    overflow-wrap: anywhere;
-    margin-left: 0.8rem;
-    color: var(--color-text-muted);
-    line-height: 2rem;
-    user-select: none;
-    cursor: pointer;
-  }
-
-  &__dependency {
-    display: flex;
-
-    &__label {
-      @include flexVCenter;
-
-      width: 30rem;
+    &__btn {
       height: 2.8rem;
-      border-radius: 0.2rem;
-      color: var(--color-text-secondary);
-      background: var(--color-bg-elevated);
+      padding: 0 1.2rem;
+      border: 0.1rem solid var(--color-status-warn);
+      border-radius: 0.4rem;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--color-status-warn);
+      background: transparent;
+      cursor: pointer;
 
-      &__status {
-        @include flexCenter;
-
-        width: 3rem;
-
-        svg {
-          font-size: 1.2rem;
-        }
-
-        &--default {
-          color: var(--color-text-disabled);
-        }
-
-        &--up-to-date {
-          color: var(--color-status-success);
-        }
-
-        &--outdated {
-          color: var(--color-status-warn);
-        }
+      &:hover:not([disabled]) {
+        color: var(--color-text-on-accent);
+        background: var(--color-status-warn);
       }
 
-      &__text {
-        @include ellipsisTextOverflow;
-
-        width: calc(100% - 13rem);
-        padding: 0 0.5rem;
-        cursor: default;
-        user-select: none;
-      }
-
-      &__version {
-        @include flexVCenter;
-
-        width: 10rem;
-        height: 2.8rem;
-        background: var(--color-bg-panel-header);
-        color: var(--color-text-secondary);
-        border-radius: 0 0.2rem 0.2rem 0;
-        padding: 0 1rem;
-        cursor: default;
-        user-select: none;
-        font-family: 'Roboto Mono', monospace;
-        font-size: 1.3rem;
+      &[disabled] {
+        cursor: not-allowed;
+        opacity: 0.6;
       }
     }
 
-    & + & {
-      margin-top: 0.5rem;
+    &__hint {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
     }
   }
 }

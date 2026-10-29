@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
@@ -28,14 +28,9 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   Panel,
-  PanelForm,
   CheckSquareIcon,
   SquareIcon,
-  ExclamationTriangleIcon,
-  PanelListItem,
-  Button,
   PencilEditIcon,
-  PanelDivider,
   PanelHeaderActionItem,
   PanelHeaderActions,
   PanelContent,
@@ -61,10 +56,7 @@ import {
 } from '@finos/legend-application';
 import { ProjectDependencyEditor } from './ProjectDependencyEditor.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
-import {
-  DocumentationLink,
-  DocumentationPreview,
-} from '@finos/legend-lego/application';
+import { DocumentationLink } from '@finos/legend-lego/application';
 import type { StoreProjectData } from '@finos/legend-server-depot';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
@@ -244,74 +236,224 @@ const ProjectStructureEditor = observer(
   },
 );
 
-const PlatformDependencyViewer = observer(
-  (props: {
-    platform: PlatformConfiguration;
-    isDefault: boolean;
-    isLatestVersion?: boolean | undefined;
-  }) => {
-    const { platform, isDefault, isLatestVersion } = props;
+/**
+ * The newest release of each platform, as listed by the SDLC server.
+ */
+const getLatestPlatformVersions = (
+  platforms: Platform[] | undefined,
+): PlatformConfiguration[] =>
+  (platforms ?? []).map(
+    (platform) =>
+      new PlatformConfiguration(platform.name, platform.platformVersion),
+  );
 
-    return (
-      <div className="platform-configurations-editor__dependency">
-        <div className="platform-configurations-editor__dependency__label">
-          <div className="platform-configurations-editor__dependency__label__status">
-            {isDefault && (
-              <CheckCircleIcon
-                className="platform-configurations-editor__dependency__label__status--default"
-                title="Platform version is up to date"
-              />
-            )}
-            {isLatestVersion !== undefined &&
-              (isLatestVersion ? (
-                <CheckCircleIcon
-                  className="platform-configurations-editor__dependency__label__status--up-to-date"
-                  title="Platform version is up to date"
-                />
-              ) : (
-                <ExclamationTriangleIcon
-                  className="platform-configurations-editor__dependency__label__status--outdated"
-                  title="Platform version is outdated"
-                />
-              ))}
-          </div>
-          <div className="platform-configurations-editor__dependency__label__text">
-            {platform.name}
-          </div>
-          <div
-            className={clsx(
-              'platform-configurations-editor__dependency__label__version',
-            )}
-          >
-            {platform.version}
-          </div>
+const PlatformVersionMode = (props: {
+  title: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}): React.ReactNode => {
+  const { title, description, checked, disabled, onSelect } = props;
+  return (
+    <label
+      className={clsx('platform-versions__mode', {
+        'platform-versions__mode--checked': checked,
+        'platform-versions__mode--disabled': disabled,
+      })}
+    >
+      <input
+        type="radio"
+        name="platform-versions-mode"
+        className="platform-versions__mode__radio"
+        checked={checked}
+        disabled={disabled}
+        onChange={onSelect}
+      />
+      <span className="platform-versions__mode__text">
+        <span className="platform-versions__mode__title">{title}</span>
+        <span className="platform-versions__mode__description">
+          {description}
+        </span>
+      </span>
+    </label>
+  );
+};
+
+const PlatformVersionsHeader = (): React.ReactNode => (
+  <div className="platform-versions__row platform-versions__row--header">
+    <div>Platform</div>
+    <div>Version</div>
+    <div>Status</div>
+  </div>
+);
+
+const PlatformVersionsTable = observer(
+  (props: {
+    projectConfig: ProjectConfiguration;
+    latestVersions: PlatformConfiguration[];
+    isReadOnly: boolean;
+  }) => {
+    const { projectConfig, latestVersions, isReadOnly } = props;
+    const frozenVersions = projectConfig.platformConfigurations;
+    const updateToLatest = (
+      name: string | undefined,
+      version: string,
+    ): void => {
+      if (frozenVersions) {
+        projectConfig.setPlatformConfigurations(
+          frozenVersions.map((platform) =>
+            platform.name === name
+              ? new PlatformConfiguration(name, version)
+              : platform,
+          ),
+        );
+      }
+    };
+    const platforms = frozenVersions ?? latestVersions;
+
+    if (!platforms.length) {
+      return (
+        <div className="platform-versions__empty">
+          The SDLC server lists no platforms.
         </div>
+      );
+    }
+    return (
+      <div className="platform-versions">
+        <PlatformVersionsHeader />
+        {platforms.map((platform) => {
+          const latestVersion = latestVersions.find(
+            (latest) => latest.name === platform.name,
+          )?.version;
+          return (
+            <div key={platform._UUID} className="platform-versions__row">
+              <div className="platform-versions__name">{platform.name}</div>
+              <div className="platform-versions__version">
+                {platform.version}
+              </div>
+              <div className="platform-versions__status">
+                {!frozenVersions ? (
+                  <span className="platform-versions__badge">Latest</span>
+                ) : latestVersion === undefined ? null : latestVersion ===
+                  platform.version ? (
+                  <span className="platform-versions__badge platform-versions__badge--current">
+                    <CheckCircleIcon />
+                    Up to date
+                  </span>
+                ) : (
+                  <button
+                    className="platform-versions__update-btn"
+                    disabled={isReadOnly}
+                    onClick={(): void =>
+                      updateToLatest(platform.name, latestVersion)
+                    }
+                    title={`Freeze ${platform.name} at ${latestVersion}`}
+                  >
+                    {latestVersion} available
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   },
 );
 
-const PlatformDependencyEditor = observer(
-  (props: { platform: PlatformConfiguration }) => {
-    const { platform } = props;
+type PlatformVersionDraft = { name: string | undefined; version: string };
+
+/**
+ * What a manual draft is made from: the frozen versions (or none), and the latest versions
+ * the SDLC server lists. The draft starts over when this changes.
+ */
+const getPlatformVersionsDraftSource = (
+  projectConfig: ProjectConfiguration,
+  latestVersions: PlatformConfiguration[],
+): string =>
+  JSON.stringify([
+    projectConfig.platformConfigurations?.map((platform) => [
+      platform.name,
+      platform.version,
+    ]) ?? null,
+    latestVersions.map((platform) => [platform.name, platform.version]),
+  ]);
+
+const ManualPlatformVersionsEditor = observer(
+  (props: {
+    projectConfig: ProjectConfiguration;
+    latestVersions: PlatformConfiguration[];
+    isReadOnly: boolean;
+  }) => {
+    const { projectConfig, latestVersions, isReadOnly } = props;
+    const editorStore = useEditorStore();
+    // a plain snapshot: typing only changes this state, and the configuration only changes,
+    // with new objects, when the versions are applied
+    const [draft, setDraft] = useState<PlatformVersionDraft[]>(() =>
+      (projectConfig.platformConfigurations ?? latestVersions).map(
+        (platform) => ({
+          name: platform.name,
+          version: platform.version ?? '',
+        }),
+      ),
+    );
+    const setDraftVersion = (name: string | undefined, version: string): void =>
+      setDraft((current) =>
+        current.map((platform) =>
+          platform.name === name ? { ...platform, version } : platform,
+        ),
+      );
+    const close = (): void =>
+      editorStore.projectConfigurationEditorState.setManualOverwrite(false);
+    const apply = (): void => {
+      projectConfig.setPlatformConfigurations(
+        draft.map(
+          (platform) =>
+            new PlatformConfiguration(platform.name, platform.version),
+        ),
+      );
+      close();
+    };
 
     return (
-      <div className="platform-configurations-editor__dependency">
-        <div className="platform-configurations-editor__dependency__label">
-          <div className="platform-configurations-editor__dependency__label__status"></div>
-          <div className="platform-configurations-editor__dependency__label__text">
-            {platform.name}
-          </div>
-          <input
-            className="input input--dark"
-            onChange={(event) => {
-              platform.setVersion(event.target.value);
-            }}
-            value={platform.version}
-            spellCheck={false}
-          />
+      <>
+        <div className="platform-versions">
+          <PlatformVersionsHeader />
+          {draft.map((platform) => (
+            <div key={platform.name} className="platform-versions__row">
+              <div className="platform-versions__name">{platform.name}</div>
+              <input
+                className="input input--dark platform-versions__input"
+                title={`${platform.name} version`}
+                value={platform.version}
+                spellCheck={false}
+                disabled={isReadOnly}
+                onChange={(event): void =>
+                  setDraftVersion(platform.name, event.target.value)
+                }
+              />
+              <div className="platform-versions__status" />
+            </div>
+          ))}
         </div>
-      </div>
+        <div className="platform-versions__footer platform-versions__footer--manual">
+          <span className="platform-versions__footer__hint">
+            Versions entered by hand stay frozen until you change them. Use this
+            only to unblock your project for a while.
+          </span>
+          <button className="platform-versions__secondary-btn" onClick={close}>
+            Cancel
+          </button>
+          <button
+            className="platform-versions__primary-btn"
+            disabled={isReadOnly}
+            onClick={apply}
+          >
+            Freeze at these versions
+          </button>
+        </div>
+      </>
     );
   },
 );
@@ -321,232 +463,139 @@ const ProjectPlatformVersionEditor = observer(
     const { projectConfig, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-
-    const convertPlatformtoPlatformConfiguration = (
-      platforms: Platform[] | undefined,
-    ): PlatformConfiguration[] | undefined => {
-      if (platforms) {
-        return platforms.map(
-          (platform) =>
-            new PlatformConfiguration(platform.name, platform.platformVersion),
-        );
-      } else {
-        return undefined;
-      }
-    };
-
-    const platformConfigurations = projectConfig.platformConfigurations;
-    const defaultPlatforms = convertPlatformtoPlatformConfiguration(
+    const configState = editorStore.projectConfigurationEditorState;
+    const isManual = configState.manualOverwrite;
+    const latestVersions = getLatestPlatformVersions(
       editorStore.sdlcServerClient.platforms,
     );
-    const isUpToDate = platformConfigurations?.every(
-      (conf) =>
-        defaultPlatforms?.find((p) => p.name === conf.name)?.version ===
-        conf.version,
+    const frozenVersions = projectConfig.platformConfigurations;
+    const hasOutdatedVersions = Boolean(
+      frozenVersions?.some((platform) => {
+        const latestVersion = latestVersions.find(
+          (latest) => latest.name === platform.name,
+        )?.version;
+        return (
+          latestVersion !== undefined && latestVersion !== platform.version
+        );
+      }),
     );
-    const updateLatestToLatestVersion = (): void => {
-      if (platformConfigurations && defaultPlatforms) {
+
+    const useLatestVersions = (): void =>
+      projectConfig.setPlatformConfigurations(undefined);
+    const freezeVersions = (): void =>
+      projectConfig.setPlatformConfigurations(latestVersions);
+    const updateAllToLatest = (): void => {
+      if (frozenVersions) {
         projectConfig.setPlatformConfigurations(
-          platformConfigurations.map((conf) => {
-            const matchingPlatformConfig = defaultPlatforms.find(
-              (p) => p.name === conf.name,
-            );
-            if (matchingPlatformConfig) {
-              return matchingPlatformConfig;
-            }
-            return conf;
-          }),
+          frozenVersions.map(
+            (platform) =>
+              latestVersions.find((latest) => latest.name === platform.name) ??
+              platform,
+          ),
         );
       }
     };
-
-    const toggleOverridePlatformConfigurations = (): void => {
-      if (!projectConfig.platformConfigurations) {
-        projectConfig.setPlatformConfigurations(defaultPlatforms);
-      } else {
-        projectConfig.setPlatformConfigurations(undefined);
-      }
-    };
-
-    const toggleManualOverwrite = (): void => {
-      if (!editorStore.projectConfigurationEditorState.manualOverwrite) {
-        applicationStore.alertService.setActionAlertInfo({
-          message:
-            'Clicking this will allow you to not just override and freeze platform versions but to input custom platform versions you would like manually and is not usually recommended except to temporarily unblock your project',
-          prompt: 'Do you want to proceed?',
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Continue',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void =>
-                editorStore.projectConfigurationEditorState.setManualOverwrite(
-                  true,
-                ),
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      } else {
-        editorStore.projectConfigurationEditorState.setManualOverwrite(false);
-      }
+    const enterVersionsManually = (): void => {
+      applicationStore.alertService.setActionAlertInfo({
+        message:
+          'Entering platform versions by hand freezes them at whatever you type. This is not recommended, except to unblock your project for a while.',
+        prompt: 'Do you want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Continue',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => configState.setManualOverwrite(true),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
     };
 
     return (
-      <Panel>
-        <PanelForm>
-          <DocumentationPreview
-            text="By default, your project will use the latest platform
-              dependencies' versions (e.g. engine, sdlc, etc.) in the pipeline.
-              This might be undesirable when you want to produce stable
-              artifacts; in this case, you can freeze the platform dependencies'
-              versions"
-            documentationKey={
-              LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
-            }
-          />
-          <div className="platform-configurations-editor__dependencies">
-            <div className="platform-configurations-editor__dependencies__header">
-              <div className="platform-configurations-editor__dependencies__header__left">
-                <div
-                  className="platform-configurations-editor__toggler"
-                  onClick={toggleOverridePlatformConfigurations}
-                >
-                  <button
-                    className={clsx(
-                      'platform-configurations-editor__toggler__btn',
-                      {
-                        'platform-configurations-editor__toggler__btn--toggled':
-                          Boolean(platformConfigurations),
-                      },
-                    )}
-                    disabled={isReadOnly}
-                    tabIndex={-1}
-                  >
-                    {platformConfigurations ? (
-                      <CheckSquareIcon />
-                    ) : (
-                      <SquareIcon />
-                    )}
-                  </button>
-                  <div className="platform-configurations-editor__toggler__prompt">
-                    {`Override platform dependencies' versions`}
-                  </div>
-                </div>
-              </div>
-
-              <div className="platform-configurations-editor__dependencies__header__right">
-                <PanelListItem>
-                  {platformConfigurations &&
-                    !isUpToDate &&
-                    !editorStore.projectConfigurationEditorState
-                      .manualOverwrite && (
-                      <div>
-                        <button
-                          className="btn btn--dark"
-                          tabIndex={-1}
-                          onClick={updateLatestToLatestVersion}
-                        >
-                          Update to the current latest platform version
-                        </button>
-                      </div>
-                    )}
-                  <Button
-                    className={clsx(
-                      'project-configuration-editor__manual-btn',
-                      {
-                        'project-configuration-editor__manual-btn--active':
-                          editorStore.projectConfigurationEditorState
-                            .manualOverwrite,
-                      },
-                    )}
-                    title="Manually overwrite platform configurations"
-                    disabled={isReadOnly}
-                    onClick={toggleManualOverwrite}
-                  >
-                    <PencilEditIcon />
-                  </Button>
-                </PanelListItem>
-              </div>
-            </div>
-            <div className="platform-configurations-editor__dependencies__content">
-              {editorStore.projectConfigurationEditorState.manualOverwrite ? (
-                <>
-                  {!platformConfigurations &&
-                    defaultPlatforms?.map((p) => (
-                      <PlatformDependencyEditor key={p.name} platform={p} />
-                    ))}
-                  {platformConfigurations?.map((p) => (
-                    <PlatformDependencyEditor key={p.name} platform={p} />
-                  ))}
-
-                  <PanelDivider />
-                  <PanelListItem>
-                    <Button
-                      className="project-configuration-editor__manual-overwrite-btn"
-                      disabled={isReadOnly}
-                      onClick={() => {
-                        editorStore.projectConfigurationEditorState.setManualOverwrite(
-                          false,
-                        );
-                      }}
-                      title="Cancel manual override"
-                      text="Cancel"
-                    />
-
-                    <Button
-                      className="project-configuration-editor__manual-overwrite-btn"
-                      disabled={isReadOnly}
-                      onClick={() => {
-                        if (!platformConfigurations) {
-                          projectConfig.setPlatformConfigurations(
-                            defaultPlatforms,
-                          );
-                        } else {
-                          projectConfig.setPlatformConfigurations(
-                            platformConfigurations,
-                          );
-                        }
-
-                        editorStore.projectConfigurationEditorState.setManualOverwrite(
-                          false,
-                        );
-                      }}
-                      text="Manual override"
-                    />
-                  </PanelListItem>
-                </>
-              ) : (
-                <>
-                  {!platformConfigurations &&
-                    defaultPlatforms?.map((p) => (
-                      <PlatformDependencyViewer
-                        key={p.name}
-                        isDefault={true}
-                        platform={p}
-                      />
-                    ))}
-                  {platformConfigurations?.map((p) => (
-                    <PlatformDependencyViewer
-                      key={p.name}
-                      platform={p}
-                      isDefault={false}
-                      isLatestVersion={isUpToDate}
-                    />
-                  ))}
-                </>
-              )}
-            </div>
+      <EditorForm>
+        <EditorFormSection
+          title="Platform versions"
+          description="The versions of the Legend platform (engine, SDLC, and so on) your project's pipeline builds with."
+          actions={
+            <DocumentationLink
+              documentationKey={
+                LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
+              }
+            />
+          }
+        >
+          <div className="platform-versions__modes">
+            <PlatformVersionMode
+              title="Use the latest versions"
+              description="Recommended. Every build uses the newest platform release."
+              checked={!frozenVersions}
+              disabled={isReadOnly || isManual}
+              onSelect={useLatestVersions}
+            />
+            <PlatformVersionMode
+              title="Freeze versions"
+              description="Builds keep the versions below until you change them, so your artifacts stay stable."
+              checked={Boolean(frozenVersions)}
+              disabled={isReadOnly || isManual || !latestVersions.length}
+              onSelect={freezeVersions}
+            />
           </div>
-        </PanelForm>
-      </Panel>
+          {isManual ? (
+            <ManualPlatformVersionsEditor
+              // start a new draft when the versions it was made from change
+              key={getPlatformVersionsDraftSource(
+                projectConfig,
+                latestVersions,
+              )}
+              projectConfig={projectConfig}
+              latestVersions={latestVersions}
+              isReadOnly={isReadOnly}
+            />
+          ) : (
+            <>
+              <PlatformVersionsTable
+                projectConfig={projectConfig}
+                latestVersions={latestVersions}
+                isReadOnly={isReadOnly}
+              />
+              <div className="platform-versions__footer">
+                {hasOutdatedVersions && (
+                  <button
+                    className="platform-versions__primary-btn"
+                    disabled={isReadOnly}
+                    onClick={updateAllToLatest}
+                  >
+                    Update all to latest
+                  </button>
+                )}
+                <button
+                  className="platform-versions__manual-btn"
+                  disabled={isReadOnly}
+                  onClick={enterVersionsManually}
+                >
+                  <PencilEditIcon />
+                  Enter versions manually
+                </button>
+              </div>
+            </>
+          )}
+        </EditorFormSection>
+      </EditorForm>
     );
   },
 );
+
+const PROJECT_TYPE_DESCRIPTIONS: Record<ProjectType, string> = {
+  [ProjectType.MANAGED]:
+    'The SDLC server manages the build and deployment of the project, so releases and dependency management work across Legend. Only change this if your own build can handle these operations and you know what managed projects provide.',
+  [ProjectType.EMBEDDED]:
+    "The project has its own build, managed directly in its version control system (GitLab, GitHub, and so on). The project's owners manage that build, including the steps that make releases and dependency management work. The SDLC server still decides where element files go, according to the project structure version.",
+};
 
 const ProjectAdvancedEditor = observer(
   (props: {
@@ -559,15 +608,14 @@ const ProjectAdvancedEditor = observer(
     const applicationStore = useApplicationStore();
     const currentProjectType = projectConfig.projectType ?? ProjectType.MANAGED;
     const isEmbeddedMode = currentProjectType === ProjectType.EMBEDDED;
-    const managedModeBlurb =
-      'Managed Projects are managed by our SDLC server, which includes managing the build and deployment of your project.This enables rich features such as releasing and dependency management work within our ecosystem.This is the recommended mode and should not be changed unless your customized build is robust to handle these operations and you are aware of the different features our managed mode provides.';
-    const embeddedModeBlurb =
-      'Embedded Projects have their own customized build. The build is managed directly on the underlying version system (gitlab, github etc) and the owners of the projects are responsible for managing their build and incorporating the necessary steps to enable features such as releasing and dependency management. Our SDLC server still manages the file structure of where the elements entities are located and correlate with the project structure version.';
+    const otherProjectType = isEmbeddedMode
+      ? ProjectType.MANAGED
+      : ProjectType.EMBEDDED;
     const managedToEmbedded =
-      'You are about to change from managed to embedded project type. This will cause your build files (pom, ci etc) to no longer be managed by our SDLC process. Your element folder structure will remain managed by us but your build will become your responsibility. Please ensure you understand the risks of changing over before continuing.';
+      'You are about to change from the managed to the embedded project type. Your build files (pom, CI, etc.) will no longer be managed by the SDLC server. Your element folder structure stays managed, but your build becomes your responsibility. Please make sure you understand the risks before continuing.';
     const embeddedToManaged =
-      'You are about to change from embedded to managed project type. Your build will now be managed by our SDLC sever in addition to your element folder structure. Your current build files will all be deleted and replaces with our own. Please ensure you understand the risks of changing over before continuing.';
-    const runDependencyMessage = `In addition to running your own tests, you can also configure to run all tests in your dependency projects.  This should be rarely used and mostly helped mitigate when you have override your dependencies. You should aim to have most of your tests in your current project.`;
+      'You are about to change from the embedded to the managed project type. The SDLC server will manage your build as well as your element folder structure. Your current build files will all be deleted and replaced with its own. Please make sure you understand the risks before continuing.';
+    const runDependencyTests = Boolean(projectConfig.runDependencyTests);
     const toggleRunDependency = (): void => {
       const newVal = !projectConfig.runDependencyTests;
       if (
@@ -604,87 +652,88 @@ const ProjectAdvancedEditor = observer(
     };
 
     return (
-      <Panel>
-        <PanelForm>
-          <div className="panel__content__form__section__header__label">
-            {`Dependency Tests`}
-          </div>
-          <div className="documentation-preview">
-            <div className="documentation-preview__text">
-              <div className="project-configuration-editor__advanced__project-type__info">
-                {runDependencyMessage}
-              </div>
-            </div>
-          </div>
-          <div className="platform-configurations-editor__dependencies">
-            <div className="platform-configurations-editor__dependencies__header">
-              <div className="platform-configurations-editor__dependencies__header__left">
-                <div
-                  className="platform-configurations-editor__toggler"
-                  onClick={toggleRunDependency}
-                >
-                  <button
-                    className={clsx(
-                      'platform-configurations-editor__toggler__btn',
-                      {
-                        'platform-configurations-editor__toggler__btn--toggled':
-                          Boolean(projectConfig.runDependencyTests),
-                      },
-                    )}
-                    disabled={isReadOnly}
-                    tabIndex={-1}
-                  >
-                    {projectConfig.runDependencyTests ? (
-                      <CheckSquareIcon />
-                    ) : (
-                      <SquareIcon />
-                    )}
-                  </button>
-                  <div className="platform-configurations-editor__toggler__prompt">
-                    {`Run Dependency Tests`}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </PanelForm>
-        <PanelForm>
-          <div className="panel__content__form__section__header__label">
-            {`Project Type: ${prettyCONSTName(currentProjectType)} `}
-          </div>
-          <div className="documentation-preview">
-            <div className="documentation-preview__text">
-              <div className="project-configuration-editor__advanced__project-type__info">
-                {managedModeBlurb}
-              </div>
-              <div className="project-configuration-editor__advanced__project-type__info">
-                {embeddedModeBlurb}
-              </div>
-            </div>
-
-            <div className="documentation-preview__hint">
-              <DocumentationLink
-                documentationKey={
-                  LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_EMBEDDED_MODE_PROJECT_TYPE
-                }
-              />
-            </div>
-          </div>
-          <div className="platform-configurations-editor__dependencies">
-            <div className="platform-configurations-editor__dependencies__header">
-              <button
-                className="btn--dark btn--conflict btn--important project-configuration-editor__advanced__caution__btn"
-                onClick={changeProjectType}
-                tabIndex={-1}
+      <EditorForm>
+        <EditorFormSection
+          title="Dependency tests"
+          description="Whether builds also run the tests of the projects this project depends on."
+        >
+          <button
+            className={clsx('project-advanced-editor__checkbox', {
+              'project-advanced-editor__checkbox--checked': runDependencyTests,
+            })}
+            role="checkbox"
+            aria-checked={runDependencyTests}
+            disabled={isReadOnly}
+            onClick={toggleRunDependency}
+          >
+            {runDependencyTests ? <CheckSquareIcon /> : <SquareIcon />}
+            <span className="project-advanced-editor__checkbox__text">
+              <span className="project-advanced-editor__checkbox__label">
+                Run dependency tests
+              </span>
+              <span className="project-advanced-editor__checkbox__hint">
+                Rarely needed: it mostly helps when you override dependency
+                versions. Keep most of your tests in this project.
+              </span>
+            </span>
+          </button>
+        </EditorFormSection>
+        <EditorFormSection
+          title="Project type"
+          description="Who builds and releases this project."
+          actions={
+            <DocumentationLink
+              documentationKey={
+                LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_EMBEDDED_MODE_PROJECT_TYPE
+              }
+            />
+          }
+        >
+          <div className="project-advanced-editor__types">
+            {[ProjectType.MANAGED, ProjectType.EMBEDDED].map((type) => (
+              <div
+                key={type}
+                className={clsx('project-advanced-editor__type', {
+                  'project-advanced-editor__type--current':
+                    type === currentProjectType,
+                })}
               >
-                {`Change to ${
-                  isEmbeddedMode ? 'Managed Type' : 'Embedded Type'
-                }`}
-              </button>
-            </div>
+                <div className="project-advanced-editor__type__header">
+                  <span className="project-advanced-editor__type__name">
+                    {prettyCONSTName(type)}
+                  </span>
+                  {type === currentProjectType && (
+                    <span className="project-advanced-editor__type__badge">
+                      Current
+                    </span>
+                  )}
+                  {type === ProjectType.MANAGED && (
+                    <span className="project-advanced-editor__type__badge project-advanced-editor__type__badge--muted">
+                      Recommended
+                    </span>
+                  )}
+                </div>
+                <p className="project-advanced-editor__type__description">
+                  {PROJECT_TYPE_DESCRIPTIONS[type]}
+                </p>
+              </div>
+            ))}
           </div>
-        </PanelForm>
-      </Panel>
+          <div className="project-advanced-editor__change-type">
+            <button
+              className="project-advanced-editor__change-type__btn"
+              disabled={isReadOnly}
+              onClick={changeProjectType}
+            >
+              Change to {prettyCONSTName(otherProjectType)}…
+            </button>
+            <span className="project-advanced-editor__change-type__hint">
+              This is saved straight away; it does not wait for Update
+              configuration.
+            </span>
+          </div>
+        </EditorFormSection>
+      </EditorForm>
     );
   },
 );
