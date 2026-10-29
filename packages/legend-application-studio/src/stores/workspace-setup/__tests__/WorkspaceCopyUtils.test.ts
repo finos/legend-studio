@@ -17,11 +17,17 @@
 import { describe, expect, test } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
-import { EntityChangeType } from '@finos/legend-server-sdlc';
+import type { PlainObject } from '@finos/legend-shared';
+import {
+  EntityChangeType,
+  ProjectConfiguration,
+} from '@finos/legend-server-sdlc';
 import {
   buildWorkspaceCopyEntityChanges,
   countWorkspaceElementChanges,
+  getOtherProjectWorkspaceCopyChanges,
   getPathsAlsoChangedOnLine,
+  getWorkspaceCopyDependencyDiff,
   getWorkspaceElementChanges,
 } from '../WorkspaceCopyUtils.js';
 
@@ -189,4 +195,122 @@ describe('buildWorkspaceCopyEntityChanges', () => {
       expect(getPathsAlsoChangedOnLine(changes, base).size).toBe(0);
     },
   );
+});
+
+describe('copying a workspace of another project', () => {
+  const line = [
+    buildClass('model::Same'),
+    buildClass('model::Shared'),
+    buildClass('model::OnlyInProject'),
+  ];
+  const source = [
+    buildClass('model::Same'),
+    buildClass('model::Shared', 'source'),
+    buildClass('model::OnlyInSource'),
+  ];
+
+  test(
+    unitTest(
+      'brings the elements the project lacks as new and replaces those it has, deleting none',
+    ),
+    () => {
+      const changes = getOtherProjectWorkspaceCopyChanges(line, source);
+
+      expect(changes.map((change) => [change.type, change.entityPath])).toEqual(
+        [
+          [EntityChangeType.CREATE, 'model::OnlyInSource'],
+          [EntityChangeType.MODIFY, 'model::Shared'],
+        ],
+      );
+      expect(buildWorkspaceCopyEntityChanges(changes, line)).toEqual([
+        {
+          type: EntityChangeType.CREATE,
+          entityPath: 'model::OnlyInSource',
+          classifierPath: CLASS,
+          content: buildClass('model::OnlyInSource').content,
+        },
+        {
+          type: EntityChangeType.MODIFY,
+          entityPath: 'model::Shared',
+          classifierPath: CLASS,
+          content: buildClass('model::Shared', 'source').content,
+        },
+      ]);
+    },
+  );
+});
+
+const buildConfiguration = (
+  projectDependencies: { projectId: string; versionId: string }[],
+): ProjectConfiguration =>
+  ProjectConfiguration.serialization.fromJson({
+    projectId: 'PROD-1',
+    groupId: 'org.finos.legend',
+    artifactId: 'target',
+    projectStructureVersion: { version: 13, extensionVersion: 1 },
+    projectDependencies,
+  } as PlainObject<ProjectConfiguration>);
+
+describe('getWorkspaceCopyDependencyDiff', () => {
+  test(
+    unitTest(
+      'lists the dependencies the target lacks, and those it has at another version',
+    ),
+    () => {
+      const diff = getWorkspaceCopyDependencyDiff(
+        buildConfiguration([
+          { projectId: 'org.finos.legend:fx-rates', versionId: '1.4.0' },
+          { projectId: 'org.finos.legend:shared', versionId: '2.0.0' },
+          { projectId: 'org.finos.legend:pinned', versionId: '1.0.0' },
+          { projectId: 'org.finos.legend:instruments', versionId: '2.0.1' },
+        ]),
+        buildConfiguration([
+          { projectId: 'org.finos.legend:shared', versionId: '2.0.0' },
+          { projectId: 'org.finos.legend:pinned', versionId: '1.1.0' },
+        ]),
+      );
+
+      expect(
+        diff.missing.map((dependency) => [
+          dependency.projectId,
+          dependency.versionId,
+        ]),
+      ).toEqual([
+        ['org.finos.legend:fx-rates', '1.4.0'],
+        ['org.finos.legend:instruments', '2.0.1'],
+      ]);
+      expect(
+        diff.mismatched.map(({ source, target }) => [
+          source.projectId,
+          source.versionId,
+          target.versionId,
+        ]),
+      ).toEqual([['org.finos.legend:pinned', '1.0.0', '1.1.0']]);
+    },
+  );
+
+  test(unitTest('leaves out a dependency on the target itself'), () => {
+    const diff = getWorkspaceCopyDependencyDiff(
+      buildConfiguration([
+        { projectId: 'org.finos.legend:target', versionId: '3.0.0' },
+        { projectId: 'PROD-1', versionId: '3.0.0' },
+      ]),
+      buildConfiguration([]),
+    );
+
+    expect(diff).toEqual({ missing: [], mismatched: [] });
+  });
+
+  test(unitTest('finds nothing when both depend on the same'), () => {
+    const dependencies = [
+      { projectId: 'org.finos.legend:shared', versionId: '2.0.0' },
+    ];
+
+    expect(
+      getWorkspaceCopyDependencyDiff(
+        buildConfiguration(dependencies),
+        buildConfiguration(dependencies),
+      ),
+    ).toEqual({ missing: [], mismatched: [] });
+  });
 });

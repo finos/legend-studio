@@ -15,8 +15,13 @@
  */
 
 import { type PlainObject, deepEqual } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-storage';
-import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
+import { type Entity, GAV_DELIMITER } from '@finos/legend-storage';
+import {
+  type EntityChange,
+  type ProjectConfiguration,
+  type ProjectDependency,
+  EntityChangeType,
+} from '@finos/legend-server-sdlc';
 
 /**
  * What a workspace did to one element since it was created: the element at
@@ -168,4 +173,65 @@ export const buildWorkspaceCopyEntityChanges = (
       },
     ];
   });
+};
+
+/**
+ * What copying all the elements of a workspace of another project brings to a
+ * line whose latest entities are `lineEntities`: an element the line doesn't
+ * have is new (CREATE), and one it has with other content is replaced
+ * (MODIFY). One it has as is is left out, and nothing is deleted.
+ */
+export const getOtherProjectWorkspaceCopyChanges = (
+  lineEntities: Entity[],
+  entities: Entity[],
+): WorkspaceElementChange[] =>
+  getWorkspaceElementChanges(lineEntities, entities).filter(
+    (change) => change.type !== EntityChangeType.DELETE,
+  );
+
+/**
+ * How the project dependencies of the project a workspace is copied from
+ * compare with those of the project it is copied into, by project
+ * (`groupId:artifactId`).
+ */
+export interface WorkspaceCopyDependencyDiff {
+  /**
+   * The source's dependencies on projects the target doesn't depend on
+   */
+  missing: ProjectDependency[];
+  /**
+   * The projects both depend on, at different versions
+   */
+  mismatched: { source: ProjectDependency; target: ProjectDependency }[];
+}
+
+export const getWorkspaceCopyDependencyDiff = (
+  source: ProjectConfiguration,
+  target: ProjectConfiguration,
+): WorkspaceCopyDependencyDiff => {
+  const targetDependencies = new Map(
+    target.projectDependencies.map((dependency) => [
+      dependency.projectId,
+      dependency,
+    ]),
+  );
+  // NOTE: the copied elements find what they need from the target in the
+  // target itself, and a project can't depend on itself
+  const targetCoordinates = new Set([
+    `${target.groupId}${GAV_DELIMITER}${target.artifactId}`,
+    target.projectId,
+  ]);
+  const diff: WorkspaceCopyDependencyDiff = { missing: [], mismatched: [] };
+  source.projectDependencies.forEach((dependency) => {
+    if (targetCoordinates.has(dependency.projectId)) {
+      return;
+    }
+    const targetDependency = targetDependencies.get(dependency.projectId);
+    if (!targetDependency) {
+      diff.missing.push(dependency);
+    } else if (targetDependency.versionId !== dependency.versionId) {
+      diff.mismatched.push({ source: dependency, target: targetDependency });
+    }
+  });
+  return diff;
 };

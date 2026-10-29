@@ -108,6 +108,19 @@ export class WorkspaceCopyState {
     this.copyError = error;
   }
 
+  /**
+   * The elements `copyTo` commits, each as the source has it
+   */
+  protected get elementsToCopy(): WorkspaceElementChange[] {
+    return this.changes;
+  }
+
+  protected buildCopyCommitMessage(entityChangeCount: number): string {
+    return `copied the changes of workspace ${this.source.workspaceId} [potentially affected ${
+      entityChangeCount === 1 ? '1 entity' : `${entityChangeCount} entities`
+    }]`;
+  }
+
   *load(): GeneratorFn<void> {
     this.loadState.inProgress();
     this.loadError = undefined;
@@ -152,7 +165,8 @@ export class WorkspaceCopyState {
   *copyTo(workspace: Workspace): GeneratorFn<void> {
     this.copyState.inProgress();
     this.copyError = undefined;
-    if (!this.changes.length) {
+    const elements = this.elementsToCopy;
+    if (!elements.length) {
       this.copyState.pass();
       return;
     }
@@ -165,7 +179,7 @@ export class WorkspaceCopyState {
         workspace,
       )) as Entity[];
       const entityChanges = buildWorkspaceCopyEntityChanges(
-        this.changes,
+        elements,
         lineEntities,
       );
       if (entityChanges.length) {
@@ -173,11 +187,7 @@ export class WorkspaceCopyState {
           this.projectId,
           workspace,
           {
-            message: `copied the changes of workspace ${this.source.workspaceId} [potentially affected ${
-              entityChanges.length === 1
-                ? '1 entity'
-                : `${entityChanges.length} entities`
-            }]`,
+            message: this.buildCopyCommitMessage(entityChanges.length),
             entityChanges,
           },
         );

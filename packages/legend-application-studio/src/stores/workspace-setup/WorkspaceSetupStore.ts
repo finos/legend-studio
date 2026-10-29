@@ -62,6 +62,10 @@ import {
   type RecentWorkspaceEntry,
 } from '../../__lib__/LegendStudioUserDataHelper.js';
 import { WorkspaceCopyState } from './WorkspaceCopyState.js';
+import {
+  OtherProjectCopySourceState,
+  OtherProjectWorkspaceCopyState,
+} from './OtherProjectWorkspaceCopyState.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -75,7 +79,7 @@ export interface ProjectSearchResult {
 }
 
 const PROD_PROJECT_ID_PREFIX = 'PROD';
-const cleanProjectIdInput = (searchText: string): string | undefined => {
+export const cleanProjectIdInput = (searchText: string): string | undefined => {
   const parsed = returnUndefOnError(() =>
     parseProjectIdentifier(searchText.trim()),
   );
@@ -120,6 +124,7 @@ export class WorkspaceSetupStore {
   createWorkspaceState = ActionState.create();
   showCreateWorkspaceModal = false;
   workspaceCopyState?: WorkspaceCopyState | undefined;
+  otherProjectCopySource?: OtherProjectCopySourceState | undefined;
 
   graphManagerState: GraphManagerState;
 
@@ -144,6 +149,7 @@ export class WorkspaceSetupStore {
       loadSandboxState: observable,
       showCreateWorkspaceModal: observable,
       workspaceCopyState: observable,
+      otherProjectCopySource: observable,
       sandboxProject: observable,
       createSandboxProjectState: observable,
       engineInitializeState: observable,
@@ -155,6 +161,7 @@ export class WorkspaceSetupStore {
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
       setWorkspaceCopySource: action,
+      setOtherProjectCopySource: action,
       setImportProjectSuccessReport: action,
       setSandboxModal: action,
       changeWorkspace: action,
@@ -211,25 +218,55 @@ export class WorkspaceSetupStore {
   setShowCreateWorkspaceModal(val: boolean): void {
     this.showCreateWorkspaceModal = val;
     this.workspaceCopyState = undefined;
+    this.otherProjectCopySource = undefined;
   }
 
   /**
    * Picks the workspace the new workspace copies, in the create workspace
    * modal, and reads what it changed; `undefined` starts from HEAD or a patch.
+   * A workspace of another project, `sourceProject`, is copied whole.
    */
-  setWorkspaceCopySource(workspace: Workspace | undefined): void {
-    this.workspaceCopyState = workspace
-      ? new WorkspaceCopyState(
+  setWorkspaceCopySource(
+    workspace: Workspace | undefined,
+    sourceProject?: Project | undefined,
+  ): void {
+    const projectId = guaranteeNonNullable(
+      this.currentProject,
+      `Can't copy a workspace: project is not specified`,
+    ).projectId;
+    this.workspaceCopyState = !workspace
+      ? undefined
+      : sourceProject && sourceProject.projectId !== projectId
+        ? new OtherProjectWorkspaceCopyState(
+            this.sdlcServerClient,
+            projectId,
+            sourceProject,
+            workspace,
+          )
+        : new WorkspaceCopyState(this.sdlcServerClient, projectId, workspace);
+    if (this.workspaceCopyState) {
+      flowResult(this.workspaceCopyState.load()).catch(
+        this.applicationStore.alertUnhandledError,
+      );
+    }
+  }
+
+  /**
+   * Starts, or stops, looking for a workspace of another project to copy, in
+   * the create workspace modal, with a project search of its own.
+   */
+  setOtherProjectCopySource(val: boolean): void {
+    this.otherProjectCopySource = val
+      ? new OtherProjectCopySourceState(
           this.sdlcServerClient,
           guaranteeNonNullable(
             this.currentProject,
             `Can't copy a workspace: project is not specified`,
           ).projectId,
-          workspace,
         )
       : undefined;
-    if (this.workspaceCopyState) {
-      flowResult(this.workspaceCopyState.load()).catch(
+    if (this.otherProjectCopySource) {
+      flowResult(this.otherProjectCopySource.searchProjects('')).catch(
         this.applicationStore.alertUnhandledError,
       );
     }
@@ -1017,6 +1054,13 @@ export class WorkspaceSetupStore {
       hasPatchReleaseVersion: patchReleaseVersionId !== undefined,
       copiesWorkspace: copy !== undefined,
       copiedElementCount: copy?.changes.length,
+      copiesFromOtherProject: copy
+        ? copy instanceof OtherProjectWorkspaceCopyState
+        : undefined,
+      addedDependencyCount:
+        copy instanceof OtherProjectWorkspaceCopyState
+          ? copy.dependenciesToAdd.length
+          : undefined,
     };
     LegendStudioTelemetryHelper.logEvent_SetupActionLaunched(
       this.applicationStore.telemetryService,
@@ -1047,7 +1091,11 @@ export class WorkspaceSetupStore {
           if (this.workspaceCopyState !== copy) {
             // the modal was closed while copying
             this.applicationStore.notificationService.notifyWarning(
-              `Workspace '${newWorkspace.workspaceId}' is created, but copying the changes of ${copy.source.workspaceId} failed: ${error.message}`,
+              copy instanceof OtherProjectWorkspaceCopyState
+                ? copy.hasCopiedElements
+                  ? `Workspace '${newWorkspace.workspaceId}' is created with the elements of ${copy.source.workspaceId} of ${copy.sourceProject.name}, but adding the dependencies failed: ${error.message}`
+                  : `Workspace '${newWorkspace.workspaceId}' is created, but copying the elements of ${copy.source.workspaceId} of ${copy.sourceProject.name} failed: ${error.message}`
+                : `Workspace '${newWorkspace.workspaceId}' is created, but copying the changes of ${copy.source.workspaceId} failed: ${error.message}`,
             );
           }
           this.applicationStore.logService.error(
@@ -1139,21 +1187,48 @@ export class WorkspaceSetupStore {
     }
   }
 
+  private describeOtherProjectCopy(
+    workspace: Workspace,
+    copy: OtherProjectWorkspaceCopyState,
+  ): string {
+    const elementCount = copy.changes.length;
+    const dependencyCount = copy.dependenciesToAdd.length;
+    const copied = [
+      ...(elementCount
+        ? [elementCount === 1 ? '1 element' : `${elementCount} elements`]
+        : []),
+      ...(dependencyCount
+        ? [
+            dependencyCount === 1
+              ? '1 dependency'
+              : `${dependencyCount} dependencies`,
+          ]
+        : []),
+    ];
+    return copied.length
+      ? `Workspace '${workspace.workspaceId}' is created from ${
+          copy.source.workspaceId
+        } of ${copy.sourceProject.name}, with ${copied.join(' and ')}`
+      : `Workspace '${workspace.workspaceId}' is succesfully created`;
+  }
+
   private completeWorkspaceCreation(
     workspace: Workspace,
     copy: WorkspaceCopyState | undefined,
   ): void {
     const copiedChangeCount = copy?.changes.length ?? 0;
     this.applicationStore.notificationService.notifySuccess(
-      copy && copiedChangeCount
-        ? `Workspace '${workspace.workspaceId}' is created from ${
-            copy.source.workspaceId
-          }, with its ${
-            copiedChangeCount === 1
-              ? '1 change'
-              : `${copiedChangeCount} changes`
-          }`
-        : `Workspace '${workspace.workspaceId}' is succesfully created`,
+      copy instanceof OtherProjectWorkspaceCopyState
+        ? this.describeOtherProjectCopy(workspace, copy)
+        : copy && copiedChangeCount
+          ? `Workspace '${workspace.workspaceId}' is created from ${
+              copy.source.workspaceId
+            }, with its ${
+              copiedChangeCount === 1
+                ? '1 change'
+                : `${copiedChangeCount} changes`
+            }`
+          : `Workspace '${workspace.workspaceId}' is succesfully created`,
     );
 
     const matchingWorkspace = this.workspaces.find(
