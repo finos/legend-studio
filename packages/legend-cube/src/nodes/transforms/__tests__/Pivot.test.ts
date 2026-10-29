@@ -37,12 +37,16 @@ import {
 } from '../../../messages/CubeMessages.js';
 import { Schema } from '../../../schema/Schema.js';
 import type { LiteralValue } from '../../../values/LiteralValue.js';
-import { AggregationFunction } from '../Aggregation.js';
+import {
+  AggregationFunction,
+  SUMMARY_AGGREGATION_FUNCTIONS,
+} from '../Aggregation.js';
 import {
   DEFAULT_PIVOT_AGGREGATION,
   getPivotColumnNames,
   isPivotableType,
   Pivot,
+  PIVOT_AGGREGATION_FUNCTIONS,
   PIVOT_MAX_VALUES,
   type PivotAggregation,
 } from '../Pivot.js';
@@ -262,7 +266,7 @@ describe(unitTest('Pivot'), () => {
     ).toEqual([]);
   });
 
-  test("Checks its aggregation as a Group's, but for Distinct Value, on a column neither a row nor pivoted", () => {
+  test("Checks its aggregation as a Group's, but for Distinct Value and PLAN §11.27's functions, on a column neither a row nor pivoted", () => {
     expect(
       errorsOf(
         pivot({
@@ -273,14 +277,28 @@ describe(unitTest('Pivot'), () => {
         }),
       ),
     ).toEqual([MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED('DistinctValue')]);
+    // Snowflake's pivot takes none of them, settings or not
+    SUMMARY_AGGREGATION_FUNCTIONS.forEach((fn) =>
+      expect(
+        errorsOf(pivot({ aggregation: { function: fn, column: 'FREIGHT' } })),
+      ).toEqual([MESSAGE_PIVOT_AGGREGATION_UNSUPPORTED(fn)]),
+    );
+    expect(PIVOT_AGGREGATION_FUNCTIONS).toEqual([
+      'Count',
+      'DistinctCount',
+      'Sum',
+      'Average',
+      'Min',
+      'Max',
+      'CountRows',
+    ]);
+    expect(Object.isFrozen(PIVOT_AGGREGATION_FUNCTIONS)).toBe(true);
     expect(
       errorsOf(pivot({ aggregation: { function: '', column: 'FREIGHT' } })),
     ).toEqual([MESSAGE_AGGREGATION_FUNCTION_EMPTY]);
     expect(
-      errorsOf(
-        pivot({ aggregation: { function: 'Median', column: 'FREIGHT' } }),
-      ),
-    ).toEqual([MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Median')]);
+      errorsOf(pivot({ aggregation: { function: 'Mode', column: 'FREIGHT' } })),
+    ).toEqual([MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Mode')]);
     expect(
       errorsOf(
         pivot({

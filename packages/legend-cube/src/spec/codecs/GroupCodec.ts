@@ -19,6 +19,7 @@ import {
   type AggregationUse,
   type ColumnAggregation,
   getAggregationAutoName,
+  getAggregationSettings,
   GROUP_AGGREGATION_USE,
 } from '../../nodes/transforms/Aggregation.js';
 import { Group } from '../../nodes/transforms/Group.js';
@@ -36,20 +37,28 @@ import {
   UnreadableContent,
 } from '../SpecReader.js';
 
-const AGGREGATION_KEYS = ['column', 'function', 'name', 'offset', 'buckets'];
+const AGGREGATION_KEYS = [
+  'column',
+  'function',
+  'name',
+  ...Object.values(AggregationSetting),
+];
 
 /**
  * The aggregations under `key`, each `{column, function, name}`, the column
  * left out for a function that takes none (PLAN §11.5), and a window
  * function's `offset` (Lag, Lead) or `buckets` (NTile), JSON numbers (PLAN
- * §11.9). Texts and numbers are kept exactly, `''` included, for validation
- * to judge: an unknown, empty or misplaced function or setting is held, not
- * dropped (Q4), since an invalid node can't run. A name left out is read as
- * the auto-name for the use (Q3), or `''` when there is none, and written
- * back; a setting left out stays out, which validation reports, as a Limit's
- * cleared size: never its default, so an invalid one is never saved as valid. An entry key this version doesn't
- * know could change the rows, so it makes the node unreadable, once every
- * entry has been read. Shared by the nodes that aggregate (Group, Partition).
+ * §11.9), or a Group's `percentile` (Percentile), a JSON number from 0 to 1,
+ * or `separator` (Join Text), a text (PLAN §11.27). Texts and numbers are
+ * kept exactly, `''` included, for validation to judge: an unknown, empty or
+ * misplaced function or setting is held, not dropped (Q4), since an invalid
+ * node can't run. A name left out is read as the auto-name for the use (Q3),
+ * or `''` when there is none, and written back; a setting left out stays
+ * out, which validation reports, as a Limit's cleared size: never its
+ * default, so an invalid one is never saved as valid. An entry key this
+ * version doesn't know could change the rows, so it makes the node
+ * unreadable, once every entry has been read. Shared by the nodes that
+ * aggregate (Group, Partition).
  */
 export const readColumnAggregations = (
   json: JsonObject,
@@ -64,16 +73,27 @@ export const readColumnAggregations = (
     const column = readOptionalString(item, 'column', itemPath, true);
     const fn = readString(item, 'function', itemPath, true);
     const name = readOptionalString(item, 'name', itemPath, true);
-    const [offset, buckets] = [
+    const [offset, buckets, percentile] = [
       AggregationSetting.OFFSET,
       AggregationSetting.BUCKETS,
+      AggregationSetting.PERCENTILE,
     ].map((setting) => readOptionalFiniteNumber(item, setting, itemPath));
+    const settings = getAggregationSettings({
+      offset,
+      buckets,
+      percentile,
+      separator: readOptionalString(
+        item,
+        AggregationSetting.SEPARATOR,
+        itemPath,
+        true,
+      ),
+    });
     return {
       column,
       function: fn,
-      name: name ?? getAggregationAutoName(fn, column, use) ?? '',
-      ...(offset === undefined ? {} : { offset }),
-      ...(buckets === undefined ? {} : { buckets }),
+      name: name ?? getAggregationAutoName(fn, column, use, settings) ?? '',
+      ...settings,
     };
   });
   return {
@@ -84,17 +104,27 @@ export const readColumnAggregations = (
   };
 };
 
+/** The JSON of the settings an aggregation holds */
+const encodeSettings = (aggregation: ColumnAggregation): JsonObject =>
+  Object.fromEntries(
+    Object.values(AggregationSetting).flatMap((setting) => {
+      const value = aggregation[setting];
+      return value === undefined ? [] : [[setting, value]];
+    }),
+  );
+
 /** The JSON of aggregations, the column left out for a function that takes none, a setting for one that has it */
 export const encodeColumnAggregations = (
   aggregations: readonly ColumnAggregation[],
 ): JsonObject[] =>
   aggregations.map(
-    ({ column, function: fn, name, offset, buckets }): JsonObject => ({
-      ...(column === undefined ? {} : { column }),
-      function: fn,
-      name,
-      ...(offset === undefined ? {} : { offset }),
-      ...(buckets === undefined ? {} : { buckets }),
+    (aggregation): JsonObject => ({
+      ...(aggregation.column === undefined
+        ? {}
+        : { column: aggregation.column }),
+      function: aggregation.function,
+      name: aggregation.name,
+      ...encodeSettings(aggregation),
     }),
   );
 

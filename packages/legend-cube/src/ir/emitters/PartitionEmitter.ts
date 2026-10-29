@@ -43,8 +43,9 @@ import {
 import { type EmitContext, originOf } from '../EmitContext.js';
 
 /**
- * How a window's values reduce, `$y` (PLAN §8.8, §11.6): the counts are
- * `size()`, since `count()` loses its OVER clause on the engine and fails
+ * How a window's values reduce, `$y` (PLAN §8.8, §11.6, §11.27): the counts
+ * are `size()`, since `count()` loses its OVER clause on the engine and
+ * fails; Std Dev and Variance the sample ones, which keep it
  */
 const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
   const values = variable('y');
@@ -64,6 +65,10 @@ const reduce = (aggregation: AggregationFunction, origin: Origin): IR => {
       return func('min', [values], origin);
     case AggregationFunction.MAX:
       return func('max', [values], origin);
+    case AggregationFunction.STD_DEV:
+      return func('stdDevSample', [values], origin);
+    case AggregationFunction.VARIANCE:
+      return func('varianceSample', [values], origin);
     default:
       throw new Error(`Can't emit window function "${aggregation}"`);
   }

@@ -27,6 +27,7 @@ import {
   AggregationFunction,
   getAvailableAggregations,
   isAggregationFunction,
+  SUMMARY_AGGREGATION_FUNCTIONS,
 } from '../nodes/transforms/Aggregation.js';
 import {
   FilterOperator,
@@ -94,12 +95,22 @@ export const getDefaultDrilldownAggregation = (
 ): AggregationFunction | null =>
   isNumericFamily(type.family) ? AggregationFunction.SUM : null;
 
-/** The functions a group row can show for a column of the type: a Group's, but Count rows, which takes no column */
+/**
+ * Whether a group row knows the function: a Group's, but those of PLAN
+ * §11.27, which it doesn't offer yet (Percentile and Join Text take a
+ * setting, which a drill-down's aggregation has no place for)
+ */
+const isDrilldownFunction = (fn: string): fn is AggregationFunction =>
+  isAggregationFunction(fn) && !SUMMARY_AGGREGATION_FUNCTIONS.includes(fn);
+
+/** The functions a group row can show for a column of the type: a Group's it knows (`isDrilldownFunction`), but Count rows, which takes no column */
 export const getDrilldownAggregations = (
   type: CubeType,
 ): readonly AggregationFunction[] =>
   getAvailableAggregations(type).filter(
-    (aggregation) => aggregation !== AggregationFunction.COUNT_ROWS,
+    (aggregation) =>
+      aggregation !== AggregationFunction.COUNT_ROWS &&
+      isDrilldownFunction(aggregation),
   );
 
 /** The drill-down's saved aggregation of a column, by name in any case, if it has one */
@@ -175,7 +186,7 @@ export const checkDrilldown = (
       problems.push(MESSAGE_DRILLDOWN_AGGREGATION_COLUMN_NOT_IN_OUTPUT(name));
     } else if (fn === null) {
       usable.set(column.name, null);
-    } else if (!isAggregationFunction(fn)) {
+    } else if (!isDrilldownFunction(fn)) {
       problems.push(MESSAGE_DRILLDOWN_AGGREGATION_UNKNOWN(fn, name));
     } else if (!getDrilldownAggregations(column.type).includes(fn)) {
       problems.push(MESSAGE_DRILLDOWN_AGGREGATION_INCOMPATIBLE(fn, name));

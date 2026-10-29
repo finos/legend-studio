@@ -94,6 +94,40 @@ describe(unitTest('Drill-down defaults'), () => {
     );
   });
 
+  test("Offers none of PLAN §11.27's functions, which a group row doesn't know yet", () => {
+    expect(getDrilldownAggregations(type('FREIGHT'))).toEqual([
+      COUNT,
+      DISTINCT_COUNT,
+      AggregationFunction.DISTINCT_VALUE,
+      SUM,
+      AVERAGE,
+      AggregationFunction.MIN,
+      MAX,
+    ]);
+    expect(getDrilldownAggregations(type('SHIP_CITY'))).toEqual([
+      COUNT,
+      DISTINCT_COUNT,
+      AggregationFunction.DISTINCT_VALUE,
+      AggregationFunction.MIN,
+      MAX,
+    ]);
+    // a saved one is unknown, as before them
+    expect(
+      checkDrilldown(
+        drilldown({
+          aggregations: [
+            { column: 'FREIGHT', function: AggregationFunction.STD_DEV },
+            { column: 'SHIP_CITY', function: AggregationFunction.JOIN_TEXT },
+          ],
+        }),
+        ORDERS,
+      ).problems,
+    ).toEqual([
+      'Drill-down aggregation "StdDev" of column "FREIGHT" is unknown.',
+      'Drill-down aggregation "JoinText" of column "SHIP_CITY" is unknown.',
+    ]);
+  });
+
   test('Reads a saved aggregation only with a column and a function or null', () => {
     expect(isDrilldownAggregation({ column: 'A', function: 'Sum' })).toBe(true);
     expect(isDrilldownAggregation({ column: 'A', function: null })).toBe(true);

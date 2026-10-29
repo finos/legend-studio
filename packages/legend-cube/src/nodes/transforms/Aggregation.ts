@@ -37,8 +37,8 @@ import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import { isSortableType } from '../../types/TypeCompatibility.js';
 import { isNumericFamily, TypeFamily } from '../../types/TypeFamily.js';
 
-// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6 and §11.9), shared by Group
-// and Partition, whose windows also offer the rank and row functions
+// Aggregations (spec §10, PLAN §5.7, §11.5, §11.6, §11.9 and §11.27), shared by
+// Group and Partition, whose windows also offer the rank and row functions
 
 /** An aggregation function, as saved: a Group's, and a window's but its rank functions */
 export enum AggregationFunction {
@@ -51,6 +51,16 @@ export enum AggregationFunction {
   MAX = 'Max',
   /** Added by Cube (PLAN §11.5, Q1): every row, null or not, so it takes no column */
   COUNT_ROWS = 'CountRows',
+  /** Added in PLAN §11.27: the middle value, or the average of the two middle ones */
+  MEDIAN = 'Median',
+  /** Added in PLAN §11.27: the value `percentile` of the way through the sorted values, interpolated as Median is */
+  PERCENTILE = 'Percentile',
+  /** Added in PLAN §11.27: the sample standard deviation, over n - 1 values */
+  STD_DEV = 'StdDev',
+  /** Added in PLAN §11.27: the sample variance, over n - 1 values */
+  VARIANCE = 'Variance',
+  /** Added in PLAN §11.27: the texts joined by `separator`, in no set order */
+  JOIN_TEXT = 'JoinText',
 }
 
 const AGGREGATION_FUNCTIONS: readonly string[] =
@@ -59,6 +69,30 @@ const AGGREGATION_FUNCTIONS: readonly string[] =
 export const isAggregationFunction = (
   value: string,
 ): value is AggregationFunction => AGGREGATION_FUNCTIONS.includes(value);
+
+/**
+ * The functions added in PLAN §11.27, in the order a Group offers them: a
+ * Group offers them all, a window Std Dev and Variance (`isWindowFunction`),
+ * and a Pivot and the grid's group rows none
+ */
+export const SUMMARY_AGGREGATION_FUNCTIONS: readonly AggregationFunction[] =
+  Object.freeze([
+    AggregationFunction.MEDIAN,
+    AggregationFunction.PERCENTILE,
+    AggregationFunction.STD_DEV,
+    AggregationFunction.VARIANCE,
+    AggregationFunction.JOIN_TEXT,
+  ]);
+
+/**
+ * The aggregation functions a window doesn't know (PLAN §11.27): Snowflake
+ * refuses a sort in their window, which a window with sort columns writes
+ */
+const GROUP_ONLY_FUNCTIONS: readonly string[] = [
+  AggregationFunction.MEDIAN,
+  AggregationFunction.PERCENTILE,
+  AggregationFunction.JOIN_TEXT,
+];
 
 /**
  * A window-only function, as saved (spec §10, PLAN §11.6, §11.9): it ranks
@@ -112,14 +146,17 @@ export const isWindowRowFunction = (
 ): value is WindowRowFunction =>
   (WINDOW_ROW_FUNCTIONS as readonly string[]).includes(value);
 
-/** A function a window offers: every aggregation function, and the rank and row functions */
+/**
+ * A function a window offers: every aggregation function but Median,
+ * Percentile and Join Text, and the rank and row functions
+ */
 export type WindowFunction =
   | AggregationFunction
   | WindowRankFunction
   | WindowRowFunction;
 
 export const isWindowFunction = (value: string): value is WindowFunction =>
-  isAggregationFunction(value) ||
+  (isAggregationFunction(value) && !GROUP_ONLY_FUNCTIONS.includes(value)) ||
   isWindowRankFunction(value) ||
   isWindowRowFunction(value);
 
@@ -127,30 +164,120 @@ export const isWindowFunction = (value: string): value is WindowFunction =>
 export const needsWindowSort = (aggregation: string): boolean =>
   isWindowRankFunction(aggregation) || isWindowRowFunction(aggregation);
 
-/** What a function sets beside its column, if anything: Lag's and Lead's offset, NTile's bucket count */
+/**
+ * What a function sets beside its column, if anything: Lag's and Lead's
+ * offset, NTile's bucket count, Percentile's percentile and Join Text's
+ * separator (PLAN §11.27)
+ */
 export enum AggregationSetting {
   OFFSET = 'offset',
   BUCKETS = 'buckets',
+  /** A fraction from 0 to 1, as the engine's `percentile()` takes it; editors show it as a percent */
+  PERCENTILE = 'percentile',
+  SEPARATOR = 'separator',
 }
+
+/** The settings an aggregation can hold, by key, each `undefined` on a function that doesn't take it */
+export interface AggregationSettings {
+  readonly offset?: number | undefined;
+  readonly buckets?: number | undefined;
+  readonly percentile?: number | undefined;
+  readonly separator?: string | undefined;
+}
+
+const SETTINGS = new Map<string, AggregationSetting>([
+  [WindowRowFunction.LAG, AggregationSetting.OFFSET],
+  [WindowRowFunction.LEAD, AggregationSetting.OFFSET],
+  [WindowRankFunction.NTILE, AggregationSetting.BUCKETS],
+  [AggregationFunction.PERCENTILE, AggregationSetting.PERCENTILE],
+  [AggregationFunction.JOIN_TEXT, AggregationSetting.SEPARATOR],
+]);
 
 /** The setting the function takes, if any */
 export const getAggregationSetting = (
   aggregation: string,
-): AggregationSetting | undefined =>
-  aggregation === WindowRowFunction.LAG ||
-  aggregation === WindowRowFunction.LEAD
-    ? AggregationSetting.OFFSET
-    : aggregation === WindowRankFunction.NTILE
-      ? AggregationSetting.BUCKETS
-      : undefined;
+): AggregationSetting | undefined => SETTINGS.get(aggregation);
 
-/** A setting's value until the user gives one: one row back or ahead, four buckets (quartiles) */
-export const AGGREGATION_SETTING_DEFAULTS: Readonly<
-  Record<AggregationSetting, number>
-> = Object.freeze({
+/**
+ * A setting's value until the user gives one: one row back or ahead, four
+ * buckets (quartiles), the 90th percentile, and a comma and a space
+ */
+export const AGGREGATION_SETTING_DEFAULTS: Readonly<{
+  [Setting in AggregationSetting]-?: NonNullable<AggregationSettings[Setting]>;
+}> = Object.freeze({
   [AggregationSetting.OFFSET]: 1,
   [AggregationSetting.BUCKETS]: 4,
+  [AggregationSetting.PERCENTILE]: 0.9,
+  [AggregationSetting.SEPARATOR]: ', ',
 });
+
+/** The settings an aggregation holds, those left undefined left out */
+export const getAggregationSettings = (
+  aggregation: AggregationSettings,
+): AggregationSettings =>
+  Object.fromEntries(
+    Object.values(AggregationSetting).flatMap((setting) =>
+      aggregation[setting] === undefined
+        ? []
+        : [[setting, aggregation[setting]]],
+    ),
+  ) as AggregationSettings;
+
+/**
+ * A decimal number's text with its point moved `places` to the right (to the
+ * left when negative), in plain notation without extra zeros; `undefined` for
+ * a text that isn't a decimal number. Moving the point never rounds, as
+ * multiplying would (0.29 * 100 is 28.999999999999996).
+ */
+const shiftDecimalPoint = (
+  text: string,
+  places: number,
+): string | undefined => {
+  const match =
+    /^(?<sign>[+-]?)(?<whole>\d*)(?:\.(?<fraction>\d*))?(?:[eE](?<exponent>[+-]?\d+))?$/u.exec(
+      text,
+    );
+  const {
+    sign,
+    whole = '',
+    fraction = '',
+    exponent = '0',
+  } = match?.groups ?? {};
+  if (!match || (!whole && !fraction)) {
+    return undefined;
+  }
+  const digits = `${whole}${fraction}`;
+  // where the point goes in the digits, padded with zeros to reach it
+  const point = whole.length + Number(exponent) + places;
+  const padded =
+    point < 0 ? `${'0'.repeat(-point)}${digits}` : digits.padEnd(point, '0');
+  const at = Math.max(point, 0);
+  const integer = padded.slice(0, at).replace(/^0+(?=\d)/u, '') || '0';
+  const decimals = padded.slice(at).replace(/0+$/u, '');
+  const shifted = decimals ? `${integer}.${decimals}` : integer;
+  return sign === '-' && /[1-9]/u.test(shifted) ? `-${shifted}` : shifted;
+};
+
+/** A percentile, a fraction, as the percent an editor shows: 0.9 is `90`, 0.125 `12.5` */
+export const getPercentileText = (percentile: number): string =>
+  shiftDecimalPoint(String(percentile), 2) ?? String(percentile);
+
+/** A percent as typed: an optional sign, then digits with a decimal point or not */
+const PERCENT_TEXT = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/u;
+
+/**
+ * The percentile, a fraction, of a percent as typed: `90` is 0.9, `12.5`
+ * 0.125; spaces around it are allowed, and any other text, empty text, `1e3`
+ * and `0x10` included, gives `undefined`, which the node then reports
+ */
+export const parsePercentileText = (text: string): number | undefined => {
+  const trimmed = text.trim();
+  const shifted = PERCENT_TEXT.test(trimmed)
+    ? shiftDecimalPoint(trimmed, -2)
+    : undefined;
+  const value = shifted === undefined ? Number.NaN : Number(shifted);
+  return Number.isFinite(value) ? value : undefined;
+};
 
 /**
  * Where aggregations are: a Group, or a window, which also knows the rank
@@ -178,19 +305,21 @@ export const isAggregationFunctionOf = (
  * name. The function is kept as saved, so an unknown or empty one is held and
  * reported, never dropped (PLAN §11.5, Q4). `column` is `undefined` for a
  * function that takes none (Count rows, the rank functions) and `''` until
- * picked; `name` is `''` until given. `offset` (Lag, Lead) and `buckets`
- * (NTile) are their functions' settings (PLAN §11.9), kept as given for
- * validation to judge, and `undefined` on every other function.
+ * picked; `name` is `''` until given. `offset` (Lag, Lead), `buckets`
+ * (NTile), `percentile` (Percentile) and `separator` (Join Text) are their
+ * functions' settings (PLAN §11.9, §11.27), kept as given for validation to
+ * judge, and `undefined` on every other function.
  */
-export interface ColumnAggregation {
+export interface ColumnAggregation extends AggregationSettings {
   readonly column: string | undefined;
   readonly function: string;
   readonly name: string;
-  readonly offset?: number | undefined;
-  readonly buckets?: number | undefined;
 }
 
-/** Whether a value has a `ColumnAggregation`'s shape: texts, the column left out or not, and numbers for the settings */
+/**
+ * Whether a value has a `ColumnAggregation`'s shape: texts, the column left
+ * out or not, numbers for the settings but the separator, a text
+ */
 export const isColumnAggregation = (
   value: unknown,
 ): value is ColumnAggregation => {
@@ -203,36 +332,37 @@ export const isColumnAggregation = (
     name,
     offset,
     buckets,
+    percentile,
+    separator,
   } = value as Partial<Record<keyof ColumnAggregation, unknown>>;
   return (
     (column === undefined || typeof column === 'string') &&
     typeof fn === 'string' &&
     typeof name === 'string' &&
-    (offset === undefined || typeof offset === 'number') &&
-    (buckets === undefined || typeof buckets === 'number')
+    [offset, buckets, percentile].every(
+      (setting) => setting === undefined || typeof setting === 'number',
+    ) &&
+    (separator === undefined || typeof separator === 'string')
   );
 };
 
 /** A frozen copy of an aggregation, its settings left out when undefined */
-export const freezeColumnAggregation = ({
-  column,
-  function: fn,
-  name,
-  offset,
-  buckets,
-}: ColumnAggregation): ColumnAggregation =>
+export const freezeColumnAggregation = (
+  aggregation: ColumnAggregation,
+): ColumnAggregation =>
   Object.freeze({
-    column,
-    function: fn,
-    name,
-    ...(offset === undefined ? {} : { offset }),
-    ...(buckets === undefined ? {} : { buckets }),
+    column: aggregation.column,
+    function: aggregation.function,
+    name: aggregation.name,
+    ...getAggregationSettings(aggregation),
   });
 
 const DISPLAY_NAMES = new Map<string, string>([
   [AggregationFunction.DISTINCT_COUNT, 'Distinct Count'],
   [AggregationFunction.DISTINCT_VALUE, 'Distinct Value'],
   [AggregationFunction.COUNT_ROWS, 'Count Rows'],
+  [AggregationFunction.STD_DEV, 'Std Dev'],
+  [AggregationFunction.JOIN_TEXT, 'Join Text'],
   [WindowRankFunction.DENSE_RANK, 'Dense Rank'],
   [WindowRankFunction.ROW_NUMBER, 'Row Number'],
   [WindowRankFunction.PERCENT_RANK, 'Percent Rank'],
@@ -241,8 +371,9 @@ const DISPLAY_NAMES = new Map<string, string>([
 
 /**
  * How a function is shown (spec §10): `Distinct Count`, `Distinct Value`,
- * `Count Rows`, `Dense Rank`, `Row Number`, `Percent Rank` and `Cumulative
- * Distribution`; every other text as it is, an unknown one included
+ * `Count Rows`, `Std Dev`, `Join Text`, `Dense Rank`, `Row Number`, `Percent
+ * Rank` and `Cumulative Distribution`; every other text as it is, an unknown
+ * one included
  */
 export const getAggregationDisplayName = (aggregation: string): string =>
   DISPLAY_NAMES.get(aggregation) ?? aggregation;
@@ -270,30 +401,50 @@ const NUMBERS = [
   AggregationFunction.MIN,
   AggregationFunction.MAX,
 ] as const;
+/** A window's numbers: then Std Dev and Variance, which run over a sorted window too (PLAN §11.27) */
+const WINDOW_NUMBERS = [
+  ...NUMBERS,
+  AggregationFunction.STD_DEV,
+  AggregationFunction.VARIANCE,
+] as const;
+/** A Group's numbers: then Median and Percentile, Std Dev and Variance (PLAN §11.27) */
+const GROUP_NUMBERS = [
+  ...NUMBERS,
+  AggregationFunction.MEDIAN,
+  AggregationFunction.PERCENTILE,
+  AggregationFunction.STD_DEV,
+  AggregationFunction.VARIANCE,
+] as const;
+/** A Group's strings: the ordered ones, then Join Text (PLAN §11.27) */
+const GROUP_STRINGS = [...ORDERED, AggregationFunction.JOIN_TEXT] as const;
 
 /**
  * The functions offered on a column of the type, in the spec's order
- * (§10.1): dates, strings and Booleans add Min and Max to the distinct ones
- * (strings and Booleans from M6d, §11.14); numbers, DECIMAL included, get all
- * seven; StrictTime and enumerations the distinct ones (enumerations from
- * M6d); VARIANT and a type Cube doesn't know Count only. Count rows takes no
- * column, so it is never in the list.
+ * (§10.1): dates and Booleans add Min and Max to the distinct ones (Booleans
+ * from M6d, §11.14), and strings too, with Join Text in a Group (§11.27);
+ * numbers, DECIMAL included, get the distinct ones, Sum, Average, Min and
+ * Max, then Std Dev and Variance, with Median and Percentile before them in a
+ * Group (§11.27); StrictTime and enumerations the distinct ones (enumerations
+ * from M6d); VARIANT and a type Cube doesn't know Count only. Count rows
+ * takes no column, so it is never in the list.
  */
 export const getAvailableAggregations = (
   type: CubeType,
+  use: AggregationUse = GROUP_AGGREGATION_USE,
 ): readonly AggregationFunction[] => {
   switch (type.family) {
     case TypeFamily.DATE:
     case TypeFamily.STRICT_DATE:
     case TypeFamily.DATETIME:
     case TypeFamily.BOOLEAN:
-    case TypeFamily.STRING:
       return ORDERED;
+    case TypeFamily.STRING:
+      return use.kind === 'group' ? GROUP_STRINGS : ORDERED;
     case TypeFamily.INTEGER:
     case TypeFamily.FLOAT:
     case TypeFamily.DECIMAL:
     case TypeFamily.NUMBER:
-      return NUMBERS;
+      return use.kind === 'group' ? GROUP_NUMBERS : WINDOW_NUMBERS;
     case TypeFamily.STRICT_TIME:
     case TypeFamily.ENUM:
       return DISTINCTS;
@@ -306,7 +457,8 @@ export const getAvailableAggregations = (
 /**
  * Whether a column of the type offers the function: a row function any type
  * a window can partition by (`isSortableType`), never a rank function, which
- * takes no column
+ * takes no column; any other as a Group's column does, whose functions hold a
+ * window's
  */
 const offersAggregation = (
   columnType: CubeType,
@@ -353,8 +505,10 @@ const dateResultType = (family: TypeFamily): PrimitiveType => {
  * for Sum, Integer, Float, or else Number; Float for Average; Min and Max as
  * Sum on numbers, StrictDate on a StrictDate, DateTime on a Timestamp or
  * DateTime, the column's own precise type on a string or a Boolean
- * (`Varchar(10)`, PLAN §11.14). `undefined` for a function the column's type
- * doesn't offer, or a column function given no column.
+ * (`Varchar(10)`, PLAN §11.14); Float for Median, Number for Percentile, Std
+ * Dev and Variance, and String for Join Text, whatever the column's precise
+ * type (PLAN §11.27). `undefined` for a function the column's type doesn't
+ * offer, or a column function given no column.
  */
 export const getAggregationResultType = (
   aggregation: WindowFunction,
@@ -390,6 +544,14 @@ export const getAggregationResultType = (
             columnType.family === TypeFamily.BOOLEAN
           ? columnType
           : dateResultType(columnType.family);
+    case AggregationFunction.MEDIAN:
+      return primitive(PRIMITIVE_TYPE_PATH.FLOAT);
+    case AggregationFunction.PERCENTILE:
+    case AggregationFunction.STD_DEV:
+    case AggregationFunction.VARIANCE:
+      return primitive(PRIMITIVE_TYPE_PATH.NUMBER);
+    case AggregationFunction.JOIN_TEXT:
+      return primitive(PRIMITIVE_TYPE_PATH.STRING);
     default:
       return undefined;
   }
@@ -398,7 +560,10 @@ export const getAggregationResultType = (
 /**
  * Whether a function's output can be null: all but the counts and the rank
  * functions, though the engine types Sum and Average as never null (PLAN
- * §5.7, D4); a row function's is empty when there is no such row (PLAN §11.9). It decides rows: a negated filter guards with `isEmpty` only on a
+ * §5.7, D4), and Median, Std Dev, Variance and Join Text too, which are empty
+ * on a group of empty values, and Std Dev and Variance on a group of one row
+ * (PLAN §11.27); a row function's is empty when there is no such row (PLAN
+ * §11.9). It decides rows: a negated filter guards with `isEmpty` only on a
  * nullable column.
  */
 export const isAggregationNullable = (aggregation: WindowFunction): boolean =>
@@ -410,14 +575,16 @@ export const isAggregationNullable = (aggregation: WindowFunction): boolean =>
 /**
  * The name the editor gives an aggregation until the user types one (spec
  * §10.3): `<column> <shown as>`, e.g. `ORDER_ID Count`, or for a function
- * with no column how it is shown, e.g. `Count Rows` or `Dense Rank`;
- * `undefined` for a function the use doesn't know, or a column function with
- * no column
+ * with no column how it is shown, e.g. `Count Rows` or `Dense Rank`; a
+ * Percentile with a percentile `<column> P<percent>`, e.g. `FREIGHT P90`, so
+ * a column's quartiles don't clash (PLAN §11.27); `undefined` for a function
+ * the use doesn't know, or a column function with no column
  */
 export const getAggregationAutoName = (
   aggregation: string,
   column: string | undefined,
   use: AggregationUse = GROUP_AGGREGATION_USE,
+  { percentile }: AggregationSettings = {},
 ): string | undefined => {
   if (!isAggregationFunctionOf(aggregation, use)) {
     return undefined;
@@ -425,21 +592,58 @@ export const getAggregationAutoName = (
   if (!takesAggregationColumn(aggregation)) {
     return getAggregationDisplayName(aggregation);
   }
-  return column
-    ? `${column} ${getAggregationDisplayName(aggregation)}`
-    : undefined;
+  if (!column) {
+    return undefined;
+  }
+  return aggregation === AggregationFunction.PERCENTILE &&
+    percentile !== undefined &&
+    Number.isFinite(percentile)
+    ? `${column} P${getPercentileText(percentile)}`
+    : `${column} ${getAggregationDisplayName(aggregation)}`;
+};
+
+/**
+ * Whether a setting's value is one its function can use: an offset or a
+ * bucket count a whole number of at least 1, a percentile a fraction from 0
+ * to 1 (the engine plans 1.5, which the database refuses), and a separator
+ * any text with no backslash, which Databricks and SingleStore would drop
+ * (PLAN §11.27)
+ */
+const isValidSetting = (
+  setting: AggregationSetting,
+  value: number | string | undefined,
+): boolean => {
+  switch (setting) {
+    case AggregationSetting.OFFSET:
+    case AggregationSetting.BUCKETS:
+      return (
+        typeof value === 'number' && Number.isSafeInteger(value) && value >= 1
+      );
+    case AggregationSetting.PERCENTILE:
+      return (
+        typeof value === 'number' &&
+        Number.isFinite(value) &&
+        value >= 0 &&
+        value <= 1
+      );
+    case AggregationSetting.SEPARATOR:
+      return typeof value === 'string' && !value.includes('\\');
+    default:
+      return false;
+  }
 };
 
 /**
  * Checks an aggregation's function and column against the input schema,
  * stopping at the first problem (spec §10.3, then Cube's checks, PLAN §11.5,
- * §11.6, §11.9 and §11.12): the function is given and the use knows it;
- * Count rows and the rank functions have no column, any other function a
+ * §11.6, §11.9, §11.12 and §11.27): the function is given and the use knows
+ * it; Count rows and the rank functions have no column, any other function a
  * column of the input whose type offers it; a rank or row function's window
  * sorts its rows (with none, the database fails with no location); Lag's and
- * Lead's offset and NTile's bucket count are whole numbers of at least 1, and
- * no other function has one. Its name is the caller's to check. Exported so a
- * Pivot, whose aggregation has no name, checks the same.
+ * Lead's offset, NTile's bucket count, Percentile's percentile and Join
+ * Text's separator are given and valid (`isValidSetting`), and no other
+ * function has one. Its name is the caller's to check. Exported so a Pivot,
+ * whose aggregation has no name, checks the same.
  */
 export const validateAggregationFunctionAndColumn = (
   aggregation: Omit<ColumnAggregation, 'name'>,
@@ -483,7 +687,7 @@ export const validateAggregationFunctionAndColumn = (
       const value = aggregation[key];
       return key === setting
         ? validate(
-            value !== undefined && Number.isSafeInteger(value) && value >= 1,
+            isValidSetting(key, value),
             MESSAGE_AGGREGATION_FUNCTION_SETTING_INVALID(fn, key),
             errors,
           )

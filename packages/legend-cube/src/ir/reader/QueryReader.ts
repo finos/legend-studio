@@ -423,9 +423,41 @@ const REDUCES: ReadonlyMap<string, AggregationFunction> = new Map([
   ['average', AggregationFunction.AVERAGE],
   ['min', AggregationFunction.MIN],
   ['max', AggregationFunction.MAX],
+  ['median', AggregationFunction.MEDIAN],
+  ['stdDevSample', AggregationFunction.STD_DEV],
+  ['varianceSample', AggregationFunction.VARIANCE],
 ]);
 
-/** `~name: x | $x.column : y | $y->sum()`, or `~name: x | 1 : y | $y->count()` (Count rows), as `emitAggregation` writes them */
+/**
+ * A reduce with a setting, as Cube writes one (PLAN §11.27): Percentile's
+ * `percentile($y, <Float>)` and Join Text's `joinStrings($y, <String>)`, the
+ * setting a literal, kept for validation to judge
+ */
+const readSettingReduce = (
+  name: string,
+  setting: IR,
+):
+  | Pick<ColumnAggregation, 'function' | 'percentile' | 'separator'>
+  | undefined => {
+  if (setting.k !== 'literal') {
+    return undefined;
+  }
+  const { value } = setting;
+  return name === 'percentile' && value.kind === 'float'
+    ? {
+        function: AggregationFunction.PERCENTILE,
+        percentile: Number(value.value),
+      }
+    : name === 'joinStrings' && value.kind === 'string'
+      ? { function: AggregationFunction.JOIN_TEXT, separator: value.value }
+      : undefined;
+};
+
+/**
+ * `~name: x | $x.column : y | $y->sum()`, `~name: x | $x.column : y |
+ * $y->percentile(0.9)`, or `~name: x | 1 : y | $y->count()` (Count rows), as
+ * `emitAggregation` writes them
+ */
 const readAggregation = (spec: IR): ColumnAggregation | undefined => {
   if (spec.k !== 'colSpec' || !spec.fn1 || !spec.fn2) {
     return undefined;
@@ -447,11 +479,28 @@ const readAggregation = (spec: IR): ColumnAggregation | undefined => {
   const [reduced] = reduce.body as [IR];
   const readsValues = (ir: IR | undefined): boolean =>
     ir?.k === 'var' && ir.name === values;
-  if (reduced.k !== 'func' || reduced.params.length !== 1) {
+  // the column of the row the map reads, if it reads one
+  const column =
+    value.k === 'property' &&
+    value.receiver.k === 'var' &&
+    value.receiver.name === row
+      ? value.name
+      : undefined;
+  if (
+    reduced.k !== 'func' ||
+    reduced.params.length < 1 ||
+    reduced.params.length > 2
+  ) {
     return undefined;
   }
   const reduceName = getCubeFunctionName(reduced.name);
-  const [argument] = reduced.params as [IR];
+  const [argument, setting] = reduced.params as [IR, IR | undefined];
+  if (setting !== undefined) {
+    const read = readsValues(argument)
+      ? readSettingReduce(reduceName, setting)
+      : undefined;
+    return read && column !== undefined ? { name, column, ...read } : undefined;
+  }
   let fn: AggregationFunction | undefined;
   if (
     reduceName === 'count' &&
@@ -480,14 +529,7 @@ const readAggregation = (spec: IR): ColumnAggregation | undefined => {
       function: AggregationFunction.COUNT_ROWS,
     };
   }
-  if (
-    value.k !== 'property' ||
-    value.receiver.k !== 'var' ||
-    value.receiver.name !== row
-  ) {
-    return undefined;
-  }
-  return { name, column: value.name, function: fn };
+  return column === undefined ? undefined : { name, column, function: fn };
 };
 
 class CubeQueryReader {

@@ -34,7 +34,9 @@ import {
   getAggregationDisplayName,
   getAggregationResultType,
   getAggregationSetting,
+  getAggregationSettings,
   getAvailableAggregations,
+  getPercentileText,
   GROUP_AGGREGATION_USE,
   isAggregationFunction,
   isAggregationFunctionOf,
@@ -43,6 +45,8 @@ import {
   isWindowRankFunction,
   isWindowRowFunction,
   needsWindowSort,
+  parsePercentileText,
+  SUMMARY_AGGREGATION_FUNCTIONS,
   takesAggregationColumn,
   validateColumnAggregation,
   WINDOW_RANK_FUNCTIONS,
@@ -61,6 +65,11 @@ const {
   MIN,
   MAX,
   COUNT_ROWS,
+  MEDIAN,
+  PERCENTILE,
+  STD_DEV,
+  VARIANCE,
+  JOIN_TEXT,
 } = AggregationFunction;
 const COLUMN_FUNCTIONS = [
   COUNT,
@@ -70,14 +79,22 @@ const COLUMN_FUNCTIONS = [
   AVERAGE,
   MIN,
   MAX,
+  MEDIAN,
+  PERCENTILE,
+  STD_DEV,
+  VARIANCE,
+  JOIN_TEXT,
 ] as const;
+/** The functions a window doesn't know, though a Group does (PLAN §11.27) */
+const GROUP_ONLY = [MEDIAN, PERCENTILE, JOIN_TEXT] as const;
 
 const type = (path: string, params: number[] = []): PrimitiveType =>
   PrimitiveType.get(path, params);
 
 /**
- * Per type, each column function's result type (`undefined` where the type
- * doesn't offer it), PLAN §5.7 and §11.5: every family, every precise type
+ * Per type, each column function's result type in a Group (`undefined` where
+ * the type doesn't offer it), PLAN §5.7, §11.5 and §11.27: every family,
+ * every precise type
  */
 const RESULT_TYPES: readonly [
   string,
@@ -92,12 +109,21 @@ const RESULT_TYPES: readonly [
     [AVERAGE]: 'Float',
     [MIN]: sum,
     [MAX]: sum,
+    // whatever the column's precise type, as the engine types them
+    [MEDIAN]: 'Float',
+    [PERCENTILE]: 'Number',
+    [STD_DEV]: 'Number',
+    [VARIANCE]: 'Number',
   });
   const dates = (minMax: string, own: string) => ({
     ...counts,
     [DISTINCT_VALUE]: own,
     [MIN]: minMax,
     [MAX]: minMax,
+  });
+  const strings = (own: string) => ({
+    ...dates(own, own),
+    [JOIN_TEXT]: 'String',
   });
   const distincts = (own: string) => ({ ...counts, [DISTINCT_VALUE]: own });
   const integer = (path: string): [string, CubeType, object] => [
@@ -132,12 +158,8 @@ const RESULT_TYPES: readonly [
     ['StrictTime', type('StrictTime'), distincts('StrictTime')],
     // Min and Max typed as the column (PLAN §11.14)
     ['Boolean', type('Boolean'), dates('Boolean', 'Boolean')],
-    ['String', type('String'), dates('String', 'String')],
-    [
-      'Varchar(15)',
-      type(`${P}Varchar`, [15]),
-      dates(`${P}Varchar(15)`, `${P}Varchar(15)`),
-    ],
+    ['String', type('String'), strings('String')],
+    ['Varchar(15)', type(`${P}Varchar`, [15]), strings(`${P}Varchar(15)`)],
     [
       'Variant',
       type('meta::pure::metamodel::variant::Variant'),
@@ -168,12 +190,18 @@ describe('Aggregation functions', () => {
       'Min',
       'Max',
       'CountRows',
+      'Median',
+      'Percentile',
+      'StdDev',
+      'Variance',
+      'JoinText',
     ]);
     expect(isAggregationFunction('Sum')).toBe(true);
     expect(isAggregationFunction('CountRows')).toBe(true);
-    // window-only until M5, so unknown here (PLAN §11.5, Q4)
-    ['sum', 'Rank', 'DenseRank', 'Median', ''].forEach((text) =>
-      expect(isAggregationFunction(text)).toBe(false),
+    expect(isAggregationFunction('Median')).toBe(true);
+    // window-only until M5, so unknown here (PLAN §11.5, Q4); Mode isn't offered
+    ['sum', 'Rank', 'DenseRank', 'Mode', 'StdDevPopulation', ''].forEach(
+      (text) => expect(isAggregationFunction(text)).toBe(false),
     );
   });
 
@@ -193,6 +221,11 @@ describe('Aggregation functions', () => {
         'Min',
         'Max',
         'Count Rows',
+        'Median',
+        'Percentile',
+        'Std Dev',
+        'Variance',
+        'Join Text',
         'Rank',
         'newerFunction',
       ]);
@@ -220,6 +253,19 @@ describe('Aggregation functions', () => {
     (_, columnType, expected) => {
       expect(getAvailableAggregations(columnType)).toEqual(
         COLUMN_FUNCTIONS.filter((aggregation) => aggregation in expected),
+      );
+      // a window offers them too, but Median, Percentile and Join Text
+      expect(
+        getAvailableAggregations(columnType, {
+          kind: 'window',
+          sorted: true,
+        }),
+      ).toEqual(
+        COLUMN_FUNCTIONS.filter(
+          (aggregation) =>
+            aggregation in expected &&
+            !(GROUP_ONLY as readonly string[]).includes(aggregation),
+        ),
       );
       expect(
         Object.fromEntries(
@@ -351,8 +397,8 @@ describe('Aggregation validation', () => {
     ],
     [
       'an unknown function',
-      agg('Median', 'ID', 'x'),
-      'Aggregation function "Median" is unknown.',
+      agg('Mode', 'ID', 'x'),
+      'Aggregation function "Mode" is unknown.',
     ],
     [
       'a function in another case',
@@ -472,12 +518,12 @@ describe('Aggregation validation', () => {
   test(unitTest('Reports the first problem of a row only'), () => {
     expect(
       errorsOf([
-        agg('Median', 'MISSING', ''),
+        agg('Mode', 'MISSING', ''),
         agg(SUM, 'MISSING', 'NAME'),
         agg(SUM, 'NAME', ''),
       ]),
     ).toEqual([
-      ['Aggregation function "Median" is unknown.'],
+      ['Aggregation function "Mode" is unknown.'],
       ['Aggregation column "MISSING" is not present in the input schema.'],
       ['Aggregation function "Sum" is incompatible with column "NAME".'],
     ]);
@@ -605,7 +651,10 @@ describe('Window functions', () => {
       });
       Object.values(AggregationFunction).forEach((fn) => {
         expect(isWindowRankFunction(fn)).toBe(false);
-        expect(isWindowFunction(fn)).toBe(true);
+        // all but Median, Percentile and Join Text (PLAN §11.27)
+        expect(isWindowFunction(fn)).toBe(
+          !(GROUP_ONLY as readonly string[]).includes(fn),
+        );
       });
       ['rank', 'Denserank', 'Ntile', 'lag', 'Nth', ''].forEach((text) => {
         expect(isWindowRankFunction(text)).toBe(false);
@@ -786,7 +835,12 @@ describe('Window row functions', () => {
       [FIRST, LAST, RANK, PERCENT_RANK, SUM, 'Median'].forEach((fn) =>
         expect(getAggregationSetting(fn)).toBeUndefined(),
       );
-      expect(AGGREGATION_SETTING_DEFAULTS).toEqual({ offset: 1, buckets: 4 });
+      expect(AGGREGATION_SETTING_DEFAULTS).toEqual({
+        offset: 1,
+        buckets: 4,
+        percentile: 0.9,
+        separator: ', ',
+      });
       expect(Object.isFrozen(AGGREGATION_SETTING_DEFAULTS)).toBe(true);
     },
   );
@@ -1065,4 +1119,259 @@ describe('Window function validation', () => {
       ['Aggregation column "NOPE" is not present in the input schema.'],
     ]);
   });
+});
+
+describe('Median, Percentile, Std Dev, Variance and Join Text', () => {
+  test(
+    unitTest(
+      'Lists them in the order a Group offers them, each nullable, two taking a setting',
+    ),
+    () => {
+      expect(SUMMARY_AGGREGATION_FUNCTIONS).toEqual([
+        MEDIAN,
+        PERCENTILE,
+        STD_DEV,
+        VARIANCE,
+        JOIN_TEXT,
+      ]);
+      expect(Object.isFrozen(SUMMARY_AGGREGATION_FUNCTIONS)).toBe(true);
+      SUMMARY_AGGREGATION_FUNCTIONS.forEach((fn) => {
+        expect(takesAggregationColumn(fn)).toBe(true);
+        expect(isAggregationNullable(fn)).toBe(true);
+        expect(needsWindowSort(fn)).toBe(false);
+      });
+      expect(
+        SUMMARY_AGGREGATION_FUNCTIONS.map((fn) => getAggregationSetting(fn)),
+      ).toEqual([
+        undefined,
+        AggregationSetting.PERCENTILE,
+        undefined,
+        undefined,
+        AggregationSetting.SEPARATOR,
+      ]);
+    },
+  );
+
+  test(
+    unitTest(
+      'Knows Std Dev and Variance in a window, and Median, Percentile and Join Text only in a Group',
+    ),
+    () => {
+      SUMMARY_AGGREGATION_FUNCTIONS.forEach((fn) =>
+        expect(isAggregationFunctionOf(fn, GROUP_AGGREGATION_USE)).toBe(true),
+      );
+      [STD_DEV, VARIANCE].forEach((fn) => {
+        expect(isAggregationFunctionOf(fn, SORTED_WINDOW)).toBe(true);
+        expect(isAggregationFunctionOf(fn, UNSORTED_WINDOW)).toBe(true);
+      });
+      GROUP_ONLY.forEach((fn) => {
+        expect(isAggregationFunctionOf(fn, SORTED_WINDOW)).toBe(false);
+        expect(isAggregationFunctionOf(fn, UNSORTED_WINDOW)).toBe(false);
+        expect(getAggregationAutoName(fn, 'ID', SORTED_WINDOW)).toBeUndefined();
+      });
+    },
+  );
+
+  test(
+    unitTest(
+      'Names a Percentile after its percent, so quartiles of a column differ, and the others as shown',
+    ),
+    () => {
+      expect(getAggregationAutoName(MEDIAN, 'FREIGHT')).toBe('FREIGHT Median');
+      expect(getAggregationAutoName(STD_DEV, 'FREIGHT')).toBe(
+        'FREIGHT Std Dev',
+      );
+      expect(getAggregationAutoName(VARIANCE, 'FREIGHT', SORTED_WINDOW)).toBe(
+        'FREIGHT Variance',
+      );
+      expect(getAggregationAutoName(JOIN_TEXT, 'SHIP_CITY')).toBe(
+        'SHIP_CITY Join Text',
+      );
+      expect(
+        [0.25, 0.5, 0.75, 0.9, 0.125, 0, 1].map((percentile) =>
+          getAggregationAutoName(PERCENTILE, 'FREIGHT', GROUP_AGGREGATION_USE, {
+            percentile,
+          }),
+        ),
+      ).toEqual([
+        'FREIGHT P25',
+        'FREIGHT P50',
+        'FREIGHT P75',
+        'FREIGHT P90',
+        'FREIGHT P12.5',
+        'FREIGHT P0',
+        'FREIGHT P100',
+      ]);
+      // with no percentile yet, as shown
+      expect(getAggregationAutoName(PERCENTILE, 'FREIGHT')).toBe(
+        'FREIGHT Percentile',
+      );
+      // a setting changes no other function's name
+      expect(
+        getAggregationAutoName(MEDIAN, 'FREIGHT', GROUP_AGGREGATION_USE, {
+          percentile: 0.9,
+        }),
+      ).toBe('FREIGHT Median');
+    },
+  );
+
+  test(
+    unitTest(
+      'Shows a percentile as a percent and reads one back by moving the decimal point, never rounding',
+    ),
+    () => {
+      expect(
+        [0.9, 0.125, 1, 0, 0.29, 0.333, 0.07, 1e-7, 1.5, -0.1].map(
+          getPercentileText,
+        ),
+      ).toEqual([
+        '90',
+        '12.5',
+        '100',
+        '0',
+        // 0.29 * 100 is 28.999999999999996
+        '29',
+        '33.3',
+        '7',
+        '0.00001',
+        '150',
+        '-10',
+      ]);
+      expect(
+        ['90', ' 12.5 ', '100', '0', '29', '33.3', '7', '.5', '5.', '-10'].map(
+          parsePercentileText,
+        ),
+      ).toEqual([0.9, 0.125, 1, 0, 0.29, 0.333, 0.07, 0.005, 0.05, -0.1]);
+      // 33.3 / 100 is 0.33299999999999996
+      expect(parsePercentileText('33.3')).not.toBe(33.3 / 100);
+      ['', ' ', 'abc', '1e1', '0x10', '9 0', '.', '-', '90%'].forEach((text) =>
+        expect(parsePercentileText(text)).toBeUndefined(),
+      );
+    },
+  );
+
+  test(
+    unitTest(
+      'Keeps the settings an aggregation holds, and leaves out those it leaves undefined',
+    ),
+    () => {
+      expect(
+        getAggregationSettings({
+          offset: undefined,
+          percentile: 0.9,
+          separator: '',
+        }),
+      ).toStrictEqual({ percentile: 0.9, separator: '' });
+      expect(getAggregationSettings({})).toStrictEqual({});
+    },
+  );
+
+  test(
+    unitTest(
+      'Accepts each on a column that offers it: a percentile from 0 to 1, a separator of any text with no backslash',
+    ),
+    () => {
+      expect(
+        errorsOf([
+          agg(MEDIAN, 'ID', 'a'),
+          { ...agg(PERCENTILE, 'AMOUNT', 'b'), percentile: 0 },
+          { ...agg(PERCENTILE, 'AMOUNT', 'c'), percentile: 1 },
+          { ...agg(PERCENTILE, 'ID', 'd'), percentile: 0.9 },
+          agg(STD_DEV, 'AMOUNT', 'e'),
+          agg(VARIANCE, 'ID', 'f'),
+          { ...agg(JOIN_TEXT, 'NAME', 'g'), separator: ', ' },
+          { ...agg(JOIN_TEXT, 'NAME', 'h'), separator: '' },
+          { ...agg(JOIN_TEXT, 'NAME', 'i'), separator: " ' | / " },
+        ]),
+      ).toEqual([[], [], [], [], [], [], [], [], []]);
+    },
+  );
+
+  test.each<[string, ColumnAggregation, string]>([
+    [
+      'a Percentile with no percentile',
+      agg(PERCENTILE, 'ID', 'x'),
+      'Aggregation function "Percentile" needs a percentile from 0 to 100.',
+    ],
+    [
+      'a percentile over 1, which the engine plans and the database refuses',
+      { ...agg(PERCENTILE, 'ID', 'x'), percentile: 1.5 },
+      'Aggregation function "Percentile" needs a percentile from 0 to 100.',
+    ],
+    [
+      'a percentile under 0',
+      { ...agg(PERCENTILE, 'ID', 'x'), percentile: -0.1 },
+      'Aggregation function "Percentile" needs a percentile from 0 to 100.',
+    ],
+    [
+      'a Join Text with no separator',
+      agg(JOIN_TEXT, 'NAME', 'x'),
+      'Aggregation function "JoinText" needs a separator with no backslash.',
+    ],
+    [
+      'a separator with a backslash, which Databricks and SingleStore would drop',
+      { ...agg(JOIN_TEXT, 'NAME', 'x'), separator: 'a\\b' },
+      'Aggregation function "JoinText" needs a separator with no backslash.',
+    ],
+    [
+      "another function's setting",
+      { ...agg(JOIN_TEXT, 'NAME', 'x'), separator: ',', percentile: 0.5 },
+      'Aggregation function "JoinText" does not take a percentile.',
+    ],
+    [
+      'a setting on a function that takes none',
+      { ...agg(MEDIAN, 'ID', 'x'), separator: ',' },
+      'Aggregation function "Median" does not take a separator.',
+    ],
+    [
+      'Join Text of a number',
+      { ...agg(JOIN_TEXT, 'ID', 'x'), separator: ',' },
+      'Aggregation function "JoinText" is incompatible with column "ID".',
+    ],
+    [
+      'Median of a text',
+      agg(MEDIAN, 'NAME', 'x'),
+      'Aggregation function "Median" is incompatible with column "NAME".',
+    ],
+    [
+      'Std Dev of a date',
+      agg(STD_DEV, 'DT', 'x'),
+      'Aggregation function "StdDev" is incompatible with column "DT".',
+    ],
+    [
+      'Variance of an enumeration',
+      agg(VARIANCE, 'REGION', 'x'),
+      'Aggregation function "Variance" is incompatible with column "REGION".',
+    ],
+  ])(unitTest('Reports %s'), (_, aggregation, message) => {
+    expect(errorsOf([aggregation])).toEqual([[message]]);
+  });
+
+  test(
+    unitTest(
+      'Checks Std Dev and Variance in a window, sorted or not, and reports Median, Percentile and Join Text there as unknown',
+    ),
+    () => {
+      [SORTED_WINDOW, UNSORTED_WINDOW].forEach((use) =>
+        expect(
+          errorsOf(
+            [
+              agg(STD_DEV, 'AMOUNT', 'a'),
+              agg(VARIANCE, 'ID', 'b'),
+              agg(MEDIAN, 'ID', 'c'),
+              { ...agg(PERCENTILE, 'ID', 'd'), percentile: 0.5 },
+              { ...agg(JOIN_TEXT, 'NAME', 'e'), separator: ',' },
+            ],
+            use,
+          ),
+        ).toEqual([
+          [],
+          [],
+          ['Aggregation function "Median" is unknown.'],
+          ['Aggregation function "Percentile" is unknown.'],
+          ['Aggregation function "JoinText" is unknown.'],
+        ]),
+      );
+    },
+  );
 });
