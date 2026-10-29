@@ -299,7 +299,8 @@ drop and a rename.
   describe large workflows as "spaghetti" 🔎.
 - **In legend-lite 📄:** Tidy Up puts each box one column after the furthest box it reads, so every input lands in the
   first column (`flow.ts`, `arranged`). A container is a frame drawn behind its boxes, with a title, a fold and a close
-  button, and a box belongs to it when its place is inside the frame (`Frame`, `framedBy`).
+  button, and Ctrl+G wraps the selected boxes in one. A box belongs to it when its place is inside the frame (`Frame`,
+  `framedBy`).
 - **In Cube today 📄:** each step shows its settings as its label, which covers Alteryx's annotations
   ([CubeCanvasElements.ts:175-181](../../../packages/legend-cube-builder/src/components/canvas/CubeCanvasElements.ts#L175)).
   The layout is dagre's, recomputed from the query on every edit, with no positions saved
@@ -552,8 +553,8 @@ the source of each claim, the list of claims seen only in search summaries, and 
 - finos/legend-studio#5679: M8, saved cubes (PLAN §11.13).
 - legend-lite's flow mode: [neema2/legend-lite#75](https://github.com/neema2/legend-lite/pull/75),
   [#76](https://github.com/neema2/legend-lite/pull/76) and [#79](https://github.com/neema2/legend-lite/pull/79), merged
-  2026-10-26 to 2026-10-29. Its design note (`DATACUBE_FLOW_MODE_2026_10_24.md`) and `flow.ts` are copied in the local
-  evidence folder, under `alteryx/reports/legend-lite/`.
+  2026-10-26 to 2026-10-29. Its design note (`docs/DATACUBE_FLOW_MODE_2026_10_24.md`) and `flow.ts` are copied in the
+  local evidence folder, under `alteryx/reports/legend-lite/`.
 - legend-engine `3aeb3f0f7f` (2026-10-23): the relation functions under
   `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources/core_functions_relation/relation/functions/`.
 - The study's report, a page private to the user, and its local copy (`alteryx/alteryx-ideas-for-cube.html` in the
