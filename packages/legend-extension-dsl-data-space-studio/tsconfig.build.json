@@ -16,6 +16,7 @@
     { "path": "../legend-server-depot/tsconfig.build.json" },
     { "path": "../legend-server-sdlc/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
-    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" }
+    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" }
   ]
 }

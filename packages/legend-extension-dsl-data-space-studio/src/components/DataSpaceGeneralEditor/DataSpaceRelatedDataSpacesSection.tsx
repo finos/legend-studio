@@ -14,88 +14,97 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '@finos/legend-application-studio';
-import { ListEditor, CustomSelectorInput } from '@finos/legend-art';
+import {
+  EditorFormSection,
+  useEditorStore,
+} from '@finos/legend-application-studio';
+import { CustomSelectorInput, PlusIcon, TimesIcon } from '@finos/legend-art';
 import { type ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import { observer } from 'mobx-react-lite';
-import {
-  DataSpaceEditorState,
-  type RelatedDataSpaceRow,
-} from '../../stores/DataSpaceEditorState.js';
+import { useState } from 'react';
+import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 
 export const DataSpaceRelatedDataSpacesSection = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = editorStore.applicationStore;
   const darkMode =
     !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
+  const isReadOnly = dataSpaceState.isReadOnly;
+  const rows = dataSpaceState.relatedDataSpaceRows;
+  const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddRelatedDataSpace = (option: {
-    label: string;
-    value: ResolvedDataSpaceEntityWithOrigin;
-  }): void => {
-    dataSpaceState.addRelatedDataSpace(option.value);
-  };
-
-  const handleRemoveRelatedDataSpace = (row: RelatedDataSpaceRow): void => {
-    dataSpaceState.removeRelatedDataSpaceRow(row);
-  };
-
-  const RelatedDataSpaceComponent = observer(
-    (props: { item: RelatedDataSpaceRow }): React.ReactElement => {
-      const { item } = props;
-
-      return (
-        <div className="panel__content__form__section__list__item__content">
-          <div className="panel__content__form__section__list__item__content__label">
-            {item.label}
-          </div>
+  return (
+    <EditorFormSection
+      title="Related data spaces"
+      description="Other data spaces people may want, listed under Related Data Spaces."
+    >
+      {rows.length ? (
+        <div className="dataSpace-editor-table dataSpace-editor-table--related">
+          {rows.map((row) => (
+            <div key={row.id} className="dataSpace-editor-table__row">
+              <div className="dataSpace-editor-table__element">
+                <span className="dataSpace-editor-table__element__name">
+                  {row.label}
+                </span>
+              </div>
+              <button
+                className="dataSpace-editor-table__remove-btn"
+                disabled={isReadOnly}
+                onClick={(): void =>
+                  dataSpaceState.removeRelatedDataSpaceRow(row)
+                }
+                title="Remove this related data space"
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          ))}
         </div>
-      );
-    },
-  );
-
-  const NewRelatedDataSpaceComponent = observer(
-    (props: { onFinishEditing: () => void }) => {
-      const { onFinishEditing } = props;
-
-      return (
-        <div className="panel__content__form__section__list__new-item__input">
+      ) : (
+        <div className="dataSpace-editor-table__empty">
+          No related data spaces.
+        </div>
+      )}
+      {isAdding ? (
+        <div className="dataSpace-editor-add-picker">
           <CustomSelectorInput
             options={dataSpaceState.getRelatedDataSpaceOptions()}
             onChange={(option: {
               label: string;
               value: ResolvedDataSpaceEntityWithOrigin;
-            }) => {
-              onFinishEditing();
-              handleAddRelatedDataSpace(option);
+            }): void => {
+              dataSpaceState.addRelatedDataSpace(option.value);
+              setIsAdding(false);
             }}
             placeholder={
               dataSpaceState.loadRelatedDataSpacesState.isInProgress
-                ? 'Loading Data Spaces...'
-                : 'Select a Data Space to add...'
+                ? 'Loading data spaces...'
+                : 'Choose a data space to add...'
             }
             isLoading={dataSpaceState.loadRelatedDataSpacesState.isInProgress}
             darkMode={darkMode}
+            autoFocus={true}
+            openMenuOnFocus={true}
           />
+          <button
+            className="dataSpace-editor-add-picker__cancel"
+            onClick={(): void => setIsAdding(false)}
+          >
+            Cancel
+          </button>
         </div>
-      );
-    },
-  );
-
-  return (
-    <ListEditor
-      title="Related Data Spaces"
-      prompt="Add Data Spaces to display under Related Data Spaces."
-      items={dataSpaceState.relatedDataSpaceRows}
-      keySelector={(row: RelatedDataSpaceRow) => row.id}
-      ItemComponent={RelatedDataSpaceComponent}
-      NewItemComponent={NewRelatedDataSpaceComponent}
-      handleRemoveItem={handleRemoveRelatedDataSpace}
-      isReadOnly={dataSpaceState.isReadOnly}
-      emptyMessage="No related Data Spaces specified"
-    />
+      ) : (
+        <button
+          className="dataSpace-editor-add-btn"
+          disabled={isReadOnly}
+          onClick={(): void => setIsAdding(true)}
+        >
+          <PlusIcon />
+          Add related data space
+        </button>
+      )}
+    </EditorFormSection>
   );
 });

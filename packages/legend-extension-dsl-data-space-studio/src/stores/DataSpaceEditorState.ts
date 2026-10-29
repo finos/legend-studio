@@ -112,10 +112,9 @@ export class DataSpaceEditorState extends ElementEditorState {
       availableRelatedDataSpaces: observable,
       dataSpace: computed,
       relatedDataSpaceTaggedValues: computed,
-      isVerified: computed,
-      isInDevelopment: computed,
-      isExternal: computed,
-      deprecationNotice: computed,
+      // NOTE: the statuses (verified, in development, external, deprecation notice) are plain
+      // getters, not computed: the editor's header stays mounted across tabs, and a computed
+      // first read before the graph is observed would keep its stale value
       reprocess: action,
       isValidDataSpaceElement: action,
       getDataSpaceElementOptions: action,

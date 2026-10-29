@@ -26,11 +26,23 @@ import { DataSpaceHomeTab } from './DataSpaceHomeTab.js';
 import { DataSpaceExecutionContextEditor } from '../DataSpaceExecutionContextEditor.js';
 import { DataspaceExecutablesSection } from './DataSpaceExecutablesSection.js';
 import { DataSpaceInfoTab } from './DataSpaceInfoTab.js';
+import {
+  dataSpaceNeedsExecutionContextOrExecutable,
+  hasExecutionContextValidationError,
+} from './DataSpaceValidation.js';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
+  const dataSpace = dataSpaceState.dataSpace;
+  const executionContexts = dataSpace.executionContexts ?? [];
+  const tabsWithIssues = [
+    dataSpaceNeedsExecutionContextOrExecutable(dataSpace) &&
+      DATA_SPACE_TAB.HOME,
+    executionContexts.some(hasExecutionContextValidationError) &&
+      DATA_SPACE_TAB.EXECUTION_CONTEXTS,
+  ].filter((tab): tab is DATA_SPACE_TAB => Boolean(tab));
 
   const renderTab = (): React.ReactNode => {
     switch (dataSpaceState.selectedTab) {
@@ -51,6 +63,11 @@ export const DataSpaceGeneralEditor = observer(() => {
       <DataSpaceSidebar
         selectedTab={dataSpaceState.selectedTab}
         setSelectedTab={(tab): void => dataSpaceState.setSelectedTab(tab)}
+        counts={{
+          [DATA_SPACE_TAB.EXECUTION_CONTEXTS]: executionContexts.length,
+          [DATA_SPACE_TAB.EXECUTABLES]: dataSpace.executables?.length ?? 0,
+        }}
+        tabsWithIssues={tabsWithIssues}
       />
       <div className="dataSpace-editor__general__content">{renderTab()}</div>
     </PanelContentLists>
