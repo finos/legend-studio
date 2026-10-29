@@ -286,6 +286,98 @@
     }
   }
 
+  // The project, then the workspace, to copy from another project
+  &__other-project {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.2rem;
+    padding: 0 1rem 1rem;
+
+    &__field {
+      flex: 1 1 26rem;
+      min-width: 0;
+    }
+  }
+
+  // The dependencies of the other project that the project lacks, or has at
+  // another version
+  &__copy-dependencies {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 0 1rem 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--color-status-warn-bg);
+    border: 0.1rem solid var(--color-status-warn);
+    font-size: 1.3rem;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+
+    &__message {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    &__icon {
+      flex: 0 0 auto;
+      margin-top: 0.2rem;
+      color: var(--color-status-warn);
+    }
+
+    &__list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding-left: 2.2rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+      overflow-wrap: anywhere;
+      color: var(--color-text-secondary);
+    }
+
+    &__toggle {
+      @include flexVCenter;
+
+      align-self: flex-start;
+      gap: 0.8rem;
+      margin-left: 2.2rem;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 1.3rem;
+      text-align: left;
+      color: var(--color-text-primary);
+      cursor: pointer;
+
+      &__box {
+        @include flexCenter;
+
+        svg {
+          font-size: 1.6rem;
+          color: var(--color-text-disabled);
+        }
+      }
+
+      &[aria-checked='true'] &__box svg {
+        color: var(--color-accent);
+      }
+
+      &:hover:not([disabled]) &__box svg {
+        color: var(--color-accent-hover);
+      }
+
+      &[disabled] {
+        cursor: not-allowed;
+        color: var(--color-text-muted);
+      }
+
+      &[disabled] &__box svg {
+        color: var(--color-text-disabled);
+      }
+    }
+  }
+
   &__action + &__action {
     margin-left: 0.8rem;
   }
@@ -301,6 +393,13 @@
 
     .selector-input__group + .selector-input__group,
     .selector-input--dark__group + .selector-input--dark__group {
+      border-top: 0.1rem solid var(--color-border-default);
+    }
+
+    // A workspace in another project, after the groups
+    .selector-input__group + .selector-input__option,
+    .selector-input--dark__group + .selector-input--dark__option {
+      margin-top: 0.4rem;
       border-top: 0.1rem solid var(--color-border-default);
     }
   }
