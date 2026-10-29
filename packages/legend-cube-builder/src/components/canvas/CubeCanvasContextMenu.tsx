@@ -94,6 +94,17 @@ export const CubeCanvasContextMenu = observer(
           Duplicate
         </MenuContentItem>
         <MenuContentItem
+          title="Frame this step and the steps before it in a container, which can be folded to one box"
+          disabled={
+            nodeId === undefined || !editorState.canAddContainer(nodeId)
+          }
+          onClick={finishing(
+            () => nodeId !== undefined && editorState.addContainer(nodeId),
+          )}
+        >
+          Put in a Container
+        </MenuContentItem>
+        <MenuContentItem
           disabled={nodeId === undefined || !editorState.canRemoveNode(nodeId)}
           onClick={finishing(
             () => nodeId !== undefined && editorState.removeNode(nodeId),

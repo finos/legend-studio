@@ -22,6 +22,8 @@ export enum LEGEND_CUBE_TEST_ID {
   CANVAS = 'legend-cube__canvas',
   CANVAS_NODE = 'legend-cube__canvas-node',
   CANVAS_EDGE_LABEL = 'legend-cube__canvas-edge-label',
+  CANVAS_CONTAINER = 'legend-cube__canvas-container',
+  CANVAS_FOLDED_CONTAINER = 'legend-cube__canvas-folded-container',
   PALETTE = 'legend-cube__palette',
   PALETTE_ITEM = 'legend-cube__palette-item',
   NODE_EDITOR = 'legend-cube__node-editor',

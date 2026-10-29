@@ -48,6 +48,12 @@ import {
   DataSpaceSource,
   Join,
   SourceNode,
+  generateStepContainerId,
+  getShownContainers,
+  getStepsForNewContainer,
+  pruneStepContainers,
+  type ShownStepContainer,
+  type StepContainer,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -364,6 +370,11 @@ export class CubeEditorState implements CommandRegistrar {
       pasteNode: action,
       duplicateNode: action,
       swapInputs: action,
+      shownContainers: computed,
+      addContainer: action,
+      setContainerFolded: action,
+      renameContainer: action,
+      removeContainer: action,
       setShowGraph: action,
       setPaletteCollapsed: action,
       setHostIssue: action,
@@ -1004,13 +1015,22 @@ export class CubeEditorState implements CommandRegistrar {
     return this.redoStack.length > 0;
   }
 
-  /** The one way to change the cube; the document before goes to the undo history */
+  /**
+   * The one way to change the cube; the document before goes to the undo
+   * history. A step removed leaves no container (PLAN §11.28): a new step
+   * of its id must not join it.
+   */
   applyDocument(next: CubeDocument): void {
     if (next === this.document) {
       return;
     }
     this.pushHistory();
-    this.replaceDocument(next);
+    const containers = pruneStepContainers(next.meta.containers, next.query);
+    this.replaceDocument(
+      containers === next.meta.containers
+        ? next
+        : next.withMeta({ ...next.meta, containers }),
+    );
   }
 
   /**
@@ -1931,6 +1951,91 @@ export class CubeEditorState implements CommandRegistrar {
   swapInputs(nodeId: string): void {
     if (this.canSwapInputs(nodeId)) {
       this.applyQuery(this.document.query.swapInputs(nodeId));
+    }
+  }
+
+  /** The containers the canvas draws (PLAN §11.28) */
+  get shownContainers(): ShownStepContainer[] {
+    return getShownContainers(
+      this.document.query,
+      this.document.meta.containers,
+    );
+  }
+
+  private applyContainers(containers: readonly StepContainer[]): void {
+    this.applyDocument(
+      this.document.withMeta({ ...this.document.meta, containers }),
+    );
+  }
+
+  canAddContainer(stepId: string): boolean {
+    return (
+      !this.readOnly &&
+      getStepsForNewContainer(this.document.query, this.shownContainers, stepId)
+        .length > 0
+    );
+  }
+
+  /**
+   * A new container of the step and the steps before it in no container
+   * (`getStepsForNewContainer`); one undo step
+   */
+  addContainer(stepId: string): void {
+    if (!this.canAddContainer(stepId)) {
+      return;
+    }
+    const containers = this.document.meta.containers ?? [];
+    const id = generateStepContainerId(containers);
+    this.applyContainers([
+      ...containers,
+      {
+        id,
+        title: `Container ${id.slice('container'.length)}`,
+        steps: getStepsForNewContainer(
+          this.document.query,
+          this.shownContainers,
+          stepId,
+        ),
+        folded: false,
+      },
+    ]);
+  }
+
+  private updateContainer(
+    containerId: string,
+    update: (container: StepContainer) => StepContainer,
+  ): void {
+    const containers = this.document.meta.containers ?? [];
+    const updated = containers.map((container) =>
+      container.id === containerId ? update(container) : container,
+    );
+    // an update that changes nothing takes no undo step
+    if (
+      !this.readOnly &&
+      updated.some((container, index) => container !== containers[index])
+    ) {
+      this.applyContainers(updated);
+    }
+  }
+
+  /** Folds a container to one box, or opens it: saved, one undo step, as showing the graph is */
+  setContainerFolded(containerId: string, folded: boolean): void {
+    this.updateContainer(containerId, (container) =>
+      container.folded === folded ? container : { ...container, folded },
+    );
+  }
+
+  renameContainer(containerId: string, title: string): void {
+    this.updateContainer(containerId, (container) =>
+      container.title === title ? container : { ...container, title },
+    );
+  }
+
+  /** Takes a container away; its steps stay, as they were */
+  removeContainer(containerId: string): void {
+    const containers = this.document.meta.containers ?? [];
+    if (!this.readOnly && containers.some(({ id }) => id === containerId)) {
+      this.applyContainers(containers.filter(({ id }) => id !== containerId));
     }
   }
 
