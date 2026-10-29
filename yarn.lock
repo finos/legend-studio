@@ -3743,7 +3743,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
-    fastify: "npm:5.12.5"
+    fastify: "npm:5.12.6"
     nodemon: "npm:3.1.9"
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:6.0.1"
@@ -3978,7 +3978,7 @@ __metadata:
     "@jest/globals": "npm:29.7.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
-    fastify: "npm:5.12.5"
+    fastify: "npm:5.12.6"
     jest: "npm:29.7.0"
     nodemon: "npm:3.1.9"
     npm-run-all: "npm:4.1.5"
@@ -3999,7 +3999,7 @@ __metadata:
     "@jest/globals": "npm:29.7.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"
-    fastify: "npm:5.12.5"
+    fastify: "npm:5.12.6"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.6"
     npm-run-all: "npm:4.1.5"
@@ -11629,9 +11629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:5.12.5":
-  version: 5.12.5
-  resolution: "fastify@npm:5.12.5"
+"fastify@npm:5.12.6":
+  version: 5.12.6
+  resolution: "fastify@npm:5.12.6"
   dependencies:
     "@fastify/ajv-compiler": "npm:^4.0.5"
     "@fastify/error": "npm:^4.0.0"
@@ -11648,7 +11648,7 @@ __metadata:
     secure-json-parse: "npm:^4.0.0"
     semver: "npm:^7.6.0"
     toad-cache: "npm:^3.7.0"
-  checksum: 10/282ec56b8bc153b9b0048409ebd060fc20372284589aaac35e5f2b45f0f84a85bd1b5199caed10cbc7cfc7b5cf406d3188c544f3e3f5f59c602eed2c37b645b9
+  checksum: 10/57671601b66ae25eb631688dfebd707f08d28c17fcb86f1576a769400ad1697200621ea8ea7198dac589610aab91f29b6f60684fe599a29af59505cfc8564903
   languageName: node
   linkType: hard
 
