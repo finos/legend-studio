@@ -1620,6 +1620,64 @@ describe('LegendStudioTelemetryHelper - workspace setup actions', () => {
     });
   });
 
+  test('logEvent_SetupActionFailure (create-workspace) carries the copy flag and the copied element count', () => {
+    const { service, calls } = buildTelemetryStub();
+
+    LegendStudioTelemetryHelper.logEvent_SetupActionFailure(service, {
+      action: SETUP_ACTION.CREATE_WORKSPACE,
+      projectId: 'PROJ-1',
+      workspaceType: 'GROUP',
+      hasPatchReleaseVersion: false,
+      copiesWorkspace: true,
+      copiedElementCount: 12,
+      errorMessage: 'could not perform entity changes',
+    });
+
+    const call = guaranteeNonNullable(calls[0]);
+    expect(call.event).toBe(LEGEND_STUDIO_APP_EVENT.SETUP_ACTION__FAILURE);
+    expect(call.data).toEqual({
+      sourceInfo: undefined,
+      action: 'create-workspace',
+      projectId: 'PROJ-1',
+      workspaceType: 'GROUP',
+      hasPatchReleaseVersion: false,
+      copiesWorkspace: true,
+      copiedElementCount: 12,
+      errorMessage: 'could not perform entity changes',
+    });
+  });
+
+  test('logEvent_SetupActionSucceeded (create-workspace) carries the copy from another project and the dependencies it adds', () => {
+    const { service, calls } = buildTelemetryStub();
+
+    LegendStudioTelemetryHelper.logEvent_SetupActionSucceeded(service, {
+      action: SETUP_ACTION.CREATE_WORKSPACE,
+      projectId: 'PROJ-1',
+      workspaceType: 'GROUP',
+      hasPatchReleaseVersion: false,
+      copiesWorkspace: true,
+      copiedElementCount: 31,
+      copiesFromOtherProject: true,
+      addedDependencyCount: 2,
+      durationMs: 840,
+    });
+
+    const call = guaranteeNonNullable(calls[0]);
+    expect(call.event).toBe(LEGEND_STUDIO_APP_EVENT.SETUP_ACTION__SUCCESS);
+    expect(call.data).toEqual({
+      sourceInfo: undefined,
+      action: 'create-workspace',
+      projectId: 'PROJ-1',
+      workspaceType: 'GROUP',
+      hasPatchReleaseVersion: false,
+      copiesWorkspace: true,
+      copiedElementCount: 31,
+      copiesFromOtherProject: true,
+      addedDependencyCount: 2,
+      durationMs: 840,
+    });
+  });
+
   test('logEvent_SetupActionSucceeded (import-project) carries projectId and durationMs', () => {
     const { service, calls } = buildTelemetryStub();
 
