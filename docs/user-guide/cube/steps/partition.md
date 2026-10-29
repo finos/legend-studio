@@ -11,7 +11,7 @@ Here it ranks each country's sales by amount, largest first. The cube runs on th
 
 [![The Apply Window Functions editor, its inputs numbered](../images/steps/partition.png)](../images/steps/partition.png)
 
-1. **A window function** and its new column's name: Count, Distinct Count, Distinct Value, Sum, Average, Min, Max, Lag, Lead, First, Last, Count Rows, Rank, Dense Rank, Row Number, NTile, Percent Rank or Cumulative Distribution.
+1. **A window function** and its new column's name: Count, Distinct Count, Distinct Value, Sum, Average, Min, Max, Std Dev, Variance, Lag, Lead, First, Last, Count Rows, Rank, Dense Rank, Row Number, NTile, Percent Rank or Cumulative Distribution. Median, Percentile and Join Text are only in Group by Column.
 2. **Add window function**.
 3. **Partition columns**: each combination of their values is a window. With none, every row is in one window.
 4. **Sort columns**: the order of the rows in each window.

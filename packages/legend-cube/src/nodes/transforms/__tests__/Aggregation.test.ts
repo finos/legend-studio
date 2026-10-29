@@ -1309,7 +1309,7 @@ describe('Median, Percentile, Std Dev, Variance and Join Text', () => {
       'Aggregation function "JoinText" needs a separator with no backslash.',
     ],
     [
-      'a separator with a backslash, which Databricks and SingleStore would drop',
+      'a separator with a backslash, which Snowflake, Databricks and SingleStore would read as an escape',
       { ...agg(JOIN_TEXT, 'NAME', 'x'), separator: 'a\\b' },
       'Aggregation function "JoinText" needs a separator with no backslash.',
     ],

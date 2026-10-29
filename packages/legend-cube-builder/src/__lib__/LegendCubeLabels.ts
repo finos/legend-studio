@@ -318,10 +318,14 @@ export const getConcatUntypedWarning = (columns: readonly string[]): string =>
 /** Why the Group editor can't take a column as a key (PLAN §11.5) */
 export const CUBE_GROUP_COLUMN_DISABLED_REASON = "can't be grouped";
 
-/** What the Group editor says about its aggregations (PLAN §11.5; Count counts non-empty values, D4) */
+/** What the Group editor says about its aggregations (PLAN §11.5, §11.28; Count counts non-empty values, D4) */
 export const GROUP_EDITOR_NOTES = [
   'Count counts the values that are not empty; Count Rows counts every row.',
   'Distinct Value is the value when the group has exactly one distinct value that is not empty, and empty otherwise.',
+  'Median and Percentile interpolate between the two nearest values. Percentile takes a percent from 0 to 100: 90 gives the value 90% of the way through the sorted values.',
+  'Std Dev and Variance are the sample ones, which divide by one less than the number of values: a group with one value gives empty.',
+  'Join Text joins the texts that are not empty, with the separator between them, in no set order. A group with none gives an empty text on Snowflake and Databricks, and empty on other databases.',
+  "Some databases, such as SQL Server, Trino and ClickHouse, can't run Join Text, nor Hive Std Dev; ClickHouse estimates Median and Percentile.",
   'With no group column, the result is one row, even when there are no rows.',
 ];
 
@@ -351,6 +355,7 @@ export const PIVOT_EDITOR_NOTES = [
   'Each picked value becomes a column, named by the value, holding the aggregation of its rows; each combination of the row columns with a picked value becomes a row. Values not picked, and combinations holding only them, are left out.',
   "Load values lists the pivot column's values, each once, up to 100. An empty value can't be pivoted, nor one that can't name a column; of two values that differ only in case, one can be ticked, as some databases would mix up their columns.",
   "Pivot runs on Snowflake, Databricks, SingleStore and DuckDB; other databases, such as H2 and Postgres, can't run it.",
+  "Median, Percentile, Std Dev, Variance and Join Text are only in Group by Column: Snowflake's pivot takes Count, Sum, Average, Min and Max.",
 ] as const;
 
 /** Why the Explode Array editor won't pick a column (PLAN §11.20) */
@@ -414,7 +419,7 @@ export const getPartitionNoColumnText = (fn: string): string =>
 
 /** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3; §11.9) */
 export const PARTITION_EDITOR_NOTES = [
-  'With sort columns, the aggregations (Count to Max, and Count Rows) run from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
+  'With sort columns, the aggregations (Count to Variance, and Count Rows) run from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
   "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",
   'NTile, Percent Rank and Cumulative Distribution need a sort column too. NTile splits each partition into buckets of near-equal size, numbered from 1 in the sort order; Percent Rank and Cumulative Distribution give each row its place in its partition, from 0 to 1.',
   "Lag and Lead read a column from the row so many rows before or after in the sort order, and are empty at the partition's edges. First and Last read it from the partition's first and last rows, the same on every row. They need a sort column, and rows tied on it may give any of them.",
@@ -424,6 +429,7 @@ export const PARTITION_EDITOR_NOTES = [
   "A Sort before this node doesn't order the window: its sort columns do. The rows keep the order they came in.",
   'Count counts the values that are not empty; Count Rows counts every row.',
   'Some databases, such as Postgres, SQL Server, Databricks and Trino, refuse Distinct Count and Distinct Value in a window.',
+  'Median, Percentile and Join Text are only in Group by Column: Snowflake refuses them in a window with sort columns.',
 ];
 
 /** Why a column of the Left input can't be a difference column (PLAN §11.7) */

@@ -16,8 +16,11 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  aggregationColSpec,
   buildSchemasAndValidity,
   colSpec,
+  colSpecArray,
   collection,
   ColumnComparisonFilter,
   columnAccess,
@@ -33,6 +36,7 @@ import {
   func,
   genericType,
   getExtendSignature,
+  type Group,
   isSameCubeIR,
   lambda,
   literal,
@@ -46,6 +50,7 @@ import {
   Sort,
   splitCubeLambda,
   storeAccessor,
+  variable,
   type CubeDocument,
   type CubeSourceStep,
   type IR,
@@ -374,5 +379,100 @@ describe('Reading the steps of a lambda', () => {
         },
       ),
     ).toThrow(CUBE_QUERY_READER_MESSAGE.NO_STEP('olapGroupBy'));
+  });
+  test("Reads PLAN §11.28's Group functions as Cube writes them, the setting a literal, and refuses their other forms", () => {
+    const sample = SAMPLES.find((each) =>
+      each.key.endsWith('operations.cube.json/relational101'),
+    ) as (typeof SAMPLES)[number];
+    const relation = (sample.relation as Extract<IR, { k: 'lambda' }>)
+      .body[0] as IR;
+    const read = (column: string, reduce: IR): QueryNode | undefined => {
+      const { query } = readCubeQuery(
+        splitCubeLambda(
+          lambda(
+            [],
+            [
+              func('groupBy', [
+                relation,
+                colSpecArray([colSpec('SHIP_COUNTRY')]),
+                colSpecArray([
+                  aggregationColSpec(
+                    'n',
+                    lambda(['x'], [columnAccess('x', column)]),
+                    lambda(['y'], [reduce]),
+                  ),
+                ]),
+              ]),
+            ],
+          ),
+        ),
+        {
+          bindSource: TEST__bindSampleSources(sample.document),
+          expressions: CUBE_EXPRESSION_CODEC,
+        },
+      );
+      return query.getNode(query.selected as string);
+    };
+    const y = variable('y');
+    const float = (value: string): IR => literal({ kind: 'float', value });
+    const text = (value: string): IR => literal({ kind: 'string', value });
+    expect(
+      (read('FREIGHT', func('percentile', [y, float('0.25')])) as Group)
+        .aggregations,
+    ).toEqual([
+      {
+        column: 'FREIGHT',
+        function: AggregationFunction.PERCENTILE,
+        name: 'n',
+        percentile: 0.25,
+      },
+    ]);
+    expect(
+      (read('SHIP_CITY', func('joinStrings', [y, text(' | ')])) as Group)
+        .aggregations,
+    ).toEqual([
+      {
+        column: 'SHIP_CITY',
+        function: AggregationFunction.JOIN_TEXT,
+        name: 'n',
+        separator: ' | ',
+      },
+    ]);
+    (
+      [
+        ['median', AggregationFunction.MEDIAN],
+        ['stdDevSample', AggregationFunction.STD_DEV],
+        ['varianceSample', AggregationFunction.VARIANCE],
+      ] as const
+    ).forEach(([name, fn]) =>
+      expect((read('FREIGHT', func(name, [y])) as Group).aggregations).toEqual([
+        { column: 'FREIGHT', function: fn, name: 'n' },
+      ]),
+    );
+    const refused = CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+      'groupBy',
+      CUBE_QUERY_READER_MESSAGE.AGGREGATION('n'),
+    );
+    [
+      // an Integer percentile doesn't type on the engine
+      func('percentile', [y, literal({ kind: 'integer', value: '1' })]),
+      // ascending and continuous, which Cube doesn't write
+      func('percentile', [
+        y,
+        float('0.9'),
+        literal({ kind: 'boolean', value: true }),
+        literal({ kind: 'boolean', value: false }),
+      ]),
+      func('percentile', [y, columnAccess('x', 'FREIGHT')]),
+      // the population ones, which Cube doesn't offer
+      func('stdDevPopulation', [y]),
+      func('variancePopulation', [y]),
+      func('median', [y, float('0.5')]),
+    ].forEach((reduce) =>
+      expect(() => read('FREIGHT', reduce)).toThrow(refused),
+    );
+    [func('joinStrings', [y]), func('joinStrings', [y, float('1.0')])].forEach(
+      (reduce) => expect(() => read('SHIP_CITY', reduce)).toThrow(refused),
+    );
   });
 });

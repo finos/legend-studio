@@ -606,8 +606,8 @@ export const getAggregationAutoName = (
  * Whether a setting's value is one its function can use: an offset or a
  * bucket count a whole number of at least 1, a percentile a fraction from 0
  * to 1 (the engine plans 1.5, which the database refuses), and a separator
- * any text with no backslash, which Databricks and SingleStore would drop
- * (PLAN §11.28)
+ * any text with no backslash, which the engine writes as it is and
+ * Snowflake, Databricks and SingleStore read as an escape (PLAN §11.28)
  */
 const isValidSetting = (
   setting: AggregationSetting,

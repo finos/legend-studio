@@ -191,7 +191,9 @@ export class CubePartitionDraft extends CubeNodeDraft<Partition> {
 
   /** Types the row's setting, Lag's and Lead's offset or NTile's bucket count, kept as text (PLAN §11.9) */
   setSetting(key: number, setting: AggregationSetting, text: string): void {
-    this.update(key, (row) => withRowSetting(row, setting, text));
+    this.update(key, (row) =>
+      withRowSetting(row, setting, text, this.aggregationUse),
+    );
   }
 
   /** Types the row's name, kept exactly; the auto-name itself follows again */

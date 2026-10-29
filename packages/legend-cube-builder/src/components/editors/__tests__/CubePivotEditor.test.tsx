@@ -221,7 +221,7 @@ describe('Pivot editor', () => {
     expect(within(panel()).queryByText(PIVOT_NO_VALUES_NOTICE)).toBeNull();
   });
 
-  test("Offers the aggregation's functions but Distinct Value, then Count rows", async () => {
+  test("Offers the aggregation's functions but Distinct Value and Median to Join Text, then Count rows", async () => {
     await render();
     // no column picked: every column function
     expect(optionValues('Aggregation function')).toEqual([
@@ -235,10 +235,22 @@ describe('Pivot editor', () => {
     ]);
     pick('Aggregation function', 'Count');
     pick('Aggregation column', 'SHIP_COUNTRY');
-    // a String column: its family's, Min and Max included (PLAN §11.14)
+    // a String column: its family's, Min and Max included (PLAN §11.14),
+    // never Join Text, which Snowflake's pivot doesn't take (§11.28)
     expect(optionValues('Aggregation function')).toEqual([
       'Count',
       'DistinctCount',
+      'Min',
+      'Max',
+      'CountRows',
+    ]);
+    // a number: never Median, Percentile, Std Dev or Variance either
+    pick('Aggregation column', 'FREIGHT');
+    expect(optionValues('Aggregation function')).toEqual([
+      'Count',
+      'DistinctCount',
+      'Sum',
+      'Average',
       'Min',
       'Max',
       'CountRows',
