@@ -1496,6 +1496,171 @@ To make Cube easy to demo and explore, it ships three small datasets and six exa
 
 ---
 
+### 6.10 A saved Legend query as a source (planned, 2026-10-20; not built)
+
+**Ask (user, 2026-10-20):** a saved Legend query as a source: fetch it from the query server, get its lambda, turn it
+into a Relation if it isn't one, and run the cube's steps on it. Data space queries only for now, run with their
+mapping and runtime. This is Legend Query's saved queries, through the engine's query server; it is not the original
+app's saved cubes, which Cube still doesn't read (§1.2).
+
+**Audit (2026-10-20).** Checked against the local engine with an inline model (a class mapped onto Northwind's
+CUSTOMERS, a runtime naming the mapping) and against legend-studio's code. The probe and its output are kept outside
+the repo (local evidence `saved-query-source/`).
+
+| #   | Question                                     | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Can a TDS query become a Relation?           | ✅ `POST /api/pure/v1/compilation/autofix/transformTdsToRelation/lambda` (`{model, lambda}`, legend-engine's `Autofix`) rewrote a Query Builder TDS lambda into `Customer.all()->project(~[Company: …, Country: …])->filter(…)`, typed as a Relation. It covers project, extend, filter, groupBy, olapGroupBy, sort, restrict, restrictDistinct, renameColumns, distinct, drop, limit, take, slice, concatenate, `from(mapping, runtime)`, and join through the relational extension. Any other function is passed through unchanged. |
+| A2  | How is a query that can't be one told apart? | ✅ `lambdaReturnType` first: `TabularDataSet` is converted, a Relation is kept, anything else is refused. A graph fetch returns `String`, the endpoint passes it through, and `lambdaRelationType` then fails with a NullPointerException, so the return type has to be checked first.                                                                                                                                                                                                                                                |
+| A3  | Its columns?                                 | ✅ `lambdaRelationType` on the converted lambda, the call Cube's `typeLambdas` already makes.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| A4  | Can Cube's steps follow it?                  | ✅ Steps after the query and one `->from(mapping, runtime)` at the end ran. The query's own `from(mapping, runtime)` inside, then steps, then `from(runtime)`, also ran. Both gave one SQL statement with the filters pushed down. A join to a table of the same database under that runtime typed and ran.                                                                                                                                                                                                                           |
+| A5  | Parameters?                                  | ✅ Kept by the conversion. Given as a `let` at the top of the run's lambda, they run, so the run lambda keeps no parameters, as today.                                                                                                                                                                                                                                                                                                                                                                                                |
+| A6  | Through the Cube IR?                         | ✅ `V1_readCubeLambda` and `V1_serializeCubeLambda` round-trip the converted lambda, and it still runs. Typed lambda parameters (`x: probe::Customer[1]`) lose their type, which the engine didn't need here.                                                                                                                                                                                                                                                                                                                         |
+| A7  | Precedent?                                   | Legend DataCube's Legend Query source (`LegendDataCubeDataCubeEngine`): query info, execution context, `grammarToJSON_lambda`, an SDLC pointer to the query's project version, autofix when TDS, the last expression as the source (earlier ones put back at run time), `lambdaRelationType`, parameter values (function-valued ones as `let`s), and `from(mapping, runtime)` appended.                                                                                                                                               |
+| A8  | Data space context in the builder?           | ❌ legend-graph resolves it through a data space plugin of its graph manager (`resolveQueryInfoExecutionContext`); the builder has no graph manager or data space plugin. The v1 adapter reads it instead, in legend-graph's order: the query's own `mapping` and `runtime` when it has both, else its `V1_QueryDataSpaceExecutionContext` (`dataSpacePath`, optional `executionKey`), the data space entity of the query's project version from depot, and that execution context's `mapping` and `defaultRuntime`.                  |
+| A9  | A mapping in Cube?                           | ❌ None: `CubeContext` is a model and a runtime, and a run ends in `from(runtime)`.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| A10 | The query's project version?                 | ⚠️ Cube's project model reads released versions only (user, 2026-10-09; `checkCubeProjectModel`). Saved queries often name `latest` or a SNAPSHOT.                                                                                                                                                                                                                                                                                                                                                                                    |
+| A11 | Finding queries?                             | The query server's search filters by term, project, tagged values, stereotypes and owner, and sorts; a light query has no execution context. So the picker lists by search, and a picked query is fetched in full before Cube can tell whether it's a data space query.                                                                                                                                                                                                                                                               |
+| A12 | Which hosts?                                 | Legend Cube runs in Analytics and in Studio's embedded editor; it left Legend Query with #5736 (§11.24). Both configure `engine.queryUrl`, and `LegendCubeHost` passes it to the engine client. Studio's Cube builds ingest materialized views, a different source family.                                                                                                                                                                                                                                                            |
+
+**Design (proposed):**
+
+- **Core:** a new source, `LegendQuerySource` (kind `legendQuery`). The spec keeps the query's **id**, and what tells
+  whether it changed since: its name, its `lastUpdatedAt`, and a schema snapshot of its columns (plus the parameter
+  values the cube gives). The converted lambda is **not** saved: when the cube opens, the query is fetched, converted
+  if it's TDS, and typed again, so the relation Cube runs is always the saved query's. Validation needs the columns
+  and every required parameter's value. The emitter writes the relation as it is, and each parameter as a `let` before
+  it, through the lets Cube already writes for windows (§8.6).
+- **Keeping in sync:** on open, a query whose `lastUpdatedAt` is unchanged is used as fetched. One that changed is
+  converted and typed again; if its columns are still the snapshot's, the cube goes on and says so; if not, the source
+  is marked invalid, naming the columns that went or changed, and **Refresh** takes the new columns (one undo step), as
+  data products are rechecked (`CubeDataProductRecheck`). A query that's gone, or that the viewer can't see, marks the
+  source invalid with the reason.
+- **The model and the run:** the cube's model is the query's project, through the existing project pointer kind
+  (`CubeProject.ts`), so tables and functions of the same project version can join it. The context gains an optional
+  `mapping`; when set, the run ends in `from(mapping, runtime)` instead of `from(runtime)`. That's the one `from` A4
+  checked, as DataCube writes it. The spec stays at version 1, since the change is additive.
+- **One context:** a cube runs on one model, mapping and runtime (§6.8), so a second saved query, or a table, has to
+  share the first query's project version, mapping and runtime.
+- **Builder:**
+  - a **Legend Query** tab in the source dialog (search by name, mine or everyone's, newest first), and a palette
+    item;
+  - picking a query fetches it, refuses one that isn't a data space query or isn't tabular with the reason, and shows
+    its columns and parameters before Add;
+  - the source's editor shows the query's name and data space, a link to open it in Legend Query, its parameters'
+    values (as the Function source's are), and Refresh.
+- **Engine port:** a host-given `CubeQueryCatalog`, as the data product and ingest catalogs are: search, then read one
+  query into a source. The v1 adapter implements it with the engine's query endpoints, depot, the autofix endpoint and
+  the type calls. No `V1_*` outside `v1/`.
+- **Reading back:** Import Pure doesn't know the source and keeps refusing a lambda that holds one (§11.18).
+- **Not in Studio** (user, 2026-10-20): the source is offered in Analytics only. Studio's embedded editor doesn't list
+  it.
+
+**Decisions (user, 2026-10-20):**
+
+1. **Save the query's id, not its lambda:** the conversion runs again on each open, so there's no saved copy to keep in
+   sync; the snapshot only tells whether the columns changed (see Keeping in sync).
+2. **Data space queries only:** a query whose execution context isn't a data space is refused, with the reason. Its
+   own `mapping` and `runtime`, when it has both, are used before the data space's, as legend-graph does (A8).
+3. **Analytics only, not Studio.**
+
+**Still open:**
+
+- **Moving versions (A10).** A saved query names a version of its project: a release (`1.4.0`), `latest` (the newest
+  release, which moves when a new one is cut), or a SNAPSHOT (the code under development, which moves on every
+  change). Cube has read released versions only (user, 2026-10-09) so that a saved cube's tables can't change under
+  it. A query source depends on the saved query anyway, which can change, and the sync check covers it. Recommended:
+  run the query on the version it names, whatever it is, and show that version in the source's editor (marked when it
+  moves). Or refuse SNAPSHOT queries.
+
+**Risks:** a TDS function the autofix doesn't convert (the query is then refused, naming it); a query whose lambda
+already holds `from(mapping, runtime)` (strip it, and check it against the data space's); multi-expression lambdas
+(put back as lets); large project pointers loading slowly on the engine; queries the viewer can't see on the query
+server.
+
+**Steps:**
+
+| Step | Deliverable                                                                                                                                                                                   | Done when                                                                                           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Q.1  | This section; the user's answers                                                                                                                                                              | Answered                                                                                            |
+| Q.2  | Core: the source node (id, name, `lastUpdatedAt`, columns, parameter values), codec, emitter (relation, lets), validation; the optional `mapping` in the context and `from(mapping, runtime)` | Unit tests; emitted Pure pinned                                                                     |
+| Q.3  | v1 adapter: the query catalog (search, fetch, data space context, autofix, typing, parameters)                                                                                                | Adapter tests with a fake engine; an engine-roundtrip test on an inline mapped model like the probe |
+| Q.4  | Builder: the tab, the palette item, the source editor, the sync check on open and Refresh                                                                                                     | Store and component tests                                                                           |
+| Q.5  | Hosts: Analytics passes the catalog                                                                                                                                                           | Host tests                                                                                          |
+| Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                                                                        | Every caption true on screen                                                                        |
+
+### 6.11 A saved query's relation type, kept with it (proposed, 2026-10-20; not built)
+
+**Ask (user, 2026-10-20):** keep a saved query's relation type (its columns and their types) in the saved query, so
+that Cube's saved query source (§6.10) and Legend DataCube's Legend Query source can know a query's columns without
+asking the engine. Today both make up to three engine calls to learn them: the return type, the TDS conversion, and
+the relation type. Each compiles the query's project, which is slow for big projects.
+
+**Where it's kept:** a new field on the saved query, `relationType`. The engine's query store drops fields it doesn't
+know (`Query.java` is `@JsonIgnoreProperties(ignoreUnknown = true)`), so the field needs an engine change (draft in
+[ISSUES.md](ISSUES.md)), and the same field in legend-graph's `V1_Query`, `Query` and their transforms.
+
+```json
+"relationType": {
+  "columns": [
+    { "name": "Company", "type": "String" },
+    { "name": "Country", "type": "String" }
+  ],
+  "computedFor": {
+    "contentHash": "<SHA-256 of the query's content>",
+    "versionId": "1.4.0",
+    "executionContextHash": "<SHA-256 of its execution context, mapping and runtime>"
+  },
+  "computedAt": 1760000000000
+}
+```
+
+- **`columns`** has the shape of legend-graph's `RelationTypeMetadata`, as `getLambdaRelationType` returns it. For a
+  TDS query it's the columns of its Relation form, so every reader gets the same columns.
+- **`computedFor`** says what the columns are true for. A reader trusts them only when all three still match the
+  query, so a write that doesn't update the field never leaves a wrong one in use. `versionId` is the concrete version:
+  for a query on `latest`, the release it resolved to when computed, as Query already resolves `originalVersionId` on
+  Save As.
+
+**When Legend Query writes it** (every path that writes a saved query, `QueryEditorStore` and `V1_PureGraphManager`):
+
+| Write                                                                                    | What changes                   | The relation type                                                                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Save As (`createQuery`)                                                                  | everything                     | computed                                                                                                                  |
+| Save (`updateQuery`, also from the modal that renames or changes the version)            | the content, maybe the version | computed                                                                                                                  |
+| Update version (`updateQueryVersionId`, a `patchQuery` of `versionId` only)              | the version                    | computed for the new version and patched with it; if that fails, the old one stays, and its `versionId` no longer matches |
+| Rename (`QueryLoaderState`, `renameQuery`: get, change the name, update)                 | the name                       | kept: it's carried through the get and the update, which needs the field in `V1_Query`, or the rename would drop it       |
+| Revert to a revision (`revertQueryToRevision`: get, take the revision's content, update) | the content                    | the revision's own, when it has one; else none                                                                            |
+| Any other client, or an older Legend Query                                               | anything                       | left as it was, or dropped; `computedFor` no longer matches, and readers compute it                                       |
+
+**How Legend Query computes it** (in `buildQueryForPersistence`, beside the content and parameter values it already
+asks the engine for):
+
+1. `getLambdaReturnType(lambda, graph)`: a Relation goes on; a `TabularDataSet` is converted first with the engine's
+   `transformTdsToRelation` endpoint; anything else, such as a graph fetch, gets no relation type.
+2. `getLambdaRelationType` on the Relation form gives the columns.
+3. The calls point the engine at the query's project version (`getFullGraphModelContext` sends the SDLC pointer when
+   the graph came from a project), the same model the query runs on, so the engine's model cache usually has it.
+4. **Best-effort, never in the way:** the calls run alongside `lambdaToPureCode`, with a time limit (say 5 s). A
+   failure or a timeout saves the query without the field and is logged, as a failed default parameter value is
+   today. Saving never fails, or waits long, because of it.
+
+**How readers use it** (Cube's §6.10 source, DataCube's `LegendQueryDataCubeSource`): when `computedFor` matches the
+query's content, execution context and concrete version, they take the columns as they are, and no engine call is made
+until the cube runs. Otherwise they compute the columns as today. For a query on `latest`, matching means the latest
+release is still the one recorded, a cheap depot call. A SNAPSHOT's columns are never trusted, since its code changes
+without a new version. The run still checks the engine's columns against the ones used (Cube's `runCubeQuery`).
+
+**Order:** the engine field first, then legend-graph's, then Legend Query's writes, then the readers. Each step works
+without the next: a reader that finds no field, or one that doesn't match, computes as today.
+
+**Open questions for the user:**
+
+1. Time limit on Save: compute inline with a short limit (recommended), or save first and patch the field afterwards
+   in the background (no delay at all, but a second write, lost if the tab closes)?
+2. Should Legend Query compute it for the existing saved queries, for example when one is opened and found without it
+   (a background patch), or only on the next save?
+3. Do Studio or other clients that save queries need to write it too?
+
 ## 7. C. Canvas and editors (slice)
 
 ### 7.1 Layout (provisional, D7)
