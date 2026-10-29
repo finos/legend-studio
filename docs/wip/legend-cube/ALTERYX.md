@@ -158,8 +158,9 @@ $left->filter(l | $l.CUSTOMER_ID->in($right->select(~CUSTOMER_ID)))
 
 ### 2.3 More Group functions
 
-**Size** S. **Waits on** nothing. **Being built** since 2026-10-29: median, percentile, standard deviation and
-concatenate, on the branch `cube-group-functions`.
+**Size** S. **Waits on** nothing. **Being built** since 2026-10-29, on the branch `cube-group-functions`: median,
+percentile, standard deviation and variance (sample), and joined text. Its PR records which of them windows and Pivot
+get.
 
 - **In Alteryx 📄:** Summarize offers Count Null and Non Null, Median, Mode, Percentile, Std Dev, Variance, Product,
   Concatenate (with a start, a separator and an end), Concatenate Distinct, First, Last, Longest, Shortest, and finance
@@ -182,8 +183,8 @@ $input->groupBy(~[CATEGORY_ID], ~[
   SQL for mode, variance, correlation and covariance 📄; those weren't probed.
 - **Notes:** Group and Apply Window Functions share the list, so each new function is checked in Pivot and in window
   aggregates before it is offered there. First and Last need an order, which Alteryx takes from record position (§3.2).
-  Once this lands, #5791's "Add this view as steps" could map DataCube's StdDev and Join Strings instead of refusing
-  them 💭.
+  Once this lands, #5791's "Add this view as steps" could map DataCube's Variance, StdDev and Join Strings instead of
+  refusing them 💭.
 
 ### 2.4 A column profile of a step
 
