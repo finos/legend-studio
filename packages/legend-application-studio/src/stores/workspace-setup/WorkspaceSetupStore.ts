@@ -230,13 +230,16 @@ export class WorkspaceSetupStore {
     workspace: Workspace | undefined,
     sourceProject?: Project | undefined,
   ): void {
+    if (!workspace) {
+      this.workspaceCopyState = undefined;
+      return;
+    }
     const projectId = guaranteeNonNullable(
       this.currentProject,
       `Can't copy a workspace: project is not specified`,
     ).projectId;
-    this.workspaceCopyState = !workspace
-      ? undefined
-      : sourceProject && sourceProject.projectId !== projectId
+    this.workspaceCopyState =
+      sourceProject && sourceProject.projectId !== projectId
         ? new OtherProjectWorkspaceCopyState(
             this.sdlcServerClient,
             projectId,
@@ -244,11 +247,9 @@ export class WorkspaceSetupStore {
             workspace,
           )
         : new WorkspaceCopyState(this.sdlcServerClient, projectId, workspace);
-    if (this.workspaceCopyState) {
-      flowResult(this.workspaceCopyState.load()).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-    }
+    flowResult(this.workspaceCopyState.load()).catch(
+      this.applicationStore.alertUnhandledError,
+    );
   }
 
   /**
