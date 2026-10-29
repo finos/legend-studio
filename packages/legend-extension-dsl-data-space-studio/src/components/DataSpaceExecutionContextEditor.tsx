@@ -23,6 +23,10 @@ import {
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import {
   BlankPanelPlaceholder,
   clsx,
   CustomSelectorInput,
@@ -254,6 +258,56 @@ const MappingSourceEditor = observer(
       dataSpace_setExecutionContextMappingProvider(executionContext, provider);
     };
 
+    // The two sources are exclusive, so choosing one drops the other; ask first
+    // if that throws away something the user set.
+    const selectSourceKind = (kind: MappingSourceKind): void => {
+      const otherSourcePath =
+        kind === 'mapping'
+          ? mappingProvider?.element.value.path
+          : executionContext.mapping?.value.path;
+      if (otherSourcePath === undefined) {
+        setSourceKind(kind);
+        return;
+      }
+      const kindLabel = kind === 'mapping' ? 'mapping' : 'mapping provider';
+      const otherSourceLabel =
+        kind === 'mapping' ? 'mapping provider' : 'mapping';
+      applicationStore.alertService.setActionAlertInfo({
+        // both are set (e.g. from grammar) when the clicked kind is already shown
+        message:
+          kind === sourceKind
+            ? `Keep only the ${kindLabel}?`
+            : `Switch to a ${kindLabel}?`,
+        prompt: `An execution context takes either a mapping or a mapping provider. This removes ${otherSourceLabel} '${otherSourcePath}' from '${executionContext.name}'.`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: `Remove ${otherSourceLabel}`,
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              if (kind === 'mapping') {
+                dataSpace_setExecutionContextMappingProvider(
+                  executionContext,
+                  undefined,
+                );
+              } else {
+                dataSpace_setExecutionContextMapping(
+                  executionContext,
+                  undefined,
+                );
+              }
+              setSourceKind(kind);
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
+
     const accessPointGroupIds = providerDataProduct
       ? getModelAccessPointGroupIds(providerDataProduct)
       : [];
@@ -339,7 +393,7 @@ const MappingSourceEditor = observer(
                 sourceKind === 'mapping',
             })}
             disabled={isReadOnly}
-            onClick={(): void => setSourceKind('mapping')}
+            onClick={(): void => selectSourceKind('mapping')}
           >
             Mapping
           </button>
@@ -350,7 +404,7 @@ const MappingSourceEditor = observer(
                 sourceKind === 'mappingProvider',
             })}
             disabled={isReadOnly}
-            onClick={(): void => setSourceKind('mappingProvider')}
+            onClick={(): void => selectSourceKind('mappingProvider')}
           >
             Mapping Provider
           </button>

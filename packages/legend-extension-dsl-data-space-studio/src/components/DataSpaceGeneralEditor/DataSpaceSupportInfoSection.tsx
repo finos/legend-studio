@@ -31,6 +31,7 @@ import {
   dataSpace_setDocumentationUrl,
   dataSpace_combined_setWebsite,
   dataSpace_combined_setFaqUrl,
+  dataSpace_combined_setSupportUrl,
   dataSpace_combined_addEmail,
   dataSpace_combined_deleteEmail,
   dataSpace_setSupportInfo,
@@ -52,7 +53,9 @@ export const DataSpaceSupportInfoSection = observer(() => {
       return;
     }
     const type = option.value;
-    if (
+    if (type === 'none') {
+      dataSpace_setSupportInfo(dataSpace, undefined);
+    } else if (
       type === 'email' &&
       !(dataSpace.supportInfo instanceof DataSpaceSupportEmail)
     ) {
@@ -75,8 +78,6 @@ export const DataSpaceSupportInfoSection = observer(() => {
         supportInfo.documentationUrl = dataSpace.supportInfo.documentationUrl;
       }
       dataSpace_setSupportInfo(dataSpace, supportInfo);
-    } else {
-      dataSpace_setSupportInfo(dataSpace, undefined);
     }
   };
 
@@ -148,30 +149,29 @@ export const DataSpaceSupportInfoSection = observer(() => {
       <div className="panel__content__form__section__header__prompt">
         Configure support information for this Data Space.
       </div>
-      {!(dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) && (
-        <CustomSelectorInput
-          options={[
-            { label: 'None', value: 'none' },
-            { label: 'Combined', value: 'combined' },
-          ]}
-          onChange={(option: { label: string; value: string }) =>
-            handleSupportInfoTypeChange(option)
-          }
-          value={{
-            label: dataSpace.supportInfo
-              ? dataSpace.supportInfo instanceof DataSpaceSupportEmail
-                ? 'Email'
-                : 'Combined'
-              : 'None',
-            value: dataSpace.supportInfo
-              ? dataSpace.supportInfo instanceof DataSpaceSupportEmail
-                ? 'email'
-                : 'combined'
-              : 'none',
-          }}
-          darkMode={true}
-        />
-      )}
+      <CustomSelectorInput
+        options={[
+          { label: 'None', value: 'none' },
+          { label: 'Combined', value: 'combined' },
+        ]}
+        onChange={(option: { label: string; value: string }) =>
+          handleSupportInfoTypeChange(option)
+        }
+        value={{
+          label: dataSpace.supportInfo
+            ? dataSpace.supportInfo instanceof DataSpaceSupportEmail
+              ? 'Email'
+              : 'Combined'
+            : 'None',
+          value: dataSpace.supportInfo
+            ? dataSpace.supportInfo instanceof DataSpaceSupportEmail
+              ? 'email'
+              : 'combined'
+            : 'none',
+        }}
+        disabled={dataSpaceState.isReadOnly}
+        darkMode={true}
+      />
       {dataSpace.supportInfo ? (
         dataSpace.supportInfo instanceof DataSpaceSupportEmail ? (
           <PanelFormSection className="dataSpace-editor__general__support-info__content">
@@ -265,6 +265,22 @@ export const DataSpaceSupportInfoSection = observer(() => {
                 }
               }}
               placeholder="Enter FAQ URL"
+            />
+            <PanelFormTextField
+              name="Support URL"
+              value={dataSpace.supportInfo.supportUrl}
+              update={(value) => {
+                if (
+                  dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo
+                ) {
+                  dataSpace_combined_setSupportUrl(
+                    dataSpace.supportInfo,
+                    value ?? '',
+                  );
+                }
+              }}
+              isReadOnly={dataSpaceState.isReadOnly}
+              placeholder="Enter support URL"
             />
           </div>
         ) : (
