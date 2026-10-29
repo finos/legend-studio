@@ -127,17 +127,19 @@ Structured lifecycle around user-triggered writes from the setup / project picke
 
 Enum exported from the telemetry helper: `SETUP_ACTION` — `create-sandbox-project` / `create-project` / `import-project` / `create-workspace`.
 
-| Event                  | Payload                                                                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `setup.action.launch`  | `sourceInfo?` (always undefined) · `action` · `projectId?` · `workspaceType?` · `hasPatchReleaseVersion?`                  |
-| `setup.action.success` | `sourceInfo?` (always undefined) · `action` · `projectId?` · `workspaceType?` · `hasPatchReleaseVersion?` · `durationMs`   |
-| `setup.action.failure` | `sourceInfo?` (always undefined) · `action` · `projectId?` · `workspaceType?` · `hasPatchReleaseVersion?` · `errorMessage` |
+| Event                  | Payload                                                                                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setup.action.launch`  | `sourceInfo?` (always undefined) · `action` · `projectId?` · `workspaceType?` · `hasPatchReleaseVersion?` · `copiesWorkspace?` · `copiedElementCount?`                  |
+| `setup.action.success` | `sourceInfo?` (always undefined) · `action` · `projectId?` · `workspaceType?` · `hasPatchReleaseVersion?` · `copiesWorkspace?` · `copiedElementCount?` · `durationMs`   |
+| `setup.action.failure` | `sourceInfo?` (always undefined) · `action` · `projectId?` · `workspaceType?` · `hasPatchReleaseVersion?` · `copiesWorkspace?` · `copiedElementCount?` · `errorMessage` |
 
 Design notes:
 
 - **`sourceInfo` is always undefined.** The setup screen runs before any editor mode is active. Slice on the payload's `action` / `projectId?` instead.
 - **`projectId` is populated at launch for `create-workspace`** (the caller passes the target project up front). For the other three actions the id is only known once the server assigns it — it appears on `success` events but is absent from `launch` and `failure`.
-- **`workspaceType` and `hasPatchReleaseVersion` are only populated for `create-workspace`.** They are omitted from the other three actions rather than carrying meaningless defaults.
+- **`workspaceType`, `hasPatchReleaseVersion` and `copiesWorkspace` are only populated for `create-workspace`.** They are omitted from the other three actions rather than carrying meaningless defaults.
+- **`copiesWorkspace` is true when the new workspace copies another workspace of the project** (Workspace Source set to one of its workspaces). `hasPatchReleaseVersion` is then the source workspace's line: a copy starts on the line its source is on. `copiedElementCount` is only set for a copy: the number of elements the source changed since it was created (its new, modified and deleted elements, the count the dialog and the success toast show). The commit can hold fewer entity changes, as changes the line already has are left out.
+- **A copy that fails after the workspace is created emits `failure`** with the copy's error, as SDLC can't create a workspace from another one: Studio creates the workspace, then commits the copy. The dialog then keeps the workspace and offers Retry copy and Delete workspace; neither emits a lifecycle event, so `launch` stays a fair denominator for `success + failure`, and a copy fixed by Retry copy still counts as one `failure`.
 - **Bail-out early-returns are not "failures".** `createSandboxProject` short-circuits when the user lacks sandbox access (a sandbox request modal opens instead) — that path emits no lifecycle event, so `launch` remains a fair denominator for `success + failure`.
 - **`WORKSPACE_SETUP_FAILURE` and `ENGINE_MANAGER_FAILURE` developer logs stay in place** at the two callsites that had them; the new failure event is emitted alongside.
 - **Read paths stay on generic buckets.** `initialize`, `initializeEngine`, `loadProjects`, `loadSandboxProject`, `changeProject` are background reads and continue to log through `SDLC_MANAGER_FAILURE` / `ENGINE_MANAGER_FAILURE` / `DEPOT_MANAGER_FAILURE` / `WORKSPACE_SETUP_FAILURE`.

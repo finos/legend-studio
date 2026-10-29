@@ -17,7 +17,8 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import { unitTest, createSpy } from '@finos/legend-shared/test';
 import { flowResult } from 'mobx';
-import type { PlainObject } from '@finos/legend-shared';
+import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
+import { waitFor } from '@testing-library/react';
 import { ApplicationStore } from '@finos/legend-application';
 import {
   Project,
@@ -417,6 +418,80 @@ describe('WorkspaceSetupStore — recents wiring', () => {
       expect(setupStore.recentWorkspaces.map((w) => w.workspaceId)).toContain(
         'ws-b',
       );
+    },
+  );
+});
+
+describe('WorkspaceSetupStore — copying a workspace', () => {
+  test(
+    unitTest(
+      'warns when a copy fails once the create workspace modal is closed',
+    ),
+    async () => {
+      const { setupStore, applicationStore, sdlcServerClient } =
+        buildSetupHarness();
+      stubChangeProjectSdlcCalls(sdlcServerClient, [
+        buildWorkspaceJson('p1', 'uml', WorkspaceType.USER),
+      ]);
+      await flowResult(
+        setupStore.changeProject(
+          Project.serialization.fromJson(buildProjectJson('p1')),
+        ),
+      );
+      const entity = {
+        path: 'model::Person',
+        classifierPath: 'meta::pure::metamodel::type::Class',
+        content: { _type: 'class', name: 'Person', package: 'model' },
+      };
+      // uml created model::Person
+      createSpy(sdlcServerClient, 'getEntitiesByRevision').mockResolvedValue(
+        [],
+      );
+      createSpy(sdlcServerClient, 'getEntities').mockImplementation(
+        (projectId, workspace) =>
+          Promise.resolve(workspace?.workspaceId === 'uml' ? [entity] : []),
+      );
+      createSpy(sdlcServerClient, 'isWorkspaceOutdated').mockResolvedValue(
+        false,
+      );
+      createSpy(sdlcServerClient, 'createWorkspace').mockResolvedValue(
+        buildWorkspaceJson('p1', 'uml-copy', WorkspaceType.GROUP),
+      );
+      // the modal is closed while the copy is committed, which then fails
+      createSpy(sdlcServerClient, 'performEntityChanges').mockImplementation(
+        () => {
+          setupStore.setShowCreateWorkspaceModal(false);
+          return Promise.reject(new Error('could not perform entity changes'));
+        },
+      );
+      const notifyWarning = createSpy(
+        applicationStore.notificationService,
+        'notifyWarning',
+      );
+
+      setupStore.setShowCreateWorkspaceModal(true);
+      setupStore.setWorkspaceCopySource(
+        guaranteeNonNullable(setupStore.workspaces[0]),
+      );
+      const copy = guaranteeNonNullable(setupStore.workspaceCopyState);
+      await waitFor(() => expect(copy.loadState.hasSucceeded).toBe(true));
+      await flowResult(
+        setupStore.createWorkspace(
+          'p1',
+          undefined,
+          'uml-copy',
+          WorkspaceType.GROUP,
+          copy,
+        ),
+      );
+
+      expect(notifyWarning).toHaveBeenCalledWith(
+        `Workspace 'uml-copy' is created, but copying the changes of uml failed: could not perform entity changes`,
+      );
+      expect(setupStore.workspaces.map((w) => w.workspaceId)).toEqual([
+        'uml',
+        'uml-copy',
+      ]);
     },
   );
 });

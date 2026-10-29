@@ -381,6 +381,12 @@ type SetupActionIdentityData = {
   // Only meaningful for `create-workspace` — true when the workspace
   // targets a patch branch rather than main.
   hasPatchReleaseVersion?: boolean | undefined;
+  // Only meaningful for `create-workspace` — true when the new workspace
+  // copies the changes of another workspace of the project.
+  copiesWorkspace?: boolean | undefined;
+  // Only meaningful for `create-workspace` that copies a workspace — the
+  // number of elements the source workspace changed, which the copy brings.
+  copiedElementCount?: number | undefined;
 };
 
 export type SetupActionLaunchData = SetupActionIdentityData;

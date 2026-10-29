@@ -61,6 +61,7 @@ import {
   type RecentProjectEntry,
   type RecentWorkspaceEntry,
 } from '../../__lib__/LegendStudioUserDataHelper.js';
+import { WorkspaceCopyState } from './WorkspaceCopyState.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -118,6 +119,7 @@ export class WorkspaceSetupStore {
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
   showCreateWorkspaceModal = false;
+  workspaceCopyState?: WorkspaceCopyState | undefined;
 
   graphManagerState: GraphManagerState;
 
@@ -141,6 +143,7 @@ export class WorkspaceSetupStore {
       currentWorkspace: observable,
       loadSandboxState: observable,
       showCreateWorkspaceModal: observable,
+      workspaceCopyState: observable,
       sandboxProject: observable,
       createSandboxProjectState: observable,
       engineInitializeState: observable,
@@ -151,6 +154,7 @@ export class WorkspaceSetupStore {
       recentWorkspaces: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
+      setWorkspaceCopySource: action,
       setImportProjectSuccessReport: action,
       setSandboxModal: action,
       changeWorkspace: action,
@@ -168,6 +172,8 @@ export class WorkspaceSetupStore {
       importProject: flow,
       createSandboxProject: flow,
       createWorkspace: flow,
+      retryWorkspaceCopy: flow,
+      deleteCopiedWorkspace: flow,
       initializeEngine: flow,
       selectRecentProject: flow,
     });
@@ -204,6 +210,29 @@ export class WorkspaceSetupStore {
 
   setShowCreateWorkspaceModal(val: boolean): void {
     this.showCreateWorkspaceModal = val;
+    this.workspaceCopyState = undefined;
+  }
+
+  /**
+   * Picks the workspace the new workspace copies, in the create workspace
+   * modal, and reads what it changed; `undefined` starts from HEAD or a patch.
+   */
+  setWorkspaceCopySource(workspace: Workspace | undefined): void {
+    this.workspaceCopyState = workspace
+      ? new WorkspaceCopyState(
+          this.sdlcServerClient,
+          guaranteeNonNullable(
+            this.currentProject,
+            `Can't copy a workspace: project is not specified`,
+          ).projectId,
+          workspace,
+        )
+      : undefined;
+    if (this.workspaceCopyState) {
+      flowResult(this.workspaceCopyState.load()).catch(
+        this.applicationStore.alertUnhandledError,
+      );
+    }
   }
 
   setImportProjectSuccessReport(
@@ -977,6 +1006,7 @@ export class WorkspaceSetupStore {
     patchReleaseVersionId: string | undefined,
     workspaceId: string,
     workspaceType: WorkspaceType,
+    copy?: WorkspaceCopyState | undefined,
   ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     const startTime = Date.now();
@@ -985,6 +1015,8 @@ export class WorkspaceSetupStore {
       projectId,
       workspaceType,
       hasPatchReleaseVersion: patchReleaseVersionId !== undefined,
+      copiesWorkspace: copy !== undefined,
+      copiedElementCount: copy?.changes.length,
     };
     LegendStudioTelemetryHelper.logEvent_SetupActionLaunched(
       this.applicationStore.telemetryService,
@@ -999,26 +1031,38 @@ export class WorkspaceSetupStore {
           workspaceType,
         )) as PlainObject<Workspace>,
       );
+      // NOTE: the copy below is committed through this, which routes the
+      // workspace of a patch to the patch's endpoints
       newWorkspace.source = patchReleaseVersionId;
 
-      this.applicationStore.notificationService.notifySuccess(
-        `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
-      );
-
-      const matchingWorkspace = this.workspaces.find(
-        (workspace) =>
-          workspace.workspaceId === newWorkspace.workspaceId &&
-          workspace.workspaceType === newWorkspace.workspaceType,
-      );
-      const newWorkspaceToSelect = matchingWorkspace ?? newWorkspace;
-      this.changeWorkspace(newWorkspaceToSelect);
-      this.setShowCreateWorkspaceModal(false);
-
-      // NOTE: do this after closing the modal to not interfere
-      // with validation of existing workspaces in create workspace modal
-      if (!matchingWorkspace) {
-        this.workspaces.push(newWorkspace);
+      if (copy) {
+        try {
+          yield flowResult(copy.copyTo(newWorkspace));
+        } catch (error) {
+          assertErrorThrown(error);
+          // NOTE: the workspace exists without the copy: list it, and keep the
+          // modal open to try the copy again or to delete the workspace
+          copy.setCreatedWorkspace(newWorkspace);
+          this.workspaces.push(newWorkspace);
+          if (this.workspaceCopyState !== copy) {
+            // the modal was closed while copying
+            this.applicationStore.notificationService.notifyWarning(
+              `Workspace '${newWorkspace.workspaceId}' is created, but copying the changes of ${copy.source.workspaceId} failed: ${error.message}`,
+            );
+          }
+          this.applicationStore.logService.error(
+            LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+            error,
+          );
+          LegendStudioTelemetryHelper.logEvent_SetupActionFailure(
+            this.applicationStore.telemetryService,
+            { ...identity, errorMessage: error.message },
+          );
+          return;
+        }
       }
+
+      this.completeWorkspaceCreation(newWorkspace, copy);
       LegendStudioTelemetryHelper.logEvent_SetupActionSucceeded(
         this.applicationStore.telemetryService,
         { ...identity, durationMs: Date.now() - startTime },
@@ -1036,6 +1080,96 @@ export class WorkspaceSetupStore {
       this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createWorkspaceState.reset();
+    }
+  }
+
+  /**
+   * Tries the copy again, into the workspace created by the modal, whose copy
+   * failed.
+   */
+  *retryWorkspaceCopy(): GeneratorFn<void> {
+    const copy = this.workspaceCopyState;
+    const workspace = copy?.createdWorkspace;
+    if (!copy || !workspace) {
+      return;
+    }
+    this.createWorkspaceState.inProgress();
+    try {
+      yield flowResult(copy.copyTo(workspace));
+      this.completeWorkspaceCreation(workspace, copy);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
+      );
+    } finally {
+      this.createWorkspaceState.reset();
+    }
+  }
+
+  /**
+   * Deletes the workspace created by the modal, whose copy failed, and goes
+   * back to the modal's form.
+   */
+  *deleteCopiedWorkspace(): GeneratorFn<void> {
+    const copy = this.workspaceCopyState;
+    const workspace = copy?.createdWorkspace;
+    if (!copy || !workspace) {
+      return;
+    }
+    this.createWorkspaceState.inProgress();
+    try {
+      yield this.sdlcServerClient.deleteWorkspace(copy.projectId, workspace);
+      this.workspaces = this.workspaces.filter((w) => w !== workspace);
+      copy.setCreatedWorkspace(undefined);
+      copy.setCopyError(undefined);
+      this.applicationStore.notificationService.notifySuccess(
+        `Workspace '${workspace.workspaceId}' is deleted`,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
+      );
+      this.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.createWorkspaceState.reset();
+    }
+  }
+
+  private completeWorkspaceCreation(
+    workspace: Workspace,
+    copy: WorkspaceCopyState | undefined,
+  ): void {
+    const copiedChangeCount = copy?.changes.length ?? 0;
+    this.applicationStore.notificationService.notifySuccess(
+      copy && copiedChangeCount
+        ? `Workspace '${workspace.workspaceId}' is created from ${
+            copy.source.workspaceId
+          }, with its ${
+            copiedChangeCount === 1
+              ? '1 change'
+              : `${copiedChangeCount} changes`
+          }`
+        : `Workspace '${workspace.workspaceId}' is succesfully created`,
+    );
+
+    const matchingWorkspace = this.workspaces.find(
+      (w) =>
+        w.workspaceId === workspace.workspaceId &&
+        w.workspaceType === workspace.workspaceType &&
+        w.source === workspace.source,
+    );
+    const newWorkspaceToSelect = matchingWorkspace ?? workspace;
+    this.changeWorkspace(newWorkspaceToSelect);
+    this.setShowCreateWorkspaceModal(false);
+
+    // NOTE: do this after closing the modal to not interfere
+    // with validation of existing workspaces in create workspace modal
+    if (!matchingWorkspace) {
+      this.workspaces.push(workspace);
     }
   }
 }
