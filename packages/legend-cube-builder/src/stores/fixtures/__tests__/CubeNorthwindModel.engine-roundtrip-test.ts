@@ -29,7 +29,7 @@ import {
 } from '../CubeNorthwindModel.js';
 
 // The Cube Northwind fixture on the engine (PLAN §6.2.4): it compiles, every
-// table but the binary one types, and the CUBETEST rows read back as designed
+// table types, the binary one too, and the CUBETEST rows read back as designed
 
 const accessor = (schema: string, table: string): PlainObject => ({
   _type: 'lambda',
@@ -82,12 +82,16 @@ const typeOf = async (
   lambdas: Record<string, PlainObject>,
 ): Promise<{
   result: PlainObject;
-  errors: Record<string, { message: string }>;
+  // left out when no lambda fails
+  errors?: Record<string, { message: string }>;
 }> =>
   (await CUBE_ENGINE_TEST__lambdaRelationTypeBatch({
     model: CUBE_NORTHWIND_MODEL,
     lambdas,
-  })) as { result: PlainObject; errors: Record<string, { message: string }> };
+  })) as {
+    result: PlainObject;
+    errors?: Record<string, { message: string }>;
+  };
 
 const columnNames = (relationType: unknown): string[] =>
   (relationType as { columns: { name: string }[] }).columns.map(
@@ -113,19 +117,20 @@ describe('Cube Northwind fixture', () => {
     ).toHaveProperty('message', 'OK');
   });
 
-  test('Types every table in one call, and only the table with a binary column fails, alone', async () => {
+  test('Types every table in one call, the table with a binary column too', async () => {
     const lambdas = Object.fromEntries(
       Object.entries(TABLES).flatMap(([schema, tables]) =>
         tables.map((table) => [`${schema}.${table}`, accessor(schema, table)]),
       ),
     );
     const { result, errors } = await typeOf(lambdas);
-    expect(Object.keys(errors)).toEqual(['CUBETEST.PROBLEM_BINARY']);
-    expect(Object.keys(result).sort()).toEqual(
-      Object.keys(lambdas)
-        .filter((key) => key !== 'CUBETEST.PROBLEM_BINARY')
-        .sort(),
-    );
+    expect(Object.keys(errors ?? {})).toEqual([]);
+    expect(Object.keys(result).sort()).toEqual(Object.keys(lambdas).sort());
+    // the engine types a BINARY column as Byte (legend-engine#5449)
+    expect(columnNames(result['CUBETEST.PROBLEM_BINARY'])).toEqual([
+      'ID',
+      'PAYLOAD',
+    ]);
     expect(columnNames(result['CUBETEST.ALLTYPES'])).toEqual([
       'ID',
       'TI',
@@ -153,7 +158,7 @@ describe('Cube Northwind fixture', () => {
     });
     expect(columnNames(result.json)).toEqual(['LINE_ID', 'RIGHT_COL']);
     expect(columnNames(result.text)).toEqual(['WRONG_TABLE']);
-    expect(errors.unquoted?.message).toContain(
+    expect(errors?.unquoted?.message).toContain(
       "Can't find table 'ORDER.LINES' in schema 'CUBETEST'",
     );
   });
