@@ -49,9 +49,13 @@ import {
   uuid,
   isNonNullable,
   guaranteeNonNullable,
+  isEmpty,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { generateVariableExpressionMockValue } from './ValueSpecificationEditorHelper.js';
+import {
+  buildDefaultInstanceValue,
+  generateVariableExpressionMockValue,
+} from './ValueSpecificationEditorHelper.js';
 import {
   valueSpecification_setGenericType,
   valueSpecification_setMultiplicity,
@@ -127,6 +131,20 @@ export const buildExecutionParameterValues = (
 ): ParameterValue[] =>
   paramStates
     .filter((ps) => !doesLambdaParameterStateContainFunctionValues(ps))
+    .filter(
+      (ps) =>
+        !(
+          ps.value instanceof PrimitiveInstanceValue &&
+          (ps.value.genericType.value.rawType === PrimitiveType.STRICTDATE ||
+            ps.value.genericType.value.rawType === PrimitiveType.DATE ||
+            ps.value.genericType.value.rawType === PrimitiveType.DATETIME) &&
+          isEmpty(ps.value.values[0]) &&
+          areMultiplicitiesEqual(
+            ps.parameter.multiplicity,
+            Multiplicity.ZERO_ONE,
+          )
+        ),
+    )
     .map((queryParamState) => {
       const paramValue = new ParameterValue();
       paramValue.name = queryParamState.parameter.name;
@@ -244,6 +262,27 @@ export class LambdaParameterState implements Hashable {
   }
 
   mockParameterValue(): void {
+    const t = this.variableType;
+    const isOptionalDate =
+      (t === PrimitiveType.STRICTDATE ||
+        t === PrimitiveType.DATE ||
+        t === PrimitiveType.DATETIME) &&
+      areMultiplicitiesEqual(
+        this.parameter.multiplicity,
+        Multiplicity.ZERO_ONE,
+      );
+    if (isOptionalDate) {
+      const nullDateValue = buildDefaultInstanceValue(
+        this.graph,
+        t,
+        this.observerContext,
+        false,
+      );
+      nullDateValue.multiplicity = this.parameter.multiplicity;
+      this.setValue(nullDateValue);
+      return;
+    }
+
     this.setValue(
       generateVariableExpressionMockValue(
         this.parameter,
