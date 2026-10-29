@@ -65,6 +65,11 @@ import {
 } from './TaggedValueEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
+  ElementEditorEmptyState,
+  ElementEditorHeader,
+  ElementEditorTabs,
+} from '../ElementEditorLayout.js';
+import {
   type Enumeration,
   type StereotypeReference,
   type TaggedValue,
@@ -76,6 +81,7 @@ import {
   stub_Profile,
   stub_Stereotype,
   stub_Enum,
+  extractAnnotatedElementDocumentation,
 } from '@finos/legend-graph';
 import {
   enum_setName,
@@ -113,6 +119,7 @@ const EnumBasicEditor = observer(
     const isEnumValueDuplicated = (val: Enum): boolean =>
       enumValue._OWNER.values.filter((value) => value.name === val.name)
         .length >= 2;
+    const documentation = extractAnnotatedElementDocumentation(enumValue);
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -182,6 +189,14 @@ const EnumBasicEditor = observer(
               isEnumValueDuplicated(enumValue) ? 'Duplicated enum' : undefined
             }
           />
+          <div
+            className={clsx('enum-basic-editor__doc', {
+              'enum-basic-editor__doc--empty': !documentation,
+            })}
+            title={documentation}
+          >
+            {documentation ?? 'No documentation'}
+          </div>
           <button
             className="uml-element-editor__basic__detail-btn"
             onClick={selectValue}
@@ -442,6 +457,11 @@ export const EnumerationEditor = observer(
       default:
         break;
     }
+    const tabCounts: Partial<Record<UML_EDITOR_TAB, number>> = {
+      [UML_EDITOR_TAB.ENUM_VALUES]: enumeration.values.length,
+      [UML_EDITOR_TAB.TAGGED_VALUES]: enumeration.taggedValues.length,
+      [UML_EDITOR_TAB.STEREOTYPES]: enumeration.stereotypes.length,
+    };
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.ENUM_VALUES) {
@@ -549,6 +569,15 @@ export const EnumerationEditor = observer(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ENUMERATION_EDITOR,
     );
 
+    const renderEmptyState = (description: string): React.ReactNode => (
+      <ElementEditorEmptyState
+        title={`No ${prettyCONSTName(selectedTab).toLowerCase()} yet`}
+        description={description}
+        actionLabel={addButtonTitle}
+        onAction={isReadOnly ? undefined : add}
+      />
+    );
+
     // layout
     const enumEditorCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
       !selectedEnum,
@@ -568,67 +597,59 @@ export const EnumerationEditor = observer(
             minSize={56}
           >
             <Panel>
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">enumeration</div>
-                  <div className="panel__header__title__content">
-                    {enumeration.name}
-                  </div>
-                </div>
-                <div className="panel__header__actions">
-                  {generationParentElement && (
-                    <button
-                      className="uml-element-editor__header__generation-origin"
-                      onClick={visitGenerationParentElement}
-                      tabIndex={-1}
-                      title={`Visit generation parent '${generationParentElement.path}'`}
-                    >
-                      <div className="uml-element-editor__header__generation-origin__label">
-                        <FireIcon />
-                      </div>
-                      <div className="uml-element-editor__header__generation-origin__parent-name">
-                        {generationParentElement.name}
-                      </div>
-                      <div className="uml-element-editor__header__generation-origin__visit-btn">
-                        <StickArrowCircleRightIcon />
-                      </div>
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div
-                data-testid={
-                  LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER
-                }
-                className="panel__header uml-element-editor__tabs__header"
+              <ElementEditorHeader
+                element={enumeration}
+                typeLabel="enumeration"
+                isReadOnly={isReadOnly}
               >
-                <div className="uml-element-editor__tabs">
-                  {tabs.map((tab) => (
-                    <div
-                      key={tab}
-                      onClick={changeTab(tab)}
-                      className={clsx('uml-element-editor__tab', {
-                        'uml-element-editor__tab--active': tab === selectedTab,
-                      })}
-                    >
-                      {prettyCONSTName(tab)}
-                    </div>
-                  ))}
-                </div>
-                <div className="panel__header__actions">
+                {generationParentElement && (
                   <button
-                    className="panel__header__action"
-                    onClick={add}
+                    className="uml-element-editor__header__generation-origin"
+                    onClick={visitGenerationParentElement}
                     tabIndex={-1}
-                    title={addButtonTitle}
+                    title={`Visit generation parent '${generationParentElement.path}'`}
                   >
-                    <PlusIcon />
+                    <div className="uml-element-editor__header__generation-origin__label">
+                      <FireIcon />
+                    </div>
+                    <div className="uml-element-editor__header__generation-origin__parent-name">
+                      {generationParentElement.name}
+                    </div>
+                    <div className="uml-element-editor__header__generation-origin__visit-btn">
+                      <StickArrowCircleRightIcon />
+                    </div>
                   </button>
-                </div>
-              </div>
+                )}
+              </ElementEditorHeader>
+              <ElementEditorTabs
+                testId={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                tabs={tabs.map((tab) => ({
+                  id: tab,
+                  label: prettyCONSTName(tab),
+                  count: tabCounts[tab],
+                }))}
+                selectedTab={selectedTab}
+                onSelect={(tab): void => changeTab(tab)()}
+                addTitle={addButtonTitle}
+                onAdd={add}
+                disableAdd={isReadOnly}
+              />
               <PanelContent>
                 {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
-                  <PanelContentLists>
+                  <PanelContentLists className="uml-table">
+                    {enumeration.values.length ? (
+                      <div className="uml-table__header">
+                        <div className="uml-table__header__name">Value</div>
+                        <div className="uml-table__header__detail">
+                          Documentation
+                        </div>
+                        <div className="uml-table__header__actions" />
+                      </div>
+                    ) : (
+                      renderEmptyState(
+                        'The values are the names this enumeration can take.',
+                      )
+                    )}
                     <DragPreviewLayer
                       labelGetter={(item: EnumValueDragSource): string =>
                         item.enumValue.name === ''
@@ -654,6 +675,10 @@ export const EnumerationEditor = observer(
                     dropTargetConnector={taggedValueDropConnector}
                   >
                     <PanelContentLists>
+                      {!enumeration.taggedValues.length &&
+                        renderEmptyState(
+                          'Drop a profile here from the explorer to tag this enumeration with one of its tags.',
+                        )}
                       <TaggedValueDragPreviewLayer />
                       {enumeration.taggedValues.map((taggedValue) => (
                         <TaggedValueEditor
@@ -673,6 +698,10 @@ export const EnumerationEditor = observer(
                     dropTargetConnector={stereotypeDropConnector}
                   >
                     <PanelContentLists>
+                      {!enumeration.stereotypes.length &&
+                        renderEmptyState(
+                          'Drop a profile here from the explorer to mark this enumeration with one of its stereotypes.',
+                        )}
                       <StereotypeDragPreviewLayer />
                       {enumeration.stereotypes.map((stereotype) => (
                         <StereotypeSelector

@@ -21,11 +21,8 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/UMLEditorState.js';
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   InputWithInlineValidation,
-  PlusIcon,
   TimesIcon,
-  LockIcon,
   PanelEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
@@ -43,6 +40,11 @@ import {
   stub_Stereotype,
   type Tag,
 } from '@finos/legend-graph';
+import {
+  ElementEditorEmptyState,
+  ElementEditorHeader,
+  ElementEditorTabs,
+} from '../ElementEditorLayout.js';
 import {
   profile_addTag,
   profile_addStereotype,
@@ -281,7 +283,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   let addButtonTitle = '';
   switch (selectedTab) {
     case UML_EDITOR_TAB.TAGS:
-      addButtonTitle = 'Add tagged value';
+      addButtonTitle = 'Add tag';
       break;
     case UML_EDITOR_TAB.STEREOTYPES:
       addButtonTitle = 'Add stereotype';
@@ -306,6 +308,18 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile_deleteTag(profile, val);
+  const tabCounts: Partial<Record<UML_EDITOR_TAB, number>> = {
+    [UML_EDITOR_TAB.TAGS]: profile.p_tags.length,
+    [UML_EDITOR_TAB.STEREOTYPES]: profile.p_stereotypes.length,
+  };
+  const renderEmptyState = (): React.ReactNode => (
+    <ElementEditorEmptyState
+      title={`No ${prettyCONSTName(selectedTab).toLowerCase()} yet`}
+      description="Tags and stereotypes defined here can be applied to classes, properties, enumerations, functions and other elements."
+      actionLabel={addButtonTitle}
+      onAction={isReadOnly ? undefined : addValue}
+    />
+  );
 
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.PROFILE_EDITOR,
@@ -314,49 +328,34 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   return (
     <div className="uml-element-editor profile-editor">
       <Panel>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            {isReadOnly && (
-              <div className="uml-element-editor__header__lock">
-                <LockIcon />
-              </div>
-            )}
-            <div className="panel__header__title__label">profile</div>
-            <div className="panel__header__title__content">{profile.name}</div>
-          </div>
-        </div>
-        <div
-          data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
-          className="panel__header uml-element-editor__tabs__header"
-        >
-          <div className="uml-element-editor__tabs">
-            {tabs.map((tab) => (
-              <div
-                key={tab}
-                onClick={changeTab(tab)}
-                className={clsx('uml-element-editor__tab', {
-                  'uml-element-editor__tab--active': tab === selectedTab,
-                })}
-              >
-                {prettyCONSTName(tab)}
-              </div>
-            ))}
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              onClick={addValue}
-              disabled={isReadOnly}
-              tabIndex={-1}
-              title={addButtonTitle}
-            >
-              <PlusIcon />
-            </button>
-          </div>
-        </div>
+        <ElementEditorHeader
+          element={profile}
+          typeLabel="profile"
+          isReadOnly={isReadOnly}
+        />
+        <ElementEditorTabs
+          testId={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+          tabs={tabs.map((tab) => ({
+            id: tab,
+            label: prettyCONSTName(tab),
+            count: tabCounts[tab],
+          }))}
+          selectedTab={selectedTab}
+          onSelect={(tab): void => changeTab(tab)()}
+          addTitle={addButtonTitle}
+          onAdd={addValue}
+          disableAdd={isReadOnly}
+        />
         <PanelContent>
           {selectedTab === UML_EDITOR_TAB.TAGS && (
-            <PanelContentLists>
+            <PanelContentLists className="uml-table">
+              {profile.p_tags.length ? (
+                <div className="uml-table__header">
+                  <div className="uml-table__header__name">Tag</div>
+                </div>
+              ) : (
+                renderEmptyState()
+              )}
               <DragPreviewLayer
                 labelGetter={(item: TagDragSource): string =>
                   item.tag.value === '' ? '(unknown)' : item.tag.value
@@ -375,7 +374,14 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             </PanelContentLists>
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-            <PanelContentLists>
+            <PanelContentLists className="uml-table">
+              {profile.p_stereotypes.length ? (
+                <div className="uml-table__header">
+                  <div className="uml-table__header__name">Stereotype</div>
+                </div>
+              ) : (
+                renderEmptyState()
+              )}
               <DragPreviewLayer
                 labelGetter={(item: StereotypeDragSource): string =>
                   item.stereotype.value === ''
