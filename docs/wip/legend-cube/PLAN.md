@@ -5724,12 +5724,18 @@ type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and Duck
   makes all of them nullable: a group of empty values gives none, and Std Dev and Variance give none over one value. The
   conformance cases declare the engine's `[1]` ones wider, as Sum and Average (§5.7).
 - **Percentile's literal is a Float**: `percentile(1)` doesn't type. The engine plans 1.5, so Cube checks the range.
-- **Join Text's values come in no set order**; a group with no text gives an empty text on Snowflake (documented) and
-  Databricks, and none on H2 and DuckDB ✅.
+- **Join Text's values come in no set order**; a group with no text gives an empty text on Snowflake (documented) and,
+  by `array_join` of an empty list, Databricks 💭, and none on H2 and DuckDB ✅.
+- **Run on the warehouses, by the engine's PCT** (its expected-failure manifests, checkout `3aeb3f0f7f`, run on
+  Snowflake and Databricks themselves): no failure is listed for `median`, `percentile`, `stdDevSample`,
+  `varianceSample` or `joinStrings` in a group, nor for Median, Std Dev and Variance in a window. The failures listed
+  are a Percentile window (Snowflake's values, DuckDB's missing window function) and Databricks' `joinStrings` with an
+  order, neither of which Cube writes. BigQuery's (legend-engine#5108) list Median ("Function not found") and
+  Percentile (a syntax error).
 - **Other databases** (plans): every function plans on Postgres, Sybase, Sybase IQ, DB2, Oracle, Redshift, BigQuery and
   ClickHouse too. The engine refuses Join Text on SQL Server, Trino, Presto, Athena, Hive and Composite, and Std Dev on
   Hive and Composite. ClickHouse writes Median and Percentile as estimates (`median`, `quantile`) and Join Text as a
-  function of one row (ISSUES.md). The Group editor's notes say so.
+  function of one row (ISSUES.md). The Group editor's notes say so, BigQuery's Median and Percentile included.
 - **Import Pure** reads `median()`, `stdDevSample()`, `varianceSample()`, `percentile(<Float>)` and
   `joinStrings(<String>)`, and refuses the other forms (an Integer p, the four-argument `percentile`, the population
   functions); a window reads `stdDevSample()` and `varianceSample()`.

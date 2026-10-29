@@ -324,8 +324,8 @@ export const GROUP_EDITOR_NOTES = [
   'Distinct Value is the value when the group has exactly one distinct value that is not empty, and empty otherwise.',
   'Median and Percentile interpolate between the two nearest values. Percentile takes a percent from 0 to 100: 90 gives the value 90% of the way through the sorted values.',
   'Std Dev and Variance are the sample ones, which divide by one less than the number of values: a group with one value gives empty.',
-  'Join Text joins the texts that are not empty, with the separator between them, in no set order. A group with none gives an empty text on Snowflake and Databricks, and empty on other databases.',
-  "Some databases, such as SQL Server, Trino and ClickHouse, can't run Join Text, nor Hive Std Dev; ClickHouse estimates Median and Percentile.",
+  'Join Text joins the texts that are not empty, with the separator between them, in no set order. A group with none gives an empty text on some databases, such as Snowflake, and empty on others, such as H2 and DuckDB.',
+  "Not every database runs them all: BigQuery can't run Median or Percentile, SQL Server, Trino and ClickHouse can't run Join Text, and Hive can't run Std Dev. ClickHouse estimates Median and Percentile.",
   'With no group column, the result is one row, even when there are no rows.',
 ];
 
