@@ -134,12 +134,15 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const { query } = editorState.document;
   const { readOnly } = editorState;
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
-  const positions = useMemo(() => layoutCubeQuery(query), [query]);
+  const { positions, lanes } = useMemo(() => layoutCubeQuery(query), [query]);
   const nodes = useMemo(
     () => buildCubeCanvasNodes(query, positions),
     [query, positions],
   );
-  const edges = useMemo(() => buildCubeCanvasEdges(query), [query]);
+  const edges = useMemo(
+    () => buildCubeCanvasEdges(query, lanes),
+    [query, lanes],
+  );
   // the view fits the graph again, to the left, whenever the layout moves a
   // node, or the canvas changes size (e.g. the splitter above the grid
   // moves), once React Flow has measured every node

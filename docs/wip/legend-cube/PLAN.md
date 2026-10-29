@@ -1517,7 +1517,13 @@ panel. The click-away's rules and `holdOpen()` handle §17.5's nested-dismiss pr
   2. Insert nodes **sorted by id** and edges **sorted by `port + source + target`**, keyed by port (§17.3
      determinism, verified for dagre ✅). Invariant 3 means one node never feeds both ports of a Join (a self-join
      is two source nodes of one table), so the multigraph is a safeguard only.
-  3. Run layout and convert centres to top-left (fixes §17.3 pitfall 1).
+  3. Give each node a **column**: 0 with no input, else one after its furthest input (the longest path from a
+     source). Each edge's `minlen` is its columns' difference, so every source starts in the first column
+     (feedback, 2026-10-29). dagre alone puts a short branch's source next to the step it feeds.
+  4. Run layout and convert centres to top-left (fixes §17.3 pitfall 1). An edge that skips columns gets a
+     **lane** in each: the height where dagre's route for it crosses the column's middle, which dagre keeps clear
+     of the column's nodes. The edge goes straight across each column in its lane and curves only in the gaps
+     between columns, so it never crosses a node. An edge between neighbouring columns is React Flow's curve.
 - **Nodes:**
   - Fixed size (200×72), with the icon and the `describe()` text clamped to two lines; the full text is in the
     tooltip. This avoids measuring, which keeps the layout deterministic.

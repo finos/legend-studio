@@ -34,6 +34,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_CANVAS_NODE_HEIGHT,
   CUBE_CANVAS_NODE_WIDTH,
+  type CubeCanvasLayout,
   type CubeCanvasPosition,
 } from './CubeCanvasLayout.js';
 
@@ -51,7 +52,11 @@ export const MISSING_VALIDITY_TOOLTIP =
   'This node depends on some invalid inputs.';
 
 export type CubeCanvasNodeData = { readonly node: QueryNode };
-export type CubeCanvasEdgeData = { readonly label: string | undefined };
+export type CubeCanvasEdgeData = {
+  readonly label: string | undefined;
+  /** The lanes it crosses the columns it skips in, left to right (`layoutCubeQuery`) */
+  readonly lanes: readonly CubeCanvasPosition[];
+};
 export type CubeCanvasFlowNode = Node<CubeCanvasNodeData, 'cube'>;
 export type CubeCanvasFlowEdge = Edge<CubeCanvasEdgeData, 'cube'>;
 type CubeCanvasHandle = NonNullable<Node['handles']>[number];
@@ -97,8 +102,14 @@ export const buildCubeCanvasNodes = (
     data: { node },
   }));
 
-/** Each connection, labelled with its port's label when the target has one, e.g. Left and Right on a Join */
-export const buildCubeCanvasEdges = (query: Query): CubeCanvasFlowEdge[] =>
+/**
+ * Each connection, labelled with its port's label when the target has one,
+ * e.g. Left and Right on a Join, with the lanes the layout gives it
+ */
+export const buildCubeCanvasEdges = (
+  query: Query,
+  lanes: CubeCanvasLayout['lanes'] = new Map(),
+): CubeCanvasFlowEdge[] =>
   query.connections.map((connection) => {
     const target = query.getNode(connection.target);
     const label = target?.portLabels[target.ports.indexOf(connection.port)];
@@ -110,7 +121,7 @@ export const buildCubeCanvasEdges = (query: Query): CubeCanvasFlowEdge[] =>
       sourceHandle: CUBE_OUTPUT_HANDLE_ID,
       targetHandle: connection.port,
       markerEnd: { type: MarkerType.ArrowClosed },
-      data: { label },
+      data: { label, lanes: lanes.get(connection.toString()) ?? [] },
     };
   });
 
