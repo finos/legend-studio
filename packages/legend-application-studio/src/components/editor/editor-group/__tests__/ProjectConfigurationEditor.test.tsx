@@ -240,6 +240,89 @@ test(
 );
 
 test(
+  integrationTest(
+    'Platform versions entered by hand never change the configured objects',
+  ),
+  async () => {
+    const engine = new PlatformConfiguration('legend-engine', '4.80.0');
+    const sdlc = new PlatformConfiguration('legend-sdlc', '0.201.0');
+    act(() =>
+      MOCK__editorStore.projectConfigurationEditorState.currentProjectConfiguration.setPlatformConfigurations(
+        [engine, sdlc],
+      ),
+    );
+    const editorGroupContent = openConfigurationTab('Platform Configurations');
+    await waitFor(() => getByText(editorGroupContent, '4.95.1 available'));
+    fireEvent.click(getByText(editorGroupContent, 'Enter versions manually'));
+    fireEvent.click(await renderResult.findByText('Continue'));
+    fireEvent.change(
+      await waitFor(() =>
+        getByTitle(editorGroupContent, 'legend-engine version'),
+      ),
+      { target: { value: '4.96.0' } },
+    );
+
+    // typing only changes the draft
+    expect(engine.version).toBe('4.80.0');
+    expect(getPlatformVersions()).toEqual([
+      'legend-engine:4.80.0',
+      'legend-sdlc:0.201.0',
+    ]);
+
+    fireEvent.click(getByText(editorGroupContent, 'Freeze at these versions'));
+
+    // applying writes new objects, and leaves the old ones as they were
+    expect(getPlatformVersions()).toEqual([
+      'legend-engine:4.96.0',
+      'legend-sdlc:0.201.0',
+    ]);
+    expect(engine.version).toBe('4.80.0');
+    expect(
+      MOCK__editorStore.projectConfigurationEditorState.currentProjectConfiguration.platformConfigurations?.includes(
+        engine,
+      ),
+    ).toBe(false);
+  },
+);
+
+test(
+  integrationTest(
+    'A manual platform versions draft starts over when the configured versions change',
+  ),
+  async () => {
+    const editorGroupContent = openConfigurationTab('Platform Configurations');
+    await waitFor(() => getByText(editorGroupContent, 'legend-engine'));
+    fireEvent.click(getByText(editorGroupContent, 'Enter versions manually'));
+    fireEvent.click(await renderResult.findByText('Continue'));
+    fireEvent.change(
+      await waitFor(() =>
+        getByTitle(editorGroupContent, 'legend-engine version'),
+      ),
+      { target: { value: '4.96.0' } },
+    );
+
+    // e.g. the configuration is reloaded while the draft is open
+    act(() =>
+      MOCK__editorStore.projectConfigurationEditorState.currentProjectConfiguration.setPlatformConfigurations(
+        [
+          new PlatformConfiguration('legend-engine', '4.90.0'),
+          new PlatformConfiguration('legend-sdlc', '0.201.0'),
+        ],
+      ),
+    );
+
+    await waitFor(() =>
+      expect(
+        getByTitle<HTMLInputElement>(
+          editorGroupContent,
+          'legend-engine version',
+        ).value,
+      ).toBe('4.90.0'),
+    );
+  },
+);
+
+test(
   integrationTest('Advanced settings: dependency tests and the project type'),
   async () => {
     const editorGroupContent = openConfigurationTab('Advanced');

@@ -362,6 +362,24 @@ const PlatformVersionsTable = observer(
   },
 );
 
+type PlatformVersionDraft = { name: string | undefined; version: string };
+
+/**
+ * What a manual draft is made from: the frozen versions (or none), and the latest versions
+ * the SDLC server lists. The draft starts over when this changes.
+ */
+const getPlatformVersionsDraftSource = (
+  projectConfig: ProjectConfiguration,
+  latestVersions: PlatformConfiguration[],
+): string =>
+  JSON.stringify([
+    projectConfig.platformConfigurations?.map((platform) => [
+      platform.name,
+      platform.version,
+    ]) ?? null,
+    latestVersions.map((platform) => [platform.name, platform.version]),
+  ]);
+
 const ManualPlatformVersionsEditor = observer(
   (props: {
     projectConfig: ProjectConfiguration;
@@ -370,17 +388,31 @@ const ManualPlatformVersionsEditor = observer(
   }) => {
     const { projectConfig, latestVersions, isReadOnly } = props;
     const editorStore = useEditorStore();
-    // edit copies, so the configuration only changes when the versions are applied
-    const [draft] = useState(() =>
+    // a plain snapshot: typing only changes this state, and the configuration only changes,
+    // with new objects, when the versions are applied
+    const [draft, setDraft] = useState<PlatformVersionDraft[]>(() =>
       (projectConfig.platformConfigurations ?? latestVersions).map(
-        (platform) =>
-          new PlatformConfiguration(platform.name, platform.version),
+        (platform) => ({
+          name: platform.name,
+          version: platform.version ?? '',
+        }),
       ),
     );
+    const setDraftVersion = (name: string | undefined, version: string): void =>
+      setDraft((current) =>
+        current.map((platform) =>
+          platform.name === name ? { ...platform, version } : platform,
+        ),
+      );
     const close = (): void =>
       editorStore.projectConfigurationEditorState.setManualOverwrite(false);
     const apply = (): void => {
-      projectConfig.setPlatformConfigurations(draft);
+      projectConfig.setPlatformConfigurations(
+        draft.map(
+          (platform) =>
+            new PlatformConfiguration(platform.name, platform.version),
+        ),
+      );
       close();
     };
 
@@ -389,16 +421,16 @@ const ManualPlatformVersionsEditor = observer(
         <div className="platform-versions">
           <PlatformVersionsHeader />
           {draft.map((platform) => (
-            <div key={platform._UUID} className="platform-versions__row">
+            <div key={platform.name} className="platform-versions__row">
               <div className="platform-versions__name">{platform.name}</div>
               <input
                 className="input input--dark platform-versions__input"
                 title={`${platform.name} version`}
-                value={platform.version ?? ''}
+                value={platform.version}
                 spellCheck={false}
                 disabled={isReadOnly}
                 onChange={(event): void =>
-                  platform.setVersion(event.target.value)
+                  setDraftVersion(platform.name, event.target.value)
                 }
               />
               <div className="platform-versions__status" />
@@ -515,6 +547,11 @@ const ProjectPlatformVersionEditor = observer(
           </div>
           {isManual ? (
             <ManualPlatformVersionsEditor
+              // start a new draft when the versions it was made from change
+              key={getPlatformVersionsDraftSource(
+                projectConfig,
+                latestVersions,
+              )}
               projectConfig={projectConfig}
               latestVersions={latestVersions}
               isReadOnly={isReadOnly}
