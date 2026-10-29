@@ -220,9 +220,8 @@ export interface CubeCanvasContainerPlace {
   readonly height: number;
 }
 
-export interface CubeCanvasLayout {
-  /** Where each step shown goes: a folded container's steps aren't shown */
-  readonly positions: ReadonlyMap<string, CubeCanvasPosition>;
+/** Where the canvas draws the query's nodes and edges, and its containers */
+export interface CubeCanvasContainerLayout extends CubeCanvasLayout {
   readonly containers: readonly CubeCanvasContainerPlace[];
 }
 
@@ -232,31 +231,32 @@ const boxKey = (id: string): string => `\u0000box:${id}`;
 const frameKey = (id: string): string => `\u0000frame:${id}`;
 
 interface CubeCanvasLayoutEdge {
+  readonly connection: Connection;
   readonly source: string;
   readonly target: string;
+  /** Unique: a step feeds one other, and a port takes one input */
   readonly name: string;
 }
 
-/** Each key's column, as the steps' (getColumns), in the graph laid out */
+/** Each key's column, as a step's (`getColumns`), in the graph laid out */
 const getKeyColumns = (
-  keys: readonly string[],
   edges: readonly CubeCanvasLayoutEdge[],
-): Map<string, number> => {
+): ((key: string) => number) => {
+  const inputs = new Map<string, string[]>();
+  edges.forEach(({ source, target }) =>
+    inputs.set(target, [...(inputs.get(target) ?? []), source]),
+  );
   const columns = new Map<string, number>();
-  const columnOf = (key: string): number => {
-    const known = columns.get(key);
-    if (known !== undefined) {
-      return known;
+  const getColumn = (key: string): number => {
+    let column = columns.get(key);
+    if (column === undefined) {
+      // the graph laid out has no cycle (`layoutCubeCanvas`), so this ends
+      column = Math.max(-1, ...(inputs.get(key) ?? []).map(getColumn)) + 1;
+      columns.set(key, column);
     }
-    const inputs = edges.filter((edge) => edge.target === key);
-    const column = inputs.length
-      ? Math.max(...inputs.map((input) => columnOf(input.source) + 1))
-      : 0;
-    columns.set(key, column);
     return column;
   };
-  keys.forEach(columnOf);
-  return columns;
+  return getColumn;
 };
 
 /**
@@ -266,15 +266,16 @@ const getKeyColumns = (
  * one box, with the lines that come into them, or go out of them, coming to
  * or going from it: the graph laid out is the query with each folded
  * container's steps made one. Containers are one block of steps each
- * (`getShownContainers`), so that graph has no cycle.
+ * (`getShownContainers`), so that graph has no cycle. Columns and lanes are
+ * `layoutCubeQuery`'s, on that graph.
  */
 export const layoutCubeCanvas = (
   query: Query,
   containers: readonly StepContainer[] | undefined,
-): CubeCanvasLayout => {
+): CubeCanvasContainerLayout => {
   const shown = getShownContainers(query, containers);
   if (!shown.length) {
-    return { positions: layoutCubeQuery(query), containers: [] };
+    return { ...layoutCubeQuery(query), containers: [] };
   }
   const boxOf = new Map<string, string>();
   shown.forEach(
@@ -289,18 +290,16 @@ export const layoutCubeCanvas = (
   const keys = [...new Set(query.nodes.map((node) => keyOf(node.id)))].sort(
     compareText,
   );
-  const edges = query.connections
+  const edges = [...query.connections]
+    .sort(compareConnections)
     .map((connection) => ({
+      connection,
       source: keyOf(connection.source),
       target: keyOf(connection.target),
-      // a step feeds one other, and a port takes one input
       name: `${connection.target}:${connection.port}`,
     }))
-    .filter((edge) => edge.source !== edge.target)
-    .sort(
-      (a, b) => compareText(a.name, b.name) || compareText(a.source, b.source),
-    );
-  const columns = getKeyColumns(keys, edges);
+    .filter((edge) => edge.source !== edge.target);
+  const getColumn = getKeyColumns(edges);
   const graph = new dagre.graphlib.Graph<{
     width?: number;
     height?: number;
@@ -326,10 +325,7 @@ export const layoutCubeCanvas = (
     graph.setEdge(
       edge.source,
       edge.target,
-      {
-        minlen:
-          (columns.get(edge.target) ?? 0) - (columns.get(edge.source) ?? 0),
-      },
+      { minlen: getColumn(edge.target) - getColumn(edge.source) },
       edge.name,
     ),
   );
@@ -345,10 +341,43 @@ export const layoutCubeCanvas = (
   const positions = new Map(
     query.nodes
       .filter((node) => !boxOf.has(node.id))
-      .map((node) => [node.id, topLeftOf(node.id)]),
+      .map((node): [string, CubeCanvasPosition] => [
+        node.id,
+        topLeftOf(node.id),
+      ]),
   );
+  // a lane in each column a line skips, as `layoutCubeQuery` gives them
+  const columnLefts = new Map(
+    keys.map((key): [number, number] => [getColumn(key), topLeftOf(key).x]),
+  );
+  const lanes = new Map<string, CubeCanvasPosition[]>();
+  edges.forEach((edge) => {
+    const edgeLanes: CubeCanvasPosition[] = [];
+    const { points } = graph.edge(edge.source, edge.target, edge.name) as {
+      points: CubeCanvasPosition[];
+    };
+    for (
+      let column = getColumn(edge.source) + 1;
+      column < getColumn(edge.target);
+      column++
+    ) {
+      const x = columnLefts.get(column);
+      const y =
+        x === undefined
+          ? undefined
+          : getHeightAt(points, x + CUBE_CANVAS_NODE_WIDTH / 2);
+      if (x === undefined || y === undefined) {
+        return;
+      }
+      edgeLanes.push({ x, y });
+    }
+    if (edgeLanes.length) {
+      lanes.set(edge.connection.toString(), edgeLanes);
+    }
+  });
   return {
     positions,
+    lanes,
     containers: shown.map(({ container, steps }) => {
       if (container.folded) {
         return {
@@ -387,7 +416,7 @@ export const layoutCubeCanvas = (
  * folded container it is in
  */
 export const getCubeCanvasStepPlace = (
-  layout: CubeCanvasLayout,
+  layout: CubeCanvasContainerLayout,
   stepId: string,
 ): CubeCanvasPosition | undefined =>
   layout.positions.get(stepId) ??

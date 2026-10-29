@@ -127,13 +127,13 @@ describe('layoutCubeCanvas', () => {
   test('Lays a cube without containers out as before', () => {
     const query = managerQuery();
     expect(layoutCubeCanvas(query, undefined)).toEqual({
-      positions: layoutCubeQuery(query),
+      ...layoutCubeQuery(query),
       containers: [],
     });
     // a container left with no step of the query is none
     expect(
       layoutCubeCanvas(query, [container('container1', ['gone'])]),
-    ).toEqual({ positions: layoutCubeQuery(query), containers: [] });
+    ).toEqual({ ...layoutCubeQuery(query), containers: [] });
   });
 
   test('Frames an open container round its steps alone, the sources still in the first column', () => {
@@ -154,7 +154,7 @@ describe('layoutCubeCanvas', () => {
       positions.get('relational102')?.x,
     );
     // the columns keep their gap
-    const before = layoutCubeQuery(query);
+    const before = layoutCubeQuery(query).positions;
     const gap = (layout: ReadonlyMap<string, CubeCanvasPosition>): number =>
       (layout.get('filter101')?.x ?? NaN) -
       (layout.get('relational102')?.x ?? NaN);
@@ -213,6 +213,45 @@ describe('layoutCubeCanvas', () => {
     expect(positions.get('sort101')?.x).toBeGreaterThan(box.x);
     const frame = placeOf(places, 'container2');
     expect(intersects(frame, box)).toBe(false);
+  });
+
+  test('Gives a line that skips a column a lane past a frame, not through it', () => {
+    // TRADES and DESKS joined in a frame, INSTRUMENTS → Rename → a second Join,
+    // the Rename and that Join folded: INSTRUMENTS's line skips the Join's column
+    const query = new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101'),
+        northwindTable('relational103', 'ORDERS', ORDERS_COLUMNS),
+        new Filter('filter101'),
+        new Join('join102'),
+        new Sort('sort101'),
+      ],
+      [
+        new Connection('relational101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+        new Connection('join101', 'join102', 'leftTds'),
+        new Connection('relational103', 'filter101', 'tds'),
+        new Connection('filter101', 'join102', 'rightTds'),
+        new Connection('join102', 'sort101', 'tds'),
+      ],
+      'sort101',
+    );
+    const { lanes, containers: places } = layoutCubeCanvas(query, [
+      container('container1', ['relational101', 'relational102', 'join101']),
+      container('container2', ['filter101', 'join102'], true),
+    ]);
+    const frame = placeOf(places, 'container1');
+    const [lane, ...more] =
+      lanes.get(
+        new Connection('relational103', 'filter101', 'tds').toString(),
+      ) ?? [];
+    expect(more).toEqual([]);
+    expect(lane?.x).toBeGreaterThan(frame.x);
+    expect(
+      (lane?.y ?? NaN) < frame.y || (lane?.y ?? NaN) > frame.y + frame.height,
+    ).toBe(true);
   });
 
   test('Gives the same layout whatever order the containers and their steps come in', () => {
