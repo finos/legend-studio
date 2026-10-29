@@ -53,6 +53,7 @@ import {
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
   TEST__importDocument,
+  TEST__getColumnListRowText,
   TEST__renderInCubeApplication,
 } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
@@ -263,24 +264,33 @@ describe('Group editor', () => {
     await openGroup();
     // the blank row is left out, so there's no aggregation yet
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Aggregations')]);
-    expect(keyItems().map((item) => item.textContent)).toEqual([
-      'ORDER_IDWhole number',
-      'CUSTOMER_IDText, optional',
-      'EMPLOYEE_IDWhole number, optional',
-      'ORDER_DATEDate, optional',
-      'REQUIRED_DATEDate, optional',
-      'SHIPPED_DATEDate, optional',
-      'SHIP_VIAWhole number, optional',
-      'FREIGHTNumber, optional',
-      'SHIP_NAMEText, optional',
-      'SHIP_ADDRESSText, optional',
-      'SHIP_CITYText, optional',
-      'SHIP_REGIONText, optional',
-      'SHIP_POSTAL_CODEText, optional',
-      'SHIP_COUNTRYText, optional',
-      "PAYLOADVariant, optional (can't be grouped)",
-      "SHAPEShape, optional (can't be grouped)",
+    expect(keyItems().map(TEST__getColumnListRowText)).toEqual([
+      'ORDER_ID Whole number',
+      'CUSTOMER_ID Text, optional',
+      'EMPLOYEE_ID Whole number, optional',
+      'ORDER_DATE Date, optional',
+      'REQUIRED_DATE Date, optional',
+      'SHIPPED_DATE Date, optional',
+      'SHIP_VIA Whole number, optional',
+      'FREIGHT Number, optional',
+      'SHIP_NAME Text, optional',
+      'SHIP_ADDRESS Text, optional',
+      'SHIP_CITY Text, optional',
+      'SHIP_REGION Text, optional',
+      'SHIP_POSTAL_CODE Text, optional',
+      'SHIP_COUNTRY Text, optional',
+      "PAYLOAD Variant, optional (can't be grouped)",
+      "SHAPE Shape, optional (can't be grouped)",
     ]);
+    // the row shows the type's icon, with the words and the exact type in its
+    // tooltip; the words follow the name for screen readers only
+    const [orderId] = keyItems();
+    expect(
+      orderId?.querySelector('[aria-hidden="true"]')?.getAttribute('title'),
+    ).toBe('Whole number (SmallInt)');
+    expect(
+      within(orderId as HTMLElement).getByText('Whole number').className,
+    ).toBe('sr-only');
     expect(checkbox('ORDER_ID').disabled).toBe(false);
     expect(checkbox('PAYLOAD').disabled).toBe(true);
     expect(checkbox('SHAPE').disabled).toBe(true);

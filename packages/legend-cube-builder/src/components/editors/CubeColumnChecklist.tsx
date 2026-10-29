@@ -21,12 +21,8 @@ import {
   type SchemaColumn,
 } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
-import {
-  getColumnTypeLabel,
-  getExactColumnTypeLabel,
-} from '../../__lib__/LegendCubeLabels.js';
 import { CubeButton } from '../CubeButton.js';
-import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { CubeTypedColumnName } from './CubeColumnPicker.js';
 
 /**
  * The input's columns, each ticked to pick it (a Group's keys, PLAN §11.5; a
@@ -100,17 +96,15 @@ export const CubeColumnChecklist = observer(
                     }
                     onChange={() => onToggle(column.name)}
                   />
-                  <CubeColumnTypeIcon
-                    type={column.type}
-                    className="text-[var(--color-text-secondary)]"
+                  <CubeTypedColumnName
+                    column={column}
+                    iconClassName="text-[var(--color-text-secondary)]"
                   />
-                  <span className="min-w-0 truncate">{column.name}</span>
-                  <span
-                    className="shrink-0 text-sm text-[var(--color-text-muted)]"
-                    title={getExactColumnTypeLabel(column)}
-                  >
-                    {`${getColumnTypeLabel(column)}${pickable ? '' : ` (${reason})`}`}
-                  </span>
+                  {reason && (
+                    <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
+                      {`(${reason})`}
+                    </span>
+                  )}
                 </label>
               </li>
             );

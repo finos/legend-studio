@@ -154,6 +154,18 @@ export const getColumnTypeLabel = (column: SchemaColumn): string =>
     column.nullable ? ', optional' : ''
   }`;
 
+/**
+ * A column's type for the tooltip of its type's icon, shown without the
+ * words: the words, then the exact type, e.g. `Whole number, optional
+ * (SmallInt?)`; for an enumeration, or a type Cube doesn't know, its path
+ */
+export const getColumnTypeTitle = (column: SchemaColumn): string =>
+  `${getColumnTypeLabel(column)} (${
+    TYPE_FAMILY_LABELS[column.type.family]
+      ? getExactColumnTypeLabel(column)
+      : column.type.fullName
+  })`;
+
 const listColumns = (columns: readonly SchemaColumn[]): string =>
   columns.map((column) => column.name).join(', ');
 
