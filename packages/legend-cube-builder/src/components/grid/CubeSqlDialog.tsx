@@ -50,12 +50,12 @@ export const CubeSqlDialog = observer(
       <Dialog open={sql.length > 0} onClose={onClose}>
         <Modal darkMode={darkMode} className="w-[960px] max-w-full">
           <ModalHeader>
-            <div className="modal__title">Executed SQL</div>
+            <div className="modal__title">SQL of the last run</div>
           </ModalHeader>
           <ModalBody>
             <div
               className="h-[60vh] w-full overflow-hidden rounded-sm border border-[var(--color-border-default)]"
-              aria-label="Executed SQL"
+              aria-label="SQL of the last run"
               data-testid={LEGEND_CUBE_TEST_ID.SQL_PANEL}
             >
               <CodeEditor

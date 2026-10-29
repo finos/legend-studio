@@ -61,9 +61,15 @@ export const READ_ONLY_CUBE_TITLE =
 /** How a SQL NULL shows in the grid, distinct from an empty string */
 export const NULL_CELL_TEXT = '(null)';
 
-/** What the Runs panel calls a run (PLAN §11.10, §11.16); a fetch of the grid's rows is described by its level */
+/** The button that runs the query, as Legend Query's names it */
+export const RUN_QUERY_LABEL = 'Run Query';
+
+/** The panel of the latest runs, fetches and exports (PLAN §11.16) */
+export const RUN_HISTORY_LABEL = 'Run history';
+
+/** What Run history calls a run (PLAN §11.10, §11.16); a fetch of the grid's rows is described by its level */
 export const CUBE_RUN_LABEL = {
-  EXECUTE: 'Execute',
+  EXECUTE: 'Run',
   EXPORT_CSV: 'Export CSV',
   pivotValues: (column: string): string => `Values of ${column}`,
 };
@@ -79,7 +85,7 @@ export const CUBE_RUN_PURE_NOTE =
 export enum CUBE_PENDING_LABEL {
   LOADING_MODEL = 'loading model',
   RESOLVING_SOURCE = 'resolving source',
-  EXECUTING_QUERY = 'executing query',
+  EXECUTING_QUERY = 'running query',
   FETCHING_ROWS = 'fetching rows',
   EXPORTING_CSV = 'exporting CSV',
   RENDERING_QUERY = 'rendering query',
@@ -157,7 +163,7 @@ export const getColumnTypeLabel = (column: SchemaColumn): string =>
 const listColumns = (columns: readonly SchemaColumn[]): string =>
   columns.map((column) => column.name).join(', ');
 
-/** Why Execute (and Show Pure) can't run, one reason a line, for a tooltip */
+/** Why Run Query (and Show Pure) can't run, one reason a line, for a tooltip */
 export const formatDisabledReasons = (reasons: readonly string[]): string =>
   reasons.map((reason) => `• ${reason}`).join('\n');
 
@@ -199,8 +205,7 @@ export const CUBE_JSON_DISABLED_REASON = {
 };
 
 export const CUBE_QUICK_ACTION_DISABLED_REASON = {
-  STALE_ROWS:
-    'Execute again: these rows are from an earlier version of the query.',
+  STALE_ROWS: 'Run again: these rows are from an earlier version of the query.',
   RUNNING: 'Wait for the run to finish.',
   EDITING:
     "Close the node editor first: these rows don't show the changes in it.",
@@ -377,14 +382,14 @@ export const CUBE_JSON_EXPLODE_OFFER_TITLE =
 
 /** The tooltips of a Variant column's fields in an expression editor (PLAN §11.20, V.9) */
 export const CUBE_JSON_FIELDS_TITLE = {
-  OPEN: 'Show its fields, read from its first values just before this step: listed in Runs; a field clicked is written into the expression',
+  OPEN: 'Show its fields, read from its first values just before this step: listed in Run history; a field clicked is written into the expression',
   FORMS:
     'Other forms of the field: counts, lists, the first element, totals, as JSON',
   EXPLODE:
     'One row per element is a step of its own: add Explode Array from the palette, or from Explore JSON in the grid',
   READ_AGAIN: 'Read the column again',
   EVERY_ROW:
-    'Read every value of the column, for the shape of the whole column: listed in Runs, and it can be stopped',
+    'Read every value of the column, for the shape of the whole column: listed in Run history, and it can be stopped',
 } as const;
 
 /** What a Variant column's fields were read from, in an expression editor (PLAN §11.20, V.9) */

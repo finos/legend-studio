@@ -45,7 +45,7 @@ import type { CubeEditorState } from './CubeEditorState.js';
 import type { CubeExecutionResult } from './CubeExecutionState.js';
 
 export const CUBE_EXPORT_CONTEXT_CHANGED =
-  "The cube's model, runtime or warehouse changed since this run: execute again to export it.";
+  "The cube's model, runtime or warehouse changed since this run: run again to export it.";
 
 /** A file name for a cube's export, from its name, e.g. `Largest_buys.csv` */
 export const getCubeExportFileName = (

@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { PanelLoadingIndicator } from '@finos/legend-art';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  PlayIcon,
+  SquareIcon,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { EXECUTE_SHORTCUT_LABEL } from '../../__lib__/LegendCubeCommand.js';
@@ -26,6 +31,8 @@ import {
   getRowLimitError,
   getTruncationMessage,
   ROW_LIMIT_WARNING_THRESHOLD,
+  RUN_HISTORY_LABEL,
+  RUN_QUERY_LABEL,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
@@ -147,6 +154,65 @@ const CubeGridModeToggle = observer(
   },
 );
 
+/**
+ * Run Query, or Stop while a run is in flight (spec §17.5): the page's one
+ * filled button, Legend Query's green with its ▶, so nothing else on the
+ * page looks like it (the manager's feedback, 2026-10-29)
+ */
+const CubeRunButton = observer((props: { editorState: CubeEditorState }) => {
+  const { editorState } = props;
+  const { execution } = editorState;
+  const disabledReasons = execution.disabledReasons;
+  const className =
+    // Run Query and Stop are as wide, so the row limit stays put
+    'flex h-6 min-w-[104px] shrink-0 items-center justify-center gap-1.5 rounded-sm border px-3 text-base font-medium enabled:cursor-pointer disabled:cursor-not-allowed';
+  return execution.isRunning ? (
+    <button
+      type="button"
+      className={clsx(
+        className,
+        'border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] enabled:hover:bg-[var(--color-bg-hover)]',
+      )}
+      title="Stop the run"
+      {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
+      onClick={() => execution.stop()}
+    >
+      <SquareIcon
+        className="text-xs text-[var(--color-status-error)]"
+        aria-hidden={true}
+      />
+      Stop
+    </button>
+  ) : (
+    <button
+      type="button"
+      className={clsx(
+        className,
+        // Legend Query's run colours, which every theme keeps (_query-builder.scss)
+        'border-[var(--color-green-100)] bg-[var(--color-green-100)] text-[var(--color-text-on-accent)] enabled:hover:border-[var(--color-green-200)] enabled:hover:bg-[var(--color-green-200)] disabled:border-[var(--color-border-default)] disabled:bg-[var(--color-bg-panel-header)] disabled:text-[var(--color-text-disabled)]',
+      )}
+      {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
+      disabled={!execution.canExecute}
+      title={
+        disabledReasons.length
+          ? `${formatDisabledReasons(disabledReasons)}\n(${EXECUTE_SHORTCUT_LABEL})`
+          : `Run the query up to the output step (${EXECUTE_SHORTCUT_LABEL})`
+      }
+      // the node editor's edits apply first, so they run (spec §17.5)
+      onClick={() => editorState.executeEdited()}
+    >
+      <PlayIcon className="text-xs" aria-hidden={true} />
+      {RUN_QUERY_LABEL}
+    </button>
+  );
+});
+
+/**
+ * Above the grid: how it shows the run, what came back, Show SQL and Run
+ * history; at the right end, as in Legend Query's results, the row limit and
+ * Run Query. It wraps when narrow, the right end keeping to the right, so Run
+ * Query is never pushed out of sight.
+ */
 const CubeGridToolbar = observer(
   (props: {
     editorState: CubeEditorState;
@@ -157,49 +223,15 @@ const CubeGridToolbar = observer(
     const { editorState, onShowSql, showRuns, onToggleRuns } = props;
     const { execution } = editorState;
     const { result } = execution;
-    const disabledReasons = execution.disabledReasons;
     return (
       <div
-        className="flex h-8 shrink-0 items-center gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2"
+        className="flex min-h-8 shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2 py-0.5"
         data-testid={LEGEND_CUBE_TEST_ID.GRID_TOOLBAR}
       >
-        {execution.isRunning ? (
-          <CubeButton
-            title="Stop the run"
-            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
-            onClick={() => execution.stop()}
-          >
-            Stop
-          </CubeButton>
-        ) : (
-          <CubeButton
-            primary={true}
-            {...cubeTourAnchor(CUBE_TOUR_ANCHOR.EXECUTE)}
-            disabled={!execution.canExecute}
-            title={
-              disabledReasons.length
-                ? `${formatDisabledReasons(disabledReasons)}\n(${EXECUTE_SHORTCUT_LABEL})`
-                : `Run the query up to the selected node (${EXECUTE_SHORTCUT_LABEL})`
-            }
-            // the node editor's edits apply first, so they run (spec §17.5)
-            onClick={() => editorState.executeEdited()}
-          >
-            Execute
-          </CubeButton>
-        )}
-        <CubeRowLimitInput editorState={editorState} />
         <CubeGridModeToggle editorState={editorState} />
         {execution.isRunning && (
           <span className="text-base text-[var(--color-text-secondary)]">
             {CUBE_PENDING_LABEL.EXECUTING_QUERY}
-          </span>
-        )}
-        {execution.isStale && (
-          <span
-            className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-base text-[var(--color-status-warn)]"
-            title="The query, the warehouse or the row limit changed since this run"
-          >
-            Stale: execute again to refresh
           </span>
         )}
         {result && !execution.isRunning && (
@@ -247,15 +279,26 @@ const CubeGridToolbar = observer(
             )}
           </>
         )}
-        <span className="flex-1" />
         <CubeButton
           aria-expanded={showRuns}
           {...cubeTourAnchor(CUBE_TOUR_ANCHOR.RUNS)}
           title="The latest runs, fetches and exports, with their SQL"
           onClick={onToggleRuns}
         >
-          {`Runs (${editorState.runStats.entries.length})`}
+          {`${RUN_HISTORY_LABEL} (${editorState.runStats.entries.length})`}
         </CubeButton>
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          {execution.isStale && (
+            <span
+              className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-base text-[var(--color-status-warn)]"
+              title="The query, the warehouse or the row limit changed since this run"
+            >
+              Out of date: run again
+            </span>
+          )}
+          <CubeRowLimitInput editorState={editorState} />
+          <CubeRunButton editorState={editorState} />
+        </div>
       </div>
     );
   },
@@ -394,7 +437,7 @@ const CubeRunGrid = observer(
   },
 );
 
-/** The results: Execute, the row limit and the run's stats above the grid (PLAN §9) */
+/** The results: the run's stats, the row limit and Run Query above the grid (PLAN §9) */
 export const CubeGridRegion = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
@@ -437,7 +480,7 @@ export const CubeGridRegion = observer(
             />
           ) : (
             <div className="flex h-full items-center justify-center text-base text-[var(--color-text-secondary)]">
-              Execute the query to see its rows.
+              {`Run the query (${EXECUTE_SHORTCUT_LABEL}) to see its rows.`}
             </div>
           )}
         </div>

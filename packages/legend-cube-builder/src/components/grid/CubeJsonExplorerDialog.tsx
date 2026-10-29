@@ -25,7 +25,10 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { CUBE_JSON_EXPLODE_OFFER_TITLE } from '../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_JSON_EXPLODE_OFFER_TITLE,
+  CUBE_JSON_FIELDS_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeJsonExplorerState } from '../../stores/variant/CubeJsonExplorerState.js';
@@ -78,7 +81,7 @@ const CubeJsonExplorerStatus = observer(
           sample &&
           !sample.complete && (
             <CubeButton
-              title="Read every value of the column, for the shape of the whole column: listed in Runs, and it can be stopped"
+              title={CUBE_JSON_FIELDS_TITLE.EVERY_ROW}
               onClick={() => {
                 // a failed read shows its message in the dialog
                 flowResult(explorer.read(true)).catch(() => undefined);
