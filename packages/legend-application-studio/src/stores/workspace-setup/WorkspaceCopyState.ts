@@ -41,8 +41,8 @@ import {
  *
  * NOTE: SDLC can't start a workspace from another workspace, so the copy is a
  * commit made once the new workspace exists. When that commit fails, the
- * workspace is kept, and `createdWorkspace` and `copyError` tell the modal to
- * offer to try the copy again or to delete the workspace.
+ * workspace is kept, and `createdWorkspace` tells the modal to offer to try the
+ * copy again or to delete the workspace.
  */
 export class WorkspaceCopyState {
   readonly sdlcServerClient: SDLCServerClient;
@@ -63,7 +63,13 @@ export class WorkspaceCopyState {
   pathsAlsoChangedOnLine = new Set<string>();
   loadError?: string | undefined;
 
+  /**
+   * The workspace created for the copy, once copying into it failed
+   */
   createdWorkspace?: Workspace | undefined;
+  /**
+   * Why the last try of the copy failed, cleared when the copy is tried again
+   */
   copyError?: string | undefined;
 
   constructor(

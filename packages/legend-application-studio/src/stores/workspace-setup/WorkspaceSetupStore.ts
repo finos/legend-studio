@@ -1036,13 +1036,13 @@ export class WorkspaceSetupStore {
       newWorkspace.source = patchReleaseVersionId;
 
       if (copy) {
-        copy.setCreatedWorkspace(newWorkspace);
         try {
           yield flowResult(copy.copyTo(newWorkspace));
         } catch (error) {
           assertErrorThrown(error);
           // NOTE: the workspace exists without the copy: list it, and keep the
           // modal open to try the copy again or to delete the workspace
+          copy.setCreatedWorkspace(newWorkspace);
           this.workspaces.push(newWorkspace);
           if (this.workspaceCopyState !== copy) {
             // the modal was closed while copying
