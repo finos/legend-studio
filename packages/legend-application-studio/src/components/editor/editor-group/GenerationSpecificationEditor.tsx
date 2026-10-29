@@ -812,6 +812,7 @@ export const GenerationSpecificationEditor = observer(() => {
   );
   const stageCount = specState.stageCount;
   const isReadOnly = specState.isReadOnly;
+  const flattenBlockers = specState.flattenBlockers;
   const board = (
     <GenerationStageBoard
       specState={specState}
@@ -849,6 +850,25 @@ export const GenerationSpecificationEditor = observer(() => {
                 stageCount === 1 ? 'recompile' : 'recompiles'
               }`}
             </div>
+            {/* an action the author takes, never one the editor suggests: whether the stages are
+                independent is not something the editor can know, so the tooltip says what is at
+                stake, and a card that then fails offers to move back into a stage of its own */}
+            {!isReadOnly && stageCount > 1 && (
+              <button
+                className="generation-spec-editor__flatten"
+                onClick={(): void => specState.flattenStages()}
+                disabled={!specState.canFlattenStages}
+                title={
+                  flattenBlockers.length
+                    ? `Can't flatten: ${flattenBlockers.join(', ')} ${
+                        flattenBlockers.length === 1 ? 'is' : 'are'
+                      } in more than one stage, and one stage cannot run the same element twice`
+                    : `Move every generation into stage 1, so they all run together - one recompile instead of ${stageCount}. A generation that needs another one's output will then fail, and its card will offer to move it back into a stage of its own.`
+                }
+              >
+                Flatten into one stage
+              </button>
+            )}
           </div>
           <PanelHeaderActions>
             <PanelHeaderActionItem

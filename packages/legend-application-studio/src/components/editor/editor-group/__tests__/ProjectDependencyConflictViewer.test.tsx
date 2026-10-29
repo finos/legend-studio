@@ -21,6 +21,7 @@ import {
   fireEvent,
   getByText,
   findByText,
+  findAllByText,
   getByTitle,
   queryByText,
   queryAllByText,
@@ -118,7 +119,7 @@ test.skip(integrationTest('Test Project Report With Conflicts'), async () => {
   const editorGroup = await renderResult.findByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
-  const updateButton = getByText(editorGroup, 'Update');
+  const updateButton = getByText(editorGroup, 'Update configuration');
   expect(updateButton.getAttribute('disabled')).not.toBeNull();
   await waitFor(() => renderResult.getByText('Project Structure'));
   await findByText(editorGroup, 'Project Dependencies');
@@ -128,10 +129,13 @@ test.skip(integrationTest('Test Project Report With Conflicts'), async () => {
   // See: https://davidwcai.medium.com/react-testing-library-and-the-not-wrapped-in-act-errors-491a5629193b
   await waitFor(() => getByText(editorGroup, 'PROD-1'));
 
-  await findByText(editorGroup, 'View Dependency Explorer');
-  await findByText(editorGroup, 'View Conflicts');
+  await findByText(editorGroup, 'Dependency Explorer');
+  // conflicts show as a banner and as the conflicts summary card, which opens them
+  await findAllByText(editorGroup, 'See where they come from');
 
-  fireEvent.click(getByText(editorGroup, 'View Conflicts'));
+  fireEvent.click(
+    getByTitle(editorGroup, 'View any conflicts in your dependencies'),
+  );
   const dependencyExplorer = await waitFor(() =>
     renderResult.getByRole('dialog'),
   );
@@ -202,10 +206,12 @@ test(
     await findByText(editorGroup, 'Project Dependencies');
     fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
 
-    await findByText(editorGroup, 'View Dependency Explorer');
-    await findByText(editorGroup, 'View Conflicts');
+    await findByText(editorGroup, 'Dependency Explorer');
+    await findAllByText(editorGroup, 'See where they come from');
 
-    fireEvent.click(getByText(editorGroup, 'View Conflicts'));
+    fireEvent.click(
+      getByTitle(editorGroup, 'View any conflicts in your dependencies'),
+    );
     const dependencyExplorer = await waitFor(() =>
       renderResult.getByRole('dialog'),
     );

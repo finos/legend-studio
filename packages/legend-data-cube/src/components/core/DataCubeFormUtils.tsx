@@ -38,8 +38,12 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { isString } from '@finos/legend-shared';
 import { useDataCube } from '../DataCubeProvider.js';
 import {
+  getDataCubeCodeEditorTheme,
+  getDataCubeColorThemeClassName,
+  useDataCubeColorTheme,
+} from './DataCubeColorTheme.js';
+import {
   clearMarkers,
-  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
   getCodeEditorValue,
   normalizeLineEnding,
@@ -347,10 +351,12 @@ export const FormDropdownMenuTrigger = forwardRef<
 
 export function FormDropdownMenu(props: DropdownMenuProps) {
   const { className, ...otherProps } = props;
+  const colorTheme = useDataCubeColorTheme();
   return (
     <DropdownMenu
       {...otherProps}
       menuProps={{
+        className: getDataCubeColorThemeClassName(colorTheme),
         classes: {
           paper: 'rounded-none mt-[1px]',
           list: cn(
@@ -368,7 +374,7 @@ export function FormDropdownMenuItem(props: DropdownMenuItemProps) {
   return (
     <DropdownMenuItem
       className={cn(
-        'flex h-5 w-full items-center px-1.5 text-sm hover:bg-neutral-100 focus:bg-sky-600 focus:text-white',
+        'flex h-5 w-full items-center px-1.5 text-sm hover:bg-neutral-100 focus:bg-sky-600 focus:text-[var(--color-text-on-accent)]',
         className,
       )}
       {...otherProps}
@@ -561,6 +567,7 @@ export function FormColorPickerButton(props: {
 }) {
   const { color, onChange, className, disabled, defaultColor } = props;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const colorTheme = useDataCubeColorTheme();
   return (
     <>
       <button
@@ -587,6 +594,7 @@ export function FormColorPickerButton(props: {
       </button>
       {Boolean(anchorEl) && (
         <BasePopover
+          className={getDataCubeColorThemeClassName(colorTheme)}
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
           anchorOrigin={{ vertical: 'center', horizontal: 'right' }}
@@ -692,6 +700,7 @@ export const FormCodeEditor: React.FC<{
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
   const [isWordWrap, setIsWordWrap] = useState(false);
+  const colorTheme = useDataCubeColorTheme();
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -721,7 +730,7 @@ export const FormCodeEditor: React.FC<{
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         fontSize: 12,
-        theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
+        theme: getDataCubeCodeEditorTheme(colorTheme),
         // layout
         glyphMargin: !hidePadding,
         padding: !hidePadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
@@ -731,7 +740,12 @@ export const FormCodeEditor: React.FC<{
       });
       setEditor(_editor);
     }
-  }, [hidePadding, editor]);
+  }, [hidePadding, editor, colorTheme]);
+
+  // NOTE: the theme is only applied on creation, so it must be updated when switched
+  useEffect(() => {
+    editor?.updateOptions({ theme: getDataCubeCodeEditorTheme(colorTheme) });
+  }, [editor, colorTheme]);
 
   useEffect(() => {
     if (editor) {

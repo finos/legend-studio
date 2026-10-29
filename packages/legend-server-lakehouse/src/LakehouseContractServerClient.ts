@@ -63,6 +63,8 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   // ------------------------------------------- Data Contracts -------------------------------------------
 
   private _dataContracts = (): string => `${this.baseUrl}/datacontracts`;
+  private _dataContractsReader = (): string =>
+    `${this.baseUrl}/datacontractsReader`;
 
   getLiteDataContractsPaginated = (
     size: number,
@@ -70,7 +72,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_LiteDataContractsPaginatedResponse>> =>
     this.get(
-      `${this._dataContracts()}/litePaginated?size=${size}${lastContractId ? `&lastContractId=${lastContractId}` : ''}`,
+      `${this._dataContractsReader()}/litePaginated?size=${size}${lastContractId ? `&lastContractId=${lastContractId}` : ''}`,
       {},
       this._token(token),
     );
@@ -81,7 +83,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(
-      `${this._dataContracts()}/${encodeURIComponent(id)}?withMembers=${withMembers}`,
+      `${this._dataContractsReader()}/${encodeURIComponent(id)}?withMembers=${withMembers}`,
       {},
       this._token(token),
     );
@@ -91,7 +93,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractApprovedUsersResponse>> =>
     this.get(
-      `${this._dataContracts()}/${encodeURIComponent(id)}/approvedUsers`,
+      `${this._dataContractsReader()}/${encodeURIComponent(id)}/approvedUsers`,
       {},
       this._token(token),
     );
@@ -114,7 +116,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractApprovedUsersResponse>> =>
     this.get(
-      `${this._dataContracts()}/approvedWorkforceUsers/resource/${encodeURIComponent(resource)}/did/${encodeURIComponent(did)}/apg/${encodeURIComponent(apg)}`,
+      `${this._dataContractsReader()}/approvedWorkforceUsers/resource/${encodeURIComponent(resource)}/did/${encodeURIComponent(did)}/apg/${encodeURIComponent(apg)}`,
       {},
       this._token(token),
     );
@@ -125,7 +127,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_ContractUserStatusResponse>> =>
     this.get(
-      `${this._dataContracts()}/${encodeURIComponent(contractId)}/user/${encodeURIComponent(userId)}`,
+      `${this._dataContractsReader()}/${encodeURIComponent(contractId)}/user/${encodeURIComponent(userId)}`,
       {},
       this._token(token),
     );
@@ -160,7 +162,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_LiteDataContractWithUserStatus>[]> => {
     return this.get(
-      `${this._dataContracts()}/user/${user}`,
+      `${this._dataContractsReader()}/user/${user}`,
       {},
       this._token(token),
     );
@@ -171,7 +173,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_LiteDataContractWithUserStatus>[]> => {
     return this.get(
-      `${this._dataContracts()}/createdBy/${user}`,
+      `${this._dataContractsReader()}/createdBy/${user}`,
       {},
       this._token(token),
     );
@@ -182,7 +184,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_UserPendingContractsResponse>> => {
     return this.get(
-      `${this._dataContracts()}/pendingContractsForUser`,
+      `${this._dataContractsReader()}/pendingContractsForUser`,
       {},
       this._token(token),
       { user },
@@ -227,13 +229,15 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   // ------------------------------------------- Tasks -------------------------------------------
 
   private _tasks = (): string => `${this.baseUrl}/datacontracts/tasks`;
-  private _contract_tasks = (): string => `${this._tasks()}/query/contract`;
+  private _tasksReader = (): string => `${this._dataContractsReader()}/tasks`;
+  private _contract_tasks = (): string =>
+    `${this._tasksReader()}/query/contract`;
 
   getPendingTasks = (
     user: string | undefined,
     token: string | undefined,
   ): Promise<PlainObject<V1_PendingTasksResponse>> => {
-    return this.get(`${this._tasks()}/pending`, {}, this._token(token), {
+    return this.get(`${this._tasksReader()}/pending`, {}, this._token(token), {
       user,
     });
   };
@@ -243,7 +247,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_PendingTasksResponse>> => {
     return this.get(
-      `${this._tasks()}/${encodeURIComponent(taskId)}`,
+      `${this._tasksReader()}/${encodeURIComponent(taskId)}`,
       {},
       this._token(token),
       undefined,
@@ -466,7 +470,8 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   // --------------------------------------- Data Products ---------------------------------------
 
-  private _dataProducts = (): string => `${this.baseUrl}/dataproducts`;
+  private _dataProductsReader = (): string =>
+    `${this.baseUrl}/dataproductsReader`;
 
   getDataProductsLitePaginated = (
     size: number = 1000,
@@ -475,12 +480,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     lastDataProductDeploymentId: number | undefined,
     token: string | undefined,
   ): Promise<PlainObject<V1_DataProductLitePaginatedResponse>> =>
-    this.get(`${this._dataProducts()}/lite/paginated`, {}, this._token(token), {
-      size,
-      environmentType,
-      lastDataProductId,
-      lastDataProductDeploymentId,
-    });
+    this.get(
+      `${this._dataProductsReader()}/lite/paginated`,
+      {},
+      this._token(token),
+      {
+        size,
+        environmentType,
+        lastDataProductId,
+        lastDataProductDeploymentId,
+      },
+    );
 
   getAllLiteDataProducts = async (
     environmentType: V1_EntitlementsLakehouseEnvironmentType,
@@ -531,7 +541,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
     this.get(
-      `${this._dataProducts()}/${dataProductId}`,
+      `${this._dataProductsReader()}/${dataProductId}`,
       {},
       this._token(token),
     );
@@ -542,7 +552,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
     this.get(
-      `${this._dataProducts()}/${dataProductId}/deployments/${deploymentId}`,
+      `${this._dataProductsReader()}/${dataProductId}/deployments/${deploymentId}`,
       {},
       this._token(token),
     );

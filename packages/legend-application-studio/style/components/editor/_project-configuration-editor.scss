@@ -140,23 +140,42 @@
     }
   }
 
-  &__update-btn {
-    background: var(--color-accent);
-    color: var(--color-text-on-accent);
-    border-radius: 0.2rem;
-    width: 10rem;
-    cursor: pointer;
-    height: 2rem;
-    font-size: 1.2rem;
+  // the header's save action: quiet until there are unsaved configuration changes
+  &__save {
+    @include flexVCenter;
+
+    gap: 1rem;
     margin-right: 0.3rem;
 
-    &:hover {
-      background: var(--color-accent-hover);
+    &__hint {
+      font-size: 1.2rem;
+      color: var(--color-status-warn);
     }
 
-    &[disabled]:hover,
-    &[disabled] {
-      background: var(--color-bg-tag);
+    &__btn {
+      height: 2.2rem;
+      padding: 0 1rem;
+      border: 0.1rem solid var(--color-border-default);
+      border-radius: 0.3rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: transparent;
+      cursor: pointer;
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
+
+      &--active {
+        border-color: var(--color-accent);
+        color: var(--color-text-on-accent);
+        background: var(--color-accent);
+      }
+
+      &--active:hover {
+        background: var(--color-accent-hover);
+      }
     }
   }
 
@@ -229,8 +248,14 @@
 }
 
 .project-dependency-editor {
+  --dep-version-width: 26rem;
+  --dep-exclusions-width: 24rem;
+  --dep-actions-width: 10.4rem;
+
   display: flex;
-  margin-top: 0.5rem;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 0.1rem solid var(--color-border-subtle);
 
   &__value {
     flex: auto;
@@ -250,7 +275,8 @@
   }
 
   &__selector {
-    flex: 1 0 auto;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   &__selector + &__selector {
@@ -261,12 +287,17 @@
     @include flexCenter;
 
     flex: 2.8rem 0 0;
-    height: 2.8rem;
-    color: var(--color-text-primary);
-    background: var(--color-bg-tag);
-    border-radius: 0.2rem;
+    height: 2.6rem;
     margin-left: 0.5rem;
+    border-radius: 0.3rem;
+    color: var(--color-text-muted);
+    background: transparent;
     cursor: pointer;
+
+    &:hover {
+      color: var(--color-status-error);
+      background: var(--color-bg-hover);
+    }
   }
 
   &__progress-msg {
@@ -294,9 +325,15 @@
       height: 2.8rem;
       padding: 0 0.5rem;
       margin-left: 0.5rem;
-      border-radius: 0 0.2rem 0.2rem 0;
-      border-left: 0.1rem solid var(--color-shadow);
+      border-radius: 0.3rem;
+      color: var(--color-text-muted);
+      background: transparent;
       cursor: pointer;
+
+      &:hover {
+        color: var(--color-text-primary);
+        background: var(--color-bg-hover);
+      }
 
       svg {
         margin-left: 0.5rem;
@@ -321,13 +358,14 @@
     &__tag {
       @include flexCenter;
 
-      width: 10rem;
       height: 1.8rem;
+      padding: 0 0.6rem;
       border-radius: 0.2rem;
       font-size: 1rem;
       margin-right: 1rem;
       cursor: default;
-      color: var(--color-text-inverted);
+      // was --color-text-inverted on the tag surface, which is unreadable in dark
+      color: var(--color-text-secondary);
       background: var(--color-bg-tag);
       font-weight: 500;
     }
@@ -417,6 +455,175 @@
         transform: rotate(360deg);
       }
     }
+  }
+
+  // summary, conflicts and table layout
+  &__version {
+    @include flexVCenter;
+
+    flex: 0 0 var(--dep-version-width);
+    gap: 0.6rem;
+    margin-left: 0.6rem;
+    min-width: 0;
+  }
+
+  &__exclusions {
+    flex: 0 0 var(--dep-exclusions-width);
+    margin-left: 0.6rem;
+    min-width: 0;
+  }
+
+  &__update-btn {
+    flex: 0 0 auto;
+    padding: 0 0.7rem;
+    border: 0.1rem solid var(--color-status-warn);
+    border-radius: 0.9rem;
+    line-height: 1.8rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    color: var(--color-status-warn);
+    background: transparent;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-text-on-accent);
+      background: var(--color-status-warn);
+    }
+  }
+
+  &__summary {
+    @include flexVCenter;
+
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+
+    &__actions {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      margin-left: auto;
+    }
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-width: 12rem;
+    height: 5.4rem;
+    padding: 0 1.4rem;
+    border: 0.1rem solid var(--color-border-subtle);
+    border-radius: 0.6rem;
+    text-align: left;
+    color: var(--color-text-primary);
+    background: var(--color-bg-panel);
+
+    &:is(button):not([disabled]) {
+      cursor: pointer;
+    }
+
+    &:is(button):not([disabled]):hover {
+      border-color: var(--color-border-default);
+    }
+
+    &__value {
+      font-size: 2rem;
+      font-weight: 600;
+      line-height: 2.4rem;
+    }
+
+    &__label {
+      font-size: 1.2rem;
+      color: var(--color-text-muted);
+    }
+
+    &--conflict {
+      border-color: var(--color-status-error);
+    }
+
+    &--conflict &__value {
+      color: var(--color-status-error);
+    }
+  }
+
+  &__conflict-banner {
+    @include flexVCenter;
+
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    padding: 0.8rem 1.2rem;
+    border-left: 0.3rem solid var(--color-status-error);
+    border-radius: 0.3rem;
+    background: var(--color-bg-panel);
+
+    &__text {
+      flex: 1 1 auto;
+      color: var(--color-text-secondary);
+
+      strong {
+        color: var(--color-text-primary);
+        font-weight: 500;
+      }
+    }
+
+    &__action {
+      flex: 0 0 auto;
+      color: var(--color-text-link);
+      background: transparent;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__table-header {
+    @include flexVCenter;
+
+    // the heading row is not inside a dependency row, so it needs the column widths too
+    --dep-version-width: 26rem;
+    --dep-exclusions-width: 24rem;
+    --dep-actions-width: 10.4rem;
+
+    height: 2.6rem;
+    border-bottom: 0.1rem solid var(--color-border-subtle);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+
+    &__project {
+      flex: 1 1 auto;
+      padding-left: 0.8rem;
+    }
+
+    &__version {
+      flex: 0 0 var(--dep-version-width);
+      margin-left: 0.6rem;
+      padding-left: 0.8rem;
+    }
+
+    &__exclusions {
+      flex: 0 0 var(--dep-exclusions-width);
+      margin-left: 0.6rem;
+      padding-left: 0.8rem;
+    }
+
+    &__actions {
+      flex: 0 0 var(--dep-actions-width);
+    }
+  }
+
+  &__empty {
+    margin-top: 2rem;
+    padding: 2.4rem;
+    border: 0.1rem dashed var(--color-border-default);
+    border-radius: 0.6rem;
+    text-align: center;
+    color: var(--color-text-muted);
   }
 }
 
@@ -1179,5 +1386,105 @@
     font-weight: 600;
     color: var(--color-status-warn);
     margin-left: 1rem;
+  }
+}
+
+// Project structure tab: coordinates and structure version as form sections
+.project-structure-editor {
+  &__coordinates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.6rem;
+  }
+
+  &__published-as {
+    @include flexVCenter;
+
+    gap: 0.8rem;
+    font-size: 1.3rem;
+    color: var(--color-text-muted);
+
+    code {
+      padding: 0.2rem 0.8rem;
+      border-radius: 0.3rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--color-text-primary);
+      background: var(--color-bg-tag);
+    }
+  }
+
+  &__warning {
+    @include flexVCenter;
+
+    gap: 0.6rem;
+    padding: 0.8rem 1.2rem;
+    border-left: 0.3rem solid var(--color-status-warn);
+    border-radius: 0.3rem;
+    font-size: 1.3rem;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-app);
+  }
+
+  &__version {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    gap: 1.2rem;
+
+    &__current {
+      @include flexVCenter;
+
+      gap: 1rem;
+    }
+
+    &__label {
+      font-size: 1.3rem;
+      color: var(--color-text-muted);
+    }
+
+    &__value {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+  }
+
+  &__status {
+    @include flexVCenter;
+
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    border: 0.1rem solid currentcolor;
+    border-radius: 1rem;
+    line-height: 2rem;
+    font-size: 1.2rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+
+    &--current {
+      color: var(--color-status-success);
+    }
+
+    &--outdated {
+      color: var(--color-status-warn);
+    }
+  }
+
+  &__update-btn {
+    height: 2.8rem;
+    padding: 0 1.2rem;
+    border-radius: 0.4rem;
+    font-weight: 500;
+    color: var(--color-text-on-accent);
+    background: var(--color-accent);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-accent-hover);
+    }
   }
 }

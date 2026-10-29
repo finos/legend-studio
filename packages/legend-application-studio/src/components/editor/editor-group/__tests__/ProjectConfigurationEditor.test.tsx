@@ -21,6 +21,8 @@ import {
   waitFor,
   fireEvent,
   getByText,
+  getByTitle,
+  queryByText,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -57,7 +59,7 @@ beforeEach(async () => {
   const editorGroupContent = await renderResult.findByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
-  const updateButton = getByText(editorGroupContent, 'Update');
+  const updateButton = getByText(editorGroupContent, 'Update configuration');
   expect(updateButton.getAttribute('disabled')).not.toBeNull();
   await waitFor(() => renderResult.getByText('Project Structure'));
 });
@@ -66,13 +68,46 @@ test(integrationTest('Test Project Structure'), async () => {
   const editorGroupContent = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
-  await waitFor(() =>
-    getByText(editorGroupContent, 'PROJECT STRUCTURE VERSION 10.1'),
-  );
-  await waitFor(() => getByText(editorGroupContent, 'Update to version 11.1'));
+  await waitFor(() => getByText(editorGroupContent, '10.1'));
+  await waitFor(() => getByText(editorGroupContent, '11.1 available'));
+  await waitFor(() => getByText(editorGroupContent, 'Update to 11.1'));
   await waitFor(() =>
     getByDisplayValue(editorGroupContent, 'org.finos.legend'),
   );
   await waitFor(() => getByDisplayValue(editorGroupContent, 'dependency-test'));
+  // the coordinates the project is published as
+  getByText(editorGroupContent, 'org.finos.legend:dependency-test');
   // TODO: test update project structure
 });
+
+test(
+  integrationTest(
+    'Changing the coordinates warns about the impact and enables saving',
+  ),
+  async () => {
+    const editorGroupContent = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
+    );
+    expect(
+      queryByText(editorGroupContent, /Changing the coordinates/),
+    ).toBeNull();
+    expect(
+      queryByText(editorGroupContent, 'Unsaved configuration changes'),
+    ).toBeNull();
+
+    fireEvent.change(getByTitle(editorGroupContent, 'Group ID'), {
+      target: { value: 'org.finos.legend.v2' },
+    });
+
+    await waitFor(() =>
+      getByText(editorGroupContent, /Changing the coordinates/),
+    );
+    getByText(editorGroupContent, 'org.finos.legend.v2:dependency-test');
+    getByText(editorGroupContent, 'Unsaved configuration changes');
+    expect(
+      getByText(editorGroupContent, 'Update configuration').getAttribute(
+        'disabled',
+      ),
+    ).toBeNull();
+  },
+);

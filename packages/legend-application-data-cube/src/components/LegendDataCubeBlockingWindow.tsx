@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-import { DataCubeIcon, Dialog } from '@finos/legend-art';
+import { DataCubeIcon, Dialog, cn } from '@finos/legend-art';
 import {
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
+  DataCubeColorThemeProvider,
+  getDataCubeColorThemeClassName,
   LayoutConfiguration,
   type WindowConfiguration,
 } from '@finos/legend-data-cube';
 import { action, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
+import { useLegendDataCubeColorTheme } from './LegendDataCubeFrameworkProvider.js';
 
 export const LegendDataCubeBlockingWindow = observer(
   (props: { windowState: LegendDataCubeBlockingWindowState }) => {
     const { windowState } = props;
+    // NOTE: the dialog is portaled outside of DataCube, so it must be themed on its own
+    const colorTheme = useLegendDataCubeColorTheme();
     const onClose = () => {
       windowState.onClose?.();
       windowState.close();
@@ -64,29 +69,34 @@ export const LegendDataCubeBlockingWindow = observer(
           },
         }}
         classes={{
-          root: 'data-cube h-full w-full flex items-center justify-center',
+          root: cn(
+            'data-cube h-full w-full flex items-center justify-center',
+            getDataCubeColorThemeClassName(colorTheme),
+          ),
           paper: 'min-h-10 min-w-40 rounded-none shadow-md',
         }}
       >
-        <div
-          className="border border-neutral-400 bg-neutral-200 shadow-xl"
-          ref={ref}
-        >
-          <div className="flex h-6 w-full select-none items-center justify-between border-b border-b-neutral-300 bg-white">
-            <div className="px-2">{windowState.configuration.title}</div>
-            <button
-              className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
-              onClick={onClose}
-            >
-              <DataCubeIcon.X />
-            </button>
+        <DataCubeColorThemeProvider value={colorTheme}>
+          <div
+            className="border border-neutral-400 bg-neutral-200 shadow-xl"
+            ref={ref}
+          >
+            <div className="flex h-6 w-full select-none items-center justify-between border-b border-b-neutral-300 bg-white">
+              <div className="px-2">{windowState.configuration.title}</div>
+              <button
+                className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-[var(--color-text-on-accent)]"
+                onClick={onClose}
+              >
+                <DataCubeIcon.X />
+              </button>
+            </div>
+            <div className="h-[calc(100%_-_24px)] w-full overflow-auto">
+              {windowState.configuration.contentRenderer(
+                windowState.configuration,
+              )}
+            </div>
           </div>
-          <div className="h-[calc(100%_-_24px)] w-full overflow-auto">
-            {windowState.configuration.contentRenderer(
-              windowState.configuration,
-            )}
-          </div>
-        </div>
+        </DataCubeColorThemeProvider>
       </Dialog>
     );
   },

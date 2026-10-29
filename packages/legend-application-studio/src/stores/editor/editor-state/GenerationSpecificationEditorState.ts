@@ -89,6 +89,9 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
       generationTreeNodeStates: computed,
       stageCount: computed,
       elementUsageIndex: computed,
+      flattenBlockers: computed,
+      canFlattenStages: computed,
+      flattenStages: action,
       addElementToStage: action,
       addElementAsNewStage: action,
       moveElementToStage: action,
@@ -138,6 +141,23 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
       }),
     );
     return index;
+  }
+
+  /**
+   * The elements that sit in more than one stage. Flattening would put each of them into one stage
+   * twice - two generations writing the same output against the same model, which is a hard
+   * failure - so while there are any, the stages cannot be flattened.
+   */
+  get flattenBlockers(): string[] {
+    return Array.from(this.elementUsageIndex.entries())
+      .filter(([, count]) => count > 1)
+      .map(([path]) => path);
+  }
+
+  get canFlattenStages(): boolean {
+    return (
+      !this.isReadOnly && this.stageCount > 1 && !this.flattenBlockers.length
+    );
   }
 
   /**
@@ -279,6 +299,26 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
     if (!node.generationElements.length) {
       this.deleteGenerationTreeNode(node);
     }
+  }
+
+  /**
+   * Runs every generation together: the elements of every stage move into the first, in the order
+   * they ran, and the stages they leave dissolve - one recompile instead of one per stage.
+   *
+   * Nothing here can tell whether one generation needs another's output, so this is an action the
+   * author takes, never one the editor suggests. A generation that did need an earlier one fails on
+   * its card, which then offers to move it back into a stage of its own.
+   */
+  flattenStages(): void {
+    const [firstStage, ...laterStages] = [...this.spec.generationNodes];
+    if (!this.canFlattenStages || !firstStage) {
+      return;
+    }
+    laterStages.forEach((node) =>
+      [...node.generationElements].forEach((elementRef) =>
+        this.moveElementToStage(node, elementRef, firstStage),
+      ),
+    );
   }
 
   moveStage(fromIndex: number, toIndex: number): void {

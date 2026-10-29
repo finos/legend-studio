@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
+import { createSimpleSchema, primitive } from 'serializr';
+
 export type DataCubeColumn = {
   name: string;
   type: string;
 };
+
+export const dataCubeColumnSchema = createSimpleSchema({
+  name: primitive(),
+  type: primitive(),
+});
+
+export type DataCubeColumnRelationType = DataCubeColumn[];
 
 export function _findCol<T extends DataCubeColumn>(
   cols: T[] | undefined,

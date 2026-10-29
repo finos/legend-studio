@@ -48,6 +48,11 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 import { FormBadge_WIP } from '../../core/DataCubeFormUtils.js';
 import { useDataCube } from '../../DataCubeProvider.js';
 import { DataCubeMultidimensionalGrid } from './DataCubeMultidimensionalGrid.js';
+import {
+  type DataCubeColorTheme,
+  getThemedGridColor,
+  useDataCubeColorTheme,
+} from '../../core/DataCubeColorTheme.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -58,6 +63,7 @@ const __INTERNAL__original_console_error = console.error; // eslint-disable-line
 function textColorStyle(
   key: DataCubeConfigurationColorKey,
   configuration: DataCubeConfiguration,
+  colorTheme: DataCubeColorTheme,
 ) {
   return `${Array.from(
     new Set([
@@ -69,7 +75,7 @@ function textColorStyle(
   )
     .map(
       (color) =>
-        `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextColorUtilityClassName(color, key)}{color:${color};}`,
+        `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextColorUtilityClassName(color, key)}{color:${getThemedGridColor(color, colorTheme)};}`,
     )
     .join('\n')}`;
 }
@@ -77,6 +83,7 @@ function textColorStyle(
 function backgroundColorStyle(
   key: DataCubeConfigurationColorKey,
   configuration: DataCubeConfiguration,
+  colorTheme: DataCubeColorTheme,
 ) {
   return `${Array.from(
     new Set([
@@ -88,7 +95,7 @@ function backgroundColorStyle(
   )
     .map(
       (color) =>
-        `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateBackgroundColorUtilityClassName(color, key)}{background-color:${color};}`,
+        `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateBackgroundColorUtilityClassName(color, key)}{background-color:${getThemedGridColor(color, colorTheme)};}`,
     )
     .join('\n')};`;
 }
@@ -96,28 +103,34 @@ function backgroundColorStyle(
 export const DataCubeGridStyleController = observer(
   (props: { configuration: DataCubeConfiguration }) => {
     const { configuration } = props;
+    const colorTheme = useDataCubeColorTheme();
+    const themed = (color: string) => getThemedGridColor(color, colorTheme);
 
     return (
       <Global
         styles={css`
           .${INTERNAL__GridClientUtilityCssClassName.ROOT} {
-            --ag-odd-row-background-color: ${configuration.alternateRowsStandardMode &&
-            !configuration.alternateRows
-              ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
-              : DEFAULT_ROW_BACKGROUND_COLOR};
+            --ag-odd-row-background-color: ${themed(
+              configuration.alternateRowsStandardMode &&
+                !configuration.alternateRows
+                ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
+                : DEFAULT_ROW_BACKGROUND_COLOR,
+            )};
             --ag-cell-horizontal-border: ${configuration.showVerticalGridLines
               ? `1px solid
-            ${configuration.gridLineColor}`
+            ${themed(configuration.gridLineColor)}`
               : 'none'};
             --ag-row-border-color: ${configuration.showHorizontalGridLines
-              ? configuration.gridLineColor
+              ? themed(configuration.gridLineColor)
               : 'transparent'};
           }
           .${INTERNAL__GridClientUtilityCssClassName.ROOT}
             .${INTERNAL__GridClientUtilityCssClassName.HIGHLIGHT_ROW} {
-            background-color: ${configuration.alternateRows
-              ? configuration.alternateRowsColor
-              : DEFAULT_ROW_BACKGROUND_COLOR};
+            background-color: ${themed(
+              configuration.alternateRows
+                ? configuration.alternateRowsColor
+                : DEFAULT_ROW_BACKGROUND_COLOR,
+            )};
           }
           ${[
             DataCubeFont.ARIAL,
@@ -200,14 +213,14 @@ export const DataCubeGridStyleController = observer(
                 `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
             )
             .join('\n')};
-          ${backgroundColorStyle('normal', configuration)}
-          ${backgroundColorStyle('zero', configuration)}
-        ${backgroundColorStyle('negative', configuration)}
-        ${backgroundColorStyle('error', configuration)}
-        ${textColorStyle('normal', configuration)}
-        ${textColorStyle('zero', configuration)}
-        ${textColorStyle('negative', configuration)}
-        ${textColorStyle('error', configuration)}
+          ${backgroundColorStyle('normal', configuration, colorTheme)}
+          ${backgroundColorStyle('zero', configuration, colorTheme)}
+        ${backgroundColorStyle('negative', configuration, colorTheme)}
+        ${backgroundColorStyle('error', configuration, colorTheme)}
+        ${textColorStyle('normal', configuration, colorTheme)}
+        ${textColorStyle('zero', configuration, colorTheme)}
+        ${textColorStyle('negative', configuration, colorTheme)}
+        ${textColorStyle('error', configuration, colorTheme)}
         .${INTERNAL__GridClientUtilityCssClassName.ROOT}
           .${INTERNAL__GridClientUtilityCssClassName.BLUR} {
             filter: blur(3px);
