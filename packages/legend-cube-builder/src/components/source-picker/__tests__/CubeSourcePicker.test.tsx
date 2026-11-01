@@ -412,7 +412,7 @@ describe('Cube source picker', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(fake.execute).not.toHaveBeenCalled();
-    expect(screen.queryByText('executing query')).toBeNull();
+    expect(screen.queryByText('running query')).toBeNull();
   });
 
   test('Lands the picked table with the schema the engine typed, as its Source panel shows', async () => {

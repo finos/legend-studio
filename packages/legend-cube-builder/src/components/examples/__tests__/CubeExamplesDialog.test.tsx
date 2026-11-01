@@ -121,7 +121,9 @@ describe('Examples dialog', () => {
     await screen.findByText('Top customers by orders');
     expect(TEST__getCanvasNodes()).toHaveLength(7);
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
-    expect(screen.queryByText('Execute the query to see its rows.')).toBeNull();
+    expect(
+      screen.queryByText('Run the query (F9) to see its rows.'),
+    ).toBeNull();
 
     await TEST__chooseCubeMenuItem('New');
     expect(TEST__getCanvasNodes()).toHaveLength(0);
@@ -129,7 +131,7 @@ describe('Examples dialog', () => {
     expect(screen.queryByText('Top customers by orders')).toBeNull();
     // the example's run is gone with it
     expect(
-      screen.getByText('Execute the query to see its rows.'),
+      screen.getByText('Run the query (F9) to see its rows.'),
     ).toBeDefined();
     expect(await TEST__isCubeMenuItemDisabled('New')).toBe(true);
 

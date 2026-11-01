@@ -205,7 +205,7 @@ describe('Grid fetcher', () => {
     expect(runOf(fake, 1)).toContain(`$row.SHIP_COUNTRY == 'France'`);
   });
 
-  test('Records each fetch in the run stats, after the Execute, newest first', async () => {
+  test('Records each fetch in the run stats, after the run, newest first', async () => {
     const result = await setUp();
     fake.execute.mockResolvedValueOnce(COUNTRY_GROUPS());
     await state.gridFetcher.fetchLevel(
@@ -218,7 +218,7 @@ describe('Grid fetcher', () => {
     expect(state.runStats.entries.map((entry) => entry.label)).toEqual([
       'Rows of SHIP_COUNTRY (null)',
       'Groups by SHIP_COUNTRY, sorted by FREIGHT descending',
-      'Execute',
+      'Run',
     ]);
     expect(state.runStats.entries[1]?.sql).toEqual(['select …']);
     // each keeps the lambda it sent, row limit included (PLAN §11.16)
@@ -235,7 +235,7 @@ describe('Grid fetcher', () => {
     fake.execute.mockResolvedValue(COUNTRY_GROUPS());
     const first = await state.gridFetcher.fetchLevel(result, [], []);
     expect(await state.gridFetcher.fetchLevel(result, [], [])).toBe(first);
-    // the Execute, then one fetch
+    // the run, then one fetch
     expect(fake.execute).toHaveBeenCalledTimes(2);
     await state.gridFetcher.fetchLevel(
       result,
@@ -289,7 +289,7 @@ describe('Grid fetcher', () => {
     // the dropped answer recorded nothing
     expect(state.runStats.entries.map((entry) => entry.label)).toEqual([
       'Groups by SHIP_COUNTRY',
-      'Execute',
+      'Run',
     ]);
   });
 
