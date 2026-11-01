@@ -37,7 +37,7 @@ types, and offers the columns each field can become.
 4. **The columns it can become**: tick one or more. An array also offers **Explode Array**, a row for each element.
 5. **Add** the ticked columns: an Extend step, and an Explode Array step for an array, added as one change to undo.
 
-The read is listed in [Runs](./results.md#runs), and can be stopped.
+The read is listed in [Run history](./results.md#run-history), and can be stopped.
 
 ## Parse as JSON
 
