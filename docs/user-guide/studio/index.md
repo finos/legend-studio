@@ -15,5 +15,6 @@ review them, and release a version that other projects and applications can use.
 - [Projects and workspaces](./start-screen.md): the start screen, opening a workspace and creating one.
 - [The editor](./editor.md): every part of the editor, numbered on a screenshot, and text mode.
 - [Modeling](./modeling.md): classes, enumerations, associations, profiles and diagrams.
+- [Connecting to data](./connect.md): databases, connections, runtimes and mappings.
 
 The screenshots show one project, **firm-model**: firms, the people they employ, and the database that holds them.
