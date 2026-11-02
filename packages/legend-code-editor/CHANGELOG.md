@@ -1,5 +1,7 @@
 # @finos/legend-code-editor
 
+## 2.0.215
+
 ## 2.0.214
 
 ### Patch Changes

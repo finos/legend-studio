@@ -1,5 +1,13 @@
 # @finos/legend-dev-utils
 
+## 2.2.13
+
+### Patch Changes
+
+- [#5773](https://github.com/finos/legend-studio/pull/5773) [`25b0c9f`](https://github.com/finos/legend-studio/commit/25b0c9f75962cba4379ab34fd7556f3b28df158d) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add a dark color theme to DataCube, toggled via the new `Dark Mode: Enabled` setting (Settings › Appearance), which uses the same palette as the default dark theme of the other Legend applications. Default grid colors (foreground, grid lines, highlighted rows, etc.) follow the theme while customized colors are kept as-is. To support this, Tailwind color utilities now read their values from the `--tw-color-*` CSS variables (the default palette is unchanged), so a subtree can be re-themed by redefining these variables.
+
+- [#5797](https://github.com/finos/legend-studio/pull/5797) [`17799b5`](https://github.com/finos/legend-studio/commit/17799b5a88520766e92b6a15af42706de16b6a80) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Text mode shows an element outline: the declaration of the element being read stays pinned at the top while scrolling, the quick outline (Ctrl/Cmd + Shift + O) lists the elements, and the header shows the element under the cursor. Studio's Monaco bundle now includes the `documentSymbols`, `stickyScroll` and `quickOutline` features.
+
 ## 2.2.12
 
 ### Patch Changes
