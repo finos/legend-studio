@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.19.24
+
+### Patch Changes
+
+- [#5815](https://github.com/finos/legend-studio/pull/5815) [`f08c331`](https://github.com/finos/legend-studio/commit/f08c33113f6c2842ff7b0d6ce81fb0c1437a7e4f) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fixed the `is in list of` / `is not in list of` filter operators incorrectly rejecting a compatible multi-valued parameter (e.g. an `Integer[*]` parameter parsed from PURE text) dragged or bound onto a property of the same primitive family, which caused the binding to silently reset to a default value. Also tightened `isTypeCompatibleForAssignment`'s date-family check so a date/time value is no longer treated as compatible with a non-date property.
+
 ## 4.19.23
 
 ### Patch Changes

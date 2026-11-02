@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.5.12
+
+### Patch Changes
+
+- [#5812](https://github.com/finos/legend-studio/pull/5812) [`3519a9c`](https://github.com/finos/legend-studio/commit/3519a9c58c01c587f4ad546c354f959bec04f5b3) ([@yash0024](https://github.com/yash0024)) - Bulk approving or denying pending tasks now sends requests in batches of size 50 with a single progress indicator instead of firing every request at once with a notification per task.
+
 ## 0.5.11
 
 ## 0.5.10
