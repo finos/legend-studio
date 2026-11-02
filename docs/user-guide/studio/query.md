@@ -72,5 +72,5 @@ query in the workspace as a new element, which opens:
 - **Function**: a function that runs the query, with its mapping and its runtime. It's named after the class, as in
   `Person_QueryFunction`, in the class's package. Type another name, or a path such as `reporting::olderEmployees`,
   then **Create**.
-- **Service**: a service that runs the query, with its mapping and its runtime. It's named after the mapping, as in
-  `guide::mapping::FirmMappingService`. Type another path, then **Create**.
+- **Service**: a [service](./services.md) that runs the query, with its mapping and its runtime. It's named after the
+  mapping, as in `guide::mapping::FirmMappingService`. Type another path, then **Create**.

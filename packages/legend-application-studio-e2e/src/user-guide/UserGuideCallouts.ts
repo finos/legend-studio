@@ -167,3 +167,27 @@ export const saveRegion = async (
     },
   });
 };
+
+/**
+ * Saves the region from its top down to a margin below `last`, as wide as
+ * the region: for an editor whose content ends well above its bottom
+ */
+export const saveRegionDownTo = async (
+  page: Page,
+  path: string,
+  region: Locator,
+  last: Locator,
+  margin = 44,
+): Promise<void> => {
+  const box = await boxOf(region);
+  const end = await boxOf(last);
+  await page.screenshot({
+    path,
+    clip: {
+      x: box.x,
+      y: box.y,
+      width: box.width,
+      height: Math.min(box.y + box.height, end.y + end.height + margin) - box.y,
+    },
+  });
+};

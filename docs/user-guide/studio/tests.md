@@ -42,7 +42,8 @@ A function's **Test Suites** tab works the same way. Here, the tests of **initia
 4. **The result**: whether the test passed and, when it fails, the difference between what it expected and what came
    back.
 
-A service's tests are on its own editor: its query runs on test data for each of its connections.
+A service's tests are on its own editor: its query runs on test data for each of its connections (see
+[Services](./services.md#test)).
 
 ## The Test Runner
 

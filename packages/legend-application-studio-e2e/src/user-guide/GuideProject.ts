@@ -283,10 +283,7 @@ Service guide::service::FirmEmployees
 {
   pattern: '/guide/firms/employees';
   title: 'Firm employees';
-  owners:
-  [
-    'ada.lovelace'
-  ];
+  ownership: UserList { users: ['ada.lovelace', 'grace.hopper'] };
   documentation: 'Every person, with the firm they work for.';
   autoActivateUpdates: true;
   execution: Single
