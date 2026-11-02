@@ -96,6 +96,12 @@ export { ActivityBarMenu } from './components/editor/ActivityBar.js';
 export * from './components/workspace-setup/ProjectSelectorUtils.js';
 export * from './components/workspace-setup/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/editor-group/uml-editor/ClassEditor.js';
+export {
+  ElementEditorHeader,
+  ElementEditorTabs,
+  ElementEditorEmptyState,
+  type ElementEditorTab,
+} from './components/editor/editor-group/ElementEditorLayout.js';
 export { TypeTree } from './components/editor/editor-group/mapping-editor/TypeTree.js';
 export * from './stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 
