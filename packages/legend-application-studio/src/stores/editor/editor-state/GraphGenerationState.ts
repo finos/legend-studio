@@ -368,10 +368,39 @@ export class GraphGenerationState {
   }
 
   /**
+   * Say what a generation produced (the failures are notified by each step).
+   */
+  private notifyGenerationSuccess(): void {
+    const elements = Array.from(this.generatedEntities.values()).reduce(
+      (count, entities) => count + entities.length,
+      0,
+    );
+    const files = this.filesIndex.size;
+    const notificationService =
+      this.editorStore.applicationStore.notificationService;
+    if (!elements && !files) {
+      notificationService.notify('Nothing to generate');
+      return;
+    }
+    const plural = (count: number, noun: string): string =>
+      `${count} ${noun}${count === 1 ? '' : 's'}`;
+    notificationService.notifySuccess(
+      `Generated ${[
+        elements ? plural(elements, 'element') : undefined,
+        files ? plural(files, 'file') : undefined,
+      ]
+        .filter(Boolean)
+        .join(' and ')}`,
+    );
+  }
+
+  /**
    * Global generation is tied to the generation specification of the project. Every time a generation element
    * is added, they will be added to the generation specification
    */
-  *globalGenerate(): GeneratorFn<void> {
+  *globalGenerate(options?: {
+    disableNotificationOnSuccess?: boolean;
+  }): GeneratorFn<void> {
     if (
       this.editorStore.graphState.checkIfApplicationUpdateOperationIsRunning()
     ) {
@@ -416,6 +445,9 @@ export class GraphGenerationState {
           sourceInfo,
           { ...telemetryBase, durationMs: Date.now() - startedAt },
         );
+        if (!options?.disableNotificationOnSuccess) {
+          this.notifyGenerationSuccess();
+        }
       }
     } catch (error) {
       assertErrorThrown(error);
