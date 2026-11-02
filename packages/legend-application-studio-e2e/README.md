@@ -7,7 +7,7 @@ End-to-end tests for the Legend Studio web application, built with [Playwright](
 The tests exercise the Legend Studio webapp served by the `@finos/legend-application-studio-deployment` dev server (`http://localhost:9000/studio/`), backed by:
 
 - **Engine**: a real engine on port 6300, run in Docker from the same compose file as the engine round-trip tests ([`fixtures/legend-docker-setup/grammar-test-setup`](../../fixtures/legend-docker-setup/grammar-test-setup)). The flows this suite exists for — switching between form and text mode, compiling, and the errors that come back — need the real grammar parser and compiler; mocking them would test the mock. Every engine call goes through [`EngineSpy.ts`](./src/support/EngineSpy.ts), which records it and can make any endpoint fail or hang on demand.
-- **SDLC**: an in-memory SDLC server, answered in the browser by [`SDLCMock.ts`](./src/support/SDLCMock.ts). It holds one project (`E2E-1`) with one user workspace (`e2e-workspace`) holding a small model (see [`TEST_DATA__SDLC.ts`](./src/support/TEST_DATA__SDLC.ts)). Pushing changes commits a new revision that later loads serve back, so a test can push, reload and see what was saved.
+- **SDLC**: an in-memory SDLC server, answered in the browser by [`SDLCMock.ts`](./src/support/SDLCMock.ts). It holds one project (`E2E-1`) with one user workspace (`e2e-workspace`) holding a small model (see [`TEST_DATA__SDLC.ts`](./src/support/TEST_DATA__SDLC.ts)). `setupStudio()`'s `project` option serves another project instead, as the user guide's screenshots do. Pushing changes commits a new revision that later loads serve back, so a test can push, reload and see what was saved.
 - **Depot and showcase**: stubbed in the browser; the test project has no dependencies, published versions or showcases.
 
 [`setupStudio()`](./src/support/StudioSetup.ts) wires all of this up per test, by intercepting the app's `config.json` with Playwright's [`route()`](https://playwright.dev/docs/network#modify-requests): the SDLC, depot and showcase URLs point at ports where nothing listens, so a real SDLC server running locally can never leak into a test. It routes the test's whole browser context rather than one page, so a tab the app opens (e.g. the full editor, opened from strict text mode) gets the same backends, and sees the same SDLC state.
@@ -113,3 +113,10 @@ Unmocked calls fail loudly with a `501` whose message names the endpoint, and ar
 ## CI
 
 The `run-studio-e2e-tests` job in [`.github/workflows/test.yml`](../../.github/workflows/test.yml) runs this suite on every PR and on pushes to `master`. Like the `run-tests` job, it starts the engine in Docker in the background, so pulling the image and booting the engine overlap with installing and building (from the shared build cache), and waits for the engine right before running the tests — failing fast, with its logs, if it doesn't come up. The Playwright `webServer` config then reuses that engine, and boots the app. Failed runs retry twice, print the engine's logs, and upload the HTML report as an artifact (`studio-e2e-test-report`).
+
+## The user guide's screenshots
+
+[`src/user-guide`](./src/user-guide) holds the scripts that make the Legend Studio user guide's screenshots
+([`docs/user-guide/studio`](../../docs/user-guide/studio)), on the same backends as the tests, and GIFs of a few tasks
+to reuse elsewhere ([`docs/user-guide/studio/_recordings`](../../docs/user-guide/studio/_recordings)). They aren't
+tests, and run on their own: see the [user guides' README](../../docs/user-guide/README.md#legend-studio).
