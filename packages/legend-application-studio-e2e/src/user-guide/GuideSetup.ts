@@ -20,7 +20,9 @@ import type { Page, Request } from '@playwright/test';
 import { getExplorer } from '../support/StudioHelpers.js';
 import { corsHeaders, getApiPath } from '../support/MockUtils.js';
 import { MOCK_SDLC_URL } from '../support/SDLCMock.js';
+import type { Entity } from '../support/TEST_DATA__SDLC.js';
 import {
+  grammarToEntities,
   MOCK_DEPOT_URL,
   setupStudio,
   type StudioBackends,
@@ -223,9 +225,21 @@ const getGuideDepotAnswer = (request: Request): unknown =>
  * answers the guide's screens need on top (see `getGuideSDLCAnswer()` and
  * `getGuideDepotAnswer()`).
  */
-export const setupGuideStudio = async (page: Page): Promise<StudioBackends> => {
+export const setupGuideStudio = async (
+  page: Page,
+  options: {
+    /**
+     * Elements the project has on top of its model, e.g. ones the engine
+     * this runs against can't parse
+     */
+    extraEntities?: Entity[];
+  } = {},
+): Promise<StudioBackends> => {
   const backends = await setupStudio(page, {
-    grammar: GUIDE_MODEL,
+    entities: [
+      ...(await grammarToEntities(GUIDE_MODEL)),
+      ...(options.extraEntities ?? []),
+    ],
     project: GUIDE_PROJECT,
   });
   const openReviews: Record<string, unknown>[] = [];
@@ -282,8 +296,11 @@ export const hideAssistant = async (page: Page): Promise<void> => {
  * Opens the guide's workspace in the editor, with the Showcases panel, which
  * opens with the workspace, closed
  */
-export const openGuideWorkspace = async (page: Page): Promise<void> => {
-  await setupGuideStudio(page);
+export const openGuideWorkspace = async (
+  page: Page,
+  options: { extraEntities?: Entity[] } = {},
+): Promise<void> => {
+  await setupGuideStudio(page, options);
   await page.goto(GUIDE_WORKSPACE_URL);
   await getExplorer(page).getByText('guide', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Close Showcases' }).click();

@@ -117,5 +117,6 @@ The `run-studio-e2e-tests` job in [`.github/workflows/test.yml`](../../.github/w
 ## The user guide's screenshots
 
 [`src/user-guide`](./src/user-guide) holds the scripts that make the Legend Studio user guide's screenshots
-([`docs/user-guide/studio`](../../docs/user-guide/studio)), on the same backends as the tests. They aren't tests, and
-run on their own: see the [user guides' README](../../docs/user-guide/README.md#legend-studio).
+([`docs/user-guide/studio`](../../docs/user-guide/studio)), on the same backends as the tests, and GIFs of a few tasks
+to reuse elsewhere ([`docs/user-guide/studio/_recordings`](../../docs/user-guide/studio/_recordings)). They aren't
+tests, and run on their own: see the [user guides' README](../../docs/user-guide/README.md#legend-studio).

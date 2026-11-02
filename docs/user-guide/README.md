@@ -43,3 +43,6 @@ The scripts are in
 The scripts are in
 [packages/legend-application-studio-e2e/src/user-guide](../../packages/legend-application-studio-e2e/src/user-guide),
 and the guide's project, a model written in the Legend language, in its `GuideProject.ts`.
+
+`user-guide:recordings` records the GIFs in [studio/\_recordings](./studio/_recordings/), of a few tasks to reuse
+elsewhere. The guide doesn't show them, and the site doesn't publish them. It needs `ffmpeg`.
