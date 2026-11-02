@@ -439,6 +439,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           layoutManager: store.layoutService.manager,
           taskManager: store.taskService.manager,
           gridClientLicense: store.baseStore.gridClientLicense,
+          initialSource: builder.source,
           onInitialized(event) {
             builder.setDataCube(event.api);
           },

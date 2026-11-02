@@ -256,10 +256,12 @@ export class DataCubeViewState {
           this.snapshotService.registerSubscriber(state);
         }),
       );
-      const source = await this.engine.processSource(
-        specification.source,
-        specification.relationType,
-      );
+      const source =
+        this.dataCube.options?.initialSource ??
+        (await this.engine.processSource(
+          specification.source,
+          specification.relationType,
+        ));
       this._source = source;
       this._initialSource = source;
       this._initialSpecification = specification;
