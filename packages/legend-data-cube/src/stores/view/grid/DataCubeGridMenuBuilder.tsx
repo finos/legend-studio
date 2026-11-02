@@ -50,15 +50,12 @@ import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
-import {
-  CORE_PURE_PATH,
-  PRECISE_PRIMITIVE_TYPE,
-  PRIMITIVE_TYPE,
-} from '@finos/legend-graph';
+import { CORE_PURE_PATH, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { getLiteralType } from '../../core/DataCubeColumnTypes.js';
 import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
-import { _findCol } from '../../core/model/DataCubeColumn.js';
+import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import { useGridMenuItem, type CustomMenuItemProps } from 'ag-grid-react';
 import { FormBadge_WIP } from '../../../components/core/DataCubeFormUtils.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
@@ -95,9 +92,10 @@ function toFilterValue(
   value: unknown,
   columnConfiguration: DataCubeColumnConfiguration,
 ): { label: string; value: DataCubeOperationValue } | undefined {
-  const label = `${columnConfiguration.type === PRIMITIVE_TYPE.STRING ? `'${value}'` : value}`;
+  const literalType = getLiteralType(columnConfiguration.type);
+  const label = `${literalType === PRIMITIVE_TYPE.STRING ? `'${value}'` : value}`;
   let val: unknown;
-  switch (columnConfiguration.type) {
+  switch (literalType) {
     case PRIMITIVE_TYPE.STRING: {
       val = value;
       break;
@@ -129,13 +127,13 @@ function toFilterValue(
       );
     }
   }
-  return { label, value: { type: columnConfiguration.type, value: val } };
+  return { label, value: { type: literalType, value: val } };
 }
 
 function getColumnFilterOperations(
   columnConfiguration: DataCubeColumnConfiguration,
 ): string[] {
-  switch (columnConfiguration.type) {
+  switch (getLiteralType(columnConfiguration.type)) {
     case PRIMITIVE_TYPE.STRING: {
       return [
         DataCubeQueryFilterOperator.EQUAL,
@@ -196,10 +194,7 @@ function buildNewFilterConditionMenuItem(
       controller.addNewFilterCondition(
         new DataCubeFilterEditorConditionTreeNode(
           controller.filterTree.root,
-          {
-            name: columnConfiguration.name,
-            type: columnConfiguration.type,
-          },
+          _toCol(columnConfiguration),
           operation,
           value.value,
           undefined,
@@ -905,8 +900,7 @@ export function generateMenuBuilder(
           ...(columnConfiguration &&
           columnName &&
           !fromHeader &&
-          (columnConfiguration.type === PRIMITIVE_TYPE.STRING ||
-            columnConfiguration.type === PRECISE_PRIMITIVE_TYPE.VARCHAR) &&
+          getLiteralType(columnConfiguration.type) === PRIMITIVE_TYPE.STRING &&
           !_findCol(controller.groupExtendedColumns, columnName) &&
           isString(value) &&
           isDataCubeJsonDocumentText(value)

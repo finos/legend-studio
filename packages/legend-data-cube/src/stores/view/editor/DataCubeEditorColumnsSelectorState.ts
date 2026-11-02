@@ -17,16 +17,22 @@
 import { makeObservable, observable, action, computed } from 'mobx';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  _sortByColName,
+  type DataCubeColumn,
+} from '../../core/model/DataCubeColumn.js';
 import type { DataCubeQuerySortDirection } from '../../core/DataCubeQueryEngine.js';
 
 export class DataCubeEditorColumnsSelectorColumnState {
   readonly name: string;
   readonly type: string;
+  readonly typeVariableValues?: readonly number[] | undefined;
 
-  constructor(name: string, type: string) {
-    this.name = name;
-    this.type = type;
+  constructor(column: DataCubeColumn) {
+    this.name = column.name;
+    this.type = column.type;
+    this.typeVariableValues = column.typeVariableValues;
   }
 }
 
@@ -114,12 +120,11 @@ export class DataCubeEditorColumnsSelectorSortColumnState extends DataCubeEditor
   direction: DataCubeQuerySortDirection;
 
   constructor(
-    name: string,
-    type: string,
+    column: DataCubeColumn,
     direction: DataCubeQuerySortDirection,
     onChange?: (() => void) | undefined,
   ) {
-    super(name, type);
+    super(column);
 
     makeObservable(this, {
       direction: observable,

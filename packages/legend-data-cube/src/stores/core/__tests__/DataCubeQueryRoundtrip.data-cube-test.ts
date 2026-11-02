@@ -1772,6 +1772,46 @@ const cases: TestCase[] = [
     },
     error: `Can't process configuration: column ordering mismatch at index 0 (expected: 'c', found: 'd)', expected ordering: c, d, a, e, b, f`,
   }),
+  _case(
+    `Configuration: with precise numeric column persisted with older defaults not aggregated in groupBy() expression`,
+    {
+      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+      columns: [
+        'a:String',
+        'b:Integer',
+        'c:meta::pure::precisePrimitives::Numeric(18,4)',
+      ],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        _setOlderPreciseNumericColumnDefaults(config, 'c');
+        return config;
+      },
+      validator: _checkAggregateOperator(
+        'c',
+        DataCubeQueryAggregateOperator.UNIQUE,
+      ),
+    },
+  ),
+  _case(
+    `Configuration: with precise numeric column persisted with older defaults not aggregated in pivot() expression`,
+    {
+      query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+      columns: [
+        'a:String',
+        'b:Integer',
+        'c:meta::pure::precisePrimitives::Numeric(18,4)',
+      ],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        _setOlderPreciseNumericColumnDefaults(config, 'c');
+        return config;
+      },
+      validator: _checkAggregateOperator(
+        'c',
+        DataCubeQueryAggregateOperator.UNIQUE,
+      ),
+    },
+  ),
   _case(`Configuration: ERROR - column type mismatch`, {
     query: `select(~[a, b])->groupBy(~[b], ~[a:x|$x.a:x|$x->average()])->sort([~b->ascending()])`,
     columns: ['a:Integer', 'b:String'],
@@ -1841,6 +1881,20 @@ const cases: TestCase[] = [
         return config;
       },
       error: `Can't process configuration: aggregation operator mismatch for column 'b' (expected: 'avg', found: 'sum')`,
+    },
+  ),
+  _case(
+    `Configuration: ERROR - column aggregation operator mismatch (precise numeric aggregate column in groupBy() expression)`,
+    {
+      query: `select(~[a, c])->groupBy(~[a], ~[c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+      columns: ['a:String', 'c:meta::pure::precisePrimitives::Numeric(18,4)'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        _findColumnConfiguration(config, 'c').aggregateOperator =
+          DataCubeQueryAggregateOperator.UNIQUE;
+        return config;
+      },
+      error: `Can't process configuration: aggregation operator mismatch for column 'c' (expected: 'sum', found: 'unique')`,
     },
   ),
   _case(
@@ -2110,17 +2164,70 @@ function _case(
   return [
     name,
     data.query,
+    // NOTE: column entries are specified as `name:type`, where the type can be
+    // a path and can specify type variable values, e.g. `name:a::Numeric(18,4)`
     data.columns?.map((entry) => {
-      const parts = entry.split(':');
-      return {
-        name: (parts[0] as string).trim(),
-        type: (parts[1] as string).trim(),
-      };
+      const separatorIndex = entry.indexOf(':');
+      const columnName = entry.slice(0, separatorIndex).trim();
+      const groups = entry
+        .slice(separatorIndex + 1)
+        .trim()
+        .match(/^(?<type>[^(]+)(?:\((?<typeVariableValues>.*)\))?$/u)?.groups;
+      const type = (groups?.type ?? '').trim();
+      return groups?.typeVariableValues
+        ? {
+            name: columnName,
+            type,
+            typeVariableValues: groups.typeVariableValues
+              .split(',')
+              .map((value) => Number(value.trim())),
+          }
+        : { name: columnName, type };
     }) ?? [],
     data.configurationBuilder,
     data.error,
     data.validator,
   ];
+}
+
+function _findColumnConfiguration(
+  config: DataCubeConfiguration,
+  name: string,
+): DataCubeColumnConfiguration {
+  return guaranteeNonNullable(
+    config.columns.find((column) => column.name === name),
+  );
+}
+
+/**
+ * Sets the defaults older versions used for precise numeric columns, e.g. `Numeric`,
+ * which were persisted as dimensions aggregated with `unique` rather than measures
+ * aggregated with `sum`.
+ */
+function _setOlderPreciseNumericColumnDefaults(
+  config: DataCubeConfiguration,
+  name: string,
+) {
+  const column = _findColumnConfiguration(config, name);
+  column.kind = DataCubeColumnKind.DIMENSION;
+  column.excludedFromPivot = true;
+  column.aggregateOperator = DataCubeQueryAggregateOperator.UNIQUE;
+}
+
+function _checkAggregateOperator(
+  name: string,
+  operator: DataCubeQueryAggregateOperator,
+) {
+  return (snapshot: DataCubeSnapshot) => {
+    expect(
+      _findColumnConfiguration(
+        DataCubeConfiguration.serialization.fromJson(
+          snapshot.data.configuration,
+        ),
+        name,
+      ).aggregateOperator,
+    ).toBe(operator);
+  };
 }
 
 function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {

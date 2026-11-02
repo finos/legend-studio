@@ -39,6 +39,7 @@ import { debounce } from '@finos/legend-shared';
 import { DataCubeCodeEditor } from './DataCubeCodeEditor.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 import { DataCubeJsonFieldsWindow } from './DataCubeJsonFieldsWindow.js';
+import { formatColumnType } from '../../../stores/core/DataCubeColumnTypes.js';
 
 enum DataCubeExtendedColumnKind {
   LEAF_LEVEL_MEASURE = 'Leaf Level Measure',
@@ -200,7 +201,17 @@ export const DataCubeColumnCreator = observer(
                   >
                     {state.expectedType}
                   </FormDropdownMenuTrigger>
-                  <div className="ml-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center text-lg">
+                  <div
+                    className="ml-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center text-lg"
+                    title={
+                      state.returnType
+                        ? `Return type: ${formatColumnType({
+                            type: state.returnType,
+                            typeVariableValues: state.returnTypeVariableValues,
+                          })}`
+                        : undefined
+                    }
+                  >
                     {state.validationState.isInProgress ? (
                       <DataCubeIcon.Loader className="animate-spin stroke-2 text-neutral-400" />
                     ) : state.returnType ? (

@@ -2038,7 +2038,11 @@ const mockIngestDefinitionPMCD = (
 });
 const mockIngestDefinitionPMCDWithColumns = (
   datasetName: string,
-  schemaColumns: { name: string; fullPath: string }[],
+  schemaColumns: {
+    name: string;
+    fullPath: string;
+    typeVariableValues?: number[];
+  }[],
 ): PlainObject => ({
   _type: 'data',
   elements: [
@@ -2061,6 +2065,9 @@ const mockIngestDefinitionPMCDWithColumns = (
                     _type: 'packageableType',
                     fullPath: column.fullPath,
                   },
+                  typeVariableValues: (column.typeVariableValues ?? []).map(
+                    (value) => ({ _type: 'integer', value }),
+                  ),
                 },
                 multiplicity: { lowerBound: 0, upperBound: 1 },
               })),
@@ -2255,11 +2262,11 @@ test(
       { name: 'LAKE_DIGEST', type: 'String' },
       {
         name: 'LAKE_FROM',
-        type: 'meta::relational::metamodel::datatype::Timestamp',
+        type: 'meta::pure::precisePrimitives::Timestamp',
       },
       {
         name: 'LAKE_THRU',
-        type: 'meta::relational::metamodel::datatype::Timestamp',
+        type: 'meta::pure::precisePrimitives::Timestamp',
       },
     ]);
   },
@@ -2385,6 +2392,87 @@ test(
         type: 'meta::pure::precisePrimitives::Varchar',
       },
     ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource keeps the type variable values of precise-primitive column types, skipping lambdaRelationType',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCDWithColumns('test_data-set', [
+        { name: 'name', fullPath: 'Varchar', typeVariableValues: [255] },
+        {
+          name: 'price',
+          fullPath: 'meta::pure::precisePrimitives::Numeric',
+          typeVariableValues: [18, 4],
+        },
+      ]),
+    );
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when every column type resolves',
+      ),
+    );
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual([
+      {
+        name: 'name',
+        type: 'meta::pure::precisePrimitives::Varchar',
+        typeVariableValues: [255],
+      },
+      {
+        name: 'price',
+        type: 'meta::pure::precisePrimitives::Numeric',
+        typeVariableValues: [18, 4],
+      },
+    ]);
+  },
+);
+
+test(
+  integrationTest(
+    'Lakehouse Producer processSource falls back to lambdaRelationType when a Numeric column type has no precision and scale',
+  ),
+  async () => {
+    const engine = await TEST__provideMockedLegendDataCubeEngine();
+    createSpy(engine, 'parseCompatibleModel').mockResolvedValue(
+      mockIngestDefinitionPMCDWithColumns('test_data-set', [
+        { name: 'id', fullPath: 'Integer' },
+        { name: 'price', fullPath: 'Numeric' },
+      ]),
+    );
+    const fallbackColumns = [
+      { name: 'id', type: 'Integer' },
+      {
+        name: 'price',
+        type: 'meta::pure::precisePrimitives::Numeric',
+        typeVariableValues: [10, 2],
+      },
+    ];
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockResolvedValue({ columns: fallbackColumns });
+
+    const source = guaranteeType(
+      await engine.processSource(mockLakehouseProducerAdHocDataProduct),
+      LakehouseProducerDataCubeSource,
+    );
+
+    expect(relationTypeSpy).toHaveBeenCalledTimes(1);
+    expect(source.columns).toEqual(fallbackColumns);
   },
 );
 
@@ -2654,6 +2742,96 @@ test(
     );
 
     expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual(cachedColumns);
+  },
+);
+
+test(
+  integrationTest(
+    'Legend Query processSource uses cached columns of precise primitive types with their type variable values',
+  ),
+  async () => {
+    const engine = await setUpMockedLegendQueryProcessSource();
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(
+      new Error(
+        'lambdaRelationType should not be called when cached columns are complete',
+      ),
+    );
+    const cachedColumns = [
+      { name: 'a', type: 'meta::pure::precisePrimitives::Int' },
+      {
+        name: 'b',
+        type: 'meta::pure::precisePrimitives::Varchar',
+        typeVariableValues: [200],
+      },
+    ];
+
+    const source = guaranteeType(
+      await engine.processSource(mockLegendQuerySource, cachedColumns),
+      LegendQueryDataCubeSource,
+    );
+
+    expect(relationTypeSpy).not.toHaveBeenCalled();
+    expect(source.columns).toEqual(cachedColumns);
+  },
+);
+
+test(
+  integrationTest(
+    'Legend Query processSource falls back to lambdaRelationType when cached columns saved by older versions lack type variable values',
+  ),
+  async () => {
+    const engine = await setUpMockedLegendQueryProcessSource();
+    const fallbackColumns = [
+      { name: 'a', type: 'meta::pure::precisePrimitives::Int' },
+      {
+        name: 'b',
+        type: 'meta::pure::precisePrimitives::Varchar',
+        typeVariableValues: [200],
+      },
+    ];
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockResolvedValue({ columns: fallbackColumns });
+
+    const source = guaranteeType(
+      await engine.processSource(mockLegendQuerySource, [
+        { name: 'a', type: 'meta::pure::precisePrimitives::Int' },
+        { name: 'b', type: 'meta::pure::precisePrimitives::Varchar' },
+      ]),
+      LegendQueryDataCubeSource,
+    );
+
+    expect(relationTypeSpy).toHaveBeenCalledTimes(1);
+    expect(source.columns).toEqual(fallbackColumns);
+  },
+);
+
+test(
+  integrationTest(
+    'Legend Query processSource uses cached columns lacking type variable values when lambdaRelationType fails',
+  ),
+  async () => {
+    const engine = await setUpMockedLegendQueryProcessSource();
+    const relationTypeSpy = createSpy(
+      engine,
+      '_getLambdaRelationType',
+    ).mockRejectedValue(new Error('engine unavailable'));
+    const cachedColumns = [
+      { name: 'a', type: 'meta::pure::precisePrimitives::Int' },
+      { name: 'b', type: 'meta::pure::precisePrimitives::Varchar' },
+    ];
+
+    const source = guaranteeType(
+      await engine.processSource(mockLegendQuerySource, cachedColumns),
+      LegendQueryDataCubeSource,
+    );
+
+    expect(relationTypeSpy).toHaveBeenCalledTimes(1);
     expect(source.columns).toEqual(cachedColumns);
   },
 );

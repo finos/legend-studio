@@ -58,12 +58,11 @@ const CURRENT_MOMENT_VALUES: [string, DataCubeFunction, string][] = [
 
 // every column type which carries a date, i.e. which a filter can compare
 // against a moment - note that `Date` is the super type of both, and that a
-// timestamp is spelled 2 ways: the precise primitive and the relational type
+// timestamp is spelled 2 ways: the precise primitive and the (legacy) relational type
 const DATE_COLUMN_TYPES = [
   PRIMITIVE_TYPE.DATE,
   PRIMITIVE_TYPE.STRICTDATE,
   PRIMITIVE_TYPE.DATETIME,
-  PRECISE_PRIMITIVE_TYPE.STRICTDATE,
   PRECISE_PRIMITIVE_TYPE.DATETIME,
   PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
 ];
@@ -196,10 +195,6 @@ describe(
     test.each([
       [PRIMITIVE_TYPE.DATE, DataCubeOperationAdvancedValueType.TODAY],
       [PRIMITIVE_TYPE.STRICTDATE, DataCubeOperationAdvancedValueType.TODAY],
-      [
-        PRECISE_PRIMITIVE_TYPE.STRICTDATE,
-        DataCubeOperationAdvancedValueType.TODAY,
-      ],
       [PRIMITIVE_TYPE.DATETIME, DataCubeOperationAdvancedValueType.NOW],
       [PRECISE_PRIMITIVE_TYPE.DATETIME, DataCubeOperationAdvancedValueType.NOW],
       [

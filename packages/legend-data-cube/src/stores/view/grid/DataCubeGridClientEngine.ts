@@ -36,7 +36,6 @@ import {
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
 import {
-  PRIMITIVE_TYPE,
   PureClientVersion,
   type TabularDataSet,
   type TDSRow,
@@ -49,7 +48,12 @@ import {
   type DataCubeDimensionConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
-import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  reuseTypeVariableValues,
+  _sortByColName,
+  _toCol,
+} from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeClientModelOption,
   DataCubeColumnDataType,
@@ -478,14 +482,24 @@ async function getCastColumns(
     },
   );
 
+  // NOTE: execution results do not report the type variable values of precise primitives
+  // (e.g. the size of `Varchar(200)`), so take them from the matching column when it
+  // passes through the pivot unchanged
+  const knownColumns = new Map(
+    [
+      ...currentSnapshot.data.sourceColumns,
+      ...currentSnapshot.data.leafExtendedColumns,
+    ].map((column) => [column.name, column]),
+  );
   return result.result.builder.columns.map((column) => {
+    const name = column.name.replace(/^'|'$/g, '');
     const type = column.type as string;
-    return {
-      name: column.name.replace(/^'|'$/g, ''),
-      // FIXME: this is a workaround to help plan generation does not handle well decimal type
-      // Remove this once https://github.com/finos/legend-engine/pull/3400 is productionized
-      type: type === PRIMITIVE_TYPE.DECIMAL ? PRIMITIVE_TYPE.FLOAT : type,
-    };
+    const knownColumn = knownColumns.get(name);
+    return _toCol({
+      name,
+      type,
+      typeVariableValues: reuseTypeVariableValues(knownColumn, type),
+    });
   });
 }
 

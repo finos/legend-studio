@@ -124,10 +124,7 @@ export class DataCubeEditorDimensionsPanelState
           ) &&
           !isVariantType(column.type),
       )
-      .map(
-        (col) =>
-          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-      );
+      .map((col) => new DataCubeEditorColumnsSelectorColumnState(col));
   }
 
   get availableColumnsForDisplay() {
@@ -206,10 +203,7 @@ export class DataCubeEditorDimensionsPanelState
             const column = guaranteeNonNullable(
               _findCol(configuration.columns, colName),
             );
-            return new DataCubeEditorColumnsSelectorColumnState(
-              column.name,
-              column.type,
-            );
+            return new DataCubeEditorColumnsSelectorColumnState(column);
           }),
         );
         return _dimension;

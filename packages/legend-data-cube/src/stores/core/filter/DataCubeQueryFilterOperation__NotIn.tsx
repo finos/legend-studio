@@ -16,6 +16,7 @@
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
+import { getLiteralType } from '../DataCubeColumnTypes.js';
 import {
   DataCubeColumnDataType,
   DataCubeFunction,
@@ -106,7 +107,7 @@ export class DataCubeQueryFilterOperation__NotIn extends DataCubeQueryFilterOper
       type: DataCubeOperationAdvancedValueType.LIST,
       value: [
         {
-          type: column.type,
+          type: getLiteralType(column.type),
           value: _defaultPrimitiveTypeValue(column.type),
         },
       ],
