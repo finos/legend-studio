@@ -15,8 +15,18 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '@finos/legend-application-studio';
-import { EyeIcon, Panel, PanelContent, PanelHeader } from '@finos/legend-art';
+import {
+  getElementIcon,
+  useEditorStore,
+} from '@finos/legend-application-studio';
+import {
+  clsx,
+  CheckCircleIcon,
+  EyeIcon,
+  LockIcon,
+  Panel,
+  PanelContent,
+} from '@finos/legend-art';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGeneralEditor.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
@@ -26,6 +36,93 @@ import { isStubbed_PackageableElement } from '@finos/legend-graph';
 import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
+
+const DataSpaceEditorHeader = observer(
+  (props: {
+    dataSpaceState: DataSpaceEditorState;
+    canPreview: boolean;
+    onPreview: () => void;
+  }) => {
+    const { dataSpaceState, canPreview, onPreview } = props;
+    const editorStore = useEditorStore();
+    const dataSpace = dataSpaceState.dataSpace;
+    const statuses = [
+      dataSpaceState.isVerified && {
+        label: 'Verified',
+        kind: 'verified',
+        title: 'Marked as verified',
+      },
+      dataSpaceState.isInDevelopment && {
+        label: 'In development',
+        kind: 'development',
+        title: 'Marked as still in development',
+      },
+      dataSpaceState.isExternal && {
+        label: 'External',
+        kind: 'external',
+        title: 'Marked as externally sourced',
+      },
+      dataSpaceState.deprecationNotice && {
+        label: 'Deprecated',
+        kind: 'deprecated',
+        title: dataSpaceState.deprecationNotice,
+      },
+    ].filter(
+      (status): status is { label: string; kind: string; title: string } =>
+        Boolean(status),
+    );
+
+    return (
+      <div className="dataSpace-editor-header">
+        <div className="dataSpace-editor-header__icon">
+          {getElementIcon(dataSpace, editorStore)}
+        </div>
+        <div className="dataSpace-editor-header__title">
+          <div className="dataSpace-editor-header__name">
+            <span>
+              {dataSpace.title?.trim() ? dataSpace.title : dataSpace.name}
+            </span>
+            {statuses.map((status) => (
+              <span
+                key={status.kind}
+                className={clsx(
+                  'dataSpace-editor-header__status',
+                  `dataSpace-editor-header__status--${status.kind}`,
+                )}
+                title={status.title}
+              >
+                {status.kind === 'verified' && <CheckCircleIcon />}
+                {status.label}
+              </span>
+            ))}
+            {dataSpaceState.isReadOnly && (
+              <span
+                className="dataSpace-editor-header__status"
+                title="This data space is read-only"
+              >
+                <LockIcon />
+                Read-only
+              </span>
+            )}
+          </div>
+          <div className="dataSpace-editor-header__path" title={dataSpace.path}>
+            Data space · {dataSpace.path}
+          </div>
+        </div>
+        <button
+          className="dataSpace-editor-header__preview-btn"
+          onClick={onPreview}
+          title="Preview the data space as people will see it"
+          tabIndex={-1}
+          disabled={!canPreview}
+        >
+          <EyeIcon />
+          Preview
+        </button>
+      </div>
+    );
+  },
+);
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -77,30 +174,19 @@ export const DataSpaceEditor = observer(() => {
     );
   }, [dataSpaceState, editorStore]);
 
+  // Studio observes the graph in the background after loading it. Remount the header once that
+  // is done, so it reads, and tracks, the statuses from the observed data space
+  const isGraphObserved =
+    editorStore.changeDetectionState.graphObserveState.hasSucceeded;
+
   return (
     <Panel className="dataSpace-editor">
-      <PanelHeader
-        title="Data Space"
-        titleContent={dataSpaceState.dataSpace.name}
-        darkMode={true}
-        isReadOnly={dataSpaceState.isReadOnly}
+      <DataSpaceEditorHeader
+        key={isGraphObserved ? 'observed' : 'not-observed'}
+        dataSpaceState={dataSpaceState}
+        canPreview={validPreviewState()}
+        onPreview={previewDataSpace}
       />
-      <PanelHeader darkMode={true}>
-        <div className="panel__header__actions">
-          <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-            <button
-              className="btn__dropdown-combo__label"
-              onClick={previewDataSpace}
-              title="Preview Data Space"
-              tabIndex={-1}
-              disabled={!validPreviewState()}
-            >
-              <EyeIcon className="btn__dropdown-combo__label__icon" />
-              <div className="btn__dropdown-combo__label__title">Preview</div>
-            </button>
-          </div>
-        </div>
-      </PanelHeader>
 
       <PanelContent>
         <DataSpaceGeneralEditor />

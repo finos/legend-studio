@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '@finos/legend-application-studio';
 import {
-  CustomSelectorInput,
-  ListEditor,
-  PanelFormTextField,
-} from '@finos/legend-art';
+  EditorFormSection,
+  getElementIcon,
+  useEditorStore,
+} from '@finos/legend-application-studio';
+import { CustomSelectorInput, PlusIcon, TimesIcon } from '@finos/legend-art';
 import { DataSpaceDiagram } from '@finos/legend-extension-dsl-data-space/graph';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+import { uuid } from '@finos/legend-shared';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
@@ -32,113 +34,140 @@ import {
   dataSpace_setDiagramDescription,
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 
+// the same diagram can be listed twice (with different titles), so rows are keyed by entry
+const diagramRowKeys = new WeakMap<DataSpaceDiagram, string>();
+const getDiagramRowKey = (diagram: DataSpaceDiagram): string => {
+  let key = diagramRowKeys.get(diagram);
+  if (!key) {
+    key = uuid();
+    diagramRowKeys.set(diagram, key);
+  }
+  return key;
+};
+
 export const DataSpaceDiagramsSection = observer(() => {
   const editorStore = useEditorStore();
-
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
   const dataSpace = dataSpaceState.dataSpace;
+  const isReadOnly = dataSpaceState.isReadOnly;
+  const diagrams = dataSpace.diagrams ?? [];
+  const [isAdding, setIsAdding] = useState(false);
 
-  // Event handlers
-  const handleAddDiagram = (option: {
-    label: string;
-    value: Diagram;
-  }): void => {
-    if (typeof option.value === 'object') {
-      const diagramValue = option.value;
-      const newDiagram = new DataSpaceDiagram();
-      newDiagram.title = diagramValue.name;
-      newDiagram.diagram =
-        PackageableElementExplicitReference.create(diagramValue);
-      dataSpace_addDiagram(dataSpace, newDiagram);
-    }
+  const addDiagram = (option: { label: string; value: Diagram }): void => {
+    const newDiagram = new DataSpaceDiagram();
+    newDiagram.title = option.value.name;
+    newDiagram.diagram = PackageableElementExplicitReference.create(
+      option.value,
+    );
+    dataSpace_addDiagram(dataSpace, newDiagram);
+    setIsAdding(false);
   };
-
-  const handleRemoveDiagram = (diagram: DataSpaceDiagram): void => {
-    dataSpace_removeDiagram(dataSpace, diagram);
-  };
-
-  const handleDiagramTitleChange = (
-    diagram: DataSpaceDiagram,
-    value: string | undefined,
-  ): void => {
-    dataSpace_setDiagramTitle(diagram, value ?? '');
-  };
-
-  const handleDiagramDescriptionChange = (
-    diagram: DataSpaceDiagram,
-    value: string | undefined,
-  ): void => {
-    dataSpace_setDiagramDescription(diagram, value);
-  };
-
-  // ListEditor component renderers
-  const DiagramComponent = observer(
-    (props: { item: DataSpaceDiagram }): React.ReactElement => {
-      const { item } = props;
-
-      return (
-        <>
-          <div className="panel__content__form__section__list__item__content">
-            <div className="panel__content__form__section__header__label">
-              Diagram
-            </div>
-            <div className="panel__content__form__section__list__item__content__title">
-              {item.diagram.value.path}
-            </div>
-          </div>
-          <div className="panel__content__form__section__list__item__form">
-            <PanelFormTextField
-              name="Title"
-              value={item.title}
-              update={(value) => handleDiagramTitleChange(item, value)}
-              placeholder="Enter title"
-              className="dataSpace-editor__general__diagrams__title"
-            />
-            <PanelFormTextField
-              name="Description"
-              value={item.description ?? ''}
-              update={(value) => handleDiagramDescriptionChange(item, value)}
-              placeholder="Enter description"
-              className="dataSpace-editor__general__diagrams__description"
-            />
-          </div>
-        </>
-      );
-    },
-  );
-
-  const NewDiagramComponent = observer(
-    (props: { onFinishEditing: () => void }): React.ReactElement => {
-      const { onFinishEditing } = props;
-
-      return (
-        <div className="panel__content__form__section__list__new-item__input">
-          <CustomSelectorInput
-            options={dataSpaceState.getDiagramOptions()}
-            onChange={(event: { label: string; value: Diagram }) => {
-              onFinishEditing();
-              handleAddDiagram(event);
-            }}
-            placeholder="Select a diagram to add..."
-            darkMode={true}
-          />
-        </div>
-      );
-    },
-  );
 
   return (
-    <ListEditor
+    <EditorFormSection
       title="Diagrams"
-      prompt="Add diagrams to include in this Data Space. Set a title and description for each diagram."
-      items={dataSpace.diagrams}
-      keySelector={(element: DataSpaceDiagram) => element.diagram.value.path}
-      ItemComponent={DiagramComponent}
-      NewItemComponent={NewDiagramComponent}
-      handleRemoveItem={handleRemoveDiagram}
-      isReadOnly={dataSpaceState.isReadOnly}
-      emptyMessage="No diagrams specified"
-    />
+      description="Diagrams shown when people browse this data space, each with a title and a description."
+    >
+      {diagrams.length ? (
+        <div className="dataSpace-editor-table dataSpace-editor-table--diagrams">
+          <div className="dataSpace-editor-table__row dataSpace-editor-table__row--header">
+            <div>Diagram</div>
+            <div>Title</div>
+            <div>Description</div>
+            <div />
+          </div>
+          {diagrams.map((diagram) => (
+            <div
+              key={getDiagramRowKey(diagram)}
+              className="dataSpace-editor-table__row"
+            >
+              <div
+                className="dataSpace-editor-table__element"
+                title={diagram.diagram.value.path}
+              >
+                {getElementIcon(diagram.diagram.value, editorStore)}
+                <span className="dataSpace-editor-table__element__name">
+                  {diagram.diagram.value.name}
+                </span>
+                <span className="dataSpace-editor-table__element__package">
+                  {diagram.diagram.value.package?.path}
+                </span>
+              </div>
+              <input
+                className="input input--dark dataSpace-editor-table__input"
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={diagram.title}
+                onChange={(event): void =>
+                  dataSpace_setDiagramTitle(diagram, event.target.value)
+                }
+                placeholder="Title"
+                title="Diagram title"
+              />
+              <input
+                className="input input--dark dataSpace-editor-table__input"
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={diagram.description ?? ''}
+                onChange={(event): void =>
+                  dataSpace_setDiagramDescription(
+                    diagram,
+                    event.target.value || undefined,
+                  )
+                }
+                placeholder="Add a description"
+                title="Diagram description"
+              />
+              <button
+                className="dataSpace-editor-table__remove-btn"
+                disabled={isReadOnly}
+                onClick={(): void =>
+                  dataSpace_removeDiagram(dataSpace, diagram)
+                }
+                title="Remove this diagram from the data space"
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="dataSpace-editor-table__empty">
+          No diagrams yet. A diagram helps people see the shape of the model
+          before they query it.
+        </div>
+      )}
+      {isAdding ? (
+        <div className="dataSpace-editor-add-picker">
+          <CustomSelectorInput
+            options={dataSpaceState.getDiagramOptions()}
+            onChange={addDiagram}
+            placeholder="Choose a diagram to add..."
+            darkMode={
+              !editorStore.applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            autoFocus={true}
+            openMenuOnFocus={true}
+          />
+          <button
+            className="dataSpace-editor-add-picker__cancel"
+            onClick={(): void => setIsAdding(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button
+          className="dataSpace-editor-add-btn"
+          disabled={isReadOnly}
+          onClick={(): void => setIsAdding(true)}
+        >
+          <PlusIcon />
+          Add diagram
+        </button>
+      )}
+    </EditorFormSection>
   );
 });

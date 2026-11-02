@@ -35,8 +35,12 @@ export const DataSpaceSidebar = observer(
   (props: {
     selectedTab: DATA_SPACE_TAB;
     setSelectedTab: (tab: DATA_SPACE_TAB) => void;
+    /** how many items each tab holds, for the tabs that hold a list */
+    counts?: Partial<Record<DATA_SPACE_TAB, number>>;
+    /** tabs with something to fix */
+    tabsWithIssues?: DATA_SPACE_TAB[];
   }) => {
-    const { selectedTab, setSelectedTab } = props;
+    const { selectedTab, setSelectedTab, counts, tabsWithIssues } = props;
     return (
       <div
         className="data-space__viewer__activity-bar dataSpace-editor__sidebar"
@@ -54,10 +58,28 @@ export const DataSpaceSidebar = observer(
               tabIndex={-1}
               title={item.tab}
             >
-              {item.icon}
+              <span className="dataSpace-editor__sidebar__item__icon">
+                {item.icon}
+                {tabsWithIssues?.includes(item.tab) && (
+                  <span
+                    className="dataSpace-editor__sidebar__item__issue"
+                    title="Something here needs fixing"
+                  />
+                )}
+              </span>
               <span className="dataSpace-editor__sidebar__item__label">
                 {item.tab}
               </span>
+              {counts?.[item.tab] !== undefined && (
+                <span
+                  className={clsx('dataSpace-editor__sidebar__item__count', {
+                    'dataSpace-editor__sidebar__item__count--empty':
+                      !counts[item.tab],
+                  })}
+                >
+                  {counts[item.tab]}
+                </span>
+              )}
             </button>
           ))}
         </div>

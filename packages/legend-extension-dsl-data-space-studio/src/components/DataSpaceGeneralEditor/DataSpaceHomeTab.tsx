@@ -15,6 +15,8 @@
  */
 
 import {
+  EditorForm,
+  EditorFormSection,
   useEditorStore,
   useLegendAISuggestTelemetry,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
@@ -23,12 +25,7 @@ import {
   type DSL_DataSpace_LegendStudioApplicationPlugin_Extension,
 } from '@finos/legend-application-studio';
 import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
-import {
-  PanelForm,
-  PanelFormTextField,
-  PanelLoadingIndicator,
-  SparkleIcon,
-} from '@finos/legend-art';
+import { PanelLoadingIndicator, SparkleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
@@ -195,7 +192,7 @@ export const DataSpaceHomeTab = observer(() => {
   };
 
   return (
-    <PanelForm>
+    <EditorForm>
       {dataSpaceNeedsExecutionContextOrExecutable(dataSpace) && (
         <InlineIssue
           issue={{
@@ -205,50 +202,54 @@ export const DataSpaceHomeTab = observer(() => {
           }}
         />
       )}
-      {aiDocSuggester && (
-        <div className="dataSpace-editor__ai-suggest">
-          <button
-            className="dataSpace-editor__ai-suggest-btn"
-            onClick={(): void => runSuggestWithAI(false)}
-            disabled={isSuggestingWithAI || isReadOnly}
-            title="Use AI to suggest titles and descriptions for this data space, its execution contexts, diagrams, and executables"
-          >
-            <SparkleIcon />
-            <span>
-              {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-            </span>
-          </button>
-          <span className="dataSpace-editor__ai-suggest__hint">
-            Fill in titles and descriptions, then review which to keep
-          </span>
-        </div>
-      )}
       <PanelLoadingIndicator isLoading={isSuggestingWithAI && !aiSuggestion} />
-      <PanelFormTextField
-        name="Title"
-        value={dataSpace.title ?? ''}
-        prompt="Provide a title for this Data Space."
-        update={handleTitleChange}
-        placeholder="Enter title"
-      />
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          Description
-        </div>
-        <div className="panel__content__form__section__header__prompt">
-          Provide a description for this Data Space.
-        </div>
-        <textarea
-          className="panel__content__form__section__textarea"
-          spellCheck={false}
-          disabled={isReadOnly}
-          value={dataSpace.description ?? ''}
-          onChange={(event) => {
-            handleDescriptionChange(event.target.value);
-          }}
-          placeholder="Enter description"
-        />
-      </div>
+      <EditorFormSection
+        title="About"
+        description="The title and description people see when they browse and search data spaces."
+        actions={
+          aiDocSuggester && (
+            <button
+              className="dataSpace-editor__ai-suggest-btn"
+              onClick={(): void => runSuggestWithAI(false)}
+              disabled={isSuggestingWithAI || isReadOnly}
+              title="Use AI to suggest titles and descriptions for this data space, its execution contexts, diagrams, and executables, then review which to keep"
+            >
+              <SparkleIcon />
+              <span>
+                {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+              </span>
+            </button>
+          )
+        }
+      >
+        <label className="dataSpace-editor-field">
+          <span className="dataSpace-editor-field__label">Title</span>
+          <input
+            className="input input--dark dataSpace-editor-field__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={dataSpace.title ?? ''}
+            onChange={(event): void =>
+              handleTitleChange(event.target.value || undefined)
+            }
+            placeholder={dataSpace.name}
+          />
+        </label>
+        <label className="dataSpace-editor-field">
+          <span className="dataSpace-editor-field__label">Description</span>
+          <textarea
+            className="input input--dark dataSpace-editor-field__textarea"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={dataSpace.description ?? ''}
+            onChange={(event): void => {
+              handleDescriptionChange(event.target.value);
+            }}
+            rows={4}
+            placeholder="What data this data space gives access to, and who it is for"
+          />
+        </label>
+      </EditorFormSection>
       {aiSuggestion && (
         <DataSpaceAISuggestionReviewModal
           key={aiSuggestion.id}
@@ -263,6 +264,6 @@ export const DataSpaceHomeTab = observer(() => {
       <DataSpaceDiagramsSection />
       <DataSpaceElementsSection />
       <DataSpaceSupportInfoSection />
-    </PanelForm>
+    </EditorForm>
   );
 });

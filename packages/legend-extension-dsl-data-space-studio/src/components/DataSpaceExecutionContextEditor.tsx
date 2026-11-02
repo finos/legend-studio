@@ -25,6 +25,8 @@ import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   BlankPanelPlaceholder,
   clsx,
+  CheckCircleIcon,
+  EmptyCircleIcon,
   CustomSelectorInput,
   Dialog,
   LongArrowRightIcon,
@@ -637,52 +639,74 @@ const ExecutionContextConfigurationEditor = observer(
 
     return (
       <div className="dataSpace-editor__configuration">
-        <PanelFormTextField
-          name="Name"
-          value={executionContext.name}
-          update={(value): void =>
-            dataSpace_setExecutionContextName(executionContext, value ?? '')
-          }
-          isReadOnly={isReadOnly}
-          placeholder="Enter a unique name"
-          fullWidth={true}
-          hasError={Boolean(nameError)}
-          errorMessage={nameError}
-          errorClassName="dataSpace-editor__field--error"
-        />
-        <PanelFormTextField
-          name="Title"
-          value={executionContext.title ?? ''}
-          update={(value): void =>
-            dataSpace_setExecutionContextTitle(executionContext, value)
-          }
-          isReadOnly={isReadOnly}
-          placeholder="Enter title"
-          prompt="Provide a title for this execution context"
-          fullWidth={true}
-        />
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            Description
+        <div className="dataSpace-editor__configuration__section">
+          <div className="dataSpace-editor__configuration__section__heading">
+            <div className="dataSpace-editor__configuration__section__header">
+              <div className="dataSpace-editor__configuration__section__title">
+                General
+              </div>
+              <div className="dataSpace-editor__configuration__section__hint">
+                How this execution context is named and described.
+              </div>
+            </div>
+            <button
+              className={clsx('dataSpace-editor-default-toggle', {
+                'dataSpace-editor-default-toggle--active': isDefault,
+              })}
+              onClick={toggleDefault}
+              disabled={isReadOnly}
+              aria-pressed={isDefault}
+              title={
+                isDefault
+                  ? 'Queries use this context unless they pick another. Click to unset.'
+                  : 'Make this the context queries use unless they pick another'
+              }
+            >
+              {isDefault ? <CheckCircleIcon /> : <EmptyCircleIcon />}
+              {isDefault ? 'Default context' : 'Make default'}
+            </button>
           </div>
-          <div className="panel__content__form__section__header__prompt">
-            Provide a description for this execution context.
-          </div>
-          <textarea
-            className="panel__content__form__section__textarea"
-            spellCheck={false}
-            disabled={isReadOnly}
-            value={executionContext.description ?? ''}
-            onChange={(event): void =>
-              dataSpace_setExecutionContextDescription(
-                executionContext,
-                event.target.value || undefined,
-              )
+          <PanelFormTextField
+            name="Name"
+            value={executionContext.name}
+            update={(value): void =>
+              dataSpace_setExecutionContextName(executionContext, value ?? '')
             }
-            rows={3}
-            placeholder="Enter description"
+            isReadOnly={isReadOnly}
+            placeholder="Enter a unique name"
+            fullWidth={true}
+            hasError={Boolean(nameError)}
+            errorMessage={nameError}
+            errorClassName="dataSpace-editor__field--error"
           />
-        </PanelFormSection>
+          <PanelFormTextField
+            name="Title"
+            value={executionContext.title ?? ''}
+            update={(value): void =>
+              dataSpace_setExecutionContextTitle(executionContext, value)
+            }
+            isReadOnly={isReadOnly}
+            placeholder="Enter title"
+            fullWidth={true}
+          />
+          <label className="dataSpace-editor-field">
+            <span className="dataSpace-editor-field__label">Description</span>
+            <textarea
+              className="input input--dark dataSpace-editor-field__textarea"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={executionContext.description ?? ''}
+              onChange={(event): void =>
+                dataSpace_setExecutionContextDescription(
+                  executionContext,
+                  event.target.value || undefined,
+                )
+              }
+              rows={3}
+              placeholder="What this context is for, e.g. which environment it queries"
+            />
+          </label>
+        </div>
         <MappingSourceEditor
           executionContextState={executionContextState}
           executionContext={executionContext}
@@ -695,18 +719,6 @@ const ExecutionContextConfigurationEditor = observer(
           executionContext={executionContext}
           isReadOnly={isReadOnly}
         />
-        <PanelFormSection>
-          <button
-            className="btn btn--dark"
-            onClick={toggleDefault}
-            disabled={isReadOnly}
-            tabIndex={-1}
-          >
-            {isDefault
-              ? 'Unset as default execution context'
-              : 'Set as default execution context'}
-          </button>
-        </PanelFormSection>
         {issues.length > 0 && (
           <div className="dataSpace-editor__configuration__issues">
             {issues.map((issue) => (
