@@ -16,5 +16,6 @@ review them, and release a version that other projects and applications can use.
 - [The editor](./editor.md): every part of the editor, numbered on a screenshot, and text mode.
 - [Modeling](./modeling.md): classes, enumerations, associations, profiles and diagrams.
 - [Connecting to data](./connect.md): databases, connections, runtimes and mappings.
+- [Tests](./tests.md): a mapping's and a function's tests, and the Test Runner.
 
 The screenshots show one project, **firm-model**: firms, the people they employ, and the database that holds them.

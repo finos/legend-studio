@@ -314,7 +314,7 @@ Service guide::service::FirmEmployees
       [
         connections:
         [
-          guide::store::FirmConnection:
+          connection_1:
             Relational
             #{
               default.FIRM:
