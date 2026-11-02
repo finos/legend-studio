@@ -86,7 +86,8 @@ documents, then query it.
    - **Grammar**: its query in the Legend language.
    - **Data Access**: the data it reads.
    - The last tab, its usage statistics, is still in progress.
-3. **The columns**: each one's name, type, documentation and sample values.
+3. **The columns**: each one's name, type and documentation, and sample values where the data space's authors give
+   them.
 
 ## About Data Space
 
