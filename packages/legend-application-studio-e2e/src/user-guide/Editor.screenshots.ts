@@ -16,33 +16,21 @@
 
 import { test, type Locator, type Page } from '@playwright/test';
 import { getExplorer, getGrammarEditor } from '../support/StudioHelpers.js';
-import { GUIDE_WORKSPACE_URL } from './GuideProject.js';
-import { hideAssistant, setupGuideStudio } from './GuideSetup.js';
+import { openGuideElement } from './GuideSetup.js';
 import {
   markCallouts,
   saveRegion,
   STUDIO_GUIDE_IMAGES,
 } from './UserGuideCallouts.js';
 
-/**
- * Opens the guide's workspace with the class `guide::model::Firm` open, and
- * the Showcases panel, which opens with the workspace, closed
- */
-export const openGuideClass = async (page: Page): Promise<void> => {
-  await setupGuideStudio(page);
-  await page.goto(GUIDE_WORKSPACE_URL);
-  const explorer = getExplorer(page);
-  await explorer.getByText('guide', { exact: true }).waitFor();
-  await page.getByRole('button', { name: 'Close Showcases' }).click();
-  await hideAssistant(page);
-  for (const node of ['guide', 'model', 'Firm']) {
-    await explorer.getByText(node, { exact: true }).click();
-  }
-  await page.getByTestId('class-form-editor').waitFor();
-};
-
 const button = (page: Page, name: string): Locator =>
   page.getByRole('button', { name, exact: true });
+
+/** Opens the guide's workspace with the class `guide::model::Firm` open */
+const openGuideClass = async (page: Page): Promise<void> => {
+  await openGuideElement(page, 'guide::model::Firm');
+  await page.getByTestId('class-form-editor').waitFor();
+};
 
 test('the editor', async ({ page }) => {
   await openGuideClass(page);

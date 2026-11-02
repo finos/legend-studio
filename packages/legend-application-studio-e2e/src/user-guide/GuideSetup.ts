@@ -17,10 +17,15 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
+import { getExplorer } from '../support/StudioHelpers.js';
 import { corsHeaders, getApiPath } from '../support/MockUtils.js';
 import { MOCK_SDLC_URL } from '../support/SDLCMock.js';
 import { setupStudio, type StudioBackends } from '../support/StudioSetup.js';
-import { GUIDE_MODEL, GUIDE_PROJECT } from './GuideProject.js';
+import {
+  GUIDE_MODEL,
+  GUIDE_PROJECT,
+  GUIDE_WORKSPACE_URL,
+} from './GuideProject.js';
 
 /** Legend Studio's icon, which the start screen shows as its logo */
 const STUDIO_ICON = fileURLToPath(
@@ -127,4 +132,30 @@ export const showStudioLogo = async (page: Page): Promise<void> => {
  */
 export const hideAssistant = async (page: Page): Promise<void> => {
   await page.getByRole('button', { name: 'Hide assistant' }).click();
+};
+
+/**
+ * Opens the guide's workspace in the editor, with the Showcases panel, which
+ * opens with the workspace, closed
+ */
+export const openGuideWorkspace = async (page: Page): Promise<void> => {
+  await setupGuideStudio(page);
+  await page.goto(GUIDE_WORKSPACE_URL);
+  await getExplorer(page).getByText('guide', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Close Showcases' }).click();
+  await hideAssistant(page);
+};
+
+/**
+ * Opens an element of the guide's workspace from the explorer, e.g.
+ * `guide::model::Firm`
+ */
+export const openGuideElement = async (
+  page: Page,
+  path: string,
+): Promise<void> => {
+  await openGuideWorkspace(page);
+  for (const node of path.split('::')) {
+    await getExplorer(page).getByText(node, { exact: true }).first().click();
+  }
 };
