@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '@finos/legend-application-studio';
-import { ListEditor, Checkbox, CustomSelectorInput } from '@finos/legend-art';
+import {
+  EditorFormSection,
+  getElementIcon,
+  useEditorStore,
+} from '@finos/legend-application-studio';
+import {
+  clsx,
+  CustomSelectorInput,
+  PlusIcon,
+  TimesIcon,
+} from '@finos/legend-art';
 import {
   type DataSpaceElement,
   DataSpaceElementPointer,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+import { prettyCONSTName, returnUndefOnError } from '@finos/legend-shared';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import {
@@ -31,98 +42,144 @@ import {
 
 export const DataSpaceElementsSection = observer(() => {
   const editorStore = useEditorStore();
-
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
   const dataSpace = dataSpaceState.dataSpace;
+  const isReadOnly = dataSpaceState.isReadOnly;
+  const elements = dataSpace.elements ?? [];
+  const [isAdding, setIsAdding] = useState(false);
 
-  // Event handlers
-  const handleAddElement = (option: {
+  const addElement = (option: {
     label: string;
     value: DataSpaceElement;
   }): void => {
-    if (typeof option.value === 'object') {
-      const element = option.value;
-      const elementPointer = new DataSpaceElementPointer();
-      elementPointer.element =
-        PackageableElementExplicitReference.create(element);
-      dataSpace_addElement(dataSpace, elementPointer);
-    }
+    const elementPointer = new DataSpaceElementPointer();
+    elementPointer.element = PackageableElementExplicitReference.create(
+      option.value,
+    );
+    dataSpace_addElement(dataSpace, elementPointer);
+    setIsAdding(false);
   };
-
-  const handleRemoveElement = (element: DataSpaceElementPointer): void => {
-    dataSpace_removeElement(dataSpace, element);
+  const getTypeLabel = (pointer: DataSpaceElementPointer): string => {
+    const type = returnUndefOnError(() =>
+      editorStore.graphState.getPackageableElementType(pointer.element.value),
+    );
+    return type ? prettyCONSTName(type) : '';
   };
-
-  const handleElementExcludeChange = (
-    element: DataSpaceElementPointer,
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    dataSpace_setElementExclude(element, event.target.checked);
-  };
-
-  // ListEditor component renderers
-  const ElementComponent = observer(
-    (props: { item: DataSpaceElementPointer }): React.ReactElement => {
-      const { item } = props;
-
-      return (
-        <div className="panel__content__form__section__list__item__content">
-          <div className="panel__content__form__section__list__item__content__label">
-            {item.element.value.path}
-          </div>
-          <div className="panel__content__form__section__list__item__content__actions">
-            <div className="panel__content__form__section__list__item__content__actions-exclude">
-              <Checkbox
-                disabled={dataSpaceState.isReadOnly}
-                checked={item.exclude ?? false}
-                onChange={(event) => handleElementExcludeChange(item, event)}
-                size="small"
-                className="panel__content__form__section__list__item__content__actions-exclude__btn"
-              />
-              <span className="panel__content__form__section__list__item__content__actions__label">
-                Exclude
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-    },
-  );
-
-  const NewElementComponent = observer(
-    (props: { onFinishEditing: () => void }) => {
-      const { onFinishEditing } = props;
-
-      return (
-        <div className="panel__content__form__section__list__new-item__input">
-          <CustomSelectorInput
-            options={dataSpaceState.getDataSpaceElementOptions()}
-            onChange={(event: { label: string; value: DataSpaceElement }) => {
-              onFinishEditing();
-              handleAddElement(event);
-            }}
-            placeholder="Select an element to add..."
-            darkMode={true}
-          />
-        </div>
-      );
-    },
-  );
 
   return (
-    <ListEditor
+    <EditorFormSection
       title="Elements"
-      prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Space entirely."
-      items={dataSpace.elements}
-      keySelector={(element: DataSpaceElementPointer) =>
-        element.element.value.path
-      }
-      ItemComponent={ElementComponent}
-      NewItemComponent={NewElementComponent}
-      handleRemoveItem={handleRemoveElement}
-      isReadOnly={dataSpaceState.isReadOnly}
-      emptyMessage="No elements specified"
-    />
+      description="The classes, enumerations, associations and packages listed under Models Documentation. Exclude an element to hide it from this data space altogether, even when its package is included."
+    >
+      {elements.length ? (
+        <div className="dataSpace-editor-table dataSpace-editor-table--elements">
+          <div className="dataSpace-editor-table__row dataSpace-editor-table__row--header">
+            <div>Element</div>
+            <div>Type</div>
+            <div>In this data space</div>
+            <div />
+          </div>
+          {elements.map((pointer) => (
+            <div
+              key={pointer.element.value.path}
+              className={clsx('dataSpace-editor-table__row', {
+                'dataSpace-editor-table__row--excluded': pointer.exclude,
+              })}
+            >
+              <div
+                className="dataSpace-editor-table__element"
+                title={pointer.element.value.path}
+              >
+                {getElementIcon(pointer.element.value, editorStore)}
+                <span className="dataSpace-editor-table__element__name">
+                  {pointer.element.value.name}
+                </span>
+                <span className="dataSpace-editor-table__element__package">
+                  {pointer.element.value.package?.path}
+                </span>
+              </div>
+              <div className="dataSpace-editor-table__type">
+                {getTypeLabel(pointer)}
+              </div>
+              <div className="dataSpace-editor-segmented">
+                <button
+                  className={clsx('dataSpace-editor-segmented__option', {
+                    'dataSpace-editor-segmented__option--active':
+                      !pointer.exclude,
+                  })}
+                  disabled={isReadOnly}
+                  aria-pressed={!pointer.exclude}
+                  onClick={(): void =>
+                    dataSpace_setElementExclude(pointer, false)
+                  }
+                >
+                  Included
+                </button>
+                <button
+                  className={clsx('dataSpace-editor-segmented__option', {
+                    'dataSpace-editor-segmented__option--active': Boolean(
+                      pointer.exclude,
+                    ),
+                  })}
+                  disabled={isReadOnly}
+                  aria-pressed={Boolean(pointer.exclude)}
+                  onClick={(): void =>
+                    dataSpace_setElementExclude(pointer, true)
+                  }
+                >
+                  Excluded
+                </button>
+              </div>
+              <button
+                className="dataSpace-editor-table__remove-btn"
+                disabled={isReadOnly}
+                onClick={(): void =>
+                  dataSpace_removeElement(dataSpace, pointer)
+                }
+                title="Remove this element from the list"
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="dataSpace-editor-table__empty">
+          No elements listed yet. Add the classes, enumerations, associations or
+          packages people should find documented here.
+        </div>
+      )}
+      {isAdding ? (
+        <div className="dataSpace-editor-add-picker">
+          <CustomSelectorInput
+            options={dataSpaceState.getDataSpaceElementOptions()}
+            onChange={addElement}
+            placeholder="Choose a class, enumeration, association or package..."
+            darkMode={
+              !editorStore.applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            autoFocus={true}
+            openMenuOnFocus={true}
+          />
+          <button
+            className="dataSpace-editor-add-picker__cancel"
+            onClick={(): void => setIsAdding(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button
+          className="dataSpace-editor-add-btn"
+          disabled={isReadOnly}
+          onClick={(): void => setIsAdding(true)}
+        >
+          <PlusIcon />
+          Add element
+        </button>
+      )}
+    </EditorFormSection>
   );
 });

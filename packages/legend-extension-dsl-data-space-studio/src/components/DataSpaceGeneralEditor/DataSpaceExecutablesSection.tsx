@@ -30,9 +30,11 @@ import {
   dataSpace_setExecutableTitle,
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
+  getElementIcon,
   RelationElementSampleValuesEditor,
   useEditorStore,
 } from '@finos/legend-application-studio';
+import { prettyCONSTName, returnUndefOnError } from '@finos/legend-shared';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import {
   BlankPanelPlaceholder,
@@ -380,39 +382,43 @@ const ExecutableConfigurationEditor = observer(
 
     return (
       <div className="dataSpace-editor__configuration">
-        <PanelFormTextField
-          name="Title"
-          value={executable.title}
-          update={(value): void =>
-            dataSpace_setExecutableTitle(executable, value ?? '')
-          }
-          isReadOnly={isReadOnly}
-          placeholder="Enter title"
-          prompt="Provide a title for this executable"
-          fullWidth={true}
-        />
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            Description
+        <div className="dataSpace-editor__configuration__section">
+          <div className="dataSpace-editor__configuration__section__header">
+            <div className="dataSpace-editor__configuration__section__title">
+              General
+            </div>
+            <div className="dataSpace-editor__configuration__section__hint">
+              How this executable is shown to people browsing the data space.
+            </div>
           </div>
-          <div className="panel__content__form__section__header__prompt">
-            Provide a description for this executable.
-          </div>
-          <textarea
-            className="panel__content__form__section__textarea"
-            spellCheck={false}
-            disabled={isReadOnly}
-            value={executable.description ?? ''}
-            onChange={(event): void =>
-              dataSpace_setExecutableDescription(
-                executable,
-                event.target.value || undefined,
-              )
+          <PanelFormTextField
+            name="Title"
+            value={executable.title}
+            update={(value): void =>
+              dataSpace_setExecutableTitle(executable, value ?? '')
             }
-            rows={3}
-            placeholder="Enter description"
+            isReadOnly={isReadOnly}
+            placeholder="Enter title"
+            fullWidth={true}
           />
-        </PanelFormSection>
+          <label className="dataSpace-editor-field">
+            <span className="dataSpace-editor-field__label">Description</span>
+            <textarea
+              className="input input--dark dataSpace-editor-field__textarea"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={executable.description ?? ''}
+              onChange={(event): void =>
+                dataSpace_setExecutableDescription(
+                  executable,
+                  event.target.value || undefined,
+                )
+              }
+              rows={3}
+              placeholder="What this executable returns, and when to use it"
+            />
+          </label>
+        </div>
         {executable instanceof DataSpacePackageableElementExecutable && (
           <div className="dataSpace-editor__configuration__section">
             <div className="dataSpace-editor__configuration__section__header">
@@ -421,6 +427,9 @@ const ExecutableConfigurationEditor = observer(
               </div>
             </div>
             <div className="dataSpace-editor__configuration__row">
+              <span className="dataSpace-editor__configuration__row__icon">
+                {getElementIcon(executable.executable.value, editorStore)}
+              </span>
               <span className="dataSpace-editor__executable__pointer__path">
                 {executable.executable.value.path}
               </span>
@@ -491,12 +500,14 @@ const ExecutableConfigurationEditor = observer(
 const ExecutableTab = observer(
   (props: {
     executable: DataSpaceExecutable;
+    kind: string;
     isActive: boolean;
     isReadOnly: boolean;
     onSelect: () => void;
     onDelete: () => void;
   }) => {
-    const { executable, isActive, isReadOnly, onSelect, onDelete } = props;
+    const { executable, kind, isActive, isReadOnly, onSelect, onDelete } =
+      props;
 
     const remove = (event: React.MouseEvent): void => {
       event.stopPropagation();
@@ -511,6 +522,7 @@ const ExecutableTab = observer(
         })}
         role="tab"
       >
+        <span className="dataSpace-editor__tab__kind">{kind}</span>
         <span className="dataSpace-editor__tab__label">
           {executable.title || '(untitled)'}
         </span>
@@ -552,6 +564,20 @@ export const DataspaceExecutablesSection = observer(() => {
   };
 
   const addExecutable = (): void => setIsNewModalOpen(true);
+  const getKind = (executable: DataSpaceExecutable): string => {
+    if (executable instanceof DataSpaceExecutableTemplate) {
+      return 'Query';
+    }
+    if (executable instanceof DataSpacePackageableElementExecutable) {
+      const type = returnUndefOnError(() =>
+        editorStore.graphState.getPackageableElementType(
+          executable.executable.value,
+        ),
+      );
+      return type ? prettyCONSTName(type) : 'Element';
+    }
+    return 'Executable';
+  };
 
   return (
     <div className="panel dataSpace-editor__tab-panel">
@@ -561,6 +587,7 @@ export const DataspaceExecutablesSection = observer(() => {
             <ExecutableTab
               key={executable.hashCode}
               executable={executable}
+              kind={getKind(executable)}
               isActive={executable === currentSelection}
               isReadOnly={isReadOnly}
               onSelect={(): void => setSelectedExecutable(executable)}

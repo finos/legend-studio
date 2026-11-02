@@ -18,6 +18,7 @@
     { "path": "../legend-server-depot" },
     { "path": "../legend-server-sdlc" },
     { "path": "../legend-shared" },
-    { "path": "../legend-extension-dsl-data-space" }
+    { "path": "../legend-extension-dsl-data-space" },
+    { "path": "../legend-extension-dsl-diagram" }
   ]
 }
