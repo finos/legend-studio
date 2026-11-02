@@ -6,7 +6,7 @@ section of its own. What is merged here shows there after the site's next build 
 
 | Guide                      | On the site                                                              |
 | -------------------------- | ------------------------------------------------------------------------ |
-| [Legend Cube](./cube/)     | [legend.finos.org/cube](https://legend.finos.org/cube)                   |
+| [Legend Cube](./cube/)     | [legend.finos.org/guides/cube](https://legend.finos.org/guides/cube)     |
 | [Legend Studio](./studio/) | [legend.finos.org/guides/studio](https://legend.finos.org/guides/studio) |
 
 ## Writing a page
