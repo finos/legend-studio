@@ -170,7 +170,7 @@ const graph = (): HTMLElement =>
 const toolbar = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR);
 
-/** ORDERS, then a Limit of the size, which Execute runs */
+/** ORDERS, then a Limit of the size, the output step */
 const limitDocument = (size: number | undefined): CubeDocument =>
   new CubeDocument({
     context: CONTEXT,
@@ -228,14 +228,14 @@ beforeEach(() => {
 });
 
 describe('Cube keyboard shortcuts', () => {
-  test('Executes on F9', async () => {
+  test('Runs the query on F9', async () => {
     const { fake } = await renderPage();
     pressF9();
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
     await within(toolbar()).findByText(/rows? in/u);
   });
 
-  test('Does nothing on F9 while Execute is disabled', async () => {
+  test('Does nothing on F9 while Run Query is disabled', async () => {
     const { fake, host } = await renderPage(new CubeDocument());
     const { commandService } = host.applicationStore;
     // a trigger that says no leaves the key to any other command bound to it
@@ -244,7 +244,7 @@ describe('Cube keyboard shortcuts', () => {
     );
     expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.UNDO)).toBe(false);
     expect(
-      within(toolbar()).getByText<HTMLButtonElement>('Execute').disabled,
+      within(toolbar()).getByText<HTMLButtonElement>('Run Query').disabled,
     ).toBe(true);
     pressF9();
     expect(fake.execute).not.toHaveBeenCalled();
@@ -390,7 +390,7 @@ describe('Cube keyboard shortcuts', () => {
     expect(takesRun(fake)).toEqual(['5']);
   });
 
-  test('Does nothing on F9, Ctrl+Z, Execute or Undo while something opened from the node editor holds it open', async () => {
+  test('Does nothing on F9, Ctrl+Z, Run Query or Undo while something opened from the node editor holds it open', async () => {
     const { fake, host, editorState } = await renderPage(limitDocument(10));
     const { commandService } = host.applicationStore;
     await typeSize('5');
@@ -404,7 +404,7 @@ describe('Cube keyboard shortcuts', () => {
       false,
     );
     expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.UNDO)).toBe(false);
-    fireEvent.click(within(toolbar()).getByText('Execute'));
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
     fireEvent.click(within(graph()).getByText('Undo'));
     expect(fake.execute).not.toHaveBeenCalled();
     expect(sizeField().value).toBe('5');
@@ -527,10 +527,10 @@ describe('Cube keyboard shortcuts', () => {
     expect(undo.disabled).toBe(true);
   });
 
-  test('Applies the edits in the open editor when Execute is clicked, and runs them', async () => {
+  test('Applies the edits in the open editor when Run Query is clicked, and runs them', async () => {
     const { fake } = await renderPage(limitDocument(10));
     await typeSize('5');
-    fireEvent.click(within(toolbar()).getByText('Execute'));
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
     expect(takesRun(fake)).toEqual(['5']);
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
@@ -642,9 +642,9 @@ describe('Cube keyboard shortcuts', () => {
     ).toEqual([]);
   });
 
-  test('Names the shortcuts in the tooltips of Execute and Undo while they are disabled too', async () => {
+  test('Names the shortcuts in the tooltips of Run Query and Undo while they are disabled too', async () => {
     await renderPage(new CubeDocument());
-    const execute = within(toolbar()).getByText<HTMLButtonElement>('Execute');
+    const execute = within(toolbar()).getByText<HTMLButtonElement>('Run Query');
     expect(execute.disabled).toBe(true);
     expect(execute.title).toBe('• Add a table first.\n(F9)');
     const undo = within(graph()).getByText<HTMLButtonElement>('Undo');
@@ -652,10 +652,10 @@ describe('Cube keyboard shortcuts', () => {
     expect(undo.title).toBe('Undo the last change (Ctrl+Z / Cmd+Z)');
   });
 
-  test('Names the shortcuts in the tooltips of Execute and Undo', async () => {
+  test('Names the shortcuts in the tooltips of Run Query and Undo', async () => {
     await renderPage();
-    expect(within(toolbar()).getByText('Execute').title).toBe(
-      'Run the query up to the selected node (F9)',
+    expect(within(toolbar()).getByText('Run Query').title).toBe(
+      'Run the query up to the output step (F9)',
     );
     expect(within(graph()).getByText('Undo').title).toBe(
       'Undo the last change (Ctrl+Z / Cmd+Z)',

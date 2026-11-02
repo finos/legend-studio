@@ -158,12 +158,12 @@ const CubeGraphHeader = observer(
             {...cubeTourAnchor(CUBE_TOUR_ANCHOR.VIEW)}
             title={
               editorState.execution.canExecute
-                ? 'Show the Pure query that Execute runs'
+                ? 'Show the Pure query that runs, up to the output step'
                 : formatDisabledReasons(editorState.execution.disabledReasons)
             }
             disabled={!editorState.execution.canExecute}
             onClick={() => {
-              // what it shows includes the node editor's edits, as Execute runs them
+              // what it shows includes the node editor's edits, as a run does
               if (!editorState.nodeEditor.finishApplied()) {
                 return;
               }

@@ -290,7 +290,7 @@ const openStep = async (page: Page, id: string): Promise<Locator> => {
 
 /** Runs the cube, so its steps' editors know their input columns */
 const execute = async (page: Page): Promise<void> => {
-  await page.getByRole('button', { name: 'Execute', exact: true }).click();
+  await page.getByRole('button', { name: 'Run Query', exact: true }).click();
   await page.getByText(/^\d+ rows? in /u).waitFor();
 };
 

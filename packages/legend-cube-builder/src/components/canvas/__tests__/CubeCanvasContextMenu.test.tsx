@@ -87,7 +87,7 @@ const H2_TRANSFORMS = TRANSFORMS.filter(
 const PALETTE = [TABLE, 'Data Product (BETA)', FUNCTION, ...TRANSFORMS];
 const ITEMS = [
   ...PALETTE,
-  'Run this step',
+  'Set as output',
   'Copy',
   'Paste',
   'Duplicate',
@@ -153,7 +153,7 @@ describe('Canvas context menu', () => {
       TABLE,
       FUNCTION,
       ...H2_TRANSFORMS,
-      'Run this step',
+      'Set as output',
       'Copy',
       'Duplicate',
       'Remove',
@@ -165,7 +165,7 @@ describe('Canvas context menu', () => {
     );
     await closeMenu();
 
-    // the node Execute runs, with one input
+    // the output step, with one input
     items = await openMenu(await TEST__findCanvasNode('filter101'));
     expect(enabledItems(items)).toEqual([
       TABLE,
@@ -182,7 +182,7 @@ describe('Canvas context menu', () => {
       TABLE,
       FUNCTION,
       ...H2_TRANSFORMS,
-      'Run this step',
+      'Set as output',
       'Copy',
       'Duplicate',
       'Remove',
@@ -233,19 +233,19 @@ describe('Canvas context menu', () => {
     expect(editorState.history).toHaveLength(1);
   });
 
-  test('Selects a node, so Execute runs the query up to it', async () => {
+  test('Sets a node as the output, so Run Query runs the query up to it', async () => {
     const editorState = await render(slice());
     const items = await openMenu(await TEST__findCanvasNode('join101'));
-    fireEvent.click(items.get('Run this step') as HTMLButtonElement);
+    fireEvent.click(items.get('Set as output') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
     expect(editorState.nodeEditor.nodeId).toBeUndefined();
-    // the step that runs, and only it, is marked Runs
+    // the output step, and only it, is labelled Output
     await waitFor(async () =>
       expect(
         (await TEST__findCanvasNode('join101')).querySelector(
           `[data-testid="${LEGEND_CUBE_TEST_ID.RUNNING_NODE_BADGE}"]`,
         )?.textContent,
-      ).toBe('▶ Runs'),
+      ).toBe('Output'),
     );
     expect(
       screen.getAllByTestId(LEGEND_CUBE_TEST_ID.RUNNING_NODE_BADGE),
@@ -309,14 +309,14 @@ describe('Canvas context menu', () => {
     const editorState = await render();
     await TEST__importDocument(editorState, slice(), true);
     const items = await openMenu(await TEST__findCanvasNode('join101'));
-    expect(enabledItems(items)).toEqual(['Run this step', 'Copy']);
-    fireEvent.click(items.get('Run this step') as HTMLButtonElement);
+    expect(enabledItems(items)).toEqual(['Set as output', 'Copy']);
+    fireEvent.click(items.get('Set as output') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
   });
 });
 
 describe('Canvas context menu, with the node editor open', () => {
-  /** The slice, then a Limit of 10 after its Filter, which Execute runs */
+  /** The slice, then a Limit of 10 after its Filter, the output step */
   const limitedSlice = (): CubeDocument => {
     const query = sliceQuery();
     return new CubeDocument({
@@ -361,7 +361,7 @@ describe('Canvas context menu, with the node editor open', () => {
         ]),
     ],
     [
-      'Run this step',
+      'Set as output',
       'join101',
       (query) => expect(query.selected).toBe('join101'),
     ],

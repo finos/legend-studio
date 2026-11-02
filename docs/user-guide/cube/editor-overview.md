@@ -31,25 +31,27 @@ Click the image to see it full size.
 4. **Add Items**: the palette's sources and steps, as a menu.
 5. **Examples**: ready-made cubes on sample data, to try things out.
 6. **Undo** and **Redo**: every change, opening an example included (Ctrl+Z and Ctrl+Shift+Z, or Cmd on a Mac).
-7. **Show Pure**: the Pure query that Execute runs.
+7. **Show Pure**: the Pure query that runs, up to the output step.
 8. **Hide graph**: more room for the results; **Show graph** brings it back.
 
 ## The graph
 
 9. **A step**: click it to edit it. Its editor opens beside it (see [A step's editor](#a-steps-editor), and each step's
    page under [Steps](./steps/index.md)).
-10. **Runs**: marks the step Execute runs up to. A step's editor has **Run this step** to move it.
+10. **Output**: marks the output step, the step Run Query runs up to. A step's menu and editor have **Set as output**
+    to move it.
 11. **Zoom in**, **zoom out** and **fit the graph to the view**.
 
 ## The results
 
-12. **Execute** runs the query (F9) and shows its rows. **Rows** caps how many come back. Then how many rows came
-    back, and how long the run took.
-13. **Server-side** or **Local**: with Server-side, each sort and drill-down in the grid runs on the engine, over every
+12. **Server-side** or **Local**: with Server-side, each sort and drill-down in the grid runs on the engine, over every
     row of the query; with Local, the grid groups, pivots and filters the rows already fetched, in the browser.
+13. How many rows came back, and how long the run took.
 14. **Show SQL**: the SQL the run sent to the database.
-15. **Runs**: the latest runs, fetches and exports, each with its SQL.
-16. **A column's menu** (⋮): sort, pin, autosize, choose the columns shown, or reset them. Right-click a cell for
+15. **Run history**: the latest runs, fetches and exports, each with its SQL.
+16. **Rows** and **Run Query**: Run Query (F9) runs the query up to the output step and shows its rows; **Rows** caps
+    how many come back. While the query runs, the button is **Stop**.
+17. **A column's menu** (⋮): sort, pin, autosize, choose the columns shown, or reset them. Right-click a cell for
     more: drill down by its column; sort, group or filter by it, as a new step; format a number column; copy; or
     export the rows. See [The results](./results.md).
 
@@ -61,7 +63,7 @@ Click a step on the graph to open its editor. This is the Group step's:
 
 1. The step's kind, and its id.
 2. **?**: hover over it to see what the step does.
-3. **Run this step**: Execute runs up to this step, and shows its rows.
+3. **Set as output**: makes this the output step, so Run Query runs up to it and shows its rows.
 4. **Close** the editor.
 5. **None**: untick every group column (one row for all the rows).
 6. The columns to group by.
