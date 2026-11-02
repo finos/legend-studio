@@ -28,8 +28,9 @@ import {
 } from './SDLCMock.js';
 import {
   TEST_DATA__Entities,
-  TEST_DATA__ProjectConfiguration,
+  TEST_DATA__SDLCProject,
   type Entity,
+  type TestSDLCProject,
 } from './TEST_DATA__SDLC.js';
 
 /** Where the app's depot and showcase calls go; nothing listens there. */
@@ -46,13 +47,25 @@ export interface StudioBackends {
   unmockedCalls: string[];
 }
 
-/** The classifier path SDLC stores each kind of element under. */
+/**
+ * The classifier path SDLC stores each kind of element under, by the
+ * element's `_type` in the engine's JSON (see `CORE_PURE_PATH` in
+ * `@finos/legend-graph`).
+ */
 const CLASSIFIER_PATHS: Record<string, string> = {
   class: 'meta::pure::metamodel::type::Class',
   Enumeration: 'meta::pure::metamodel::type::Enumeration',
   association: 'meta::pure::metamodel::relationship::Association',
   function: 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
   profile: 'meta::pure::metamodel::extension::Profile',
+  relational: 'meta::relational::metamodel::Database',
+  mapping: 'meta::pure::mapping::Mapping',
+  connection: 'meta::pure::runtime::PackageableConnection',
+  runtime: 'meta::pure::runtime::PackageableRuntime',
+  service: 'meta::legend::service::metamodel::Service',
+  diagram: 'meta::pure::metamodel::diagram::Diagram',
+  text: 'meta::pure::metamodel::text::Text',
+  dataElement: 'meta::pure::data::DataElement',
 };
 
 /**
@@ -101,7 +114,8 @@ export const grammarToEntities = async (grammar: string): Promise<Entity[]> => {
  * editor, from strict text mode) shares them, SDLC state included:
  * - SDLC: an in-memory SDLC holding the workspace every test opens, starting
  *   with `entities` (the model in `TEST_DATA__SDLC.ts` unless given), or the
- *   model written in `grammar` — see `SDLCMock.ts`
+ *   model written in `grammar` — see `SDLCMock.ts`. `project` names the
+ *   project, workspace and user it serves (the tests' own unless given)
  * - engine: the real engine, with every call recorded, and failures or holds
  *   on demand — see `EngineSpy.ts`
  * - depot and showcase: stubbed; the test project has no published versions
@@ -112,8 +126,13 @@ export const grammarToEntities = async (grammar: string): Promise<Entity[]> => {
  */
 export const setupStudio = async (
   page: Page,
-  options: { entities?: Entity[]; grammar?: string } = {},
+  options: {
+    entities?: Entity[];
+    grammar?: string;
+    project?: TestSDLCProject;
+  } = {},
 ): Promise<StudioBackends> => {
+  const sdlcProject = options.project ?? TEST_DATA__SDLCProject;
   const entities =
     options.grammar !== undefined
       ? await grammarToEntities(options.grammar)
@@ -161,7 +180,7 @@ export const setupStudio = async (
         `Unmocked ${backend} endpoint called in e2e test: ${call} — add a handler in StudioSetup.ts`,
       );
     };
-  const { groupId, artifactId } = TEST_DATA__ProjectConfiguration;
+  const { groupId, artifactId } = sdlcProject.configuration;
   await page
     .context()
     .route(
@@ -172,8 +191,11 @@ export const setupStudio = async (
     .context()
     .route(`${MOCK_SHOWCASE_URL}/**`, stub('showcase', { showcases: [] }));
 
-  const sdlc = await installSDLCMock(page, entities, (call) =>
-    unmockedCalls.push(call),
+  const sdlc = await installSDLCMock(
+    page,
+    entities,
+    (call) => unmockedCalls.push(call),
+    sdlcProject,
   );
   const engine = await installEngineSpy(page);
 

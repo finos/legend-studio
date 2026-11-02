@@ -51,6 +51,26 @@ export const TEST_DATA__ProjectConfiguration = {
   metamodelDependencies: [],
 };
 
+/**
+ * What the in-memory SDLC serves (see `SDLCMock.ts`): the project, the user
+ * workspace opened in it, the current user and the project's configuration.
+ * The tests use {@link TEST_DATA__SDLCProject}; the user guide's screenshots
+ * use a project of their own, so its names read naturally.
+ */
+export interface TestSDLCProject {
+  project: typeof TEST_DATA__Project;
+  workspaceId: string;
+  currentUser: typeof TEST_DATA__CurrentUser;
+  configuration: typeof TEST_DATA__ProjectConfiguration;
+}
+
+export const TEST_DATA__SDLCProject: TestSDLCProject = {
+  project: TEST_DATA__Project,
+  workspaceId: TEST_WORKSPACE_ID,
+  currentUser: TEST_DATA__CurrentUser,
+  configuration: TEST_DATA__ProjectConfiguration,
+};
+
 export const TEST_DATA__LatestProjectStructureVersion = {
   version: 13,
   extensionVersion: 1,
