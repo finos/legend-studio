@@ -270,6 +270,9 @@ export type ModelGenerationFailure = {
 export class GraphGenerationState {
   editorStore: EditorStore;
   isRunningGlobalGenerate = false;
+  /** the step a running generation is on, and when it started, for the status bar */
+  generationStep: 'models' | 'artifacts' | undefined = undefined;
+  generationStartedAt: number | undefined = undefined;
   generatedEntities = new Map<string, Entity[]>();
   clearingGenerationEntitiesState = ActionState.create();
   externalFormatState: ExternalFormatState;
@@ -292,6 +295,8 @@ export class GraphGenerationState {
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {
       isRunningGlobalGenerate: observable,
+      generationStep: observable,
+      generationStartedAt: observable,
       generatedEntities: observable.shallow,
       clearingGenerationEntitiesState: observable,
       externalFormatState: observable,
@@ -363,10 +368,39 @@ export class GraphGenerationState {
   }
 
   /**
+   * Say what a generation produced (the failures are notified by each step).
+   */
+  private notifyGenerationSuccess(): void {
+    const elements = Array.from(this.generatedEntities.values()).reduce(
+      (count, entities) => count + entities.length,
+      0,
+    );
+    const files = this.filesIndex.size;
+    const notificationService =
+      this.editorStore.applicationStore.notificationService;
+    if (!elements && !files) {
+      notificationService.notify('Nothing to generate');
+      return;
+    }
+    const plural = (count: number, noun: string): string =>
+      `${count} ${noun}${count === 1 ? '' : 's'}`;
+    notificationService.notifySuccess(
+      `Generated ${[
+        elements ? plural(elements, 'element') : undefined,
+        files ? plural(files, 'file') : undefined,
+      ]
+        .filter(Boolean)
+        .join(' and ')}`,
+    );
+  }
+
+  /**
    * Global generation is tied to the generation specification of the project. Every time a generation element
    * is added, they will be added to the generation specification
    */
-  *globalGenerate(): GeneratorFn<void> {
+  *globalGenerate(options?: {
+    disableNotificationOnSuccess?: boolean;
+  }): GeneratorFn<void> {
     if (
       this.editorStore.graphState.checkIfApplicationUpdateOperationIsRunning()
     ) {
@@ -374,6 +408,7 @@ export class GraphGenerationState {
     }
     this.isRunningGlobalGenerate = true;
     const startedAt = Date.now();
+    this.generationStartedAt = startedAt;
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
     const telemetryBase = {
       mode: GENERATION_MODE.GLOBAL,
@@ -389,9 +424,11 @@ export class GraphGenerationState {
       // them instead of throwing, so artifact generation still runs when
       // model generation fails. We only decide the telemetry outcome here so
       // each run emits exactly one terminal event.
+      this.generationStep = 'models';
       const modelGenerationError = (yield flowResult(this.generateModels())) as
         | Error
         | undefined;
+      this.generationStep = 'artifacts';
       const artifactGenerationError = (yield flowResult(
         this.generateArtifacts(),
       )) as Error | undefined;
@@ -408,6 +445,9 @@ export class GraphGenerationState {
           sourceInfo,
           { ...telemetryBase, durationMs: Date.now() - startedAt },
         );
+        if (!options?.disableNotificationOnSuccess) {
+          this.notifyGenerationSuccess();
+        }
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -425,6 +465,8 @@ export class GraphGenerationState {
       );
     } finally {
       this.isRunningGlobalGenerate = false;
+      this.generationStep = undefined;
+      this.generationStartedAt = undefined;
     }
   }
 

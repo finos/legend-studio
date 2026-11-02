@@ -23,7 +23,10 @@ import { unitTest } from '@finos/legend-shared/test';
 import { expect, jest, test } from '@jest/globals';
 import { DataCubeSpecification } from '@finos/legend-data-cube';
 import { LegendDataCubeCreatorState } from '../LegendDataCubeCreatorState.js';
-import type { LegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStore.js';
+import type {
+  LegendDataCubeBuilderState,
+  LegendDataCubeBuilderStore,
+} from '../LegendDataCubeBuilderStore.js';
 import type { LegendDataCubeSourceBuilderState } from '../source/LegendDataCubeSourceBuilderState.js';
 
 // `LegendDataCubeDuckDBEngine` uses `import.meta`, which jest can't parse; it is
@@ -81,6 +84,7 @@ const buildHarness = (
 ) => {
   const endedTasks: unknown[] = [];
   const alertedErrors: Error[] = [];
+  const builders: LegendDataCubeBuilderState[] = [];
 
   const specification = new DataCubeSpecification();
   // a configuration must be present, else `finalizeConfiguration` is skipped
@@ -134,8 +138,8 @@ const buildHarness = (
         endedTasks.push(task);
       },
     },
-    setBuilder: () => {
-      // no-op
+    setBuilder: (builder: LegendDataCubeBuilderState) => {
+      builders.push(builder);
     },
     markDataCubeLoadStart: () => {
       // no-op
@@ -146,6 +150,7 @@ const buildHarness = (
     state: new LegendDataCubeCreatorState(store),
     endedTasks,
     alertedErrors,
+    builders,
   };
 };
 
@@ -238,5 +243,29 @@ test(
 
     expect(state.finalizeState.hasSucceeded).toBe(true);
     expect(endedTasks).toHaveLength(1);
+  },
+);
+
+test(
+  unitTest(
+    'finalize stashes the resolved source on the new builder so the view does not have to re-resolve it',
+  ),
+  async () => {
+    const finalized: string[] = [];
+    const resolvedSource = { from: 'already-resolved' };
+    const { state, builders } = buildHarness({
+      processSource: async () => resolvedSource,
+    });
+    state.sourceBuilder = buildFakeSourceBuilder('A', finalized);
+
+    await state.finalize();
+
+    // this is what lets DataCubeViewState.initialize() skip calling
+    // processSource() a second time via DataCubeOptions.initialSource
+    // NOTE: mobx's `observable` field annotation proxies plain object values
+    // (unlike the real `DataCubeSource` class instances `processSource()`
+    // normally returns), so compare by value rather than by reference
+    expect(builders).toHaveLength(1);
+    expect(builders[0]?.source).toEqual(resolvedSource);
   },
 );

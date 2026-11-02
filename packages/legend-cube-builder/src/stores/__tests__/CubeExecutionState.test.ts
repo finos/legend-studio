@@ -315,12 +315,12 @@ describe('Cube execution: a run', () => {
       `The column 'REMOVED' can't be found in the relation`,
     );
     expect([...state.hostIssues.keys()]).toEqual(['join101']);
-    expect(state.hostIssues.get('join101')?.detail).toContain('more'); // both failures are in the Runs panel, each with the lambda it sent
+    expect(state.hostIssues.get('join101')?.detail).toContain('more'); // both failures are in Run history, each with the lambda it sent
     expect(
       state.runStats.entries.map(({ label, error }) => [label, error]),
     ).toEqual([
-      ['Execute', `The column 'REMOVED' can't be found in the relation`],
-      ['Execute', expect.stringContaining('returned 0 columns')],
+      ['Run', `The column 'REMOVED' can't be found in the relation`],
+      ['Run', expect.stringContaining('returned 0 columns')],
     ]);
     expect(
       state.runStats.entries[0]?.lambda === fake.execute.mock.calls[1]?.[1],
@@ -481,7 +481,7 @@ describe('Cube execution: stopping and staleness', () => {
       expect(state.execution.isRunning).toBe(true);
       expect(state.execution.result).toBeUndefined();
       expect(state.execution.error).toBeUndefined();
-      // Execute is still Stop: no third request
+      // Run Query is still Stop: no third request
       await flowResult(state.execution.execute());
       expect(fake.execute).toHaveBeenCalledTimes(2);
       second.resolve(ordersResult(2));

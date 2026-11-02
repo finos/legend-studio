@@ -87,7 +87,7 @@ describe(unitTest('Group'), () => {
       ['SHIP_COUNTRY'],
       [
         { function: COUNT_ROWS, name: 'Count Rows' } as ColumnAggregation,
-        agg('Median', 'FREIGHT', ''),
+        agg('Mode', 'FREIGHT', ''),
         agg('', '', ''),
         // a key it doesn't know is not kept on the aggregation
         {
@@ -98,7 +98,7 @@ describe(unitTest('Group'), () => {
     );
     expect(group.aggregations).toStrictEqual([
       { column: undefined, function: 'CountRows', name: 'Count Rows' },
-      { column: 'FREIGHT', function: 'Median', name: '' },
+      { column: 'FREIGHT', function: 'Mode', name: '' },
       { column: '', function: '', name: '' },
       { column: 'FREIGHT', function: 'Sum', name: 'FREIGHT Sum' },
     ]);
@@ -338,7 +338,7 @@ describe(unitTest('Group'), () => {
       ['SHIP_COUNTRY'],
       [
         agg('', 'ORDER_ID', 'a'),
-        agg('Median', 'FREIGHT', 'b'),
+        agg('Mode', 'FREIGHT', 'b'),
         agg(SUM, 'FREIGHT', 'FREIGHT Sum'),
         agg(COUNT, undefined, 'c'),
         agg(MAX, 'SHIPPER', 'd'),
@@ -351,7 +351,7 @@ describe(unitTest('Group'), () => {
       ],
       [
         'Aggregation function cannot be empty.',
-        'Aggregation function "Median" is unknown.',
+        'Aggregation function "Mode" is unknown.',
         'Aggregation column does not have a name.',
         'Aggregation column "SHIPPER" is not present in the input schema.',
         'Aggregation function "Average" is incompatible with column "ORDER_DATE".',

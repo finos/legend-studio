@@ -158,7 +158,9 @@ export class ShowcaseViewerStore {
           .length
       ) {
         yield flowResult(
-          this.editorStore.graphState.graphGenerationState.globalGenerate(),
+          this.editorStore.graphState.graphGenerationState.globalGenerate({
+            disableNotificationOnSuccess: true,
+          }),
         );
       }
 

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.269
+
+### Patch Changes
+
+- [#5772](https://github.com/finos/legend-studio/pull/5772) [`5da934a`](https://github.com/finos/legend-studio/commit/5da934aeac2fb5c528d7a4e3e43e1bbe0574cf8f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fixed the data space quick start query text forcing a dark code editor theme in the light theme, which turned every code editor in the application dark: it now follows the application theme.
+
 ## 10.4.268
 
 ### Patch Changes

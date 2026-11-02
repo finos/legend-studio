@@ -264,7 +264,8 @@ export const isTypeCompatibleForAssignment = (
     // This is because we would simulate auto-boxing for date by altering the
     // Pure function used for the operation
     // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
-    DATE_PRIMITIVE_TYPES.includes(normalizedTypePath) ||
+    (DATE_PRIMITIVE_TYPES.includes(normalizedTypePath) &&
+      DATE_PRIMITIVE_TYPES.includes(normalizedAssignmentTypePath)) ||
     normalizedTypePath === normalizedAssignmentTypePath ||
     isSuperType(assignmentType, type)
   );

@@ -84,18 +84,19 @@ test('Legend Cube: the editor overview', async ({ page }) => {
     },
     {
       n: 12,
-      targets: [tool('Execute'), toolbar.getByText(/^\d+ rows? in /u)],
-      at: 'above',
-    },
-    {
-      n: 13,
       targets: [tool('Server-side'), tool('Local')],
       at: 'above',
     },
+    { n: 13, targets: [toolbar.getByText(/^\d+ rows? in /u)], at: 'above' },
     { n: 14, targets: [tool('Show SQL')], at: 'above' },
-    { n: 15, targets: [tool(/^Runs/u)], at: 'left' },
+    { n: 15, targets: [tool(/^Run history/u)], at: 'above' },
     {
       n: 16,
+      targets: [toolbar.getByLabel('Row limit'), tool('Run Query')],
+      at: 'above',
+    },
+    {
+      n: 17,
       targets: [
         page.locator('.ag-header-cell').filter({ hasText: 'ORDER_COUNT' }),
       ],
@@ -122,7 +123,7 @@ test('Legend Cube: the editor overview', async ({ page }) => {
       at: 'left',
     },
     { n: 2, targets: [editor.getByLabel('Help')], at: 'above' },
-    { n: 3, targets: [editorButton('Run this step')], at: 'above' },
+    { n: 3, targets: [editorButton('Set as output')], at: 'above' },
     {
       n: 4,
       targets: [editor.getByRole('button', { name: 'Close the editor' })],

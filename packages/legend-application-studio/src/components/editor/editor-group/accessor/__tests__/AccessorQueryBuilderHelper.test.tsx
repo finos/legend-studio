@@ -15,7 +15,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals';
-import { cleanup } from '@testing-library/react';
+import { act, cleanup } from '@testing-library/react';
 import { integrationTest, createMock } from '@finos/legend-shared/test';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
@@ -49,8 +49,10 @@ describe(integrationTest('Promote accessor query to function'), () => {
     await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
       entities: TEST_DATA__QueryBuilder_Accessors,
     });
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
+    act(() =>
+      MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+        GraphCompilationOutcome.SUCCEEDED,
+      ),
     );
   });
 

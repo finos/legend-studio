@@ -23,18 +23,24 @@ export const EditorForm = (props: {
 
 /**
  * One section of an editor form: a title, a sentence saying what the section is for,
- * and its fields.
+ * and its fields. `actions` sit at the right of the title, e.g. a documentation link.
  */
 export const EditorFormSection = (props: {
   title: string;
   description?: string | undefined;
+  actions?: React.ReactNode;
   children: React.ReactNode;
 }): React.ReactNode => {
-  const { title, description, children } = props;
+  const { title, description, actions, children } = props;
   return (
     <section className="editor-form-section">
       <div className="editor-form-section__header">
-        <h3 className="editor-form-section__title">{title}</h3>
+        <div className="editor-form-section__heading">
+          <h3 className="editor-form-section__title">{title}</h3>
+          {actions && (
+            <div className="editor-form-section__actions">{actions}</div>
+          )}
+        </div>
         {description && (
           <p className="editor-form-section__description">{description}</p>
         )}

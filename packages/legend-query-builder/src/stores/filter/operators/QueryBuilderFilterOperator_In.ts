@@ -41,6 +41,7 @@ import {
   buildNotExpression,
   getCollectionValueSpecificationType,
   getStandardPrimitiveTypeEquivalent,
+  isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -141,7 +142,12 @@ export class QueryBuilderFilterOperator_In
         if (valueSpec.multiplicity.upperBound === 1) {
           return false;
         }
-        return propertyType === valueSpec.genericType?.value.rawType;
+        const variableType = valueSpec.genericType?.value.rawType;
+        // NOTE: use the same loose, numeric/date-family aware check as value assignment,
+        // so e.g. an `Integer[*]` parameter is still recognized as compatible with
+        // an `Integer` property even when the two don't resolve to the exact same
+        // `Type` instance (this can happen when the parameter is parsed from PURE text)
+        return isTypeCompatibleForAssignment(variableType, propertyType);
       }
     }
     return false;

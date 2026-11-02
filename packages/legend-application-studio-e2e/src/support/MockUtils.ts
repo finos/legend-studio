@@ -22,10 +22,12 @@ export const APP_ORIGIN = 'http://localhost:9000';
 
 /**
  * The CORS headers a backend on another port must send back for the app's
- * calls to go through (the app sends credentials, so no wildcard origin).
+ * calls to go through (the app sends credentials, so no wildcard origin):
+ * they name the origin the call came from, so the app may run on another
+ * port than the dev server's default (e.g. for the user guide's screenshots).
  */
 export const corsHeaders = (request: Request): Record<string, string> => ({
-  'access-control-allow-origin': APP_ORIGIN,
+  'access-control-allow-origin': request.headers().origin ?? APP_ORIGIN,
   'access-control-allow-credentials': 'true',
   'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS',
   'access-control-allow-headers':

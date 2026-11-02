@@ -38,6 +38,7 @@ import {
 } from '@testing-library/react';
 import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
+  TEST_DATA__getAllWithOneIntegerIsInConditionFilterAndCollectionParameter,
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
   TEST_DATA__simpeFilterWithDerivedPropFromParentsUsedInFilter,
   TEST_DATA__simpeFilterWithMilestonedExists,
@@ -2340,6 +2341,55 @@ test(
     switchMenu = renderResult.getByRole('menu');
     fireEvent.click(getByText(switchMenu, 'is'));
     expect(queryByText(filterPanel, '1'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder allows DND of a collection-multiplicity parameter onto an is-in filter condition value',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__getAllWithOneIntegerIsInConditionFilterAndCollectionParameter.parameters,
+          TEST_DATA__getAllWithOneIntegerIsInConditionFilterAndCollectionParameter.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'is in list of'));
+    const filterValue = getByText(filterPanel, 'List(3): 1,2,3');
+
+    const parametersPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const dragSource = getByText(parametersPanel, 'ages');
+
+    await dragAndDrop(
+      dragSource,
+      filterValue,
+      filterPanel,
+      'Change Filter Value',
+    );
+
+    // the `[*]` multiplicity parameter is accepted as the filter condition value,
+    // replacing the literal collection
+    await waitFor(() => getByText(filterPanel, 'ages'));
+    expect(queryByText(filterPanel, 'List(3): 1,2,3')).toBeNull();
   },
 );
 

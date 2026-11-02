@@ -106,7 +106,7 @@ describe('Node editor registries', () => {
       unknown: 'Source or transformation unknown to the application.',
     });
     expect(SELECT_NODE_TOOLTIP).toBe(
-      'Make this the step that runs: Execute shows its rows in the grid.',
+      'Make this the output step: Run Query shows its rows in the grid.',
     );
   });
 

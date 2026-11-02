@@ -31,7 +31,7 @@ export enum LEGEND_CUBE_COMMAND_KEY {
 /** Keys as `KeyboardEvent.code` names */
 export const LEGEND_CUBE_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_CUBE_COMMAND_KEY.EXECUTE]: {
-    title: 'Execute the query',
+    title: 'Run the query',
     defaultKeyboardShortcut: 'F9',
   },
   [LEGEND_CUBE_COMMAND_KEY.UNDO]: {

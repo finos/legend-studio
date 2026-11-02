@@ -27,7 +27,7 @@ import {
 
 // The images of docs/user-guide/cube/results.md, on the example "Top
 // customers by orders": a cell's menu, drilling down, the group rows'
-// settings, a column's format, Runs, and the grid in Local mode.
+// settings, a column's format, Run history, and the grid in Local mode.
 
 const RESULT_IMAGES = join(CUBE_GUIDE_IMAGES, 'results');
 
@@ -194,16 +194,16 @@ test('Legend Cube: the results', async ({ page }) => {
   await clearCallouts(page);
   await formatDialog.getByRole('button', { name: 'Cancel' }).click();
 
-  // Runs
-  await page.getByRole('button', { name: /^Runs/u }).click();
+  // Run history
+  await page.getByRole('button', { name: /^Run history/u }).click();
   const runs = page.getByTestId('legend-cube__run-stats');
   await runs.waitFor();
   await page.mouse.move(5, 895);
   await markCallouts(page, [
     {
       n: 1,
-      // the oldest run, the first Execute, which has room below it
-      targets: [runs.getByText('Execute', { exact: true })],
+      // the oldest run, the first one, which has room below it
+      targets: [runs.getByText('Run', { exact: true })],
       at: 'left',
     },
     {
@@ -224,7 +224,7 @@ test('Legend Cube: the results', async ({ page }) => {
   ]);
   await save('runs.png', [runs], 36);
   await clearCallouts(page);
-  await page.getByRole('button', { name: /^Runs/u }).click();
+  await page.getByRole('button', { name: /^Run history/u }).click();
 
   // Local mode
   await page.getByRole('button', { name: 'Local', exact: true }).click();

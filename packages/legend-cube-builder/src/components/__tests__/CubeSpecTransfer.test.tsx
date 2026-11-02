@@ -166,7 +166,7 @@ const nodeProblems = async (nodeId: string): Promise<string[]> =>
 const executeButton = (): HTMLButtonElement =>
   within(
     screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
-  ).getByText<HTMLButtonElement>('Execute');
+  ).getByText<HTMLButtonElement>('Run Query');
 /**
  * legend-art's loading bar among the region's own children, which has one
  * class while it loads and another while idle
@@ -413,7 +413,7 @@ describe('Cube spec export and import, on the page', () => {
     );
     expect(fake.execute).not.toHaveBeenCalled();
     expect(
-      screen.getByText('Execute the query to see its rows.'),
+      screen.getByText('Run the query (F9) to see its rows.'),
     ).toBeDefined();
 
     fireEvent.click(headerButton('Undo'));

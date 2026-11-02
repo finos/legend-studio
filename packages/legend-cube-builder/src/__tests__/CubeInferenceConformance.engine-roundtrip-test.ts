@@ -16,7 +16,9 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AGGREGATION_SETTING_DEFAULTS,
   AggregationFunction,
+  type AggregationUse,
   buildSchemasAndValidity,
   type ColumnAggregation,
   ColumnComparisonFilter,
@@ -36,7 +38,9 @@ import {
   FilterOperator,
   FunctionSource,
   fixJoinDuplicates,
+  getAggregationSetting,
   getAvailableAggregations,
+  GROUP_AGGREGATION_USE,
   Group,
   IngestDatasetSource,
   type JsonObject,
@@ -381,14 +385,23 @@ const keptAs = (
 };
 const NUMBERED = ['N1', 'N2', 'N3'];
 
-/** The aggregations whose outputs the engine types as never null, though a group of empty values gives none (PLAN §5.7) */
+/**
+ * The aggregations whose outputs the engine types as never null, though a
+ * group of empty values gives none (PLAN §5.7): Sum and Average, and Median,
+ * Std Dev, Variance and Join Text, Std Dev and Variance also empty over one
+ * value (PLAN §11.28); Percentile the engine types as nullable
+ */
 const NULLABLE_ONLY_TO_CUBE: readonly string[] = [
   AggregationFunction.SUM,
   AggregationFunction.AVERAGE,
+  AggregationFunction.MEDIAN,
+  AggregationFunction.STD_DEV,
+  AggregationFunction.VARIANCE,
+  AggregationFunction.JOIN_TEXT,
 ];
 
-/** The names of a group's Sum and Average outputs, which a case declares wider */
-const sumsAndAverages = (
+/** The names of a group's outputs the engine types as never null (`NULLABLE_ONLY_TO_CUBE`), which a case declares wider */
+const neverNullToTheEngine = (
   aggregations: readonly ColumnAggregation[],
 ): string[] =>
   aggregations
@@ -397,29 +410,51 @@ const sumsAndAverages = (
     )
     .map(({ name }) => name);
 
+/** An aggregation, with its function's setting at its default when it takes one (PLAN §11.9, §11.28) */
 const aggregation = (
   fn: AggregationFunction | WindowRankFunction | WindowRowFunction,
   column: string | undefined,
   name: string,
-): ColumnAggregation => ({ column, function: fn, name });
+): ColumnAggregation => {
+  const setting = getAggregationSetting(fn);
+  return {
+    column,
+    function: fn,
+    name,
+    ...(setting === undefined
+      ? {}
+      : { [setting]: AGGREGATION_SETTING_DEFAULTS[setting] }),
+  };
+};
 
 /**
- * Every function each column of the table offers (spec §10.1), and Count
- * rows: one output per (column, function), named `<column>_<function>`. An
- * unresolved table (the coverage test) gives Count rows alone.
+ * Every function each column of the table offers where the aggregations are
+ * (spec §10.1), and Count rows: one output per (column, function), named
+ * `<column>_<function>`. An unresolved table (the coverage test) gives Count
+ * rows alone.
  */
 const everyAggregation = (
   table: RelationalTableSource,
+  use: AggregationUse = GROUP_AGGREGATION_USE,
 ): ColumnAggregation[] => [
   aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
   ...(table.resolution.kind === 'resolved'
     ? table.resolution.schema.columns.flatMap((column) =>
-        getAvailableAggregations(column.type).map((fn) =>
+        getAvailableAggregations(column.type, use).map((fn) =>
           aggregation(fn, column.name, `${column.name}_${fn}`),
         ),
       )
     : []),
 ];
+
+/** The outputs `everyAggregation` names that the engine types as never null, of these columns' functions (`NULLABLE_ONLY_TO_CUBE`) */
+const neverNullOf = (
+  columns: readonly string[],
+  functions: readonly AggregationFunction[],
+): string[] =>
+  columns.flatMap((column) => functions.map((fn) => `${column}_${fn}`));
+const { SUM, AVERAGE, MEDIAN, STD_DEV, VARIANCE, JOIN_TEXT } =
+  AggregationFunction;
 
 /** Every function of every ALLTYPES column, by a key or over all the rows */
 const everyAlltypesAggregation =
@@ -471,10 +506,19 @@ const groupOfConverted =
       ]),
     )(sources);
   };
-const CONVERTED_SUMS_AND_AVERAGES = ['N', 'DE', 'I', 'FL'].flatMap((name) => [
-  `${name}_Sum`,
-  `${name}_Average`,
-]);
+/** Their outputs the engine types as never null, in a Group: of the numbers, and K's Join Text */
+const CONVERTED_NEVER_NULL_IN_A_GROUP = [
+  ...neverNullOf(
+    ['N', 'DE', 'I', 'FL'],
+    [SUM, AVERAGE, MEDIAN, STD_DEV, VARIANCE],
+  ),
+  `K_${JOIN_TEXT}`,
+];
+/** and in a window, which has no Median or Join Text */
+const CONVERTED_NEVER_NULL_IN_A_WINDOW = neverNullOf(
+  ['N', 'DE', 'I', 'FL'],
+  [SUM, AVERAGE, STD_DEV, VARIANCE],
+);
 
 // Partition (M5, PLAN §11.6): its windows' functions are typed as a Group's
 // (§5.7), and the engine types Sum and Average as never null here too, though
@@ -522,17 +566,20 @@ const ORDERS_WINDOW_FUNCTIONS: readonly ColumnAggregation[] = [
   ...RANKS,
 ];
 
-/** ALLTYPES' Sum and Average outputs, as `everyAggregation` names them */
-const ALLTYPES_SUMS_AND_AVERAGES = [
-  'TI',
-  'SI',
-  'BI',
-  'ID',
-  'F',
-  'D',
-  'DEC',
-  'NUM',
-].flatMap((name) => [`${name}_Sum`, `${name}_Average`]);
+/** ALLTYPES' number columns */
+const ALLTYPES_NUMBERS = ['TI', 'SI', 'BI', 'ID', 'F', 'D', 'DEC', 'NUM'];
+/** ALLTYPES' outputs the engine types as never null in a Group, as `everyAggregation` names them: of its numbers, and VC's Join Text */
+const ALLTYPES_NEVER_NULL_IN_A_GROUP = [
+  ...neverNullOf(ALLTYPES_NUMBERS, [SUM, AVERAGE, MEDIAN, STD_DEV, VARIANCE]),
+  `VC_${JOIN_TEXT}`,
+];
+/** and in a window, which has no Median or Join Text */
+const ALLTYPES_NEVER_NULL_IN_A_WINDOW = neverNullOf(ALLTYPES_NUMBERS, [
+  SUM,
+  AVERAGE,
+  STD_DEV,
+  VARIANCE,
+]);
 
 /**
  * Every function of every ALLTYPES column in a Partition by these columns
@@ -543,7 +590,10 @@ const everyAlltypesWindowFunction =
   (sources: ReadonlyMap<string, RelationalTableSource>): Query =>
     chain(
       new Partition('partition101', columns, sorts, [
-        ...everyAggregation(source(sources, 'relational101')),
+        ...everyAggregation(source(sources, 'relational101'), {
+          kind: 'window',
+          sorted: sorts.length > 0,
+        }),
         ...(sorts.length ? RANKS : []),
       ]),
     )(sources);
@@ -569,9 +619,10 @@ const partitionOfConverted =
       new Partition('partition101', columns, sorts, [
         aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
         ...(concat?.columns ?? []).flatMap((column) =>
-          getAvailableAggregations(column.type).map((fn) =>
-            aggregation(fn, column.name, `${column.name}_${fn}`),
-          ),
+          getAvailableAggregations(column.type, {
+            kind: 'window',
+            sorted: sorts.length > 0,
+          }).map((fn) => aggregation(fn, column.name, `${column.name}_${fn}`)),
         ),
         ...RANKS,
       ]),
@@ -783,52 +834,14 @@ const CASES: readonly ConformanceCase[] = [
     name: 'group-every-aggregation',
     tables: [ALLTYPES],
     build: everyAlltypesAggregation(['B']),
-    widerNullable: {
-      group101: [
-        'TI_Sum',
-        'SI_Sum',
-        'BI_Sum',
-        'ID_Sum',
-        'F_Sum',
-        'D_Sum',
-        'DEC_Sum',
-        'NUM_Sum',
-        'TI_Average',
-        'SI_Average',
-        'BI_Average',
-        'ID_Average',
-        'F_Average',
-        'D_Average',
-        'DEC_Average',
-        'NUM_Average',
-      ],
-    },
+    widerNullable: { group101: ALLTYPES_NEVER_NULL_IN_A_GROUP },
   },
   {
     // and over all the rows: aggregate()
     name: 'aggregate-every-aggregation',
     tables: [ALLTYPES],
     build: everyAlltypesAggregation([]),
-    widerNullable: {
-      group101: [
-        'TI_Sum',
-        'SI_Sum',
-        'BI_Sum',
-        'ID_Sum',
-        'F_Sum',
-        'D_Sum',
-        'DEC_Sum',
-        'NUM_Sum',
-        'TI_Average',
-        'SI_Average',
-        'BI_Average',
-        'ID_Average',
-        'F_Average',
-        'D_Average',
-        'DEC_Average',
-        'NUM_Average',
-      ],
-    },
+    widerNullable: { group101: ALLTYPES_NEVER_NULL_IN_A_GROUP },
   },
   {
     // keys listed in another order than the input's, FREIGHT a Double
@@ -841,7 +854,7 @@ const CASES: readonly ConformanceCase[] = [
         ORDERS_AGGREGATIONS,
       ),
     ),
-    widerNullable: { group101: sumsAndAverages(ORDERS_AGGREGATIONS) },
+    widerNullable: { group101: neverNullToTheEngine(ORDERS_AGGREGATIONS) },
   },
   {
     // a group of a group: Integer, Float, StrictDate and Varchar inputs
@@ -866,7 +879,7 @@ const CASES: readonly ConformanceCase[] = [
       ),
     ),
     widerNullable: {
-      group101: sumsAndAverages(ORDERS_AGGREGATIONS),
+      group101: neverNullToTheEngine(ORDERS_AGGREGATIONS),
       group102: ['orders'],
     },
   },
@@ -1270,7 +1283,7 @@ const CASES: readonly ConformanceCase[] = [
       'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
     tables: [ALLTYPES, ALLTYPES_SECOND],
     build: groupOfConverted(['K']),
-    widerNullable: { group101: CONVERTED_SUMS_AND_AVERAGES },
+    widerNullable: { group101: CONVERTED_NEVER_NULL_IN_A_GROUP },
   },
   {
     name: 'group-by-converted-types',
@@ -1278,7 +1291,7 @@ const CASES: readonly ConformanceCase[] = [
       'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
     tables: [ALLTYPES, ALLTYPES_SECOND],
     build: groupOfConverted(['N', 'W']),
-    widerNullable: { group101: CONVERTED_SUMS_AND_AVERAGES },
+    widerNullable: { group101: CONVERTED_NEVER_NULL_IN_A_GROUP },
   },
   {
     // and a String (two Varchar lengths): every function it offers
@@ -1505,7 +1518,7 @@ const CASES: readonly ConformanceCase[] = [
       ),
     ),
     widerNullable: {
-      partition101: sumsAndAverages(ORDERS_WINDOW_FUNCTIONS),
+      partition101: neverNullToTheEngine(ORDERS_WINDOW_FUNCTIONS),
     },
   },
   {
@@ -1516,21 +1529,21 @@ const CASES: readonly ConformanceCase[] = [
       ['B'],
       [{ column: 'ID', direction: ASC }],
     ),
-    widerNullable: { partition101: ALLTYPES_SUMS_AND_AVERAGES },
+    widerNullable: { partition101: ALLTYPES_NEVER_NULL_IN_A_WINDOW },
   },
   {
     // and over each partition whole, with no sort: over(~[p])
     name: 'partition-every-alltypes-function-unsorted',
     tables: [ALLTYPES],
     build: everyAlltypesWindowFunction(['VC'], []),
-    widerNullable: { partition101: ALLTYPES_SUMS_AND_AVERAGES },
+    widerNullable: { partition101: ALLTYPES_NEVER_NULL_IN_A_WINDOW },
   },
   {
     // and over all the rows: over([])
     name: 'partition-every-alltypes-function-over-all-rows',
     tables: [ALLTYPES],
     build: everyAlltypesWindowFunction([], []),
-    widerNullable: { partition101: ALLTYPES_SUMS_AND_AVERAGES },
+    widerNullable: { partition101: ALLTYPES_NEVER_NULL_IN_A_WINDOW },
   },
   {
     // the converted columns (M4.13): Integer, Number, Float, Decimal and Date,
@@ -1540,7 +1553,7 @@ const CASES: readonly ConformanceCase[] = [
       'I Integer?, N Number?, FL Float?, DE Decimal?, W Date?, K Varchar(20)?',
     tables: [ALLTYPES, ALLTYPES_SECOND],
     build: partitionOfConverted(['K'], [{ column: 'W', direction: DESC }]),
-    widerNullable: { partition101: CONVERTED_SUMS_AND_AVERAGES },
+    widerNullable: { partition101: CONVERTED_NEVER_NULL_IN_A_WINDOW },
   },
   {
     // partitioned by a Number and a Date, sorted by a Float and a Decimal
@@ -1555,7 +1568,7 @@ const CASES: readonly ConformanceCase[] = [
         { column: 'DE', direction: ASC },
       ],
     ),
-    widerNullable: { partition101: CONVERTED_SUMS_AND_AVERAGES },
+    widerNullable: { partition101: CONVERTED_NEVER_NULL_IN_A_WINDOW },
   },
   {
     // and a String (two Varchar lengths): every function it offers, sorted by
@@ -1828,9 +1841,9 @@ const CASES: readonly ConformanceCase[] = [
       ),
     ),
     widerNullable: {
-      group101: sumsAndAverages(ORDERS_AGGREGATIONS),
+      group101: neverNullToTheEngine(ORDERS_AGGREGATIONS),
       partition101: [
-        ...sumsAndAverages(ORDERS_AGGREGATIONS),
+        ...neverNullToTheEngine(ORDERS_AGGREGATIONS),
         'country orders',
         'mean average id',
       ],

@@ -18,22 +18,29 @@ import {
   AGGREGATION_SETTING_DEFAULTS,
   AggregationFunction,
   AggregationSetting,
+  type AggregationSettings,
   type AggregationUse,
   type ColumnAggregation,
   getAggregationAutoName,
   getAggregationSetting,
+  getAggregationSettings,
+  getPercentileText,
   isAggregationFunctionOf,
+  parsePercentileText,
   type Schema,
   takesAggregationColumn,
 } from '@finos/legend-cube';
 import { parseWholeNumberText } from './CubeIntegerText.js';
 
-// The rows of the editors that aggregate (Group, PLAN §11.5; Partition,
-// §11.6, §11.9): each a column, a function, a setting for a function that
-// takes one, and an output name, judged by where the aggregations are
-// (`AggregationUse`)
+// The rows of the editors that aggregate (Group, PLAN §11.5, §11.28;
+// Partition, §11.6, §11.9): each a column, a function, a setting for a
+// function that takes one, and an output name, judged by where the
+// aggregations are (`AggregationUse`)
 
-/** A row's settings as typed, by key: Lag's and Lead's offset, NTile's bucket count */
+/**
+ * A row's settings as typed, by key: Lag's and Lead's offset, NTile's bucket
+ * count, Percentile's percentile as a percent, Join Text's separator
+ */
 export type CubeAggregationSettingTexts = Readonly<
   Partial<Record<AggregationSetting, string>>
 >;
@@ -54,8 +61,8 @@ export interface CubeAggregationRow {
    * it doesn't take, kept so it is reported until the function is picked again
    */
   readonly settings: CubeAggregationSettingTexts;
-  /** The settings as saved, kept while their text is as it opened, so one that isn't a whole number stays reported */
-  readonly savedSettings?: Pick<ColumnAggregation, 'offset' | 'buckets'>;
+  /** The settings as saved, kept while their text is as it opened, so one the text can't give, as an offset that isn't a whole number, stays reported */
+  readonly savedSettings?: AggregationSettings;
   /**
    * The name was typed: it no longer follows the column and the function.
    * A name equal to the auto-name follows them again.
@@ -74,46 +81,70 @@ export const blankAggregationRow = (): CubeAggregationRow => ({
   named: false,
 });
 
+/** A setting's value as an editor shows it: a percentile as a percent (0.9 is `90`), a separator as it is */
+export const getAggregationSettingText = (
+  setting: AggregationSetting,
+  value: number | string,
+): string =>
+  setting === AggregationSetting.PERCENTILE && typeof value === 'number'
+    ? getPercentileText(value)
+    : String(value);
+
 /** The settings a saved aggregation holds, as texts */
-const settingTextsOf = ({
-  offset,
-  buckets,
-}: ColumnAggregation): CubeAggregationSettingTexts => ({
-  ...(offset === undefined
-    ? {}
-    : { [AggregationSetting.OFFSET]: String(offset) }),
-  ...(buckets === undefined
-    ? {}
-    : { [AggregationSetting.BUCKETS]: String(buckets) }),
-});
+const settingTextsOf = (
+  aggregation: ColumnAggregation,
+): CubeAggregationSettingTexts =>
+  Object.fromEntries(
+    Object.values(AggregationSetting).flatMap((setting) => {
+      const value = aggregation[setting];
+      return value === undefined
+        ? []
+        : [[setting, getAggregationSettingText(setting, value)]];
+    }),
+  );
+
+/** The value a setting's text gives: a whole number, a percent as its fraction, or a separator exactly as typed */
+const parseSettingText = (
+  setting: AggregationSetting,
+  text: string,
+): number | string | undefined => {
+  switch (setting) {
+    case AggregationSetting.PERCENTILE:
+      return parsePercentileText(text);
+    case AggregationSetting.SEPARATOR:
+      return text;
+    default:
+      return parseWholeNumberText(text);
+  }
+};
 
 /**
- * The settings the texts give: a whole number, or the saved number while the
- * text is as it opened (so a saved 2.5 stays 2.5, reported, never dropped), or
- * none, which the node reports
+ * The settings the texts give (`parseSettingText`), or the saved value while
+ * the text is as it opened (so a saved offset of 2.5 stays 2.5, reported,
+ * never dropped), or none, which the node reports
  */
 const settingsOfTexts = (
   texts: CubeAggregationSettingTexts,
-  saved: Pick<ColumnAggregation, 'offset' | 'buckets'> = {},
-): Pick<ColumnAggregation, 'offset' | 'buckets'> => {
-  const [offset, buckets] = [
-    AggregationSetting.OFFSET,
-    AggregationSetting.BUCKETS,
-  ].map((key) => {
-    const text = texts[key];
-    const savedValue = saved[key];
-    return text === undefined
-      ? undefined
-      : (parseWholeNumberText(text) ??
-          (savedValue !== undefined && text === String(savedValue)
-            ? savedValue
-            : undefined));
-  });
-  return {
-    ...(offset === undefined ? {} : { offset }),
-    ...(buckets === undefined ? {} : { buckets }),
-  };
-};
+  saved: AggregationSettings = {},
+): AggregationSettings =>
+  getAggregationSettings(
+    Object.fromEntries(
+      Object.values(AggregationSetting).map((setting) => {
+        const text = texts[setting];
+        const savedValue = saved[setting];
+        return [
+          setting,
+          text === undefined
+            ? undefined
+            : (parseSettingText(setting, text) ??
+              (savedValue !== undefined &&
+              text === getAggregationSettingText(setting, savedValue)
+                ? savedValue
+                : undefined)),
+        ];
+      }),
+    ),
+  );
 
 /** Whether the use knows the function and it takes no column: Count rows, and in a window the rank functions */
 export const takesNoAggregationColumn = (
@@ -136,17 +167,21 @@ export const isBuiltAggregationRow = (
   takesNoAggregationColumn(row.function, use) ||
   (row.column === undefined && !isAggregationFunctionOf(row.function, use));
 
-/** The row with its name following the column and the function, unless typed */
+/** The name the row gets until one is typed: its column's, its function's and a Percentile's percent (`getAggregationAutoName`) */
+const autoNameOf = (row: CubeAggregationRow, use: AggregationUse): string =>
+  getAggregationAutoName(
+    row.function,
+    row.column,
+    use,
+    settingsOfTexts(row.settings, row.savedSettings),
+  ) ?? '';
+
+/** The row with its name following the column, the function and its setting, unless typed */
 const withAutoName = (
   row: CubeAggregationRow,
   use: AggregationUse,
 ): CubeAggregationRow =>
-  row.named
-    ? row
-    : {
-        ...row,
-        name: getAggregationAutoName(row.function, row.column, use) ?? '',
-      };
+  row.named ? row : { ...row, name: autoNameOf(row, use) };
 
 /** The rows of saved aggregations, or one blank row when there are none */
 export const aggregationRowsOf = (
@@ -162,15 +197,10 @@ export const aggregationRowsOf = (
           function: fn,
           name,
           settings: settingTextsOf(aggregation),
-          savedSettings: {
-            ...(aggregation.offset === undefined
-              ? {}
-              : { offset: aggregation.offset }),
-            ...(aggregation.buckets === undefined
-              ? {}
-              : { buckets: aggregation.buckets }),
-          },
-          named: name !== (getAggregationAutoName(fn, column, use) ?? ''),
+          savedSettings: getAggregationSettings(aggregation),
+          named:
+            name !==
+            (getAggregationAutoName(fn, column, use, aggregation) ?? ''),
         };
       })
     : [blankAggregationRow()];
@@ -203,7 +233,7 @@ export const withRowColumn = (
 /**
  * The row with its function picked: a function that takes no column clears
  * it, and back to a column function leaves one to pick. It keeps only the
- * function's own setting, as typed, or its default.
+ * function's own setting, as typed, or its default as an editor shows it.
  */
 export const withRowFunction = (
   row: CubeAggregationRow,
@@ -224,22 +254,24 @@ export const withRowFunction = (
           : {
               [setting]:
                 row.settings[setting] ??
-                String(AGGREGATION_SETTING_DEFAULTS[setting]),
+                getAggregationSettingText(
+                  setting,
+                  AGGREGATION_SETTING_DEFAULTS[setting],
+                ),
             },
     },
     use,
   );
 };
 
-/** The row with a setting typed, kept exactly as text */
+/** The row with a setting typed, kept exactly as text; a Percentile's name follows its percent unless typed */
 export const withRowSetting = (
   row: CubeAggregationRow,
   setting: AggregationSetting,
   text: string,
-): CubeAggregationRow => ({
-  ...row,
-  settings: { ...row.settings, [setting]: text },
-});
+  use: AggregationUse,
+): CubeAggregationRow =>
+  withAutoName({ ...row, settings: { ...row.settings, [setting]: text } }, use);
 
 /** The row with its name typed, kept exactly; the auto-name itself follows again */
 export const withRowName = (
@@ -249,7 +281,7 @@ export const withRowName = (
 ): CubeAggregationRow => ({
   ...row,
   name,
-  named: name !== (getAggregationAutoName(row.function, row.column, use) ?? ''),
+  named: name !== autoNameOf(row, use),
 });
 
 export const isSameAggregations = (
@@ -262,8 +294,9 @@ export const isSameAggregations = (
       aggregation.column === b[index]?.column &&
       aggregation.function === b[index]?.function &&
       aggregation.name === b[index]?.name &&
-      aggregation.offset === b[index]?.offset &&
-      aggregation.buckets === b[index]?.buckets,
+      Object.values(AggregationSetting).every(
+        (setting) => aggregation[setting] === b[index]?.[setting],
+      ),
   );
 
 /**

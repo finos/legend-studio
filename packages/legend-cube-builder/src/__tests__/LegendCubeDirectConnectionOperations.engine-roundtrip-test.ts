@@ -17,6 +17,7 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   AggregationFunction,
+  type ColumnAggregation,
   ColumnComparisonFilter,
   Connection,
   Difference,
@@ -24,6 +25,7 @@ import {
   Drop,
   Filter,
   FilterOperator,
+  Group,
   Limit,
   Partition,
   type JsonObject,
@@ -300,6 +302,154 @@ describe.each<[CubeDirectDatabaseType, string, string, string]>([
       expect(TEST__columnValues(result, 'v')).toEqual(
         TEST__columnValues(result, country),
       );
+    });
+
+    // More Group functions (PLAN §11.28): DE holds orders 1, 3 and 6, MX 2
+    // and 5, FR 4
+
+    const byCountry = (...aggregations: ColumnAggregation[]): Group =>
+      new Group('group101', [country], aggregations);
+    const numbersByCountry = (
+      result: CubeResult,
+      column: string,
+    ): Record<string, number | null> =>
+      Object.fromEntries(
+        TEST__columnValues(result, country).map((key, index) => {
+          const value = TEST__columnValues(result, column)[index];
+          return [String(key), value === null ? null : Number(value)];
+        }),
+      );
+
+    test("Gives each country's median, 90th percentile, and sample standard deviation and variance", async () => {
+      const result = await run(
+        byCountry(
+          {
+            column: orderId,
+            function: AggregationFunction.MEDIAN,
+            name: 'median',
+          },
+          {
+            column: orderId,
+            function: AggregationFunction.PERCENTILE,
+            name: 'p90',
+            percentile: 0.9,
+          },
+          {
+            column: orderId,
+            function: AggregationFunction.STD_DEV,
+            name: 'sd',
+          },
+          {
+            column: orderId,
+            function: AggregationFunction.VARIANCE,
+            name: 'variance',
+          },
+        ),
+      );
+      expect(numbersByCountry(result, 'median')).toEqual({
+        DE: 3,
+        MX: 3.5,
+        FR: 4,
+      });
+      // interpolated: 3 + 0.8 * (6 - 3), 2 + 0.9 * (5 - 2)
+      expect(numbersByCountry(result, 'p90')).toEqual({
+        DE: expect.closeTo(5.4, 9),
+        MX: expect.closeTo(4.7, 9),
+        FR: 4,
+      });
+      // over n - 1 values: one value has none
+      expect(numbersByCountry(result, 'sd')).toEqual({
+        DE: expect.closeTo(Math.sqrt(19 / 3), 9),
+        MX: expect.closeTo(3 * Math.SQRT1_2, 9),
+        FR: null,
+      });
+      expect(numbersByCountry(result, 'variance')).toEqual({
+        DE: expect.closeTo(19 / 3, 9),
+        MX: expect.closeTo(4.5, 9),
+        FR: null,
+      });
+    });
+
+    test('Joins every country with the separator, in no set order, and gives nothing over no rows', async () => {
+      const joined: ColumnAggregation = {
+        column: country,
+        function: AggregationFunction.JOIN_TEXT,
+        name: 'countries',
+        separator: " | it's ",
+      };
+      const all = await run(new Group('group101', [], [joined]));
+      expect(
+        String(TEST__columnValues(all, 'countries')[0])
+          .split(" | it's ")
+          .sort(),
+      ).toEqual(['DE', 'DE', 'DE', 'FR', 'MX', 'MX']);
+      // empty, not an empty text, on H2 and DuckDB (Snowflake and Databricks
+      // give an empty text)
+      const none = await run(
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter(country, FilterOperator.EQUAL, {
+            kind: 'string',
+            value: 'Nowhere',
+          }),
+        ),
+        new Group('group101', [], [joined]),
+      );
+      expect(TEST__columnValues(none, 'countries')).toEqual([null]);
+    });
+
+    test("Gives each country's running and whole standard deviation and variance in a window", async () => {
+      const result = await run(
+        window(
+          [country],
+          true,
+          [AggregationFunction.STD_DEV, orderId, 'sd'],
+          [AggregationFunction.VARIANCE, orderId, 'variance'],
+        ),
+        new Partition(
+          'partition102',
+          [country],
+          [],
+          [
+            {
+              column: orderId,
+              function: AggregationFunction.STD_DEV,
+              name: 'whole sd',
+            },
+          ],
+        ),
+        ascending(),
+      );
+      const numbers = (column: string): (number | null)[] =>
+        TEST__columnValues(result, column).map((value) =>
+          value === null ? null : Number(value),
+        );
+      // DE runs 1, then 1 and 3, then 1, 3 and 6; MX 2, then 2 and 5
+      expect(numbers('variance')).toEqual([
+        null,
+        null,
+        expect.closeTo(2, 9),
+        null,
+        expect.closeTo(4.5, 9),
+        expect.closeTo(19 / 3, 9),
+      ]);
+      expect(numbers('sd')).toEqual([
+        null,
+        null,
+        expect.closeTo(Math.SQRT2, 9),
+        null,
+        expect.closeTo(3 * Math.SQRT1_2, 9),
+        expect.closeTo(Math.sqrt(19 / 3), 9),
+      ]);
+      // over the whole country
+      expect(numbers('whole sd')).toEqual([
+        expect.closeTo(Math.sqrt(19 / 3), 9),
+        expect.closeTo(3 * Math.SQRT1_2, 9),
+        expect.closeTo(Math.sqrt(19 / 3), 9),
+        null,
+        expect.closeTo(3 * Math.SQRT1_2, 9),
+        expect.closeTo(Math.sqrt(19 / 3), 9),
+      ]);
     });
 
     // Difference (PLAN §11.7): a full outer join, native on DuckDB, emulated

@@ -30,6 +30,7 @@ import {
   CUBE_NODE_HELP_TEXT,
   RUN_THIS_STEP_LABEL,
   RUNNING_NODE_LABEL,
+  RUNNING_NODE_TITLE,
   SELECT_NODE_TOOLTIP,
 } from '../../__lib__/LegendCubeHelpText.js';
 import {
@@ -219,11 +220,12 @@ export const CubeNodeEditorPanel = observer(
           </span>
           <span className="flex-1" />
           {isCapture ? (
+            // a label, as on the canvas: only Run Query looks like a button
             <span
-              className="shrink-0 rounded-sm bg-[var(--color-accent)] px-1 text-sm font-medium text-[var(--color-text-on-accent)]"
-              title="This is the step that runs: Execute shows its rows"
+              className="shrink-0 cursor-default text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]"
+              title={RUNNING_NODE_TITLE}
             >
-              {`▶ ${RUNNING_NODE_LABEL}`}
+              {RUNNING_NODE_LABEL}
             </span>
           ) : (
             <button

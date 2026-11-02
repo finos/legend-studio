@@ -165,10 +165,10 @@ const renderPage = async (
 const toolbar = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR);
 const executeButton = (): HTMLButtonElement =>
-  within(toolbar()).getByText<HTMLButtonElement>('Execute');
+  within(toolbar()).getByText<HTMLButtonElement>('Run Query');
 const rowLimitInput = (): HTMLInputElement =>
   within(toolbar()).getByLabelText<HTMLInputElement>('Row limit');
-/** Makes the node the one Execute runs, as Ctrl-click on the canvas does */
+/** Makes the node the output step, as Ctrl-click on the canvas does */
 const selectNode = async (nodeId: string): Promise<void> => {
   fireEvent.click(await TEST__findCanvasNode(nodeId), { ctrlKey: true });
 };
@@ -624,12 +624,12 @@ describe('Cube results', () => {
     });
     clickHeader(0);
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
-    fireEvent.click(within(toolbar()).getByText('Runs (2)'));
+    fireEvent.click(within(toolbar()).getByText('Run history (2)'));
     const runs = screen.getByTestId(LEGEND_CUBE_TEST_ID.RUN_STATS);
     const entries = within(runs).getAllByRole('listitem');
     expect(entries.map((entry) => entry.textContent)).toEqual([
       expect.stringContaining('Rows, sorted by ID ascending'),
-      expect.stringContaining('Execute'),
+      expect.stringMatching(/^Run/u),
     ]);
     fireEvent.click(within(entries[0] as HTMLElement).getByText('Copy SQL'));
     expect(copy).toHaveBeenCalledWith('select … order by "ID"');
@@ -646,7 +646,7 @@ describe('Cube results', () => {
     clickHeader(0);
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(2));
     const sorted = fake.execute.mock.calls[1]?.[1] as IR;
-    fireEvent.click(within(toolbar()).getByText('Runs (2)'));
+    fireEvent.click(within(toolbar()).getByText('Run history (2)'));
     const runs = screen.getByTestId(LEGEND_CUBE_TEST_ID.RUN_STATS);
     const entry = (): HTMLElement =>
       within(runs).getAllByRole('listitem')[0] as HTMLElement;
@@ -691,7 +691,7 @@ describe('Cube results', () => {
       within(entry()).getByText<HTMLButtonElement>('Show Pure').disabled,
     ).toBe(false);
 
-    // the compression switch is in Dev Settings, not in Runs
+    // the compression switch is in Dev Settings, not in Run history
     expect(within(runs).queryByText(/uncompressed|compress/u)).toBeNull();
   });
 
@@ -765,7 +765,7 @@ describe('Cube results', () => {
     // a new limit runs nothing: the rows shown are still the 2 of the run
     fireEvent.change(limit, { target: { value: '7' } });
     fireEvent.blur(limit);
-    expect(within(toolbar()).getByText(/Stale/u)).toBeDefined();
+    expect(within(toolbar()).getByText(/Out of date/u)).toBeDefined();
     expect(within(toolbar()).getByText('2 rows in 42 ms')).toBeDefined();
     expect(within(toolbar()).getByText(truncation)).toBeDefined();
     expect(
@@ -787,11 +787,11 @@ describe('Cube results', () => {
     ['', '5', '50'].forEach((text) => {
       fireEvent.change(limit, { target: { value: text } });
       expect(within(toolbar()).queryByRole('alert')).toBeNull();
-      expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+      expect(within(toolbar()).queryByText(/Out of date/u)).toBeNull();
     });
     expect(persistValue).not.toHaveBeenCalled();
     fireEvent.keyDown(limit, { key: 'Enter' });
-    expect(within(toolbar()).getByText(/Stale/u)).toBeDefined();
+    expect(within(toolbar()).getByText(/Out of date/u)).toBeDefined();
     expect(persistValue).toHaveBeenCalledTimes(1);
     expect(persistValue).toHaveBeenCalledWith('legend-cube.row-limit', 50);
     fireEvent.change(limit, { target: { value: '60' } });
@@ -860,23 +860,23 @@ describe('Cube results', () => {
     expect(within(toolbar()).queryByText(warning)).toBeNull();
   });
 
-  test('Marks the rows stale after an edit, keeps them, and runs nothing until Execute', async () => {
+  test('Marks the rows stale after an edit, keeps them, and runs nothing until Run Query', async () => {
     const fake = await renderPage(
       new CubeDocument({ context: CONTEXT, query: tableQuery() }),
     );
     fireEvent.click(executeButton());
     await cellTexts(0);
-    expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+    expect(within(toolbar()).queryByText(/Out of date/u)).toBeNull();
     // the row limit is part of the run
     const limit = rowLimitInput();
     fireEvent.change(limit, { target: { value: '500' } });
     fireEvent.blur(limit);
-    expect(within(toolbar()).getByText(/Stale/u)).toBeDefined();
+    expect(within(toolbar()).getByText(/Out of date/u)).toBeDefined();
     expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']);
     expect(fake.execute).toHaveBeenCalledTimes(1);
     fireEvent.click(executeButton());
     await waitFor(() =>
-      expect(within(toolbar()).queryByText(/Stale/u)).toBeNull(),
+      expect(within(toolbar()).queryByText(/Out of date/u)).toBeNull(),
     );
   });
 
@@ -898,7 +898,7 @@ describe('Cube results', () => {
     await cellTexts(0);
     expect([0, 1].map(headerText)).toEqual(['ID', 'NAME']);
     await selectNode('relational102');
-    expect(within(toolbar()).getByText(/Stale/u)).toBeDefined();
+    expect(within(toolbar()).getByText(/Out of date/u)).toBeDefined();
     // the rows are still the first table's, so are their headers
     expect([0, 1].map(headerText)).toEqual(['ID', 'NAME']);
     expect(await cellTexts(1)).toEqual(['ten', '(null)', 'nine']);
@@ -1025,7 +1025,7 @@ describe('Cube results', () => {
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.RESULT_GRID)).toBeNull();
     expect(within(toolbar()).queryByText(/rows? in/u)).toBeNull();
     expect(within(toolbar()).queryByText('Show SQL')).toBeNull();
-    expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+    expect(within(toolbar()).queryByText(/Out of date/u)).toBeNull();
   });
 
   test("Drops a failed run's error from the results and from its node when the query changes", async () => {
@@ -1049,7 +1049,7 @@ describe('Cube results', () => {
     ).toBeNull();
     expect(await nodeProblems('filter101')).toEqual([]);
     expect(
-      screen.getByText('Execute the query to see its rows.'),
+      screen.getByText('Run the query (F9) to see its rows.'),
     ).toBeDefined();
   });
 
@@ -1067,7 +1067,7 @@ describe('Cube results', () => {
         }),
     );
     fireEvent.click(executeButton());
-    expect(await within(toolbar()).findByText('executing query')).toBeDefined();
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
     await selectNode('relational102');
     await act(async () => {
       failRun(
@@ -1088,7 +1088,7 @@ describe('Cube results', () => {
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.RESULT_GRID)).toBeNull();
     expect(within(toolbar()).queryByText(/rows? in/u)).toBeNull();
     expect(
-      screen.getByText('Execute the query to see its rows.'),
+      screen.getByText('Run the query (F9) to see its rows.'),
     ).toBeDefined();
   });
 
@@ -1104,10 +1104,28 @@ describe('Cube results', () => {
     fireEvent.click(executeButton());
     await waitFor(() => expect(alertUnhandledError).toHaveBeenCalledTimes(1));
     expect(alertUnhandledError.mock.calls[0]?.[0]).toBeInstanceOf(TypeError);
-    expect(within(toolbar()).queryByText('executing query')).toBeNull();
+    expect(within(toolbar()).queryByText('running query')).toBeNull();
     expect(executeButton().disabled).toBe(false);
     fireEvent.click(executeButton());
     expect(await cellTexts(0)).toEqual(['10', '9007199254740993', '9']);
+  });
+
+  test('Ends the results bar with the row limit and Run Query, as Legend Query does, and Stop takes its place while a run is in flight', async () => {
+    await renderPage(undefined, (engine) =>
+      engine.execute.mockImplementation(
+        async () => new Promise<CubeResult>(() => undefined),
+      ),
+    );
+    const controls = (): Element[] => [
+      ...toolbar().querySelectorAll('input, button'),
+    ];
+    expect(controls().slice(-2)).toEqual([rowLimitInput(), executeButton()]);
+    fireEvent.click(executeButton());
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
+    expect(controls().slice(-2)).toEqual([
+      rowLimitInput(),
+      within(toolbar()).getByText('Stop'),
+    ]);
   });
 
   test('Shows the run in progress, with a loading bar over the results, and stops it', async () => {
@@ -1123,7 +1141,7 @@ describe('Cube results', () => {
       'panel-loading-indicator--disabled',
     );
     fireEvent.click(executeButton());
-    expect(await within(toolbar()).findByText('executing query')).toBeDefined();
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
     // the bar is the region's first child, and covers it
     expect(region.firstElementChild?.className).toBe('panel-loading-indicator');
     await waitFor(() =>
@@ -1133,7 +1151,7 @@ describe('Cube results', () => {
     );
     fireEvent.click(within(toolbar()).getByText('Stop'));
     expect(signal?.aborted).toBe(true);
-    expect(within(toolbar()).queryByText('executing query')).toBeNull();
+    expect(within(toolbar()).queryByText('running query')).toBeNull();
     expect(region.firstElementChild?.className).toBe(
       'panel-loading-indicator--disabled',
     );
@@ -1156,7 +1174,7 @@ describe('Cube results', () => {
         }),
     });
     fireEvent.click(executeButton());
-    expect(await within(toolbar()).findByText('executing query')).toBeDefined();
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
     expect(signal?.aborted).toBe(false);
     unmount();
     expect(signal?.aborted).toBe(true);
@@ -1177,7 +1195,7 @@ describe('Cube results', () => {
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
     fireEvent.click(within(toolbar()).getByText('Show SQL'));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Executed SQL')).toBeDefined();
+    expect(within(dialog).getByText('SQL of the last run')).toBeDefined();
     expect(
       within(dialog).getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL),
     ).toBeDefined();
@@ -1197,7 +1215,7 @@ describe('Cube results', () => {
       async () => new Promise<CubeResult>(() => undefined),
     );
     fireEvent.click(executeButton());
-    expect(await within(toolbar()).findByText('executing query')).toBeDefined();
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
     expect(within(toolbar()).queryByText('Show SQL')).toBeNull();
   });
 });

@@ -17,14 +17,24 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   AggregationFunction,
+  AggregationSetting,
   Group,
   PrimitiveType,
   Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
+import { getAggregationSettingText } from '../CubeAggregationRows.js';
 import { CubeGroupDraft } from '../CubeGroupDraft.js';
 
-const { COUNT, DISTINCT_COUNT, SUM, AVERAGE, COUNT_ROWS } = AggregationFunction;
+const {
+  COUNT,
+  DISTINCT_COUNT,
+  SUM,
+  AVERAGE,
+  COUNT_ROWS,
+  PERCENTILE,
+  JOIN_TEXT,
+} = AggregationFunction;
 
 const ORDERS = new Schema([
   new SchemaColumn('ORDER_ID', PrimitiveType.get('Integer'), false),
@@ -545,5 +555,85 @@ describe('Group draft', () => {
       { column: undefined, function: '', name: 'E' },
       { column: 'ORDER_ID', function: COUNT, name: 'ORDER_ID Count' },
     ]);
+  });
+  test("Gives a Percentile its percent and a Join Text its separator as typed, and builds the percentile's fraction (PLAN §11.28)", () => {
+    const group = new Group('group101', ['SHIP_COUNTRY']);
+    const draft = new CubeGroupDraft(group);
+    draft.setColumn(keyOf(draft, 0), 'FREIGHT');
+    draft.setFunction(keyOf(draft, 0), PERCENTILE);
+    expect(draft.rows[0]?.settings).toEqual({ percentile: '90' });
+    expect(draft.rows[0]?.name).toBe('FREIGHT P90');
+    draft.setSetting(keyOf(draft, 0), AggregationSetting.PERCENTILE, '12.5');
+    expect(draft.rows[0]?.name).toBe('FREIGHT P12.5');
+    draft.addRow();
+    draft.setColumn(keyOf(draft, 1), 'SHIP_COUNTRY');
+    draft.setFunction(keyOf(draft, 1), JOIN_TEXT);
+    expect(draft.rows[1]?.settings).toEqual({ separator: ', ' });
+    draft.setSetting(keyOf(draft, 1), AggregationSetting.SEPARATOR, ' / ');
+    expect(draft.aggregations).toEqual([
+      {
+        column: 'FREIGHT',
+        function: PERCENTILE,
+        name: 'FREIGHT P12.5',
+        percentile: 0.125,
+      },
+      {
+        column: 'SHIP_COUNTRY',
+        function: JOIN_TEXT,
+        name: 'SHIP_COUNTRY Join Text',
+        separator: ' / ',
+      },
+    ]);
+    // another function keeps only its own setting
+    draft.setFunction(keyOf(draft, 0), SUM);
+    expect(draft.rows[0]?.settings).toEqual({});
+    expect(draft.build().aggregations[0]).toEqual({
+      column: 'FREIGHT',
+      function: SUM,
+      name: 'FREIGHT Sum',
+    });
+  });
+
+  test('Keeps a saved setting it would refuse exactly while its text is as it opened, and gives the original back', () => {
+    const group = new Group(
+      'group101',
+      ['SHIP_COUNTRY'],
+      [
+        {
+          column: 'FREIGHT',
+          function: PERCENTILE,
+          name: 'FREIGHT P150',
+          percentile: 1.5,
+        },
+        {
+          column: 'SHIP_COUNTRY',
+          function: JOIN_TEXT,
+          name: 'Cities',
+          separator: '\\',
+        },
+      ],
+    );
+    const draft = new CubeGroupDraft(group);
+    expect(draft.rows.map(({ settings }) => settings)).toEqual([
+      { percentile: '150' },
+      { separator: '\\' },
+    ]);
+    // the auto-name follows the percent; the typed one doesn't
+    expect(draft.rows.map(({ named }) => named)).toEqual([false, true]);
+    expect(draft.aggregations).toEqual(group.aggregations);
+    draft.setName(keyOf(draft, 1), 'Cities');
+    expect(draft.build()).toBe(group);
+  });
+
+  test('Shows a setting as an editor does: a percentile as its percent, never rounded, anything else as it is', () => {
+    expect(
+      [0.9, 0.29, 0.333, 1, 0].map((value) =>
+        getAggregationSettingText(AggregationSetting.PERCENTILE, value),
+      ),
+    ).toEqual(['90', '29', '33.3', '100', '0']);
+    expect(getAggregationSettingText(AggregationSetting.OFFSET, 2)).toBe('2');
+    expect(getAggregationSettingText(AggregationSetting.SEPARATOR, ', ')).toBe(
+      ', ',
+    );
   });
 });

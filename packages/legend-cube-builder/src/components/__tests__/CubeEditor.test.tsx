@@ -215,7 +215,7 @@ describe('Cube page', () => {
         durationMs: 1,
       }),
     );
-    fireEvent.click(within(toolbar()).getByText('Execute'));
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
     await within(toolbar()).findByText(/rows? in/u);
     const graph = (): HTMLElement =>
       screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
@@ -227,7 +227,7 @@ describe('Cube page', () => {
     expect(TEST__getAddItemsTrigger()).toBeDefined();
     expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBe(grid);
     expect(within(graph()).getByText('Show graph')).toBe(toggle);
-    expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+    expect(within(toolbar()).queryByText(/Out of date/u)).toBeNull();
     expect(within(toolbar()).getByText(/rows? in/u)).toBeDefined();
     // an edit of the cube, so Undo shows the graph again
     fireEvent.click(within(graph()).getByText('Undo'));
@@ -236,7 +236,7 @@ describe('Cube page', () => {
     fireEvent.click(within(graph()).getByText('Hide graph'));
     fireEvent.click(within(graph()).getByText('Show graph'));
     expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeDefined();
-    expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+    expect(within(toolbar()).queryByText(/Out of date/u)).toBeNull();
   });
 
   test('Opens a cube saved with its graph hidden that way', async () => {
@@ -374,7 +374,7 @@ describe('Cube page', () => {
     expect(within(graph).queryByText('Unsaved Query')).toBeNull();
   });
 
-  test("Draws the query's nodes, with the one Execute runs marked", async () => {
+  test("Draws the query's nodes, with the output step marked", async () => {
     await renderPage(
       new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
     );
@@ -567,8 +567,8 @@ describe('Cube page', () => {
       new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
       neverAnswers,
     );
-    fireEvent.click(within(toolbar()).getByText('Execute'));
-    expect(await within(toolbar()).findByText('executing query')).toBeDefined();
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
     // the run's bar is over the results only
     expect(
       loadingBarIn(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)),
@@ -590,7 +590,7 @@ describe('Cube page', () => {
     ).toBeDefined();
     fireEvent.click(within(dialog).getByText('Cancel'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(within(toolbar()).getByText('executing query')).toBeDefined();
+    expect(within(toolbar()).getByText('running query')).toBeDefined();
   });
 
   test('Keeps the results while the picker is open and a table resolves, and after Cancel', async () => {
@@ -612,11 +612,11 @@ describe('Cube page', () => {
     expect(
       loadingBarIn(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)),
     ).toBeNull();
-    expect(within(toolbar()).getByText('Execute')).toBeDefined();
+    expect(within(toolbar()).getByText('Run Query')).toBeDefined();
     fireEvent.click(within(dialog).getByText('Cancel'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
-    expect(within(toolbar()).getByText('Execute')).toBeDefined();
+    expect(within(toolbar()).getByText('Run Query')).toBeDefined();
   });
 
   test('Stops the run in flight when the page unmounts', async () => {
@@ -627,8 +627,8 @@ describe('Cube page', () => {
         return new Promise<CubeResult>(() => undefined);
       }),
     );
-    fireEvent.click(within(toolbar()).getByText('Execute'));
-    expect(await within(toolbar()).findByText('executing query')).toBeDefined();
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
+    expect(await within(toolbar()).findByText('running query')).toBeDefined();
     expect(signal?.aborted).toBe(false);
     unmount();
     expect(signal?.aborted).toBe(true);

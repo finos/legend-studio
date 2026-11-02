@@ -57,7 +57,7 @@ import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
-import { guaranteeNonNullable, startCase } from '@finos/legend-shared';
+import { startCase } from '@finos/legend-shared';
 import { showTaskActionAlert } from './showTaskActionAlert.js';
 import {
   type ContractErrorLayer,
@@ -88,6 +88,8 @@ import {
   useGetDataProductUrl,
 } from '../../../utils/EntitlementsUtils.js';
 
+const MAX_DISPLAYED_ERRORS = 100;
+
 const EntitlementsDashboardActionResultsModal = (props: {
   action: TaskApprovalAction;
   errorMessages: [V1_PendingTaskRecord, string][];
@@ -104,6 +106,10 @@ const EntitlementsDashboardActionResultsModal = (props: {
     marketplaceBaseStore,
     onClose,
   } = props;
+  const contractsById = useMemo(
+    () => new Map(pendingTaskContracts.map((c) => [c.guid, c])),
+    [pendingTaskContracts],
+  );
 
   return (
     <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -119,45 +125,49 @@ const EntitlementsDashboardActionResultsModal = (props: {
             successfully
           </Box>
         )}
-        {errorMessages.map(([task, errorMessage]) => {
-          const contractId = task.accessRequestId;
-          const contract = pendingTaskContracts.find(
-            (c) => c.guid === contractId,
-          );
-          return (
-            <Box
-              key={task.taskId}
-              className="marketplace-lakehouse-entitlements__data-contract-approval__error"
-            >
-              <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__content">
-                Encountered an error{' '}
-                {action === TaskApprovalAction.APPROVE
-                  ? 'approving'
-                  : 'denying'}{' '}
-                request for{' '}
-                <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
-                  <UserRenderer
-                    userId={task.consumer}
-                    applicationStore={marketplaceBaseStore.applicationStore}
-                    userSearchService={marketplaceBaseStore.userSearchService}
-                  />
-                </div>{' '}
-                for {startCase(contract?.resourceType.toLowerCase())}{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
-                  {contract?.accessPointGroup}
-                </span>{' '}
-                on Data Product{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
-                  {contract?.resourceId}
-                </span>
-                :
-              </div>
-              <div>
-                <code>{errorMessage}</code>
-              </div>
-            </Box>
-          );
-        })}
+        {errorMessages
+          .slice(0, MAX_DISPLAYED_ERRORS)
+          .map(([task, errorMessage]) => {
+            const contract = contractsById.get(task.accessRequestId);
+            return (
+              <Box
+                key={task.taskId}
+                className="marketplace-lakehouse-entitlements__data-contract-approval__error"
+              >
+                <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__content">
+                  Encountered an error{' '}
+                  {action === TaskApprovalAction.APPROVE
+                    ? 'approving'
+                    : 'denying'}{' '}
+                  request for{' '}
+                  <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
+                    <UserRenderer
+                      userId={task.consumer}
+                      applicationStore={marketplaceBaseStore.applicationStore}
+                      userSearchService={marketplaceBaseStore.userSearchService}
+                    />
+                  </div>{' '}
+                  for {startCase(contract?.resourceType.toLowerCase())}{' '}
+                  <span className="marketplace-lakehouse-text__emphasis">
+                    {contract?.accessPointGroup}
+                  </span>{' '}
+                  on Data Product{' '}
+                  <span className="marketplace-lakehouse-text__emphasis">
+                    {contract?.resourceId}
+                  </span>
+                  :
+                </div>
+                <div>
+                  <code>{errorMessage}</code>
+                </div>
+              </Box>
+            );
+          })}
+        {errorMessages.length > MAX_DISPLAYED_ERRORS && (
+          <Box className="marketplace-lakehouse-entitlements__data-contract-approval__error">
+            ...and {errorMessages.length - MAX_DISPLAYED_ERRORS} more errors
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} variant="outlined">
@@ -273,25 +283,15 @@ export const EntitlementsPendingTasksDashboard = observer(
       const tasks =
         pendingTasks?.filter((task) => selectedTaskIdsSet.has(task.taskId)) ??
         [];
-      const currentErrorMessages: [V1_PendingTaskRecord, string][] = [];
-      let successCount = 0;
-      await Promise.all(
-        tasks.map(async (task) => {
-          const actionResult =
-            action === TaskApprovalAction.APPROVE
-              ? dashboardState.approve(task, tokenRef.current, justification)
-              : dashboardState.deny(
-                  task,
-                  tokenRef.current,
-                  guaranteeNonNullable(justification),
-                );
-          return flowResult(actionResult)
-            .then(() => {
-              successCount += 1;
-            })
-            .catch((error) => currentErrorMessages.push([task, error.message]));
-        }),
-      );
+      const { successCount, errorMessages: currentErrorMessages } =
+        await flowResult(
+          dashboardState.changeTaskStatuses(
+            tasks,
+            () => tokenRef.current,
+            action,
+            justification,
+          ),
+        );
       if (currentErrorMessages.length === 0) {
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
           `${tasks.length} selected contract requests have been ${action === TaskApprovalAction.APPROVE ? 'approved' : 'denied'} successfully.`,

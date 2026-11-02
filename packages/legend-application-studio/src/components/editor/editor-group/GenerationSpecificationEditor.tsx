@@ -875,7 +875,7 @@ export const GenerationSpecificationEditor = observer(() => {
               className={clsx(
                 'editor__status-bar__action editor__status-bar__generate-btn',
                 {
-                  'editor__status-bar__generate-btn--wiggling':
+                  'editor__status-bar__action--running':
                     generationGenerationState.isRunningGlobalGenerate,
                 },
               )}

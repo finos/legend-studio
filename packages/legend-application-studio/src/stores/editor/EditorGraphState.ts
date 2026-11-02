@@ -148,6 +148,8 @@ export class EditorGraphState {
   enableStrictMode: boolean;
   mostRecentCompilationGraphHash: string | undefined = undefined;
   mostRecentCompilationOutcome: GraphCompilationOutcome | undefined = undefined;
+  /** when the running compile started, for the status bar */
+  compileStartedAt: number | undefined = undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -162,6 +164,7 @@ export class EditorGraphState {
 
       mostRecentCompilationGraphHash: observable,
       mostRecentCompilationOutcome: observable,
+      compileStartedAt: observable,
       warnings: observable,
       error: observable,
       enableStrictMode: observable,
@@ -172,6 +175,7 @@ export class EditorGraphState {
       clearProblems: action,
       setEnableStrictMode: action,
       setMostRecentCompilationGraphHash: action,
+      setCompileStartedAt: action,
       fetchAvailableRelationalDatabseTypeConfigurations: flow,
       fetchAvailableFunctionActivatorConfigurations: flow,
       buildGraph: flow,
@@ -217,6 +221,10 @@ export class EditorGraphState {
 
   setMostRecentCompilationGraphHash(val: string | undefined): void {
     this.mostRecentCompilationGraphHash = val;
+  }
+
+  setCompileStartedAt(val: number | undefined): void {
+    this.compileStartedAt = val;
   }
 
   setMostRecentCompilationOutcome(

@@ -1,5 +1,17 @@
 # @finos/legend-data-cube
 
+## 0.3.133
+
+### Patch Changes
+
+- [#5801](https://github.com/finos/legend-studio/pull/5801) [`ec4901a`](https://github.com/finos/legend-studio/commit/ec4901a81f50ce39aa7a1e915c26c255ce295284) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fixed a dark DataCube embedded in another application (e.g. the query builder) re-theming the application's own popovers and page background. The dark theme rules which style elements outside of DataCube (i.e. popups portaled to the page body, the page background) are now only used when the page is marked as owned by DataCube via the new `useDataCubeOwnsPage()` hook, which Legend DataCube uses.
+
+- [#5773](https://github.com/finos/legend-studio/pull/5773) [`25b0c9f`](https://github.com/finos/legend-studio/commit/25b0c9f75962cba4379ab34fd7556f3b28df158d) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add a dark color theme to DataCube, toggled via the new `Dark Mode: Enabled` setting (Settings › Appearance), which uses the same palette as the default dark theme of the other Legend applications. Default grid colors (foreground, grid lines, highlighted rows, etc.) follow the theme while customized colors are kept as-is. To support this, Tailwind color utilities now read their values from the `--tw-color-*` CSS variables (the default palette is unchanged), so a subtree can be re-themed by redefining these variables.
+
+- [#5790](https://github.com/finos/legend-studio/pull/5790) [`18a8f8f`](https://github.com/finos/legend-studio/commit/18a8f8fcf7bb16016de3e8642950826d518625f6) ([@gs-gunjan](https://github.com/gs-gunjan)) - Expanding a row group in a vertically pivoted grid no longer reloads the whole grid: only that group's rows are fetched.
+
+- [#5792](https://github.com/finos/legend-studio/pull/5792) [`2e871c6`](https://github.com/finos/legend-studio/commit/2e871c6008e3a6544288759f63e63932a7fdca9a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Persist the resolved column name/type list (`relationType`) on a saved DataCube's specification, and reuse it when reopening an unmodified DataCube to skip the `lambdaRelationType` engine round trip.
+
 ## 0.3.132
 
 ### Patch Changes

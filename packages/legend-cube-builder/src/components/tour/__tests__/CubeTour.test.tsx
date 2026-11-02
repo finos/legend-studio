@@ -193,12 +193,12 @@ describe('The editor tour (PLAN §11.21)', () => {
     fireEvent.click(
       within(steps).getByRole('button', { name: CUBE_TOUR_LABEL.NEXT }),
     );
-    // not the graph, nor the step that runs, which is on the graph
-    const execute = await findCard('Execute');
+    // not the graph, nor the output step, which is on the graph
+    const execute = await findCard('Run Query');
     expect(
       within(execute).getByText(
         CUBE_TOUR_LABEL.progress(
-          CUBE_EDITOR_TOUR.findIndex((step) => step.title === 'Execute') + 1,
+          CUBE_EDITOR_TOUR.findIndex((step) => step.title === 'Run Query') + 1,
           CUBE_EDITOR_TOUR.length,
         ),
       ),

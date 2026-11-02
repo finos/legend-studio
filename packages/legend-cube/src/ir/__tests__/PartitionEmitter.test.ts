@@ -247,6 +247,53 @@ describe(unitTest('Partition emission'), () => {
     );
   });
 
+  test('Writes Std Dev and Variance as the sample ones, among the aggregates, over a sorted window too (PLAN §11.28)', () => {
+    expect(
+      windowedOrders(['SHIP_COUNTRY'], BY_ORDER_DATE, [
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.STD_DEV,
+          name: 'sd',
+        },
+        {
+          column: 'ORDER_ID',
+          function: AggregationFunction.VARIANCE,
+          name: 'v',
+        },
+        RANK_FUNCTION,
+      ]),
+    ).toBe(
+      `${ORDERS}->extend(${OVER_COUNTRY_BY_DATE}, ~[sd: {p, w, r | $r.FREIGHT} : y | $y->stdDevSample(), v: {p, w, r | $r.ORDER_ID} : y | $y->varianceSample()])` +
+        `->extend(${OVER_COUNTRY_BY_DATE}, ~[${RANK_TEXT}])`,
+    );
+  });
+
+  test("Doesn't emit Median, Percentile or Join Text in a window, which validation reports as unknown there (PLAN §11.28)", () => {
+    [
+      { column: 'FREIGHT', function: AggregationFunction.MEDIAN, name: 'n' },
+      {
+        column: 'FREIGHT',
+        function: AggregationFunction.PERCENTILE,
+        name: 'n',
+        percentile: 0.5,
+      },
+      {
+        column: 'CUSTOMER_ID',
+        function: AggregationFunction.JOIN_TEXT,
+        name: 'n',
+        separator: ', ',
+      },
+    ].forEach((aggregation) => {
+      const emitter = emitterOf(
+        ordersThen(partition(['SHIP_COUNTRY'], [], [aggregation])),
+      );
+      expect(emitter.canEmit('partition101')).toBe(false);
+      expect(() => emitter.emitRelation('partition101')).toThrow(
+        `Aggregation function "${aggregation.function}" is unknown.`,
+      );
+    });
+  });
+
   test('Averages whole numbers with average() alone, never writing 1.0 *, which the engine adds', () => {
     const text = windowedOrders(
       ['SHIP_COUNTRY'],
