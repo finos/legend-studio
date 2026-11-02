@@ -163,3 +163,15 @@ export const TEST__isCubeMenuItemDisabled = async (
   await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   return disabled;
 };
+
+/**
+ * A row of an editor's column list (a checklist, or Restrict's) as its
+ * checkbox is named: the column's name, its type in words, which only screen
+ * readers get (the row shows the type's icon), and why it can't be ticked,
+ * e.g. `PAYLOAD Variant, optional (can't be grouped)`
+ */
+export const TEST__getColumnListRowText = (row: HTMLElement): string =>
+  Array.from(row.querySelectorAll('label > span'))
+    .map((span) => span.textContent)
+    .filter(Boolean)
+    .join(' ');
