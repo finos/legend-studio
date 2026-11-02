@@ -20,6 +20,7 @@ review them, and release a version that other projects and applications can use.
 - [Querying](./query.md): the query builder, the query in the Legend language and its SQL, and saving a query.
 - [Services](./services.md): a service's settings, its query, its tests and its post validations.
 - [Data spaces](./data-space.md): what people who use a model's data see of it, and its preview.
+- [Data products](./data-product.md): data published for Legend Marketplace, in access point groups and access points.
 - [Review and release](./review.md): local changes, pushing, reviews, updating a workspace and releasing a version.
 
 The screenshots show one project, **firm-model**: firms, the people they employ, and the database that holds them.
