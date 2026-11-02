@@ -41,8 +41,10 @@ test(integrationTest('Test Explorer tree context menu '), async () => {
   const MOCK__GlobalCompileInFormModeFn = createMock();
   MOCK__editorStore.graphEditorMode.globalCompile =
     MOCK__GlobalCompileInFormModeFn;
-  MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-    GraphCompilationOutcome.SUCCEEDED,
+  act(() =>
+    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+      GraphCompilationOutcome.SUCCEEDED,
+    ),
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     createMock();
@@ -96,8 +98,10 @@ test(integrationTest('Test Explorer tree is open in viewer mode'), async () => {
   const MOCK__GlobalCompileInFormModeFn = createMock();
   MOCK__editorStore.graphEditorMode.globalCompile =
     MOCK__GlobalCompileInFormModeFn;
-  MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-    GraphCompilationOutcome.SUCCEEDED,
+  act(() =>
+    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+      GraphCompilationOutcome.SUCCEEDED,
+    ),
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     createMock();
