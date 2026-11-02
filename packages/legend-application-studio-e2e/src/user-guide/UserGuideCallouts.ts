@@ -57,6 +57,11 @@ interface Box {
 }
 
 const boxOf = async (locator: Locator, textOnly = false): Promise<Box> => {
+  // some controls show a moment after the rest, such as a code editor's text
+  await locator
+    .first()
+    .waitFor({ timeout: 10_000 })
+    .catch(() => undefined);
   const box = textOnly
     ? await locator.first().evaluate((element) => {
         const range = document.createRange();

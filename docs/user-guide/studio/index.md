@@ -19,5 +19,6 @@ review them, and release a version that other projects and applications can use.
 - [Tests](./tests.md): a mapping's and a function's tests, and the Test Runner.
 - [Querying](./query.md): the query builder, the query in the Legend language and its SQL, and saving a query.
 - [Services](./services.md): a service's settings, its query, its tests and its post validations.
+- [Review and release](./review.md): local changes, pushing, reviews, updating a workspace and releasing a version.
 
 The screenshots show one project, **firm-model**: firms, the people they employ, and the database that holds them.
