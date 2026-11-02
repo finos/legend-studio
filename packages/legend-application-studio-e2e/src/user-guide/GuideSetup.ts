@@ -20,7 +20,11 @@ import type { Page, Request } from '@playwright/test';
 import { getExplorer } from '../support/StudioHelpers.js';
 import { corsHeaders, getApiPath } from '../support/MockUtils.js';
 import { MOCK_SDLC_URL } from '../support/SDLCMock.js';
-import { setupStudio, type StudioBackends } from '../support/StudioSetup.js';
+import {
+  MOCK_DEPOT_URL,
+  setupStudio,
+  type StudioBackends,
+} from '../support/StudioSetup.js';
 import {
   GUIDE_MODEL,
   GUIDE_PROJECT,
@@ -182,9 +186,42 @@ const getGuideSDLCAnswer = (
 };
 
 /**
+ * Data spaces the other projects released, which a data space's editor offers
+ * as related data spaces
+ */
+const OTHER_DATA_SPACES = [
+  {
+    groupId: 'org.finos.legend.guide',
+    artifactId: 'trade-model',
+    versionId: '2.3.0',
+    path: 'trades::dataspace::TradeData',
+    classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+  },
+  {
+    groupId: 'org.finos.legend.guide',
+    artifactId: 'reference-data',
+    versionId: '1.4.0',
+    path: 'refdata::dataspace::Countries',
+    classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+  },
+];
+
+/**
+ * What the guide's screens ask the depot that the tests' stub doesn't
+ * answer: the data spaces released in other projects
+ */
+const getGuideDepotAnswer = (request: Request): unknown =>
+  request.method() === 'GET' &&
+  decodeURIComponent(getApiPath(request)) ===
+    'classifiers/meta::pure::metamodel::dataSpace::DataSpace'
+    ? OTHER_DATA_SPACES
+    : undefined;
+
+/**
  * Wires Legend Studio's backends up for the guide's screenshots, as the tests
- * do (see `setupStudio()`), on the guide's project, with the SDLC answers the
- * guide's screens need on top (see `getGuideSDLCAnswer()`).
+ * do (see `setupStudio()`), on the guide's project, with the SDLC and depot
+ * answers the guide's screens need on top (see `getGuideSDLCAnswer()` and
+ * `getGuideDepotAnswer()`).
  */
 export const setupGuideStudio = async (page: Page): Promise<StudioBackends> => {
   const backends = await setupStudio(page, {
@@ -197,6 +234,15 @@ export const setupGuideStudio = async (page: Page): Promise<StudioBackends> => {
   await page.context().route(`${MOCK_SDLC_URL}/**`, async (route) => {
     const request = route.request();
     const answer = getGuideSDLCAnswer(request, openReviews);
+    if (answer === undefined) {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ json: answer, headers: corsHeaders(request) });
+  });
+  await page.context().route(`${MOCK_DEPOT_URL}/**`, async (route) => {
+    const request = route.request();
+    const answer = getGuideDepotAnswer(request);
     if (answer === undefined) {
       await route.fallback();
       return;

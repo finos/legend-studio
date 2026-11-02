@@ -34,7 +34,7 @@ import {
 } from './TEST_DATA__SDLC.js';
 
 /** Where the app's depot and showcase calls go; nothing listens there. */
-const MOCK_DEPOT_URL = 'http://localhost:6198/depot/api';
+export const MOCK_DEPOT_URL = 'http://localhost:6198/depot/api';
 const MOCK_SHOWCASE_URL = 'http://localhost:6197/api';
 
 export interface StudioBackends {
@@ -66,6 +66,7 @@ const CLASSIFIER_PATHS: Record<string, string> = {
   diagram: 'meta::pure::metamodel::diagram::Diagram',
   text: 'meta::pure::metamodel::text::Text',
   dataElement: 'meta::pure::data::DataElement',
+  dataSpace: 'meta::pure::metamodel::dataSpace::DataSpace',
 };
 
 /**

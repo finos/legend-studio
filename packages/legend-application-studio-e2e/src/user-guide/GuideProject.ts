@@ -384,4 +384,49 @@ Diagram guide::model::FirmDiagram
     points: [(155.0,223.0),(130.0,49.0)];
   }
 }
+
+###DataSpace
+DataSpace guide::dataspace::FirmData
+{
+  executionContexts:
+  [
+    {
+      name: 'Firm database';
+      title: 'Firm database';
+      description: 'Firms and the people they employ, from the firm database';
+      mapping: guide::mapping::FirmMapping;
+      defaultRuntime: guide::store::FirmRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Firm database';
+  title: 'Firm data';
+  description: 'Firms, the people they employ, and the services that list them.';
+  diagrams:
+  [
+    {
+      title: 'Firms and their employees';
+      description: 'A firm, the legal entity it is, and the people it employs';
+      diagram: guide::model::FirmDiagram;
+    }
+  ];
+  elements:
+  [
+    guide::model
+  ];
+  executables:
+  [
+    {
+      title: 'Firm employees';
+      description: 'Every person, with the firm they work for';
+      executable: guide::service::FirmEmployees;
+    }
+  ];
+  supportInfo: Combined {
+    documentationUrl: 'https://legend.finos.org/guides/studio';
+    emails:
+    [
+      'firm-model@example.com'
+    ];
+  };
+}
 `;

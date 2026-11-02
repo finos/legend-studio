@@ -1,6 +1,6 @@
 ---
 title: Review and release
-sidebar_position: 9
+sidebar_position: 10
 ---
 
 # Review and release
