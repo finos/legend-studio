@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
@@ -27,35 +26,32 @@ import {
 import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import type { DataCubeSnapshotProcessingContext } from './DataCubeSnapshot.js';
 import { at } from '@finos/legend-shared';
+import { getDefaultDecimals, isNumericType } from './DataCubeColumnTypes.js';
 
 export function newColumnConfiguration(
   column: DataCubeColumn,
   context?: DataCubeSnapshotProcessingContext | undefined,
 ): DataCubeColumnConfiguration {
-  const { name, type } = column;
-  const config = new DataCubeColumnConfiguration(name, type);
+  const { name, type, typeVariableValues } = column;
+  const config = new DataCubeColumnConfiguration(
+    name,
+    type,
+    typeVariableValues,
+  );
 
-  switch (type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT: {
-      config.kind = DataCubeColumnKind.MEASURE;
-      config.decimals = type === PRIMITIVE_TYPE.INTEGER ? 0 : 2;
-      config.displayCommas = true;
-      config.negativeNumberInParens = true;
-      config.textAlign = DataCubeFontTextAlignment.RIGHT; // always align number to the right
-      config.excludedFromPivot = false;
-      config.aggregateOperator = DataCubeQueryAggregateOperator.SUM;
-      config.pivotStatisticColumnFunction = DataCubeQueryAggregateOperator.SUM;
-      break;
-    }
-    default: {
-      config.kind = DataCubeColumnKind.DIMENSION;
-      config.excludedFromPivot = true;
-      config.aggregateOperator = DataCubeQueryAggregateOperator.UNIQUE;
-      break;
-    }
+  if (isNumericType(type)) {
+    config.kind = DataCubeColumnKind.MEASURE;
+    config.decimals = getDefaultDecimals(column);
+    config.displayCommas = true;
+    config.negativeNumberInParens = true;
+    config.textAlign = DataCubeFontTextAlignment.RIGHT;
+    config.excludedFromPivot = false;
+    config.aggregateOperator = DataCubeQueryAggregateOperator.SUM;
+    config.pivotStatisticColumnFunction = DataCubeQueryAggregateOperator.SUM;
+  } else {
+    config.kind = DataCubeColumnKind.DIMENSION;
+    config.excludedFromPivot = true;
+    config.aggregateOperator = DataCubeQueryAggregateOperator.UNIQUE;
   }
 
   if (context) {

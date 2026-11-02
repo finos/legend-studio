@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-import { createSimpleSchema, primitive } from 'serializr';
+import { createSimpleSchema, list, optional, primitive } from 'serializr';
 
 export type DataCubeColumn = {
   name: string;
   type: string;
+  /**
+   * The type variable values of the column type, e.g. `[200]` for `Varchar(200)`
+   * and `[18, 4]` for `Numeric(18, 4)`
+   */
+  typeVariableValues?: readonly number[] | undefined;
 };
 
 export const dataCubeColumnSchema = createSimpleSchema({
   name: primitive(),
   type: primitive(),
+  typeVariableValues: optional(list(primitive())),
 });
 
 export type DataCubeColumnRelationType = DataCubeColumn[];
@@ -35,9 +41,34 @@ export function _findCol<T extends DataCubeColumn>(
   return cols?.find((c) => c.name === name);
 }
 
-export function _toCol(col: { name: string; type: string }): DataCubeColumn {
-  return { name: col.name, type: col.type };
+export function _toCol(col: {
+  name: string;
+  type: string;
+  typeVariableValues?: readonly number[] | undefined;
+}): DataCubeColumn {
+  return col.typeVariableValues?.length
+    ? {
+        name: col.name,
+        type: col.type,
+        typeVariableValues: [...col.typeVariableValues],
+      }
+    : { name: col.name, type: col.type };
 }
 
 export const _sortByColName = (a: { name: string }, b: { name: string }) =>
   a.name.localeCompare(b.name);
+
+/**
+ * Reuses the type variable values of `knownColumn` (e.g. the size of `Varchar(200)`) when
+ * it matches `type`, since execution results and relation casts do not always report them.
+ */
+export function reuseTypeVariableValues(
+  knownColumn:
+    | { type: string; typeVariableValues?: readonly number[] | undefined }
+    | undefined,
+  type: string,
+): readonly number[] | undefined {
+  return knownColumn?.type === type && knownColumn.typeVariableValues
+    ? knownColumn.typeVariableValues
+    : undefined;
+}

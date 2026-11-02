@@ -19,7 +19,6 @@ import {
   CORE_PURE_PATH,
   DATE_FORMAT,
   PRIMITIVE_TYPE,
-  PRECISE_PRIMITIVE_TYPE,
   type V1_AppliedFunction,
 } from '@finos/legend-graph';
 import {
@@ -30,6 +29,11 @@ import {
 } from '@finos/legend-shared';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
+import {
+  DataCubeColumnDataType,
+  getColumnTypeInfo,
+  getLiteralType,
+} from './DataCubeColumnTypes.js';
 
 export enum DataCubeFunction {
   // relation
@@ -271,14 +275,7 @@ export enum DataCubeColumnPinPlacement {
   RIGHT = 'Right',
 }
 
-export enum DataCubeColumnDataType {
-  NUMBER = 'Numeric',
-  TEXT = 'Text',
-  DATE = 'Date',
-  TIME = 'Time',
-  BOOLEAN = 'Boolean',
-  VARIANT = 'Variant',
-}
+export { DataCubeColumnDataType };
 
 export enum DataCubeGridMode {
   STANDARD = 'Standard',
@@ -360,9 +357,8 @@ export const EMPTY_VALUE_PLACEHOLDER = '(None)';
 // --------------------------------- UTILITIES ---------------------------------
 
 export function _defaultPrimitiveTypeValue(type: string): unknown {
-  switch (type) {
+  switch (getLiteralType(type)) {
     case PRIMITIVE_TYPE.STRING:
-    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
       return '';
     case PRIMITIVE_TYPE.BOOLEAN:
       return false;
@@ -373,28 +369,14 @@ export function _defaultPrimitiveTypeValue(type: string): unknown {
     case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.INTEGER:
     case PRIMITIVE_TYPE.BINARY:
-    case PRECISE_PRIMITIVE_TYPE.INT:
-    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.U_INT:
-    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
       return 0;
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
-    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
       return formatDate(new Date(Date.now()), DATE_FORMAT);
     case PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return formatDate(new Date(Date.now()), DATE_TIME_FORMAT);
+    case PRIMITIVE_TYPE.STRICTTIME:
+      return '00:00:00';
     default:
       throw new UnsupportedOperationError(
         `Can't generate value for type '${type}'`,
@@ -423,43 +405,10 @@ export function getAggregateOperation(
 }
 
 export function getDataType(type: string): DataCubeColumnDataType {
-  switch (type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.INT:
-    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.U_INT:
-    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
-      return DataCubeColumnDataType.NUMBER;
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-      return DataCubeColumnDataType.DATE;
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
-      return DataCubeColumnDataType.TIME;
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return DataCubeColumnDataType.BOOLEAN;
-    case CORE_PURE_PATH.VARIANT:
-    case VARIANT_TYPE_NAME:
-      return DataCubeColumnDataType.VARIANT;
-    case PRIMITIVE_TYPE.STRING:
-    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-    default:
-      return DataCubeColumnDataType.TEXT;
+  if (type === VARIANT_TYPE_NAME) {
+    return DataCubeColumnDataType.VARIANT;
   }
+  return getColumnTypeInfo(type)?.dataType ?? DataCubeColumnDataType.TEXT;
 }
 
 export function ofDataType(
@@ -478,36 +427,9 @@ export function isDimensionalGridMode(gridMode: DataCubeGridMode) {
 }
 
 export function isPrimitiveType(type: string) {
-  return (
-    [
-      PRIMITIVE_TYPE.NUMBER,
-      PRIMITIVE_TYPE.INTEGER,
-      PRIMITIVE_TYPE.DECIMAL,
-      PRIMITIVE_TYPE.FLOAT,
-      PRIMITIVE_TYPE.DATE,
-      PRIMITIVE_TYPE.STRICTDATE,
-      PRIMITIVE_TYPE.DATETIME,
-      PRIMITIVE_TYPE.STRING,
-      PRIMITIVE_TYPE.BOOLEAN,
-      PRECISE_PRIMITIVE_TYPE.INT,
-      PRECISE_PRIMITIVE_TYPE.BIG_INT,
-      PRECISE_PRIMITIVE_TYPE.DECIMAL,
-      PRECISE_PRIMITIVE_TYPE.NUMERIC,
-      PRECISE_PRIMITIVE_TYPE.DOUBLE,
-      PRECISE_PRIMITIVE_TYPE.SMALL_INT,
-      PRECISE_PRIMITIVE_TYPE.FLOAT,
-      PRECISE_PRIMITIVE_TYPE.U_INT,
-      PRECISE_PRIMITIVE_TYPE.TINY_INT,
-      PRECISE_PRIMITIVE_TYPE.U_BIG_INT,
-      PRECISE_PRIMITIVE_TYPE.U_SMALL_INT,
-      PRECISE_PRIMITIVE_TYPE.U_TINY_INT,
-      PRECISE_PRIMITIVE_TYPE.STRICTDATE,
-      PRECISE_PRIMITIVE_TYPE.STRICTTIME,
-      PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
-      PRECISE_PRIMITIVE_TYPE.VARCHAR,
-    ] as string[]
-  ).includes(type);
+  return getColumnTypeInfo(type)?.isPrimitive ?? false;
 }
+
 /**
  * Current-moment values are filter values which resolve at execution time
  * rather than being specified by the user: `today()` and `now()`.
@@ -526,13 +448,7 @@ export function isCurrentMomentValue(
 }
 
 export function isDateType(type: string) {
-  return (
-    [
-      PRIMITIVE_TYPE.DATE,
-      PRIMITIVE_TYPE.STRICTDATE,
-      PRECISE_PRIMITIVE_TYPE.STRICTDATE,
-    ] as string[]
-  ).includes(type);
+  return getColumnTypeInfo(type)?.dataType === DataCubeColumnDataType.DATE;
 }
 
 /**
@@ -540,13 +456,7 @@ export function isDateType(type: string) {
  * so their values must be specified (and displayed) down to the second.
  */
 export function isDateTimeType(type: string) {
-  return (
-    [
-      PRIMITIVE_TYPE.DATETIME,
-      PRECISE_PRIMITIVE_TYPE.DATETIME,
-      PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
-    ] as string[]
-  ).includes(type);
+  return getColumnTypeInfo(type)?.dataType === DataCubeColumnDataType.TIME;
 }
 
 /**

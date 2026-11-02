@@ -22,7 +22,26 @@ export * from './stores/core/model/DataCubeSource.js';
 export {
   type DataCubeColumn,
   type DataCubeColumnRelationType,
+  reuseTypeVariableValues,
 } from './stores/core/model/DataCubeColumn.js';
+export {
+  toDataCubeColumn,
+  getTypeVariableValues,
+} from './stores/core/DataCubeSnapshotBuilderUtils.js';
+export {
+  type DataCubeColumnTypeInfo,
+  DATA_CUBE_PRECISE_PRIMITIVE_TYPES,
+  DEFAULT_VARCHAR_SIZE,
+  getColumnTypeInfo,
+  isPrecisePrimitiveType,
+  getLiteralType,
+  isNumericType,
+  isIntegerType,
+  getDefaultDecimals,
+  formatColumnType,
+  hasCompleteColumnType,
+  resolveLegacyColumnType,
+} from './stores/core/DataCubeColumnTypes.js';
 export * from './stores/core/model/DataCubeConfiguration.js';
 export * from './stores/core/model/FreeformTDSExpressionDataCubeSource.js';
 export { CachedDataCubeSource } from './stores/core/model/CachedDataCubeSource.js';

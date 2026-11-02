@@ -19,7 +19,6 @@ import {
   type V1_Lambda,
   type V1_AppliedFunction,
   V1_relationTypeModelSchema,
-  V1_getGenericTypeFullPath,
   V1_buildEngineError,
   V1_EngineError,
   V1_buildParserError,
@@ -46,6 +45,7 @@ import {
   ENGINE_TEST_SUPPORT__NetworkClientError,
 } from '@finos/legend-graph/test';
 import { deserialize } from 'serializr';
+import { toDataCubeColumn } from '../core/DataCubeSnapshotBuilderUtils.js';
 
 export class TEST__DataCubeEngine extends DataCubeEngine {
   override getDataFromSource(source?: DataCubeSource): PlainObject {
@@ -124,10 +124,9 @@ export class TEST__DataCubeEngine extends DataCubeEngine {
         ),
       );
       return {
-        columns: relationType.columns.map((column) => ({
-          name: column.name,
-          type: V1_getGenericTypeFullPath(column.genericType),
-        })),
+        columns: relationType.columns.map((column) =>
+          toDataCubeColumn(column.name, column.genericType),
+        ),
       };
     } catch (error) {
       assertErrorThrown(error);

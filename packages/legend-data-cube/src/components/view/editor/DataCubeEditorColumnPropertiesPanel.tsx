@@ -46,6 +46,7 @@ import {
   EMPTY_VALUE_PLACEHOLDER,
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
+import { formatColumnType } from '../../../stores/core/DataCubeColumnTypes.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import {
   _findCol,
@@ -288,6 +289,18 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
 
             {selectedColumn && (
               <>
+                <div className="mt-2 flex h-5 w-full items-center">
+                  <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                    Type:
+                  </div>
+                  <div
+                    className="flex h-full items-center font-mono text-sm text-neutral-600"
+                    title={selectedColumn.type}
+                  >
+                    {formatColumnType(selectedColumn)}
+                  </div>
+                </div>
+
                 <div className="mt-2 flex h-5 w-full items-center">
                   <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                     Display Name:

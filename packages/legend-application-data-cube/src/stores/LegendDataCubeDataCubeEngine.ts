@@ -50,11 +50,9 @@ import {
   V1_ClassInstanceType,
   V1_Column,
   V1_Database,
-  V1_Date,
   V1_DuckDBDatasourceSpecification,
   V1_EngineRuntime,
   V1_IdentifiedConnection,
-  V1_Integer,
   V1_PackageableElementPointer,
   V1_PackageableRuntime,
   V1_PureModelContextData,
@@ -64,10 +62,6 @@ import {
   V1_StoreConnections,
   V1_Table,
   V1_TestAuthenticationStrategy,
-  V1_VarChar,
-  V1_SemiStructured,
-  V1_Bit,
-  V1_Float,
   PackageableElementPointerType,
   DatabaseType,
   PRIMITIVE_TYPE,
@@ -86,7 +80,6 @@ import {
   V1_deserializeIngestDefinitionContent,
   V1_DataProductAccessor,
   PRECISE_PRIMITIVE_TYPE,
-  CORE_PURE_PATH,
   V1_DataProductOriginType,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_AdHocDeploymentDataProductOrigin,
@@ -125,6 +118,11 @@ import {
   _property,
   DataCubeGridClientExportFormat,
   type DataCubeColumnRelationType,
+  DATA_CUBE_PRECISE_PRIMITIVE_TYPES,
+  hasCompleteColumnType,
+  toDataCubeColumn,
+  reuseTypeVariableValues,
+  resolveLegacyColumnType,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -144,7 +142,10 @@ import {
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
 import { LegendDataCubeDuckDBEngine } from './LegendDataCubeDuckDBEngine.js';
-import { getRelationalDataTypeFromDuckDBType } from './LegendDataCubeDuckDBColumnType.js';
+import {
+  getCacheColumnType,
+  getRelationalDataTypeFromDuckDBType,
+} from './LegendDataCubeDuckDBColumnType.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -196,12 +197,11 @@ import {
 } from '../__lib__/LegendDataCubeNavigation.js';
 import { LEGEND_DATA_CUBE_DOCUMENTATION_KEY } from '../__lib__/LegendDataCubeDocumentation.js';
 
-// Relational TIMESTAMP is excluded since its short name 'Timestamp' collides with precisePrimitives::Timestamp.
+// NOTE: only the precise primitives which exist in the engine are listed, some members of
+// PRECISE_PRIMITIVE_TYPE (e.g. relational TIMESTAMP, Date, Time, Decimal) are not precise primitives.
 const INGEST_COLUMN_PRIMITIVE_TYPE_PATHS: readonly string[] = [
   ...Object.values(PRIMITIVE_TYPE),
-  ...Object.values(PRECISE_PRIMITIVE_TYPE).filter(
-    (path) => path !== PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
-  ),
+  ...DATA_CUBE_PRECISE_PRIMITIVE_TYPES,
 ];
 
 const INGEST_COLUMN_PRIMITIVE_TYPE_PATH_BY_PATH = new Map<string, string>(
@@ -751,7 +751,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         // be prepended to the transformed query when it is executed.
         source.query = at(source.lambda.body, source.lambda.body.length - 1);
 
-        if (cachedColumns) {
+        // NOTE: columns saved by older versions do not record the type variable values
+        // of precise primitives (e.g. the size of `Varchar(200)`), in which case we get
+        // the columns from the engine, so they are saved with their full types next time
+        if (cachedColumns?.every((column) => hasCompleteColumnType(column))) {
           source.columns = cachedColumns;
         } else {
           try {
@@ -763,9 +766,18 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ).columns;
           } catch (error) {
             assertErrorThrown(error);
-            throw new Error(
-              `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
+            // NOTE: fall back to the saved columns, which are usable without
+            // the type variable values, rather than failing to load
+            this._application.logService.warn(
+              LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+              `Can't get the column types from the engine, falling back to the saved columns: ${error.message}`,
             );
+            if (!cachedColumns?.length) {
+              throw new Error(
+                `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
+              );
+            }
+            source.columns = cachedColumns;
           }
         }
 
@@ -866,15 +878,29 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ? datasets?.find((dataset) => dataset.name === rawSource.paths[1])
             : undefined;
           const ingestedDatasetColumns = ingestedDataset?.source.schema.columns;
-          // If any column type can't be resolved, fall back to the engine rather than risk mistyping it.
+          // If any column type can't be resolved, or a `Numeric` column lacks its precision and scale,
+          // fall back to the engine rather than risk mistyping it.
           const normalizedIngestedColumns = (ingestedDatasetColumns ?? [])
             .map((column) => {
               const normalizedType = normalizeIngestColumnTypePath(
                 V1_getGenericTypeFullPath(column.genericType),
               );
-              return normalizedType
-                ? { name: column.name, type: normalizedType }
-                : undefined;
+              if (!normalizedType) {
+                return undefined;
+              }
+              const dataCubeColumn = toDataCubeColumn(
+                column.name,
+                column.genericType,
+              );
+              // NOTE: `Numeric` can't be declared without its precision and scale,
+              // so fall back to the engine to get them
+              if (
+                normalizedType === PRECISE_PRIMITIVE_TYPE.NUMERIC &&
+                dataCubeColumn.typeVariableValues?.length !== 2
+              ) {
+                return undefined;
+              }
+              return { ...dataCubeColumn, type: normalizedType };
             })
             .filter(isNonNullable);
           if (
@@ -887,7 +913,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
               // The engine also injects milestoning system columns for milestoned datasets, on top of the raw declared schema.
               ...V1_getMilestoningColumnsForWriteMode(
                 ingestedDataset.writeMode ?? writeMode,
-              ),
+              ).map((column) => ({
+                name: column.name,
+                // NOTE: milestoning timestamp columns are reported with the relational data type,
+                // whereas the engine reports them with the precise primitive `Timestamp`
+                type: resolveLegacyColumnType(column.type),
+              })),
             ];
           } else {
             try {
@@ -1499,72 +1530,45 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       source,
       options,
     );
+    // NOTE: execution results do not report the type variable values of precise primitives
+    // (e.g. the precision and scale of `Numeric(18,4)`), so take them from the source columns.
+    // The column types are computed before creating the cache table, so an unsupported
+    // type fails before anything is created.
+    const sourceColumns = new Map(
+      source.columns.map((column) => [column.name, column]),
+    );
+    const cacheColumnTypes = result.result.builder.columns.map((col) => {
+      const type = guaranteeNonNullable(
+        col.type,
+        `Can't initialize cache: type of column '${col.name}' is not specified`,
+      );
+      return getCacheColumnType({
+        type,
+        typeVariableValues: reuseTypeVariableValues(
+          sourceColumns.get(col.name),
+          type,
+        ),
+      });
+    });
     const {
       schema: schemaName,
       table: tableName,
       rowCount,
-    } = await this._duckDBEngine.cache(result.result);
+    } = await this._duckDBEngine.cache(
+      result.result,
+      cacheColumnTypes.map((columnType) => columnType.duckDBType),
+    );
 
     const { model, database, schema, table, runtime } =
       this._synthesizeMinimalModelContext({
         schemaName,
         tableName,
-        tableColumns: result.result.builder.columns.map((col) => {
+        tableColumns: result.result.builder.columns.map((col, idx) => {
           const column = new V1_Column();
           column.name = col.name;
-          switch (col.type as string) {
-            case PRIMITIVE_TYPE.BINARY:
-            case PRIMITIVE_TYPE.BOOLEAN: {
-              column.type = new V1_Bit();
-              break;
-            }
-            case PRECISE_PRIMITIVE_TYPE.INT:
-            case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
-            case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_INT:
-            case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-            case PRIMITIVE_TYPE.INTEGER: {
-              column.type = new V1_Integer();
-              break;
-            }
-            case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-            case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-            case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-            case PRIMITIVE_TYPE.NUMBER:
-            case PRIMITIVE_TYPE.FLOAT:
-            case PRIMITIVE_TYPE.DECIMAL: {
-              column.type = new V1_Float();
-              break;
-            }
-            case PRIMITIVE_TYPE.DATE:
-            case PRIMITIVE_TYPE.STRICTDATE:
-            case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-            case PRIMITIVE_TYPE.STRICTDATE:
-            case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
-            case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-            case PRECISE_PRIMITIVE_TYPE.DATETIME:
-            case PRIMITIVE_TYPE.DATETIME: {
-              column.type = new V1_Date();
-              break;
-            }
-            case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-            case PRIMITIVE_TYPE.STRING: {
-              column.type = new V1_VarChar();
-              break;
-            }
-            case CORE_PURE_PATH.VARIANT: {
-              column.type = new V1_SemiStructured();
-              break;
-            }
-            default: {
-              throw new UnsupportedOperationError(
-                `Can't initialize cache: failed to find matching relational data type for Pure type '${col.type}' when synthesizing table definition`,
-              );
-            }
-          }
+          column.type = guaranteeNonNullable(
+            cacheColumnTypes[idx],
+          ).relationalType;
           return column;
         }),
       });
@@ -1650,10 +1654,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       }),
     );
     return {
-      columns: relationType.columns.map((column) => ({
-        name: column.name,
-        type: V1_getGenericTypeFullPath(column.genericType),
-      })),
+      columns: relationType.columns.map((column) =>
+        toDataCubeColumn(column.name, column.genericType),
+      ),
     };
   }
 
@@ -2169,10 +2172,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                 rawType instanceof V1_RelationType,
             );
           if (relationType) {
-            artifactColumns = relationType.columns.map((column) => ({
-              name: column.name,
-              type: V1_getGenericTypeFullPath(column.genericType),
-            }));
+            artifactColumns = relationType.columns.map((column) =>
+              toDataCubeColumn(column.name, column.genericType),
+            );
           }
         }
       } catch {
