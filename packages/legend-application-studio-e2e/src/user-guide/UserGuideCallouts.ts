@@ -22,13 +22,17 @@ export const STUDIO_GUIDE_IMAGES = fileURLToPath(
   new URL('../../../../docs/user-guide/studio/images/', import.meta.url),
 );
 
-/** Where a callout's number sits, beside its controls or inside them */
+/**
+ * Where a callout's number sits, beside its controls or inside them: inside
+ * at the top right, or at the bottom right where a panel's header has actions
+ */
 export type CalloutPlacement =
   | 'left'
   | 'right'
   | 'above'
   | 'below'
-  | 'inside-right';
+  | 'inside-right'
+  | 'inside-bottom-right';
 
 export interface Callout {
   /** The number the guide's text explains it under */
@@ -119,6 +123,10 @@ export const markCallouts = async (
         above: [box.x + box.width / 2 - size / 2, box.y - size - 6],
         below: [box.x + box.width / 2 - size / 2, box.y + box.height + 6],
         'inside-right': [box.x + box.width - size - 8, box.y + 8],
+        'inside-bottom-right': [
+          box.x + box.width - size - 8,
+          box.y + box.height - size - 8,
+        ],
       }[at] as [number, number];
       const badge = document.createElement('div');
       badge.textContent = String(n);

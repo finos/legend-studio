@@ -24,8 +24,8 @@ Here, the suite **firmSuite** of **FirmMapping** counts each firm's employees, a
    each test runs it.
 4. **Test Documentation**: what the test checks, in words.
 5. **The input data**: the rows each table holds for the test, written as CSV. **Import CSV** and **Add Relational
-   Table Data** add a table's rows. **Shared Data** uses rows kept in a data element, which several tests can share; it needs a data element in the
-   project.
+   Table Data** add a table's rows. **Shared Data** uses rows kept in a data element, which several tests can share;
+   it needs a data element in the project.
 6. **Expected** is the result the test expects, and **Result** shows whether it passed. **Generate** fills in
    **Expected** by running the query on the input data.
 

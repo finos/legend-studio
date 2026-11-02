@@ -17,5 +17,6 @@ review them, and release a version that other projects and applications can use.
 - [Modeling](./modeling.md): classes, enumerations, associations, profiles and diagrams.
 - [Connecting to data](./connect.md): databases, connections, runtimes and mappings.
 - [Tests](./tests.md): a mapping's and a function's tests, and the Test Runner.
+- [Querying](./query.md): the query builder, the query in the Legend language and its SQL, and saving a query.
 
 The screenshots show one project, **firm-model**: firms, the people they employ, and the database that holds them.
