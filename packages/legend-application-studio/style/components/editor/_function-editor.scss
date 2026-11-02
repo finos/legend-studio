@@ -302,7 +302,14 @@
 }
 
 .function-promote-editor {
-  width: 50vw;
+  // wide enough for four cards a row, so the activator types take two rows
+  width: min(104rem, calc(100vw - 4rem));
+
+  // the dialog can't scroll: in a small window, the body scrolls instead and
+  // the footer stays in view
+  max-height: calc(100vh - 10rem);
+  display: flex;
+  flex-direction: column;
   border: none !important;
 
   &__type-icon {
@@ -310,16 +317,57 @@
     font-size: 3rem;
   }
 
+  .modal__footer {
+    flex-shrink: 0;
+  }
+
   &__content {
+    overflow-y: auto;
+
     &__prompt {
       font-weight: 500;
       margin-bottom: 1rem;
     }
 
     &__activator-types {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+  }
+
+  // The shared card has a fixed 16rem x 24rem size and scrolls its text:
+  // here the grid sets the width and the text sets the height.
+  .mui-card {
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+
+  // an outline, unlike the shared card's border, doesn't resize the selected card
+  .mui-card--active {
+    border: none;
+    outline: 0.2rem solid var(--color-accent);
+    outline-offset: -0.2rem;
+  }
+
+  .mui-card__header {
+    height: auto;
+  }
+
+  .mui-card__content {
+    height: auto;
+    overflow-y: visible;
+  }
+
+  .MuiCardContent-root {
+    height: auto;
+    margin: 0;
+    padding: 0 2rem 2rem;
+
+    &:last-child {
+      padding-bottom: 2rem;
     }
   }
 
