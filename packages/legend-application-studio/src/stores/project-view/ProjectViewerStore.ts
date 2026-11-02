@@ -570,7 +570,9 @@ export class ProjectViewerStore {
             .length
         ) {
           yield flowResult(
-            this.editorStore.graphState.graphGenerationState.globalGenerate(),
+            this.editorStore.graphState.graphGenerationState.globalGenerate({
+              disableNotificationOnSuccess: true,
+            }),
           );
         }
         this.editorStore.initState.setMessage(undefined);

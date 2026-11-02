@@ -501,6 +501,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
 
     try {
       this.editorStore.graphState.isRunningGlobalCompile = true;
+      this.editorStore.graphState.setCompileStartedAt(Date.now());
       this.editorStore.graphState.clearProblems();
       if (options?.openConsole) {
         this.editorStore.setActivePanelMode(PANEL_MODE.CONSOLE);
@@ -611,6 +612,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       );
     } finally {
       this.editorStore.graphState.isRunningGlobalCompile = false;
+      this.editorStore.graphState.setCompileStartedAt(undefined);
     }
   }
 

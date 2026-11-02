@@ -73,6 +73,7 @@ import { EmbeddedQueryBuilder } from '../editor/EmbeddedQueryBuilder.js';
 import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
 import { ActivityBarMenu, ColorThemeToggle } from '../editor/ActivityBar.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
+import { StatusBarActivity } from '../editor/StatusBar.js';
 import { StoreProjectData } from '@finos/legend-server-depot';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { Project } from '@finos/legend-server-sdlc';
@@ -174,7 +175,11 @@ const ProjectViewerStatusBar = observer(() => {
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
-      className="editor__status-bar project-view__status-bar"
+      className={clsx('editor__status-bar project-view__status-bar', {
+        'editor__status-bar--busy':
+          editorStore.graphState.isRunningGlobalCompile ||
+          editorStore.graphState.graphGenerationState.isRunningGlobalGenerate,
+      })}
     >
       <div className="editor__status-bar__left">
         {currentProject && (
@@ -241,11 +246,12 @@ const ProjectViewerStatusBar = observer(() => {
         )}
       </div>
       <div className="editor__status-bar__right">
+        <StatusBarActivity />
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__generate-btn',
             {
-              'editor__status-bar__generate-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.graphGenerationState
                   .isRunningGlobalGenerate,
             },
@@ -264,7 +270,7 @@ const ProjectViewerStatusBar = observer(() => {
             'editor__status-bar__action editor__status-bar__clear__generation-btn',
 
             {
-              'editor__status-bar__action editor__status-bar__clear__generation-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.graphGenerationState
                   .clearingGenerationEntitiesState.isInProgress,
             },
@@ -283,7 +289,7 @@ const ProjectViewerStatusBar = observer(() => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__compile-btn',
             {
-              'editor__status-bar__compile-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.isRunningGlobalCompile,
             },
           )}

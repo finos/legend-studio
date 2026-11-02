@@ -20,10 +20,24 @@
   @include flexVCenter;
   @include flexHSpaceBetween;
 
+  position: relative;
   height: 2.2rem;
   background: var(--color-status-info);
   color: var(--color-text-on-accent);
   padding: 0 0.5rem 0 1rem;
+
+  // a thin line along the top while compile or generate runs
+  &--busy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30%;
+    height: 0.2rem;
+    background: var(--color-text-on-accent);
+    opacity: 0.8;
+    animation: status-bar-progress 1.4s ease-in-out infinite;
+  }
 
   &--conflict-resolution {
     background: var(--color-conflict);
@@ -138,16 +152,78 @@
     padding: 0 0.5rem;
     margin-left: 0.5rem;
 
-    &--loading svg {
-      animation: jiggle 0.3s infinite ease;
-    }
-
     &[disabled] {
       color: var(--color-state-disabled-on-accent);
     }
 
     svg {
       font-size: 1.6rem;
+    }
+  }
+
+  // a running action: a ring turns around its icon (the icon itself stays still)
+  &__action--running {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2rem;
+      height: 2rem;
+      margin: -1rem 0 0 -1rem;
+      border: 0.15rem solid var(--color-text-on-accent);
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: status-bar-spin 0.9s linear infinite;
+    }
+
+    svg {
+      opacity: 0.6;
+    }
+  }
+
+  // what a running action is doing
+  &__activity-region {
+    @include flexVCenter;
+
+    height: 100%;
+  }
+
+  &__activity {
+    @include flexVCenter;
+
+    gap: 0.5rem;
+    max-width: 48rem;
+    height: 1.8rem;
+    margin: 0 0.6rem;
+    padding: 0 0.8rem;
+    border-radius: 0.9rem;
+    font-size: 1.2rem;
+    color: var(--color-text-primary);
+    background: var(--color-bg-panel);
+    cursor: default;
+
+    svg {
+      flex: 0 0 auto;
+      font-size: 1.2rem;
+    }
+
+    &__label {
+      @include ellipsisTextOverflow;
+    }
+
+    &__step,
+    &__time {
+      flex: 0 0 auto;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-text-muted);
+    }
+
+    &__spinner {
+      color: var(--color-accent);
+      animation: status-bar-spin 0.9s linear infinite;
     }
   }
 
@@ -162,11 +238,6 @@
     &[disabled] {
       color: var(--color-state-disabled-on-accent);
     }
-
-    &--wiggling svg {
-      animation: flame-rise 0.5s infinite ease;
-      transform-origin: bottom left;
-    }
   }
 
   &__clear__generation-btn {
@@ -179,11 +250,6 @@
 
     &[disabled] {
       color: var(--color-state-disabled-on-accent);
-    }
-
-    &--wiggling svg {
-      animation: flame-rise 0.5s infinite ease;
-      transform-origin: bottom left;
     }
   }
 
@@ -198,11 +264,6 @@
     &[disabled] {
       color: var(--color-state-disabled-on-accent);
     }
-
-    &--wiggling svg {
-      animation: hammer-wiggle 0.5s infinite ease;
-      transform-origin: bottom left;
-    }
   }
 }
 
@@ -210,22 +271,33 @@
   background: var(--color-status-success-bg);
 }
 
-@keyframes flame-rise {
-  from {
-    transform: translateY(-0.05rem);
-  }
-
+@keyframes status-bar-spin {
   to {
-    transform: translateY(0.05rem);
+    transform: rotate(360deg);
   }
 }
 
-@keyframes hammer-wiggle {
+@keyframes status-bar-progress {
   from {
-    transform: rotate(-7deg);
+    left: -30%;
   }
 
   to {
-    transform: rotate(10deg);
+    left: 100%;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor__status-bar--busy::before,
+  .editor__status-bar__action--running::after,
+  .editor__status-bar__activity__spinner {
+    animation: none;
+  }
+}
+
+// outside the status bar (e.g. the generation specification editor's header), the ring takes the
+// icon's colour
+.panel__header__action.editor__status-bar__action--running::after {
+  border-color: currentcolor;
+  border-right-color: transparent;
 }

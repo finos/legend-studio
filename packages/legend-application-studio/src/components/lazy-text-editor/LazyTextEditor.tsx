@@ -55,6 +55,7 @@ import { ActivityBar } from '../editor/ActivityBar.js';
 import { SideBar } from '../editor/side-bar/SideBar.js';
 import { GrammarTextEditor } from '../editor/editor-group/GrammarTextEditor.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
+import { StatusBarActivity } from '../editor/StatusBar.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
@@ -142,7 +143,10 @@ const LazyStatusBar = observer((props: { actionsDisabled: boolean }) => {
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
-      className={clsx('editor__status-bar', 'lazy-text-editor__status-bar')}
+      className={clsx('editor__status-bar', 'lazy-text-editor__status-bar', {
+        'editor__status-bar--busy':
+          editorStore.graphState.isRunningGlobalCompile,
+      })}
     >
       <div className="editor__status-bar__left">
         <div className="editor__status-bar__workspace">
@@ -236,7 +240,7 @@ const LazyStatusBar = observer((props: { actionsDisabled: boolean }) => {
             </div>
             <button
               className={clsx('editor__status-bar__push-changes__btn', {
-                'editor__status-bar__push-changes__btn--loading':
+                'editor__status-bar__action--running':
                   editorStore.localChangesState.pushChangesState.isInProgress ||
                   configurationState.updatingConfigurationState.isInProgress,
               })}
@@ -257,11 +261,12 @@ const LazyStatusBar = observer((props: { actionsDisabled: boolean }) => {
             </button>
           </div>
         )}
+        <StatusBarActivity />
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__compile-btn',
             {
-              'editor__status-bar__compile-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.isRunningGlobalCompile,
             },
           )}
