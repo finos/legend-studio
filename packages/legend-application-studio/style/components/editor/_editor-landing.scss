@@ -1,0 +1,327 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+// the editor with no tab open (see `EditorLandingPage`)
+.editor-landing {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--color-bg-app);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.8rem;
+    max-width: 96rem;
+    margin: 0 auto;
+    padding: 3.2rem 3.2rem 4rem;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    &__title {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    &__meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 1.6rem;
+      font-size: 1.3rem;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__workspace,
+  &__compile {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__workspace {
+    color: var(--color-text-secondary);
+  }
+
+  &__compile {
+    &--ok svg {
+      color: var(--color-status-success);
+    }
+
+    &--warnings svg,
+    &--stale svg {
+      color: var(--color-status-warn);
+    }
+
+    &--failed svg {
+      color: var(--color-status-error);
+    }
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+
+    &__title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.06rem;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+
+      &--small {
+        margin-top: 1.2rem;
+      }
+    }
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr));
+    gap: 1rem;
+  }
+
+  &__action,
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1.4rem;
+    border: 0.1rem solid var(--color-border-subtle);
+    border-radius: 0.6rem;
+    text-align: left;
+    color: var(--color-text-primary);
+    background: var(--color-bg-panel);
+    cursor: pointer;
+
+    &:hover:not([disabled]) {
+      border-color: var(--color-accent);
+    }
+
+    &:focus-visible {
+      outline: 0.2rem solid var(--color-accent);
+      outline-offset: 0.1rem;
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    &__icon {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      width: 3.2rem;
+      height: 3.2rem;
+      border-radius: 0.6rem;
+      color: var(--color-accent);
+      background: var(--color-bg-tag);
+
+      svg {
+        font-size: 1.5rem;
+      }
+    }
+
+    &__text {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+    }
+
+    &__title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.4rem;
+      font-weight: 500;
+
+      svg {
+        font-size: 1rem;
+        color: var(--color-text-muted);
+      }
+    }
+
+    &__description {
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+      color: var(--color-text-muted);
+    }
+  }
+
+  // an action's keys sit beside its title, and wrap under it when the tile is narrow
+  &__action__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+  }
+
+  &__link > svg {
+    flex: 0 0 auto;
+    font-size: 1.6rem;
+    color: var(--color-accent);
+  }
+
+  &__keys {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.3rem;
+  }
+
+  &__key {
+    min-width: 2.2rem;
+    padding: 0 0.5rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-bottom-width: 0.2rem;
+    border-radius: 0.4rem;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1rem;
+    line-height: 2rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-app);
+  }
+
+  &__columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+    gap: 2.4rem;
+  }
+
+  &__changes {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+    border: 0.1rem solid var(--color-border-subtle);
+    border-radius: 0.6rem;
+    background: var(--color-bg-panel);
+
+    li + li {
+      border-top: 0.1rem solid var(--color-border-subtle);
+    }
+  }
+
+  &__change {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    text-align: left;
+    color: var(--color-text-primary);
+    background: none;
+    cursor: pointer;
+
+    &:hover:not([disabled]) {
+      background: var(--color-bg-hover);
+    }
+
+    &[disabled] {
+      cursor: default;
+      color: var(--color-text-muted);
+    }
+
+    &__path {
+      @include ellipsisTextOverflow;
+
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 1.3rem;
+    }
+
+    &__type {
+      flex: 0 0 auto;
+      padding: 0 0.6rem;
+      border: 0.1rem solid currentcolor;
+      border-radius: 0.9rem;
+      line-height: 1.8rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+
+      &--create {
+        color: var(--color-status-success);
+      }
+
+      &--modify {
+        color: var(--color-status-info);
+      }
+
+      &--delete {
+        color: var(--color-status-error);
+      }
+    }
+  }
+
+  &__more {
+    padding: 0.8rem 1.2rem;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+  }
+
+  &__empty {
+    padding: 1.2rem 1.4rem;
+    border: 0.1rem dashed var(--color-border-default);
+    border-radius: 0.6rem;
+    font-size: 1.3rem;
+    color: var(--color-text-muted);
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  &__shortcuts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__shortcut {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 1.3rem;
+    color: var(--color-text-secondary);
+  }
+}
