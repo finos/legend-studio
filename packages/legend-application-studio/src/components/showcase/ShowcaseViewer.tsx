@@ -61,6 +61,7 @@ import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvide
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
+import { StatusBarActivity } from '../editor/StatusBar.js';
 import { QueryDataCubeViewer } from '@finos/legend-query-builder';
 import { ShowcaseFeedback } from './ShowcaseFeedback.js';
 import { SHOWCASE_FEEDBACK_SURFACE } from '../../__lib__/LegendStudioTelemetryHelper.js';
@@ -93,7 +94,11 @@ const ShowcaseViewerStatusBar = observer(() => {
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
-      className="editor__status-bar project-view__status-bar"
+      className={clsx('editor__status-bar project-view__status-bar', {
+        'editor__status-bar--busy':
+          editorStore.graphState.isRunningGlobalCompile ||
+          editorStore.graphState.graphGenerationState.isRunningGlobalGenerate,
+      })}
     >
       <div className="editor__status-bar__left">
         {showcase && (
@@ -121,11 +126,12 @@ const ShowcaseViewerStatusBar = observer(() => {
         )}
       </div>
       <div className="editor__status-bar__right">
+        <StatusBarActivity />
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__generate-btn',
             {
-              'editor__status-bar__generate-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.graphGenerationState
                   .isRunningGlobalGenerate,
             },
@@ -144,7 +150,7 @@ const ShowcaseViewerStatusBar = observer(() => {
             'editor__status-bar__action editor__status-bar__clear__generation-btn',
 
             {
-              'editor__status-bar__action editor__status-bar__clear__generation-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.graphGenerationState
                   .clearingGenerationEntitiesState.isInProgress,
             },
@@ -163,7 +169,7 @@ const ShowcaseViewerStatusBar = observer(() => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__compile-btn',
             {
-              'editor__status-bar__compile-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.isRunningGlobalCompile,
             },
           )}

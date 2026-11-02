@@ -270,6 +270,9 @@ export type ModelGenerationFailure = {
 export class GraphGenerationState {
   editorStore: EditorStore;
   isRunningGlobalGenerate = false;
+  /** the step a running generation is on, and when it started, for the status bar */
+  generationStep: 'models' | 'artifacts' | undefined = undefined;
+  generationStartedAt: number | undefined = undefined;
   generatedEntities = new Map<string, Entity[]>();
   clearingGenerationEntitiesState = ActionState.create();
   externalFormatState: ExternalFormatState;
@@ -292,6 +295,8 @@ export class GraphGenerationState {
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {
       isRunningGlobalGenerate: observable,
+      generationStep: observable,
+      generationStartedAt: observable,
       generatedEntities: observable.shallow,
       clearingGenerationEntitiesState: observable,
       externalFormatState: observable,
@@ -374,6 +379,7 @@ export class GraphGenerationState {
     }
     this.isRunningGlobalGenerate = true;
     const startedAt = Date.now();
+    this.generationStartedAt = startedAt;
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
     const telemetryBase = {
       mode: GENERATION_MODE.GLOBAL,
@@ -389,9 +395,11 @@ export class GraphGenerationState {
       // them instead of throwing, so artifact generation still runs when
       // model generation fails. We only decide the telemetry outcome here so
       // each run emits exactly one terminal event.
+      this.generationStep = 'models';
       const modelGenerationError = (yield flowResult(this.generateModels())) as
         | Error
         | undefined;
+      this.generationStep = 'artifacts';
       const artifactGenerationError = (yield flowResult(
         this.generateArtifacts(),
       )) as Error | undefined;
@@ -425,6 +433,8 @@ export class GraphGenerationState {
       );
     } finally {
       this.isRunningGlobalGenerate = false;
+      this.generationStep = undefined;
+      this.generationStartedAt = undefined;
     }
   }
 
