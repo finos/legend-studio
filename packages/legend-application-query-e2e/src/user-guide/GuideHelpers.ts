@@ -42,15 +42,13 @@ export const chooseSetupOption = async (
 };
 
 /**
- * Opens Legend Query on a new query of the guide's data space, its default
- * context and `entity`, e.g. `Person`; with no entity, the one the data space
- * starts on, so the query is still unchanged
+ * On a new query, picks the guide's data space, then `entity` (see
+ * {@link openGuideDataSpace})
  */
-export const openGuideDataSpace = async (
+export const chooseGuideDataSpace = async (
   page: Page,
   entity: string | undefined = 'Person',
-): Promise<GuideQueryStore> => {
-  const store = await openNewQuery(page);
+): Promise<void> => {
   await chooseSetupOption(page, 'Data Space', GUIDE_DATA_SPACE_TITLE);
   await expect(getSetupSelector(page, 'Entity')).toBeVisible({
     timeout: 60_000,
@@ -61,6 +59,19 @@ export const openGuideDataSpace = async (
       getExplorer(page).getByText(entity, { exact: true }).first(),
     ).toBeVisible();
   }
+};
+
+/**
+ * Opens Legend Query on a new query of the guide's data space, its default
+ * context and `entity`, e.g. `Person`; with no entity, the one the data space
+ * starts on, so the query is still unchanged
+ */
+export const openGuideDataSpace = async (
+  page: Page,
+  entity: string | undefined = 'Person',
+): Promise<GuideQueryStore> => {
+  const store = await openNewQuery(page);
+  await chooseGuideDataSpace(page, entity);
   return store;
 };
 

@@ -13,9 +13,10 @@ Legend language for you, and the engine runs it on the data's store, through the
 
 Click the image to see it full size.
 
-1. **The query's name**: **Unsaved Query** until you save it.
+1. **The query's name**: **Unsaved Query** until you save it (see [Saving and sharing](./save-and-share.md)).
 2. **Undo** and **Redo**. **Load Query** opens a saved query, and **New Query** starts an empty one on the same data
-   space. **Save** saves the query; the arrow beside it has **Save As New Query**.
+   space. **Save** saves the query; the arrow beside it has **Save As New Query** (see
+   [Saving and sharing](./save-and-share.md)).
 3. **Advanced**: more a query can do, such as parameters and constants (see
    [Parameters and constants](#parameters-and-constants)), a post-filter (see [Post-filter](#post-filter)) and window
    functions. **Show Pure** shows the query in the Legend language, and **Edit Pure** edits it there. **Check

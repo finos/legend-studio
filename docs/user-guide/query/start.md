@@ -17,7 +17,7 @@ Click the image to see it full size.
    pick it to start a query on it (see [Data spaces](./data-space.md)).
 3. **Search for data space**: a larger search, which shows what a data space holds before you query it (see
    [Search for a data space](./data-space.md#search-for-a-data-space)).
-4. **Load Query**: opens a query you or someone else saved.
+4. **Load Query**: opens a query you or someone else saved (see [Load a query](./save-and-share.md#load-a-query)).
 
 ## The setup page
 

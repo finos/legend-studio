@@ -16,6 +16,8 @@ again later or share it.
 - [Data spaces](./data-space.md): picking a data space, its context and the class to query, its templates, and what
   it documents.
 - [The query editor](./query-editor.md): building a query, its results, post-filters, parameters and constants.
+- [Saving and sharing](./save-and-share.md): saving a query and its changes, its info and history, loading a query,
+  and sharing its link.
 
 The screenshots show one data space, **Firm data**, from the project **firm-model**: firms, the people they employ,
 and the database that holds them. The [Legend Studio guide](https://legend.finos.org/guides/studio) shows how a project
