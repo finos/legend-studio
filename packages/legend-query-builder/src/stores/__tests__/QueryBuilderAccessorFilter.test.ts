@@ -21,11 +21,15 @@ import {
   CollectionInstanceValue,
   Core_GraphManagerPreset,
   FunctionExpression,
+  GenericType,
+  GenericTypeExplicitReference,
+  Multiplicity,
   PrecisePrimitiveType,
   PrimitiveInstanceValue,
   PrimitiveType,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -871,6 +875,167 @@ describe(unitTest('AccessorQueryBuilder filter with relation columns'), () => {
     expect(notInCollection.genericType?.value.rawType).toBe(
       PrimitiveType.STRING,
     );
+  });
+
+  test('filter `is in list of` recognizes a collection-multiplicity parameter of the standard primitive equivalent of a Varchar relation column', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    // `country` is declared as Varchar (a precise primitive) in TEST_DATA.
+    const varcharColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'country',
+      ),
+    );
+    expect(varcharColumn.genericType.value.rawType).toBeInstanceOf(
+      PrecisePrimitiveType,
+    );
+
+    const filterConditionState = new FilterConditionState(
+      queryBuilderState.filterState,
+      new FilterRelationColumnSourceState(
+        varcharColumn.name,
+        varcharColumn.genericType.value.rawType,
+        varcharColumn.multiplicity,
+      ),
+    );
+    const inOp = guaranteeNonNullable(
+      filterConditionState.operators.find(
+        (op) => op instanceof QueryBuilderFilterOperator_In,
+      ),
+    );
+    filterConditionState.changeOperator(inOp);
+
+    // Simulate parsing a PURE `in()` expression whose right-hand side is a
+    // `String[*]` parameter -- the standard primitive equivalent of the
+    // Varchar column, as it would be reported by `in($x.country, $names)`.
+    const stringParam = new VariableExpression(
+      'names',
+      new Multiplicity(0, undefined),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
+    );
+    filterConditionState.setRightConditionValue(
+      new FilterValueSpecConditionValueState(filterConditionState, stringParam),
+    );
+
+    // This must recognize the parameter as compatible so the parsed value is
+    // kept rather than reset to an empty default collection (previously, the
+    // strict `===` type check here rejected `String` against the property's
+    // precise `Varchar` type).
+    expect(
+      inOp.isCompatibleWithFilterConditionValue(filterConditionState),
+    ).toBe(true);
+  });
+
+  test('filter `is in list of` recognizes a `Number[*]` parameter against a BigInt relation column', async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    const ingest = guaranteeNonNullable(
+      queryBuilderState.graphManagerState.graph.ingests[0],
+    );
+    await queryBuilderState.changeAccessorOwner(ingest);
+
+    // `year` is declared as BigInt (a precise primitive) in TEST_DATA.
+    const bigIntColumn = guaranteeNonNullable(
+      guaranteeNonNullable(queryBuilderState.sourceRelationType).columns.find(
+        (c) => c.name === 'year',
+      ),
+    );
+    expect(bigIntColumn.genericType.value.rawType).toBeInstanceOf(
+      PrecisePrimitiveType,
+    );
+
+    const filterConditionState = new FilterConditionState(
+      queryBuilderState.filterState,
+      new FilterRelationColumnSourceState(
+        bigIntColumn.name,
+        bigIntColumn.genericType.value.rawType,
+        bigIntColumn.multiplicity,
+      ),
+    );
+    const inOp = guaranteeNonNullable(
+      filterConditionState.operators.find(
+        (op) => op instanceof QueryBuilderFilterOperator_In,
+      ),
+    );
+    filterConditionState.changeOperator(inOp);
+
+    // Simulate parsing a PURE `in()` expression whose right-hand side is a
+    // `Number[*]` parameter, e.g. `did: Number[*]|...->filter(x|$x.DID->in($did))`
+    // -- a common way to explicitly declare a numeric collection parameter,
+    // distinct from the property's own precise numeric type (BigInt).
+    const numberParam = new VariableExpression(
+      'did',
+      new Multiplicity(0, undefined),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.NUMBER),
+      ),
+    );
+    filterConditionState.setRightConditionValue(
+      new FilterValueSpecConditionValueState(filterConditionState, numberParam),
+    );
+
+    // This must recognize the parameter as compatible so the parsed value is
+    // kept rather than reset to an empty default collection (previously, the
+    // normalized-equivalence check rejected `Number` against the property's
+    // precise `BigInt` type, which normalizes to `Integer`, not `Number`).
+    expect(
+      inOp.isCompatibleWithFilterConditionValue(filterConditionState),
+    ).toBe(true);
   });
 
   test('filter `is in list of` default collection uses INTEGER for a BigInt relation column', async () => {
