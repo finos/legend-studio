@@ -5693,10 +5693,11 @@ finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no long
 [ALTERYX.md](ALTERYX.md): decisions AX1-AX5 first (branching, when counts and profiles run, unmatched rows as Join
 kinds, rolling windows, checks as Data Quality validations), then eleven ideas in build order. Each compiles to one SQL
 statement and needs no new engine function: row counts and join checks, unmatched rows and duplicate keys, more Group
-functions, column profiles, one edit for many columns, Transpose, the canvas (every source in the first column, groups,
-notes, search), a plain-English description, checks, parameters and saved functions. The engine checks are plans on
-relational tables only; data product accessors weren't planned locally. Idea 3 (more Group functions) is being built
-(2026-10-29); the others wait for the user.
+functions, column profiles, one edit for many columns, Transpose, the canvas (every source in the first column,
+containers, notes, search), a plain-English description, checks, parameters and saved functions. The engine checks are
+plans on relational tables only; data product accessors weren't planned locally. **Status (2026-11-02):** idea 3 is
+done (#5810, §11.28), and so is idea 7's first column (#5811, §7.2); containers are a prototype waiting on the user's
+answers; the other ideas and the five decisions wait for the user.
 
 ### 11.28 More Group functions: Median, Percentile, Std Dev, Variance and Join Text (2026-10-29)
 
