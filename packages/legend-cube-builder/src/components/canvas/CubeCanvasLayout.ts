@@ -30,6 +30,18 @@ export interface CubeCanvasPosition {
   readonly y: number;
 }
 
+/** Where the canvas draws the query's nodes and edges */
+export interface CubeCanvasLayout {
+  /** Each node's top-left corner, by node id */
+  readonly positions: ReadonlyMap<string, CubeCanvasPosition>;
+  /**
+   * For each connection that skips columns, by its id (`toString()`), one
+   * lane for each column it skips, left to right: the column's left edge,
+   * and the height dagre keeps clear of that column's nodes for it
+   */
+  readonly lanes: ReadonlyMap<string, readonly CubeCanvasPosition[]>;
+}
+
 // by code unit, so the order never depends on the locale
 const compareText = (a: string, b: string): number =>
   a < b ? -1 : a > b ? 1 : 0;
@@ -40,14 +52,57 @@ const compareConnections = (a: Connection, b: Connection): number =>
   compareText(a.target, b.target);
 
 /**
+ * Each node's column: the first for a node with no input, else the one after
+ * its furthest input's (the longest path from a source). So every source
+ * starts in the first column (feedback, 2026-10-29), where dagre alone would
+ * put a short branch's source next to the step it feeds.
+ */
+const getColumns = (query: Query): ((id: string) => number) => {
+  const inputs = new Map<string, string[]>();
+  query.connections.forEach(({ source, target }) =>
+    inputs.set(target, [...(inputs.get(target) ?? []), source]),
+  );
+  const columns = new Map<string, number>();
+  const getColumn = (id: string): number => {
+    let column = columns.get(id);
+    if (column === undefined) {
+      // a query has no cycle, so this ends
+      column = Math.max(-1, ...(inputs.get(id) ?? []).map(getColumn)) + 1;
+      columns.set(id, column);
+    }
+    return column;
+  };
+  return getColumn;
+};
+
+/** The height at `x` of the line through the points, which go left to right */
+const getHeightAt = (
+  points: readonly CubeCanvasPosition[],
+  x: number,
+): number | undefined => {
+  const index = points.findIndex((point) => point.x >= x);
+  const after = points[index];
+  const before = points[index - 1] ?? after;
+  if (!after || !before) {
+    return undefined;
+  }
+  return after.x === before.x
+    ? after.y
+    : before.y + ((after.y - before.y) * (x - before.x)) / (after.x - before.x);
+};
+
+/**
  * Where each node goes, laid out left to right (spec §17.3): a pure function
  * of the query, recomputed on every change, so undo, import and every edit
  * need no layout state. Nodes go in sorted by id and connections by port,
  * source and target, so an edit that only reorders them moves nothing.
+ *
+ * Each node goes in its column (`getColumns`): every connection is at least
+ * as long as its columns are apart, and dagre's ranking keeps it that long.
+ * A connection that skips columns gets a lane through each: dagre routes it
+ * there, clear of the nodes, so its edge can follow it (`CubeCanvasEdge`).
  */
-export const layoutCubeQuery = (
-  query: Query,
-): Map<string, CubeCanvasPosition> => {
+export const layoutCubeQuery = (query: Query): CubeCanvasLayout => {
   const graph = new dagre.graphlib.Graph<{
     width: number;
     height: number;
@@ -66,14 +121,20 @@ export const layoutCubeQuery = (
         height: CUBE_CANVAS_NODE_HEIGHT,
       }),
     );
-  [...query.connections]
-    .sort(compareConnections)
-    .forEach((connection) =>
-      graph.setEdge(connection.source, connection.target, {}, connection.port),
-    );
+  const getColumn = getColumns(query);
+  [...query.connections].sort(compareConnections).forEach((connection) =>
+    graph.setEdge(
+      connection.source,
+      connection.target,
+      {
+        minlen: getColumn(connection.target) - getColumn(connection.source),
+      },
+      connection.port,
+    ),
+  );
   dagre.layout(graph);
-  return new Map(
-    query.nodes.map((node) => {
+  const positions = new Map(
+    query.nodes.map((node): [string, CubeCanvasPosition] => {
       // dagre gives each node's centre
       const { x, y } = graph.node(node.id);
       return [
@@ -85,4 +146,38 @@ export const layoutCubeQuery = (
       ];
     }),
   );
+  // every node of a column has the same left edge
+  const columnLefts = new Map(
+    [...positions].map(([id, { x }]): [number, number] => [getColumn(id), x]),
+  );
+  const lanes = new Map<string, CubeCanvasPosition[]>();
+  query.connections.forEach((connection) => {
+    const connectionLanes: CubeCanvasPosition[] = [];
+    const { points } = graph.edge(
+      connection.source,
+      connection.target,
+      connection.port,
+    );
+    for (
+      let column = getColumn(connection.source) + 1;
+      column < getColumn(connection.target);
+      column++
+    ) {
+      const x = columnLefts.get(column);
+      // dagre's route crosses the middle of a column at its lane's height
+      const y =
+        x === undefined
+          ? undefined
+          : getHeightAt(points, x + CUBE_CANVAS_NODE_WIDTH / 2);
+      if (x === undefined || y === undefined) {
+        // no lane to follow: the edge is drawn as any other
+        return;
+      }
+      connectionLanes.push({ x, y });
+    }
+    if (connectionLanes.length) {
+      lanes.set(connection.toString(), connectionLanes);
+    }
+  });
+  return { positions, lanes };
 };

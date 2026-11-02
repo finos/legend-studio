@@ -105,73 +105,72 @@ export const RecentWorkspacesPanel = observer(
                 ? `${projectName} / ${entry.workspaceId}\n${projectDescription}`
                 : `Open ${projectName} / ${entry.workspaceId}`;
             const key = `${entry.projectId}::${entry.workspaceType}::${entry.workspaceId}`;
-            const handleRemove = (
-              event: React.MouseEvent<HTMLButtonElement>,
-            ): void => {
-              event.stopPropagation();
+            const handleRemove = (): void =>
               setupStore.removeRecentWorkspace({
                 projectId: entry.projectId,
                 workspaceId: entry.workspaceId,
                 workspaceType: entry.workspaceType,
               });
-            };
+            // The tile holds two sibling buttons, open and remove, since a
+            // button can't contain another one
             return (
-              <button
-                key={key}
-                type="button"
-                className="workspace-setup__recents__tile"
-                title={tileTitle}
-                onClick={() =>
-                  openWorkspace(
-                    entry.projectId,
-                    entry.workspaceId,
-                    entry.workspaceType,
-                  )
-                }
-              >
+              <div key={key} className="workspace-setup__recents__tile">
                 <button
                   type="button"
-                  tabIndex={-1}
+                  className="workspace-setup__recents__tile__open"
+                  title={tileTitle}
+                  onClick={() =>
+                    openWorkspace(
+                      entry.projectId,
+                      entry.workspaceId,
+                      entry.workspaceType,
+                    )
+                  }
+                >
+                  <div className="workspace-setup__recents__tile__project">
+                    <FolderIcon />
+                    <span className="workspace-setup__recents__tile__project__name">
+                      {projectName}
+                    </span>
+                  </div>
+                  <div className="workspace-setup__recents__tile__workspace">
+                    {entry.workspaceType === WorkspaceType.GROUP ? (
+                      <UsersIcon />
+                    ) : (
+                      <UserIcon />
+                    )}
+                    <span className="workspace-setup__recents__tile__workspace__name">
+                      {entry.workspaceId}
+                    </span>
+                  </div>
+                  <div className="workspace-setup__recents__tile__meta">
+                    {projectTags.length > 0 && (
+                      <div className="workspace-setup__recents__tile__tags">
+                        {projectTags.slice(0, 2).map((tag) => (
+                          <span
+                            key={tag}
+                            className="workspace-setup__recents__tile__tag"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="workspace-setup__recents__tile__time">
+                      {formatRelativeTime(entry.lastOpenedAt)}
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
                   className="workspace-setup__recents__tile__remove"
                   title="Remove from recents"
+                  aria-label={`Remove ${projectName} / ${entry.workspaceId} from recents`}
                   onClick={handleRemove}
                 >
                   <TimesIcon />
                 </button>
-                <div className="workspace-setup__recents__tile__project">
-                  <FolderIcon />
-                  <span className="workspace-setup__recents__tile__project__name">
-                    {projectName}
-                  </span>
-                </div>
-                <div className="workspace-setup__recents__tile__workspace">
-                  {entry.workspaceType === WorkspaceType.GROUP ? (
-                    <UsersIcon />
-                  ) : (
-                    <UserIcon />
-                  )}
-                  <span className="workspace-setup__recents__tile__workspace__name">
-                    {entry.workspaceId}
-                  </span>
-                </div>
-                <div className="workspace-setup__recents__tile__meta">
-                  {projectTags.length > 0 && (
-                    <div className="workspace-setup__recents__tile__tags">
-                      {projectTags.slice(0, 2).map((tag) => (
-                        <span
-                          key={tag}
-                          className="workspace-setup__recents__tile__tag"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="workspace-setup__recents__tile__time">
-                    {formatRelativeTime(entry.lastOpenedAt)}
-                  </div>
-                </div>
-              </button>
+              </div>
             );
           })}
         </div>

@@ -395,6 +395,41 @@ processIdentifierWithQuoteChar (extensionDefaults.pure) wraps an identifier in t
 pivot's value) gives `q`t`, which ends the identifier early. The quote character inside should be doubled.
 ```
 
+### ClickHouse: `joinStrings` in a group writes `concatWithSeparator`, which joins no rows
+
+Found in PLAN §11.28's plans, planned on the local engine ✅ (`LegendCubeDialects.engine-roundtrip-test.ts`). The
+ClickHouse dialect writes `joinStrings` as `concatWithSeparator(%s, %s)` in every state (`clickHouseExtension.pure:115`),
+a function of one row's values, so a Group's Join Text plans as `concatwithseparator(ship_city, ', ')` beside a GROUP
+BY, which ClickHouse can't run (inferred from the SQL; no ClickHouse server was run). The Group editor's note says
+ClickHouse can't run Join Text; ClickHouse's Median and Percentile are `median` and `quantile(p)`, estimates. Draft
+issue for finos/legend-engine:
+
+```text
+Title: ClickHouse: joinStrings of a group writes concatWithSeparator, not an aggregate
+
+groupBy(~[k], ~[j: x | $x.c : y | $y->joinStrings(', ')]) plans on ClickHouse as
+concatWithSeparator("t".c, ', ') with GROUP BY k. clickHouseExtension.pure maps joinStrings to concatWithSeparator in
+every state; in an aggregate it should be arrayStringConcat(groupArray(c), ', ').
+```
+
+### Snowflake, Databricks and MemSQL: a backslash in a string literal is written as it is
+
+Found in PLAN §11.28's plans, planned on the local engine ✅ (`legend-cube-evidence/group-functions/out-2026-10-29.txt`,
+G07). `joinStrings(' \' \\ ')` plans on Snowflake as `' '' \ '`, on Databricks as `' \' \ '` and on MemSQL as
+`' '' \ '`, and a filter on `'a\\b'` as `'a\b'` on all three: the quote is escaped, the backslash isn't. All three
+read a backslash in a single-quoted string as an escape and drop it before a character that has none
+([Snowflake](https://docs.snowflake.com/en/sql-reference/data-types-text#escape-sequences-in-single-quoted-string-constants);
+Databricks by default; MemSQL as MySQL does), so the value changes: `\b` is even a backspace. Cube refuses a backslash
+in a Join Text separator; a Filter's text value with one is not checked yet. Draft issue for finos/legend-engine:
+
+```text
+Title: Snowflake, Databricks and MemSQL: backslashes in string literals aren't escaped
+
+A string literal holding a backslash, such as joinStrings(' \\ ') or a filter on 'a\\b', is written with the backslash
+alone ('a\b'). Snowflake, Databricks (spark.sql.parser.escapedStringLiterals=false, the default) and MemSQL read it as
+an escape, so the value changes. The dialects should write a backslash as \\.
+```
+
 ### Schema exploration returns JSON and VARIANT columns as `Other` or text
 
 Found in the Variant analysis (PLAN §11.20), run on the local engine 🧪 (`variant/probe-cube-path.out.txt` in the

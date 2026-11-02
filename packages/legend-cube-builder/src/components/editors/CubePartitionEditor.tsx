@@ -16,8 +16,10 @@
 
 import {
   AggregationFunction,
+  type AggregationUse,
   getAvailableAggregations,
   isSortableType,
+  isWindowFunction,
   type Schema,
   validateColumnAggregation,
   WINDOW_RANK_FUNCTIONS,
@@ -55,20 +57,25 @@ const NO_COLUMN_FUNCTIONS: readonly string[] = [
 ];
 
 /**
- * The functions a row can take: those its column's type offers, or every
- * column function before a column is picked, then the row functions (Lag,
+ * The functions a row can take: those its column's type offers in a window,
+ * or every column function a window knows before a column is picked (not
+ * Median, Percentile or Join Text, PLAN §11.28), then the row functions (Lag,
  * Lead, First, Last) on a column a window can sort by, then Count rows and
  * the rank functions; a function the row holds that isn't among them (an
  * unknown one kept as saved, or one its column doesn't offer) stays listed,
  * so the problem can be seen and fixed
  */
-const functionOptions = (row: CubeAggregationRow, schema: Schema): string[] => {
+const functionOptions = (
+  row: CubeAggregationRow,
+  schema: Schema,
+  use: AggregationUse,
+): string[] => {
   const type = row.column ? schema.lookup(row.column)?.type : undefined;
   const offered: string[] = [
     ...(type
-      ? getAvailableAggregations(type)
+      ? getAvailableAggregations(type, use)
       : Object.values(AggregationFunction).filter(
-          (fn) => fn !== AggregationFunction.COUNT_ROWS,
+          (fn) => fn !== AggregationFunction.COUNT_ROWS && isWindowFunction(fn),
         )),
     ...(type === undefined || isSortableType(type) ? WINDOW_ROW_FUNCTIONS : []),
     ...NO_COLUMN_FUNCTIONS,
@@ -129,7 +136,7 @@ export const CubePartitionEditor = observer((props: CubeNodeEditorProps) => {
             position={index + 1}
             schema={schema}
             use={aggregationUse}
-            functions={functionOptions(row, schema)}
+            functions={functionOptions(row, schema, aggregationUse)}
             noColumnText={getPartitionNoColumnText}
             problem={problems[index]}
             readOnly={readOnly}

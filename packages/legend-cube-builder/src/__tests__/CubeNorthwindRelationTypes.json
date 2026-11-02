@@ -1,5 +1,5 @@
 {
-  "description": "The engine relation type of every table of the Cube Northwind fixture (PLAN 6.2.6, Settled before M1.7), recorded from the engine at commit 93d92b4 on 2026-10-06. A local typer must reproduce it exactly. If the engine test comparing with it fails, the engine typing changed: check it, then record it again.",
+  "description": "The engine relation type of every table of the Cube Northwind fixture (PLAN 6.2.6, Settled before M1.7), recorded from the engine at commit 93d92b4 on 2026-10-06, and its BINARY table again on 2026-10-29, after the engine began typing BINARY columns as Byte (legend-engine#5449). A local typer must reproduce it exactly. If the engine test comparing with it fails, the engine typing changed: check it, then record it again.",
   "tables": {
     "NORTHWIND.CATEGORIES": {
       "columns": [
@@ -684,7 +684,20 @@
       ]
     },
     "CUBETEST.PROBLEM_BINARY": {
-      "error": "PureExecutionException: Execution error at (resource:/platform_store_relational/functions.pure line:100 column:12), \"Match failure: BinaryObject instanceOf Binary\""
+      "columns": [
+        {
+          "name": "ID",
+          "type": "meta::pure::precisePrimitives::Int",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "PAYLOAD",
+          "type": "Byte",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        }
+      ]
     },
     "CUBETEST.PROBLEM_CHAR": {
       "columns": [

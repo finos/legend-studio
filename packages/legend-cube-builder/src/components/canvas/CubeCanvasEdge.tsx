@@ -22,9 +22,56 @@ import {
 } from '@xyflow/react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeCanvasFlowEdge } from './CubeCanvasElements.js';
+import {
+  CUBE_CANVAS_NODE_WIDTH,
+  type CubeCanvasPosition,
+} from './CubeCanvasLayout.js';
 
 /** The gap between an input's label and the node it feeds */
 const LABEL_GAP = 6;
+
+/** React Flow's curve from a point to one further right: both control points halfway across */
+const curveTo = (
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+): string => {
+  const middle = (fromX + toX) / 2;
+  return ` C${middle},${fromY} ${middle},${toY} ${toX},${toY}`;
+};
+
+/**
+ * An edge's path: React Flow's curve from its source to its target or, for an
+ * edge that skips columns, straight across each column in the lane the
+ * layout keeps for it, with the same curve in each gap between columns, so
+ * it never crosses a node (`layoutCubeQuery`)
+ */
+export const getCubeCanvasEdgePath = (
+  edge: Pick<
+    EdgeProps,
+    | 'sourceX'
+    | 'sourceY'
+    | 'sourcePosition'
+    | 'targetX'
+    | 'targetY'
+    | 'targetPosition'
+  >,
+  lanes: readonly CubeCanvasPosition[],
+): string => {
+  if (!lanes.length) {
+    return getBezierPath(edge)[0];
+  }
+  let path = `M${edge.sourceX},${edge.sourceY}`;
+  let x = edge.sourceX;
+  let y = edge.sourceY;
+  lanes.forEach((lane) => {
+    path += `${curveTo(x, y, lane.x, lane.y)} L${lane.x + CUBE_CANVAS_NODE_WIDTH},${lane.y}`;
+    x = lane.x + CUBE_CANVAS_NODE_WIDTH;
+    y = lane.y;
+  });
+  return path + curveTo(x, y, edge.targetX, edge.targetY);
+};
 
 /**
  * A connection, with its port's label (Left or Right on a Join) shown as text
@@ -35,7 +82,7 @@ export const CubeCanvasEdge: React.FC<EdgeProps<CubeCanvasFlowEdge>> = (
   props,
 ) => {
   const { id, targetX, targetY, markerEnd, data } = props;
-  const [path] = getBezierPath(props);
+  const path = getCubeCanvasEdgePath(props, data?.lanes ?? []);
   return (
     <>
       <BaseEdge id={id} path={path} markerEnd={markerEnd} />
