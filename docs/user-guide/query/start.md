@@ -11,11 +11,12 @@ Legend Query opens on a new, empty query. To start, pick a data space: the data 
 
 Click the image to see it full size.
 
-1. **☰**: the menu. **Back to query setup** opens the setup page (see below), **Documentation** opens Legend's
-   documentation, and **Dev Settings** holds settings for Legend's developers, such as which engine to call.
+1. **☰**: the menu. **Back to query setup** opens the setup page (see below) in a new tab, **Documentation** opens
+   Legend's documentation, and **Dev Settings** holds settings for Legend's developers, such as which engine to call.
 2. **Data Space**: the data spaces released in Legend's projects. Type part of a data space's title to find it, then
-   pick it to start a query on it.
-3. **Search for data space**: a larger search, which shows what a data space holds before you query it.
+   pick it to start a query on it (see [Data spaces](./data-space.md)).
+3. **Search for data space**: a larger search, which shows what a data space holds before you query it (see
+   [Search for a data space](./data-space.md#search-for-a-data-space)).
 4. **Load Query**: opens a query you or someone else saved.
 
 ## The setup page
