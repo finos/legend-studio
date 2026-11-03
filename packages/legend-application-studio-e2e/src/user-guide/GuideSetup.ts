@@ -230,16 +230,32 @@ const INGEST_ACCESSOR = 'I';
 const RELATION_STORE_ACCESSOR = '>';
 
 /**
+ * The guide's database that each of the guide's ingests copies: an ingest's
+ * data sets are the database's tables, with the same names and columns
+ */
+const INGEST_DATABASES: Record<string, string> = {
+  'guide::ingest::FirmIngest': 'guide::store::FirmDatabase',
+};
+
+/** The kinds of element the open-source engine can't read */
+const LAKEHOUSE_ELEMENT_TYPES = new Set(['dataProduct', 'ingestDefinition']);
+
+/**
  * The lambda in protocol JSON with each accessor to an ingest's data set
- * turned into a relation store accessor of the same path, and the paths of
- * the accessors it turned, e.g. `guide::ingest::FirmIngest.PERSON`
+ * turned into a relation store accessor, and the paths of the accessors it
+ * turned, e.g. `guide::ingest::FirmIngest.PERSON`. With `onDatabase`, each
+ * accessor reads the database table the data set copies (see
+ * `INGEST_DATABASES`); otherwise it keeps the data set's path.
  */
 const toRelationStoreAccessors = (
   value: unknown,
   paths: Set<string>,
+  onDatabase = false,
 ): unknown => {
   if (Array.isArray(value)) {
-    return value.map((item) => toRelationStoreAccessors(item, paths));
+    return value.map((item) =>
+      toRelationStoreAccessors(item, paths, onDatabase),
+    );
   }
   if (typeof value !== 'object' || value === null) {
     return value;
@@ -248,46 +264,81 @@ const toRelationStoreAccessors = (
   if (json._type === 'classInstance' && json.type === INGEST_ACCESSOR) {
     const { path } = json.value as { path: string[] };
     paths.add(path.join('.'));
-    return { ...json, type: RELATION_STORE_ACCESSOR };
+    const [ingest = '', ...dataSet] = path;
+    return {
+      ...json,
+      type: RELATION_STORE_ACCESSOR,
+      ...(onDatabase
+        ? { value: { path: [INGEST_DATABASES[ingest] ?? ingest, ...dataSet] } }
+        : {}),
+    };
   }
   return Object.fromEntries(
     Object.entries(json).map(([key, item]) => [
       key,
-      toRelationStoreAccessors(item, paths),
+      toRelationStoreAccessors(item, paths, onDatabase),
     ]),
   );
 };
 
+/** The real engine's answer to the request, with another body */
+const askEngine = async (request: Request, body: unknown): Promise<unknown> => {
+  const response = await fetch(request.url(), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return response.ok ? response.json() : undefined;
+};
+
 /**
- * What the guide's screens ask the engine that it can't answer: the text of
- * a data product's access points, whose functions read an ingest's data sets
- * (`#I{guide::ingest::FirmIngest.PERSON}#`), which the open-source engine has
- * no grammar for. The engine writes the same functions with relation store
- * accessors (`#>{…}#`) in their place, and the answer marks those back as
- * ingest accessors: the rest of the text is the engine's own.
+ * What the guide's screens ask the engine that it can't answer, about a data
+ * product's access points, whose functions read an ingest's data sets
+ * (`#I{guide::ingest::FirmIngest.PERSON}#`): the open-source engine has no
+ * grammar for those, nor for data products. The rest of each answer is the
+ * engine's own:
+ * - their text: the engine writes the same functions with relation store
+ *   accessors (`#>{…}#`) in their place, and the answer marks those back as
+ *   ingest accessors;
+ * - their columns, for their sample values: the engine works them out for
+ *   the same functions on the database tables the data sets copy, in the
+ *   project without its data products and ingests.
  */
 const getGuideEngineAnswer = async (request: Request): Promise<unknown> => {
-  if (
-    request.method() !== 'POST' ||
-    getApiPath(request) !== 'pure/v1/grammar/jsonToGrammar/lambda/batch'
-  ) {
+  const apiPath = getApiPath(request);
+  if (request.method() !== 'POST') {
     return undefined;
   }
   const body = getRequestBody(request);
   if (!body.includes(`"type":"${INGEST_ACCESSOR}"`)) {
     return undefined;
   }
-  const paths = new Set<string>();
-  const lambdas = toRelationStoreAccessors(JSON.parse(body), paths);
-  const response = await fetch(request.url(), {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(lambdas),
-  });
-  if (!response.ok) {
+  if (apiPath === 'pure/v1/compilation/lambdaRelationType') {
+    const input = JSON.parse(body) as {
+      lambda: unknown;
+      model: { elements?: { _type: string }[] };
+    };
+    return askEngine(request, {
+      lambda: toRelationStoreAccessors(input.lambda, new Set(), true),
+      model: {
+        ...input.model,
+        elements: input.model.elements?.filter(
+          (element) => !LAKEHOUSE_ELEMENT_TYPES.has(element._type),
+        ),
+      },
+    });
+  }
+  if (apiPath !== 'pure/v1/grammar/jsonToGrammar/lambda/batch') {
     return undefined;
   }
-  const texts = (await response.json()) as Record<string, string>;
+  const paths = new Set<string>();
+  const texts = (await askEngine(
+    request,
+    toRelationStoreAccessors(JSON.parse(body), paths),
+  )) as Record<string, string> | undefined;
+  if (!texts) {
+    return undefined;
+  }
   return Object.fromEntries(
     Object.entries(texts).map(([key, text]) => [
       key,

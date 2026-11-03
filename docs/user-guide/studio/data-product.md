@@ -49,7 +49,7 @@ Below them, **Ownership** takes the IDs of the deployments that own the data pro
    the query builder, on the project's ingest definition, and **Save Lambda** puts it back. The buttons at its right
    expand the text and open it in a larger editor.
 6. **Reproducible** lets people get the data as it was at any Lakehouse batch. **Sample Values** adds example rows of
-   what the access point returns, with the function's columns. The arrow beside its environment, here **Snowflake**,
+   what the access point returns (see [Sample values](#sample-values)). The arrow beside its environment, here **Snowflake**,
    picks where the access point is deployed: **Snowflake**, **Databricks**, **BigQuery** or **DuckDb**. The last
    button has **AP Plan Generation**, the plan the engine makes to run the access point, and **Lineage Viewer**, where
    its columns' data comes from.
@@ -59,6 +59,29 @@ its data enterprise data, which anyone in the organization can access without ap
 
 A model access point group has a **Mapping** instead of access points: people query its data through the model's
 classes, with that mapping. The arrow beside it opens the mapping. Here, **firmModel** uses **FirmMapping**.
+
+## Sample values
+
+Sample values are a few example rows of what an access point returns. Legend Marketplace shows them beside each of the
+access point's columns, under **Column Sample Values**. They're saved in the project, with the data product.
+
+To add them, click **Sample Values** beside the access point. Legend Studio first asks the engine for the columns the
+access point's function returns, so the function must compile and return rows; if it doesn't, Legend Studio says to fix
+the function and adds nothing. The editor then opens with an empty row, under those columns. Here, **Firms** returns
+**LEGAL_NAME** and **INC_TYPE**.
+
+[![An access point's sample values, their parts numbered](./images/data-product-sample-values.png)](./images/data-product-sample-values.png)
+
+1. **Do not add sensitive data**: the values are saved in the project and shown in Legend Marketplace.
+2. **Add Row** adds an empty row. Type each value in its cell. **Add Column**, beside it, adds a column, but the columns
+   should stay the function's (see below).
+3. **Upload CSV** replaces the table with a CSV file's rows. The file's first line names the columns.
+4. **The table**: a column for each column the function returns, and a row for each example. **×** removes a row.
+5. **Export CSV** saves the table as a CSV file, and the bin, after asking, removes every row.
+6. **Delete** removes the access point's sample values, after asking. **Close** closes the editor and keeps them.
+
+The button then shows a pencil, and opens them again. It has a red border while their columns differ from those the
+function returns, such as after the function changes.
 
 ## Operational metadata
 

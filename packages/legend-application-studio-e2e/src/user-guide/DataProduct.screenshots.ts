@@ -20,6 +20,7 @@ import type { Entity } from '../support/TEST_DATA__SDLC.js';
 import { openGuideWorkspace } from './GuideSetup.js';
 import {
   markCallouts,
+  saveRegion,
   saveRegionDownTo,
   STUDIO_GUIDE_IMAGES,
 } from './UserGuideCallouts.js';
@@ -423,5 +424,62 @@ test("a data product's support information", async ({ page }) => {
     editor,
     editor.locator('.data-product-editor__expertise'),
     24,
+  );
+});
+
+test("an access point's sample values", async ({ page }) => {
+  // the dialog takes most of the window: a shorter one leaves less of it
+  // empty below the table
+  await page.setViewportSize({ width: 1440, height: 540 });
+  const editor = await openDataProductPage(page, 'APG');
+  // the first access point's, firms: the engine works out its columns first
+  await editor.getByTitle('Add sample values').first().click();
+  const dialog = page.getByRole('dialog');
+  const rows = dialog.getByRole('table').getByRole('rowgroup').last();
+  const fillRow = async (index: number, values: string[]): Promise<void> => {
+    const cells = rows.getByRole('row').nth(index).getByRole('textbox');
+    for (const [cell, value] of values.entries()) {
+      await cells.nth(cell).fill(value);
+    }
+  };
+  await fillRow(0, ['Acme Corp', 'CORP']);
+  await button(dialog, 'Add Row').click();
+  await fillRow(1, ['Initech', 'LLC']);
+  // the focus out of the cells, so none shows it
+  await dialog.getByText('Firms Sample Values').click();
+  await page.mouse.move(700, 500);
+  await markCallouts(page, [
+    {
+      n: 1,
+      targets: [dialog.getByText('DO NOT ADD SENSITIVE DATA')],
+      at: 'right',
+      textOnly: true,
+    },
+    { n: 2, targets: [button(dialog, 'Add Row')], at: 'below' },
+    { n: 3, targets: [button(dialog, 'Upload CSV')], at: 'above' },
+    {
+      n: 4,
+      targets: [dialog.getByRole('table')],
+      at: 'inside-right',
+    },
+    {
+      n: 5,
+      targets: [
+        button(dialog, 'Clear All Data'),
+        button(dialog, 'Export as CSV'),
+      ],
+      at: 'below',
+    },
+    {
+      n: 6,
+      targets: [button(dialog, 'Delete'), button(dialog, 'Close')],
+      at: 'left',
+    },
+  ]);
+  await saveRegion(
+    page,
+    `${STUDIO_GUIDE_IMAGES}data-product-sample-values.png`,
+    [dialog],
+    0,
   );
 });
