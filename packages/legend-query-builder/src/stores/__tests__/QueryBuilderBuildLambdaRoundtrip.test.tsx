@@ -99,7 +99,10 @@ import {
   TEST_DATA__lambda_postFilterWithRightValAsWindowFunctionCol,
   TEST_DATA__lambda_typedAggregationPostFilter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
-import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
+import {
+  INTERNAL__BasicQueryBuilderState,
+  QUERY_BUILDER_LAMBDA_WRITER_MODE,
+} from '../QueryBuilderState.js';
 import {
   TEST_DATA__OlapGroupBy_entities,
   TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
@@ -168,6 +171,8 @@ import {
   TEST_DATA_typedTDSMax,
   TEST_DATA_typedTDSPercentRank,
   TEST_DATA_typedTDSRank,
+  TEST_DATA_typedTDSRankWithPostFilterOnProjectionColumn,
+  TEST_DATA_typedTDSRankWithPostFilterOnWindowColumn,
   TEST_DATA_typedTDSRowNumber,
 } from './TEST_DATA__TypedTDSWindowFunctions.js';
 import {
@@ -177,6 +182,8 @@ import {
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabaseDefaultSchema,
   TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+  TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest_WithPostFilter,
+  TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest_WithWindowColumnAndPostFilter,
 } from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
 type RoundtripTestCase = [
@@ -865,6 +872,18 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA_typedTDSPercentRank,
     undefined,
   ],
+  [
+    'Typed TDS rank() window function with post-filter on the window column',
+    olapGroupbyCtx,
+    TEST_DATA_typedTDSRankWithPostFilterOnWindowColumn,
+    undefined,
+  ],
+  [
+    'Typed TDS rank() window function with post-filter on a projection column',
+    olapGroupbyCtx,
+    TEST_DATA_typedTDSRankWithPostFilterOnProjectionColumn,
+    undefined,
+  ],
   // accessor
   [
     'Simple accessor projection',
@@ -894,6 +913,12 @@ const cases: RoundtripTestCase[] = [
     'Simple accessor select with ingest',
     { entities: TEST_DATA__QueryBuilder_Accessors },
     TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+    undefined,
+  ],
+  [
+    'Simple accessor select with ingest and post-filter',
+    { entities: TEST_DATA__QueryBuilder_Accessors },
+    TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest_WithPostFilter,
     undefined,
   ],
 ];
@@ -942,6 +967,52 @@ describe(
         expect(lambda).toEqual(jsonQuery);
       },
     );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder lambda processing roundtrip test with typed TDS: accessor select with a window column and a post-filter on it',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+    const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
+      applicationStore,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      undefined,
+    );
+    // NOTE: unlike a typed project(), reading select() doesn't switch the query
+    // builder to typed TDS, which an application with typed TDS enabled does up front
+    queryBuilderState.setLambdaWriteMode(
+      QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+    );
+    const lambda =
+      TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest_WithWindowColumnAndPostFilter;
+    queryBuilderState.initializeWithQuery(
+      new RawLambda(lambda.parameters, lambda.body),
+    );
+    expect(queryBuilderState.isQuerySupported).toBe(true);
+    const jsonQuery =
+      graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      );
+    expect(lambda).toEqual(jsonQuery);
   },
 );
 
