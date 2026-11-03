@@ -74,6 +74,7 @@ import {
   mockSDLCDataProductDatabricksAP,
   mockSDLCDataProductParameterizedAP,
   mockSDLCDataProductNoSupportInfo,
+  mockSDLCDataProductDescriptionsAsTitles,
   mockEntitlementsUntitledSDLCDataProduct,
   mockUntitledSDLCDataProduct,
   mockUntitledSDLCDataProductNamedAsDeployed,
@@ -948,6 +949,26 @@ describe('DataProductViewer', () => {
       expect(writeText).toHaveBeenCalledWith('ap_1');
       expect(accessPointState.isCollapsed).toBe(true);
       expect(screen.queryAllByText('Column Name')).toHaveLength(0);
+    });
+  });
+
+  describe('Descriptions that repeat the title', () => {
+    test('shows only the title when the description repeats it, ignoring case and spacing', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDescriptionsAsTitles,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      expect(screen.queryByText('mock SDLC data product')).toBeNull();
+      expect(screen.queryByText('(description not specified)')).toBeNull();
+      expect(screen.getAllByText('Main Group Test')).toHaveLength(1);
+      expect(await screen.findAllByText('Customer Demographics')).toHaveLength(
+        1,
+      );
+      expect(screen.queryByText('No description to provide')).toBeNull();
     });
   });
 

@@ -516,6 +516,47 @@ const buildMockUntitledSDLCDataProduct = (name: string): V1_DataProduct =>
     ],
   });
 
+// The descriptions only repeat the titles, in another case or spacing
+export const mockSDLCDataProductDescriptionsAsTitles: V1_DataProduct =
+  deserialize(V1_dataProductModelSchema([]), {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description: 'mock SDLC data product',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        description: 'Main Group Test',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: '  Customer   Demographics ',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+  });
+
 // its element name differs in case from its deployed ID
 export const mockUntitledSDLCDataProduct = buildMockUntitledSDLCDataProduct(
   'Mock_Untitled_DataProduct',

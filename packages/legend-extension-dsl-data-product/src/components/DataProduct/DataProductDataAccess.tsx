@@ -145,6 +145,7 @@ import {
   CollapsibleChevron,
   CollapsibleWikiSection,
 } from '../ProductViewer.js';
+import { isDescriptionSameAsTitle } from '../../utils/DataProductViewerUtils.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1900,13 +1901,18 @@ export const DataProductAccessPointViewer = observer(
                   />
                 )}
               </div>
-              <div className="data-product__viewer__access-point__description">
-                {accessPointState.accessPoint.description?.trim() ?? (
-                  <span className="data-product__viewer__grid__empty-cell">
-                    No description to provide
-                  </span>
-                )}
-              </div>
+              {!isDescriptionSameAsTitle(
+                accessPointState.accessPoint.description,
+                displayedTitle,
+              ) && (
+                <div className="data-product__viewer__access-point__description">
+                  {accessPointState.accessPoint.description?.trim() ?? (
+                    <span className="data-product__viewer__grid__empty-cell">
+                      No description to provide
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="data-product__viewer__access-point__tags">
               {accessPointState.registryMetadata?.ads && (
@@ -2119,11 +2125,16 @@ export const DataProductAccessPointGroupViewer = observer(
           )}
         {!apgState.isCollapsed && (
           <div className="data-product__viewer__access-group__item__collapsible-content">
-            <div className="data-product__viewer__access-group__item__description">
-              <DataProductMarkdownTextViewer
-                value={apgState.apg.description ?? ''}
-              />
-            </div>
+            {!isDescriptionSameAsTitle(
+              apgState.apg.description,
+              displayedTitle,
+            ) && (
+              <div className="data-product__viewer__access-group__item__description">
+                <DataProductMarkdownTextViewer
+                  value={apgState.apg.description ?? ''}
+                />
+              </div>
+            )}
             <div className="data-product__viewer__access-group__item__content">
               <div className="data-product__viewer__access-group__item__content__tab__content">
                 {filteredAccessPointStates.map((accessPointState) => (
