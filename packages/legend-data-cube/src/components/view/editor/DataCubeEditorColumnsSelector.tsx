@@ -48,6 +48,7 @@ import {
 } from '../../core/DataCubeFormUtils.js';
 import { DataCubeQuerySortDirection } from '../../../stores/core/DataCubeQueryEngine.js';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
+import { formatColumnType } from '../../../stores/core/DataCubeColumnTypes.js';
 
 export const INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT = 20;
 
@@ -396,7 +397,7 @@ export const DataCubeEditorColumnsSelector = observer(
                       return (
                         <div
                           className="flex h-full w-full cursor-pointer items-center"
-                          title={`[${data.name}]\nDouble-click to add column`}
+                          title={`[${data.name}]: ${formatColumnType(data)}\nDouble-click to add column`}
                           onDoubleClick={() => {
                             selector.setSelectedColumns([
                               ...selector.selectedColumns,
@@ -598,7 +599,7 @@ export const DataCubeEditorColumnsSelector = observer(
                       return (
                         <div
                           className="flex h-full w-full cursor-pointer items-center"
-                          title={`[${data.name}]\nDouble-click to remove column`}
+                          title={`[${data.name}]: ${formatColumnType(data)}\nDouble-click to remove column`}
                           onDoubleClick={() => {
                             selector.setSelectedColumns(
                               selector.selectedColumns.filter(

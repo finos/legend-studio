@@ -83,7 +83,14 @@ import {
   getPivotResultColumnBaseColumnName,
   DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
   DataCubeQueryFilterOperator,
+  isPrimitiveType,
 } from './DataCubeQueryEngine.js';
+import {
+  DEFAULT_VARCHAR_SIZE,
+  getColumnTypeInfo,
+  getLiteralType,
+  hasCompleteColumnType,
+} from './DataCubeColumnTypes.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 import {
@@ -203,9 +210,8 @@ export function _primitiveValue(
     primitiveValue.value = val;
     return primitiveValue;
   };
-  switch (type) {
+  switch (getLiteralType(type)) {
     case PRIMITIVE_TYPE.STRING:
-    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
       return _val(new V1_CString(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.BOOLEAN:
       return _val(
@@ -222,8 +228,6 @@ export function _primitiveValue(
       );
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
-    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
       return _val(
         new V1_CDecimal(),
         guaranteeIsNumber(
@@ -231,14 +235,6 @@ export function _primitiveValue(
         ),
       );
     case PRIMITIVE_TYPE.INTEGER:
-    case PRECISE_PRIMITIVE_TYPE.U_INT:
-    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
-    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.INT:
-    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
       return _val(
         new V1_CInteger(),
         guaranteeIsNumber(
@@ -246,8 +242,6 @@ export function _primitiveValue(
         ),
       );
     case PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
       return _val(
         new V1_CFloat(),
         guaranteeIsNumber(
@@ -256,14 +250,10 @@ export function _primitiveValue(
       );
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
-    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
       return _val(new V1_CStrictDate(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return _val(new V1_CDateTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.STRICTTIME:
-    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.LATESTDATE:
       return new V1_CLatestDate();
@@ -274,17 +264,39 @@ export function _primitiveValue(
   }
 }
 
-// TODO: this is a strategic fix for precise primitives
-// we might want to start capturing type variable values as part of data cube column
-function _generateTypeVariableValues(type: string): V1_ValueSpecification[] {
-  switch (type) {
-    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-      // this number is as per legend-engine
-      // https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan/src/main/java/org/finos/legend/engine/plan/execution/stores/relational/exploration/SchemaExportation.java#L105
-      return [_primitiveValue(PRIMITIVE_TYPE.INTEGER, 16777216)];
-    default:
-      return [];
+/**
+ * Returns the type and type variable values to use when declaring the type of the column
+ * in a relation type (e.g. in a relation cast).
+ *
+ * Precise primitives which take type variables (e.g. `Varchar(x)`, `Numeric(precision, scale)`)
+ * must be declared with their values; when these are unknown, fall back to a default size for
+ * `Varchar` and to the core primitive `Decimal` for `Numeric`.
+ */
+export function _relationTypeColumnType(column: DataCubeColumn): {
+  type: string;
+  typeVariableValues: V1_ValueSpecification[];
+} {
+  const typeVariableValues =
+    column.type === PRECISE_PRIMITIVE_TYPE.VARCHAR &&
+    !column.typeVariableValues?.length
+      ? [DEFAULT_VARCHAR_SIZE]
+      : column.typeVariableValues;
+  if (hasCompleteColumnType({ type: column.type, typeVariableValues })) {
+    // NOTE: only emit values for types which take them, a type which takes none
+    // (e.g. `Int`) must not be declared with stale values
+    const typeVariableCount =
+      getColumnTypeInfo(column.type)?.typeVariableCount ?? 0;
+    return {
+      type: column.type,
+      typeVariableValues: typeVariableCount
+        ? (typeVariableValues ?? []).map((value) =>
+            _primitiveValue(PRIMITIVE_TYPE.INTEGER, value),
+          )
+        : [],
+    };
   }
+  // NOTE: there is no safe default precision and scale for `Numeric`, unlike the size of `Varchar`
+  return { type: getLiteralType(column.type), typeVariableValues: [] };
 }
 
 export function _enumValue(value: string): V1_EnumValue {
@@ -340,41 +352,6 @@ export function _colSpec(
 
 export function _value(value: DataCubeOperationValue): V1_ValueSpecification {
   switch (value.type) {
-    case PRIMITIVE_TYPE.STRING:
-    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-    case PRIMITIVE_TYPE.BOOLEAN:
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.INT:
-    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-    case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.FLOAT:
-    case PRECISE_PRIMITIVE_TYPE.U_INT:
-    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.STRICTTIME:
-    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.STRICTTIME:
-    case PRECISE_PRIMITIVE_TYPE.DATETIME:
-    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP: {
-      if (Array.isArray(value.value)) {
-        return _collection(
-          value.value.map((val) => _primitiveValue(value.type, val)),
-        );
-      }
-      return _primitiveValue(value.type, value.value);
-    }
     case DataCubeOperationAdvancedValueType.TODAY:
       return _function(_functionName(DataCubeFunction.TODAY), []);
     case DataCubeOperationAdvancedValueType.NOW:
@@ -392,10 +369,19 @@ export function _value(value: DataCubeOperationValue): V1_ValueSpecification {
         (value.value as DataCubeOperationValue[]).map((val) => _value(val)),
       );
     }
-    default:
+    default: {
+      if (isPrimitiveType(value.type)) {
+        if (Array.isArray(value.value)) {
+          return _collection(
+            value.value.map((val) => _primitiveValue(value.type, val)),
+          );
+        }
+        return _primitiveValue(value.type, value.value);
+      }
       throw new UnsupportedOperationError(
         `Can't build value instance for unsupported type '${value.type}'`,
       );
+    }
   }
 }
 
@@ -573,13 +559,14 @@ export function _castCols(columns: DataCubeColumn[]) {
   genericTypeInstance.genericType.typeArguments = [
     V1_createGenericTypeWithRawType(
       V1_createRelationType(
-        columns.map((col) =>
-          V1_createRelationTypeColumn(
+        columns.map((col) => {
+          const { type, typeVariableValues } = _relationTypeColumnType(col);
+          return V1_createRelationTypeColumn(
             col.name.replace(/^'|'$/g, ''),
-            col.type,
-            _generateTypeVariableValues(col.type),
-          ),
-        ),
+            type,
+            typeVariableValues,
+          );
+        }),
       ),
     ),
   ];

@@ -137,7 +137,7 @@ function _dateValueMoment(value: DataCubeOperationValue): Date {
  * specifies rather than with the type of the column. The type of a value names
  * the literal it is written as, which the type of the column does not: `Date`
  * says nothing about whether a time of day is meant, and a timestamp column is
- * typed with a relational data type, which no literal can be spelled with.
+ * typed with a precise primitive (`Timestamp`), which no literal can be spelled with.
  * This is also the type the value comes back as when the query it is written
  * to is read again, so a value keeps its shape across a round-trip.
  */

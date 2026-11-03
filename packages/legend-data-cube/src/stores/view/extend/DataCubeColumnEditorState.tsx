@@ -83,6 +83,7 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
   name: string;
   isNameEdited = false;
   expectedType: string;
+  returnTypeVariableValues?: readonly number[] | undefined;
   isGroupLevel: boolean;
   columnKind?: DataCubeColumnKind | undefined;
 
@@ -295,11 +296,17 @@ export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorSt
           this.buildExtendBaseQuery(),
           this.view.source,
         );
-      let returnType = _findCol(returnRelationType.columns, this._name)?.type;
+      const returnColumn = _findCol(returnRelationType.columns, this._name);
+      let returnType = returnColumn?.type;
       returnType =
         returnType && (isPrimitiveType(returnType) || isVariantType(returnType))
           ? returnType
           : undefined;
+      // NOTE: keep the type variable values of precise primitives, e.g. when a column
+      // is passed through unchanged, its type remains `Varchar(200)`
+      this.returnTypeVariableValues = returnType
+        ? returnColumn?.typeVariableValues
+        : undefined;
       this.setReturnType(returnType);
       return returnType;
     } catch (error) {
@@ -482,6 +489,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       {
         name: this.name,
         type: returnType,
+        typeVariableValues: this.returnTypeVariableValues,
         mapFn: this.view.engine.serializeValueSpecification(query),
       },
       this.isGroupLevel,
@@ -628,6 +636,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       {
         name: this.name,
         type: returnType,
+        typeVariableValues: this.returnTypeVariableValues,
         mapFn: this.view.engine.serializeValueSpecification(query),
       },
       this.isGroupLevel,

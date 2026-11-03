@@ -25,9 +25,11 @@ import { observer } from 'mobx-react-lite';
 import {
   DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterGroupOperator,
+  DataCubeQueryFilterOperator,
   getDataType,
   isCurrentMomentValue,
   isDateTimeType,
+  isPrimitiveType,
   type DataCubeOperationValue,
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import {
@@ -59,7 +61,11 @@ import {
   useState,
   useMemo,
 } from 'react';
-import { PRECISE_PRIMITIVE_TYPE, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  getColumnValueWarning,
+  getLiteralType,
+} from '../../../stores/core/DataCubeColumnTypes.js';
 
 import {
   formatDate,
@@ -465,7 +471,7 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
       // if input provided, try to coerce to column type; else create default typed item
       let newItem: DataCubeOperationValue;
       const firstType = localItems[0]?.value.type ?? PRIMITIVE_TYPE.STRING;
-      switch (firstType) {
+      switch (getLiteralType(firstType)) {
         case PRIMITIVE_TYPE.BOOLEAN: {
           const v = trimmed.toLowerCase();
           const boolVal = v === 'true' || v === '1';
@@ -475,30 +481,14 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
         case PRIMITIVE_TYPE.NUMBER:
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT:
-        case PRIMITIVE_TYPE.INTEGER:
-        case PRECISE_PRIMITIVE_TYPE.INT:
-        case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-        case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-        case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-        case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-        case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-        case PRECISE_PRIMITIVE_TYPE.FLOAT:
-        case PRECISE_PRIMITIVE_TYPE.U_INT:
-        case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_TINY_INT: {
+        case PRIMITIVE_TYPE.INTEGER: {
           const n = Number(trimmed);
           newItem = { type: firstType, value: isNaN(n) ? 0 : n };
           break;
         }
         case PRIMITIVE_TYPE.DATE:
         case PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.DATETIME:
-        case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-        case PRECISE_PRIMITIVE_TYPE.DATETIME:
-        case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-        case PRECISE_PRIMITIVE_TYPE.TIMESTAMP: {
+        case PRIMITIVE_TYPE.DATETIME: {
           // try parse ISO, else use formatted now
           const { valueFormat } = getDateValueFormats(firstType);
           let dateVal = trimmed;
@@ -603,7 +593,7 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
                   <div key={id} className="mb-1 flex items-center gap-2">
                     <div className="flex-1">
                       {(() => {
-                        switch (it.type) {
+                        switch (getLiteralType(it.type)) {
                           case PRIMITIVE_TYPE.BOOLEAN:
                             return (
                               <DataCubeEditorFilterConditionNodeBooleanValueEditor
@@ -627,18 +617,6 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
                           case PRIMITIVE_TYPE.DECIMAL:
                           case PRIMITIVE_TYPE.FLOAT:
                           case PRIMITIVE_TYPE.INTEGER:
-                          case PRECISE_PRIMITIVE_TYPE.INT:
-                          case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-                          case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-                          case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-                          case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-                          case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-                          case PRECISE_PRIMITIVE_TYPE.FLOAT:
-                          case PRECISE_PRIMITIVE_TYPE.U_INT:
-                          case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-                          case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-                          case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-                          case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
                             return (
                               <DataCubeEditorFilterConditionNodeNumberValueEditor
                                 value={
@@ -664,10 +642,6 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
                           case PRIMITIVE_TYPE.DATE:
                           case PRIMITIVE_TYPE.STRICTDATE:
                           case PRIMITIVE_TYPE.DATETIME:
-                          case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-                          case PRECISE_PRIMITIVE_TYPE.DATETIME:
-                          case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-                          case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
                             return (
                               <DataCubeEditorFilterConditionNodeDatePicker
                                 valueType={it.type}
@@ -779,9 +753,8 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
     const { node, value, updateValue, view } = props;
     // WIP: support column
-    switch (value.type) {
+    switch (getLiteralType(value.type)) {
       case PRIMITIVE_TYPE.STRING:
-      case PRECISE_PRIMITIVE_TYPE.VARCHAR:
         return (
           <DataCubeEditorFilterConditionNodeTextValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
@@ -801,18 +774,6 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER:
-      case PRECISE_PRIMITIVE_TYPE.INT:
-      case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-      case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-      case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-      case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-      case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-      case PRECISE_PRIMITIVE_TYPE.FLOAT:
-      case PRECISE_PRIMITIVE_TYPE.U_INT:
-      case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-      case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-      case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-      case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
         return (
           <DataCubeEditorFilterConditionNodeNumberValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
@@ -823,10 +784,6 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
-      case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-      case PRECISE_PRIMITIVE_TYPE.DATETIME:
-      case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-      case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       case DataCubeOperationAdvancedValueType.TODAY:
       case DataCubeOperationAdvancedValueType.NOW:
         return (
@@ -935,6 +892,58 @@ const DataCubeEditorFilterConditionNodeController = observer(
   },
 );
 
+// NOTE: a value which violates the constraints of the column type can never match these
+// operators, so the warning is accurate. It would be misleading for range comparisons
+// (e.g. `intCol > 1.5`, `tinyIntCol < 1000` are legitimate) and negated operators (a value
+// which can never match is legal and simply always true).
+const VALUE_CONSTRAINT_WARNING_OPERATORS = new Set<string>([
+  DataCubeQueryFilterOperator.EQUAL,
+  DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE,
+  DataCubeQueryFilterOperator.IN,
+  DataCubeQueryFilterOperator.IN_CASE_INSENSITIVE,
+  DataCubeQueryFilterOperator.CONTAIN,
+  DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE,
+  DataCubeQueryFilterOperator.START_WITH,
+  DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE,
+  DataCubeQueryFilterOperator.END_WITH,
+  DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE,
+]);
+
+/**
+ * Checks the value(s) of a filter condition against the constraints of the
+ * (precise primitive) type of its column, see `getColumnValueWarning()`
+ */
+function getFilterValueWarning(
+  column: { type: string; typeVariableValues?: readonly number[] | undefined },
+  operator: string,
+  value: DataCubeOperationValue,
+): string | undefined {
+  if (!VALUE_CONSTRAINT_WARNING_OPERATORS.has(operator)) {
+    return undefined;
+  }
+  if (
+    !isPrimitiveType(value.type) &&
+    value.type !== DataCubeOperationAdvancedValueType.LIST
+  ) {
+    return undefined;
+  }
+  const values: unknown[] =
+    value.type === DataCubeOperationAdvancedValueType.LIST
+      ? Array.isArray(value.value)
+        ? (value.value as DataCubeOperationValue[]).map((item) => item.value)
+        : []
+      : Array.isArray(value.value)
+        ? value.value
+        : [value.value];
+  for (const val of values) {
+    const warning = getColumnValueWarning(column, val);
+    if (warning) {
+      return warning;
+    }
+  }
+  return undefined;
+}
+
 const DataCubeEditorFilterConditionNodeDisplay = observer(
   (props: {
     node: DataCubeFilterEditorConditionTreeNode;
@@ -968,6 +977,17 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     // `today()`/`now()` function.
     const hasDateValueModeSelector = Boolean(
       getDateValueModes(node.column.type).length,
+    );
+    // NOTE: the column of the condition might not carry the type variable values
+    // of its type (e.g. when read from a query), so look up its configuration
+    const valueWarning = useMemo(
+      () =>
+        getFilterValueWarning(
+          _findCol(editor.columns, node.column.name) ?? node.column,
+          node.operation.operator,
+          node.value,
+        ),
+      [editor.columns, node.column, node.operation, node.value],
     );
 
     return (
@@ -1110,6 +1130,14 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
             view={view}
           />
         </div>
+        {valueWarning && (
+          <div
+            className="relative ml-1 flex h-5 flex-shrink-0 items-center text-lg text-amber-500"
+            title={valueWarning}
+          >
+            <DataCubeIcon.WarningCircle />
+          </div>
+        )}
       </div>
     );
   },

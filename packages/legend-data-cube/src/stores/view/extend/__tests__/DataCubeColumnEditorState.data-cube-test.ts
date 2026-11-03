@@ -19,6 +19,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   CORE_PURE_PATH,
+  PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_ClassInstance,
@@ -68,6 +69,7 @@ jest.mock('monaco-editor', () => {
 class TEST__ReturnTypeDataCubeEngine extends TEST__DataCubeEngine {
   readonly checkedQueries: { code: string; baseQuery: V1_Lambda }[] = [];
   returnType = PRIMITIVE_TYPE.STRING as string;
+  returnTypeVariableValues?: number[] | undefined;
 
   override buildExecutionContext() {
     return undefined;
@@ -81,7 +83,15 @@ class TEST__ReturnTypeDataCubeEngine extends TEST__DataCubeEngine {
     const columnName = guaranteeNonNullable(
       /^->extend\(~(?<name>\w+):/u.exec(code)?.groups?.name,
     );
-    return { columns: [{ name: columnName, type: this.returnType }] };
+    return {
+      columns: [
+        {
+          name: columnName,
+          type: this.returnType,
+          typeVariableValues: this.returnTypeVariableValues,
+        },
+      ],
+    };
   }
 }
 
@@ -214,6 +224,27 @@ describe(
       expect(editor.name).toBe('quantity');
       expect(editor.expectedType).toBe(DataCubeColumnDataType.NUMBER);
       expect(editor.code).toBe(offer('price', PRIMITIVE_TYPE.FLOAT).code);
+    });
+
+    test(`keeps the precise type of the column, including its type variable values`, async () => {
+      const { engine, manager } = setUp();
+      engine.returnType = PRECISE_PRIMITIVE_TYPE.VARCHAR;
+      engine.returnTypeVariableValues = [200];
+      const editor = new DataCubeNewColumnState(manager);
+      await editor.applyJsonOffer(offer('tier'));
+      expect(editor.returnType).toBe(PRECISE_PRIMITIVE_TYPE.VARCHAR);
+      expect(editor.returnTypeVariableValues).toEqual([200]);
+      expect(editor.isTypeValid).toBe(true);
+    });
+
+    test(`accepts a column of precise primitive type Timestamp`, async () => {
+      const { engine, manager } = setUp();
+      engine.returnType = PRECISE_PRIMITIVE_TYPE.DATETIME; // Timestamp
+      const editor = new DataCubeNewColumnState(manager);
+      await editor.applyJsonOffer(offer('since', PRIMITIVE_TYPE.DATETIME));
+      expect(editor.returnType).toBe(PRECISE_PRIMITIVE_TYPE.DATETIME);
+      expect(editor.expectedType).toBe(DataCubeColumnDataType.TIME);
+      expect(editor.isTypeValid).toBe(true);
     });
 
     test(`keeps the name of an existing column when a field is picked`, async () => {

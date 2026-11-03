@@ -61,6 +61,7 @@ import {
   type DataCubeGridClientDataFetchRequest,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
+import { getLiteralType } from '../../core/DataCubeColumnTypes.js';
 import { _colSpecArrayParam } from '../../core/DataCubeSnapshotBuilderUtils.js';
 import {
   buildDimensionalExecutableQuery,
@@ -258,7 +259,8 @@ function generateGridDataFetchExecutableQueryPostProcessor(
                         ...groupByColumn,
                         operator: DataCubeQueryFilterOperator.EQUAL,
                       };
-                      switch (groupByColumn.type) {
+                      const literalType = getLiteralType(groupByColumn.type);
+                      switch (literalType) {
                         case PRIMITIVE_TYPE.BOOLEAN:
                           return {
                             ...condition,
@@ -271,7 +273,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
                           return {
                             ...condition,
                             value: {
-                              type: groupByColumn.type,
+                              type: literalType,
                               value: parseInt(value, 10),
                             },
                           };
@@ -281,7 +283,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
                           return {
                             ...condition,
                             value: {
-                              type: groupByColumn.type,
+                              type: literalType,
                               value: parseFloat(value),
                             },
                           };
@@ -293,7 +295,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
                         default:
                           return {
                             ...condition,
-                            value: { type: groupByColumn.type, value },
+                            value: { type: literalType, value },
                           };
                       }
                     }),

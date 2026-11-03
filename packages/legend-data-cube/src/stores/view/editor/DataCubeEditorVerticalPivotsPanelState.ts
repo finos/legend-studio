@@ -30,10 +30,7 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
   override cloneColumn(
     column: DataCubeEditorColumnsSelectorColumnState,
   ): DataCubeEditorColumnsSelectorColumnState {
-    return new DataCubeEditorColumnsSelectorColumnState(
-      column.name,
-      column.type,
-    );
+    return new DataCubeEditorColumnsSelectorColumnState(column);
   }
 
   override get availableColumns() {
@@ -49,10 +46,7 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
             column.name,
           ),
       )
-      .map(
-        (col) =>
-          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-      );
+      .map((col) => new DataCubeEditorColumnsSelectorColumnState(col));
   }
 }
 
@@ -79,8 +73,7 @@ export class DataCubeEditorVerticalPivotsPanelState
   ) {
     this.selector.setSelectedColumns(
       (snapshot.data.groupBy?.columns ?? []).map(
-        (col) =>
-          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
+        (col) => new DataCubeEditorColumnsSelectorColumnState(col),
       ),
     );
   }

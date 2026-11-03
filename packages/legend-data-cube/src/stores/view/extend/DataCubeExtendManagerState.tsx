@@ -366,6 +366,9 @@ export class DataCubeExtendManagerState extends DataCubeSnapshotController {
             : DataCubeColumnKind.DIMENSION);
         col.name = updatedColumn.name;
         col.type = updatedColumn.type;
+        col.typeVariableValues = updatedColumn.typeVariableValues
+          ? [...updatedColumn.typeVariableValues]
+          : undefined;
         col.excludedFromPivot = col.kind === DataCubeColumnKind.DIMENSION;
       }
       return col;

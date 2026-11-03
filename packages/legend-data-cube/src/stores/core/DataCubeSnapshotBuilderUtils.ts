@@ -37,10 +37,15 @@ import {
   V1_RelationType,
   V1_PackageableType,
   type V1_GenericType,
+  V1_getGenericTypeFullPath,
   V1_Collection,
   V1_Lambda,
 } from '@finos/legend-graph';
-import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
+import {
+  _findCol,
+  _toCol,
+  type DataCubeColumn,
+} from './model/DataCubeColumn.js';
 import {
   assertErrorThrown,
   assertTrue,
@@ -203,6 +208,39 @@ export function _packageableType(genericType: V1_GenericType) {
     V1_PackageableType,
     `Can't process generic type: failed to extract packageable type`,
   );
+}
+
+/**
+ * Builds a column from a relation type column reported by the engine, keeping
+ * the type variable values of its type, e.g. the size of `Varchar(200)`
+ */
+export function toDataCubeColumn(
+  name: string,
+  genericType: V1_GenericType,
+): DataCubeColumn {
+  return _toCol({
+    name,
+    type: V1_getGenericTypeFullPath(genericType),
+    typeVariableValues: getTypeVariableValues(genericType),
+  });
+}
+
+/**
+ * NOTE: a list which is not made up of integers only (e.g. a mix of integers and
+ * other values) intentionally yields `undefined`, since it cannot be a valid set of
+ * type variable values.
+ */
+export function getTypeVariableValues(
+  genericType: V1_GenericType,
+): number[] | undefined {
+  const all = genericType.typeVariableValues;
+  const values = all
+    .filter((value): value is V1_CInteger => value instanceof V1_CInteger)
+    .map((value) => value.value);
+  if (!all.length || values.length !== all.length) {
+    return undefined;
+  }
+  return values;
 }
 
 export function _operationPrimitiveValue(
@@ -380,11 +418,13 @@ export async function _extractExtendedColumns(
   }
 
   return colSpecs.map((colSpec) => ({
+    ..._toCol(
+      guaranteeNonNullable(
+        _findCol(columns, colSpec.name),
+        `Can't process extend() expression: failed to retrieve type information for column '${colSpec.name}'`,
+      ),
+    ),
     name: colSpec.name,
-    type: guaranteeNonNullable(
-      _findCol(columns, colSpec.name),
-      `Can't process extend() expression: failed to retrieve type information for column '${colSpec.name}'`,
-    ).type,
     mapFn: engine.serializeValueSpecification(
       guaranteeNonNullable(
         colSpec.function1,
