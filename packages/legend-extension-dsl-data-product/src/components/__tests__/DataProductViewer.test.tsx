@@ -4417,8 +4417,10 @@ describe('DataProductViewer', () => {
       jest
         .spyOn(MockedMonacoEditorAPI, 'createModel')
         .mockReturnValue(MockedMonacoEditorModel);
+      // NOTE: the queries below are by text: on this data product's large page,
+      // a query by role takes seconds on a slow machine
       await act(async () => {
-        fireEvent.click(await screen.findByRole('tab', { name: 'Pure Query' }));
+        fireEvent.click(await screen.findByText('Pure Query'));
       });
       await screen.findByText('Accessor');
       expect(fetchGrammarSpy).not.toHaveBeenCalled();
@@ -4428,9 +4430,7 @@ describe('DataProductViewer', () => {
         fireEvent.click(await screen.findByText('Column Specifications'));
       });
       await act(async () => {
-        fireEvent.click(
-          await screen.findByRole('button', { name: 'View definition' }),
-        );
+        fireEvent.click(await screen.findByText('View definition'));
       });
 
       // Assert that the definition fetch happens
@@ -4455,19 +4455,13 @@ describe('DataProductViewer', () => {
         fireEvent.click(await screen.findByText('Column Specifications'));
       });
       await act(async () => {
-        fireEvent.click(
-          await screen.findByRole('button', { name: 'View definition' }),
-        );
+        fireEvent.click(await screen.findByText('View definition'));
       });
       await act(async () => {
-        fireEvent.click(
-          await screen.findByRole('button', { name: 'Hide definition' }),
-        );
+        fireEvent.click(await screen.findByText('Hide definition'));
       });
       await act(async () => {
-        fireEvent.click(
-          await screen.findByRole('button', { name: 'View definition' }),
-        );
+        fireEvent.click(await screen.findByText('View definition'));
       });
       await act(async () => {
         fireEvent.click(await screen.findByText('Governance'));
@@ -4651,23 +4645,26 @@ describe('DataProductViewer', () => {
         errors: {},
       });
 
+    // NOTE: these tests find elements by text or by label: a query by role reads
+    // every element of the page, which takes seconds on a slow machine
     const openPureQuery = async (): Promise<void> => {
       await screen.findByText('Customer Demographics');
       await act(async () => {
-        fireEvent.click(await screen.findByRole('tab', { name: 'Pure Query' }));
+        fireEvent.click(await screen.findByText('Pure Query'));
       });
     };
 
     // copies a code block, and returns what went to the clipboard
-    const copyCode = async (name: string): Promise<string | undefined> => {
-      const button = await screen.findByRole('button', { name });
-      fireEvent.click(button);
-      // the tooltip says "Copied", which also flushes the state update
-      await waitFor(() =>
-        expect(
-          button.classList.contains('data-product__viewer__code-copy--copied'),
-        ).toBe(true),
-      );
+    const copyCode = async (label: string): Promise<string | undefined> => {
+      const button = await screen.findByLabelText(label);
+      // the clipboard write resolves in a microtask: the async act waits for it
+      // and renders "Copied"
+      await act(async () => {
+        fireEvent.click(button);
+      });
+      expect(
+        button.classList.contains('data-product__viewer__code-copy--copied'),
+      ).toBe(true);
       return writeText.mock.lastCall?.[0];
     };
 
@@ -4679,12 +4676,12 @@ describe('DataProductViewer', () => {
         [],
       );
 
-      const columnsTab = await screen.findByRole('tab', {
-        name: 'Column Specifications',
-      });
-      const tabs = within(
-        guaranteeNonNullable(columnsTab.closest<HTMLElement>('[role=tablist]')),
-      ).getAllByRole('tab');
+      const tabList = guaranteeNonNullable(
+        (await screen.findByText('Column Specifications')).closest<HTMLElement>(
+          '[role=tablist]',
+        ),
+      );
+      const tabs = within(tabList).getAllByRole('tab');
       expect(tabs.map((tab) => tab.textContent)).toEqual([
         'Column Specifications',
         'Pure Query',
@@ -4695,7 +4692,7 @@ describe('DataProductViewer', () => {
         'Power BI',
         'SQL',
       ]);
-      expect(screen.queryByRole('tab', { name: 'Grammar' })).toBeNull();
+      expect(within(tabList).queryByText('Grammar')).toBeNull();
     });
 
     test('Pure Query shows the accessor of the access point, and an example with every column', async () => {
@@ -4859,20 +4856,18 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
       await screen.findByText('2 columns');
-      expect(screen.queryByRole('region', { name: 'Definition' })).toBeNull();
+      expect(screen.queryByLabelText('Definition')).toBeNull();
       expect(jsonToGrammarSpy).not.toHaveBeenCalled();
 
-      const viewDefinition = await screen.findByRole('button', {
-        name: 'View definition',
-      });
+      const viewDefinition = await screen.findByText('View definition');
+      expect(viewDefinition.tagName).toBe('BUTTON');
       expect(viewDefinition.getAttribute('aria-expanded')).toBe('false');
       await act(async () => {
         fireEvent.click(viewDefinition);
       });
 
-      const definition = await screen.findByRole('region', {
-        name: 'Definition',
-      });
+      const definition = await screen.findByLabelText('Definition');
+      expect(definition.tagName).toBe('SECTION');
       within(definition).getByText('Definition');
       expect(
         within(definition).getByText(/^How the producer defined/).textContent,
@@ -4882,14 +4877,13 @@ describe('DataProductViewer', () => {
       expect(await copyCode('Copy definition')).toBe(DEFINITION);
       expect(jsonToGrammarSpy).toHaveBeenCalledTimes(1);
 
-      const hideDefinition = screen.getByRole('button', {
-        name: 'Hide definition',
-      });
+      const hideDefinition = screen.getByText('Hide definition');
+      expect(hideDefinition).toBe(viewDefinition);
       expect(hideDefinition.getAttribute('aria-expanded')).toBe('true');
       await act(async () => {
         fireEvent.click(hideDefinition);
       });
-      expect(screen.queryByRole('region', { name: 'Definition' })).toBeNull();
+      expect(screen.queryByLabelText('Definition')).toBeNull();
       // the column grid stays
       screen.getByText('Column Name');
     });
