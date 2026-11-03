@@ -8,6 +8,7 @@ section of its own. What is merged here shows there after the site's next build 
 | -------------------------- | ------------------------------------------------------------------------ |
 | [Legend Cube](./cube/)     | [legend.finos.org/guides/cube](https://legend.finos.org/guides/cube)     |
 | [Legend Studio](./studio/) | [legend.finos.org/guides/studio](https://legend.finos.org/guides/studio) |
+| [Legend Query](./query/)   | [legend.finos.org/guides/query](https://legend.finos.org/guides/query)   |
 
 ## Writing a page
 
@@ -46,3 +47,15 @@ and the guide's project, a model written in the Legend language, in its `GuidePr
 
 `user-guide:recordings` records the GIFs in [studio/\_recordings](./studio/_recordings/), of a few tasks to reuse
 elsewhere. The guide doesn't show them, and the site doesn't publish them. It needs `ffmpeg`.
+
+### Legend Query
+
+1. Run Legend Query (`yarn dev:query`) and the engine on port 6300. No depot or query store is needed: the scripts
+   answer for them in the browser, with the project the guide shows. The engine finds a project only in its own depot,
+   so the scripts send it the guide project's model in place of each reference to the project.
+2. `yarn workspace @finos/legend-application-query-e2e user-guide:screenshots` (`USER_GUIDE_QUERY_URL` points at
+   another Legend Query; the default is `http://localhost:9001/query/`).
+
+The scripts are in
+[packages/legend-application-query-e2e/src/user-guide](../../packages/legend-application-query-e2e/src/user-guide),
+and the guide's project, a model written in the Legend language, in its `GuideProject.ts`.
