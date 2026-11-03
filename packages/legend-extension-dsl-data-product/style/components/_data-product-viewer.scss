@@ -115,15 +115,24 @@
       }
     }
 
+    // the title, with the data product ID and DID beside it, or under it
+    // when a long title leaves them no room
+    &__main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 1.6rem;
+      min-width: 0;
+    }
+
     &__title {
       @include flexCenter;
       @include ellipsisTextOverflow;
 
-      flex: 1;
+      flex: 0 1 auto;
       min-width: 0;
       max-width: 50vw;
       font-size: 3rem;
-      align-self: start;
       justify-content: flex-start;
       height: 5rem;
       font-weight: 600;
@@ -135,8 +144,9 @@
     &__ids {
       @include flexVCenter;
 
+      flex: none;
       gap: 1rem;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
     }
 
     &__actions {
