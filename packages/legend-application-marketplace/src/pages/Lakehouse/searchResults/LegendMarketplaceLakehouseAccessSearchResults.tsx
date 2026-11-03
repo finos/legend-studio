@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { useCallback, useEffect } from 'react';
 import { Container, Typography } from '@mui/material';
+import { FilterIcon } from '@finos/legend-art';
 import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
@@ -178,6 +179,22 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
         runSearch();
       }, [searchResultsStore, applicationStore, runSearch]);
 
+      const handleShowOnlyDeploymentId = useCallback(
+        (deploymentId: string) => {
+          LegendMarketplaceTelemetryHelper.logEvent_ClickShowOnlyDeploymentId(
+            applicationStore.telemetryService,
+            deploymentId,
+            searchResultsStore.searchQuery,
+          );
+          searchResultsStore.addDeploymentId(deploymentId);
+          searchResultsStore.setPage(1);
+          runSearch();
+        },
+        [searchResultsStore, applicationStore, runSearch],
+      );
+      const deploymentIdFilterOffer =
+        searchResultsStore.deploymentIdFilterOffer;
+
       return (
         <LegendMarketplacePage className="marketplace-lakehouse-search-results marketplace-lakehouse-access-search-results">
           <Container className="marketplace-lakehouse-search-results__search-container">
@@ -237,6 +254,20 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
                 <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
                   {LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT}
                 </TimedInfoBanner>
+                {deploymentIdFilterOffer !== undefined && (
+                  <div className="marketplace-lakehouse-search-results__did-offer">
+                    <button
+                      type="button"
+                      className="marketplace-lakehouse-search-results__did-offer__btn"
+                      onClick={() =>
+                        handleShowOnlyDeploymentId(deploymentIdFilterOffer)
+                      }
+                    >
+                      <FilterIcon />
+                      {`Show only DID ${deploymentIdFilterOffer}`}
+                    </button>
+                  </div>
+                )}
                 <SearchResultsCardGrid
                   isLoading={isLoadingDataProducts}
                   totalItems={searchResultsStore.totalItems}
@@ -253,6 +284,10 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
                   page={searchResultsStore.page}
                   onPageChange={handlePageChange}
                   onItemsPerPageChange={handleItemsPerPageChange}
+                  productIds={{
+                    searchQuery: searchResultsStore.searchQuery,
+                    page: LEGEND_MARKETPLACE_PAGE.LAKEHOUSE_ACCESS_PAGE,
+                  }}
                 />
               </div>
             </div>

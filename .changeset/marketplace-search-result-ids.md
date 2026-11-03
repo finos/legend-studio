@@ -1,0 +1,5 @@
+---
+'@finos/legend-application-marketplace': patch
+---
+
+Lakehouse Access search results show each data product's ID and deployment ID (DID) on a quiet line under the title (`TRADE_POSITIONS_EOD · DID 30455`), in tiles and list rows. A click (or Enter or Space) copies the value without opening the product; the tooltip says "Copied". An untitled product, whose title already is its ID, shows only its DID, and its title wraps after underscores. When the query is a result's data product ID (ignoring case) or its DID, that value is highlighted, the tile is outlined (the list row gets a bar on its left), and an "Exact ID match" or "Exact DID match" badge shows. An all-digit query offers "Show only DID <n>", which applies the Deployment ID filter (never on its own). The DataSpaces tab is unchanged. With two tiles per row, a tile's chips now wrap instead of clipping the last one. New telemetry events: `marketplace.copy.data-product.id` (which ID, which product, which page) and `marketplace.click.show-only.deployment-id`.

@@ -555,6 +555,41 @@ describe('MarketplaceLakehouseSearchResults', () => {
         expect(screen.getByText('owner2@example.com')).toBeDefined();
       });
     });
+
+    // The ID line, the exact-match marking and the "Show only DID" offer belong to
+    // the Lakehouse Access tab: Lakehouse data products shown here stay as they were.
+    test.each(['LAKEHOUSE_SDLC_DATA_PRODUCT', '12345'])(
+      'Lakehouse data product cards show no IDs and mark no match for the query %p',
+      async (query) => {
+        await setupTestComponent(query, 'prod');
+
+        await screen.findByText('4 DataSpaces');
+        expect(screen.getByText('Lakehouse SDLC Data Product')).toBeDefined();
+        expect(
+          screen.queryByRole('button', {
+            name: /^Copy (?:data product|deployment) ID/,
+          }),
+        ).toBeNull();
+        expect(
+          document.querySelector('.marketplace-lakehouse-product-ids'),
+        ).toBeNull();
+        expect(screen.queryByText(/^Exact (?:ID|DID) match$/)).toBeNull();
+        expect(
+          document.querySelector(
+            '.marketplace-lakehouse-data-product-card--exact-match',
+          ),
+        ).toBeNull();
+        expect(
+          screen.queryByRole('button', { name: /^Show only DID/ }),
+        ).toBeNull();
+        // an untitled product's title is its plain ID
+        expect(
+          screen
+            .getByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE')
+            .querySelector('wbr'),
+        ).toBeNull();
+      },
+    );
   });
 
   describe('Producer Search', () => {

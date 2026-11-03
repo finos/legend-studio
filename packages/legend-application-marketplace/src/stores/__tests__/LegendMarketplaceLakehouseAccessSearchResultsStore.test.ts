@@ -131,6 +131,46 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - deployment IDs', 
   });
 });
 
+describe('LegendMarketplaceLakehouseAccessSearchResultsStore - DID filter offer', () => {
+  test('offers the DID an all-digit query may be, trimmed', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery(' 30455 ');
+
+    expect(store.deploymentIdFilterOffer).toBe('30455');
+  });
+
+  test('offers nothing for other queries', async () => {
+    const { store } = await setupStore();
+
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+    ['', '   ', 'TRADE_POSITIONS', '30455a', '-30455', '30 455', '3.5'].forEach(
+      (query) => {
+        store.setSearchQuery(query);
+        expect(store.deploymentIdFilterOffer).toBeUndefined();
+      },
+    );
+  });
+
+  test('offers nothing once that DID is filtered', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery('30455');
+    store.addDeploymentId('30455');
+
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+  });
+
+  test('still offers the DID while another one is filtered', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery('30455');
+    store.addDeploymentId('12345');
+
+    expect(store.deploymentIdFilterOffer).toBe('30455');
+  });
+});
+
 describe('LegendMarketplaceLakehouseAccessSearchResultsStore - filters', () => {
   test('toggleSource adds then removes a source', async () => {
     const { store } = await setupStore();

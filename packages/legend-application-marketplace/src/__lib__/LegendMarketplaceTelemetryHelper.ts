@@ -61,6 +61,14 @@ export enum ICON_TOOLBAR_TYPE {
   HELP = 'Help Icon',
 }
 
+/**
+ * The IDs of a Lakehouse data product that the Marketplace shows and lets users copy.
+ */
+export enum DATA_PRODUCT_ID_TYPE {
+  DATA_PRODUCT_ID = 'dataProductId',
+  DEPLOYMENT_ID = 'deploymentId',
+}
+
 type MarketplaceDataProductOrigin_TelemetryData = {
   type: DATAPRODUCT_TYPE;
   groupId?: string | undefined;
@@ -568,6 +576,48 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.SHOW_ALL_DATA_PRODUCTS,
       {
+        searchQuery,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_CopyDataProductId(
+    telemetryService: TelemetryService,
+    idType: DATA_PRODUCT_ID_TYPE,
+    dataProductId: string,
+    deploymentId: number,
+    copiedFrom: LEGEND_MARKETPLACE_PAGE,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+      {
+        idType,
+        dataProductId,
+        deploymentId,
+        copiedFrom,
+        ...session,
+      },
+    );
+  }
+
+  /**
+   * Logs a click on the "Show only DID <n>" offer that an all-digit query brings up.
+   * Applying the filter logs its own {@link logEvent_ApplySearchFilter} event too.
+   */
+  static logEvent_ClickShowOnlyDeploymentId(
+    telemetryService: TelemetryService,
+    deploymentId: string,
+    searchQuery: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_SHOW_ONLY_DEPLOYMENT_ID,
+      {
+        deploymentId,
         searchQuery,
         ...session,
       },

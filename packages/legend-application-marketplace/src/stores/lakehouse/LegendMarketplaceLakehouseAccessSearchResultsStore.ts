@@ -165,6 +165,7 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
       isFirstLoad: computed,
       isOnLastPage: computed,
       hasActiveFilters: computed,
+      deploymentIdFilterOffer: computed,
       executeSearch: flow,
     });
   }
@@ -324,6 +325,22 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
 
   get hasActiveFilters(): boolean {
     return this.selectedSources.size > 0 || this.selectedDeploymentIds.size > 0;
+  }
+
+  /**
+   * An all-digit query may be a deployment ID (DID), so the page offers to filter on
+   * it (never on its own): the DID to offer, unless that DID is filtered already.
+   */
+  get deploymentIdFilterOffer(): string | undefined {
+    const query = this.searchQuery?.trim();
+    if (
+      query === undefined ||
+      !/^\d+$/.test(query) ||
+      this.selectedDeploymentIds.has(query)
+    ) {
+      return undefined;
+    }
+    return query;
   }
 
   /**

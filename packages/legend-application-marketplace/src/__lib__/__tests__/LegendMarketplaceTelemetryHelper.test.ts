@@ -32,6 +32,7 @@ import { LEGEND_MARKETPLACE_APP_EVENT } from '../LegendMarketplaceAppEvent.js';
 import { MarketplaceSearchMode } from '../LegendMarketplaceSearchMode.js';
 import {
   CONTRACT_ACTION,
+  DATA_PRODUCT_ID_TYPE,
   ICON_TOOLBAR_TYPE,
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
@@ -627,6 +628,35 @@ const simpleTelemetryCases: SimpleTelemetryCase[] = [
       action: 'select',
       searchQuery: 'bloomberg',
     },
+  },
+  {
+    description: 'logEvent_CopyDataProductId',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_CopyDataProductId(
+        service,
+        DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID,
+        'TRADE_POSITIONS_EOD',
+        30455,
+        LEGEND_MARKETPLACE_PAGE.LAKEHOUSE_ACCESS_PAGE,
+      ),
+    expectedPayload: {
+      idType: 'deploymentId',
+      dataProductId: 'TRADE_POSITIONS_EOD',
+      deploymentId: 30455,
+      copiedFrom: 'Lakehouse Access Page',
+    },
+  },
+  {
+    description: 'logEvent_ClickShowOnlyDeploymentId',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.CLICK_SHOW_ONLY_DEPLOYMENT_ID,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ClickShowOnlyDeploymentId(
+        service,
+        '30455',
+        ' 30455 ',
+      ),
+    expectedPayload: { deploymentId: '30455', searchQuery: ' 30455 ' },
   },
   {
     description: 'logEvent_ClearSearchFilters',
