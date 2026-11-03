@@ -1894,7 +1894,7 @@ const cases: TestCase[] = [
           DataCubeQueryAggregateOperator.UNIQUE;
         return config;
       },
-      error: `Can't process configuration: aggregation operator mismatch for column 'c' (expected: 'sum', found: 'unique')`,
+      error: `Can't process configuration: aggregation operator mismatch for column 'c' (expected: 'sum', found: 'uniq')`,
     },
   ),
   _case(
