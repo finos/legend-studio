@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { Tooltip } from '../tooltip/Tooltip.js';
 import { CheckIcon, CopyIcon } from '../icon/Icon.js';
@@ -80,11 +80,20 @@ export const CopyableId: React.FC<{
   } = props;
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const [copyState, setCopyState] = useState<CopyableIdCopyState>('idle');
+  // NOTE: MUI calls `onOpen` when the enter delay that a hover started runs out,
+  // judging by whether the tooltip was open when the hover began. So a click within
+  // that delay is followed by an `onOpen` that would wipe the click's outcome: this
+  // tells whether the tooltip is open right now.
+  const isTooltipOpenRef = useRef(false);
+  const setTooltipOpen = (open: boolean): void => {
+    isTooltipOpenRef.current = open;
+    setIsTooltipOpen(open);
+  };
 
   const copy = (): void => {
     // keep the tooltip open to show the outcome, even if the click came before
     // the tooltip's enter delay was over
-    setIsTooltipOpen(true);
+    setTooltipOpen(true);
     writeToClipboard(value)
       .then(() => {
         setCopyState('copied');
@@ -118,10 +127,12 @@ export const CopyableId: React.FC<{
         // NOTE: the outcome of the last copy is cleared when the tooltip opens again
         // rather than when it closes, so "Copied" doesn't flip back while the
         // tooltip fades out
-        setCopyState('idle');
-        setIsTooltipOpen(true);
+        if (!isTooltipOpenRef.current) {
+          setCopyState('idle');
+        }
+        setTooltipOpen(true);
       }}
-      onClose={() => setIsTooltipOpen(false)}
+      onClose={() => setTooltipOpen(false)}
       slotProps={{
         tooltip: { className: 'copyable-id__tooltip' },
         // NOTE: the tooltip is rendered in a portal, but React still bubbles its

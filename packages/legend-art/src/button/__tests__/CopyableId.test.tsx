@@ -23,6 +23,7 @@ import {
   jest,
 } from '@jest/globals';
 import {
+  act,
   render,
   screen,
   cleanup,
@@ -181,6 +182,26 @@ describe('CopyableId', () => {
         await waitFor(() =>
           expect(screen.getByRole('tooltip').textContent).toEqual('Copied'),
         );
+      },
+    );
+
+    test(
+      unitTest('keeps Copied when the hover delay runs out after the click'),
+      async () => {
+        render(
+          <CopyableId value="TRADE_POSITIONS_EOD" label="data product ID" />,
+        );
+
+        // the hover starts MUI's enter delay, and the click lands before it runs out
+        fireEvent.mouseOver(idButton());
+        fireEvent.click(idButton());
+        await screen.findByText('Copied');
+        await act(
+          () => new Promise<void>((resolve) => setTimeout(resolve, 300)),
+        );
+
+        expect(screen.getByRole('tooltip').textContent).toEqual('Copied');
+        expect(idButton().className).toContain('copyable-id--copied');
       },
     );
 
