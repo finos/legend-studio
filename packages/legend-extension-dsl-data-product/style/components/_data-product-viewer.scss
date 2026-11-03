@@ -2161,20 +2161,6 @@
     font-size: 1.5rem;
   }
 
-  &__item__header__type {
-    @include flexVCenter;
-
-    height: 2rem;
-    padding: 0 0.5rem;
-    border-radius: 0.5rem;
-    background: var(--color-bg-tag);
-    color: var(--color-white);
-    user-select: none;
-    margin-left: 0.5rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-  }
-
   &__item__header__anchor {
     @include flexVCenter;
 

@@ -2031,9 +2031,6 @@ export const DataProductAccessPointGroupViewer = observer(
                 label="access point group ID"
               />
             )}
-            <div className="data-product__viewer__access-group__item__header__type">
-              LAKEHOUSE
-            </div>
             <CollapsibleChevron
               viewerState={apgState.dataProductViewerState}
               anchor={apgState.anchor}
