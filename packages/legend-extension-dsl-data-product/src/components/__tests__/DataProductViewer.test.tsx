@@ -73,6 +73,7 @@ import {
   mockSDLCDataProduct,
   mockSDLCDataProductDatabricksAP,
   mockSDLCDataProductParameterizedAP,
+  mockSDLCDataProductTypedParametersAP,
   mockSDLCDataProductNoSupportInfo,
   mockSDLCDataProductDescriptionsAsTitles,
   mockEntitlementsUntitledSDLCDataProduct,
@@ -4404,17 +4405,35 @@ describe('DataProductViewer', () => {
         expect(fetchRelationTypeSpy).toHaveBeenCalledTimes(1);
       });
 
-      // Grammar and Governance fetches should not have been called yet
+      // Definition and Governance fetches should not have been called yet
       expect(fetchGrammarSpy).not.toHaveBeenCalled();
       expect(fetchRegistryMetadataSpy).not.toHaveBeenCalled();
 
-      // Click on Grammar tab
-      const grammarTab = await screen.findByText('Grammar');
+      // Pure Query shows the accessor, not the definition
+      jest.spyOn(MockedMonacoEditorAPI, 'create').mockReturnValue({
+        ...MockedMonacoEditorInstance,
+        getValue: jest.fn().mockReturnValue(''),
+      });
+      jest
+        .spyOn(MockedMonacoEditorAPI, 'createModel')
+        .mockReturnValue(MockedMonacoEditorModel);
       await act(async () => {
-        fireEvent.click(grammarTab);
+        fireEvent.click(await screen.findByRole('tab', { name: 'Pure Query' }));
+      });
+      await screen.findByText('Accessor');
+      expect(fetchGrammarSpy).not.toHaveBeenCalled();
+
+      // Open the definition in Column Specifications
+      await act(async () => {
+        fireEvent.click(await screen.findByText('Column Specifications'));
+      });
+      await act(async () => {
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'View definition' }),
+        );
       });
 
-      // Assert that Grammar fetch happens
+      // Assert that the definition fetch happens
       await waitFor(() => {
         expect(fetchGrammarSpy).toHaveBeenCalledTimes(1);
       });
@@ -4436,7 +4455,19 @@ describe('DataProductViewer', () => {
         fireEvent.click(await screen.findByText('Column Specifications'));
       });
       await act(async () => {
-        fireEvent.click(await screen.findByText('Grammar'));
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'View definition' }),
+        );
+      });
+      await act(async () => {
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'Hide definition' }),
+        );
+      });
+      await act(async () => {
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'View definition' }),
+        );
       });
       await act(async () => {
         fireEvent.click(await screen.findByText('Governance'));
@@ -4570,6 +4601,300 @@ describe('DataProductViewer', () => {
     });
   });
 
+  describe('Access point tabs: Pure Query and the definition', () => {
+    const ACCESSOR = '#P{test::Mock_SDLC_DataProduct.customer_demographics}#';
+    const DEFINITION =
+      "|#I{test::IngestDefinition.CUSTOMERS}#\n  ->filter(c|$c.ACTIVE == 'Y')";
+    let writeText: jest.Mock<(text: string) => Promise<void>>;
+
+    beforeEach(() => {
+      jest.spyOn(MockedMonacoEditorAPI, 'create').mockReturnValue({
+        ...MockedMonacoEditorInstance,
+        getValue: jest.fn().mockReturnValue(''),
+      });
+      jest
+        .spyOn(MockedMonacoEditorAPI, 'createModel')
+        .mockReturnValue(MockedMonacoEditorModel);
+      // jsdom has no clipboard
+      writeText = jest
+        .fn<(text: string) => Promise<void>>()
+        .mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    });
+
+    // the engine's relation type for the only access point of the mock data products
+    const relationTypeWithColumns =
+      (count: number) =>
+      async (): Promise<V1_BatchLambdaRelationTypeResponse> => ({
+        result: {
+          'GROUP1::customer_demographics': {
+            _type: 'relationType',
+            columns: Array.from({ length: count }, (_, index) => ({
+              name: `col_${index + 1}`,
+              multiplicity: { lowerBound: 1, upperBound: 1 },
+              genericType: {
+                multiplicityArguments: [],
+                typeArguments: [],
+                rawType: { _type: 'packageableType', fullPath: 'String' },
+                typeVariableValues: [],
+              },
+            })),
+          },
+        } as unknown as V1_BatchLambdaRelationTypeResponse['result'],
+        errors: {},
+      });
+
+    const openPureQuery = async (): Promise<void> => {
+      await screen.findByText('Customer Demographics');
+      await act(async () => {
+        fireEvent.click(await screen.findByRole('tab', { name: 'Pure Query' }));
+      });
+    };
+
+    // copies a code block, and returns what went to the clipboard
+    const copyCode = async (name: string): Promise<string | undefined> => {
+      const button = await screen.findByRole('button', { name });
+      fireEvent.click(button);
+      // the tooltip says "Copied", which also flushes the state update
+      await waitFor(() =>
+        expect(
+          button.classList.contains('data-product__viewer__code-copy--copied'),
+        ).toBe(true),
+      );
+      return writeText.mock.lastCall?.[0];
+    };
+
+    test('shows Pure Query and Legend Query after Column Specifications, and no Grammar tab', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      const columnsTab = await screen.findByRole('tab', {
+        name: 'Column Specifications',
+      });
+      const tabs = within(
+        guaranteeNonNullable(columnsTab.closest<HTMLElement>('[role=tablist]')),
+      ).getAllByRole('tab');
+      expect(tabs.map((tab) => tab.textContent)).toEqual([
+        'Column Specifications',
+        'Pure Query',
+        'Legend Query',
+        'Service',
+        'Datacube',
+        'Governance',
+        'Power BI',
+        'SQL',
+      ]);
+      expect(screen.queryByRole('tab', { name: 'Grammar' })).toBeNull();
+    });
+
+    test('Pure Query shows the accessor of the access point, and an example with every column', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+      const fetchGrammarSpy = jest.spyOn(
+        guaranteeNonNullable(
+          dataProductViewerState.apgStates[0]?.accessPointStates[0],
+        ),
+        'fetchGrammar',
+      );
+
+      await openPureQuery();
+
+      screen.getByText(
+        "Returns this access point's rows as a relation. Use it in a Pure query, for example in a function in Studio.",
+      );
+      expect(
+        screen.queryByText(/^Replace each parameter with a value/),
+      ).toBeNull();
+      expect(await copyCode('Copy accessor')).toBe(ACCESSOR);
+      await screen.findByText(
+        "Every column, first 100 rows. Delete the columns you don't need.",
+      );
+      expect(await copyCode('Copy example')).toBe(
+        `${ACCESSOR}\n  ->select(~[varchar_val, int_val])\n  ->take(100)`,
+      );
+      // the definition is not what Pure Query shows
+      expect(fetchGrammarSpy).not.toHaveBeenCalled();
+    });
+
+    test('Pure Query puts the parameters of a parameterized access point in parentheses, with their types', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductTypedParametersAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await openPureQuery();
+
+      expect(
+        (await screen.findByText(/^Replace each parameter with a value/))
+          .textContent,
+      ).toBe(
+        'Replace each parameter with a value: businessDate (StrictDate), clientAccountId (String).',
+      );
+      const accessor =
+        '#P{test::Mock_SDLC_DataProduct.customer_demographics(businessDate, clientAccountId)}#';
+      expect(await copyCode('Copy accessor')).toBe(accessor);
+      expect(await copyCode('Copy example')).toBe(
+        `${accessor}\n  ->select(~[varchar_val, int_val])\n  ->take(100)`,
+      );
+    });
+
+    test('Pure Query names a parameter without a type', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductParameterizedAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await openPureQuery();
+
+      expect(
+        (await screen.findByText(/^Replace each parameter with a value/))
+          .textContent,
+      ).toBe('Replace each parameter with a value: startDate.');
+      expect(await copyCode('Copy accessor')).toBe(
+        '#P{test::Mock_SDLC_DataProduct.customer_demographics(startDate)}#',
+      );
+    });
+
+    test('Pure Query example selects all 20 columns of an access point with 20', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { batchLambdasRelationType: relationTypeWithColumns(20) },
+      );
+
+      await openPureQuery();
+
+      await screen.findByText(
+        "Every column, first 100 rows. Delete the columns you don't need.",
+      );
+      const example = guaranteeNonNullable(await copyCode('Copy example'));
+      // too long for one line: the columns go on lines of their own
+      expect(example.startsWith(`${ACCESSOR}\n  ->select(~[\n    col_1,`)).toBe(
+        true,
+      );
+      expect(example.endsWith('col_20\n  ])\n  ->take(100)')).toBe(true);
+      expect(example.match(/col_\d+/gu)).toEqual(
+        Array.from({ length: 20 }, (_, index) => `col_${index + 1}`),
+      );
+    });
+
+    test('Pure Query example selects no columns by name for an access point with more than 20', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { batchLambdasRelationType: relationTypeWithColumns(21) },
+      );
+
+      await openPureQuery();
+
+      expect(
+        (await screen.findByText(/^First 100 rows\. This access point has/))
+          .textContent,
+      ).toBe(
+        'First 100 rows. This access point has 21 columns: add ->select(~[…]) with the ones you need.',
+      );
+      expect(await copyCode('Copy example')).toBe(`${ACCESSOR}\n  ->take(100)`);
+    });
+
+    test('Pure Query shows for a Databricks access point', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDatabricksAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await openPureQuery();
+
+      expect(await copyCode('Copy accessor')).toBe(ACCESSOR);
+      expect(
+        screen.queryByText(
+          'This feature is not supported for access points deployed to Databricks.',
+        ),
+      ).toBeNull();
+    });
+
+    test('Column Specifications shows the column count, and the definition only once opened', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+      const jsonToGrammarSpy = createSpy(
+        dataProductViewerState.engineServerClient,
+        'JSONToGrammar_lambda',
+      ).mockResolvedValue(DEFINITION);
+
+      await screen.findByText('Customer Demographics');
+      await screen.findByText('2 columns');
+      expect(screen.queryByRole('region', { name: 'Definition' })).toBeNull();
+      expect(jsonToGrammarSpy).not.toHaveBeenCalled();
+
+      const viewDefinition = await screen.findByRole('button', {
+        name: 'View definition',
+      });
+      expect(viewDefinition.getAttribute('aria-expanded')).toBe('false');
+      await act(async () => {
+        fireEvent.click(viewDefinition);
+      });
+
+      const definition = await screen.findByRole('region', {
+        name: 'Definition',
+      });
+      within(definition).getByText('Definition');
+      expect(
+        within(definition).getByText(/^How the producer defined/).textContent,
+      ).toBe(
+        'How the producer defined this access point. To query it, use Pure Query.',
+      );
+      expect(await copyCode('Copy definition')).toBe(DEFINITION);
+      expect(jsonToGrammarSpy).toHaveBeenCalledTimes(1);
+
+      const hideDefinition = screen.getByRole('button', {
+        name: 'Hide definition',
+      });
+      expect(hideDefinition.getAttribute('aria-expanded')).toBe('true');
+      await act(async () => {
+        fireEvent.click(hideDefinition);
+      });
+      expect(screen.queryByRole('region', { name: 'Definition' })).toBeNull();
+      // the column grid stays
+      screen.getByText('Column Name');
+    });
+  });
+
   describe('LegendQueryScreen', () => {
     test('shows "Not Supported" when dataAccessState is undefined', async () => {
       await setupLakehouseDataProductTest(
@@ -4584,8 +4909,10 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
 
-      // Click on the Query tab
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      // Click on the Legend Query tab
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });
@@ -4606,7 +4933,9 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
 
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });
@@ -4624,7 +4953,9 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
 
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });
@@ -4646,7 +4977,9 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
 
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });
@@ -4671,7 +5004,9 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
 
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });
@@ -4715,7 +5050,9 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Customer Demographics');
 
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });
@@ -4773,7 +5110,7 @@ describe('DataProductViewer', () => {
       await screen.findByText(unsupportedMessage);
     });
 
-    test('Query tab shows the unsupported message for a Databricks-targeted access point', async () => {
+    test('Legend Query tab shows the unsupported message for a Databricks-targeted access point', async () => {
       await setupLakehouseDataProductTest(
         mockSDLCDataProductDatabricksAP,
         mockEntitlementsSDLCDataProduct,
@@ -4783,7 +5120,9 @@ describe('DataProductViewer', () => {
       );
 
       await screen.findByText('Mock SDLC Data Product');
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       fireEvent.click(queryTab);
 
       await screen.findByText(unsupportedMessage);
@@ -4931,7 +5270,7 @@ describe('DataProductViewer', () => {
       expect(openDataCubeMock).not.toHaveBeenCalled();
     });
 
-    test('Query tab button is disabled with an explanatory title for a parameterized access point', async () => {
+    test('Legend Query tab button is disabled with an explanatory title for a parameterized access point', async () => {
       const mockOpenQuery = jest.fn();
       await setupLakehouseDataProductTest(
         mockSDLCDataProductParameterizedAP,
@@ -4944,7 +5283,9 @@ describe('DataProductViewer', () => {
       );
 
       await screen.findByText('Mock SDLC Data Product');
-      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      const queryTab = await screen.findByRole('tab', {
+        name: 'Legend Query',
+      });
       await act(async () => {
         fireEvent.click(queryTab);
       });

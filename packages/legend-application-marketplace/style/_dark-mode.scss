@@ -3377,34 +3377,6 @@
           }
         }
       }
-
-      &__grammar {
-        background: var(--color-dark-theme-bg-secondary);
-
-        // CodeEditor dark theme
-        .monaco-editor,
-        .monaco-editor .monaco-editor-background,
-        .monaco-editor .inputarea.ime-input {
-          background: var(--color-dark-theme-bg-secondary) !important;
-          color: var(--color-dark-theme-text-primary) !important;
-        }
-
-        .monaco-editor .view-lines {
-          color: var(--color-dark-theme-text-primary) !important;
-        }
-
-        .monaco-editor .line-numbers {
-          color: var(--color-dark-theme-text-muted) !important;
-        }
-
-        .mtk1 {
-          color: var(--color-dark-theme-text-primary) !important;
-        }
-
-        .monaco-scrollable-element > .scrollbar > .slider {
-          background: var(--color-dark-theme-border-light) !important;
-        }
-      }
     }
 
     // Grid styles

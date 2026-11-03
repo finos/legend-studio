@@ -640,6 +640,45 @@
       color: var(--color-hclight-grey-60);
     }
 
+    &__columns-strip,
+    &__definition-toggle,
+    &__definition__caption,
+    &__definition__message,
+    &__pure-query__caption {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__definition-toggle:hover,
+    &__definition-toggle--open,
+    &__definition__title,
+    &__pure-query__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__definition {
+      background: var(--color-hclight-grey-10);
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__pure-query__inline-code {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__code-box {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__code-copy {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-grey-30);
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__code-copy:hover {
+      background: var(--color-hclight-grey-10);
+    }
+
     &__access-group__item__header__anchor {
       color: var(--color-hclight-blue-60);
     }
