@@ -1050,6 +1050,21 @@
   }
 
   &__description {
+    // the card is a dark overlay on the diagram's canvas, which is light gray
+    // in every theme, so it keeps the default dark theme's colors: with a light
+    // theme's, its title and text would be dark on dark
+    // See `_theme-default-dark.scss` in `@finos/legend-art`
+    --color-text-primary: var(--color-light-grey-0);
+    --color-text-secondary: var(--color-light-grey-200);
+    --color-text-muted: var(--color-light-grey-400);
+    --color-text-disabled: var(--color-dark-grey-400);
+    --color-text-link: var(--color-blue-100);
+    --color-bg-app: var(--color-dark-grey-50);
+    --color-bg-panel-header: var(--color-dark-grey-200);
+    --color-bg-tag: var(--color-dark-grey-300);
+    --color-border-default: var(--color-dark-grey-200);
+    --color-border-strong: var(--color-dark-grey-300);
+
     position: absolute;
     z-index: 2;
     height: 10rem;
@@ -1112,10 +1127,12 @@
       height: calc(100% - 3rem);
       overflow: auto;
 
-      .data-space__viewer__markdown-text-viewer {
+      // the diagram viewer renders the description with `MarkdownTextViewer`
+      // from `@finos/legend-art`, whose padding would push it below the card
+      .markdown-content {
         background: transparent;
         color: var(--color-text-secondary);
-        padding-top: 0.5rem;
+        padding: 0.5rem 0 0;
       }
     }
 

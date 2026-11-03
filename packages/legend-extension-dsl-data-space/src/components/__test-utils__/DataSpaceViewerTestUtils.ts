@@ -26,6 +26,7 @@ import { TEST__getApplicationVersionData } from '@finos/legend-application/test'
 import { type PlainObject, guaranteeType } from '@finos/legend-shared';
 import {
   type GraphData,
+  type GraphManagerState,
   type GraphManagerPluginManager,
   type PureGraphManagerPlugin,
   type PureGraphPlugin,
@@ -116,18 +117,13 @@ export type TEST__DataSpaceViewerActionOverrides = {
 };
 
 /**
- * Build a real `DataSpaceViewerState` from a V1 analytics-result JSON payload.
- *
- * Mirrors the shape used across the app (`buildDataSpaceAnalytics` from a
- * plain V1 JSON), so tests can drive the viewer with realistic analytics data
- * loaded from fixture files.
+ * Build an application store and a graph manager state with the data space
+ * extension, initialized on a remote engine, which data space analysis
+ * (`analyzeDataSpace`) requires even when it reads the analytics from cache.
  */
-export const TEST__getDataSpaceViewerState = async (
-  V1_analysisResult: PlainObject<V1_DataSpaceAnalysisResult>,
-  overrides?: TEST__DataSpaceViewerActionOverrides,
-): Promise<{
-  viewerState: DataSpaceViewerState;
+export const TEST__getDataSpaceGraphManagerState = async (): Promise<{
   applicationStore: GenericLegendApplicationStore;
+  graphManagerState: GraphManagerState;
 }> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   pluginManager.usePresets([new DSL_DataSpace_GraphManagerPreset()]).install();
@@ -158,13 +154,32 @@ export const TEST__getDataSpaceViewerState = async (
     { engine: remoteEngine },
   );
   await graphManagerState.initializeSystem();
+  return { applicationStore, graphManagerState };
+};
 
-  const graphManagerExtension =
-    DSL_DataSpace_getGraphManagerExtension(graphManager);
+/**
+ * Build a real `DataSpaceViewerState` from a V1 analytics-result JSON payload.
+ *
+ * Mirrors the shape used across the app (`buildDataSpaceAnalytics` from a
+ * plain V1 JSON), so tests can drive the viewer with realistic analytics data
+ * loaded from fixture files.
+ */
+export const TEST__getDataSpaceViewerState = async (
+  V1_analysisResult: PlainObject<V1_DataSpaceAnalysisResult>,
+  overrides?: TEST__DataSpaceViewerActionOverrides,
+): Promise<{
+  viewerState: DataSpaceViewerState;
+  applicationStore: GenericLegendApplicationStore;
+}> => {
+  const { applicationStore, graphManagerState } =
+    await TEST__getDataSpaceGraphManagerState();
+  const graphManagerExtension = DSL_DataSpace_getGraphManagerExtension(
+    graphManagerState.graphManager,
+  );
   const dataSpaceAnalysisResult =
     await graphManagerExtension.buildDataSpaceAnalytics(
       V1_analysisResult,
-      pluginManager.getPureProtocolProcessorPlugins(),
+      graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
     );
 
   const viewerState = new DataSpaceViewerState(
