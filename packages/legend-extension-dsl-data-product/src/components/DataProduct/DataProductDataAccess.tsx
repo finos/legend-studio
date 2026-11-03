@@ -37,6 +37,7 @@ import {
   WarningIcon,
   RocketIcon,
   CopyIcon,
+  CopyableId,
   QueryIcon,
   Snowflake_BrandIcon,
   Databricks_BrandIcon,
@@ -1846,6 +1847,8 @@ export const DataProductAccessPointViewer = observer(
     const targetEnvironmentIcon = targetEnvironment
       ? getLakehouseTargetEnvironmentIcon(targetEnvironment)
       : undefined;
+    const accessPointId = accessPointState.accessPoint.id;
+    const displayedTitle = accessPointState.accessPoint.title ?? accessPointId;
 
     return (
       <Accordion
@@ -1861,16 +1864,22 @@ export const DataProductAccessPointViewer = observer(
         }}
       >
         <AccordionSummary
+          // a div, not a button: it holds the button that copies the ID
+          component="div"
           expandIcon={<ExpandMoreIcon />}
           className="data-product__viewer__access-point__summary"
         >
           <div className="data-product__viewer__access-point__info">
             <div className="data-product__viewer__access-point__details">
               <div className="data-product__viewer__access-point__name">
-                <strong>
-                  {accessPointState.accessPoint.title ??
-                    accessPointState.accessPoint.id}
-                </strong>
+                <strong>{displayedTitle}</strong>
+                {displayedTitle !== accessPointId && (
+                  <CopyableId
+                    className="data-product__viewer__id data-product__viewer__access-point__id"
+                    value={accessPointId}
+                    label="access point ID"
+                  />
+                )}
                 {targetEnvironment && (
                   <Chip
                     className={clsx(
@@ -1938,6 +1947,7 @@ export const DataProductAccessPointGroupViewer = observer(
     const { apgState, dataAccessState } = props;
 
     const accessPointStates = apgState.accessPointStates;
+    const displayedTitle = apgState.apg.title ?? apgState.apg.id;
 
     const auth = useAuth();
     const tokenRef = useRef(auth.user?.access_token);
@@ -2006,8 +2016,15 @@ export const DataProductAccessPointGroupViewer = observer(
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
-              {apgState.apg.title ?? apgState.apg.id}
+              {displayedTitle}
             </div>
+            {displayedTitle !== apgState.apg.id && (
+              <CopyableId
+                className="data-product__viewer__id data-product__viewer__access-group__item__header__id"
+                value={apgState.apg.id}
+                label="access point group ID"
+              />
+            )}
             <div className="data-product__viewer__access-group__item__header__type">
               LAKEHOUSE
             </div>

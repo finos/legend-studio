@@ -28,6 +28,7 @@ import {
   AnchorLinkIcon,
   CaretUpIcon,
   clsx,
+  CopyableId,
   ExpandMoreIcon,
   OpenIcon,
   QuestionCircleIcon,
@@ -288,6 +289,41 @@ const DataProductEnvironmentLabel = observer(
   },
 );
 
+const DataProductHeaderIds = observer(
+  (props: {
+    dataAccessState: DataProductDataAccessState;
+    displayedTitle: string | undefined;
+  }) => {
+    const { dataAccessState, displayedTitle } = props;
+    // the deployed ID, as on the search cards: the element name can differ
+    // from it in case
+    const dataProductId = dataAccessState.entitlementsDataProductDetails.id;
+    const deploymentId = String(
+      dataAccessState.entitlementsDataProductDetails.deploymentId,
+    );
+
+    return (
+      <div className="data-product__viewer__header__ids">
+        {displayedTitle !== dataProductId && (
+          <CopyableId
+            className="data-product__viewer__id"
+            value={dataProductId}
+            label="data product ID"
+          />
+        )}
+        <CopyableId
+          className="data-product__viewer__id"
+          value={deploymentId}
+          label="deployment ID"
+        >
+          <span className="data-product__viewer__id__prefix">DID</span>{' '}
+          {deploymentId}
+        </CopyableId>
+      </div>
+    );
+  },
+);
+
 const ProductHeader = observer(
   (props: {
     productViewerState: BaseViewerState<
@@ -320,6 +356,8 @@ const ProductHeader = observer(
         ? productViewerState.product.name
         : undefined;
 
+    const displayedTitle = productTitle ? productTitle : productName;
+
     useEffect(() => {
       if (headerRef.current) {
         productViewerState.layoutState.header = headerRef.current;
@@ -344,8 +382,14 @@ const ProductHeader = observer(
               className="data-product__viewer__header__title"
               title={`${productTitle} - ${productPath}`}
             >
-              {productTitle ? productTitle : productName}
+              {displayedTitle}
             </div>
+            {dataAccessState instanceof DataProductDataAccessState && (
+              <DataProductHeaderIds
+                dataAccessState={dataAccessState}
+                displayedTitle={displayedTitle}
+              />
+            )}
           </div>
 
           {dataAccessState instanceof DataProductDataAccessState && (

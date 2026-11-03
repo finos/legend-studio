@@ -132,6 +132,13 @@
       letter-spacing: -0.02rem;
     }
 
+    &__ids {
+      @include flexVCenter;
+
+      gap: 1rem;
+      font-size: 1.4rem;
+    }
+
     &__actions {
       @include flexVCenter;
 
@@ -2138,6 +2145,12 @@
     font-weight: 500;
   }
 
+  &__item__header__id.copyable-id {
+    margin-right: 0;
+    margin-left: 0.6rem;
+    font-size: 1.5rem;
+  }
+
   &__item__header__type {
     @include flexVCenter;
 
@@ -3363,6 +3376,12 @@
     align-items: center;
   }
 
+  &__id.copyable-id {
+    margin-right: 0;
+    margin-left: 0.6rem;
+    font-size: 1.3rem;
+  }
+
   &__details {
     display: block;
   }
@@ -3402,6 +3421,24 @@
         color: var(--color-databricks-brand);
       }
     }
+  }
+}
+
+// The IDs next to the titles: legend-art's CopyableId, which inherits its color,
+// size and margins unless the selector also names `.copyable-id`. The color is
+// muted, and not from the --color-text-* tokens: those stay light in the light
+// theme's viewer.
+.data-product__viewer__id {
+  &.copyable-id {
+    color: var(--color-dark-theme-text-muted);
+  }
+
+  // the "DID" before the deployment ID
+  &__prefix {
+    font-family: Roboto, sans-serif;
+    font-size: 0.85em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
   }
 }
 
