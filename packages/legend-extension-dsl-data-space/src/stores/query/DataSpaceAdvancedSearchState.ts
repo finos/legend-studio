@@ -219,12 +219,14 @@ export class DataSpaceAdvancedSearchState {
               );
               return;
             }
-            generateDataSpaceQueryCreatorRoute(
-              groupId,
-              artifactId,
-              versionId,
-              analysisResult.path,
-              executionContextKey,
+            this.applicationStore.navigationService.navigator.goToLocation(
+              generateDataSpaceQueryCreatorRoute(
+                groupId,
+                artifactId,
+                versionId,
+                analysisResult.path,
+                executionContextKey,
+              ),
             );
           },
           viewProject: (path: string | undefined) =>
