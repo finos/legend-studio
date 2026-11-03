@@ -326,20 +326,10 @@ export class TypedResultModifierValueSpecificationBuilder extends ResultModifier
 export const appendResultSetModifier = (
   resultModifierState: QueryResultSetModifierState,
   lambdaFunction: LambdaFunction,
-  isTyped: boolean,
+  useRelation: boolean,
   options?: ResultModifierValueSpecOptions | undefined,
 ): LambdaFunction => {
-  const precedingExpression = lambdaFunction.expressionSequence[0];
-  // select(~[...]) only takes a relation and is written for a relation source in
-  // either lambda writer mode, so what follows it must be the relation functions
-  const isRelation =
-    isTyped ||
-    (precedingExpression instanceof SimpleFunctionExpression &&
-      matchFunctionName(
-        precedingExpression.functionName,
-        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_SELECT,
-      ));
-  const builder = isRelation
+  const builder = useRelation
     ? new TypedResultModifierValueSpecificationBuilder(
         resultModifierState.tdsState.queryBuilderState.graphManagerState,
       )

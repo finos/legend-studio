@@ -89,6 +89,7 @@ import {
 } from '@finos/legend-graph/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared/test';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
@@ -167,7 +168,14 @@ import {
   TEST_DATA__simpleProjectionWithMilestonedRootAndRowScopedNestedBusinessDate,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
-import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
+import {
+  QueryBuilderActionConfig,
+  QueryBuilderAdvancedWorkflowState,
+} from '../query-workflow/QueryBuilderWorkFlowState.js';
+import { AccessorQueryBuilderState } from '../workflows/accessor/AccessorQueryBuilderState.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderRelationColumnProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { SortColumnState } from '../fetch-structure/tds/QueryResultSetModifierState.js';
 import {
   TEST_DATA_typedTDSMax,
   TEST_DATA_typedTDSPercentRank,
@@ -1149,5 +1157,94 @@ test(
       QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
     );
     expect(buildQuery()).toEqual(lambda);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder writes sort and limit as relation functions for a new accessor query in classic mode',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+    const queryBuilderState = new AccessorQueryBuilderState(
+      new ApplicationStore(TEST__getGenericApplicationConfig(), pluginManager),
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+    await queryBuilderState.changeAccessorOwner(
+      guaranteeNonNullable(graphManagerState.graph.ingests[0]),
+    );
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    const column = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType?.columns[0],
+    );
+    const columnState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      column,
+      true,
+    );
+    tdsState.addColumn(columnState);
+    tdsState.resultSetModifierState.addSortColumn(
+      new SortColumnState(columnState),
+    );
+    tdsState.resultSetModifierState.setLimit(10);
+
+    // the projection of an accessor source is a relation, project(~[...]),
+    // even though a new accessor query starts in classic mode
+    expect(queryBuilderState.isFetchStructureTyped).toBe(false);
+    expect(
+      graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toMatchObject({
+      body: [
+        {
+          function: 'from',
+          parameters: [
+            {
+              function: 'limit',
+              parameters: [
+                {
+                  function: 'sort',
+                  parameters: [
+                    { function: 'project' },
+                    {
+                      values: [
+                        {
+                          function: 'ascending',
+                          parameters: [
+                            {
+                              type: 'colSpec',
+                              value: { name: columnState.columnName },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                { _type: 'integer', value: 10 },
+              ],
+            },
+          ],
+        },
+      ],
+    });
   },
 );
