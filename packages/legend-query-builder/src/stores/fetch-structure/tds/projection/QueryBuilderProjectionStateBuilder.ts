@@ -499,6 +499,25 @@ export const processTDSSelectExpression = (
   tdsState.setProjectionMode(TDS_PROJECTION_MODE.SELECT);
 };
 
+/**
+ * The functions that take()/limit(), distinct(), sort() and slice() can
+ * immediately follow, in classic (TDS) or typed (relation) form. A function
+ * name also matches by its last segment, so e.g. TDS_SORT covers the relation
+ * sort() as well.
+ */
+const RESULT_SET_MODIFIER_PRECEDING_FUNCTIONS = [
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_LIMIT,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_SELECT,
+];
+
 export const processTDSTakeExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
@@ -518,15 +537,10 @@ export const processTDSTakeExpression = (
   );
 
   assertTrue(
-    matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
-    ]),
+    matchFunctionName(
+      precedingExpression.functionName,
+      RESULT_SET_MODIFIER_PRECEDING_FUNCTIONS,
+    ),
     `Can't process take() expression: only support take() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -567,15 +581,10 @@ export const processTDSDistinctExpression = (
     `Can't process distinct() expression: only support distinct() immediately following an expression`,
   );
   assertTrue(
-    matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
-    ]),
+    matchFunctionName(
+      precedingExpression.functionName,
+      RESULT_SET_MODIFIER_PRECEDING_FUNCTIONS,
+    ),
     `Can't process distinct() expression: only support distinct() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -613,15 +622,10 @@ export const processTDSSortExpression = (
     `Can't process sort() expression: only support sort() immediately following an expression`,
   );
   assertTrue(
-    matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
-    ]),
+    matchFunctionName(
+      precedingExpression.functionName,
+      RESULT_SET_MODIFIER_PRECEDING_FUNCTIONS,
+    ),
     `Can't process sort() expression: only support sort() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -665,15 +669,10 @@ export const processTDSSliceExpression = (
     `Can't process slice() expression: only support slice() immediately following an expression`,
   );
   assertTrue(
-    matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
-    ]),
+    matchFunctionName(
+      precedingExpression.functionName,
+      RESULT_SET_MODIFIER_PRECEDING_FUNCTIONS,
+    ),
     `Can't process slice() expression: only support slice() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(
