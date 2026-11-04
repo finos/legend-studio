@@ -25,26 +25,57 @@ import {
 } from './LakehouseProductCardSharedUtils.js';
 import { LakehouseDataProductCardInfoPopover } from './LakehouseProductCard.js';
 import { LegendMarketplaceListItem } from '../MarketplaceCard/LegendMarketplaceListItem.js';
+import {
+  type LakehouseProductIdsDisplay,
+  getLakehouseProductIdsState,
+  LakehouseProductBreakableId,
+  LakehouseProductExactMatchBadge,
+  LakehouseProductIdLine,
+} from './LakehouseProductIds.js';
 
 export const LakehouseProductListItem = observer(
   (props: {
     productCardState: ProductCardState;
     onClick: (productCardState: ProductCardState) => void;
+    /** Show the product's IDs under its title, marking an exact match. */
+    productIds?: LakehouseProductIdsDisplay | undefined;
   }): React.ReactNode => {
-    const { productCardState, onClick } = props;
+    const { productCardState, onClick, productIds } = props;
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
+    const { exactMatch, isTitleId } = getLakehouseProductIdsState(
+      productCardState,
+      productIds,
+    );
 
     const content = (
       <>
         <div className="marketplace-lakehouse-list-item__header">
-          <div className="marketplace-lakehouse-list-item__title">
-            {productCardState.title}
+          <div
+            className={clsx('marketplace-lakehouse-list-item__title', {
+              'marketplace-lakehouse-list-item__title--id': isTitleId,
+            })}
+          >
+            {isTitleId ? (
+              <LakehouseProductBreakableId value={productCardState.title} />
+            ) : (
+              productCardState.title
+            )}
           </div>
+          {exactMatch && (
+            <LakehouseProductExactMatchBadge exactMatch={exactMatch} />
+          )}
           <div className="marketplace-lakehouse-list-item__tags">
             <LakehouseProductTags productCardState={productCardState} />
           </div>
         </div>
+        {productIds && (
+          <LakehouseProductIdLine
+            productCardState={productCardState}
+            page={productIds.page}
+            exactMatch={exactMatch}
+          />
+        )}
         <div className="marketplace-lakehouse-list-item__description">
           <MarkdownTextViewer
             className="marketplace-lakehouse-list-item__description__markdown"
@@ -88,7 +119,10 @@ export const LakehouseProductListItem = observer(
         content={content}
         actions={actions}
         onClick={() => onClick(productCardState)}
-        className="marketplace-lakehouse-list-item"
+        className={clsx('marketplace-lakehouse-list-item', {
+          'marketplace-lakehouse-list-item--exact-match':
+            exactMatch !== undefined,
+        })}
         cardMedia={productCardState.icon ?? productCardState.displayImage}
         loadingMedia={productCardState.initState.isInProgress}
       />

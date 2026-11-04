@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
+import { createSpy } from '@finos/legend-shared/test';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { LegendMarketplaceLakehouseAccessSearchResultsStore } from '../lakehouse/LegendMarketplaceLakehouseAccessSearchResultsStore.js';
 import {
@@ -22,6 +23,7 @@ import {
   SearchResultsViewMode,
 } from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 const setupStore = async (): Promise<{
   store: LegendMarketplaceLakehouseAccessSearchResultsStore;
@@ -128,6 +130,102 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - deployment IDs', 
     store.removeDeploymentId('12345');
 
     expect(Array.from(store.selectedDeploymentIds)).toEqual(['67890']);
+  });
+});
+
+describe('LegendMarketplaceLakehouseAccessSearchResultsStore - DID filter offer', () => {
+  test('offers the DID an all-digit query may be, trimmed', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery(' 30455 ');
+
+    expect(store.deploymentIdFilterOffer).toBe('30455');
+  });
+
+  test('offers nothing for other queries', async () => {
+    const { store } = await setupStore();
+
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+    ['', '   ', 'TRADE_POSITIONS', '30455a', '-30455', '30 455', '3.5'].forEach(
+      (query) => {
+        store.setSearchQuery(query);
+        expect(store.deploymentIdFilterOffer).toBeUndefined();
+      },
+    );
+  });
+
+  test('offers nothing for digits too long to be a DID', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery('9007199254740993');
+
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+  });
+
+  test('offers nothing once that DID is filtered', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery('30455');
+    store.addDeploymentId('30455');
+
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+  });
+
+  test('still offers the DID while another one is filtered', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery('30455');
+    store.addDeploymentId('12345');
+
+    expect(store.deploymentIdFilterOffer).toBe('30455');
+  });
+});
+
+describe('LegendMarketplaceLakehouseAccessSearchResultsStore - applying a DID filter', () => {
+  test('applyDeploymentIdFilter adds the IDs and goes back to the first page', async () => {
+    const { store } = await setupStore();
+    store.setPage(3);
+
+    store.applyDeploymentIdFilter('30455, 12345');
+
+    expect(Array.from(store.selectedDeploymentIds)).toEqual(['30455', '12345']);
+    expect(store.page).toBe(1);
+  });
+
+  test('applyDeploymentIdFilterOffer filters on the offered DID and logs the offer', async () => {
+    const { store, baseStore } = await setupStore();
+    const logEvent = createSpy(
+      baseStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+    store.setSearchQuery(' 30455 ');
+    store.setPage(2);
+
+    store.applyDeploymentIdFilterOffer();
+
+    expect(Array.from(store.selectedDeploymentIds)).toEqual(['30455']);
+    expect(store.page).toBe(1);
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+    expect(logEvent).toHaveBeenCalledWith(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_FILTER_ON_DEPLOYMENT_ID,
+      expect.objectContaining({ deploymentId: 30455, searchQuery: ' 30455 ' }),
+    );
+  });
+
+  test('applyDeploymentIdFilterOffer does nothing when no DID is offered', async () => {
+    const { store, baseStore } = await setupStore();
+    const logEvent = createSpy(
+      baseStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+    store.setSearchQuery('TRADE_POSITIONS');
+    store.setPage(2);
+
+    store.applyDeploymentIdFilterOffer();
+
+    expect(store.selectedDeploymentIds.size).toBe(0);
+    expect(store.page).toBe(2);
+    expect(logEvent).not.toHaveBeenCalled();
   });
 });
 

@@ -2665,6 +2665,10 @@
       color: var(--color-dark-theme-text-secondary);
     }
 
+    .marketplace-lakehouse-product-ids {
+      color: var(--color-dark-theme-text-muted);
+    }
+
     &__info-btn {
       color: var(--color-dark-theme-text-muted);
 
@@ -2672,6 +2676,10 @@
         color: var(--color-dark-theme-text-primary);
       }
     }
+  }
+
+  .marketplace-lakehouse-search-results__did-offer__btn {
+    color: var(--color-dark-theme-blue-primary);
   }
 
   .marketplace-search-filters-panel {
