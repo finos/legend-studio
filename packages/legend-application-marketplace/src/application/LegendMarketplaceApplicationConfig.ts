@@ -23,6 +23,7 @@ import {
 } from 'serializr';
 import {
   type PlainObject,
+  type RequestHeaders,
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
@@ -124,6 +125,12 @@ export interface LegendMarketplaceApplicationConfigurationData
   };
   depot: { url: string };
   terminal: { url: string };
+  sdlc?: {
+    url: string;
+    baseHeaders?: RequestHeaders;
+    client?: string;
+    useCookieAuthOnly?: boolean;
+  };
   engine: {
     url: string;
     queryUrl?: string;
@@ -188,6 +195,24 @@ export class LegendLakehouseEntitlementsConfig {
   }
 }
 
+export class LegendMarketplaceSDLCConfig {
+  url: string;
+  baseHeaders: RequestHeaders | undefined;
+  client: string | undefined;
+  useCookieAuthOnly: boolean;
+  constructor(
+    url: string,
+    baseHeaders: RequestHeaders | undefined,
+    client: string | undefined,
+    useCookieAuthOnly: boolean,
+  ) {
+    this.url = url;
+    this.baseHeaders = baseHeaders;
+    this.client = client;
+    this.useCookieAuthOnly = useCookieAuthOnly;
+  }
+}
+
 export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig {
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
@@ -208,6 +233,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly engineQueryServerUrl?: string | undefined;
   readonly terminalServerUrl: string;
   readonly depotServerUrl: string;
+  readonly sdlcConfig: LegendMarketplaceSDLCConfig | undefined;
   readonly lakehouseServerUrl: string;
   readonly lakehousePlatformUrl: string;
   readonly lakehouseWorkflowServerUrl: string;
@@ -325,6 +351,15 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'depot.url' field is missing or empty`,
       ),
     );
+
+    this.sdlcConfig = input.configData.sdlc?.url
+      ? new LegendMarketplaceSDLCConfig(
+          LegendApplicationConfig.resolveAbsoluteUrl(input.configData.sdlc.url),
+          input.configData.sdlc.baseHeaders,
+          input.configData.sdlc.client,
+          Boolean(input.configData.sdlc.useCookieAuthOnly),
+        )
+      : undefined;
 
     // Terminal
     assertNonNullable(

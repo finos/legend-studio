@@ -2605,6 +2605,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-lakehouse": "workspace:*"
     "@finos/legend-server-marketplace": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"

@@ -80,6 +80,8 @@ import {
   convertTrendingEntryToSearchResult,
 } from '../utils/SearchUtils.js';
 import { LakehouseDataProductService } from './lakehouse/LakehouseDataProductService.js';
+import { SDLCServerClient } from '@finos/legend-server-sdlc';
+import { DataSpaceSDLCService } from './sdlc/DataSpaceSDLCService.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -92,6 +94,8 @@ export class LegendMarketplaceBaseStore {
   readonly adjacentEnvState: LegendMarketplaceEnvState | undefined;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
+  readonly sdlcServerClient: SDLCServerClient | undefined;
+  readonly dataSpaceSDLCService: DataSpaceSDLCService | undefined;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
@@ -162,6 +166,23 @@ export class LegendMarketplaceBaseStore {
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+
+    const sdlcConfig = this.applicationStore.config.sdlcConfig;
+    if (sdlcConfig) {
+      this.sdlcServerClient = new SDLCServerClient({
+        env: this.applicationStore.config.env,
+        serverUrl: sdlcConfig.url,
+        baseHeaders: sdlcConfig.baseHeaders,
+        client: sdlcConfig.client,
+        useCookieAuthOnly: sdlcConfig.useCookieAuthOnly,
+      });
+      this.sdlcServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+      this.dataSpaceSDLCService = new DataSpaceSDLCService(
+        this.sdlcServerClient,
+      );
+    }
 
     // lakehouse contract
     this.lakehouseContractServerClient = new LakehouseContractServerClient({
