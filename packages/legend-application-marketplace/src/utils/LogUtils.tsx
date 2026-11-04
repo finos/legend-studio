@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-server-marketplace';
 import {
   type LEGEND_MARKETPLACE_PAGE,
+  type MarketplaceDataProduct_TelemetryData,
   LegendMarketplaceTelemetryHelper,
 } from '../__lib__/LegendMarketplaceTelemetryHelper.js';
 import type { ProductCardState } from '../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -28,18 +29,16 @@ import { getSearchResultProjectGAV } from './SearchUtils.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { DATAPRODUCT_TYPE } from '@finos/legend-extension-dsl-data-product';
 
-export const logClickingDataProductCard = (
+/**
+ * How telemetry describes a data product shown as a search result, so that events
+ * about the same product (a card click, an ID copied) can be joined.
+ */
+export const getDataProductTelemetryData = (
   productCardState: ProductCardState,
-  applicationStore: GenericLegendApplicationStore,
-  source: LEGEND_MARKETPLACE_PAGE,
-): void => {
+): MarketplaceDataProduct_TelemetryData => {
   const searchResult = productCardState.searchResult;
   const projectGAV = getSearchResultProjectGAV(searchResult);
-  const deploymentId =
-    searchResult.dataProductDetails instanceof
-    LakehouseDataProductSearchResultDetails
-      ? searchResult.dataProductDetails.deploymentId
-      : undefined;
+  const deploymentId = productCardState.deploymentId;
   const path =
     searchResult.dataProductDetails instanceof
     LakehouseDataProductSearchResultDetails
@@ -63,14 +62,22 @@ export const logClickingDataProductCard = (
       : {
           type: DATAPRODUCT_TYPE.ADHOC,
         };
+  return {
+    origin: origin,
+    dataProductId: productCardState.dataProductId,
+    name: productCardState.title,
+    deploymentId,
+  };
+};
+
+export const logClickingDataProductCard = (
+  productCardState: ProductCardState,
+  applicationStore: GenericLegendApplicationStore,
+  source: LEGEND_MARKETPLACE_PAGE,
+): void => {
   LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
     applicationStore.telemetryService,
-    {
-      origin: origin,
-      dataProductId: productCardState.dataProductId,
-      name: productCardState.title,
-      deploymentId,
-    },
+    getDataProductTelemetryData(productCardState),
     source,
   );
 };

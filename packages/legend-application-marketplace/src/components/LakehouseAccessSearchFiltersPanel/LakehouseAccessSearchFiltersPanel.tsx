@@ -58,9 +58,9 @@ export const LakehouseAccessSearchFiltersPanel: React.FC<{
     if (deploymentIdInput.trim().length === 0) {
       return;
     }
-    store.addDeploymentId(deploymentIdInput);
+    store.applyDeploymentIdFilter(deploymentIdInput);
     setDeploymentIdInput('');
-    triggerSearch();
+    onFiltersChanged();
   };
 
   const handleRemoveDeploymentId = (deploymentId: string): void => {

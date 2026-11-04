@@ -32,8 +32,7 @@ import { uniqBy } from '@finos/legend-shared';
 export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorSortColumnState> {
   override cloneColumn(column: DataCubeEditorColumnsSelectorSortColumnState) {
     return new DataCubeEditorColumnsSelectorSortColumnState(
-      column.name,
-      column.type,
+      column,
       column.direction,
     );
   }
@@ -70,8 +69,7 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
     ).map(
       (col) =>
         new DataCubeEditorColumnsSelectorSortColumnState(
-          col.name,
-          col.type,
+          col,
           DataCubeQuerySortDirection.ASCENDING,
         ),
     );
@@ -103,8 +101,7 @@ export class DataCubeEditorSortsPanelState
       snapshot.data.sortColumns.map((col) => {
         const column = this.selector.getColumn(col.name);
         return new DataCubeEditorColumnsSelectorSortColumnState(
-          column.name,
-          column.type,
+          column,
           col.direction,
         );
       }),

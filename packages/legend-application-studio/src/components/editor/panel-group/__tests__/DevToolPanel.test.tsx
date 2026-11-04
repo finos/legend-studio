@@ -58,7 +58,9 @@ test(
     expect(within(sdlc).getByText('https://testSdlcUrl')).not.toBeNull();
     expect(screen.getByTestId('dev-tool-backend-server-engine')).not.toBeNull();
 
-    fireEvent.click(screen.getByText('change backend servers...'));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Change Backend Servers...' }),
+    );
     const sdlcInput = await screen.findByLabelText('SDLC Server URL');
     expect((sdlcInput as HTMLInputElement).placeholder).toBe(
       'https://testSdlcUrl',
@@ -74,6 +76,6 @@ test(
   async () => {
     await openDeveloperTools(undefined);
     expect(screen.queryByText('Backend Servers')).toBeNull();
-    expect(screen.queryByText('change backend servers...')).toBeNull();
+    expect(screen.queryByText('Change Backend Servers...')).toBeNull();
   },
 );

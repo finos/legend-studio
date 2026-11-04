@@ -56,6 +56,7 @@ afterEach(() => {
 const createApplicationStore = (overrides?: {
   engineClientName?: string | undefined;
   engineUseCookieAuthOnly?: boolean | undefined;
+  sdlc?: { url: string; client?: string; useCookieAuthOnly?: boolean };
 }): LegendMarketplaceApplicationStore =>
   new ApplicationStore(
     TEST__getTestLegendMarketplaceApplicationConfig(overrides),
@@ -124,5 +125,73 @@ describe(unitTest('LegendMarketplaceBaseStore - engine authentication'), () => {
     ).toBeUndefined();
     expect(options.credentials).toBe('include');
     expect(url).toContain(`client_name=${CLIENT_NAME}`);
+  });
+});
+
+describe(unitTest('LegendMarketplaceBaseStore - sdlc'), () => {
+  const SDLC_URL = 'https://test-sdlc-url/api';
+
+  test('no sdlc client or data space sdlc service is created when sdlc is not configured', () => {
+    const baseStore = new LegendMarketplaceBaseStore(createApplicationStore());
+
+    expect(baseStore.sdlcServerClient).toBeUndefined();
+    expect(baseStore.dataSpaceSDLCService).toBeUndefined();
+  });
+
+  test('the data space sdlc service reads data space entities from the configured sdlc server', async () => {
+    const baseStore = new LegendMarketplaceBaseStore(
+      createApplicationStore({ sdlc: { url: SDLC_URL } }),
+    );
+    expect(baseStore.dataSpaceSDLCService?.sdlcServerClient).toBe(
+      baseStore.sdlcServerClient,
+    );
+    fetchSpy.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          path: 'model::TestDataSpace',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+          content: {},
+        }),
+    } as Response);
+
+    await baseStore.dataSpaceSDLCService?.getDataSpaceEntity(
+      'PROD-1',
+      'model::TestDataSpace',
+    );
+
+    expect(String(fetchSpy.mock.calls.at(-1)?.[0])).toBe(
+      `${SDLC_URL}/projects/PROD-1/entities/model::TestDataSpace`,
+    );
+  });
+
+  test('the sdlc client calls the configured sdlc server with its client name and session cookie', async () => {
+    fetchSpy.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(false),
+    } as Response);
+    const applicationStore = createApplicationStore({
+      sdlc: { url: SDLC_URL, client: 'gitlab', useCookieAuthOnly: true },
+    });
+    applicationStore.setEnableTokenClient(true);
+    applicationStore.setAccessToken(ACCESS_TOKEN);
+    const baseStore = new LegendMarketplaceBaseStore(applicationStore);
+
+    await expect(baseStore.sdlcServerClient?.isAuthorized()).resolves.toBe(
+      false,
+    );
+
+    const call = fetchSpy.mock.calls.find(([url]) =>
+      String(url).startsWith(`${SDLC_URL}/auth/authorized`),
+    );
+    expect(call).toBeDefined();
+    const [url, options] = call as [string, RequestInit];
+    expect(String(url)).toContain('client_name=gitlab');
+    expect(options.credentials).toBe('include');
+    expect(
+      (options.headers as Record<string, string> | undefined)?.Authorization,
+    ).toBeUndefined();
   });
 });

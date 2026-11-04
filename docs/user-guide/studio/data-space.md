@@ -57,7 +57,8 @@ An executable is something people can run from the data space as it is, such as 
 3. **Element**: the service or function it runs. The arrow opens it.
 4. **Execution Context**: which of the data space's execution contexts it runs with. Left empty, it runs with the
    default one.
-5. **Sample Values**: a few example rows of what it returns.
+5. **Sample Values**: a few example rows of what it returns. They work as a data product's (see
+   [Sample values](./data-product.md#sample-values)).
 
 ## Info
 

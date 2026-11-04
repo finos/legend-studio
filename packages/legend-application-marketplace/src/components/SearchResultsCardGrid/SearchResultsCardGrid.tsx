@@ -26,6 +26,7 @@ import { LakehouseProductCard } from '../LakehouseProductCard/LakehouseProductCa
 import { LakehouseProductListItem } from '../LakehouseProductCard/LakehouseProductListItem.js';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 import { PaginationControls } from '../Pagination/PaginationControls.js';
+import type { LakehouseProductIdsDisplay } from '../LakehouseProductCard/LakehouseProductIds.js';
 
 /**
  * Shared body of a marketplace search results page: loading state, empty state, the
@@ -47,6 +48,11 @@ export const SearchResultsCardGrid: React.FC<{
   page: number;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (itemsPerPage: number) => void;
+  /**
+   * Show each Lakehouse result's IDs under its title, and mark the result whose ID or
+   * DID is the query. Only the Lakehouse Access page asks for it.
+   */
+  productIds?: LakehouseProductIdsDisplay | undefined;
 }> = observer(
   ({
     isLoading,
@@ -60,6 +66,7 @@ export const SearchResultsCardGrid: React.FC<{
     page,
     onPageChange,
     onItemsPerPageChange,
+    productIds,
   }) => {
     if (isLoading) {
       return (
@@ -107,6 +114,7 @@ export const SearchResultsCardGrid: React.FC<{
                   productCardState={productCardState}
                   moreInfoPreview="small"
                   onClick={() => onProductCardClick(productCardState)}
+                  productIds={productIds}
                 />
               </Grid>
             ))}
@@ -119,6 +127,7 @@ export const SearchResultsCardGrid: React.FC<{
                 key={productCardState.guid}
                 productCardState={productCardState}
                 onClick={onProductCardClick}
+                productIds={productIds}
               />
             ))}
           </div>

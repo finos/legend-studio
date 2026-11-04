@@ -27,6 +27,7 @@ import {
   V1_CInteger,
   extractElementNameFromPath as _name,
   matchFunctionName,
+  PRECISE_PRIMITIVE_TYPE,
   type V1_ValueSpecification,
   V1_Lambda,
 } from '@finos/legend-graph';
@@ -39,6 +40,7 @@ import {
 } from './DataCubeSnapshot.js';
 import {
   _findCol,
+  reuseTypeVariableValues,
   _toCol,
   type DataCubeColumn,
 } from './model/DataCubeColumn.js';
@@ -54,8 +56,10 @@ import {
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 import { newConfiguration } from './DataCubeConfigurationBuilder.js';
+import { isLegacyCollapsedColumnType } from './DataCubeColumnTypes.js';
 import {
   _colSpecArrayParam,
+  getTypeVariableValues,
   _param,
   _extractExtendedColumns,
   _filter,
@@ -485,10 +489,21 @@ export async function validateAndBuildSnapshot(
     );
     const castColumns = _relationType(
       _genericTypeParam(funcMap.pivotCast, 0).genericType,
-    ).columns.map((column) => ({
-      name: column.name.replace(/^'|'$/g, ''),
-      type: _packageableType(column.genericType).fullPath,
-    }));
+    ).columns.map((column) => {
+      const name = column.name.replace(/^'|'$/g, '');
+      const type = _packageableType(column.genericType).fullPath;
+      // NOTE: prefer the type variable values of the matching column when it passes
+      // through the pivot unchanged, since queries saved by older versions declare a
+      // default size for `Varchar` (and no precision and scale for `Numeric`)
+      const knownColumn = colsMap.get(name);
+      return _toCol({
+        name,
+        type,
+        typeVariableValues:
+          reuseTypeVariableValues(knownColumn, type) ??
+          getTypeVariableValues(column.genericType),
+      });
+    });
     data.pivot = {
       columns: pivotColumns,
       castColumns: castColumns,
@@ -719,6 +734,22 @@ function validateAndBuildConfiguration(
   columns.forEach((column) => {
     const _column = guaranteeNonNullable(_findCol(_columns, column.name));
 
+    // NOTE: configurations saved by older versions hold precise primitive types collapsed
+    // into core primitives (e.g. `String` for `Varchar`), upgrade them to the precise type
+    const isLegacyColumn =
+      column.type !== _column.type &&
+      isLegacyCollapsedColumnType(column.type, _column.type);
+    if (isLegacyColumn) {
+      column.type = _column.type;
+    }
+    if (column.type === _column.type) {
+      // NOTE: the type variable values reported by the engine always win over the persisted
+      // ones; copy so the persisted configuration does not share the source column's array
+      column.typeVariableValues = _column.typeVariableValues
+        ? [..._column.typeVariableValues]
+        : undefined;
+    }
+
     // check type
     assertTrue(
       column.type === _column.type,
@@ -744,8 +775,20 @@ function validateAndBuildConfiguration(
 
     // check aggregation (only relevant if aggregation is present)
     if (data.pivot ?? data.groupBy) {
+      // NOTE: older versions defaulted precise numeric columns (e.g. `Int`, `Numeric`) to
+      // dimensions aggregated with `unique`, whereas they now default to measures aggregated
+      // with `sum`. Such columns are not necessarily collapsed in older configurations, e.g.
+      // `Numeric` was persisted as is. For columns not aggregated in the query, the operator
+      // is not part of the query, so keep the one saved rather than requiring the new default.
+      const hasChangedDefaultAggregateOperator =
+        isLegacyColumn || column.type === PRECISE_PRIMITIVE_TYPE.NUMERIC;
       assertTrue(
-        column.aggregateOperator === _column.aggregateOperator,
+        (hasChangedDefaultAggregateOperator &&
+          !(
+            _findCol(context.groupByAggColumns ?? [], column.name) ??
+            _findCol(context.pivotAggColumns ?? [], column.name)
+          )) ||
+          column.aggregateOperator === _column.aggregateOperator,
         `Can't process configuration: aggregation operator mismatch for column '${column.name}' (expected: '${_column.aggregateOperator}', found: '${column.aggregateOperator}')`,
       );
       assertTrue(

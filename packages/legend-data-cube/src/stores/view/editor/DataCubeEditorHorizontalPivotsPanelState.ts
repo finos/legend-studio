@@ -41,8 +41,7 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
     column: DataCubeEditorColumnsSelectorSortColumnState,
   ): DataCubeEditorColumnsSelectorSortColumnState {
     return new DataCubeEditorColumnsSelectorSortColumnState(
-      column.name,
-      column.type,
+      column,
       column.direction,
       column.onChange,
     );
@@ -60,8 +59,7 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
       .map(
         (col) =>
           new DataCubeEditorColumnsSelectorSortColumnState(
-            col.name,
-            col.type,
+            col,
             DataCubeQuerySortDirection.ASCENDING,
             () => this.onChange?.(this),
           ),
@@ -127,8 +125,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
       (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
           new DataCubeEditorColumnsSelectorSortColumnState(
-            col.name,
-            col.type,
+            col,
             _findCol(configuration.columns, col.name)?.pivotSortDirection ??
               DataCubeQuerySortDirection.ASCENDING,
             () => this.selector.onChange?.(this.selector),

@@ -24,6 +24,7 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
+  DATAPRODUCT_TYPE,
   SEARCH_SESSION_KEY,
   TELEMETRY_EVENT_STATUS,
   type MarketplaceUserSession,
@@ -32,6 +33,7 @@ import { LEGEND_MARKETPLACE_APP_EVENT } from '../LegendMarketplaceAppEvent.js';
 import { MarketplaceSearchMode } from '../LegendMarketplaceSearchMode.js';
 import {
   CONTRACT_ACTION,
+  DATA_PRODUCT_ID_TYPE,
   ICON_TOOLBAR_TYPE,
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
@@ -627,6 +629,62 @@ const simpleTelemetryCases: SimpleTelemetryCase[] = [
       action: 'select',
       searchQuery: 'bloomberg',
     },
+  },
+  {
+    description: 'logEvent_CopyDataProductId',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_CopyDataProductId(
+        service,
+        DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID,
+        {
+          origin: { type: DATAPRODUCT_TYPE.ADHOC },
+          dataProductId: 'TRADE_POSITIONS_EOD',
+          name: 'Trade Positions',
+          deploymentId: 30455,
+        },
+        LEGEND_MARKETPLACE_PAGE.LAKEHOUSE_ACCESS_PAGE,
+      ),
+    expectedPayload: {
+      origin: { type: DATAPRODUCT_TYPE.ADHOC },
+      dataProductId: 'TRADE_POSITIONS_EOD',
+      name: 'Trade Positions',
+      deploymentId: 30455,
+      idType: 'deploymentId',
+      copiedFrom: 'Lakehouse Access Page',
+      status: TELEMETRY_EVENT_STATUS.SUCCESS,
+    },
+  },
+  {
+    description: 'logEvent_CopyDataProductId (failed copy)',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_CopyDataProductId(
+        service,
+        DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID,
+        { dataProductId: 'TRADE_POSITIONS_EOD', deploymentId: 30455 },
+        LEGEND_MARKETPLACE_PAGE.LAKEHOUSE_ACCESS_PAGE,
+        'Write permission denied.',
+      ),
+    expectedPayload: {
+      dataProductId: 'TRADE_POSITIONS_EOD',
+      deploymentId: 30455,
+      idType: 'dataProductId',
+      copiedFrom: 'Lakehouse Access Page',
+      status: TELEMETRY_EVENT_STATUS.FAILURE,
+      error: 'Write permission denied.',
+    },
+  },
+  {
+    description: 'logEvent_ClickFilterOnDeploymentId',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.CLICK_FILTER_ON_DEPLOYMENT_ID,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ClickFilterOnDeploymentId(
+        service,
+        30455,
+        ' 30455 ',
+      ),
+    expectedPayload: { deploymentId: 30455, searchQuery: ' 30455 ' },
   },
   {
     description: 'logEvent_ClearSearchFilters',

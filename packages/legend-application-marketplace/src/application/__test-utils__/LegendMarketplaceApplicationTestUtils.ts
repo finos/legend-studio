@@ -114,10 +114,12 @@ export const TEST__getTestLegendMarketplaceApplicationConfig = (overrides?: {
   adjacentEnvUrl?: string | undefined;
   engineClientName?: string | undefined;
   engineUseCookieAuthOnly?: boolean | undefined;
+  sdlc?: LegendMarketplaceApplicationConfigurationData['sdlc'];
 }): LegendMarketplaceApplicationConfig => {
   const config = new LegendMarketplaceApplicationConfig({
     configData: {
       ...TEST_DATA__appConfig,
+      ...(overrides?.sdlc ? { sdlc: overrides.sdlc } : {}),
       engine: {
         ...TEST_DATA__appConfig.engine,
         ...(overrides?.engineClientName !== undefined

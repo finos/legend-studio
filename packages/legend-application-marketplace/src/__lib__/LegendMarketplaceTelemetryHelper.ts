@@ -61,6 +61,14 @@ export enum ICON_TOOLBAR_TYPE {
   HELP = 'Help Icon',
 }
 
+/**
+ * The IDs of a Lakehouse data product that the Marketplace shows and lets users copy.
+ */
+export enum DATA_PRODUCT_ID_TYPE {
+  DATA_PRODUCT_ID = 'dataProductId',
+  DEPLOYMENT_ID = 'deploymentId',
+}
+
 type MarketplaceDataProductOrigin_TelemetryData = {
   type: DATAPRODUCT_TYPE;
   groupId?: string | undefined;
@@ -69,7 +77,7 @@ type MarketplaceDataProductOrigin_TelemetryData = {
   path?: string | undefined;
 };
 
-type MarketplaceDataProduct_TelemetryData = {
+export type MarketplaceDataProduct_TelemetryData = {
   origin?: MarketplaceDataProductOrigin_TelemetryData | undefined;
   dataProductId?: string | undefined;
   deploymentId?: number | undefined;
@@ -568,6 +576,62 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.SHOW_ALL_DATA_PRODUCTS,
       {
+        searchQuery,
+        ...session,
+      },
+    );
+  }
+
+  /**
+   * Logs a copy of one of a data product's IDs, or a failed one (`error`, e.g. when
+   * the browser blocked the clipboard). The data product is described as for
+   * {@link logEvent_ClickingDataProductCard}, so the two events can be joined.
+   */
+  static logEvent_CopyDataProductId(
+    telemetryService: TelemetryService,
+    idType: DATA_PRODUCT_ID_TYPE,
+    dataProductData: MarketplaceDataProduct_TelemetryData,
+    copiedFrom: LEGEND_MARKETPLACE_PAGE,
+    error?: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+      error === undefined
+        ? {
+            ...dataProductData,
+            idType,
+            copiedFrom,
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+            ...session,
+          }
+        : {
+            ...dataProductData,
+            idType,
+            copiedFrom,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
+            error,
+            ...session,
+          },
+    );
+  }
+
+  /**
+   * Logs a click on the "Filter on DID <n>" offer that an all-digit query brings up.
+   * Applying the filter logs its own {@link logEvent_ApplySearchFilter} event too.
+   */
+  static logEvent_ClickFilterOnDeploymentId(
+    telemetryService: TelemetryService,
+    deploymentId: number,
+    searchQuery: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_FILTER_ON_DEPLOYMENT_ID,
+      {
+        deploymentId,
         searchQuery,
         ...session,
       },

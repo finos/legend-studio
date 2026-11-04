@@ -80,7 +80,7 @@ describe(unitTest(`Filter date value: modes offered for a column`), () => {
     PRIMITIVE_TYPE.DATE,
     PRIMITIVE_TYPE.STRICTDATE,
     PRIMITIVE_TYPE.DATETIME,
-    PRECISE_PRIMITIVE_TYPE.STRICTDATE,
+    PRECISE_PRIMITIVE_TYPE.DATETIME,
     PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
   ])(`a %s column offers every mode`, (columnType) => {
     expect(getDateValueModes(columnType)).toEqual([

@@ -45,6 +45,13 @@ import {
   LakehouseProductTags,
   DATA_PRODUCT_MARKDOWN_COMPONENTS,
 } from './LakehouseProductCardSharedUtils.js';
+import {
+  type LakehouseProductIdsDisplay,
+  getLakehouseProductIdsState,
+  LakehouseProductBreakableId,
+  LakehouseProductExactMatchBadge,
+  LakehouseProductIdLine,
+} from './LakehouseProductIds.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -73,10 +80,7 @@ export const LakehouseDataProductCardInfoPopover = observer(
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
         ? dataProductDetails.dataProductId
         : undefined;
-    const deploymentId =
-      dataProductDetails instanceof LakehouseDataProductSearchResultDetails
-        ? dataProductDetails.deploymentId
-        : undefined;
+    const deploymentId = dataProductCardState.deploymentId;
     const producerEnvironmentName =
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
         ? dataProductDetails.producerEnvironmentName
@@ -282,6 +286,8 @@ export const LakehouseProductCard = observer(
     moreInfoPreview?: 'small' | 'large' | undefined;
     hideInfoPopover?: boolean;
     hideTags?: boolean;
+    /** Show the product's IDs under its title, marking an exact match. */
+    productIds?: LakehouseProductIdsDisplay | undefined;
   }): React.ReactNode => {
     const {
       productCardState,
@@ -289,7 +295,17 @@ export const LakehouseProductCard = observer(
       moreInfoPreview,
       hideInfoPopover,
       hideTags,
+      productIds,
     } = props;
+    const { exactMatch, isTitleId } = getLakehouseProductIdsState(
+      productCardState,
+      productIds,
+    );
+    const title = isTitleId ? (
+      <LakehouseProductBreakableId value={productCardState.title} />
+    ) : (
+      productCardState.title
+    );
 
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
@@ -312,9 +328,15 @@ export const LakehouseProductCard = observer(
                 <LakehouseProductTags productCardState={productCardState} />
               </Box>
             )}
+            {exactMatch && (
+              <LakehouseProductExactMatchBadge
+                exactMatch={exactMatch}
+                className="marketplace-lakehouse-data-product-card__exact-match"
+              />
+            )}
             {moreInfoPreview === undefined && (
               <Box className="marketplace-lakehouse-data-product-card__name">
-                {productCardState.title}
+                {title}
               </Box>
             )}
           </Box>
@@ -325,8 +347,15 @@ export const LakehouseProductCard = observer(
     const moreInfoContent = (
       <>
         <Box className="marketplace-lakehouse-data-product-card__name">
-          {productCardState.title}
+          {title}
         </Box>
+        {productIds && (
+          <LakehouseProductIdLine
+            productCardState={productCardState}
+            page={productIds.page}
+            exactMatch={exactMatch}
+          />
+        )}
         <Box className="marketplace-lakehouse-data-product-card__description">
           <MarkdownTextViewer
             className="marketplace-lakehouse-data-product-card__description__markdown"
@@ -373,7 +402,10 @@ export const LakehouseProductCard = observer(
         size="large"
         content={content}
         onClick={() => onClick(productCardState)}
-        className="marketplace-lakehouse-data-product-card"
+        className={clsx('marketplace-lakehouse-data-product-card', {
+          'marketplace-lakehouse-data-product-card--exact-match':
+            exactMatch !== undefined,
+        })}
         moreInfo={moreInfoContent}
         moreInfoPreview={moreInfoPreview}
         cardMedia={productCardState.icon ?? productCardState.displayImage}

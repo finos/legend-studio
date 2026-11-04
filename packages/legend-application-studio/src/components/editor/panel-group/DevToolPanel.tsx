@@ -77,21 +77,15 @@ const DevToolBackendServers = observer(() => {
           </div>
         </div>
       ))}
-      <div className="developer-tools__action-groups">
-        <div
-          className="developer-tools__action-group"
+      <div className="developer-tools__actions">
+        <button
+          className="btn btn--dark developer-tools__action-btn"
           onClick={() => backendOverrideService.open()}
-          role="button"
-          tabIndex={-1}
-          title="Change backend servers..."
+          title="Override the backend servers this application uses"
         >
-          <button className="developer-tools__action-group__btn" tabIndex={-1}>
-            <ServerIcon />
-          </button>
-          <div className="developer-tools__action-group__prompt">
-            change backend servers...
-          </div>
-        </div>
+          <ServerIcon />
+          Change Backend Servers...
+        </button>
       </div>
     </PanelFormListItems>
   );
@@ -262,49 +256,31 @@ export const DevToolPanel = observer(() => {
           update={toggleArtifactGeneration}
         />
         <PanelFormListItems title="Download Project Grammar">
-          <div className="developer-tools__action-groups">
-            <div
-              className="developer-tools__action-group"
+          <div className="developer-tools__actions">
+            <button
+              className="btn btn--dark developer-tools__action-btn"
               onClick={() => {
                 downloadProjectGrammar(false).catch(
                   editorStore.applicationStore.alertUnhandledError,
                 );
               }}
-              role="button"
-              tabIndex={-1}
-              title="Download Project Grammar"
+              title="Download the project's grammar, without its dependencies"
             >
-              <button
-                className="developer-tools__action-group__btn"
-                tabIndex={-1}
-              >
-                <CloudDownloadIcon />
-              </button>
-              <div className="developer-tools__action-group__prompt">
-                download grammar without dependency
-              </div>
-            </div>
-            <div
-              className="developer-tools__action-group"
+              <CloudDownloadIcon />
+              Download Without Dependencies
+            </button>
+            <button
+              className="btn btn--dark developer-tools__action-btn"
               onClick={() => {
                 downloadProjectGrammar(true).catch(
                   editorStore.applicationStore.alertUnhandledError,
                 );
               }}
-              role="button"
-              tabIndex={-1}
-              title="Download Project Grammar with Dependency"
+              title="Download the project's grammar, with its dependencies"
             >
-              <button
-                className="developer-tools__action-group__btn"
-                tabIndex={-1}
-              >
-                <CloudDownloadIcon />
-              </button>
-              <div className="developer-tools__action-group__prompt">
-                download grammar with dependency
-              </div>
-            </div>
+              <CloudDownloadIcon />
+              Download With Dependencies
+            </button>
           </div>
         </PanelFormListItems>
       </PanelForm>

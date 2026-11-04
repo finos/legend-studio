@@ -18,7 +18,12 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import type { Page, Request } from '@playwright/test';
 import { getExplorer } from '../support/StudioHelpers.js';
-import { corsHeaders, getApiPath } from '../support/MockUtils.js';
+import {
+  corsHeaders,
+  getApiPath,
+  getRequestBody,
+} from '../support/MockUtils.js';
+import { ENGINE_URL } from '../support/EngineSpy.js';
 import { MOCK_SDLC_URL } from '../support/SDLCMock.js';
 import type { Entity } from '../support/TEST_DATA__SDLC.js';
 import {
@@ -219,11 +224,141 @@ const getGuideDepotAnswer = (request: Request): unknown =>
     ? OTHER_DATA_SPACES
     : undefined;
 
+/** How the Legend language marks an accessor to an ingest's data set: `#I{…}#` */
+const INGEST_ACCESSOR = 'I';
+/** How it marks an accessor to a relational store's table: `#>{…}#` */
+const RELATION_STORE_ACCESSOR = '>';
+
+/**
+ * The guide's database that each of the guide's ingests copies: an ingest's
+ * data sets are the database's tables, with the same names and columns
+ */
+const INGEST_DATABASES: Record<string, string> = {
+  'guide::ingest::FirmIngest': 'guide::store::FirmDatabase',
+};
+
+/** The kinds of element the open-source engine can't read */
+const LAKEHOUSE_ELEMENT_TYPES = new Set(['dataProduct', 'ingestDefinition']);
+
+/**
+ * The lambda in protocol JSON with each accessor to an ingest's data set
+ * turned into a relation store accessor, and the paths of the accessors it
+ * turned, e.g. `guide::ingest::FirmIngest.PERSON`. With `onDatabase`, each
+ * accessor reads the database table the data set copies (see
+ * `INGEST_DATABASES`); otherwise it keeps the data set's path.
+ */
+const toRelationStoreAccessors = (
+  value: unknown,
+  paths: Set<string>,
+  onDatabase = false,
+): unknown => {
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      toRelationStoreAccessors(item, paths, onDatabase),
+    );
+  }
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+  const json = value as Record<string, unknown>;
+  if (json._type === 'classInstance' && json.type === INGEST_ACCESSOR) {
+    const { path } = json.value as { path: string[] };
+    paths.add(path.join('.'));
+    const [ingest = '', ...dataSet] = path;
+    return {
+      ...json,
+      type: RELATION_STORE_ACCESSOR,
+      ...(onDatabase
+        ? { value: { path: [INGEST_DATABASES[ingest] ?? ingest, ...dataSet] } }
+        : {}),
+    };
+  }
+  return Object.fromEntries(
+    Object.entries(json).map(([key, item]) => [
+      key,
+      toRelationStoreAccessors(item, paths, onDatabase),
+    ]),
+  );
+};
+
+/** The real engine's answer to the request, with another body */
+const askEngine = async (request: Request, body: unknown): Promise<unknown> => {
+  const response = await fetch(request.url(), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return response.ok ? response.json() : undefined;
+};
+
+/**
+ * What the guide's screens ask the engine that it can't answer, about a data
+ * product's access points, whose functions read an ingest's data sets
+ * (`#I{guide::ingest::FirmIngest.PERSON}#`): the open-source engine has no
+ * grammar for those, nor for data products. The rest of each answer is the
+ * engine's own:
+ * - their text: the engine writes the same functions with relation store
+ *   accessors (`#>{…}#`) in their place, and the answer marks those back as
+ *   ingest accessors;
+ * - their columns, for their sample values: the engine works them out for
+ *   the same functions on the database tables the data sets copy, in the
+ *   project without its data products and ingests.
+ */
+const getGuideEngineAnswer = async (request: Request): Promise<unknown> => {
+  const apiPath = getApiPath(request);
+  if (request.method() !== 'POST') {
+    return undefined;
+  }
+  const body = getRequestBody(request);
+  if (!body.includes(`"type":"${INGEST_ACCESSOR}"`)) {
+    return undefined;
+  }
+  if (apiPath === 'pure/v1/compilation/lambdaRelationType') {
+    const input = JSON.parse(body) as {
+      lambda: unknown;
+      model: { elements?: { _type: string }[] };
+    };
+    return askEngine(request, {
+      lambda: toRelationStoreAccessors(input.lambda, new Set(), true),
+      model: {
+        ...input.model,
+        elements: input.model.elements?.filter(
+          (element) => !LAKEHOUSE_ELEMENT_TYPES.has(element._type),
+        ),
+      },
+    });
+  }
+  if (apiPath !== 'pure/v1/grammar/jsonToGrammar/lambda/batch') {
+    return undefined;
+  }
+  const paths = new Set<string>();
+  const texts = (await askEngine(
+    request,
+    toRelationStoreAccessors(JSON.parse(body), paths),
+  )) as Record<string, string> | undefined;
+  if (!texts) {
+    return undefined;
+  }
+  return Object.fromEntries(
+    Object.entries(texts).map(([key, text]) => [
+      key,
+      [...paths].reduce(
+        (result, path) =>
+          result.replaceAll(
+            `#${RELATION_STORE_ACCESSOR}{${path}}#`,
+            `#${INGEST_ACCESSOR}{${path}}#`,
+          ),
+        text,
+      ),
+    ]),
+  );
+};
+
 /**
  * Wires Legend Studio's backends up for the guide's screenshots, as the tests
- * do (see `setupStudio()`), on the guide's project, with the SDLC and depot
- * answers the guide's screens need on top (see `getGuideSDLCAnswer()` and
- * `getGuideDepotAnswer()`).
+ * do (see `setupStudio()`), on the guide's project, with the SDLC, depot and
+ * engine answers the guide's screens need on top (see `getGuideSDLCAnswer()`,
+ * `getGuideDepotAnswer()` and `getGuideEngineAnswer()`).
  */
 export const setupGuideStudio = async (
   page: Page,
@@ -257,6 +392,16 @@ export const setupGuideStudio = async (
   await page.context().route(`${MOCK_DEPOT_URL}/**`, async (route) => {
     const request = route.request();
     const answer = getGuideDepotAnswer(request);
+    if (answer === undefined) {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ json: answer, headers: corsHeaders(request) });
+  });
+  // routed after the engine's spy, so asked first: the rest goes to the engine
+  await page.context().route(`${ENGINE_URL}/**`, async (route) => {
+    const request = route.request();
+    const answer = await getGuideEngineAnswer(request);
     if (answer === undefined) {
       await route.fallback();
       return;

@@ -37,6 +37,7 @@ export * from './badge/Badge.js';
 
 export * from './button/Button.js';
 export * from './button/Switch.js';
+export * from './button/CopyableId.js';
 
 export * from './card/BaseCard.js';
 export * from './card/Box.js';
