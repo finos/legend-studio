@@ -40,47 +40,22 @@
     }
   }
 
-  &__backend-servers__change-btn {
-    gap: 0.6rem;
-    height: 2.8rem;
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
     margin-top: 0.8rem;
-    padding: 0 1.2rem;
-    font-size: 1.2rem;
   }
 
-  &__action-group {
-    @include flexVCenter;
+  &__action-btn {
+    gap: 0.6rem;
+    height: 2.8rem;
+    padding: 0 1.2rem;
+    font-size: 1.2rem;
 
-    cursor: pointer;
-
-    &__btn {
-      align-self: flex-start;
-      padding-top: 0.2rem;
-
-      svg {
-        font-size: 2rem;
-        color: var(--color-text-disabled);
-      }
-
-      &--loading svg {
-        animation: jiggle 0.3s infinite ease;
-      }
-    }
-
-    &__prompt {
-      @include flexCenter;
-
-      word-break: normal;
-      overflow-wrap: anywhere;
-      margin-left: 0.8rem;
-      color: var(--color-text-muted);
-      line-height: 2rem;
-      user-select: none;
-      cursor: pointer;
-
-      svg {
-        margin-left: 0.5rem;
-      }
+    // .btn spaces sibling buttons with a margin; the row's gap does it here
+    & + & {
+      margin-left: 0;
     }
   }
 }

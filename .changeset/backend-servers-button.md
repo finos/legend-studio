@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': patch
 ---
 
-Developer Tools: show "Change Backend Servers..." as a real button, so it's visible, looks clickable and can be reached by keyboard.
+Developer Tools: show "Change Backend Servers..." and the two project grammar downloads as real buttons, so they're visible, look clickable and can be reached by keyboard.
