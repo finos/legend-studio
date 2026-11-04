@@ -20,7 +20,6 @@ import {
   CopyableId,
   CopyableIdIconVisibility,
 } from '@finos/legend-art';
-import { LakehouseDataProductSearchResultDetails } from '@finos/legend-server-marketplace';
 import { observer } from 'mobx-react-lite';
 import { Fragment } from 'react';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -82,14 +81,16 @@ type LakehouseProductIds = {
 const getLakehouseProductIds = (
   productCardState: ProductCardState,
 ): LakehouseProductIds | undefined => {
-  const details = productCardState.searchResult.dataProductDetails;
-  return details instanceof LakehouseDataProductSearchResultDetails
-    ? {
-        dataProductId: details.dataProductId,
-        deploymentId: details.deploymentId,
+  // NOTE: only Lakehouse data products have a DID, and for them `dataProductId` is the
+  // Lakehouse data product ID
+  const deploymentId = productCardState.deploymentId;
+  return deploymentId === undefined
+    ? undefined
+    : {
+        dataProductId: productCardState.dataProductId,
+        deploymentId,
         titleIsId: !productCardState.hasOwnTitle,
-      }
-    : undefined;
+      };
 };
 
 /**

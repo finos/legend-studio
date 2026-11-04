@@ -80,10 +80,7 @@ export const LakehouseDataProductCardInfoPopover = observer(
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
         ? dataProductDetails.dataProductId
         : undefined;
-    const deploymentId =
-      dataProductDetails instanceof LakehouseDataProductSearchResultDetails
-        ? dataProductDetails.deploymentId
-        : undefined;
+    const deploymentId = dataProductCardState.deploymentId;
     const producerEnvironmentName =
       dataProductDetails instanceof LakehouseDataProductSearchResultDetails
         ? dataProductDetails.producerEnvironmentName

@@ -65,6 +65,7 @@ export interface DeploymentIdFilterableSearchStore
   extends SourceFilterableSearchStore {
   selectedDeploymentIds: Set<string>;
   addDeploymentId(value: string): void;
+  applyDeploymentIdFilter(value: string): void;
   removeDeploymentId(value: string): void;
 }
 
@@ -161,6 +162,8 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
       setFilterCounts: action,
       toggleSource: action,
       addDeploymentId: action,
+      applyDeploymentIdFilter: action,
+      applyDeploymentIdFilterOffer: action,
       removeDeploymentId: action,
       clearAllFilters: action,
       filterSortProducts: computed,
@@ -293,6 +296,33 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
       'select',
       this.searchQuery,
     );
+  }
+
+  /**
+   * Filters on the given deployment IDs (see {@link addDeploymentId}) from the first
+   * page. Both the Deployment ID field of the filters panel and the "Filter on DID"
+   * offer go through here; the caller then runs the search.
+   */
+  applyDeploymentIdFilter(value: string): void {
+    this.addDeploymentId(value);
+    this.setPage(1);
+  }
+
+  /**
+   * Filters on the DID the query may be: the "Filter on DID <n>" offer (see
+   * {@link deploymentIdFilterOffer}). The caller then runs the search.
+   */
+  applyDeploymentIdFilterOffer(): void {
+    const deploymentId = this.deploymentIdFilterOffer;
+    if (deploymentId === undefined) {
+      return;
+    }
+    LegendMarketplaceTelemetryHelper.logEvent_ClickFilterOnDeploymentId(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      Number(deploymentId),
+      this.searchQuery,
+    );
+    this.applyDeploymentIdFilter(deploymentId);
   }
 
   removeDeploymentId(value: string): void {

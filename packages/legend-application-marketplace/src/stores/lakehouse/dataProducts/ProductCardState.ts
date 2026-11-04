@@ -119,6 +119,17 @@ export class ProductCardState {
         : 'unknown';
   }
 
+  /**
+   * The deployment ID (DID) of a Lakehouse data product; other data products don't
+   * have one.
+   */
+  get deploymentId(): number | undefined {
+    return this.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails
+      ? this.searchResult.dataProductDetails.deploymentId
+      : undefined;
+  }
+
   get guid(): string {
     return this.searchResult.dataProductDetails instanceof
       LakehouseDataProductSearchResultDetails

@@ -180,19 +180,10 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
         runSearch();
       }, [searchResultsStore, applicationStore, runSearch]);
 
-      const handleFilterOnDeploymentId = useCallback(
-        (deploymentId: string) => {
-          LegendMarketplaceTelemetryHelper.logEvent_ClickFilterOnDeploymentId(
-            applicationStore.telemetryService,
-            Number(deploymentId),
-            searchResultsStore.searchQuery,
-          );
-          searchResultsStore.addDeploymentId(deploymentId);
-          searchResultsStore.setPage(1);
-          runSearch();
-        },
-        [searchResultsStore, applicationStore, runSearch],
-      );
+      const handleFilterOnDeploymentId = useCallback(() => {
+        searchResultsStore.applyDeploymentIdFilterOffer();
+        runSearch();
+      }, [searchResultsStore, runSearch]);
       const deploymentIdFilterOffer =
         searchResultsStore.deploymentIdFilterOffer;
 
@@ -260,9 +251,7 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
                     <button
                       type="button"
                       className="marketplace-lakehouse-search-results__did-offer__btn"
-                      onClick={() =>
-                        handleFilterOnDeploymentId(deploymentIdFilterOffer)
-                      }
+                      onClick={handleFilterOnDeploymentId}
                     >
                       <FilterIcon />
                       {`Filter on ${DEPLOYMENT_ID_ABBREVIATION} ${deploymentIdFilterOffer}`}

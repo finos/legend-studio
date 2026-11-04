@@ -38,11 +38,7 @@ export const getDataProductTelemetryData = (
 ): MarketplaceDataProduct_TelemetryData => {
   const searchResult = productCardState.searchResult;
   const projectGAV = getSearchResultProjectGAV(searchResult);
-  const deploymentId =
-    searchResult.dataProductDetails instanceof
-    LakehouseDataProductSearchResultDetails
-      ? searchResult.dataProductDetails.deploymentId
-      : undefined;
+  const deploymentId = productCardState.deploymentId;
   const path =
     searchResult.dataProductDetails instanceof
     LakehouseDataProductSearchResultDetails
