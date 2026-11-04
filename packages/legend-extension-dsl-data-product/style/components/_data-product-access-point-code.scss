@@ -30,6 +30,36 @@
   font-size: 1.25rem;
 }
 
+// inline text, which keeps the spaces around the separators
+.data-product__viewer__columns-strip__summary {
+  min-width: 0;
+}
+
+// how to add what the columns lack
+.data-product__viewer__columns-strip__link.MuiLink-root {
+  margin-left: 1.2rem;
+  color: var(--color-dark-theme-blue-primary);
+  font-size: 1.2rem;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+// a column's missing description or sample values, in the grid
+.data-product__viewer__more-info__columns-grid__empty-cell {
+  color: var(--color-dark-theme-text-muted);
+}
+
+// NOTE: Marketplace's dark theme colors every cell of the grid
+.theme__hc-dark
+  .data-product__viewer__more-info__columns-grid.ag-theme-balham
+  .ag-cell.data-product__viewer__more-info__columns-grid__empty-cell {
+  color: var(--color-dark-theme-text-muted);
+}
+
 // a quiet text action: "View definition", "Hide definition"
 .data-product__viewer__definition-toggle {
   display: inline-flex;

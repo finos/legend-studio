@@ -233,6 +233,7 @@ export class DataProductDataAccessState {
       setAssociatedContracts: action,
       filteredDataProductQueryEnvs: computed,
       resolvedUserEnv: computed,
+      isCurrentUserOwner: computed,
       setContractCreatorAPG: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setEntitlementsEnv: action,
@@ -304,6 +305,12 @@ export class DataProductDataAccessState {
       return this.filteredDataProductQueryEnvs[0];
     }
     return undefined;
+  }
+
+  /** Whether the current user is one of the data product's owners */
+  get isCurrentUserOwner(): boolean {
+    const currentUser = this.applicationStore.identityService.currentUser;
+    return Boolean(currentUser && this.dataProductOwners.includes(currentUser));
   }
 
   /**

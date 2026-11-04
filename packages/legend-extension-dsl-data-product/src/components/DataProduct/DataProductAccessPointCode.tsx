@@ -25,10 +25,14 @@ import {
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { V1_LakehouseAccessPoint } from '@finos/legend-graph';
-import { Box } from '@mui/material';
+import { Box, Link } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
+import { AccessPointGroupAccess } from '../../stores/DataProduct/DataProductAPGState.js';
+import type { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
+import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
+import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 import {
   buildAccessPointAccessor,
   buildAccessPointPureQueryExample,
@@ -349,22 +353,126 @@ const DataProductAccessPointDefinition = observer(
   },
 );
 
+// without access, the engine can't sample the data
+const ACCESS_WITHOUT_DATA: AccessPointGroupAccess[] = [
+  AccessPointGroupAccess.NO_ACCESS,
+  AccessPointGroupAccess.DENIED,
+  AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS,
+  AccessPointGroupAccess.PENDING_MANAGER_APPROVAL,
+  AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL,
+];
+
+const DocumentationHintLink: React.FC<{
+  url: string;
+  children: React.ReactNode;
+}> = (props) => (
+  <Link
+    className="data-product__viewer__columns-strip__link"
+    href={props.url}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    {props.children}
+    <span aria-hidden={true}> ↗</span>
+  </Link>
+);
+
 /**
- * The strip above the column grid: the column count, and a quiet toggle that
- * shows the access point's definition between the strip and the grid.
+ * What the columns lack, after the column count, said to those who can act on it:
+ * - the data product's owners, and the producer in Studio's preview, read that no
+ *   column has a description, or that there are no sample values, with links to
+ *   how to add them (when the documentation is configured);
+ * - anyone else without access reads that sample values show once they have it.
+ */
+const DataProductAccessPointColumnsHint = observer(
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { accessPointState, dataAccessState } = props;
+    const columns = accessPointState.relationType?.columns ?? [];
+    const viewerState = accessPointState.apgState.dataProductViewerState;
+    const isProducer =
+      viewerState.isPreview || Boolean(dataAccessState?.isCurrentUserOwner);
+    const lacksSampleValues =
+      !accessPointState.fetchingSampleDataState.isInProgress &&
+      !accessPointState.hasSampleValues;
+    const showsNoDescriptions =
+      isProducer &&
+      columns.every((column) => !getRelationColumnDescription(column));
+    // NOTE: sample values the producer saved may not show here, e.g. in Studio's
+    // preview, so they are said to be missing only when the data product has none
+    const showsNoSampleValues =
+      isProducer && lacksSampleValues && !viewerState.definesSampleValues;
+    const showsSampleValuesNeedAccess =
+      !isProducer &&
+      lacksSampleValues &&
+      ACCESS_WITHOUT_DATA.includes(accessPointState.apgState.access);
+    if (
+      columns.length === 0 ||
+      (!showsNoDescriptions &&
+        !showsNoSampleValues &&
+        !showsSampleValuesNeedAccess)
+    ) {
+      return null;
+    }
+    const documentationService =
+      accessPointState.apgState.applicationStore.documentationService;
+    const descriptionsUrl = documentationService.getDocEntry(
+      DSL_DATA_PRODUCT_DOCUMENTATION_KEY.COLUMN_DESCRIPTIONS,
+    )?.url;
+    const sampleValuesUrl = documentationService.getDocEntry(
+      DSL_DATA_PRODUCT_DOCUMENTATION_KEY.SAMPLE_VALUES,
+    )?.url;
+
+    return (
+      <span className="data-product__viewer__columns-strip__hint">
+        {showsNoDescriptions && <span>{' · No descriptions'}</span>}
+        {showsNoSampleValues && <span>{' · No sample values'}</span>}
+        {showsSampleValuesNeedAccess && (
+          <span>{' · Sample values show once you have access'}</span>
+        )}
+        {showsNoDescriptions && descriptionsUrl !== undefined && (
+          <DocumentationHintLink url={descriptionsUrl}>
+            How to add descriptions
+          </DocumentationHintLink>
+        )}
+        {showsNoSampleValues && sampleValuesUrl !== undefined && (
+          <DocumentationHintLink url={sampleValuesUrl}>
+            How to add sample values
+          </DocumentationHintLink>
+        )}
+      </span>
+    );
+  },
+);
+
+/**
+ * The strip above the column grid: the column count, what the columns lack, and
+ * a quiet toggle that shows the access point's definition between the strip and
+ * the grid.
  */
 export const DataProductAccessPointColumnsStrip = observer(
-  (props: { accessPointState: DataProductAccessPointState }) => {
-    const { accessPointState } = props;
+  (props: {
+    accessPointState: DataProductAccessPointState;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { accessPointState, dataAccessState } = props;
     const [isDefinitionOpen, setIsDefinitionOpen] = useState(false);
     const columnCount = accessPointState.relationType?.columns.length;
 
     return (
       <>
         <div className="data-product__viewer__columns-strip">
-          <span className="data-product__viewer__columns-strip__count">
-            {columnCount !== undefined &&
-              `${columnCount} column${columnCount === 1 ? '' : 's'}`}
+          <span className="data-product__viewer__columns-strip__summary">
+            <span className="data-product__viewer__columns-strip__count">
+              {columnCount !== undefined &&
+                `${columnCount} column${columnCount === 1 ? '' : 's'}`}
+            </span>
+            <DataProductAccessPointColumnsHint
+              accessPointState={accessPointState}
+              dataAccessState={dataAccessState}
+            />
           </span>
           {accessPointState.accessPoint instanceof V1_LakehouseAccessPoint && (
             <button

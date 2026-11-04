@@ -39,6 +39,7 @@ import {
   assertErrorThrown,
   filterByType,
   guaranteeNonNullable,
+  isEmpty,
   LogEvent,
 } from '@finos/legend-shared';
 import { makeAutoObservable, observable, computed } from 'mobx';
@@ -82,6 +83,7 @@ export class DataProductAccessPointState {
       unsupportedLakehouseComputeTarget: computed,
       isParameterized: computed,
       parameters: computed,
+      hasSampleValues: computed,
     });
 
     this.apgState = apgState;
@@ -130,6 +132,15 @@ export class DataProductAccessPointState {
       this.accessPoint instanceof V1_LakehouseAccessPoint &&
       Array.isArray(this.accessPoint.func.parameters) &&
       this.accessPoint.func.parameters.length > 0
+    );
+  }
+
+  /** Whether the sample data has a value for any column */
+  get hasSampleValues(): boolean {
+    return Boolean(
+      this.relationElement?.rows.some((row) =>
+        row.values.some((value) => !isEmpty(value)),
+      ),
     );
   }
 

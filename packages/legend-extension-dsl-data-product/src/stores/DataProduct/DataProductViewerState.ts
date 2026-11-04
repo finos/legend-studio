@@ -236,6 +236,8 @@ export class DataProductViewerState extends BaseViewerState<
       setApgSearchText: action,
       filteredApgStates: computed,
       totalAccessPoints: computed,
+      isPreview: computed,
+      definesSampleValues: computed,
     });
 
     this.apgStates = this.product.accessPointGroups.map(
@@ -341,6 +343,19 @@ export class DataProductViewerState extends BaseViewerState<
       (acc, apg) => acc + apg.accessPoints.length,
       0,
     );
+  }
+
+  /**
+   * Whether the viewer previews a data product being edited, as in Studio's data
+   * product editor: unlike a published data product, it has no project version
+   */
+  get isPreview(): boolean {
+    return this.projectGAV === undefined;
+  }
+
+  /** Whether the producer saved sample values in the data product, for any access point */
+  get definesSampleValues(): boolean {
+    return (this.product.sampleValues?.length ?? 0) > 0;
   }
 
   getModelAccessPointDiagrams(): DiagramAnalysisResult[] {

@@ -35,10 +35,12 @@ import {
   NetworkClientError,
   HttpStatus,
   guaranteeNonNullable,
+  DocumentationEntry,
   LegendUser,
   UserSearchService,
 } from '@finos/legend-shared';
 import type * as LegendApplication from '@finos/legend-application';
+import { DocumentationService } from '@finos/legend-application';
 import {
   type V1_BatchLambdaRelationTypeResponse,
   type V1_DataContract,
@@ -74,6 +76,7 @@ import {
   mockSDLCDataProductDatabricksAP,
   mockSDLCDataProductParameterizedAP,
   mockSDLCDataProductTypedParametersAP,
+  mockSDLCDataProductWithSampleValues,
   mockSDLCDataProductNoSupportInfo,
   mockSDLCDataProductDescriptionsAsTitles,
   mockEntitlementsUntitledSDLCDataProduct,
@@ -518,6 +521,28 @@ const setupLakehouseDataProductTest = async (
     notifyErrorSpy,
   };
 };
+
+// the engine's relation type for the only access point of the mock data products:
+// columns without a description
+const relationTypeWithColumns =
+  (count: number) => async (): Promise<V1_BatchLambdaRelationTypeResponse> => ({
+    result: {
+      'GROUP1::customer_demographics': {
+        _type: 'relationType',
+        columns: Array.from({ length: count }, (_, index) => ({
+          name: `col_${index + 1}`,
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          genericType: {
+            multiplicityArguments: [],
+            typeArguments: [],
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+            typeVariableValues: [],
+          },
+        })),
+      },
+    } as unknown as V1_BatchLambdaRelationTypeResponse['result'],
+    errors: {},
+  });
 
 describe('DataProductViewer', () => {
   describe('Basic rendering', () => {
@@ -4623,28 +4648,6 @@ describe('DataProductViewer', () => {
       Reflect.deleteProperty(navigator, 'clipboard');
     });
 
-    // the engine's relation type for the only access point of the mock data products
-    const relationTypeWithColumns =
-      (count: number) =>
-      async (): Promise<V1_BatchLambdaRelationTypeResponse> => ({
-        result: {
-          'GROUP1::customer_demographics': {
-            _type: 'relationType',
-            columns: Array.from({ length: count }, (_, index) => ({
-              name: `col_${index + 1}`,
-              multiplicity: { lowerBound: 1, upperBound: 1 },
-              genericType: {
-                multiplicityArguments: [],
-                typeArguments: [],
-                rawType: { _type: 'packageableType', fullPath: 'String' },
-                typeVariableValues: [],
-              },
-            })),
-          },
-        } as unknown as V1_BatchLambdaRelationTypeResponse['result'],
-        errors: {},
-      });
-
     // NOTE: these tests find elements by text or by label: a query by role reads
     // every element of the page, which takes seconds on a slow machine
     const openPureQuery = async (): Promise<void> => {
@@ -4886,6 +4889,204 @@ describe('DataProductViewer', () => {
       expect(screen.queryByLabelText('Definition')).toBeNull();
       // the column grid stays
       screen.getByText('Column Name');
+    });
+  });
+
+  describe('Column Specifications: missing descriptions and sample values', () => {
+    const DESCRIPTIONS_URL = 'https://example.com/docs/column-descriptions';
+    const SAMPLE_VALUES_URL = 'https://example.com/docs/sample-values';
+    // a published version: unlike Studio's preview
+    const PROJECT_GAV = {
+      groupId: 'com.example.analytics',
+      artifactId: 'customer-analytics',
+      versionId: '1.2.0',
+    };
+
+    // how to add descriptions and sample values, as a deployment configures it
+    // (no other entries: these tests need none)
+    const configureDocumentation = (): void => {
+      jest
+        .spyOn(DocumentationService.prototype, 'getDocEntry')
+        .mockImplementation((key) => {
+          switch (key) {
+            case 'dsl-dataproduct.column-descriptions':
+              return DocumentationEntry.create({ url: DESCRIPTIONS_URL }, key);
+            case 'dsl-dataproduct.sample-values':
+              return DocumentationEntry.create({ url: SAMPLE_VALUES_URL }, key);
+            default:
+              return undefined;
+          }
+        });
+    };
+
+    // the column count, and what the columns lack
+    const findColumnsSummary = async (): Promise<HTMLElement> =>
+      guaranteeNonNullable(
+        (await screen.findByText(/^\d+ columns?$/u)).parentElement,
+      );
+
+    const getLinkUrl = (summary: HTMLElement, text: string): string | null =>
+      guaranteeNonNullable(
+        within(summary).getByText(text).closest('a'),
+      ).getAttribute('href');
+
+    test('shows a quiet dash where a column has no description or sample values', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        PROJECT_GAV,
+        undefined,
+        undefined,
+        undefined,
+        { batchLambdasRelationType: relationTypeWithColumns(2) },
+      );
+
+      await screen.findByText('col_1');
+      const emptyCells = document.querySelectorAll(
+        '.data-product__viewer__more-info__columns-grid__empty-cell',
+      );
+      // two columns, without a description or sample values
+      expect(emptyCells).toHaveLength(4);
+      emptyCells.forEach((cell) => expect(cell.textContent).toBe('—'));
+      expect(screen.queryByText('No description provided')).toBeNull();
+      expect(screen.queryByText('No sample values provided')).toBeNull();
+    });
+
+    test('tells an owner when no column has a description, or there are no sample values, with how to add them', async () => {
+      configureDocumentation();
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+          PROJECT_GAV,
+          undefined,
+          undefined,
+          undefined,
+          { batchLambdasRelationType: relationTypeWithColumns(2) },
+        );
+      act(() => {
+        guaranteeNonNullable(dataProductDataAccessState).setDataProductOwners([
+          'test-consumer-user-id',
+        ]);
+      });
+
+      const summary = await findColumnsSummary();
+      await waitFor(() =>
+        expect(summary.textContent).toContain(
+          '2 columns · No descriptions · No sample values',
+        ),
+      );
+      expect(getLinkUrl(summary, 'How to add descriptions')).toBe(
+        DESCRIPTIONS_URL,
+      );
+      expect(getLinkUrl(summary, 'How to add sample values')).toBe(
+        SAMPLE_VALUES_URL,
+      );
+    });
+
+    test('says nothing about descriptions to an owner once a column has one, and shows no link without documentation', async () => {
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+          PROJECT_GAV,
+        );
+      act(() => {
+        guaranteeNonNullable(dataProductDataAccessState).setDataProductOwners([
+          'test-consumer-user-id',
+        ]);
+      });
+
+      // the default columns have descriptions
+      await screen.findByText('Varchar Column Description from field');
+      const summary = await findColumnsSummary();
+      await waitFor(() =>
+        expect(summary.textContent).toBe('2 columns · No sample values'),
+      );
+      expect(within(summary).queryByRole('link')).toBeNull();
+    });
+
+    test('tells anyone else without access that sample values need it, and nothing about descriptions', async () => {
+      configureDocumentation();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        PROJECT_GAV,
+        undefined,
+        undefined,
+        undefined,
+        { batchLambdasRelationType: relationTypeWithColumns(2) },
+      );
+
+      // no contract: the user has no access to the group
+      await screen.findByText('REQUEST ACCESS');
+      const summary = await findColumnsSummary();
+      await waitFor(() =>
+        expect(summary.textContent).toBe(
+          '2 columns · Sample values show once you have access',
+        ),
+      );
+      expect(within(summary).queryByRole('link')).toBeNull();
+    });
+
+    test("tells the producer in Studio's preview what the columns lack, with how to add it", async () => {
+      configureDocumentation();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        undefined,
+        [],
+        [],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { batchLambdasRelationType: relationTypeWithColumns(2) },
+      );
+
+      const summary = await findColumnsSummary();
+      await waitFor(() =>
+        expect(summary.textContent).toContain(
+          '2 columns · No descriptions · No sample values',
+        ),
+      );
+      expect(getLinkUrl(summary, 'How to add descriptions')).toBe(
+        DESCRIPTIONS_URL,
+      );
+      expect(getLinkUrl(summary, 'How to add sample values')).toBe(
+        SAMPLE_VALUES_URL,
+      );
+    });
+
+    test("does not say sample values are missing in Studio's preview when the data product saved some", async () => {
+      configureDocumentation();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductWithSampleValues,
+        undefined,
+        [],
+        [],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { batchLambdasRelationType: relationTypeWithColumns(2) },
+      );
+
+      const summary = await findColumnsSummary();
+      await waitFor(() =>
+        expect(summary.textContent).toContain('2 columns · No descriptions'),
+      );
+      expect(summary.textContent).not.toContain('No sample values');
+      expect(
+        within(summary).queryByText('How to add sample values'),
+      ).toBeNull();
     });
   });
 

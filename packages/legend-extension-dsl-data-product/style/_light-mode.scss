@@ -679,6 +679,14 @@
       background: var(--color-hclight-grey-10);
     }
 
+    &__columns-strip__link.MuiLink-root {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__more-info__columns-grid__empty-cell.ag-cell {
+      color: var(--color-hclight-grey-50);
+    }
+
     &__access-group__item__header__anchor {
       color: var(--color-hclight-blue-60);
     }

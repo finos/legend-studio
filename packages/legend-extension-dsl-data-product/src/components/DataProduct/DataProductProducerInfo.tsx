@@ -84,12 +84,7 @@ export const DataProductProducerInfo = observer(
 
     // Show the Owner badge when the current user appears in the data product's
     // owners list (fetched into DataProductDataAccessState.dataProductOwners).
-    const currentUser =
-      dataProductViewerState.applicationStore.identityService.currentUser;
-    const isOwner = Boolean(
-      currentUser &&
-        dataProductDataAccessState?.dataProductOwners.includes(currentUser),
-    );
+    const isOwner = Boolean(dataProductDataAccessState?.isCurrentUserOwner);
 
     // Producer-side actions (e.g. Open in Legend Query against an ingest
     // definition) are only available to owners. Surface a documentation link
