@@ -17,6 +17,7 @@
 import { test, describe, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../__test-utils__/LegendMarketplaceApplicationTestUtils.js';
+import { LegendMarketplaceSDLCConfig } from '../LegendMarketplaceApplicationConfig.js';
 
 const CLIENT_NAME = 'test-client';
 
@@ -38,3 +39,45 @@ describe(
     });
   },
 );
+
+describe(unitTest('LegendMarketplaceApplicationConfig - sdlc'), () => {
+  test('sdlc is not configured when the sdlc section is missing', () => {
+    expect(
+      TEST__getTestLegendMarketplaceApplicationConfig().sdlcConfig,
+    ).toBeUndefined();
+  });
+
+  test('a configured sdlc section is read as-is', () => {
+    const config = TEST__getTestLegendMarketplaceApplicationConfig({
+      sdlc: {
+        url: 'https://testSdlcUrl/api',
+        baseHeaders: { 'x-test-header': 'value' },
+        client: 'gitlab',
+        useCookieAuthOnly: true,
+      },
+    });
+    expect(config.sdlcConfig).toEqual(
+      new LegendMarketplaceSDLCConfig(
+        'https://testSdlcUrl/api',
+        { 'x-test-header': 'value' },
+        'gitlab',
+        true,
+      ),
+    );
+  });
+
+  test('a relative sdlc url is resolved against the application origin', () => {
+    const config = TEST__getTestLegendMarketplaceApplicationConfig({
+      sdlc: { url: '/sdlc/api' },
+    });
+    expect(config.sdlcConfig?.url).toBe(`${window.location.origin}/sdlc/api`);
+    expect(config.sdlcConfig?.useCookieAuthOnly).toBe(false);
+  });
+
+  test('an empty sdlc url leaves sdlc unconfigured', () => {
+    expect(
+      TEST__getTestLegendMarketplaceApplicationConfig({ sdlc: { url: '' } })
+        .sdlcConfig,
+    ).toBeUndefined();
+  });
+});
