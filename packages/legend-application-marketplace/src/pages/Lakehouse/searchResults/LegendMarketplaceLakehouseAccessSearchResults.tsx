@@ -52,6 +52,7 @@ import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
 import { LakehouseAccessSearchFiltersPanel } from '../../../components/LakehouseAccessSearchFiltersPanel/LakehouseAccessSearchFiltersPanel.js';
 import { SearchResultsCardGrid } from '../../../components/SearchResultsCardGrid/SearchResultsCardGrid.js';
 import { SearchResultsSortControls } from '../../../components/SearchResultsSortControls/SearchResultsSortControls.js';
+import { DEPLOYMENT_ID_ABBREVIATION } from '../../../components/LakehouseProductCard/LakehouseProductIds.js';
 
 export const LegendMarketplaceLakehouseAccessSearchResults =
   withLegendMarketplaceLakehouseAccessSearchResultsStore(
@@ -179,11 +180,11 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
         runSearch();
       }, [searchResultsStore, applicationStore, runSearch]);
 
-      const handleShowOnlyDeploymentId = useCallback(
+      const handleFilterOnDeploymentId = useCallback(
         (deploymentId: string) => {
-          LegendMarketplaceTelemetryHelper.logEvent_ClickShowOnlyDeploymentId(
+          LegendMarketplaceTelemetryHelper.logEvent_ClickFilterOnDeploymentId(
             applicationStore.telemetryService,
-            deploymentId,
+            Number(deploymentId),
             searchResultsStore.searchQuery,
           );
           searchResultsStore.addDeploymentId(deploymentId);
@@ -260,11 +261,11 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
                       type="button"
                       className="marketplace-lakehouse-search-results__did-offer__btn"
                       onClick={() =>
-                        handleShowOnlyDeploymentId(deploymentIdFilterOffer)
+                        handleFilterOnDeploymentId(deploymentIdFilterOffer)
                       }
                     >
                       <FilterIcon />
-                      {`Show only DID ${deploymentIdFilterOffer}`}
+                      {`Filter on ${DEPLOYMENT_ID_ABBREVIATION} ${deploymentIdFilterOffer}`}
                     </button>
                   </div>
                 )}

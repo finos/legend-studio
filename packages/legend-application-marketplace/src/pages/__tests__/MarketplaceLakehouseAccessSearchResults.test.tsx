@@ -34,7 +34,7 @@ import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { type PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import {
   mockLakehouseAccessFilteredSearchResultResponse,
@@ -141,10 +141,14 @@ const mockClipboard = (): jest.Mock<(text: string) => Promise<void>> => {
 };
 
 const getTile = (element: HTMLElement): HTMLElement =>
-  element.closest('.marketplace-lakehouse-data-product-card') as HTMLElement;
+  guaranteeNonNullable(
+    element.closest<HTMLElement>('.marketplace-lakehouse-data-product-card'),
+  );
 
 const getListRow = (element: HTMLElement): HTMLElement =>
-  element.closest('.marketplace-lakehouse-list-item') as HTMLElement;
+  guaranteeNonNullable(
+    element.closest<HTMLElement>('.marketplace-lakehouse-list-item'),
+  );
 
 const switchToListView = async (): Promise<void> => {
   await act(async () => {
@@ -656,13 +660,47 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
       expect(writeText).toHaveBeenCalledWith('LAKEHOUSE_SDLC_DATA_PRODUCT');
       expect(await screen.findByText('Copied')).toBeDefined();
       expect(mockVisitAddress).not.toHaveBeenCalled();
+      // the product is described as for a card click, so the two events can be joined
       expect(logEvent).toHaveBeenCalledWith(
         LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
         expect.objectContaining({
           idType: 'dataProductId',
           dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
           deploymentId: 12345,
+          name: 'Lakehouse SDLC Data Product',
+          origin: expect.objectContaining({
+            groupId: 'com.example.lakehouse',
+            artifactId: 'lakehouse-sdlc-data-product',
+          }),
           copiedFrom: 'Lakehouse Access Page',
+          status: 'success',
+        }),
+      );
+    });
+
+    test('a copy the browser refuses is logged as a failure', async () => {
+      const writeText = mockClipboard();
+      writeText.mockRejectedValue(new Error('Write permission denied.'));
+      const { MOCK__baseStore } = await setupTestComponent('data');
+      const logEvent = createSpy(
+        MOCK__baseStore.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+        }),
+      );
+
+      expect(await screen.findByText('Copy failed')).toBeDefined();
+      expect(logEvent).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+        expect.objectContaining({
+          idType: 'dataProductId',
+          dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
+          status: 'failure',
+          error: 'Write permission denied.',
         }),
       );
     });
@@ -694,12 +732,13 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
           idType: 'deploymentId',
           dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
           deploymentId: 12345,
+          status: 'success',
         }),
       );
     });
   });
 
-  describe('Show only DID', () => {
+  describe('Filter on DID', () => {
     test('an all-digit query offers to filter on that DID', async () => {
       const { MOCK__baseStore } = await setupTestComponent(' 12345 ');
       await screen.findByText('2 Products');
@@ -714,7 +753,7 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
 
       await act(async () => {
         fireEvent.click(
-          screen.getByRole('button', { name: 'Show only DID 12345' }),
+          screen.getByRole('button', { name: 'Filter on DID 12345' }),
         );
         await flushMicrotasks();
       });
@@ -730,15 +769,15 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
         }),
       );
       expect(logEvent).toHaveBeenCalledWith(
-        LEGEND_MARKETPLACE_APP_EVENT.CLICK_SHOW_ONLY_DEPLOYMENT_ID,
+        LEGEND_MARKETPLACE_APP_EVENT.CLICK_FILTER_ON_DEPLOYMENT_ID,
         expect.objectContaining({
-          deploymentId: '12345',
+          deploymentId: 12345,
           searchQuery: ' 12345 ',
         }),
       );
       // the filter is applied, so the offer is gone
       expect(
-        screen.queryByRole('button', { name: 'Show only DID 12345' }),
+        screen.queryByRole('button', { name: 'Filter on DID 12345' }),
       ).toBeNull();
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -749,7 +788,7 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
     test('never filters on its own', async () => {
       const { MOCK__baseStore } = await setupTestComponent('12345');
 
-      await screen.findByRole('button', { name: 'Show only DID 12345' });
+      await screen.findByRole('button', { name: 'Filter on DID 12345' });
       expect(
         MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
       ).toHaveBeenCalledTimes(1);
@@ -764,7 +803,7 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
 
     test('is not offered once that DID is filtered', async () => {
       await setupTestComponent('12345');
-      await screen.findByRole('button', { name: 'Show only DID 12345' });
+      await screen.findByRole('button', { name: 'Filter on DID 12345' });
 
       const deploymentInput = screen.getByLabelText('Deployment ID');
       await act(async () => {
@@ -775,22 +814,26 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
 
       await waitFor(() =>
         expect(
-          screen.queryByRole('button', { name: 'Show only DID 12345' }),
+          screen.queryByRole('button', { name: 'Filter on DID 12345' }),
         ).toBeNull(),
       );
     });
 
-    test.each(['data', '12345abc', 'DID 12345', '12 345'])(
-      'is not offered for the query %p',
-      async (query) => {
-        await setupTestComponent(query);
+    test.each([
+      'data',
+      '12345abc',
+      'DID 12345',
+      '12 345',
+      // too long to be a DID
+      '99999999999999999999',
+    ])('is not offered for the query %p', async (query) => {
+      await setupTestComponent(query);
 
-        await screen.findByText('2 Products');
-        expect(
-          screen.queryByRole('button', { name: /^Show only DID/ }),
-        ).toBeNull();
-      },
-    );
+      await screen.findByText('2 Products');
+      expect(
+        screen.queryByRole('button', { name: /^Filter on DID/ }),
+      ).toBeNull();
+    });
   });
 
   describe('View toggle', () => {

@@ -556,7 +556,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
     });
 
-    // The ID line, the exact-match marking and the "Show only DID" offer belong to
+    // The ID line, the exact-match marking and the "Filter on DID" offer belong to
     // the Lakehouse Access tab: Lakehouse data products shown here stay as they were.
     test.each(['LAKEHOUSE_SDLC_DATA_PRODUCT', '12345'])(
       'Lakehouse data product cards show no IDs and mark no match for the query %p',
@@ -580,7 +580,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
           ),
         ).toBeNull();
         expect(
-          screen.queryByRole('button', { name: /^Show only DID/ }),
+          screen.queryByRole('button', { name: /^Filter on DID/ }),
         ).toBeNull();
         // an untitled product's title is its plain ID
         expect(

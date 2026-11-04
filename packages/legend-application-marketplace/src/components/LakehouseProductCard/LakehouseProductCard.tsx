@@ -47,8 +47,7 @@ import {
 } from './LakehouseProductCardSharedUtils.js';
 import {
   type LakehouseProductIdsDisplay,
-  getLakehouseProductExactIdMatch,
-  isLakehouseProductTitleItsId,
+  getLakehouseProductIdsState,
   LakehouseProductBreakableId,
   LakehouseProductExactMatchBadge,
   LakehouseProductIdLine,
@@ -301,18 +300,15 @@ export const LakehouseProductCard = observer(
       hideTags,
       productIds,
     } = props;
-    const exactMatch = productIds
-      ? getLakehouseProductExactIdMatch(
-          productCardState,
-          productIds.searchQuery,
-        )
-      : undefined;
-    const title =
-      productIds && isLakehouseProductTitleItsId(productCardState) ? (
-        <LakehouseProductBreakableId value={productCardState.title} />
-      ) : (
-        productCardState.title
-      );
+    const { exactMatch, isTitleId } = getLakehouseProductIdsState(
+      productCardState,
+      productIds,
+    );
+    const title = isTitleId ? (
+      <LakehouseProductBreakableId value={productCardState.title} />
+    ) : (
+      productCardState.title
+    );
 
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);

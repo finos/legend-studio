@@ -51,7 +51,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLEAR_SEARCH_FILTERS = 'marketplace.clear.search-filters',
   SHOW_ALL_DATA_PRODUCTS = 'marketplace.show-all.data-products',
   COPY_DATA_PRODUCT_ID = 'marketplace.copy.data-product.id',
-  CLICK_SHOW_ONLY_DEPLOYMENT_ID = 'marketplace.click.show-only.deployment-id',
+  CLICK_FILTER_ON_DEPLOYMENT_ID = 'marketplace.click.filter-on.deployment-id',
   TOGGLE_VIEW_MODE = 'marketplace.toggle.view-mode',
   TOGGLE_SERVICES_VIEW_MODE = 'marketplace.toggle.services.view-mode',
   SEARCH_SERVICES = 'marketplace.search.services',

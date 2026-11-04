@@ -152,6 +152,14 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - DID filter offer'
     );
   });
 
+  test('offers nothing for digits too long to be a DID', async () => {
+    const { store } = await setupStore();
+
+    store.setSearchQuery('9007199254740993');
+
+    expect(store.deploymentIdFilterOffer).toBeUndefined();
+  });
+
   test('offers nothing once that DID is filtered', async () => {
     const { store } = await setupStore();
 

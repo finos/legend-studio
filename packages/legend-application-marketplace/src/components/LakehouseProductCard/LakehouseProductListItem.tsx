@@ -27,8 +27,7 @@ import { LakehouseDataProductCardInfoPopover } from './LakehouseProductCard.js';
 import { LegendMarketplaceListItem } from '../MarketplaceCard/LegendMarketplaceListItem.js';
 import {
   type LakehouseProductIdsDisplay,
-  getLakehouseProductExactIdMatch,
-  isLakehouseProductTitleItsId,
+  getLakehouseProductIdsState,
   LakehouseProductBreakableId,
   LakehouseProductExactMatchBadge,
   LakehouseProductIdLine,
@@ -44,15 +43,10 @@ export const LakehouseProductListItem = observer(
     const { productCardState, onClick, productIds } = props;
     const [popoverAnchorEl, setPopoverAnchorEl] =
       useState<HTMLButtonElement | null>(null);
-    const exactMatch = productIds
-      ? getLakehouseProductExactIdMatch(
-          productCardState,
-          productIds.searchQuery,
-        )
-      : undefined;
-    const isTitleId =
-      productIds !== undefined &&
-      isLakehouseProductTitleItsId(productCardState);
+    const { exactMatch, isTitleId } = getLakehouseProductIdsState(
+      productCardState,
+      productIds,
+    );
 
     const content = (
       <>

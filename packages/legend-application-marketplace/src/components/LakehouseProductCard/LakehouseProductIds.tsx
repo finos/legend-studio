@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { CheckIcon, clsx, CopyableId } from '@finos/legend-art';
+import {
+  CheckIcon,
+  clsx,
+  CopyableId,
+  CopyableIdIconVisibility,
+} from '@finos/legend-art';
 import { LakehouseDataProductSearchResultDetails } from '@finos/legend-server-marketplace';
 import { observer } from 'mobx-react-lite';
 import { Fragment } from 'react';
@@ -24,6 +29,29 @@ import {
   DATA_PRODUCT_ID_TYPE,
   LegendMarketplaceTelemetryHelper,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { getDataProductTelemetryData } from '../../utils/LogUtils.js';
+
+/** How the ID line and the "Filter on DID" offer abbreviate deployment ID. */
+export const DEPLOYMENT_ID_ABBREVIATION = 'DID';
+
+const DATA_PRODUCT_ID_TYPE_LABELS: Record<
+  DATA_PRODUCT_ID_TYPE,
+  {
+    /** What the ID is called, e.g. in the tooltip's "Copy data product ID". */
+    name: string;
+    /** The badge on a result whose ID of this type is the query. */
+    exactMatch: string;
+  }
+> = {
+  [DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID]: {
+    name: 'data product ID',
+    exactMatch: 'Exact ID match',
+  },
+  [DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID]: {
+    name: 'deployment ID',
+    exactMatch: `Exact ${DEPLOYMENT_ID_ABBREVIATION} match`,
+  },
+};
 
 /**
  * Asks a Lakehouse search result (tile or list row) to show its data product ID and
@@ -34,6 +62,14 @@ export type LakehouseProductIdsDisplay = {
   searchQuery: string | undefined;
   /** The page the results are on, for telemetry. */
   page: LEGEND_MARKETPLACE_PAGE;
+};
+
+/** What a search result shows about its IDs. */
+export type LakehouseProductIdsState = {
+  /** Which of the result's IDs the query is, exactly, if any. */
+  exactMatch: DATA_PRODUCT_ID_TYPE | undefined;
+  /** The result has no title of its own, so its title shows its data product ID. */
+  isTitleId: boolean;
 };
 
 type LakehouseProductIds = {
@@ -51,14 +87,10 @@ const getLakehouseProductIds = (
     ? {
         dataProductId: details.dataProductId,
         deploymentId: details.deploymentId,
-        titleIsId: productCardState.title === details.dataProductId,
+        titleIsId: !productCardState.hasOwnTitle,
       }
     : undefined;
 };
-
-export const isLakehouseProductTitleItsId = (
-  productCardState: ProductCardState,
-): boolean => getLakehouseProductIds(productCardState)?.titleIsId ?? false;
 
 /**
  * Which of a result's IDs the query is, exactly: its data product ID (ignoring case)
@@ -68,13 +100,12 @@ export const isLakehouseProductTitleItsId = (
  * compares the query with the IDs each result carries. Ranking stays the search
  * service's, so an exact match on another page isn't marked.
  */
-export const getLakehouseProductExactIdMatch = (
-  productCardState: ProductCardState,
+const getExactIdMatch = (
+  ids: LakehouseProductIds,
   searchQuery: string | undefined,
 ): DATA_PRODUCT_ID_TYPE | undefined => {
-  const ids = getLakehouseProductIds(productCardState);
   const query = searchQuery?.trim() ?? '';
-  if (!ids || !query) {
+  if (!query) {
     return undefined;
   }
   if (ids.dataProductId.toLowerCase() === query.toLowerCase()) {
@@ -84,6 +115,24 @@ export const getLakehouseProductExactIdMatch = (
     return DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID;
   }
   return undefined;
+};
+
+/**
+ * What a search result shows about its IDs: nothing unless the page asks for them
+ * (`productIds`), and only for Lakehouse data products.
+ */
+export const getLakehouseProductIdsState = (
+  productCardState: ProductCardState,
+  productIds: LakehouseProductIdsDisplay | undefined,
+): LakehouseProductIdsState => {
+  const ids = productIds ? getLakehouseProductIds(productCardState) : undefined;
+  return {
+    exactMatch:
+      ids && productIds
+        ? getExactIdMatch(ids, productIds.searchQuery)
+        : undefined,
+    isTitleId: ids?.titleIsId ?? false,
+  };
 };
 
 /**
@@ -123,13 +172,13 @@ export const LakehouseProductIdLine = observer(
     if (!ids) {
       return null;
     }
-    const logCopy = (idType: DATA_PRODUCT_ID_TYPE): void =>
+    const logCopy = (idType: DATA_PRODUCT_ID_TYPE, error?: Error): void =>
       LegendMarketplaceTelemetryHelper.logEvent_CopyDataProductId(
         productCardState.marketplaceBaseStore.applicationStore.telemetryService,
         idType,
-        ids.dataProductId,
-        ids.deploymentId,
+        getDataProductTelemetryData(productCardState),
         page,
+        error?.message,
       );
 
     return (
@@ -138,13 +187,20 @@ export const LakehouseProductIdLine = observer(
           <>
             <CopyableId
               value={ids.dataProductId}
-              label="data product ID"
-              iconVisibility="never"
+              label={
+                DATA_PRODUCT_ID_TYPE_LABELS[
+                  DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID
+                ].name
+              }
+              iconVisibility={CopyableIdIconVisibility.NEVER}
               className={clsx('marketplace-lakehouse-product-ids__id', {
                 'marketplace-lakehouse-product-ids__id--exact-match':
                   exactMatch === DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID,
               })}
               onCopy={() => logCopy(DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID)}
+              onCopyError={(value, error) =>
+                logCopy(DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID, error)
+              }
             />
             <span
               className="marketplace-lakehouse-product-ids__separator"
@@ -156,16 +212,21 @@ export const LakehouseProductIdLine = observer(
         )}
         <CopyableId
           value={String(ids.deploymentId)}
-          label="deployment ID"
-          iconVisibility="never"
+          label={
+            DATA_PRODUCT_ID_TYPE_LABELS[DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID].name
+          }
+          iconVisibility={CopyableIdIconVisibility.NEVER}
           className={clsx('marketplace-lakehouse-product-ids__did', {
             'marketplace-lakehouse-product-ids__did--exact-match':
               exactMatch === DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID,
           })}
           onCopy={() => logCopy(DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID)}
+          onCopyError={(value, error) =>
+            logCopy(DATA_PRODUCT_ID_TYPE.DEPLOYMENT_ID, error)
+          }
         >
           <span className="marketplace-lakehouse-product-ids__did-label">
-            DID
+            {DEPLOYMENT_ID_ABBREVIATION}
           </span>
           <span className="marketplace-lakehouse-product-ids__did-value">
             {ids.deploymentId}
@@ -187,8 +248,6 @@ export const LakehouseProductExactMatchBadge = (props: {
     )}
   >
     <CheckIcon />
-    {props.exactMatch === DATA_PRODUCT_ID_TYPE.DATA_PRODUCT_ID
-      ? 'Exact ID match'
-      : 'Exact DID match'}
+    {DATA_PRODUCT_ID_TYPE_LABELS[props.exactMatch].exactMatch}
   </span>
 );

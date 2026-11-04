@@ -53,6 +53,9 @@ import {
   SearchResultsViewMode,
 } from './LegendMarketplaceSearchResultsStore.js';
 
+/** A query that may be a deployment ID (DID): digits only. */
+const DEPLOYMENT_ID_QUERY_PATTERN = /^\d+$/;
+
 /**
  * The subset of {@link LegendMarketplaceLakehouseAccessSearchResultsStore} that
  * {@link LakehouseAccessSearchFiltersPanel} needs, on top of the common
@@ -330,12 +333,16 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
   /**
    * An all-digit query may be a deployment ID (DID), so the page offers to filter on
    * it (never on its own): the DID to offer, unless that DID is filtered already.
+   *
+   * NOTE: DIDs are numbers, so a query too long to be one (beyond
+   * `Number.MAX_SAFE_INTEGER`) isn't offered.
    */
   get deploymentIdFilterOffer(): string | undefined {
     const query = this.searchQuery?.trim();
     if (
       query === undefined ||
-      !/^\d+$/.test(query) ||
+      !DEPLOYMENT_ID_QUERY_PATTERN.test(query) ||
+      !Number.isSafeInteger(Number(query)) ||
       this.selectedDeploymentIds.has(query)
     ) {
       return undefined;
