@@ -77,22 +77,14 @@ const DevToolBackendServers = observer(() => {
           </div>
         </div>
       ))}
-      <div className="developer-tools__action-groups">
-        <div
-          className="developer-tools__action-group"
-          onClick={() => backendOverrideService.open()}
-          role="button"
-          tabIndex={-1}
-          title="Change backend servers..."
-        >
-          <button className="developer-tools__action-group__btn" tabIndex={-1}>
-            <ServerIcon />
-          </button>
-          <div className="developer-tools__action-group__prompt">
-            change backend servers...
-          </div>
-        </div>
-      </div>
+      <button
+        className="btn btn--dark developer-tools__backend-servers__change-btn"
+        onClick={() => backendOverrideService.open()}
+        title="Override the backend servers this application uses"
+      >
+        <ServerIcon />
+        Change Backend Servers...
+      </button>
     </PanelFormListItems>
   );
 });

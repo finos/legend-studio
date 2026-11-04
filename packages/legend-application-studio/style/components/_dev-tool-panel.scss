@@ -40,6 +40,14 @@
     }
   }
 
+  &__backend-servers__change-btn {
+    gap: 0.6rem;
+    height: 2.8rem;
+    margin-top: 0.8rem;
+    padding: 0 1.2rem;
+    font-size: 1.2rem;
+  }
+
   &__action-group {
     @include flexVCenter;
 
