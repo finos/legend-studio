@@ -19,7 +19,21 @@ import { clsx } from 'clsx';
 import { Tooltip } from '../tooltip/Tooltip.js';
 import { CheckIcon, CopyIcon } from '../icon/Icon.js';
 
-type CopyableIdCopyState = 'idle' | 'copied' | 'failed';
+/**
+ * When the copy icon after the value shows: on hover and keyboard focus, always, or
+ * never.
+ */
+export enum CopyableIdIconVisibility {
+  HOVER = 'hover',
+  ALWAYS = 'always',
+  NEVER = 'never',
+}
+
+enum CopyableIdCopyState {
+  IDLE = 'idle',
+  COPIED = 'copied',
+  FAILED = 'failed',
+}
 
 const stopPropagation = (event: React.SyntheticEvent): void => {
   event.stopPropagation();
@@ -62,24 +76,27 @@ export const CopyableId: React.FC<{
   /** What to show; defaults to the value. */
   children?: React.ReactNode;
   className?: string;
-  /**
-   * When the copy icon after the value shows: on hover and keyboard focus (default),
-   * always, or never.
-   */
-  iconVisibility?: 'hover' | 'always' | 'never';
+  /** When the copy icon after the value shows; on hover by default. */
+  iconVisibility?: CopyableIdIconVisibility | undefined;
   /** Called once the value is on the clipboard, e.g. for telemetry. */
   onCopy?: ((value: string) => void) | undefined;
+  /**
+   * Called when the value couldn't be copied, e.g. because the browser blocked the
+   * clipboard or the page isn't served over HTTPS; for telemetry.
+   */
+  onCopyError?: ((value: string, error: Error) => void) | undefined;
 }> = (props) => {
   const {
     value,
     label,
     children,
     className,
-    iconVisibility = 'hover',
+    iconVisibility = CopyableIdIconVisibility.HOVER,
     onCopy,
+    onCopyError,
   } = props;
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
-  const [copyState, setCopyState] = useState<CopyableIdCopyState>('idle');
+  const [copyState, setCopyState] = useState(CopyableIdCopyState.IDLE);
   // NOTE: MUI calls `onOpen` when the enter delay that a hover started runs out,
   // judging by whether the tooltip was open when the hover began. So a click within
   // that delay is followed by an `onOpen` that would wipe the click's outcome: this
@@ -94,19 +111,28 @@ export const CopyableId: React.FC<{
     // keep the tooltip open to show the outcome, even if the click came before
     // the tooltip's enter delay was over
     setTooltipOpen(true);
-    writeToClipboard(value)
-      .then(() => {
-        setCopyState('copied');
+    // NOTE: the rejection handler only sees the clipboard's own failure: an error
+    // thrown by `onCopy` must not be reported as a failed copy
+    writeToClipboard(value).then(
+      () => {
+        setCopyState(CopyableIdCopyState.COPIED);
         onCopy?.(value);
-      })
-      .catch(() => setCopyState('failed'));
+      },
+      (error: unknown) => {
+        setCopyState(CopyableIdCopyState.FAILED);
+        onCopyError?.(
+          value,
+          error instanceof Error ? error : new Error(String(error)),
+        );
+      },
+    );
   };
 
-  const showsCopied = copyState === 'copied' && isTooltipOpen;
+  const showsCopied = copyState === CopyableIdCopyState.COPIED && isTooltipOpen;
   const tooltipTitle =
-    copyState === 'copied' ? (
+    copyState === CopyableIdCopyState.COPIED ? (
       <span className="copyable-id__tooltip__label">Copied</span>
-    ) : copyState === 'failed' ? (
+    ) : copyState === CopyableIdCopyState.FAILED ? (
       <span className="copyable-id__tooltip__label">Copy failed</span>
     ) : (
       <>
@@ -128,7 +154,7 @@ export const CopyableId: React.FC<{
         // rather than when it closes, so "Copied" doesn't flip back while the
         // tooltip fades out
         if (!isTooltipOpenRef.current) {
-          setCopyState('idle');
+          setCopyState(CopyableIdCopyState.IDLE);
         }
         setTooltipOpen(true);
       }}
@@ -180,7 +206,7 @@ export const CopyableId: React.FC<{
         onTouchStart={stopPropagation}
       >
         <span className="copyable-id__content">{children ?? value}</span>
-        {iconVisibility !== 'never' && (
+        {iconVisibility !== CopyableIdIconVisibility.NEVER && (
           <span className="copyable-id__icon" aria-hidden={true}>
             {showsCopied ? <CheckIcon /> : <CopyIcon />}
           </span>

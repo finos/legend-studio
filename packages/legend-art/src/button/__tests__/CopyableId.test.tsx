@@ -31,7 +31,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
-import { CopyableId } from '../CopyableId.js';
+import { CopyableId, CopyableIdIconVisibility } from '../CopyableId.js';
 
 const writeText = jest.fn<(text: string) => Promise<void>>();
 
@@ -113,7 +113,7 @@ describe('CopyableId', () => {
         <CopyableId
           value="TRADE_POSITIONS_EOD"
           label="data product ID"
-          iconVisibility="always"
+          iconVisibility={CopyableIdIconVisibility.ALWAYS}
         />,
       );
       expect(idButton().className).toContain('copyable-id--icon-always');
@@ -123,7 +123,7 @@ describe('CopyableId', () => {
         <CopyableId
           value="TRADE_POSITIONS_EOD"
           label="data product ID"
-          iconVisibility="never"
+          iconVisibility={CopyableIdIconVisibility.NEVER}
         />,
       );
       expect(idButton().className).toContain('copyable-id--icon-never');
@@ -308,13 +308,16 @@ describe('CopyableId', () => {
     });
 
     test(unitTest('says Copy failed when the clipboard refuses'), async () => {
-      writeText.mockRejectedValue(new Error('Write permission denied.'));
+      const error = new Error('Write permission denied.');
+      writeText.mockRejectedValue(error);
       const onCopy = jest.fn();
+      const onCopyError = jest.fn();
       render(
         <CopyableId
           value="TRADE_POSITIONS_EOD"
           label="data product ID"
           onCopy={onCopy}
+          onCopyError={onCopyError}
         />,
       );
 
@@ -322,17 +325,21 @@ describe('CopyableId', () => {
 
       expect(await screen.findByText('Copy failed')).toBeDefined();
       expect(onCopy).not.toHaveBeenCalled();
+      expect(onCopyError).toHaveBeenCalledTimes(1);
+      expect(onCopyError).toHaveBeenCalledWith('TRADE_POSITIONS_EOD', error);
     });
 
     test(unitTest('says Copy failed when there is no clipboard'), async () => {
       // e.g. a page served over plain HTTP
       setClipboard(undefined);
       const onCopy = jest.fn();
+      const onCopyError = jest.fn();
       render(
         <CopyableId
           value="TRADE_POSITIONS_EOD"
           label="data product ID"
           onCopy={onCopy}
+          onCopyError={onCopyError}
         />,
       );
 
@@ -340,6 +347,49 @@ describe('CopyableId', () => {
 
       expect(await screen.findByText('Copy failed')).toBeDefined();
       expect(onCopy).not.toHaveBeenCalled();
+      expect(onCopyError).toHaveBeenCalledWith(
+        'TRADE_POSITIONS_EOD',
+        expect.any(TypeError),
+      );
+    });
+
+    test(
+      unitTest('reports a failure that is not an Error as an Error'),
+      async () => {
+        writeText.mockImplementation(() => Promise.reject('NotAllowedError'));
+        const onCopyError = jest.fn();
+        render(
+          <CopyableId
+            value="TRADE_POSITIONS_EOD"
+            label="data product ID"
+            onCopyError={onCopyError}
+          />,
+        );
+
+        fireEvent.click(idButton());
+
+        expect(await screen.findByText('Copy failed')).toBeDefined();
+        expect(onCopyError).toHaveBeenCalledWith(
+          'TRADE_POSITIONS_EOD',
+          new Error('NotAllowedError'),
+        );
+      },
+    );
+
+    test(unitTest('reports no failure when the copy works'), async () => {
+      const onCopyError = jest.fn();
+      render(
+        <CopyableId
+          value="TRADE_POSITIONS_EOD"
+          label="data product ID"
+          onCopyError={onCopyError}
+        />,
+      );
+
+      fireEvent.click(idButton());
+
+      await screen.findByText('Copied');
+      expect(onCopyError).not.toHaveBeenCalled();
     });
   });
 
