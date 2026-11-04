@@ -446,6 +446,126 @@ export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetails
     },
   });
 
+export const mockEntitlementsUntitledSDLCDataProduct: V1_EntitlementsDataProductDetails =
+  deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
+    id: 'MOCK_UNTITLED_DATAPRODUCT',
+    deploymentId: 66666,
+    description: 'Data product without titles',
+    origin: {
+      type: 'SdlcDeployment',
+      group: 'com.example.analytics',
+      artifact: 'untitled-data-product',
+      version: '1.0.0',
+    },
+    lakehouseEnvironment: {
+      producerEnvironmentName: 'production-analytics',
+      type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+    },
+    dataProduct: {
+      name: 'MOCK_UNTITLED_DATAPRODUCT',
+      accessPoints: [
+        {
+          name: 'untitled_access_point',
+          groups: ['UNTITLED_GROUP'],
+        },
+      ],
+      accessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 66666,
+        level: V1_AppDirLevel.DEPLOYMENT,
+      },
+    },
+  });
+
+// No titles: the viewer shows the element name for the data product, and the
+// IDs for its access point group and access point
+const buildMockUntitledSDLCDataProduct = (name: string): V1_DataProduct =>
+  deserialize(V1_dataProductModelSchema([]), {
+    _type: 'dataProduct',
+    package: 'test',
+    name,
+    description: 'Data product without titles',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'UNTITLED_GROUP',
+        description: 'Access point group without a title',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'untitled_access_point',
+            description: 'Access point without a title',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+// The descriptions only repeat the titles, in another case or spacing
+export const mockSDLCDataProductDescriptionsAsTitles: V1_DataProduct =
+  deserialize(V1_dataProductModelSchema([]), {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description: 'mock SDLC data product',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        description: 'Main Group Test',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: '  Customer   Demographics ',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+// its element name differs in case from its deployed ID
+export const mockUntitledSDLCDataProduct = buildMockUntitledSDLCDataProduct(
+  'Mock_Untitled_DataProduct',
+);
+
+// its element name is its deployed ID
+export const mockUntitledSDLCDataProductNamedAsDeployed =
+  buildMockUntitledSDLCDataProduct('MOCK_UNTITLED_DATAPRODUCT');
+
 // Helper to generate N access point definitions for mock data
 const generateAccessPoints = (
   count: number,

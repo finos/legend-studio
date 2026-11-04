@@ -115,21 +115,38 @@
       }
     }
 
+    // the title, with the data product ID and DID beside it, or under it
+    // when a long title leaves them no room
+    &__main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 1.6rem;
+      min-width: 0;
+    }
+
     &__title {
       @include flexCenter;
       @include ellipsisTextOverflow;
 
-      flex: 1;
+      flex: 0 1 auto;
       min-width: 0;
       max-width: 50vw;
       font-size: 3rem;
-      align-self: start;
       justify-content: flex-start;
       height: 5rem;
       font-weight: 600;
       color: var(--color-text-primary);
       background: none !important;
       letter-spacing: -0.02rem;
+    }
+
+    &__ids {
+      @include flexVCenter;
+
+      flex: none;
+      gap: 1rem;
+      font-size: 1.5rem;
     }
 
     &__actions {
@@ -2138,18 +2155,10 @@
     font-weight: 500;
   }
 
-  &__item__header__type {
-    @include flexVCenter;
-
-    height: 2rem;
-    padding: 0 0.5rem;
-    border-radius: 0.5rem;
-    background: var(--color-bg-tag);
-    color: var(--color-white);
-    user-select: none;
-    margin-left: 0.5rem;
-    font-size: 1.2rem;
-    font-weight: 700;
+  &__item__header__id.copyable-id {
+    margin-right: 0;
+    margin-left: 0.6rem;
+    font-size: 1.5rem;
   }
 
   &__item__header__anchor {
@@ -3363,6 +3372,12 @@
     align-items: center;
   }
 
+  &__id.copyable-id {
+    margin-right: 0;
+    margin-left: 0.6rem;
+    font-size: 1.3rem;
+  }
+
   &__details {
     display: block;
   }
@@ -3402,6 +3417,24 @@
         color: var(--color-databricks-brand);
       }
     }
+  }
+}
+
+// The IDs next to the titles: legend-art's CopyableId, which inherits its color,
+// size and margins unless the selector also names `.copyable-id`. The color is
+// muted, and not from the --color-text-* tokens: those stay light in the light
+// theme's viewer.
+.data-product__viewer__id {
+  &.copyable-id {
+    color: var(--color-dark-theme-text-muted);
+  }
+
+  // the "DID" before the deployment ID
+  &__prefix {
+    font-family: Roboto, sans-serif;
+    font-size: 0.85em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
   }
 }
 

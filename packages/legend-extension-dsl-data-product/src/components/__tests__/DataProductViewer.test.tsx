@@ -74,6 +74,10 @@ import {
   mockSDLCDataProductDatabricksAP,
   mockSDLCDataProductParameterizedAP,
   mockSDLCDataProductNoSupportInfo,
+  mockSDLCDataProductDescriptionsAsTitles,
+  mockEntitlementsUntitledSDLCDataProduct,
+  mockUntitledSDLCDataProduct,
+  mockUntitledSDLCDataProductNamedAsDeployed,
   buildMockDataProductArtifactWithSampleQueries,
   MOCK__TDS_SAMPLE_QUERY_ID,
   MOCK__RELATION_SAMPLE_QUERY_ID,
@@ -783,6 +787,188 @@ describe('DataProductViewer', () => {
         expect(screen.getByText('owner2@example.com')).toBeDefined();
         expect(screen.getByText('owner3@example.com')).toBeDefined();
       });
+    });
+  });
+
+  describe('IDs next to titles', () => {
+    let writeText: jest.Mock<(text: string) => Promise<void>>;
+
+    beforeEach(() => {
+      // jsdom has no clipboard
+      writeText = jest
+        .fn<(text: string) => Promise<void>>()
+        .mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    });
+
+    // the button that copies an ID is named "Copy {label} {ID}"
+    const getCopyableId = (label: string, id: string): HTMLElement =>
+      screen.getByRole('button', { name: `Copy ${label} ${id}` });
+
+    // waits for the tooltip to say "Copied", which also flushes the state update
+    const copy = async (button: HTMLElement): Promise<void> => {
+      fireEvent.click(button);
+      await waitFor(() =>
+        expect(button.classList.contains('copyable-id--copied')).toBe(true),
+      );
+    };
+
+    test('shows the data product, deployment, access point group and access point IDs', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      // the deployed data product ID, not the element name (Mock_SDLC_DataProduct)
+      expect(
+        getCopyableId('data product ID', 'MOCK_SDLC_DATAPRODUCT').textContent,
+      ).toBe('MOCK_SDLC_DATAPRODUCT');
+      expect(screen.queryByText('Mock_SDLC_DataProduct')).toBeNull();
+      expect(getCopyableId('deployment ID', '11111').textContent).toBe(
+        'DID 11111',
+      );
+      screen.getByText('Main Group Test');
+      expect(getCopyableId('access point group ID', 'GROUP1').textContent).toBe(
+        'GROUP1',
+      );
+      await screen.findByText('Customer Demographics');
+      expect(
+        getCopyableId('access point ID', 'customer_demographics').textContent,
+      ).toBe('customer_demographics');
+    });
+
+    test('shows no IDs in the header without a deployment', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        undefined,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      expect(
+        screen.queryByRole('button', {
+          name: /^Copy (?:data product|deployment) ID /,
+        }),
+      ).toBeNull();
+      getCopyableId('access point group ID', 'GROUP1');
+      await screen.findByText('Customer Demographics');
+      getCopyableId('access point ID', 'customer_demographics');
+    });
+
+    test('shows no extra ID when the title is missing, since the ID shows in its place', async () => {
+      await setupLakehouseDataProductTest(
+        mockUntitledSDLCDataProductNamedAsDeployed,
+        mockEntitlementsUntitledSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Data product without titles');
+      expect(screen.getAllByText('MOCK_UNTITLED_DATAPRODUCT')).toHaveLength(1);
+      expect(screen.getAllByText('UNTITLED_GROUP')).toHaveLength(1);
+      expect(await screen.findAllByText('untitled_access_point')).toHaveLength(
+        1,
+      );
+      expect(
+        screen.queryByRole('button', {
+          name: /^Copy (?:data product|access point group|access point) ID /,
+        }),
+      ).toBeNull();
+      getCopyableId('deployment ID', '66666');
+    });
+
+    test('shows the deployed data product ID when the title is missing and the element name differs from it', async () => {
+      await setupLakehouseDataProductTest(
+        mockUntitledSDLCDataProduct,
+        mockEntitlementsUntitledSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock_Untitled_DataProduct');
+      getCopyableId('data product ID', 'MOCK_UNTITLED_DATAPRODUCT');
+      getCopyableId('deployment ID', '66666');
+    });
+
+    test('copies each ID on click without collapsing its access point group or access point', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+      const apgState = guaranteeNonNullable(
+        dataProductViewerState.apgStates[0],
+      );
+      const accessPointState = guaranteeNonNullable(
+        apgState.accessPointStates[0],
+      );
+      await screen.findByText('Customer Demographics');
+
+      const ids = [
+        ['data product ID', 'MOCK_SDLC_DATAPRODUCT'],
+        ['deployment ID', '11111'],
+        ['access point group ID', 'GROUP1'],
+        ['access point ID', 'customer_demographics'],
+      ] as const;
+      for (const [label, id] of ids) {
+        await copy(getCopyableId(label, id));
+        expect(writeText).toHaveBeenLastCalledWith(id);
+      }
+      expect(writeText).toHaveBeenCalledTimes(ids.length);
+      expect(apgState.isCollapsed).toBe(false);
+      expect(accessPointState.isCollapsed).toBe(false);
+    });
+
+    test('copies an access point ID on click without expanding the access point', async () => {
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockLargeSDLCDataProduct,
+        mockEntitlementsLargeSDLCDataProduct,
+        [],
+        [],
+      );
+      const accessPointState = guaranteeNonNullable(
+        dataProductViewerState.apgStates[0]?.accessPointStates[0],
+      );
+      expect(accessPointState.isCollapsed).toBe(true);
+      await screen.findByText('Access Point 1');
+
+      await copy(getCopyableId('access point ID', 'ap_1'));
+
+      expect(writeText).toHaveBeenCalledWith('ap_1');
+      expect(accessPointState.isCollapsed).toBe(true);
+      expect(screen.queryAllByText('Column Name')).toHaveLength(0);
+    });
+  });
+
+  describe('Descriptions that repeat the title', () => {
+    test('shows only the title when the description repeats it, ignoring case and spacing', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDescriptionsAsTitles,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      expect(screen.queryByText('mock SDLC data product')).toBeNull();
+      expect(screen.queryByText('(description not specified)')).toBeNull();
+      expect(screen.getAllByText('Main Group Test')).toHaveLength(1);
+      expect(await screen.findAllByText('Customer Demographics')).toHaveLength(
+        1,
+      );
+      expect(screen.queryByText('No description to provide')).toBeNull();
     });
   });
 

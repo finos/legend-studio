@@ -636,6 +636,10 @@
       color: var(--color-hclight-aqua-90);
     }
 
+    &__id.copyable-id {
+      color: var(--color-hclight-grey-60);
+    }
+
     &__access-group__item__header__anchor {
       color: var(--color-hclight-blue-60);
     }

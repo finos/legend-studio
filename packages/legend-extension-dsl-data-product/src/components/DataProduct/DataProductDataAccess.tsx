@@ -37,6 +37,7 @@ import {
   WarningIcon,
   RocketIcon,
   CopyIcon,
+  CopyableId,
   QueryIcon,
   Snowflake_BrandIcon,
   Databricks_BrandIcon,
@@ -144,6 +145,7 @@ import {
   CollapsibleChevron,
   CollapsibleWikiSection,
 } from '../ProductViewer.js';
+import { isDescriptionSameAsTitle } from '../../utils/DataProductViewerUtils.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1846,6 +1848,8 @@ export const DataProductAccessPointViewer = observer(
     const targetEnvironmentIcon = targetEnvironment
       ? getLakehouseTargetEnvironmentIcon(targetEnvironment)
       : undefined;
+    const accessPointId = accessPointState.accessPoint.id;
+    const displayedTitle = accessPointState.accessPoint.title ?? accessPointId;
 
     return (
       <Accordion
@@ -1861,16 +1865,22 @@ export const DataProductAccessPointViewer = observer(
         }}
       >
         <AccordionSummary
+          // a div, not a button: it holds the button that copies the ID
+          component="div"
           expandIcon={<ExpandMoreIcon />}
           className="data-product__viewer__access-point__summary"
         >
           <div className="data-product__viewer__access-point__info">
             <div className="data-product__viewer__access-point__details">
               <div className="data-product__viewer__access-point__name">
-                <strong>
-                  {accessPointState.accessPoint.title ??
-                    accessPointState.accessPoint.id}
-                </strong>
+                <strong>{displayedTitle}</strong>
+                {displayedTitle !== accessPointId && (
+                  <CopyableId
+                    className="data-product__viewer__id data-product__viewer__access-point__id"
+                    value={accessPointId}
+                    label="access point ID"
+                  />
+                )}
                 {targetEnvironment && (
                   <Chip
                     className={clsx(
@@ -1891,13 +1901,18 @@ export const DataProductAccessPointViewer = observer(
                   />
                 )}
               </div>
-              <div className="data-product__viewer__access-point__description">
-                {accessPointState.accessPoint.description?.trim() ?? (
-                  <span className="data-product__viewer__grid__empty-cell">
-                    No description to provide
-                  </span>
-                )}
-              </div>
+              {!isDescriptionSameAsTitle(
+                accessPointState.accessPoint.description,
+                displayedTitle,
+              ) && (
+                <div className="data-product__viewer__access-point__description">
+                  {accessPointState.accessPoint.description?.trim() ?? (
+                    <span className="data-product__viewer__grid__empty-cell">
+                      No description to provide
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="data-product__viewer__access-point__tags">
               {accessPointState.registryMetadata?.ads && (
@@ -1938,6 +1953,7 @@ export const DataProductAccessPointGroupViewer = observer(
     const { apgState, dataAccessState } = props;
 
     const accessPointStates = apgState.accessPointStates;
+    const displayedTitle = apgState.apg.title ?? apgState.apg.id;
 
     const auth = useAuth();
     const tokenRef = useRef(auth.user?.access_token);
@@ -2006,11 +2022,15 @@ export const DataProductAccessPointGroupViewer = observer(
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
-              {apgState.apg.title ?? apgState.apg.id}
+              {displayedTitle}
             </div>
-            <div className="data-product__viewer__access-group__item__header__type">
-              LAKEHOUSE
-            </div>
+            {displayedTitle !== apgState.apg.id && (
+              <CopyableId
+                className="data-product__viewer__id data-product__viewer__access-group__item__header__id"
+                value={apgState.apg.id}
+                label="access point group ID"
+              />
+            )}
             <CollapsibleChevron
               viewerState={apgState.dataProductViewerState}
               anchor={apgState.anchor}
@@ -2102,11 +2122,16 @@ export const DataProductAccessPointGroupViewer = observer(
           )}
         {!apgState.isCollapsed && (
           <div className="data-product__viewer__access-group__item__collapsible-content">
-            <div className="data-product__viewer__access-group__item__description">
-              <DataProductMarkdownTextViewer
-                value={apgState.apg.description ?? ''}
-              />
-            </div>
+            {!isDescriptionSameAsTitle(
+              apgState.apg.description,
+              displayedTitle,
+            ) && (
+              <div className="data-product__viewer__access-group__item__description">
+                <DataProductMarkdownTextViewer
+                  value={apgState.apg.description ?? ''}
+                />
+              </div>
+            )}
             <div className="data-product__viewer__access-group__item__content">
               <div className="data-product__viewer__access-group__item__content__tab__content">
                 {filteredAccessPointStates.map((accessPointState) => (
