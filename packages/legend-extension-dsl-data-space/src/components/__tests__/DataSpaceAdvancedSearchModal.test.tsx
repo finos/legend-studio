@@ -24,6 +24,7 @@ import {
 } from '@testing-library/react';
 import { when } from 'mobx';
 import { ApplicationStoreProvider } from '@finos/legend-application';
+import { BrowserPlatform } from '@finos/legend-application/browser';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { PlainObject } from '@finos/legend-shared';
 import type { DepotServerClient } from '@finos/legend-server-depot';
@@ -46,20 +47,36 @@ import TEST_DATA__relationExecutable from './TEST_DATA__DataSpaceViewer__Relatio
     disconnect: jest.fn(),
   }));
 
+// Legend Query is served under a base URL, e.g. `https://<host>/query/`
+const TEST_QUERY_BASE_URL = '/query';
+
 /**
  * Opens the data space search on the fixture's data space, as Legend Query
  * opens it from a query on that data space, with the depot serving its
- * analytics; returns the spy on where the application goes next
+ * analytics; returns the spies on where the application goes next, in the
+ * same tab and in a new one
  */
 const openDataSpaceSearch = async (
   V1_analysisResult: PlainObject<V1_DataSpaceAnalysisResult>,
 ): Promise<{
   goToLocation: jest.Mock;
+  visitAddress: jest.Mock;
 }> => {
   const { applicationStore, graphManagerState } =
     await TEST__getDataSpaceGraphManagerState();
+  // the browser platform's navigator resolves locations against the base URL
+  // NOTE: it replaces the application's navigator, so spy after this
+  await applicationStore.initialize(
+    new BrowserPlatform(applicationStore, {
+      navigate: () => undefined,
+      baseUrl: TEST_QUERY_BASE_URL,
+    }),
+  );
   const goToLocation = jest
     .spyOn(applicationStore.navigationService.navigator, 'goToLocation')
+    .mockImplementation(() => undefined);
+  const visitAddress = jest
+    .spyOn(applicationStore.navigationService.navigator, 'visitAddress')
     .mockImplementation(() => undefined);
   const depotServerClient = {
     getEntitiesByClassifier: jest
@@ -110,7 +127,10 @@ const openDataSpaceSearch = async (
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
   expect(searchState.loadDataSpaceState.hasSucceeded).toBe(true);
-  return { goToLocation: goToLocation as unknown as jest.Mock };
+  return {
+    goToLocation: goToLocation as unknown as jest.Mock,
+    visitAddress: visitAddress as unknown as jest.Mock,
+  };
 };
 
 describe(integrationTest('DataSpaceAdvancedSearchModal'), () => {
@@ -146,6 +166,37 @@ describe(integrationTest('DataSpaceAdvancedSearchModal'), () => {
     expect(goToLocation).toHaveBeenCalledTimes(1);
     expect(goToLocation).toHaveBeenCalledWith(
       '/extensions/dataspace/test.group:test-artifact:0.0.0/test::domain::RelationExecutableDataProduct/secondary',
+    );
+  });
+
+  test('Open in Query on a service executable opens the service query in Legend Query, under its base URL', async () => {
+    const [relationExecutable] = TEST_DATA__relationExecutable.executables;
+    const { visitAddress } = await openDataSpaceSearch({
+      ...TEST_DATA__relationExecutable,
+      executables: [
+        {
+          ...relationExecutable,
+          title: 'Firm employees',
+          executable: 'test::service::FirmEmployees',
+          info: {
+            _type: 'service',
+            executionContextKey: 'default',
+            pattern: '/firm/employees',
+            query: '|test::domain::MyClass.all()->project(~[id, name])',
+            datasets: [],
+          },
+        },
+      ],
+    } as PlainObject<V1_DataSpaceAnalysisResult>);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Query' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Open in Query' }),
+    );
+
+    expect(visitAddress).toHaveBeenCalledTimes(1);
+    expect(visitAddress).toHaveBeenCalledWith(
+      `${window.location.origin}${TEST_QUERY_BASE_URL}/create-from-service/test.group:test-artifact:0.0.0/test::service::FirmEmployees`,
     );
   });
 });
