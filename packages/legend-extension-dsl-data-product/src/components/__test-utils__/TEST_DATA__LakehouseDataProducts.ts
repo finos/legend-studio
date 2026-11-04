@@ -262,6 +262,122 @@ export const mockSDLCDataProductParameterizedAP: V1_DataProduct = deserialize(
   },
 );
 
+// a parameterized access point whose parameters have types, one as
+// `genericType` and one as the older `class`
+export const mockSDLCDataProductTypedParametersAP: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema([]),
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description:
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        description: 'Test access point group',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: 'Customer demographics data access point',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'businessDate',
+                  genericType: {
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'StrictDate',
+                    },
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                },
+                {
+                  _type: 'var',
+                  name: 'clientAccountId',
+                  class: 'String',
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  },
+);
+
+// sample values saved in the data product, as Studio's editor saves them
+export const mockSDLCDataProductWithSampleValues: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema([]),
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: 'Customer demographics data access point',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+    sampleValues: [
+      {
+        _type: 'relationAccessor',
+        relationElements: [
+          {
+            paths: ['customer_demographics'],
+            columns: ['varchar_val', 'int_val'],
+            rows: [{ values: ['abc', '1'] }],
+          },
+        ],
+      },
+    ],
+  },
+);
+
 export const mockEntitlementsSDLCDataProductNoSupportInfo: V1_EntitlementsDataProductDetails =
   deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
     id: 'MOCK_SDLC_DATAPRODUCT',

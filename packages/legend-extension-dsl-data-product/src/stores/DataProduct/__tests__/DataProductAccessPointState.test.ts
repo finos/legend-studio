@@ -26,6 +26,7 @@ import {
 } from '@finos/legend-graph';
 import { DataProductAccessPointState } from '../DataProductAccessPointState.js';
 import type { DataProductAPGState } from '../DataProductAPGState.js';
+import { getAccessPointParameterTypeName } from '../../../utils/AccessPointPureQueryUtils.js';
 
 // apgState is never read by `isParameterized`, so a stub is sufficient here.
 const mockApgState = {} as DataProductAPGState;
@@ -75,6 +76,53 @@ describe('DataProductAccessPointState', () => {
       const state = new DataProductAccessPointState(mockApgState, accessPoint);
 
       expect(state.isParameterized).toBe(false);
+    });
+  });
+
+  describe('parameters', () => {
+    test("are the lakehouse access point function's parameters, in order, with their types", () => {
+      const accessPoint = buildLakehouseAccessPoint([
+        {
+          _type: 'var',
+          name: 'businessDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::precisePrimitives::Date',
+            },
+          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+        },
+        // the older form of a parameter's type
+        { _type: 'var', name: 'clientAccountId', class: 'String' },
+        { _type: 'var', name: 'untyped' },
+      ]);
+      const state = new DataProductAccessPointState(mockApgState, accessPoint);
+
+      expect(
+        state.parameters.map((parameter) => [
+          parameter.name,
+          getAccessPointParameterTypeName(parameter),
+        ]),
+      ).toEqual([
+        ['businessDate', 'Date'],
+        ['clientAccountId', 'String'],
+        ['untyped', undefined],
+      ]);
+    });
+
+    test('are none without parameters, or for a non-lakehouse access point', () => {
+      expect(
+        new DataProductAccessPointState(
+          mockApgState,
+          buildLakehouseAccessPoint(undefined),
+        ).parameters,
+      ).toEqual([]);
+      const accessPoint = new TEST__NonLakehouseAccessPoint();
+      accessPoint.id = 'test_non_lakehouse_access_point';
+      expect(
+        new DataProductAccessPointState(mockApgState, accessPoint).parameters,
+      ).toEqual([]);
     });
   });
 });

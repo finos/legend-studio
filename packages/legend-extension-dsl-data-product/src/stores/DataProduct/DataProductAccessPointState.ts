@@ -28,6 +28,8 @@ import {
   V1_deserializeExecutionResult,
   V1_buildExecutionResult,
   V1_RelationRowTestData,
+  V1_deserializeValueSpecification,
+  V1_Variable,
   type V1_ExecutionResult,
   type TDSExecutionResult,
 } from '@finos/legend-graph';
@@ -35,7 +37,9 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
+  filterByType,
   guaranteeNonNullable,
+  isEmpty,
   LogEvent,
 } from '@finos/legend-shared';
 import { makeAutoObservable, observable, computed } from 'mobx';
@@ -78,6 +82,8 @@ export class DataProductAccessPointState {
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
       isParameterized: computed,
+      parameters: computed,
+      hasSampleValues: computed,
     });
 
     this.apgState = apgState;
@@ -127,6 +133,28 @@ export class DataProductAccessPointState {
       Array.isArray(this.accessPoint.func.parameters) &&
       this.accessPoint.func.parameters.length > 0
     );
+  }
+
+  /** Whether the sample data has a value for any column */
+  get hasSampleValues(): boolean {
+    return Boolean(
+      this.relationElement?.rows.some((row) =>
+        row.values.some((value) => !isEmpty(value)),
+      ),
+    );
+  }
+
+  /** The parameters of a Lakehouse access point's function, in order */
+  get parameters(): V1_Variable[] {
+    if (
+      !(this.accessPoint instanceof V1_LakehouseAccessPoint) ||
+      !Array.isArray(this.accessPoint.func.parameters)
+    ) {
+      return [];
+    }
+    return (this.accessPoint.func.parameters as PlainObject[])
+      .map((parameter) => V1_deserializeValueSpecification(parameter, []))
+      .filter(filterByType(V1_Variable));
   }
 
   async fetchRegistryMetadata(): Promise<void> {

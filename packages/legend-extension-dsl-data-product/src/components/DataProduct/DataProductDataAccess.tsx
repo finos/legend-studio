@@ -146,6 +146,10 @@ import {
   CollapsibleWikiSection,
 } from '../ProductViewer.js';
 import { isDescriptionSameAsTitle } from '../../utils/DataProductViewerUtils.js';
+import {
+  DataProductAccessPointColumnsStrip,
+  DataProductPureQueryScreen,
+} from './DataProductAccessPointCode.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -168,6 +172,15 @@ const getLakehouseTargetEnvironmentIcon = (
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
+// a column's description or sample values, when there are none: the strip above
+// the grid says why, once, for those who can act on it
+const EMPTY_COLUMN_SPECIFICATION = '—';
+const emptyColumnSpecificationCellClass = (params: {
+  value?: unknown;
+}): string | undefined =>
+  params.value === EMPTY_COLUMN_SPECIFICATION
+    ? 'data-product__viewer__more-info__columns-grid__empty-cell'
+    : undefined;
 const LAKEHOUSE_EXECUTE_PATH = '/lakehouse/v1/execute';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
@@ -831,8 +844,8 @@ const GovernanceScreen = observer(
 
 const enum DataProductAccessPointTabs {
   COLUMNS = 'Columns',
-  QUERY = 'Query',
-  GRAMMAR = 'Grammar',
+  PURE_QUERY = 'Pure Query',
+  LEGEND_QUERY = 'Legend Query',
   SERVICE = 'Service',
   GOVERNANCE = 'Governance',
   DATACUBE = 'Datacube',
@@ -1377,8 +1390,9 @@ const ColumnsScreen = observer(
           valueGetter: (_params) =>
             _params.data
               ? (getRelationColumnDescription(_params.data) ??
-                'No description provided')
+                EMPTY_COLUMN_SPECIFICATION)
               : '',
+          cellClass: emptyColumnSpecificationCellClass,
         },
         {
           headerName: 'Column Sample Values',
@@ -1390,24 +1404,31 @@ const ColumnsScreen = observer(
               return 'Loading sample data...';
             }
             if (!_params.data || !accessPointState.relationElement) {
-              return 'No sample values provided';
+              return EMPTY_COLUMN_SPECIFICATION;
             }
             const columnName = _params.data.name;
             const columnIndex =
               accessPointState.relationElement.columns.indexOf(columnName);
             if (columnIndex === -1) {
-              return 'No sample values provided';
+              return EMPTY_COLUMN_SPECIFICATION;
             }
             const sampleValues = accessPointState.relationElement.rows
               .map((row) => row.values[columnIndex])
               .filter((value) => value !== undefined && !isEmpty(value));
-            return sampleValues.join(', ');
+            return sampleValues.length > 0
+              ? sampleValues.join(', ')
+              : EMPTY_COLUMN_SPECIFICATION;
           },
+          cellClass: emptyColumnSpecificationCellClass,
         },
       ];
 
     return (
       <>
+        <DataProductAccessPointColumnsStrip
+          accessPointState={accessPointState}
+          dataAccessState={dataAccessState}
+        />
         {accessPointState.fetchingRelationTypeState.isInProgress ? (
           <Box className="data-product__viewer__more-info__loading-indicator">
             <CubesLoadingIndicator isLoading={true}>
@@ -1458,54 +1479,6 @@ const ColumnsScreen = observer(
           </Box>
         ) : (
           <TabMessageScreen message="Unable to fetch access point columns" />
-        )}
-      </>
-    );
-  },
-);
-
-const GrammarScreen = observer(
-  (props: { accessPointState: DataProductAccessPointState }) => {
-    const { accessPointState } = props;
-
-    useEffect(() => {
-      if (accessPointState.fetchingGrammarState.isInInitialState) {
-        accessPointState
-          .fetchGrammar()
-          .catch((error: Error) =>
-            accessPointState.apgState.applicationStore.notificationService.notifyError(
-              error,
-            ),
-          );
-      }
-    }, [accessPointState]);
-
-    return (
-      <>
-        {accessPointState.fetchingGrammarState.isInProgress ? (
-          <Box className="data-product__viewer__more-info__loading-indicator">
-            <CubesLoadingIndicator isLoading={true}>
-              <CubesLoadingIndicatorIcon />
-            </CubesLoadingIndicator>
-          </Box>
-        ) : accessPointState.fetchingGrammarState.hasCompleted ? (
-          <Box className="data-product__viewer__more-info__grammar">
-            <CodeEditor
-              inputValue={accessPointState.grammar ?? 'Unable to fetch grammar'}
-              isReadOnly={true}
-              language={CODE_EDITOR_LANGUAGE.PURE}
-              hideMinimap={true}
-              hideGutter={true}
-              hideActionBar={true}
-              lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-              extraEditorOptions={{
-                scrollBeyondLastLine: false,
-                wordWrap: 'on',
-              }}
-            />
-          </Box>
-        ) : (
-          <TabMessageScreen message="Unable to fetch access point grammar" />
         )}
       </>
     );
@@ -1680,8 +1653,14 @@ const AccessPointTable = observer(
               dataAccessState={dataAccessState}
             />
           );
-        case DataProductAccessPointTabs.GRAMMAR:
-          return <GrammarScreen accessPointState={accessPointState} />;
+        case DataProductAccessPointTabs.PURE_QUERY:
+          // shown whatever the access point's compute target
+          return accessPointState.accessPoint instanceof
+            V1_LakehouseAccessPoint ? (
+            <DataProductPureQueryScreen accessPointState={accessPointState} />
+          ) : (
+            <TabMessageScreen message={NOT_SUPPORTED} />
+          );
         case DataProductAccessPointTabs.GOVERNANCE:
           return (
             <GovernanceScreen
@@ -1696,7 +1675,7 @@ const AccessPointTable = observer(
               dataAccessState={dataAccessState}
             />
           );
-        case DataProductAccessPointTabs.QUERY:
+        case DataProductAccessPointTabs.LEGEND_QUERY:
           return (
             <LegendQueryScreen
               accessPointState={accessPointState}
@@ -1741,13 +1720,13 @@ const AccessPointTable = observer(
         icon: null,
       },
       {
-        key: DataProductAccessPointTabs.GRAMMAR,
-        label: 'Grammar',
+        key: DataProductAccessPointTabs.PURE_QUERY,
+        label: 'Pure Query',
         icon: null,
       },
       {
-        key: DataProductAccessPointTabs.QUERY,
-        label: 'Query',
+        key: DataProductAccessPointTabs.LEGEND_QUERY,
+        label: 'Legend Query',
         icon: null,
       },
       {

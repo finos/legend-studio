@@ -1,0 +1,212 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// An access point's code: the Pure Query tab, and the definition in Column
+// Specifications. The colors are the dark theme's; the light theme sets its own
+// in `_light-mode.scss`.
+
+// the strip above the column grid: the column count, and the definition toggle
+.data-product__viewer__columns-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.4rem;
+  padding: 0.4rem 0.6rem 0.4rem 1rem;
+  color: var(--color-dark-theme-text-muted);
+  font-size: 1.25rem;
+}
+
+// inline text, which keeps the spaces around the separators
+.data-product__viewer__columns-strip__summary {
+  min-width: 0;
+}
+
+// how to add what the columns lack
+.data-product__viewer__columns-strip__link.MuiLink-root {
+  margin-left: 1.2rem;
+  color: var(--color-dark-theme-blue-primary);
+  font-size: 1.2rem;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+// a column's missing description or sample values, in the grid
+.data-product__viewer__more-info__columns-grid__empty-cell {
+  color: var(--color-dark-theme-text-muted);
+}
+
+// NOTE: Marketplace's dark theme colors every cell of the grid
+.theme__hc-dark
+  .data-product__viewer__more-info__columns-grid.ag-theme-balham
+  .ag-cell.data-product__viewer__more-info__columns-grid__empty-cell {
+  color: var(--color-dark-theme-text-muted);
+}
+
+// a quiet text action: "View definition", "Hide definition"
+.data-product__viewer__definition-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.8rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: none;
+  color: var(--color-dark-theme-text-muted);
+  font-size: 1.25rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover,
+  &--open {
+    background: rgb(127 127 127 / 15%);
+    color: var(--color-dark-theme-text-primary);
+  }
+
+  &:focus-visible {
+    outline: 0.1rem solid currentcolor;
+    outline-offset: 0.1rem;
+  }
+
+  &__icon {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+// the definition, between the strip and the column grid
+.data-product__viewer__definition {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 0 0.6rem 0.8rem;
+  padding: 1rem 1.2rem 1.2rem;
+  border: 0.1rem solid var(--color-dark-theme-border);
+  border-radius: 0.6rem;
+  background: var(--color-dark-theme-bg-secondary);
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.2rem;
+  }
+
+  &__title {
+    color: var(--color-dark-theme-text-primary);
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  &__caption,
+  &__message {
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.25rem;
+  }
+}
+
+// the Pure Query tab
+.data-product__viewer__pure-query {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 1.2rem 1rem 1.4rem;
+
+  &__block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.2rem;
+  }
+
+  &__title {
+    color: var(--color-dark-theme-text-primary);
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  &__caption {
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.25rem;
+    line-height: 1.6;
+  }
+
+  &__inline-code {
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.3rem;
+    background: rgb(127 127 127 / 18%);
+    color: var(--color-dark-theme-text-secondary);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.15rem;
+  }
+}
+
+// a read-only Pure editor, as tall as its lines
+.data-product__viewer__code-box {
+  flex: none;
+  overflow: hidden;
+  border: 0.1rem solid var(--color-dark-theme-border-light);
+  border-radius: 0.4rem;
+
+  .code-editor {
+    height: 100%;
+  }
+
+  // NOTE: the code is read-only, so no line is highlighted; Marketplace's dark
+  // theme paints every Monaco editor's current line, the margin's included
+  .monaco-editor .margin-view-overlays .current-line {
+    background: none !important;
+  }
+}
+
+.data-product__viewer__code-copy {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border: 0.1rem solid var(--color-dark-theme-border-light);
+  border-radius: 0.4rem;
+  background: var(--color-dark-theme-bg-elevated);
+  color: var(--color-dark-theme-text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  &:hover {
+    background: var(--color-dark-theme-bg-tertiary);
+  }
+
+  &:focus-visible {
+    outline: 0.1rem solid currentcolor;
+    outline-offset: 0.1rem;
+  }
+}

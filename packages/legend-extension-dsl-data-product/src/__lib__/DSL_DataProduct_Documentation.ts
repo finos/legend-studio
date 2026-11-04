@@ -19,4 +19,6 @@ export enum DSL_DATA_PRODUCT_DOCUMENTATION_KEY {
   MULTI_REGION_RESILIENCY = 'dsl-dataproduct.multi-region-resiliency',
   PRODUCER_QUERYING_ENTITLEMENTS = 'dsl-dataproduct.producer-querying-entitlements',
   LAKEHOUSE_COMPUTE_DEPLOYMENT = 'dsl-dataproduct.lakehouse-compute-deployment',
+  COLUMN_DESCRIPTIONS = 'dsl-dataproduct.column-descriptions',
+  SAMPLE_VALUES = 'dsl-dataproduct.sample-values',
 }
