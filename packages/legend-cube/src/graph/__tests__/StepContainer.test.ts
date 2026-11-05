@@ -30,6 +30,7 @@ import { Query } from '../Query.js';
 import {
   canTakeStepOutOfContainer,
   generateStepContainerId,
+  getBlockLinkingSteps,
   getContainersBesideStep,
   getShownContainers,
   getStepsForNewContainer,
@@ -147,6 +148,50 @@ describe(unitTest('Step containers'), () => {
     // a step in a container already
     expect(getStepsForNewContainer(query, shown, 'f')).toEqual([]);
     expect(getStepsForNewContainer(query, shown, 'gone')).toEqual([]);
+  });
+
+  test('Links steps with each step between two of them, as far as where their ways meet', () => {
+    const query = managerQuery();
+    const link = (steps: string[]): string[] | undefined =>
+      getBlockLinkingSteps(query, steps);
+    // one block already, and one step
+    expect(link(['s2', 'f'])).toEqual(['f', 's2']);
+    expect(link(['f', 'f'])).toEqual(['f']);
+    // f is between s2 and the Join
+    expect(link(['join', 's2'])).toEqual(['f', 'join', 's2']);
+    // the sources' ways meet at the Join
+    expect(link(['s1', 's2'])).toEqual(['f', 'join', 's1', 's2']);
+    expect(link(['sort', 's1'])).toEqual(['join', 's1', 'sort']);
+    expect(link(['s1', 'f', 'sort'])).toEqual(['f', 'join', 's1', 'sort']);
+    // a step the query hasn't is left out
+    expect(link(['gone', 's1'])).toEqual(['s1']);
+    // each is one block, as a container's steps are
+    [
+      ['s1', 's2'],
+      ['sort', 's1'],
+      ['join', 's2'],
+    ].forEach((steps) =>
+      expect(isConnectedStepSet(query, new Set(link(steps)))).toBe(true),
+    );
+  });
+
+  test('No block links steps of two trees, or no step', () => {
+    // two trees: s1 → f, and s2 → sort
+    const query = new Query(
+      [
+        resolvedTable('s1', 'ORDERS', [column('ID')]),
+        new TestUnaryNode('f'),
+        resolvedTable('s2', 'CUSTOMERS', [column('ID')]),
+        new TestUnaryNode('sort'),
+      ],
+      [new Connection('s1', 'f', 'tds'), new Connection('s2', 'sort', 'tds')],
+      'f',
+    );
+    expect(getBlockLinkingSteps(query, ['s1', 'sort'])).toBeUndefined();
+    expect(getBlockLinkingSteps(query, ['f', 's2'])).toBeUndefined();
+    expect(getBlockLinkingSteps(query, [])).toBeUndefined();
+    expect(getBlockLinkingSteps(query, ['gone'])).toBeUndefined();
+    expect(getBlockLinkingSteps(query, ['s2', 'sort'])).toEqual(['s2', 'sort']);
   });
 
   test('Numbers new containers after the highest number used', () => {

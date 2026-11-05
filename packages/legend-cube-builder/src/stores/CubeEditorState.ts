@@ -56,6 +56,7 @@ import {
   canTakeStepOutOfContainer,
   getContainersBesideStep,
   getStepContainer,
+  isConnectedStepSet,
   type ShownStepContainer,
   type StepContainer,
 } from '@finos/legend-cube';
@@ -154,6 +155,7 @@ import {
 } from './CubeHost.js';
 import { buildCubeIngestJoinRule } from './CubeLakehouseSources.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
+import { CubeCanvasSelectionState } from './CubeCanvasSelectionState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeJsonViewerState } from './variant/CubeJsonViewerState.js';
 import { CubeJsonExplorerState } from './variant/CubeJsonExplorerState.js';
@@ -243,6 +245,8 @@ export class CubeEditorState implements CommandRegistrar {
   /** Import Pure: the lambda the page opened on, read into the cube (PLAN §11.18) */
   readonly lambdaImport: CubeLambdaImportState;
   readonly nodeEditor: CubeNodeEditorState;
+  /** The steps picked on the canvas, to put in a container (PLAN §11.29) */
+  readonly canvasSelection: CubeCanvasSelectionState;
 
   document: CubeDocument;
   /** Earlier documents, oldest first */
@@ -384,6 +388,7 @@ export class CubeEditorState implements CommandRegistrar {
       swapInputs: action,
       shownContainers: computed,
       addContainer: action,
+      addContainerOf: action,
       addToContainer: action,
       takeOutOfContainer: action,
       setContainerFolded: action,
@@ -440,6 +445,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.jsonExplorer = new CubeJsonExplorerState(this);
     this.lambdaImport = new CubeLambdaImportState(this);
     this.nodeEditor = new CubeNodeEditorState(this);
+    this.canvasSelection = new CubeCanvasSelectionState(this);
     this.rechecking = reaction(
       () => this.nodesToCheck,
       (waiting) => {
@@ -1112,6 +1118,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.execution.reset();
     this.sourcePicker.close();
     this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    this.canvasSelection.clear();
     this.hostIssues = new Map();
     this.document = next;
     this.readOnly = false;
@@ -1123,6 +1130,7 @@ export class CubeEditorState implements CommandRegistrar {
     this.execution.reset();
     this.sourcePicker.close();
     this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    this.canvasSelection.clear();
     this.hostIssues = new Map();
     // warnings are kept: they are by node key, which the imported nodes don't
     // share, and Undo brings back the nodes they belong to
@@ -1498,6 +1506,7 @@ export class CubeEditorState implements CommandRegistrar {
       // the cube before an import is another cube, as the import was
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+      this.canvasSelection.clear();
     }
     const { query, meta } = this.document;
     const restored = previous.withQuery(
@@ -1534,6 +1543,7 @@ export class CubeEditorState implements CommandRegistrar {
       this.importedOver.add(this.history.at(-1) as CubeDocument);
       this.sourcePicker.close();
       this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+      this.canvasSelection.clear();
     }
     this.readOnly = next.readOnly;
     const { query, meta } = this.document;
@@ -2048,7 +2058,26 @@ export class CubeEditorState implements CommandRegistrar {
    * step
    */
   addContainer(stepId: string, withStepsBefore: boolean): void {
-    if (!this.canAddContainer(stepId)) {
+    if (this.canAddContainer(stepId)) {
+      this.addContainerOf(
+        this.getStepsForNewContainer(stepId, withStepsBefore),
+      );
+    }
+  }
+
+  /**
+   * A new container of these steps, Container 1, 2… as `addContainer`
+   * names it; one undo step. Nothing when they aren't one block of steps in
+   * no container, as a container's steps are (PLAN §11.29).
+   */
+  addContainerOf(steps: readonly string[]): void {
+    const { query } = this.document;
+    if (
+      this.readOnly ||
+      !steps.every((id) => query.getNode(id)) ||
+      !isConnectedStepSet(query, new Set(steps)) ||
+      steps.some((id) => this.getStepContainer(id))
+    ) {
       return;
     }
     const containers = this.document.meta.containers ?? [];
@@ -2058,7 +2087,7 @@ export class CubeEditorState implements CommandRegistrar {
       {
         id,
         title: `Container ${id.slice('container'.length)}`,
-        steps: this.getStepsForNewContainer(stepId, withStepsBefore),
+        steps: [...steps],
         folded: false,
       },
     ]);
@@ -2251,5 +2280,6 @@ export class CubeEditorState implements CommandRegistrar {
     this.dataSpaceTyping();
     this.execution.stop();
     this.nodeEditor.dispose();
+    this.canvasSelection.dispose();
   }
 }

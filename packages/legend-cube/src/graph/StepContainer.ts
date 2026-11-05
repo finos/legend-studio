@@ -150,6 +150,45 @@ export const getStepsForNewContainer = (
   return steps.sort(compareText);
 };
 
+/**
+ * The block that links these steps, e.g. the steps picked on the canvas: them
+ * and each step between two of them, sorted by id, the smallest block
+ * (`isConnectedStepSet`) holding them. A step feeds one step at most, so each
+ * has one way down the flow, to its tree's last step; the block is each
+ * step's way down to where all their ways meet. None for no step, or for
+ * steps of two trees, which no block links. A step the query hasn't is left
+ * out.
+ */
+export const getBlockLinkingSteps = (
+  query: Query,
+  steps: Iterable<string>,
+): string[] | undefined => {
+  const ways = [...new Set(steps)]
+    .filter((id) => query.getNode(id) !== undefined)
+    .map((id) => {
+      const way = [id];
+      for (
+        let next = query.getOutputConnection(id)?.target;
+        next !== undefined &&
+        query.getNode(next) !== undefined &&
+        !way.includes(next);
+        next = query.getOutputConnection(next)?.target
+      ) {
+        way.push(next);
+      }
+      return way;
+    });
+  const [first, ...others] = ways;
+  const meeting = first?.find((id) => others.every((way) => way.includes(id)));
+  return meeting === undefined
+    ? undefined
+    : [
+        ...new Set(
+          ways.flatMap((way) => way.slice(0, way.indexOf(meeting) + 1)),
+        ),
+      ].sort(compareText);
+};
+
 /** A new container's id: `container` and one more than the highest number used */
 export const generateStepContainerId = (
   containers: readonly StepContainer[],
