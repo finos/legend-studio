@@ -52,6 +52,8 @@ import {
 import {
   createEmptyEqualToJsonAssertion,
   isTestPassing,
+  regenerateAllExpectedResultsForTestable,
+  type RegeneratableTestableState,
 } from '../../../utils/TestableUtils.js';
 import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {
@@ -211,6 +213,10 @@ export abstract class TestableTestEditorState {
   abstract get testableKind(): TESTABLE_KIND;
 
   abstract get testablePath(): string;
+
+  get regeneratableTestableState(): RegeneratableTestableState | undefined {
+    return undefined;
+  }
 
   setSelectedTab(val: TESTABLE_TEST_TAB): void {
     this.selectedTab = val;
@@ -594,7 +600,9 @@ export abstract class TestableTestSuiteEditorState {
   }
 }
 
-export abstract class TestablePackageableElementEditorState {
+export abstract class TestablePackageableElementEditorState
+  implements RegeneratableTestableState
+{
   readonly editorStore: EditorStore;
   readonly editorState: ElementEditorState;
   readonly testable: Testable;
@@ -606,6 +614,7 @@ export abstract class TestablePackageableElementEditorState {
 
   isRunningTestableSuitesState = ActionState.create();
   isRunningFailingSuitesState = ActionState.create();
+  isRegeneratingExpectedResultsState = ActionState.create();
 
   constructor(editorState: ElementEditorState, testable: Testable) {
     this.editorState = editorState;
@@ -880,5 +889,27 @@ export abstract class TestablePackageableElementEditorState {
       );
       state?.handleTestResult(result);
     });
+  }
+
+  *regenerateAllExpectedResults(): GeneratorFn<void> {
+    const unitTestIds: UniqueTestId[] = [];
+    this.suites.forEach((suite) => {
+      suite.tests.forEach((t) => unitTestIds.push(new UniqueTestId(suite, t)));
+    });
+    yield* regenerateAllExpectedResultsForTestable(
+      this.editorStore,
+      this.isRegeneratingExpectedResultsState,
+      this.testable,
+      unitTestIds,
+      {
+        testableKind: this.testableKind,
+        testablePath: this.testablePath,
+        testCount: unitTestIds.length,
+      },
+      () => {
+        this.selectedTestSuite?.testStates.forEach((t) => t.resetResult());
+        this.setTestableResults(undefined);
+      },
+    );
   }
 }

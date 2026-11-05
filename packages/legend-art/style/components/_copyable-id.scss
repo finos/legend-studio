@@ -1,0 +1,96 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+// NOTE: colors and font size come from the surrounding text, and the hover and
+// focus states are drawn with translucent grey and `currentcolor`, so the same
+// styles work on light and dark surfaces alike.
+.copyable-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
+
+  // room for the hover background, without moving the text
+  padding: 0.1rem 0.4rem;
+  margin: -0.1rem -0.4rem;
+  border: none;
+  border-radius: 0.3rem;
+  background: none;
+  color: inherit;
+  font-family: 'Roboto Mono', monospace;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: copy;
+
+  &:hover {
+    background: rgb(127 127 127 / 20%);
+  }
+
+  &:focus-visible {
+    outline: 0.1rem solid currentcolor;
+    outline-offset: 0.1rem;
+  }
+
+  &__content {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  &__icon {
+    @include flexCenter;
+
+    flex: none;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+
+    svg {
+      width: 0.9em;
+      height: 0.9em;
+    }
+  }
+
+  &--icon-hover &__icon {
+    opacity: 0;
+  }
+
+  &:hover &__icon,
+  &:focus-visible &__icon,
+  &--copied &__icon {
+    opacity: 1;
+  }
+}
+
+// NOTE: the tooltip is rendered in a portal, outside `.copyable-id`
+.copyable-id__tooltip {
+  &__label {
+    display: block;
+  }
+
+  &__value {
+    display: block;
+    margin-top: 0.2rem;
+    font-family: 'Roboto Mono', monospace;
+    overflow-wrap: anywhere;
+  }
+}

@@ -537,14 +537,12 @@ describe('isTypeCompatibleForAssignment', () => {
           PrimitiveType.STRING,
         ),
       ).toBe(false);
-      // NOTE: date types are loosely compatible by design (accepted as RHS for any LHS),
-      // so TIMESTAMP vs STRING returns true — this is correct behavior.
       expect(
         isTypeCompatibleForAssignment(
           PrecisePrimitiveType.TIMESTAMP,
           PrimitiveType.STRING,
         ),
-      ).toBe(true);
+      ).toBe(false);
     },
   );
 

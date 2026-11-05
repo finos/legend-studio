@@ -53,6 +53,7 @@ import {
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
   TEST__importDocument,
+  TEST__getColumnListRowText,
   TEST__renderInCubeApplication,
 } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
@@ -61,8 +62,18 @@ import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindMode
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
-const { COUNT, DISTINCT_COUNT, SUM, AVERAGE, MAX, COUNT_ROWS } =
-  AggregationFunction;
+const {
+  COUNT,
+  DISTINCT_COUNT,
+  SUM,
+  AVERAGE,
+  MAX,
+  COUNT_ROWS,
+  MEDIAN,
+  PERCENTILE,
+  STD_DEV,
+  JOIN_TEXT,
+} = AggregationFunction;
 /** ORDERS, with a Variant column and a column of a type Cube doesn't know */
 const COLUMNS = [
   ...ORDERS_COLUMNS,
@@ -74,7 +85,7 @@ const COUNT_ROWS_AGGREGATION: ColumnAggregation = {
   function: COUNT_ROWS,
   name: 'Count Rows',
 };
-/** How the function select shows each column function, in the spec's order */
+/** How the function select shows each column function, in the spec's order, then PLAN §11.28's */
 const ALL_COLUMN_FUNCTIONS = [
   'Count',
   'Distinct Count',
@@ -83,6 +94,24 @@ const ALL_COLUMN_FUNCTIONS = [
   'Average',
   'Min',
   'Max',
+  'Median',
+  'Percentile',
+  'Std Dev',
+  'Variance',
+  'Join Text',
+];
+/** A number's: all but Join Text */
+const NUMBER_FUNCTIONS = ALL_COLUMN_FUNCTIONS.filter(
+  (fn) => fn !== 'Join Text',
+);
+/** A text's: the distinct ones, Min and Max (PLAN §11.14), and Join Text */
+const TEXT_FUNCTIONS = [
+  'Count',
+  'Distinct Count',
+  'Distinct Value',
+  'Min',
+  'Max',
+  'Join Text',
 ];
 
 const ordersGrouped = (
@@ -235,24 +264,33 @@ describe('Group editor', () => {
     await openGroup();
     // the blank row is left out, so there's no aggregation yet
     expect(problems()).toEqual([MESSAGE_CANNOT_BE_EMPTY('Aggregations')]);
-    expect(keyItems().map((item) => item.textContent)).toEqual([
-      'ORDER_IDWhole number',
-      'CUSTOMER_IDText, optional',
-      'EMPLOYEE_IDWhole number, optional',
-      'ORDER_DATEDate, optional',
-      'REQUIRED_DATEDate, optional',
-      'SHIPPED_DATEDate, optional',
-      'SHIP_VIAWhole number, optional',
-      'FREIGHTNumber, optional',
-      'SHIP_NAMEText, optional',
-      'SHIP_ADDRESSText, optional',
-      'SHIP_CITYText, optional',
-      'SHIP_REGIONText, optional',
-      'SHIP_POSTAL_CODEText, optional',
-      'SHIP_COUNTRYText, optional',
-      "PAYLOADVariant, optional (can't be grouped)",
-      "SHAPEShape, optional (can't be grouped)",
+    expect(keyItems().map(TEST__getColumnListRowText)).toEqual([
+      'ORDER_ID Whole number',
+      'CUSTOMER_ID Text, optional',
+      'EMPLOYEE_ID Whole number, optional',
+      'ORDER_DATE Date, optional',
+      'REQUIRED_DATE Date, optional',
+      'SHIPPED_DATE Date, optional',
+      'SHIP_VIA Whole number, optional',
+      'FREIGHT Number, optional',
+      'SHIP_NAME Text, optional',
+      'SHIP_ADDRESS Text, optional',
+      'SHIP_CITY Text, optional',
+      'SHIP_REGION Text, optional',
+      'SHIP_POSTAL_CODE Text, optional',
+      'SHIP_COUNTRY Text, optional',
+      "PAYLOAD Variant, optional (can't be grouped)",
+      "SHAPE Shape, optional (can't be grouped)",
     ]);
+    // the row shows the type's icon, with the words and the exact type in its
+    // tooltip; the words follow the name for screen readers only
+    const [orderId] = keyItems();
+    expect(
+      orderId?.querySelector('[aria-hidden="true"]')?.getAttribute('title'),
+    ).toBe('Whole number (SmallInt)');
+    expect(
+      within(orderId as HTMLElement).getByText('Whole number').className,
+    ).toBe('sr-only');
     expect(checkbox('ORDER_ID').disabled).toBe(false);
     expect(checkbox('PAYLOAD').disabled).toBe(true);
     expect(checkbox('SHAPE').disabled).toBe(true);
@@ -435,17 +473,10 @@ describe('Group editor', () => {
       'Count Rows',
     ]);
     pick(1, 'SHIP_COUNTRY');
-    // Min and Max on a string from M6d (PLAN §11.14)
-    expect(functions(1)).toEqual([
-      'Count',
-      'Distinct Count',
-      'Distinct Value',
-      'Min',
-      'Max',
-      'Count Rows',
-    ]);
+    // Min and Max on a string from M6d (PLAN §11.14), Join Text from §11.28
+    expect(functions(1)).toEqual([...TEXT_FUNCTIONS, 'Count Rows']);
     pick(1, 'ORDER_ID');
-    expect(functions(1)).toEqual([...ALL_COLUMN_FUNCTIONS, 'Count Rows']);
+    expect(functions(1)).toEqual([...NUMBER_FUNCTIONS, 'Count Rows']);
     pick(1, 'ORDER_DATE');
     expect(functions(1)).toEqual([
       'Count',
@@ -466,15 +497,7 @@ describe('Group editor', () => {
     choose(1, SUM);
     pick(1, 'SHIP_COUNTRY');
     expect(functionPicker(1).value).toBe(SUM);
-    expect(functions(1)).toEqual([
-      'Sum',
-      'Count',
-      'Distinct Count',
-      'Distinct Value',
-      'Min',
-      'Max',
-      'Count Rows',
-    ]);
+    expect(functions(1)).toEqual(['Sum', ...TEXT_FUNCTIONS, 'Count Rows']);
     const incompatible = MESSAGE_AGGREGATION_FUNCTION_INCOMPATIBLE(
       SUM,
       'SHIP_COUNTRY',
@@ -527,7 +550,7 @@ describe('Group editor', () => {
     expect(screen.queryByRole('button', { name: 'Clear column 1' })).toBeNull();
     expect(functions(1)).toEqual([
       'Rank (unknown)',
-      ...ALL_COLUMN_FUNCTIONS,
+      ...NUMBER_FUNCTIONS,
       'Count Rows',
     ]);
     const unknown = MESSAGE_AGGREGATION_FUNCTION_UNKNOWN('Rank');
@@ -535,7 +558,7 @@ describe('Group editor', () => {
     expect(functionPicker(2).value).toBe('');
     expect(functions(2)).toEqual([
       'Pick a function',
-      ...ALL_COLUMN_FUNCTIONS,
+      ...NUMBER_FUNCTIONS,
       'Count Rows',
     ]);
     expectRowProblem(2, MESSAGE_AGGREGATION_FUNCTION_EMPTY);
@@ -544,7 +567,7 @@ describe('Group editor', () => {
     expect(button('Apply').disabled).toBe(true);
     choose(1, DISTINCT_COUNT);
     choose(2, SUM);
-    expect(functions(1)).toEqual([...ALL_COLUMN_FUNCTIONS, 'Count Rows']);
+    expect(functions(1)).toEqual([...NUMBER_FUNCTIONS, 'Count Rows']);
     expectRowProblem(1, undefined);
     expectRowProblem(2, undefined);
     expect(problems()).toEqual([]);
@@ -798,5 +821,145 @@ describe('Group editor', () => {
     expect(name(1).value).toBe(`${long} Distinct Count`);
     expect(name(1).value).toHaveLength(129);
     expectRowProblem(1, MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID);
+  });
+  test('Gives Percentile a percent field, 90 by default, and names the row after its percent until a name is typed (PLAN §11.28)', async () => {
+    const editorState = await render(ordersGrouped(['SHIP_COUNTRY'], []));
+    await openGroup();
+    const percent = (position: number): HTMLInputElement =>
+      within(panel()).getByLabelText<HTMLInputElement>(
+        `Aggregation percentile ${position}`,
+      );
+    pick(1, 'FREIGHT');
+    choose(1, PERCENTILE);
+    expect(percent(1).value).toBe('90');
+    expect(percent(1).getAttribute('inputmode')).toBe('decimal');
+    expect(percent(1).title).toBe(
+      'The percent of the values at or below the result, from 0 to 100: 90 is the 90th percentile, 50 the median',
+    );
+    expect(within(row(1)).getByText('%')).toBeDefined();
+    expect(name(1).value).toBe('FREIGHT P90');
+    fireEvent.change(percent(1), { target: { value: '25' } });
+    expect(name(1).value).toBe('FREIGHT P25');
+    // a column's other quartile is named apart
+    fireEvent.click(button('Add aggregation'));
+    pick(2, 'FREIGHT');
+    choose(2, PERCENTILE);
+    fireEvent.change(percent(2), { target: { value: '75' } });
+    expect(name(2).value).toBe('FREIGHT P75');
+    // a typed name no longer follows the percent
+    type(1, 'Lower quartile');
+    fireEvent.change(percent(1), { target: { value: '33.3' } });
+    expect(name(1).value).toBe('Lower quartile');
+    // Median and Std Dev take no setting, so they have no field
+    fireEvent.click(button('Add aggregation'));
+    pick(3, 'FREIGHT');
+    choose(3, MEDIAN);
+    expect(name(3).value).toBe('FREIGHT Median');
+    expect(within(row(3)).queryAllByRole('textbox')).toHaveLength(1);
+    choose(3, STD_DEV);
+    expect(name(3).value).toBe('FREIGHT Std Dev');
+    expect(within(row(3)).queryAllByRole('textbox')).toHaveLength(1);
+    expect(problems()).toEqual([]);
+    fireEvent.click(button('Apply'));
+    // saved as the engine's fraction, never rounded: 33.3 / 100 isn't 0.333
+    expect(stored(editorState).aggregations).toEqual([
+      {
+        column: 'FREIGHT',
+        function: PERCENTILE,
+        name: 'Lower quartile',
+        percentile: 0.333,
+      },
+      {
+        column: 'FREIGHT',
+        function: PERCENTILE,
+        name: 'FREIGHT P75',
+        percentile: 0.75,
+      },
+      { column: 'FREIGHT', function: STD_DEV, name: 'FREIGHT Std Dev' },
+    ]);
+    expect(editorState.analysis.schemas.get('group101')?.names()).toEqual([
+      'SHIP_COUNTRY',
+      'Lower quartile',
+      'FREIGHT P75',
+      'FREIGHT Std Dev',
+    ]);
+  });
+
+  test('Shows a saved percentile as its percent, and marks one outside 0 to 100 on its field, kept as typed', async () => {
+    await render(
+      ordersGrouped(
+        ['SHIP_COUNTRY'],
+        [
+          {
+            column: 'FREIGHT',
+            function: PERCENTILE,
+            name: 'FREIGHT P12.5',
+            percentile: 0.125,
+          },
+        ],
+      ),
+    );
+    await openGroup();
+    const percent = (): HTMLInputElement =>
+      within(panel()).getByLabelText<HTMLInputElement>(
+        'Aggregation percentile 1',
+      );
+    expect(percent().value).toBe('12.5');
+    const problem =
+      'Aggregation function "Percentile" needs a percentile from 0 to 100.';
+    ['150', '-1', 'abc', '', '1e2', '90%'].forEach((text) => {
+      fireEvent.change(percent(), { target: { value: text } });
+      expect(percent().value).toBe(text);
+      expect(percent().getAttribute('aria-invalid')).toBe('true');
+      expect(percent().title).toBe(problem);
+      expect(rowMessages(1)).toEqual([problem]);
+      expect(functionPicker(1).getAttribute('aria-invalid')).toBe('false');
+      expect(name(1).getAttribute('aria-invalid')).toBe('false');
+    });
+    // the saved name was the auto-name, so it follows the percent
+    fireEvent.change(percent(), { target: { value: '100' } });
+    expect(percent().getAttribute('aria-invalid')).toBe('false');
+    expect(name(1).value).toBe('FREIGHT P100');
+    expect(problems()).toEqual([]);
+  });
+
+  test('Gives Join Text a separator field on a text column, ", " by default, kept exactly, and refuses a backslash', async () => {
+    const editorState = await render(ordersGrouped(['SHIP_COUNTRY'], []));
+    await openGroup();
+    const separator = (): HTMLInputElement =>
+      within(panel()).getByLabelText<HTMLInputElement>(
+        'Aggregation separator 1',
+      );
+    pick(1, 'SHIP_CITY');
+    choose(1, JOIN_TEXT);
+    expect(separator().value).toBe(', ');
+    expect(separator().getAttribute('inputmode')).toBe('text');
+    expect(separator().placeholder).toBe('none');
+    expect(name(1).value).toBe('SHIP_CITY Join Text');
+    const problem =
+      'Aggregation function "JoinText" needs a separator with no backslash.';
+    fireEvent.change(separator(), { target: { value: ' \\ ' } });
+    expect(separator().getAttribute('aria-invalid')).toBe('true');
+    expect(separator().title).toBe(problem);
+    expect(rowMessages(1)).toEqual([problem]);
+    // no separator at all is one
+    fireEvent.change(separator(), { target: { value: '' } });
+    expect(separator().getAttribute('aria-invalid')).toBe('false');
+    expect(problems()).toEqual([]);
+    fireEvent.change(separator(), { target: { value: " ' | " } });
+    fireEvent.click(button('Apply'));
+    expect(stored(editorState).aggregations).toEqual([
+      {
+        column: 'SHIP_CITY',
+        function: JOIN_TEXT,
+        name: 'SHIP_CITY Join Text',
+        separator: " ' | ",
+      },
+    ]);
+    expect(
+      editorState.analysis.schemas
+        .get('group101')
+        ?.lookup('SHIP_CITY Join Text')?.type.path,
+    ).toBe('String');
   });
 });

@@ -91,7 +91,11 @@ export class CubeShowPureState {
         );
       }
       return host.engine.renderPure(
-        emitter.emitExecutionLambda({ runtime, databaseType }),
+        emitter.emitExecutionLambda({
+          runtime,
+          mapping: context?.mapping,
+          databaseType,
+        }),
       );
     });
   }

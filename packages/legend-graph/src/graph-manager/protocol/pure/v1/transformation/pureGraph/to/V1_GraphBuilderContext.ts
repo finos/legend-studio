@@ -114,6 +114,7 @@ import {
   RelationType,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import type { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { V1_buildValueSpecification } from './helpers/V1_ValueSpecificationBuilderHelper.js';
 import {
   type V1_RawGenericType,
@@ -748,6 +749,33 @@ export class V1_GraphBuilderContext {
       path,
       this.graph.getDataProduct,
     );
+  resolveIngestDefinition = (
+    path: string,
+  ): PackageableElementImplicitReference<IngestDefinition> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getIngestDefinition,
+    );
+  /**
+   * Resolves the store referenced by a mapping test suite's `storeTestData`.
+   * Unlike `resolveStore()`, this also accepts Lakehouse elements -
+   * `IngestDefinition` and `DataProduct` - as they can act as the source of
+   * data for a mapping test even though they are not `Store` themselves.
+   */
+  resolveMappingTestDataStore = (
+    path: string,
+  ): PackageableElementImplicitReference<
+    Store | IngestDefinition | DataProduct
+  > => {
+    const resolvedElement =
+      returnUndefOnError(() => this.resolveStore(path)) ??
+      returnUndefOnError(() => this.resolveIngestDefinition(path)) ??
+      returnUndefOnError(() => this.resolveDataProduct(path));
+    return guaranteeNonNullable(
+      resolvedElement,
+      `Can't find store, ingest definition, or data product '${path}'`,
+    );
+  };
 }
 
 export class V1_GraphBuilderContextBuilder {

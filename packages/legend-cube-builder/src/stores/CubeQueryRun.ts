@@ -36,6 +36,8 @@ export interface CubeQueryRunRequest {
   readonly query: Query;
   readonly model: ModelContext;
   readonly runtime: string;
+  /** The cube's mapping, when its sources read classes (PLAN §11.25) */
+  readonly mapping?: string | undefined;
   /** The schema Cube infers for the node: the engine's columns must be these */
   readonly schema: Schema;
   /** The most rows to keep: one more is fetched to tell whether there are more */
@@ -70,7 +72,8 @@ const runAndCheck = async (
   request: CubeQueryRunRequest,
   sent: { lambda?: IR },
 ): Promise<CubeQueryRunResult> => {
-  const { query, model, runtime, schema, rowLimit, abortController } = request;
+  const { query, model, runtime, mapping, schema, rowLimit, abortController } =
+    request;
   const nodeId = query.selected;
   if (nodeId === undefined) {
     throw new Error('A query to run has a selected node');
@@ -91,7 +94,7 @@ const runAndCheck = async (
   const lambda = new QueryEmitter(
     query,
     editorState.registry,
-  ).emitExecutionLambda({ rowLimit, runtime, databaseType });
+  ).emitExecutionLambda({ rowLimit, runtime, mapping, databaseType });
   sent.lambda = lambda;
   const response = await editorState.host.engine.execute(model, lambda, {
     abortController,

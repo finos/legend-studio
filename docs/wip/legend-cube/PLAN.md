@@ -1517,7 +1517,13 @@ panel. The click-away's rules and `holdOpen()` handle §17.5's nested-dismiss pr
   2. Insert nodes **sorted by id** and edges **sorted by `port + source + target`**, keyed by port (§17.3
      determinism, verified for dagre ✅). Invariant 3 means one node never feeds both ports of a Join (a self-join
      is two source nodes of one table), so the multigraph is a safeguard only.
-  3. Run layout and convert centres to top-left (fixes §17.3 pitfall 1).
+  3. Give each node a **column**: 0 with no input, else one after its furthest input (the longest path from a
+     source). Each edge's `minlen` is its columns' difference, so every source starts in the first column
+     (feedback, 2026-10-29). dagre alone puts a short branch's source next to the step it feeds.
+  4. Run layout and convert centres to top-left (fixes §17.3 pitfall 1). An edge that skips columns gets a
+     **lane** in each: the height where dagre's route for it crosses the column's middle, which dagre keeps clear
+     of the column's nodes. The edge goes straight across each column in its lane and curves only in the gaps
+     between columns, so it never crosses a node. An edge between neighbouring columns is React Flow's curve.
 - **Nodes:**
   - Fixed size (200×72), with the icon and the `describe()` text clamped to two lines; the full text is in the
     tooltip. This avoids measuring, which keeps the layout deterministic.
@@ -1583,8 +1589,9 @@ appears, unconnected, after the dialog's confirm. The empty canvas's link opens 
 - **Edits are buffered** locally. **Apply** (or any close but Cancel) emits one replacement node, so there is one undo
   entry per edit (§17.5). Cancel discards. Apply closes the editor (2026-10-11; it used to stay open, applied).
 - **If an upstream node is invalid,** the editor shows the upstream error instead of its body (§17.5).
-- **Column pickers** only offer columns from the actual input schema(s). Each column shows its type label and
-  nullable marker.
+- **Column pickers** only offer columns from the actual input schema(s). Each option is the column's name; the picked
+  column's type shows beside the picker as its family's icon, with the words and the exact type in its tooltip
+  (2026-10-29; before, each option and the picker said the type in words).
 - **Following the cube** (built in M1.8b S17, narrowing the user's answer to the panel with edits). Since M3b, user
   actions outside the editor apply it first (below), so this covers re-checks, Import and Undo's own effects:
   - an editor with unapplied edits whose node is replaced or removed underneath (Undo, a re-check, Remove) closes
@@ -4840,7 +4847,11 @@ new features; the whole list is the "UX backlog" in [ISSUES.md](ISSUES.md).
 - **Types by the kind of value** (6): the editors' column lists say Text, Whole number, Number, Decimal, Date, Date and
   time, Time, True or false, and ", optional" (", can be empty" until 2026-10-15, user); the exact type is on hover, and
   messages that compare types (Join, Concat, a table that changed) keep it (`getColumnTypeLabel`,
-  `getExactColumnTypeLabel`).
+  `getExactColumnTypeLabel`). Since 2026-10-29 (the user's manager: the words repeat on every column), pickers,
+  checklists and Restrict's list show the family's icon alone: its tooltip has the words and the exact type
+  (`getColumnTypeTitle`), and screen readers read the words after the column's name (`CubeColumnTypeLabelIcon`,
+  `CubeTypedColumnName`). A source's column table, Concatenate's exact types and Extend's result type keep the words;
+  a Time column gets a clock, not the question mark.
 - **Run this step** (10): the node menu's and editor's Select is "Run this step"; the step that runs carries a "▶
   Runs" badge on the canvas and in its editor. `selected` and the saved spec are unchanged (Appendix A, §17.9's
   tooltip).
@@ -5518,6 +5529,232 @@ The user's call: Legend Cube runs as an application of its own (Legend Analytics
   as the hosts.
 - **Not carried over:** the link entry (`?sourceType=dataProductAccessPoint&sourceId=…`), which nothing linked to.
   `CubeEditor`'s `initialSource` still takes one, should Legend Analytics read the link.
+
+### 11.25 A data space as a source, through the query builder (option B; user, 2026-10-21)
+
+**Ask:** a cube starts from a data space, picking an entity and its columns and filtering it in Legend Query's query
+builder, reused rather than written again. The user chose option B of the proposal
+(`docs/wip/legend-cube/DATA-SPACE-SOURCE.md`, finos/legend-studio#5758, which stays a proposal): **one node**, whose
+editor is the query builder's data space, entity, explorer, columns and filter. Aggregates, query options, post-filters,
+window functions and results stay out: Cube's own steps do them after the node. The user asked to be told before the
+query builder changes in a drastic way.
+
+**Design:**
+
+- **The node:** `DataSpaceSource` (kind `dataSpace`), a source. It holds the data space's path, the execution context's
+  key, the entity's path (for its label), two lambdas the editor writes together on Apply, and a schema snapshot of its
+  columns. The two lambdas are `query`, the query builder's own lambda, which the editor opens again, and `relation`,
+  the same query as a Relation, which is what Cube runs. Both are protocol JSON that the core never reads. The emitter
+  writes `relation`'s body as `raw` IR, passed through as is. `raw` gains an optional origin, stamped on each value
+  specification as an Extend's lambda is, so that an engine error in the node's part points at the node.
+- **The cube's context:**
+  - The model is the data space's project at a released version (the existing project pointer, `CubeProject.ts`).
+  - The runtime is its execution context's runtime.
+  - A new optional **`mapping`** holds its mapping. A run then ends in `from(mapping, runtime)` instead of
+    `from(runtime)`; the engine runs that as one SQL statement with the steps after it (checked for the saved query
+    plan, finos/legend-studio#5742).
+  - The spec stays at version 1: the field is additive.
+- **One context, no mixing:** a cube with a data space source takes only data space sources of the same data space,
+  version and execution context (another entity is fine, e.g. to join two classes). The other source kinds run with
+  `from(runtime)` on a runtime with no mapping, so their tabs are disabled once a data space source is in, and the data
+  space tab is disabled once another kind is.
+- **The editor, provided by the host:** `legend-cube-builder` stays free of `legend-query-builder` (its README's rule).
+  `CubeHost` gains an optional `dataSpaceEditor`, which Legend Analytics provides: it lists the depot's released data
+  spaces, describes one at a version (its execution contexts, with their mappings and runtimes), and opens a session
+  of the query builder on a source, which Cube shows and reads the query of, with the query builder's own undo and
+  redo, which Cube's shortcuts use while it shows. Only a host that provides it offers the source.
+- **The flow (built, DS.3):** the palette's Data Space item opens the source dialog's Data Space tab: the data spaces,
+  searched by title and path, then the picked one's version (its project's released versions) and execution context.
+  Add puts an **unset** source on the canvas (data space and execution context only; the cube's context takes the
+  project at that version and the context's mapping and runtime) and opens its node editor: the query builder, in a
+  panel wider and taller than the other editors. Apply stores its query and relation, and the editor types the
+  relation with the engine as it lands. A query in another execution context changes the cube's mapping and runtime
+  in the same undo step, unless other data space sources run in the cube's; a query Cube can't run keeps the editor
+  open on closing, saying why. Once the cube has a data space source, the tab offers only its data space, version
+  and context, and the project tabs don't take the cube.
+- **What the query builder writes (spike, 2026-10-21):** Data Cube's "Open in DataCube" already gets a Relation from
+  the query builder without the engine: it switches the builder to its typed writer for one `buildQuery()`. The writer
+  turns every projection column the builder makes (property, relation column, derivation) into
+  `project(~[…])`, and adds `from(mapping, runtime)`, which the editor strips. So `relation` needs no engine conversion
+  (the `transformTdsToRelation` endpoint isn't used). Cube types it through its engine port, as it does a function
+  source.
+- **Milestoned classes:** the query builder gives a date-versioned class's dates as parameters, with a value that
+  follows the current date. The editor writes that value in place of each parameter in `relation`, so a cube reads the
+  class as of the day it runs. Picking another date is a later step. Any other parameter is refused, with the reason.
+- **Refused on Apply:** the query builder's state is checked, not only its controls. Aggregates, query options, a
+  post-filter, window functions, constants, a graph fetch and text it can't show are each refused with the reason, in
+  case one comes back from a spec edited by hand.
+- **In Analytics:**
+  - A `DataSpaceQueryBuilderState` subclass for Cube, built as Legend Query builds one (`DataProductQueryCreatorStore`).
+  - The data space's graph is only ever the **light graph** (user, 2026-10-23), as Legend Query builds it with
+    `TEMPORARY__enableMinimalGraph`: from the data space's analytics, which a release of its project generates
+    (depot's `dataSpace-analytics` files), the classes the execution context's mapping covers, the data space, and
+    stubs of its mappings and runtimes. The data space extension's `analyzeDataSpaceCoverage` builds it; the explorer
+    and the entity list read what is mapped from the analysis' coverage, and Cube runs through the project pointer.
+    The project's entities and dependencies are never read, so a large project opens as fast as a small one.
+  - A data space whose release has no analytics, or none for a mapping of its contexts, is refused with the reason,
+    rather than falling back to the full graph as Legend Query does.
+  - Each editor session builds its own light graph; the analytics are read once per data space version. A context of
+    another mapping gets that mapping's light graph, which starts the query again on one of its classes, as in Legend
+    Query; a context of the same mapping keeps the query.
+  - The data spaces are listed from depot.
+  - The results panel is hidden (`isResultPanelHidden`, an existing getter).
+  - Analytics registers only the core, query builder and data space graph presets: the light graph holds nothing
+    else. Building a project's full graph would need the graph plugins of every element type it could hold (the
+    Assortment, Text, Diagram, Persistence, Service Store and Data Quality extensions Legend Query registers). No
+    application plugins are registered, so the query builder shows no template queries and has no keyboard
+    commands.
+  - The mock depot serves the test data space's analytics (`/generations/:g/:a/:v/types/:type`), and takes
+    `--port`, so a worktree's copy can run beside another.
+
+**The query builder's controls (spike, 2026-10-21):**
+
+| Control                                                                                                                                                           | What it could add                                        | Hidden by                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
+| The header's Advanced menu (functions, parameters, constants, fetch structure, windows, post-filter, calendar, typed mode, entitlements, Edit Pure, Show Pure, …) | Windows, post-filters, parameters, constants, text edits | New: `showHeaderMenus`                                        |
+| The header's Help menu (documentation, virtual assistant)                                                                                                         | Nothing                                                  | New: `showHeaderMenus`                                        |
+| Undo and redo                                                                                                                                                     | Nothing                                                  | Kept                                                          |
+| The fetch structure switch (projection or graph fetch)                                                                                                            | A graph fetch                                            | Existing: `getFetchStructureLayoutConfig().showInFetchPanel`  |
+| A column's aggregate operator (Σ)                                                                                                                                 | A group-by                                               | New: `showProjectionAggregation`                              |
+| Query Options (sort, distinct, limit, dates)                                                                                                                      | Sorts, a distinct, a limit                               | New: `showQueryOptions`                                       |
+| The status bar (diff, compile, JSON and Pure text modes)                                                                                                          | Text edits                                               | Existing: `showStatusBar`                                     |
+| The results panel (run, plan, export)                                                                                                                             | Nothing in the query                                     | Existing: `isResultPanelHidden`                               |
+| The query assistant's chat                                                                                                                                        | Text edits                                               | Existing config: `TEMPORARY__disableQueryBuilderAgentChat`    |
+| Template queries                                                                                                                                                  | Anything                                                 | Not shown: the data space application plugin isn't registered |
+| The data space, context, runtime and entity selectors; the explorer; columns, derivations; the filter                                                             | The node's settings                                      | Kept                                                          |
+
+**Changes to `legend-query-builder` (not drastic):** the three new options are getters on its existing workflow seam
+(`QueryBuilderWorkflowState`), each defaulting to today's behaviour, and read where the controls are rendered. Nothing
+else in the query builder changes; any change beyond these is raised with the user first. With the export of
+`QueryBuilderTDSState` and the test helper's optional workflow state, they merged first as their own PR,
+finos/legend-studio#5764 (user, 2026-10-22); this branch, rebased on it, no longer changes the query builder.
+
+**Not in this milestone:**
+
+- **Parameters other than milestoning dates:** refused; a run has no parameters to give (#5742 found that `let`s could
+  give them, later).
+- **Studio:** not offered, as the user decided for the saved query source (2026-10-20).
+- **Import Pure** doesn't read the node back: it refuses a lambda holding a class query, as it does now.
+
+**Verification (DS.6, 2026-10-21):**
+
+- **The engine (:6300), through the project pointer the mock depot (:6200) serves:** the typed writer's relation types
+  without a mapping (`Id Integer[1]`, `Cases Float[0..1]`), and with a Cube filter, a limit and
+  `from(mapping, runtime)` its plan is one SQL statement:
+  `select top 11 "root".ID as "Id", "root".CASES as "Cases" from COVID_DATA as "root" where "root".CASE_TYPE = 'Confirmed' and "root".CASES is not null and "root".CASES > cast(0.0 as float)`.
+- **A browser rehearsal** on Legend Analytics with the mock depot's `test::DataSpace`
+  (`org.finos.legend.test:legend-query-test:0.0.1`): the tab, the editor with only undo and redo in the query
+  builder's header, no Σ and no Query Options, columns from the explorer, a dragged filter, Apply, the engine's
+  typing, a Filter by Column after it, and Show Pure:
+  `|test::COVIDData.all()->filter(x|$x.caseType == 'Confirmed')->project(~['Case Type': x|$x.caseType, Cases: x|$x.cases, Date: x|$x.date])->filter(row|$row.Cases > 100.0)->from(test::CovidDataMapping, test::H2Runtime)`.
+- **Fixed on the way:**
+  - The tab offers the version listed alone when the project catalog can't list the project's versions (the mock
+    depot lists none), instead of an error.
+  - A set source waiting for the engine is pending (`ERR_TYPING`), not a problem: "Required schema of this source could
+    not be resolved." showed before the engine answered.
+  - The node says its data space and entity before the engine types it, and once typed shows its entity with its data
+    space below, as the other sources show their name and where it comes from.
+  - The data space the list read is described from that content at the version listed: one depot call fewer.
+  - Legend Analytics had none of the query builder's light-mode styles (its filter rows were dark): Legend Query's are
+    copied into the Analytics bootstrap's `light-mode.scss`, as its own Cube rules were (§11.18).
+  - An Escape in one of the query builder's fields closed the node editor, applying it: the explorer's search, which
+    says "ESC to clear", lost the whole editor. An Escape in a field of the host's editor is now the field's (the
+    editor's wrapper marks it used); an Escape elsewhere still closes the editor, as in every node editor.
+  - Ctrl+Z outside a text field ran Cube's undo, which drops every change made in the open editor, while the query
+    builder's own Undo says "Undo(ctrl + z)". The session now has the query builder's undo and redo
+    (`changeHistoryState`), which Cube's undo and redo shortcuts step through while its editor shows; Cube's Undo
+    button stays Cube's. The query builder doesn't change.
+- **Every way the editor opens and closes** (Add, its node, Escape, Cancel, Apply, a click on the canvas, Undo, a
+  Filter's editor and back) walks without a console error on a fresh load (`probe-editor-paths.mjs` in the evidence
+  folder). An assertion that the editor's draft is a data space draft showed only after hot reloads of the libraries,
+  once per rebuild: a class from before the reload.
+- **Execution (2026-10-22, the engine restarted):** one SQL statement, the query builder's filter and Cube's both in its
+  `where`, and the one matching row:
+  `select top 1001 "root".CASE_TYPE as "Case Type", "root".CASES as "Cases", "root".DATE as "Date" from COVID_DATA as "root" where "root".CASE_TYPE = 'Confirmed' and "root".CASES is not null and "root".CASES > cast(100.0 as float)`.
+  The demo video (39) is on the PR.
+- **Engine-backed tests:** `CubeDataSpaceSource.engine-roundtrip-test.ts` types a source's relation and runs it with a
+  Cube Filter after it through `from(mapping, runtime)`, on Legend Query's COVID data (a class, its mapping and an H2
+  runtime); the inference conformance suite lists the type as typed there.
+
+**Steps:**
+
+| Step | Deliverable                                                                                                                                                                         | Done when                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| DS.1 | This section, a draft PR, the spike                                                                                                                                                 | Pushed                                                                        |
+| DS.2 | Core: the optional `mapping` and `from(mapping, runtime)`; the `raw` IR's origin; `DataSpaceSource` (node, codec, emitter, validation, registry, help text)                         | Unit tests; emitted Pure pinned ✅ (2026-10-21)                               |
+| DS.3 | Builder: the `dataSpaceEditor` seam; the node's resolution (typing `relation`); its editor shell; the palette item and source tab; the mixing rule; the origin in the v1 serializer | Store, component and serializer tests with a fake host editor ✅ (2026-10-21) |
+| DS.4 | Query builder: the three workflow options, defaulting to today's behaviour                                                                                                          | Its tests pass unchanged; a test for each option ✅ (2026-10-21)              |
+| DS.5 | Analytics: the graph plugins, the data space graph, the Cube query builder state, the checks on Apply and the editor component                                                      | Host and component tests ✅ (2026-10-21)                                      |
+| DS.6 | Verification on a real engine and a mock depot; a browser rehearsal; a demo video                                                                                                   | Every caption true on screen ✅ (2026-10-22, video 39 on the PR)              |
+
+### 11.28 More Group functions: Median, Percentile, Std Dev, Variance and Join Text (2026-10-29)
+
+**Ask:** idea 3 of the Alteryx study (finos/legend-studio#5809, its §2.3; §11.26 and §11.27 belong to the drafts #5791
+and #5809): Alteryx's Summarize offers Median, Percentile, Std Dev, Variance and Concatenate, and Group by Column offered
+eight functions. Built on the branch `cube-group-functions` from master `18a8f8fcf`, in one PR into master. Plans were
+made on the local engine (`aa1c755`) for Snowflake, Databricks, MemSQL, DuckDB and H2 ✅ (plans), then for every database
+type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and DuckDB ✅. Evidence:
+`legend-cube-evidence/group-functions/` (`run.mjs`, `types.mjs`, `dialects-2026-10-29.json`).
+
+**Settled with the user** (2026-10-29, all on the recommendation):
+
+1. **Percentile's p is typed as a percent** from 0 to 100, 90 by default, and saved and written as the fraction the
+   engine's `percentile()` takes (`percentile(0.9)`). The editor moves the decimal point in the text, never
+   multiplying, so nothing is rounded (33.3 / 100 is 0.33299999999999996). Its auto-name carries the percent,
+   `FREIGHT P90`, so a column's quartiles don't clash.
+2. **Std Dev and Variance are the sample ones** (`stdDevSample`, `varianceSample`, over n - 1); the population ones
+   aren't offered.
+3. **Join Text** (not "Concatenate", the Concat step's name) joins a group's texts with a separator, `, ` by default,
+   kept exactly, empty allowed. A backslash is refused: the engine writes it as it is, and Snowflake, Databricks and
+   MemSQL read it as an escape (ISSUES.md).
+4. **Windows offer Std Dev and Variance only.** Snowflake refuses an ORDER BY in the OVER of MEDIAN, PERCENTILE_CONT and
+   LISTAGG ([MEDIAN](https://docs.snowflake.com/en/sql-reference/functions/median)), and a Partition with sort columns
+   writes one for every aggregate; STDDEV_SAMP and VAR_SAMP take one, as a running window.
+
+**Decided without asking:**
+
+- **Pivot takes none of them:** Snowflake's PIVOT takes only AVG, COUNT, MAX, MIN and SUM
+  ([PIVOT](https://docs.snowflake.com/en/sql-reference/constructs/pivot)), though each plans.
+  `PIVOT_AGGREGATION_FUNCTIONS` lists what a Pivot takes, and the editor offers no other.
+- **The grid's group rows (drill-down) keep their list:** a drill-down's aggregation has no setting. A saved one of
+  these functions is reported unknown there, as before.
+- In a window, Median, Percentile and Join Text are unknown, as Rank is in a Group (§11.5, Q4).
+
+**The functions** (`Aggregation.ts`; settings `percentile` and `separator` beside `offset` and `buckets`, §11.9):
+
+| Saved        | Shown as   | Offered on           | Result type | Pure                | Snowflake                           | Databricks                          | MemSQL                           |
+| ------------ | ---------- | -------------------- | ----------- | ------------------- | ----------------------------------- | ----------------------------------- | -------------------------------- |
+| `Median`     | Median     | numbers              | Float       | `median()`          | `median`                            | `median`                            | `median`                         |
+| `Percentile` | Percentile | numbers              | Number      | `percentile(0.9)`   | `percentile_cont(0.9) within group` | the same, of a double               | `percentile_cont`                |
+| `StdDev`     | Std Dev    | numbers; windows too | Number      | `stdDevSample()`    | `stddev_samp`                       | `stddev_samp`                       | `stddev_samp`                    |
+| `Variance`   | Variance   | numbers; windows too | Number      | `varianceSample()`  | `var_samp`                          | `var_samp`                          | `var_samp`                       |
+| `JoinText`   | Join Text  | strings              | String      | `joinStrings(', ')` | `listagg(c, ', ')`                  | `array_join(collect_list(c), ', ')` | `group_concat(c separator ', ')` |
+
+- **Types** are the engine's (`lambdaRelationType` on every numeric type, `types.mjs`): Median `Float[1]`, Percentile
+  `Number[0..1]`, Std Dev and Variance `Number[1]`, Join Text `String[1]`, whatever the column's precise type. Cube
+  makes all of them nullable: a group of empty values gives none, and Std Dev and Variance give none over one value. The
+  conformance cases declare the engine's `[1]` ones wider, as Sum and Average (§5.7).
+- **Percentile's literal is a Float**: `percentile(1)` doesn't type. The engine plans 1.5, so Cube checks the range.
+- **Join Text's values come in no set order**; a group with no text gives an empty text on Snowflake (documented) and,
+  by `array_join` of an empty list, Databricks 💭, and none on H2 and DuckDB ✅.
+- **Run on the warehouses, by the engine's PCT** (its expected-failure manifests, checkout `3aeb3f0f7f`, run on
+  Snowflake and Databricks themselves): no failure is listed for `median`, `percentile`, `stdDevSample`,
+  `varianceSample` or `joinStrings` in a group, nor for Median, Std Dev and Variance in a window. The failures listed
+  are a Percentile window (Snowflake's values, DuckDB's missing window function) and Databricks' `joinStrings` with an
+  order, neither of which Cube writes. BigQuery's (legend-engine#5108) list Median ("Function not found") and
+  Percentile (a syntax error).
+- **Other databases** (plans): every function plans on Postgres, Sybase, Sybase IQ, DB2, Oracle, Redshift, BigQuery and
+  ClickHouse too. The engine refuses Join Text on SQL Server, Trino, Presto, Athena, Hive and Composite, and Std Dev on
+  Hive and Composite. ClickHouse writes Median and Percentile as estimates (`median`, `quantile`) and Join Text as a
+  function of one row (ISSUES.md). The Group editor's notes say so, BigQuery's Median and Percentile included.
+- **Import Pure** reads `median()`, `stdDevSample()`, `varianceSample()`, `percentile(<Float>)` and
+  `joinStrings(<String>)`, and refuses the other forms (an Integer p, the four-argument `percentile`, the population
+  functions); a window reads `stdDevSample()` and `varianceSample()`.
+
+**Status:** draft finos/legend-studio#5810.
+
+**Supersessions** (kept here until folded): §11.5's aggregations table and `getAvailableAggregations`; §11.6's window
+functions; §11.12's Pivot aggregations; Appendix A, §10 (functions beyond the spec) and §16 (the setting messages).
 
 ## 12. G. Risks and open questions
 

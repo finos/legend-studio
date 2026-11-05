@@ -15,7 +15,7 @@
  */
 
 import { test } from '@jest/globals';
-import { fireEvent, getByText, waitFor } from '@testing-library/react';
+import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
 import { integrationTest, createMock } from '@finos/legend-shared/test';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
 import { TEST_DATA__QueryBuilder_Accessors } from '@finos/legend-query-builder/test';
@@ -209,8 +209,10 @@ test(integrationTest('Open query builder by querying a class'), async () => {
   const MOCK__GlobalCompileInFormModeFn = createMock();
   MOCK__editorStore.graphEditorMode.globalCompile =
     MOCK__GlobalCompileInFormModeFn;
-  MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-    GraphCompilationOutcome.SUCCEEDED,
+  act(() =>
+    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+      GraphCompilationOutcome.SUCCEEDED,
+    ),
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     createMock();
@@ -246,8 +248,10 @@ test(
     const MOCK__GlobalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphEditorMode.globalCompile =
       MOCK__GlobalCompileInFormModeFn;
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
+    act(() =>
+      MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+        GraphCompilationOutcome.SUCCEEDED,
+      ),
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       createMock();
@@ -285,8 +289,10 @@ test(
     const MOCK__GlobalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphEditorMode.globalCompile =
       MOCK__GlobalCompileInFormModeFn;
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
+    act(() =>
+      MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+        GraphCompilationOutcome.SUCCEEDED,
+      ),
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       createMock();
@@ -317,8 +323,10 @@ test(
     const MOCK__GlobalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphEditorMode.globalCompile =
       MOCK__GlobalCompileInFormModeFn;
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
+    act(() =>
+      MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+        GraphCompilationOutcome.SUCCEEDED,
+      ),
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       createMock();
@@ -348,8 +356,10 @@ test(
       { entities: TEST_DATA__QueryBuilder_Accessors },
     );
 
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
+    act(() =>
+      MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+        GraphCompilationOutcome.SUCCEEDED,
+      ),
     );
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
 
@@ -387,8 +397,10 @@ test(
       { entities: TEST_DATA__QueryBuilder_Accessors },
     );
 
-    MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-      GraphCompilationOutcome.SUCCEEDED,
+    act(() =>
+      MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+        GraphCompilationOutcome.SUCCEEDED,
+      ),
     );
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
 

@@ -61,9 +61,15 @@ export const READ_ONLY_CUBE_TITLE =
 /** How a SQL NULL shows in the grid, distinct from an empty string */
 export const NULL_CELL_TEXT = '(null)';
 
-/** What the Runs panel calls a run (PLAN §11.10, §11.16); a fetch of the grid's rows is described by its level */
+/** The button that runs the query, as Legend Query's names it */
+export const RUN_QUERY_LABEL = 'Run Query';
+
+/** The panel of the latest runs, fetches and exports (PLAN §11.16) */
+export const RUN_HISTORY_LABEL = 'Run history';
+
+/** What Run history calls a run (PLAN §11.10, §11.16); a fetch of the grid's rows is described by its level */
 export const CUBE_RUN_LABEL = {
-  EXECUTE: 'Execute',
+  EXECUTE: 'Run',
   EXPORT_CSV: 'Export CSV',
   pivotValues: (column: string): string => `Values of ${column}`,
 };
@@ -79,7 +85,7 @@ export const CUBE_RUN_PURE_NOTE =
 export enum CUBE_PENDING_LABEL {
   LOADING_MODEL = 'loading model',
   RESOLVING_SOURCE = 'resolving source',
-  EXECUTING_QUERY = 'executing query',
+  EXECUTING_QUERY = 'running query',
   FETCHING_ROWS = 'fetching rows',
   EXPORTING_CSV = 'exporting CSV',
   RENDERING_QUERY = 'rendering query',
@@ -154,10 +160,22 @@ export const getColumnTypeLabel = (column: SchemaColumn): string =>
     column.nullable ? ', optional' : ''
   }`;
 
+/**
+ * A column's type for the tooltip of its type's icon, shown without the
+ * words: the words, then the exact type, e.g. `Whole number, optional
+ * (SmallInt?)`; for an enumeration, or a type Cube doesn't know, its path
+ */
+export const getColumnTypeTitle = (column: SchemaColumn): string =>
+  `${getColumnTypeLabel(column)} (${
+    TYPE_FAMILY_LABELS[column.type.family]
+      ? getExactColumnTypeLabel(column)
+      : column.type.fullName
+  })`;
+
 const listColumns = (columns: readonly SchemaColumn[]): string =>
   columns.map((column) => column.name).join(', ');
 
-/** Why Execute (and Show Pure) can't run, one reason a line, for a tooltip */
+/** Why Run Query (and Show Pure) can't run, one reason a line, for a tooltip */
 export const formatDisabledReasons = (reasons: readonly string[]): string =>
   reasons.map((reason) => `• ${reason}`).join('\n');
 
@@ -199,8 +217,7 @@ export const CUBE_JSON_DISABLED_REASON = {
 };
 
 export const CUBE_QUICK_ACTION_DISABLED_REASON = {
-  STALE_ROWS:
-    'Execute again: these rows are from an earlier version of the query.',
+  STALE_ROWS: 'Run again: these rows are from an earlier version of the query.',
   RUNNING: 'Wait for the run to finish.',
   EDITING:
     "Close the node editor first: these rows don't show the changes in it.",
@@ -318,10 +335,14 @@ export const getConcatUntypedWarning = (columns: readonly string[]): string =>
 /** Why the Group editor can't take a column as a key (PLAN §11.5) */
 export const CUBE_GROUP_COLUMN_DISABLED_REASON = "can't be grouped";
 
-/** What the Group editor says about its aggregations (PLAN §11.5; Count counts non-empty values, D4) */
+/** What the Group editor says about its aggregations (PLAN §11.5, §11.28; Count counts non-empty values, D4) */
 export const GROUP_EDITOR_NOTES = [
   'Count counts the values that are not empty; Count Rows counts every row.',
   'Distinct Value is the value when the group has exactly one distinct value that is not empty, and empty otherwise.',
+  'Median and Percentile interpolate between the two nearest values. Percentile takes a percent from 0 to 100: 90 gives the value 90% of the way through the sorted values.',
+  'Std Dev and Variance are the sample ones, which divide by one less than the number of values: a group with one value gives empty.',
+  'Join Text joins the texts that are not empty, with the separator between them, in no set order. A group with none gives an empty text on some databases, such as Snowflake, and empty on others, such as H2 and DuckDB.',
+  "Not every database runs them all: BigQuery can't run Median or Percentile, SQL Server, Trino and ClickHouse can't run Join Text, and Hive can't run Std Dev. ClickHouse estimates Median and Percentile.",
   'With no group column, the result is one row, even when there are no rows.',
 ];
 
@@ -351,6 +372,7 @@ export const PIVOT_EDITOR_NOTES = [
   'Each picked value becomes a column, named by the value, holding the aggregation of its rows; each combination of the row columns with a picked value becomes a row. Values not picked, and combinations holding only them, are left out.',
   "Load values lists the pivot column's values, each once, up to 100. An empty value can't be pivoted, nor one that can't name a column; of two values that differ only in case, one can be ticked, as some databases would mix up their columns.",
   "Pivot runs on Snowflake, Databricks, SingleStore and DuckDB; other databases, such as H2 and Postgres, can't run it.",
+  "Median, Percentile, Std Dev, Variance and Join Text are only in Group by Column: Snowflake's pivot takes Count, Sum, Average, Min and Max.",
 ] as const;
 
 /** Why the Explode Array editor won't pick a column (PLAN §11.20) */
@@ -372,14 +394,14 @@ export const CUBE_JSON_EXPLODE_OFFER_TITLE =
 
 /** The tooltips of a Variant column's fields in an expression editor (PLAN §11.20, V.9) */
 export const CUBE_JSON_FIELDS_TITLE = {
-  OPEN: 'Show its fields, read from its first values just before this step: listed in Runs; a field clicked is written into the expression',
+  OPEN: 'Show its fields, read from its first values just before this step: listed in Run history; a field clicked is written into the expression',
   FORMS:
     'Other forms of the field: counts, lists, the first element, totals, as JSON',
   EXPLODE:
     'One row per element is a step of its own: add Explode Array from the palette, or from Explore JSON in the grid',
   READ_AGAIN: 'Read the column again',
   EVERY_ROW:
-    'Read every value of the column, for the shape of the whole column: listed in Runs, and it can be stopped',
+    'Read every value of the column, for the shape of the whole column: listed in Run history, and it can be stopped',
 } as const;
 
 /** What a Variant column's fields were read from, in an expression editor (PLAN §11.20, V.9) */
@@ -414,7 +436,7 @@ export const getPartitionNoColumnText = (fn: string): string =>
 
 /** What the Partition editor says about its window functions (PLAN §11.6: D5's frames, Q2, Q3; §11.9) */
 export const PARTITION_EDITOR_NOTES = [
-  'With sort columns, the aggregations (Count to Max, and Count Rows) run from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
+  'With sort columns, the aggregations (Count to Variance, and Count Rows) run from the first row of the partition to the current row, and rows that tie on the sort columns count together: a Distinct Value is then the one value so far. Without sort columns, they cover the whole partition.',
   "Rank, Dense Rank and Row Number need a sort column. Tied rows share a rank: Rank then skips numbers and Dense Rank doesn't. Row Number numbers every row, and rows tied on this node's sort columns get their numbers in no set order: add a sort column that tells them apart, such as an id, for a stable top N.",
   'NTile, Percent Rank and Cumulative Distribution need a sort column too. NTile splits each partition into buckets of near-equal size, numbered from 1 in the sort order; Percent Rank and Cumulative Distribution give each row its place in its partition, from 0 to 1.',
   "Lag and Lead read a column from the row so many rows before or after in the sort order, and are empty at the partition's edges. First and Last read it from the partition's first and last rows, the same on every row. They need a sort column, and rows tied on it may give any of them.",
@@ -424,6 +446,7 @@ export const PARTITION_EDITOR_NOTES = [
   "A Sort before this node doesn't order the window: its sort columns do. The rows keep the order they came in.",
   'Count counts the values that are not empty; Count Rows counts every row.',
   'Some databases, such as Postgres, SQL Server, Databricks and Trino, refuse Distinct Count and Distinct Value in a window.',
+  'Median, Percentile and Join Text are only in Group by Column: Snowflake refuses them in a window with sort columns.',
 ];
 
 /** Why a column of the Left input can't be a difference column (PLAN §11.7) */

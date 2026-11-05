@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-@import url('ag-grid-community/styles/ag-grid.css');
-@import url('ag-grid-community/styles/ag-theme-quartz.css');
+@forward 'deps';
+@forward 'dark-mode';
 
 // ---------------------------------------- SCROLLBAR ----------------------------------------
 // Make sure to configure the scrollbar to be consistent across browsers
@@ -535,6 +535,9 @@
   --ag-input-focus-border-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
   --ag-selected-row-background-color: var(--tw-color-sky-100);
+  // set explicitly since ag-grid defaults these to hard-coded light colors
+  --ag-background-color: var(--tw-color-white);
+  --ag-menu-background-color: var(--tw-color-white);
   --ag-border-color: var(--tw-color-white);
   --ag-header-background-color: var(--tw-color-white);
   --ag-header-height: 20px;

@@ -163,8 +163,10 @@
     user-select: none;
   }
 
+  // The tab strip is --color-bg-panel-header, which --color-bg-hover equals in
+  // light themes, so hover uses the panel surface to stand out in both.
   &__tab:hover {
-    background: var(--color-dark-grey-100);
+    background: var(--color-bg-panel);
   }
 
   &__tab--active {

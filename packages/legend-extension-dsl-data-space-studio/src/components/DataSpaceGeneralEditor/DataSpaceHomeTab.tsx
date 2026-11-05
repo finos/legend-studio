@@ -15,6 +15,8 @@
  */
 
 import {
+  EditorForm,
+  EditorFormSection,
   useEditorStore,
   useLegendAISuggestTelemetry,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
@@ -23,13 +25,7 @@ import {
   type DSL_DataSpace_LegendStudioApplicationPlugin_Extension,
 } from '@finos/legend-application-studio';
 import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
-import {
-  clsx,
-  PanelForm,
-  PanelFormTextField,
-  PanelLoadingIndicator,
-  SparkleIcon,
-} from '@finos/legend-art';
+import { PanelLoadingIndicator, SparkleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
@@ -42,6 +38,15 @@ import {
   dataSpace_setDescription,
   dataSpace_setTitle,
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
+import {
+  buildDataSpaceAISuggestionRows,
+  serializeDataSpaceAISuggestionFields,
+  type DataSpaceAISuggestionRow,
+} from '../../stores/DataSpaceAISuggestion.js';
+import {
+  DataSpaceAISuggestionReviewModal,
+  type DataSpaceAISuggestionSelection,
+} from './DataSpaceAISuggestionReviewModal.js';
 import { DataSpaceDiagramsSection } from './DataSpaceDiagramsSection.js';
 import { DataSpaceElementsSection } from './DataSpaceElementsSection.js';
 import { DataSpaceSupportInfoSection } from './DataSpaceSupportInfoSection.js';
@@ -78,9 +83,10 @@ export const DataSpaceHomeTab = observer(() => {
         .find(Boolean)
     : undefined;
   const [isSuggestingWithAI, setIsSuggestingWithAI] = useState(false);
-  const [aiDocSuggestion, setAIDocSuggestion] = useState<string | undefined>(
-    undefined,
-  );
+  const [aiSuggestion, setAISuggestion] = useState<
+    | { id: number; rows: DataSpaceAISuggestionRow[]; overwrite: boolean }
+    | undefined
+  >(undefined);
   const aiSuggestTelemetry = useLegendAISuggestTelemetry(
     editorStore,
     {
@@ -89,7 +95,9 @@ export const DataSpaceHomeTab = observer(() => {
     },
     { legendAIUrl, available: Boolean(aiDocSuggester), isReadOnly },
   );
-  const suggestDocumentationWithAI = async (): Promise<void> => {
+  const suggestDocumentationWithAI = async (
+    overwrite: boolean,
+  ): Promise<void> => {
     if (!aiDocSuggester || !legendAIUrl) {
       return;
     }
@@ -97,7 +105,6 @@ export const DataSpaceHomeTab = observer(() => {
       existingText: dataSpace.description,
     });
     setIsSuggestingWithAI(true);
-    setAIDocSuggestion(undefined);
     let stage = LEGENDAI_SUGGEST_STAGE.SERIALIZE;
     try {
       const definitions =
@@ -106,21 +113,30 @@ export const DataSpaceHomeTab = observer(() => {
         );
       stage = LEGENDAI_SUGGEST_STAGE.REQUEST;
       const suggestion = await aiDocSuggester(
-        { definitions, data_space_name: dataSpace.path },
+        { definitions, data_space_name: dataSpace.path, overwrite },
         legendAIUrl,
       );
+      const rows = buildDataSpaceAISuggestionRows(dataSpace, suggestion);
       const shouldShow = aiSuggestTelemetry.succeed(request, {
-        suggestionText: suggestion.description,
+        // the response is structured, so measure the parts that differ
+        suggestionText: rows.map((row) => row.suggestedValue).join('\n'),
         definitionsLength: definitions.length,
         currentText: dataSpace.description,
-        confidence: suggestion.confidence,
       });
-      if (!shouldShow) {
+      if (!shouldShow && overwrite) {
         editorStore.applicationStore.notificationService.notifyWarning(
-          'LegendAI did not return a description suggestion for this data space',
+          'LegendAI did not return any suggestions for this data space',
         );
+        setAISuggestion(undefined);
+        return;
       }
-      setAIDocSuggestion(shouldShow ? suggestion.description : undefined);
+      // with nothing new to fill in, still open the review so the user can
+      // ask to regenerate the fields that already have a value
+      setAISuggestion((prev) => ({
+        id: (prev?.id ?? 0) + 1,
+        rows,
+        overwrite,
+      }));
     } catch (error) {
       assertErrorThrown(error);
       aiSuggestTelemetry.fail(request, error, stage);
@@ -142,32 +158,41 @@ export const DataSpaceHomeTab = observer(() => {
       setIsSuggestingWithAI(false);
     }
   };
-  const applyAIDocSuggestion = (): void => {
-    if (!aiDocSuggestion) {
-      return;
-    }
+  const applyAISuggestion = (
+    selection: DataSpaceAISuggestionSelection,
+  ): void => {
+    const existingText = dataSpace.description;
+    selection.forEach(({ row, value }) => row.write(dataSpace, value));
+    const appliedRows = selection.map(({ row }) => row);
     const dataSpacePath = dataSpace.path;
     aiSuggestTelemetry.apply({
-      existingText: dataSpace.description,
-      appliedText: aiDocSuggestion,
+      existingText,
+      appliedText: serializeDataSpaceAISuggestionFields(dataSpace, appliedRows),
       readCurrentText: (store) => {
         const element =
           store.graphManagerState.graph.getNullableElement(dataSpacePath);
         return element instanceof DataSpace
-          ? { found: true, text: element.description }
+          ? {
+              found: true,
+              text: serializeDataSpaceAISuggestionFields(element, appliedRows),
+            }
           : { found: false };
       },
     });
-    dataSpace_setDescription(dataSpace, aiDocSuggestion);
-    setAIDocSuggestion(undefined);
+    setAISuggestion(undefined);
   };
-  const discardAIDocSuggestion = (): void => {
+  const discardAISuggestion = (): void => {
     aiSuggestTelemetry.discard();
-    setAIDocSuggestion(undefined);
+    setAISuggestion(undefined);
+  };
+  const runSuggestWithAI = (overwrite: boolean): void => {
+    suggestDocumentationWithAI(overwrite).catch(
+      editorStore.applicationStore.alertUnhandledError,
+    );
   };
 
   return (
-    <PanelForm>
+    <EditorForm>
       {dataSpaceNeedsExecutionContextOrExecutable(dataSpace) && (
         <InlineIssue
           issue={{
@@ -177,83 +202,68 @@ export const DataSpaceHomeTab = observer(() => {
           }}
         />
       )}
-      <PanelFormTextField
-        name="Title"
-        value={dataSpace.title ?? ''}
-        prompt="Provide a title for this Data Space."
-        update={handleTitleChange}
-        placeholder="Enter title"
-      />
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          Description
-          {aiDocSuggestion && (
-            <span
-              className="dataSpace-editor__ai-suggestion-badge"
-              style={{ marginLeft: '0.8rem' }}
-            >
-              <SparkleIcon />
-              AI Suggestion
-            </span>
-          )}
-          {aiDocSuggester && !aiDocSuggestion && (
+      <PanelLoadingIndicator isLoading={isSuggestingWithAI && !aiSuggestion} />
+      <EditorFormSection
+        title="About"
+        description="The title and description people see when they browse and search data spaces."
+        actions={
+          aiDocSuggester && (
             <button
               className="dataSpace-editor__ai-suggest-btn"
-              style={{ marginLeft: '0.8rem' }}
-              onClick={(): void => {
-                suggestDocumentationWithAI().catch(
-                  editorStore.applicationStore.alertUnhandledError,
-                );
-              }}
+              onClick={(): void => runSuggestWithAI(false)}
               disabled={isSuggestingWithAI || isReadOnly}
-              title="Use AI to suggest a description for this data space"
+              title="Use AI to suggest titles and descriptions for this data space, its execution contexts, diagrams, and executables, then review which to keep"
             >
               <SparkleIcon />
               <span>
                 {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
               </span>
             </button>
-          )}
-        </div>
-        <div className="panel__content__form__section__header__prompt">
-          Provide a description for this Data Space.
-        </div>
-        <PanelLoadingIndicator isLoading={isSuggestingWithAI} />
-        <textarea
-          className={clsx('panel__content__form__section__textarea', {
-            'textarea--ai-suggested': Boolean(aiDocSuggestion),
-          })}
-          spellCheck={false}
-          disabled={isReadOnly}
-          readOnly={Boolean(aiDocSuggestion)}
-          value={aiDocSuggestion ?? dataSpace.description ?? ''}
-          onChange={(event) => {
-            handleDescriptionChange(event.target.value);
-          }}
-          placeholder="Enter description"
+          )
+        }
+      >
+        <label className="dataSpace-editor-field">
+          <span className="dataSpace-editor-field__label">Title</span>
+          <input
+            className="input input--dark dataSpace-editor-field__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={dataSpace.title ?? ''}
+            onChange={(event): void =>
+              handleTitleChange(event.target.value || undefined)
+            }
+            placeholder={dataSpace.name}
+          />
+        </label>
+        <label className="dataSpace-editor-field">
+          <span className="dataSpace-editor-field__label">Description</span>
+          <textarea
+            className="input input--dark dataSpace-editor-field__textarea"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={dataSpace.description ?? ''}
+            onChange={(event): void => {
+              handleDescriptionChange(event.target.value);
+            }}
+            rows={4}
+            placeholder="What data this data space gives access to, and who it is for"
+          />
+        </label>
+      </EditorFormSection>
+      {aiSuggestion && (
+        <DataSpaceAISuggestionReviewModal
+          key={aiSuggestion.id}
+          rows={aiSuggestion.rows}
+          overwrite={aiSuggestion.overwrite}
+          isRegenerating={isSuggestingWithAI}
+          onApply={applyAISuggestion}
+          onDismiss={discardAISuggestion}
+          onRegenerate={(): void => runSuggestWithAI(true)}
         />
-        {aiDocSuggestion && (
-          <div className="dataSpace-editor__ai-suggestion__actions">
-            <button
-              className="btn btn--dark dataSpace-editor__ai-suggestion__apply-btn"
-              onClick={applyAIDocSuggestion}
-              title="Apply AI suggestion to description"
-            >
-              Apply Suggestion
-            </button>
-            <button
-              className="btn dataSpace-editor__ai-suggestion__dismiss-btn"
-              onClick={discardAIDocSuggestion}
-              title="Dismiss AI suggestion"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-      </div>
+      )}
       <DataSpaceDiagramsSection />
       <DataSpaceElementsSection />
       <DataSpaceSupportInfoSection />
-    </PanelForm>
+    </EditorForm>
   );
 });

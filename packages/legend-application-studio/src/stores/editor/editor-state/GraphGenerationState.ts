@@ -42,11 +42,15 @@ import {
   type GenerationOutput,
   type DSL_Generation_PureGraphManagerPlugin_Extension,
   type GenerationTreeNode,
+  type PackageableElement,
+  type PackageableElementReference,
   ArtifactGenerationExtensionResult,
   Class,
   Enumeration,
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
+  getElementOrigin,
+  isGeneratedElement,
 } from '@finos/legend-graph';
 import { ExternalFormatState } from './ExternalFormatState.js';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
@@ -216,11 +220,24 @@ export class DEPREACTED_GlobalFileGenerationState {
     this.fileGenerationConfigurations = fileGenerationConfigurations;
   }
 
+  /**
+   * NOTE: the descriptions come from the engine, so a file generation in the graph
+   * may have none, e.g. when the engine doesn't support its type or the descriptions
+   * failed to load
+   */
+  getNullableFileGenerationConfiguration(
+    type: string,
+  ): GenerationConfigurationDescription | undefined {
+    return this.fileGenerationConfigurations.find(
+      (config) => config.key === type,
+    );
+  }
+
   getFileGenerationConfiguration(
     type: string,
   ): GenerationConfigurationDescription {
     return guaranteeNonNullable(
-      this.fileGenerationConfigurations.find((config) => config.key === type),
+      this.getNullableFileGenerationConfiguration(type),
       `Can't find configuration description for file generation type '${type}'`,
     );
   }
@@ -246,9 +263,18 @@ export class DEPREACTED_GlobalFileGenerationState {
   }
 }
 
+export type ModelGenerationFailure = {
+  node: GenerationTreeNode;
+  elementRef: PackageableElementReference<PackageableElement>;
+  message: string;
+};
+
 export class GraphGenerationState {
   editorStore: EditorStore;
   isRunningGlobalGenerate = false;
+  /** the step a running generation is on, and when it started, for the status bar */
+  generationStep: 'models' | 'artifacts' | undefined = undefined;
+  generationStartedAt: number | undefined = undefined;
   generatedEntities = new Map<string, Entity[]>();
   clearingGenerationEntitiesState = ActionState.create();
   externalFormatState: ExternalFormatState;
@@ -261,14 +287,23 @@ export class GraphGenerationState {
   // This is to explore the performance impact of inlcuding this in the generation action and whether we always
   // generate artifacts or add inputs to the api to choose which ones we generate.
   enableArtifactGeneration = false;
+  /**
+   * Which generation element a run failed on, so the failure can be shown on the card that caused
+   * it and not only in a notification. Keyed by the node and the element reference rather than by
+   * path or index, since the same element may sit in more than one stage.
+   */
+  modelGenerationFailures: ModelGenerationFailure[] = [];
 
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {
       isRunningGlobalGenerate: observable,
+      generationStep: observable,
+      generationStartedAt: observable,
       generatedEntities: observable.shallow,
       clearingGenerationEntitiesState: observable,
       externalFormatState: observable,
       enableArtifactGeneration: observable,
+      modelGenerationFailures: observable.shallow,
       globalFileGenerationState: observable,
       rootFileDirectory: observable,
       filesIndex: observable,
@@ -276,6 +311,8 @@ export class GraphGenerationState {
       processGenerationResult: action,
       reprocessGenerationFileState: action,
       setEnableArtifactGeneration: action,
+      clearModelGenerationFailures: action,
+      clearModelGenerationFailure: action,
       reprocessNodeTree: action,
       onTreeNodeSelect: action,
       setSelectedNode: action,
@@ -302,6 +339,29 @@ export class GraphGenerationState {
     this.enableArtifactGeneration = val;
   }
 
+  clearModelGenerationFailures(): void {
+    this.modelGenerationFailures = [];
+  }
+
+  clearModelGenerationFailure(
+    node: GenerationTreeNode,
+    elementRef: PackageableElementReference<PackageableElement>,
+  ): void {
+    this.modelGenerationFailures = this.modelGenerationFailures.filter(
+      (failure) =>
+        !(failure.node === node && failure.elementRef === elementRef),
+    );
+  }
+
+  getModelGenerationFailure(
+    node: GenerationTreeNode,
+    elementRef: PackageableElementReference<PackageableElement>,
+  ): ModelGenerationFailure | undefined {
+    return this.modelGenerationFailures.find(
+      (failure) => failure.node === node && failure.elementRef === elementRef,
+    );
+  }
+
   findGenerationParentPath(genChildPath: string): string | undefined {
     const genEntity = Array.from(this.generatedEntities.entries()).find(
       ([, genEntities]) => genEntities.find((m) => m.path === genChildPath),
@@ -310,10 +370,39 @@ export class GraphGenerationState {
   }
 
   /**
+   * Say what a generation produced (the failures are notified by each step).
+   */
+  private notifyGenerationSuccess(): void {
+    const elements = Array.from(this.generatedEntities.values()).reduce(
+      (count, entities) => count + entities.length,
+      0,
+    );
+    const files = this.filesIndex.size;
+    const notificationService =
+      this.editorStore.applicationStore.notificationService;
+    if (!elements && !files) {
+      notificationService.notify('Nothing to generate');
+      return;
+    }
+    const plural = (count: number, noun: string): string =>
+      `${count} ${noun}${count === 1 ? '' : 's'}`;
+    notificationService.notifySuccess(
+      `Generated ${[
+        elements ? plural(elements, 'element') : undefined,
+        files ? plural(files, 'file') : undefined,
+      ]
+        .filter(Boolean)
+        .join(' and ')}`,
+    );
+  }
+
+  /**
    * Global generation is tied to the generation specification of the project. Every time a generation element
    * is added, they will be added to the generation specification
    */
-  *globalGenerate(): GeneratorFn<void> {
+  *globalGenerate(options?: {
+    disableNotificationOnSuccess?: boolean;
+  }): GeneratorFn<void> {
     if (
       this.editorStore.graphState.checkIfApplicationUpdateOperationIsRunning()
     ) {
@@ -321,6 +410,7 @@ export class GraphGenerationState {
     }
     this.isRunningGlobalGenerate = true;
     const startedAt = Date.now();
+    this.generationStartedAt = startedAt;
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
     const telemetryBase = {
       mode: GENERATION_MODE.GLOBAL,
@@ -336,9 +426,11 @@ export class GraphGenerationState {
       // them instead of throwing, so artifact generation still runs when
       // model generation fails. We only decide the telemetry outcome here so
       // each run emits exactly one terminal event.
+      this.generationStep = 'models';
       const modelGenerationError = (yield flowResult(this.generateModels())) as
         | Error
         | undefined;
+      this.generationStep = 'artifacts';
       const artifactGenerationError = (yield flowResult(
         this.generateArtifacts(),
       )) as Error | undefined;
@@ -355,6 +447,9 @@ export class GraphGenerationState {
           sourceInfo,
           { ...telemetryBase, durationMs: Date.now() - startedAt },
         );
+        if (!options?.disableNotificationOnSuccess) {
+          this.notifyGenerationSuccess();
+        }
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -372,7 +467,41 @@ export class GraphGenerationState {
       );
     } finally {
       this.isRunningGlobalGenerate = false;
+      this.generationStep = undefined;
+      this.generationStartedAt = undefined;
     }
+  }
+
+  /**
+   * Generated elements are added to the graph once their whole stage is done, where one whose
+   * path is already taken would fail the build half-way through and leave the graph with only
+   * part of the generated elements, so they are checked before they get there.
+   */
+  private assertNoDuplicatedGeneratedElements(entities: Entity[]): void {
+    const graph = this.editorStore.graphManagerState.graph;
+    const generationParentPathIndex = new Map<string, string>();
+    this.generatedEntities.forEach((generatedEntities, generationParentPath) =>
+      generatedEntities.forEach((entity) =>
+        generationParentPathIndex.set(entity.path, generationParentPath),
+      ),
+    );
+    entities.forEach((entity) => {
+      const existingElement = graph.getNullableElement(entity.path);
+      // an element generated by the previous run is replaced, so it does not count
+      if (existingElement && !isGeneratedElement(existingElement)) {
+        throw new Error(
+          `Generated element '${entity.path}' already exists in ${
+            getElementOrigin(existingElement, graph) || 'the project'
+          }`,
+        );
+      }
+      const generationParentPath = generationParentPathIndex.get(entity.path);
+      if (generationParentPath) {
+        throw new Error(
+          `Generated element '${entity.path}' was already generated by '${generationParentPath}'`,
+        );
+      }
+    });
   }
 
   /**
@@ -382,6 +511,7 @@ export class GraphGenerationState {
   *generateModels(): GeneratorFn<Error | undefined> {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
+      this.clearModelGenerationFailures();
       const generationSpecs =
         this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
@@ -395,28 +525,40 @@ export class GraphGenerationState {
       const generationNodes = generationSpec.generationNodes;
       for (let i = 0; i < generationNodes.length; i++) {
         const node = generationNodes[i] as GenerationTreeNode;
-        let generatedEntities: Entity[] = [];
-        try {
-          generatedEntities =
-            (yield this.editorStore.graphManagerState.graphManager.generateModel(
-              node.generationElement.value,
-              this.editorStore.graphManagerState.graph,
-              this.editorStore.graphEditorMode.getGraphTextInputOption(),
-            )) as Entity[];
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't generate models: failure occured at step ${
-              i + 1
-            } with specification '${
-              node.generationElement.value.path
-            }'. Error: ${error.message}`,
+        // every element of a node is generated against the same graph; the graph is updated once
+        // the whole node is done, which is what lets the next node use what this one produced
+        for (const generationElement of node.generationElements) {
+          let generatedEntities: Entity[] = [];
+          try {
+            generatedEntities =
+              (yield this.editorStore.graphManagerState.graphManager.generateModel(
+                generationElement.value,
+                this.editorStore.graphManagerState.graph,
+                this.editorStore.graphEditorMode.getGraphTextInputOption(),
+              )) as Entity[];
+            this.assertNoDuplicatedGeneratedElements(generatedEntities);
+          } catch (error) {
+            assertErrorThrown(error);
+            // the failure belongs to the element that caused it, so the editor can show it on that
+            // card and offer a way out of a stage the element cannot run in
+            this.modelGenerationFailures.push({
+              node,
+              elementRef: generationElement,
+              message: error.message,
+            });
+            throw new Error(
+              `Can't generate models: failure occured at stage ${
+                i + 1
+              } with specification '${generationElement.value.path}'. Error: ${
+                error.message
+              }`,
+            );
+          }
+          this.generatedEntities.set(
+            generationElement.value.path,
+            generatedEntities,
           );
         }
-        this.generatedEntities.set(
-          node.generationElement.value.path,
-          generatedEntities,
-        );
         yield flowResult(
           this.editorStore.graphState.updateGenerationGraphAndApplication(),
         );

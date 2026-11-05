@@ -270,7 +270,9 @@ const buildMappingStoreTestData = (
       ModelStore.INSTANCE,
     );
   } else {
-    mappingStoreTestData.store = context.resolveStore(element.store.path);
+    mappingStoreTestData.store = context.resolveMappingTestDataStore(
+      element.store.path,
+    );
   }
   mappingStoreTestData.data = V1_buildEmbeddedData(element.data, context);
   return mappingStoreTestData;

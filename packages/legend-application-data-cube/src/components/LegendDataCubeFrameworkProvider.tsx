@@ -22,6 +22,12 @@ import {
   useApplicationStore,
   ApplicationFrameworkProvider,
 } from '@finos/legend-application';
+import {
+  type DataCubeSettingValues,
+  DataCubeColorTheme,
+  DataCubeSettingKey,
+} from '@finos/legend-data-cube';
+import { LegendDataCubeSettingStorageKey } from '../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import type { LegendDataCubePluginManager } from '../application/LegendDataCubePluginManager.js';
 import { LegendDataCubeBaseStore } from '../stores/LegendDataCubeBaseStore.js';
@@ -34,6 +40,23 @@ export const useLegendDataCubeApplicationStore = (): ApplicationStore<
     LegendDataCubeApplicationConfig,
     LegendDataCubePluginManager
   >();
+
+/**
+ * NOTE: some parts of the application (e.g. the placeholder shown before DataCube is loaded,
+ * blocking windows rendered outside of DataCube) are themed outside of DataCube, so the
+ * persisted setting is read directly rather than from DataCube's setting service.
+ */
+export const useLegendDataCubeColorTheme = (): DataCubeColorTheme => {
+  const application = useLegendDataCubeApplicationStore();
+  const dataCubeSettingValues = application.settingService.getObjectValue(
+    LegendDataCubeSettingStorageKey.DATA_CUBE,
+  ) as DataCubeSettingValues | undefined;
+  return dataCubeSettingValues?.[
+    DataCubeSettingKey.APPEARANCE__ENABLE_DARK_MODE
+  ] === true
+    ? DataCubeColorTheme.DARK
+    : DataCubeColorTheme.LIGHT;
+};
 
 const LegendDataCubeBaseStoreContext = createContext<
   LegendDataCubeBaseStore | undefined

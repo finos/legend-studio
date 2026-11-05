@@ -35,6 +35,7 @@ import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePic
 import { CubeDataProductTab } from './CubeDataProductTab.js';
 import { CubeIngestTab } from './CubeIngestTab.js';
 import { CubeServiceTab } from './CubeServiceTab.js';
+import { CubeDataSpaceTab } from './CubeDataSpaceTab.js';
 import { CubeProjectTab } from './CubeProjectTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
@@ -135,6 +136,8 @@ export const CubeSourcePicker = observer(
                   <CubeProjectTab tab={picker.projectFunctionTab} />
                 ) : activeTab.key === CubeSourcePickerTabKey.SERVICE ? (
                   <CubeServiceTab tab={picker.serviceTab} />
+                ) : activeTab.key === CubeSourcePickerTabKey.DATA_SPACE ? (
+                  <CubeDataSpaceTab tab={picker.dataSpaceTab} />
                 ) : (
                   <CubeInlineModelTab tab={picker.modelTab} />
                 )}

@@ -24,6 +24,7 @@ import {
 import {
   Connection,
   CubeDocument,
+  DataSpaceSource,
   ExpressionFilter,
   Extend,
   type IR,
@@ -63,8 +64,15 @@ import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
 } from '../../__test-utils__/CubeTestApplication.js';
+import {
+  buildFakeDataSpaceEdit,
+  createFakeCubeDataSpaceEditor,
+  FAKE_TRADES_DATA_SPACE,
+} from '../../__test-utils__/FakeCubeDataSpaceEditor.js';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
 import type { CubeResult } from '../../graph-manager/CubeEngine.js';
+import { createCubeProjectModel } from '../../graph-manager/CubeProject.js';
+import type { CubeHost } from '../../stores/CubeHost.js';
 import { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../CubeEditor.js';
@@ -106,6 +114,7 @@ const renderPage = async (
       'relational101',
     ),
   }),
+  adaptHost: (host: CubeHost) => CubeHost = (host) => host,
 ): Promise<{
   fake: FakeCubeEngine;
   host: ReturnType<typeof TEST__createCubeHost>['host'];
@@ -124,7 +133,7 @@ const renderPage = async (
   const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
   try {
     const { unmount } = await TEST__renderInCubeApplication(
-      <CubeEditor host={host} initialDocument={document} />,
+      <CubeEditor host={adaptHost(host)} initialDocument={document} />,
       applicationStore,
       LEGEND_CUBE_TEST_ID.EDITOR,
     );
@@ -161,7 +170,7 @@ const graph = (): HTMLElement =>
 const toolbar = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR);
 
-/** ORDERS, then a Limit of the size, which Execute runs */
+/** ORDERS, then a Limit of the size, the output step */
 const limitDocument = (size: number | undefined): CubeDocument =>
   new CubeDocument({
     context: CONTEXT,
@@ -219,14 +228,14 @@ beforeEach(() => {
 });
 
 describe('Cube keyboard shortcuts', () => {
-  test('Executes on F9', async () => {
+  test('Runs the query on F9', async () => {
     const { fake } = await renderPage();
     pressF9();
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
     await within(toolbar()).findByText(/rows? in/u);
   });
 
-  test('Does nothing on F9 while Execute is disabled', async () => {
+  test('Does nothing on F9 while Run Query is disabled', async () => {
     const { fake, host } = await renderPage(new CubeDocument());
     const { commandService } = host.applicationStore;
     // a trigger that says no leaves the key to any other command bound to it
@@ -235,7 +244,7 @@ describe('Cube keyboard shortcuts', () => {
     );
     expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.UNDO)).toBe(false);
     expect(
-      within(toolbar()).getByText<HTMLButtonElement>('Execute').disabled,
+      within(toolbar()).getByText<HTMLButtonElement>('Run Query').disabled,
     ).toBe(true);
     pressF9();
     expect(fake.execute).not.toHaveBeenCalled();
@@ -381,7 +390,7 @@ describe('Cube keyboard shortcuts', () => {
     expect(takesRun(fake)).toEqual(['5']);
   });
 
-  test('Does nothing on F9, Ctrl+Z, Execute or Undo while something opened from the node editor holds it open', async () => {
+  test('Does nothing on F9, Ctrl+Z, Run Query or Undo while something opened from the node editor holds it open', async () => {
     const { fake, host, editorState } = await renderPage(limitDocument(10));
     const { commandService } = host.applicationStore;
     await typeSize('5');
@@ -395,7 +404,7 @@ describe('Cube keyboard shortcuts', () => {
       false,
     );
     expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.UNDO)).toBe(false);
-    fireEvent.click(within(toolbar()).getByText('Execute'));
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
     fireEvent.click(within(graph()).getByText('Undo'));
     expect(fake.execute).not.toHaveBeenCalled();
     expect(sizeField().value).toBe('5');
@@ -442,6 +451,66 @@ describe('Cube keyboard shortcuts', () => {
     expect(editorState.history).toHaveLength(0);
   });
 
+  test("Steps through a data space source's query builder on Ctrl+Z and Ctrl+Shift+Z while it shows, and leaves Undo to the cube", async () => {
+    const editor = createFakeCubeDataSpaceEditor();
+    const { editorState } = await renderPage(
+      new CubeDocument({
+        context: {
+          model: createCubeProjectModel(FAKE_TRADES_DATA_SPACE.project),
+          runtime: 'trading::TradeRuntime',
+          mapping: 'trading::TradeMapping',
+        },
+        query: new Query(
+          [
+            new DataSpaceSource('dataSpace101', {
+              dataSpace: FAKE_TRADES_DATA_SPACE.path,
+              executionContext: 'production',
+            }),
+          ],
+          [],
+          'dataSpace101',
+        ),
+      }),
+      (host) => ({ ...host, dataSpaceEditor: editor.editor }),
+    );
+    fireEvent.click(await TEST__findCanvasNode('dataSpace101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const session = guaranteeNonNullable(editor.sessions[0]);
+    act(() => {
+      session.load();
+      session.setEdit(buildFakeDataSpaceEdit('trading::Trade', ['id']));
+    });
+    pressUndo();
+    pressUndo(document, 'metaKey');
+    fireEvent.keyDown(document, {
+      key: 'Z',
+      code: 'KeyZ',
+      ctrlKey: true,
+      shiftKey: true,
+    });
+    expect([session.undone, session.redone]).toEqual([2, 1]);
+    expect(within(graph()).getByText('Undo').title).toBe(
+      'Undo the last change (in the open editor, Ctrl+Z / Cmd+Z undoes its own)',
+    );
+    expect(within(graph()).getByText('Redo').title).toBe(
+      'Redo the last change undone (in the open editor, Ctrl+Shift+Z / Cmd+Shift+Z redoes its own)',
+    );
+    // the editor stays open, its query not applied
+    expect(
+      screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),
+    ).not.toBeNull();
+    expect(editorState.document.query.getNode('dataSpace101')?.isUnset()).toBe(
+      true,
+    );
+    expect(editorState.history).toHaveLength(0);
+    // Undo, the button, is the cube's: it leaves the cube as it was
+    fireEvent.click(within(graph()).getByText('Undo'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.document.query.getNode('dataSpace101')?.isUnset()).toBe(
+      true,
+    );
+  });
+
   test('Enables Undo while the open editor has edits and there is no history, and Undo then leaves the cube as it was', async () => {
     const { editorState } = await renderPage(limitDocument(10));
     const limit = editorState.document.query.getNode('limit101');
@@ -458,10 +527,10 @@ describe('Cube keyboard shortcuts', () => {
     expect(undo.disabled).toBe(true);
   });
 
-  test('Applies the edits in the open editor when Execute is clicked, and runs them', async () => {
+  test('Applies the edits in the open editor when Run Query is clicked, and runs them', async () => {
     const { fake } = await renderPage(limitDocument(10));
     await typeSize('5');
-    fireEvent.click(within(toolbar()).getByText('Execute'));
+    fireEvent.click(within(toolbar()).getByText('Run Query'));
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
     expect(takesRun(fake)).toEqual(['5']);
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
@@ -573,9 +642,9 @@ describe('Cube keyboard shortcuts', () => {
     ).toEqual([]);
   });
 
-  test('Names the shortcuts in the tooltips of Execute and Undo while they are disabled too', async () => {
+  test('Names the shortcuts in the tooltips of Run Query and Undo while they are disabled too', async () => {
     await renderPage(new CubeDocument());
-    const execute = within(toolbar()).getByText<HTMLButtonElement>('Execute');
+    const execute = within(toolbar()).getByText<HTMLButtonElement>('Run Query');
     expect(execute.disabled).toBe(true);
     expect(execute.title).toBe('• Add a table first.\n(F9)');
     const undo = within(graph()).getByText<HTMLButtonElement>('Undo');
@@ -583,10 +652,10 @@ describe('Cube keyboard shortcuts', () => {
     expect(undo.title).toBe('Undo the last change (Ctrl+Z / Cmd+Z)');
   });
 
-  test('Names the shortcuts in the tooltips of Execute and Undo', async () => {
+  test('Names the shortcuts in the tooltips of Run Query and Undo', async () => {
     await renderPage();
-    expect(within(toolbar()).getByText('Execute').title).toBe(
-      'Run the query up to the selected node (F9)',
+    expect(within(toolbar()).getByText('Run Query').title).toBe(
+      'Run the query up to the output step (F9)',
     );
     expect(within(graph()).getByText('Undo').title).toBe(
       'Undo the last change (Ctrl+Z / Cmd+Z)',

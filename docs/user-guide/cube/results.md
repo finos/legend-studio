@@ -5,8 +5,9 @@ sidebar_position: 4
 
 # The results
 
-**Execute** (F9) runs the query up to the step marked **Runs**, and its rows show in the grid below the graph. **Rows**
-caps how many come back. After a change, the results say they are stale until you execute again.
+**Run Query** (F9), at the right end of the bar above the grid, runs the query up to the step marked **Output**, and
+its rows show in the grid below the graph. **Rows**, beside it, caps how many come back. After a change, the results
+say they are out of date until you run the query again.
 
 The pictures below use the example **Top customers by orders**.
 
@@ -24,8 +25,8 @@ Right-click a cell:
 [![A cell's menu, its parts numbered](./images/results/cell-menu.png)](./images/results/cell-menu.png)
 
 1. **Drilldown by** the cell's column: see [Drilling down](#drilling-down).
-2. **Sort by**, **Group by** or **Filter by** the cell's column: each adds that step after the step that runs, as one
-   change to undo; Filter by keeps the rows holding the cell's value. Nothing runs until you execute.
+2. **Sort by**, **Group by** or **Filter by** the cell's column: each adds that step after the output step, as one
+   change to undo; Filter by keeps the rows holding the cell's value. Nothing runs until you run the query.
 3. **Format Column…**: how a number column's values show (greyed out on other columns); see
    [Formatting a column](#formatting-a-column).
 4. **Autosize All Columns** to their contents, or **Reset Columns** to how they were.
@@ -67,18 +68,18 @@ In Server-side mode, each level, and each group opened, runs on the engine.
 4. **Apply to every number column** at once.
 5. **Preview** of the format.
 
-## Runs
+## Run history
 
-**Runs** lists the latest runs, fetches and exports of the page, newest first; the latest 15 are kept.
+**Run history** lists the latest runs, fetches and exports of the page, newest first; the latest 15 are kept.
 
-[![Runs, its parts numbered](./images/results/runs.png)](./images/results/runs.png)
+[![Run history, its parts numbered](./images/results/runs.png)](./images/results/runs.png)
 
 1. **What ran**, when, and how long it took. **▸ SQL** under it shows the SQL it sent to the database.
 2. **Show Pure**: the Pure query it ran.
 3. **Copy JSON**: the query as it was sent to the engine, to debug it.
 4. **Copy SQL**.
 
-**Show SQL**, beside Execute, shows the SQL of the last run.
+**Show SQL**, beside the run's row count, shows the SQL of the last run.
 
 ## Local mode
 

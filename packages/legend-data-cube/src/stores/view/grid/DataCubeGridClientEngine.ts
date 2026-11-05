@@ -31,11 +31,11 @@ import {
   hashObject,
   isBoolean,
   isNonNullable,
+  isObject,
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
 import {
-  PRIMITIVE_TYPE,
   PureClientVersion,
   type TabularDataSet,
   type TDSRow,
@@ -43,13 +43,21 @@ import {
 import { makeObservable, observable, runInAction } from 'mobx';
 import {
   DataCubeConfiguration,
+  type DataCubeColumnConfiguration,
   type DataCubeConfigurationColorKey,
   type DataCubeDimensionConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
-import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  reuseTypeVariableValues,
+  _sortByColName,
+  _toCol,
+} from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeClientModelOption,
+  DataCubeColumnDataType,
+  getDataType,
   isPivotResultColumnName,
 } from '../../core/DataCubeQueryEngine.js';
 import { buildSnapshotFromGridState } from './DataCubeGridSnapshotBuilder.js';
@@ -219,6 +227,23 @@ export function getDataForAllFilteredNodes<T>(client: GridApi<T>): T[] {
   return rows;
 }
 
+export function autoSizeNonVariantColumns<T>(
+  client: GridApi<T>,
+  columns: DataCubeColumnConfiguration[],
+): void {
+  const variantColumnNames = new Set(
+    columns
+      .filter(
+        (column) => getDataType(column.type) === DataCubeColumnDataType.VARIANT,
+      )
+      .map((column) => column.name),
+  );
+  const colIds = (client.getColumns() ?? [])
+    .map((column) => column.getColId())
+    .filter((colId) => !variantColumnNames.has(colId));
+  client.autoSizeColumns(colIds);
+}
+
 /**
  * This method computes the hash code for the parts of the snapshot that should trigger data fetching.
  * This is used to manually trigger server-side row model data source getRows() method.
@@ -234,6 +259,8 @@ export function computeHashCodeForDataFetchManualTrigger(
         pivotStatisticColumnPlacement:
           configuration.pivotStatisticColumnPlacement,
         treeColumnSortDirection: configuration.treeColumnSortDirection,
+        // the grid only applies this when rows are loaded (see `isServerSideGroupOpenByDefault`)
+        initialExpandLevel: configuration.initialExpandLevel,
         columns: configuration.columns
           .map((column) => ({
             name: column.name,
@@ -258,6 +285,18 @@ export function computeHashCodeForDataFetchManualTrigger(
   );
 }
 
+function _cellValue(value: unknown): DataCubeGridClientCellValue {
+  // `ag-grid` shows `false` value as empty string so we have
+  // call `.toString()` to avoid this behavior.
+  if (isBoolean(value)) {
+    return String(value);
+  }
+  if (!isNonNullable(value)) {
+    return INTERNAL__GRID_CLIENT_MISSING_VALUE;
+  }
+  return isObject(value) ? JSON.stringify(value) : (value as string | number);
+}
+
 function buildRowData(
   result: TabularDataSet,
   snapshot: DataCubeSnapshot,
@@ -266,13 +305,7 @@ function buildRowData(
     const row: DataCubeGridClientRowData = {};
     const cols = result.columns;
     _row.values.forEach((value, colIdx) => {
-      // `ag-grid` shows `false` value as empty string so we have
-      // call `.toString()` to avoid this behavior.
-      row[cols[colIdx] as string] = isBoolean(value)
-        ? String(value)
-        : isNonNullable(value)
-          ? value
-          : INTERNAL__GRID_CLIENT_MISSING_VALUE;
+      row[cols[colIdx] as string] = _cellValue(value);
       if (snapshot.data.pivot && snapshot.data.groupBy) {
         row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = Number(
           sum(
@@ -321,11 +354,7 @@ function _createClientRow(
 ): DataCubeGridClientRowData {
   const row: DataCubeGridClientRowData = {};
   rawRow.values.forEach((value, i) => {
-    row[guaranteeNonNullable(columns[i])] = isBoolean(value)
-      ? String(value)
-      : isNonNullable(value)
-        ? value
-        : INTERNAL__GRID_CLIENT_MISSING_VALUE;
+    row[guaranteeNonNullable(columns[i])] = _cellValue(value);
   });
 
   const metadata = new Map<string, DataCubeDimensionalMetadata>();
@@ -455,14 +484,24 @@ async function getCastColumns(
     },
   );
 
+  // NOTE: execution results do not report the type variable values of precise primitives
+  // (e.g. the size of `Varchar(200)`), so take them from the matching column when it
+  // passes through the pivot unchanged
+  const knownColumns = new Map(
+    [
+      ...currentSnapshot.data.sourceColumns,
+      ...currentSnapshot.data.leafExtendedColumns,
+    ].map((column) => [column.name, column]),
+  );
   return result.result.builder.columns.map((column) => {
+    const name = column.name.replace(/^'|'$/g, '');
     const type = column.type as string;
-    return {
-      name: column.name.replace(/^'|'$/g, ''),
-      // FIXME: this is a workaround to help plan generation does not handle well decimal type
-      // Remove this once https://github.com/finos/legend-engine/pull/3400 is productionized
-      type: type === PRIMITIVE_TYPE.DECIMAL ? PRIMITIVE_TYPE.FLOAT : type,
-    };
+    const knownColumn = knownColumns.get(name);
+    return _toCol({
+      name,
+      type,
+      typeVariableValues: reuseTypeVariableValues(knownColumn, type),
+    });
   });
 }
 
@@ -857,7 +896,10 @@ export class DataCubeGridClientServerSideDataSource
     // `setTimeout()` is need to ensure this runs after the grid has been updated with the new data
     // since ag-grid does not provide an event hook for this action for server-side row model.
     setTimeout(() => {
-      this._grid.client.autoSizeAllColumns();
+      autoSizeNonVariantColumns(
+        this._grid.client,
+        this._grid.configuration.columns,
+      );
     }, 0);
     this._view.taskService.endTask(task);
   }

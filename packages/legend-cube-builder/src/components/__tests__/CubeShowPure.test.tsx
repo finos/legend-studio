@@ -96,7 +96,7 @@ const showPureButton = (): HTMLButtonElement =>
 const executeButton = (): HTMLButtonElement =>
   within(
     screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
-  ).getByText<HTMLButtonElement>('Execute');
+  ).getByText<HTMLButtonElement>('Run Query');
 
 /** A render that never answers, until the test answers it */
 const holdRender = (fake: FakeCubeEngine): ((text: string) => void) => {
@@ -124,7 +124,7 @@ afterEach(() => {
 });
 
 describe('Show Pure', () => {
-  test('Shows exactly the text the engine renders for what Execute runs, and copies it', async () => {
+  test('Shows exactly the text the engine renders for what Run Query runs, and copies it', async () => {
     const { host, fake } = await renderPage(sliceDocument());
     const copy = jest
       .spyOn(host.applicationStore.clipboardService, 'copyTextToClipboard')
@@ -133,7 +133,7 @@ describe('Show Pure', () => {
     const dialog = await screen.findByRole('dialog');
     const pure = await within(dialog).findByLabelText('Pure query');
     expect(pure.textContent).toBe(PURE);
-    // the capture node's execution lambda, without Execute's row limit
+    // the capture node's execution lambda, without the run's row limit
     expect(fake.renderPure).toHaveBeenCalledTimes(1);
     expect(printIR(fake.renderPure.mock.calls[0]?.[0] as never)).toBe(
       printIR(
@@ -189,7 +189,7 @@ describe('Show Pure', () => {
     ).toBeNull();
   });
 
-  test("Can't show a query Execute can't run, and says why in the same words", async () => {
+  test("Can't show a query Run Query can't run, and says why in the same words", async () => {
     await renderPage(
       new CubeDocument({
         context: CONTEXT,
@@ -203,7 +203,7 @@ describe('Show Pure', () => {
     );
     expect(executeButton().disabled).toBe(true);
     expect(showPureButton().disabled).toBe(true);
-    // the same reasons; Execute's also names its shortcut
+    // the same reasons; Run Query's also names its shortcut
     expect(executeButton().title).toBe(`${showPureButton().title}\n(F9)`);
     expect(showPureButton().title).toContain('NOPE');
   });
@@ -330,7 +330,7 @@ describe('Show Pure state', () => {
     expect(state.showPure.isRendering).toBe(false);
   });
 
-  test("Leaves out the row limit Execute adds to see if there are more rows, whatever it is, and keeps the user's own steps", async () => {
+  test("Leaves out the row limit a run adds to see if there are more rows, whatever it is, and keeps the user's own steps", async () => {
     const { host, fake } = TEST__createCubeHost();
     const state = new CubeEditorState(host, sliceDocument());
     expect(state.setRowLimit(50)).toBe(true);
@@ -346,7 +346,7 @@ describe('Show Pure state', () => {
         }),
       ),
     );
-    // Execute's lambda, its second argument, fetches one more than the limit
+    // the run's lambda, its second argument, fetches one more than the limit
     const run = printIR(fake.execute.mock.calls[0]?.[1] as never);
     expect(run).toContain('limit(51)');
     expect(shown).not.toContain('limit');
@@ -382,7 +382,7 @@ describe('Show Pure state', () => {
     expect(state.showPure.error?.detail).toBe('Boom');
   });
 
-  test('Opens nothing when Execute could not run', async () => {
+  test('Opens nothing when Run Query could not run', async () => {
     const { host, fake } = TEST__createCubeHost();
     const state = new CubeEditorState(host);
     await flowResult(state.showPure.open());
@@ -425,7 +425,7 @@ describe('Show Pure state', () => {
       'Sources from different databases are not supported yet',
     ],
   ])(
-    'Opens nothing when Execute could not run a cube that has a model and a runtime: %s',
+    'Opens nothing when Run Query could not run a cube that has a model and a runtime: %s',
     async (_case, query, reason) => {
       const { host, fake } = TEST__createCubeHost();
       const state = new CubeEditorState(

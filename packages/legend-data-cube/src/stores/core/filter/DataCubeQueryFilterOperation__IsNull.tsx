@@ -55,6 +55,7 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
       DataCubeColumnDataType.NUMBER,
       DataCubeColumnDataType.DATE,
       DataCubeColumnDataType.TIME,
+      DataCubeColumnDataType.VARIANT,
     ]);
   }
 

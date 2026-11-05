@@ -44,6 +44,28 @@ const BASE_PURE_LANGUAGE_COLOR_TOKENS: monacoEditorAPI.ITokenThemeRule[] = [
   { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'd7ba7d' },
 ];
 
+/**
+ * The light counterparts of the dark colors above, taken from VS Code's
+ * Light+ theme (as the dark ones are from Dark+), each at least 4.5:1 on white
+ */
+const LIGHT_PURE_LANGUAGE_COLOR_TOKENS: monacoEditorAPI.ITokenThemeRule[] = [
+  // NOTE: `monaco-editor` only accepts HEX values, not CSS variables
+  { token: PURE_GRAMMAR_TOKEN.IDENTIFIER, foreground: '795e26' },
+  { token: PURE_GRAMMAR_TOKEN.NUMBER, foreground: '098658' },
+  { token: PURE_GRAMMAR_TOKEN.DATE, foreground: '098658' },
+  { token: PURE_GRAMMAR_TOKEN.COLOR, foreground: '098658' },
+  { token: PURE_GRAMMAR_TOKEN.PACKAGE, foreground: '6a737d' },
+  { token: PURE_GRAMMAR_TOKEN.PARSER, foreground: 'af00db' },
+  { token: PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT, foreground: 'af00db' },
+  { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
+  { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
+  { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '001080' },
+  { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '001080' },
+  { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '0070c1' },
+  { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '267f99' },
+  { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'ee0000' },
+];
+
 export enum CODE_EDITOR_THEME {
   DEFAULT_DARK = 'default-dark',
   GITHUB_LIGHT = 'github-light',
@@ -113,22 +135,14 @@ export const GITHUB_LIGHT_THEME = buildCodeEditorTheme(
   CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT,
   {},
   [
-    // NOTE: `monaco-editor` only accepts HEX values, not CSS variables
-    // { token: PURE_GRAMMAR_TOKEN.IDENTIFIER, foreground: '000000' },
-    // { token: PURE_GRAMMAR_TOKEN.NUMBER, foreground: 'b5cea8' },
-    // { token: PURE_GRAMMAR_TOKEN.DATE, foreground: 'b5cea8' },
-    // { token: PURE_GRAMMAR_TOKEN.COLOR, foreground: 'b5cea8' },
-    // { token: PURE_GRAMMAR_TOKEN.PACKAGE, foreground: '808080' },
-    // { token: PURE_GRAMMAR_TOKEN.PARSER, foreground: 'c586c0' },
-    // { token: PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT, foreground: 'c586c0' },
-    // { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
-    // { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
-    // { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '9cdcfe' },
-    // { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
-    // { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
-    // { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
-    // { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'd7ba7d' },
-    // TODO: handle SQL formatting like in dark theme?
+    ...LIGHT_PURE_LANGUAGE_COLOR_TOKENS,
+    // NOTE: correct a problem with syntax highlighting of string in SQL, as in
+    // the dark theme: `vs` colors SQL strings ff0000 and operators 778899,
+    // both under 4.5:1 on white
+    { token: 'string.sql', foreground: 'a31515' },
+    { token: 'white.sql', foreground: '1f2328' },
+    { token: 'identifier.sql', foreground: '1f2328' },
+    { token: 'operator.sql', foreground: '1f2328' },
   ],
 );
 

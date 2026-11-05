@@ -106,6 +106,7 @@ export class LegendDataCubeBuilderState {
     store: LegendDataCubeBuilderStore,
     specification: DataCubeSpecification,
     persistentDataCube?: PersistentDataCube | undefined,
+    source?: DataCubeSource | undefined,
   ) {
     makeObservable(this, {
       persistentDataCube: observable,
@@ -121,6 +122,7 @@ export class LegendDataCubeBuilderState {
     this._store = store;
     this.initialSpecification = specification;
     this.persistentDataCube = persistentDataCube;
+    this.source = source;
   }
 
   setPersistentDataCube(val: PersistentDataCube | undefined) {
@@ -776,7 +778,14 @@ export class LegendDataCubeBuilderStore {
       newSpecification.configuration =
         builder.initialSpecification.configuration;
 
-      this.setBuilder(new LegendDataCubeBuilderState(this, newSpecification));
+      this.setBuilder(
+        new LegendDataCubeBuilderState(
+          this,
+          newSpecification,
+          undefined,
+          processedSource,
+        ),
+      );
       this.queryEditorDisplay.close();
       this.queryEditorState.pass();
       const queryChanged = state.isQueryChanged;

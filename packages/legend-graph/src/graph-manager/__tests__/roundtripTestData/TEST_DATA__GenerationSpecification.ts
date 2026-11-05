@@ -32,6 +32,19 @@ export const TEST_DATA__GenerationSpecificationRoundtrip = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
   {
+    path: 'test::tMapping2',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'tMapping2',
+      package: 'test',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
     path: 'test::tFileGen',
     content: {
       _type: 'fileGeneration',
@@ -54,7 +67,16 @@ export const TEST_DATA__GenerationSpecificationRoundtrip = [
           type: 'FILE_GENERATION',
         },
       ],
-      generationNodes: [],
+      generationNodes: [
+        {
+          generationElements: ['test::tMapping', 'test::tMapping2'],
+          id: 'test::tMapping,test::tMapping2',
+        },
+        {
+          generationElement: 'test::tMapping2',
+          id: 'afterTheGroup',
+        },
+      ],
       name: 'tGenSpec',
       package: 'test',
     },
@@ -83,7 +105,7 @@ export const TEST_DATA__GenerationSpecificationRoundtrip = [
         {
           _type: 'importAware',
           imports: [],
-          elements: ['test::tMapping'],
+          elements: ['test::tMapping', 'test::tMapping2'],
           parserName: 'Mapping',
         },
         {

@@ -42,9 +42,10 @@ const KEYS = 'Group columns';
 
 /**
  * The functions a row can take: those its column's type offers, or every
- * column function before a column is picked, then Count rows; a function the
- * row holds that isn't among them (an unknown one kept as saved, or one its
- * column doesn't offer) stays listed, so the problem can be seen and fixed
+ * column function before a column is picked, Median to Join Text included
+ * (PLAN §11.28), then Count rows; a function the row holds that isn't among
+ * them (an unknown one kept as saved, or one its column doesn't offer) stays
+ * listed, so the problem can be seen and fixed
  */
 const functionOptions = (row: CubeGroupRow, schema: Schema): string[] => {
   const type = row.column ? schema.lookup(row.column)?.type : undefined;
@@ -64,10 +65,11 @@ const functionOptions = (row: CubeGroupRow, schema: Schema): string[] => {
 /**
  * The Group editor (spec §17.6, PLAN §11.5): the input's columns, each ticked
  * to group by it (a column that can't be compared is shown but can't be
- * ticked), then rows of aggregation column, function and output name. Each
- * row shows its first problem, as the node checks it. Rows can always be
- * added: a column can be aggregated several ways. The lists scroll on their
- * own, so the editor fits wherever it is shown.
+ * ticked), then rows of aggregation column, function, a Percentile's percent
+ * or a Join Text's separator (PLAN §11.28), and output name. Each row shows
+ * its first problem, as the node checks it. Rows can always be added: a
+ * column can be aggregated several ways. The lists scroll on their own, so
+ * the editor fits wherever it is shown.
  */
 export const CubeGroupEditor = observer((props: CubeNodeEditorProps) => {
   const { readOnly } = props;
@@ -111,6 +113,9 @@ export const CubeGroupEditor = observer((props: CubeNodeEditorProps) => {
             readOnly={readOnly}
             onColumn={(column) => draft.setColumn(row.key, column)}
             onFunction={(fn) => draft.setFunction(row.key, fn)}
+            onSetting={(setting, text) =>
+              draft.setSetting(row.key, setting, text)
+            }
             onName={(name) => draft.setName(row.key, name)}
             onRemove={() => draft.removeRow(row.key)}
           />

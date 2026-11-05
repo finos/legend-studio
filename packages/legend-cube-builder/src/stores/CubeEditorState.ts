@@ -45,6 +45,7 @@ import {
   FunctionSource,
   copyQueryNode,
   type CubeContext,
+  DataSpaceSource,
   Join,
   SourceNode,
 } from '@finos/legend-cube';
@@ -61,6 +62,7 @@ import {
   reaction,
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
+import type { CubeFunctionCatalogue } from '../graph-manager/CubeFunctionCatalogue.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
@@ -103,6 +105,12 @@ import {
   getFunctionRecheckWarning,
 } from '../__lib__/LegendCubeFunctionLabels.js';
 import { recheckCubeFunctionSources } from './CubeFunctionRecheck.js';
+import { recheckCubeDataSpaceSources } from './CubeDataSpaceRecheck.js';
+import {
+  CUBE_DATA_SPACE_MESSAGE,
+  getDataSpaceDriftWarning,
+  getDataSpaceRecheckWarning,
+} from '../__lib__/LegendCubeDataSpaceLabels.js';
 import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExamplesState } from './CubeExamplesState.js';
 import { CubeTourState } from './CubeTourState.js';
@@ -168,7 +176,8 @@ type RecheckedSource =
   | FunctionSource
   | DataProductAccessPointSource
   | IngestDatasetSource
-  | ServiceSource;
+  | ServiceSource
+  | DataSpaceSource;
 
 /**
  * The state of one Cube page (PLAN §7.8). The document is immutable: every
@@ -272,6 +281,8 @@ export class CubeEditorState implements CommandRegistrar {
    * another way (PLAN §11.4, §11.11, §11.12)
    */
   private readonly outlineLoading: IReactionDisposer;
+  /** Types each data space source its editor applied a query to (PLAN §11.25) */
+  private readonly dataSpaceTyping: IReactionDisposer;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /** The palette shows icons only; kept per user, never in the cube */
@@ -285,6 +296,14 @@ export class CubeEditorState implements CommandRegistrar {
   private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
   /** Documents an import replaced: undoing back to one opens another cube again */
   private readonly importedOver = new WeakSet<CubeDocument>();
+  /**
+   * The engine's catalogue of Pure functions, for the expression editors'
+   * completions and help (EXPRESSION-EDITOR.md, round 1): loaded when an
+   * expression editor first opens; none until then, or while the engine
+   * doesn't serve it
+   */
+  functionCatalogue: CubeFunctionCatalogue | undefined = undefined;
+  private isLoadingFunctionCatalogue = false;
 
   constructor(host: CubeHost, document = new CubeDocument()) {
     makeObservable<
@@ -293,7 +312,10 @@ export class CubeEditorState implements CommandRegistrar {
     >(this, {
       pendingSources: observable.ref,
       checkingNodes: observable.ref,
+      functionCatalogue: observable.ref,
+      setFunctionCatalogue: action,
       nodesToCheck: computed,
+      dataSpaceSourcesToType: computed,
       isCheckingExpressions: computed,
       checkExpressions: flow,
       modelOutlines: observable.ref,
@@ -401,6 +423,17 @@ export class CubeEditorState implements CommandRegistrar {
       },
       { fireImmediately: true },
     );
+    this.dataSpaceTyping = reaction(
+      () => this.dataSpaceSourcesToType,
+      (waiting) => {
+        if (waiting.length) {
+          flowResult(this.reresolveSources(waiting)).catch(
+            this.host.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+      { fireImmediately: true },
+    );
     // the model, while the cube reads a table: another model loads too
     this.outlineLoading = reaction(
       () =>
@@ -451,6 +484,29 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
+   * Loads the engine's function catalogue for the expression editors, once:
+   * asked again only while the engine has none to give, which it remembers
+   * for an engine without one
+   */
+  loadFunctionCatalogue(): void {
+    if (this.functionCatalogue || this.isLoadingFunctionCatalogue) {
+      return;
+    }
+    this.isLoadingFunctionCatalogue = true;
+    this.host.engine
+      .getFunctionCatalogue()
+      .then((catalogue) => this.setFunctionCatalogue(catalogue))
+      .catch(() => undefined)
+      .finally(() => {
+        this.isLoadingFunctionCatalogue = false;
+      });
+  }
+
+  setFunctionCatalogue(catalogue: CubeFunctionCatalogue | undefined): void {
+    this.functionCatalogue = catalogue;
+  }
+
+  /**
    * The Extends and Filters by Expression of the cube shown that wait for
    * the engine, their input valid, and that aren't being checked (PLAN §11.7,
    * §11.11): new expressions, or an input that changed
@@ -462,6 +518,21 @@ export class CubeEditorState implements CommandRegistrar {
         isCubeEngineCheckedNode(node) &&
         !this.checkingNodes.has(node) &&
         (validity.get(node.id) ?? []).some(isTypingError),
+    );
+  }
+
+  /**
+   * The data space sources whose editor applied a query that isn't typed
+   * yet, and isn't being typed (PLAN §11.25): typed as they land, as a table
+   * is when the source dialog adds it
+   */
+  get dataSpaceSourcesToType(): readonly DataSpaceSource[] {
+    return this.document.query.nodes.filter(
+      (node): node is DataSpaceSource =>
+        node instanceof DataSpaceSource &&
+        !node.isUnset() &&
+        node.resolution.kind === 'unresolved' &&
+        !this.pendingSources.has(node),
     );
   }
 
@@ -802,7 +873,10 @@ export class CubeEditorState implements CommandRegistrar {
    * 2026-10-07), or while something opened from the node editor holds it
    * open. Like their buttons, they finish the node editor first (PLAN §11.8):
    * F9 runs the edited query, and Ctrl+Z undoes what finishing applied. Undo
-   * leaves Ctrl+Z to a text field that has the focus.
+   * leaves Ctrl+Z to a text field that has the focus. An editor with its own
+   * history, the query builder of a data space source (PLAN §11.25), takes
+   * undo and redo while it is open instead: Cube's undo would drop every
+   * change made in it.
    */
   registerCommands(): void {
     const { commandService } = this.host.applicationStore;
@@ -848,26 +922,40 @@ export class CubeEditorState implements CommandRegistrar {
       trigger: () =>
         !this.isDialogOpen &&
         !this.nodeEditor.isHeld &&
-        this.canRedo &&
+        (this.nodeEditor.draft?.history !== undefined || this.canRedo) &&
         !isTypingText(),
-      action: () =>
+      action: () => {
+        const history = this.nodeEditor.draft?.history;
+        if (history) {
+          history.redo();
+          return;
+        }
         this.nodeEditor.runFromKeyboard(
           () => this.redoEdited(),
           isFocusInNodeEditor(),
-        ),
+        );
+      },
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
       trigger: () =>
         !this.isDialogOpen &&
         !this.nodeEditor.isHeld &&
-        (this.canUndo || this.hasEditsToApply) &&
+        (this.nodeEditor.draft?.history !== undefined ||
+          this.canUndo ||
+          this.hasEditsToApply) &&
         !isTypingText(),
-      action: () =>
+      action: () => {
+        const history = this.nodeEditor.draft?.history;
+        if (history) {
+          history.undo();
+          return;
+        }
         this.nodeEditor.runFromKeyboard(
           () => this.undoEdited(),
           isFocusInNodeEditor(),
-        ),
+        );
+      },
     });
   }
 
@@ -1052,12 +1140,19 @@ export class CubeEditorState implements CommandRegistrar {
           (node): node is ServiceSource => node instanceof ServiceSource,
         )
       : [];
+    // a data space source once its editor applied a query (PLAN §11.25);
+    // on another kind of cube, the no-mix rule's to flag
+    const dataSpaces = kept.filter(
+      (node): node is DataSpaceSource =>
+        node instanceof DataSpaceSource && !node.isUnset(),
+    );
     const sources: readonly RecheckedSource[] = [
       ...tables,
       ...functions,
       ...accessPoints,
       ...dataSets,
       ...services,
+      ...dataSpaces,
     ];
     if (!sources.length) {
       return;
@@ -1071,6 +1166,7 @@ export class CubeEditorState implements CommandRegistrar {
         dataSetAnswers,
         serviceAnswers,
         functionAnswers,
+        dataSpaceAnswers,
       ] = (yield Promise.all([
         tables.length
           ? this.host.engine
@@ -1124,6 +1220,13 @@ export class CubeEditorState implements CommandRegistrar {
               functions,
             )
           : new Map(),
+        dataSpaces.length
+          ? recheckCubeDataSpaceSources(
+              this.host.engine,
+              context.model,
+              dataSpaces,
+            )
+          : new Map(),
       ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
       answers = new Map([
         ...(tableAnswers ?? []),
@@ -1131,6 +1234,7 @@ export class CubeEditorState implements CommandRegistrar {
         ...(dataSetAnswers ?? []),
         ...(serviceAnswers ?? []),
         ...(functionAnswers ?? []),
+        ...(dataSpaceAnswers ?? []),
       ]);
     } finally {
       this.pendingSources = new Set(
@@ -1146,6 +1250,7 @@ export class CubeEditorState implements CommandRegistrar {
       const isAccessPoint = source instanceof DataProductAccessPointSource;
       const isDataSet = source instanceof IngestDatasetSource;
       const isFunction = source instanceof FunctionSource;
+      const isDataSpace = source instanceof DataSpaceSource;
       const answer =
         answers.get(source.id) ??
         new CubeEngineError(
@@ -1156,7 +1261,9 @@ export class CubeEditorState implements CommandRegistrar {
               ? CUBE_INGEST_RECHECK_MESSAGE.NO_ANSWER
               : isFunction
                 ? CUBE_FUNCTION_MESSAGE.NO_ANSWER
-                : 'The engine gave no schema for this table',
+                : isDataSpace
+                  ? CUBE_DATA_SPACE_MESSAGE.NO_ANSWER
+                  : 'The engine gave no schema for this table',
           source.id,
         );
       const saved =
@@ -1172,7 +1279,9 @@ export class CubeEditorState implements CommandRegistrar {
                 ? getDataSetRecheckWarning(answer.firstLine)
                 : isFunction
                   ? getFunctionRecheckWarning(answer.firstLine)
-                  : getSourceRecheckWarning(answer.firstLine),
+                  : isDataSpace
+                    ? getDataSpaceRecheckWarning(answer.firstLine)
+                    : getSourceRecheckWarning(answer.firstLine),
           ]);
         } else if (
           source.resolution.kind !== 'failed' ||
@@ -1203,7 +1312,9 @@ export class CubeEditorState implements CommandRegistrar {
               ? getDataSetDriftWarning(diff)
               : isFunction
                 ? getFunctionDriftWarning(diff)
-                : getSchemaDriftWarning(diff),
+                : isDataSpace
+                  ? getDataSpaceDriftWarning(diff)
+                  : getSchemaDriftWarning(diff),
         ]);
       }
       replacements.set(source, resolved);
@@ -1284,7 +1395,8 @@ export class CubeEditorState implements CommandRegistrar {
       source instanceof DataProductAccessPointSource ||
       source instanceof IngestDatasetSource ||
       source instanceof ServiceSource ||
-      source instanceof FunctionSource
+      source instanceof FunctionSource ||
+      (source instanceof DataSpaceSource && !source.isUnset())
     ) {
       // a Refresh reads the deployed artifact or definition again
       yield flowResult(this.reresolveSources([source], true));
@@ -1555,7 +1667,7 @@ export class CubeEditorState implements CommandRegistrar {
 
   /**
    * The kinds of source the host serves: data products, ingest data sets and
-   * services only with their catalogs, tables and functions only with a tab
+   * services only with their catalogs, data spaces only with an editor, tables and functions only with a tab
    * that reads them (Studio offers ingest data sets alone). The cube's kind
    * may still disable one (`canAddNode`)
    */
@@ -1568,9 +1680,12 @@ export class CubeEditorState implements CommandRegistrar {
       dataProductTab,
       ingestTab,
       serviceTab,
+      dataSpaceTab,
     } = this.sourcePicker;
     const isServed = (type: string): boolean => {
       switch (type) {
+        case DataSpaceSource.TYPE:
+          return dataSpaceTab.isAvailable;
         case DataProductAccessPointSource.TYPE:
           return dataProductTab.isAvailable;
         case IngestDatasetSource.TYPE:
@@ -1899,6 +2014,7 @@ export class CubeEditorState implements CommandRegistrar {
   dispose(): void {
     this.rechecking();
     this.outlineLoading();
+    this.dataSpaceTyping();
     this.execution.stop();
     this.nodeEditor.dispose();
   }

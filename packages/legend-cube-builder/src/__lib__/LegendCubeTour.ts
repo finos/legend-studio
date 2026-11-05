@@ -93,14 +93,14 @@ export const CUBE_EDITOR_TOUR: readonly CubeTourStep[] = Object.freeze([
   {
     anchor: CUBE_TOUR_ANCHOR.RUNNING_STEP,
     placement: 'bottom',
-    title: 'The step that runs',
-    text: 'Execute runs the query up to the step marked Runs. To run up to another step, open its editor and click Run this step.',
+    title: 'The output step',
+    text: "Run Query runs the query up to the step marked Output. To see another step's rows, open its editor and click Set as output.",
   },
   {
     anchor: CUBE_TOUR_ANCHOR.EXECUTE,
     placement: 'top',
-    title: 'Execute',
-    text: `Runs the query and shows its rows below (${EXECUTE_SHORTCUT_LABEL}). Rows caps how many rows come back.`,
+    title: 'Run Query',
+    text: `Run the query and see its rows below (${EXECUTE_SHORTCUT_LABEL}); while it runs, the button is Stop. Rows caps how many rows come back.`,
   },
   {
     anchor: CUBE_TOUR_ANCHOR.GRID_MODE,
@@ -123,7 +123,7 @@ export const CUBE_EDITOR_TOUR: readonly CubeTourStep[] = Object.freeze([
   {
     anchor: CUBE_TOUR_ANCHOR.RUNS,
     placement: 'top',
-    title: 'Runs',
+    title: 'Run history',
     text: 'The latest runs, fetches and exports, each with its SQL and how long it took.',
   },
   {
@@ -148,7 +148,7 @@ export const CUBE_EDITOR_TOUR: readonly CubeTourStep[] = Object.freeze([
     anchor: CUBE_TOUR_ANCHOR.VIEW,
     placement: 'bottom',
     title: 'Undo, Show Pure, Hide graph',
-    text: `Undo (${UNDO_SHORTCUT_LABEL}) and Redo (${REDO_SHORTCUT_LABEL}) every change. Show Pure shows the Pure query Execute runs. Hide graph leaves more room for the results.`,
+    text: `Undo (${UNDO_SHORTCUT_LABEL}) and Redo (${REDO_SHORTCUT_LABEL}) every change. Show Pure shows the Pure query that runs. Hide graph leaves more room for the results.`,
   },
   {
     anchor: CUBE_TOUR_ANCHOR.PAGE_MENU,

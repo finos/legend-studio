@@ -29,6 +29,7 @@ import {
 } from '../canvas/CubeNodeEditorAnchor.js';
 import { returnFocusToCubeCanvasNode } from '../canvas/CubeCanvasNodeFocus.js';
 import { CubeNodeEditorPanel } from './CubeNodeEditorPanel.js';
+import { CUBE_WIDE_NODE_EDITORS } from './CubeNodeEditorRegistry.js';
 import { useCubeNodeEditorDismiss } from './useCubeNodeEditorDismiss.js';
 
 /**
@@ -36,6 +37,9 @@ import { useCubeNodeEditorDismiss } from './useCubeNodeEditorDismiss.js';
  * Legend's root is 62.5%, so it is written in pixels)
  */
 export const CUBE_NODE_EDITOR_WIDTH = 432;
+
+/** A wide editor's width, e.g. a data space source's query builder (PLAN §11.25): inside the window */
+const CUBE_WIDE_NODE_EDITOR_WIDTH = 'min(1280px, calc(100vw - 16px))';
 
 /**
  * Above the canvas and the grid, below MUI's dialogs (1300), so a dialog
@@ -87,6 +91,10 @@ export const CubeNodeEditorPopper = observer(
   }) => {
     const { editorState, positions } = props;
     const { nodeId } = editorState.nodeEditor;
+    const nodeType =
+      nodeId === undefined
+        ? undefined
+        : editorState.document.query.getNode(nodeId)?.type;
     const transform = useStore((state) => state.transform);
     const canvas = useStore((state) => state.domNode);
     // a canvas that changes size may show or hide the node
@@ -169,7 +177,10 @@ export const CubeNodeEditorPopper = observer(
         modifiers={MODIFIERS}
         style={{
           zIndex: CUBE_NODE_EDITOR_Z_INDEX,
-          width: CUBE_NODE_EDITOR_WIDTH,
+          width:
+            nodeType !== undefined && CUBE_WIDE_NODE_EDITORS.has(nodeType)
+              ? CUBE_WIDE_NODE_EDITOR_WIDTH
+              : CUBE_NODE_EDITOR_WIDTH,
           visibility: inView ? undefined : 'hidden',
         }}
       >

@@ -34,6 +34,9 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type ElementTypeLabelGetter,
+  type NewElementDriver,
+  type NewElementDriverCreator,
+  type NewElementDriverEditorRenderer,
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
 } from '@finos/legend-application-studio';
 import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
@@ -43,6 +46,8 @@ import {
   BLANK_PERSISTENCE_SNIPPET,
 } from '../../__lib__/studio/DSL_Persistence_LegendStudioCodeSnippet.js';
 import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Persistence_LegendStudioDocumentation.js';
+import { NewPersistenceDriver } from '../../stores/studio/DSL_Persistence_NewPersistenceDriver.js';
+import { NewPersistenceDriverEditor } from './DSL_Persistence_NewPersistenceDriverEditor.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import type { DocumentationEntry } from '@finos/legend-shared';
 
@@ -137,9 +142,36 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
         state: NewElementState,
       ): PackageableElement | undefined => {
         if (type === PERSISTENCE_ELEMENT_TYPE) {
-          return new Persistence(name);
+          return state
+            .getNewElementDriver(NewPersistenceDriver)
+            .createElement(name);
         } else if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
           return new PersistenceContext(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementDriverCreators(): NewElementDriverCreator[] {
+    return [
+      (
+        editorStore: EditorStore,
+        type: string,
+      ): NewElementDriver<PackageableElement> | undefined => {
+        if (type === PERSISTENCE_ELEMENT_TYPE) {
+          return new NewPersistenceDriver(editorStore);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementDriverEditorRenderers(): NewElementDriverEditorRenderer[] {
+    return [
+      (type: string): React.ReactNode | undefined => {
+        if (type === PERSISTENCE_ELEMENT_TYPE) {
+          return <NewPersistenceDriverEditor />;
         }
         return undefined;
       },

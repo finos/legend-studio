@@ -17,6 +17,7 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  DataSpaceSource,
   Difference,
   IngestDatasetSource,
   Distinct,
@@ -43,6 +44,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeConcatEditor } from './CubeConcatEditor.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
+import { CubeDataSpaceSourceEditor } from './CubeDataSpaceSourceEditor.js';
 import { CubeExplodeEditor } from './CubeExplodeEditor.js';
 import { CubeExpressionFilterEditor } from './CubeExpressionFilterEditor.js';
 import { CubePivotEditor } from './CubePivotEditor.js';
@@ -84,6 +86,15 @@ export interface CubeNodeEditorProps {
 }
 
 /**
+ * The node types whose editor fills a wide, tall panel: a data space
+ * source's, the host's query builder (PLAN §11.25); every other one is one
+ * width, its body as tall as it needs, up to a third of the window
+ */
+export const CUBE_WIDE_NODE_EDITORS: ReadonlySet<string> = new Set([
+  DataSpaceSource.TYPE,
+]);
+
+/**
  * The editor of each node type, by type. A type without one shows its
  * description; a type with one either has a draft factory in
  * `CUBE_NODE_DRAFT_FACTORIES` or edits nothing (a source).
@@ -97,6 +108,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [IngestDatasetSource.TYPE, CubeIngestSourceEditor],
   [ServiceSource.TYPE, CubeServiceSourceEditor],
+  [DataSpaceSource.TYPE, CubeDataSpaceSourceEditor],
   [Sort.TYPE, CubeSortEditor],
   [Group.TYPE, CubeGroupEditor],
   [Filter.TYPE, CubeFilterEditor],

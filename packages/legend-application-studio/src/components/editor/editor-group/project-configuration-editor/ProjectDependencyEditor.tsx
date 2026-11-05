@@ -76,6 +76,7 @@ import {
   LogEvent,
   prettyCONSTName,
   compareSemVerVersions,
+  isSemVer,
 } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
@@ -115,12 +116,37 @@ const buildProjectOption = (project: StoreProjectData): ProjectOption => ({
   value: project,
 });
 
+/**
+ * The newest released version (plain semver, no prerelease part such as `-SNAPSHOT`) when it
+ * is newer than the one in use; undefined for snapshots and other non-release versions.
+ */
+export const getNewerReleasedVersion = (
+  currentVersion: string,
+  versions: string[],
+): string | undefined => {
+  const isRelease = (version: string): boolean =>
+    isSemVer(version) && !version.includes('-');
+  if (!isRelease(currentVersion)) {
+    return undefined;
+  }
+  const latest = versions
+    .filter(isRelease)
+    .toSorted((v1, v2) => compareSemVerVersions(v2, v1))[0];
+  return latest && compareSemVerVersions(latest, currentVersion) > 0
+    ? latest
+    : undefined;
+};
+
 const ProjectDependencyActions = observer(
-  (props: { dependencyEditorState: ProjectDependencyEditorState }) => {
+  (props: {
+    dependencyEditorState: ProjectDependencyEditorState;
+    directDependencyCount: number;
+  }) => {
     const { dependencyEditorState: dependencyEditorState } = props;
     const applicationStore = useApplicationStore();
-    const hasConflicts =
-      dependencyEditorState.dependencyReport?.conflicts.length;
+    const hasConflicts = Boolean(
+      dependencyEditorState.dependencyReport?.conflicts.length,
+    );
     const hasDependencyChanges = dependencyEditorState.hasDependencyChanges;
     const viewTree = (): void => {
       if (dependencyEditorState.dependencyReport) {
@@ -137,35 +163,99 @@ const ProjectDependencyActions = observer(
         dependencyEditorState.validateAndFetchDependencyReport(),
       ).catch(applicationStore.alertUnhandledError);
     };
+    const report = dependencyEditorState.dependencyReport;
+    const conflicts = report?.conflicts ?? [];
+    // the tree has one node per version, so a project in conflict appears more than once
+    const versionsInTree = report
+      ? Array.from(report.graph.nodes.values())
+      : [];
+    const projectsInTree = new Set(
+      versionsInTree.map((node) => `${node.groupId}:${node.artifactId}`),
+    ).size;
     return (
-      <div className="project-dependency-editor__info">
-        <Button
-          onClick={viewTree}
-          disabled={!dependencyEditorState.dependencyReport}
-          title="View Dependency Explorer"
-          text="View Dependency Explorer"
-        />
-        {Boolean(hasConflicts) && (
-          <Button
-            className="project-dependency-editor__conflicts-btn"
-            text="View Conflicts"
-            onClick={viewConflict}
-            disabled={!dependencyEditorState.dependencyReport?.conflicts.length}
-            title="View any conflicts in your dependencies"
-          />
-        )}
-        {hasDependencyChanges && (
-          <Button
-            className="project-dependency-editor__validate-btn"
-            text="Validate Dependencies"
-            onClick={validateDependencies}
-            disabled={
-              dependencyEditorState.validatingDependenciesState.isInProgress
+      <>
+        <div className="project-dependency-editor__summary">
+          <div className="project-dependency-editor__stat">
+            <span className="project-dependency-editor__stat__value">
+              {props.directDependencyCount}
+            </span>
+            <span className="project-dependency-editor__stat__label">
+              direct
+            </span>
+          </div>
+          <button
+            className="project-dependency-editor__stat"
+            onClick={viewTree}
+            disabled={!report}
+            title={
+              report
+                ? `${projectsInTree} projects, ${versionsInTree.length} versions in the dependency tree. Click to open the dependency explorer.`
+                : undefined
             }
-            title="Validate dependency changes and update dependency tree"
-          />
-        )}
-      </div>
+          >
+            <span className="project-dependency-editor__stat__value">
+              {report ? projectsInTree : '–'}
+            </span>
+            <span className="project-dependency-editor__stat__label">
+              projects in the tree
+            </span>
+          </button>
+          <button
+            className={clsx('project-dependency-editor__stat', {
+              'project-dependency-editor__stat--conflict': hasConflicts,
+            })}
+            onClick={viewConflict}
+            disabled={!hasConflicts}
+            title="View any conflicts in your dependencies"
+          >
+            <span className="project-dependency-editor__stat__value">
+              {report ? conflicts.length : '–'}
+            </span>
+            <span className="project-dependency-editor__stat__label">
+              {conflicts.length === 1 ? 'conflict' : 'conflicts'}
+            </span>
+          </button>
+          <div className="project-dependency-editor__summary__actions">
+            {hasDependencyChanges && (
+              <Button
+                className="project-dependency-editor__validate-btn"
+                text="Validate Dependencies"
+                onClick={validateDependencies}
+                disabled={
+                  dependencyEditorState.validatingDependenciesState.isInProgress
+                }
+                title="Validate dependency changes and update dependency tree"
+              />
+            )}
+            <Button
+              onClick={viewTree}
+              disabled={!report}
+              title="View Dependency Explorer"
+              text="Dependency Explorer"
+            />
+          </div>
+        </div>
+        {conflicts.map((conflict) => (
+          <div
+            key={`${conflict.groupId}:${conflict.artifactId}`}
+            className="project-dependency-editor__conflict-banner"
+          >
+            <div className="project-dependency-editor__conflict-banner__text">
+              <strong>
+                {conflict.groupId}:{conflict.artifactId}
+              </strong>{' '}
+              is required at {conflict.versions.length} versions:{' '}
+              {conflict.versions.map((v) => v.versionId).join(', ')}
+            </div>
+            <button
+              className="project-dependency-editor__conflict-banner__action"
+              onClick={viewConflict}
+            >
+              See where they come from
+            </button>
+          </div>
+        ))}
+      </>
     );
   },
 );
@@ -1381,6 +1471,7 @@ const ProjectVersionDependencyEditor = observer(
       });
     const selectedVersionOption: VersionOption | null =
       versionOptions.find((v) => v.value === version) ?? null;
+    const newerVersion = getNewerReleasedVersion(version, versions);
     const versionDisabled =
       Boolean(!versions.length || !projectDependency.projectId.length) ||
       !configState.associatedProjectsAndVersionsFetched ||
@@ -1463,35 +1554,55 @@ const ProjectVersionDependencyEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
         />
-        <CustomSelectorInput
-          className="project-dependency-editor__selector"
-          inputRef={versionSelectorRef}
-          options={versionOptions}
-          isClearable={true}
-          escapeClearsValue={true}
-          onChange={onVersionSelectionChange}
-          value={selectedVersionOption}
-          disabled={versionDisabled}
-          placeholder={
-            fetchSelectedProjectVersionsStatus.isInProgress
-              ? 'Fetching project versions'
-              : projectSelectorPlaceholder
-          }
-          isLoading={
-            editorStore.projectConfigurationEditorState
-              .fetchingProjectVersionsState.isInProgress ||
-            fetchSelectedProjectVersionsStatus.isInProgress
-          }
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-        />
-        {selectedProject && selectedVersionOption && (
-          <ProjectDependencyInlineExclusionsSelector
-            projectDependency={projectDependency}
-            isReadOnly={isReadOnly}
+        <div className="project-dependency-editor__version">
+          <CustomSelectorInput
+            className="project-dependency-editor__selector"
+            inputRef={versionSelectorRef}
+            options={versionOptions}
+            isClearable={true}
+            escapeClearsValue={true}
+            onChange={onVersionSelectionChange}
+            value={selectedVersionOption}
+            disabled={versionDisabled}
+            placeholder={
+              fetchSelectedProjectVersionsStatus.isInProgress
+                ? 'Fetching project versions'
+                : projectSelectorPlaceholder
+            }
+            isLoading={
+              editorStore.projectConfigurationEditorState
+                .fetchingProjectVersionsState.isInProgress ||
+              fetchSelectedProjectVersionsStatus.isInProgress
+            }
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
-        )}
+          {newerVersion && (
+            <button
+              className="project-dependency-editor__update-btn"
+              disabled={isReadOnly}
+              onClick={(): void =>
+                onVersionSelectionChange({
+                  value: newerVersion,
+                  label: newerVersion,
+                })
+              }
+              title={`Update to the newest released version, ${newerVersion}`}
+            >
+              {newerVersion} available
+            </button>
+          )}
+        </div>
+        <div className="project-dependency-editor__exclusions">
+          {selectedProject && selectedVersionOption && (
+            <ProjectDependencyInlineExclusionsSelector
+              projectDependency={projectDependency}
+              isReadOnly={isReadOnly}
+            />
+          )}
+        </div>
 
         <ControlledDropdownMenu
           className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"
@@ -1574,7 +1685,31 @@ export const ProjectDependencyEditor = observer(() => {
                   : ''}
         </div>
       )}
-      <ProjectDependencyActions dependencyEditorState={dependencyEditorState} />
+      <ProjectDependencyActions
+        dependencyEditorState={dependencyEditorState}
+        directDependencyCount={
+          currentProjectConfiguration.projectDependencies.length
+        }
+      />
+      {currentProjectConfiguration.projectDependencies.length ? (
+        <div className="project-dependency-editor__table-header">
+          <div className="project-dependency-editor__table-header__project">
+            Project
+          </div>
+          <div className="project-dependency-editor__table-header__version">
+            Version
+          </div>
+          <div className="project-dependency-editor__table-header__exclusions">
+            Exclusions
+          </div>
+          <div className="project-dependency-editor__table-header__actions" />
+        </div>
+      ) : (
+        <div className="project-dependency-editor__empty">
+          This project has no dependencies. Use + to depend on another
+          project&apos;s released version.
+        </div>
+      )}
       {currentProjectConfiguration.projectDependencies.map(
         (projectDependency) => (
           <div key={projectDependency._UUID}>

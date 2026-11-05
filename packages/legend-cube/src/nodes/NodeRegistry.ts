@@ -44,6 +44,7 @@ import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAcce
 import { emitIngestDatasetSource } from '../ir/emitters/IngestDatasetSourceEmitter.js';
 import { emitServiceSource } from '../ir/emitters/ServiceSourceEmitter.js';
 import { emitFunctionSource } from '../ir/emitters/FunctionSourceEmitter.js';
+import { emitDataSpaceSource } from '../ir/emitters/DataSpaceSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
@@ -66,11 +67,16 @@ import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProdu
 import { INGEST_DATASET_SOURCE_CODEC } from '../spec/codecs/IngestDatasetSourceCodec.js';
 import { SERVICE_SOURCE_CODEC } from '../spec/codecs/ServiceSourceCodec.js';
 import { FUNCTION_SOURCE_CODEC } from '../spec/codecs/FunctionSourceCodec.js';
+import { DATA_SPACE_SOURCE_CODEC } from '../spec/codecs/DataSpaceSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import { DataProductAccessPointSource } from './sources/DataProductAccessPointSource.js';
 import { IngestDatasetSource } from './sources/IngestDatasetSource.js';
 import { ServiceSource } from './sources/ServiceSource.js';
 import { FunctionSource } from './sources/FunctionSource.js';
+import {
+  DataSpaceSource,
+  dataSpaceSourcesShareContext,
+} from './sources/DataSpaceSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -214,6 +220,24 @@ export const FUNCTION_SOURCE_DEFINITION: SourceDefinition<FunctionSource> = {
   resolve: (node, resolution) => node.withResolution(resolution),
   emit: (node) => emitFunctionSource(node),
   spec: FUNCTION_SOURCE_CODEC,
+};
+
+/**
+ * A class of a data space, queried in the host's query builder (PLAN
+ * §11.25), in beta. Only a host with a data space editor offers it.
+ */
+export const DATA_SPACE_SOURCE_DEFINITION: SourceDefinition<DataSpaceSource> = {
+  kind: 'source',
+  type: DataSpaceSource.TYPE,
+  label: 'Data Space',
+  icon: 'dataSpace',
+  beta: true,
+  fromCoordinates: (id, coordinates) =>
+    DataSpaceSource.fromCoordinates(id, coordinates),
+  resolve: (node, resolution) => node.withResolution(resolution),
+  queryRules: [dataSpaceSourcesShareContext],
+  emit: (node) => emitDataSpaceSource(node),
+  spec: DATA_SPACE_SOURCE_CODEC,
 };
 
 /** A deployed service (PLAN §6.4), in progress: picked, not read yet */
@@ -488,6 +512,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     INGEST_DATASET_SOURCE_DEFINITION,
+    DATA_SPACE_SOURCE_DEFINITION,
     FUNCTION_SOURCE_DEFINITION,
     SERVICE_SOURCE_DEFINITION,
     SORT_DEFINITION,

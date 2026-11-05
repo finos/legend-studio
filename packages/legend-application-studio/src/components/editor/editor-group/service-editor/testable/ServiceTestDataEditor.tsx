@@ -84,6 +84,7 @@ import {
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
 import type { TableOption } from '../../data-editor/RelationalCSVDataEditor.js';
 import { getPrimitiveTypeFromRelationalType } from '../../../../../stores/editor/utils/MockDataUtils.js';
+import { RegenerateTestsWarning } from '../../testable/RegenerateTestsWarning.js';
 
 export interface ColumnOption {
   value: Column;
@@ -427,15 +428,18 @@ export const UseDataElementModal = observer(
   },
 );
 
+const TEST_DATA_CHANGED_WARNING_TEXT =
+  'Test data has changed. Click to regenerate test suites.';
+
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
     const { connectionTestDataState } = props;
     const applicationStore = useApplicationStore();
     const USER_ATTESTATION_MESSAGE =
       'Data generated has not been anonmyized. I attest that I am aware of the sensitive data leakage risk when using real data in tests.';
-    const isReadOnly =
-      connectionTestDataState.testDataState.testSuiteState.testableState
-        .serviceEditorState.isReadOnly;
+    const testableState =
+      connectionTestDataState.testDataState.testSuiteState.testableState;
+    const isReadOnly = testableState.serviceEditorState.isReadOnly;
     const dataElements =
       connectionTestDataState.editorStore.graphManagerState.graph.dataElements;
     const openShared = (): void => {
@@ -506,6 +510,12 @@ export const ConnectionTestDataEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
+            {!isReadOnly && testableState.isTestDataChanged && (
+              <RegenerateTestsWarning
+                text={TEST_DATA_CHANGED_WARNING_TEXT}
+                testableState={testableState}
+              />
+            )}
             <div
               className={clsx('panel__content__form__section__toggler', {
                 'panel__content__form__section__toggler--disabled': isReadOnly,

@@ -1,0 +1,94 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+:root {
+  // An exact ID or DID match looks the same in both themes: it has to stand out on
+  // the tiles' black panel and on light and dark list rows alike.
+  --marketplace-exact-match-bg: #ffe08a;
+  --marketplace-exact-match-text: #3d2e00;
+  --marketplace-exact-match-ring: #f2b705;
+}
+
+// `<data product ID> · DID <deployment ID>` under a search result's title. The
+// color comes from the tile or the list row around it.
+.marketplace-lakehouse-product-ids {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 1.45rem;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  // a long ID ends in an ellipsis, the DID always shows
+  &__id {
+    flex: 0 1 auto;
+  }
+
+  &__did {
+    flex: none;
+  }
+
+  &__separator {
+    flex: none;
+    opacity: 0.6;
+  }
+
+  &__did-label {
+    margin-right: 0.5rem;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    opacity: 0.75;
+  }
+
+  &__did-value {
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  // the value the query is
+  &__id--exact-match .copyable-id__content,
+  &__did--exact-match &__did-value {
+    padding: 0 0.3rem;
+    border-radius: 0.3rem;
+    background: var(--marketplace-exact-match-bg);
+    color: var(--marketplace-exact-match-text);
+  }
+
+  &__exact-match {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 1.2rem;
+    background: var(--marketplace-exact-match-bg);
+    color: var(--marketplace-exact-match-text);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+
+    svg {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+}

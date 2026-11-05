@@ -156,6 +156,29 @@ export const DataCubeSettingsPanel = observer(() => {
           <div className="mt-1 flex h-5">
             <div className="flex h-full">
               <div className="flex h-5 items-center text-xl font-medium">
+                <DataCubeIcon.Appearance />
+              </div>
+              <div className="ml-1 flex h-5 items-center text-xl font-medium">
+                Appearance
+              </div>
+            </div>
+          </div>
+          {configurations
+            .filter(
+              (setting) => setting.group === DataCubeSettingGroup.APPEARANCE,
+            )
+            .map((configuration) => (
+              <DataCubeSettingEntryDisplay
+                key={configuration.key}
+                configuration={configuration}
+              />
+            ))}
+
+          <div className="my-2 h-[1px] w-full bg-neutral-200" />
+
+          <div className="mt-1 flex h-5">
+            <div className="flex h-full">
+              <div className="flex h-5 items-center text-xl font-medium">
                 <DataCubeIcon.Table />
               </div>
               <div className="ml-1 flex h-5 items-center text-xl font-medium">

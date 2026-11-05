@@ -17,6 +17,7 @@
 import {
   Concat,
   DataProductAccessPointSource,
+  DataSpaceSource,
   Difference,
   IngestDatasetSource,
   Distinct,
@@ -59,6 +60,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   /** Added by Cube: the original's service source is read another way, still to come (PLAN §6.4) */
   [ServiceSource.TYPE]:
     "Sources data from a deployed service. In progress: Cube can't read services yet.",
+  /** Added by Cube: the original has no data space source (PLAN §11.25) */
+  [DataSpaceSource.TYPE]:
+    "Sources data from a class of a data space, as the query builder queries it: its columns, and the rows its filter keeps. Cube's own steps sort, group and filter them after it.",
   [Concat.TYPE]:
     'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
   [Difference.TYPE]:
@@ -97,12 +101,19 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [UnknownNode.TYPE]: 'Source or transformation unknown to the application.',
 };
 
-/** The tooltip of the editor's Select link (spec §17.9) */
+/** The tooltip of the editor's Set as output link (spec §17.9) */
 export const SELECT_NODE_TOOLTIP =
-  'Make this the step that runs: Execute shows its rows in the grid.';
+  'Make this the output step: Run Query shows its rows in the grid.';
 
-/** The marker on the step that runs, on the canvas and in its editor */
-export const RUNNING_NODE_LABEL = 'Runs';
+/**
+ * The label on the output step, the step Run Query runs up to, on the canvas
+ * and in its editor: a label, never a button (the manager's feedback, 2026-10-29)
+ */
+export const RUNNING_NODE_LABEL = 'Output';
 
-/** What a node's menu and editor call making it the step that runs */
-export const RUN_THIS_STEP_LABEL = 'Run this step';
+/** What the output step's label says on hover */
+export const RUNNING_NODE_TITLE =
+  'The output step: Run Query runs the query up to here and shows its rows';
+
+/** What a node's menu and editor call making it the output step; it runs nothing */
+export const RUN_THIS_STEP_LABEL = 'Set as output';

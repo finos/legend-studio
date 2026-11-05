@@ -32,6 +32,7 @@ import {
   V1_transformElementReferencePointer,
   V1_initPackageableElement,
 } from './V1_CoreTransformerHelper.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 // ----------------------------------------------- GENERATION SPECIFICATION ----------------------------------------
 
@@ -39,8 +40,16 @@ const transformGenerationTreeNode = (
   element: GenerationTreeNode,
 ): V1_GenerationTreeNode => {
   const treeNode = new V1_GenerationTreeNode();
-  treeNode.generationElement =
-    element.generationElement.valueForSerialization ?? '';
+  // the form the node was written in is kept, so a specification is not rewritten on save
+  if (element.writtenAsSingleElement) {
+    treeNode.generationElement =
+      guaranteeNonNullable(element.generationElements[0])
+        .valueForSerialization ?? '';
+  } else {
+    treeNode.generationElements = element.generationElements.map(
+      (generationElement) => generationElement.valueForSerialization ?? '',
+    );
+  }
   treeNode.id = element.id;
   return treeNode;
 };

@@ -287,11 +287,11 @@
     height: 2.8rem;
     padding: 0 1rem;
     font-size: 1.2rem;
-    background: var(--color-dark-grey-200);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-panel-header);
+    color: var(--color-text-secondary);
 
     &:hover {
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
     }
   }
 
@@ -301,10 +301,12 @@
     &__label {
       &--query {
         background: var(--color-accent) !important;
+        color: var(--color-text-on-accent);
       }
 
       &--test {
         background: var(--color-pink-500) !important;
+        color: var(--color-text-on-accent);
       }
     }
 

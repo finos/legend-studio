@@ -23,10 +23,15 @@ import { DataCubeTitleBar } from './DataCubeTitleBar.js';
 import { DataCubeStatusBar } from './DataCubeStatusBar.js';
 import type { LayoutManager } from '../stores/services/DataCubeLayoutService.js';
 import { DataCubeLayout } from './core/DataCubeLayout.js';
-import { DataCubeIcon } from '@finos/legend-art';
+import { cn, DataCubeIcon } from '@finos/legend-art';
 import type { TaskManager } from '../stores/services/DataCubeTaskService.js';
 import { LEGEND_DATACUBE_TEST_ID } from '../__lib__/DataCubeTesting.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from './core/DataCubePureCodeEditorUtils.js';
+import {
+  DataCubeColorTheme,
+  DataCubeColorThemeProvider,
+  getDataCubeColorThemeClassName,
+} from './core/DataCubeColorTheme.js';
 
 export const DataCubePlaceholderErrorDisplay = (props: {
   message: string;
@@ -75,6 +80,7 @@ export const DataCubePlaceholder = observer(
     menuItems?: (DataCubeMenuItem | DataCubeNativeMenuItem)[] | undefined;
     layoutManager?: LayoutManager | undefined;
     taskManager?: TaskManager | undefined;
+    colorTheme?: DataCubeColorTheme | undefined;
   }) => {
     const {
       children,
@@ -84,22 +90,28 @@ export const DataCubePlaceholder = observer(
       layoutManager,
       taskManager,
     } = props;
+    const colorTheme = props.colorTheme ?? DataCubeColorTheme.LIGHT;
 
     return (
-      <div
-        className="data-cube relative flex h-full w-full flex-col bg-white"
-        data-testid={LEGEND_DATACUBE_TEST_ID.PLACEHOLDER}
-      >
-        <DataCubeTitleBar title={title} menuItems={menuItems}>
-          {headerContent ?? null}
-        </DataCubeTitleBar>
+      <DataCubeColorThemeProvider value={colorTheme}>
+        <div
+          className={cn(
+            'data-cube relative flex h-full w-full flex-col bg-white',
+            getDataCubeColorThemeClassName(colorTheme),
+          )}
+          data-testid={LEGEND_DATACUBE_TEST_ID.PLACEHOLDER}
+        >
+          <DataCubeTitleBar title={title} menuItems={menuItems}>
+            {headerContent ?? null}
+          </DataCubeTitleBar>
 
-        <DataCubeViewPlaceholder taskManager={taskManager}>
-          {children}
-        </DataCubeViewPlaceholder>
-        {layoutManager ? <DataCubeLayout layout={layoutManager} /> : null}
-        <INTERNAL__MonacoEditorWidgetsRoot />
-      </div>
+          <DataCubeViewPlaceholder taskManager={taskManager}>
+            {children}
+          </DataCubeViewPlaceholder>
+          {layoutManager ? <DataCubeLayout layout={layoutManager} /> : null}
+          <INTERNAL__MonacoEditorWidgetsRoot />
+        </div>
+      </DataCubeColorThemeProvider>
     );
   },
 );

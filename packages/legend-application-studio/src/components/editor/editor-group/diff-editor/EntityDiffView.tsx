@@ -129,12 +129,6 @@ export const EntityDiffView = observer(
                 {getPrettyLabelForRevision(toRevision)}
               </div>
             </div>
-            <div className="entity-diff-view__header__info__revision-summary__icon">
-              <CompareIcon />
-            </div>
-            <div className="entity-diff-view__header__info__revision-summary__revision">
-              {getPrettyLabelForRevision(toRevision)}
-            </div>
           </div>
           <div className="entity-diff-view__header__actions">
             <button

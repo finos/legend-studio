@@ -348,8 +348,8 @@ const MaterializedViewButton = observer(
             !execution.canExecute
               ? formatDisabledReasons(execution.disabledReasons)
               : matView === undefined
-                ? 'Add the step that runs to the ingest definition, as a materialized view'
-                : `Replace materialized view ${matView} with the step that runs`
+                ? 'Add the output step to the ingest definition, as a materialized view'
+                : `Replace materialized view ${matView} with the output step`
           }
           disabled={!execution.canExecute || isBuilding}
           onClick={start}

@@ -36,6 +36,7 @@ import {
   RobotIcon,
   SigmaIcon,
   SortIcon,
+  SquareIcon,
   TableIcon,
 } from '@finos/legend-art';
 
@@ -48,6 +49,8 @@ const NODE_ICONS: Readonly<
   dataProduct: PackageIcon,
   ingest: DatabaseImportIcon,
   service: RobotIcon,
+  // as Legend shows a data space
+  dataSpace: SquareIcon,
   filter: FilterIcon,
   expressionFilter: FunctionIcon,
   join: ArrowsJoinIcon,

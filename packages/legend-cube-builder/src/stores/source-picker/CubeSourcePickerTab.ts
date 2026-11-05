@@ -25,6 +25,7 @@ export enum CubeSourcePickerTabKey {
   PROJECT = 'project',
   PROJECT_FUNCTION = 'projectFunction',
   SERVICE = 'service',
+  DATA_SPACE = 'dataSpace',
 }
 
 /**

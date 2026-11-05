@@ -53,6 +53,9 @@ import {
   SearchResultsViewMode,
 } from './LegendMarketplaceSearchResultsStore.js';
 
+/** A query that may be a deployment ID (DID): digits only. */
+const DEPLOYMENT_ID_QUERY_PATTERN = /^\d+$/;
+
 /**
  * The subset of {@link LegendMarketplaceLakehouseAccessSearchResultsStore} that
  * {@link LakehouseAccessSearchFiltersPanel} needs, on top of the common
@@ -62,6 +65,7 @@ export interface DeploymentIdFilterableSearchStore
   extends SourceFilterableSearchStore {
   selectedDeploymentIds: Set<string>;
   addDeploymentId(value: string): void;
+  applyDeploymentIdFilter(value: string): void;
   removeDeploymentId(value: string): void;
 }
 
@@ -158,6 +162,8 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
       setFilterCounts: action,
       toggleSource: action,
       addDeploymentId: action,
+      applyDeploymentIdFilter: action,
+      applyDeploymentIdFilterOffer: action,
       removeDeploymentId: action,
       clearAllFilters: action,
       filterSortProducts: computed,
@@ -165,6 +171,7 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
       isFirstLoad: computed,
       isOnLastPage: computed,
       hasActiveFilters: computed,
+      deploymentIdFilterOffer: computed,
       executeSearch: flow,
     });
   }
@@ -291,6 +298,33 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
     );
   }
 
+  /**
+   * Filters on the given deployment IDs (see {@link addDeploymentId}) from the first
+   * page. Both the Deployment ID field of the filters panel and the "Filter on DID"
+   * offer go through here; the caller then runs the search.
+   */
+  applyDeploymentIdFilter(value: string): void {
+    this.addDeploymentId(value);
+    this.setPage(1);
+  }
+
+  /**
+   * Filters on the DID the query may be: the "Filter on DID <n>" offer (see
+   * {@link deploymentIdFilterOffer}). The caller then runs the search.
+   */
+  applyDeploymentIdFilterOffer(): void {
+    const deploymentId = this.deploymentIdFilterOffer;
+    if (deploymentId === undefined) {
+      return;
+    }
+    LegendMarketplaceTelemetryHelper.logEvent_ClickFilterOnDeploymentId(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      Number(deploymentId),
+      this.searchQuery,
+    );
+    this.applyDeploymentIdFilter(deploymentId);
+  }
+
   removeDeploymentId(value: string): void {
     this.selectedDeploymentIds.delete(value);
     LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
@@ -324,6 +358,26 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
 
   get hasActiveFilters(): boolean {
     return this.selectedSources.size > 0 || this.selectedDeploymentIds.size > 0;
+  }
+
+  /**
+   * An all-digit query may be a deployment ID (DID), so the page offers to filter on
+   * it (never on its own): the DID to offer, unless that DID is filtered already.
+   *
+   * NOTE: DIDs are numbers, so a query too long to be one (beyond
+   * `Number.MAX_SAFE_INTEGER`) isn't offered.
+   */
+  get deploymentIdFilterOffer(): string | undefined {
+    const query = this.searchQuery?.trim();
+    if (
+      query === undefined ||
+      !DEPLOYMENT_ID_QUERY_PATTERN.test(query) ||
+      !Number.isSafeInteger(Number(query)) ||
+      this.selectedDeploymentIds.has(query)
+    ) {
+      return undefined;
+    }
+    return query;
   }
 
   /**

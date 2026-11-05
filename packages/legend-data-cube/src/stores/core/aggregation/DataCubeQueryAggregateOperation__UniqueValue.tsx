@@ -51,6 +51,8 @@ export class DataCubeQueryAggregateOperation__UniqueValue extends DataCubeQueryA
       DataCubeColumnDataType.NUMBER,
       DataCubeColumnDataType.DATE,
       DataCubeColumnDataType.TIME,
+      DataCubeColumnDataType.VARIANT,
+      DataCubeColumnDataType.OTHER,
     ]);
   }
 

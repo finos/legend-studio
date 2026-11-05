@@ -17,13 +17,10 @@
 import type { Page, Route } from '@playwright/test';
 import { corsHeaders, fulfillError, getApiPath } from './MockUtils.js';
 import {
-  TEST_DATA__CurrentUser,
   TEST_DATA__LatestProjectStructureVersion,
-  TEST_DATA__Project,
-  TEST_DATA__ProjectConfiguration,
-  TEST_PROJECT_ID,
-  TEST_WORKSPACE_ID,
+  TEST_DATA__SDLCProject,
   type Entity,
+  type TestSDLCProject,
 } from './TEST_DATA__SDLC.js';
 
 /**
@@ -130,9 +127,9 @@ const decodeSegment = (segment: string): string => {
 /**
  * Answer every SDLC call `page` makes from a small in-memory SDLC: the
  * project `E2E-1`, whose user workspace `e2e-workspace` starts with
- * `entities`. Pushing entity changes to the workspace commits a new
- * revision, which later loads serve back — so a test can push, reload and
- * see what was saved.
+ * `entities` (or the project and workspace `sdlcProject` names). Pushing
+ * entity changes to the workspace commits a new revision, which later loads
+ * serve back — so a test can push, reload and see what was saved.
  *
  * Calls no handler answers get a `501` naming the endpoint, and are passed
  * to `onUnmocked`.
@@ -141,7 +138,14 @@ export const installSDLCMock = async (
   page: Page,
   entities: Entity[],
   onUnmocked: (call: string) => void,
+  sdlcProject: TestSDLCProject = TEST_DATA__SDLCProject,
 ): Promise<CapturedSDLCRequests> => {
+  const {
+    project,
+    workspaceId: projectWorkspaceId,
+    currentUser,
+    configuration,
+  } = sdlcProject;
   const captured: CapturedSDLCRequests = {
     entityChanges: [],
     failures: new Map(),
@@ -157,9 +161,9 @@ export const installSDLCMock = async (
     return {
       revision: {
         id: `e2e-revision-${revisionCounter}`,
-        authorName: TEST_DATA__CurrentUser.userId,
+        authorName: currentUser.userId,
         authoredAt: now,
-        committerName: TEST_DATA__CurrentUser.userId,
+        committerName: currentUser.userId,
         committedAt: now,
         message,
       },
@@ -216,7 +220,7 @@ export const installSDLCMock = async (
         case 'entities':
           return fulfillJson(getLatest(revisions).entities);
         case 'configuration':
-          return fulfillJson(TEST_DATA__ProjectConfiguration);
+          return fulfillJson(configuration);
         case 'workflows':
           return fulfillJson([]);
         case 'revisions': {
@@ -236,7 +240,7 @@ export const installSDLCMock = async (
             case 'entities':
               return fulfillJson(found.entities);
             case 'configuration':
-              return fulfillJson(TEST_DATA__ProjectConfiguration);
+              return fulfillJson(configuration);
             default:
           }
           break;
@@ -303,7 +307,7 @@ export const installSDLCMock = async (
           await fulfillJson({ canCreateProject: true, canCreateVersion: true });
           return;
         case 'currentUser':
-          await fulfillJson(TEST_DATA__CurrentUser);
+          await fulfillJson(currentUser);
           return;
         case 'configuration/latestProjectStructureVersion':
           await fulfillJson(TEST_DATA__LatestProjectStructureVersion);
@@ -316,7 +320,7 @@ export const installSDLCMock = async (
       .split('/')
       .map(decodeSegment);
     if (head === 'projects' && projectId !== undefined) {
-      if (projectId !== TEST_PROJECT_ID) {
+      if (projectId !== project.projectId) {
         await fulfillError(route, 404, `Unknown project: ${projectId}`);
         return;
       }
@@ -324,7 +328,7 @@ export const installSDLCMock = async (
       if (projectPath[0] === 'workspaces' && projectPath.length > 1) {
         // workspace-scoped endpoints
         const [, workspaceId, ...workspacePath] = projectPath;
-        if (workspaceId !== TEST_WORKSPACE_ID) {
+        if (workspaceId !== projectWorkspaceId) {
           await fulfillError(
             route,
             404,
@@ -334,7 +338,7 @@ export const installSDLCMock = async (
         }
         const workspace = {
           projectId,
-          userId: TEST_DATA__CurrentUser.userId,
+          userId: currentUser.userId,
           workspaceId,
         };
         if (
@@ -352,7 +356,7 @@ export const installSDLCMock = async (
         if (method === 'GET') {
           switch (projectPath.join('/')) {
             case '':
-              await fulfillJson(TEST_DATA__Project);
+              await fulfillJson(project);
               return;
             case 'authorizedActions':
               await fulfillJson([
@@ -366,8 +370,8 @@ export const installSDLCMock = async (
               await fulfillJson([
                 {
                   projectId,
-                  userId: TEST_DATA__CurrentUser.userId,
-                  workspaceId: TEST_WORKSPACE_ID,
+                  userId: currentUser.userId,
+                  workspaceId: projectWorkspaceId,
                 },
               ]);
               return;

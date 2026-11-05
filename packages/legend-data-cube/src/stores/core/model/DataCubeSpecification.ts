@@ -19,9 +19,20 @@ import {
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, optional, primitive, raw } from 'serializr';
+import {
+  createModelSchema,
+  list,
+  object,
+  optional,
+  primitive,
+  raw,
+} from 'serializr';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import { DataCubeDimensionalTree } from '../../view/grid/DataCubeGridDimensionalTree.js';
+import {
+  dataCubeColumnSchema,
+  type DataCubeColumnRelationType,
+} from './DataCubeColumn.js';
 
 export class DataCubeSpecificationOptions {
   autoEnableCache?: boolean | undefined;
@@ -39,6 +50,7 @@ export class DataCubeSpecification {
   source!: PlainObject;
   options?: DataCubeSpecificationOptions | undefined;
   dimensionalTree?: DataCubeDimensionalTree | undefined;
+  relationType?: DataCubeColumnRelationType | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeSpecification, {
@@ -53,6 +65,7 @@ export class DataCubeSpecification {
       dimensionalTree: optional(
         usingModelSchema(DataCubeDimensionalTree.serialization.schema),
       ),
+      relationType: optional(list(object(dataCubeColumnSchema))),
     }),
   );
 }

@@ -185,6 +185,11 @@ export enum LEGEND_STUDIO_APP_EVENT {
   TESTABLE_RUN__SUCCESS = 'editor.testable.run.success',
   TESTABLE_RUN__FAILURE = 'editor.testable.run.failure',
 
+  // unified testable bulk "regenerate all expected results" (across every suite of the testable)
+  TESTABLE_REGENERATE_EXPECTED_RESULTS__LAUNCH = 'editor.testable.regenerate-expected-results.launch',
+  TESTABLE_REGENERATE_EXPECTED_RESULTS__SUCCESS = 'editor.testable.regenerate-expected-results.success',
+  TESTABLE_REGENERATE_EXPECTED_RESULTS__FAILURE = 'editor.testable.regenerate-expected-results.failure',
+
   // global test runner (sidebar): run-all / run-dependencies across many testables at once
   GLOBAL_TEST_RUN__LAUNCH = 'global-test-runner.run.launch',
   GLOBAL_TEST_RUN__SUCCESS = 'global-test-runner.run.success',

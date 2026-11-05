@@ -19,7 +19,29 @@ export { LEGEND_DATACUBE_TEST_ID } from './__lib__/DataCubeTesting.js';
 export * from './__lib__/DataCubeEvent.js';
 export * from './stores/core/model/DataCubeSpecification.js';
 export * from './stores/core/model/DataCubeSource.js';
-export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
+export {
+  type DataCubeColumn,
+  type DataCubeColumnRelationType,
+  reuseTypeVariableValues,
+} from './stores/core/model/DataCubeColumn.js';
+export {
+  toDataCubeColumn,
+  getTypeVariableValues,
+} from './stores/core/DataCubeSnapshotBuilderUtils.js';
+export {
+  type DataCubeColumnTypeInfo,
+  DATA_CUBE_PRECISE_PRIMITIVE_TYPES,
+  DEFAULT_VARCHAR_SIZE,
+  getColumnTypeInfo,
+  isPrecisePrimitiveType,
+  getLiteralType,
+  isNumericType,
+  isIntegerType,
+  getDefaultDecimals,
+  formatColumnType,
+  hasCompleteColumnType,
+  resolveLegacyColumnType,
+} from './stores/core/DataCubeColumnTypes.js';
 export * from './stores/core/model/DataCubeConfiguration.js';
 export * from './stores/core/model/FreeformTDSExpressionDataCubeSource.js';
 export { CachedDataCubeSource } from './stores/core/model/CachedDataCubeSource.js';
@@ -59,6 +81,13 @@ export * from './components/DataCube.js';
 
 export * from './components/core/DataCubeFormUtils.js';
 export * from './components/DataCubePlaceholder.js';
+export {
+  DataCubeColorTheme,
+  DataCubeColorThemeProvider,
+  getDataCubeColorThemeClassName,
+  useDataCubeOwnsPage,
+} from './components/core/DataCubeColorTheme.js';
+export { DataCubeSettingKey } from './__lib__/DataCubeSetting.js';
 
 // some low-level/core utilities we expose for building DataCube extensions
 // or implementing DataCube engine

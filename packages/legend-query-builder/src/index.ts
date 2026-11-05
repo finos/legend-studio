@@ -53,6 +53,7 @@ export {
   getTDSColumnDerivedProperyFromType,
   buildTDSSortTypeExpression,
 } from './stores/fetch-structure/tds/QueryBuilderTDSHelper.js';
+export { QueryBuilderTDSState } from './stores/fetch-structure/tds/QueryBuilderTDSState.js';
 export { type ExportDataInfo } from './stores/QueryBuilderResultState.js';
 export { QueryBuilderPropertySearchState } from './stores/explorer/QueryBuilderPropertySearchState.js';
 export {

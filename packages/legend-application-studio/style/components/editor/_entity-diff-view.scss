@@ -35,8 +35,8 @@
     width: calc(100% - 2.8rem);
   }
 
-  // Revision summary chip — bright-grey chip with dark text. Same pattern
-  // as other "highlighted neutral chip" treatments throughout studio.
+  // Revision summary chip — a neutral tag chip, so its labels and icon pair
+  // with the regular text tokens, which flip with the theme like the chip.
   &__header__info__revision-summary {
     @include flexVCenter;
 
@@ -51,7 +51,7 @@
     margin: 0 0.5rem;
     font-size: 1.2rem;
     font-weight: 500;
-    color: var(--color-text-inverted);
+    color: var(--color-text-primary);
     white-space: nowrap;
   }
 
@@ -63,7 +63,7 @@
 
   &__header__info__revision-summary__icon svg {
     font-size: 1.7rem;
-    color: var(--color-text-inverted);
+    color: var(--color-text-primary);
   }
 
   &__header__info__comparison-summary {

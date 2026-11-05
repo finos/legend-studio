@@ -49,6 +49,7 @@ import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DataProductSampleQueries } from './DataProduct/DataProductSampleQueries.js';
 import { DataProductNativeModelAccessDataAccess } from './DataProduct/DataProductNativeModelAccessDataAccess.js';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
+import { isDescriptionSameAsTitle } from '../utils/DataProductViewerUtils.js';
 import { useNavigationZone } from '@finos/legend-application/browser';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
@@ -124,6 +125,16 @@ export const ProductDescription = observer(
         ? TERMINAL_PRODUCT_VIEWER_SECTION.DESCRIPTION
         : undefined;
     const anchor = section ? generateAnchorForSection(section) : '';
+    const description = productViewerState.product.description;
+    // the title the header shows
+    const repeatsTitle =
+      productViewerState instanceof DataProductViewerState &&
+      isDescriptionSameAsTitle(
+        description,
+        productViewerState.product.title
+          ? productViewerState.product.title
+          : productViewerState.product.name,
+      );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -141,24 +152,26 @@ export const ProductDescription = observer(
           <ProductTags productViewerState={productViewerState} />
         )}
         <div className="data-product__viewer__wiki__section__content">
-          {productViewerState.product.description !== undefined ? (
-            <div className="data-product__viewer__description">
-              <div className="data-product__viewer__description__content">
-                <MarkdownTextViewer
-                  className="data-product__viewer__markdown-text-viewer"
-                  value={{
-                    value: productViewerState.product.description,
-                  }}
-                  components={{
-                    h1: 'h2',
-                    h2: 'h3',
-                    h3: 'h4',
-                  }}
-                />
-              </div>
-            </div>
-          ) : (
+          {description === undefined ? (
             <ProductWikiPlaceholder message="(description not specified)" />
+          ) : (
+            !repeatsTitle && (
+              <div className="data-product__viewer__description">
+                <div className="data-product__viewer__description__content">
+                  <MarkdownTextViewer
+                    className="data-product__viewer__markdown-text-viewer"
+                    value={{
+                      value: description,
+                    }}
+                    components={{
+                      h1: 'h2',
+                      h2: 'h3',
+                      h3: 'h4',
+                    }}
+                  />
+                </div>
+              </div>
+            )
           )}
         </div>
       </div>

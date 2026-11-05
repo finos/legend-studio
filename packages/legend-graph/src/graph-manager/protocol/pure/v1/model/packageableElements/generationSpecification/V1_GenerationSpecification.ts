@@ -24,13 +24,25 @@ import {
 
 export class V1_GenerationTreeNode {
   id!: string;
-  generationElement!: string;
+  /**
+   * Set when the node holds a single generation element. A node holding `generationElements`
+   * leaves this unset, so that a reader which does not understand parallel groups fails rather
+   * than silently generating one element out of many.
+   */
+  generationElement?: string | undefined;
+  /**
+   * The generation elements of a parallel group. They are generated against the same compiled
+   * graph, so they cannot consume each other's output.
+   */
+  generationElements: string[] = [];
   children: V1_GenerationTreeNode[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GENERATION_TREE_NODE,
-      this.generationElement,
+      ...(this.generationElements.length
+        ? this.generationElements
+        : [this.generationElement ?? '']),
       this.id,
     ]);
   }

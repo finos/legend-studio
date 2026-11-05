@@ -448,6 +448,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       ).emitExecutionLambda({
         rowLimit: 1,
         runtime,
+        mapping: context.mapping,
         databaseType: this.planDatabaseType,
       });
     } catch (error) {

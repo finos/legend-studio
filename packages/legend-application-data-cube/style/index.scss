@@ -68,7 +68,12 @@
   }
 }
 
-:root {
+// NOTE: these are also declared for a dark DataCube (and its portaled popovers) since custom
+// properties are resolved where they are declared, i.e. they would otherwise keep the colors
+// of the light palette
+:root,
+.data-cube-theme--dark,
+body.data-cube-page:has(.data-cube-theme--dark) > .MuiPopover-root {
   --value-spec-border-color: var(--tw-color-neutral-200);
   --value-spec-error-color: var(--tw-color-red-500);
   --value-spec-btn-backgorund-color: var(--tw-color-neutral-200);
@@ -79,6 +84,12 @@
   --value-spec-toggler-btn-color-toggled-hover: var(--tw-color-sky-600);
   --value-spec-toggler-btn-color-toggled-disabled: var(--tw-color-sky-400);
   --value-spec-list-editor-preview-color-hover: var(--tw-color-neutral-300);
+}
+
+.data-cube-theme--dark,
+body.data-cube-page:has(.data-cube-theme--dark) > .MuiPopover-root {
+  // the faint shade used for disabled buttons barely shows on the dark surfaces
+  --value-spec-btn-color-disabled: var(--color-text-disabled);
 }
 
 .data-cube {

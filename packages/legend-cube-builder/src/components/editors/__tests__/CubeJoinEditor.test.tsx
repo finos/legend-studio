@@ -32,10 +32,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import {
-  DATE_OR_TIMESTAMP_WARNING,
-  getColumnTypeLabel,
-} from '../../../__lib__/LegendCubeLabels.js';
+import { DATE_OR_TIMESTAMP_WARNING } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -209,13 +206,13 @@ describe('Join editor', () => {
     ).toEqual(['CUSTOMER_ID']);
   });
 
-  test('Offers only the columns of each input, with their types, and marks a pair that cannot be compared', async () => {
+  test('Offers only the columns of each input, by name, and marks a pair that cannot be compared', async () => {
     await render(ordersJoinCustomers(['ORDER_ID'], ['COMPANY_NAME']));
     await openJoin();
     const left =
       within(panel()).getByLabelText<HTMLSelectElement>('Left join column 1');
     expect(Array.from(left.options).map((option) => option.text)).toEqual(
-      ORDERS_COLUMNS.map((c) => `${c.name}: ${getColumnTypeLabel(c)}`),
+      ORDERS_COLUMNS.map((c) => c.name),
     );
     expect(
       within(panel()).getByLabelText<HTMLSelectElement>('Right join column 1')
@@ -534,25 +531,20 @@ describe('Join editor', () => {
     expect(within(panel()).queryByText(DATE_OR_TIMESTAMP_WARNING)).toBeNull();
   });
 
-  test("Shows the picked column's type with its family's icon and its full type in the tooltip", async () => {
+  test("Shows the picked column's type as its family's icon, named by the type in words, the exact type in its tooltip", async () => {
     await render(ordersJoinCustomers(['CUSTOMER_ID'], ['CUSTOMER_ID']));
     await openJoin();
-    const typeLabel = (label: string): HTMLElement =>
-      within(panel())
-        .getByLabelText(label)
-        .parentElement?.querySelector('span') as HTMLElement;
-    const text = typeLabel('Left join column 1');
-    expect(text.textContent).toBe('Text, optional');
-    // the exact type, then its full path, on hover
-    expect(text.title).toBe(
-      'Varchar(5)? (meta::pure::precisePrimitives::Varchar(5))',
-    );
+    const typeIcon = (label: string, words: string): HTMLElement =>
+      within(
+        within(panel()).getByLabelText(label).parentElement as HTMLElement,
+      ).getByRole('img', { name: words });
+    const text = typeIcon('Left join column 1', 'Text, optional');
+    // the words, then the exact type, on hover
+    expect(text.title).toBe('Text, optional (Varchar(5)?)');
     const textIcon = text.querySelector('svg')?.innerHTML;
     pick('Left join column 1', 'EMPLOYEE_ID');
-    const number = typeLabel('Left join column 1');
-    expect(number.title).toBe(
-      'SmallInt? (meta::pure::precisePrimitives::SmallInt)',
-    );
+    const number = typeIcon('Left join column 1', 'Whole number, optional');
+    expect(number.title).toBe('Whole number, optional (SmallInt?)');
     expect(number.querySelector('svg')?.innerHTML).not.toBe(textIcon);
   });
 });

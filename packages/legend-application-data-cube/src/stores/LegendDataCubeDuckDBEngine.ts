@@ -18,7 +18,6 @@ import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import {
-  CORE_PURE_PATH,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
   INTERNAL__TDSColumn,
@@ -39,7 +38,64 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
-import { Type } from 'apache-arrow';
+import { DataType, Precision, Type } from 'apache-arrow';
+import {
+  getDuckDBBlobCsvValue,
+  getHexFromDuckDBBlob,
+  getNumberFromDuckDBDecimal,
+  getTimeStringFromDuckDBTime,
+} from './LegendDataCubeDuckDBColumnType.js';
+
+/**
+ * Maps an Arrow type (as returned by DuckDB) to the matching (precise) Pure type.
+ *
+ * NOTE: Arrow types do not carry the max length of strings, and the type variable
+ * values of the precise primitives cannot be reported by a TDS column, so strings
+ * and decimals are typed as `String` and `Numeric` respectively.
+ */
+function getPureTypeFromArrowType(type: DataType): string {
+  if (DataType.isBool(type)) {
+    return PRIMITIVE_TYPE.BOOLEAN;
+  } else if (DataType.isBinary(type)) {
+    return PRIMITIVE_TYPE.BYTE;
+  } else if (DataType.isDate(type)) {
+    return PRIMITIVE_TYPE.STRICTDATE;
+  } else if (DataType.isTime(type)) {
+    return PRIMITIVE_TYPE.STRICTTIME;
+  } else if (DataType.isTimestamp(type)) {
+    return PRECISE_PRIMITIVE_TYPE.DATETIME; // Timestamp
+  } else if (DataType.isUtf8(type) || DataType.isLargeUtf8(type)) {
+    return PRIMITIVE_TYPE.STRING;
+  } else if (DataType.isDecimal(type)) {
+    return PRECISE_PRIMITIVE_TYPE.NUMERIC;
+  } else if (DataType.isInt(type)) {
+    switch (type.bitWidth) {
+      case 8:
+        return type.isSigned
+          ? PRECISE_PRIMITIVE_TYPE.TINY_INT
+          : PRECISE_PRIMITIVE_TYPE.U_TINY_INT;
+      case 16:
+        return type.isSigned
+          ? PRECISE_PRIMITIVE_TYPE.SMALL_INT
+          : PRECISE_PRIMITIVE_TYPE.U_SMALL_INT;
+      case 32:
+        return type.isSigned
+          ? PRECISE_PRIMITIVE_TYPE.INT
+          : PRECISE_PRIMITIVE_TYPE.U_INT;
+      default:
+        return type.isSigned
+          ? PRECISE_PRIMITIVE_TYPE.BIG_INT
+          : PRECISE_PRIMITIVE_TYPE.U_BIG_INT;
+    }
+  } else if (DataType.isFloat(type)) {
+    return type.precision === Precision.DOUBLE
+      ? PRECISE_PRIMITIVE_TYPE.DOUBLE
+      : PRECISE_PRIMITIVE_TYPE.FLOAT; // Float4
+  }
+  throw new UnsupportedOperationError(
+    `Can't find matching Pure type for Arrow type '${type}' (type ID: ${type.typeId})`,
+  );
+}
 
 export class LegendDataCubeDuckDBEngine {
   private static readonly DUCKDB_DEFAULT_SCHEMA_NAME = 'main'; // See https://duckdb.org/docs/sql/statements/use.html
@@ -111,7 +167,12 @@ export class LegendDataCubeDuckDBEngine {
     await connection.query(`SET builtin_httpfs = false;`);
   }
 
-  async cache(result: TDSExecutionResult) {
+  /**
+   * Caches the result in a DuckDB table, the DuckDB type of each column of the result
+   * is to be specified (in order) so the table matches the table definition synthesized
+   * for it, see `getCacheColumnType()`
+   */
+  async cache(result: TDSExecutionResult, columnTypes: string[]) {
     const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.cacheTableCounter += 1;
     const table = `${LegendDataCubeDuckDBEngine.CACHE_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.cacheTableCounter}`;
@@ -119,76 +180,30 @@ export class LegendDataCubeDuckDBEngine {
 
     const columns: string[] = [];
     const columnNames: string[] = [];
-    result.builder.columns.forEach((col) => {
-      let colType: string;
-      switch (col.type as string) {
-        case PRIMITIVE_TYPE.BINARY: {
-          colType = 'BIT';
-          break;
-        }
-        case PRIMITIVE_TYPE.BOOLEAN: {
-          colType = 'BOOLEAN';
-          break;
-        }
-        case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-        case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-        case PRIMITIVE_TYPE.NUMBER: {
-          colType = 'DOUBLE';
-          break;
-        }
-        case PRECISE_PRIMITIVE_TYPE.INT:
-        case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
-        case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_INT:
-        case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-        case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-        case PRIMITIVE_TYPE.INTEGER: {
-          colType = 'INTEGER';
-          break;
-        }
-        // TODO: we need precision and scale
-        case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-        case PRIMITIVE_TYPE.DECIMAL: {
-          colType = 'DECIMAL';
-          break;
-        }
-        case PRECISE_PRIMITIVE_TYPE.FLOAT:
-        case PRIMITIVE_TYPE.FLOAT: {
-          colType = 'FLOAT';
-          break;
-        }
-        case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.DATE: {
-          colType = 'DATE';
-          break;
-        }
-        case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
-        case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-        case PRECISE_PRIMITIVE_TYPE.DATETIME:
-        case PRIMITIVE_TYPE.DATETIME: {
-          colType = 'TIMESTAMP';
-          break;
-        }
-        case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-        case CORE_PURE_PATH.VARIANT:
-        case PRIMITIVE_TYPE.STRING: {
-          colType = 'VARCHAR';
-          break;
-        }
-        default: {
-          throw new UnsupportedOperationError(
-            `Can't initialize cache: failed to find matching DuckDB type for Pure type '${col.type}'`,
-          );
-        }
-      }
-      columns.push(`"${col.name}" ${colType}`);
+    result.builder.columns.forEach((col, idx) => {
+      columns.push(
+        `"${col.name.replace(/"/gu, '""')}" ${guaranteeNonNullable(
+          columnTypes[idx],
+          `Can't cache column '${col.name}': no DuckDB type provided`,
+        )}`,
+      );
       columnNames.push(col.name);
     });
 
-    const data = result.result.rows.map((row) => row.values);
+    // NOTE: the engine returns binary values as hex strings, which DuckDB would load into
+    // a BLOB as their ASCII text, so they are converted to the escaped form it decodes
+    const blobColumnIndexes = new Set(
+      columnTypes.flatMap((type, idx) => (type === 'BLOB' ? [idx] : [])),
+    );
+    const data = result.result.rows.map((row) =>
+      blobColumnIndexes.size
+        ? row.values.map((value, idx) =>
+            blobColumnIndexes.has(idx) && typeof value === 'string'
+              ? getDuckDBBlobCsvValue(value)
+              : value,
+          )
+        : row.values,
+    );
 
     const csvContent = csvStringify([columnNames, ...data]);
     await this.database.registerFileText(csvFileName, csvContent);
@@ -334,14 +349,34 @@ export class LegendDataCubeDuckDBEngine {
     const data = result.toArray();
     const columnNames = result.schema.fields.map((field) => field.name);
     const columnTypesIds = result.schema.fields.map((field) => field.typeId);
+    const columnTypes = result.schema.fields.map(
+      (field) => field.type as DataType,
+    );
     const rows = data.map((row) => {
       const tdsRow = new TDSRow();
       tdsRow.values = columnNames.map((column, idx) => {
         const value = row[column] as unknown;
+        const columnType = columnTypes[idx];
+        // NOTE: DuckDB returns `TIME` as the number of microseconds since midnight
+        // and `BLOB` as bytes, so they are converted to the `StrictTime` and `Byte`
+        // representations the engine uses
+        if (!isNullable(value) && DataType.isTime(columnType)) {
+          return getTimeStringFromDuckDBTime(
+            value as bigint | number,
+            columnType.unit,
+          );
+        } else if (!isNullable(value) && DataType.isBinary(columnType)) {
+          return getHexFromDuckDBBlob(value as Uint8Array);
+        }
         // NOTE: DuckDB WASM returns ArrayBuffer for numeric value, such as for count(*)
         // so we need to convert it to number
         if (ArrayBuffer.isView(value)) {
-          return row[column].valueOf() as number;
+          return DataType.isDecimal(columnType)
+            ? getNumberFromDuckDBDecimal(
+                value as { toString(): string },
+                columnType.scale,
+              )
+            : (row[column].valueOf() as number);
         } else if (columnTypesIds[idx] === Type.Date) {
           return formatDate(new Date(Number(value)), DATE_FORMAT);
         } else if (columnTypesIds[idx] === Type.Timestamp) {
@@ -363,59 +398,7 @@ export class LegendDataCubeDuckDBEngine {
     builder.columns = result.schema.fields.map((field) => {
       const col = new INTERNAL__TDSColumn();
       col.name = field.name;
-      switch (field.typeId) {
-        case Type.Binary: {
-          col.type = PRIMITIVE_TYPE.BINARY;
-          break;
-        }
-        case Type.Bool: {
-          col.type = PRIMITIVE_TYPE.BOOLEAN;
-          break;
-        }
-        case Type.Date:
-        case Type.DateDay:
-        case Type.DateMillisecond: {
-          col.type = PRIMITIVE_TYPE.DATE;
-          break;
-        }
-        case Type.Timestamp: {
-          col.type = PRIMITIVE_TYPE.DATETIME;
-          break;
-        }
-        case Type.Utf8:
-        case Type.LargeUtf8: {
-          col.type = PRIMITIVE_TYPE.STRING;
-          break;
-        }
-        case Type.Decimal: {
-          col.type = PRIMITIVE_TYPE.DECIMAL;
-          break;
-        }
-        case Type.Int:
-        case Type.Int8:
-        case Type.Uint8:
-        case Type.Int16:
-        case Type.Uint16:
-        case Type.Int32:
-        case Type.Uint32:
-        case Type.Int64:
-        case Type.Uint64: {
-          col.type = PRIMITIVE_TYPE.INTEGER;
-          break;
-        }
-        case Type.Float:
-        case Type.Float16:
-        case Type.Float32:
-        case Type.Float64: {
-          col.type = PRIMITIVE_TYPE.FLOAT;
-          break;
-        }
-        default: {
-          throw new UnsupportedOperationError(
-            `Can't find matching Pure type for Arrow type ID '${field.typeId}' ${Type.Utf8}`,
-          );
-        }
-      }
+      col.type = getPureTypeFromArrowType(field.type);
       return col;
     });
     tdsExecutionResult.builder = builder;

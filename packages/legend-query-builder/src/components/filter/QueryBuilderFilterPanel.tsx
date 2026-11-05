@@ -101,7 +101,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
-  type Type,
   type ValueSpecification,
   AbstractPropertyExpression,
   extractElementNameFromPath,
@@ -881,16 +880,30 @@ export const QueryBuilderFilterRelationColumnBadge = observer(
 );
 
 const canDropTypeOntoNodeValue = (
-  type: Type | undefined,
+  item: QueryBuilderFilterValueDropTarget,
+  type: string,
   condition: FilterConditionState,
 ): boolean => {
   const conditionOperator = condition.operator;
   const conditionValueType = condition.leftConditionType;
-  return (
-    !(conditionOperator instanceof QueryBuilderFilterOperator_In) &&
-    !(conditionOperator instanceof QueryBuilderFilterOperator_NotIn) &&
-    isTypeCompatibleForAssignment(type, conditionValueType)
-  );
+  const itemType = getDNDItemType(item, type);
+  if (
+    conditionOperator instanceof QueryBuilderFilterOperator_In ||
+    conditionOperator instanceof QueryBuilderFilterOperator_NotIn
+  ) {
+    // `in` / `not in` filter conditions take a collection value, so only a
+    // collection-multiplicity (`[*]`) parameter can be dropped onto them;
+    // scalar properties/columns can never satisfy a collection operator
+    if (type !== QUERY_BUILDER_VARIABLE_DND_TYPE) {
+      return false;
+    }
+    const variable = (item as QueryBuilderVariableDragSource).variable;
+    return (
+      variable.multiplicity.upperBound !== 1 &&
+      isTypeCompatibleForAssignment(itemType, conditionValueType)
+    );
+  }
+  return isTypeCompatibleForAssignment(itemType, conditionValueType);
 };
 
 const QueryBuilderFilterConditionEditor = observer(
@@ -912,7 +925,7 @@ const QueryBuilderFilterConditionEditor = observer(
         const itemType = getDNDItemType(item, type);
         if (
           itemType !== undefined &&
-          canDropTypeOntoNodeValue(itemType, node.condition)
+          canDropTypeOntoNodeValue(item, type, node.condition)
         ) {
           try {
             if (
@@ -1047,7 +1060,8 @@ const QueryBuilderFilterConditionEditor = observer(
         accept: CAN_DROP_FILTER_VALUE_DND_TYPES,
         canDrop: (item, monitor): boolean =>
           canDropTypeOntoNodeValue(
-            getDNDItemType(item, monitor.getItemType() as string),
+            item,
+            monitor.getItemType() as string,
             node.condition,
           ),
         drop: (item, monitor): void => {
@@ -1072,7 +1086,8 @@ const QueryBuilderFilterConditionEditor = observer(
           monitor.getItemType()?.toString() ?? '',
         ) &&
         canDropTypeOntoNodeValue(
-          getDNDItemType(monitor.getItem(), monitor.getItemType() as string),
+          monitor.getItem(),
+          monitor.getItemType() as string,
           node.condition,
         ),
     }));

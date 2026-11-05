@@ -261,15 +261,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
           <div className="query-setup__wizard__group">
             <div className="query-setup__wizard__group__title">Query</div>
 
-            <div
-              className="mt-2 h-40 w-full"
-              style={{
-                border: '2px solid #e5e7eb',
-                padding: '5px',
-                borderRadius: '5px',
-                position: 'relative',
-              }}
-            >
+            <div className="relative mt-2 h-40 w-full rounded-[5px] border-2 border-neutral-200 p-[5px]">
               {sourceBuilder.queryInitializationState.isInProgress ? (
                 <FormLoadingIndicator message="Generating query..." />
               ) : (

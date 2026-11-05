@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 import {
   usingModelSchema,
   usingConstantValueSchema,
@@ -33,7 +33,9 @@ export const V1_generationTreeNodeModelSchema = createModelSchema(
   V1_GenerationTreeNode,
   {
     children: customEquivalentList(),
-    generationElement: primitive(),
+    generationElement: optional(primitive()),
+    // an empty list is skipped, so a node written in the singular form serializes exactly as before
+    generationElements: customEquivalentList(),
     id: primitive(),
   },
 );

@@ -22,8 +22,8 @@
  * Structural greys (backgrounds, borders, text) use the global semantic
  * tokens — the editor automatically adapts to the active studio theme.
  *
- * Domain "kind" colors are kept as direct palette refs because they encode
- * meaning that must read identically in light and dark theme:
+ * Domain "kind" colors encode meaning that must read the same in light and
+ * dark theme:
  *   - purple (`--color-purple-400` / `--color-magenta-50`) — schemas, views,
  *     view-formula expressions, processing-milestoning
  *   - yellow (`--color-yellow-200`) — joins, primary keys, read-only indicator,
@@ -37,9 +37,29 @@
  * These should not be folded into the generic semantic tokens; they read as a
  * legend (PK is yellow, FK is blue, etc.) that users learn over time.
  *
+ * Fills (selected rows, kind tags) use the palette colors above directly. Text,
+ * icons and strokes in yellow, blue and purple use the `--database-editor-*`
+ * variables below instead: same hue, but a shade per theme that keeps text at
+ * 4.5:1 or more on this editor's surfaces (bright yellow is unreadable on
+ * white; dark blue and purple are unreadable on dark grey).
+ *
  * The previous `.database-editor--light` modifier and its sun/moon toggle
  * have been removed — global theme switching does the same job.
  * ============================================================================ */
+
+// Defined on the root, not on `.database-editor`, so the annotation popover
+// (portalled to `body`) resolves them too.
+:root {
+  --database-editor-yellow: var(--color-yellow-200);
+  --database-editor-blue: var(--color-blue-40);
+  --database-editor-purple: var(--color-purple-25);
+}
+
+.theme__default-light {
+  --database-editor-yellow: var(--color-yellow-700);
+  --database-editor-blue: var(--color-blue-200);
+  --database-editor-purple: var(--color-purple-400);
+}
 
 .database-editor {
   display: flex;
@@ -109,9 +129,9 @@
     gap: 0.4rem;
     margin-right: 1rem;
     padding: 0.2rem 0.6rem;
-    border: 0.1rem solid var(--color-yellow-200);
+    border: 0.1rem solid var(--database-editor-yellow);
     border-radius: 0.2rem;
-    color: var(--color-yellow-200);
+    color: var(--database-editor-yellow);
     font-size: 0.9rem;
     font-weight: 500;
     letter-spacing: 0.05rem;
@@ -261,7 +281,7 @@
         padding: 0.3rem 1rem;
         background: transparent;
         border: none;
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
         font-size: 1.1rem;
         text-transform: uppercase;
         letter-spacing: 0.04rem;
@@ -283,7 +303,7 @@
       }
 
       &__count {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
         font-size: 1rem;
       }
 
@@ -309,7 +329,7 @@
 
         // Yellow domain color — table icons (consistent with PK indicator).
         svg {
-          color: var(--color-yellow-200);
+          color: var(--database-editor-yellow);
           flex-shrink: 0;
         }
 
@@ -323,11 +343,16 @@
           background: var(--color-blue-200);
           color: var(--color-text-on-accent);
         }
+
+        // On the blue fill, the bright yellow reads in both themes.
+        &--selected svg {
+          color: var(--color-yellow-200);
+        }
       }
 
       // Views — purple icon distinguishes view from table.
       &--view &__row svg {
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
       }
 
       &__name {
@@ -336,8 +361,12 @@
       }
 
       &__count {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
         font-size: 1rem;
+      }
+
+      &__row--selected &__count {
+        color: var(--color-text-on-accent);
       }
 
       // Secondary view-feature tags (DISTINCT / FILTERED / GROUP BY (n)).
@@ -396,7 +425,7 @@
 
       // PK column — yellow (domain).
       &--pk &__name {
-        color: var(--color-yellow-200);
+        color: var(--database-editor-yellow);
       }
 
       // Selected column bg is saturated blue — text stays light in both themes.
@@ -410,7 +439,7 @@
 
         width: 1.4rem;
         flex-shrink: 0;
-        color: var(--color-yellow-200);
+        color: var(--database-editor-yellow);
 
         svg {
           width: 1rem;
@@ -418,8 +447,16 @@
         }
       }
 
+      &--selected &__icon {
+        color: var(--color-yellow-200);
+      }
+
       &__bullet {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
+      }
+
+      &--selected &__bullet {
+        color: var(--color-text-on-accent);
       }
 
       &__name {
@@ -436,11 +473,11 @@
       // View column formula — italic purple (matches view domain color).
       &--view &__type {
         font-style: italic;
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
       }
 
       &--view-meta &__name {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
         font-style: italic;
       }
 
@@ -484,7 +521,7 @@
       }
 
       &__count {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
       }
     }
 
@@ -496,7 +533,7 @@
 
         gap: 0.6rem;
         padding: 0.3rem 1rem;
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
         font-size: 1.1rem;
       }
 
@@ -506,7 +543,7 @@
       }
 
       &__count {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
         font-size: 1rem;
       }
     }
@@ -525,7 +562,7 @@
       text-align: left;
 
       svg {
-        color: var(--color-yellow-200);
+        color: var(--database-editor-yellow);
         flex-shrink: 0;
       }
 
@@ -537,6 +574,10 @@
       &--selected:hover {
         background: var(--color-blue-200);
         color: var(--color-text-on-accent);
+      }
+
+      &--selected svg {
+        color: var(--color-yellow-200);
       }
 
       &__name {
@@ -570,7 +611,7 @@
 
       &--selected,
       &--selected:hover {
-        background: var(--color-yellow-200);
+        background: var(--database-editor-yellow);
         color: var(--color-text-inverted);
 
         svg {
@@ -646,7 +687,7 @@
         font-family: var(--font-code);
         font-style: italic;
         font-size: 1rem;
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
       }
     }
 
@@ -658,13 +699,13 @@
       padding: 0.3rem 1rem 0.3rem 2.4rem;
       background: transparent;
       border: none;
-      color: var(--color-text-disabled);
+      color: var(--color-text-muted);
       font-size: 1.1rem;
       cursor: pointer;
       text-align: left;
 
       svg {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
         flex-shrink: 0;
         font-size: 1.2rem;
       }
@@ -791,9 +832,9 @@
 
     // Join-endpoint ring — yellow (matches join selection in side panel).
     &--join-endpoint {
-      border-color: var(--color-yellow-200);
+      border-color: var(--database-editor-yellow);
       box-shadow:
-        0 0 0 0.2rem var(--color-yellow-200),
+        0 0 0 0.2rem var(--database-editor-yellow),
         0 0.2rem 0.6rem rgb(0 0 0 / 40%);
     }
 
@@ -805,7 +846,7 @@
       }
 
       .database-diagram__table-node__header__icon {
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
       }
 
       .database-diagram__table-node__header__name {
@@ -833,7 +874,7 @@
       &__icon {
         @include flexVCenter;
 
-        color: var(--color-yellow-200);
+        color: var(--database-editor-yellow);
 
         svg {
           width: 1.4rem;
@@ -853,7 +894,7 @@
         padding: 0.1rem 0.6rem;
         border-radius: 1rem;
         background: rgb(197 134 192 / 12%);
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
         font-size: 0.95rem;
       }
 
@@ -897,17 +938,17 @@
 
       // PK column — yellow name (domain).
       &--pk &__name {
-        color: var(--color-yellow-200);
+        color: var(--database-editor-yellow);
         font-weight: 500;
       }
 
       // FK column — blue name (domain).
       &--fk &__name {
-        color: var(--color-blue-200);
+        color: var(--database-editor-blue);
       }
 
-      &--nullable:not(&--pk, &--fk) &__name {
-        color: var(--color-text-disabled);
+      &--nullable:not(&--pk, &--fk, &--focused) &__name {
+        color: var(--color-text-muted);
       }
 
       &--focused {
@@ -925,7 +966,7 @@
         @include flexVCenter;
 
         justify-content: center;
-        color: var(--color-yellow-200);
+        color: var(--database-editor-yellow);
 
         svg {
           width: 1rem;
@@ -946,7 +987,7 @@
 
       &--view &__type {
         font-style: italic;
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
       }
     }
 
@@ -960,7 +1001,7 @@
         font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: 0.05rem;
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
         margin-bottom: 0.2rem;
       }
 
@@ -975,14 +1016,14 @@
 
       &__index {
         flex-shrink: 0;
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
       }
 
       &__formula {
         @include ellipsisTextOverflow;
 
         font-style: italic;
-        color: var(--color-purple-400);
+        color: var(--database-editor-purple);
       }
     }
 
@@ -991,7 +1032,7 @@
       min-width: 16rem;
       background: var(--color-bg-app);
       border: 0.1rem dashed var(--color-text-disabled);
-      color: var(--color-text-disabled);
+      color: var(--color-text-muted);
 
       .database-diagram__table-node__header {
         background: transparent;
@@ -999,7 +1040,7 @@
       }
 
       .database-diagram__table-node__header__icon {
-        color: var(--color-text-disabled);
+        color: var(--color-text-muted);
       }
 
       .database-diagram__table-node__header__name {
@@ -1013,7 +1054,7 @@
       padding: 0.3rem 0.8rem 0.5rem;
       font-family: 'Roboto Mono', monospace;
       font-size: 0.95rem;
-      color: var(--color-text-disabled);
+      color: var(--color-text-muted);
       font-style: italic;
       @include ellipsisTextOverflow;
     }
@@ -1044,7 +1085,7 @@
     font-size: 1.1rem;
 
     &--join {
-      border-left: 0.3rem solid var(--color-yellow-200);
+      border-left: 0.3rem solid var(--database-editor-yellow);
     }
 
     &--filter {
@@ -1087,9 +1128,14 @@
 
 .database-diagram__tree__column__nullable {
   margin-left: 0.3rem;
-  color: var(--color-text-disabled);
+  color: var(--color-text-muted);
   font-style: italic;
   font-weight: 400;
+}
+
+.database-diagram__tree__column--selected
+  .database-diagram__tree__column__nullable {
+  color: var(--color-text-on-accent);
 }
 
 .database-annotation {
@@ -1147,10 +1193,10 @@
 
   // Stereotypes — purple (domain).
   &__stereotype {
-    color: var(--color-purple-400);
+    color: var(--database-editor-purple);
 
     svg {
-      color: var(--color-purple-400);
+      color: var(--database-editor-purple);
     }
   }
 
@@ -1159,15 +1205,15 @@
     color: var(--color-text-secondary);
 
     svg {
-      color: var(--color-blue-200);
+      color: var(--database-editor-blue);
     }
 
     &__name {
-      color: var(--color-blue-200);
+      color: var(--database-editor-blue);
     }
 
     &__sep {
-      color: var(--color-text-disabled);
+      color: var(--color-text-muted);
       margin: 0 0.1rem;
     }
 
@@ -1213,7 +1259,12 @@
     font-family: var(--font-code);
     font-style: italic;
     font-size: 1rem;
-    color: var(--color-text-disabled);
+    color: var(--color-text-muted);
+  }
+
+  &--selected &__formula,
+  &--selected &__icon .icon {
+    color: var(--color-text-inverted);
   }
 
   &__marker {
@@ -1269,12 +1320,12 @@
   gap: 0.6rem;
   padding: 0.6rem 1rem;
   background: rgb(229 192 123 / 10%);
-  border-bottom: 0.1rem solid var(--color-yellow-200);
+  border-bottom: 0.1rem solid var(--database-editor-yellow);
   color: var(--color-text-secondary);
   font-size: 1.1rem;
 
   svg {
-    color: var(--color-yellow-200);
+    color: var(--database-editor-yellow);
     flex-shrink: 0;
   }
 
@@ -1285,7 +1336,7 @@
 
   &__path {
     font-family: var(--font-code);
-    color: var(--color-yellow-200);
+    color: var(--database-editor-yellow);
   }
 }
 
@@ -1492,7 +1543,7 @@
 // hues (blue vs. magenta) so users can tell the two apart at a glance.
 .database-diagram__table-node__header__kind-tag--milestoned-business {
   background: rgb(86 156 214 / 18%);
-  color: var(--color-blue-200);
+  color: var(--database-editor-blue);
   border: 0.1rem solid rgb(86 156 214 / 35%);
 }
 
@@ -1510,7 +1561,7 @@
 
 .database-diagram__tree__table__meta-row--milestoning-business
   .database-diagram__tree__table__meta-row__label {
-  color: var(--color-blue-200);
+  color: var(--database-editor-blue);
 }
 
 .database-diagram__tree__table__meta-row--milestoning-processing

@@ -19,6 +19,7 @@ import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.j
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
   isString,
   type GeneratorFn,
 } from '@finos/legend-shared';
@@ -28,6 +29,11 @@ import {
   DeploymentOwnershipDetail,
   UserListOwnershipDetail,
 } from '@finos/legend-graph';
+import {
+  LegendServiceTree,
+  type LegendServiceTreeNode,
+  toPatternSegments,
+} from './LegendServiceTree.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export enum LegendServiceSort {
@@ -40,6 +46,7 @@ export enum ServicesViewMode {
   LIST = 'list',
   TILE = 'tile',
   GRID = 'grid',
+  TREE = 'tree',
 }
 
 export class LegendServiceCardState {
@@ -142,6 +149,15 @@ export class LegendMarketplaceDataAPIsStore {
   ownerFilters: string[] = [];
   deploymentIdFilters: string[] = [];
   favorites: Set<string> = new Set();
+  toggledTreeGroups: Set<string> = new Set();
+  treeScopePath: string | undefined;
+  private serviceTreeCache:
+    | {
+        services: LegendServiceCardState[];
+        scopePath: string | undefined;
+        tree: LegendServiceTree;
+      }
+    | undefined;
 
   readonly fetchingServicesState = ActionState.create();
 
@@ -165,7 +181,7 @@ export class LegendMarketplaceDataAPIsStore {
       persistedViewMode as ServicesViewMode,
     )
       ? (persistedViewMode as ServicesViewMode)
-      : ServicesViewMode.TILE;
+      : ServicesViewMode.GRID;
 
     const persistedShowOwn =
       this.marketplaceBaseStore.applicationStore.settingService.getBooleanValue(
@@ -198,6 +214,12 @@ export class LegendMarketplaceDataAPIsStore {
       ownerFilters: observable,
       deploymentIdFilters: observable,
       favorites: observable,
+      toggledTreeGroups: observable.ref,
+      treeScopePath: observable,
+      setTreeScopePath: action,
+      toggleTreeGroup: action,
+      expandAllTreeGroups: action,
+      collapseAllTreeGroups: action,
       setSearchQuery: action,
       setSort: action,
       setViewMode: action,
@@ -212,6 +234,9 @@ export class LegendMarketplaceDataAPIsStore {
       removeDeploymentIdFilter: action,
       clearAllFilters: action,
       filteredSortedServices: computed,
+      serviceTree: computed,
+      visibleTreeRows: computed,
+      treeGroupsOpenByDefault: computed,
       paginatedServices: computed,
       totalFilteredCount: computed,
       hasActiveFilters: computed,
@@ -221,8 +246,67 @@ export class LegendMarketplaceDataAPIsStore {
   }
 
   setSearchQuery(query: string): void {
+    const wasOpenByDefault = this.treeGroupsOpenByDefault;
     this.searchQuery = query;
+    if (wasOpenByDefault !== this.treeGroupsOpenByDefault) {
+      this.toggledTreeGroups = new Set();
+    }
     this.page = 1;
+  }
+
+  setTreeScopePath(path: string | undefined): void {
+    const joined = toPatternSegments(path ?? '').join('/');
+    const normalized = joined.length > 0 ? joined : undefined;
+    if (normalized !== this.treeScopePath) {
+      this.treeScopePath = normalized;
+      this.toggledTreeGroups = new Set();
+    }
+  }
+
+  /**
+   * Whether groups are open unless toggled: while searching they are, so
+   * matches are visible.
+   */
+  get treeGroupsOpenByDefault(): boolean {
+    return this.searchQuery.length > 0;
+  }
+
+  /**
+   * Whether the group at `path` is open unless toggled. The scope root of a
+   * shared sub-tree always starts open.
+   */
+  private isTreeGroupOpenByDefault(path: string): boolean {
+    return this.treeGroupsOpenByDefault || path === this.treeScopePath;
+  }
+
+  isTreeGroupExpanded(path: string): boolean {
+    return (
+      this.isTreeGroupOpenByDefault(path) !== this.toggledTreeGroups.has(path)
+    );
+  }
+
+  toggleTreeGroup(path: string): void {
+    const next = new Set(this.toggledTreeGroups);
+    if (!next.delete(path)) {
+      next.add(path);
+    }
+    this.toggledTreeGroups = next;
+  }
+
+  expandAllTreeGroups(): void {
+    this.toggledTreeGroups = new Set(
+      this.serviceTree.groupPaths.filter(
+        (path) => !this.isTreeGroupOpenByDefault(path),
+      ),
+    );
+  }
+
+  collapseAllTreeGroups(): void {
+    this.toggledTreeGroups = new Set(
+      this.serviceTree.groupPaths.filter((path) =>
+        this.isTreeGroupOpenByDefault(path),
+      ),
+    );
   }
 
   setSort(sort: LegendServiceSort): void {
@@ -442,6 +526,51 @@ export class LegendMarketplaceDataAPIsStore {
     });
   }
 
+  /**
+   * The rows to render: one pass over the flat tree that skips collapsed
+   * subtrees.
+   */
+  get visibleTreeRows(): LegendServiceTreeNode[] {
+    const { flat } = this.serviceTree;
+    const rows: LegendServiceTreeNode[] = [];
+    let i = 0;
+    while (i < flat.length) {
+      const node = guaranteeNonNullable(flat[i]);
+      rows.push(node);
+      i =
+        node.isGroup && !this.isTreeGroupExpanded(node.path)
+          ? node.subtreeEnd
+          : i + 1;
+    }
+    return rows;
+  }
+
+  /**
+   * The tree of the filtered services, scoped to `treeScopePath` when set.
+   */
+  get serviceTree(): LegendServiceTree {
+    return this.buildServiceTree();
+  }
+
+  /**
+   * Builds the tree, or returns the one built for the same services and scope.
+   * The cache is a plain field rather than a kept-alive computed, so a tree
+   * built ahead of time survives until its inputs change.
+   */
+  private buildServiceTree(): LegendServiceTree {
+    const services = this.filteredSortedServices;
+    const scopePath = this.treeScopePath;
+    if (
+      this.serviceTreeCache?.services === services &&
+      this.serviceTreeCache.scopePath === scopePath
+    ) {
+      return this.serviceTreeCache.tree;
+    }
+    const tree = new LegendServiceTree(services, scopePath);
+    this.serviceTreeCache = { services, scopePath, tree };
+    return tree;
+  }
+
   get paginatedServices(): LegendServiceCardState[] {
     const start = (this.page - 1) * this.itemsPerPage;
     return this.filteredSortedServices.slice(start, start + this.itemsPerPage);
@@ -469,6 +598,7 @@ export class LegendMarketplaceDataAPIsStore {
 
       this.serviceCardStates = serviceCards;
       this.fetchingServicesState.complete();
+      setTimeout(() => this.buildServiceTree(), 0);
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(

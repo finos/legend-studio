@@ -103,6 +103,45 @@
   }
 
   &__text-mode {
+    // the element under the cursor, next to the text mode tab
+    &__breadcrumb {
+      @include flexVCenter;
+
+      height: 100%;
+      padding: 0 1.2rem;
+      font-size: 1.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+
+      &__keyword {
+        margin-right: 0.8rem;
+        padding: 0 0.6rem;
+        border-radius: 0.3rem;
+        line-height: 1.8rem;
+        font-size: 1.1rem;
+        color: var(--color-text-secondary);
+        background: var(--color-bg-tag);
+      }
+
+      &__package,
+      &__name {
+        &:not(:last-child)::after {
+          content: '›';
+          margin: 0 0.6rem;
+          color: var(--color-text-muted);
+        }
+      }
+
+      &__package {
+        color: var(--color-text-muted);
+      }
+
+      &__name {
+        font-weight: 500;
+        color: var(--color-text-primary);
+      }
+    }
+
     &__action {
       display: flex;
       justify-content: flex-end;

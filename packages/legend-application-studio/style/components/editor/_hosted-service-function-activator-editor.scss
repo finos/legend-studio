@@ -144,7 +144,10 @@
         }
       }
 
+      // The primary button fills with the accent color, so its text pairs
+      // with --color-text-on-accent instead of --color-text-primary.
       &__action--primary {
+        color: var(--color-text-on-accent);
         background: var(--color-accent);
       }
     }

@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { useSearchParams } from '@finos/legend-application/browser';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { type PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import {
   mockLakehouseAccessFilteredSearchResultResponse,
@@ -33,6 +46,7 @@ import {
   generateLakehouseAccessSearchResultsRoute,
   LEGEND_MARKETPLACE_ROUTE_PATTERN,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -115,10 +129,44 @@ const setupTestComponent = async (
   return { MOCK__baseStore, renderResult };
 };
 
+const mockClipboard = (): jest.Mock<(text: string) => Promise<void>> => {
+  const writeText = jest
+    .fn<(text: string) => Promise<void>>()
+    .mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText },
+    configurable: true,
+  });
+  return writeText;
+};
+
+const getTile = (element: HTMLElement): HTMLElement =>
+  guaranteeNonNullable(
+    element.closest<HTMLElement>('.marketplace-lakehouse-data-product-card'),
+  );
+
+const getListRow = (element: HTMLElement): HTMLElement =>
+  guaranteeNonNullable(
+    element.closest<HTMLElement>('.marketplace-lakehouse-list-item'),
+  );
+
+const switchToListView = async (): Promise<void> => {
+  await act(async () => {
+    fireEvent.click(screen.getByTitle('List View'));
+  });
+};
+
 beforeEach(() => {
   localStorage.clear();
   mockUseSearchParams.mockReset();
   mockSetSearchParams.mockReset();
+});
+
+afterEach(() => {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
 });
 
 describe('MarketplaceLakehouseAccessSearchResults', () => {
@@ -451,6 +499,340 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
           '/dataProduct/deployed/LAKEHOUSE_SDLC_DATA_PRODUCT/12345',
         ),
       );
+    });
+  });
+
+  describe('Data product IDs', () => {
+    test('a tile shows its data product ID and DID under the title', async () => {
+      await setupTestComponent('data');
+
+      const idButton = await screen.findByRole('button', {
+        name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+      });
+      expect(idButton.textContent).toBe('LAKEHOUSE_SDLC_DATA_PRODUCT');
+
+      const tile = within(getTile(idButton));
+      expect(tile.getByText('Lakehouse SDLC Data Product')).toBeDefined();
+      expect(
+        tile.getByRole('button', { name: 'Copy deployment ID 12345' })
+          .textContent,
+      ).toBe('DID12345');
+    });
+
+    test('an untitled product shows only its DID, its ID as the title', async () => {
+      await setupTestComponent('data');
+
+      const title = await screen.findByText(
+        'LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE',
+      );
+      // the ID is already the title: it is not repeated in the ID line, and it wraps
+      // after its underscores
+      expect(
+        screen.queryByRole('button', {
+          name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE',
+        }),
+      ).toBeNull();
+      expect(title.querySelectorAll('wbr')).toHaveLength(5);
+      expect(
+        within(getTile(title)).getByRole('button', {
+          name: 'Copy deployment ID 12345',
+        }),
+      ).toBeDefined();
+    });
+
+    test('a list row shows its data product ID and DID under the title', async () => {
+      await setupTestComponent('data');
+      await screen.findByText('2 Products');
+      await switchToListView();
+
+      const idButton = screen.getByRole('button', {
+        name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+      });
+      const row = within(getListRow(idButton));
+      expect(row.getByText('Lakehouse SDLC Data Product')).toBeDefined();
+      expect(
+        row.getByRole('button', { name: 'Copy deployment ID 12345' }),
+      ).toBeDefined();
+
+      // the untitled row shows only the DID
+      const untitledRow = getListRow(
+        screen.getByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE'),
+      );
+      expect(
+        within(untitledRow).getAllByRole('button', { name: /^Copy / }),
+      ).toHaveLength(1);
+    });
+
+    test('marks the result whose data product ID is the query, ignoring case', async () => {
+      await setupTestComponent(' lakehouse_sdlc_data_product ');
+
+      const idButton = await screen.findByRole('button', {
+        name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+      });
+      const tile = getTile(idButton);
+      expect(tile.className).toContain(
+        'marketplace-lakehouse-data-product-card--exact-match',
+      );
+      expect(within(tile).getByText('Exact ID match')).toBeDefined();
+      expect(idButton.className).toContain(
+        'marketplace-lakehouse-product-ids__id--exact-match',
+      );
+
+      // the untitled product's ID only starts with the query
+      const untitledTile = getTile(
+        screen.getByText('LAKEHOUSE_SDLC_DATA_PRODUCT_NO_TITLE'),
+      );
+      expect(untitledTile.className).not.toContain(
+        'marketplace-lakehouse-data-product-card--exact-match',
+      );
+      expect(screen.getAllByText('Exact ID match')).toHaveLength(1);
+    });
+
+    test('marks every result whose DID is the query', async () => {
+      await setupTestComponent('12345');
+
+      await screen.findByText('2 Products');
+      // both products are deployed with DID 12345
+      expect(screen.getAllByText('Exact DID match')).toHaveLength(2);
+      screen
+        .getAllByRole('button', { name: 'Copy deployment ID 12345' })
+        .forEach((didButton) => {
+          expect(didButton.className).toContain(
+            'marketplace-lakehouse-product-ids__did--exact-match',
+          );
+          expect(getTile(didButton).className).toContain(
+            'marketplace-lakehouse-data-product-card--exact-match',
+          );
+        });
+      expect(screen.queryByText('Exact ID match')).toBeNull();
+    });
+
+    test('marks the exact match in list rows too', async () => {
+      await setupTestComponent('LAKEHOUSE_SDLC_DATA_PRODUCT');
+      await screen.findByText('2 Products');
+      await switchToListView();
+
+      const row = getListRow(
+        screen.getByRole('button', {
+          name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+        }),
+      );
+      expect(row.className).toContain(
+        'marketplace-lakehouse-list-item--exact-match',
+      );
+      // the badge follows the title
+      const badge = within(row).getByText('Exact ID match');
+      expect(badge.previousElementSibling?.textContent).toBe(
+        'Lakehouse SDLC Data Product',
+      );
+    });
+
+    test('marks nothing when the query is not an ID', async () => {
+      await setupTestComponent('data');
+
+      await screen.findByText('2 Products');
+      expect(screen.queryByText('Exact ID match')).toBeNull();
+      expect(screen.queryByText('Exact DID match')).toBeNull();
+      expect(
+        document.querySelector(
+          '.marketplace-lakehouse-data-product-card--exact-match',
+        ),
+      ).toBeNull();
+    });
+
+    test('clicking an ID copies it without opening the product', async () => {
+      const writeText = mockClipboard();
+      const { MOCK__baseStore } = await setupTestComponent('data');
+      const mockVisitAddress = jest.fn();
+      MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
+        mockVisitAddress;
+      const logEvent = createSpy(
+        MOCK__baseStore.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+        }),
+      );
+
+      expect(writeText).toHaveBeenCalledWith('LAKEHOUSE_SDLC_DATA_PRODUCT');
+      expect(await screen.findByText('Copied')).toBeDefined();
+      expect(mockVisitAddress).not.toHaveBeenCalled();
+      // the product is described as for a card click, so the two events can be joined
+      expect(logEvent).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+        expect.objectContaining({
+          idType: 'dataProductId',
+          dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
+          deploymentId: 12345,
+          name: 'Lakehouse SDLC Data Product',
+          origin: expect.objectContaining({
+            groupId: 'com.example.lakehouse',
+            artifactId: 'lakehouse-sdlc-data-product',
+          }),
+          copiedFrom: 'Lakehouse Access Page',
+          status: 'success',
+        }),
+      );
+    });
+
+    test('a copy the browser refuses is logged as a failure', async () => {
+      const writeText = mockClipboard();
+      writeText.mockRejectedValue(new Error('Write permission denied.'));
+      const { MOCK__baseStore } = await setupTestComponent('data');
+      const logEvent = createSpy(
+        MOCK__baseStore.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Copy data product ID LAKEHOUSE_SDLC_DATA_PRODUCT',
+        }),
+      );
+
+      expect(await screen.findByText('Copy failed')).toBeDefined();
+      expect(logEvent).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+        expect.objectContaining({
+          idType: 'dataProductId',
+          dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
+          status: 'failure',
+          error: 'Write permission denied.',
+        }),
+      );
+    });
+
+    test('Enter on a DID in a list row copies it without opening the product', async () => {
+      const writeText = mockClipboard();
+      const { MOCK__baseStore } = await setupTestComponent('data');
+      const mockVisitAddress = jest.fn();
+      MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
+        mockVisitAddress;
+      const logEvent = createSpy(
+        MOCK__baseStore.applicationStore.telemetryService,
+        'logEvent',
+      );
+      await screen.findByText('2 Products');
+      await switchToListView();
+
+      const didButton = within(
+        getListRow(screen.getByText('Lakehouse SDLC Data Product')),
+      ).getByRole('button', { name: 'Copy deployment ID 12345' });
+      fireEvent.keyDown(didButton, { key: 'Enter' });
+
+      expect(writeText).toHaveBeenCalledWith('12345');
+      expect(await screen.findByText('Copied')).toBeDefined();
+      expect(mockVisitAddress).not.toHaveBeenCalled();
+      expect(logEvent).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.COPY_DATA_PRODUCT_ID,
+        expect.objectContaining({
+          idType: 'deploymentId',
+          dataProductId: 'LAKEHOUSE_SDLC_DATA_PRODUCT',
+          deploymentId: 12345,
+          status: 'success',
+        }),
+      );
+    });
+  });
+
+  describe('Filter on DID', () => {
+    test('an all-digit query offers to filter on that DID', async () => {
+      const { MOCK__baseStore } = await setupTestComponent(' 12345 ');
+      await screen.findByText('2 Products');
+      (
+        MOCK__baseStore.marketplaceServerClient
+          .lakehouseAccessSearch as jest.Mock
+      ).mockClear();
+      const logEvent = createSpy(
+        MOCK__baseStore.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole('button', { name: 'Filter on DID 12345' }),
+        );
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).toHaveBeenCalledWith(
+        ' 12345 ',
+        expect.anything(),
+        expect.objectContaining({
+          searchFilters: ['deployment_id=12345'],
+          pageNumber: 1,
+        }),
+      );
+      expect(logEvent).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.CLICK_FILTER_ON_DEPLOYMENT_ID,
+        expect.objectContaining({
+          deploymentId: 12345,
+          searchQuery: ' 12345 ',
+        }),
+      );
+      // the filter is applied, so the offer is gone
+      expect(
+        screen.queryByRole('button', { name: 'Filter on DID 12345' }),
+      ).toBeNull();
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      expect(within(filterPanel).getByText('12345')).toBeDefined();
+    });
+
+    test('never filters on its own', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('12345');
+
+      await screen.findByRole('button', { name: 'Filter on DID 12345' });
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).toHaveBeenCalledWith(
+        '12345',
+        expect.anything(),
+        expect.objectContaining({ searchFilters: [] }),
+      );
+    });
+
+    test('is not offered once that DID is filtered', async () => {
+      await setupTestComponent('12345');
+      await screen.findByRole('button', { name: 'Filter on DID 12345' });
+
+      const deploymentInput = screen.getByLabelText('Deployment ID');
+      await act(async () => {
+        fireEvent.change(deploymentInput, { target: { value: '12345' } });
+        fireEvent.keyDown(deploymentInput, { key: 'Enter' });
+        await flushMicrotasks();
+      });
+
+      await waitFor(() =>
+        expect(
+          screen.queryByRole('button', { name: 'Filter on DID 12345' }),
+        ).toBeNull(),
+      );
+    });
+
+    test.each([
+      'data',
+      '12345abc',
+      'DID 12345',
+      '12 345',
+      // too long to be a DID
+      '99999999999999999999',
+    ])('is not offered for the query %p', async (query) => {
+      await setupTestComponent(query);
+
+      await screen.findByText('2 Products');
+      expect(
+        screen.queryByRole('button', { name: /^Filter on DID/ }),
+      ).toBeNull();
     });
   });
 

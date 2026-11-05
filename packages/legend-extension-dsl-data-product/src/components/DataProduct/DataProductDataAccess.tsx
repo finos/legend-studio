@@ -37,6 +37,7 @@ import {
   WarningIcon,
   RocketIcon,
   CopyIcon,
+  CopyableId,
   QueryIcon,
   Snowflake_BrandIcon,
   Databricks_BrandIcon,
@@ -144,6 +145,11 @@ import {
   CollapsibleChevron,
   CollapsibleWikiSection,
 } from '../ProductViewer.js';
+import { isDescriptionSameAsTitle } from '../../utils/DataProductViewerUtils.js';
+import {
+  DataProductAccessPointColumnsStrip,
+  DataProductPureQueryScreen,
+} from './DataProductAccessPointCode.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -166,6 +172,15 @@ const getLakehouseTargetEnvironmentIcon = (
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
+// a column's description or sample values, when there are none: the strip above
+// the grid says why, once, for those who can act on it
+const EMPTY_COLUMN_SPECIFICATION = '—';
+const emptyColumnSpecificationCellClass = (params: {
+  value?: unknown;
+}): string | undefined =>
+  params.value === EMPTY_COLUMN_SPECIFICATION
+    ? 'data-product__viewer__more-info__columns-grid__empty-cell'
+    : undefined;
 const LAKEHOUSE_EXECUTE_PATH = '/lakehouse/v1/execute';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
@@ -829,8 +844,8 @@ const GovernanceScreen = observer(
 
 const enum DataProductAccessPointTabs {
   COLUMNS = 'Columns',
-  QUERY = 'Query',
-  GRAMMAR = 'Grammar',
+  PURE_QUERY = 'Pure Query',
+  LEGEND_QUERY = 'Legend Query',
   SERVICE = 'Service',
   GOVERNANCE = 'Governance',
   DATACUBE = 'Datacube',
@@ -1375,8 +1390,9 @@ const ColumnsScreen = observer(
           valueGetter: (_params) =>
             _params.data
               ? (getRelationColumnDescription(_params.data) ??
-                'No description provided')
+                EMPTY_COLUMN_SPECIFICATION)
               : '',
+          cellClass: emptyColumnSpecificationCellClass,
         },
         {
           headerName: 'Column Sample Values',
@@ -1388,24 +1404,31 @@ const ColumnsScreen = observer(
               return 'Loading sample data...';
             }
             if (!_params.data || !accessPointState.relationElement) {
-              return 'No sample values provided';
+              return EMPTY_COLUMN_SPECIFICATION;
             }
             const columnName = _params.data.name;
             const columnIndex =
               accessPointState.relationElement.columns.indexOf(columnName);
             if (columnIndex === -1) {
-              return 'No sample values provided';
+              return EMPTY_COLUMN_SPECIFICATION;
             }
             const sampleValues = accessPointState.relationElement.rows
               .map((row) => row.values[columnIndex])
               .filter((value) => value !== undefined && !isEmpty(value));
-            return sampleValues.join(', ');
+            return sampleValues.length > 0
+              ? sampleValues.join(', ')
+              : EMPTY_COLUMN_SPECIFICATION;
           },
+          cellClass: emptyColumnSpecificationCellClass,
         },
       ];
 
     return (
       <>
+        <DataProductAccessPointColumnsStrip
+          accessPointState={accessPointState}
+          dataAccessState={dataAccessState}
+        />
         {accessPointState.fetchingRelationTypeState.isInProgress ? (
           <Box className="data-product__viewer__more-info__loading-indicator">
             <CubesLoadingIndicator isLoading={true}>
@@ -1456,54 +1479,6 @@ const ColumnsScreen = observer(
           </Box>
         ) : (
           <TabMessageScreen message="Unable to fetch access point columns" />
-        )}
-      </>
-    );
-  },
-);
-
-const GrammarScreen = observer(
-  (props: { accessPointState: DataProductAccessPointState }) => {
-    const { accessPointState } = props;
-
-    useEffect(() => {
-      if (accessPointState.fetchingGrammarState.isInInitialState) {
-        accessPointState
-          .fetchGrammar()
-          .catch((error: Error) =>
-            accessPointState.apgState.applicationStore.notificationService.notifyError(
-              error,
-            ),
-          );
-      }
-    }, [accessPointState]);
-
-    return (
-      <>
-        {accessPointState.fetchingGrammarState.isInProgress ? (
-          <Box className="data-product__viewer__more-info__loading-indicator">
-            <CubesLoadingIndicator isLoading={true}>
-              <CubesLoadingIndicatorIcon />
-            </CubesLoadingIndicator>
-          </Box>
-        ) : accessPointState.fetchingGrammarState.hasCompleted ? (
-          <Box className="data-product__viewer__more-info__grammar">
-            <CodeEditor
-              inputValue={accessPointState.grammar ?? 'Unable to fetch grammar'}
-              isReadOnly={true}
-              language={CODE_EDITOR_LANGUAGE.PURE}
-              hideMinimap={true}
-              hideGutter={true}
-              hideActionBar={true}
-              lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-              extraEditorOptions={{
-                scrollBeyondLastLine: false,
-                wordWrap: 'on',
-              }}
-            />
-          </Box>
-        ) : (
-          <TabMessageScreen message="Unable to fetch access point grammar" />
         )}
       </>
     );
@@ -1678,8 +1653,14 @@ const AccessPointTable = observer(
               dataAccessState={dataAccessState}
             />
           );
-        case DataProductAccessPointTabs.GRAMMAR:
-          return <GrammarScreen accessPointState={accessPointState} />;
+        case DataProductAccessPointTabs.PURE_QUERY:
+          // shown whatever the access point's compute target
+          return accessPointState.accessPoint instanceof
+            V1_LakehouseAccessPoint ? (
+            <DataProductPureQueryScreen accessPointState={accessPointState} />
+          ) : (
+            <TabMessageScreen message={NOT_SUPPORTED} />
+          );
         case DataProductAccessPointTabs.GOVERNANCE:
           return (
             <GovernanceScreen
@@ -1694,7 +1675,7 @@ const AccessPointTable = observer(
               dataAccessState={dataAccessState}
             />
           );
-        case DataProductAccessPointTabs.QUERY:
+        case DataProductAccessPointTabs.LEGEND_QUERY:
           return (
             <LegendQueryScreen
               accessPointState={accessPointState}
@@ -1739,13 +1720,13 @@ const AccessPointTable = observer(
         icon: null,
       },
       {
-        key: DataProductAccessPointTabs.GRAMMAR,
-        label: 'Grammar',
+        key: DataProductAccessPointTabs.PURE_QUERY,
+        label: 'Pure Query',
         icon: null,
       },
       {
-        key: DataProductAccessPointTabs.QUERY,
-        label: 'Query',
+        key: DataProductAccessPointTabs.LEGEND_QUERY,
+        label: 'Legend Query',
         icon: null,
       },
       {
@@ -1846,6 +1827,8 @@ export const DataProductAccessPointViewer = observer(
     const targetEnvironmentIcon = targetEnvironment
       ? getLakehouseTargetEnvironmentIcon(targetEnvironment)
       : undefined;
+    const accessPointId = accessPointState.accessPoint.id;
+    const displayedTitle = accessPointState.accessPoint.title ?? accessPointId;
 
     return (
       <Accordion
@@ -1861,16 +1844,22 @@ export const DataProductAccessPointViewer = observer(
         }}
       >
         <AccordionSummary
+          // a div, not a button: it holds the button that copies the ID
+          component="div"
           expandIcon={<ExpandMoreIcon />}
           className="data-product__viewer__access-point__summary"
         >
           <div className="data-product__viewer__access-point__info">
             <div className="data-product__viewer__access-point__details">
               <div className="data-product__viewer__access-point__name">
-                <strong>
-                  {accessPointState.accessPoint.title ??
-                    accessPointState.accessPoint.id}
-                </strong>
+                <strong>{displayedTitle}</strong>
+                {displayedTitle !== accessPointId && (
+                  <CopyableId
+                    className="data-product__viewer__id data-product__viewer__access-point__id"
+                    value={accessPointId}
+                    label="access point ID"
+                  />
+                )}
                 {targetEnvironment && (
                   <Chip
                     className={clsx(
@@ -1891,13 +1880,18 @@ export const DataProductAccessPointViewer = observer(
                   />
                 )}
               </div>
-              <div className="data-product__viewer__access-point__description">
-                {accessPointState.accessPoint.description?.trim() ?? (
-                  <span className="data-product__viewer__grid__empty-cell">
-                    No description to provide
-                  </span>
-                )}
-              </div>
+              {!isDescriptionSameAsTitle(
+                accessPointState.accessPoint.description,
+                displayedTitle,
+              ) && (
+                <div className="data-product__viewer__access-point__description">
+                  {accessPointState.accessPoint.description?.trim() ?? (
+                    <span className="data-product__viewer__grid__empty-cell">
+                      No description to provide
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="data-product__viewer__access-point__tags">
               {accessPointState.registryMetadata?.ads && (
@@ -1938,6 +1932,7 @@ export const DataProductAccessPointGroupViewer = observer(
     const { apgState, dataAccessState } = props;
 
     const accessPointStates = apgState.accessPointStates;
+    const displayedTitle = apgState.apg.title ?? apgState.apg.id;
 
     const auth = useAuth();
     const tokenRef = useRef(auth.user?.access_token);
@@ -2006,11 +2001,15 @@ export const DataProductAccessPointGroupViewer = observer(
         <div className="data-product__viewer__access-group__item__header">
           <div className="data-product__viewer__access-group__item__header-main">
             <div className="data-product__viewer__access-group__item__header__title">
-              {apgState.apg.title ?? apgState.apg.id}
+              {displayedTitle}
             </div>
-            <div className="data-product__viewer__access-group__item__header__type">
-              LAKEHOUSE
-            </div>
+            {displayedTitle !== apgState.apg.id && (
+              <CopyableId
+                className="data-product__viewer__id data-product__viewer__access-group__item__header__id"
+                value={apgState.apg.id}
+                label="access point group ID"
+              />
+            )}
             <CollapsibleChevron
               viewerState={apgState.dataProductViewerState}
               anchor={apgState.anchor}
@@ -2102,11 +2101,16 @@ export const DataProductAccessPointGroupViewer = observer(
           )}
         {!apgState.isCollapsed && (
           <div className="data-product__viewer__access-group__item__collapsible-content">
-            <div className="data-product__viewer__access-group__item__description">
-              <DataProductMarkdownTextViewer
-                value={apgState.apg.description ?? ''}
-              />
-            </div>
+            {!isDescriptionSameAsTitle(
+              apgState.apg.description,
+              displayedTitle,
+            ) && (
+              <div className="data-product__viewer__access-group__item__description">
+                <DataProductMarkdownTextViewer
+                  value={apgState.apg.description ?? ''}
+                />
+              </div>
+            )}
             <div className="data-product__viewer__access-group__item__content">
               <div className="data-product__viewer__access-group__item__content__tab__content">
                 {filteredAccessPointStates.map((accessPointState) => (

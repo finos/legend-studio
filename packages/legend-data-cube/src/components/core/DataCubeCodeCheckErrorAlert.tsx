@@ -17,7 +17,6 @@
 import { DataCubeIcon } from '@finos/legend-art';
 import {
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
   moveCursorToPosition,
   PURE_CODE_EDITOR_WORD_SEPARATORS,
@@ -28,6 +27,10 @@ import { useEffect, useRef, useState } from 'react';
 import { MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID } from './DataCubePureCodeEditorUtils.js';
 import type { EngineError } from '@finos/legend-graph';
 import { isNonNullable } from '@finos/legend-shared';
+import {
+  getDataCubeCodeEditorTheme,
+  useDataCubeColorTheme,
+} from './DataCubeColorTheme.js';
 
 export function DataCubeCodeCheckErrorAlert(props: {
   editorModel: monacoEditorAPI.ITextModel;
@@ -37,6 +40,7 @@ export function DataCubeCodeCheckErrorAlert(props: {
 }) {
   const { editorModel, error, message, text } = props;
   const editorRef = useRef<HTMLDivElement>(null);
+  const colorTheme = useDataCubeColorTheme();
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
@@ -51,7 +55,7 @@ export function DataCubeCodeCheckErrorAlert(props: {
         ...getBaseCodeEditorOptions(),
         fontSize: 12,
         language: CODE_EDITOR_LANGUAGE.PURE,
-        theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
+        theme: getDataCubeCodeEditorTheme(colorTheme),
         wordSeparators: PURE_CODE_EDITOR_WORD_SEPARATORS,
         // Make sure the widgets (tooltips, menus) are not clipped by the container bounds
         // and fix the problem where widgets are rendered with position=fixed not working well with parent
@@ -71,7 +75,12 @@ export function DataCubeCodeCheckErrorAlert(props: {
       newEditor.setModel(editorModel);
       setEditor(newEditor);
     }
-  }, [editor, editorModel]);
+  }, [editor, editorModel, colorTheme]);
+
+  // NOTE: the theme is only applied on creation, so it must be updated when switched
+  useEffect(() => {
+    editor?.updateOptions({ theme: getDataCubeCodeEditorTheme(colorTheme) });
+  }, [editor, colorTheme]);
 
   useEffect(() => {
     if (error.sourceInformation) {

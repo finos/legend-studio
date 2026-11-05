@@ -969,10 +969,12 @@ export const FileGenerationConfigurationEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const fileGeneration = fileGenerationState.fileGeneration;
+    // the engine may have no description for this type (e.g. it doesn't support it,
+    // or the descriptions failed to load), so the properties can't be edited
     const fileGenerationConfiguration =
-      editorStore.graphState.graphGenerationState.globalFileGenerationState.getFileGenerationConfiguration(
+      editorStore.graphState.graphGenerationState.globalFileGenerationState.getNullableFileGenerationConfiguration(
         fileGeneration.type,
-      ).properties;
+      );
     const debouncedRegenerate = useMemo(
       () => debounce(() => flowResult(fileGenerationState.generate()), 500),
       [fileGenerationState],
@@ -1103,18 +1105,31 @@ export const FileGenerationConfigurationEditor = observer(
                   )
                 }
               />
-              {fileGenerationConfiguration.map((abstractGenerationProperty) => (
-                <GenerationPropertyEditor
-                  key={
-                    abstractGenerationProperty.name +
-                    abstractGenerationProperty.type
-                  }
-                  update={update}
-                  isReadOnly={isReadOnly}
-                  getConfigValue={getConfigValue}
-                  property={abstractGenerationProperty}
-                />
-              ))}
+              {fileGenerationConfiguration ? (
+                fileGenerationConfiguration.properties.map(
+                  (abstractGenerationProperty) => (
+                    <GenerationPropertyEditor
+                      key={
+                        abstractGenerationProperty.name +
+                        abstractGenerationProperty.type
+                      }
+                      update={update}
+                      isReadOnly={isReadOnly}
+                      getConfigValue={getConfigValue}
+                      property={abstractGenerationProperty}
+                    />
+                  ),
+                )
+              ) : (
+                <PanelFormSection>
+                  <div className="panel__content__form__section__header__label">
+                    Configuration
+                  </div>
+                  <div className="panel__content__form__section__header__prompt">
+                    {`Can't edit the configuration: the engine has no description for file generation type '${fileGeneration.type}'. It may not support this type, or the generation descriptions failed to load.`}
+                  </div>
+                </PanelFormSection>
+              )}
             </div>
           </PanelDropZone>
         </PanelContent>

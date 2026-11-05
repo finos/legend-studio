@@ -151,7 +151,7 @@ export class CubeExecutionState {
     const captureId = query.selected;
     if (captureId === undefined) {
       reasons.push(
-        'Pick the step to run: Run this step, from its menu or editor.',
+        'Pick the output step: Set as output, from its menu or editor.',
       );
     } else if (
       !emitter.canEmit(captureId) ||
@@ -195,6 +195,7 @@ export class CubeExecutionState {
         query,
         model,
         runtime,
+        mapping: context.mapping,
         schema,
         rowLimit,
         abortController: controller,

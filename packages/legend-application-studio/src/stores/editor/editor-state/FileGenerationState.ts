@@ -229,14 +229,21 @@ export class FileGenerationState extends GeneratedFileStructureState {
         this.processGenerationResult([]);
         return;
       }
-      const mode =
-        this.editorStore.graphState.graphGenerationState.globalFileGenerationState.getFileGenerationConfiguration(
+      const configuration =
+        this.editorStore.graphState.graphGenerationState.globalFileGenerationState.getNullableFileGenerationConfiguration(
           this.fileGeneration.type,
-        ).generationMode;
+        );
+      // without the engine's description for this type, we don't know its generation mode;
+      // the configuration editor already says so, so there is nothing to generate
+      if (!configuration) {
+        this.fileSystemState.selectedNode = undefined;
+        this.processGenerationResult([]);
+        return;
+      }
       const result =
         (yield this.editorStore.graphManagerState.graphManager.generateFile(
           this.fileGeneration,
-          mode,
+          configuration.generationMode,
           this.editorStore.graphManagerState.graph,
         )) as GenerationOutput[];
       this.processGenerationResult(result);

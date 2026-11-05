@@ -45,7 +45,9 @@ import {
   type Type,
   resolveServiceQueryRawLambda,
   PureExecution,
+  RawLambda,
 } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-storage';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
 import { ServicePostValidationsState } from './ServicePostValidationState.js';
@@ -106,6 +108,24 @@ export const isServiceQueryTDS = (
       ? valueSpecReturnTDS(valueSpec, editorStore.graphManagerState.graph)
       : undefined,
   );
+};
+
+type SavedServiceEntityContent = {
+  execution?: { func?: { parameters?: object; body?: object } };
+};
+
+export const getSavedServiceQueryHash = (
+  savedEntities: Entity[],
+  servicePath: string,
+): string | undefined => {
+  const savedQuery = (
+    savedEntities.find((entity) => entity.path === servicePath)?.content as
+      | SavedServiceEntityContent
+      | undefined
+  )?.execution?.func;
+  return savedQuery
+    ? new RawLambda(savedQuery.parameters, savedQuery.body).hashCode
+    : undefined;
 };
 
 export const MINIMUM_SERVICE_OWNERS = 2;

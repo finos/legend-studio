@@ -18,7 +18,6 @@ import { cn } from '@finos/legend-art';
 import {
   getBaseCodeEditorOptions,
   CODE_EDITOR_LANGUAGE,
-  CODE_EDITOR_THEME,
   PURE_CODE_EDITOR_WORD_SEPARATORS,
 } from '@finos/legend-code-editor';
 import {
@@ -39,12 +38,17 @@ import {
 } from 'monaco-editor';
 import type { DataCubeCodeEditorState } from './DataCubeCodeEditorState.js';
 import { runInAction } from 'mobx';
+import {
+  getDataCubeCodeEditorTheme,
+  useDataCubeColorTheme,
+} from '../../core/DataCubeColorTheme.js';
 
 export const DataCubeCodeEditor = observer(
   (props: { state: DataCubeCodeEditorState }) => {
     const { state } = props;
 
     const editorRef = useRef<HTMLDivElement>(null);
+    const colorTheme = useDataCubeColorTheme();
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
@@ -71,7 +75,7 @@ export const DataCubeCodeEditor = observer(
           ...getBaseCodeEditorOptions(),
           fontSize: 12,
           language: CODE_EDITOR_LANGUAGE.PURE,
-          theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
+          theme: getDataCubeCodeEditorTheme(colorTheme),
           wordSeparators: PURE_CODE_EDITOR_WORD_SEPARATORS,
           // Make sure the widgets (tooltips, menus) are not clipped by the container bounds
           // and fix the problem where widgets are rendered with position=fixed not working well with parent
@@ -145,7 +149,12 @@ export const DataCubeCodeEditor = observer(
         state.setEditor(newEditor);
         setEditor(newEditor);
       }
-    }, [state, editor, debouncedCheckReturnType]);
+    }, [state, editor, debouncedCheckReturnType, colorTheme]);
+
+    // NOTE: the theme is only applied on creation, so it must be updated when switched
+    useEffect(() => {
+      editor?.updateOptions({ theme: getDataCubeCodeEditorTheme(colorTheme) });
+    }, [editor, colorTheme]);
 
     // clean up
     useEffect(

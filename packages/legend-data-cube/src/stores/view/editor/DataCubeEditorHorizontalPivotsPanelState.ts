@@ -20,6 +20,7 @@ import {
   DataCubeColumnKind,
   DataCubeQuerySortDirection,
   isPivotResultColumnName,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import {
@@ -40,8 +41,7 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
     column: DataCubeEditorColumnsSelectorSortColumnState,
   ): DataCubeEditorColumnsSelectorSortColumnState {
     return new DataCubeEditorColumnsSelectorSortColumnState(
-      column.name,
-      column.type,
+      column,
       column.direction,
       column.onChange,
     );
@@ -53,13 +53,13 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !_findCol(this._editor.groupExtendColumns, col.name),
+          !_findCol(this._editor.groupExtendColumns, col.name) &&
+          !isVariantType(col.type),
       )
       .map(
         (col) =>
           new DataCubeEditorColumnsSelectorSortColumnState(
-            col.name,
-            col.type,
+            col,
             DataCubeQuerySortDirection.ASCENDING,
             () => this.onChange?.(this),
           ),
@@ -125,8 +125,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
       (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
           new DataCubeEditorColumnsSelectorSortColumnState(
-            col.name,
-            col.type,
+            col,
             _findCol(configuration.columns, col.name)?.pivotSortDirection ??
               DataCubeQuerySortDirection.ASCENDING,
             () => this.selector.onChange?.(this.selector),

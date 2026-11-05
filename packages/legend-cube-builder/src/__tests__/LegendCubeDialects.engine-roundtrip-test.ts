@@ -37,6 +37,7 @@ import {
   Explode,
   Partition,
   MESSAGE_PATTERN_NOT_LITERAL,
+  MESSAGE_PIVOT_UNSUPPORTED_DATABASE,
   MESSAGE_VARIANT_UNSUPPORTED_DATABASE,
   Pivot,
   printIR,
@@ -1656,9 +1657,11 @@ describe('A pattern that is not a literal, as each database plans it', () => {
 });
 
 // Pivot (PLAN §11.12): the engine's static pivot(), which four types plan.
-// Trino and Athena plan it with no PIVOT (ISSUES.md), and every other type
-// refuses it: Cube refuses all 16, so these plan the native form to pin the
-// engine's behaviour. When it changes, these fail, and the list can change.
+// Trino and Athena plan it with no PIVOT (ISSUES.md), BigQuery writes a PIVOT
+// that Cube has yet to run against it (legend-engine#5108 still records static
+// pivot failures there), and every other type refuses it: Cube refuses all 16,
+// so these plan the native form to pin the engine's behaviour. When it
+// changes, these fail, and the list can change.
 describe('Pivot, as each database plans it', () => {
   /** SHIP_VIA's 1, 2 and 3 by SHIP_COUNTRY, Sum of FREIGHT */
   const pivotThen = (): Query =>
@@ -1700,10 +1703,31 @@ describe('Pivot, as each database plans it', () => {
     },
   );
 
+  test.each(['BigQuery'])(
+    'Writes a PIVOT on %s, whose names the outer select reads, which Cube refuses',
+    async (databaseType) => {
+      const sql = await planSql(pivotThen(), databaseType, { native: true });
+      expect(sql).toMatch(/\bpivot\b/u);
+      ['1', '2', '3'].forEach((value) =>
+        expect(sql).toMatch(
+          new RegExp(`'${value}__\\|__cube_pivot'\` as \`${value}\``, 'u'),
+        ),
+      );
+      expect(() =>
+        new QueryEmitter(pivotThen()).emitExecutionLambda({
+          rowLimit: 1000,
+          runtime: `test::plan::${databaseType}Runtime`,
+          databaseType,
+        }),
+      ).toThrow(MESSAGE_PIVOT_UNSUPPORTED_DATABASE(databaseType));
+    },
+  );
+
   test.each(
     PLANNED_DATABASE_TYPES.filter(
       (type) =>
-        !PIVOTING.includes(type) && type !== 'Trino' && type !== 'Athena',
+        !PIVOTING.includes(type) &&
+        !['Trino', 'Athena', 'BigQuery'].includes(type),
     ),
   )('Refuses it on %s', async (databaseType) => {
     await expect(
@@ -1881,7 +1905,10 @@ describe('Window functions, as each database plans them', () => {
       );
       expect(sql).not.toMatch(/\blast_value\(|\bnth_value\(/u);
       // reversed, the sort puts empty values at the other end too: where
-      // the database's own default wouldn't, the engine writes it
+      // the database's own default wouldn't, the engine writes it. BigQuery
+      // is the exception: it refuses the clause outside a ROWS frame, so the
+      // engine leaves it out and the order is BigQuery's own, empty values
+      // low, either way (legend-engine#5108)
       const ascending =
         /\border by [^()]*order_date[`"]? asc(?<nulls> nulls last)?\)/u.exec(
           sql,
@@ -1891,7 +1918,7 @@ describe('Window functions, as each database plans them', () => {
           sql,
         );
       expect(Boolean(ascending?.groups?.nulls)).toBe(
-        ['MemSQL', 'Databricks', 'Hive', 'BigQuery'].includes(databaseType),
+        ['MemSQL', 'Databricks', 'Hive'].includes(databaseType),
       );
       expect(Boolean(descending?.groups?.nulls)).toBe(
         ![
@@ -1904,6 +1931,7 @@ describe('Window functions, as each database plans them', () => {
           'Snowflake',
           'Oracle',
           'Redshift',
+          'BigQuery',
         ].includes(databaseType),
       );
     },
@@ -2343,6 +2371,134 @@ describe("The grid's drill-down, as each database plans it", () => {
       const limit = /(?<!\d)100(?!\d)/u.exec(sql)?.index ?? -1;
       expect(limit).toBeGreaterThan(-1);
       expect(limit).toBeLessThan(sql.lastIndexOf('group by'));
+    },
+  );
+});
+
+describe('Median to Join Text in a Group, and Std Dev and Variance in a window, as each database plans them (PLAN §11.28)', () => {
+  const { MEDIAN, PERCENTILE, STD_DEV, VARIANCE, JOIN_TEXT } =
+    AggregationFunction;
+  /** One of each, of FREIGHT, a Double, and SHIP_CITY, a Varchar */
+  const SUMMARIES: readonly ColumnAggregation[] = [
+    { column: 'FREIGHT', function: MEDIAN, name: 'med' },
+    { column: 'FREIGHT', function: PERCENTILE, name: 'p90', percentile: 0.9 },
+    { column: 'FREIGHT', function: STD_DEV, name: 'sd' },
+    { column: 'FREIGHT', function: VARIANCE, name: 'v' },
+    {
+      column: 'SHIP_CITY',
+      function: JOIN_TEXT,
+      name: 'cities',
+      separator: ', ',
+    },
+  ];
+  /** The functions the engine writes no SQL for on a database type, in a Group or a window */
+  const REFUSED: Readonly<Record<string, readonly string[]>> = {
+    SqlServer: [JOIN_TEXT],
+    Trino: [JOIN_TEXT],
+    Presto: [JOIN_TEXT],
+    Athena: [JOIN_TEXT],
+    Hive: [STD_DEV, JOIN_TEXT],
+    Composite: [STD_DEV, JOIN_TEXT],
+  };
+  /** How the databases Cube targets first write each, in SUMMARIES' order, and ClickHouse */
+  const WRITTEN: Readonly<Record<string, readonly string[]>> = {
+    Snowflake: [
+      'median("orders_0".freight)',
+      'percentile_cont(0.9) within group (order by "orders_0".freight asc)',
+      'stddev_samp("orders_0".freight)',
+      'var_samp("orders_0".freight)',
+      `listagg("orders_0".ship_city, ', ')`,
+    ],
+    Databricks: [
+      'median(`orders_0`.freight)',
+      'percentile_cont(0.9) within group (order by cast(`orders_0`.freight as double) asc)',
+      'stddev_samp(`orders_0`.freight)',
+      'var_samp(`orders_0`.freight)',
+      "array_join(collect_list(`orders_0`.ship_city), ', ')",
+    ],
+    MemSQL: [
+      'median(`orders_0`.freight)',
+      'percentile_cont(0.9) within group (order by `orders_0`.freight asc)',
+      'stddev_samp(`orders_0`.freight)',
+      'var_samp(`orders_0`.freight)',
+      "group_concat(`orders_0`.ship_city separator ', ')",
+    ],
+    DuckDB: [
+      'median("orders_0".freight)',
+      'percentile_cont(0.9) within group (order by "orders_0".freight asc)',
+      'stddev_samp("orders_0".freight)',
+      'var_samp("orders_0".freight)',
+      `string_agg("orders_0".ship_city,', ')`,
+    ],
+    H2: [
+      'percentile_cont(cast(0.5 as float)) within group (order by "orders_0".freight asc)',
+      'percentile_cont(cast(0.9 as float)) within group (order by "orders_0".freight asc)',
+      'stddev_samp("orders_0".freight)',
+      'var_samp("orders_0".freight)',
+      `listagg("orders_0".ship_city, ', ')`,
+    ],
+    // estimates (quantile), and a Join Text of one row, no aggregate: the
+    // editor's note says ClickHouse can't run it (ISSUES.md)
+    ClickHouse: [
+      'median("orders_0".freight)',
+      'quantile(0.9)("orders_0".freight)',
+      'stddevsamp("orders_0".freight)',
+      'varsamp("orders_0".freight)',
+      `concatwithseparator("orders_0".ship_city, ', ')`,
+    ],
+  };
+
+  test.each(PLANNED_DATABASE_TYPES)(
+    'Plans each in a Group on %s, or the engine refuses it there',
+    async (databaseType) => {
+      for (const [index, summary] of SUMMARIES.entries()) {
+        const planned = planSql(
+          ordersThen(new Group('group101', ['SHIP_COUNTRY'], [summary])),
+          databaseType,
+        );
+        if (REFUSED[databaseType]?.includes(summary.function)) {
+          await expect(planned).rejects.toThrow();
+        } else {
+          const written = WRITTEN[databaseType]?.[index];
+          const sql = await planned;
+          if (written !== undefined) {
+            expect([summary.function, sql]).toEqual([
+              summary.function,
+              expect.stringContaining(written),
+            ]);
+          }
+        }
+      }
+    },
+  );
+
+  test.each(WINDOW_DATABASE_TYPES)(
+    'Plans Std Dev and Variance over a sorted window on %s, keeping its OVER, or the engine refuses it there',
+    async (databaseType) => {
+      for (const summary of SUMMARIES.filter(
+        ({ function: fn }) => fn === STD_DEV || fn === VARIANCE,
+      )) {
+        const planned = planSql(
+          ordersThen(
+            new Partition(
+              'partition101',
+              ['SHIP_COUNTRY'],
+              [{ column: 'ORDER_ID', direction: SortDirection.ASC }],
+              [summary],
+            ),
+          ),
+          databaseType,
+        );
+        if (REFUSED[databaseType]?.includes(summary.function)) {
+          await expect(planned).rejects.toThrow();
+        } else {
+          expect(await planned).toMatch(
+            summary.function === STD_DEV
+              ? /(?:stddev_samp|stddevsamp|stdev)\([^()]*\) over \(partition by [^)]* order by /u
+              : /(?:var_samp|varsamp|var)\([^()]*\) over \(partition by [^)]* order by /u,
+          );
+        }
+      }
     },
   );
 });

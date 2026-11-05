@@ -63,6 +63,15 @@ export {
   isCubeProjectHost,
   isCubeSampleDataOffered,
 } from './stores/CubeHost.js';
+export type {
+  CubeDataSpaceDescription,
+  CubeDataSpaceEdit,
+  CubeDataSpaceEditor,
+  CubeDataSpaceEditorSession,
+  CubeDataSpaceEditorTarget,
+  CubeDataSpaceExecutionContext,
+  CubeDataSpaceSummary,
+} from './stores/CubeDataSpaceEditor.js';
 export {
   buildLegendCubeLakehouseServices,
   buildLegendCubeProjectCatalog,

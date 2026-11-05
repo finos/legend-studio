@@ -37,12 +37,14 @@ import {
   guaranteeType,
   NetworkClientError,
 } from '@finos/legend-shared';
+import { DATA_CUBE_PRECISE_PRIMITIVE_TYPES } from '@finos/legend-data-cube';
 
 export const isVariableEnumerationType = (variable: V1_Variable) =>
   variable.genericType?.rawType instanceof V1_PackageableType &&
-  !Object.values(PRIMITIVE_TYPE)
-    .map((type) => type.toString())
-    .includes(variable.genericType.rawType.fullPath);
+  ![
+    ...Object.values(PRIMITIVE_TYPE).map((type) => type.toString()),
+    ...DATA_CUBE_PRECISE_PRIMITIVE_TYPES,
+  ].includes(variable.genericType.rawType.fullPath);
 
 export const fetchV1Enumeration = async (
   enumerationPath: string,

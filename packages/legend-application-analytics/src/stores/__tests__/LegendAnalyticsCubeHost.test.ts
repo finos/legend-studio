@@ -23,6 +23,7 @@ import {
   buildLegendAnalyticsCubeHostConfig,
   createLegendAnalyticsCubeHost,
 } from '../LegendAnalyticsCubeHost.js';
+import { LegendAnalyticsDataSpaceEditor } from '../data-space/LegendAnalyticsDataSpaceEditor.js';
 
 const createApplicationStore = (
   extraConfigData = {},
@@ -97,6 +98,7 @@ describe('Legend Analytics as the Cube host', () => {
     expect(host.projectCatalog).toBeUndefined();
     expect(host.dataProductCatalog).toBeUndefined();
     expect(host.ingestCatalog).toBeUndefined();
+    expect(host.dataSpaceEditor).toBeUndefined();
     expect(host.engineClientSettings.defaultBaseUrl).toBe(
       'https://testEngineUrl',
     );
@@ -115,5 +117,12 @@ describe('Legend Analytics as the Cube host', () => {
     expect(host.projectCatalog).toBeDefined();
     expect(host.dataProductCatalog).toBeDefined();
     expect(host.ingestCatalog).toBeDefined();
+  });
+
+  test('Offers data spaces with a depot, their editor the query builder (PLAN §11.25)', () => {
+    const host = createLegendAnalyticsCubeHost(
+      createApplicationStore({ depot: { url: 'https://depot.test' } }),
+    );
+    expect(host.dataSpaceEditor).toBeInstanceOf(LegendAnalyticsDataSpaceEditor);
   });
 });

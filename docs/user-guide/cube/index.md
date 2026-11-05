@@ -13,5 +13,5 @@ the graph. The query it runs is Pure, and Show Pure shows it.
 
 - [The editor](./editor-overview.md): every part of the page, numbered on a screenshot.
 - [Steps](./steps/index.md): each step, and its editor's settings.
-- [The results](./results.md): the grid, drilling down, formats, exports and Runs.
+- [The results](./results.md): the grid, drilling down, formats, exports and Run history.
 - [JSON columns](./json.md): reading, exploring and exploding JSON.

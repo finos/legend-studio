@@ -186,10 +186,8 @@ describe('Export', () => {
     await exporting;
     expect(saved).toEqual([]);
     expect(state.export.error).toBeUndefined();
-    // the Execute only
-    expect(state.runStats.entries.map((entry) => entry.label)).toEqual([
-      'Execute',
-    ]);
+    // the run only
+    expect(state.runStats.entries.map((entry) => entry.label)).toEqual(['Run']);
   });
 
   test('Refuses to export a run made in another context, as the warehouse is read from the page', async () => {

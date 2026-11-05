@@ -34,6 +34,25 @@ export abstract class QueryBuilderWorkflowState {
     state: QueryBuilderState,
   ): FetchStructureLayoutConfig;
 
+  /**
+   * Whether the header shows its Advanced and Help menus; a workflow that
+   * embeds the query builder for a part of a query, e.g. a Legend Cube data
+   * space source, hides them
+   */
+  get showHeaderMenus(): boolean {
+    return true;
+  }
+
+  /** Whether a projection column can be given an aggregate operator */
+  get showProjectionAggregation(): boolean {
+    return true;
+  }
+
+  /** Whether the projection shows its query options: sort, distinct, limit and dates */
+  get showQueryOptions(): boolean {
+    return true;
+  }
+
   updateActionConfig(actionConfig: QueryBuilderActionConfig): void {
     this.actionConfig = actionConfig;
   }

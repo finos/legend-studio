@@ -23,8 +23,14 @@ import {
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import {
   BlankPanelPlaceholder,
   clsx,
+  CheckCircleIcon,
+  EmptyCircleIcon,
   CustomSelectorInput,
   Dialog,
   LongArrowRightIcon,
@@ -254,6 +260,56 @@ const MappingSourceEditor = observer(
       dataSpace_setExecutionContextMappingProvider(executionContext, provider);
     };
 
+    // The two sources are exclusive, so choosing one drops the other; ask first
+    // if that throws away something the user set.
+    const selectSourceKind = (kind: MappingSourceKind): void => {
+      const otherSourcePath =
+        kind === 'mapping'
+          ? mappingProvider?.element.value.path
+          : executionContext.mapping?.value.path;
+      if (otherSourcePath === undefined) {
+        setSourceKind(kind);
+        return;
+      }
+      const kindLabel = kind === 'mapping' ? 'mapping' : 'mapping provider';
+      const otherSourceLabel =
+        kind === 'mapping' ? 'mapping provider' : 'mapping';
+      applicationStore.alertService.setActionAlertInfo({
+        // both are set (e.g. from grammar) when the clicked kind is already shown
+        message:
+          kind === sourceKind
+            ? `Keep only the ${kindLabel}?`
+            : `Switch to a ${kindLabel}?`,
+        prompt: `An execution context takes either a mapping or a mapping provider. This removes ${otherSourceLabel} '${otherSourcePath}' from '${executionContext.name}'.`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: `Remove ${otherSourceLabel}`,
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              if (kind === 'mapping') {
+                dataSpace_setExecutionContextMappingProvider(
+                  executionContext,
+                  undefined,
+                );
+              } else {
+                dataSpace_setExecutionContextMapping(
+                  executionContext,
+                  undefined,
+                );
+              }
+              setSourceKind(kind);
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
+
     const accessPointGroupIds = providerDataProduct
       ? getModelAccessPointGroupIds(providerDataProduct)
       : [];
@@ -339,7 +395,7 @@ const MappingSourceEditor = observer(
                 sourceKind === 'mapping',
             })}
             disabled={isReadOnly}
-            onClick={(): void => setSourceKind('mapping')}
+            onClick={(): void => selectSourceKind('mapping')}
           >
             Mapping
           </button>
@@ -350,7 +406,7 @@ const MappingSourceEditor = observer(
                 sourceKind === 'mappingProvider',
             })}
             disabled={isReadOnly}
-            onClick={(): void => setSourceKind('mappingProvider')}
+            onClick={(): void => selectSourceKind('mappingProvider')}
           >
             Mapping Provider
           </button>
@@ -637,52 +693,74 @@ const ExecutionContextConfigurationEditor = observer(
 
     return (
       <div className="dataSpace-editor__configuration">
-        <PanelFormTextField
-          name="Name"
-          value={executionContext.name}
-          update={(value): void =>
-            dataSpace_setExecutionContextName(executionContext, value ?? '')
-          }
-          isReadOnly={isReadOnly}
-          placeholder="Enter a unique name"
-          fullWidth={true}
-          hasError={Boolean(nameError)}
-          errorMessage={nameError}
-          errorClassName="dataSpace-editor__field--error"
-        />
-        <PanelFormTextField
-          name="Title"
-          value={executionContext.title ?? ''}
-          update={(value): void =>
-            dataSpace_setExecutionContextTitle(executionContext, value)
-          }
-          isReadOnly={isReadOnly}
-          placeholder="Enter title"
-          prompt="Provide a title for this execution context"
-          fullWidth={true}
-        />
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            Description
+        <div className="dataSpace-editor__configuration__section">
+          <div className="dataSpace-editor__configuration__section__heading">
+            <div className="dataSpace-editor__configuration__section__header">
+              <div className="dataSpace-editor__configuration__section__title">
+                General
+              </div>
+              <div className="dataSpace-editor__configuration__section__hint">
+                How this execution context is named and described.
+              </div>
+            </div>
+            <button
+              className={clsx('dataSpace-editor-default-toggle', {
+                'dataSpace-editor-default-toggle--active': isDefault,
+              })}
+              onClick={toggleDefault}
+              disabled={isReadOnly}
+              aria-pressed={isDefault}
+              title={
+                isDefault
+                  ? 'Queries use this context unless they pick another. Click to unset.'
+                  : 'Make this the context queries use unless they pick another'
+              }
+            >
+              {isDefault ? <CheckCircleIcon /> : <EmptyCircleIcon />}
+              {isDefault ? 'Default context' : 'Make default'}
+            </button>
           </div>
-          <div className="panel__content__form__section__header__prompt">
-            Provide a description for this execution context.
-          </div>
-          <textarea
-            className="panel__content__form__section__textarea"
-            spellCheck={false}
-            disabled={isReadOnly}
-            value={executionContext.description ?? ''}
-            onChange={(event): void =>
-              dataSpace_setExecutionContextDescription(
-                executionContext,
-                event.target.value || undefined,
-              )
+          <PanelFormTextField
+            name="Name"
+            value={executionContext.name}
+            update={(value): void =>
+              dataSpace_setExecutionContextName(executionContext, value ?? '')
             }
-            rows={3}
-            placeholder="Enter description"
+            isReadOnly={isReadOnly}
+            placeholder="Enter a unique name"
+            fullWidth={true}
+            hasError={Boolean(nameError)}
+            errorMessage={nameError}
+            errorClassName="dataSpace-editor__field--error"
           />
-        </PanelFormSection>
+          <PanelFormTextField
+            name="Title"
+            value={executionContext.title ?? ''}
+            update={(value): void =>
+              dataSpace_setExecutionContextTitle(executionContext, value)
+            }
+            isReadOnly={isReadOnly}
+            placeholder="Enter title"
+            fullWidth={true}
+          />
+          <label className="dataSpace-editor-field">
+            <span className="dataSpace-editor-field__label">Description</span>
+            <textarea
+              className="input input--dark dataSpace-editor-field__textarea"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={executionContext.description ?? ''}
+              onChange={(event): void =>
+                dataSpace_setExecutionContextDescription(
+                  executionContext,
+                  event.target.value || undefined,
+                )
+              }
+              rows={3}
+              placeholder="What this context is for, e.g. which environment it queries"
+            />
+          </label>
+        </div>
         <MappingSourceEditor
           executionContextState={executionContextState}
           executionContext={executionContext}
@@ -695,18 +773,6 @@ const ExecutionContextConfigurationEditor = observer(
           executionContext={executionContext}
           isReadOnly={isReadOnly}
         />
-        <PanelFormSection>
-          <button
-            className="btn btn--dark"
-            onClick={toggleDefault}
-            disabled={isReadOnly}
-            tabIndex={-1}
-          >
-            {isDefault
-              ? 'Unset as default execution context'
-              : 'Set as default execution context'}
-          </button>
-        </PanelFormSection>
         {issues.length > 0 && (
           <div className="dataSpace-editor__configuration__issues">
             {issues.map((issue) => (

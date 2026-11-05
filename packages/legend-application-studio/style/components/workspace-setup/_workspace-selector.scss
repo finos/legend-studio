@@ -20,6 +20,7 @@
   @include flexVCenter;
 
   width: 100%;
+  height: 100%;
 
   &__icon {
     @include flexCenter;
@@ -32,6 +33,7 @@
   &__label {
     width: calc(100% - 1rem);
     display: flex;
+    align-items: center;
   }
 
   &__name {
@@ -41,8 +43,7 @@
   }
 
   &__source {
-    // Patch tag — same bright-grey-chip pattern as project-overview source
-    // tags. Folded to bg-tag with text-inverted; documented shift.
+    // Patch tag: the same neutral chip as the project's view button
     &__patch {
       @include flexCenter;
 
@@ -50,7 +51,7 @@
       background: var(--color-bg-tag);
       border-radius: 0.2rem;
       font-size: 1.2rem;
-      color: var(--color-text-inverted);
+      color: var(--color-text-primary);
       font-weight: 500;
       width: 8rem;
     }

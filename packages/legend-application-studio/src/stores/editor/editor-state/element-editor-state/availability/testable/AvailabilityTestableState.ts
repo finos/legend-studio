@@ -77,7 +77,7 @@ export const AVAILABILITY_TEST_DATA_COLUMNS = [
 ];
 
 // Default fixed timestamp populated for new rows.
-export const DEFAULT_INGEST_COMPLETED_TS_UTC = '2025-01-01T00:00:00Z';
+export const DEFAULT_INGEST_COMPLETED_TS_UTC = '2025-01-01T00:00:00';
 
 const AVAILABILITY_COLUMN_DEFAULTS: Record<string, string> = {
   ingest_completed_ts_utc: DEFAULT_INGEST_COMPLETED_TS_UTC,

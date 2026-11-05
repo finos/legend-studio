@@ -30,6 +30,9 @@ import { LegendAnalyticsPluginManager } from './LegendAnalyticsPluginManager.js'
 import { Core_LegendAnalytics_LegendApplicationPlugin } from './Core_LegendAnalytics_LegendApplicationPlugin.js';
 import { Core_LegendAnalyticsApplicationPlugin } from './Core_LegendAnalyticsApplicationPlugin.js';
 import { LegendAnalyticsWebApplication } from '../components/LegendAnalyticsWebApplication.js';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
+import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
+import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
 import type { LegendAnalyticsApplicationStore } from '../stores/LegendAnalyticsBaseStore.js';
 
 /**
@@ -44,7 +47,12 @@ export class LegendAnalytics extends LegendApplication {
     const application = new LegendAnalytics(
       LegendAnalyticsPluginManager.create(),
     );
-    application.withBasePresets([]);
+    // the graph a data space source's query builder builds (PLAN §11.25)
+    application.withBasePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+      new DSL_DataSpace_GraphManagerPreset(),
+    ]);
     application.withBasePlugins([
       new Core_LegendAnalytics_LegendApplicationPlugin(),
       new Core_LegendAnalyticsApplicationPlugin(),

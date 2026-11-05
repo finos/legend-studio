@@ -36,6 +36,7 @@ import {
   RobotIcon,
   SigmaIcon,
   SortIcon,
+  SquareIcon,
   TableIcon,
 } from '@finos/legend-art';
 import { createNodeRegistry } from '@finos/legend-cube';
@@ -49,6 +50,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   dataProduct: PackageIcon,
   ingest: DatabaseImportIcon,
   service: RobotIcon,
+  dataSpace: SquareIcon,
   filter: FilterIcon,
   expressionFilter: FunctionIcon,
   join: ArrowsJoinIcon,

@@ -13,8 +13,12 @@
     { "path": "../legend-art" },
     { "path": "../legend-code-editor" },
     { "path": "../legend-cube-builder" },
+    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-graph" },
     { "path": "../legend-lego" },
-    { "path": "../legend-shared" }
+    { "path": "../legend-query-builder" },
+    { "path": "../legend-server-depot" },
+    { "path": "../legend-shared" },
+    { "path": "../legend-storage" }
   ]
 }

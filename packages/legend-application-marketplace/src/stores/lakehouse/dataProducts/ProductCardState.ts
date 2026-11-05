@@ -40,6 +40,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  isNonNullable,
   LogEvent,
   type GeneratorFn,
   type PlainObject,
@@ -96,6 +97,14 @@ export class ProductCardState {
     return this.searchResult.dataProductTitle ?? this.dataProductId;
   }
 
+  /**
+   * Whether the product has a title of its own: otherwise {@link title} falls back to
+   * the product's ID.
+   */
+  get hasOwnTitle(): boolean {
+    return isNonNullable(this.searchResult.dataProductTitle);
+  }
+
   get description(): string {
     return this.searchResult.dataProductDescription ?? '';
   }
@@ -108,6 +117,17 @@ export class ProductCardState {
           LegacyDataProductSearchResultDetails
         ? extractEntityNameFromPath(this.searchResult.dataProductDetails.path)
         : 'unknown';
+  }
+
+  /**
+   * The deployment ID (DID) of a Lakehouse data product; other data products don't
+   * have one.
+   */
+  get deploymentId(): number | undefined {
+    return this.searchResult.dataProductDetails instanceof
+      LakehouseDataProductSearchResultDetails
+      ? this.searchResult.dataProductDetails.deploymentId
+      : undefined;
   }
 
   get guid(): string {

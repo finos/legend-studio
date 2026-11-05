@@ -63,7 +63,7 @@ export class CubeGridFetchDropped extends Error {
 export const MAX_CUBE_GRID_CACHED_ROWS = 200_000;
 
 export const CUBE_GRID_CONTEXT_CHANGED =
-  "The cube's model, runtime or warehouse changed since this run: execute again to see more of its rows.";
+  "The cube's model, runtime or warehouse changed since this run: run again to see more of its rows.";
 
 interface CachedLevel {
   readonly promise: Promise<CubeGridLevelRows>;
@@ -242,6 +242,7 @@ export class CubeGridFetcher {
         query: level.query,
         model,
         runtime,
+        mapping: result.context.mapping,
         schema,
         rowLimit: result.rowLimit,
         abortController: controller,

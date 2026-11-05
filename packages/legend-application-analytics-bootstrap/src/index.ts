@@ -22,7 +22,12 @@ import {
 } from '@finos/legend-shared';
 
 export class LegendAnalyticsWebApplication {
-  /** Legend Cube builds no graph, so no graph manager presets are needed */
+  /**
+   * None: a Legend Cube data space source's query builder builds only the
+   * light graph of its data space's analytics (PLAN §11.25), its classes,
+   * the data space and stubs of its mappings and runtimes, which Legend
+   * Analytics' base presets (core, query builder, data space) cover
+   */
   static getPresetCollection(): AbstractPreset[] {
     return [];
   }

@@ -142,7 +142,7 @@ export const mockLiteDataProducts = async (page: Page): Promise<void> => {
     ),
   ];
   await page.route(
-    /\/lakehouse\/api\/dataproducts\/lite\/paginated(?:\?.*)?$/,
+    /\/lakehouse\/api\/dataproductsReader\/lite\/paginated(?:\?.*)?$/,
     (route) => {
       // the app asks for the next page with the last data product it got
       const isFirstPage = !new URL(route.request().url()).searchParams.has(

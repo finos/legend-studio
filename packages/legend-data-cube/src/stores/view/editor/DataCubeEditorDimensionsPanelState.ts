@@ -21,6 +21,7 @@ import {
 import {
   DataCubeColumnKind,
   DataCubeGridMode,
+  isVariantType,
 } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
@@ -120,12 +121,10 @@ export class DataCubeEditorDimensionsPanelState
           !_findCol(
             this._editor.horizontalPivots.selector.selectedColumns,
             column.name,
-          ),
+          ) &&
+          !isVariantType(column.type),
       )
-      .map(
-        (col) =>
-          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-      );
+      .map((col) => new DataCubeEditorColumnsSelectorColumnState(col));
   }
 
   get availableColumnsForDisplay() {
@@ -204,10 +203,7 @@ export class DataCubeEditorDimensionsPanelState
             const column = guaranteeNonNullable(
               _findCol(configuration.columns, colName),
             );
-            return new DataCubeEditorColumnsSelectorColumnState(
-              column.name,
-              column.type,
-            );
+            return new DataCubeEditorColumnsSelectorColumnState(column);
           }),
         );
         return _dimension;

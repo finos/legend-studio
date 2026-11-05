@@ -31,6 +31,7 @@ import {
   Connection,
   CubeDocument,
   DataProductAccessPointSource,
+  DataSpaceSource,
   Filter,
   IngestDatasetSource,
   Join,
@@ -71,6 +72,7 @@ import {
   TEST__createCubeApplicationStore,
   TEST__createCubeHost,
 } from '../../../__test-utils__/CubeTestApplication.js';
+import { buildFakeDataSpaceQuery } from '../../../__test-utils__/FakeCubeDataSpaceEditor.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
   createCubeDirectModel,
@@ -651,6 +653,17 @@ describe('Node labels on the canvas', () => {
         ),
       ),
     ).toEqual({ title: 'TradesByDesk', detail: '/trades/byDesk' });
+    const dataSpace = new DataSpaceSource(
+      'dataSpace101',
+      buildFakeDataSpaceQuery('trading::Trade', ['Id']),
+    );
+    expect(getCubeCanvasNodeLabel(dataSpace.withResolution(RESOLVED))).toEqual({
+      title: 'Trade',
+      detail: 'TradesDataSpace',
+    });
+    expect(getCubeCanvasNodeLabel(dataSpace)).toEqual({
+      title: 'Entity "Trade" from data space "TradesDataSpace"',
+    });
     // not resolved yet, a source shows its description, as the tooltip does
     const unresolved = new RelationalTableSource('relational102', {
       database: 'db::Db',

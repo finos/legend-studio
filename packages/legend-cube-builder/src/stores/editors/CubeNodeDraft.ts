@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import type { QueryNode } from '@finos/legend-cube';
+import type { CubeContext, QueryNode } from '@finos/legend-cube';
+
+/** A node editor's own undo and redo, as its buttons do them */
+export interface CubeNodeDraftHistory {
+  undo(): void;
+  redo(): void;
+}
 
 /**
  * The edits of one node in the node editor, kept until Apply or closing it
@@ -37,6 +43,35 @@ export abstract class CubeNodeDraft<N extends QueryNode = QueryNode> {
    * as no change.
    */
   abstract build(): N;
+
+  /**
+   * Whether the draft holds edits `build()` can't make a node of yet, e.g.
+   * a data space source's query builder holding a query Cube can't run
+   * (PLAN §11.25): the panel counts them as changes, so closing it keeps it
+   * open, saying why (`applyDisabledReason`), rather than dropping them
+   */
+  get hasEditsNotBuilt(): boolean {
+    return false;
+  }
+
+  /**
+   * The cube's context Apply stores with the node, in the same undo step,
+   * when the draft changes it: a data space source's new execution context
+   * (PLAN §11.25); by default none, as the context stays
+   */
+  get editedContext(): CubeContext | undefined {
+    return undefined;
+  }
+
+  /**
+   * The editor's own history, when it has one, e.g. a data space source's
+   * query builder (PLAN §11.25): Cube's undo and redo shortcuts step
+   * through it while the editor is open, in place of Cube's undo, which
+   * would drop every change made in it; by default none
+   */
+  get history(): CubeNodeDraftHistory | undefined {
+    return undefined;
+  }
 
   /**
    * Why Apply waits, if it does: the panel disables it with this reason and

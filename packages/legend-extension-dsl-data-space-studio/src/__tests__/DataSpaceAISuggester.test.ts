@@ -29,8 +29,8 @@ import {
 // Mock plugin implementing the AI doc suggestion extension
 // ---------------------------------------------------------------------------
 const MOCK_SUGGESTION: DataSpaceDocResponse = {
+  title: 'AI Generated Title',
   description: 'AI Generated Description for DataSpace',
-  confidence: 0.92,
 };
 
 class MockDataSpaceAIDocPlugin
@@ -165,7 +165,7 @@ describe(
       expect(suggester).toBeUndefined();
     });
 
-    test('AI suggester returns description and confidence', async () => {
+    test('AI suggester returns title and description', async () => {
       const pluginManager = LegendStudioPluginManager.create();
       new MockDataSpaceAIDocPlugin().install(pluginManager);
 
@@ -180,8 +180,8 @@ describe(
         request,
         'http://ai.example.com',
       );
+      expect(result.title).toBe('AI Generated Title');
       expect(result.description).toBe('AI Generated Description for DataSpace');
-      expect(result.confidence).toBe(0.92);
     });
 
     test('AI suggester request includes data_space_name (not data_product_name)', async () => {
@@ -205,7 +205,7 @@ describe(
           _legendAIUrl: string,
         ): Promise<DataSpaceDocResponse> {
           capturedRequest = request;
-          return { description: 'test', confidence: 1 };
+          return { title: 'Test', description: 'test' };
         }
       }
 
@@ -246,7 +246,7 @@ describe(
           _legendAIUrl: string,
         ): Promise<DataSpaceDocResponse> {
           capturedRequest = request;
-          return { description: 'test', confidence: 1 };
+          return { title: 'Test', description: 'test' };
         }
       }
 

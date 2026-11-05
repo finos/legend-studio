@@ -45,7 +45,7 @@ import type { CubeEditorState } from './CubeEditorState.js';
 import type { CubeExecutionResult } from './CubeExecutionState.js';
 
 export const CUBE_EXPORT_CONTEXT_CHANGED =
-  "The cube's model, runtime or warehouse changed since this run: execute again to export it.";
+  "The cube's model, runtime or warehouse changed since this run: run again to export it.";
 
 /** A file name for a cube's export, from its name, e.g. `Largest_buys.csv` */
 export const getCubeExportFileName = (
@@ -143,7 +143,11 @@ export class CubeExportState {
       lambda = new QueryEmitter(
         query,
         editorState.registry,
-      ).emitExecutionLambda({ runtime, databaseType });
+      ).emitExecutionLambda({
+        runtime,
+        mapping: result.context.mapping,
+        databaseType,
+      });
       const csv = (yield editorState.host.engine.exportCsv(model, lambda, {
         abortController: controller,
       })) as string;

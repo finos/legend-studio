@@ -129,8 +129,12 @@ export type IR =
       readonly value: IR;
       readonly origin?: Origin;
     }
-  /** Protocol JSON passed through as is */
-  | { readonly k: 'raw'; readonly json: unknown }
+  /**
+   * Protocol JSON passed through as is, e.g. a data space source's relation
+   * (PLAN §11.25): with an origin, written with it on each value
+   * specification
+   */
+  | { readonly k: 'raw'; readonly json: unknown; readonly origin?: Origin }
   /**
    * A lambda Cube holds as the engine's JSON, an Extend column's expression
    * (PLAN §11.7): without source information, its number literals as their
@@ -328,6 +332,9 @@ export const ingestAccessor = (
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
 
 /** An expression's lambda, as the engine's JSON (an Extend column's, PLAN §11.7) */
+export const raw = (json: unknown, origin?: Origin): IR =>
+  origin ? { k: 'raw', json, origin } : { k: 'raw', json };
+
 export const lambdaJson = (json: JsonObject, origin?: Origin): IR =>
   origin ? { k: 'lambdaJson', json, origin } : { k: 'lambdaJson', json };
 

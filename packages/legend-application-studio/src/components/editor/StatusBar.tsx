@@ -15,8 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import {
   clsx,
+  CircleNotchIcon,
   HammerIcon,
   SyncIcon,
   FireIcon,
@@ -49,6 +51,73 @@ import {
 } from '../LegendStudioFrameworkProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+/**
+ * Seconds since an action started. It ticks on its own, so the status bar does not re-render
+ * every second.
+ */
+const ElapsedSeconds = (props: {
+  since: number | undefined;
+}): React.ReactNode => {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return (): void => clearInterval(timer);
+  }, []);
+  if (props.since === undefined) {
+    return null;
+  }
+  // NOTE: hidden from screen readers, which would announce every tick
+  return (
+    <span className="editor__status-bar__activity__time" aria-hidden={true}>
+      {Math.max(0, Math.floor((now - props.since) / 1000))}s
+    </span>
+  );
+};
+
+/**
+ * What compile (F9) and generate (F10) are doing while they run: the step and the elapsed time.
+ * How they end is left to the notifications.
+ */
+export const StatusBarActivity = observer(() => {
+  const editorStore = useEditorStore();
+  const graphState = editorStore.graphState;
+  const generationState = graphState.graphGenerationState;
+
+  let activity: React.ReactNode = null;
+  if (graphState.isRunningGlobalCompile) {
+    activity = (
+      <div className="editor__status-bar__activity">
+        <CircleNotchIcon className="editor__status-bar__activity__spinner" />
+        <span className="editor__status-bar__activity__label">Compiling…</span>
+        <ElapsedSeconds since={graphState.compileStartedAt} />
+      </div>
+    );
+  } else if (generationState.isRunningGlobalGenerate) {
+    const isArtifactStep = generationState.generationStep === 'artifacts';
+    activity = (
+      <div className="editor__status-bar__activity">
+        <CircleNotchIcon className="editor__status-bar__activity__spinner" />
+        <span className="editor__status-bar__activity__label">
+          {isArtifactStep ? 'Generating artifacts…' : 'Generating models…'}
+        </span>
+        <span className="editor__status-bar__activity__step">
+          {isArtifactStep ? '2/2' : '1/2'}
+        </span>
+        <ElapsedSeconds since={generationState.generationStartedAt} />
+      </div>
+    );
+  }
+  // NOTE: the live region is always there, so screen readers announce what appears in it
+  return (
+    <div
+      className="editor__status-bar__activity-region"
+      role="status"
+      aria-live="polite"
+    >
+      {activity}
+    </div>
+  );
+});
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
@@ -165,6 +234,9 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
       className={clsx('editor__status-bar', {
         'editor__status-bar--conflict-resolution': isInConflictResolutionMode,
+        'editor__status-bar--busy':
+          editorStore.graphState.isRunningGlobalCompile ||
+          editorStore.graphState.graphGenerationState.isRunningGlobalGenerate,
       })}
     >
       <div className="editor__status-bar__left">
@@ -259,7 +331,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             </div>
             <button
               className={clsx('editor__status-bar__push-changes__btn', {
-                'editor__status-bar__push-changes__btn--loading':
+                'editor__status-bar__action--running':
                   editorStore.conflictResolutionState
                     .isAcceptingConflictResolution,
               })}
@@ -291,7 +363,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             </div>
             <button
               className={clsx('editor__status-bar__push-changes__btn', {
-                'editor__status-bar__push-changes__btn--loading':
+                'editor__status-bar__action--running':
                   editorStore.localChangesState.pushChangesState.isInProgress ||
                   configurationState.updatingConfigurationState.isInProgress,
               })}
@@ -312,11 +384,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             </button>
           </div>
         )}
+        <StatusBarActivity />
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__generate-btn',
             {
-              'editor__status-bar__generate-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.graphGenerationState
                   .isRunningGlobalGenerate,
             },
@@ -334,7 +407,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__clear__generation-btn',
             {
-              'editor__status-bar__action editor__status-bar__clear__generation-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.graphGenerationState
                   .clearingGenerationEntitiesState.isInProgress,
             },
@@ -353,7 +426,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__compile-btn',
             {
-              'editor__status-bar__compile-btn--wiggling':
+              'editor__status-bar__action--running':
                 editorStore.graphState.isRunningGlobalCompile,
             },
           )}

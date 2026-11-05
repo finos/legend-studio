@@ -401,12 +401,19 @@ export const getWebAppBaseWebpackConfig = (
           'gotoLine',
           'hover',
           'links',
+          // signature help, as a call's arguments are written
+          'parameterHints',
           'smartSelect',
           'multicursor',
           'snippet',
           'snippetController2',
           'suggest',
           'gotoSymbol',
+          // element outline in text mode: the declaration of the element being read
+          // stays pinned while scrolling, and the quick outline (Ctrl/Cmd + Shift + O)
+          'documentSymbols',
+          'stickyScroll',
+          'quickOutline',
         ],
       }),
     ].filter(Boolean),

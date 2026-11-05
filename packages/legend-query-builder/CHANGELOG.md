@@ -1,5 +1,19 @@
 # @finos/legend-query-builder
 
+## 4.19.24
+
+### Patch Changes
+
+- [#5815](https://github.com/finos/legend-studio/pull/5815) [`f08c331`](https://github.com/finos/legend-studio/commit/f08c33113f6c2842ff7b0d6ce81fb0c1437a7e4f) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fixed the `is in list of` / `is not in list of` filter operators incorrectly rejecting a compatible multi-valued parameter (e.g. an `Integer[*]` parameter parsed from PURE text) dragged or bound onto a property of the same primitive family, which caused the binding to silently reset to a default value. Also tightened `isTypeCompatibleForAssignment`'s date-family check so a date/time value is no longer treated as compatible with a non-date property.
+
+## 4.19.23
+
+### Patch Changes
+
+- [#5756](https://github.com/finos/legend-studio/pull/5756) [`bd6317c`](https://github.com/finos/legend-studio/commit/bd6317ceaff851051a1ae19b0fcb0ab5493de8db) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix code editors turning dark in the light theme after the SQL Playground opens: the playground now follows the application theme, and every code editor uses the same light theme, since a Monaco theme applies to every editor on the page.
+
+- [#5764](https://github.com/finos/legend-studio/pull/5764) [`34655a8`](https://github.com/finos/legend-studio/commit/34655a8233e8a2f5dadf1935c7aea4e1008731d3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - `QueryBuilderWorkflowState` gains three options, each on by default, for a workflow that embeds the query builder for a part of a query, as Legend Cube's data space source does: `showHeaderMenus` (the Advanced and Help menus), `showProjectionAggregation` (a column's aggregate operator) and `showQueryOptions` (sort, distinct, limit and dates).
+
 ## 4.19.22
 
 ## 4.19.21

@@ -76,6 +76,14 @@ export type DataCubeOptions = {
    */
   onInitialized?: ((event: DataCubeInitializedEvent) => void) | undefined;
   /**
+   * A pre-resolved source to use instead of re-resolving `specification.source` through
+   * `DataCubeEngine.processSource()` on initialization. This is an optimization for callers
+   * which already resolved the source moments earlier (e.g. right after building the
+   * specification) and would otherwise force a full, redundant round of source-resolution
+   * network calls. Must correspond to the same `specification.source` passed to `<DataCube>`.
+   */
+  initialSource?: DataCubeSource | undefined;
+  /**
    * DataCube main view has initialized, and is ready for most API calls, but may not be fully rendered yet.
    * The query source has been fully resolved and analyzed, grid view is to be rendered right after.
    */

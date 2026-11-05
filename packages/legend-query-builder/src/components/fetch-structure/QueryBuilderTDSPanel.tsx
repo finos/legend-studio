@@ -985,243 +985,251 @@ const QueryBuilderProjectionColumnEditor = observer(
                 </div>
               </>
             )}
-            <div className="query-builder__projection__column__aggregate">
-              <div className="query-builder__projection__column__aggregate__operator">
-                {aggregateColumnState && (
-                  <div className="query-builder__projection__column__aggregate__operator">
-                    <div className="query-builder__projection__column__aggregate__operator__label">
-                      {aggregateColumnState.operator.getLabel(
-                        projectionColumnState,
-                      )}
-                      {aggregateColumnState.operator instanceof
-                        QueryBuilderAggregateOperator_Wavg && (
-                        <WavgParamDNDZone
-                          column={aggregateColumnState.operator}
-                          tdsState={tdsState}
-                        />
-                      )}
-                      {aggregateColumnState.operator instanceof
-                        QueryBuilderAggregateOperator_Percentile && (
-                        <button
-                          className="query-builder__projection__column__aggregate__operator__percentile__badge"
-                          ref={percentileButtonRef}
-                          onClick={setPercentileArguments}
-                          title="Set Percentile Argument(s)..."
-                        >
-                          {getPercentileDisplayValue()}
-                        </button>
-                      )}
+            {tdsState.queryBuilderState.workflowState
+              .showProjectionAggregation && (
+              <div className="query-builder__projection__column__aggregate">
+                <div className="query-builder__projection__column__aggregate__operator">
+                  {aggregateColumnState && (
+                    <div className="query-builder__projection__column__aggregate__operator">
+                      <div className="query-builder__projection__column__aggregate__operator__label">
+                        {aggregateColumnState.operator.getLabel(
+                          projectionColumnState,
+                        )}
+                        {aggregateColumnState.operator instanceof
+                          QueryBuilderAggregateOperator_Wavg && (
+                          <WavgParamDNDZone
+                            column={aggregateColumnState.operator}
+                            tdsState={tdsState}
+                          />
+                        )}
+                        {aggregateColumnState.operator instanceof
+                          QueryBuilderAggregateOperator_Percentile && (
+                          <button
+                            className="query-builder__projection__column__aggregate__operator__percentile__badge"
+                            ref={percentileButtonRef}
+                            onClick={setPercentileArguments}
+                            title="Set Percentile Argument(s)..."
+                          >
+                            {getPercentileDisplayValue()}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {aggregateColumnState && isPercentileOpen && (
-                  <BasePopover
-                    open={isPercentileOpen}
-                    slotProps={{
-                      paper: {
-                        classes: {
-                          root: 'query-builder__projection__column__aggregate__operator__percentile__container__root',
+                  )}
+                  {aggregateColumnState && isPercentileOpen && (
+                    <BasePopover
+                      open={isPercentileOpen}
+                      slotProps={{
+                        paper: {
+                          classes: {
+                            root: 'query-builder__projection__column__aggregate__operator__percentile__container__root',
+                          },
                         },
-                      },
-                    }}
-                    className={clsx(
-                      'query-builder__projection__column__aggregate__operator__percentile__container',
-                    )}
-                    anchorEl={percentileButtonRef.current}
-                    onClose={() => {
-                      const percentileOperator =
-                        aggregateColumnState.operator as QueryBuilderAggregateOperator_Percentile;
-                      if (percentileValue === '') {
-                        percentileOperator.setPercentile(undefined);
-                      } else {
-                        percentileOperator.setPercentile(
-                          Number(percentileValue),
-                        );
-                      }
-                      if (acending !== undefined && continuous !== undefined) {
-                        percentileOperator.setAcending(acending);
-                        percentileOperator.setContinuous(continuous);
-                      }
-                      setIsPercentileOpen(false);
-                    }}
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'center',
-                    }}
-                  >
-                    <div
-                      data-testid={
-                        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PERCENTILE_PANEL
-                      }
+                      }}
+                      className={clsx(
+                        'query-builder__projection__column__aggregate__operator__percentile__container',
+                      )}
+                      anchorEl={percentileButtonRef.current}
+                      onClose={() => {
+                        const percentileOperator =
+                          aggregateColumnState.operator as QueryBuilderAggregateOperator_Percentile;
+                        if (percentileValue === '') {
+                          percentileOperator.setPercentile(undefined);
+                        } else {
+                          percentileOperator.setPercentile(
+                            Number(percentileValue),
+                          );
+                        }
+                        if (
+                          acending !== undefined &&
+                          continuous !== undefined
+                        ) {
+                          percentileOperator.setAcending(acending);
+                          percentileOperator.setContinuous(continuous);
+                        }
+                        setIsPercentileOpen(false);
+                      }}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                      }}
                     >
-                      <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
-                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
-                          Percentile
-                          <br />
-                          (0-100)
-                        </div>
-                        <div
-                          className={clsx(
-                            'query-builder__projection__column__aggregate__operator__percentile__argument-combo__value',
-                          )}
-                        >
-                          <InputWithInlineValidation
-                            ref={percentileInputRef}
+                      <div
+                        data-testid={
+                          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PERCENTILE_PANEL
+                        }
+                      >
+                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
+                          <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
+                            Percentile
+                            <br />
+                            (0-100)
+                          </div>
+                          <div
                             className={clsx(
-                              'query-builder__projection__column__aggregate__operator__percentile__input input--dark',
+                              'query-builder__projection__column__aggregate__operator__percentile__argument-combo__value',
                             )}
-                            type="text"
-                            inputMode="numeric"
-                            onChange={onPercentileValueChange}
-                            value={percentileValue}
-                            error={
-                              percentileValue && Number(percentileValue) > 100
-                                ? `Invalid aggregation agruement for ${aggregateColumnState.columnName}`
-                                : undefined
+                          >
+                            <InputWithInlineValidation
+                              ref={percentileInputRef}
+                              className={clsx(
+                                'query-builder__projection__column__aggregate__operator__percentile__input input--dark',
+                              )}
+                              type="text"
+                              inputMode="numeric"
+                              onChange={onPercentileValueChange}
+                              value={percentileValue}
+                              error={
+                                percentileValue && Number(percentileValue) > 100
+                                  ? `Invalid aggregation agruement for ${aggregateColumnState.columnName}`
+                                  : undefined
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
+                          <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
+                            Acending
+                          </div>
+                          <CustomSelectorInput
+                            className="query-loader__results__sort-by__selector query-builder__projection__column__aggregate__operator__percentile__argument-combo__value"
+                            options={percentileOptions}
+                            onChange={(option: {
+                              label: string;
+                              value: string;
+                            }) => {
+                              setAcending(
+                                option.value === 'true' ? true : false,
+                              );
+                            }}
+                            value={{
+                              label:
+                                acending === undefined
+                                  ? ''
+                                  : acending
+                                    ? 'true'
+                                    : 'false',
+                              value:
+                                acending === undefined
+                                  ? ''
+                                  : acending
+                                    ? 'true'
+                                    : 'false',
+                            }}
+                            darkMode={
+                              !applicationStore.layoutService
+                                .TEMPORARY__isLightColorThemeEnabled
+                            }
+                          />
+                        </div>
+                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
+                          <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
+                            Continous
+                          </div>
+                          <CustomSelectorInput
+                            className="query-loader__results__sort-by__selector query-builder__projection__column__aggregate__operator__percentile__argument-combo__value"
+                            options={percentileOptions}
+                            onChange={(option: {
+                              label: string;
+                              value: string;
+                            }) =>
+                              setContinuous(
+                                option.value === 'true' ? true : false,
+                              )
+                            }
+                            value={{
+                              label:
+                                continuous === undefined
+                                  ? ''
+                                  : continuous
+                                    ? 'true'
+                                    : 'false',
+                              value:
+                                continuous === undefined
+                                  ? ''
+                                  : continuous
+                                    ? 'true'
+                                    : 'false',
+                            }}
+                            darkMode={
+                              !applicationStore.layoutService
+                                .TEMPORARY__isLightColorThemeEnabled
                             }
                           />
                         </div>
                       </div>
-                      <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
-                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
-                          Acending
-                        </div>
-                        <CustomSelectorInput
-                          className="query-loader__results__sort-by__selector query-builder__projection__column__aggregate__operator__percentile__argument-combo__value"
-                          options={percentileOptions}
-                          onChange={(option: {
-                            label: string;
-                            value: string;
-                          }) => {
-                            setAcending(option.value === 'true' ? true : false);
-                          }}
-                          value={{
-                            label:
-                              acending === undefined
-                                ? ''
-                                : acending
-                                  ? 'true'
-                                  : 'false',
-                            value:
-                              acending === undefined
-                                ? ''
-                                : acending
-                                  ? 'true'
-                                  : 'false',
-                          }}
-                          darkMode={
-                            !applicationStore.layoutService
-                              .TEMPORARY__isLightColorThemeEnabled
-                          }
-                        />
+                    </BasePopover>
+                  )}
+                  {isCalendarEnabled &&
+                    aggregateColumnState &&
+                    aggregateCalendarFunctions.length > 0 && (
+                      <div
+                        className={clsx(
+                          'query-builder__projection__column__aggregate__calendar__toggler',
+                          {
+                            'query-builder__projection__column__aggregate__calendar__toggler--active':
+                              !aggregateColumnState.hideCalendarColumnState,
+                          },
+                        )}
+                        onClick={toggleHideCalendarColumnState}
+                        title="Toggle calendar aggregation"
+                      >
+                        <CalendarClockIcon />
                       </div>
-                      <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
-                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
-                          Continous
-                        </div>
-                        <CustomSelectorInput
-                          className="query-loader__results__sort-by__selector query-builder__projection__column__aggregate__operator__percentile__argument-combo__value"
-                          options={percentileOptions}
-                          onChange={(option: {
-                            label: string;
-                            value: string;
-                          }) =>
-                            setContinuous(
-                              option.value === 'true' ? true : false,
-                            )
-                          }
-                          value={{
-                            label:
-                              continuous === undefined
-                                ? ''
-                                : continuous
-                                  ? 'true'
-                                  : 'false',
-                            value:
-                              continuous === undefined
-                                ? ''
-                                : continuous
-                                  ? 'true'
-                                  : 'false',
-                          }}
-                          darkMode={
-                            !applicationStore.layoutService
-                              .TEMPORARY__isLightColorThemeEnabled
-                          }
-                        />
-                      </div>
-                    </div>
-                  </BasePopover>
-                )}
-                {isCalendarEnabled &&
-                  aggregateColumnState &&
-                  aggregateCalendarFunctions.length > 0 && (
+                    )}
+                  <ControlledDropdownMenu
+                    className="query-builder__projection__column__aggregate__operator__dropdown"
+                    title="Choose Aggregate Operator..."
+                    disabled={!aggreateOperators.length}
+                    content={
+                      <MenuContent>
+                        {aggregateColumnState && (
+                          <MenuContentItem
+                            className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                            onClick={changeOperator(undefined)}
+                          >
+                            (none)
+                          </MenuContentItem>
+                        )}
+                        {aggreateOperators.map((op) => (
+                          <MenuContentItem
+                            key={op.uuid}
+                            className="query-builder__projection__column__aggregate__operator__dropdown__option"
+                            onClick={changeOperator(op)}
+                          >
+                            {op.getLabel(projectionColumnState)}
+                          </MenuContentItem>
+                        ))}
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                      transformOrigin: { vertical: 'top', horizontal: 'left' },
+                      elevation: 7,
+                    }}
+                  >
                     <div
                       className={clsx(
-                        'query-builder__projection__column__aggregate__calendar__toggler',
+                        'query-builder__projection__column__aggregate__operator__badge',
                         {
-                          'query-builder__projection__column__aggregate__calendar__toggler--active':
-                            !aggregateColumnState.hideCalendarColumnState,
+                          'query-builder__projection__column__aggregate__operator__badge--activated':
+                            Boolean(aggregateColumnState),
                         },
                       )}
-                      onClick={toggleHideCalendarColumnState}
-                      title="Toggle calendar aggregation"
                     >
-                      <CalendarClockIcon />
+                      <SigmaIcon />
                     </div>
-                  )}
-                <ControlledDropdownMenu
-                  className="query-builder__projection__column__aggregate__operator__dropdown"
-                  title="Choose Aggregate Operator..."
-                  disabled={!aggreateOperators.length}
-                  content={
-                    <MenuContent>
-                      {aggregateColumnState && (
-                        <MenuContentItem
-                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                          onClick={changeOperator(undefined)}
-                        >
-                          (none)
-                        </MenuContentItem>
-                      )}
-                      {aggreateOperators.map((op) => (
-                        <MenuContentItem
-                          key={op.uuid}
-                          className="query-builder__projection__column__aggregate__operator__dropdown__option"
-                          onClick={changeOperator(op)}
-                        >
-                          {op.getLabel(projectionColumnState)}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                    transformOrigin: { vertical: 'top', horizontal: 'left' },
-                    elevation: 7,
-                  }}
-                >
-                  <div
-                    className={clsx(
-                      'query-builder__projection__column__aggregate__operator__badge',
-                      {
-                        'query-builder__projection__column__aggregate__operator__badge--activated':
-                          Boolean(aggregateColumnState),
-                      },
-                    )}
-                  >
-                    <SigmaIcon />
-                  </div>
-                  <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
-                    <CaretDownIcon />
-                  </div>
-                </ControlledDropdownMenu>
+                    <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
+                      <CaretDownIcon />
+                    </div>
+                  </ControlledDropdownMenu>
+                </div>
               </div>
-            </div>
+            )}
             <div className="query-builder__projection__column__actions">
               <button
                 className="query-builder__projection__column__action"
@@ -1572,221 +1580,225 @@ export const QueryBuilderTDSPanel = observer(
     return (
       <PanelContent>
         <div className="query-builder__projection__toolbar">
-          <div
-            className="query-builder__projection__result-modifier-prompt"
-            data-testid={
-              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT
-            }
-          >
-            <div className="query-builder__projection__result-modifier-prompt__header">
-              <button
-                className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                onClick={openResultSetModifierEditor}
-                title="Configure Query Options..."
-              >
-                <CogIcon className="query-builder__projection__result-modifier-prompt__header__label__icon" />
-                <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                  {tdsState.isQueryOptionsSet
-                    ? 'Query Options'
-                    : 'Set Query Options'}
-                </div>
-              </button>
-
-              <div
-                className={clsx(
-                  'query-builder__projection__result-modifier-prompt__divider',
-                  {
-                    'query-builder__projection__result-modifier-prompt__divider--light':
-                      applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled,
-                  },
-                )}
-              >
-                {tdsState.isQueryOptionsSet && ' - '}
-              </div>
-              {tdsState.queryBuilderState.milestoningState
-                .isAllVersionsEnabled &&
-                !tdsState.queryBuilderState.milestoningState
-                  .isAllVersionsInRangeEnabled && (
-                  <div className="query-builder__projection__result-modifier-prompt__group">
-                    <div className="query-builder__projection__result-modifier-prompt__group__label">
-                      All Versions
-                    </div>
-                    <button
-                      className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                      onClick={openResultSetModifierEditor}
-                    >
-                      <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        Yes
-                      </div>
-                    </button>
+          {tdsState.queryBuilderState.workflowState.showQueryOptions && (
+            <div
+              className="query-builder__projection__result-modifier-prompt"
+              data-testid={
+                QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT
+              }
+            >
+              <div className="query-builder__projection__result-modifier-prompt__header">
+                <button
+                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                  onClick={openResultSetModifierEditor}
+                  title="Configure Query Options..."
+                >
+                  <CogIcon className="query-builder__projection__result-modifier-prompt__header__label__icon" />
+                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                    {tdsState.isQueryOptionsSet
+                      ? 'Query Options'
+                      : 'Set Query Options'}
                   </div>
-                )}
-              {tdsState.queryBuilderState.milestoningState
-                .isAllVersionsInRangeEnabled &&
-                tdsState.queryBuilderState.milestoningState.startDate &&
-                tdsState.queryBuilderState.milestoningState.endDate && (
+                </button>
+
+                <div
+                  className={clsx(
+                    'query-builder__projection__result-modifier-prompt__divider',
+                    {
+                      'query-builder__projection__result-modifier-prompt__divider--light':
+                        applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled,
+                    },
+                  )}
+                >
+                  {tdsState.isQueryOptionsSet && ' - '}
+                </div>
+                {tdsState.queryBuilderState.milestoningState
+                  .isAllVersionsEnabled &&
+                  !tdsState.queryBuilderState.milestoningState
+                    .isAllVersionsInRangeEnabled && (
+                    <div className="query-builder__projection__result-modifier-prompt__group">
+                      <div className="query-builder__projection__result-modifier-prompt__group__label">
+                        All Versions
+                      </div>
+                      <button
+                        className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                        onClick={openResultSetModifierEditor}
+                      >
+                        <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                          Yes
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                {tdsState.queryBuilderState.milestoningState
+                  .isAllVersionsInRangeEnabled &&
+                  tdsState.queryBuilderState.milestoningState.startDate &&
+                  tdsState.queryBuilderState.milestoningState.endDate && (
+                    <div className="query-builder__projection__result-modifier-prompt__group">
+                      <div className="query-builder__projection__result-modifier-prompt__group__label">
+                        All Versions
+                      </div>
+                      <button
+                        className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                        onClick={openResultSetModifierEditor}
+                      >
+                        <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                          (
+                          {getNameOfValueSpecification(
+                            tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
+                              tdsState.queryBuilderState.milestoningState
+                                .startDate,
+                            ) ??
+                              tdsState.queryBuilderState.milestoningState
+                                .startDate,
+                            tdsState.queryBuilderState,
+                          )}{' '}
+                          -{' '}
+                          {getNameOfValueSpecification(
+                            tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
+                              tdsState.queryBuilderState.milestoningState
+                                .endDate,
+                            ) ??
+                              tdsState.queryBuilderState.milestoningState
+                                .endDate,
+                            tdsState.queryBuilderState,
+                          )}
+                          )
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                {tdsState.queryBuilderState.milestoningState.businessDate && (
                   <div className="query-builder__projection__result-modifier-prompt__group">
                     <div className="query-builder__projection__result-modifier-prompt__group__label">
-                      All Versions
+                      Business Date
                     </div>
                     <button
                       className="query-builder__projection__result-modifier-prompt__header__label editable-value"
                       onClick={openResultSetModifierEditor}
                     >
                       <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        (
                         {getNameOfValueSpecification(
                           tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
                             tdsState.queryBuilderState.milestoningState
-                              .startDate,
+                              .businessDate,
                           ) ??
                             tdsState.queryBuilderState.milestoningState
-                              .startDate,
-                          tdsState.queryBuilderState,
-                        )}{' '}
-                        -{' '}
-                        {getNameOfValueSpecification(
-                          tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
-                            tdsState.queryBuilderState.milestoningState.endDate,
-                          ) ??
-                            tdsState.queryBuilderState.milestoningState.endDate,
+                              .businessDate,
                           tdsState.queryBuilderState,
                         )}
-                        )
                       </div>
                     </button>
                   </div>
                 )}
-              {tdsState.queryBuilderState.milestoningState.businessDate && (
+                {tdsState.queryBuilderState.milestoningState.processingDate && (
+                  <div className="query-builder__projection__result-modifier-prompt__group">
+                    <div className="query-builder__projection__result-modifier-prompt__group__label">
+                      Processing Date
+                    </div>
+                    <button
+                      className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                      onClick={openResultSetModifierEditor}
+                    >
+                      <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                        {getNameOfValueSpecification(
+                          tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
+                            tdsState.queryBuilderState.milestoningState
+                              .processingDate,
+                          ) ??
+                            tdsState.queryBuilderState.milestoningState
+                              .processingDate,
+                          tdsState.queryBuilderState,
+                        )}
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+              {tdsState.resultSetModifierState.limit && (
                 <div className="query-builder__projection__result-modifier-prompt__group">
                   <div className="query-builder__projection__result-modifier-prompt__group__label">
-                    Business Date
+                    Max Rows
                   </div>
                   <button
                     className="query-builder__projection__result-modifier-prompt__header__label editable-value"
                     onClick={openResultSetModifierEditor}
                   >
                     <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                      {getNameOfValueSpecification(
-                        tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
-                          tdsState.queryBuilderState.milestoningState
-                            .businessDate,
-                        ) ??
-                          tdsState.queryBuilderState.milestoningState
-                            .businessDate,
-                        tdsState.queryBuilderState,
-                      )}
+                      {tdsState.resultSetModifierState.limit}
                     </div>
                   </button>
                 </div>
               )}
-              {tdsState.queryBuilderState.milestoningState.processingDate && (
+              {tdsState.resultSetModifierState.distinct && (
                 <div className="query-builder__projection__result-modifier-prompt__group">
                   <div className="query-builder__projection__result-modifier-prompt__group__label">
-                    Processing Date
+                    Eliminate Duplicate Rows
                   </div>
                   <button
                     className="query-builder__projection__result-modifier-prompt__header__label editable-value"
                     onClick={openResultSetModifierEditor}
                   >
                     <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                      {getNameOfValueSpecification(
-                        tdsState.queryBuilderState.milestoningState.getMilestoningParameterValue(
-                          tdsState.queryBuilderState.milestoningState
-                            .processingDate,
-                        ) ??
-                          tdsState.queryBuilderState.milestoningState
-                            .processingDate,
-                        tdsState.queryBuilderState,
-                      )}
+                      Yes
                     </div>
+                  </button>
+                </div>
+              )}
+              {tdsState.resultSetModifierState.sortColumns.length > 0 && (
+                <div className="query-builder__projection__result-modifier-prompt__group">
+                  <div className="query-builder__projection__result-modifier-prompt__group__label">
+                    Sort
+                  </div>
+                  {tdsState.resultSetModifierState.sortColumns.map(
+                    (columnState) => (
+                      <button
+                        key={columnState.columnState.uuid}
+                        className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                        onClick={openResultSetModifierEditor}
+                      >
+                        <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                          {`${columnState.columnState.columnName} ${columnState.sortType}`}
+                        </div>
+                      </button>
+                    ),
+                  )}
+                </div>
+              )}
+              {tdsState.resultSetModifierState.slice && (
+                <div className="query-builder__projection__result-modifier-prompt__group">
+                  <div className="query-builder__projection__result-modifier-prompt__group__label">
+                    Slice
+                  </div>
+                  <button
+                    className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                    onClick={openResultSetModifierEditor}
+                  >
+                    <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                      {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
+                    </div>
+                  </button>
+                </div>
+              )}
+              {tdsState.queryBuilderState.watermarkState.value && (
+                <div className="query-builder__projection__result-modifier-prompt__group">
+                  <div className="query-builder__projection__result-modifier-prompt__group__label">
+                    Watermark
+                  </div>
+                  <button
+                    className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                    onClick={openResultSetModifierEditor}
+                  >
+                    {getNameOfValueSpecification(
+                      tdsState.queryBuilderState.watermarkState.value,
+                      tdsState.queryBuilderState,
+                    )}
                   </button>
                 </div>
               )}
             </div>
-            {tdsState.resultSetModifierState.limit && (
-              <div className="query-builder__projection__result-modifier-prompt__group">
-                <div className="query-builder__projection__result-modifier-prompt__group__label">
-                  Max Rows
-                </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                  onClick={openResultSetModifierEditor}
-                >
-                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    {tdsState.resultSetModifierState.limit}
-                  </div>
-                </button>
-              </div>
-            )}
-            {tdsState.resultSetModifierState.distinct && (
-              <div className="query-builder__projection__result-modifier-prompt__group">
-                <div className="query-builder__projection__result-modifier-prompt__group__label">
-                  Eliminate Duplicate Rows
-                </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                  onClick={openResultSetModifierEditor}
-                >
-                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    Yes
-                  </div>
-                </button>
-              </div>
-            )}
-            {tdsState.resultSetModifierState.sortColumns.length > 0 && (
-              <div className="query-builder__projection__result-modifier-prompt__group">
-                <div className="query-builder__projection__result-modifier-prompt__group__label">
-                  Sort
-                </div>
-                {tdsState.resultSetModifierState.sortColumns.map(
-                  (columnState) => (
-                    <button
-                      key={columnState.columnState.uuid}
-                      className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                      onClick={openResultSetModifierEditor}
-                    >
-                      <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        {`${columnState.columnState.columnName} ${columnState.sortType}`}
-                      </div>
-                    </button>
-                  ),
-                )}
-              </div>
-            )}
-            {tdsState.resultSetModifierState.slice && (
-              <div className="query-builder__projection__result-modifier-prompt__group">
-                <div className="query-builder__projection__result-modifier-prompt__group__label">
-                  Slice
-                </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                  onClick={openResultSetModifierEditor}
-                >
-                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
-                  </div>
-                </button>
-              </div>
-            )}
-            {tdsState.queryBuilderState.watermarkState.value && (
-              <div className="query-builder__projection__result-modifier-prompt__group">
-                <div className="query-builder__projection__result-modifier-prompt__group__label">
-                  Watermark
-                </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                  onClick={openResultSetModifierEditor}
-                >
-                  {getNameOfValueSpecification(
-                    tdsState.queryBuilderState.watermarkState.value,
-                    tdsState.queryBuilderState,
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
+          )}
           <div className="query-builder__projection__toolbar__actions">
             <button
               className="panel__header__action"

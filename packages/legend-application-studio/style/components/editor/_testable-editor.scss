@@ -317,3 +317,38 @@
     }
   }
 }
+
+.regenerate-tests-warning {
+  @include flexVCenter;
+
+  gap: 0.5rem;
+  height: 100%;
+  min-width: 0;
+  max-width: 40rem;
+  padding: 0 0.8rem;
+  margin-right: 0.5rem;
+  background: transparent;
+  color: var(--color-status-warn);
+  font-size: 1.2rem;
+  cursor: pointer;
+
+  svg {
+    flex-shrink: 0;
+    color: inherit;
+  }
+
+  &:hover:not([disabled]) {
+    background: var(--color-bg-hover);
+  }
+
+  &[disabled] {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  &__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

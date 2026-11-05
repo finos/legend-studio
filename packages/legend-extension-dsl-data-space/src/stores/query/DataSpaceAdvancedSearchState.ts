@@ -219,12 +219,14 @@ export class DataSpaceAdvancedSearchState {
               );
               return;
             }
-            generateDataSpaceQueryCreatorRoute(
-              groupId,
-              artifactId,
-              versionId,
-              analysisResult.path,
-              executionContextKey,
+            this.applicationStore.navigationService.navigator.goToLocation(
+              generateDataSpaceQueryCreatorRoute(
+                groupId,
+                artifactId,
+                versionId,
+                analysisResult.path,
+                executionContextKey,
+              ),
             );
           },
           viewProject: (path: string | undefined) =>
@@ -236,11 +238,13 @@ export class DataSpaceAdvancedSearchState {
           },
           openServiceQuery: (servicePath: string): void =>
             this.applicationStore.navigationService.navigator.visitAddress(
-              generateServiceQueryCreatorRoute(
-                groupId,
-                artifactId,
-                versionId,
-                servicePath,
+              this.applicationStore.navigationService.navigator.generateAddress(
+                generateServiceQueryCreatorRoute(
+                  groupId,
+                  artifactId,
+                  versionId,
+                  servicePath,
+                ),
               ),
             ),
         },

@@ -29,6 +29,7 @@ import {
   MultiExecutionServiceTestResult,
   TestExecutionStatus,
   getAllIdentifiedServiceConnections,
+  resolveServiceQueryRawLambda,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -42,7 +43,7 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import {
   service_addConnectionTestData,
@@ -53,8 +54,11 @@ import {
 import {
   EmbeddedDataConnectionTypeVisitor,
   createEmptyEqualToJsonAssertion,
+  regenerateAllExpectedResultsForTestable,
+  type RegeneratableTestableState,
 } from '../../../../utils/TestableUtils.js';
 import {
+  getSavedServiceQueryHash,
   isServiceQueryTDS,
   type ServiceEditorState,
 } from '../ServiceEditorState.js';
@@ -69,6 +73,7 @@ import {
 import {
   LegendStudioTelemetryHelper,
   SERVICE_TEST_SUITE_RUN_MODE,
+  TESTABLE_KIND,
   summarizeTestResults,
 } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
@@ -348,11 +353,51 @@ export class ServiceTestSuiteState {
   }
 }
 
-export class ServiceTestableState {
+/**
+ * Whether the service has at least one test. A suite with no tests doesn't count:
+ * there is nothing to regenerate, so nothing for a warning to point at.
+ */
+export const serviceHasTests = (service: Service): boolean =>
+  service.tests.some((suite) => suite.tests.length > 0);
+
+/**
+ * Snapshot of each suite's test data hash, keyed by suite (not id) so renaming or
+ * deleting other suites does not disturb the comparison.
+ */
+export const snapshotServiceTestDataHashes = (
+  service: Service,
+): Map<ServiceTestSuite, string> =>
+  new Map(
+    service.tests
+      .filter(filterByType(ServiceTestSuite))
+      .map((suite) => [suite, suite.testData?.hashCode ?? '']),
+  );
+
+/**
+ * Whether the test data of any suite present in the snapshot has changed since it was
+ * taken. Suites added after the snapshot are ignored: their tests are still being
+ * authored, so there are no previously-generated expected results to go stale.
+ */
+export const hasServiceTestDataChanged = (
+  service: Service,
+  snapshot: Map<ServiceTestSuite, string>,
+): boolean =>
+  service.tests.filter(filterByType(ServiceTestSuite)).some((suite) => {
+    const snapshotHash = snapshot.get(suite);
+    return (
+      snapshotHash !== undefined &&
+      snapshotHash !== (suite.testData?.hashCode ?? '')
+    );
+  });
+
+export class ServiceTestableState implements RegeneratableTestableState {
   readonly editorStore: EditorStore;
   readonly serviceEditorState: ServiceEditorState;
   selectedSuiteState: ServiceTestSuiteState | undefined;
   suiteToRename: ServiceTestSuite | undefined;
+  isRegeneratingExpectedResultsState = ActionState.create();
+  lastRegeneratedQueryHash: string | undefined;
+  testDataHashSnapshot: Map<ServiceTestSuite, string>;
 
   constructor(
     editorStore: EditorStore,
@@ -363,19 +408,62 @@ export class ServiceTestableState {
       serviceEditorState: false,
       selectedSuiteState: observable,
       suiteToRename: observable,
+      lastRegeneratedQueryHash: observable,
+      testDataHashSnapshot: observable.ref,
+      isQueryChangedSinceSaved: computed,
+      isTestDataChanged: computed,
       initSuites: action,
       addTestSuite: action,
       changeSuite: action,
       setSuiteToRename: action,
       deleteSuite: action,
+      setLastRegeneratedQueryHash: action,
+      setTestDataHashSnapshot: action,
+      regenerateAllExpectedResults: flow,
     });
     this.editorStore = editorStore;
     this.serviceEditorState = serviceEditorState;
+    this.testDataHashSnapshot = snapshotServiceTestDataHashes(
+      serviceEditorState.service,
+    );
     this.initSuites();
   }
 
   get service(): Service {
     return this.serviceEditorState.service;
+  }
+
+  get isQueryChangedSinceSaved(): boolean {
+    const currentQueryHash = resolveServiceQueryRawLambda(
+      this.service,
+    )?.hashCode;
+    const savedQueryHash = getSavedServiceQueryHash(
+      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+        .entities,
+      this.service.path,
+    );
+    return (
+      serviceHasTests(this.service) &&
+      currentQueryHash !== undefined &&
+      savedQueryHash !== undefined &&
+      currentQueryHash !== savedQueryHash &&
+      currentQueryHash !== this.lastRegeneratedQueryHash
+    );
+  }
+
+  setLastRegeneratedQueryHash(val: string | undefined): void {
+    this.lastRegeneratedQueryHash = val;
+  }
+
+  get isTestDataChanged(): boolean {
+    return (
+      serviceHasTests(this.service) &&
+      hasServiceTestDataChanged(this.service, this.testDataHashSnapshot)
+    );
+  }
+
+  setTestDataHashSnapshot(val: Map<ServiceTestSuite, string>): void {
+    this.testDataHashSnapshot = val;
   }
 
   setSuiteToRename(testSuite: ServiceTestSuite | undefined): void {
@@ -423,5 +511,34 @@ export class ServiceTestableState {
         `Unable to create service test suite: ${error.message}`,
       );
     }
+  }
+
+  *regenerateAllExpectedResults(): GeneratorFn<void> {
+    const service = this.service;
+    // captured up front: this is the query the engine runs the tests against
+    const regeneratedQueryHash =
+      resolveServiceQueryRawLambda(service)?.hashCode;
+    const regeneratedTestDataHashSnapshot =
+      snapshotServiceTestDataHashes(service);
+    const unitTestIds: UniqueTestId[] = [];
+    service.tests.filter(filterByType(ServiceTestSuite)).forEach((suite) => {
+      suite.tests.forEach((t) => unitTestIds.push(new UniqueTestId(suite, t)));
+    });
+    yield* regenerateAllExpectedResultsForTestable(
+      this.editorStore,
+      this.isRegeneratingExpectedResultsState,
+      service,
+      unitTestIds,
+      {
+        testableKind: TESTABLE_KIND.SERVICE,
+        testablePath: service.path,
+        testCount: unitTestIds.length,
+      },
+      () => {
+        this.selectedSuiteState?.testStates.forEach((t) => t.resetResult());
+        this.setLastRegeneratedQueryHash(regeneratedQueryHash);
+        this.setTestDataHashSnapshot(regeneratedTestDataHashSnapshot);
+      },
+    );
   }
 }

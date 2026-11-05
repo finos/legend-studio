@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { CustomSelectorInput, WarningIcon } from '@finos/legend-art';
+import { CustomSelectorInput, WarningIcon, cn } from '@finos/legend-art';
 import { useEffect, useState } from 'react';
 import { flowResult } from 'mobx';
 import { type LegendDataCubeBuilderStore } from '../../../stores/builder/LegendDataCubeBuilderStore.js';
@@ -337,14 +337,10 @@ export const FreeformTDSExpressionDataCubeSourceBuilder = observer(
             <div className="query-setup__wizard__group__title">Query</div>
 
             <div
-              className="mt-2 h-40 w-full"
-              style={{
-                border: '2px solid #e5e7eb',
-                padding: '5px',
-                borderRadius: '5px',
-                position: 'relative',
-                backgroundColor: allowQueryEditing() ? '#ffffff' : '#f2f2f2',
-              }}
+              className={cn(
+                'relative mt-2 h-40 w-full rounded-[5px] border-2 border-neutral-200 p-[5px]',
+                allowQueryEditing() ? 'bg-white' : 'bg-neutral-100',
+              )}
             >
               {allowQueryEditing() ? (
                 <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
@@ -353,10 +349,7 @@ export const FreeformTDSExpressionDataCubeSourceBuilder = observer(
               )}
             </div>
             {sourceBuilder.codeEditorState.compilationError ? (
-              <div
-                className="flex h-full w-full flex-shrink-0 text-sm"
-                style={{ color: 'red' }}
-              >
+              <div className="flex h-full w-full flex-shrink-0 text-sm text-red-600">
                 <WarningIcon />
                 Compilation Error: Ensure TDS is returned and all class names
                 are correct

@@ -16,6 +16,7 @@
 
 import {
   Concat,
+  DataSpaceSource,
   Difference,
   Distinct,
   Drop,
@@ -38,6 +39,7 @@ import {
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeConcatDraft } from './CubeConcatDraft.js';
+import { CubeDataSpaceDraft } from './CubeDataSpaceDraft.js';
 import { CubeDifferenceDraft } from './CubeDifferenceDraft.js';
 import { CubeExplodeDraft } from './CubeExplodeDraft.js';
 import { CubeExpressionFilterDraft } from './CubeExpressionFilterDraft.js';
@@ -64,7 +66,9 @@ export type CubeNodeDraftFactory = (
 /**
  * The draft of each node type the panel edits, by type (PLAN §7.4). A
  * transform with an editor in `CUBE_NODE_EDITORS` has its factory here, as
- * has a function source, whose parameter values are edited (PLAN §6.5);
+ * has a function source, whose parameter values are edited (PLAN §6.5), and
+ * a data space source, whose query is edited in the host's query builder
+ * (PLAN §11.25);
  * another source, which has nothing to edit, has none, and so no Apply or
  * Cancel.
  */
@@ -75,6 +79,11 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   [
     FunctionSource.TYPE,
     (node) => new CubeFunctionDraft(guaranteeType(node, FunctionSource)),
+  ],
+  [
+    DataSpaceSource.TYPE,
+    (node, editorState) =>
+      new CubeDataSpaceDraft(guaranteeType(node, DataSpaceSource), editorState),
   ],
   [Sort.TYPE, (node) => new CubeSortDraft(guaranteeType(node, Sort))],
   [Group.TYPE, (node) => new CubeGroupDraft(guaranteeType(node, Group))],

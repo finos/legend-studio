@@ -28,6 +28,7 @@ import {
   DataCubeTitleBarMenuItems,
   FormLoadingIndicator,
 } from '@finos/legend-data-cube';
+import { useLegendDataCubeColorTheme } from '../LegendDataCubeFrameworkProvider.js';
 import {
   useLegendDataCubeBuilderStore,
   withLegendDataCubeBuilderStore,
@@ -328,6 +329,10 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
     const store = useLegendDataCubeBuilderStore();
     const builder = store.builder;
     const application = store.application;
+    const dataCubeSettingValues = application.settingService.getObjectValue(
+      LegendDataCubeSettingStorageKey.DATA_CUBE,
+    ) as DataCubeSettingValues | undefined;
+    const colorTheme = useLegendDataCubeColorTheme();
     const params = useParams<LegendDataCubeBuilderPathParams>();
     const dataCubeId =
       params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID];
@@ -385,6 +390,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           title="[ Legend DataCube ]"
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
+          colorTheme={colorTheme}
           headerContent={<LegendDataCubeBuilderHeader />}
           menuItems={generateMenuItems(store)}
         >
@@ -408,6 +414,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           title="[ Legend DataCube ]"
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
+          colorTheme={colorTheme}
           headerContent={<LegendDataCubeBuilderHeader />}
           menuItems={generateMenuItems(store)}
         >
@@ -432,6 +439,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           layoutManager: store.layoutService.manager,
           taskManager: store.taskService.manager,
           gridClientLicense: store.baseStore.gridClientLicense,
+          initialSource: builder.source,
           onInitialized(event) {
             builder.setDataCube(event.api);
           },
@@ -445,9 +453,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           getHeaderMenuItems: () => generateMenuItems(store),
           settingsData: {
             configurations: store.baseStore.settings,
-            values: application.settingService.getObjectValue(
-              LegendDataCubeSettingStorageKey.DATA_CUBE,
-            ) as DataCubeSettingValues | undefined,
+            values: dataCubeSettingValues,
           },
           onSettingsChanged(event) {
             application.settingService.persistValue(

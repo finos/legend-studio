@@ -60,5 +60,6 @@ export * from './models/patch/Patch.js';
 
 export * from './util/ProjectUtil.js';
 export * from './util/ComparisonHelper.js';
+export * from './util/SDLCServerClientHelper.js';
 
 export { SDLCServerClient } from './SDLCServerClient.js';

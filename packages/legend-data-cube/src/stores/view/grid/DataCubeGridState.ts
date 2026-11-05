@@ -32,6 +32,7 @@ import {
   computeHashCodeForDataFetchManualTrigger,
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING,
   fetchDimensionalQueryRows,
+  autoSizeNonVariantColumns,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
@@ -279,7 +280,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
   async configureClient(val: GridApi | undefined) {
     this._client = val;
     this.debouncedAutoResizeColumns = debounce(
-      () => val?.autoSizeAllColumns(),
+      () => val && autoSizeNonVariantColumns(val, this.configuration.columns),
       100,
     );
 
@@ -294,7 +295,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
   async configureDimensionGridClient(val: GridApi | undefined) {
     this._client = val;
     this.debouncedAutoResizeColumns = debounce(
-      () => val?.autoSizeAllColumns(),
+      () => val && autoSizeNonVariantColumns(val, this.configuration.columns),
       100,
     );
     const latestSnapshot = this.getLatestSnapshot();
@@ -428,14 +429,26 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     // in the grid client options, we will need to manually trigger data fetching by updating the
     // following hash code which is computed from those parts of the new snapshot then making use of
     // the filter configuration mechanism to trigger getRows() method of server-side row model data source
-    this.client.setFilterModel({
-      [INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID]: {
-        type: 'equals',
-        filter: computeHashCodeForDataFetchManualTrigger(
-          snapshot,
-          configuration,
-        ),
-      },
-    });
+    //
+    // NOTE: ag-grid fires filterChanged (which purges and refetches the whole server-side store) on every
+    // setFilterModel() call, even when the model is unchanged, so we only set it when the hash changes;
+    // otherwise, a snapshot which does not affect the data (e.g. expanding a row group) reloads the grid.
+    const dataFetchManualTrigger = computeHashCodeForDataFetchManualTrigger(
+      snapshot,
+      configuration,
+    );
+    const currentDataFetchManualTrigger = (
+      this.client.getFilterModel()[
+        INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID
+      ] as { filter?: string } | undefined
+    )?.filter;
+    if (currentDataFetchManualTrigger !== dataFetchManualTrigger) {
+      this.client.setFilterModel({
+        [INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID]: {
+          type: 'equals',
+          filter: dataFetchManualTrigger,
+        },
+      });
+    }
   }
 }

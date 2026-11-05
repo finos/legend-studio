@@ -169,17 +169,17 @@ describe('Node editor panel', () => {
     );
     expect(editorState.document.query.selected).toBe('filter101');
     const select = within(editor).getByRole('button', {
-      name: 'Run this step',
+      name: 'Set as output',
     });
     expect(select.title).toBe(SELECT_NODE_TOOLTIP);
     fireEvent.click(select);
     expect(editorState.document.query.selected).toBe('relational101');
-    const selected = within(panel()).getByText('▶ Runs');
+    const selected = within(panel()).getByText('Output');
     expect(selected.title).toBe(
-      'This is the step that runs: Execute shows its rows',
+      'The output step: Run Query runs the query up to here and shows its rows',
     );
     expect(
-      within(panel()).queryByRole('button', { name: 'Run this step' }),
+      within(panel()).queryByRole('button', { name: 'Set as output' }),
     ).toBeNull();
   });
 

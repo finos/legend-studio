@@ -1,5 +1,19 @@
 # @finos/legend-art
 
+## 7.1.172
+
+### Patch Changes
+
+- [#5773](https://github.com/finos/legend-studio/pull/5773) [`25b0c9f`](https://github.com/finos/legend-studio/commit/25b0c9f75962cba4379ab34fd7556f3b28df158d) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add a dark color theme to DataCube, toggled via the new `Dark Mode: Enabled` setting (Settings › Appearance), which uses the same palette as the default dark theme of the other Legend applications. Default grid colors (foreground, grid lines, highlighted rows, etc.) follow the theme while customized colors are kept as-is. To support this, Tailwind color utilities now read their values from the `--tw-color-*` CSS variables (the default palette is unchanged), so a subtree can be re-themed by redefining these variables.
+
+## 7.1.171
+
+### Patch Changes
+
+- [#5763](https://github.com/finos/legend-studio/pull/5763) [`3645313`](https://github.com/finos/legend-studio/commit/36453132ea191fe1294fd773140cdf191ebf426c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add two palette colors for text that keeps its hue across themes: `--color-yellow-700` (dark amber, readable on white) and `--color-purple-25` (lavender, readable on dark grey).
+
+- [#5755](https://github.com/finos/legend-studio/pull/5755) [`8de8fca`](https://github.com/finos/legend-studio/commit/8de8fca003c398a24b0d553940a0c2d01f9c22bf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Pair text and background color tokens correctly in the light and dark themes: a default `btn__dropdown-combo` (on `--color-bg-tag`) now uses `--color-text-primary` and only the `--primary` variant uses `--color-text-on-accent`, including its dropdown caret; and the `panel__header__title__label--light` modifier no longer hardcodes grey text on a light background, so panel header chips follow the theme even when an editor restyles their background.
+
 ## 7.1.170
 
 ## 7.1.169

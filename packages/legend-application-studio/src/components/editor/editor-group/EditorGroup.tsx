@@ -85,11 +85,6 @@ import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../stores/editor
 import { SnowflakeAppFunctionActivatorEditor } from './function-activator/SnowflakeAppFunctionActivatorEditor.js';
 import { SnowflakeM2MUdfFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeM2MUdfFunctionActivatorEditorState.js';
 import { SnowflakeM2MUdfFunctionActivatorEditor } from './function-activator/SnowflakeM2MUdfFunctionActivatorEditor.js';
-import {
-  ShowcaseCard,
-  RuleEngagementCard,
-  DocumentationCard,
-} from '../../workspace-setup/WorkspaceSetup.js';
 import { HostedServiceFunctionActivatorEditorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditor } from './function-activator/HostedServiceFunctionActivatorEditor.js';
 import { DataProductEditorState } from '../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
@@ -98,6 +93,7 @@ import { IngestDefinitionEditorState } from '../../../stores/editor/editor-state
 import { IngestDefinitionEditor } from './ingest-editor/IngestDefinitionEditor.js';
 import { AvailabilityEditorState } from '../../../stores/editor/editor-state/element-editor-state/availability/AvailabilityEditorState.js';
 import { AvailabilityEditor } from './availability/AvailabilityEditor.js';
+import { EditorLandingPage } from './EditorLandingPage.js';
 import { ComputeEditorState } from '../../../stores/editor/editor-state/element-editor-state/compute/ComputeEditorState.js';
 import { ComputeEditor } from './compute-editor/ComputeEditor.js';
 import {
@@ -143,91 +139,10 @@ export const ViewerEditorGroupSplashScreen: React.FC = () => {
   );
 };
 
-export const EditorGroupSplashScreen: React.FC = () => {
-  const commandListWidth = 300;
-  const commandListHeight = 180;
-  const [showCommandList, setShowCommandList] = useState(false);
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-  useEffect(() => {
-    setShowCommandList(
-      (width ?? 0) > commandListWidth && (height ?? 0) > commandListHeight,
-    );
-  }, [width, height]);
-
-  return (
-    <div ref={ref} className="editor-group__splash-screen">
-      <div
-        className={clsx('editor-group__splash-screen__content', {
-          'editor-group__splash-screen__content--hidden': !showCommandList,
-        })}
-      >
-        <div className="editor-group__splash-screen__content__cards">
-          <div className="editor-group__splash-screen__content__cards__container">
-            <RuleEngagementCard />
-            <ShowcaseCard hideDocumentation={true} />
-            <DocumentationCard />
-          </div>
-        </div>
-        <div className="editor-group__splash-screen__content__divider"></div>
-        <div className="editor-group__splash-screen__content__actions">
-          <div className="editor-group__splash-screen__content__header">
-            Essential Keyboard Shortcuts
-          </div>
-          <div className="editor-group__splash-screen__content__items">
-            <div className="editor-group__splash-screen__content__item">
-              <div className="editor-group__splash-screen__content__item__label">
-                Open or Search for an Element
-              </div>
-              <div className="editor-group__splash-screen__content__item__hot-keys">
-                <div className="hotkey__key">Ctrl</div>
-                <div className="hotkey__plus">
-                  <PlusIcon />
-                </div>
-                <div className="hotkey__key">P</div>
-              </div>
-            </div>
-            <div className="editor-group__splash-screen__content__item">
-              <div className="editor-group__splash-screen__content__item__label">
-                Push Local Changes
-              </div>
-              <div className="editor-group__splash-screen__content__item__hot-keys">
-                <div className="hotkey__key">Ctrl</div>
-                <div className="hotkey__plus">
-                  <PlusIcon />
-                </div>
-                <div className="hotkey__key">S</div>
-              </div>
-            </div>
-            <div className="editor-group__splash-screen__content__item">
-              <div className="editor-group__splash-screen__content__item__label">
-                Open Showcases
-              </div>
-              <div className="editor-group__splash-screen__content__item__hot-keys">
-                <div className="hotkey__key">F7</div>
-              </div>
-            </div>
-            <div className="editor-group__splash-screen__content__item">
-              <div className="editor-group__splash-screen__content__item__label">
-                Go To Text Mode
-              </div>
-              <div className="editor-group__splash-screen__content__item__hot-keys">
-                <div className="hotkey__key">F8</div>
-              </div>
-            </div>
-            <div className="editor-group__splash-screen__content__item">
-              <div className="editor-group__splash-screen__content__item__label">
-                Compile
-              </div>
-              <div className="editor-group__splash-screen__content__item__hot-keys">
-                <div className="hotkey__key">F9</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+/**
+ * Shown when no tab is open: see `EditorLandingPage`.
+ */
+export const EditorGroupSplashScreen: React.FC = () => <EditorLandingPage />;
 
 export const EditorGroup = observer(() => {
   const editorStore = useEditorStore();

@@ -15,18 +15,58 @@
  */
 
 import { LegendApplicationPluginManager } from '@finos/legend-application';
+import type {
+  GraphManagerPluginManager,
+  PureGraphManagerPlugin,
+  PureGraphPlugin,
+  PureProtocolProcessorPlugin,
+} from '@finos/legend-graph';
 import type { LegendAnalyticsApplicationPlugin } from './LegendAnalyticsApplicationPlugin.js';
 
 /**
- * Legend Analytics' plugins. Legend Cube builds no graph, so there are no
- * graph manager plugins to hold
+ * Legend Analytics' plugins, the graph's among them: a Legend Cube data
+ * space source's query builder builds the data space's project's graph
+ * (PLAN §11.25), as Legend Query does
  */
-export class LegendAnalyticsPluginManager extends LegendApplicationPluginManager<LegendAnalyticsApplicationPlugin> {
+export class LegendAnalyticsPluginManager
+  extends LegendApplicationPluginManager<LegendAnalyticsApplicationPlugin>
+  implements GraphManagerPluginManager
+{
+  private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
+  private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
+  private pureGraphPlugins: PureGraphPlugin[] = [];
+
   private constructor() {
     super();
   }
 
   static create(): LegendAnalyticsPluginManager {
     return new LegendAnalyticsPluginManager();
+  }
+
+  registerPureProtocolProcessorPlugin(
+    plugin: PureProtocolProcessorPlugin,
+  ): void {
+    this.pureProtocolProcessorPlugins.push(plugin);
+  }
+
+  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
+    this.pureGraphManagerPlugins.push(plugin);
+  }
+
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
+    this.pureGraphPlugins.push(plugin);
+  }
+
+  getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
+    return [...this.pureGraphManagerPlugins];
+  }
+
+  getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
+    return [...this.pureProtocolProcessorPlugins];
+  }
+
+  getPureGraphPlugins(): PureGraphPlugin[] {
+    return [...this.pureGraphPlugins];
   }
 }

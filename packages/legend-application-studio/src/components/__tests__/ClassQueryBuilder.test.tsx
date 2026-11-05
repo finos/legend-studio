@@ -15,7 +15,7 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { fireEvent, getByText, waitFor } from '@testing-library/react';
+import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { integrationTest, createMock } from '@finos/legend-shared/test';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
@@ -94,8 +94,10 @@ describe(
         const MOCK__GlobalCompileInFormModeFn = createMock();
         MOCK__editorStore.graphEditorMode.globalCompile =
           MOCK__GlobalCompileInFormModeFn;
-        MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
-          GraphCompilationOutcome.SUCCEEDED,
+        act(() =>
+          MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+            GraphCompilationOutcome.SUCCEEDED,
+          ),
         );
 
         MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =

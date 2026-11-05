@@ -963,11 +963,17 @@ export class SDLCServerClient extends AbstractServerClient {
       `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,
       command,
     );
+  getEntity = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(`${this._entities(projectId, workspace)}/${entityPath}`);
   getWorkspaceEntity = (
     workspace: Workspace,
     entityPath: string,
   ): Promise<PlainObject<Entity>> =>
-    this.get(`${this._entities(workspace.projectId, workspace)}/${entityPath}`);
+    this.getEntity(workspace.projectId, workspace, entityPath);
 
   // ------------------------------------------- Review -------------------------------------------
 

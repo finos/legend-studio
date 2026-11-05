@@ -45,9 +45,9 @@ beforeEach(async () => {
 });
 
 test(integrationTest('Test navigation between element states'), async () => {
-  //check successfully load cards
+  // the landing page shows while no tab is open
   await waitFor(() =>
-    expect(renderResult.queryByText('Showcase Projects')).not.toBeNull(),
+    expect(renderResult.queryByText('Open an element')).not.toBeNull(),
   );
 
   // Test opening multiple elements

@@ -1,5 +1,31 @@
 # @finos/legend-cube-builder
 
+## 0.0.10
+
+### Patch Changes
+
+- [#5789](https://github.com/finos/legend-studio/pull/5789) [`5e159f1`](https://github.com/finos/legend-studio/commit/5e159f1f8dfef8f42f145bf13622f5b1ad70c5ec) ([@gs-gunjan](https://github.com/gs-gunjan)) - Follow the engine's BigQuery dialect (legend-engine#5108) in the dialect roundtrip tests: BigQuery now plans a static PIVOT (still refused by Cube until it is run against BigQuery), and writes no `NULLS FIRST`/`NULLS LAST` in a window's sort, leaving BigQuery's own order, empty values low.
+
+- [#5806](https://github.com/finos/legend-studio/pull/5806) [`d7149bb`](https://github.com/finos/legend-studio/commit/d7149bb564e50fb8d22891d4f6d17c526c133fbd) ([@gs-gunjan](https://github.com/gs-gunjan)) - Follow the engine's typing of BINARY and VARBINARY columns as `Byte` (legend-engine#5449) in the Northwind fixture's engine tests: its binary table now types, and the parity file records its columns rather than an error. The source picker still flags such tables unavailable.
+
+- [#5811](https://github.com/finos/legend-studio/pull/5811) [`d4b9ceb`](https://github.com/finos/legend-studio/commit/d4b9ceb6e2c2caccdaa7334b20d4e69ca350f2f1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Put every source of a cube in the first column of the canvas, however short its branch, and draw an edge that skips columns straight across them, in a lane the layout keeps clear of nodes.
+
+- [#5813](https://github.com/finos/legend-studio/pull/5813) [`3277576`](https://github.com/finos/legend-studio/commit/3277576f8728dc2dc28fdaa743f7f31790e4b9d9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube's step editors show a column's type as its family's icon, without the words (`Whole number, optional`) beside every column. Pickers list column names only, with the picked column's icon beside the picker, so names are no longer cut off; checklists and Restrict's list show each column's icon and name, and a column that can't be picked still says why. The icon's tooltip gives the words and the exact type, and screen readers read the words after the column's name. A source's column table, Concatenate's exact types and Extend's result type keep their words. Time columns get a clock icon in place of the question mark.
+
+- [#5759](https://github.com/finos/legend-studio/pull/5759) [`a7038ec`](https://github.com/finos/legend-studio/commit/a7038ec339defaa0ed248a3f1696f0ed07820c92) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - A data space as a Legend Cube source (PLAN §11.25). The core's `dataSpace` node runs the relation the host's query builder wrote for it, and a cube's optional mapping makes a run end in `from(mapping, runtime)`. The builder adds the source dialog's Data Space tab and the source's node editor, both through a new host seam (`CubeHost.dataSpaceEditor`), so it keeps no dependency on the query builder. Legend Analytics provides the editor when its deployment has a depot: the depot's released data spaces, and the query builder on a data space's light graph, which it builds only from the analytics a release of the project generates, as Legend Query builds its minimal graph; a data space without them is refused, and no DSL extension's graph plugins are needed.
+
+- [#5810](https://github.com/finos/legend-studio/pull/5810) [`14e756f`](https://github.com/finos/legend-studio/commit/14e756ff78e40e3d1e9559df4c2277f0703e49f7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - More functions in Legend Cube's Group by Column (PLAN §11.28): Median, Percentile, Std Dev and Variance on numbers, and Join Text on texts. Percentile takes a percent from 0 to 100, 90 by default, saved and written as the engine's fraction (`percentile(0.9)`), and its auto-name carries it (`FREIGHT P90`); Std Dev and Variance are the sample ones (`stdDevSample`, `varianceSample`); Join Text joins a group's texts with a separator, `, ` by default, which can't hold a backslash. Apply Window Functions offers Std Dev and Variance too: Snowflake refuses a sorted window of Median, Percentile and Join Text. A Pivot takes none of them, as Snowflake's pivot takes only Count, Sum, Average, Min and Max, and the grid's group rows don't offer them yet. Import Pure reads them back.
+
+- [#5814](https://github.com/finos/legend-studio/pull/5814) [`bc2daa4`](https://github.com/finos/legend-studio/commit/bc2daa45222097e7269c80864d69c32ca4c777b3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Name Cube's run controls with one word, Run. Run Query, in Legend Query's green at the right end of the results bar beside the row limit, runs the query up to the output step, which a plain Output label marks; Set as output picks that step, and Run history lists the latest runs. Studio's MatView button names the output step too.
+
+## 0.0.9
+
+### Patch Changes
+
+- [#5745](https://github.com/finos/legend-studio/pull/5745) [`393ac49`](https://github.com/finos/legend-studio/commit/393ac491269fb95c1e94b2f0f05940cc1f82d32e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The expression editors of Filter by Expression, Extend Columns and Import Pure read the engine's function catalogue (`/api/pct/pct-docs.json`). Their completions now offer every function a column's type is passed to, each with its signature and documentation. A hover over a function's name shows its documentation, and its signatures show while a call's arguments are written. The column chips write at the cursor. Without the catalogue, the editors work as before.
+
+- [#5761](https://github.com/finos/legend-studio/pull/5761) [`e5de75f`](https://github.com/finos/legend-studio/commit/e5de75f359347b5875da4b3d9ffaea5bb7713c06) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Expect Explore JSON's "total of" an array to be 0, not empty, for a row whose array is empty or missing, as the engine now sums no elements to 0 on DuckDB.
+
 ## 0.0.8
 
 ### Patch Changes

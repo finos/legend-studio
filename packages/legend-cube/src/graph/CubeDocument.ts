@@ -34,11 +34,16 @@ export interface ModelContext extends JsonObject {
   readonly _type: string;
 }
 
-/** The model and runtime of the whole query: one of each per query (D2) */
+/** The model, runtime and mapping of the whole query: one of each per query (D2) */
 export interface CubeContext {
   readonly model: ModelContext;
   /** The path of the runtime the query runs with */
   readonly runtime?: string;
+  /**
+   * The path of the mapping the query runs with, for sources that read
+   * classes, e.g. a data space's (PLAN §11.25); none for the others
+   */
+  readonly mapping?: string;
   readonly rest?: JsonObject;
 }
 

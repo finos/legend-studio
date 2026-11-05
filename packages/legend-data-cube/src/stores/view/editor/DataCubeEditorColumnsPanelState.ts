@@ -50,10 +50,7 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
   }
 
   override cloneColumn(column: DataCubeEditorColumnsSelectorColumnState) {
-    return new DataCubeEditorColumnsSelectorColumnState(
-      column.name,
-      column.type,
-    );
+    return new DataCubeEditorColumnsSelectorColumnState(column);
   }
 
   override get availableColumns() {
@@ -61,9 +58,7 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
       ...this._editor.sourceColumns,
       ...this._editor.leafExtendColumns,
       ...this._editor.groupExtendColumns,
-    ].map(
-      (col) => new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-    );
+    ].map((col) => new DataCubeEditorColumnsSelectorColumnState(col));
   }
 
   override get availableColumnsForDisplay(): DataCubeEditorColumnsSelectorColumnState[] {
@@ -159,10 +154,7 @@ export class DataCubeEditorColumnsPanelState
         .filter((col) => col.isSelected)
         .map((col) => {
           const column = this.selector.getColumn(col.name);
-          return new DataCubeEditorColumnsSelectorColumnState(
-            column.name,
-            column.type,
-          );
+          return new DataCubeEditorColumnsSelectorColumnState(column);
         }),
     );
   }

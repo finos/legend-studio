@@ -19,7 +19,8 @@ import {
   type Class,
   type Type,
   type GraphManagerState,
-  type RawLambda,
+  type Mapping,
+  RawLambda,
   type SetImplementation,
   type MappingTestSuite,
   type GraphFetchTree,
@@ -65,7 +66,9 @@ import {
   assertTrue,
   filterByType,
   guaranteeNonNullable,
+  hashArray,
 } from '@finos/legend-shared';
+import type { Entity } from '@finos/legend-storage';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 
@@ -284,3 +287,83 @@ export const createGraphFetchQueryFromMappingAnalysis = (
     return buildRawLambdaFromLambdaFunction(lambdaFunction, graphManagerState);
   }
 };
+
+export const mappingHasTests = (mapping: Mapping): boolean =>
+  mapping.tests.some((suite) => suite.tests.length > 0);
+
+// NOTE: in the saved mapping, `testSuites` are the test suites; `tests` is the legacy
+// (deprecated) mapping test format, which has no suite id or query to compare
+type SavedMappingEntityContent = {
+  testSuites?: {
+    id?: string;
+    func?: { parameters?: object; body?: object };
+  }[];
+};
+
+export const getSavedMappingSuiteQueryHashes = (
+  savedEntities: Entity[],
+  mappingPath: string,
+): Map<string, string> => {
+  const savedSuites =
+    (
+      savedEntities.find((entity) => entity.path === mappingPath)?.content as
+        | SavedMappingEntityContent
+        | undefined
+    )?.testSuites ?? [];
+  const hashes = new Map<string, string>();
+  savedSuites.forEach((suite) => {
+    if (suite.id !== undefined && suite.func) {
+      hashes.set(
+        suite.id,
+        new RawLambda(suite.func.parameters, suite.func.body).hashCode,
+      );
+    }
+  });
+  return hashes;
+};
+
+export const snapshotMappingSuiteQueryHashes = (
+  mapping: Mapping,
+): Map<MappingTestSuite, string> =>
+  new Map(mapping.tests.map((suite) => [suite, suite.func.hashCode]));
+
+export const hasMappingSuiteQueryChanged = (
+  mapping: Mapping,
+  savedHashes: Map<string, string>,
+  lastRegeneratedHashes: Map<MappingTestSuite, string>,
+): boolean =>
+  mapping.tests.some((suite) => {
+    const savedHash = savedHashes.get(suite.id);
+    const currentHash = suite.func.hashCode;
+    return (
+      savedHash !== undefined &&
+      currentHash !== savedHash &&
+      currentHash !== lastRegeneratedHashes.get(suite)
+    );
+  });
+
+const getMappingTests = (mapping: Mapping): MappingTest[] =>
+  mapping.tests.flatMap((suite) =>
+    suite.tests.filter(filterByType(MappingTest)),
+  );
+
+const hashStoreTestData = (test: MappingTest): string =>
+  hashArray(test.storeTestData);
+
+export const snapshotMappingTestDataHashes = (
+  mapping: Mapping,
+): Map<MappingTest, string> =>
+  new Map(
+    getMappingTests(mapping).map((test) => [test, hashStoreTestData(test)]),
+  );
+
+export const hasMappingTestDataChanged = (
+  mapping: Mapping,
+  snapshot: Map<MappingTest, string>,
+): boolean =>
+  getMappingTests(mapping).some((test) => {
+    const snapshotHash = snapshot.get(test);
+    return (
+      snapshotHash !== undefined && snapshotHash !== hashStoreTestData(test)
+    );
+  });
