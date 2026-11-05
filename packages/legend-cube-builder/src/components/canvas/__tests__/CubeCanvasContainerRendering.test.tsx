@@ -227,6 +227,8 @@ describe('Containers on the canvas', () => {
         name: CUBE_CONTAINER_LABEL.WITH_STEPS_BEFORE,
       }),
     );
+    // the item closes the menus, as any does
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
     const frame = await findFrame();
     expect(frame.textContent).toContain('Container 1');
     expect(frame.textContent).toContain('3 steps');

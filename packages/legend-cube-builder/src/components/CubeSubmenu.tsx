@@ -76,8 +76,14 @@ export const CubeSubmenu: React.FC<{
       onMouseEnter={open}
       onMouseLeave={closeSoon}
       onClick={(event) => {
-        // the menu closes on a click; this one opens the submenu instead
-        if (opensOnClick && hasItems) {
+        // the menu closes on a click; one on the item opens the submenu
+        // instead, and one on the submenu's items, which React passes up
+        // through here, closes it
+        if (
+          opensOnClick &&
+          hasItems &&
+          !submenuRef.current?.contains(event.target as Node)
+        ) {
           event.stopPropagation();
           openAndFocus();
         }

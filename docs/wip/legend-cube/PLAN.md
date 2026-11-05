@@ -5826,14 +5826,14 @@ names that the query no longer has is left out where the canvas reads it (`getSh
 | Step | What                                                                                                     | Status |
 | ---- | -------------------------------------------------------------------------------------------------------- | ------ |
 | C.1  | Prototype: the meta, the rules' core, the layout, frames and folded boxes, Put in a Container            | ✅     |
-| C.2  | Steps follow the flow: added, pasted, moved and removed steps; a split container keeps its largest block | ⏳     |
-| C.3  | The menus: Put in a Container ▸, Take Out of Container, the head's menu; renaming from the menu          | ⏳     |
-| C.4  | The folded box: the Output caption, Enter to open, the minimap; tests of the canvas                      | ⏳     |
-| C.5  | The user guide: a section and its images; this section; the changeset                                    | ⏳     |
+| C.2  | Steps follow the flow: added, pasted, moved and removed steps; a split container keeps its largest block | ✅     |
+| C.3  | The menus: Put in a Container ▸, Take Out of Container, the head's menu; renaming from the menu          | ✅     |
+| C.4  | The folded box: the Output caption, Enter to open, the minimap; tests of the canvas                      | ✅     |
+| C.5  | The user guide: a section and its images; this section; the changeset                                    | ✅     |
 | C.6  | Checks: every suite that reads the builder (core, builder, Query, Studio, Analytics), lint, the browser  | ⏳     |
 | C.7  | Demo video                                                                                               | ⏳     |
 
-**Status:** draft (PR to come).
+**Status:** draft finos/legend-studio#5850.
 
 ## 12. G. Risks and open questions
 
