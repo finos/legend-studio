@@ -107,11 +107,38 @@ export const CUBE_OWN_FUNCTIONS: readonly CubeFunction[] = [
   ),
 ];
 
-/** The catalogue with Cube's own functions it lacks */
+/** A signature by its parameters' types and multiplicities, to tell two alike */
+const shapeOf = (signature: CubeFunctionSignature): string =>
+  signature.parameters
+    .map(({ type, multiplicity }) => `${type}[${multiplicity}]`)
+    .join(',');
+
+/**
+ * The catalogue with Cube's own signatures it lacks, first among a
+ * function's: the engine's `indexOf` is a list's, `indexOf(T[*], T[1])`, so
+ * the text's is added beside it
+ */
 export const withCubeOwnFunctions = (
   catalogue: CubeFunctionCatalogue,
-): CubeFunctionCatalogue =>
-  new CubeFunctionCatalogue([
-    ...catalogue.functions.values(),
-    ...CUBE_OWN_FUNCTIONS.filter((each) => !catalogue.get(each.name)),
-  ]);
+): CubeFunctionCatalogue => {
+  const functions = new Map(catalogue.functions);
+  CUBE_OWN_FUNCTIONS.forEach((own) => {
+    const engines = functions.get(own.name);
+    const shapes = new Set(engines?.signatures.map(shapeOf));
+    const added = own.signatures.filter(
+      (signature) => !shapes.has(shapeOf(signature)),
+    );
+    if (!added.length) {
+      return;
+    }
+    functions.set(
+      own.name,
+      new CubeFunction(
+        own.name,
+        [...new Set([...own.packages, ...(engines?.packages ?? [])])],
+        [...added, ...(engines?.signatures ?? [])],
+      ),
+    );
+  });
+  return new CubeFunctionCatalogue([...functions.values()]);
+};

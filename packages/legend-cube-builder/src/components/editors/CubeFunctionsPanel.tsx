@@ -31,6 +31,7 @@ import {
 import {
   getCubeDatabaseLabel,
   getCubeFunctionDocumentation,
+  getCubeFunctionTestSummary,
 } from './CubeFunctionHelp.js';
 
 // The functions panel (EXPRESSION-EDITOR.md, round 2b): the engine's
@@ -196,14 +197,23 @@ export const CubeFunctionsPanel = (props: {
                   {CUBE_FUNCTIONS_PANEL_LABEL.INSERT}
                 </button>
               </div>
-              <div className="max-h-60 overflow-y-auto">
+              {databaseType !== undefined && (
                 <MarkdownTextViewer
-                  className="text-sm"
+                  className="legend-cube-function-doc"
                   value={{
-                    value: getCubeFunctionDocumentation(
+                    value: getCubeFunctionTestSummary(
                       selected.signatures,
                       context,
                     ),
+                  }}
+                />
+              )}
+              <div className="max-h-60 overflow-y-auto">
+                <MarkdownTextViewer
+                  className="legend-cube-function-doc"
+                  value={{
+                    // how its tests went is said above
+                    value: getCubeFunctionDocumentation(selected.signatures),
                   }}
                 />
               </div>

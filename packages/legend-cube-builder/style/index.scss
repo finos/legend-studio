@@ -75,3 +75,37 @@
     border-color: var(--color-status-error);
   }
 }
+
+// The functions panel's help (EXPRESSION-EDITOR.md, round 2b): compact, as a
+// panel's text, not a page's
+.legend-cube-function-doc.markdown-content {
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1.4;
+
+  p {
+    margin: 0 0 0.4rem;
+  }
+
+  pre {
+    margin: 0 0 0.4rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.2rem;
+    background: var(--color-bg-input);
+    white-space: pre-wrap;
+  }
+
+  code,
+  pre {
+    font-size: 1.1rem;
+  }
+
+  ul {
+    margin: 0 0 0.4rem;
+    padding-left: 1.6rem;
+  }
+
+  hr {
+    margin: 0.6rem 0;
+  }
+}

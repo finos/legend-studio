@@ -36,7 +36,7 @@ describe("How the engine's tests of a function went on the cube's database", () 
         databaseType: 'H2',
         testedDatabases: TESTED,
       }),
-    ).toBe("**On H2:** 2 of the engine's 2 tests of it pass.");
+    ).toBe("**On H2:** the engine's tests of it pass 2 of 2.");
     const failures = Array.from({ length: 5 }, (_, index) => ({
       test: `test${index}`,
       message: index === 0 ? 'Not *supported* `here`' : '',
@@ -48,7 +48,7 @@ describe("How the engine's tests of a function went on the cube's database", () 
       }),
     ).toBe(
       [
-        "**On H2:** 0 of the engine's 5 tests of it pass. A test that fails doesn't mean it can't run there.",
+        "**On H2:** the engine's tests of it pass 0 of 5. A test that fails doesn't mean it can't run there.",
         '- `test0`: Not supported here\n- `test1`\n- `test2`\n- and 2 more',
       ].join('\n\n'),
     );

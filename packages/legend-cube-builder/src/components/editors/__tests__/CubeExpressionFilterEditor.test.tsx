@@ -721,7 +721,7 @@ describe('The functions panel (EXPRESSION-EDITOR.md, round 2b)', () => {
     const about = within(panel()).getByLabelText('About lpad');
     expect(about.textContent).toContain('on H2');
     expect(about.textContent).toContain(
-      "**On H2:** 4 of the engine's 5 tests of it pass.",
+      "**On H2:** the engine's tests of it pass 4 of 5.",
     );
     // before the code is clicked into: at its end, written whole
     fireEvent.click(within(about).getByRole('button', { name: 'Insert' }));

@@ -68,7 +68,7 @@ export const getCubeFunctionTestLine = (
       ? `**On ${database}:** the engine has no tests of it.`
       : `**On ${database}:** this engine's catalogue has no tests on ${database}.`;
   }
-  const line = `**On ${database}:** ${result.passed} of the engine's ${result.total} tests of it pass.`;
+  const line = `**On ${database}:** the engine's tests of it pass ${result.passed} of ${result.total}.`;
   if (!result.failures.length) {
     return line;
   }
@@ -111,6 +111,38 @@ export const getCubeFunctionDocumentation = (
         .join('\n\n');
     })
     .join('\n\n---\n\n');
+
+/**
+ * How the engine's tests of each of a function's definitions went on the
+ * database, in Markdown, as the functions panel says it first: one line a
+ * definition the engine reports tests of, named by its first signature's
+ * types when there are several
+ */
+export const getCubeFunctionTestSummary = (
+  signatures: readonly CubeFunctionSignature[],
+  context: CubeFunctionHelpContext,
+): string => {
+  // a definition the engine reports no tests of at all, as Cube's own, says nothing
+  const definitions = signatures.filter(
+    (signature, index) =>
+      signature.testResults !== undefined &&
+      signatures.findIndex(
+        (other) => other.testResults === signature.testResults,
+      ) === index,
+  );
+  return definitions
+    .flatMap((signature) => {
+      const line = getCubeFunctionTestLine(signature.testResults, context);
+      if (line === undefined) {
+        return [];
+      }
+      const name = `\`${signature.name}(${signature.parameters
+        .map(({ type, multiplicity }) => `${type}[${multiplicity}]`)
+        .join(', ')})\``;
+      return [definitions.length > 1 ? `${name}: ${line}` : line];
+    })
+    .join('\n\n');
+};
 
 /** One signature's documentation, then how its definition's tests went on the database */
 export const getCubeSignatureDocumentation = (

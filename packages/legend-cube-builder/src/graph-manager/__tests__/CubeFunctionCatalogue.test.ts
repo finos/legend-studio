@@ -16,8 +16,13 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TypeFamily } from '@finos/legend-cube';
-import { TEST__functionCatalogue } from '../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
 import {
+  TEST__functionCatalogue,
+  TEST__functionSignature,
+} from '../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
+import {
+  CubeFunction,
+  CubeFunctionCatalogue,
   CubeFunctionCategory,
   getCubeFunctionCategory,
   parseCubeFunctionSignature,
@@ -195,8 +200,40 @@ describe('The functions to browse (EXPRESSION-EDITOR.md, round 2b)', () => {
     expect(catalogue.browse().map((offer) => offer.function.name)).toContain(
       'substring',
     );
-    // an engine's own is kept
-    const engines = withCubeOwnFunctions(catalogue);
-    expect(engines.get('substring')).toBe(catalogue.get('substring'));
+    // nothing added twice
+    expect(
+      withCubeOwnFunctions(catalogue).get('substring')?.signatures,
+    ).toHaveLength(1);
+  });
+
+  test("Adds the text's indexOf beside the engine's indexOf of a list, first", () => {
+    const listIndexOf = TEST__functionSignature(
+      'meta::pure::functions::collection',
+      'indexOf',
+      [
+        ['T', '*', 'set'],
+        ['T', '1', 'value'],
+      ],
+      ['Integer', '1'],
+      'The position of a value in a list.',
+    );
+    const catalogue = withCubeOwnFunctions(
+      new CubeFunctionCatalogue([
+        new CubeFunction(
+          'indexOf',
+          ['meta::pure::functions::collection'],
+          [listIndexOf],
+        ),
+      ]),
+    );
+    const indexOf = catalogue.get('indexOf');
+    expect(indexOf?.signatures.map((each) => each.text)).toEqual([
+      'indexOf(source: String[1], toFind: String[1]): Integer[1]',
+      'indexOf(set: T[*], value: T[1]): Integer[1]',
+    ]);
+    expect(indexOf?.packages).toEqual([
+      'meta::pure::functions::string',
+      'meta::pure::functions::collection',
+    ]);
   });
 });
