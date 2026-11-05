@@ -246,6 +246,89 @@ describe('Containers on the canvas', () => {
     ]);
   });
 
+  test("Walks Put in a Container's menu with the keyboard, and puts a step in the container beside it", async () => {
+    const editorState = await render(
+      slice([
+        {
+          id: 'container1',
+          title: 'The join',
+          steps: ['join101'],
+          folded: false,
+        },
+      ]),
+    );
+    fireEvent.contextMenu(await TEST__findCanvasNode('filter101'));
+    const putIn = within(await screen.findByRole('menu')).getByRole('button', {
+      name: CUBE_CONTAINER_LABEL.PUT_IN,
+    });
+    putIn.focus();
+    // the right arrow opens its menu, on its first item
+    fireEvent.keyDown(putIn, { key: 'ArrowRight' });
+    const submenu = await screen.findByRole('menu', {
+      name: CUBE_CONTAINER_LABEL.PUT_IN,
+    });
+    const item = (name: string): HTMLElement =>
+      within(submenu).getByRole('button', { name });
+    await waitFor(() =>
+      expect(document.activeElement).toBe(item(CUBE_CONTAINER_LABEL.ALONE)),
+    );
+    // no step before the filter is free: its item is disabled, and skipped
+    expect(
+      (item(CUBE_CONTAINER_LABEL.WITH_STEPS_BEFORE) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    fireEvent.keyDown(document.activeElement as HTMLElement, {
+      key: 'ArrowDown',
+    });
+    expect(document.activeElement).toBe(item('The join'));
+    fireEvent.keyDown(document.activeElement as HTMLElement, {
+      key: 'ArrowUp',
+    });
+    expect(document.activeElement).toBe(item(CUBE_CONTAINER_LABEL.ALONE));
+    // the left arrow goes back to the item
+    fireEvent.keyDown(document.activeElement as HTMLElement, {
+      key: 'ArrowLeft',
+    });
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('menu', { name: CUBE_CONTAINER_LABEL.PUT_IN }),
+      ).toBeNull(),
+    );
+    expect(document.activeElement).toBe(putIn);
+    fireEvent.keyDown(putIn, { key: 'ArrowRight' });
+    fireEvent.click(
+      within(
+        await screen.findByRole('menu', { name: CUBE_CONTAINER_LABEL.PUT_IN }),
+      ).getByRole('button', { name: 'The join' }),
+    );
+    expect(editorState.document.meta.containers?.[0]?.steps).toEqual([
+      'join101',
+      'filter101',
+    ]);
+  });
+
+  test('Folds, opens and removes a container from its own menu, on its head or its box', async () => {
+    const editorState = await render(slice([ORDERS_WITH_CUSTOMERS]));
+    const fromMenu = async (target: Element, name: string): Promise<void> => {
+      fireEvent.contextMenu(target);
+      fireEvent.click(
+        within(await screen.findByRole('menu')).getByRole('button', { name }),
+      );
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    };
+    await fromMenu(
+      within(await findFrame()).getByText('Orders with customers'),
+      CUBE_CONTAINER_LABEL.FOLD,
+    );
+    await fromMenu(await findFoldedBox(), CUBE_CONTAINER_LABEL.OPEN);
+    await fromMenu(
+      within(await findFrame()).getByText('Orders with customers'),
+      CUBE_CONTAINER_LABEL.REMOVE,
+    );
+    expect(editorState.document.meta.containers).toEqual([]);
+    expect(editorState.document.query.nodes).toHaveLength(4);
+  });
+
   test('Takes a step at its edge out of its container from its menu', async () => {
     const editorState = await render(slice([ORDERS_WITH_CUSTOMERS]));
     fireEvent.contextMenu(await TEST__findCanvasNode('relational101'));
