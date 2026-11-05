@@ -32,6 +32,10 @@ import {
   RUNNING_NODE_TITLE,
 } from '../../__lib__/LegendCubeHelpText.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  CUBE_TOUR_ANCHOR,
+  cubeTourAnchor,
+} from '../../__lib__/LegendCubeTour.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_FOLDED_INPUT_HANDLE_ID,
@@ -300,6 +304,10 @@ export const CubeCanvasFoldedContainer = observer(
             style={FOLDED_STYLE}
             data-testid={LEGEND_CUBE_TEST_ID.CANVAS_FOLDED_CONTAINER}
             aria-label={`Folded container: ${container.title}`}
+            // the tour's card on the output step points at the box that holds it
+            {...(isCapture
+              ? cubeTourAnchor(CUBE_TOUR_ANCHOR.RUNNING_STEP)
+              : {})}
             onDoubleClick={() => !editorState.readOnly && open()}
           >
             <LayerGroupIcon

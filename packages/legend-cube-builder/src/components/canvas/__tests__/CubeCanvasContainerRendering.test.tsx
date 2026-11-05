@@ -30,6 +30,10 @@ import {
 import { RUNNING_NODE_LABEL } from '../../../__lib__/LegendCubeHelpText.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
+  CUBE_TOUR_ANCHOR,
+  CUBE_TOUR_ANCHOR_ATTRIBUTE,
+} from '../../../__lib__/LegendCubeTour.js';
+import {
   TEST__findCanvasNode,
   TEST__getCanvasNodes,
 } from '../../../__test-utils__/CubeCanvasTestUtils.js';
@@ -125,8 +129,11 @@ describe('Containers on the canvas', () => {
     const box = await findFoldedBox();
     expect(box.textContent).toContain('Orders with customers');
     expect(box.textContent).toContain('2 steps, folded');
-    // filter101, the output step, is in it
+    // filter101, the output step, is in it: the tour's card on it points here
     expect(within(box).getByText(RUNNING_NODE_LABEL)).toBeDefined();
+    expect(box.getAttribute(CUBE_TOUR_ANCHOR_ATTRIBUTE)).toBe(
+      CUBE_TOUR_ANCHOR.RUNNING_STEP,
+    );
     await TEST__findCanvasNode('relational101');
     expect(drawnSteps()).toEqual(['relational101', 'relational102']);
   });
