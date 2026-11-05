@@ -298,6 +298,15 @@ Each iteration is one PR into cube-dev, demoed with a video.
    - Quick fixes: wrap in `toOne()` or `coalesce(…, 0)`; add parentheses around comparisons.
    - A warning while typing for the two precedence traps, from the parsed shape.
    - The database's PCT result and the "results differ by database" notes in the docs.
+   - **Built, as I2a** (finos/legend-studio#5783, the outline the mockup's users picked over blocks):
+     - The outline under the code of Filter by Expression and each Extend row: how Pure reads it, part by part,
+       each part's role and the kind of value it gives; pointing at a part highlights its code.
+     - The precedence warning and its one-click fix for arithmetic, `&&`/`||` or `!` before a comparison, found
+       from the engine's located parse, with no warning where the code already has the parentheses. Each fix is
+       parsed again by the engine in an engine-roundtrip test.
+     - "Can be empty" on a number in arithmetic, a Boolean in `&&`, or an argument every signature takes as one
+       value, with `->toOne()` and `->coalesce(0 / '' / false)` fixes. Comparisons are never flagged.
+     - The functions panel and the PCT results by database are I2b, a separate PR.
 3. **I3: the visual editor for Extend (MVP).**
    - Columns, values, operators and about 25 scalar functions, with typed slots.
    - Cube's own printer.

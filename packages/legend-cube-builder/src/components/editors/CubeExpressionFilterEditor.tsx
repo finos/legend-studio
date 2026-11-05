@@ -18,6 +18,7 @@ import { CompressIcon, ExpandIcon } from '@finos/legend-art';
 import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
 import {
+  type CodeEditorTextEditor,
   type CodeEditorTextInserter,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
@@ -26,8 +27,14 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import {
   EXPRESSION_FILTER_EDITOR_NOTES,
+  EXPRESSION_FILTER_PARENTHESES_HINT,
   getExactColumnTypeLabel,
 } from '../../__lib__/LegendCubeLabels.js';
+import {
+  type CubeCodeEdit,
+  type CubeCodeRange,
+  applyCubeCodeEdits,
+} from '../../graph-manager/CubeExpressionOutline.js';
 import {
   type CubeConditionProblem,
   CubeExpressionFilterDraft,
@@ -35,6 +42,12 @@ import {
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import {
+  CubeExpressionOutlineView,
+  CubePrecedenceWarning,
+  toCodeEditorEdits,
+  toCodeEditorRange,
+} from './CubeExpressionOutline.js';
 import {
   getCubeExpressionCompletionSource,
   getCubeFunctionHoverSource,
@@ -83,13 +96,17 @@ const CubeConditionStatus = observer(
       return null;
     }
     if (problem) {
+      // the precedence warning says it, with its fix
+      const hint =
+        problem.hint === EXPRESSION_FILTER_PARENTHESES_HINT &&
+        draft.precedenceTraps.length
+          ? undefined
+          : problem.hint;
       return (
         <div className="text-sm text-[var(--color-status-error)]">
           <div>{problem.message}</div>
-          {problem.hint && (
-            <div className="text-[var(--color-text-secondary)]">
-              {problem.hint}
-            </div>
+          {hint && (
+            <div className="text-[var(--color-text-secondary)]">{hint}</div>
           )}
         </div>
       );
@@ -123,9 +140,10 @@ const CubeConditionStatus = observer(
  * The Filter by Expression editor (PLAN §11.11): the condition's code in a
  * code editor, checked once typing pauses (F10 at once), its border green
  * when ready (user, 2026-10-16), with the engine's functions' completions
- * and help (EXPRESSION-EDITOR.md, round 1), and the input's columns, which
- * a click writes at the cursor, or at the end before the code is clicked
- * into.
+ * and help (EXPRESSION-EDITOR.md, round 1), its outline with a warning
+ * where Pure's precedence reads it other than likely meant, and fixes
+ * (round 2), and the input's columns, which a click writes at the cursor,
+ * or at the end before the code is clicked into.
  */
 export const CubeExpressionFilterEditor = observer(
   (props: CubeNodeEditorProps) => {
@@ -134,7 +152,11 @@ export const CubeExpressionFilterEditor = observer(
     const [schema] = inputSchemas as [Schema];
     const [expanded, setExpanded] = useState(false);
     const inserter = useRef<CodeEditorTextInserter | undefined>(undefined);
+    const textEditor = useRef<CodeEditorTextEditor | undefined>(undefined);
     const [hasCursor, setHasCursor] = useState(false);
+    // the part of the outline pointed at
+    const [pointed, setPointed] = useState<CubeCodeRange | undefined>();
+    const { outline } = draft;
     const catalogue = editorState.functionCatalogue;
     useEffect(() => editorState.loadFunctionCatalogue(), [editorState]);
     // typing goes on while the code is checked
@@ -146,6 +168,13 @@ export const CubeExpressionFilterEditor = observer(
       }
       const separator = /\s$/u.test(draft.code) ? '' : ' ';
       draft.setCode(`${draft.code}${separator}${text}`);
+    };
+    /** Writes a fix into the condition, as one step Undo takes back */
+    const edit = (edits: readonly CubeCodeEdit[]): void => {
+      setPointed(undefined);
+      if (!textEditor.current?.(toCodeEditorEdits(edits))) {
+        draft.setCode(applyCubeCodeEdits(draft.code, edits));
+      }
     };
     return (
       <div className="flex flex-col gap-2 text-base">
@@ -184,6 +213,8 @@ export const CubeExpressionFilterEditor = observer(
             hover={getCubeFunctionHoverSource(catalogue)}
             signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
             textInserterRef={inserter}
+            textEditorRef={textEditor}
+            highlightedRange={pointed ? toCodeEditorRange(pointed) : undefined}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
@@ -194,6 +225,22 @@ export const CubeExpressionFilterEditor = observer(
           />
         </div>
         <CubeConditionStatus draft={draft} />
+        <CubePrecedenceWarning
+          traps={draft.precedenceTraps}
+          disabled={disabled}
+          onEdit={edit}
+        />
+        {outline && (
+          <CubeExpressionOutlineView
+            outline={outline}
+            columns={schema.columns}
+            catalogue={catalogue}
+            name="the condition"
+            disabled={disabled}
+            onEdit={edit}
+            onPoint={setPointed}
+          />
+        )}
         <span>Input columns</span>
         <ul aria-label="Input columns" className="flex flex-wrap gap-1">
           {schema.columns.map((column) => (

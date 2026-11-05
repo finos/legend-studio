@@ -17,6 +17,7 @@
 import {
   EmitRole,
   type IR,
+  type JsonObject,
   lambda,
   type ModelContext,
   type Schema,
@@ -82,6 +83,7 @@ import {
   type NodeId,
 } from '../../../CubeEngine.js';
 import type { CubeFunctionCatalogue } from '../../../CubeFunctionCatalogue.js';
+import type { CubeExpressionOutline } from '../../../CubeExpressionOutline.js';
 import {
   V1_canonicalCubeDirectConnection,
   V1_checkCubeDirectConnection,
@@ -116,6 +118,7 @@ import {
 } from './V1_CubeExecutionResultReader.js';
 import { V1_readCubeExpression } from './V1_CubeExpression.js';
 import { V1_buildCubeFunctionCatalogue } from './V1_CubeFunctionCatalogue.js';
+import { V1_buildCubeExpressionOutline } from './V1_CubeExpressionOutline.js';
 import { V1_serializeCubeLambda } from './V1_CubeLambdaSerializer.js';
 import { V1_buildCubeModelOutline } from './V1_CubeModelOutlineBuilder.js';
 import { V1_buildCubeSchema } from './V1_CubeRelationTypeAdapter.js';
@@ -1437,6 +1440,13 @@ export class V1_LegendCubeEngine implements CubeEngine {
       }
       throw V1_toCubeEngineError(error, undefined, CubeEngineErrorKind.COMPILE);
     }
+  }
+
+  readExpressionOutline(
+    json: JsonObject,
+    code: string,
+  ): CubeExpressionOutline | undefined {
+    return V1_buildCubeExpressionOutline(json, code);
   }
 
   getFunctionCatalogue(): Promise<CubeFunctionCatalogue | undefined> {
