@@ -307,6 +307,16 @@ Each iteration is one PR into cube-dev, demoed with a video.
      - "Can be empty" on a number in arithmetic, a Boolean in `&&`, or an argument every signature takes as one
        value, with `->toOne()` and `->coalesce(0 / '' / false)` fixes. Comparisons are never flagged.
      - The functions panel and the PCT results by database are I2b, a separate PR.
+   - **Built, as I2b** (finos/legend-studio#5849):
+     - A functions panel in Filter by Expression and Extend, behind a toggle: the functions by category (by package),
+       found by name, each with how the engine's tests of it went on the cube's database first, then its signatures
+       and documentation; Insert writes a call at the cursor as a snippet, `->name(…)` after a value.
+     - The PCT results are read per definition (`string::contains` passes where `collection::contains` fails), the
+       relational adapters only, and shown as information: "On H2: the engine's tests of it pass 0 of 1" (`year`,
+       which runs). Nothing is said where the catalogue has no tests on the database (a local engine has none on
+       Snowflake; the internal one has) or of a definition with none; the panel says the first once.
+     - Cube's own `substring` and `indexOf` are documented with how their results differ by database (§2.3), added
+       beside the engine's list `indexOf`.
 3. **I3: the visual editor for Extend (MVP).**
    - Columns, values, operators and about 25 scalar functions, with typed slots.
    - Cube's own printer.
