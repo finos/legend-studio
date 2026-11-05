@@ -126,11 +126,14 @@ export const buildCubeCanvasNodes = (
   });
 
 /**
- * A container's node on the canvas, under an id no step's is: steps are
- * named by their type, e.g. `group101` for a Group
+ * A container's node on the canvas, under an id no step's is (steps are
+ * named by their type, e.g. `group101` for a Group): its frame's, or its
+ * folded box's, another node, so folding it changes no node's type
  */
-export const getCubeCanvasContainerNodeId = (containerId: string): string =>
-  `container:${containerId}`;
+export const getCubeCanvasContainerNodeId = (
+  containerId: string,
+  folded: boolean,
+): string => `${folded ? 'folded-container' : 'container'}:${containerId}`;
 
 /**
  * The containers' frames, to go first, behind the steps, and the folded
@@ -140,7 +143,10 @@ export const buildCubeCanvasContainerNodes = (
   places: readonly CubeCanvasContainerPlace[],
 ): CubeCanvasContainerNode[] =>
   places.map((place) => ({
-    id: getCubeCanvasContainerNodeId(place.container.id),
+    id: getCubeCanvasContainerNodeId(
+      place.container.id,
+      place.container.folded,
+    ),
     type: place.container.folded
       ? CUBE_CANVAS_FOLDED_CONTAINER_TYPE
       : CUBE_CANVAS_CONTAINER_TYPE,
@@ -191,7 +197,7 @@ export const buildCubeCanvasEdges = (
       .flatMap((place) =>
         place.steps.map((id) => [
           id,
-          getCubeCanvasContainerNodeId(place.container.id),
+          getCubeCanvasContainerNodeId(place.container.id, true),
         ]),
       ),
   );

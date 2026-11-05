@@ -189,7 +189,13 @@ export const CubeContainerContextMenu = observer(
         </MenuContentItem>
         <MenuContentItem
           disabled={readOnly || !container}
-          onClick={() => editorState.startRenamingContainer(containerId)}
+          // once the menu has closed, so its list doesn't take the focus from
+          // the title back
+          onClick={() =>
+            window.setTimeout(() =>
+              editorState.startRenamingContainer(containerId),
+            )
+          }
         >
           {CUBE_CONTAINER_LABEL.RENAME}
         </MenuContentItem>

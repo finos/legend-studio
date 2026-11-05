@@ -274,7 +274,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
         const folded = editorState.shownContainers.find(
           ({ container }) =>
             container.folded &&
-            getCubeCanvasContainerNodeId(container.id) === nodeId,
+            getCubeCanvasContainerNodeId(container.id, true) === nodeId,
         );
         if (folded && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
