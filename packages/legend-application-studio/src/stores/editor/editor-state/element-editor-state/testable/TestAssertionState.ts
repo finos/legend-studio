@@ -57,7 +57,10 @@ import {
 } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import type { TestableTestEditorState } from './TestableEditorState.js';
 import { RelationElementState } from '../data/EmbeddedDataState.js';
-import { isTestPassing } from '../../../utils/TestableUtils.js';
+import {
+  generateExpectedForAssertion,
+  isTestPassing,
+} from '../../../utils/TestableUtils.js';
 import { equalTo_setExpected } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
 
 export enum TEST_ASSERTION_TAB {
@@ -306,12 +309,7 @@ export class EqualToJsonAssertionState extends TestAssertionState {
   }
 
   generateExpected(status: AssertFail): boolean {
-    if (status instanceof EqualToJsonAssertFail) {
-      const expected = status.actual;
-      this.setExpectedValue(expected);
-      return true;
-    }
-    return false;
+    return generateExpectedForAssertion(this.assertion, status);
   }
   generateBare(): TestAssertion {
     const bareAssertion = new EqualToJson();

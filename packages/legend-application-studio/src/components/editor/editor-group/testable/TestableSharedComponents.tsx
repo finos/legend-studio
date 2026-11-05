@@ -16,9 +16,11 @@
 
 import {
   BlankPanelPlaceholder,
+  CaretDownIcon,
   clsx,
   CompareIcon,
   ContextMenu,
+  ControlledDropdownMenu,
   CustomSelectorInput,
   Dialog,
   MenuContent,
@@ -80,13 +82,20 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
-import type { TestParamContentType } from '../../../../stores/editor/utils/TestableUtils.js';
+import type {
+  RegeneratableTestableState,
+  TestParamContentType,
+} from '../../../../stores/editor/utils/TestableUtils.js';
 import { RelationElementEditor } from '../data-editor/RelationElementsDataEditor.js';
 import {
   BasicValueSpecificationEditor,
   buildDefaultInstanceValue,
 } from '@finos/legend-query-builder';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  type AlertService,
+  ActionAlertActionType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { DataProductTestState } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
 import type { IngestTestState } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestTestableState.js';
 
@@ -979,18 +988,55 @@ export const TestAssertionItem = observer(
   },
 );
 
+export const confirmRegenerateAllExpectedResults = (
+  alertService: AlertService,
+  regeneratableTestableState: RegeneratableTestableState,
+): void => {
+  alertService.setActionAlertInfo({
+    message:
+      'This will overwrite the expected result of every currently-failing, generatable assertion across all test suites of this element with its actual result. Review the resulting diff before committing. Do you want to proceed?',
+    actions: [
+      {
+        label: 'Regenerate All',
+        handler: (): void => {
+          regeneratableTestableState.regenerateAllExpectedResults();
+        },
+        type: ActionAlertActionType.PROCEED,
+      },
+      {
+        label: 'Cancel',
+      },
+    ],
+  });
+};
+
 export const TestAssertionEditor = observer(
   (props: { testAssertionState: TestAssertionEditorState }) => {
     const { testAssertionState } = props;
+    const applicationStore = useApplicationStore();
     const selectedTab = testAssertionState.selectedTab;
     const isReadOnly = testAssertionState.testState.isReadOnly;
     const isLakehouseTest =
       testAssertionState.testState.testable instanceof DataProduct ||
       testAssertionState.testState.testable instanceof IngestDefinition;
+    const regeneratableTestableState =
+      testAssertionState.testState.regeneratableTestableState;
+    const isRegeneratingAll =
+      regeneratableTestableState?.isRegeneratingExpectedResultsState
+        .isInProgress ?? false;
     const isDisabled =
       isReadOnly ||
       !testAssertionState.assertionState.supportsGeneratingAssertion ||
-      testAssertionState.generatingExpectedAction.isInProgress;
+      testAssertionState.generatingExpectedAction.isInProgress ||
+      isRegeneratingAll;
+    const regenerateAllExpectedResults = (): void => {
+      if (regeneratableTestableState) {
+        confirmRegenerateAllExpectedResults(
+          applicationStore.alertService,
+          regeneratableTestableState,
+        );
+      }
+    };
     const changeTab = (val: TEST_ASSERTION_TAB): void =>
       testAssertionState.setSelectedTab(val);
     const renderContent = (state: TestAssertionState): React.ReactNode => {
@@ -1033,6 +1079,15 @@ export const TestAssertionEditor = observer(
     const generate = (): void => {
       testAssertionState.generateExpected();
     };
+    const renderGenerateButtonLabel = (
+      iconClassName: string,
+      titleClassName: string,
+    ): React.ReactNode => (
+      <>
+        <RefreshIcon className={iconClassName} />
+        <div className={titleClassName}>Generate</div>
+      </>
+    );
 
     const isRunning = testAssertionState.generatingExpectedAction.isInProgress;
     return (
@@ -1055,20 +1110,59 @@ export const TestAssertionEditor = observer(
           </div>
           {!isLakehouseTest && (
             <div className="testable-test-assertion-editor__header__actions">
-              <button
-                className="panel__header__action service-execution-editor__test-data__generate-btn"
-                onClick={generate}
-                title="Generate expected result if possible"
-                disabled={isDisabled}
-                tabIndex={-1}
-              >
-                <div className="service-execution-editor__test-data__generate-btn__label">
-                  <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
-                  <div className="service-execution-editor__test-data__generate-btn__label__title">
-                    Generate
-                  </div>
+              {regeneratableTestableState ? (
+                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                  <button
+                    className="btn__dropdown-combo__label service-execution-editor__test-data__generate-btn"
+                    onClick={generate}
+                    title="Generate the expected result for this assertion only, from its actual result"
+                    disabled={isDisabled}
+                    tabIndex={-1}
+                  >
+                    {renderGenerateButtonLabel(
+                      'btn__dropdown-combo__label__icon',
+                      'btn__dropdown-combo__label__title',
+                    )}
+                  </button>
+                  <ControlledDropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={isReadOnly || isRegeneratingAll}
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={regenerateAllExpectedResults}
+                          disabled={isRegeneratingAll}
+                          title="Run every test across every suite of this element and overwrite expected results for all currently-failing, generatable assertions"
+                        >
+                          Regenerate All Expected Results
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </ControlledDropdownMenu>
                 </div>
-              </button>
+              ) : (
+                <button
+                  className="panel__header__action service-execution-editor__test-data__generate-btn"
+                  onClick={generate}
+                  title="Generate expected result if possible"
+                  disabled={isDisabled}
+                  tabIndex={-1}
+                >
+                  <div className="service-execution-editor__test-data__generate-btn__label">
+                    {renderGenerateButtonLabel(
+                      'service-execution-editor__test-data__generate-btn__label__icon',
+                      'service-execution-editor__test-data__generate-btn__label__title',
+                    )}
+                  </div>
+                </button>
+              )}
             </div>
           )}
         </div>

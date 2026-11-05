@@ -70,6 +70,10 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from 
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { pureExecution_setFunction } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { RegenerateTestsWarning } from '../testable/RegenerateTestsWarning.js';
+
+const QUERY_CHANGED_WARNING_TEXT =
+  'This service has changed. Click to regenerate test suite assertions.';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -214,6 +218,10 @@ export const ServiceExecutionQueryEditor = observer(
         executionState.setOpeningQueryEditor(false);
       });
 
+    const testableState = executionState.serviceEditorState.testableState;
+    const showQueryChangedWarning =
+      !isReadOnly && testableState.isQueryChangedSinceSaved;
+
     const importQuery = (): void =>
       queryState.queryLoaderState.setQueryLoaderDialogOpen(true);
 
@@ -312,6 +320,12 @@ export const ServiceExecutionQueryEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
+            {showQueryChangedWarning && (
+              <RegenerateTestsWarning
+                text={QUERY_CHANGED_WARNING_TEXT}
+                testableState={testableState}
+              />
+            )}
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
                 className="btn__dropdown-combo__label"

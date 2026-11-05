@@ -69,6 +69,7 @@ import {
 import {
   EmbeddedDataCreatorFromEmbeddedData,
   createBareExternalFormat,
+  type RegeneratableTestableState,
 } from '../../../../utils/TestableUtils.js';
 import {
   TESTABLE_TEST_TAB,
@@ -84,7 +85,13 @@ import {
   createBareMappingTest,
   createGraphFetchQueryFromMappingAnalysis,
   generateStoreTestDataFromSetImpl,
+  getSavedMappingSuiteQueryHashes,
+  hasMappingSuiteQueryChanged,
+  hasMappingTestDataChanged,
   isRelationalMappingTestSuite,
+  mappingHasTests,
+  snapshotMappingSuiteQueryHashes,
+  snapshotMappingTestDataHashes,
 } from './MappingTestingHelper.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
 import {
@@ -230,6 +237,10 @@ export class MappingTestState extends TestableTestEditorState {
 
   override get testablePath(): string {
     return this.mappingTestableState.mapping.path;
+  }
+
+  override get regeneratableTestableState(): RegeneratableTestableState {
+    return this.mappingTestableState;
   }
 
   constructor(
@@ -581,6 +592,8 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
     | undefined;
 
   createSuiteState: CreateSuiteState | undefined;
+  lastRegeneratedQueryHashes = new Map<MappingTestSuite, string>();
+  testDataHashSnapshot: Map<MappingTest, string>;
 
   declare selectedTestSuite: MappingTestSuiteState | undefined;
   declare runningSuite: MappingTestSuite | undefined;
@@ -603,6 +616,10 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
       renameTestableComponent: observable,
       testableResults: observable,
       createSuiteState: observable,
+      lastRegeneratedQueryHashes: observable.ref,
+      testDataHashSnapshot: observable.ref,
+      isQueryChangedSinceSaved: computed,
+      isTestDataChanged: computed,
       suiteCount: computed,
       changeSuite: action,
       closeCreateModal: action,
@@ -615,13 +632,57 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
       runTestable: flow,
       runSuite: flow,
       runAllFailingSuites: flow,
+      setRegeneratedHashes: action,
+      regenerateAllExpectedResults: flow,
     });
     this.mappingEditorState = mappingEditorState;
+    this.testDataHashSnapshot = snapshotMappingTestDataHashes(
+      mappingEditorState.mapping,
+    );
     this.init();
   }
 
   get mapping(): Mapping {
     return this.mappingEditorState.mapping;
+  }
+
+  get isQueryChangedSinceSaved(): boolean {
+    return (
+      mappingHasTests(this.mapping) &&
+      hasMappingSuiteQueryChanged(
+        this.mapping,
+        getSavedMappingSuiteQueryHashes(
+          this.editorStore.changeDetectionState
+            .workspaceLocalLatestRevisionState.entities,
+          this.mapping.path,
+        ),
+        this.lastRegeneratedQueryHashes,
+      )
+    );
+  }
+
+  get isTestDataChanged(): boolean {
+    return (
+      mappingHasTests(this.mapping) &&
+      hasMappingTestDataChanged(this.mapping, this.testDataHashSnapshot)
+    );
+  }
+
+  setRegeneratedHashes(
+    queryHashes: Map<MappingTestSuite, string>,
+    testDataHashes: Map<MappingTest, string>,
+  ): void {
+    this.lastRegeneratedQueryHashes = queryHashes;
+    this.testDataHashSnapshot = testDataHashes;
+  }
+
+  override *regenerateAllExpectedResults(): GeneratorFn<void> {
+    const queryHashes = snapshotMappingSuiteQueryHashes(this.mapping);
+    const testDataHashes = snapshotMappingTestDataHashes(this.mapping);
+    yield flowResult(super.regenerateAllExpectedResults());
+    if (this.isRegeneratingExpectedResultsState.hasSucceeded) {
+      this.setRegeneratedHashes(queryHashes, testDataHashes);
+    }
   }
 
   override init(): void {

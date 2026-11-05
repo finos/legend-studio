@@ -36,7 +36,14 @@ import {
   type Binding,
   type RawLambda,
   type Type,
+  type Testable,
+  type GraphManagerState,
+  type UniqueTestId,
   ExternalFormatData,
+  AssertFail,
+  EqualToJsonAssertFail,
+  MultiExecutionServiceTestResult,
+  RunTestsTestableInput,
   RelationalCSVData,
   ConnectionTestData,
   EqualToJson,
@@ -64,6 +71,9 @@ import {
   RelationRowTestData,
 } from '@finos/legend-graph';
 import {
+  type ActionState,
+  type GeneratorFn,
+  assertErrorThrown,
   assertTrue,
   ContentType,
   generateEnumerableNameFromToken,
@@ -77,10 +87,15 @@ import {
 } from '@finos/legend-shared';
 import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../EditorStore.js';
+import { externalFormatData_setData } from '../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { createMockDataForMappingElementSource } from './MockDataUtils.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '@finos/legend-query-builder';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  type TESTABLE_KIND,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export const DEFAULT_TEST_ASSERTION_ID = 'assertion_1';
 export const DEFAULT_TEST_ID = 'test_1';
@@ -396,6 +411,141 @@ export const TEMPORARY__createRelationalDataFromCSV = (
 export const isTestPassing = (testResult: TestResult): boolean =>
   testResult instanceof TestExecuted &&
   testResult.testExecutionStatus === TestExecutionStatus.PASS;
+
+// generate expected result
+export const generateExpectedForAssertion = (
+  assertion: TestAssertion,
+  status: AssertFail,
+): boolean => {
+  if (
+    assertion instanceof EqualToJson &&
+    status instanceof EqualToJsonAssertFail
+  ) {
+    externalFormatData_setData(assertion.expected, status.actual);
+    return true;
+  }
+  return false;
+};
+
+export interface RegenerateExpectedResultsSummary {
+  regenerated: number;
+  unchanged: number;
+  skipped: number;
+  errored: number;
+}
+
+export interface RegeneratableTestableState {
+  isRegeneratingExpectedResultsState: ActionState;
+  regenerateAllExpectedResults(): GeneratorFn<void>;
+}
+
+export const regenerateExpectedResultsForTests = async (
+  testable: Testable,
+  unitTestIds: UniqueTestId[],
+  graphManagerState: GraphManagerState,
+): Promise<RegenerateExpectedResultsSummary> => {
+  const summary: RegenerateExpectedResultsSummary = {
+    regenerated: 0,
+    unchanged: 0,
+    skipped: 0,
+    errored: 0,
+  };
+  const input = new RunTestsTestableInput(testable);
+  input.unitTestIds = unitTestIds;
+  const results = await graphManagerState.graphManager.runTests(
+    [input],
+    graphManagerState.graph,
+  );
+  const processExecuted = (executed: TestExecuted): void => {
+    if (isTestPassing(executed)) {
+      summary.unchanged += executed.atomicTest.assertions.length;
+      return;
+    }
+    executed.assertStatuses.forEach((status) => {
+      if (status instanceof AssertFail) {
+        if (generateExpectedForAssertion(status.assertion, status)) {
+          summary.regenerated++;
+        } else {
+          summary.skipped++;
+        }
+      } else {
+        summary.unchanged++;
+      }
+    });
+  };
+  results.forEach((result) => {
+    if (result instanceof MultiExecutionServiceTestResult) {
+      Array.from(result.keyIndexedTestResults.values()).forEach(
+        (keyedResult) => {
+          if (keyedResult instanceof TestExecuted) {
+            processExecuted(keyedResult);
+          } else {
+            summary.errored += keyedResult.atomicTest.assertions.length;
+          }
+        },
+      );
+    } else if (result instanceof TestExecuted) {
+      processExecuted(result);
+    } else {
+      summary.errored += result.atomicTest.assertions.length;
+    }
+  });
+  return summary;
+};
+
+export function* regenerateAllExpectedResultsForTestable(
+  editorStore: EditorStore,
+  isRegeneratingExpectedResultsState: ActionState,
+  testable: Testable,
+  unitTestIds: UniqueTestId[],
+  telemetryData: {
+    testableKind: TESTABLE_KIND;
+    testablePath: string;
+    testCount: number;
+  },
+  onSuccess: () => void,
+): GeneratorFn<void> {
+  const startTime = Date.now();
+  LegendStudioTelemetryHelper.logEvent_TestableRegenerateExpectedResultsLaunched(
+    editorStore.applicationStore.telemetryService,
+    editorStore.editorMode.getSourceInfo(),
+    telemetryData,
+  );
+  try {
+    isRegeneratingExpectedResultsState.inProgress();
+    const summary = (yield regenerateExpectedResultsForTests(
+      testable,
+      unitTestIds,
+      editorStore.graphManagerState,
+    )) as RegenerateExpectedResultsSummary;
+    isRegeneratingExpectedResultsState.complete();
+    onSuccess();
+    editorStore.applicationStore.notificationService.notifySuccess(
+      `Regenerated expected results for ${summary.regenerated} assertion(s). ${summary.unchanged} already passing, ${summary.skipped} skipped (unsupported assertion type), ${summary.errored} unable to evaluate (test errored).`,
+    );
+    LegendStudioTelemetryHelper.logEvent_TestableRegenerateExpectedResultsSucceeded(
+      editorStore.applicationStore.telemetryService,
+      editorStore.editorMode.getSourceInfo(),
+      {
+        ...telemetryData,
+        durationMs: Date.now() - startTime,
+        regeneratedCount: summary.regenerated,
+        unchangedCount: summary.unchanged,
+        skippedCount: summary.skipped,
+        erroredCount: summary.errored,
+      },
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    editorStore.applicationStore.notificationService.notifyError(error);
+    isRegeneratingExpectedResultsState.fail();
+    LegendStudioTelemetryHelper.logEvent_TestableRegenerateExpectedResultsFailure(
+      editorStore.applicationStore.telemetryService,
+      editorStore.editorMode.getSourceInfo(),
+      { ...telemetryData, errorMessage: error.message },
+    );
+  }
+}
 
 // external format param type
 export interface TestParamContentType {

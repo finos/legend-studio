@@ -30,6 +30,7 @@ import {
   TESTABLE_TEST_TAB,
   TestableTestEditorState,
 } from '../../testable/TestableEditorState.js';
+import type { RegeneratableTestableState } from '../../../../utils/TestableUtils.js';
 import { TESTABLE_KIND } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import {
@@ -437,6 +438,11 @@ export class ServiceTestState extends TestableTestEditorState {
   override get testablePath(): string {
     return this.testable.path;
   }
+
+  override get regeneratableTestableState(): RegeneratableTestableState {
+    return this.suiteState.testableState;
+  }
+
   constructor(suiteState: ServiceTestSuiteState, test: ServiceTest) {
     super(
       suiteState.testableState.serviceEditorState.service,

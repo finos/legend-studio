@@ -100,6 +100,7 @@ import {
   SharedDataElementModal,
   TestAssertionEditor,
 } from '../testable/TestableSharedComponents.js';
+import { RegenerateTestsWarning } from '../testable/RegenerateTestsWarning.js';
 import { EmbeddedDataEditor } from '../data-editor/EmbeddedDataEditor.js';
 import {
   TESTABLE_RESULT,
@@ -618,6 +619,20 @@ const CreateStoreTestDataModal = observer(
   },
 );
 
+const getRegenerateTestsWarningText = (
+  queryChanged: boolean,
+  testDataChanged: boolean,
+): string | undefined => {
+  if (queryChanged && testDataChanged) {
+    return 'Query and test data have changed. Click to regenerate test suite assertions.';
+  } else if (queryChanged) {
+    return 'Query has changed. Click to regenerate test suite assertions.';
+  } else if (testDataChanged) {
+    return 'Test data has changed. Click to regenerate test suite assertions.';
+  }
+  return undefined;
+};
+
 const MappingTestSuiteQueryEditor = observer(
   (props: {
     testSuiteState: MappingTestSuiteState;
@@ -629,6 +644,12 @@ const MappingTestSuiteQueryEditor = observer(
     const mapping = mappingTestableState.mapping;
     const editorStore = mappingTestableState.mappingEditorState.editorStore;
     const applicationStore = useApplicationStore();
+    const regenerateWarningText = isReadOnly
+      ? undefined
+      : getRegenerateTestsWarningText(
+          mappingTestableState.isQueryChangedSinceSaved,
+          mappingTestableState.isTestDataChanged,
+        );
 
     // actions
     const editWithQueryBuilder = (openInTextMode = false): (() => void) =>
@@ -770,6 +791,12 @@ const MappingTestSuiteQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
+            {regenerateWarningText && (
+              <RegenerateTestsWarning
+                text={regenerateWarningText}
+                testableState={mappingTestableState}
+              />
+            )}
             <div className="btn__dropdown-combo">
               <button
                 className="btn__dropdown-combo__label"

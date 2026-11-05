@@ -541,6 +541,12 @@ export type TestableRunCommonData = {
   testCount: number;
 };
 
+export type TestableRegenerateExpectedResultsCommonData = {
+  testableKind: TESTABLE_KIND;
+  testablePath: string;
+  testCount: number;
+};
+
 /**
  * Resolves the {@link TESTABLE_KIND} label for a testable element instance.
  * Falls back to `OTHER` so telemetry never blocks on an unknown subtype.
@@ -1966,6 +1972,48 @@ export class LegendStudioTelemetryHelper {
       sourceInfo,
       ...data,
     });
+  }
+
+  // Unified testable bulk "regenerate all expected results"
+  static logEvent_TestableRegenerateExpectedResultsLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: TestableRegenerateExpectedResultsCommonData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.TESTABLE_REGENERATE_EXPECTED_RESULTS__LAUNCH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_TestableRegenerateExpectedResultsSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: TestableRegenerateExpectedResultsCommonData & {
+      durationMs: number;
+      regeneratedCount: number;
+      unchangedCount: number;
+      skippedCount: number;
+      erroredCount: number;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.TESTABLE_REGENERATE_EXPECTED_RESULTS__SUCCESS,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_TestableRegenerateExpectedResultsFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: TestableRegenerateExpectedResultsCommonData & {
+      errorMessage: string;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.TESTABLE_REGENERATE_EXPECTED_RESULTS__FAILURE,
+      { sourceInfo, ...data },
+    );
   }
 
   // Global test runner (sidebar) — cross-testable runs
