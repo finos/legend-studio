@@ -216,9 +216,9 @@ export type CodeEditorTextInserter = (
 /** A snippet's text with its placeholders written as their default text */
 const snippetAsText = (snippet: string): string =>
   snippet
-    .replace(/\$\{\d+:((?:[^}\\]|\\.)*)\}/gu, '$1')
+    .replace(/\$\{\d+:(?<text>(?:[^}\\]|\\.)*)\}/gu, '$<text>')
     .replace(/\$\{?\d+\}?/gu, '')
-    .replace(/\\([$}\\])/gu, '$1');
+    .replace(/\\(?<escaped>[$}\\])/gu, '$<escaped>');
 
 /** A range of an editor's text: lines and columns from 1, its end column excluded, as Monaco counts them */
 export interface CodeEditorRange {

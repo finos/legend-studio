@@ -165,7 +165,9 @@ export const getCubeFunctionCallSnippet = (
       const placeholder = asText
         ? (name ?? parameter.type)
         : `\${${index + 1}:${snippetText(name ?? parameter.type)}}`;
-      return parameter.type === 'String' ? `'${placeholder}'` : placeholder;
+      // a text written as one, but the value a call written whole is of
+      const isText = parameter.type === 'String' && (isArrow || index > 0);
+      return isText ? `'${placeholder}'` : placeholder;
     })
     .join(', ')})`;
 };

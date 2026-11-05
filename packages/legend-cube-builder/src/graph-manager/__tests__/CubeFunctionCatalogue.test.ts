@@ -18,9 +18,12 @@ import { describe, expect, test } from '@jest/globals';
 import { TypeFamily } from '@finos/legend-cube';
 import { TEST__functionCatalogue } from '../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
 import {
+  CubeFunctionCategory,
+  getCubeFunctionCategory,
   parseCubeFunctionSignature,
   readCubeFunctionParameterNames,
 } from '../CubeFunctionCatalogue.js';
+import { withCubeOwnFunctions } from '../CubeOwnFunctions.js';
 
 describe("Reading a signature as the engine's documentation writes it", () => {
   test('Reads its name, its parameters and what it returns', () => {
@@ -139,5 +142,61 @@ describe('The functions a value can be passed to', () => {
       'get',
     ]);
     expect(namesFor(undefined)).toEqual(['coalesce', 'toOne', 'isEmpty']);
+  });
+});
+
+describe('The functions to browse (EXPRESSION-EDITOR.md, round 2b)', () => {
+  test('Lists the functions of values that give one value, by name: not operators, lambdas or relations', () => {
+    const browsed = TEST__functionCatalogue().browse();
+    expect(browsed.map((offer) => offer.function.name)).toEqual([
+      'coalesce',
+      'contains',
+      'get',
+      'isEmpty',
+      'lpad',
+      'round',
+      'sum',
+      'toOne',
+      'toUpper',
+    ]);
+    expect(
+      browsed.map((offer) =>
+        getCubeFunctionCategory(offer.signatures[0] as never),
+      ),
+    ).toEqual([
+      CubeFunctionCategory.EMPTY_VALUES,
+      CubeFunctionCategory.TEXT,
+      CubeFunctionCategory.JSON,
+      CubeFunctionCategory.LISTS,
+      CubeFunctionCategory.TEXT,
+      CubeFunctionCategory.NUMBERS,
+      CubeFunctionCategory.NUMBERS,
+      CubeFunctionCategory.EMPTY_VALUES,
+      CubeFunctionCategory.TEXT,
+    ]);
+    // both contains: of text, and of a list
+    expect(
+      browsed.find((offer) => offer.function.name === 'contains')?.signatures,
+    ).toHaveLength(2);
+  });
+
+  test("Adds Cube's own substring and indexOf, documented with how their results differ by database, but where the engine has them", () => {
+    const catalogue = withCubeOwnFunctions(TEST__functionCatalogue());
+    const [substring] = catalogue.get('substring')?.signatures ?? [];
+    expect(substring?.text).toBe(
+      'substring(source: String[1], start: Integer[1], end: Integer[1]): String[1]',
+    );
+    expect(substring?.documentation).toContain(
+      'On DuckDB, positions count from 1',
+    );
+    expect(catalogue.get('indexOf')?.signatures[0]?.documentation).toContain(
+      'On H2 and DuckDB, positions count from 1, and 0 means it doesn’t appear',
+    );
+    expect(catalogue.browse().map((offer) => offer.function.name)).toContain(
+      'substring',
+    );
+    // an engine's own is kept
+    const engines = withCubeOwnFunctions(catalogue);
+    expect(engines.get('substring')).toBe(catalogue.get('substring'));
   });
 });
