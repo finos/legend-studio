@@ -136,6 +136,14 @@ export const CubeFunctionsPanel = (props: {
               </button>
             ))}
           </div>
+          {databaseType !== undefined &&
+            !catalogue.testedDatabases.has(databaseType) && (
+              <div className="text-xs text-[var(--color-text-muted)]">
+                {CUBE_FUNCTIONS_PANEL_LABEL.UNTESTED_DATABASE(
+                  getCubeDatabaseLabel(databaseType),
+                )}
+              </div>
+            )}
           <ul
             aria-label={CUBE_FUNCTIONS_PANEL_LABEL.LIST}
             className="flex max-h-40 flex-col overflow-y-auto"

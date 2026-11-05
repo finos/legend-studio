@@ -641,6 +641,8 @@ export const CUBE_FUNCTIONS_PANEL_LABEL = Object.freeze({
   NONE: 'No function of that name',
   DETAIL: (name: string): string => `About ${name}`,
   ON_DATABASE: (database: string): string => `on ${database}`,
+  UNTESTED_DATABASE: (database: string): string =>
+    `This engine's catalogue has no tests on ${database}, so the functions' help says nothing of how they do there.`,
   INSERT: 'Insert',
   INSERT_TITLE: (target: string): string =>
     `Write a call of it at the cursor of ${target}: after a value, as ->name(…)`,

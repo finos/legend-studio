@@ -50,23 +50,27 @@ export interface CubeFunctionHelpContext {
 /**
  * How the engine's tests of a definition went on the database, in Markdown:
  * how many pass, the failing ones listed; that the engine has no tests of
- * it there, or none on that database at all, as a local engine has none on
- * Snowflake; nothing when the database isn't known
+ * it there, when it has some elsewhere. Nothing when the database isn't
+ * known, when the definition has no tests at all (Cube's own), or when the
+ * catalogue has none on that database, as a local engine has none on
+ * Snowflake: the functions panel says that once
  */
 export const getCubeFunctionTestLine = (
   testResults: CubeFunctionTestResults | undefined,
   context: CubeFunctionHelpContext,
 ): string | undefined => {
   const { databaseType, testedDatabases } = context;
-  if (databaseType === undefined) {
+  if (
+    databaseType === undefined ||
+    testResults === undefined ||
+    !testedDatabases?.has(databaseType)
+  ) {
     return undefined;
   }
   const database = getCubeDatabaseLabel(databaseType);
-  const result = testResults?.get(databaseType);
+  const result = testResults.get(databaseType);
   if (!result) {
-    return testedDatabases?.has(databaseType)
-      ? `**On ${database}:** the engine has no tests of it.`
-      : `**On ${database}:** this engine's catalogue has no tests on ${database}.`;
+    return `**On ${database}:** the engine has no tests of it.`;
   }
   const line = `**On ${database}:** the engine's tests of it pass ${result.passed} of ${result.total}.`;
   if (!result.failures.length) {

@@ -425,6 +425,15 @@ describe("How the engine's tests went on the cube's database (EXPRESSION-EDITOR.
     expect(help?.signatures[0]?.documentation).toContain(
       "**On H2:** the engine's tests of it pass 2 of 2.",
     );
+    // on a database the catalogue has no tests on, as Snowflake: nothing said
+    expect(
+      getCubeExpressionCompletions(
+        'x | $x.CITY->con',
+        COLUMNS,
+        CATALOGUE,
+        'Snowflake',
+      ).find((each) => each.label === 'contains')?.documentation,
+    ).toBe('Whether `source` contains `val` anywhere within it.');
     // the list itself is the same: nothing hidden or sorted by a test
     expect(
       getCubeExpressionCompletions(

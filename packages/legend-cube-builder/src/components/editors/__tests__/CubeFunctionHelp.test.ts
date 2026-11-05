@@ -54,22 +54,28 @@ describe("How the engine's tests of a function went on the cube's database", () 
     );
   });
 
-  test("Says when the engine has no tests of it there, or none on that database at all, and nothing when the database isn't known", () => {
+  test("Says when the engine has no tests of it there; nothing when it has none on that database at all, none of the definition, or the database isn't known", () => {
     expect(
       getCubeFunctionTestLine(TEST__h2Results(1, 1), {
         databaseType: 'DuckDB',
         testedDatabases: TESTED,
       }),
     ).toBe('**On DuckDB:** the engine has no tests of it.');
-    // a local engine has none on Snowflake: cloud builds alone run them
+    // a local engine has none on Snowflake (cloud builds alone run them):
+    // the panel says so once, the help nothing
     expect(
       getCubeFunctionTestLine(TEST__h2Results(1, 1), {
         databaseType: 'Snowflake',
         testedDatabases: TESTED,
       }),
-    ).toBe(
-      "**On Snowflake:** this engine's catalogue has no tests on Snowflake.",
-    );
+    ).toBeUndefined();
+    // a definition with no tests at all, as Cube's own
+    expect(
+      getCubeFunctionTestLine(undefined, {
+        databaseType: 'H2',
+        testedDatabases: TESTED,
+      }),
+    ).toBeUndefined();
     expect(
       getCubeFunctionTestLine(TEST__h2Results(1, 1), {
         testedDatabases: TESTED,
