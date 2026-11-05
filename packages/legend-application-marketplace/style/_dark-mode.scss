@@ -2466,6 +2466,87 @@
     }
   }
 
+  .marketplace-legend-service-tree {
+    &__toolbar-btn {
+      border-color: var(--color-dark-theme-border-light);
+      color: var(--color-dark-theme-text-muted);
+
+      &:hover {
+        border-color: var(--color-dark-theme-blue-primary);
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__row {
+      border-bottom-color: var(--color-dark-theme-border);
+
+      &:hover {
+        background: var(--color-dark-theme-bg-elevated);
+      }
+
+      &--group {
+        background: var(--color-dark-theme-bg-secondary);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-elevated);
+        }
+      }
+    }
+
+    &__toggle,
+    &__leaf {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__expander {
+      border-color: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-blue-primary);
+    }
+
+    &__toggle:hover .marketplace-legend-service-tree__expander {
+      background: var(--color-dark-theme-blue-primary);
+      color: var(--color-dark-theme-text-black);
+    }
+
+    &__count {
+      background: var(--color-dark-theme-bg-elevated);
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__action-btn {
+      color: var(--color-dark-theme-text-muted);
+
+      &--favorite:hover,
+      &--active {
+        color: var(--color-yellow-200);
+      }
+
+      &--active:hover {
+        color: var(--color-yellow-100);
+      }
+
+      &--open-group:hover,
+      &--details:hover,
+      &--launch:hover {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+  }
+
+  .marketplace-data-apis__scope-bar {
+    border-color: var(--color-dark-theme-border-light);
+    background: var(--color-dark-theme-bg-secondary);
+    color: var(--color-dark-theme-text-secondary);
+  }
+
+  .marketplace-data-apis__scope-bar-btn {
+    color: var(--color-dark-theme-blue-primary);
+  }
+
   .marketplace-legend-service-list-row {
     &__name {
       color: var(--color-dark-theme-text-primary);

@@ -20,9 +20,10 @@ import {
   useLegendMarketplaceDataAPIsStore,
   withLegendMarketplaceDataAPIsStore,
 } from '../../application/providers/LegendMarketplaceDataAPIsStoreProvider.js';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { flowResult } from 'mobx';
 import {
+  AccountTreeIcon,
   CheckIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -51,6 +52,7 @@ import {
 import { LegendServiceCard } from '../../components/LegendServiceCard/LegendServiceCard.js';
 import { LegendServiceListRow } from '../../components/LegendServiceCard/LegendServiceListRow.js';
 import { LegendServiceGridView } from '../../components/LegendServiceCard/LegendServiceGrid.js';
+import { LegendServiceTreeView } from '../../components/LegendServiceCard/LegendServiceTreeView.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { DataAPIsFiltersPanel } from '../../components/DataAPIsFiltersPanel/DataAPIsFiltersPanel.js';
 import { useSearchParams } from '@finos/legend-application/browser';
@@ -58,17 +60,45 @@ import { LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN } from '../../__lib__/Le
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
+const VIEW_MODE_OPTIONS = [
+  { mode: ServicesViewMode.GRID, title: 'Grid View', icon: <TableIcon /> },
+  {
+    mode: ServicesViewMode.TREE,
+    title: 'Tree View',
+    icon: <AccountTreeIcon />,
+  },
+  { mode: ServicesViewMode.TILE, title: 'Tile View', icon: <WindowIcon /> },
+  {
+    mode: ServicesViewMode.LIST,
+    title: 'List View',
+    icon: <ViewHeadlineIcon />,
+  },
+];
+
 export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
   observer(() => {
     const dataAPIsStore = useLegendMarketplaceDataAPIsStore();
     const applicationStore =
       dataAPIsStore.marketplaceBaseStore.applicationStore;
     const [searchParams, setSearchParams] = useSearchParams();
-    const { viewMode } = dataAPIsStore;
+    const groupFromUrl = searchParams.get(
+      LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN.GROUP,
+    );
+    const viewMode = groupFromUrl
+      ? ServicesViewMode.TREE
+      : dataAPIsStore.viewMode;
     const pageRef = useRef<HTMLDivElement>(null);
     const queryFromUrl = searchParams.get(
       LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN.QUERY,
     );
+
+    const viewModeIndex = VIEW_MODE_OPTIONS.findIndex(
+      (option) => option.mode === viewMode,
+    );
+
+    useLayoutEffect(() => {
+      dataAPIsStore.setTreeScopePath(groupFromUrl ?? undefined);
+    }, [dataAPIsStore, groupFromUrl]);
 
     useEffect(() => {
       if (queryFromUrl) {
@@ -117,6 +147,37 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
         });
       },
       [dataAPIsStore, setSearchParams, applicationStore],
+    );
+
+    const handleOpenGroup = useCallback(
+      (groupPath: string) => {
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set(
+            LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN.GROUP,
+            groupPath,
+          );
+          return next;
+        });
+      },
+      [setSearchParams],
+    );
+
+    const clearGroupScope = useCallback(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete(LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN.GROUP);
+        return next;
+      });
+    }, [setSearchParams]);
+
+    const handleLaunchService = useCallback(
+      (serviceCardState: LegendServiceCardState) => {
+        applicationStore.navigationService.navigator.visitAddress(
+          `${dataAPIsStore.marketplaceBaseStore.engineServerClient._user()}/${serviceCardState.patternPath}`,
+        );
+      },
+      [applicationStore, dataAPIsStore],
     );
 
     const handleServiceClick = useCallback(
@@ -181,6 +242,15 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
               onRowClick={handleServiceClick}
             />
           );
+        case ServicesViewMode.TREE:
+          return (
+            <LegendServiceTreeView
+              store={dataAPIsStore}
+              onServiceClick={handleServiceClick}
+              onOpenGroup={handleOpenGroup}
+              onLaunchService={handleLaunchService}
+            />
+          );
         case ServicesViewMode.TILE:
           return (
             <Grid
@@ -240,7 +310,10 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
               variant="h4"
               className="marketplace-lakehouse-search-results__subtitles"
             >
-              {dataAPIsStore.totalFilteredCount} Services
+              {dataAPIsStore.treeScopePath
+                ? (dataAPIsStore.serviceTree.roots[0]?.serviceCount ?? 0)
+                : dataAPIsStore.totalFilteredCount}{' '}
+              Services
             </Typography>
             <div className="legend-marketplace-search-results__sort-bar__controls">
               <FormControlLabel
@@ -278,103 +351,75 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                 <StarIcon />
               </IconButton>
               <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
-              <div className="legend-marketplace-search-results__view-toggle legend-marketplace-search-results__view-toggle--three">
+              <div className="legend-marketplace-search-results__view-toggle legend-marketplace-search-results__view-toggle--four">
                 <div
                   className={clsx(
                     'legend-marketplace-search-results__view-toggle__slider',
-                    viewMode === ServicesViewMode.LIST &&
-                      'legend-marketplace-search-results__view-toggle__slider--middle',
-                    viewMode === ServicesViewMode.GRID &&
-                      'legend-marketplace-search-results__view-toggle__slider--right',
+                    viewModeIndex > 0 &&
+                      `legend-marketplace-search-results__view-toggle__slider--position-${viewModeIndex}`,
                   )}
                 />
-                <IconButton
-                  className={clsx(
-                    'legend-marketplace-search-results__view-toggle__btn',
-                    viewMode === ServicesViewMode.TILE &&
-                      'legend-marketplace-search-results__view-toggle__btn--active',
-                  )}
-                  onClick={() => {
-                    dataAPIsStore.setViewMode(ServicesViewMode.TILE);
-                    LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
-                      applicationStore.telemetryService,
-                      ServicesViewMode.TILE,
-                    );
-                  }}
-                  title="Tile View"
-                  size="small"
-                >
-                  <WindowIcon />
-                </IconButton>
-                <IconButton
-                  className={clsx(
-                    'legend-marketplace-search-results__view-toggle__btn',
-                    viewMode === ServicesViewMode.LIST &&
-                      'legend-marketplace-search-results__view-toggle__btn--active',
-                  )}
-                  onClick={() => {
-                    dataAPIsStore.setViewMode(ServicesViewMode.LIST);
-                    LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
-                      applicationStore.telemetryService,
-                      ServicesViewMode.LIST,
-                    );
-                  }}
-                  title="List View"
-                  size="small"
-                >
-                  <ViewHeadlineIcon />
-                </IconButton>
-                <IconButton
-                  className={clsx(
-                    'legend-marketplace-search-results__view-toggle__btn',
-                    viewMode === ServicesViewMode.GRID &&
-                      'legend-marketplace-search-results__view-toggle__btn--active',
-                  )}
-                  onClick={() => {
-                    dataAPIsStore.setViewMode(ServicesViewMode.GRID);
-                    LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
-                      applicationStore.telemetryService,
-                      ServicesViewMode.GRID,
-                    );
-                  }}
-                  title="Grid View"
-                  size="small"
-                >
-                  <TableIcon />
-                </IconButton>
+                {VIEW_MODE_OPTIONS.map(({ mode, title, icon }) => (
+                  <IconButton
+                    key={mode}
+                    className={clsx(
+                      'legend-marketplace-search-results__view-toggle__btn',
+                      viewMode === mode &&
+                        'legend-marketplace-search-results__view-toggle__btn--active',
+                    )}
+                    onClick={() => {
+                      dataAPIsStore.setViewMode(mode);
+                      if (groupFromUrl) {
+                        clearGroupScope();
+                      }
+                      LegendMarketplaceTelemetryHelper.logEvent_ToggleServicesViewMode(
+                        applicationStore.telemetryService,
+                        mode,
+                      );
+                    }}
+                    title={title}
+                    size="small"
+                  >
+                    {icon}
+                  </IconButton>
+                ))}
               </div>
-              <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
-              <FormControl>
-                <Select
-                  autoWidth={true}
-                  displayEmpty={true}
-                  value={dataAPIsStore.sort}
-                  renderValue={() => 'Sort'}
-                  onChange={(e) => {
-                    const sortValue = e.target.value as LegendServiceSort;
-                    dataAPIsStore.setSort(sortValue);
-                    LegendMarketplaceTelemetryHelper.logEvent_SortServices(
-                      applicationStore.telemetryService,
-                      sortValue,
-                    );
-                  }}
-                  className="legend-marketplace-search-results__sort-select"
-                >
-                  <MenuItem disabled={true} value="Sort">
-                    Sort
-                  </MenuItem>
-                  {Object.values(LegendServiceSort).map((sortValue) => (
-                    <MenuItem
-                      key={sortValue}
-                      value={sortValue}
-                      className="legend-marketplace-search-results__sort-menu-item"
+              {viewMode !== ServicesViewMode.TREE && (
+                <>
+                  <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
+                  <FormControl>
+                    <Select
+                      autoWidth={true}
+                      displayEmpty={true}
+                      value={dataAPIsStore.sort}
+                      renderValue={() => 'Sort'}
+                      onChange={(e) => {
+                        const sortValue = e.target.value as LegendServiceSort;
+                        dataAPIsStore.setSort(sortValue);
+                        LegendMarketplaceTelemetryHelper.logEvent_SortServices(
+                          applicationStore.telemetryService,
+                          sortValue,
+                        );
+                      }}
+                      className="legend-marketplace-search-results__sort-select"
                     >
-                      {sortValue}
-                      {dataAPIsStore.sort === sortValue && <CheckIcon />}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                      <MenuItem disabled={true} value="Sort">
+                        Sort
+                      </MenuItem>
+                      {Object.values(LegendServiceSort).map((sortValue) => (
+                        <MenuItem
+                          key={sortValue}
+                          value={sortValue}
+                          className="legend-marketplace-search-results__sort-menu-item"
+                        >
+                          {sortValue}
+                          {dataAPIsStore.sort === sortValue && <CheckIcon />}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -406,23 +451,37 @@ export const LegendMarketplaceDataAPIs = withLegendMarketplaceDataAPIsStore(
                 </div>
               ) : (
                 <>
+                  {dataAPIsStore.treeScopePath && (
+                    <div className="marketplace-data-apis__scope-bar">
+                      <span>
+                        Showing only <b>{dataAPIsStore.treeScopePath}</b>
+                      </span>
+                      <button
+                        className="marketplace-data-apis__scope-bar-btn"
+                        onClick={clearGroupScope}
+                      >
+                        Show all services
+                      </button>
+                    </div>
+                  )}
                   <div
                     key={viewMode}
                     className="marketplace-data-apis__view-content"
                   >
                     {renderServiceView()}
                   </div>
-                  {viewMode !== ServicesViewMode.GRID && (
-                    <PaginationControls
-                      totalItems={dataAPIsStore.totalFilteredCount}
-                      itemsPerPage={dataAPIsStore.itemsPerPage}
-                      page={dataAPIsStore.page}
-                      onPageChange={handlePageChange}
-                      onItemsPerPageChange={handleItemsPerPageChange}
-                      disabled={dataAPIsStore.isLoading}
-                      pageSizeOptions={[12, 25, 50, 100]}
-                    />
-                  )}
+                  {viewMode !== ServicesViewMode.GRID &&
+                    viewMode !== ServicesViewMode.TREE && (
+                      <PaginationControls
+                        totalItems={dataAPIsStore.totalFilteredCount}
+                        itemsPerPage={dataAPIsStore.itemsPerPage}
+                        page={dataAPIsStore.page}
+                        onPageChange={handlePageChange}
+                        onItemsPerPageChange={handleItemsPerPageChange}
+                        disabled={dataAPIsStore.isLoading}
+                        pageSizeOptions={[12, 25, 50, 100]}
+                      />
+                    )}
                 </>
               )}
             </div>

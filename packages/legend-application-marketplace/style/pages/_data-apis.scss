@@ -278,3 +278,227 @@
     }
   }
 }
+
+.marketplace-legend-service-tree {
+  width: 100%;
+
+  &__toolbar {
+    display: flex;
+    gap: 0.8rem;
+    padding: 0.8rem 0;
+  }
+
+  &__toolbar-btn {
+    padding: 0.4rem 1.2rem;
+    border: 1.5px solid var(--color-light-grey-300);
+    border-radius: 0.6rem;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1.3rem;
+    color: var(--color-dark-grey-400);
+
+    &:hover {
+      border-color: var(--color-legacylight-light-blue-400);
+      color: var(--color-legacylight-light-blue-400);
+    }
+  }
+
+  &__viewport {
+    height: 70vh;
+    min-height: 40rem;
+    overflow-y: auto;
+  }
+
+  &__canvas {
+    position: relative;
+  }
+
+  &__row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--color-light-grey-200);
+    transition: background 0.15s;
+
+    &:hover {
+      background: var(--color-legacylight-light-blue-50);
+    }
+
+    &--group {
+      background: var(--color-light-grey-50);
+    }
+  }
+
+  &__toggle,
+  &__leaf {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex: 1;
+    min-width: 0;
+    padding: 0.4rem 0.8rem;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 1.4rem;
+    color: var(--color-dark-grey-200);
+  }
+
+  &__toggle {
+    position: relative;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  &__toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+  }
+
+  &__expander {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 1.5px solid var(--color-legacylight-light-blue-400);
+    border-radius: 0.3rem;
+    color: var(--color-legacylight-light-blue-400);
+    transition:
+      background 0.15s,
+      color 0.15s;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+
+  &__toggle:hover &__expander {
+    background: var(--color-legacylight-light-blue-400);
+    color: var(--color-white);
+  }
+
+  &__leaf {
+    padding-left: 3.4rem;
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__count {
+    padding: 0 0.7rem;
+    border-radius: 1rem;
+    background: var(--color-light-grey-200);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--color-dark-grey-300);
+  }
+
+  &__service {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    padding-right: 0.8rem;
+  }
+
+  &__title {
+    margin-right: 0.4rem;
+    font-size: 1.3rem;
+    color: var(--color-dark-grey-400);
+  }
+
+  &__action-btn {
+    z-index: 1;
+    flex-shrink: 0;
+    padding: 0.5rem;
+    color: var(--color-dark-grey-400);
+    transition:
+      color 0.15s,
+      background 0.15s;
+
+    svg {
+      font-size: 1.9rem;
+    }
+
+    &--favorite:hover,
+    &--active {
+      color: var(--color-yellow-200);
+    }
+
+    &--active:hover {
+      color: var(--color-yellow-100);
+    }
+
+    &--open-group:hover,
+    &--details:hover,
+    &--launch:hover {
+      color: var(--color-legacylight-light-blue-400);
+    }
+
+    &--details svg {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.marketplace-data-apis__scope-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-bottom: 0.8rem;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid var(--color-light-grey-300);
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+  color: var(--color-dark-grey-200);
+}
+
+.marketplace-data-apis__scope-bar-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--marketplace-link-color);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

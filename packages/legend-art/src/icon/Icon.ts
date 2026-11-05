@@ -251,6 +251,7 @@ import {
   BsAlignMiddle,
   BsAlignStart,
   BsAlignTop,
+  BsArrowRightCircle,
   BsBoxArrowUpRight,
   BsBoxSeam,
   BsChevronDown,
@@ -269,6 +270,7 @@ import {
   BsQuestionCircle,
   BsQuestionSquare,
   BsQuestionSquareFill,
+  BsRocketTakeoff,
   BsTextLeft,
 } from 'react-icons/bs';
 
@@ -278,6 +280,7 @@ export const AlignEndIcon = BsAlignEnd;
 export const AlignMiddleIcon = BsAlignMiddle;
 export const AlignStartIcon = BsAlignStart;
 export const AlignTopIcon = BsAlignTop;
+export const ArrowRightCircleOutlineIcon = BsArrowRightCircle;
 export const BoxArrowUpRightIcon = BsBoxArrowUpRight;
 export const BundleIcon = BsBoxSeam;
 export const DataAccessIcon = BsDatabaseFillLock;
@@ -291,6 +294,7 @@ export const GenericTextFileIcon = BsTextLeft;
 export const QuestionCircleOutlineIcon = BsQuestionCircle;
 export const QuestionSquareFillIcon = BsQuestionSquareFill;
 export const QuestionSquareIcon = BsQuestionSquare;
+export const RocketTakeoffOutlineIcon = BsRocketTakeoff;
 export const TabulatedDataFileIcon = BsFillFileEarmarkSpreadsheetFill;
 export const ThinChevronDownIcon = BsChevronDown;
 export const ThinChevronLeftIcon = BsChevronLeft;

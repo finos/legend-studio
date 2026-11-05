@@ -27,6 +27,8 @@ import {
   type HttpMethod,
   HttpHeader,
   NetworkClient,
+  isPlainObject,
+  isString,
 } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
@@ -1391,7 +1393,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getServicesInfo = async (): Promise<ServiceDetail[]> => {
     const raw = await this.getServicesDetailsFromCache();
-    return raw.map((r) => ServiceDetail.fromJson(r));
+    return raw
+      .filter((r) => isPlainObject(r) && isString(r.pattern))
+      .map((r) => ServiceDetail.fromJson(r));
   };
 
   // ------------------------------------------- Legend User Services -------------------------------------------

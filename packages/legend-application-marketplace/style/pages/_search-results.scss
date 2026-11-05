@@ -186,15 +186,13 @@
     }
   }
 
-  &--three &__slider {
-    width: calc(33.333% - 0.2rem);
+  &--four &__slider {
+    width: calc(25% - 0.15rem);
 
-    &--middle {
-      transform: translateX(100%);
-    }
-
-    &--right {
-      transform: translateX(200%);
+    @for $i from 1 through 3 {
+      &--position-#{$i} {
+        transform: translateX(#{$i * 100%});
+      }
     }
   }
 

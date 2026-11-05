@@ -216,6 +216,112 @@ describe('LegendMarketplaceDataAPIs', () => {
     });
   });
 
+  describe('Tree view', () => {
+    test('Grid is the default view and Tree is next in the toggle', async () => {
+      await setupTestComponent();
+      const titles = screen
+        .getAllByTitle(/ View$/)
+        .map((el) => el.getAttribute('title'));
+      expect(titles).toEqual([
+        'Grid View',
+        'Tree View',
+        'Tile View',
+        'List View',
+      ]);
+      expect(screen.queryByRole('tree')).toBeNull();
+    });
+
+    test('tree view groups services and keeps only toggled groups as state', async () => {
+      await setupTestComponent();
+      fireEvent.click(screen.getByTitle('Tree View'));
+
+      expect(screen.getByRole('tree')).toBeDefined();
+      // collapsed by default: only the root group is rendered
+      expect(screen.getAllByRole('treeitem')).toHaveLength(1);
+
+      // test > alloy has a single path, so it is one merged parent
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Expand test/alloy' }),
+      );
+      expect(screen.getAllByRole('treeitem')).toHaveLength(5);
+
+      // leaving and returning to the view preserves expansion
+      fireEvent.click(screen.getByTitle('Grid View'));
+      fireEvent.click(screen.getByTitle('Tree View'));
+      expect(screen.getAllByRole('treeitem')).toHaveLength(5);
+
+      fireEvent.click(screen.getByText('Collapse All'));
+      expect(screen.getAllByRole('treeitem')).toHaveLength(1);
+      fireEvent.click(screen.getByText('Expand All'));
+      expect(screen.getAllByRole('treeitem')).toHaveLength(5);
+    });
+  });
+
+  describe('Shared group link', () => {
+    test('opens the tree scoped to the group from the URL', async () => {
+      mockUseSearchParams.mockReturnValue([
+        new URLSearchParams({ group: 'test/alloy' }),
+        mockSetSearchParams,
+      ]);
+      const MOCK__baseStore =
+        await TEST__provideMockLegendMarketplaceBaseStore();
+      createSpy(
+        MOCK__baseStore.engineServerClient,
+        'getServicesInfo',
+      ).mockResolvedValue(mockServices.map((s) => ServiceDetail.fromJson(s)));
+      await TEST__setUpMarketplaceLakehouse(MOCK__baseStore, DATA_APIS_ROUTE);
+      await waitFor(() => screen.getByRole('tree'));
+
+      // scoped root starts open, so group + its 4 services are shown
+      expect(screen.getAllByRole('treeitem')).toHaveLength(5);
+      expect(screen.getByText(/Showing only/)).toBeDefined();
+      // the persisted view mode is left alone
+      expect(
+        MOCK__baseStore.applicationStore.settingService.getStringValue(
+          'marketplace.data-apis.viewMode',
+        ),
+      ).toBeUndefined();
+
+      fireEvent.click(screen.getByText('Show all services'));
+      const updater = mockSetSearchParams.mock.calls[0]?.[0] as (
+        prev: URLSearchParams,
+      ) => URLSearchParams;
+      expect(
+        updater(new URLSearchParams({ group: 'test/alloy' })).has('group'),
+      ).toBe(false);
+    });
+
+    test('leaf rows have a launch button that calls the service', async () => {
+      const { MOCK__baseStore } = await setupTestComponent();
+      const visit = createSpy(
+        MOCK__baseStore.applicationStore.navigationService.navigator,
+        'visitAddress',
+      ).mockImplementation(() => undefined);
+      fireEvent.click(screen.getByTitle('Tree View'));
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Expand test/alloy' }),
+      );
+      fireEvent.click(screen.getByLabelText('Launch service: service1'));
+      expect(visit).toHaveBeenCalledTimes(1);
+      expect(String(visit.mock.calls[0]?.[0])).toMatch(
+        /\/user\/test\/alloy\/service1$/,
+      );
+    });
+
+    test('go-to-group button adds the group to the URL and keeps other params', async () => {
+      await setupTestComponent();
+      fireEvent.click(screen.getByTitle('Tree View'));
+      fireEvent.click(screen.getByLabelText('Go to test/alloy'));
+      expect(mockSetSearchParams).toHaveBeenCalledTimes(1);
+      const updater = mockSetSearchParams.mock.calls[0]?.[0] as (
+        prev: URLSearchParams,
+      ) => URLSearchParams;
+      const next = updater(new URLSearchParams({ query: 'abc' }));
+      expect(next.get('group')).toBe('test/alloy');
+      expect(next.get('query')).toBe('abc');
+    });
+  });
+
   describe('Search filtering', () => {
     test('filtering by query reduces displayed count', async () => {
       await setupTestComponent();
@@ -315,7 +421,15 @@ describe('LegendMarketplaceDataAPIs', () => {
     });
 
     test('items per page is persisted to local storage', async () => {
-      const { MOCK__baseStore } = await setupTestComponent();
+      // pagination is not shown in grid view, which is the default
+      const { MOCK__baseStore } = await setupTestComponent(
+        undefined,
+        (baseStore) =>
+          baseStore.applicationStore.settingService.persistValue(
+            'marketplace.data-apis.viewMode',
+            ServicesViewMode.TILE,
+          ),
+      );
 
       expect(screen.getByText('Items per page:')).toBeDefined();
 
@@ -349,6 +463,10 @@ describe('LegendMarketplaceDataAPIs', () => {
       MOCK__baseStore.applicationStore.settingService.persistValue(
         'marketplace.data-apis.itemsPerPage',
         24,
+      );
+      MOCK__baseStore.applicationStore.settingService.persistValue(
+        'marketplace.data-apis.viewMode',
+        ServicesViewMode.TILE,
       );
 
       mockUseSearchParams.mockReturnValue([
