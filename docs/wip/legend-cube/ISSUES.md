@@ -54,12 +54,20 @@ Proposal: an optional field on Query, kept and returned as given, and not part o
 
   relationType: {
     columns: [{ name: String, type: String }],
-    computedFor: { contentHash: String, versionId: String, executionContextHash: String },
-    computedAt: Long
+    versionId: String   // the concrete release the columns were computed on
   }
 
-Legend Query writes it when it saves a query; readers use it only when computedFor still matches
-the query, and compute the columns otherwise. Nothing changes for clients that don't send it.
+versionId is the release itself for a query on one, and the release "latest" resolved to for a
+query on latest. A query on a SNAPSHOT gets no relation type: its code changes without a new
+version, so no reader could tell the columns still hold.
+
+One rule in the store: a create, update or patch that changes the query's content, version or
+execution context and doesn't send a relationType clears the stored one. A relationType that is
+there is then always the current query's, whoever wrote the query last.
+
+Legend Query writes it when it saves a query. Readers use it when its versionId is still the
+version the query runs on (for latest, the project's latest release, a depot lookup), and compute
+the columns otherwise. Nothing changes for clients that don't send it.
 ```
 
 ### SQL Server: `distinct()` then `limit()` renders `select top N distinct`
