@@ -20,14 +20,19 @@ import type {
   TypeTreeNodeData,
   PackageTreeNodeData,
 } from './TreeUtils.js';
+import type { EditorStore } from '../EditorStore.js';
 import {
-  type DerivedProperty,
-  type GraphManagerState,
   type Type,
-  generateDefaultParameterValueForType,
+  DerivedProperty,
   VariableExpression,
+  generateDerivedPropertyCallString,
 } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  LogEvent,
+  assertErrorThrown,
+} from '@finos/legend-shared';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 
 export enum CORE_DND_TYPE {
   NONE = 'NONE',
@@ -99,39 +104,65 @@ export class MappingElementDragSource {
 }
 
 /**
- * Generate the argument list, including the surrounding parentheses, to append
- * when a derived property is dropped into a lambda editor, e.g. `('', 0)`.
- *
- * Similar to how we generate the call-string for functions, each parameter
- * is filled with a default value based on its type, so the generated call
- * matches the signature of the derived property.
+ * Resolve the types of the parameters of a derived property; `undefined` is
+ * returned for a parameter whose type cannot be resolved.
  */
-export const generateDerivedPropertyCallArguments = (
+const getDerivedPropertyParameterTypes = (
   derivedProperty: DerivedProperty,
-  graphManagerState: GraphManagerState,
-): string => {
+  editorStore: EditorStore,
+): (Type | undefined)[] => {
   // NOTE: parameters of derived properties are kept in raw JSON form in the metamodel
   // and they do not include the `this` parameter
   const parameters = Array.isArray(derivedProperty.parameters)
     ? (derivedProperty.parameters as PlainObject[])
     : [];
-  const values = parameters.map((parameter, idx) => {
-    let type: Type | undefined;
+  return parameters.map((parameter) => {
     try {
-      const variable = graphManagerState.graphManager.buildValueSpecification(
-        parameter,
-        graphManagerState.graph,
+      const variable =
+        editorStore.graphManagerState.graphManager.buildValueSpecification(
+          parameter,
+          editorStore.graphManagerState.graph,
+        );
+      return variable instanceof VariableExpression
+        ? variable.genericType?.value.rawType
+        : undefined;
+    } catch (error) {
+      assertErrorThrown(error);
+      editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
+        `Can't resolve the type of a parameter of derived property '${derivedProperty.name}', using a placeholder value instead`,
+        error,
       );
-      type =
-        variable instanceof VariableExpression
-          ? variable.genericType?.value.rawType
-          : undefined;
-    } catch {
-      // the type of the parameter cannot be resolved, use a placeholder value instead
+      return undefined;
     }
-    return generateDefaultParameterValueForType(type, idx);
   });
-  return `(${values.join(', ')})`;
+};
+
+/**
+ * Generate the path to append when a type tree node is dropped into a lambda
+ * editor, e.g. `$src.firmFor('', 0).name`.
+ *
+ * Every derived property along the path is turned into a call with default
+ * arguments (not just the last one), otherwise the path does not compile.
+ */
+export const generateTypeTreeNodeLambdaPath = (
+  node: TypeTreeNodeData,
+  editorStore: EditorStore,
+): string => {
+  const segments: string[] = [];
+  let current = node;
+  while (current.property && current.parentNode) {
+    segments.unshift(
+      current.property instanceof DerivedProperty
+        ? generateDerivedPropertyCallString(
+            current.property,
+            getDerivedPropertyParameterTypes(current.property, editorStore),
+          )
+        : current.property.name,
+    );
+    current = current.parentNode;
+  }
+  return [current.id, ...segments].join('.');
 };
 
 // TODO: disperse all of these to the editor, we should probably remove all of these
