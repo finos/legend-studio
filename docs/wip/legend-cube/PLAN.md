@@ -5830,8 +5830,16 @@ names that the query no longer has is left out where the canvas reads it (`getSh
 | C.3  | The menus: Put in a Container ▸, Take Out of Container, the head's menu; renaming from the menu          | ✅     |
 | C.4  | The folded box: the Output caption, Enter to open, the minimap; tests of the canvas                      | ✅     |
 | C.5  | The user guide: a section and its images; this section; the changeset                                    | ✅     |
-| C.6  | Checks: every suite that reads the builder (core, builder, Query, Studio, Analytics), lint, the browser  | ⏳     |
-| C.7  | Demo video                                                                                               | ⏳     |
+| C.6  | Checks: every suite that reads the builder (core, builder, Query, Studio, Analytics), lint, the browser  | ✅     |
+| C.7  | Demo video                                                                                               | ✅     |
+
+**Checks:**
+
+- 7,336 tests pass in legend-cube, legend-cube-builder, Query, Analytics and Studio. 4 fail, all engine-backed and
+  against the local engine, which predates legend-engine#5449 (BINARY typing, 2 tests) and #5108 (BigQuery, 2 tests).
+- `lint:js --max-warnings=0` is clean in legend-cube, legend-cube-builder and legend-application-analytics-e2e.
+- The demo video (43, 1:22) records the menus, folding, steps following the flow, Undo and Export in Legend Analytics,
+  with 12 checks.
 
 **Status:** draft finos/legend-studio#5850.
 
