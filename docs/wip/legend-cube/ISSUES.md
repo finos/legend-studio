@@ -41,7 +41,8 @@ Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for t
 
 Not a defect: a field the query store would need for PLAN §6.11. The store's `Query`
 (`legend-engine-application-query/.../model/Query.java`) is `@JsonIgnoreProperties(ignoreUnknown = true)`, so a field
-a client sends is dropped. Draft issue for finos/legend-engine:
+a client sends is dropped. Being built as a pull request rather than filed as an issue (user, 2026-11-05: "lets do the
+engine changes first"), in `../legend-engine-query-relation-type`, branch `query-relation-type`. Its description:
 
 ```text
 Title: Query store: keep a saved query's relation type
@@ -50,10 +51,12 @@ Clients that read saved queries (Legend Query's DataCube view, Legend DataCube, 
 query's columns by compiling its project: lambdaReturnType, then transformTdsToRelation for a TDS
 query, then lambdaRelationType. For big projects that is slow on every open.
 
-Proposal: an optional field on Query, kept and returned as given, and not part of LightQuery:
+An optional field on Query, kept and returned as given, as gridConfig is, and left out of search
+results:
 
   relationType: {
-    columns: [{ name: String, type: String }],
+    columns: [...],     // the engine's lambdaRelationType columns as the client sent them:
+                        // name, genericType (with type parameters, e.g. Varchar(15)), multiplicity
     versionId: String   // the concrete release the columns were computed on
   }
 
@@ -61,13 +64,11 @@ versionId is the release itself for a query on one, and the release "latest" res
 query on latest. A query on a SNAPSHOT gets no relation type: its code changes without a new
 version, so no reader could tell the columns still hold.
 
-One rule in the store: a create, update or patch that changes the query's content, version or
-execution context and doesn't send a relationType clears the stored one. A relationType that is
-there is then always the current query's, whoever wrote the query last.
-
-Legend Query writes it when it saves a query. Readers use it when its versionId is still the
-version the query runs on (for latest, the project's latest release, a depot lookup), and compute
-the columns otherwise. Nothing changes for clients that don't send it.
+No rule in the store: an update replaces the whole stored query, so a save without the field drops
+it, and a patch keeps the fields it doesn't send, as for every field. Legend Query writes it when it
+saves a query. Readers use it when its versionId is still the version the query runs on (for
+latest, the project's latest release, a depot lookup), and compute the columns otherwise. Nothing
+changes for clients that don't send it.
 ```
 
 ### SQL Server: `distinct()` then `limit()` renders `select top N distinct`

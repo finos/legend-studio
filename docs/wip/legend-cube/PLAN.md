@@ -1526,32 +1526,39 @@ the repo (local evidence `saved-query-source/`).
 
 - **Core:** a new source, `LegendQuerySource` (kind `legendQuery`), a live link to the saved query by its **id**. The
   spec keeps the id and what tells whether anything moved since: the query's name, its `lastUpdatedAt`, the columns
-  (a schema snapshot) with the concrete version they were computed on, and the parameter values the cube gives. The
-  converted lambda is **not** saved. Validation needs the columns and every required parameter's value. The emitter
-  writes the relation as it is, and each parameter as a `let` before it, through the lets Cube already writes for
-  windows (§8.6).
+  (a schema snapshot) with the concrete version they were computed on, its parameters (name, type, optional) and the
+  values the cube gives. It also keeps the **converted query**, the Relation form Cube runs (user, 2026-11-05),
+  trusted on the same check as the columns. Validation needs the columns, the converted query and every required
+  parameter's value. The emitter writes the converted query as it is, each parameter's value where the query reads it
+  (default), so typing lambdas and runs see the same query. A parameter type Cube can't enter (a list, a class)
+  refuses the query, with the reason (default).
 - **No recompute on every open** (user, 2026-11-05). Opening the cube fetches the query from the query server (one
-  call, no compile) and reuses the kept columns while they still hold:
+  call, no compile) and reuses the kept columns and converted query while they still hold:
 
   - the query unchanged (`lastUpdatedAt`) and on a release: used as kept, with no engine call;
   - on `latest`: one depot lookup checks that `latest` is still the release the columns were computed on; used as
-    kept if it is, computed again if a newer release was cut;
-  - on a SNAPSHOT: computed on every open, since its code changes without a new version;
-  - converting a TDS query to a Relation waits for the first run (Execute, Show Pure): opening needs the columns
-    only.
+    kept if it is, converted and typed again if a newer release was cut;
+  - on a SNAPSHOT: converted and typed on every open, since its code changes without a new version;
+  - a query server that can't be reached marks the source invalid, and Refresh tries again (user, 2026-11-05): a
+    live link never runs unchecked.
 
   The saved query's own relation type (§6.11), when there, replaces the first computation when the source is added.
 
 - **Keeping in sync:** a query that changed is converted and typed again. If its columns are still the kept ones, the
   cube goes on and says so; if not, the source is marked invalid, naming the columns that went or changed, and
-  **Refresh** takes the new columns (one undo step), as data products are rechecked (`CubeDataProductRecheck`). A query
-  that's gone, or that the viewer can't see, marks the source invalid with the reason.
-- **The model and the run:** the cube's model is the query's project, through the existing project pointer kind
-  (`CubeProject.ts`), so tables and functions of the same project version can join it. The context's optional
-  `mapping` and the run's `from(mapping, runtime)` came with the data space source (§11.25, #5759); that's the one
-  `from` A4 checked.
-- **One context:** a cube runs on one model, mapping and runtime (§6.8). A second saved query, a data space source
-  (§11.25) or a table has to share the first one's project version, mapping and runtime.
+  **Refresh** takes the new columns and converted query (one undo step), as data products are rechecked
+  (`CubeDataProductRecheck`). A query that's gone, or that the viewer can't see, marks the source invalid with the
+  reason.
+- **The model and the run:** the cube's model is the query's project at the version the query names, through the
+  existing project pointer kind (`CubeProject.ts`). Runs send that version as named, `latest` included (user,
+  2026-11-05), so Cube's released-only rule (`checkCubeProjectModel`) is lifted for these cubes. The engine fetches the
+  version from depot as named; it caches `latest` under that name, so for a while after a release it can still run
+  the old one, and it never caches a SNAPSHOT, which it loads again on every call. The context's optional `mapping`
+  and the run's `from(mapping, runtime)` came with the data space source (§11.25, #5759); that's the one `from` A4
+  checked.
+- **One context:** a cube runs on one model, mapping and runtime (§6.8). Saved queries and data space sources (§11.25)
+  of the same data space, version and execution context can share a cube (user, 2026-11-05); tables and functions
+  can't. A saved query whose own mapping or runtime differs from the cube's is refused, with the reason.
 - **Builder:**
   - a **Legend Query** tab in the source dialog (search by name, mine or everyone's, newest first), and a palette
     item;
@@ -1566,8 +1573,11 @@ the repo (local evidence `saved-query-source/`).
 
 **Decisions:**
 
-1. **Save the query's id, not its lambda** (user, 2026-10-20): there's no saved copy to keep in sync; the kept
-   columns only tell whether the query changed (see above).
+1. **A live link by id, with a kept converted query** (user, 2026-10-20, revised 2026-11-05): the id is what links
+   the source to the query; the converted query is kept beside the columns and trusted on the same check, so opening
+   a cube compiles nothing unless the query or its version moved. (On 2026-10-20 the lambda wasn't to be saved; with
+   it unsaved, each open would convert a TDS query again, and every place the builder writes Pure, 12 of them, some
+   synchronous, would wait for it.)
 2. **Data space queries only** (user, 2026-10-20): a query whose execution context isn't a data space is refused, with
    the reason. Its own `mapping` and `runtime`, when it has both, are used before the data space's, as legend-graph
    does (A8).
@@ -1578,22 +1588,33 @@ the repo (local evidence `saved-query-source/`).
    it (A10). The source's editor shows it and marks a moving one.
 6. **No recompute on every open** (user, 2026-11-05): the columns are kept with their concrete version, and reused
    while the query and the version hold (see above).
+7. **A query server that can't be reached marks the source invalid** (user, 2026-11-05); Refresh tries again.
+8. **Data space sources of the same context can join saved queries** (user, 2026-11-05); tables and functions can't.
+9. **Runs send `latest` as is** (user, 2026-11-05), not the release it resolved to.
+
+**To settle before building (defaults):**
+
+- **Typing a query on `latest`:** when depot's latest has moved, the columns are typed on the release depot names,
+  not through `latest`, which the engine may still hold as the old release; otherwise the old columns would be kept
+  as the new release's and trusted until the query changes. Runs still send `latest`.
+- **A data space source on a cube on `latest` or a SNAPSHOT:** it takes the cube's version, the saved query's, rather
+  than a release of its own, which lifts its released-only rule in such cubes.
 
 **Risks:** a TDS function the autofix doesn't convert (the query is then refused, naming it); a query whose lambda
-already holds `from(mapping, runtime)` (strip it, and check it against the data space's); multi-expression lambdas
-(put back as lets); large project pointers loading slowly on the engine; queries the viewer can't see on the query
-server.
+already holds `from(mapping, runtime)` (strip it, and check it against the data space's); a lambda with several
+statements, such as Query Builder's constants (`let c = …`), each written where it's read (default); large project
+pointers loading slowly on the engine, a SNAPSHOT on every call; queries the viewer can't see on the query server.
 
 **Steps:**
 
-| Step | Deliverable                                                                                                                                 | Done when                                                                                           |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Q.1  | This section; the user's answers                                                                                                            | Answered ✅ (2026-11-05)                                                                            |
-| Q.2  | Core: the source node (id, name, `lastUpdatedAt`, columns and their version, parameter values), codec, emitter (relation, lets), validation | Unit tests; emitted Pure pinned                                                                     |
-| Q.3  | v1 adapter: the query catalog (search, fetch, data space context, autofix, typing, parameters, the version checks)                          | Adapter tests with a fake engine; an engine-roundtrip test on an inline mapped model like the probe |
-| Q.4  | Builder: the tab, the palette item, the source editor, the checks on open and Refresh                                                       | Store and component tests                                                                           |
-| Q.5  | Hosts: Analytics passes the catalog                                                                                                         | Host tests                                                                                          |
-| Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                      | Every caption true on screen                                                                        |
+| Step | Deliverable                                                                                                                                      | Done when                                                                                           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| Q.1  | This section; the user's answers                                                                                                                 | Answered ✅ (2026-11-05)                                                                            |
+| Q.2  | Core: the source node (id, name, `lastUpdatedAt`, columns and their version, converted query, parameters and values), codec, emitter, validation | Unit tests; emitted Pure pinned                                                                     |
+| Q.3  | v1 adapter: the query catalog (search, fetch, data space context, autofix, typing, parameters, the version checks)                               | Adapter tests with a fake engine; an engine-roundtrip test on an inline mapped model like the probe |
+| Q.4  | Builder: the tab, the palette item, the source editor, the checks on open and Refresh                                                            | Store and component tests                                                                           |
+| Q.5  | Hosts: Analytics passes the catalog                                                                                                              | Host tests                                                                                          |
+| Q.6  | Verification: a browser rehearsal on a mock query server, a demo video                                                                           | Every caption true on screen                                                                        |
 
 ### 6.11 A saved query's relation type, kept with it (decided 2026-11-05; a separate track, not built)
 
@@ -1609,34 +1630,42 @@ know (`Query.java` is `@JsonIgnoreProperties(ignoreUnknown = true)`), so the fie
 ```json
 "relationType": {
   "columns": [
-    { "name": "Company", "type": "String" },
-    { "name": "Country", "type": "String" }
+    {
+      "name": "Company",
+      "genericType": {
+        "rawType": { "_type": "packageableType", "fullPath": "meta::pure::precisePrimitives::Varchar" },
+        "typeArguments": [],
+        "typeVariableValues": [{ "_type": "integer", "value": 40 }]
+      },
+      "multiplicity": { "lowerBound": 0, "upperBound": 1 }
+    }
   ],
   "versionId": "1.4.0"
 }
 ```
 
-- **`columns`** has the shape of legend-graph's `RelationTypeMetadata`, as `getLambdaRelationType` returns it. For a
-  TDS query it's the columns of its Relation form, so every reader gets the same columns.
+- **`columns`** are the engine's own, as its `lambdaRelationType` answers them (name, generic type with its type
+  parameters, multiplicity), kept as sent. legend-graph's `RelationTypeMetadata` won't do: it drops type parameters,
+  so `Varchar(40)` comes back as `Varchar`, which Cube needs whole. For a TDS query they're the columns of its
+  Relation form, so every reader gets the same columns.
 - **`versionId`** is the concrete release the columns were computed on: the query's own, or for a query on `latest`,
   the release it resolved to, as Query already resolves `originalVersionId` on Save As. A query on a SNAPSHOT gets
   **no** relation type: its code changes without a new version, so no reader could tell the columns still hold (user,
   2026-11-05).
-- **The store's rule:** a create, update or patch that changes the query's content, version or execution context and
-  doesn't send a relation type clears the stored one. A relation type that is there is then always the current
-  query's, whoever wrote the query last, and readers only check the version. This replaces hashes of what it was
-  computed from (my default, stated 2026-11-05; the user can change it).
+- **No rule in the store** (user, 2026-11-05): Save (`updateQuery`) replaces the whole stored query
+  (`findOneAndReplace`, or a new revision), so a save without the field drops it. A patch (`patchQuery`) keeps the
+  fields it doesn't send; Legend Query patches only the version, and readers then see that the relation type's
+  `versionId` no longer matches. Legend Query is the only writer (user, 2026-11-05).
 
 **When Legend Query writes it** (every path that writes a saved query, `QueryEditorStore` and `V1_PureGraphManager`):
 
-| Write                                                                                    | What changes                   | The relation type                                                                                                   |
-| ---------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| Save As (`createQuery`)                                                                  | everything                     | computed                                                                                                            |
-| Save (`updateQuery`, also from the modal that renames or changes the version)            | the content, maybe the version | computed                                                                                                            |
-| Update version (`updateQueryVersionId`, a `patchQuery` of `versionId` only)              | the version                    | computed for the new version and patched with it; if that fails, the store's rule clears the old one                |
-| Rename (`QueryLoaderState`, `renameQuery`: get, change the name, update)                 | the name                       | kept: it's carried through the get and the update, which needs the field in `V1_Query`, or the rename would drop it |
-| Revert to a revision (`revertQueryToRevision`: get, take the revision's content, update) | the content                    | the revision's own, when it has one; else none                                                                      |
-| Any other client, or an older Legend Query                                               | anything                       | cleared by the store's rule when the write changes the content, version or execution context; readers compute it    |
+| Write                                                                                    | What changes                   | The relation type                                                                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Save As (`createQuery`)                                                                  | everything                     | computed                                                                                                                  |
+| Save (`updateQuery`, also from the modal that renames or changes the version)            | the content, maybe the version | computed                                                                                                                  |
+| Update version (`updateQueryVersionId`, a `patchQuery` of `versionId` only)              | the version                    | computed for the new version and patched with it; if that fails, the old one stays, and its `versionId` no longer matches |
+| Rename (`QueryLoaderState`, `renameQuery`: get, change the name, update)                 | the name                       | kept: it's carried through the get and the update, which needs the field in `V1_Query`, or the rename would drop it       |
+| Revert to a revision (`revertQueryToRevision`: get, take the revision's content, update) | the content                    | the revision's own, when it has one; else none                                                                            |
 
 **How Legend Query computes it** (in `buildQueryForPersistence`, beside the content and parameter values it already
 asks the engine for):
@@ -1645,7 +1674,8 @@ asks the engine for):
    graph the calls below run on.
 1. `getLambdaReturnType(lambda, graph)`: a Relation goes on; a `TabularDataSet` is converted first with the engine's
    `transformTdsToRelation` endpoint; anything else, such as a graph fetch, gets no relation type.
-2. `getLambdaRelationType` on the Relation form gives the columns.
+2. The engine's `lambdaRelationType` answer on the Relation form gives the columns, kept as the engine sent them
+   (not through legend-graph's `getLambdaRelationType`, whose metadata drops type parameters).
 3. The calls point the engine at the query's project version (`getFullGraphModelContext` sends the SDLC pointer when
    the graph came from a project), the same model the query runs on, so the engine's model cache usually has it.
 4. **Best-effort, never in the way:** the calls run alongside `lambdaToPureCode`, with a time limit (say 5 s). A
@@ -1658,15 +1688,16 @@ release, and for `latest` when depot's latest release is still the recorded one 
 computes them as today, once; Cube then keeps them in its source (§6.10). The run still checks the engine's columns
 against the ones used (Cube's `runCubeQuery`).
 
-**Order:** the engine field first, then legend-graph's, then Legend Query's writes, then the readers. Each step works
-without the next: a reader that finds no field, or one that doesn't match, computes as today.
+**Order:** the engine field first (being built, 2026-11-05, in `../legend-engine-query-relation-type`), then
+legend-graph's (`V1_Query` and `Query` keep the JSON as it is), then Legend Query's writes, then the readers. Each
+step works without the next: a reader that finds no field, or one that doesn't match, computes as today.
 
 **Decided (user, 2026-11-05):**
 
 1. **When:** inline at Save, beside the content, with a short time limit; a failure or a timeout saves the query
    without it (the recommendation; no preference given).
 2. **Existing queries** get it on their next save, not from a background patch when opened.
-3. **Writers:** Legend Query only, for now. Another client's change to a query clears it through the store's rule.
+3. **Writers:** Legend Query is the only one (user, 2026-11-05: no other clients edit queries).
 
 ## 7. C. Canvas and editors (slice)
 
