@@ -50,6 +50,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { isCubeSampleDataOffered } from '../../stores/CubeHost.js';
 import {
   buildCubeCanvasContainerNodes,
+  getCubeCanvasContainerNodeId,
   buildCubeCanvasEdges,
   buildCubeCanvasNodes,
   CUBE_CANVAS_CONTAINER_TYPE,
@@ -61,6 +62,7 @@ import {
   type CubeCanvasFlowNode,
 } from './CubeCanvasElements.js';
 import {
+  CUBE_CANVAS_CONTAINER_MINIMAP_COLOR,
   CubeCanvasContainerFrame,
   CubeCanvasFoldedContainer,
 } from './CubeCanvasContainer.js';
@@ -268,6 +270,19 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           target.classList.contains('react-flow__node')
             ? target.dataset.id
             : undefined;
+        // a folded container's box opens on Enter or Space
+        const folded = editorState.shownContainers.find(
+          ({ container }) =>
+            container.folded &&
+            getCubeCanvasContainerNodeId(container.id) === nodeId,
+        );
+        if (folded && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          if (!readOnly && editorState.nodeEditor.finish()) {
+            editorState.setContainerFolded(folded.container.id, false);
+          }
+          return;
+        }
         if (nodeId === undefined || !query.getNode(nodeId)) {
           return;
         }
@@ -362,7 +377,17 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           <FitViewIcon />
         </ControlButton>
       </Controls>
-      <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
+      <MiniMap
+        pannable={true}
+        zoomable={true}
+        style={MINI_MAP_STYLE}
+        // a container's plane is a tint, behind its steps
+        nodeColor={(node) =>
+          node.type === CUBE_CANVAS_CONTAINER_TYPE
+            ? CUBE_CANVAS_CONTAINER_MINIMAP_COLOR
+            : ''
+        }
+      />
       <CubeNodeEditorPopper
         editorState={editorState}
         positions={editorPositions}

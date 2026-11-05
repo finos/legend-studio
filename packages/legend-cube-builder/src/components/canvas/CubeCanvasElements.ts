@@ -134,7 +134,7 @@ export const getCubeCanvasContainerNodeId = (containerId: string): string =>
 
 /**
  * The containers' frames, to go first, behind the steps, and the folded
- * containers' boxes; none of them selectable or focusable, as no node is
+ * containers' boxes; none of them selectable, as no node is
  */
 export const buildCubeCanvasContainerNodes = (
   places: readonly CubeCanvasContainerPlace[],
@@ -151,7 +151,8 @@ export const buildCubeCanvasContainerNodes = (
     ...(place.container.folded
       ? {}
       : { zIndex: -1, style: { pointerEvents: 'none' as const } }),
-    focusable: false,
+    // a folded box opens on Enter, as a step's editor does (`CubeCanvas`)
+    focusable: place.container.folded,
     handles: place.container.folded
       ? [
           {

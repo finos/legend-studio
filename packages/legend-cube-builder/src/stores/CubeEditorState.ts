@@ -51,7 +51,10 @@ import {
   generateStepContainerId,
   getShownContainers,
   getStepsForNewContainer,
-  pruneStepContainers,
+  reconcileStepContainers,
+  canTakeStepOutOfContainer,
+  getContainersBesideStep,
+  getStepContainer,
   type ShownStepContainer,
   type StepContainer,
 } from '@finos/legend-cube';
@@ -310,6 +313,8 @@ export class CubeEditorState implements CommandRegistrar {
    */
   functionCatalogue: CubeFunctionCatalogue | undefined = undefined;
   private isLoadingFunctionCatalogue = false;
+  /** The container whose title is being renamed in place on the canvas (PLAN §11.29), if any */
+  renamingContainerId: string | undefined = undefined;
 
   constructor(host: CubeHost, document = new CubeDocument()) {
     makeObservable<
@@ -372,7 +377,12 @@ export class CubeEditorState implements CommandRegistrar {
       swapInputs: action,
       shownContainers: computed,
       addContainer: action,
+      addToContainer: action,
+      takeOutOfContainer: action,
       setContainerFolded: action,
+      renamingContainerId: observable,
+      startRenamingContainer: action,
+      stopRenamingContainer: action,
       renameContainer: action,
       removeContainer: action,
       setShowGraph: action,
@@ -1017,19 +1027,30 @@ export class CubeEditorState implements CommandRegistrar {
 
   /**
    * The one way to change the cube; the document before goes to the undo
-   * history. A step removed leaves no container (PLAN §11.28): a new step
-   * of its id must not join it.
+   * history. Its containers follow a change to the query, in the same step
+   * (PLAN §11.29): a step added between two steps of a container joins it,
+   * as does one `moved` there, and a step removed leaves it.
    */
-  applyDocument(next: CubeDocument): void {
+  applyDocument(next: CubeDocument, moved: readonly string[] = []): void {
     if (next === this.document) {
       return;
     }
+    const before = this.document.query;
+    const { containers } = next.meta;
+    const followed =
+      next.query === before
+        ? containers
+        : reconcileStepContainers(containers, next.query, [
+            ...next.query.nodes
+              .filter((node) => !before.getNode(node.id))
+              .map((node) => node.id),
+            ...moved,
+          ]);
     this.pushHistory();
-    const containers = pruneStepContainers(next.meta.containers, next.query);
     this.replaceDocument(
-      containers === next.meta.containers
+      followed === containers
         ? next
-        : next.withMeta({ ...next.meta, containers }),
+        : next.withMeta({ ...next.meta, containers: followed }),
     );
   }
 
@@ -1825,11 +1846,17 @@ export class CubeEditorState implements CommandRegistrar {
       return;
     }
     const { query } = this.document;
-    this.applyQuery(
-      query.canConnect(nodeId, targetId)
-        ? this.withSuggestedJoinKeys(query.connect(nodeId, targetId), targetId)
-        : query.move(nodeId, targetId),
-    );
+    if (query.canConnect(nodeId, targetId)) {
+      this.applyQuery(
+        this.withSuggestedJoinKeys(query.connect(nodeId, targetId), targetId),
+      );
+    } else {
+      // a step moved leaves its container, and joins the one it lands in
+      this.applyDocument(
+        this.document.withQuery(query.move(nodeId, targetId)),
+        [nodeId],
+      );
+    }
   }
 
   canRemoveNode(nodeId: string): boolean {
@@ -1954,12 +1981,17 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
-  /** The containers the canvas draws (PLAN §11.28) */
+  /** The containers the canvas draws (PLAN §11.29) */
   get shownContainers(): ShownStepContainer[] {
     return getShownContainers(
       this.document.query,
       this.document.meta.containers,
     );
+  }
+
+  /** The container the canvas draws a step in, if any */
+  getStepContainer(stepId: string): ShownStepContainer | undefined {
+    return getStepContainer(this.shownContainers, stepId);
   }
 
   private applyContainers(containers: readonly StepContainer[]): void {
@@ -1968,19 +2000,28 @@ export class CubeEditorState implements CommandRegistrar {
     );
   }
 
+  /** The steps a new container from a step takes: it alone, or it and each step before it in no container */
+  getStepsForNewContainer(stepId: string, withStepsBefore: boolean): string[] {
+    const steps = getStepsForNewContainer(
+      this.document.query,
+      this.shownContainers,
+      stepId,
+    );
+    return withStepsBefore || !steps.length ? steps : [stepId];
+  }
+
   canAddContainer(stepId: string): boolean {
     return (
-      !this.readOnly &&
-      getStepsForNewContainer(this.document.query, this.shownContainers, stepId)
-        .length > 0
+      !this.readOnly && this.getStepsForNewContainer(stepId, false).length > 0
     );
   }
 
   /**
-   * A new container of the step and the steps before it in no container
-   * (`getStepsForNewContainer`); one undo step
+   * A new container, Container 1, 2… after the highest number used, of the
+   * step alone or of it and the steps before it in no container; one undo
+   * step
    */
-  addContainer(stepId: string): void {
+  addContainer(stepId: string, withStepsBefore: boolean): void {
     if (!this.canAddContainer(stepId)) {
       return;
     }
@@ -1991,14 +2032,65 @@ export class CubeEditorState implements CommandRegistrar {
       {
         id,
         title: `Container ${id.slice('container'.length)}`,
-        steps: getStepsForNewContainer(
-          this.document.query,
-          this.shownContainers,
-          stepId,
-        ),
+        steps: this.getStepsForNewContainer(stepId, withStepsBefore),
         folded: false,
       },
     ]);
+  }
+
+  /** The containers beside a step in none, which it can join */
+  getContainersBesideStep(stepId: string): ShownStepContainer[] {
+    return this.readOnly
+      ? []
+      : getContainersBesideStep(
+          this.document.query,
+          this.shownContainers,
+          stepId,
+        );
+  }
+
+  /** Puts a step in a container beside it; one undo step */
+  addToContainer(containerId: string, stepId: string): void {
+    if (
+      this.getContainersBesideStep(stepId).some(
+        ({ container }) => container.id === containerId,
+      )
+    ) {
+      this.updateContainer(containerId, (container) => ({
+        ...container,
+        steps: [...container.steps, stepId],
+      }));
+    }
+  }
+
+  /** Whether a step is at its container's edge, so it can come out and leave it one block */
+  canTakeOutOfContainer(stepId: string): boolean {
+    return (
+      !this.readOnly &&
+      canTakeStepOutOfContainer(
+        this.document.query,
+        this.shownContainers,
+        stepId,
+      )
+    );
+  }
+
+  /** Takes a step out of its container, which goes when it held only that step; one undo step */
+  takeOutOfContainer(stepId: string): void {
+    const shown = this.getStepContainer(stepId);
+    if (!shown || !this.canTakeOutOfContainer(stepId)) {
+      return;
+    }
+    const containers = this.document.meta.containers ?? [];
+    this.applyContainers(
+      containers.flatMap((container) => {
+        if (container !== shown.container) {
+          return [container];
+        }
+        const steps = container.steps.filter((id) => id !== stepId);
+        return shown.steps.length > 1 ? [{ ...container, steps }] : [];
+      }),
+    );
   }
 
   private updateContainer(
@@ -2023,6 +2115,17 @@ export class CubeEditorState implements CommandRegistrar {
     this.updateContainer(containerId, (container) =>
       container.folded === folded ? container : { ...container, folded },
     );
+  }
+
+  /** Opens a container's title for renaming in place, as a double-click on it does */
+  startRenamingContainer(containerId: string): void {
+    if (!this.readOnly) {
+      this.renamingContainerId = containerId;
+    }
+  }
+
+  stopRenamingContainer(): void {
+    this.renamingContainerId = undefined;
   }
 
   renameContainer(containerId: string, title: string): void {

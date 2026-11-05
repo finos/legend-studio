@@ -18,6 +18,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   clsx,
+  ContextMenu,
   LayerGroupIcon,
   TimesIcon,
   Tooltip,
@@ -26,7 +27,10 @@ import type { QueryNode } from '@finos/legend-cube';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { RUNNING_NODE_LABEL } from '../../__lib__/LegendCubeHelpText.js';
+import {
+  RUNNING_NODE_LABEL,
+  RUNNING_NODE_TITLE,
+} from '../../__lib__/LegendCubeHelpText.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
@@ -36,10 +40,11 @@ import {
   getCubeCanvasNodeLabel,
   getCubeCanvasNodeStatus,
 } from './CubeCanvasElements.js';
+import { CubeContainerContextMenu } from './CubeCanvasContainerMenu.js';
 import { CUBE_CANVAS_FRAME_HEAD_HEIGHT } from './CubeCanvasLayout.js';
 import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
 
-// A container of steps (PLAN §11.28), as Alteryx's Tool Container: open, a
+// A container of steps (PLAN §11.29), as Alteryx's Tool Container: open, a
 // see-through plane behind its steps with a head; folded, one box in their
 // place. Its colours mix the theme's, so it reads in the dark theme and the
 // light one alike.
@@ -54,6 +59,12 @@ const FOLDED_STYLE = {
   boxShadow:
     '4px 4px 0 -1px var(--color-bg-panel), 4px 4px 0 0 var(--color-border-default), 8px 8px 0 -1px var(--color-bg-panel), 8px 8px 0 0 var(--color-border-default)',
 };
+
+/** How the canvas shows a container on its minimap: a tint of its plane */
+export const CUBE_CANVAS_CONTAINER_MINIMAP_COLOR =
+  'color-mix(in srgb, var(--color-accent) 20%, transparent)';
+
+const CONTAINER_MENU_PROPS = { elevation: 7 };
 
 const stepCount = (count: number): string =>
   `${count} ${count === 1 ? 'step' : 'steps'}`;
@@ -71,34 +82,22 @@ const describeSteps = (
     )
     .join('\n');
 
-/** The container's title, renamed in place on a double-click */
-const CubeCanvasContainerTitle = observer(
-  (props: { containerId: string; title: string; className?: string }) => {
-    const { containerId, title, className } = props;
+/** The title being renamed: Enter or leaving it applies, Escape doesn't */
+const CubeCanvasContainerTitleInput = observer(
+  (props: { containerId: string; title: string }) => {
+    const { containerId, title } = props;
     const editorState = useCubeCanvasEditorState();
-    const [draft, setDraft] = useState<string | undefined>(undefined);
+    const [draft, setDraft] = useState(title);
     const apply = (): void => {
-      if (draft !== undefined && editorState.nodeEditor.finish()) {
+      if (
+        editorState.renamingContainerId === containerId &&
+        editorState.nodeEditor.finish()
+      ) {
         editorState.renameContainer(containerId, draft.trim() || title);
       }
-      setDraft(undefined);
+      editorState.stopRenamingContainer();
     };
-    return draft === undefined ? (
-      <span
-        className={clsx('truncate', className)}
-        title={
-          editorState.readOnly ? title : `${title} (double-click to rename)`
-        }
-        onDoubleClick={(event) => {
-          event.stopPropagation();
-          if (!editorState.readOnly) {
-            setDraft(title);
-          }
-        }}
-      >
-        {title}
-      </span>
-    ) : (
+    return (
       <input
         className="nodrag nopan min-w-0 flex-1 rounded border border-[var(--color-accent)] bg-[var(--color-bg-input)] px-1 text-[var(--color-text-primary)]"
         aria-label="Container title"
@@ -113,7 +112,7 @@ const CubeCanvasContainerTitle = observer(
           if (event.key === 'Enter') {
             apply();
           } else if (event.key === 'Escape') {
-            setDraft(undefined);
+            editorState.stopRenamingContainer();
           }
         }}
       />
@@ -121,10 +120,35 @@ const CubeCanvasContainerTitle = observer(
   },
 );
 
+/** The container's title, renamed in place on a double-click, or from its menu */
+const CubeCanvasContainerTitle = observer(
+  (props: { containerId: string; title: string; className?: string }) => {
+    const { containerId, title, className } = props;
+    const editorState = useCubeCanvasEditorState();
+    return editorState.renamingContainerId === containerId ? (
+      <CubeCanvasContainerTitleInput containerId={containerId} title={title} />
+    ) : (
+      <span
+        className={clsx('truncate', className)}
+        title={
+          editorState.readOnly ? title : `${title} (double-click to rename)`
+        }
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          editorState.startRenamingContainer(containerId);
+        }}
+      >
+        {title || 'Untitled'}
+      </span>
+    );
+  },
+);
+
 /**
  * An open container: a frame behind its steps, which lets the canvas have
  * every press but its head's. The head has its fold, its title, how many
- * steps it holds, and its ×, which takes the container away, not its steps.
+ * steps it holds, and its ×, which takes the container away, not its steps;
+ * right-clicked, it has its menu.
  */
 export const CubeCanvasContainerFrame = observer(
   (props: NodeProps<CubeCanvasContainerNode>) => {
@@ -139,44 +163,55 @@ export const CubeCanvasContainerFrame = observer(
         data-testid={LEGEND_CUBE_TEST_ID.CANVAS_CONTAINER}
         aria-label={`Container: ${container.title}`}
       >
-        <div
-          className="legend-cube__container-head nodrag nopan pointer-events-auto flex items-center gap-1 px-1 text-sm text-[var(--color-text-secondary)]"
-          style={{ height: CUBE_CANVAS_FRAME_HEAD_HEIGHT }}
+        <ContextMenu
+          className="pointer-events-auto"
+          content={
+            <CubeContainerContextMenu
+              editorState={editorState}
+              containerId={container.id}
+            />
+          }
+          menuProps={CONTAINER_MENU_PROPS}
         >
-          <button
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded hover:bg-[var(--color-bg-hover)] disabled:opacity-50"
-            title="Fold the container to one box"
-            aria-label="Fold the container"
-            disabled={readOnly}
-            onClick={() =>
-              editorState.nodeEditor.finish() &&
-              editorState.setContainerFolded(container.id, true)
-            }
+          <div
+            className="legend-cube__container-head nodrag nopan flex items-center gap-1 px-1 text-sm text-[var(--color-text-secondary)]"
+            style={{ height: CUBE_CANVAS_FRAME_HEAD_HEIGHT }}
           >
-            <ChevronDownIcon />
-          </button>
-          <LayerGroupIcon className="shrink-0" aria-hidden={true} />
-          <CubeCanvasContainerTitle
-            containerId={container.id}
-            title={container.title}
-            className="font-medium text-[var(--color-text-primary)]"
-          />
-          <span className="shrink-0 text-[var(--color-text-muted)]">
-            {stepCount(steps.length)}
-          </span>
-          <button
-            className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded hover:bg-[var(--color-bg-hover)] disabled:opacity-50"
-            title="Take the container away; its steps stay"
-            aria-label="Take the container away"
-            disabled={readOnly}
-            onClick={() =>
-              editorState.nodeEditor.finish() &&
-              editorState.removeContainer(container.id)
-            }
-          >
-            <TimesIcon />
-          </button>
-        </div>
+            <button
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded hover:bg-[var(--color-bg-hover)] disabled:opacity-50"
+              title="Fold the container to one box"
+              aria-label="Fold the container"
+              disabled={readOnly}
+              onClick={() =>
+                editorState.nodeEditor.finish() &&
+                editorState.setContainerFolded(container.id, true)
+              }
+            >
+              <ChevronDownIcon />
+            </button>
+            <LayerGroupIcon className="shrink-0" aria-hidden={true} />
+            <CubeCanvasContainerTitle
+              containerId={container.id}
+              title={container.title}
+              className="font-medium text-[var(--color-text-primary)]"
+            />
+            <span className="shrink-0 text-[var(--color-text-muted)]">
+              {stepCount(steps.length)}
+            </span>
+            <button
+              className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded hover:bg-[var(--color-bg-hover)] disabled:opacity-50"
+              title="Take the container away; its steps stay"
+              aria-label="Take the container away"
+              disabled={readOnly}
+              onClick={() =>
+                editorState.nodeEditor.finish() &&
+                editorState.removeContainer(container.id)
+              }
+            >
+              <TimesIcon />
+            </button>
+          </div>
+        </ContextMenu>
       </div>
     );
   },
@@ -185,7 +220,9 @@ export const CubeCanvasContainerFrame = observer(
 /**
  * A folded container: one box in its steps' place, the lines into and out
  * of them at its sides. It shows what they would: an error or a missing
- * input in any of them, and the step Execute runs.
+ * input in any of them, and the Output label when the output step is one of
+ * them. ▸, a double-click, or Enter on the box (`CubeCanvas`) opens it;
+ * right-clicked, it has its menu.
  */
 export const CubeCanvasFoldedContainer = observer(
   (props: NodeProps<CubeCanvasContainerNode>) => {
@@ -216,13 +253,22 @@ export const CubeCanvasFoldedContainer = observer(
         place.steps.includes(connection.source) &&
         !place.steps.includes(connection.target),
     );
-    const unfold = (): void => {
+    const open = (): void => {
       if (editorState.nodeEditor.finish()) {
         editorState.setContainerFolded(container.id, false);
       }
     };
     return (
-      <>
+      <ContextMenu
+        className="h-full w-full"
+        content={
+          <CubeContainerContextMenu
+            editorState={editorState}
+            containerId={container.id}
+          />
+        }
+        menuProps={CONTAINER_MENU_PROPS}
+      >
         <Handle
           id={CUBE_FOLDED_INPUT_HANDLE_ID}
           type="target"
@@ -254,7 +300,7 @@ export const CubeCanvasFoldedContainer = observer(
             style={FOLDED_STYLE}
             data-testid={LEGEND_CUBE_TEST_ID.CANVAS_FOLDED_CONTAINER}
             aria-label={`Folded container: ${container.title}`}
-            onDoubleClick={() => !editorState.readOnly && unfold()}
+            onDoubleClick={() => !editorState.readOnly && open()}
           >
             <LayerGroupIcon
               className="shrink-0 text-lg text-[var(--color-text-secondary)]"
@@ -275,14 +321,18 @@ export const CubeCanvasFoldedContainer = observer(
               title="Open the container"
               aria-label="Open the container"
               disabled={editorState.readOnly}
-              onClick={unfold}
+              onClick={open}
             >
               <ChevronRightIcon />
             </button>
             {isCapture && (
-              // its steps hold the one Execute runs
-              <span className="absolute -top-2 right-2 rounded-sm bg-[var(--color-accent)] px-1 text-xs font-medium leading-4 text-[var(--color-text-on-accent)]">
-                {`▶ ${RUNNING_NODE_LABEL}`}
+              // its steps hold the output step: the step's own label, a
+              // caption above its corner
+              <span
+                className="absolute bottom-full right-1 mb-0.5 cursor-default select-none text-xs font-semibold uppercase leading-4 tracking-wider text-[var(--color-text-secondary)]"
+                title={RUNNING_NODE_TITLE}
+              >
+                {RUNNING_NODE_LABEL}
               </span>
             )}
           </div>
@@ -294,7 +344,7 @@ export const CubeCanvasFoldedContainer = observer(
           isConnectable={false}
           style={hasOutput ? undefined : { visibility: 'hidden' }}
         />
-      </>
+      </ContextMenu>
     );
   },
 );

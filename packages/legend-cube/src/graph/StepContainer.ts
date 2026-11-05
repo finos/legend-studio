@@ -43,40 +43,53 @@ export interface ShownStepContainer {
 const compareText = (a: string, b: string): number =>
   a < b ? -1 : a > b ? 1 : 0;
 
+/** The steps in blocks: each block's steps linked to one another, and to no step of another */
+const getStepBlocks = (
+  query: Query,
+  steps: ReadonlySet<string>,
+): string[][] => {
+  const blocks: string[][] = [];
+  const reached = new Set<string>();
+  steps.forEach((first) => {
+    if (reached.has(first)) {
+      return;
+    }
+    const block = [first];
+    reached.add(first);
+    for (let index = 0; index < block.length; index++) {
+      const id = block[index] as string;
+      query.connections.forEach((connection) => {
+        const other =
+          connection.source === id
+            ? connection.target
+            : connection.target === id
+              ? connection.source
+              : undefined;
+        if (other !== undefined && steps.has(other) && !reached.has(other)) {
+          reached.add(other);
+          block.push(other);
+        }
+      });
+    }
+    blocks.push(block);
+  });
+  return blocks;
+};
+
 /**
  * Whether the steps are one block, each linked to another of them: so all of
  * one tree, with every step between two of them one of them too (a forest
  * has one path between two steps). A frame round steps that aren't would
  * hold a step not its own, and folded, two such containers can feed each
  * other, a cycle: {a1, a2} and {b1, b2} on a Join fed by a1 → b1 and
- * b2 → a2. One that is folded has one output, its last step's.
+ * b2 → a2. Blocks of a forest folded to boxes still make a forest, so folding
+ * any number of them makes none. One that is folded has one output, its last
+ * step's.
  */
 export const isConnectedStepSet = (
   query: Query,
   steps: ReadonlySet<string>,
-): boolean => {
-  const [first] = steps;
-  if (first === undefined) {
-    return false;
-  }
-  const reached = new Set([first]);
-  const queue = [first];
-  for (let id = queue.pop(); id !== undefined; id = queue.pop()) {
-    query.connections.forEach((connection) => {
-      const other =
-        connection.source === id
-          ? connection.target
-          : connection.target === id
-            ? connection.source
-            : undefined;
-      if (other !== undefined && steps.has(other) && !reached.has(other)) {
-        reached.add(other);
-        queue.push(other);
-      }
-    });
-  }
-  return reached.size === steps.size;
-};
+): boolean => getStepBlocks(query, steps).length === 1;
 
 /**
  * The containers the canvas draws, in the order saved, each with the steps
@@ -155,29 +168,109 @@ export const generateStepContainerId = (
   }`;
 
 /**
- * The containers without the steps the query no longer has, and without the
- * containers that leaves empty: a step removed must not leave its id behind
- * for a new step of the same id to take up
+ * The containers beside a step in none: each holding a step that feeds it,
+ * or the step it feeds. The step can join them, as one block still.
  */
-export const pruneStepContainers = (
+export const getContainersBesideStep = (
+  query: Query,
+  shown: readonly ShownStepContainer[],
+  stepId: string,
+): ShownStepContainer[] => {
+  if (!query.getNode(stepId) || getStepContainer(shown, stepId)) {
+    return [];
+  }
+  const output = query.getOutputConnection(stepId)?.target;
+  const linked = new Set(
+    [...query.getInputIds(stepId), output].filter(
+      (id): id is string => id !== undefined,
+    ),
+  );
+  return shown.filter((each) => each.steps.some((id) => linked.has(id)));
+};
+
+/**
+ * Whether a step can be taken out of its container: what is left is one
+ * block still, or nothing. A step at the container's edge, then: one that no
+ * other step of it feeds, or its last step, when it isn't a Join of two of
+ * them.
+ */
+export const canTakeStepOutOfContainer = (
+  query: Query,
+  shown: readonly ShownStepContainer[],
+  stepId: string,
+): boolean => {
+  const container = getStepContainer(shown, stepId);
+  if (!container) {
+    return false;
+  }
+  const rest = container.steps.filter((id) => id !== stepId);
+  return !rest.length || isConnectedStepSet(query, new Set(rest));
+};
+
+const isSameList = (a: readonly string[], b: readonly string[]): boolean =>
+  a.length === b.length && a.every((each, index) => each === b[index]);
+
+/**
+ * The containers once the query has changed (PLAN §11.29): steps follow the
+ * flow.
+ *
+ * 1. A step the query no longer has leaves its container: a new step of the
+ *    same id must not take its place.
+ * 2. Each step placed, added or moved, leaves the container it was in, and
+ *    joins the one that holds both the step feeding its first input and the
+ *    step it feeds: one added after a container's last step stays out.
+ * 3. A container split by the change, e.g. by removing a Join in it, keeps
+ *    its largest block, the one with the first step by id when two are as
+ *    large; one left with no step goes.
+ *
+ * The containers as they were when nothing changes.
+ */
+export const reconcileStepContainers = (
   containers: readonly StepContainer[] | undefined,
   query: Query,
+  placed: readonly string[] = [],
 ): readonly StepContainer[] | undefined => {
-  if (!containers) {
+  if (!containers?.length) {
     return containers;
   }
-  const kept = containers
-    .map((container) => {
-      const steps = container.steps.filter(
-        (id) => query.getNode(id) !== undefined,
+  const isPlaced = new Set(placed);
+  const working = containers.map((container) => ({
+    container,
+    steps: container.steps.filter(
+      (id) => query.getNode(id) !== undefined && !isPlaced.has(id),
+    ),
+  }));
+  placed.forEach((id) => {
+    const input = query.getInputIds(id).find((each) => each !== undefined);
+    const output = query.getOutputConnection(id)?.target;
+    const into =
+      input === undefined || output === undefined
+        ? undefined
+        : working.find(
+            ({ steps }) => steps.includes(input) && steps.includes(output),
+          );
+    if (into && query.getNode(id)) {
+      into.steps = [...into.steps, id];
+    }
+  });
+  const next = working
+    .map(({ container, steps }) => {
+      const [largest = []] = getStepBlocks(query, new Set(steps)).sort(
+        (a, b) =>
+          b.length - a.length ||
+          compareText(
+            [...a].sort(compareText)[0] ?? '',
+            [...b].sort(compareText)[0] ?? '',
+          ),
       );
-      return steps.length === container.steps.length
+      const kept = steps.filter((id) => largest.includes(id));
+      return isSameList(kept, container.steps)
         ? container
-        : { ...container, steps };
+        : { ...container, steps: kept };
     })
     .filter((container) => container.steps.length > 0);
-  return kept.length === containers.length &&
-    kept.every((container, index) => container === containers[index])
+  return next.length === containers.length &&
+    next.every((container, index) => container === containers[index])
     ? containers
-    : kept;
+    : next;
 };

@@ -92,6 +92,7 @@ const ITEMS = [
   'Paste',
   'Duplicate',
   'Put in a Container',
+  'Take Out of Container',
   'Remove',
   'Swap Inputs',
 ];

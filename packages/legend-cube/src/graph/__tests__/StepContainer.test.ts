@@ -28,11 +28,13 @@ import { Connection } from '../Connection.js';
 import { CubeDocument, DEFAULT_META } from '../CubeDocument.js';
 import { Query } from '../Query.js';
 import {
+  canTakeStepOutOfContainer,
   generateStepContainerId,
+  getContainersBesideStep,
   getShownContainers,
   getStepsForNewContainer,
   isConnectedStepSet,
-  pruneStepContainers,
+  reconcileStepContainers,
   type StepContainer,
 } from '../StepContainer.js';
 
@@ -157,20 +159,136 @@ describe(unitTest('Step containers'), () => {
     ).toBe('container4');
   });
 
-  test('Prunes the steps the query no longer has, and the containers left empty', () => {
+  test('Offers the containers beside a step in none: holding a step that feeds it, or the one it feeds', () => {
     const query = managerQuery();
-    const kept = [container('container1', ['s2', 'f'])];
-    expect(pruneStepContainers(kept, query)).toBe(kept);
+    const shown = getShownContainers(query, [
+      container('container1', ['s2']),
+      container('container2', ['sort']),
+    ]);
+    const beside = (id: string): string[] =>
+      getContainersBesideStep(query, shown, id).map(
+        (each) => each.container.id,
+      );
+    expect(beside('f')).toEqual(['container1']);
+    expect(beside('join')).toEqual(['container2']);
+    // linked to none of them, or in one already
+    expect(beside('s1')).toEqual([]);
+    expect(beside('s2')).toEqual([]);
+  });
+
+  test('Takes a step out of its container only at its edge, so it stays one block', () => {
+    const query = managerQuery();
+    const shown = getShownContainers(query, [
+      container('container1', ['s1', 's2', 'f', 'join']),
+    ]);
+    expect(canTakeStepOutOfContainer(query, shown, 's1')).toBe(true);
+    expect(canTakeStepOutOfContainer(query, shown, 's2')).toBe(true);
+    // f is between s2 and the Join; the Join holds both branches
+    expect(canTakeStepOutOfContainer(query, shown, 'f')).toBe(false);
+    expect(canTakeStepOutOfContainer(query, shown, 'join')).toBe(false);
+    expect(canTakeStepOutOfContainer(query, shown, 'sort')).toBe(false);
+    // its only step
     expect(
-      pruneStepContainers(
+      canTakeStepOutOfContainer(
+        query,
+        getShownContainers(query, [container('container1', ['sort'])]),
+        'sort',
+      ),
+    ).toBe(true);
+  });
+});
+
+describe(unitTest('Step containers: steps follow the flow'), () => {
+  /** s → a → b → t */
+  const chain = (): Query =>
+    new Query(
+      [
+        resolvedTable('s', 'ORDERS', [column('ID')]),
+        ...['a', 'b', 't'].map((id) => new TestUnaryNode(id)),
+      ],
+      [
+        new Connection('s', 'a', 'tds'),
+        new Connection('a', 'b', 'tds'),
+        new Connection('b', 't', 'tds'),
+      ],
+      't',
+    );
+  const ab = [container('container1', ['a', 'b'])];
+
+  test('Leaves the containers as they were when nothing changes', () => {
+    const query = managerQuery();
+    const containers = [container('container1', ['s2', 'f'])];
+    expect(reconcileStepContainers(containers, query)).toBe(containers);
+    expect(reconcileStepContainers(undefined, query)).toBeUndefined();
+  });
+
+  test('Takes a step the query no longer has out, and a container left empty away', () => {
+    expect(
+      reconcileStepContainers(
         [
           container('container1', ['s2', 'gone']),
           container('container2', ['gone']),
         ],
-        query,
+        managerQuery(),
       ),
     ).toEqual([container('container1', ['s2'])]);
-    expect(pruneStepContainers(undefined, query)).toBeUndefined();
+  });
+
+  test('Puts a step added between two steps of a container in it, and one added after its last step out', () => {
+    const query = chain();
+    const between = query.add(new TestUnaryNode('x'), 'a');
+    expect(reconcileStepContainers(ab, between, ['x'])).toEqual([
+      container('container1', ['a', 'b', 'x']),
+    ]);
+    const after = query.add(new TestUnaryNode('x'), 'b');
+    expect(reconcileStepContainers(ab, after, ['x'])).toBe(ab);
+    const before = query.add(new TestUnaryNode('x'), 's');
+    expect(reconcileStepContainers(ab, before, ['x'])).toBe(ab);
+  });
+
+  test('Takes a moved step out of its container, and puts it in the one it lands inside', () => {
+    // s → a → b → c → t, with {a, b} and {c, t}: b moved after c
+    const query = new Query(
+      [
+        resolvedTable('s', 'ORDERS', [column('ID')]),
+        ...['a', 'b', 'c', 't'].map((id) => new TestUnaryNode(id)),
+      ],
+      [
+        new Connection('s', 'a', 'tds'),
+        new Connection('a', 'b', 'tds'),
+        new Connection('b', 'c', 'tds'),
+        new Connection('c', 't', 'tds'),
+      ],
+      't',
+    );
+    const containers = [
+      container('container1', ['a', 'b']),
+      container('container2', ['c', 't']),
+    ];
+    expect(
+      reconcileStepContainers(containers, query.move('b', 'c'), ['b']),
+    ).toEqual([
+      container('container1', ['a']),
+      container('container2', ['c', 't', 'b']),
+    ]);
+  });
+
+  test('Keeps the largest block of a container that a change splits', () => {
+    // the Join removed: s1 feeds sort in its place, and s2 → f feeds nothing
+    const query = managerQuery().remove('join');
+    expect(
+      reconcileStepContainers(
+        [container('container1', ['s1', 's2', 'join', 'sort'])],
+        query,
+      ),
+    ).toEqual([container('container1', ['s1', 'sort'])]);
+    // two blocks as large: the one with the first step by id, f
+    expect(
+      reconcileStepContainers(
+        [container('container1', ['s1', 's2', 'f', 'join', 'sort'])],
+        query,
+      ),
+    ).toEqual([container('container1', ['s2', 'f'])]);
   });
 });
 
