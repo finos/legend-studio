@@ -31,6 +31,13 @@ import type {
   CubeFunctionSignature,
 } from '../../graph-manager/CubeFunctionCatalogue.js';
 import { pureStringLiteral } from '../../stores/CubePureText.js';
+import {
+  type CubeFunctionHelpContext,
+  getCubeFunctionCallSnippet,
+  getCubeFunctionDocumentation,
+  getCubeShortestSignature,
+  getCubeSignatureDocumentation,
+} from './CubeFunctionHelp.js';
 
 // The completions of a Pure expression of one row, `x | …` (user,
 // 2026-10-16): Cube's own, from what it knows without the engine (after
@@ -160,77 +167,28 @@ const functionsOf = (
 /** Functions offered first for an optional column: its one value, or another when it is empty */
 const OPTIONAL_FIRST = ['toOne', 'coalesce'];
 
-/** A signature's documentation in Markdown: how Pure writes it, then what it does */
-const documentationOf = (
-  signatures: readonly CubeFunctionSignature[],
-): string =>
-  signatures
-    .map((signature) =>
-      [`\`\`\`pure\n${signature.text}\n\`\`\``, signature.documentation.trim()]
-        .filter((part) => part.length)
-        .join('\n\n'),
-    )
-    .join('\n\n---\n\n');
-
-/** Text a snippet writes as is: its `$`, `}` and `\\` escaped */
-const snippetText = (text: string): string => text.replace(/[$}\\]/gu, '\\$&');
-
-/** The signature with the fewest parameters: the call written first */
-const shortestOf = (
-  signatures: readonly CubeFunctionSignature[],
-): CubeFunctionSignature | undefined =>
-  signatures.reduce<CubeFunctionSignature | undefined>(
-    (shortest, each) =>
-      !shortest || each.parameters.length < shortest.parameters.length
-        ? each
-        : shortest,
-    undefined,
-  );
-
-/**
- * A call of the signature after `->`, its first parameter the value: a
- * placeholder for each other, named as its documentation names it, or as
- * another signature names a parameter of its type there, a text one quoted,
- * e.g. `lpad(${1:length}, '${2:char}')`
- */
-const snippetOf = (
-  signature: CubeFunctionSignature,
-  others: readonly CubeFunctionSignature[],
-): string =>
-  `${signature.name}(${signature.parameters
-    .slice(1)
-    .map((parameter, index) => {
-      const name =
-        parameter.name ??
-        others
-          .map((other) => other.parameters[index + 1])
-          .find((other) => other?.name && other.type === parameter.type)?.name;
-      const placeholder = `\${${index + 1}:${snippetText(
-        name ?? parameter.type,
-      )}}`;
-      return parameter.type === 'String' ? `'${placeholder}'` : placeholder;
-    })
-    .join(', ')})`;
-
 /** A function's completion, from the catalogue's offer, Cube's own snippet first */
 const offerCompletion = (
   offer: CubeFunctionOffer,
   own: CubeFunctionCompletion | undefined,
+  context: CubeFunctionHelpContext,
 ): CubeFunctionCompletion & { documentation: string } => {
-  const shortest = shortestOf(offer.signatures);
+  const shortest = getCubeShortestSignature(offer.signatures);
   const others = offer.signatures.length - 1;
+  const [lone] = offer.signatures;
   return {
     name: offer.function.name,
     snippet:
-      own?.snippet ?? (shortest ? snippetOf(shortest, offer.signatures) : ''),
+      own?.snippet ??
+      (shortest ? getCubeFunctionCallSnippet(shortest, offer.signatures) : ''),
     detail: shortest
       ? `${shortest.text}${others ? ` (+${others} more)` : ''}`
       : (own?.detail ?? ''),
     // the detail writes a lone signature already
     documentation:
-      offer.signatures.length === 1
-        ? (offer.signatures[0]?.documentation.trim() ?? '')
-        : documentationOf(offer.signatures),
+      offer.signatures.length === 1 && lone
+        ? getCubeSignatureDocumentation(lone, context)
+        : getCubeFunctionDocumentation(offer.signatures, context),
   };
 };
 
@@ -244,6 +202,7 @@ const offerCompletion = (
 const functionCompletionsOf = (
   column: CubeCompletionColumn | undefined,
   catalogue: CubeFunctionCatalogue | undefined,
+  context: CubeFunctionHelpContext,
 ): (CubeFunctionCompletion & { documentation?: string | undefined })[] => {
   const own = functionsOf(column);
   if (!catalogue) {
@@ -265,7 +224,11 @@ const functionCompletionsOf = (
   return [...names].flatMap((name) => {
     const offer = offers.get(name);
     const ownOne = ownByName.get(name);
-    return offer ? [offerCompletion(offer, ownOne)] : ownOne ? [ownOne] : [];
+    return offer
+      ? [offerCompletion(offer, ownOne, context)]
+      : ownOne
+        ? [ownOne]
+        : [];
   });
 };
 
@@ -297,6 +260,8 @@ export const getCubeExpressionCompletions = (
   textBeforeCursor: string,
   columns: readonly CubeCompletionColumn[],
   catalogue?: CubeFunctionCatalogue | undefined,
+  /** The database the expression runs on, as the engine names it: how the engine's tests went there */
+  databaseType?: string | undefined,
 ): CodeEditorCompletion[] => {
   const parameter = parameterOf(textBeforeCursor);
   // `$x.COLUMN->tex`: the column's functions
@@ -308,7 +273,10 @@ export const getCubeExpressionCompletions = (
     const name = nameOf(call.groups.column ?? '');
     const column = columns.find((each) => each.name === name);
     const replaceLength = call.groups.partial?.length ?? 0;
-    return functionCompletionsOf(column, catalogue).map((each) => ({
+    return functionCompletionsOf(column, catalogue, {
+      databaseType,
+      testedDatabases: catalogue?.testedDatabases,
+    }).map((each) => ({
       label: each.name,
       insertText: each.snippet,
       isSnippet: true,
@@ -422,6 +390,8 @@ export const getCubeExpressionCompletionSource = (
   columns: readonly CubeCompletionColumn[],
   engine?: CubeEngineCompletionSource | undefined,
   catalogue?: CubeFunctionCatalogue | undefined,
+  /** The database the expression runs on, as the engine names it */
+  databaseType?: string | undefined,
 ): CodeEditorCompletionSource => ({
   triggerCharacters: TRIGGERS,
   getCompletions: async (textBeforeCursor) => {
@@ -429,6 +399,7 @@ export const getCubeExpressionCompletionSource = (
       textBeforeCursor,
       columns,
       catalogue,
+      databaseType,
     );
     return engine
       ? mergeCubeEngineCompletions(
@@ -482,10 +453,13 @@ const helpSignaturesOf = (
 
 /**
  * The hover over a function's name, as a call writes it, after `->` or
- * before `(`: its signatures and documentation; none without a catalogue
+ * before `(`: its signatures and documentation, and how the engine's tests
+ * went on the database; none without a catalogue
  */
 export const getCubeFunctionHoverSource = (
   catalogue: CubeFunctionCatalogue | undefined,
+  /** The database the expression runs on, as the engine names it */
+  databaseType?: string | undefined,
 ): CodeEditorHoverSource | undefined =>
   catalogue
     ? {
@@ -496,7 +470,12 @@ export const getCubeFunctionHoverSource = (
           const isCalled =
             /->\s*$/u.test(textBefore) || /^\s*\(/u.test(textAfter);
           const signatures = isCalled ? helpSignaturesOf(catalogue, word) : [];
-          return signatures.length ? documentationOf(signatures) : undefined;
+          return signatures.length
+            ? getCubeFunctionDocumentation(signatures, {
+                databaseType,
+                testedDatabases: catalogue.testedDatabases,
+              })
+            : undefined;
         },
       }
     : undefined;
@@ -560,12 +539,14 @@ export const readCubeCallAtCursor = (
 /** A signature as the help shows it: each parameter where its label writes it */
 const helpSignatureOf = (
   signature: CubeFunctionSignature,
+  context: CubeFunctionHelpContext,
 ): CodeEditorSignature => {
   const label = signature.text;
   let from = signature.name.length + 1;
   return {
     label,
-    documentation: signature.documentation.trim() || undefined,
+    documentation:
+      getCubeSignatureDocumentation(signature, context) || undefined,
     parameters: signature.parameters.map((parameter) => {
       const start = label.indexOf(parameter.text, from);
       const end = start + parameter.text.length;
@@ -585,6 +566,8 @@ const helpSignatureOf = (
  */
 export const getCubeFunctionSignatureHelpSource = (
   catalogue: CubeFunctionCatalogue | undefined,
+  /** The database the expression runs on, as the engine names it */
+  databaseType?: string | undefined,
 ): CodeEditorSignatureHelpSource | undefined =>
   catalogue
     ? {
@@ -606,8 +589,14 @@ export const getCubeFunctionSignatureHelpSource = (
                 : best,
             -1,
           );
+          const context = {
+            databaseType,
+            testedDatabases: catalogue.testedDatabases,
+          };
           return {
-            signatures: signatures.map(helpSignatureOf),
+            signatures: signatures.map((each) =>
+              helpSignatureOf(each, context),
+            ),
             activeSignature: Math.max(active, 0),
             activeParameter: call.argument,
           };

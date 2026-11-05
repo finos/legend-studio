@@ -23,6 +23,7 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { guaranteeType } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -60,6 +61,9 @@ import {
 } from './CubeJsonFieldsTree.js';
 import { columnAccessOf } from '../../stores/CubePureText.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
+import type { CubeFunctionSignature } from '../../graph-manager/CubeFunctionCatalogue.js';
+import { getCubeFunctionCallText } from './CubeFunctionHelp.js';
+import { CubeFunctionsPanel } from './CubeFunctionsPanel.js';
 
 /** The code editor's language: legend-code-editor's `CODE_EDITOR_LANGUAGE.PURE` */
 const PURE = 'pure';
@@ -159,6 +163,26 @@ export const CubeExpressionFilterEditor = observer(
     const { outline } = draft;
     const catalogue = editorState.functionCatalogue;
     useEffect(() => editorState.loadFunctionCatalogue(), [editorState]);
+    // the model's outline tells the database: how the engine's tests went there
+    useEffect(() => {
+      flowResult(editorState.loadModelOutline()).catch(() => undefined);
+    }, [editorState]);
+    const { databaseType } = draft;
+    /** Writes a call of a function at the condition's cursor, or at its end before it is clicked into */
+    const insertCall = (signatures: readonly CubeFunctionSignature[]): void => {
+      if (
+        hasCursor &&
+        inserter.current?.(
+          (before) => getCubeFunctionCallText(signatures, before),
+          { isSnippet: true, isVerbatim: true, opensSignatureHelp: true },
+        )
+      ) {
+        return;
+      }
+      draft.setCode(
+        `${draft.code}${getCubeFunctionCallText(signatures, draft.code.slice(-1), true)}`,
+      );
+    };
     // typing goes on while the code is checked
     const disabled = readOnly;
     /** Writes text at the condition's cursor, or at its end before it is clicked into, as the chips do */
@@ -209,9 +233,13 @@ export const CubeExpressionFilterEditor = observer(
               schema.columns,
               (text) => draft.getEngineCompletions(text),
               catalogue,
+              databaseType,
             )}
-            hover={getCubeFunctionHoverSource(catalogue)}
-            signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
+            hover={getCubeFunctionHoverSource(catalogue, databaseType)}
+            signatureHelp={getCubeFunctionSignatureHelpSource(
+              catalogue,
+              databaseType,
+            )}
             textInserterRef={inserter}
             textEditorRef={textEditor}
             highlightedRange={pointed ? toCodeEditorRange(pointed) : undefined}
@@ -269,6 +297,15 @@ export const CubeExpressionFilterEditor = observer(
           disabled={disabled}
           onInsert={write}
         />
+        {catalogue && (
+          <CubeFunctionsPanel
+            catalogue={catalogue}
+            databaseType={databaseType}
+            target="the condition"
+            disabled={disabled}
+            onInsert={insertCall}
+          />
+        )}
         <ul className="flex list-disc flex-col gap-1 pl-4 text-sm text-[var(--color-text-secondary)]">
           {EXPRESSION_FILTER_EDITOR_NOTES.map((note) => (
             <li key={note}>{note}</li>

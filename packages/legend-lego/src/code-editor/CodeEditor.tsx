@@ -192,12 +192,33 @@ export interface CodeEditorSignatureHelpSource {
   ): CodeEditorSignatureHelp | undefined;
 }
 
+/** How an inserter writes its text */
+export interface CodeEditorTextInsertOptions {
+  /** The text is a snippet, its placeholders (`${1:name}`) filled in turn, as a completion's are */
+  readonly isSnippet?: boolean | undefined;
+  /** Writes the text as it is, no space put around it: the text says its own spacing */
+  readonly isVerbatim?: boolean | undefined;
+  /** Opens the signature help once written, as a call's `(` typed would */
+  readonly opensSignatureHelp?: boolean | undefined;
+}
+
 /**
  * Writes text at an editor's cursor, as a click outside it asks (e.g. a
  * column's chip), with a space before and after where code touches it;
- * false when the editor has no text or cursor to write at
+ * the text given, or made from the character before the cursor; false when
+ * the editor has no text or cursor to write at
  */
-export type CodeEditorTextInserter = (text: string) => boolean;
+export type CodeEditorTextInserter = (
+  text: string | ((characterBefore: string) => string),
+  options?: CodeEditorTextInsertOptions,
+) => boolean;
+
+/** A snippet's text with its placeholders written as their default text */
+const snippetAsText = (snippet: string): string =>
+  snippet
+    .replace(/\$\{\d+:((?:[^}\\]|\\.)*)\}/gu, '$1')
+    .replace(/\$\{?\d+\}?/gu, '')
+    .replace(/\\([$}\\])/gu, '$1');
 
 /** A range of an editor's text: lines and columns from 1, its end column excluded, as Monaco counts them */
 export interface CodeEditorRange {
@@ -653,7 +674,10 @@ export const CodeEditor: React.FC<{
     if (!editor || !textInserterRef) {
       return undefined;
     }
-    textInserterRef.current = (text: string): boolean => {
+    textInserterRef.current = (
+      given: string | ((characterBefore: string) => string),
+      options?: CodeEditorTextInsertOptions,
+    ): boolean => {
       const model = editor.getModel();
       const selection = editor.getSelection();
       if (!model || !selection) {
@@ -674,17 +698,38 @@ export const CodeEditor: React.FC<{
         endLineNumber: selection.endLineNumber,
         endColumn: selection.endColumn + 1,
       });
+      const text = typeof given === 'function' ? given(before) : given;
       // a space first but at the start, after a space, or an opening bracket: `a == $x.B`, `f($x.B`;
       // a space after before more code but a space, a closing bracket or a separator: `$x.B $x.C`, `f($x.B)`
-      const spaced = `${before && !/[\s([{.!]/u.test(before) ? ' ' : ''}${text}${
-        after && !/[\s)\]},.;]/u.test(after) ? ' ' : ''
-      }`;
-      editor.pushUndoStop();
-      editor.executeEdits('insert', [
-        { range: selection, text: spaced, forceMoveMarkers: true },
-      ]);
-      editor.pushUndoStop();
+      const spaced = options?.isVerbatim
+        ? text
+        : `${before && !/[\s([{.!]/u.test(before) ? ' ' : ''}${text}${
+            after && !/[\s)\]},.;]/u.test(after) ? ' ' : ''
+          }`;
+      // possibly none, as an editor mocked in tests gives
+      const snippets = (
+        options?.isSnippet
+          ? editor.getContribution('snippetController2')
+          : undefined
+      ) as { insert?: (template: string) => void } | null | undefined;
       editor.focus();
+      if (snippets?.insert) {
+        // its own undo step, its placeholders filled in turn
+        snippets.insert(spaced);
+      } else {
+        editor.pushUndoStop();
+        editor.executeEdits('insert', [
+          {
+            range: selection,
+            text: options?.isSnippet ? snippetAsText(spaced) : spaced,
+            forceMoveMarkers: true,
+          },
+        ]);
+        editor.pushUndoStop();
+      }
+      if (options?.opensSignatureHelp) {
+        editor.trigger('insert', 'editor.action.triggerParameterHints', {});
+      }
       return true;
     };
     return () => {

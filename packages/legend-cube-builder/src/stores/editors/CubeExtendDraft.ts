@@ -155,6 +155,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       validating: observable,
       touched: observable,
       columns: computed,
+      databaseType: computed,
       isValidated: computed,
       applyDisabledReason: computed,
       addRow: action,
@@ -262,6 +263,24 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   /** Checks the rows at once (F10), not waiting for typing to pause */
   checkNow(): void {
     this.autoCheck.now();
+  }
+
+  /**
+   * The database the query up to this node runs on, as the engine names it,
+   * once the model's outline tells it: how the engine's tests of a
+   * function went there (EXPRESSION-EDITOR.md, round 2b)
+   */
+  get databaseType(): string | undefined {
+    const { document } = this.editorState;
+    const runtime = document.context?.runtime;
+    return document.context && runtime !== undefined
+      ? this.editorState.getRunDatabaseType(
+          document.query,
+          this.original.id,
+          document.context.model,
+          runtime,
+        )
+      : undefined;
   }
 
   /**
