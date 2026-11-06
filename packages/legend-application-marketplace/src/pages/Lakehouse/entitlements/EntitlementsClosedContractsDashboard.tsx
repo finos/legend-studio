@@ -115,6 +115,7 @@ export const EntitlementsClosedContractsDashboard = observer(
     );
 
     useEffect(() => {
+      let isCurrentSelection = true;
       setContractErrors(undefined);
       if (
         selectedRow?.kind === ROW_KIND_CONTRACT &&
@@ -123,10 +124,21 @@ export const EntitlementsClosedContractsDashboard = observer(
         const contract = selectedRow.data.contractResultLite;
         const isCompleted = contract.state === V1_ContractState.COMPLETED;
         dashboardState
-          .getContractErrors(contract.guid, tokenRef.current, isCompleted)
-          .then((result) => setContractErrors(result))
-          .catch(() => setContractErrors(undefined));
+          .getContractErrors(contract, tokenRef.current, isCompleted)
+          .then((result) => {
+            if (isCurrentSelection) {
+              setContractErrors(result);
+            }
+          })
+          .catch(() => {
+            if (isCurrentSelection) {
+              setContractErrors(undefined);
+            }
+          });
       }
+      return () => {
+        isCurrentSelection = false;
+      };
     }, [selectedRow, dashboardState]);
 
     const selectedRowId = getSelectedRowId(selectedRow);

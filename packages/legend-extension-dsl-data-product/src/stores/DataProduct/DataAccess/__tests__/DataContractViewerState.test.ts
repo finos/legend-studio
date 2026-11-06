@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 import {
   type V1_LiteDataContract,
   type V1_TaskMetadata,
@@ -29,7 +29,9 @@ import {
   V1_ContractEventPayloadType,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ContractUserEventDataProducerPayload,
+  V1_ContractUserMembership,
 } from '@finos/legend-graph';
+import { flowResult } from 'mobx';
 import {
   ApplicationStore,
   LegendApplicationConfig,
@@ -419,6 +421,29 @@ describe('DataContractViewerState', () => {
       expect(steps[1]?.status).toBe(TimelineStepStatus.SKIPPED); // PM (no task found)
       expect(steps[2]?.status).toBe(TimelineStepStatus.UPCOMING); // DO
       expect(steps[3]?.status).toBe(TimelineStepStatus.UPCOMING); // complete
+    });
+  });
+
+  describe('init', () => {
+    test('skips fetching the contract on the first init when members are preloaded', async () => {
+      const state = createState(createLiteContract({}));
+      const getContractTasks = jest.fn(async () => ({ tasks: [] }));
+      const getDataContract = jest.fn(async () => ({ dataContracts: [] }));
+      Object.assign(state.lakehouseContractServerClient, {
+        getContractTasks,
+        getDataContract,
+      });
+
+      const member = new V1_ContractUserMembership();
+      state.preloadContractMembersForNextInit([member]);
+      await flowResult(state.init('token-1'));
+      expect(getContractTasks).toHaveBeenCalledTimes(1);
+      expect(getDataContract).not.toHaveBeenCalled();
+      expect(state.contractMembers).toEqual([member]);
+
+      await flowResult(state.init('token-1'));
+      expect(getContractTasks).toHaveBeenCalledTimes(2);
+      expect(getDataContract).toHaveBeenCalledTimes(1);
     });
   });
 });

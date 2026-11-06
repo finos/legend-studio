@@ -160,14 +160,26 @@ export const EntitlementsPendingContractsDashboard = observer(
     );
 
     useEffect(() => {
+      let isCurrentSelection = true;
       setContractErrors(undefined);
       if (selectedRow?.kind === ROW_KIND_CONTRACT) {
         const contract = selectedRow.data.contractResultLite;
         dashboardState
-          .getContractErrors(contract.guid, tokenRef.current)
-          .then((result) => setContractErrors(result))
-          .catch(() => setContractErrors(undefined));
+          .getContractErrors(contract, tokenRef.current)
+          .then((result) => {
+            if (isCurrentSelection) {
+              setContractErrors(result);
+            }
+          })
+          .catch(() => {
+            if (isCurrentSelection) {
+              setContractErrors(undefined);
+            }
+          });
       }
+      return () => {
+        isCurrentSelection = false;
+      };
     }, [selectedRow, dashboardState]);
 
     const selectedContractGuid = getSelectedContractGuid(selectedRow);

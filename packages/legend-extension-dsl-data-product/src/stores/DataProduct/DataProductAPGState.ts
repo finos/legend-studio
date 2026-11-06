@@ -25,7 +25,6 @@ import {
   type V1_DataSubscriptionTarget,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
-  type V1_LiteDataRequestsResponse,
   type V1_User,
   V1_AccessPointGroupReference,
   V1_ContractUserStatusResponseModelSchema,
@@ -328,15 +327,25 @@ export class DataProductAPGState {
     val: V1_DataContract | undefined,
     lakehouseContractServerClient: LakehouseContractServerClient,
     tokenProvider: () => string | undefined,
+    userAccessStatus?: V1_EnrichedUserApprovalStatus,
   ): void {
     this.associatedUserContract = val;
 
     if (this.associatedUserContract) {
-      this.fetchUserAccessStatus(
-        this.associatedUserContract.guid,
-        lakehouseContractServerClient,
-        tokenProvider,
-      );
+      if (userAccessStatus) {
+        this.applyUserAccessStatus(
+          this.associatedUserContract.guid,
+          userAccessStatus,
+          lakehouseContractServerClient,
+          tokenProvider,
+        );
+      } else {
+        this.fetchUserAccessStatus(
+          this.associatedUserContract.guid,
+          lakehouseContractServerClient,
+          tokenProvider,
+        );
+      }
     }
   }
 
@@ -351,11 +360,14 @@ export class DataProductAPGState {
         this.associatedSystemAccountContractsAndApprovedUsers = [];
         return;
       }
-      const rawApprovedUsersByContractId =
-        (yield lakehouseContractServerClient.getApprovedUsersForDataContracts(
-          systemAccountContracts.map((contract) => contract.guid),
-          token,
-        )) as Record<string, PlainObject<V1_User>[]>;
+      const dataAccessState =
+        this.dataProductViewerState.dataProductDataAccessState;
+      const rawApprovedUsersByContractId = (yield dataAccessState
+        ? dataAccessState.getSystemAccountContractApprovedUsers(token)
+        : lakehouseContractServerClient.getApprovedUsersForDataContracts(
+            systemAccountContracts.map((contract) => contract.guid),
+            token,
+          )) as Record<string, PlainObject<V1_User>[]>;
       this.associatedSystemAccountContractsAndApprovedUsers =
         systemAccountContracts.map((contract) => ({
           contract,
@@ -406,18 +418,11 @@ export class DataProductAPGState {
       // (e.g. these newer endpoints not yet deployed in an environment)
       // doesn't discard the contract-based approved users fetched above.
       try {
-        const rawRequestsResponse =
-          (yield lakehouseContractServerClient.getDataRequestsForDataProduct(
-            details.dataProduct.name,
-            details.deploymentId,
-            token,
-          )) as PlainObject<V1_LiteDataRequestsResponse>;
-        const plugins =
-          this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
-        const completedRequestIds = V1_deserializeDataRequestsResponse(
-          rawRequestsResponse,
-          plugins,
-        )
+        const dataRequests = (yield this.fetchDataProductDataRequests(
+          lakehouseContractServerClient,
+          token,
+        )) as V1_DataRequest[];
+        const completedRequestIds = dataRequests
           .filter(
             (request) =>
               request.state === V1_RequestState.COMPLETED &&
@@ -427,13 +432,18 @@ export class DataProductAPGState {
           .map((request) => request.guid);
 
         if (completedRequestIds.length > 0) {
-          const rawApprovedUsersByRequestId =
-            (yield lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
-              completedRequestIds,
-              token,
-            )) as Record<string, { name: string }[]>;
-          Object.values(rawApprovedUsersByRequestId)
-            .flat()
+          const dataAccessState =
+            this.dataProductViewerState.dataProductDataAccessState;
+          const rawApprovedUsersByRequestId = (yield dataAccessState
+            ? dataAccessState.getCompletedDataRequestApprovedUsers(token)
+            : lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
+                completedRequestIds,
+                token,
+              )) as Record<string, { name: string }[]>;
+          completedRequestIds
+            .flatMap(
+              (requestId) => rawApprovedUsersByRequestId[requestId] ?? [],
+            )
             .forEach((user) => approvedUserNames.add(user.name));
         }
       } catch (error) {
@@ -601,6 +611,7 @@ export class DataProductAPGState {
         userContract,
         lakehouseContractServerClient,
         tokenProvider,
+        userLiteContract?.status,
       );
 
       const isContractActive =
@@ -665,17 +676,11 @@ export class DataProductAPGState {
         return;
       }
 
-      const rawResponse =
-        await lakehouseContractServerClient.getDataRequestsForDataProduct(
-          entitlementsDataProductDetails.dataProduct.name,
-          entitlementsDataProductDetails.deploymentId,
+      const dataRequests = (
+        await this.fetchDataProductDataRequests(
+          lakehouseContractServerClient,
           token,
-        );
-      const plugins =
-        this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
-      const dataRequests = V1_deserializeDataRequestsResponse(
-        rawResponse,
-        plugins,
+        )
       ).filter(
         (request) =>
           request.resource instanceof V1_AccessPointGroupReference &&
@@ -835,62 +840,6 @@ export class DataProductAPGState {
     }
   }
 
-  async getContractLatestInApprovalProcess(
-    contracts: V1_DataContract[],
-    lakehouseContractServerClient: LakehouseContractServerClient,
-    token: string | undefined,
-  ): Promise<V1_DataContract | undefined> {
-    if (contracts.length === 0) {
-      return undefined;
-    }
-
-    const contractStatuses = (
-      await Promise.all(
-        contracts.map(async (contract) => {
-          try {
-            const rawUserStatus =
-              await lakehouseContractServerClient.getContractUserStatus(
-                contract.guid,
-                this.applicationStore.identityService.currentUser,
-                token,
-              );
-            const userStatus = deserialize(
-              V1_ContractUserStatusResponseModelSchema,
-              rawUserStatus,
-            ).status;
-            const rank = V1_USER_APPROVAL_STAGE_PRIORITY[userStatus];
-
-            return { contract, rank };
-          } catch (error) {
-            assertErrorThrown(error);
-            this.applicationStore.notificationService.notifyWarning(
-              `Could not fetch status for contract ${contract.guid}: ${error.message}`,
-            );
-            return null;
-          }
-        }),
-      )
-    ).filter(isNonNullable);
-
-    const bestContract = contractStatuses.reduce<
-      | {
-          contract: V1_DataContract;
-          rank: number;
-        }
-      | undefined
-    >((currentBest, currentContract) => {
-      if (!currentBest || currentContract.rank > currentBest.rank) {
-        return {
-          contract: currentContract.contract,
-          rank: currentContract.rank,
-        };
-      }
-      return currentBest;
-    }, undefined);
-
-    return bestContract?.contract;
-  }
-
   handleContractClick(dataAccessState: DataProductDataAccessState): void {
     switch (this.access) {
       case AccessPointGroupAccess.NO_ACCESS:
@@ -975,18 +924,13 @@ export class DataProductAPGState {
           this.applicationStore.identityService.currentUser,
           tokenProvider(),
         )) as PlainObject<V1_ContractUserStatusResponse>;
-      const userStatus = deserialize(
-        V1_ContractUserStatusResponseModelSchema,
-        rawUserStatus,
-      ).status;
-      this.setUserAccessStatus(userStatus);
-      if (userStatus === V1_EnrichedUserApprovalStatus.APPROVED) {
-        this.pollConsumerGrant(
-          contractId,
-          lakehouseContractServerClient,
-          tokenProvider,
-        );
-      }
+      this.applyUserAccessStatus(
+        contractId,
+        deserialize(V1_ContractUserStatusResponseModelSchema, rawUserStatus)
+          .status,
+        lakehouseContractServerClient,
+        tokenProvider,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
@@ -995,6 +939,44 @@ export class DataProductAPGState {
     } finally {
       this.fetchingUserAccessState.complete();
     }
+  }
+
+  private applyUserAccessStatus(
+    contractId: string,
+    userStatus: V1_EnrichedUserApprovalStatus,
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    tokenProvider: () => string | undefined,
+  ): void {
+    this.setUserAccessStatus(userStatus);
+    if (userStatus === V1_EnrichedUserApprovalStatus.APPROVED) {
+      this.pollConsumerGrant(
+        contractId,
+        lakehouseContractServerClient,
+        tokenProvider,
+      );
+    }
+  }
+
+  private async fetchDataProductDataRequests(
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    token: string | undefined,
+  ): Promise<V1_DataRequest[]> {
+    const dataAccessState =
+      this.dataProductViewerState.dataProductDataAccessState;
+    if (dataAccessState) {
+      return dataAccessState.getDataRequests(token);
+    }
+    const details = guaranteeNonNullable(
+      this.dataProductViewerState.entitlementsDataProductDetails,
+    );
+    return V1_deserializeDataRequestsResponse(
+      await lakehouseContractServerClient.getDataRequestsForDataProduct(
+        details.dataProduct.name,
+        details.deploymentId,
+        token,
+      ),
+      this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+    );
   }
 
   private async fetchApprovedDataRequests(
@@ -1006,15 +988,11 @@ export class DataProductAPGState {
       return [];
     }
     try {
-      const rawResponse =
-        await lakehouseContractServerClient.getDataRequestsForDataProduct(
-          details.dataProduct.name,
-          details.deploymentId,
+      return (
+        await this.fetchDataProductDataRequests(
+          lakehouseContractServerClient,
           token,
-        );
-      return V1_deserializeDataRequestsResponse(
-        rawResponse,
-        this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+        )
       ).filter(
         (request) =>
           request.state === V1_RequestState.COMPLETED &&

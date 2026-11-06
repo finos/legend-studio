@@ -24,9 +24,6 @@ import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import type { V1_EnrichedUserApprovalStatus } from '@finos/legend-graph';
 
-export const TEST_USER = undefined;
-export const TEST_USER2 = undefined;
-
 export class LakehouseEntitlementsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly applicationStore: LegendMarketplaceApplicationStore;

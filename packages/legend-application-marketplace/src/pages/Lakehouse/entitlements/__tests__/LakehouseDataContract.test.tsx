@@ -128,7 +128,7 @@ const setupLakehouseDataContractTest = async (
 
   const { notifyErrorSpy } = setupCommonSpies(marketplaceBaseStore);
 
-  createSpy(
+  const getDataContractSpy = createSpy(
     marketplaceBaseStore.lakehouseContractServerClient,
     'getDataContract',
   ).mockResolvedValue({
@@ -176,13 +176,13 @@ const setupLakehouseDataContractTest = async (
       </MemoryRouter>,
     );
   });
-  return { marketplaceBaseStore, notifyErrorSpy };
+  return { marketplaceBaseStore, notifyErrorSpy, getDataContractSpy };
 };
 
 describe('Lakehouse Data Contract', () => {
   describe('Task loading and display', () => {
     test('loads contract and displays pending privilege manager task', async () => {
-      await setupLakehouseDataContractTest(
+      const { getDataContractSpy } = await setupLakehouseDataContractTest(
         'contract-pending-pm-id',
         'pm-task-pending-id',
         mockContracts.pendingPrivilegeManager,
@@ -200,6 +200,12 @@ describe('Lakehouse Data Contract', () => {
       expect(approveButton.getAttribute('disabled')).toBeNull();
 
       expect(denyButton.getAttribute('disabled')).toBeNull();
+      expect(getDataContractSpy).toHaveBeenCalledTimes(1);
+      expect(getDataContractSpy).toHaveBeenCalledWith(
+        'contract-pending-pm-id',
+        true,
+        'mock-access-token',
+      );
     });
 
     test('disables approve/deny buttons for non-assigned users', async () => {

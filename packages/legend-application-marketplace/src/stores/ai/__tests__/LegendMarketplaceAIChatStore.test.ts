@@ -3058,43 +3058,36 @@ describe(
                 version: '2.0.0',
               },
               dataProduct: { name: 'dp-123', owner: {} },
+              fullPath: 'my::dp-123',
             },
           ],
         });
       jest
-        .spyOn(baseStore.depotServerClient, 'getVersionEntities')
-        .mockResolvedValue([
-          {
-            groupId: 'com.lh',
-            artifactId: 'lh-artifact',
-            versionId: '2.0.0',
-            versionedEntity: false,
-            entity: {
-              path: 'my::dp-123',
-              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-              content: {
-                _type: 'dataProduct',
-                name: 'dp-123',
-                package: 'my',
-                accessPointGroups: [
+        .spyOn(baseStore.depotServerClient, 'getVersionEntity')
+        .mockResolvedValue({
+          path: 'my::dp-123',
+          classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+          content: {
+            _type: 'dataProduct',
+            name: 'dp-123',
+            package: 'my',
+            accessPointGroups: [
+              {
+                id: 'grp',
+                title: 'Group',
+                accessPoints: [
                   {
-                    id: 'grp',
-                    title: 'Group',
-                    accessPoints: [
-                      {
-                        _type: 'lakehouseAccessPoint',
-                        id: 'Accounts',
-                        title: 'Accounts',
-                        targetEnvironment: 'Snowflake',
-                        func: { _type: 'lambda', body: [], parameters: [] },
-                      },
-                    ],
+                    _type: 'lakehouseAccessPoint',
+                    id: 'Accounts',
+                    title: 'Accounts',
+                    targetEnvironment: 'Snowflake',
+                    func: { _type: 'lambda', body: [], parameters: [] },
                   },
                 ],
               },
-            },
+            ],
           },
-        ]);
+        });
       jest
         .spyOn(baseStore.depotServerClient, 'getGenerationFilesByType')
         .mockResolvedValue([
