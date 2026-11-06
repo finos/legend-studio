@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 13.276.0
+
+### Patch Changes
+
+- [#5836](https://github.com/finos/legend-studio/pull/5836) [`14f268d`](https://github.com/finos/legend-studio/commit/14f268d18ddff682f3fde23562d6685806623854) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the data space viewer in Legend Query's data space search: diagrams show again (the Legend Query bootstrap imports the diagram extension's stylesheet again, which it lost in #3132), `Run Query` creates a query on the data space in the chosen execution context instead of doing nothing, and the diagram's description card keeps its text light on its dark overlay in light themes and no longer pads the description out of view.
+
 ## 13.275.0
 
 ## 13.274.0
