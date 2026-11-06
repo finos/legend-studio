@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import { ApplicationStore } from '@finos/legend-application';
 import {
+  CORE_PURE_PATH,
   Core_GraphManagerPreset,
   DataProductAccessor,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
+  Multiplicity,
+  PrecisePrimitiveType,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  RelationTypeColumnMetadata,
+  RelationTypeMetadata,
   RuntimePointer,
   SimpleFunctionExpression,
   V1_DataProductArtifact,
+  V1_PureGraphManager,
+  V1_RemoteEngine,
   type PackageableRuntime,
 } from '@finos/legend-graph';
 import {
@@ -147,7 +156,7 @@ const TEST_DATA__LakehouseEntities: Entity[] = [
   },
 ];
 
-const buildLakehouseDataProductState = async () => {
+const buildLakehouseDataProductState = async (withArtifact = true) => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   pluginManager
     .usePresets([
@@ -179,10 +188,10 @@ const buildLakehouseDataProductState = async () => {
     accessPoints.find((ap) => ap.id === 'lhAP2'),
   );
 
-  // Pass an empty artifact so `changeExecutionState` skips the
-  // `getLambdaRelationType` engine call and `resolveDataProductAccessor`
+  // By default, pass an empty artifact so `changeExecutionState` skips the
+  // `getLambdaResolvedRelationType` engine call and `resolveDataProductAccessor`
   // falls back to the in-graph access point group lookup.
-  const artifact = new V1_DataProductArtifact();
+  const artifact = withArtifact ? new V1_DataProductArtifact() : undefined;
 
   const state = new DataProductQueryBuilderState(
     applicationStore,
@@ -199,6 +208,177 @@ const buildLakehouseDataProductState = async () => {
   );
   return { state, ap1, ap2, graphManagerState };
 };
+
+describe(
+  unitTest(
+    'DataProductQueryBuilderState - Lakehouse access point without artifact',
+  ),
+  () => {
+    test(
+      unitTest(
+        'types the accessor from the engine, keeping nullability and Varchar(n), and an unknown type as Any',
+      ),
+      async () => {
+        const { state, ap2, graphManagerState } =
+          await buildLakehouseDataProductState(false);
+        const spy = jest
+          .spyOn(
+            guaranteeType(
+              guaranteeType(graphManagerState.graphManager, V1_PureGraphManager)
+                .engine,
+              V1_RemoteEngine,
+            ).getEngineServerClient(),
+            'lambdaRelationType',
+          )
+          .mockResolvedValue({
+            _type: 'relationType',
+            columns: [
+              {
+                name: 'CUSTOMER_ID',
+                genericType: {
+                  multiplicityArguments: [],
+                  rawType: {
+                    _type: 'packageableType',
+                    fullPath: 'meta::pure::precisePrimitives::Varchar',
+                  },
+                  typeArguments: [],
+                  typeVariableValues: [{ _type: 'integer', value: 5 }],
+                },
+                multiplicity: { lowerBound: 0, upperBound: 1 },
+              },
+              {
+                name: 'ORDER_ID',
+                genericType: {
+                  multiplicityArguments: [],
+                  rawType: {
+                    _type: 'packageableType',
+                    fullPath: 'meta::pure::precisePrimitives::Int',
+                  },
+                  typeArguments: [],
+                  typeVariableValues: [],
+                },
+                multiplicity: { lowerBound: 1, upperBound: 1 },
+              },
+              {
+                // an enum whose project isn't loaded
+                name: 'STATUS',
+                genericType: {
+                  multiplicityArguments: [],
+                  rawType: {
+                    _type: 'packageableType',
+                    fullPath: 'my::OrderStatus',
+                  },
+                  typeArguments: [],
+                  typeVariableValues: [],
+                },
+                multiplicity: { lowerBound: 0, upperBound: 1 },
+              },
+            ],
+          });
+
+        try {
+          await state.changeExecutionId({
+            label: ap2.title ?? ap2.id,
+            tag: 'LAKEHOUSE',
+            value: ap2,
+          });
+
+          expect(spy).toHaveBeenCalledTimes(1);
+          const accessor = guaranteeType(
+            state.sourceAccessor,
+            DataProductAccessor,
+          );
+          expect(accessor.accessor).toBe('lhAP2');
+          expect(
+            accessor.relationType.columns.map((column) => column.name),
+          ).toEqual(['CUSTOMER_ID', 'ORDER_ID', 'STATUS']);
+
+          const customerId = guaranteeNonNullable(
+            accessor.relationType.columns[0],
+          );
+          // the nullable engine column stays [0..1] (it used to become [1])
+          expect(customerId.multiplicity).toBe(Multiplicity.ZERO_ONE);
+          // and Varchar(5) keeps its parameter
+          const customerIdType = customerId.genericType.value;
+          expect(customerIdType.rawType).toBe(PrecisePrimitiveType.VARCHAR);
+          expect(
+            guaranteeType(
+              customerIdType.typeVariableValues?.[0],
+              PrimitiveInstanceValue,
+            ).values,
+          ).toEqual([5]);
+
+          const orderId = guaranteeNonNullable(
+            accessor.relationType.columns[1],
+          );
+          expect(orderId.multiplicity).toBe(Multiplicity.ONE);
+          expect(orderId.genericType.value.rawType).toBe(
+            PrecisePrimitiveType.INT,
+          );
+
+          // a column whose type isn't in the graph is typed `Any` instead of
+          // failing the accessor
+          const status = guaranteeNonNullable(accessor.relationType.columns[2]);
+          expect(status.genericType.value.rawType.path).toBe(
+            CORE_PURE_PATH.ANY,
+          );
+          expect(status.multiplicity).toBe(Multiplicity.ZERO_ONE);
+        } finally {
+          spy.mockRestore();
+        }
+      },
+    );
+
+    test(
+      unitTest(
+        'resolveDataProductAccessor still accepts the deprecated RelationTypeMetadata',
+      ),
+      async () => {
+        const { state, ap1, graphManagerState } =
+          await buildLakehouseDataProductState(false);
+        const metadata = new RelationTypeMetadata();
+        metadata.columns = [
+          new RelationTypeColumnMetadata(
+            'meta::pure::precisePrimitives::Varchar',
+            'CUSTOMER_ID',
+            Multiplicity.ZERO_ONE,
+          ),
+          new RelationTypeColumnMetadata('String', 'NAME', Multiplicity.ONE),
+        ];
+
+        const accessor = resolveDataProductAccessor(
+          state.dataProduct,
+          ap1,
+          graphManagerState.graph,
+          undefined,
+          metadata,
+        );
+
+        expect(accessor.accessor).toBe('lhAP1');
+        expect(accessor.relationType.name).toBe('Lakehouse AP 1');
+        expect(
+          accessor.relationType.columns.map((column) => [
+            column.name,
+            column.genericType.value.rawType,
+          ]),
+        ).toEqual([
+          ['CUSTOMER_ID', PrecisePrimitiveType.VARCHAR],
+          ['NAME', PrimitiveType.STRING],
+        ]);
+        // unchanged: the metadata has no type parameters, and this path never
+        // carried multiplicity
+        expect(
+          accessor.relationType.columns.map(
+            (column) => column.genericType.value.typeVariableValues,
+          ),
+        ).toEqual([undefined, undefined]);
+        expect(
+          accessor.relationType.columns.map((column) => column.multiplicity),
+        ).toEqual([Multiplicity.ONE, Multiplicity.ONE]);
+      },
+    );
+  },
+);
 
 describe(
   unitTest('DataProductQueryBuilderState - changeExecutionId for Lakehouse'),
