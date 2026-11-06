@@ -142,7 +142,7 @@ export const LakehouseDataContractTask =
             const rawContract =
               await marketplaceBaseStore.lakehouseContractServerClient.getDataContract(
                 contractId,
-                false,
+                true,
                 tokenRef.current,
               );
 
@@ -206,6 +206,9 @@ export const LakehouseDataContractTask =
                   marketplaceBaseStore.applicationStore.logService,
                 ),
                 marketplaceBaseStore.userSearchService,
+              );
+              viewerState.preloadContractMembersForNextInit(
+                dataContract.members,
               );
 
               setContractViewerState(viewerState);

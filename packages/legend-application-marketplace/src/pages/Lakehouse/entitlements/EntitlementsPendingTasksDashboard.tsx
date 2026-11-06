@@ -212,6 +212,7 @@ export const EntitlementsPendingTasksDashboard = observer(
 
     const [searchText, setSearchText] = useState('');
 
+    const contractErrorsRequestIdRef = useRef(0);
     const visiblePrivilegeManagerTaskIdsRef = useRef<Set<string>>(new Set());
     const visibleDataOwnerTaskIdsRef = useRef<Set<string>>(new Set());
     const visibleOtherTaskIdsRef = useRef<Set<string>>(new Set());
@@ -359,6 +360,7 @@ export const EntitlementsPendingTasksDashboard = observer(
       event: DataGridCellClickedEvent<V1_PendingTaskRecord, unknown>,
     ) => {
       if (event.colDef.colId !== 'selection') {
+        const contractErrorsRequestId = ++contractErrorsRequestIdRef.current;
         setSelectedContractTargetUser(event.data?.consumer);
 
         const dataRequestId = event.data?.accessRequestId;
@@ -384,9 +386,21 @@ export const EntitlementsPendingTasksDashboard = observer(
               data: new ContractCreatedByUserDetails(contract),
             });
             dashboardState
-              .getContractErrors(contract.guid, tokenRef.current)
-              .then((result) => setContractErrors(result))
-              .catch(() => setContractErrors(undefined));
+              .getContractErrors(contract, tokenRef.current)
+              .then((result) => {
+                if (
+                  contractErrorsRequestId === contractErrorsRequestIdRef.current
+                ) {
+                  setContractErrors(result);
+                }
+              })
+              .catch(() => {
+                if (
+                  contractErrorsRequestId === contractErrorsRequestIdRef.current
+                ) {
+                  setContractErrors(undefined);
+                }
+              });
           }
         }
       }

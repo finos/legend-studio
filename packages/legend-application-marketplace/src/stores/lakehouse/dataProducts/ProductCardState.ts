@@ -284,6 +284,8 @@ export class ProductCardState {
       entitlementsDataProductDetails.id = searchResultDetails.dataProductId;
       entitlementsDataProductDetails.deploymentId =
         searchResultDetails.deploymentId;
+      entitlementsDataProductDetails.fullPath =
+        searchResultDetails.origin.path ?? '';
       const origin = new V1_SdlcDeploymentDataProductOrigin();
       origin.group = searchResultDetails.origin.groupId ?? '';
       origin.artifact = searchResultDetails.origin.artifactId ?? '';

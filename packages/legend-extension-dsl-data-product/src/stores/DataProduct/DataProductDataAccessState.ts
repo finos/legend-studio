@@ -23,6 +23,8 @@ import {
   type V1_DataContractSubscriptions,
   type V1_DataProduct,
   type V1_DataProductArtifact,
+  type V1_DataRequest,
+  type V1_User,
   type V1_DataRequestsWithWorkflowResponse,
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
@@ -38,6 +40,7 @@ import {
   V1_createContractPayloadModelSchema,
   V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
+  V1_deserializeDataRequestsResponse,
   V1_deserializeDataRequestsWithWorkflowResponse,
   V1_deserializeDataSubscriptionTargetsResponse,
   V1_deserializeIngestEnvironment,
@@ -83,6 +86,7 @@ import {
   DSL_DATAPRODUCT_EVENT_STATUS,
 } from '../../__lib__/DSL_DataProduct_Event.js';
 import type { DataProductAPGState } from './DataProductAPGState.js';
+import { contractContainsSystemAccount } from '../../utils/DataContractUtils.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import type { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
@@ -167,6 +171,13 @@ export class DataProductDataAccessState {
   readonly permitWorkflowServerClient: PermitWorkflowServerClient | undefined;
   readonly graphManagerState: GraphManagerState;
   readonly dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[];
+  private dataRequestsPromise: Promise<V1_DataRequest[]> | undefined;
+  private systemAccountContractApprovedUsersPromise:
+    | Promise<Record<string, PlainObject<V1_User>[]>>
+    | undefined;
+  private completedDataRequestApprovedUsersPromise:
+    | Promise<Record<string, PlainObject<V1_User>[]>>
+    | undefined;
 
   // actions/data callbacks
   readonly getContractTaskUrl: (contractId: string, taskId: string) => string;
@@ -510,7 +521,80 @@ export class DataProductDataAccessState {
     this.ingestEnvironmentFetchState.complete();
   }
 
+  getDataRequests(token: string | undefined): Promise<V1_DataRequest[]> {
+    if (!this.dataRequestsPromise) {
+      this.dataRequestsPromise = this.lakehouseContractServerClient
+        .getDataRequestsForDataProduct(
+          this.entitlementsDataProductDetails.dataProduct.name,
+          this.entitlementsDataProductDetails.deploymentId,
+          token,
+        )
+        .then((rawResponse) =>
+          V1_deserializeDataRequestsResponse(
+            rawResponse,
+            this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+        )
+        .catch((error: unknown) => {
+          this.dataRequestsPromise = undefined;
+          throw error;
+        });
+    }
+    return this.dataRequestsPromise;
+  }
+
+  getSystemAccountContractApprovedUsers(
+    token: string | undefined,
+  ): Promise<Record<string, PlainObject<V1_User>[]>> {
+    if (!this.systemAccountContractApprovedUsersPromise) {
+      const contractIds = (this.associatedContracts ?? [])
+        .filter(contractContainsSystemAccount)
+        .map((contract) => contract.guid);
+      this.systemAccountContractApprovedUsersPromise = (
+        contractIds.length === 0
+          ? Promise.resolve({})
+          : this.lakehouseContractServerClient.getApprovedUsersForDataContracts(
+              contractIds,
+              token,
+            )
+      ).catch((error: unknown) => {
+        this.systemAccountContractApprovedUsersPromise = undefined;
+        throw error;
+      });
+    }
+    return this.systemAccountContractApprovedUsersPromise;
+  }
+
+  getCompletedDataRequestApprovedUsers(
+    token: string | undefined,
+  ): Promise<Record<string, PlainObject<V1_User>[]>> {
+    if (!this.completedDataRequestApprovedUsersPromise) {
+      this.completedDataRequestApprovedUsersPromise = this.getDataRequests(
+        token,
+      )
+        .then((dataRequests) => {
+          const completedRequestIds = dataRequests
+            .filter((request) => request.state === V1_RequestState.COMPLETED)
+            .map((request) => request.guid);
+          return completedRequestIds.length === 0
+            ? {}
+            : (this.lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
+                completedRequestIds,
+                token,
+              ) as Promise<Record<string, PlainObject<V1_User>[]>>);
+        })
+        .catch((error: unknown) => {
+          this.completedDataRequestApprovedUsersPromise = undefined;
+          throw error;
+        });
+    }
+    return this.completedDataRequestApprovedUsersPromise;
+  }
+
   async fetchContracts(tokenProvider: () => string | undefined): Promise<void> {
+    this.dataRequestsPromise = undefined;
+    this.systemAccountContractApprovedUsersPromise = undefined;
+    this.completedDataRequestApprovedUsersPromise = undefined;
     try {
       this.dataProductViewerState.apgStates.forEach((e) =>
         e.fetchingAccessState.inProgress(),

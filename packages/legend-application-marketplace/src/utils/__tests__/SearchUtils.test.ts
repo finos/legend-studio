@@ -314,7 +314,7 @@ describe('convertEntitlementsDataProductDetailsToSearchResult', () => {
     expect(sdlcOrigin.groupId).toBe('com.example');
     expect(sdlcOrigin.artifactId).toBe('my-art');
     expect(sdlcOrigin.versionId).toBe('1.0.0');
-    expect(sdlcOrigin.path).toBe('MyDataProduct');
+    expect(sdlcOrigin.path).toBe('com::example::MyDataProduct');
   });
 
   test('falls back to dataProduct.name when title is undefined', () => {

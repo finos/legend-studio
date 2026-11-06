@@ -297,6 +297,11 @@ describe('DataProductAPGState', () => {
             ? state.associatedUserContract.guid
             : undefined,
         ).toBe('contract-approved');
+        expect(state.userAccessStatus).toBe(
+          V1_EnrichedUserApprovalStatus.APPROVED,
+        );
+        expect(client.getContractUserStatus).not.toHaveBeenCalled();
+        state.stopPollingConsumerGrant();
       },
     );
 
