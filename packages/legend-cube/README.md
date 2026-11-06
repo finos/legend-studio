@@ -89,6 +89,8 @@ never on its `V1_*` protocol classes.
 
 ## Documentation
 
+- [Architecture](../../docs/technical/legend-cube-architecture.md): the two packages, the cube document and its spec,
+  and how a cube becomes the lambda the engine runs, and back, in diagrams.
 - [Adding an operation](./docs/adding-an-operation.md): the core half of a new transform. The builder half is in
   [`@finos/legend-cube-builder`](../legend-cube-builder/docs/adding-an-operation.md).
 - [The plan](../../docs/wip/legend-cube/PLAN.md), which wins where it differs from
