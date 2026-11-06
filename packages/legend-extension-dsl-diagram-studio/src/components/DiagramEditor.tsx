@@ -22,6 +22,7 @@ import {
   type DiagramEditorInlineClassRenamerState,
   type DiagramEditorInlinePropertyEditorState,
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
+  DIAGRAM_IMAGE_EXPORT_FORMAT,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
 } from '../stores/DiagramEditorState.js';
@@ -33,6 +34,7 @@ import {
   BlankPanelContent,
   CaretDownIcon,
   CheckSquareIcon,
+  DownloadIcon,
   clsx,
   createFilter,
   CustomSelectorInput,
@@ -1284,6 +1286,15 @@ const DiagramEditorHeader = observer(
         diagramEditorState.renderer.zoomCenter(zoomLevel / 100);
       };
     const zoomToFit = (): void => diagramEditorState.renderer.zoomToFit();
+    const createImageExporter =
+      (format: DIAGRAM_IMAGE_EXPORT_FORMAT): (() => void) =>
+      (): void => {
+        diagramEditorState
+          .exportImage(format)
+          .catch(
+            diagramEditorState.editorStore.applicationStore.alertUnhandledError,
+          );
+      };
 
     const toggleSidePanel = (): void => {
       diagramEditorState.sidePanelDisplayState.toggle();
@@ -1445,6 +1456,34 @@ const DiagramEditorHeader = observer(
           </div>
         </ControlledDropdownMenu>
         <div className="diagram-editor__header__actions">
+          <ControlledDropdownMenu
+            className="diagram-editor__header__action"
+            title="Export diagram as image..."
+            disabled={!diagramEditorState.canExportImage}
+            content={
+              <MenuContent>
+                <MenuContentItem
+                  className="diagram-editor__header__exporter__dropdown__menu__item"
+                  onClick={createImageExporter(DIAGRAM_IMAGE_EXPORT_FORMAT.PNG)}
+                >
+                  Export as PNG
+                </MenuContentItem>
+                <MenuContentItem
+                  className="diagram-editor__header__exporter__dropdown__menu__item"
+                  onClick={createImageExporter(DIAGRAM_IMAGE_EXPORT_FORMAT.SVG)}
+                >
+                  Export as SVG
+                </MenuContentItem>
+              </MenuContent>
+            }
+            menuProps={{
+              anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+              transformOrigin: { vertical: 'top', horizontal: 'right' },
+              elevation: 7,
+            }}
+          >
+            <DownloadIcon />
+          </ControlledDropdownMenu>
           <button
             className={clsx('diagram-editor__header__action', {
               'diagram-editor__header__action--active':

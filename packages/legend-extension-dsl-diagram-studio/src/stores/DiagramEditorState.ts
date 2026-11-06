@@ -16,6 +16,9 @@
 
 import { computed, action, makeObservable, observable } from 'mobx';
 import {
+  ContentType,
+  assertErrorThrown,
+  downloadFileUsingDataURI,
   guaranteeNonNullable,
   guaranteeType,
   isType,
@@ -185,6 +188,11 @@ export class DiagramEditorInlinePropertyEditorState {
   }
 }
 
+export enum DIAGRAM_IMAGE_EXPORT_FORMAT {
+  PNG = 'png',
+  SVG = 'svg',
+}
+
 export class DiagramEditorState
   extends ElementEditorState
   implements CommandRegistrar
@@ -221,6 +229,7 @@ export class DiagramEditorState
       renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
+      canExportImage: computed,
       setShowHotkeyInfosModal: action,
       setRenderer: action,
       setSidePanelState: action,
@@ -320,6 +329,37 @@ export class DiagramEditorState
       }
       default:
         return '';
+    }
+  }
+
+  get canExportImage(): boolean {
+    return this.diagram.classViews.length > 0;
+  }
+
+  /**
+   * Download the whole diagram (not just what is visible on screen) as an image
+   */
+  async exportImage(format: DIAGRAM_IMAGE_EXPORT_FORMAT): Promise<void> {
+    try {
+      const fileName = `${this.diagram.name}.${format}`;
+      if (format === DIAGRAM_IMAGE_EXPORT_FORMAT.SVG) {
+        downloadFileUsingDataURI(
+          fileName,
+          this.renderer.exportAsSVG(),
+          ContentType.IMAGE_SVG,
+        );
+      } else {
+        downloadFileUsingDataURI(
+          fileName,
+          await this.renderer.exportAsPNG(),
+          ContentType.IMAGE_PNG,
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Can't export diagram as ${format.toUpperCase()}: ${error.message}`,
+      );
     }
   }
 

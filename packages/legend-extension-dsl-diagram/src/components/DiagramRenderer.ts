@@ -22,6 +22,7 @@ import {
   guaranteeNonNullable,
   findLast,
   uniqBy,
+  assertTrue,
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
@@ -42,7 +43,7 @@ import {
   getRawGenericType,
   AggregationKind,
 } from '@finos/legend-graph';
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import type { Diagram } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 import { Rectangle } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Rectangle.js';
 import { Point } from '../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
@@ -63,6 +64,7 @@ import {
 } from '../graph/helpers/DSL_Diagram_Helper.js';
 import { AssociationView } from '../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_AssociationView.js';
 import type { RelationshipViewEnd } from '../graph-manager/index.js';
+import { DiagramSVGRenderingContext } from './DiagramSVGRenderingContext.js';
 
 export class DiagramAnalysisResult {
   readonly uuid = uuid();
@@ -206,6 +208,26 @@ export const DIAGRAM_ZOOM_LEVELS = [
 
 const getPropertyDisplayName = (property: AbstractProperty): string =>
   (property instanceof DerivedProperty ? '/ ' : '') + property.name;
+
+export interface DiagramImageExportOptions {
+  /**
+   * Scale factor applied to the diagram when exporting.
+   * Defaults to 1 for SVG and 2 for PNG (so the image stays sharp on high DPI screens).
+   */
+  scale?: number | undefined;
+  /**
+   * Whether to paint the diagram background (art board). Defaults to `true`.
+   */
+  includeBackground?: boolean | undefined;
+}
+
+/**
+ * Browsers cap the size of a canvas (e.g. Chrome and Firefox at 32767px per side,
+ * Safari at 16384px per side), so we keep PNG exports well within those limits.
+ */
+export const DIAGRAM_IMAGE_EXPORT_MAX_DIMENSION = 16384;
+export const DIAGRAM_IMAGE_EXPORT_MAX_AREA = 8192 * 8192;
+const DEFAULT_PNG_EXPORT_SCALE = 2;
 
 export class DiagramRenderer {
   diagram: Diagram;
@@ -378,6 +400,12 @@ export class DiagramRenderer {
     propertyHolderView: PropertyHolderView | undefined,
   ) => void = noop();
   handleAddSimpleProperty: (classView: ClassView) => void = noop();
+
+  /**
+   * When set, transient interaction states (selection, hover) are not drawn,
+   * so image exports only contain the diagram itself
+   */
+  private isExportingImage = false;
 
   constructor(
     div: HTMLDivElement,
@@ -1383,6 +1411,159 @@ export class DiagramRenderer {
     this.drawDiagram();
   }
 
+  /**
+   * The area of the diagram to export as an image (in model coordinates):
+   * the bounding box of all the views plus the screen padding.
+   * Unlike the canvas, this does not depend on the current zoom level or panning.
+   */
+  getImageExportBounds(): PositionedRectangle {
+    assertTrue(
+      this.diagram.classViews.length > 0,
+      `Can't export an empty diagram`,
+    );
+    // NOTE: computing the bounds measures (and paints) relationship labels, so we
+    // point the renderer at a throwaway context to leave the canvas untouched
+    const currentCtx = this.ctx;
+    try {
+      this.ctx = new DiagramSVGRenderingContext(
+        document.createElement('canvas').getContext('2d'),
+      ) as unknown as CanvasRenderingContext2D;
+      this.manageVirtualScreen();
+    } finally {
+      this.ctx = currentCtx;
+    }
+    return new PositionedRectangle(
+      new Point(
+        this.virtualScreen.position.x - this.screenPadding,
+        this.virtualScreen.position.y - this.screenPadding,
+      ),
+      new Rectangle(
+        this.virtualScreen.rectangle.width + this.screenPadding * 2,
+        this.virtualScreen.rectangle.height + this.screenPadding * 2,
+      ),
+    );
+  }
+
+  /**
+   * Reduce the requested scale if needed so the exported image fits
+   * in a canvas that browsers can actually allocate.
+   */
+  computeImageExportScale(scale: number): number {
+    assertTrue(
+      Number.isFinite(scale) && scale > 0,
+      `Image export scale must be a positive number`,
+    );
+    const { width, height } = this.getImageExportBounds().rectangle;
+    return Math.min(
+      scale,
+      DIAGRAM_IMAGE_EXPORT_MAX_DIMENSION / width,
+      DIAGRAM_IMAGE_EXPORT_MAX_DIMENSION / height,
+      Math.sqrt(DIAGRAM_IMAGE_EXPORT_MAX_AREA / (width * height)),
+    );
+  }
+
+  /**
+   * Draw the whole diagram onto the given context, independently of the current
+   * viewport: we temporarily point the renderer at the context and move the
+   * viewport so the export bounds start at (0,0), then restore everything.
+   */
+  private drawImageForExport(
+    ctx: CanvasRenderingContext2D,
+    bounds: PositionedRectangle,
+    scale: number,
+    includeBackground: boolean,
+  ): void {
+    const currentCtx = this.ctx;
+    const currentZoom = this.zoom;
+    const currentScreenOffset = this.screenOffset;
+    const currentCanvasCenter = this.canvasCenter;
+    // NOTE: wrap in an action so observers of `zoom` only see the restored value
+    runInAction(() => {
+      try {
+        this.isExportingImage = true;
+        this.ctx = ctx;
+        this.zoom = scale;
+        this.canvasCenter = new Point(0, 0);
+        this.screenOffset = new Point(-bounds.position.x, -bounds.position.y);
+        if (includeBackground) {
+          this.drawBoundingBox();
+        }
+        this.drawDiagram();
+      } finally {
+        this.isExportingImage = false;
+        this.ctx = currentCtx;
+        this.zoom = currentZoom;
+        this.screenOffset = currentScreenOffset;
+        this.canvasCenter = currentCanvasCenter;
+      }
+    });
+  }
+
+  /**
+   * Export the whole diagram as a standalone SVG document
+   */
+  exportAsSVG(options?: DiagramImageExportOptions): string {
+    const bounds = this.getImageExportBounds();
+    const scale = options?.scale ?? 1;
+    assertTrue(
+      Number.isFinite(scale) && scale > 0,
+      `Image export scale must be a positive number`,
+    );
+    const ctx = new DiagramSVGRenderingContext(
+      document.createElement('canvas').getContext('2d'),
+    );
+    this.drawImageForExport(
+      ctx as unknown as CanvasRenderingContext2D,
+      bounds,
+      scale,
+      options?.includeBackground ?? true,
+    );
+    return ctx.toSVG(
+      bounds.rectangle.width * scale,
+      bounds.rectangle.height * scale,
+    );
+  }
+
+  /**
+   * Render the whole diagram onto a new (detached) canvas
+   */
+  renderImageToCanvas(options?: DiagramImageExportOptions): HTMLCanvasElement {
+    const bounds = this.getImageExportBounds();
+    const scale = this.computeImageExportScale(
+      options?.scale ?? DEFAULT_PNG_EXPORT_SCALE,
+    );
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(bounds.rectangle.width * scale);
+    canvas.height = Math.ceil(bounds.rectangle.height * scale);
+    const ctx = guaranteeNonNullable(
+      canvas.getContext('2d'),
+      `Can't get 2D rendering context to export diagram`,
+    );
+    this.drawImageForExport(
+      ctx,
+      bounds,
+      scale,
+      options?.includeBackground ?? true,
+    );
+    return canvas;
+  }
+
+  /**
+   * Export the whole diagram as a PNG image
+   */
+  exportAsPNG(options?: DiagramImageExportOptions): Promise<Blob> {
+    const canvas = this.renderImageToCanvas(options);
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error(`Can't export diagram as PNG`));
+        }
+      }, 'image/png');
+    });
+  }
+
   private drawScreenGrid(): void {
     const startX =
       (this.virtualScreen.position.x +
@@ -1714,6 +1895,7 @@ export class DiagramRenderer {
     measureOnly: boolean,
   ): number {
     this.ctx.font =
+      !this.isExportingImage &&
       this.mouseOverClassView === classView &&
       this.mouseOverClassProperty === property
         ? `bold ${(this.fontSize - 1) * (measureOnly ? 1 : this.zoom)}px ${
@@ -1860,6 +2042,7 @@ export class DiagramRenderer {
       classView.rectangle.height * this.zoom,
     );
     this.ctx.lineWidth =
+      !this.isExportingImage &&
       this.selectedClasses.length !== 0 &&
       this.selectedClasses.indexOf(classView) !== -1
         ? 2
@@ -2214,7 +2397,10 @@ export class DiagramRenderer {
     // }
     this.ctx.beginPath();
     this.ctx.lineWidth =
-      propertyView === this.selectedPropertyOrAssociation ? 2 : 1;
+      !this.isExportingImage &&
+      propertyView === this.selectedPropertyOrAssociation
+        ? 2
+        : 1;
     fullPath.forEach((point, idx) => {
       const position = this.modelCoordinateToCanvasCoordinate(point);
       if (idx === 0) {
@@ -2460,7 +2646,10 @@ export class DiagramRenderer {
       }
     }
     this.ctx.beginPath();
-    this.ctx.lineWidth = inheritance === this.selectedInheritance ? 2 : 1;
+    this.ctx.lineWidth =
+      !this.isExportingImage && inheritance === this.selectedInheritance
+        ? 2
+        : 1;
     fullPath.forEach((point, idx) => {
       const position = this.modelCoordinateToCanvasCoordinate(point);
       if (idx === 0) {

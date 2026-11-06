@@ -62,6 +62,8 @@ export enum ContentType {
   TEXT_PLAIN = 'text/plain',
   TEXT_HTML = 'text/html',
   TEXT_CSV = 'text/csv',
+  IMAGE_PNG = 'image/png',
+  IMAGE_SVG = 'image/svg+xml',
   ALL = '*/*',
   MESSAGE_RFC822 = 'message/rfc822',
 }
@@ -599,7 +601,7 @@ export class NetworkClient {
  */
 export const downloadFileUsingDataURI = (
   fileName: string,
-  content: string,
+  content: string | Blob,
   contentType: ContentType,
 ): void => {
   const blob = new Blob([content], { type: contentType });
