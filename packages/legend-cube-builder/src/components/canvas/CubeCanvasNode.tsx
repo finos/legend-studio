@@ -31,7 +31,7 @@ import {
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import {
   CUBE_OUTPUT_HANDLE_ID,
-  type CubeCanvasFlowNode,
+  type CubeCanvasStepNode,
   getCubeCanvasNodeLabel,
   getCubeCanvasNodeStatus,
   getInputHandleOffset,
@@ -55,7 +55,7 @@ import {
  * connects rather than drags the node.
  */
 export const CubeCanvasNode = observer(
-  (props: NodeProps<CubeCanvasFlowNode>) => {
+  (props: NodeProps<CubeCanvasStepNode>) => {
     const { node } = props.data;
     const editorState = useCubeCanvasEditorState();
     const status = getCubeCanvasNodeStatus(editorState, node);

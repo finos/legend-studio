@@ -15,7 +15,12 @@
  */
 
 import dagre from '@dagrejs/dagre';
-import type { Connection, Query } from '@finos/legend-cube';
+import {
+  type Connection,
+  getShownContainers,
+  type Query,
+  type StepContainer,
+} from '@finos/legend-cube';
 
 /** Every node is drawn this size, so edges need no DOM measurement (PLAN §7.2) */
 export const CUBE_CANVAS_NODE_WIDTH = 200;
@@ -181,3 +186,240 @@ export const layoutCubeQuery = (query: Query): CubeCanvasLayout => {
   });
   return { positions, lanes };
 };
+
+// ---------------------------------------- containers ----------------------------------------
+
+/**
+ * With a container, dagre's nesting graph puts three ranks between two
+ * columns where there was one, so the columns keep their gap with a third of
+ * the separation
+ */
+const CONTAINER_RANK_SEPARATION = RANK_SEPARATION / 3;
+/**
+ * dagre keeps half the node and edge separations round a container's steps,
+ * across its columns: this leaves room above them for the frame's head
+ */
+const CONTAINER_EDGE_SEPARATION = 40;
+/** The frame's room round its steps */
+export const CUBE_CANVAS_FRAME_PADDING = 12;
+/** The frame's head, its title and buttons, above its steps */
+export const CUBE_CANVAS_FRAME_HEAD_HEIGHT = 28;
+
+/**
+ * Where the canvas draws a container: a frame round its steps or, folded,
+ * one box, the size of a step's, in their place
+ */
+export interface CubeCanvasContainerPlace {
+  readonly container: StepContainer;
+  /** Its steps, sorted by id */
+  readonly steps: readonly string[];
+  /** The frame's or the box's top-left corner */
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** Where the canvas draws the query's nodes and edges, and its containers */
+export interface CubeCanvasContainerLayout extends CubeCanvasLayout {
+  readonly containers: readonly CubeCanvasContainerPlace[];
+}
+
+// keys of the graph laid out that no step's id can be: a folded container's
+// box and an open container's frame
+const boxKey = (id: string): string => `\u0000box:${id}`;
+const frameKey = (id: string): string => `\u0000frame:${id}`;
+
+interface CubeCanvasLayoutEdge {
+  readonly connection: Connection;
+  readonly source: string;
+  readonly target: string;
+  /** Unique: a step feeds one other, and a port takes one input */
+  readonly name: string;
+}
+
+/** Each key's column, as a step's (`getColumns`), in the graph laid out */
+const getKeyColumns = (
+  edges: readonly CubeCanvasLayoutEdge[],
+): ((key: string) => number) => {
+  const inputs = new Map<string, string[]>();
+  edges.forEach(({ source, target }) =>
+    inputs.set(target, [...(inputs.get(target) ?? []), source]),
+  );
+  const columns = new Map<string, number>();
+  const getColumn = (key: string): number => {
+    let column = columns.get(key);
+    if (column === undefined) {
+      // the graph laid out has no cycle (`layoutCubeCanvas`), so this ends
+      column = Math.max(-1, ...(inputs.get(key) ?? []).map(getColumn)) + 1;
+      columns.set(key, column);
+    }
+    return column;
+  };
+  return getColumn;
+};
+
+/**
+ * The canvas laid out with its containers (PLAN §11.28): `layoutCubeQuery`'s
+ * when none is drawn. An open container's steps are a cluster of dagre's
+ * compound graph, so nothing else lands inside its frame; a folded one's are
+ * one box, with the lines that come into them, or go out of them, coming to
+ * or going from it: the graph laid out is the query with each folded
+ * container's steps made one. Containers are one block of steps each
+ * (`getShownContainers`), so that graph has no cycle. Columns and lanes are
+ * `layoutCubeQuery`'s, on that graph.
+ */
+export const layoutCubeCanvas = (
+  query: Query,
+  containers: readonly StepContainer[] | undefined,
+): CubeCanvasContainerLayout => {
+  const shown = getShownContainers(query, containers);
+  if (!shown.length) {
+    return { ...layoutCubeQuery(query), containers: [] };
+  }
+  const boxOf = new Map<string, string>();
+  shown.forEach(
+    ({ container, steps }) =>
+      container.folded &&
+      steps.forEach((id) => boxOf.set(id, boxKey(container.id))),
+  );
+  const keyOf = (id: string): string => boxOf.get(id) ?? id;
+  const open = shown
+    .filter(({ container }) => !container.folded)
+    .sort((a, b) => compareText(a.container.id, b.container.id));
+  const keys = [...new Set(query.nodes.map((node) => keyOf(node.id)))].sort(
+    compareText,
+  );
+  const edges = [...query.connections]
+    .sort(compareConnections)
+    .map((connection) => ({
+      connection,
+      source: keyOf(connection.source),
+      target: keyOf(connection.target),
+      name: `${connection.target}:${connection.port}`,
+    }))
+    .filter((edge) => edge.source !== edge.target);
+  const getColumn = getKeyColumns(edges);
+  const graph = new dagre.graphlib.Graph<{
+    width?: number;
+    height?: number;
+  }>({ multigraph: true, compound: open.length > 0 });
+  graph.setGraph({
+    rankdir: 'LR',
+    ranksep: open.length ? CONTAINER_RANK_SEPARATION : RANK_SEPARATION,
+    nodesep: NODE_SEPARATION,
+    ...(open.length ? { edgesep: CONTAINER_EDGE_SEPARATION } : {}),
+  });
+  graph.setDefaultEdgeLabel(() => ({}));
+  keys.forEach((key) =>
+    graph.setNode(key, {
+      width: CUBE_CANVAS_NODE_WIDTH,
+      height: CUBE_CANVAS_NODE_HEIGHT,
+    }),
+  );
+  open.forEach(({ container, steps }) => {
+    graph.setNode(frameKey(container.id), {});
+    steps.forEach((id) => graph.setParent(id, frameKey(container.id)));
+  });
+  edges.forEach((edge) =>
+    graph.setEdge(
+      edge.source,
+      edge.target,
+      { minlen: getColumn(edge.target) - getColumn(edge.source) },
+      edge.name,
+    ),
+  );
+  dagre.layout(graph);
+  const topLeftOf = (key: string): CubeCanvasPosition => {
+    // dagre gives each node's centre
+    const { x = 0, y = 0 } = graph.node(key) as { x?: number; y?: number };
+    return {
+      x: x - CUBE_CANVAS_NODE_WIDTH / 2,
+      y: y - CUBE_CANVAS_NODE_HEIGHT / 2,
+    };
+  };
+  const positions = new Map(
+    query.nodes
+      .filter((node) => !boxOf.has(node.id))
+      .map((node): [string, CubeCanvasPosition] => [
+        node.id,
+        topLeftOf(node.id),
+      ]),
+  );
+  // a lane in each column a line skips, as `layoutCubeQuery` gives them
+  const columnLefts = new Map(
+    keys.map((key): [number, number] => [getColumn(key), topLeftOf(key).x]),
+  );
+  const lanes = new Map<string, CubeCanvasPosition[]>();
+  edges.forEach((edge) => {
+    const edgeLanes: CubeCanvasPosition[] = [];
+    const { points } = graph.edge(edge.source, edge.target, edge.name) as {
+      points: CubeCanvasPosition[];
+    };
+    for (
+      let column = getColumn(edge.source) + 1;
+      column < getColumn(edge.target);
+      column++
+    ) {
+      const x = columnLefts.get(column);
+      const y =
+        x === undefined
+          ? undefined
+          : getHeightAt(points, x + CUBE_CANVAS_NODE_WIDTH / 2);
+      if (x === undefined || y === undefined) {
+        return;
+      }
+      edgeLanes.push({ x, y });
+    }
+    if (edgeLanes.length) {
+      lanes.set(edge.connection.toString(), edgeLanes);
+    }
+  });
+  return {
+    positions,
+    lanes,
+    containers: shown.map(({ container, steps }) => {
+      if (container.folded) {
+        return {
+          container,
+          steps,
+          ...topLeftOf(boxKey(container.id)),
+          width: CUBE_CANVAS_NODE_WIDTH,
+          height: CUBE_CANVAS_NODE_HEIGHT,
+        };
+      }
+      const corners = steps.map((id) => positions.get(id) ?? { x: 0, y: 0 });
+      const left = Math.min(...corners.map(({ x }) => x));
+      const top = Math.min(...corners.map(({ y }) => y));
+      const right =
+        Math.max(...corners.map(({ x }) => x)) + CUBE_CANVAS_NODE_WIDTH;
+      const bottom =
+        Math.max(...corners.map(({ y }) => y)) + CUBE_CANVAS_NODE_HEIGHT;
+      return {
+        container,
+        steps,
+        x: left - CUBE_CANVAS_FRAME_PADDING,
+        y: top - CUBE_CANVAS_FRAME_PADDING - CUBE_CANVAS_FRAME_HEAD_HEIGHT,
+        width: right - left + 2 * CUBE_CANVAS_FRAME_PADDING,
+        height:
+          bottom -
+          top +
+          2 * CUBE_CANVAS_FRAME_PADDING +
+          CUBE_CANVAS_FRAME_HEAD_HEIGHT,
+      };
+    }),
+  };
+};
+
+/**
+ * Where the node editor of a step goes: on the step, or on the box of the
+ * folded container it is in
+ */
+export const getCubeCanvasStepPlace = (
+  layout: CubeCanvasContainerLayout,
+  stepId: string,
+): CubeCanvasPosition | undefined =>
+  layout.positions.get(stepId) ??
+  layout.containers.find(
+    (place) => place.container.folded && place.steps.includes(stepId),
+  );
