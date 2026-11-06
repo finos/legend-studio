@@ -145,6 +145,11 @@ const TEST_CASES: QueryTestCase[] = [
     model: 'Northwind',
     queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName])->slice(1, 7)`,
   },
+  {
+    testName: '[RELATION] Result Modifier: Limit and Slice',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName])->limit(27)->slice(1, 7)`,
+  },
   // conversion
   {
     testName: '[CONVERSION] Convert Query With Pre/Post Filter to Relation',
@@ -203,6 +208,12 @@ const TEST_CASES: QueryTestCase[] = [
       "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[MAX:{p, w, r|$r.Id}:y|$y->max()])",
   },
   {
+    testName: '[WINDOW RANK] rank() query with TDS 2.0, Sort and Limit',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])->sort([~test->descending()])->limit(10)",
+  },
+  {
     testName: '[Accessor] Simple Accessor',
     model: 'Northwind',
     queryGrammar:
@@ -239,6 +250,13 @@ const TEST_CASES: QueryTestCase[] = [
     model: 'QuotedColumns',
     queryGrammar:
       "|#>{test::QuotedColumnDatabase.PEOPLE.PERSON}#->filter(x|$x.'first name' == 'John')->project(~[Id:x|$x.ID, 'First Name':x|$x.'first name', 'Last Name':x|$x.'last name'])->filter(row|$row.'Last Name' == 'Doe')",
+  },
+  {
+    // select() keeps the query in classic mode, but what follows it is still written as relation functions
+    testName: '[Accessor] Store Accessor select() with Sort and Limit',
+    model: 'Northwind',
+    queryGrammar:
+      '|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->select(~[CUSTOMER_ID, COMPANY_NAME, COUNTRY])->sort([~COUNTRY->ascending()])->limit(10)',
   },
 
   {

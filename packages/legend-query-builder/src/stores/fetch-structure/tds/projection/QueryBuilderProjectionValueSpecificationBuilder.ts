@@ -518,11 +518,12 @@ export const appendProjection = (
   // build post-filter
   appendPostFilter(tdsState.postFilterState, lambdaFunction);
 
-  // build result set modifiers
+  // build result set modifiers: relation functions whenever the projection above
+  // is a relation, i.e. in typed mode and for an accessor source in either mode
   appendResultSetModifier(
     tdsState.resultSetModifierState,
     lambdaFunction,
-    tdsState.queryBuilderState.isFetchStructureTyped,
+    tdsState.queryBuilderState.useRelation,
     {
       overridingLimit:
         options?.isBuildingExecutionQuery && !options.isExportingResult

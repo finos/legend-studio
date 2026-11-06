@@ -38,6 +38,7 @@ import {
   TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
   TEST_DATA__simpleProjectionWithSlice,
   TEST_DATA_simpleTypedRelationProjection,
+  TEST_DATA_simpleTypedRelationProjectionWithLimitAndSlice,
   TEST_DATA__projectionWithPercentileAggregation,
   TEST_DATA__projectionWithWAVGAggregation,
   TEST_DATA__simpleTypedRelationAggregation,
@@ -88,6 +89,7 @@ import {
 } from '@finos/legend-graph/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared/test';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
@@ -99,7 +101,10 @@ import {
   TEST_DATA__lambda_postFilterWithRightValAsWindowFunctionCol,
   TEST_DATA__lambda_typedAggregationPostFilter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
-import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
+import {
+  INTERNAL__BasicQueryBuilderState,
+  QUERY_BUILDER_LAMBDA_WRITER_MODE,
+} from '../QueryBuilderState.js';
 import {
   TEST_DATA__OlapGroupBy_entities,
   TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
@@ -163,11 +168,19 @@ import {
   TEST_DATA__simpleProjectionWithMilestonedRootAndRowScopedNestedBusinessDate,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
-import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
+import {
+  QueryBuilderActionConfig,
+  QueryBuilderAdvancedWorkflowState,
+} from '../query-workflow/QueryBuilderWorkFlowState.js';
+import { AccessorQueryBuilderState } from '../workflows/accessor/AccessorQueryBuilderState.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderRelationColumnProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { SortColumnState } from '../fetch-structure/tds/QueryResultSetModifierState.js';
 import {
   TEST_DATA_typedTDSMax,
   TEST_DATA_typedTDSPercentRank,
   TEST_DATA_typedTDSRank,
+  TEST_DATA_typedTDSRankWithSortAndLimit,
   TEST_DATA_typedTDSRowNumber,
 } from './TEST_DATA__TypedTDSWindowFunctions.js';
 import {
@@ -177,6 +190,7 @@ import {
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabaseDefaultSchema,
   TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+  TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngestWithSortAndLimit,
 } from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
 type RoundtripTestCase = [
@@ -840,11 +854,23 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__simpleProjectionWithSlice,
     undefined,
   ],
+  [
+    'Simple typed projection (relation) with limit and slice',
+    projectionCtx,
+    TEST_DATA_simpleTypedRelationProjectionWithLimitAndSlice,
+    undefined,
+  ],
   //typed TDS
   [
     'Typed TDS rank() window function',
     olapGroupbyCtx,
     TEST_DATA_typedTDSRank,
+    undefined,
+  ],
+  [
+    'Typed TDS rank() window function with sort and limit',
+    olapGroupbyCtx,
+    TEST_DATA_typedTDSRankWithSortAndLimit,
     undefined,
   ],
   [
@@ -894,6 +920,12 @@ const cases: RoundtripTestCase[] = [
     'Simple accessor select with ingest',
     { entities: TEST_DATA__QueryBuilder_Accessors },
     TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+    undefined,
+  ],
+  [
+    'Simple accessor select with ingest, sort and limit',
+    { entities: TEST_DATA__QueryBuilder_Accessors },
+    TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngestWithSortAndLimit,
     undefined,
   ],
 ];
@@ -998,5 +1030,221 @@ test(
     expect(TEST_DATA__simpleProjectionWithPreviewLimit).toEqual(
       unexportedQuery,
     );
+  },
+);
+
+const createQueryBuilderState = async (
+  entities: Entity[],
+): Promise<INTERNAL__BasicQueryBuilderState> => {
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager
+    .usePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ])
+    .install();
+  const applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(graphManagerState, entities);
+  return new INTERNAL__BasicQueryBuilderState(
+    applicationStore,
+    graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
+    undefined,
+  );
+};
+
+// what Run Query sends: one row over the preview limit, to tell whether there is more data
+const buildRunQueryLambda = (
+  queryBuilderState: INTERNAL__BasicQueryBuilderState,
+): object =>
+  queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+    queryBuilderState.resultState.buildExecutionRawLambda({
+      withDataOverflowCheck: true,
+    }),
+  );
+
+const buildRelationLimit = (relation: object | undefined): object => ({
+  _type: 'func',
+  function: 'limit',
+  parameters: [relation, { _type: 'integer', value: DEFAULT_LIMIT + 1 }],
+});
+
+test(
+  integrationTest(
+    'Query builder keeps the Run Query preview limit after typed window columns',
+  ),
+  async () => {
+    const queryBuilderState = await createQueryBuilderState(
+      TEST_DATA__OlapGroupBy_entities,
+    );
+    queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT);
+    queryBuilderState.initializeWithQuery(
+      new RawLambda(
+        TEST_DATA_typedTDSRank.parameters,
+        TEST_DATA_typedTDSRank.body,
+      ),
+    );
+
+    expect(queryBuilderState.isQuerySupported).toBe(true);
+    expect(queryBuilderState.isFetchStructureTyped).toBe(true);
+    expect(buildRunQueryLambda(queryBuilderState)).toEqual({
+      ...TEST_DATA_typedTDSRank,
+      body: [buildRelationLimit(TEST_DATA_typedTDSRank.body[0])],
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder keeps the Run Query preview limit after select()',
+  ),
+  async () => {
+    const queryBuilderState = await createQueryBuilderState(
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+    queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT);
+    const lambda = TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest;
+    queryBuilderState.initializeWithQuery(
+      new RawLambda(lambda.parameters, lambda.body),
+    );
+
+    expect(queryBuilderState.isQuerySupported).toBe(true);
+    // the limit goes inside from(): ...->select(~[...])->limit(...)->from(runtime)
+    const [from] = lambda.body;
+    expect(buildRunQueryLambda(queryBuilderState)).toEqual({
+      ...lambda,
+      body: [
+        {
+          ...from,
+          parameters: [
+            buildRelationLimit(from?.parameters[0]),
+            from?.parameters[1],
+          ],
+        },
+      ],
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder writes sort and limit after select() as relation functions in either lambda writer mode',
+  ),
+  async () => {
+    const queryBuilderState = await createQueryBuilderState(
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+    const lambda =
+      TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngestWithSortAndLimit;
+    queryBuilderState.initializeWithQuery(
+      new RawLambda(lambda.parameters, lambda.body),
+    );
+    const buildQuery = (): object =>
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      );
+
+    expect(queryBuilderState.isQuerySupported).toBe(true);
+    // reading select(~[...]) does not turn typed TDS on
+    expect(queryBuilderState.isFetchStructureTyped).toBe(false);
+    expect(buildQuery()).toEqual(lambda);
+
+    queryBuilderState.setLambdaWriteMode(
+      QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+    );
+    expect(buildQuery()).toEqual(lambda);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder writes sort and limit as relation functions for a new accessor query in classic mode',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Accessors,
+    );
+    const queryBuilderState = new AccessorQueryBuilderState(
+      new ApplicationStore(TEST__getGenericApplicationConfig(), pluginManager),
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+    await queryBuilderState.changeAccessorOwner(
+      guaranteeNonNullable(graphManagerState.graph.ingests[0]),
+    );
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    const column = guaranteeNonNullable(
+      queryBuilderState.sourceRelationType?.columns[0],
+    );
+    const columnState = new QueryBuilderRelationColumnProjectionColumnState(
+      tdsState,
+      column,
+      true,
+    );
+    tdsState.addColumn(columnState);
+    tdsState.resultSetModifierState.addSortColumn(
+      new SortColumnState(columnState),
+    );
+    tdsState.resultSetModifierState.setLimit(10);
+
+    // the projection of an accessor source is a relation, project(~[...]),
+    // even though a new accessor query starts in classic mode
+    expect(queryBuilderState.isFetchStructureTyped).toBe(false);
+    expect(
+      graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toMatchObject({
+      body: [
+        {
+          function: 'from',
+          parameters: [
+            {
+              function: 'limit',
+              parameters: [
+                {
+                  function: 'sort',
+                  parameters: [
+                    { function: 'project' },
+                    {
+                      values: [
+                        {
+                          function: 'ascending',
+                          parameters: [
+                            {
+                              type: 'colSpec',
+                              value: { name: columnState.columnName },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                { _type: 'integer', value: 10 },
+              ],
+            },
+          ],
+        },
+      ],
+    });
   },
 );
