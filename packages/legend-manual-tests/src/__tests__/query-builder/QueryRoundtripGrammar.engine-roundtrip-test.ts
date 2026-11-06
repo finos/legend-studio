@@ -197,6 +197,36 @@ const TEST_CASES: QueryTestCase[] = [
       "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])",
   },
   {
+    testName:
+      '[WINDOW RANK] rank() query with TDS 2.0 and post-filter on the window column',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])->filter(row|$row.test <= 3)",
+  },
+  {
+    testName:
+      '[WINDOW RANK] rank() query with TDS 2.0 and post-filter on a projection column',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])->filter(row|$row.'Item Count' > 2)",
+  },
+  {
+    testName:
+      '[WINDOW RANK] max() query with TDS 2.0 and post-filter on the window column',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[MAX:{p, w, r|$r.Id}:y|$y->max()])->filter(row|$row.MAX > 10)",
+  },
+  {
+    testName:
+      '[CONVERSION] Convert olapGroupBy() rank() query with post-filter on the window column to Relation',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project([x|$x.id, x|$x.shipToName, x|$x.itemCount], ['Id', 'Ship To Name', 'Item Count'])->olapGroupBy(['Item Count'], asc('Ship To Name'), y|$y->rank(), 'test')->filter(row|$row.getNumber('test') <= 3)",
+    convertedRelation:
+      "|showcase::northwind::model::Order.all()->project(~[Id:x|$x.id, 'Ship To Name':x|$x.shipToName, 'Item Count':x|$x.itemCount])->extend(over(~['Item Count'], [~'Ship To Name'->ascending()]), ~[test:{p, w, r|$p->rank($w, $r)}])->filter(row|$row.test <= 3)",
+  },
+  {
     testName: '[WINDOW RANK] Simple max() query with TDS 2.0',
     model: 'Northwind',
     queryGrammar:
@@ -233,6 +263,12 @@ const TEST_CASES: QueryTestCase[] = [
     model: 'Northwind',
     queryGrammar:
       "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Contact Name':x|$x.CONTACT_NAME, Region:x|$x.REGION])->filter(row|$row.'Contact Name'->isEmpty() || !$row.Region->isEmpty())",
+  },
+  {
+    testName: '[Accessor] Store Accessor select() with post-filter',
+    model: 'Northwind',
+    queryGrammar:
+      "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->select(~[CUSTOMER_ID, COMPANY_NAME, COUNTRY])->filter(row|$row.COUNTRY == 'UK')",
   },
   {
     testName: '[Accessor] Store Accessor on columns with quoted names',

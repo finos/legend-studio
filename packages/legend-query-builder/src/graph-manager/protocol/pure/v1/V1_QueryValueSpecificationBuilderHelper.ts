@@ -66,6 +66,7 @@ import {
   RelationType,
   RelationColumn,
   getValueSpecificationReturnType,
+  getRelationTypeGenericType,
   Relation,
 } from '@finos/legend-graph';
 import {
@@ -1760,14 +1761,18 @@ export const V1_buildExtendFunctionExpression = (
           returnType = getValueSpecificationReturnType(builtColSpec.function1);
         }
 
-        if (returnType) {
-          relationType.columns.push(
-            new RelationColumn(
-              colSpec.name,
-              GenericTypeExplicitReference.create(new GenericType(returnType)),
+        // NOTE: window functions such as rank() or max() are usually not in the graph,
+        // so their return type can't be inferred here. We still add the column, typed
+        // Number like the query builder's window operators, so that what follows extend()
+        // (e.g. a post-filter on `$row.rank`) can refer to it.
+        relationType.columns.push(
+          new RelationColumn(
+            colSpec.name,
+            GenericTypeExplicitReference.create(
+              new GenericType(returnType ?? PrimitiveType.NUMBER),
             ),
-          );
-        }
+          ),
+        );
 
         return builtColSpec;
       },
@@ -1794,4 +1799,51 @@ export const V1_buildExtendFunctionExpression = (
       `Can't build relation extend() expression: extend() on non window functions is not yet supported`,
     );
   }
+};
+
+export const V1_buildSelectFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  const expression = V1_buildGenericFunctionExpression(
+    functionName,
+    parameters,
+    openVariables,
+    compileContext,
+    processingContext,
+  );
+  // select() returns the selected columns of the relation it reads from: what
+  // follows it (e.g. a post-filter) needs this to infer the type of its row variable.
+  // NOTE: the relation is typed Relation<(...)> after a function such as project(),
+  // but an accessor such as #I{...}# is typed with the relation type itself
+  const [precedingExpression, columnsExpression] = expression.parametersValues;
+  const precedingRelationType = precedingExpression
+    ? (returnUndefOnError(() =>
+        getRelationTypeGenericType(precedingExpression),
+      ) ?? precedingExpression.genericType?.value.rawType)
+    : undefined;
+  if (
+    precedingRelationType instanceof RelationType &&
+    columnsExpression instanceof ColSpecArrayInstance
+  ) {
+    const relationType = new RelationType(RelationType.ID);
+    columnsExpression.values[0]?.colSpecs.forEach((colSpec) => {
+      const column = precedingRelationType.columns.find(
+        (_column) => _column.name === colSpec.name,
+      );
+      if (column) {
+        relationType.columns.push(column);
+      }
+    });
+    const relationGenericType = new GenericType(Relation.INSTANCE);
+    relationGenericType.typeArguments = [
+      GenericTypeExplicitReference.create(new GenericType(relationType)),
+    ];
+    expression.genericType =
+      GenericTypeExplicitReference.create(relationGenericType);
+  }
+  return expression;
 };
