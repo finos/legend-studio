@@ -1,5 +1,13 @@
 # @finos/legend-cube-builder
 
+## 0.0.11
+
+### Patch Changes
+
+- [#5783](https://github.com/finos/legend-studio/pull/5783) [`5e0b281`](https://github.com/finos/legend-studio/commit/5e0b2815c5a1ad7449b492812c0783275f6ef870) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Filter by Expression and Extend Columns show an expression's outline: how Pure reads the code, part by part, each part with its role and the kind of value it gives. A warning appears where Pure's precedence reads the code other than it was likely meant (`$x.A + 1 == 3`, `$x.A > 0 && $x.A < 30`, `!$x.A > 3`), with a one-click fix that puts in the parentheses. A value that can be empty where one is needed is flagged, with `->toOne()` and `->coalesce(…)` fixes.
+
+- [#5849](https://github.com/finos/legend-studio/pull/5849) [`fe59254`](https://github.com/finos/legend-studio/commit/fe59254a9d4002d29aa92c1d2fb0fa9a1297b808) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Filter by Expression and Extend Columns get a functions panel: the engine's functions of values and Cube's own, by category, found by name, each with its signatures, documentation and how the engine's tests of it went on the cube's database. Insert writes a call of it at the cursor, as `->name(…)` after a value. The completions, hover and signature help say how those tests went on the cube's database too, as information: a failing test doesn't hide a function. Cube's own `substring` and `indexOf` are documented, with how their results differ by database.
+
 ## 0.0.10
 
 ### Patch Changes
