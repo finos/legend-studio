@@ -54,6 +54,7 @@ import {
   deepEqual,
   guaranteeNonNullable,
   guaranteeType,
+  isString,
   uniq,
   UnsupportedOperationError,
   type Clazz,
@@ -61,11 +62,14 @@ import {
 import {
   DataCubeFunction,
   DataCubeOperationAdvancedValueType,
+  DataCubeQueryAggregateOperator,
   DataCubeQueryFilterGroupOperator,
   DataCubeQuerySortDirection,
   DEFAULT_LAMBDA_VARIABLE_NAME,
+  getAggregateOperation,
   getDataType,
   getPivotResultColumnBaseColumnName,
+  getPivotResultColumnNamePrefix,
   isPivotResultColumnName,
   isVariantType,
   TREE_COLUMN_VALUE_SEPARATOR,
@@ -718,10 +722,22 @@ export function _aggCol(
   );
 }
 
-export function _agg_base(
+/**
+ * Processes aggregate column of the form:
+ * ~col : x|<mapper> : x|$x->func(<parameters>)
+ * where the mapper specifies the aggregated column, along with the values of
+ * parameters of the aggregation other than those passed to the reduce function.
+ */
+function _agg(
   colSpec: V1_ColSpec,
   func: string,
   columnGetter: (name: string) => DataCubeColumn,
+  processMapper: (mapper: V1_ValueSpecification) =>
+    | {
+        column: DataCubeColumn;
+        parameterValues: DataCubeOperationValue[];
+      }
+    | undefined,
 ) {
   try {
     if (colSpec.function1 && colSpec.function2) {
@@ -741,31 +757,81 @@ export function _agg_base(
       );
 
       if (
-        mapper instanceof V1_AppliedProperty &&
         reducer instanceof V1_AppliedFunction &&
         reducer.parameters.length >= 1 &&
         matchFunctionName(reducer.function, func)
       ) {
-        const column = _propertyCol(mapper, columnGetter);
-        assertTrue(
-          column.name === colSpec.name,
-          `Can't process aggregate column: column name must match mapper column name`,
-        );
-        const variable = _param(reducer, 0, V1_Variable);
-        _var(variable);
+        const mapped = processMapper(mapper);
+        if (mapped) {
+          assertTrue(
+            mapped.column.name === colSpec.name,
+            `Can't process aggregate column: column name must match mapper column name`,
+          );
+          const variable = _param(reducer, 0, V1_Variable);
+          _var(variable);
 
-        return {
-          column,
-          paramterValues: reducer.parameters
-            .slice(1)
-            .map((value) => _operationValue(value, columnGetter)),
-        };
+          return {
+            column: mapped.column,
+            parameterValues: [
+              ...mapped.parameterValues,
+              ...reducer.parameters
+                .slice(1)
+                .map((value) => _operationValue(value, columnGetter)),
+            ],
+          };
+        }
       }
     }
   } catch {
     return undefined;
   }
   return undefined;
+}
+
+export function _agg_base(
+  colSpec: V1_ColSpec,
+  func: string,
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  return _agg(colSpec, func, columnGetter, (mapper) =>
+    mapper instanceof V1_AppliedProperty
+      ? { column: _propertyCol(mapper, columnGetter), parameterValues: [] }
+      : undefined,
+  );
+}
+
+/**
+ * Processes aggregate column of the form:
+ * ~col : x|rowMapper($x.col, $x.other) : x|$x->func()
+ * where the values of the aggregated column are paired up with those of
+ * another column, e.g. the weights for a weighted average.
+ */
+export function _agg_rowMapper(
+  colSpec: V1_ColSpec,
+  func: string,
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  return _agg(colSpec, func, columnGetter, (mapper) =>
+    mapper instanceof V1_AppliedFunction &&
+    matchFunctionName(mapper.function, DataCubeFunction.ROW_MAPPER) &&
+    mapper.parameters.length === 2
+      ? {
+          column: _propertyCol(
+            _param(mapper, 0, V1_AppliedProperty),
+            columnGetter,
+          ),
+          parameterValues: [
+            {
+              value: _propertyCol(
+                _param(mapper, 1, V1_AppliedProperty),
+                columnGetter,
+              ).name,
+              type: DataCubeOperationAdvancedValueType.COLUMN,
+            },
+          ],
+        }
+      : undefined,
+  );
 }
 
 export function _pivotSort(
@@ -946,6 +1012,7 @@ export function _validateGroupBy(
   pivot: DataCubeSnapshotPivot | undefined,
   pivotAggColumns: DataCubeSnapshotAggregateColumn[],
   availableColumns: DataCubeColumn[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
   // check for duplicate columns
   const groupByColumns = groupBy.columns;
@@ -995,20 +1062,53 @@ export function _validateGroupBy(
       .filter((col) => isPivotResultColumnName(col.name))
       .forEach((col) => {
         const aggColName = getPivotResultColumnBaseColumnName(col.name);
+        const pivotResultColumnNamePrefix = getPivotResultColumnNamePrefix(
+          col.name,
+        );
         const aggCol = {
           ...col,
           name: aggColName,
+          // columns referenced by the aggregation, e.g. the weights of a weighted average,
+          // point to their pivot result columns matching the same pivot values, so resolve
+          // them to their base columns, i.e. as they are referenced in pivot()
+          parameterValues: col.parameterValues.map((value) =>
+            value.type === DataCubeOperationAdvancedValueType.COLUMN &&
+            isString(value.value) &&
+            value.value.startsWith(pivotResultColumnNamePrefix) &&
+            isPivotResultColumnName(value.value)
+              ? {
+                  ...value,
+                  value: getPivotResultColumnBaseColumnName(value.value),
+                }
+              : value,
+          ),
         };
+
+        // aggregations which do not support reaggregation are aggregated with uniqueValueOnly()
+        // after pivot(), so resolve their specification from pivot(), see _groupByAggCols()
+        const pivotAggCol = _findCol(pivotAggColumns, aggColName);
+        const resolvedAggCol =
+          pivotAggCol &&
+          aggCol.operator === DataCubeQueryAggregateOperator.UNIQUE &&
+          !getAggregateOperation(
+            pivotAggCol.operator,
+            aggregateOperations,
+          ).supportsReaggregation(
+            pivotAggCol.parameterValues,
+            (colName) => _findCol(pivotAggColumns, colName)?.operator,
+          )
+            ? pivotAggCol
+            : aggCol;
 
         const existingAggCol = aggCols.get(aggColName);
 
         if (!existingAggCol) {
-          aggCols.set(aggColName, aggCol);
+          aggCols.set(aggColName, resolvedAggCol);
         } else if (
           // type should not be compared here as it can change dynamically due to aggregation
           !deepEqual(
             { ...existingAggCol, type: undefined },
-            { ...aggCol, type: undefined },
+            { ...resolvedAggCol, type: undefined },
           )
         ) {
           throw new Error(

@@ -14,25 +14,29 @@
  * limitations under the License.
  */
 
-import { integrationTest } from '@finos/legend-shared/test';
+import { integrationTest, unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildSnapshot } from '../DataCubeSnapshotBuilder.js';
 import {
   assertErrorThrown,
   at,
   guaranteeNonNullable,
+  guaranteeType,
   isString,
 } from '@finos/legend-shared';
 import { DataCubeSpecification } from '../model/DataCubeSpecification.js';
-import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
+import {
+  INTERNAL__DataCubeSource,
+  type DataCubeSource,
+} from '../model/DataCubeSource.js';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from '../model/DataCubeConfiguration.js';
 import { TEST__DataCubeEngine } from '../../__tests__/DataCubeTestUtils.js';
-import type {
+import {
   DataCubeSnapshot,
-  DataCubeSnapshotFilterCondition,
+  type DataCubeSnapshotFilterCondition,
 } from '../DataCubeSnapshot.js';
 import {
   DataCubeColumnKind,
@@ -40,12 +44,26 @@ import {
   DataCubeQueryAggregateOperator,
   DataCubeQueryFilterOperator,
   DataCubeQuerySortDirection,
+  type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   PRIMITIVE_TYPE,
+  V1_AppliedFunction,
+  V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
+import type {
+  DataCubeEngine,
+  DataCubeRelationType,
+} from '../DataCubeEngine.js';
+import { buildExecutableQuery } from '../DataCubeQueryBuilder.js';
+import {
+  _lambda,
+  _primitiveValue,
+  _property,
+  _var,
+} from '../DataCubeQueryBuilderUtils.js';
 
 const FOCUSED_TESTS: unknown[] = [
   // tests added here will be the only tests run
@@ -821,6 +839,7 @@ const cases: TestCase[] = [
   _case(`Aggregation: sum()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator('b', DataCubeQueryAggregateOperator.SUM),
   }),
   _case(`Aggregation: sum() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
@@ -840,6 +859,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: average()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.AVERAGE,
+    ),
   }),
   _case(`Aggregation: average() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
@@ -859,6 +882,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: count()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->count()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.COUNT,
+    ),
   }),
   _case(`Aggregation: count() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->count()])->sort([~a->ascending()])`,
@@ -878,6 +905,7 @@ const cases: TestCase[] = [
   _case(`Aggregation: min()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->min()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator('b', DataCubeQueryAggregateOperator.MIN),
   }),
   _case(`Aggregation: min() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->min()])->sort([~a->ascending()])`,
@@ -897,6 +925,7 @@ const cases: TestCase[] = [
   _case(`Aggregation: max()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->max()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator('b', DataCubeQueryAggregateOperator.MAX),
   }),
   _case(`Aggregation: max() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->max()])->sort([~a->ascending()])`,
@@ -916,6 +945,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: uniqueValueOnly()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->uniqueValueOnly()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:String'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.UNIQUE,
+    ),
   }),
   _case(`Aggregation: uniqueValueOnly() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->uniqueValueOnly()])->sort([~a->ascending()])`,
@@ -930,6 +963,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: first()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->first()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:String'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.FIRST,
+    ),
   }),
   _case(`Aggregation: first() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->first()])->sort([~a->ascending()])`,
@@ -944,6 +981,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: last()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->last()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:String'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.LAST,
+    ),
   }),
   _case(`Aggregation: last() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->last()])->sort([~a->ascending()])`,
@@ -958,6 +999,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: variancePopulation()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->variancePopulation()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.VARIANCE_POPULATION,
+    ),
   }),
   _case(`Aggregation: variancePopulation() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->variancePopulation()])->sort([~a->ascending()])`,
@@ -977,6 +1022,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: varianceSample()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->varianceSample()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.VARIANCE_SAMPLE,
+    ),
   }),
   _case(`Aggregation: varianceSample() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->varianceSample()])->sort([~a->ascending()])`,
@@ -996,6 +1045,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: stdDevPopulation()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevPopulation()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.STANDARD_DEVIATION_POPULATION,
+    ),
   }),
   _case(`Aggregation: stdDevPopulation() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevPopulation()])->sort([~a->ascending()])`,
@@ -1015,6 +1068,10 @@ const cases: TestCase[] = [
   _case(`Aggregation: stdDevSample()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevSample()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.STANDARD_DEVIATION_SAMPLE,
+    ),
   }),
   _case(`Aggregation: stdDevSample() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevSample()])->sort([~a->ascending()])`,
@@ -1034,6 +1091,11 @@ const cases: TestCase[] = [
   _case(`Aggregation: joinStrings()`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->joinStrings(',')])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:String'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.JOIN_STRINGS,
+      [{ type: PRIMITIVE_TYPE.STRING, value: ',' }],
+    ),
   }),
   _case(`Aggregation: joinStrings() : ERROR - column not found`, {
     query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->joinStrings(',')])->sort([~a->ascending()])`,
@@ -1044,6 +1106,152 @@ const cases: TestCase[] = [
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->joinStrings(2)])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
     error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: median()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->median()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.MEDIAN,
+    ),
+  }),
+  _case(`Aggregation: median() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->median()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: median() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->median('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: mode()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->mode()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.MODE,
+    ),
+  }),
+  _case(`Aggregation: mode() : ERROR - incompatible column (decimal)`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->mode()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Decimal'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: percentile()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->percentile(0.9)])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.PERCENTILE,
+      [{ type: PRIMITIVE_TYPE.FLOAT, value: 0.9 }],
+    ),
+  }),
+  _case(`Aggregation: percentile() : ERROR - missing parameter`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->percentile()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: percentile() : ERROR - integer parameter`, {
+    // NOTE: the engine requires the percentile to be a float value, see
+    // meta::pure::functions::math::percentile(Number[*], Float[1])
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->percentile(1)])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: percentile() : ERROR - out-of-range parameter`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->percentile(1.5)])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: wavg()`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->wavg(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float', 'c:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'c' }],
+    ),
+  }),
+  _case(`Aggregation: wavg() : ERROR - weight column not found`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->wavg()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float', 'c:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: wavg() : ERROR - unmatched mapped column name`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.c, $x.b):x|$x->wavg(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float', 'c:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: wavg() : ERROR - incompatible column`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->wavg(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String', 'c:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: corr()`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->corr(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float', 'c:Float'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.CORRELATION,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'c' }],
+    ),
+  }),
+  _case(`Aggregation: covarPopulation()`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->covarPopulation(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float', 'c:Float'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.COVARIANCE_POPULATION,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'c' }],
+    ),
+  }),
+  _case(`Aggregation: covarSample()`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->covarSample(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Float', 'c:Float'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.COVARIANCE_SAMPLE,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'c' }],
+    ),
+  }),
+  _case(`Aggregation: maxBy()`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->maxBy(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String', 'c:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.MAX_BY,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'c' }],
+    ),
+  }),
+  _case(`Aggregation: maxBy() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->maxBy(2), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String', 'c:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: minBy()`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.c):x|$x->minBy(), c:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:StrictDate', 'c:Integer'],
+    validator: _checkAggregateOperator(
+      'b',
+      DataCubeQueryAggregateOperator.MIN_BY,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'c' }],
+    ),
+  }),
+  _case(`Aggregation: and()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->and()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Boolean'],
+    validator: _checkAggregateOperator('b', DataCubeQueryAggregateOperator.ALL),
+  }),
+  _case(`Aggregation: and() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->and()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: or()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->or()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Boolean'],
+    validator: _checkAggregateOperator('b', DataCubeQueryAggregateOperator.ANY),
   }),
 
   // --------------------------------- PIVOT ---------------------------------
@@ -1172,6 +1380,49 @@ const cases: TestCase[] = [
       columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
     },
   ),
+  _case(
+    `GroupBy: following pivot() expression with aggregation referencing another column`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[a:x|$x.a:x|$x->sum(), b:x|meta::pure::functions::math::mathUtility::rowMapper($x.b, $x.a):x|$x->wavg()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, 'val1__|__a':Integer, 'val1__|__b':Float)>)->groupBy(~[d], ~['val1__|__a':x|$x.'val1__|__a':x|$x->sum(), 'val1__|__b':x|meta::pure::functions::math::mathUtility::rowMapper($x.'val1__|__b', $x.'val1__|__a'):x|$x->wavg()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'b:Float', 'c:String', 'd:String'],
+    },
+  ),
+  _case(
+    `GroupBy: sum and weighted average of the same column using a leaf-level extended column`,
+    {
+      query: `extend(~[priceWavg:x|$x.price])->select(~[desk, price, qty, priceWavg])->groupBy(~[desk], ~[price:x|$x.price:x|$x->sum(), qty:x|$x.qty:x|$x->sum(), priceWavg:x|meta::pure::functions::math::mathUtility::rowMapper($x.priceWavg, $x.qty):x|$x->wavg()])->sort([~desk->ascending()])`,
+      columns: ['desk:String', 'price:Float', 'qty:Integer'],
+      validator: (snapshot) => {
+        _checkAggregateOperator(
+          'price',
+          DataCubeQueryAggregateOperator.SUM,
+        )(snapshot);
+        _checkAggregateOperator(
+          'priceWavg',
+          DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+          [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'qty' }],
+        )(snapshot);
+      },
+    },
+  ),
+  _case(`GroupBy: weighted average by a leaf-level extended column`, {
+    query: `extend(~[weight:x|$x.qty])->select(~[desk, price, qty, weight])->groupBy(~[desk], ~[price:x|meta::pure::functions::math::mathUtility::rowMapper($x.price, $x.weight):x|$x->wavg(), qty:x|$x.qty:x|$x->sum(), weight:x|$x.weight:x|$x->sum()])->sort([~desk->ascending()])`,
+    columns: ['desk:String', 'price:Float', 'qty:Integer'],
+    validator: _checkAggregateOperator(
+      'price',
+      DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'weight' }],
+    ),
+  }),
+  _case(`GroupBy: weighted average grouped by a leaf-level extended column`, {
+    query: `extend(~[size:x|$x.desk])->select(~[size, price, qty])->groupBy(~[size], ~[price:x|meta::pure::functions::math::mathUtility::rowMapper($x.price, $x.qty):x|$x->wavg(), qty:x|$x.qty:x|$x->sum()])->sort([~size->ascending()])`,
+    columns: ['desk:String', 'price:Float', 'qty:Integer'],
+    validator: _checkAggregateOperator(
+      'price',
+      DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+      [{ type: DataCubeOperationAdvancedValueType.COLUMN, value: 'qty' }],
+    ),
+  }),
   _case(`GroupBy: ERROR - group column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
@@ -2217,16 +2468,17 @@ function _setOlderPreciseNumericColumnDefaults(
 function _checkAggregateOperator(
   name: string,
   operator: DataCubeQueryAggregateOperator,
+  parameterValues?: DataCubeOperationValue[] | undefined,
 ) {
   return (snapshot: DataCubeSnapshot) => {
-    expect(
-      _findColumnConfiguration(
-        DataCubeConfiguration.serialization.fromJson(
-          snapshot.data.configuration,
-        ),
-        name,
-      ).aggregateOperator,
-    ).toBe(operator);
+    const column = _findColumnConfiguration(
+      DataCubeConfiguration.serialization.fromJson(snapshot.data.configuration),
+      name,
+    );
+    expect(column.aggregateOperator).toBe(operator);
+    if (parameterValues) {
+      expect(column.aggregationParameters).toEqual(parameterValues);
+    }
   };
 }
 
@@ -2275,3 +2527,504 @@ async function _generateDefaultConfiguration(
     );
   }
 }
+
+// --------------------------------- ROUNDTRIP WITHOUT GRAMMAR ---------------------------------
+
+/**
+ * NOTE: these tests check the query built from a snapshot can be processed back
+ * into the same snapshot, i.e. the query builder and the snapshot builder agree,
+ * without needing an engine to parse/compose the grammar of the query: the only
+ * call made to the engine, i.e. retrieving the types of extended columns, is stubbed.
+ *
+ * The tests above go through the grammar, i.e. they require an engine.
+ */
+class TEST__RoundtripDataCubeEngine extends TEST__DataCubeEngine {
+  constructor(private readonly _columns: DataCubeColumn[]) {
+    super();
+  }
+
+  override async getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<DataCubeRelationType> {
+    return { columns: this._columns };
+  }
+}
+
+type TestColumn = DataCubeColumn & {
+  kind: DataCubeColumnKind;
+  aggregateOperator: string;
+  aggregationParameters?: DataCubeOperationValue[] | undefined;
+  excludedFromPivot?: boolean | undefined;
+};
+
+const _dimension = (name: string): TestColumn => ({
+  name,
+  type: PRIMITIVE_TYPE.STRING,
+  kind: DataCubeColumnKind.DIMENSION,
+  aggregateOperator: DataCubeQueryAggregateOperator.UNIQUE,
+  excludedFromPivot: true,
+});
+
+const _measure = (
+  name: string,
+  type: string,
+  aggregateOperator: string = DataCubeQueryAggregateOperator.SUM,
+  aggregationParameters?: DataCubeOperationValue[],
+): TestColumn => ({
+  name,
+  type,
+  kind: DataCubeColumnKind.MEASURE,
+  aggregateOperator,
+  aggregationParameters,
+  excludedFromPivot: false,
+});
+
+const _column = (name: string): DataCubeOperationValue[] => [
+  { type: DataCubeOperationAdvancedValueType.COLUMN, value: name },
+];
+
+const _col = (column: DataCubeColumn): DataCubeColumn => ({
+  name: column.name,
+  type: column.type,
+});
+
+type SnapshotTestCase = {
+  sourceColumns: TestColumn[];
+  // leaf-level extended columns, computed as `x|$x.<from>` for simplicity
+  leafExtendedColumns?: (TestColumn & { from: string })[] | undefined;
+  groupBy: string[];
+  pivot?:
+    | {
+        columns: string[];
+        castColumns: DataCubeColumn[];
+      }
+    | undefined;
+};
+
+function _snapshot(testCase: SnapshotTestCase, engine: DataCubeEngine) {
+  const leafExtendedColumns = testCase.leafExtendedColumns ?? [];
+  const allColumns = [...testCase.sourceColumns, ...leafExtendedColumns];
+  const _getCol = (name: string) =>
+    _col(guaranteeNonNullable(allColumns.find((col) => col.name === name)));
+  const configuration = new DataCubeConfiguration();
+  configuration.columns = allColumns.map((column) => {
+    const columnConfiguration = new DataCubeColumnConfiguration(
+      column.name,
+      column.type,
+    );
+    columnConfiguration.kind = column.kind;
+    columnConfiguration.aggregateOperator = column.aggregateOperator;
+    columnConfiguration.aggregationParameters =
+      column.aggregationParameters ?? [];
+    columnConfiguration.excludedFromPivot = column.excludedFromPivot ?? true;
+    return columnConfiguration;
+  });
+  const snapshot = DataCubeSnapshot.create(configuration.serialize());
+  snapshot.data.sourceColumns = testCase.sourceColumns.map(_col);
+  snapshot.data.leafExtendedColumns = leafExtendedColumns.map((column) => ({
+    ..._col(column),
+    mapFn: engine.serializeValueSpecification(
+      _lambda([_var()], [_property(column.from)]),
+    ),
+  }));
+  snapshot.data.selectColumns = allColumns.map(_col);
+  snapshot.data.groupBy = { columns: testCase.groupBy.map(_getCol) };
+  if (testCase.pivot) {
+    snapshot.data.pivot = {
+      columns: testCase.pivot.columns.map(_getCol),
+      castColumns: testCase.pivot.castColumns,
+    };
+  }
+  return snapshot;
+}
+
+function _source(testCase: SnapshotTestCase) {
+  const source = new INTERNAL__DataCubeSource();
+  source.query = _primitiveValue(PRIMITIVE_TYPE.STRING, '');
+  source.columns = testCase.sourceColumns.map(_col);
+  return source;
+}
+
+/**
+ * Builds the query without the source, as stored in a DataCube specification
+ */
+function _buildPartialQuery(
+  snapshot: DataCubeSnapshot,
+  source: DataCubeSource,
+  engine: DataCubeEngine,
+): V1_ValueSpecification {
+  const query = buildExecutableQuery(snapshot, source, engine, {
+    skipExecutionContext: true,
+  });
+  let first = query;
+  while (
+    first instanceof V1_AppliedFunction &&
+    first.parameters[0] instanceof V1_AppliedFunction
+  ) {
+    first = first.parameters[0];
+  }
+  if (first instanceof V1_AppliedFunction) {
+    first.parameters.shift();
+  }
+  return query;
+}
+
+async function _roundtrip(testCase: SnapshotTestCase) {
+  const engine = new TEST__RoundtripDataCubeEngine([
+    ...testCase.sourceColumns.map(_col),
+    ...(testCase.leafExtendedColumns ?? []).map(_col),
+  ]);
+  const source = _source(testCase);
+  const query = _buildPartialQuery(_snapshot(testCase, engine), source, engine);
+
+  // process the query without configuration, i.e. the configuration is derived from the query
+  const specification = new DataCubeSpecification();
+  const snapshot = await validateAndBuildSnapshot(
+    query,
+    source,
+    specification,
+    engine,
+  );
+  expect(
+    engine.serializeValueSpecification(
+      _buildPartialQuery(snapshot, source, engine),
+    ),
+  ).toEqual(engine.serializeValueSpecification(query));
+
+  // process the query again with the configuration derived, i.e. as when a saved DataCube
+  // is loaded, which validates the configuration against the query
+  const reloadSpecification = new DataCubeSpecification();
+  reloadSpecification.configuration =
+    DataCubeConfiguration.serialization.fromJson(snapshot.data.configuration);
+  const reloadedSnapshot = await validateAndBuildSnapshot(
+    query,
+    source,
+    reloadSpecification,
+    engine,
+  );
+  expect(reloadedSnapshot.data.configuration).toEqual(
+    snapshot.data.configuration,
+  );
+
+  return DataCubeConfiguration.serialization.fromJson(
+    snapshot.data.configuration,
+  );
+}
+
+function _expectAggregation(
+  configuration: DataCubeConfiguration,
+  name: string,
+  operator: string,
+  parameterValues: DataCubeOperationValue[] = [],
+) {
+  const column = _findColumnConfiguration(configuration, name);
+  expect(column.aggregateOperator).toBe(operator);
+  expect(column.aggregationParameters).toEqual(parameterValues);
+}
+
+const DESK = _dimension('Desk');
+const QTY = _measure('Qty', PRIMITIVE_TYPE.INTEGER);
+
+/**
+ * A case for every aggregation: the type of the aggregated column, and the parameter
+ * values, where aggregations referencing another column reference `Qty`
+ */
+const AGGREGATION_CASES: [string, string, DataCubeOperationValue[]][] = [
+  [DataCubeQueryAggregateOperator.SUM, PRIMITIVE_TYPE.INTEGER, []],
+  [DataCubeQueryAggregateOperator.AVERAGE, PRIMITIVE_TYPE.FLOAT, []],
+  [DataCubeQueryAggregateOperator.COUNT, PRIMITIVE_TYPE.INTEGER, []],
+  [DataCubeQueryAggregateOperator.MIN, PRIMITIVE_TYPE.FLOAT, []],
+  [DataCubeQueryAggregateOperator.MAX, PRIMITIVE_TYPE.FLOAT, []],
+  [DataCubeQueryAggregateOperator.UNIQUE, PRIMITIVE_TYPE.STRING, []],
+  [DataCubeQueryAggregateOperator.FIRST, PRIMITIVE_TYPE.STRING, []],
+  [DataCubeQueryAggregateOperator.LAST, PRIMITIVE_TYPE.STRICTDATE, []],
+  [
+    DataCubeQueryAggregateOperator.VARIANCE_POPULATION,
+    PRIMITIVE_TYPE.FLOAT,
+    [],
+  ],
+  [DataCubeQueryAggregateOperator.VARIANCE_SAMPLE, PRIMITIVE_TYPE.FLOAT, []],
+  [
+    DataCubeQueryAggregateOperator.STANDARD_DEVIATION_POPULATION,
+    PRIMITIVE_TYPE.FLOAT,
+    [],
+  ],
+  [
+    DataCubeQueryAggregateOperator.STANDARD_DEVIATION_SAMPLE,
+    PRIMITIVE_TYPE.FLOAT,
+    [],
+  ],
+  [
+    DataCubeQueryAggregateOperator.JOIN_STRINGS,
+    PRIMITIVE_TYPE.STRING,
+    [{ type: PRIMITIVE_TYPE.STRING, value: ', ' }],
+  ],
+  [DataCubeQueryAggregateOperator.MEDIAN, PRIMITIVE_TYPE.INTEGER, []],
+  [DataCubeQueryAggregateOperator.MODE, PRIMITIVE_TYPE.FLOAT, []],
+  [
+    DataCubeQueryAggregateOperator.PERCENTILE,
+    PRIMITIVE_TYPE.FLOAT,
+    [{ type: PRIMITIVE_TYPE.FLOAT, value: 0.9 }],
+  ],
+  [
+    DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+    PRIMITIVE_TYPE.FLOAT,
+    _column('Qty'),
+  ],
+  [
+    DataCubeQueryAggregateOperator.CORRELATION,
+    PRIMITIVE_TYPE.FLOAT,
+    _column('Qty'),
+  ],
+  [
+    DataCubeQueryAggregateOperator.COVARIANCE_POPULATION,
+    PRIMITIVE_TYPE.FLOAT,
+    _column('Qty'),
+  ],
+  [
+    DataCubeQueryAggregateOperator.COVARIANCE_SAMPLE,
+    PRIMITIVE_TYPE.FLOAT,
+    _column('Qty'),
+  ],
+  [
+    DataCubeQueryAggregateOperator.MAX_BY,
+    PRIMITIVE_TYPE.STRING,
+    _column('Qty'),
+  ],
+  [
+    DataCubeQueryAggregateOperator.MIN_BY,
+    PRIMITIVE_TYPE.STRICTDATE,
+    _column('Qty'),
+  ],
+  [DataCubeQueryAggregateOperator.ALL, PRIMITIVE_TYPE.BOOLEAN, []],
+  [DataCubeQueryAggregateOperator.ANY, PRIMITIVE_TYPE.BOOLEAN, []],
+];
+
+describe(unitTest('Roundtrip query processing: aggregation coverage'), () => {
+  const engine = new TEST__DataCubeEngine();
+
+  test('every aggregation has a case without grammar', () => {
+    expect(AGGREGATION_CASES.map(([operator]) => operator).sort()).toEqual(
+      engine.aggregateOperations.map((operation) => operation.operator).sort(),
+    );
+  });
+
+  test('every aggregation has a case with grammar', () => {
+    const caseNames = cases
+      .filter(([, , , , error]) => error === undefined)
+      .map(([name]) => name);
+    engine.aggregateOperations.forEach((operation) => {
+      const [, type, parameterValues] = guaranteeNonNullable(
+        AGGREGATION_CASES.find(([operator]) => operator === operation.operator),
+      );
+      const configuration = new DataCubeColumnConfiguration('Value', type);
+      configuration.aggregateOperator = operation.operator;
+      configuration.aggregationParameters = parameterValues;
+      // NOTE: cases are named after the function used to reduce the values
+      const reducer = guaranteeType(
+        guaranteeType(
+          guaranteeNonNullable(
+            operation.buildAggregateColumnExpression(configuration),
+          ).function2,
+          V1_Lambda,
+        ).body[0],
+        V1_AppliedFunction,
+      );
+      const functionName = reducer.function.substring(
+        reducer.function.lastIndexOf(':') + 1,
+      );
+      expect(caseNames).toContain(`Aggregation: ${functionName}()`);
+    });
+  });
+});
+
+describe(
+  unitTest('Roundtrip query processing without grammar: aggregation'),
+  () => {
+    test.each(AGGREGATION_CASES)(
+      'groupBy(): %s',
+      async (operator, type, parameterValues) => {
+        const configuration = await _roundtrip({
+          sourceColumns: [
+            DESK,
+            _measure('Value', type, operator, parameterValues),
+            QTY,
+          ],
+          groupBy: ['Desk'],
+        });
+        _expectAggregation(configuration, 'Value', operator, parameterValues);
+        _expectAggregation(
+          configuration,
+          'Qty',
+          DataCubeQueryAggregateOperator.SUM,
+        );
+      },
+    );
+
+    // NOTE: pivot() only aggregates measures, while non-numeric columns are processed
+    // as dimensions, so only aggregations of numeric columns are covered here
+    test.each(
+      AGGREGATION_CASES.filter(([, type]) =>
+        [PRIMITIVE_TYPE.INTEGER, PRIMITIVE_TYPE.FLOAT].includes(
+          type as PRIMITIVE_TYPE,
+        ),
+      ),
+    )('pivot() then groupBy(): %s', async (operator, type, parameterValues) => {
+      const configuration = await _roundtrip({
+        sourceColumns: [
+          _dimension('Year'),
+          DESK,
+          _measure('Value', type, operator, parameterValues),
+          QTY,
+        ],
+        groupBy: ['Desk'],
+        pivot: {
+          columns: ['Year'],
+          castColumns: [
+            _col(DESK),
+            { name: '2025__|__Value', type },
+            { name: '2025__|__Qty', type: PRIMITIVE_TYPE.INTEGER },
+          ],
+        },
+      });
+      _expectAggregation(configuration, 'Value', operator, parameterValues);
+    });
+  },
+);
+
+describe(
+  unitTest('Roundtrip query processing without grammar: weighted average'),
+  () => {
+    test('sum and weighted average of the same column, using a leaf-level measure', async () => {
+      const configuration = await _roundtrip({
+        sourceColumns: [DESK, _measure('Price', PRIMITIVE_TYPE.FLOAT), QTY],
+        leafExtendedColumns: [
+          {
+            ..._measure(
+              'Price (wavg)',
+              PRIMITIVE_TYPE.FLOAT,
+              DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+              _column('Qty'),
+            ),
+            from: 'Price',
+          },
+        ],
+        groupBy: ['Desk'],
+      });
+      _expectAggregation(
+        configuration,
+        'Price',
+        DataCubeQueryAggregateOperator.SUM,
+      );
+      _expectAggregation(
+        configuration,
+        'Price (wavg)',
+        DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+        _column('Qty'),
+      );
+    });
+
+    test('weighted by a leaf-level extended column', async () => {
+      const configuration = await _roundtrip({
+        sourceColumns: [
+          DESK,
+          _measure(
+            'Price',
+            PRIMITIVE_TYPE.FLOAT,
+            DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+            _column('Abs Qty'),
+          ),
+          QTY,
+        ],
+        leafExtendedColumns: [
+          { ..._measure('Abs Qty', PRIMITIVE_TYPE.INTEGER), from: 'Qty' },
+        ],
+        groupBy: ['Desk'],
+      });
+      _expectAggregation(
+        configuration,
+        'Price',
+        DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+        _column('Abs Qty'),
+      );
+    });
+
+    test('grouped by a leaf-level dimension extended column', async () => {
+      const configuration = await _roundtrip({
+        sourceColumns: [
+          _measure(
+            'Price',
+            PRIMITIVE_TYPE.FLOAT,
+            DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+            _column('Qty'),
+          ),
+          QTY,
+        ],
+        leafExtendedColumns: [{ ..._dimension('Size'), from: 'Qty' }],
+        groupBy: ['Size'],
+      });
+      _expectAggregation(
+        configuration,
+        'Price',
+        DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+        _column('Qty'),
+      );
+    });
+
+    test('following pivot(), weights are pivoted alongside the aggregated column', async () => {
+      const configuration = await _roundtrip({
+        sourceColumns: [
+          _dimension('Year'),
+          DESK,
+          _measure(
+            'Price',
+            PRIMITIVE_TYPE.FLOAT,
+            DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+            _column('Qty'),
+          ),
+          QTY,
+        ],
+        groupBy: ['Desk'],
+        pivot: {
+          columns: ['Year'],
+          castColumns: [
+            _col(DESK),
+            { name: '2025__|__Price', type: PRIMITIVE_TYPE.FLOAT },
+            { name: '2025__|__Qty', type: PRIMITIVE_TYPE.INTEGER },
+            { name: '2026__|__Price', type: PRIMITIVE_TYPE.FLOAT },
+            { name: '2026__|__Qty', type: PRIMITIVE_TYPE.INTEGER },
+          ],
+        },
+      });
+      _expectAggregation(
+        configuration,
+        'Price',
+        DataCubeQueryAggregateOperator.WEIGHTED_AVERAGE,
+        _column('Qty'),
+      );
+    });
+  },
+);
+
+describe(
+  unitTest('Roundtrip query processing without grammar: number of decimals'),
+  () => {
+    test('integer columns aggregated into fractional values show decimals', async () => {
+      const configuration = await _roundtrip({
+        sourceColumns: [
+          DESK,
+          _measure(
+            'Value',
+            PRIMITIVE_TYPE.INTEGER,
+            DataCubeQueryAggregateOperator.MEDIAN,
+          ),
+          QTY,
+        ],
+        groupBy: ['Desk'],
+      });
+      expect(_findColumnConfiguration(configuration, 'Value').decimals).toBe(2);
+      expect(_findColumnConfiguration(configuration, 'Qty').decimals).toBe(0);
+    });
+  },
+);

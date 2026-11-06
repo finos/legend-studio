@@ -33,6 +33,7 @@ import {
   deepDiff,
   guaranteeNonNullable,
   StopWatch,
+  uniqBy,
 } from '@finos/legend-shared';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
@@ -47,6 +48,7 @@ import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayout
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
 import { DataCubeEditorDimensionsPanelState } from './DataCubeEditorDimensionsPanelState.js';
+import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
 
 function getChangedSnapshotSections(
   baseSnapshot: DataCubeSnapshot,
@@ -199,13 +201,29 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
       // the query which is expensive in certain cases, so here, we just compute the "optimistic" set
       // of pivot result columns for casting to guarantee validation is not thronn off.
       if (tempSnapshot.data.pivot) {
-        tempSnapshot.data.pivot.castColumns =
-          this.sorts.selector.availableColumns
-            .filter(
+        tempSnapshot.data.pivot.castColumns = uniqBy(
+          [
+            ...this.sorts.selector.availableColumns,
+            // measures excluded from pivot are not sortable, but are kept by pivot() and
+            // can be referenced by aggregations, e.g. as the weights of a weighted average
+            ...this.columnProperties.columns.filter(
               (col) =>
-                !_findCol(tempSnapshot.data.groupExtendedColumns, col.name),
-            )
-            .map(_toCol);
+                col.isSelected &&
+                col.kind === DataCubeColumnKind.MEASURE &&
+                col.excludedFromPivot &&
+                !_findCol(
+                  this.horizontalPivots.selector.selectedColumns,
+                  col.name,
+                ),
+            ),
+          ],
+          (col) => col.name,
+        )
+          .filter(
+            (col) =>
+              !_findCol(tempSnapshot.data.groupExtendedColumns, col.name),
+          )
+          .map(_toCol);
       }
 
       const codePrefix = `->`;

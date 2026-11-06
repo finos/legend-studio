@@ -276,6 +276,21 @@ describe(unitTest('Column types: display'), () => {
   ])('defaults decimals of %o to %s', (column, decimals) => {
     expect(getDefaultDecimals(column)).toBe(decimals);
   });
+
+  test.each([
+    [{ type: PRECISE_PRIMITIVE_TYPE.INT }, 2],
+    [{ type: PRIMITIVE_TYPE.INTEGER }, 2],
+    [{ type: PRECISE_PRIMITIVE_TYPE.NUMERIC, typeVariableValues: [18, 4] }, 4],
+    [{ type: PRECISE_PRIMITIVE_TYPE.NUMERIC, typeVariableValues: [10, 0] }, 2],
+    [{ type: PRIMITIVE_TYPE.FLOAT }, 2],
+  ])(
+    'defaults decimals of fractional aggregated values of %o to %s',
+    (column, decimals) => {
+      expect(getDefaultDecimals(column, { hasFractionalValues: true })).toBe(
+        decimals,
+      );
+    },
+  );
 });
 
 describe(unitTest('Column types: column configuration'), () => {

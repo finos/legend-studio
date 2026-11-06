@@ -81,6 +81,7 @@ import {
   type DataCubeQueryFunctionMap,
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
+  getPivotResultColumnNamePrefix,
   DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
   DataCubeQueryFilterOperator,
   isPrimitiveType,
@@ -501,7 +502,7 @@ function _fixEmptyAggCols(aggCols: V1_ColSpec[]) {
 export function _aggCol_base(
   column: DataCubeColumn,
   func: string,
-  paramterValues?: DataCubeOperationValue[] | undefined,
+  parameterValues?: DataCubeOperationValue[] | undefined,
 ) {
   const variable = _var();
   return _colSpec(
@@ -512,10 +513,37 @@ export function _aggCol_base(
       [
         _function(_functionName(func), [
           variable,
-          ...(paramterValues ?? []).map((value) => _value(value)),
+          ...(parameterValues ?? []).map((value) => _value(value)),
         ]),
       ],
     ),
+  );
+}
+
+/**
+ * Builds aggregate column of the form:
+ * ~col : x|rowMapper($x.col, $x.other) : x|$x->func()
+ * which pairs up the values of the aggregated column with those of another
+ * column, as needed by two-column aggregators, e.g. weighted average.
+ */
+export function _aggCol_rowMapper(
+  column: DataCubeColumn,
+  func: string,
+  otherColumnName: string,
+) {
+  const variable = _var();
+  return _colSpec(
+    column.name,
+    _lambda(
+      [variable],
+      [
+        _function(_functionName(DataCubeFunction.ROW_MAPPER), [
+          _property(column.name),
+          _property(otherColumnName),
+        ]),
+      ],
+    ),
+    _lambda([variable], [_function(_functionName(func), [variable])]),
   );
 }
 
@@ -612,6 +640,11 @@ export function _groupByAggCols(
   const pivotGroupByColumns = pivot.castColumns.filter(
     (col) => !isPivotResultColumnName(col.name),
   );
+  // NOTE: after pivot(), groupBy() aggregates the already aggregated values of pivot() rows, rather
+  // than the underlying data. This is exact for some aggregations, e.g. sum, min, max, but not for
+  // others, e.g. median, which would compute the median of medians, so these are aggregated with
+  // uniqueValueOnly() instead. Some long-standing aggregations, e.g. average, are not exact either
+  // but are kept as is, see DataCubeQueryAggregateOperation.supportsReaggregation()
   return _fixEmptyAggCols([
     // for pivot result columns, resolve the base aggregate column to get aggregate configuration
     ...pivotResultColumns
@@ -634,9 +667,42 @@ export function _groupByAggCols(
             ).serialize(),
           );
         columnConfiguration.name = column.name;
+        const pivotResultColumnNamePrefix = getPivotResultColumnNamePrefix(
+          column.name,
+        );
         const operation = aggregateOperations.find(
           (op) => op.operator === columnConfiguration.aggregateOperator,
         );
+        if (
+          operation &&
+          !operation.supportsReaggregation(
+            columnConfiguration.aggregationParameters,
+            // only columns aggregated by pivot() are aggregated before groupBy()
+            (colName) =>
+              _findCol(pivot.castColumns, pivotResultColumnNamePrefix + colName)
+                ? _findCol(configuration.columns, colName)?.aggregateOperator
+                : undefined,
+          )
+        ) {
+          return _aggCol_base(
+            columnConfiguration,
+            DataCubeFunction.UNIQUE_VALUE_ONLY,
+          );
+        }
+        // a column referenced by the aggregation, e.g. the weights of a weighted average,
+        // is pivoted alongside the aggregated column, so point to its pivot result column
+        // matching the same pivot values, e.g. 2024__|__price -> 2024__|__weight
+        columnConfiguration.aggregationParameters =
+          columnConfiguration.aggregationParameters.map((value) => {
+            if (value.type !== DataCubeOperationAdvancedValueType.COLUMN) {
+              return value;
+            }
+            const pivotResultColumnName =
+              pivotResultColumnNamePrefix + guaranteeIsString(value.value);
+            return _findCol(pivot.castColumns, pivotResultColumnName)
+              ? { ...value, value: pivotResultColumnName }
+              : value;
+          });
         const aggCol =
           operation?.buildAggregateColumnExpression(columnConfiguration);
         if (!aggCol) {
@@ -648,6 +714,10 @@ export function _groupByAggCols(
       }),
     // these are the columns which are available for groupBy but not selected for groupBy
     // operation, they would be aggregated as well
+    //
+    // NOTE: these are not aggregated by pivot(), but grouped on, so groupBy() aggregates
+    // their values on the rows of pivot(), i.e. the most detailed rows shown, where rows
+    // with the same values for all of these columns are merged into one
     ...pivotGroupByColumns
       .filter((column) => !_findCol(groupByColumns, column.name))
       .map((column) => {

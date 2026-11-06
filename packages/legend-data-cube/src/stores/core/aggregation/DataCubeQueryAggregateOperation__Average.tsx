@@ -45,6 +45,10 @@ export class DataCubeQueryAggregateOperation__Average extends DataCubeQueryAggre
     return DataCubeQueryAggregateOperator.AVERAGE;
   }
 
+  override get hasFractionalResult() {
+    return true;
+  }
+
   override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [DataCubeColumnDataType.NUMBER]);
   }

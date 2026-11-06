@@ -27,11 +27,18 @@ import {
 } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { _findCol } from '../../core/model/DataCubeColumn.js';
+import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
+import {
+  fallBackUnavailableAggregations,
+  getAggregationParameterColumns,
+  setColumnAggregateOperation,
+} from '../../core/DataCubeConfigurationBuilder.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
   private readonly _view!: DataCubeViewState;
+  private readonly _editor!: DataCubeEditorState;
 
   columns: DataCubeEditorMutableColumnConfiguration[] = [];
   selectedColumnName?: string | undefined;
@@ -49,10 +56,89 @@ export class DataCubeEditorColumnPropertiesPanelState
       showAdvancedSettings: observable,
       setShowAdvancedSettings: action,
 
+      selectedColumnAggregationParameterColumns: computed,
+      selectedColumnCompatibleAggregateOperations: computed,
+      setAggregateOperation: action,
+      adaptPropagatedChanges: action,
+
       applySnaphot: action,
     });
 
     this._view = editor.view;
+    this._editor = editor;
+  }
+
+  /**
+   * Columns which the aggregation of the specified column can reference, e.g. the
+   * weights of a weighted average.
+   */
+  getAggregationParameterColumns(
+    column: DataCubeEditorMutableColumnConfiguration,
+  ) {
+    return getAggregationParameterColumns(
+      column,
+      this.columns,
+      this._editor.horizontalPivots.selector.selectedColumns,
+      this._editor.groupExtendColumns,
+    );
+  }
+
+  /**
+   * Aggregations available for the specified column; those which reference another
+   * column, e.g. weighted average, are only available when such column can be found
+   * among the columns which the aggregation can reference.
+   */
+  getCompatibleAggregateOperations(
+    column: DataCubeEditorMutableColumnConfiguration,
+    parameterColumns = this.getAggregationParameterColumns(column),
+  ) {
+    return this._view.engine.aggregateOperations.filter(
+      (operation) =>
+        operation.isCompatibleWithColumn(column) &&
+        operation.isCompatibleWithParameterValues(
+          operation.generateDefaultParameterValues(column, parameterColumns),
+        ),
+    );
+  }
+
+  // NOTE: these are computed so they are not recomputed on every render of the panel, e.g.
+  // while editing the display name, since this goes through all aggregations and columns
+  get selectedColumnAggregationParameterColumns() {
+    return this.selectedColumn
+      ? this.getAggregationParameterColumns(this.selectedColumn)
+      : [];
+  }
+
+  get selectedColumnCompatibleAggregateOperations() {
+    return this.selectedColumn
+      ? this.getCompatibleAggregateOperations(
+          this.selectedColumn,
+          this.selectedColumnAggregationParameterColumns,
+        )
+      : [];
+  }
+
+  setAggregateOperation(
+    column: DataCubeEditorMutableColumnConfiguration,
+    operation: DataCubeQueryAggregateOperation,
+  ) {
+    if (operation !== column.aggregateOperation) {
+      setColumnAggregateOperation(
+        column,
+        operation,
+        this._view.engine.aggregateOperations,
+        this.getAggregationParameterColumns(column),
+      );
+    }
+  }
+
+  adaptPropagatedChanges() {
+    fallBackUnavailableAggregations(
+      this.columns,
+      this._editor.horizontalPivots.selector.selectedColumns,
+      this._editor.groupExtendColumns,
+      this._view.engine.aggregateOperations,
+    );
   }
 
   getColumnConfiguration(colName: string | undefined) {
@@ -99,6 +185,11 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
+    // NOTE: changes are propagated when leaving the columns and horizontal pivots panels, but
+    // changes can be applied without leaving these panels, and changes made in this panel,
+    // e.g. excluding a column from pivot, are not propagated, so adapt to them here before
+    // serializing; this is idempotent, so it is fine if changes have already been propagated
+    this.adaptPropagatedChanges();
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
       columns: this.columns.map((column) => column.serialize()),

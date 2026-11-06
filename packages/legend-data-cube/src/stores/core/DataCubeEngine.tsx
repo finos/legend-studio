@@ -41,6 +41,17 @@ import { DataCubeQueryAggregateOperation__VarianceSample } from './aggregation/D
 import { DataCubeQueryAggregateOperation__StdDevPopulation } from './aggregation/DataCubeQueryAggregateOperation__StdDevPopulation.js';
 import { DataCubeQueryAggregateOperation__StdDevSample } from './aggregation/DataCubeQueryAggregateOperation__StdDevSample.js';
 import { DataCubeQueryAggregateOperation__JoinStrings } from './aggregation/DataCubeQueryAggregateOperation__JoinStrings.js';
+import { DataCubeQueryAggregateOperation__Median } from './aggregation/DataCubeQueryAggregateOperation__Median.js';
+import { DataCubeQueryAggregateOperation__Mode } from './aggregation/DataCubeQueryAggregateOperation__Mode.js';
+import { DataCubeQueryAggregateOperation__Percentile } from './aggregation/DataCubeQueryAggregateOperation__Percentile.js';
+import { DataCubeQueryAggregateOperation__WeightedAverage } from './aggregation/DataCubeQueryAggregateOperation__WeightedAverage.js';
+import { DataCubeQueryAggregateOperation__Correlation } from './aggregation/DataCubeQueryAggregateOperation__Correlation.js';
+import { DataCubeQueryAggregateOperation__CovariancePopulation } from './aggregation/DataCubeQueryAggregateOperation__CovariancePopulation.js';
+import { DataCubeQueryAggregateOperation__CovarianceSample } from './aggregation/DataCubeQueryAggregateOperation__CovarianceSample.js';
+import { DataCubeQueryAggregateOperation__MaxBy } from './aggregation/DataCubeQueryAggregateOperation__MaxBy.js';
+import { DataCubeQueryAggregateOperation__MinBy } from './aggregation/DataCubeQueryAggregateOperation__MinBy.js';
+import { DataCubeQueryAggregateOperation__All } from './aggregation/DataCubeQueryAggregateOperation__All.js';
+import { DataCubeQueryAggregateOperation__Any } from './aggregation/DataCubeQueryAggregateOperation__Any.js';
 import { DataCubeQueryFilterOperation__Equal } from './filter/DataCubeQueryFilterOperation__Equal.js';
 import { DataCubeQueryFilterOperation__LessThanOrEqual } from './filter/DataCubeQueryFilterOperation__LessThanOrEqual.js';
 import { DataCubeQueryFilterOperation__LessThan } from './filter/DataCubeQueryFilterOperation__LessThan.js';
@@ -186,6 +197,17 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__StdDevPopulation(),
     new DataCubeQueryAggregateOperation__StdDevSample(),
     new DataCubeQueryAggregateOperation__JoinStrings(),
+    new DataCubeQueryAggregateOperation__Median(),
+    new DataCubeQueryAggregateOperation__Mode(),
+    new DataCubeQueryAggregateOperation__Percentile(),
+    new DataCubeQueryAggregateOperation__WeightedAverage(),
+    new DataCubeQueryAggregateOperation__Correlation(),
+    new DataCubeQueryAggregateOperation__CovariancePopulation(),
+    new DataCubeQueryAggregateOperation__CovarianceSample(),
+    new DataCubeQueryAggregateOperation__MaxBy(),
+    new DataCubeQueryAggregateOperation__MinBy(),
+    new DataCubeQueryAggregateOperation__All(),
+    new DataCubeQueryAggregateOperation__Any(),
   ];
 
   // ------------------------------- UTILITIES -------------------------------
