@@ -19,20 +19,29 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { alias, createModelSchema, list, optional, primitive } from 'serializr';
 import {
+  alias,
+  createModelSchema,
+  list,
+  optional,
+  primitive,
+  raw,
+} from 'serializr';
+import {
+  type CubeFunctionTestResults,
   CubeFunction,
   CubeFunctionCatalogue,
   CubeFunctionParameter,
   CubeFunctionSignature,
+  CubeFunctionTestResult,
   parseCubeFunctionSignature,
   readCubeFunctionParameterNames,
 } from '../../../CubeFunctionCatalogue.js';
 
 // The engine's PCT documentation (`/api/pct/pct-docs.json`, built by
 // legend-pure's `DocumentationGeneration`), read for its functions'
-// signatures and documentation; its test results by database are left for
-// later (EXPRESSION-EDITOR.md, round 2)
+// signatures and documentation, and each definition's test results on the
+// relational databases (EXPRESSION-EDITOR.md, round 2)
 
 export class V1_CubePCTFunctionSignature {
   /** As Pure writes it: `meta::pure::functions::string::contains(String[1], String[1]):Boolean[1]` */
@@ -73,12 +82,19 @@ export class V1_CubePCTFunctionDefinition {
 
 export class V1_CubePCTFunctionDocumentation {
   functionDefinition!: V1_CubePCTFunctionDefinition;
+  /**
+   * The definition's tests by adapter, keyed `platform:group:adapter`, e.g.
+   * `compiled:Store_Relational:DuckDB`: each `{ tests: [{ testName,
+   * success, errorMessage }] }`, read as it comes and checked when built
+   */
+  functionTestResults?: PlainObject | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_CubePCTFunctionDocumentation, {
       functionDefinition: usingModelSchema(
         V1_CubePCTFunctionDefinition.serialization.schema,
       ),
+      functionTestResults: optional(raw()),
     }),
   );
 }
@@ -95,9 +111,63 @@ export class V1_CubePCTDocumentation {
   );
 }
 
+/** The adapters of relational databases, whose name is the database's: `compiled:Store_Relational:DuckDB` */
+const RELATIONAL_ADAPTER = /^[^:]*:Store_Relational:(?<database>[^:]+)$/u;
+
+/** The longest a failing test's message is kept */
+const MAX_MESSAGE_LENGTH = 200;
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** A failing test's message: its first line that says something, cut short */
+const messageOf = (message: unknown): string => {
+  const line =
+    typeof message === 'string'
+      ? (message
+          .split('\n')
+          .map((each) => each.trim())
+          .find((each) => each && each !== '"') ?? '')
+      : '';
+  return line.length > MAX_MESSAGE_LENGTH
+    ? `${line.slice(0, MAX_MESSAGE_LENGTH - 1)}…`
+    : line;
+};
+
+/** A definition's tests on the relational databases, by database; none when it reports none */
+const buildTestResults = (
+  json: PlainObject | undefined,
+): CubeFunctionTestResults | undefined => {
+  const results = new Map<string, CubeFunctionTestResult>();
+  Object.entries(json ?? {}).forEach(([adapter, report]) => {
+    const database = RELATIONAL_ADAPTER.exec(adapter)?.groups?.database;
+    const tests = isObject(report) ? report.tests : undefined;
+    if (!database || !Array.isArray(tests)) {
+      return;
+    }
+    const read = tests.filter(isObject);
+    results.set(
+      database,
+      new CubeFunctionTestResult(
+        database,
+        read.filter((test) => test.success === true).length,
+        read.length,
+        read
+          .filter((test) => test.success !== true)
+          .map((test) => ({
+            test: typeof test.testName === 'string' ? test.testName : '',
+            message: messageOf(test.errorMessage),
+          })),
+      ),
+    );
+  });
+  return results.size ? results : undefined;
+};
+
 /** A signature read from the documentation; undefined when its text can't be read */
 const buildSignature = (
   signature: V1_CubePCTFunctionSignature,
+  testResults: CubeFunctionTestResults | undefined,
 ): CubeFunctionSignature | undefined => {
   const parsed = parseCubeFunctionSignature(signature.simple);
   if (!parsed) {
@@ -128,6 +198,7 @@ const buildSignature = (
     documentation,
     Boolean(signature.grammarCharacter),
     Boolean(signature.platformOnly),
+    testResults,
   );
 };
 
@@ -140,24 +211,28 @@ export const V1_buildCubeFunctionCatalogue = (
     string,
     { packages: string[]; signatures: CubeFunctionSignature[] }
   >();
-  documentation.functionsDocumentation.forEach(({ functionDefinition }) => {
-    const signatures = functionDefinition.signatures.flatMap((signature) => {
-      const built = buildSignature(signature);
-      return built ? [built] : [];
-    });
-    if (!signatures.length) {
-      return;
-    }
-    const entry = byName.get(functionDefinition.name) ?? {
-      packages: [],
-      signatures: [],
-    };
-    if (functionDefinition.packagePath) {
-      entry.packages.push(functionDefinition.packagePath);
-    }
-    entry.signatures.push(...signatures);
-    byName.set(functionDefinition.name, entry);
-  });
+  documentation.functionsDocumentation.forEach(
+    ({ functionDefinition, functionTestResults }) => {
+      // the definition's tests, shared by its signatures
+      const testResults = buildTestResults(functionTestResults);
+      const signatures = functionDefinition.signatures.flatMap((signature) => {
+        const built = buildSignature(signature, testResults);
+        return built ? [built] : [];
+      });
+      if (!signatures.length) {
+        return;
+      }
+      const entry = byName.get(functionDefinition.name) ?? {
+        packages: [],
+        signatures: [],
+      };
+      if (functionDefinition.packagePath) {
+        entry.packages.push(functionDefinition.packagePath);
+      }
+      entry.signatures.push(...signatures);
+      byName.set(functionDefinition.name, entry);
+    },
+  );
   return new CubeFunctionCatalogue(
     [...byName].map(
       ([name, entry]) =>

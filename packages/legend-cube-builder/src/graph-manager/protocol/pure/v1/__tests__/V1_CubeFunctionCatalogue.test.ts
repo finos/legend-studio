@@ -166,3 +166,56 @@ describe('Legend Cube engine: the function catalogue', () => {
     expect(get).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("Each definition's tests on the relational databases (EXPRESSION-EDITOR.md, round 2b)", () => {
+  test('Reads them by definition: the text contains passes on DuckDB, the collection one fails', () => {
+    const [text, collection] = catalogue().get('contains')?.signatures ?? [];
+    expect(text?.testResults?.get('DuckDB')).toEqual({
+      database: 'DuckDB',
+      passed: 2,
+      total: 2,
+      failures: [],
+    });
+    const failing = collection?.testResults?.get('DuckDB');
+    expect([failing?.passed, failing?.total]).toEqual([0, 3]);
+    expect(failing?.failures.map((each) => each.test)).toEqual([
+      'testContainsNonPrimitive',
+      'testContainsPrimitive',
+      'testContainsWithFunction',
+    ]);
+    // a message's first line, cut short
+    expect(failing?.failures[1]?.message).toBe(
+      'java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)',
+    );
+    expect(
+      (failing?.failures[2]?.message.length ?? 0) <= 200 &&
+        failing?.failures[2]?.message.endsWith('…'),
+    ).toBe(true);
+    // year fails its one test everywhere, and runs: information, not a verdict
+    expect(
+      catalogue().get('year')?.signatures[0]?.testResults?.get('H2')?.failures,
+    ).toEqual([{ test: 'testYear', message: expect.any(String) }]);
+  });
+
+  test("Keeps the relational databases' alone, one object shared by a definition's signatures", () => {
+    const signatures = catalogue().get('coalesce')?.signatures ?? [];
+    expect([...(signatures[0]?.testResults?.keys() ?? [])]).toEqual([
+      'H2',
+      'DuckDB',
+      'Postgres',
+      'MemSQL',
+    ]);
+    expect(
+      signatures.every(
+        (each) => each.testResults === signatures[0]?.testResults,
+      ),
+    ).toBe(true);
+    expect(catalogue().testedDatabases).toEqual(
+      new Set(['H2', 'DuckDB', 'Postgres', 'MemSQL']),
+    );
+    // a definition the documentation reports no tests of
+    expect(
+      catalogue().get('length')?.signatures[0]?.testResults,
+    ).toBeUndefined();
+  });
+});

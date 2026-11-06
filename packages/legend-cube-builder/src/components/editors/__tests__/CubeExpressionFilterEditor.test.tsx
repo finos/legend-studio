@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   Connection,
   CubeDocument,
@@ -671,6 +671,81 @@ describe('Filter by Expression editor', () => {
           }),
         ],
       ),
+    );
+  });
+});
+
+describe('The functions panel (EXPRESSION-EDITOR.md, round 2b)', () => {
+  test("Lists the functions by category and name, each with its help on the cube's database, and Insert writes a call of it", async () => {
+    const { state } = await render(TEST__functionCatalogue());
+    await waitFor(() => expect(state.functionCatalogue).toBeDefined());
+    // the fake model's runtime connects to H2
+    await waitFor(() => expect(draftOf(state).databaseType).toBe('H2'));
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Functions' }));
+    const list = within(panel()).getByRole('list', { name: 'Functions found' });
+    const names = (): (string | null | undefined)[] =>
+      within(list)
+        .getAllByRole('button')
+        .map((each) => each.querySelector('.font-mono')?.textContent);
+    // the engine's, and Cube's own substring and indexOf
+    expect(names()).toEqual([
+      'coalesce',
+      'contains',
+      'get',
+      'indexOf',
+      'isEmpty',
+      'lpad',
+      'round',
+      'substring',
+      'sum',
+      'toOne',
+      'toUpper',
+    ]);
+    fireEvent.click(
+      within(
+        within(panel()).getByRole('group', { name: 'Function categories' }),
+      ).getByRole('button', { name: 'Text' }),
+    );
+    expect(names()).toEqual([
+      'contains',
+      'indexOf',
+      'lpad',
+      'substring',
+      'toUpper',
+    ]);
+    fireEvent.change(within(panel()).getByLabelText('Find a function'), {
+      target: { value: 'pad' },
+    });
+    expect(names()).toEqual(['lpad']);
+    fireEvent.click(within(list).getByRole('button', { name: /^lpad/u }));
+    const about = within(panel()).getByLabelText('About lpad');
+    expect(about.textContent).toContain('on H2');
+    expect(about.textContent).toContain(
+      "**On H2:** the engine's tests of it pass 4 of 5.",
+    );
+    // before the code is clicked into: at its end, written whole
+    fireEvent.click(within(about).getByRole('button', { name: 'Insert' }));
+    expect(draftOf(state).code).toBe('x | lpad(str, length)');
+    // at the cursor, after a value: ->lpad(…), its placeholders to fill, its help opened
+    fireEvent.focus(within(panel()).getByLabelText('Condition'));
+    const insert = jest.fn();
+    MockedMonacoEditorInstance.getContribution.mockReturnValueOnce({ insert });
+    MockedMonacoEditorInstance.getSelection.mockReturnValueOnce({
+      startLineNumber: 1,
+      startColumn: 12,
+      endLineNumber: 1,
+      endColumn: 12,
+    });
+    MockedMonacoEditorModel.getValueInRange
+      .mockReturnValueOnce('Y')
+      .mockReturnValueOnce('');
+    MockedMonacoEditorInstance.trigger.mockClear();
+    fireEvent.click(within(about).getByRole('button', { name: 'Insert' }));
+    expect(insert).toHaveBeenCalledWith('->lpad(${1:length})');
+    expect(MockedMonacoEditorInstance.trigger).toHaveBeenCalledWith(
+      'insert',
+      'editor.action.triggerParameterHints',
+      {},
     );
   });
 });

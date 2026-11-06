@@ -63,6 +63,7 @@ import {
 } from 'mobx';
 import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
 import type { CubeFunctionCatalogue } from '../graph-manager/CubeFunctionCatalogue.js';
+import { withCubeOwnFunctions } from '../graph-manager/CubeOwnFunctions.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
@@ -495,7 +496,12 @@ export class CubeEditorState implements CommandRegistrar {
     this.isLoadingFunctionCatalogue = true;
     this.host.engine
       .getFunctionCatalogue()
-      .then((catalogue) => this.setFunctionCatalogue(catalogue))
+      // with Cube's own functions it lacks: substring, indexOf
+      .then((catalogue) =>
+        this.setFunctionCatalogue(
+          catalogue ? withCubeOwnFunctions(catalogue) : undefined,
+        ),
+      )
       .catch(() => undefined)
       .finally(() => {
         this.isLoadingFunctionCatalogue = false;

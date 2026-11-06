@@ -627,3 +627,23 @@ export const getJoinSuggestionReasonLabel = (
   suggestion: CubeJoinKeySuggestion,
 ): string =>
   JOIN_SUGGESTION_REASON_LABELS[suggestion.reason](suggestion.detail);
+
+/** What the functions panel says (EXPRESSION-EDITOR.md, round 2b) */
+export const CUBE_FUNCTIONS_PANEL_LABEL = Object.freeze({
+  TITLE: 'Functions',
+  SHOW: (target: string): string =>
+    `Show the functions you can write into ${target}`,
+  HIDE: 'Hide the functions',
+  SEARCH: 'Find a function',
+  CATEGORIES: 'Function categories',
+  ALL: 'All',
+  LIST: 'Functions found',
+  NONE: 'No function of that name',
+  DETAIL: (name: string): string => `About ${name}`,
+  ON_DATABASE: (database: string): string => `on ${database}`,
+  UNTESTED_DATABASE: (database: string): string =>
+    `This engine's catalogue has no tests on ${database}, so the functions' help says nothing of how they do there.`,
+  INSERT: 'Insert',
+  INSERT_TITLE: (target: string): string =>
+    `Write a call of it at the cursor of ${target}: after a value, as ->name(…)`,
+});

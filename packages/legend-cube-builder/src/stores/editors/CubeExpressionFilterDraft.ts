@@ -162,6 +162,7 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       touched: observable,
       isValidated: computed,
       isChecked: computed,
+      databaseType: computed,
       checkStatus: computed,
       applyDisabledReason: computed,
       outline: computed,
@@ -208,6 +209,24 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
   /** Checks the code at once (F10), not waiting for typing to pause */
   checkNow(): void {
     this.autoCheck.now();
+  }
+
+  /**
+   * The database the query up to this node runs on, as the engine names it,
+   * once the model's outline tells it: how the engine's tests of a
+   * function went there (EXPRESSION-EDITOR.md, round 2b)
+   */
+  get databaseType(): string | undefined {
+    const { document } = this.editorState;
+    const runtime = document.context?.runtime;
+    return document.context && runtime !== undefined
+      ? this.editorState.getRunDatabaseType(
+          document.query,
+          this.original.id,
+          document.context.model,
+          runtime,
+        )
+      : undefined;
   }
 
   /** The engine's completions of the condition typed so far, written as the input's filter */
