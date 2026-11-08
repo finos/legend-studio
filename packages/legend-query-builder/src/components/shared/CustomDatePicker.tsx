@@ -511,12 +511,13 @@ export const CustomDatePicker = <
   const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
-  const targetDateOptionsEnum = typeCheckOption.match
-    ? Object.values([
-        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
-        CUSTOM_DATE_PICKER_OPTION.NOW,
-      ])
+  const allOptions = typeCheckOption.match
+    ? [CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME, CUSTOM_DATE_PICKER_OPTION.NOW]
     : Object.values(CUSTOM_DATE_PICKER_OPTION);
+  const targetDateOptionsEnum = allOptions.filter(
+    (o) => o !== CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
+  );
+
   const [datePickerOption, setDatePickerOption] = useState(
     buildDatePickerOption(valueSpecification, applicationStore),
   );

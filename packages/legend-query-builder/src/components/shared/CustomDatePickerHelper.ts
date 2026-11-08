@@ -103,6 +103,7 @@ export enum CUSTOM_DATE_PICKER_OPTION {
   PREVIOUS_DAY_OF_WEEK = 'Previous ... of Week',
   FIRST_DAY_OF = 'First day of...',
   LATEST_DATE = 'Latest Date',
+  NO_VALUE = 'No Value',
 }
 
 export enum CUSTOM_DATE_OPTION_UNIT {
@@ -945,21 +946,31 @@ export const buildDatePickerOption = (
         return new DatePickerOption('', '');
     }
   } else if (valueSpecification instanceof PrimitiveInstanceValue) {
-    return valueSpecification.genericType.value.rawType.path ===
-      PRIMITIVE_TYPE.LATESTDATE
+    const _path = valueSpecification.genericType.value.rawType.path;
+    const isDateType =
+      _path === PRIMITIVE_TYPE.STRICTDATE ||
+      _path === PRIMITIVE_TYPE.DATE ||
+      _path === PRIMITIVE_TYPE.DATETIME;
+    const isEmpty =
+      !valueSpecification.values.length ||
+      valueSpecification.values[0] === null ||
+      valueSpecification.values[0] === undefined;
+    return _path === PRIMITIVE_TYPE.LATESTDATE
       ? new DatePickerOption(
           CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
           CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
         )
-      : new DatePickerOption(
-          (valueSpecification.values[0] ?? '') as string,
-          valueSpecification.values[0] === null
-            ? ''
-            : valueSpecification.genericType.value.rawType.path ===
-                PRIMITIVE_TYPE.DATETIME
+      : isDateType && isEmpty
+        ? new DatePickerOption(
+            CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
+            CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
+          )
+        : new DatePickerOption(
+            valueSpecification.values[0] as string,
+            _path === PRIMITIVE_TYPE.DATETIME
               ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
               : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
-        );
+          );
   } else {
     if (valueSpecification instanceof V1_CLatestDate) {
       return new DatePickerOption(
