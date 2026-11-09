@@ -27,12 +27,14 @@ import {
   type CubeSourceStep,
   type IR,
 } from '@finos/legend-cube';
+import { CUBE_INGEST_JOIN_MESSAGE } from '../__lib__/LegendCubeIngestLabels.js';
 import {
   createCubeDataProductModel,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
   getCubeDataProductProject,
   type CubeDataProductEnvironmentType,
+  type CubeDataProductProject,
 } from '../graph-manager/CubeDataProduct.js';
 import type { CubeDataProductCandidate } from '../graph-manager/CubeDataProductCatalog.js';
 import {
@@ -54,8 +56,8 @@ import type { CubeEditorState } from './CubeEditorState.js';
 // one, before the steps are read. A host with a project (Studio) binds within
 // it; another binds within the cube's own model or source, and asks for a
 // source first when the lambda alone doesn't say where its sources are. A
-// host that runs data products and ingest data sets together (Studio) binds
-// a lambda reading both as one data product cube (§11.30).
+// host that runs data products and ingest data sets together (Studio, Legend
+// Analytics) binds a lambda reading both as one data product cube (§11.30).
 
 export const CUBE_LAMBDA_SOURCES_MESSAGE = {
   NONE: 'The query reads no source Cube knows: #>{…}#, #P{…}# or #I{…}#.',
@@ -75,6 +77,8 @@ export const CUBE_LAMBDA_SOURCES_MESSAGE = {
     definition: string,
     reason: string,
   ): string => `Cube can't read ${definition}.${dataSet}: ${reason}`,
+  DEFINITION_UNREADABLE: (definition: string, reason: string): string =>
+    `Cube can't read ${definition}: ${reason}`,
   NO_DATA_PRODUCT: (dataProduct: string): string =>
     `Cube finds no data product ${dataProduct}.`,
   DATA_PRODUCTS: (dataProduct: string): string =>
@@ -137,13 +141,15 @@ const newCubeWarehouse = async (
 
 /**
  * The step of each of a lambda's ingest data sets, bound to the listed
- * definition of its path, as the definition declares its columns
+ * definition of its path, as the definition declares its columns; a data
+ * product cube's as its project has them at its version (PLAN §11.30)
  */
 const bindIngestSteps = async (
   catalog: CubeIngestCatalog,
   environment: CubeIngestEnvironmentKey,
   candidates: readonly CubeIngestDefinitionCandidate[],
   sources: readonly Extract<IR, { readonly k: 'ingestAccessor' }>[],
+  project?: CubeDataProductProject,
 ): Promise<Map<string, CubeSourceStep>> => {
   const steps = new Map<string, CubeSourceStep>();
   const described = new Map<string, readonly CubeIngestDataSet[]>();
@@ -155,9 +161,19 @@ const bindIngestSteps = async (
         CUBE_LAMBDA_SOURCES_MESSAGE.NO_DEFINITION(definition),
       );
     }
+    if (candidate.disabledReason !== undefined) {
+      throw new CubeLambdaReadError(
+        CUBE_LAMBDA_SOURCES_MESSAGE.DEFINITION_UNREADABLE(
+          definition,
+          candidate.disabledReason,
+        ),
+      );
+    }
     const dataSets =
       described.get(candidate.urn) ??
-      (await catalog.describe(candidate.urn, environment));
+      (await (project
+        ? catalog.describe(candidate.urn, environment, { project })
+        : catalog.describe(candidate.urn, environment)));
     described.set(candidate.urn, dataSets);
     const dataSet = dataSets.find((each) => each.name === dataSetName);
     if (!dataSet) {
@@ -256,7 +272,12 @@ const bindIngestDataSets = async (
 const bindDataProducts = async (
   editorState: CubeEditorState,
   sources: readonly Extract<IR, { readonly k: 'dataProductAccessor' }>[],
-): Promise<CubeLambdaBinding> => {
+): Promise<
+  CubeLambdaBinding & {
+    /** The deployments of the products bound, each once (PLAN §11.30) */
+    readonly deploymentIds: readonly string[];
+  }
+> => {
   const catalog = editorState.host.dataProductCatalog;
   if (!catalog) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NO_DATA_PRODUCTS);
@@ -350,22 +371,27 @@ const bindDataProducts = async (
   if (!first) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NONE);
   }
-  return bindingOf(
-    {
-      model: createCubeDataProductModel({
-        groupId: first.groupId,
-        artifactId: first.artifactId,
-        versionId: first.versionId,
-        environmentType: first.environmentType,
-        warehouse: await newCubeWarehouse(
-          editorState,
-          current?.warehouse ?? joined?.warehouse,
-        ),
-      }),
-      runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
-    },
-    steps,
-  );
+  return {
+    ...bindingOf(
+      {
+        model: createCubeDataProductModel({
+          groupId: first.groupId,
+          artifactId: first.artifactId,
+          versionId: first.versionId,
+          environmentType: first.environmentType,
+          warehouse: await newCubeWarehouse(
+            editorState,
+            current?.warehouse ?? joined?.warehouse,
+          ),
+        }),
+        runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+      },
+      steps,
+    ),
+    deploymentIds: [
+      ...new Set([...products.values()].map((each) => each.deploymentId)),
+    ],
+  };
 };
 
 /** Tables of the cube's own model, typed by the engine in one call */
@@ -410,7 +436,8 @@ const bindTables = async (
  * A lambda's access points and ingest data sets, on a host that lists a
  * data product's project's definitions (PLAN §11.30): the access points
  * bind as a data product cube's, and the data sets among its project's
- * definitions, read in its class
+ * definitions, those its products' deployment deployed, read in its class
+ * as the project has them at its version
  */
 const bindLakehouseSources = async (
   editorState: CubeEditorState,
@@ -426,12 +453,22 @@ const bindLakehouseSources = async (
   if (!project) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
   }
-  const { candidates } = await catalog.listProjectDefinitions(project);
+  const { deploymentIds } = products;
+  if (deploymentIds.length > 1) {
+    throw new CubeLambdaReadError(
+      CUBE_INGEST_JOIN_MESSAGE.SEVERAL_DEPLOYMENTS(deploymentIds),
+    );
+  }
+  const { candidates } = await catalog.listProjectDefinitions(
+    project,
+    deploymentIds[0],
+  );
   const steps = await bindIngestSteps(
     catalog,
     { environmentType: project.environmentType },
     candidates,
     dataSets,
+    project,
   );
   return {
     context: products.context,

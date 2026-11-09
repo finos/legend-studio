@@ -20,10 +20,15 @@ import {
   IngestDatasetSource,
   Join,
   JoinType,
+  type ModelContext,
   type QueryRule,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
+import {
+  createFakeCubeDataProductCatalog,
+  FAKE_DATA_PRODUCT_CANDIDATES,
+} from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
   createFakeCubeIngestCatalog,
   FAKE_INGEST_DESKS,
@@ -31,14 +36,21 @@ import {
   FAKE_INGEST_PRODUCER_ID,
   FAKE_INGEST_TRADES_SCHEMA,
   type FakeCubeIngestCatalog,
+  fakeIngestEnvironmentOf,
   fakeIngestUrnOf,
 } from '../../__test-utils__/FakeCubeIngestCatalog.js';
+import { CUBE_INGEST_JOIN_MESSAGE } from '../../__lib__/LegendCubeIngestLabels.js';
 import {
   createCubeDataProductModel,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CubeDataProductEnvironmentType,
   type CubeDataProductProject,
 } from '../../graph-manager/CubeDataProduct.js';
+import { CubeDataProductCandidate } from '../../graph-manager/CubeDataProductCatalog.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../graph-manager/CubeEngine.js';
 import {
   createCubeIngestModel,
   CUBE_INGEST_RUNTIME_PATH,
@@ -54,6 +66,7 @@ import type { CubeHost } from '../CubeHost.js';
 import { readCubeLambdaDocument } from '../CubeLambdaImportState.js';
 import { CUBE_LAMBDA_SOURCES_MESSAGE } from '../CubeLambdaSources.js';
 import { buildCubeRunningStepLambda } from '../CubeRunningStepLambda.js';
+import { CUBE_DATA_PRODUCT_TAB_MESSAGE } from '../source-picker/CubeDataProductTabState.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
 // Data products and ingest data sets in one cube (PLAN §11.30): they mix when
@@ -107,13 +120,18 @@ const settle = async (): Promise<void> => {
 
 /**
  * A host with both catalogs, whose producer 1234 deploys the orders
- * products' project's definitions: one whose ingest catalog lists a data
- * product's project's definitions, as Studio's does, or one that can't, as
- * Legend Analytics' can't yet, which keeps them apart
+ * products' project's definitions, and its data products too: one whose
+ * ingest catalog lists a data product's project's definitions, as Studio's
+ * and Legend Analytics' do, or one that can't, as Analytics' without a
+ * depot, which keeps them apart
  */
 const setUp = (
   mixes: boolean,
   queryRules?: readonly QueryRule[],
+  options?: {
+    /** The data products listed: by default the fake's, deployed by producer 1234 */
+    readonly candidates?: readonly CubeDataProductCandidate[];
+  },
 ): ReturnType<typeof TEST__createCubeHost> & {
   state: CubeEditorState;
   ingest: FakeCubeIngestCatalog;
@@ -122,6 +140,16 @@ const setUp = (
   >;
 } => {
   const created = TEST__createCubeHost();
+  const dataProducts = createFakeCubeDataProductCatalog(
+    options?.candidates ??
+      FAKE_DATA_PRODUCT_CANDIDATES.map(
+        (candidate) =>
+          new CubeDataProductCandidate({
+            ...candidate,
+            deploymentId: FAKE_INGEST_PRODUCER_ID,
+          }),
+      ),
+  );
   const ingest = createFakeCubeIngestCatalog();
   ingest.listDefinitions.mockImplementation(
     async ({ environmentType }, producerDeploymentId) =>
@@ -136,6 +164,7 @@ const setUp = (
   );
   const host: CubeHost = {
     ...created.host,
+    dataProductCatalog: dataProducts.catalog,
     ingestCatalog: mixes
       ? { ...ingest.catalog, listProjectDefinitions }
       : ingest.catalog,
@@ -143,6 +172,7 @@ const setUp = (
   };
   return {
     ...created,
+    dataProducts,
     ingest,
     listProjectDefinitions,
     state: new CubeEditorState(host),
@@ -292,11 +322,13 @@ describe('Data products and ingest data sets in one cube', () => {
     expect(tab.warehouse).toBe(warehouse);
     // the project's definitions, with no producer deployment to pick
     expect(ingest.listProducers).not.toHaveBeenCalled();
+    // the data product's deployment, which deploys its project's definitions
     expect(listProjectDefinitions).toHaveBeenCalledWith(
       expect.objectContaining({
         ...ORDERS_PROJECT,
         environmentType: PRODUCTION,
       }),
+      FAKE_INGEST_PRODUCER_ID,
     );
     expect(tab.shownDefinitions.map((each) => each.urn)).toEqual([
       ordersUrnOf(FAKE_INGEST_ORDERS),
@@ -509,5 +541,334 @@ describe('Data products and ingest data sets in one cube', () => {
     await expect(
       readCubeLambdaDocument(elsewhere.state, lambda),
     ).rejects.toThrow(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
+  });
+});
+
+describe('Data products and ingest data sets in one cube, as Legend Analytics reads them', () => {
+  const ADDED_AFTER = "Added after this data product's version 1.4.0";
+
+  /** The orders products' project's definitions, as 1.4.0 has them: DesksIngest was added after it */
+  const atVersion = (
+    environmentType: CubeDataProductEnvironmentType,
+    greyed = FAKE_INGEST_DESKS,
+  ): CubeIngestDefinitionList => ({
+    candidates: ordersDefinitions(environmentType).candidates.map(
+      (candidate) =>
+        candidate.definition === greyed
+          ? new CubeIngestDefinitionCandidate({
+              urn: candidate.urn,
+              definition: candidate.definition,
+              groupId: candidate.groupId,
+              artifactId: candidate.artifactId,
+              disabledReason: ADDED_AFTER,
+            })
+          : candidate,
+    ),
+    droppedCount: 0,
+  });
+
+  /** Adds an access point of a listed product through the Data Product tab: whether it was added */
+  const addAccessPoint = async (
+    state: CubeEditorState,
+    productId: string,
+  ): Promise<boolean> => {
+    const picker = state.sourcePicker;
+    picker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    await settle();
+    const tab = picker.dataProductTab;
+    tab.selectCandidate(
+      tab.visibleCandidates.find((candidate) => candidate.id === productId),
+    );
+    await settle();
+    tab.selectAccessPoint('core', 'daily_orders');
+    return flowResult(tab.confirm());
+  };
+
+  test("The Ingest tab lists the definitions of the data products' deployment, greys one their version lacks, which can't be opened, and reads data sets as that version has them", async () => {
+    const { state, ingest, listProjectDefinitions } = setUp(true);
+    listProjectDefinitions.mockImplementation(async (project) =>
+      atVersion(project.environmentType),
+    );
+    await addDailyOrders(state);
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    const tab = state.sourcePicker.ingestTab;
+    expect(tab.joinedDeploymentIds).toEqual([FAKE_INGEST_PRODUCER_ID]);
+    expect(listProjectDefinitions).toHaveBeenCalledWith(
+      expect.objectContaining(ORDERS_PROJECT),
+      FAKE_INGEST_PRODUCER_ID,
+    );
+    // the deployment is named as its producer is
+    expect(tab.getProducerLabel(FAKE_INGEST_PRODUCER_ID)).toBe(
+      'Sales Feed (1234)',
+    );
+    const desks = tab.shownDefinitions.find(
+      (each) => each.definition === FAKE_INGEST_DESKS,
+    ) as CubeIngestDefinitionCandidate;
+    expect(desks.disabledReason).toBe(ADDED_AFTER);
+    tab.selectDefinition(desks);
+    tab.toggleDefinition(desks);
+    expect(tab.definitions).toEqual([]);
+    expect(ingest.describe).not.toHaveBeenCalled();
+    tab.selectDefinition(
+      tab.shownDefinitions.find(
+        (each) => each.definition === FAKE_INGEST_ORDERS,
+      ),
+    );
+    await settle();
+    expect(ingest.describe).toHaveBeenCalledWith(
+      ordersUrnOf(FAKE_INGEST_ORDERS),
+      { environmentType: PRODUCTION },
+      { project: expect.objectContaining(ORDERS_PROJECT) },
+    );
+  });
+
+  test("The Ingest tab lists again for another version of the project, and says why when the cube's access points come from several deployments", async () => {
+    const { state, listProjectDefinitions } = setUp(true);
+    await addDailyOrders(state);
+    const picker = state.sourcePicker;
+    picker.open(CubeSourcePickerTabKey.INGEST);
+    await settle();
+    picker.close();
+    // the same cube reopens on the same list
+    picker.open(CubeSourcePickerTabKey.INGEST);
+    await settle();
+    picker.close();
+    expect(listProjectDefinitions).toHaveBeenCalledTimes(1);
+    // a cube of another version lists its own
+    state.removeNode('dataProductAccessPoint101');
+    expect(await addAccessPoint(state, 'RETURNS_PRODUCT')).toBe(true);
+    picker.open(CubeSourcePickerTabKey.INGEST);
+    await settle();
+    picker.close();
+    expect(listProjectDefinitions).toHaveBeenCalledTimes(2);
+    expect(listProjectDefinitions.mock.calls[1]?.[0]).toMatchObject({
+      versionId: 'feature-returns-SNAPSHOT',
+    });
+    // access points of two deployments: neither is known to deploy the definitions
+    const [point] = state.document.query
+      .nodes as DataProductAccessPointSource[];
+    const other = point as DataProductAccessPointSource;
+    state.applyDocument(
+      state.document.withQuery(
+        state.document.query.add(
+          new DataProductAccessPointSource(
+            'dataProductAccessPoint102',
+            {
+              dataProduct: other.dataProduct,
+              accessPointGroup: other.accessPointGroup,
+              accessPoint: other.accessPoint,
+              dataProductId: other.dataProductId,
+              deploymentId: '5678',
+            },
+            other.resolution,
+          ),
+        ),
+      ),
+    );
+    picker.open(CubeSourcePickerTabKey.INGEST);
+    await settle();
+    expect(picker.ingestTab.error?.message).toBe(
+      CUBE_INGEST_JOIN_MESSAGE.SEVERAL_DEPLOYMENTS([
+        FAKE_INGEST_PRODUCER_ID,
+        '5678',
+      ]),
+    );
+    expect(listProjectDefinitions).toHaveBeenCalledTimes(2);
+  });
+
+  test("The Data Product tab on an ingest cube lists only its data sets' project's products that its producer deployment deployed", async () => {
+    const [orders] = FAKE_DATA_PRODUCT_CANDIDATES;
+    const productOf = (
+      fields: Partial<
+        ConstructorParameters<typeof CubeDataProductCandidate>[0]
+      >,
+    ): CubeDataProductCandidate =>
+      new CubeDataProductCandidate({
+        ...(orders as CubeDataProductCandidate),
+        deploymentId: FAKE_INGEST_PRODUCER_ID,
+        ...fields,
+      });
+    const candidates = [
+      productOf({}),
+      productOf({
+        id: 'ORDERS_ELSEWHERE',
+        title: 'Orders Elsewhere',
+        deploymentId: '5678',
+      }),
+      productOf({
+        id: 'OTHER_PROJECT',
+        title: 'Other Project',
+        groupId: 'com.other',
+        artifactId: 'elsewhere',
+      }),
+    ];
+    const { state } = setUp(true, undefined, { candidates });
+    await addTrades(state);
+    state.sourcePicker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    await settle();
+    const tab = state.sourcePicker.dataProductTab;
+    expect(tab.joinedIngestScope).toEqual({
+      groupId: ORDERS_PROJECT.groupId,
+      artifactId: ORDERS_PROJECT.artifactId,
+      deploymentId: FAKE_INGEST_PRODUCER_ID,
+    });
+    expect(tab.visibleCandidates.map((each) => each.id)).toEqual([
+      'ORDERS_PRODUCT',
+    ]);
+    expect(tab.getCandidateDisabledReason(candidates[1] as never)).toBe(
+      CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_DEPLOYMENT('5678'),
+    );
+    expect(tab.getCandidateDisabledReason(candidates[2] as never)).toBe(
+      CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_PROJECT('com.other', 'elsewhere'),
+    );
+    tab.selectCandidate(candidates[1]);
+    expect(tab.candidate).toBeUndefined();
+  });
+
+  test('The Data Product tab refuses an ingest cube that reads another environment than the viewer’s own, naming both', async () => {
+    const { state } = setUp(true);
+    state.addNode(IngestDatasetSource.TYPE);
+    await settle();
+    const ingestTab = state.sourcePicker.ingestTab;
+    ingestTab.setEnvironment(fakeIngestEnvironmentOf(PRODUCTION, 'env-b'));
+    await settle();
+    ingestTab.selectProducer(FAKE_INGEST_PRODUCER_ID);
+    await settle();
+    ingestTab.selectDefinition(
+      ingestTab.shownDefinitions.find(
+        (each) => each.definition === FAKE_INGEST_ORDERS,
+      ),
+    );
+    await settle();
+    await flowResult(state.sourcePicker.confirm());
+    const model = state.document.context?.model;
+    expect(model).toMatchObject({ environment: 'env-b' });
+    const picker = state.sourcePicker;
+    picker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    await settle();
+    const tab = picker.dataProductTab;
+    expect(tab.joinRefusal).toBe(
+      CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_INGEST_ENVIRONMENT('env-b', 'env-a'),
+    );
+    expect(tab.visibleCandidates).toEqual([]);
+    expect(tab.canConfirm).toBe(false);
+    picker.close();
+    // the viewer's own environment, named, can be joined
+    state.applyDocument(
+      state.document.withContext({
+        model: { ...(model as ModelContext), environment: 'env-a' },
+        runtime: CUBE_INGEST_RUNTIME_PATH,
+      }),
+    );
+    picker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    await settle();
+    expect(tab.joinRefusal).toBeUndefined();
+    // the project's products of the deployment, at any version
+    expect(tab.visibleCandidates.map((each) => each.id)).toEqual([
+      'ORDERS_PRODUCT',
+      'RETURNS_PRODUCT',
+    ]);
+  });
+
+  test("Reads an ingest cube's data sets again as the data product's version has them when its access point joins: one the version lacks fails, saying so, and Undo brings the ingest cube back", async () => {
+    const { state, ingest } = setUp(true);
+    await addTrades(state);
+    const ingestContext = state.document.context;
+    const [trades] = state.document.query.nodes;
+    ingest.resolveSchemas.mockImplementation(
+      async (_environment, sources) =>
+        new Map(
+          [...sources.keys()].map((nodeId) => [
+            nodeId,
+            new CubeEngineError(
+              CubeEngineErrorKind.COMPILE,
+              ADDED_AFTER,
+              nodeId,
+            ),
+          ]),
+        ),
+    );
+    expect(await addAccessPoint(state, 'ORDERS_PRODUCT')).toBe(true);
+    expect(ingest.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(ingest.resolveSchemas.mock.calls[0]?.[2]).toEqual({
+      fresh: false,
+      project: expect.objectContaining({
+        ...ORDERS_PROJECT,
+        environmentType: PRODUCTION,
+      }),
+    });
+    expect(errorsOf(state)).toEqual([
+      ['ingestDataset101', [ADDED_AFTER]],
+      ['dataProductAccessPoint101', []],
+    ]);
+    state.undo();
+    expect(state.document.context).toEqual(ingestContext);
+    expect(state.document.query.nodes).toHaveLength(1);
+    expect(state.document.query.nodes[0]).toBe(trades);
+    // a version that can't be read changes nothing
+    ingest.resolveSchemas.mockImplementation(
+      async (_environment, sources) =>
+        new Map(
+          [...sources.keys()].map((nodeId) => [
+            nodeId,
+            new CubeEngineError(
+              CubeEngineErrorKind.NETWORK,
+              'Depot is down',
+              nodeId,
+            ),
+          ]),
+        ),
+    );
+    expect(await addAccessPoint(state, 'ORDERS_PRODUCT')).toBe(false);
+    expect(state.sourcePicker.dataProductTab.error?.message).toBe(
+      'Depot is down',
+    );
+    expect(state.document.context).toEqual(ingestContext);
+  });
+
+  test("Import Pure reads a lambda's data sets among the definitions of its data products' deployment, as their version has them, and refuses one the version lacks", async () => {
+    const { state } = setUp(true);
+    await addDailyOrders(state);
+    await addTrades(state);
+    state.applyDocument(
+      state.document.withQuery(
+        state.document.query
+          .add(
+            new Join('join101', {
+              leftColumns: ['REGION'],
+              rightColumns: ['DESK'],
+              joinType: JoinType.INNER,
+            }),
+          )
+          .connect('dataProductAccessPoint101', 'join101', 'leftTds')
+          .connect('ingestDataset101', 'join101', 'rightTds')
+          .select('join101'),
+      ),
+    );
+    const lambda = await buildCubeRunningStepLambda(state);
+
+    const analytics = setUp(true);
+    await readCubeLambdaDocument(analytics.state, lambda);
+    expect(analytics.listProjectDefinitions).toHaveBeenCalledWith(
+      expect.objectContaining(ORDERS_PROJECT),
+      FAKE_INGEST_PRODUCER_ID,
+    );
+    expect(analytics.ingest.describe).toHaveBeenCalledWith(
+      ordersUrnOf(FAKE_INGEST_ORDERS),
+      { environmentType: PRODUCTION },
+      { project: expect.objectContaining(ORDERS_PROJECT) },
+    );
+
+    const older = setUp(true);
+    older.listProjectDefinitions.mockImplementation(async (project) =>
+      atVersion(project.environmentType, FAKE_INGEST_ORDERS),
+    );
+    await expect(readCubeLambdaDocument(older.state, lambda)).rejects.toThrow(
+      CUBE_LAMBDA_SOURCES_MESSAGE.DEFINITION_UNREADABLE(
+        FAKE_INGEST_ORDERS,
+        ADDED_AFTER,
+      ),
+    );
   });
 });
