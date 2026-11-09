@@ -51,8 +51,16 @@ import {
   type CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
+import {
+  type CubeIngestSettings,
+  getCubeIngestSettings,
+  isCubeIngestModel,
+} from '../../graph-manager/CubeIngest.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
-import type { CubeHostProjectRuntime } from '../CubeHost.js';
+import {
+  type CubeHostProjectRuntime,
+  mixesCubeLakehouseSources,
+} from '../CubeHost.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
@@ -219,6 +227,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       isAvailable: computed,
       searchesOnServer: computed,
       fixedProject: computed,
+      joinedIngest: computed,
       isSnapshot: computed,
       marketplaceLink: computed,
       visibleCandidates: computed,
@@ -261,10 +270,29 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     return isCubeDataProductModel(context.model);
   }
 
+  joinsContext(context: CubeContext): boolean {
+    return (
+      mixesCubeLakehouseSources(this.editorState.host) &&
+      isCubeIngestModel(context.model)
+    );
+  }
+
   /** The cube's project, once its first access point is added: every other comes from it */
   get fixedProject(): CubeDataProductProject | undefined {
     const model = this.editorState.document.context?.model;
     return model ? getCubeDataProductProject(model) : undefined;
+  }
+
+  /**
+   * The ingest cube the tab adds access points to, on a host that runs them
+   * together (PLAN §11.29): its class and warehouse, which its access points
+   * run with. The first one added makes it a data product cube of its class
+   */
+  get joinedIngest(): CubeIngestSettings | undefined {
+    const model = this.editorState.document.context?.model;
+    return model && mixesCubeLakehouseSources(this.editorState.host)
+      ? getCubeIngestSettings(model)
+      : undefined;
   }
 
   /** Whether the cube's project, or else the picked product, is at a moving SNAPSHOT version */
@@ -439,7 +467,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       // a search under way doesn't change the access point picked
       !this.isDescribing &&
       !this.isAdding &&
-      (context === undefined || this.fixedProject !== undefined) &&
+      (context === undefined ||
+        this.fixedProject !== undefined ||
+        this.joinedIngest !== undefined) &&
       this.candidate !== undefined &&
       this.pickedAccessPoints.length > 0 &&
       this.pickedAccessPoints.every(
@@ -450,7 +480,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   }
 
   setEnvironmentType(environmentType: CubeDataProductEnvironmentType): void {
-    if (this.fixedProject || environmentType === this.environmentType) {
+    if (
+      this.fixedProject ||
+      this.joinedIngest ||
+      environmentType === this.environmentType
+    ) {
       return;
     }
     this.environmentTypeChosen = true;
@@ -517,7 +551,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   /** The warehouse of a cube without one yet; a saved cube's is kept */
   setWarehouse(warehouse: string): void {
-    if (!this.fixedProject) {
+    if (!this.fixedProject && !this.joinedIngest) {
       this.warehouse = warehouse;
     }
   }
@@ -529,11 +563,25 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
    */
   open(): void {
     const project = this.fixedProject;
+    const joined = this.joinedIngest;
     const runtime = this.editorState.dataProductRuntime;
     this.error = undefined;
     // a cube reopens on its own project's products
     this.showAllProjects = false;
-    if (project) {
+    if (joined) {
+      // an ingest cube's access points run in its class, on its warehouse
+      // (PLAN §11.29)
+      if (this.environmentType !== joined.environmentType) {
+        this.environmentType = joined.environmentType;
+        this.resetCandidate();
+        this.projectRuntime = undefined;
+      }
+      this.warehouse = getEffectiveCubeWarehouse(
+        joined,
+        runtime.rememberedWarehouse,
+      );
+      this.warehouseFromProject = true;
+    } else if (project) {
       if (this.environmentType !== project.environmentType) {
         this.environmentType = project.environmentType;
         this.resetCandidate();
@@ -856,29 +904,47 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         }
         query = query.add(node);
       }
+      const joined = this.joinedIngest;
       if (
         document.context !== undefined &&
-        (!project || !isFromProject(candidate, project))
+        (joined
+          ? candidate.environmentType !== joined.environmentType
+          : !project || !isFromProject(candidate, project))
       ) {
         throw new Error(CUBE_DATA_PRODUCT_TAB_MESSAGE.CUBE_CHANGED);
       }
       editorState.applyDocument(
-        document.context
-          ? document.withQuery(query)
-          : document
+        joined
+          ? // the ingest cube becomes a data product cube of its class and
+            // warehouse, its data sets read in that class (PLAN §11.29)
+            document
               .withContext({
                 model: createCubeDataProductModel({
                   groupId: candidate.groupId,
                   artifactId: candidate.artifactId,
                   versionId: candidate.versionId,
-                  environmentType: candidate.environmentType,
-                  warehouse,
+                  environmentType: joined.environmentType,
+                  warehouse: joined.warehouse,
                 }),
                 runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
               })
-              .withQuery(query),
+              .withQuery(query)
+          : document.context
+            ? document.withQuery(query)
+            : document
+                .withContext({
+                  model: createCubeDataProductModel({
+                    groupId: candidate.groupId,
+                    artifactId: candidate.artifactId,
+                    versionId: candidate.versionId,
+                    environmentType: candidate.environmentType,
+                    warehouse,
+                  }),
+                  runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+                })
+                .withQuery(query),
       );
-      if (!project) {
+      if (!project && !joined) {
         editorState.dataProductRuntime.remember(warehouse);
       }
       // the product stays expanded, to add another of its access points

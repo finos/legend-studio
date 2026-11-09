@@ -216,7 +216,11 @@ const familyOf = (model: ModelContext): CubeSourceFamily =>
       ? CubeSourceFamily.INGEST
       : CubeSourceFamily.TABLES;
 
-/** Why a lambda reads a source its cube's kind can't, if it does */
+/**
+ * Why a lambda reads a source its cube's kind can't, if it does: a data
+ * product cube reads ingest data sets too, its project's alone, which
+ * `V1_checkCubeIngestAccessors` checks (PLAN §11.29)
+ */
 const foreignSourceProblemOf = (
   family: CubeSourceFamily,
   ir: IR,
@@ -226,11 +230,7 @@ const foreignSourceProblemOf = (
   const readsIngest = V1_hasCubeIngestAccessor(ir);
   switch (family) {
     case CubeSourceFamily.DATA_PRODUCT:
-      return readsTables
-        ? TABLES_IN_DATA_PRODUCT_CUBE
-        : readsIngest
-          ? INGEST_ONLY
-          : undefined;
+      return readsTables ? TABLES_IN_DATA_PRODUCT_CUBE : undefined;
     case CubeSourceFamily.INGEST:
       return readsTables || readsDataProducts
         ? OTHER_SOURCES_IN_INGEST_CUBE
@@ -703,8 +703,10 @@ export class V1_LegendCubeEngine implements CubeEngine {
 
   /**
    * Types lambdas on a data product cube: on its project at its saved
-   * version, with no runtime. The open-source engine reads no data product,
-   * so there every lambda fails as the engine says
+   * version, with no runtime; a lambda reading ingest data sets too (PLAN
+   * §11.29) only when they are its project's, of the cube's class. The
+   * open-source engine reads no data product, so there every lambda fails
+   * as the engine says
    */
   private async typeDataProduct(
     model: ModelContext,
@@ -736,9 +738,33 @@ export class V1_LegendCubeEngine implements CubeEngine {
         ]),
       );
     }
-    return this.typeOn(
+    // an ingest data set of another project or class is refused on its own node
+    const refused = new Map<NodeId, CubeEngineError>();
+    const typable = new Map<NodeId, IR>();
+    lambdas.forEach((ir, nodeId) => {
+      const problem = V1_checkCubeIngestAccessors(
+        V1_collectCubeIngestAccessors(ir),
+        project,
+      );
+      if (problem) {
+        refused.set(
+          nodeId,
+          new CubeEngineError(CubeEngineErrorKind.COMPILE, problem, nodeId),
+        );
+      } else {
+        typable.set(nodeId, ir);
+      }
+    });
+    const typed = await this.typeOn(
       V1_buildCubeDataProductTypingContext(project, projectModel),
-      lambdas,
+      typable,
+    );
+    // in the order the lambdas were given
+    return new Map(
+      [...lambdas.keys()].map((nodeId) => [
+        nodeId,
+        (refused.get(nodeId) ?? typed.get(nodeId)) as Schema | CubeEngineError,
+      ]),
     );
   }
 
@@ -1099,6 +1125,18 @@ export class V1_LegendCubeEngine implements CubeEngine {
       throw new CubeEngineError(
         CubeEngineErrorKind.EXECUTION,
         TABLES_IN_DATA_PRODUCT_CUBE,
+        captureId,
+      );
+    }
+    // ingest data sets it reads too (PLAN §11.29) are its project's, of its class
+    const ingestProblem = V1_checkCubeIngestAccessors(
+      V1_collectCubeIngestAccessors(executionLambda),
+      project,
+    );
+    if (ingestProblem) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        ingestProblem,
         captureId,
       );
     }

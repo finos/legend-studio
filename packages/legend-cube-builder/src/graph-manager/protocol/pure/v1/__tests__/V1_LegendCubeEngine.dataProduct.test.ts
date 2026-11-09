@@ -20,6 +20,7 @@ import {
   elementPtr,
   EmitRole,
   func,
+  ingestAccessor,
   type IR,
   lambda,
   literal,
@@ -38,6 +39,7 @@ import {
   CubeEngineErrorKind,
 } from '../../../../CubeEngine.js';
 import type { CubeDataProductModelSource } from '../../../../CubeDataProductCatalog.js';
+import { formatCubeIngestUrn } from '../../../../CubeIngest.js';
 import type { CubeLakehouseEnvironment } from '../../../../CubeLakehouseEnvironment.js';
 import {
   V1_buildCubeDataProductExecutionContext,
@@ -344,5 +346,129 @@ describe('Legend Cube engine: data product cubes', () => {
       ...PROJECT,
       warehouse: 'SALES_WH',
     });
+  });
+});
+
+describe('Legend Cube engine: a data product cube that reads ingest data sets too (PLAN §11.29)', () => {
+  const INGEST = 'sales::ingest::OrdersIngest';
+  /** A data set of an ingest definition, by default the project's, deployed to a class */
+  const dataSet = (
+    environmentType = CubeDataProductEnvironmentType.PRODUCTION,
+    project: { groupId: string; artifactId: string } = PROJECT,
+  ): IR =>
+    ingestAccessor(
+      [INGEST, 'TRADES'],
+      { nodeId: 'ingestDataset101', role: EmitRole.ACCESSOR },
+      formatCubeIngestUrn({
+        environmentType,
+        groupId: project.groupId,
+        artifactId: project.artifactId,
+        definition: INGEST,
+      }),
+    );
+  /** The access point and the data set, side by side */
+  const both = (ingest = dataSet()): IR =>
+    func('concatenate', [ACCESSOR, ingest], {
+      nodeId: 'concatenate101',
+      role: EmitRole.CONCAT,
+    });
+  /** Studio's workspace: the project's data products and its ingest definitions */
+  const workspace = {
+    _type: 'data',
+    elements: [
+      {
+        _type: 'dataProduct',
+        package: 'sales::products',
+        name: 'OrdersProduct',
+      },
+      {
+        _type: 'ingestDefinition',
+        package: 'sales::ingest',
+        name: 'OrdersIngest',
+      },
+    ],
+  };
+  const studioEngine = (): ReturnType<typeof setUp> =>
+    setUp(environmentOf('studio-env').environment, undefined, {
+      getProjectModel: async () => workspace,
+    });
+
+  test("Types and runs a lambda reading both on the host's one model, under one lakehouse runtime", async () => {
+    const { engine, run, batch } = studioEngine();
+    await engine.typeLambdas(
+      MODEL,
+      new Map([['concatenate101', lambda([], [both()])]]),
+    );
+    const typing = sentBody(batch.mock.calls[0] as unknown[]);
+    expect(typing.model).toEqual(workspace);
+    expect(JSON.stringify(typing.lambdas)).toContain('"type":"I"');
+    expect(JSON.stringify(typing.lambdas)).toContain('"type":"P"');
+    await engine.execute(MODEL, runOf(both()));
+    const body = sentBody(run.mock.calls[0] as unknown[]);
+    // the data product cube's own run: the workspace, then the one runtime
+    expect(body.model).toEqual(
+      V1_buildCubeDataProductExecutionContext(
+        { ...PROJECT, warehouse: 'SALES_WH' },
+        'studio-env',
+        'SALES_WH',
+        workspace,
+      ),
+    );
+    const text = JSON.stringify(body.function);
+    expect(text).toContain('"type":"I"');
+    expect(text).toContain('"type":"P"');
+    expect(text.match(/"function":"from"/gu)).toHaveLength(1);
+    expect(text).toContain(CUBE_DATA_PRODUCT_RUNTIME_PATH);
+  });
+
+  test("Refuses an ingest data set of another class than the cube's, on its node, before any call", async () => {
+    const { engine, run, batch } = studioEngine();
+    const otherClass = both(
+      dataSet(CubeDataProductEnvironmentType.PRODUCTION_PARALLEL),
+    );
+    const typed = await engine.typeLambdas(
+      MODEL,
+      new Map([['concatenate101', lambda([], [otherClass])]]),
+    );
+    expect(typed.get('concatenate101')).toMatchObject({
+      kind: CubeEngineErrorKind.COMPILE,
+      nodeId: 'concatenate101',
+      detail: `Ingest definition ${INGEST} is deployed to another environment than the cube's`,
+    });
+    await expect(
+      engine.execute(MODEL, runOf(otherClass)),
+    ).rejects.toMatchObject({
+      kind: CubeEngineErrorKind.EXECUTION,
+      detail: `Ingest definition ${INGEST} is deployed to another environment than the cube's`,
+    });
+    expect(batch).not.toHaveBeenCalled();
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  test("Refuses an ingest data set of another project than the cube's, on its node, before any call", async () => {
+    const { engine, run, batch } = studioEngine();
+    const otherProject = both(
+      dataSet(CubeDataProductEnvironmentType.PRODUCTION, {
+        groupId: 'com.example',
+        artifactId: 'sales',
+      }),
+    );
+    const typed = await engine.typeLambdas(
+      MODEL,
+      new Map([['concatenate101', lambda([], [otherProject])]]),
+    );
+    expect(typed.get('concatenate101')).toMatchObject({
+      kind: CubeEngineErrorKind.COMPILE,
+      nodeId: 'concatenate101',
+      detail: `Ingest definition ${INGEST} is in another project than the cube's data products`,
+    });
+    await expect(
+      engine.execute(MODEL, runOf(otherProject)),
+    ).rejects.toMatchObject({
+      kind: CubeEngineErrorKind.EXECUTION,
+      detail: `Ingest definition ${INGEST} is in another project than the cube's data products`,
+    });
+    expect(batch).not.toHaveBeenCalled();
+    expect(run).not.toHaveBeenCalled();
   });
 });

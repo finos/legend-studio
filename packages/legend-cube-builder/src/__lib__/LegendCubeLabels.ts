@@ -47,9 +47,17 @@ export enum LEGEND_CUBE_USER_DATA_KEY {
 }
 
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
-/** Why a source is disabled on a cube: it reads database tables or data products, never both (PLAN §6.8) */
-export const OTHER_SOURCE_KIND_TITLE =
-  "This cube's sources are of another kind: a cube reads database tables or data products, never both";
+/**
+ * Why a source is disabled on a cube: the cube reads another kind of source
+ * (PLAN §6.8), both named when known (§11.29)
+ */
+export const getOtherSourceKindTitle = (
+  cubeKind: string | undefined,
+  sourceKind: string | undefined,
+): string =>
+  cubeKind && sourceKind && cubeKind !== sourceKind
+    ? `This cube reads ${cubeKind}: it can't also read ${sourceKind}`
+    : "This cube's sources are of another kind, which this source can't join";
 
 /** Why no source can be added to a cube: the host doesn't serve the cube's kind of source (PLAN §6.8) */
 export const UNSERVED_SOURCE_KIND_TITLE =

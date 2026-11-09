@@ -1355,7 +1355,8 @@ source for now; the user plans to improve it later.
   definition; the warehouse follows the data product rule (§6.8).
 - **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
   saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
-  data products or ingest data sets) and one producer deployment.
+  data products or ingest data sets) and one producer deployment. _(2026-11-09: data products and ingest data sets of
+  one project may share a cube, §11.29.)_
 - **Config:** Legend Query's optional `lakehouse.platformUrl` (the key Data Cube and Marketplace use); the ingest
   servers are found through it.
 - **After Add:** a data set's Source panel shows its definition (the URN on hover), the class, the producer deployment
@@ -1418,6 +1419,7 @@ internals (user, 2026-10-08): questions for the original app's team are about it
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
+  _(2026-11-09: still so. Data products and ingest data sets of one project may share a cube, §11.29.)_
 - **Data product list:** the marketplace's search when Query names its server (`marketplace.serverUrl`, the same
   server Legend Marketplace's own `marketplace.url` names; user, 2026-10-09), else the lakehouse contract server's lite
   list, which Cube pages itself with guards. A failed search shows its error with Retry and never falls back to the
@@ -5029,7 +5031,8 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
    protocol JSON without source information, number literals by value. Exact, rewritten, or unchecked; Studio's note
    shows for the last two.
 6. **Binding rules:** one kind of source per cube, so a lambda mixing `#I`, `#P` and `#>` is refused; a matview that
-   reads another matview is refused with a message of its own, as matview data sets are never sources.
+   reads another matview is refused with a message of its own, as matview data sets are never sources. _(2026-11-09:
+   `#P` with `#I` of the data product's project binds as one data product cube, §11.29.)_
 7. **Expressions:** an Extend column's and a Filter by Expression's lambda is stored as the editor stores one (no
    source information, number literals as digit strings), its code the engine's grammar of it; an Extend is typed
    during the read, through the host's engine, so the steps after it can be checked.
@@ -5755,6 +5758,51 @@ type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and Duck
 
 **Supersessions** (kept here until folded): §11.5's aggregations table and `getAvailableAggregations`; §11.6's window
 functions; §11.12's Pivot aggregations; Appendix A, §10 (functions beyond the spec) and §16 (the setting messages).
+
+### 11.29 Data products and ingest data sets in one cube (user, 2026-11-05/09)
+
+**Ask:** "data products and ingest within Studio can actually be mixed", yet Cube refused it. The user reviewed the
+rules one by one (local evidence `mixed-sources/FINDINGS.md`, §0):
+
+- **R1, the rule.** Data products and ingest data sets can share a cube when they come from the same project. Studio's
+  are always one project's.
+  - **Legend Analytics:** the Ingest tab opens on the data product's own deployment id, which is the producer's, in the
+    viewer's own environment and the cube's Mode. It lists the project's definitions that are both deployed and in
+    Depot at the data product's version. A definition or data set that the version lacks is greyed out, saying so.
+    Columns are those of that version.
+- **R2, one Mode per cube.** The first source fixes it, and the other tab is locked to it. In Studio both tabs, and
+  Edit MatView, start on the Mode the definition Cube was opened from points to.
+- **R3, today's limits stay.** Data products come from one project at one version, ingest data sets from one producer
+  deployment.
+- **R4, MatViews.** The platform deploys data set by data set, so a view that reads a data product built on its own
+  definition is fine. Edit MatView refuses a true loop: an access point that reads the view being edited.
+- **R5, still refused.** Tables or functions with either lakehouse kind; data spaces with any other kind; services.
+- **R6, enforcement.** The core lets the pair share a query (`sourcesAreOneKind`). The editor checks the rest, so Run
+  and Add MatView are disabled with the reason; the engine adapter checks again before any call. The disabled-source
+  tooltip names the cube's kind.
+
+**Design:** a cube that reads both is a data product cube on every host. Its model already names the project, version,
+Mode and warehouse, so the saved format doesn't change.
+
+- **Core:** `sourcesAreOneKind` lets data products and ingest data sets share a query. `lakehouseSourcesAreApart`
+  keeps them apart, with the message `sourcesAreOneKind` gave before, on a host whose ingest catalog can't list a
+  data product's project's definitions. `getSourceKindName` names a source type's kind for the tooltip.
+- **The capability:** `CubeIngestCatalog.listProjectDefinitions(project)`. Studio's lists every definition of the
+  workspace. Legend Analytics gets it in a second PR, with the Depot read above.
+- **Editor:** `buildCubeIngestJoinRule` flags a data product cube's data set of another project, another Mode, or not
+  deployed from SDLC. `CubeHost.queryRules` adds a host's own rules; Studio's refuses the true loop.
+- **Picker:** a tab can join a cube another tab owns (`joinsContext`). The Ingest tab joins a data product cube with no
+  producer step, its Mode and warehouse locked. The Data Product tab joins an ingest cube and makes it a data product
+  cube of its Mode and warehouse, in one undo step.
+- **Re-check and Import Pure:** a data product cube's data sets are read again in its class. A lambda reading both
+  binds its access points first, then its data sets among the project's definitions.
+- **Adapter:** a data product cube's lambda may read ingest data sets of its project and Mode. It runs on the cube's
+  one `LakehouseRuntime`, on the project's model at its version (Studio: the workspace). Another project or Mode is
+  refused on its node before any call.
+- **Not changed:** emission (each source writes its accessor, one `from(runtime)`), the spec codec, Save/Add MatView.
+
+**Status:** Studio, PR 1. Legend Analytics' Ingest tab on a data product cube, PR 2. The open-source engine reads
+neither `#I` nor `#P`; the first internal run checks the plan of a mixed lambda (the request is in the evidence).
 
 ## 12. G. Risks and open questions
 

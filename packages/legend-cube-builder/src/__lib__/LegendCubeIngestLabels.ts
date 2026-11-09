@@ -32,6 +32,20 @@ export const CUBE_INGEST_RECHECK_MESSAGE = {
   NO_CATALOG: "This Legend deployment doesn't serve ingest data sets",
 } as const;
 
+/**
+ * Why an ingest data set can't be read by a data product cube (PLAN
+ * §11.29): a data product cube reads its own project's data sets, in its
+ * Mode
+ */
+export const CUBE_INGEST_JOIN_MESSAGE = {
+  NOT_SDLC: (definition: string): string =>
+    `Ingest definition ${definition} wasn't deployed from a project, so this data product cube can't read it`,
+  OTHER_PROJECT: (definition: string, project: string): string =>
+    `Ingest definition ${definition} is in another project than the cube's data products, ${project}`,
+  OTHER_MODE: (definition: string, mode: string): string =>
+    `Ingest definition ${definition} is deployed to another Mode than the cube's, ${mode}`,
+} as const;
+
 /** How many of a producer deployment's definitions the tab leaves out, or nothing when it lists them all */
 export const getDroppedDefinitionsLabel = (
   count: number,

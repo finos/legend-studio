@@ -32,7 +32,7 @@ export enum CubeSourcePickerTabKey {
  * A tab of the source dialog (PLAN §6.1, §6.8): one way to find a source,
  * e.g. a model's tables or a database connection's. The dialog opens one tab
  * at a time and runs its Add; a cube's fixed context belongs to one tab,
- * which then is the only one enabled.
+ * which then is the only one enabled, with any tab that joins it.
  */
 export interface CubeSourcePickerTab {
   readonly key: CubeSourcePickerTabKey;
@@ -44,6 +44,12 @@ export interface CubeSourcePickerTab {
   readonly canConfirm: boolean;
   /** Whether a cube's fixed context is this tab's, e.g. its saved connection */
   ownsContext(context: CubeContext): boolean;
+  /**
+   * Whether the tab adds sources to a cube whose context another tab owns:
+   * the data product and ingest tabs join each other's cubes on a host that
+   * runs them together (PLAN §11.29). None when left out
+   */
+  joinsContext?(context: CubeContext): boolean;
   /** When the dialog opens on the tab, or the user switches to it */
   open(): void;
   /** When the dialog closes: answers still on their way are dropped */

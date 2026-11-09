@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-import type { Schema } from '@finos/legend-cube';
+import type { ModelContext, Schema } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
-import type { CubeDataProductEnvironmentType } from './CubeDataProduct.js';
-import type { CubeIngestSettings } from './CubeIngest.js';
+import {
+  type CubeDataProductEnvironmentType,
+  type CubeDataProductProject,
+  getCubeDataProductProject,
+} from './CubeDataProduct.js';
+import {
+  type CubeIngestSettings,
+  getCubeIngestSettings,
+} from './CubeIngest.js';
 import type { CubeEngineError, NodeId } from './CubeEngine.js';
 
 // The deployed ingest definitions of a host's lakehouse (PLAN §6.7), as Data
@@ -67,6 +74,23 @@ export const getCubeIngestEnvironmentKey = (
   environmentType: settings.environmentType,
   name: settings.environment,
 });
+
+/**
+ * The ingest environment a cube's model reads its data sets in: an ingest
+ * cube's own; for a data product cube, which reads ingest data sets too on a
+ * host that runs them together (PLAN §11.29), the viewer's own of its class.
+ * None for any other model, or one Cube can't use
+ */
+export const getCubeIngestEnvironmentKeyOfModel = (
+  model: ModelContext,
+): CubeIngestEnvironmentKey | undefined => {
+  const settings = getCubeIngestSettings(model);
+  if (settings) {
+    return getCubeIngestEnvironmentKey(settings);
+  }
+  const project = getCubeDataProductProject(model);
+  return project ? { environmentType: project.environmentType } : undefined;
+};
 
 /** An ingest environment of the platform, as the Ingest tab lists it; a cube saves its name and class */
 export class CubeIngestEnvironment implements CubeIngestEnvironmentKey {
@@ -184,6 +208,17 @@ export interface CubeIngestCatalog {
   listDefinitions(
     environment: CubeIngestEnvironmentKey,
     producerDeploymentId: string,
+  ): Promise<CubeIngestDefinitionList>;
+
+  /**
+   * The definitions a data product cube of the project can read alongside
+   * its access points (PLAN §11.29): the project's own, deployed from SDLC
+   * in the viewer's own environment of the project's class, as the project
+   * has them at its version. A host without it keeps data products and
+   * ingest data sets apart
+   */
+  listProjectDefinitions?(
+    project: CubeDataProductProject,
   ): Promise<CubeIngestDefinitionList>;
 
   /**

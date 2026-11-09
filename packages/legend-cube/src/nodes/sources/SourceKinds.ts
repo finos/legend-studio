@@ -25,9 +25,10 @@ import { FunctionSource } from './FunctionSource.js';
 import { DataSpaceSource } from './DataSpaceSource.js';
 
 /**
- * The kinds of source a query reads, one per query (PLAN §6.8): each kind's
- * name, as messages give it, and its source node types. Messages name two
- * kinds in this order. A new kind of source joins with a row.
+ * The kinds of source a query reads, one per query (PLAN §6.8), but for the
+ * lakehouse's two (below): each kind's name, as messages give it, and its
+ * source node types. Messages name two kinds in this order. A new kind of
+ * source joins with a row.
  */
 const SOURCE_KINDS: readonly {
   readonly name: string;
@@ -52,30 +53,83 @@ const kindOf = (type: string): number =>
 const nameOf = (kind: number): string => SOURCE_KINDS[kind]?.name ?? '';
 
 /**
- * A query reads one kind of source (PLAN §6.8): its first source of a kind
- * fixes the kind, and each source of another kind is invalid, with a message
- * naming both kinds. Nodes of no kind, such as Unknown ones, are ignored.
- * Registered once, on the data product source.
+ * The name of a source node type's kind, as messages give it, e.g. `ingest
+ * data sets`; none for a type of no kind
  */
-export const sourcesAreOneKind: QueryRule = (query: Query) => {
-  const sources = query.nodes
+export const getSourceKindName = (type: string): string | undefined =>
+  SOURCE_KINDS[kindOf(type)]?.name;
+
+/**
+ * Data products and ingest data sets, the two kinds one query may read
+ * together (PLAN §11.29): both run on one lakehouse runtime, and a data
+ * product's access points read ingest data sets. Studio types and runs both
+ * on its workspace; a host that can't run them together keeps them apart
+ * with `lakehouseSourcesAreApart`
+ */
+const LAKEHOUSE_KINDS: readonly number[] = [
+  kindOf(DataProductAccessPointSource.TYPE),
+  kindOf(IngestDatasetSource.TYPE),
+];
+
+const isLakehouseKind = (kind: number): boolean =>
+  LAKEHOUSE_KINDS.includes(kind);
+
+/** The query's sources of a kind, in order; nodes of no kind, such as Unknown ones, left out */
+const sourcesOf = (query: Query): { id: string; kind: number }[] =>
+  query.nodes
     .map((node) => ({ id: node.id, kind: kindOf(node.type) }))
     .filter((source) => source.kind >= 0);
+
+/** The message of a source of one kind in a query whose first source is of another */
+const mixedKindsMessage = (kind: number, firstKind: number): string =>
+  MESSAGE_SOURCE_KINDS_MIXED(
+    [nameOf(Math.min(kind, firstKind)), nameOf(Math.max(kind, firstKind))],
+    nameOf(firstKind),
+  );
+
+/**
+ * A query reads one kind of source (PLAN §6.8), or data products with ingest
+ * data sets (§11.29): its first source of a kind fixes the kind, and each
+ * source of a kind that can't join it is invalid, with a message naming both
+ * kinds. Nodes of no kind, such as Unknown ones, are ignored. Registered
+ * once, on the data product source.
+ */
+export const sourcesAreOneKind: QueryRule = (query: Query) => {
+  const sources = sourcesOf(query);
   const [first] = sources;
   const errors = new Map<string, string[]>();
   if (first) {
     sources
-      .filter((source) => source.kind !== first.kind)
+      .filter(
+        (source) =>
+          source.kind !== first.kind &&
+          !(isLakehouseKind(source.kind) && isLakehouseKind(first.kind)),
+      )
       .forEach((source) =>
-        errors.set(source.id, [
-          MESSAGE_SOURCE_KINDS_MIXED(
-            [
-              nameOf(Math.min(source.kind, first.kind)),
-              nameOf(Math.max(source.kind, first.kind)),
-            ],
-            nameOf(first.kind),
-          ),
-        ]),
+        errors.set(source.id, [mixedKindsMessage(source.kind, first.kind)]),
+      );
+  }
+  return errors;
+};
+
+/**
+ * Data products and ingest data sets kept apart, for a host that can't run
+ * them together, as a query read them before §11.29: in a query whose first
+ * source is of one of the two kinds, each source of the other is invalid,
+ * with the message `sourcesAreOneKind` gave it. Sources of other kinds are
+ * left to that rule
+ */
+export const lakehouseSourcesAreApart: QueryRule = (query: Query) => {
+  const sources = sourcesOf(query);
+  const [first] = sources;
+  const errors = new Map<string, string[]>();
+  if (first && isLakehouseKind(first.kind)) {
+    sources
+      .filter(
+        (source) => source.kind !== first.kind && isLakehouseKind(source.kind),
+      )
+      .forEach((source) =>
+        errors.set(source.id, [mixedKindsMessage(source.kind, first.kind)]),
       );
   }
   return errors;
