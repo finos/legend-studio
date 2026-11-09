@@ -32,13 +32,35 @@ export const CUBE_INGEST_RECHECK_MESSAGE = {
   NO_CATALOG: "This Legend deployment doesn't serve ingest data sets",
 } as const;
 
-/** How many of a producer deployment's definitions the tab leaves out, or nothing when it lists them all */
+/**
+ * Why an ingest data set can't be read by a data product cube (PLAN
+ * §11.30): a data product cube reads its own project's data sets, in its
+ * Mode
+ */
+export const CUBE_INGEST_JOIN_MESSAGE = {
+  NOT_SDLC: (definition: string): string =>
+    `Ingest definition ${definition} wasn't deployed from a project, so this data product cube can't read it`,
+  OTHER_PROJECT: (definition: string, project: string): string =>
+    `Ingest definition ${definition} is in another project than the cube's data products, ${project}`,
+  OTHER_MODE: (definition: string, mode: string): string =>
+    `Ingest definition ${definition} is deployed to another Mode than the cube's, ${mode}`,
+  /** The deployment that deploys the project's definitions is its data products' own: one */
+  SEVERAL_DEPLOYMENTS: (deploymentIds: readonly string[]): string =>
+    `The cube's data products come from several deployments, ${deploymentIds.join(', ')}, so Cube can't tell which one deploys their project's ingest definitions`,
+} as const;
+
+/**
+ * How many of a producer deployment's definitions the tab leaves out, or
+ * nothing when it lists them all; for a data product cube, those of other
+ * projects too (PLAN §11.30)
+ */
 export const getDroppedDefinitionsLabel = (
   count: number,
+  ofProject = false,
 ): string | undefined =>
   count === 0
     ? undefined
-    : `${count} ${count === 1 ? 'definition' : 'definitions'} not deployed from a project, or deployed to another environment, not shown`;
+    : `${count} ${count === 1 ? 'definition' : 'definitions'} ${ofProject ? 'of other projects, ' : ''}not deployed from a project, or deployed to another environment, not shown`;
 
 /** A producer deployment as the Ingest tab shows it: its name and id, else its id alone */
 export const getProducerLabel = (
@@ -46,6 +68,13 @@ export const getProducerLabel = (
   name: string | undefined,
 ): string =>
   name ? `${name} (${deploymentId})` : `Deployment ${deploymentId}`;
+
+/** A deployment in a sentence: its name and id, else the word and its id */
+export const getDeploymentLabel = (
+  deploymentId: string,
+  name: string | undefined,
+): string =>
+  name ? `${name} (${deploymentId})` : `deployment ${deploymentId}`;
 
 /** The producer deployment a cube's data sets come from, named as the producer list names it */
 export const getFixedProducerLabel = (
@@ -55,6 +84,30 @@ export const getFixedProducerLabel = (
   name
     ? `producer ${name} (${deploymentId})`
     : `producer deployment ${deploymentId}`;
+
+/**
+ * The Ingest tab on a data product cube, on a host whose data products are
+ * deployed (PLAN §11.30): the cube's Mode, and the deployment its data sets
+ * come from, its data products' own
+ */
+export const getJoinedDataProductsLabel = (
+  mode: string,
+  deployment: string | undefined,
+  versionId: string,
+): string =>
+  `The cube's data products run in ${mode}${deployment ? `, deployed by ${deployment}` : ''}: its ingest data sets come from their deployment, in your own environment, as version ${versionId} has them.`;
+
+/**
+ * The Data Product tab on an ingest cube, on a host whose data products are
+ * deployed (PLAN §11.30): the project and deployment its data products
+ * must come from
+ */
+export const getJoinedIngestLabel = (
+  mode: string,
+  project: string,
+  deployment: string,
+): string =>
+  `The cube's ingest data sets come from ${project}, deployed by ${deployment}, in ${mode}: data products of that project and deployment can join them.`;
 
 /** Each class of ingest environment, as the Ingest tab names it */
 export const CUBE_INGEST_ENVIRONMENT_CLASS_LABELS: Readonly<

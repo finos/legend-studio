@@ -41,18 +41,22 @@ import {
   colSpec,
   colSpecArray,
   columnAccess,
+  DataProductAccessPointSource,
+  dataProductAccessor,
   func,
+  IngestDatasetSource,
   ingestAccessor,
   lambda,
   literal,
   PrimitiveType,
+  Query,
   Schema,
   SchemaColumn,
   variable,
   type IR,
   type ModelContext,
 } from '@finos/legend-cube';
-import type { PlainObject } from '@finos/legend-shared';
+import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
@@ -70,6 +74,10 @@ import {
   LEGEND_STUDIO_CUBE_DATA_PRODUCT_MESSAGE,
   LegendStudioCubeDataProductCatalog,
 } from '../../../../stores/editor/embedded-cube/LegendStudioCubeDataProductCatalog.js';
+import {
+  buildLegendStudioCubeMatViewRule,
+  LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE,
+} from '../../../../stores/editor/embedded-cube/LegendStudioCubeMatViewRules.js';
 import {
   LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE,
   LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
@@ -1037,7 +1045,7 @@ describe("Legend Cube's lakehouse environment in Studio", () => {
 
   test(
     integrationTest(
-      'Starts an ingest cube on production parallel, unless the definition it was opened from names only a production DID',
+      'Starts a cube on production parallel, its data products as its ingest data sets, unless the definition it was opened from names only a production DID',
     ),
     async () => {
       const { editorStore } = await setUp([TRADES_INGEST, LAKEHOUSE_RUNTIME]);
@@ -1076,6 +1084,22 @@ describe("Legend Cube's lakehouse environment in Studio", () => {
           ingest,
         ).environmentTypes,
       ).toEqual([PRODUCTION_PARALLEL, PRODUCTION]);
+      // data products start on the same Mode, whichever kind comes first (PLAN §11.30)
+      const dataProductClasses = (opened?: IngestDefinition): unknown =>
+        new LegendStudioCubeDataProductCatalog(
+          editorStore,
+          new LegendStudioCubeWorkspace(editorStore),
+          fakeTypingEngine().engine,
+          opened,
+        ).environmentTypes;
+      expect(dataProductClasses()).toEqual([PRODUCTION_PARALLEL, PRODUCTION]);
+      expect(dataProductClasses(ingest)).toEqual([
+        PRODUCTION_PARALLEL,
+        PRODUCTION,
+      ]);
+      expect(
+        dataProductClasses(withOwner({ production: { appDirId: 1 } })),
+      ).toEqual([PRODUCTION, PRODUCTION_PARALLEL]);
     },
   );
 
@@ -1136,6 +1160,252 @@ describe("Legend Cube's lakehouse environment in Studio", () => {
         label: 'env-a-pp, your lakehouse environment',
         warehouse: undefined,
       });
+    },
+  );
+});
+
+describe('A data product and an ingest data set in one cube in Studio (PLAN §11.30)', () => {
+  /** The desks, the data set's and the data product's: one view reading both, as Cube writes it */
+  const ALL_DESKS_LAMBDA = serializeCubeLambdaForHost(
+    lambda(
+      [],
+      [
+        func('concatenate', [
+          ingestAccessor([INGEST_PATH, 'DESKS']),
+          dataProductAccessor([DATA_PRODUCT_PATH, 'desks']),
+        ]),
+      ],
+    ),
+  );
+
+  /**
+   * The engine's types of the access points, which the open-source engine
+   * can't give: the typing calls are answered, and every other call fails,
+   * as with no engine
+   */
+  const typeAccessPoints = (): jest.Mock => {
+    const relationType = (columns: [string, string][]): object => ({
+      _type: 'relationType',
+      columns: columns.map(([name, type]) => column(name, type)),
+    });
+    return jest
+      .spyOn(AbstractServerClient.prototype, 'postWithTracing')
+      .mockImplementation(async (_traceData, url, data) => {
+        if (!url.endsWith('/compilation/lambdaRelationType/batch')) {
+          throw new Error(`No engine in this test: ${url}`);
+        }
+        const { lambdas } = JSON.parse(data as string) as {
+          lambdas: Record<string, unknown>;
+        };
+        return {
+          result: Object.fromEntries(
+            Object.entries(lambdas).map(([key, each]) => [
+              key,
+              JSON.stringify(each).includes('"desks"')
+                ? relationType([
+                    ['ID', 'Integer'],
+                    ['DESK', 'String'],
+                  ])
+                : relationType([
+                    ['TRADE_ID', 'Integer'],
+                    ['DESK_ID', 'Integer'],
+                    ['NOTIONAL_USD', 'Float'],
+                  ]),
+            ]),
+          ),
+        } as never;
+      }) as unknown as jest.Mock;
+  };
+
+  test(
+    integrationTest(
+      'Edit MatView reads a view of an access point and an ingest data set back into one cube, and Save MatView writes it back the same',
+    ),
+    async () => {
+      const typing = typeAccessPoints();
+      const { editorStore, renderResult } = await setUp([
+        {
+          ...TRADES_INGEST,
+          content: {
+            ...(TRADES_INGEST.content as PlainObject),
+            datasets: [
+              ...((TRADES_INGEST.content as PlainObject).datasets as object[]),
+              {
+                name: 'ALL_DESKS',
+                primaryKey: ['ID'],
+                privacyClassification: { sensitivity: 'DP10' },
+                source: { _type: 'FunctionSource', function: ALL_DESKS_LAMBDA },
+              },
+            ],
+          },
+        },
+        TRADES_DATA_PRODUCT,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      fireEvent.click(
+        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
+      );
+      fireEvent.click(await renderResult.findByText('Edit MatView ALL_DESKS'));
+      // the data set, the access point and the Concatenate, on Cube's
+      // canvas, with nothing to say: Cube writes them back the same
+      await waitFor(() =>
+        expect(
+          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
+        ).toHaveLength(3),
+      );
+      expect(
+        renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
+      ).toBeNull();
+      // the access point was typed on the workspace, as a data product cube's
+      const typed = typing.mock.calls
+        .filter((call) =>
+          String(call[1]).endsWith('/compilation/lambdaRelationType/batch'),
+        )
+        .map(
+          (call) =>
+            JSON.parse(call[2] as string) as {
+              model: { elements: { name: string }[] };
+            },
+        );
+      expect(typed.length).toBeGreaterThan(0);
+      expect(typed[0]?.model.elements.map((element) => element.name)).toEqual(
+        expect.arrayContaining(['TradesIngest', 'TradesDataProduct']),
+      );
+      const save = await renderResult.findByRole('button', {
+        name: 'Save MatView',
+      });
+      await waitFor(() =>
+        expect((save as HTMLButtonElement).disabled).toBe(false),
+      );
+      fireEvent.click(save);
+      await renderResult.findByText(
+        'Saved materialized view ALL_DESKS of TradesIngest',
+      );
+      const ingest = ingestOf(editorStore);
+      expect(
+        (
+          (ingest.content.datasets as PlainObject[]).at(-1)
+            ?.source as PlainObject
+        ).function,
+      ).toEqual(ALL_DESKS_LAMBDA);
+    },
+  );
+  test(
+    integrationTest(
+      'Edit MatView refuses an access point that reads the view being edited, saying why, and Save MatView waits until it is removed',
+    ),
+    async () => {
+      typeAccessPoints();
+      const LOOPY_LAMBDA = serializeCubeLambdaForHost(
+        lambda([], [dataProductAccessor([DATA_PRODUCT_PATH, 'loopy'])]),
+      );
+      const { editorStore, renderResult } = await setUp([
+        {
+          ...TRADES_INGEST,
+          content: {
+            ...(TRADES_INGEST.content as PlainObject),
+            datasets: [
+              ...((TRADES_INGEST.content as PlainObject).datasets as object[]),
+              {
+                name: 'LOOPY',
+                primaryKey: [],
+                privacyClassification: { sensitivity: 'DP10' },
+                source: { _type: 'FunctionSource', function: LOOPY_LAMBDA },
+              },
+            ],
+          },
+        },
+        {
+          ...TRADES_DATA_PRODUCT,
+          content: {
+            ...(TRADES_DATA_PRODUCT.content as PlainObject),
+            accessPointGroups: [
+              {
+                id: 'trading',
+                title: 'Trading',
+                accessPoints: [
+                  accessPoint('trades', 'TRADES'),
+                  // an access point over the view itself
+                  accessPoint('loopy', 'LOOPY'),
+                ],
+              },
+            ],
+          },
+        },
+        LAKEHOUSE_RUNTIME,
+      ]);
+      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      fireEvent.click(
+        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
+      );
+      fireEvent.click(await renderResult.findByText('Edit MatView LOOPY'));
+      await waitFor(() =>
+        expect(
+          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
+        ).toHaveLength(1),
+      );
+      const save = (await renderResult.findByRole('button', {
+        name: 'Save MatView',
+      })) as HTMLButtonElement;
+      await waitFor(() =>
+        expect(save.title).toContain(
+          LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE.READS_VIEW('loopy', 'LOOPY'),
+        ),
+      );
+      expect(save.disabled).toBe(true);
+      // the rule flags only an access point that reads the view: not one
+      // reading another data set, nor a step of another kind
+      const rule = buildLegendStudioCubeMatViewRule(
+        editorStore,
+        ingestOf(editorStore),
+        'LOOPY',
+      );
+      const point = (
+        id: string,
+        accessPointId: string,
+      ): DataProductAccessPointSource =>
+        new DataProductAccessPointSource(id, {
+          dataProduct: DATA_PRODUCT_PATH,
+          accessPointGroup: 'trading',
+          accessPoint: accessPointId,
+          dataProductId: DATA_PRODUCT_PATH,
+          deploymentId: '0',
+        });
+      const trades = new IngestDatasetSource('ingestDataset101', {
+        ingestDefinitionUrn: formatCubeIngestUrn({
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+          groupId: 'com.test',
+          artifactId: 'string',
+          definition: INGEST_PATH,
+        }),
+        ingestDefinition: INGEST_PATH,
+        dataSet: 'TRADES',
+      });
+      expect([
+        ...rule(
+          new Query(
+            [
+              point('dataProductAccessPoint101', 'trades'),
+              trades,
+              point('dataProductAccessPoint102', 'loopy'),
+            ],
+            [],
+            'dataProductAccessPoint101',
+          ),
+        ),
+      ]).toEqual([
+        [
+          'dataProductAccessPoint102',
+          [LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE.READS_VIEW('loopy', 'LOOPY')],
+        ],
+      ]);
     },
   );
 });

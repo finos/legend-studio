@@ -72,6 +72,8 @@ export class CubeFunctionSignature {
   readonly isOperator: boolean;
   /** Only for the platform's own use */
   readonly isPlatformOnly: boolean;
+  /** Its definition's tests on each database, as the engine ran them; none when it reports none */
+  readonly testResults: CubeFunctionTestResults | undefined;
 
   constructor(
     id: string,
@@ -82,6 +84,7 @@ export class CubeFunctionSignature {
     documentation: string,
     isOperator: boolean,
     isPlatformOnly: boolean,
+    testResults?: CubeFunctionTestResults | undefined,
   ) {
     this.id = id;
     this.name = name;
@@ -91,6 +94,7 @@ export class CubeFunctionSignature {
     this.documentation = documentation;
     this.isOperator = isOperator;
     this.isPlatformOnly = isPlatformOnly;
+    this.testResults = testResults;
   }
 
   /** As Pure writes it, with the parameters' names: `contains(source: String[1], val: String[1]): Boolean[1]` */
@@ -125,6 +129,76 @@ export interface CubeFunctionOffer {
   readonly signatures: readonly CubeFunctionSignature[];
 }
 
+/** One of the engine's tests of a function that failed on a database */
+export interface CubeFunctionTestFailure {
+  readonly test: string;
+  /** The first line of its message */
+  readonly message: string;
+}
+
+/**
+ * The engine's tests of a function's definition on one database, as its
+ * compatibility tests (PCT) ran them: information only, since a test that
+ * fails doesn't mean the function can't run there (EXPRESSION-EDITOR.md,
+ * §2.2)
+ */
+export class CubeFunctionTestResult {
+  /** As the engine names the database, e.g. `DuckDB` */
+  readonly database: string;
+  readonly passed: number;
+  readonly total: number;
+  readonly failures: readonly CubeFunctionTestFailure[];
+
+  constructor(
+    database: string,
+    passed: number,
+    total: number,
+    failures: readonly CubeFunctionTestFailure[],
+  ) {
+    this.database = database;
+    this.passed = passed;
+    this.total = total;
+    this.failures = failures;
+  }
+}
+
+/** A definition's test results, by the database the engine names */
+export type CubeFunctionTestResults = ReadonlyMap<
+  string,
+  CubeFunctionTestResult
+>;
+
+/** The kinds of functions the functions panel shows, by their packages */
+export enum CubeFunctionCategory {
+  TEXT = 'Text',
+  NUMBERS = 'Numbers',
+  DATES = 'Dates',
+  LOGIC = 'Logic',
+  EMPTY_VALUES = 'Empty values',
+  LISTS = 'Lists',
+  JSON = 'JSON',
+}
+
+/** A function's category, by the package of its first definition */
+const CATEGORIES_BY_PACKAGE: readonly [string, CubeFunctionCategory][] = [
+  ['meta::pure::functions::string', CubeFunctionCategory.TEXT],
+  ['meta::pure::functions::math', CubeFunctionCategory.NUMBERS],
+  ['meta::pure::functions::date', CubeFunctionCategory.DATES],
+  ['meta::pure::functions::boolean', CubeFunctionCategory.LOGIC],
+  ['meta::pure::functions::flow', CubeFunctionCategory.EMPTY_VALUES],
+  ['meta::pure::functions::multiplicity', CubeFunctionCategory.EMPTY_VALUES],
+  ['meta::pure::functions::collection', CubeFunctionCategory.LISTS],
+  ['meta::pure::functions::variant', CubeFunctionCategory.JSON],
+];
+
+/** The category of a signature, by its package */
+export const getCubeFunctionCategory = (
+  signature: CubeFunctionSignature,
+): CubeFunctionCategory | undefined =>
+  CATEGORIES_BY_PACKAGE.find(([path]) =>
+    signature.id.startsWith(`${path}::`),
+  )?.[1];
+
 /** The Pure types a value of a family is passed as */
 const FAMILY_TYPES: Readonly<Record<TypeFamily, readonly string[]>> = {
   [TypeFamily.BOOLEAN]: ['Boolean'],
@@ -146,6 +220,10 @@ const FAMILY_TYPES: Readonly<Record<TypeFamily, readonly string[]>> = {
 const isAnyType = (type: string): boolean =>
   type === 'Any' || /^[A-Z]$/u.test(type);
 
+/** A parameter of the Pure type takes a value of the family: of its own types, or any value's */
+export const acceptsCubeFamily = (type: string, family: TypeFamily): boolean =>
+  isAnyType(type) || FAMILY_TYPES[family].includes(type);
+
 /** The packages of functions a row's value is passed to: not relations, metadata or the language's own machinery */
 const VALUE_PACKAGES = [
   'meta::pure::functions::string',
@@ -166,9 +244,60 @@ const WRITTEN_AS_OPERATORS = new Set(['eq']);
 
 export class CubeFunctionCatalogue {
   readonly functions: ReadonlyMap<string, CubeFunction>;
+  /** The databases tested, read once: the catalogue doesn't change */
+  private tested: ReadonlySet<string> | undefined;
 
   constructor(functions: readonly CubeFunction[]) {
     this.functions = new Map(functions.map((each) => [each.name, each]));
+  }
+
+  /** The databases the engine reports tests on, e.g. `H2`, `DuckDB`; none of those cloud builds alone run, such as Snowflake, from a local engine */
+  get testedDatabases(): ReadonlySet<string> {
+    if (this.tested) {
+      return this.tested;
+    }
+    const databases = new Set<string>();
+    this.functions.forEach((each) =>
+      each.signatures.forEach((signature) =>
+        signature.testResults?.forEach((_result, database) =>
+          databases.add(database),
+        ),
+      ),
+    );
+    this.tested = databases;
+    return databases;
+  }
+
+  /**
+   * The functions to browse, as the functions panel lists them, by name:
+   * functions of values that give one value, as completions offer them to
+   * any value, with the signatures shown; not operators, platform-only
+   * ones, relations, or ones taking a lambda
+   */
+  browse(): CubeFunctionOffer[] {
+    return [...this.functions.values()]
+      .flatMap((each) => {
+        if (
+          WRITTEN_AS_OPERATORS.has(each.name) ||
+          each.signatures.some((signature) => signature.isOperator)
+        ) {
+          return [];
+        }
+        const signatures = each.signatures.filter(
+          (signature) =>
+            signature.parameters.length > 0 &&
+            !signature.isPlatformOnly &&
+            getCubeFunctionCategory(signature) !== undefined &&
+            !isManyMultiplicity(signature.returnMultiplicity) &&
+            signature.parameters.every(
+              (parameter) => !parameter.type.startsWith('Function<'),
+            ),
+        );
+        return signatures.length ? [{ function: each, signatures }] : [];
+      })
+      .sort((first, second) =>
+        first.function.name.localeCompare(second.function.name),
+      );
   }
 
   get(name: string): CubeFunction | undefined {
@@ -185,7 +314,6 @@ export class CubeFunctionCatalogue {
    */
   offersFor(family: TypeFamily | undefined): CubeFunctionOffer[] {
     // a value of an unknown type: the functions of any value
-    const types = family !== undefined ? FAMILY_TYPES[family] : [];
     return [...this.functions.values()].flatMap((each) => {
       if (
         WRITTEN_AS_OPERATORS.has(each.name) ||
@@ -200,7 +328,9 @@ export class CubeFunctionCatalogue {
           !signature.isOperator &&
           !signature.isPlatformOnly &&
           VALUE_PACKAGES.some((path) => signature.id.startsWith(`${path}::`)) &&
-          (isAnyType(first.type) || types.includes(first.type)) &&
+          (family !== undefined
+            ? acceptsCubeFamily(first.type, family)
+            : isAnyType(first.type)) &&
           (!first.isMany || TAKE_ONE_AS_MANY.has(each.name)) &&
           !isManyMultiplicity(signature.returnMultiplicity) &&
           // a lambda to write, as `map` takes, is for code, not a completion

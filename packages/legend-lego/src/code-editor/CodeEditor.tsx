@@ -192,12 +192,56 @@ export interface CodeEditorSignatureHelpSource {
   ): CodeEditorSignatureHelp | undefined;
 }
 
+/** How an inserter writes its text */
+export interface CodeEditorTextInsertOptions {
+  /** The text is a snippet, its placeholders (`${1:name}`) filled in turn, as a completion's are */
+  readonly isSnippet?: boolean | undefined;
+  /** Writes the text as it is, no space put around it: the text says its own spacing */
+  readonly isVerbatim?: boolean | undefined;
+  /** Opens the signature help once written, as a call's `(` typed would */
+  readonly opensSignatureHelp?: boolean | undefined;
+}
+
 /**
  * Writes text at an editor's cursor, as a click outside it asks (e.g. a
  * column's chip), with a space before and after where code touches it;
- * false when the editor has no text or cursor to write at
+ * the text given, or made from the character before the cursor; false when
+ * the editor has no text or cursor to write at
  */
-export type CodeEditorTextInserter = (text: string) => boolean;
+export type CodeEditorTextInserter = (
+  text: string | ((characterBefore: string) => string),
+  options?: CodeEditorTextInsertOptions,
+) => boolean;
+
+/** A snippet's text with its placeholders written as their default text */
+const snippetAsText = (snippet: string): string =>
+  snippet
+    .replace(/\$\{\d+:(?<text>(?:[^}\\]|\\.)*)\}/gu, '$<text>')
+    .replace(/\$\{?\d+\}?/gu, '')
+    .replace(/\\(?<escaped>[$}\\])/gu, '$<escaped>');
+
+/** A range of an editor's text: lines and columns from 1, its end column excluded, as Monaco counts them */
+export interface CodeEditorRange {
+  readonly startLineNumber: number;
+  readonly startColumn: number;
+  readonly endLineNumber: number;
+  readonly endColumn: number;
+}
+
+/** Text written over a range of an editor's text: an empty range writes it at a position */
+export interface CodeEditorTextEdit {
+  readonly range: CodeEditorRange;
+  readonly text: string;
+}
+
+/**
+ * Writes edits into an editor's text as one step, which Undo takes back,
+ * each range as the text was before; false when the editor has no text to
+ * edit
+ */
+export type CodeEditorTextEditor = (
+  edits: readonly CodeEditorTextEdit[],
+) => boolean;
 
 const COMPLETION_KINDS: Readonly<
   Record<CodeEditorCompletionKind, monacoLanguagesAPI.CompletionItemKind>
@@ -419,6 +463,10 @@ export const CodeEditor: React.FC<{
   signatureHelp?: CodeEditorSignatureHelpSource | undefined;
   /** Set to a function writing text at this editor's cursor, while the editor exists */
   textInserterRef?: { current: CodeEditorTextInserter | undefined } | undefined;
+  /** Set to a function writing edits into this editor's text, while the editor exists, e.g. a quick fix */
+  textEditorRef?: { current: CodeEditorTextEditor | undefined } | undefined;
+  /** A range of the text to highlight, e.g. the part of an expression pointed at elsewhere */
+  highlightedRange?: CodeEditorRange | undefined;
   /**
    * Renders the floating widgets (completions, hovers) in the page's body,
    * for an editor inside a CSS-transformed container, e.g. a popper
@@ -443,6 +491,8 @@ export const CodeEditor: React.FC<{
     hover,
     signatureHelp,
     textInserterRef,
+    textEditorRef,
+    highlightedRange,
     floatingWidgetsInBody,
   } = props;
   const applicationStore = useApplicationStore();
@@ -624,7 +674,10 @@ export const CodeEditor: React.FC<{
     if (!editor || !textInserterRef) {
       return undefined;
     }
-    textInserterRef.current = (text: string): boolean => {
+    textInserterRef.current = (
+      given: string | ((characterBefore: string) => string),
+      options?: CodeEditorTextInsertOptions,
+    ): boolean => {
       const model = editor.getModel();
       const selection = editor.getSelection();
       if (!model || !selection) {
@@ -645,23 +698,88 @@ export const CodeEditor: React.FC<{
         endLineNumber: selection.endLineNumber,
         endColumn: selection.endColumn + 1,
       });
+      const text = typeof given === 'function' ? given(before) : given;
       // a space first but at the start, after a space, or an opening bracket: `a == $x.B`, `f($x.B`;
       // a space after before more code but a space, a closing bracket or a separator: `$x.B $x.C`, `f($x.B)`
-      const spaced = `${before && !/[\s([{.!]/u.test(before) ? ' ' : ''}${text}${
-        after && !/[\s)\]},.;]/u.test(after) ? ' ' : ''
-      }`;
-      editor.pushUndoStop();
-      editor.executeEdits('insert', [
-        { range: selection, text: spaced, forceMoveMarkers: true },
-      ]);
-      editor.pushUndoStop();
+      const spaced = options?.isVerbatim
+        ? text
+        : `${before && !/[\s([{.!]/u.test(before) ? ' ' : ''}${text}${
+            after && !/[\s)\]},.;]/u.test(after) ? ' ' : ''
+          }`;
+      // possibly none, as an editor mocked in tests gives
+      const snippets = (
+        options?.isSnippet
+          ? editor.getContribution('snippetController2')
+          : undefined
+      ) as { insert?: (template: string) => void } | null | undefined;
       editor.focus();
+      if (snippets?.insert) {
+        // its own undo step, its placeholders filled in turn
+        snippets.insert(spaced);
+      } else {
+        editor.pushUndoStop();
+        editor.executeEdits('insert', [
+          {
+            range: selection,
+            text: options?.isSnippet ? snippetAsText(spaced) : spaced,
+            forceMoveMarkers: true,
+          },
+        ]);
+        editor.pushUndoStop();
+      }
+      if (options?.opensSignatureHelp) {
+        editor.trigger('insert', 'editor.action.triggerParameterHints', {});
+      }
       return true;
     };
     return () => {
       textInserterRef.current = undefined;
     };
   }, [editor, textInserterRef]);
+
+  // writing edits, for a click outside the editor
+  useEffect(() => {
+    if (!editor || !textEditorRef) {
+      return undefined;
+    }
+    textEditorRef.current = (edits: readonly CodeEditorTextEdit[]): boolean => {
+      if (!editor.getModel()) {
+        return false;
+      }
+      editor.pushUndoStop();
+      editor.executeEdits(
+        'edit',
+        edits.map((edit) => ({
+          range: edit.range,
+          text: edit.text,
+          forceMoveMarkers: true,
+        })),
+      );
+      editor.pushUndoStop();
+      return true;
+    };
+    return () => {
+      textEditorRef.current = undefined;
+    };
+  }, [editor, textEditorRef]);
+
+  // the highlighted range, while it is given
+  const highlightedRangeRef = useRef(highlightedRange);
+  highlightedRangeRef.current = highlightedRange;
+  const highlightKey = highlightedRange
+    ? `${highlightedRange.startLineNumber}:${highlightedRange.startColumn}:${highlightedRange.endLineNumber}:${highlightedRange.endColumn}`
+    : undefined;
+  useEffect(() => {
+    const range = highlightedRangeRef.current;
+    if (!editor || !range || highlightKey === undefined) {
+      return undefined;
+    }
+    // possibly none, as an editor mocked in tests gives
+    const decorations = editor.createDecorationsCollection([
+      { range, options: { className: 'code-editor__highlighted-range' } },
+    ]) as monacoEditorAPI.IEditorDecorationsCollection | undefined;
+    return () => decorations?.clear();
+  }, [editor, highlightKey]);
 
   useEffect(() => {
     if (editor && lineToScroll !== undefined) {

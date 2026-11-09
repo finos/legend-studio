@@ -51,6 +51,11 @@ import {
   type CubeSourceLocation,
   type NodeId,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  type CubeExpressionOutline,
+  type CubePrecedenceTrap,
+  findCubePrecedenceTraps,
+} from '../../graph-manager/CubeExpressionOutline.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeJsonFieldsState } from '../variant/CubeJsonFieldsState.js';
 import { getFreeCubeColumnName } from '../variant/CubeJsonOffers.js';
@@ -150,6 +155,7 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
       validating: observable,
       touched: observable,
       columns: computed,
+      databaseType: computed,
       isValidated: computed,
       applyDisabledReason: computed,
       addRow: action,
@@ -189,6 +195,39 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
     }
   }
 
+  /** Each parse's outline, read once */
+  private readonly outlines = new WeakMap<
+    CubeExtendCheckedCode,
+    CubeExpressionOutline | undefined
+  >();
+
+  /**
+   * A row's code in parts, as the engine last parsed it, while the code is
+   * that (EXPRESSION-EDITOR.md, round 2)
+   */
+  getRowOutline(row: CubeExtendRow): CubeExpressionOutline | undefined {
+    const { checked } = row;
+    if (checked?.code !== row.code) {
+      return undefined;
+    }
+    if (!this.outlines.has(checked)) {
+      this.outlines.set(
+        checked,
+        this.editorState.host.engine.readExpressionOutline(
+          checked.located,
+          checked.code,
+        ),
+      );
+    }
+    return this.outlines.get(checked);
+  }
+
+  /** Where Pure's precedence reads a row's code other than it was likely meant */
+  getRowPrecedenceTraps(row: CubeExtendRow): CubePrecedenceTrap[] {
+    const outline = this.getRowOutline(row);
+    return outline ? findCubePrecedenceTraps(outline) : [];
+  }
+
   /**
    * Where a row's check stands, for its code box's border: a new row never
    * edited isn't checked until it is
@@ -224,6 +263,24 @@ export class CubeExtendDraft extends CubeNodeDraft<Extend> {
   /** Checks the rows at once (F10), not waiting for typing to pause */
   checkNow(): void {
     this.autoCheck.now();
+  }
+
+  /**
+   * The database the query up to this node runs on, as the engine names it,
+   * once the model's outline tells it: how the engine's tests of a
+   * function went there (EXPRESSION-EDITOR.md, round 2b)
+   */
+  get databaseType(): string | undefined {
+    const { document } = this.editorState;
+    const runtime = document.context?.runtime;
+    return document.context && runtime !== undefined
+      ? this.editorState.getRunDatabaseType(
+          document.query,
+          this.original.id,
+          document.context.model,
+          runtime,
+        )
+      : undefined;
   }
 
   /**

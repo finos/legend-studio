@@ -175,7 +175,7 @@ const computeErrorsAndRender = async (
   }
 
   const computedContractErrors = await MOCK__dashboardState.getContractErrors(
-    TEST_CONTRACT_ID,
+    mockLiteContract,
     undefined,
     true,
   );

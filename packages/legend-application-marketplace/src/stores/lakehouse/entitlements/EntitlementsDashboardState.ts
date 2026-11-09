@@ -36,12 +36,13 @@ import {
   V1_DataProductAccessor,
   V1_deserializeDataContractResponse,
   type V1_DataRequestWithWorkflow,
+  type V1_EntitlementsDataProductDetails,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_IngestDefinitionAccessor,
   V1_LakehouseAccessPoint,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
-  V1_PureGraphManager,
+  type V1_PureGraphManager,
   V1_resolveAccessorsFromRawLambda,
   V1_ResourceType,
   V1_SdlcDeploymentDataProductOrigin,
@@ -63,8 +64,8 @@ import {
   V1_PermitTaskAction,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
+  getDataProductFromDetails,
   stringifyOrganizationalScope,
   type ContractErrorLayer,
   type DataProductDataAccess_LegendApplicationPlugin_Extension,
@@ -77,11 +78,7 @@ import {
   action,
   computed,
 } from 'mobx';
-import {
-  TEST_USER,
-  type LakehouseEntitlementsStore,
-} from './LakehouseEntitlementsStore.js';
-import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
+import type { LakehouseEntitlementsStore } from './LakehouseEntitlementsStore.js';
 
 export enum ContractSyncStatus {
   NEVER_SYNCED = 'NEVER_SYNCED',
@@ -239,6 +236,12 @@ export class EntitlementsDashboardState {
   readonly fetchingContractsByUserState = ActionState.create();
   readonly fetchingDataRequestsCreatedByUserState = ActionState.create();
 
+  private graphManagerPromise: Promise<V1_PureGraphManager> | undefined;
+  private readonly dataProductDetailsPromises = new Map<
+    string,
+    Promise<V1_EntitlementsDataProductDetails | undefined>
+  >();
+
   constructor(state: LakehouseEntitlementsStore) {
     this.lakehouseEntitlementsStore = state;
 
@@ -394,7 +397,8 @@ export class EntitlementsDashboardState {
     try {
       const rawTasks =
         (yield this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.fetch(
-          TEST_USER,
+          this.lakehouseEntitlementsStore.applicationStore.identityService
+            .currentUser,
           token,
         )) as PlainObject<V1_PendingTasksResponse>;
       const tasks = deserialize(V1_pendingTasksResponseModelSchema, rawTasks);
@@ -700,45 +704,59 @@ export class EntitlementsDashboardState {
     return didToEnvType;
   }
 
+  private getOrCreateGraphManager(): Promise<V1_PureGraphManager> {
+    if (!this.graphManagerPromise) {
+      this.graphManagerPromise =
+        this.lakehouseEntitlementsStore.marketplaceBaseStore
+          .createInitializedGraphManager()
+          .catch((error: unknown) => {
+            this.graphManagerPromise = undefined;
+            throw error;
+          });
+    }
+    return this.graphManagerPromise;
+  }
+
+  private getOrFetchDataProductDetails(
+    resourceId: string,
+    deploymentId: number,
+    token: string | undefined,
+  ): Promise<V1_EntitlementsDataProductDetails | undefined> {
+    const key = `${resourceId}:${deploymentId}`;
+    let dataProductDetails = this.dataProductDetailsPromises.get(key);
+    if (!dataProductDetails) {
+      dataProductDetails =
+        this.lakehouseEntitlementsStore.lakehouseContractServerClient
+          .getDataProductByIdAndDID(resourceId, deploymentId, token)
+          .then(
+            (raw) =>
+              V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+                raw,
+              )[0],
+          )
+          .catch((error: unknown) => {
+            this.dataProductDetailsPromises.delete(key);
+            assertErrorThrown(error);
+            return undefined;
+          });
+      this.dataProductDetailsPromises.set(key, dataProductDetails);
+    }
+    return dataProductDetails;
+  }
+
   async getUnverifiedIngestDefinitions(
-    contractId: string,
+    liteContract: V1_LiteAccessRequest,
     token: string | undefined,
   ): Promise<string[]> {
     const entitlementsStore = this.lakehouseEntitlementsStore;
     const baseStore = entitlementsStore.marketplaceBaseStore;
-    const applicationStore = entitlementsStore.applicationStore;
     const plugins =
-      applicationStore.pluginManager.getPureProtocolProcessorPlugins();
-    const contractClient = entitlementsStore.lakehouseContractServerClient;
+      entitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins();
 
     const PROD_ENV = 'prod';
     const SDLC_DEPLOYMENT = 'alloy-git';
 
     try {
-      const liteContract = await (async () => {
-        try {
-          const rawContractResponse = await contractClient.getDataContract(
-            contractId,
-            false,
-            token,
-          );
-          const dataContract = V1_deserializeDataContractResponse(
-            rawContractResponse,
-            plugins,
-          )[0]?.dataContract;
-          if (!dataContract) {
-            return undefined;
-          }
-          return V1_transformDataContractToLiteDatacontract(dataContract);
-        } catch (error) {
-          assertErrorThrown(error);
-          return undefined;
-        }
-      })();
-      if (!liteContract) {
-        return [];
-      }
-
       const accessPointGroupId =
         liteContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
           ? (liteContract.accessPointGroup ?? undefined)
@@ -747,21 +765,11 @@ export class EntitlementsDashboardState {
         return [];
       }
 
-      const dpDetails = await (async () => {
-        try {
-          const raw = await contractClient.getDataProductByIdAndDID(
-            liteContract.resourceId,
-            liteContract.deploymentId,
-            token,
-          );
-          return V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-            raw,
-          )[0];
-        } catch (error) {
-          assertErrorThrown(error);
-          return undefined;
-        }
-      })();
+      const dpDetails = await this.getOrFetchDataProductDetails(
+        liteContract.resourceId,
+        liteContract.deploymentId,
+        token,
+      );
       if (!dpDetails) {
         return [];
       }
@@ -770,26 +778,12 @@ export class EntitlementsDashboardState {
         return [];
       }
 
-      const graphManager = new V1_PureGraphManager(
-        applicationStore.pluginManager,
-        applicationStore.logService,
-        baseStore.remoteEngine,
-      );
-      await graphManager.initialize(
-        {
-          env: applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl: applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: baseStore.remoteEngine },
-      );
+      const graphManager = await this.getOrCreateGraphManager();
 
       const v1DataProduct = await getDataProductFromDetails(
         dpDetails,
         graphManager,
-        baseStore,
+        baseStore.depotServerClient,
       );
       if (!v1DataProduct) {
         return [];
@@ -904,14 +898,14 @@ export class EntitlementsDashboardState {
   }
 
   async getContractErrors(
-    contractId: string,
+    contract: V1_LiteAccessRequest,
     token: string | undefined,
     checkSyncStatus = false,
   ): Promise<ContractErrorLayer | undefined> {
     const [unverifiedIngestDefinitions, syncErrorsLayer] = await Promise.all([
-      this.getUnverifiedIngestDefinitions(contractId, token),
+      this.getUnverifiedIngestDefinitions(contract, token),
       checkSyncStatus
-        ? this.getContractSyncErrors(contractId, token)
+        ? this.getContractSyncErrors(contract.guid, token)
         : Promise.resolve(undefined),
     ]);
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   Connection,
   CubeDocument,
@@ -52,6 +52,8 @@ import {
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
+import { TEST__parsedExpression } from '../../../__test-utils__/CubeExpressionParseTestUtils.js';
+import { TEST__functionCatalogue } from '../../../__test-utils__/CubeFunctionCatalogueTestUtils.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -76,10 +78,14 @@ const render = async (): Promise<{
   fake: FakeCubeEngine;
 }> => {
   const { host, fake } = TEST__createCubeHost();
-  fake.parseExpression.mockImplementation(async (code) => ({
-    lambda: lambdaOf(code),
-    located: lambdaOf(code),
-  }));
+  // the engine's own parse, where it was captured
+  fake.parseExpression.mockImplementation(
+    async (code) =>
+      TEST__parsedExpression(code) ?? {
+        lambda: lambdaOf(code),
+        located: lambdaOf(code),
+      },
+  );
   fake.typeLambdas.mockImplementation(
     async (_model, lambdas) =>
       new Map(
@@ -212,6 +218,54 @@ describe('Extend editor', () => {
       [{ range: cursor, text: '$x.ORDER_ID', forceMoveMarkers: true }],
     );
     expect(draftOf(state).rows[0]?.code).toBe('x | ');
+  });
+
+  test("Warns under a row where Pure's precedence reads its expression other than likely meant, with its fix, and flags a column that can be empty", async () => {
+    const { state } = await render();
+    const [row] = draftOf(state).rows;
+    act(() =>
+      draftOf(state).setCode(row?.key as number, 'x | $x.FREIGHT + 1 == 3'),
+    );
+    const warning = await within(panel()).findByLabelText('Precedence warning');
+    expect(
+      within(warning).getByText('Pure reads this as $x.FREIGHT + (1 == 3)'),
+    ).toBeTruthy();
+    // FREIGHT can be empty, in arithmetic: the outline shows at once
+    const outline = within(panel()).getByRole('list', {
+      name: 'Outline of expression 1',
+    });
+    expect(within(outline).getByText('can be empty')).toBeTruthy();
+    MockedMonacoEditorInstance.executeEdits.mockClear();
+    fireEvent.click(
+      within(warning).getByRole('button', {
+        name: 'Use ($x.FREIGHT + 1) == 3',
+      }),
+    );
+    expect(MockedMonacoEditorInstance.executeEdits).toHaveBeenCalledWith(
+      'edit',
+      [
+        {
+          range: {
+            startLineNumber: 1,
+            startColumn: 5,
+            endLineNumber: 1,
+            endColumn: 5,
+          },
+          text: '(',
+          forceMoveMarkers: true,
+        },
+        {
+          range: {
+            startLineNumber: 1,
+            startColumn: 19,
+            endLineNumber: 1,
+            endColumn: 19,
+          },
+          text: ')',
+          forceMoveMarkers: true,
+        },
+      ],
+    );
   });
 
   test("Offers the columns an expression can read as it is typed, the input's and the new ones above it, while its editor has the focus, then the engine's completions", async () => {
@@ -377,5 +431,52 @@ describe('Extend editor', () => {
         ],
       ),
     );
+  });
+});
+
+describe('The functions panel in Extend (EXPRESSION-EDITOR.md, round 2b)', () => {
+  test('Writes a call into the expression last used: at its cursor, at the end of one never clicked into', async () => {
+    const { state, fake } = await render();
+    fake.getFunctionCatalogue.mockResolvedValue(TEST__functionCatalogue());
+    act(() => state.loadFunctionCatalogue());
+    await waitFor(() => expect(state.functionCatalogue).toBeDefined());
+    fireEvent.click(button('Add column'));
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Functions' }));
+    fireEvent.change(within(panel()).getByLabelText('Find a function'), {
+      target: { value: 'toUpper' },
+    });
+    fireEvent.click(
+      within(
+        within(panel()).getByRole('list', { name: 'Functions found' }),
+      ).getByRole('button', { name: /^toUpper/u }),
+    );
+    const insertButton = (): HTMLElement =>
+      within(within(panel()).getByLabelText('About toUpper')).getByRole(
+        'button',
+        { name: 'Insert' },
+      );
+    // the first expression clicked into, then the second's name: into the
+    // second, never clicked into, at its end, written whole
+    fireEvent.focus(within(panel()).getByLabelText('Expression 1'));
+    fireEvent.focus(within(panel()).getByLabelText('Column name 2'));
+    fireEvent.click(insertButton());
+    expect(draftOf(state).rows[1]?.code).toBe('x | toUpper(source)');
+    // back to the first: at its cursor, after a value, as a snippet
+    fireEvent.focus(within(panel()).getByLabelText('Expression 1'));
+    const insert = jest.fn();
+    MockedMonacoEditorInstance.getContribution.mockReturnValueOnce({ insert });
+    MockedMonacoEditorInstance.getSelection.mockReturnValueOnce({
+      startLineNumber: 1,
+      startColumn: 12,
+      endLineNumber: 1,
+      endColumn: 12,
+    });
+    MockedMonacoEditorModel.getValueInRange
+      .mockReturnValueOnce('Y')
+      .mockReturnValueOnce('');
+    fireEvent.click(insertButton());
+    expect(insert).toHaveBeenCalledWith('->toUpper()');
+    // the editor's text, which the mocked editor keeps to itself
+    expect(draftOf(state).rows[0]?.code).toBe('x | ');
   });
 });

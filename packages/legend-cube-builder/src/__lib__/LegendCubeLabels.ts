@@ -47,9 +47,17 @@ export enum LEGEND_CUBE_USER_DATA_KEY {
 }
 
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
-/** Why a source is disabled on a cube: it reads database tables or data products, never both (PLAN §6.8) */
-export const OTHER_SOURCE_KIND_TITLE =
-  "This cube's sources are of another kind: a cube reads database tables or data products, never both";
+/**
+ * Why a source is disabled on a cube: the cube reads another kind of source
+ * (PLAN §6.8), both named when known (§11.30)
+ */
+export const getOtherSourceKindTitle = (
+  cubeKind: string | undefined,
+  sourceKind: string | undefined,
+): string =>
+  cubeKind && sourceKind && cubeKind !== sourceKind
+    ? `This cube reads ${cubeKind}: it can't also read ${sourceKind}`
+    : "This cube's sources are of another kind, which this source can't join";
 
 /** Why no source can be added to a cube: the host doesn't serve the cube's kind of source (PLAN §6.8) */
 export const UNSERVED_SOURCE_KIND_TITLE =
@@ -148,6 +156,10 @@ const TYPE_FAMILY_LABELS: Partial<Record<TypeFamily, string>> = {
   [TypeFamily.STRICT_TIME]: 'Time',
   [TypeFamily.VARIANT]: 'Variant',
 };
+
+/** The kind of value a type family holds, as the editors name it; none for an enumeration or a type Cube doesn't know */
+export const getTypeFamilyLabel = (family: TypeFamily): string | undefined =>
+  TYPE_FAMILY_LABELS[family];
 
 /**
  * A column's type as the editors show it: the kind of value, and whether it
@@ -524,6 +536,42 @@ export const EXPRESSION_FILTER_EDITOR_NOTES = [
   'A JSON (Variant) column’s {} opens its fields, read from its first values just before this step: a field clicked is written into the condition.',
 ] as const;
 
+/** What an expression's outline says (EXPRESSION-EDITOR.md, round 2) */
+export const CUBE_OUTLINE_LABEL = Object.freeze({
+  TITLE: 'Outline',
+  DESCRIPTION: 'How Pure reads the code, part by part',
+  SHOW: 'Show how Pure reads the code',
+  HIDE: 'Hide the outline',
+  CAN_BE_EMPTY: 'can be empty',
+  CAN_BE_EMPTY_TITLE:
+    'It can be empty, where one value is needed: take its one value, or give a value for when it is empty',
+  TO_ONE: '->toOne()',
+  TO_ONE_TITLE: 'Assume it has a value: ->toOne() fails the row if it is empty',
+  COALESCE: (fallback: string): string => `->coalesce(${fallback})`,
+  COALESCE_TITLE: (fallback: string): string =>
+    `Use ${fallback} when it is empty: ->coalesce(${fallback})`,
+});
+
+/** Why Pure reads a precedence trap as it does, by its kind (`CubePrecedenceTrapKind`) */
+export const CUBE_PRECEDENCE_TRAP_EXPLANATIONS: Readonly<
+  Record<string, string>
+> = Object.freeze({
+  ARITHMETIC_THEN_COMPARISON:
+    'Pure compares first, then does the arithmetic with the comparison’s true or false, which fails. Put the arithmetic in parentheses to do it first.',
+  LOGIC_THEN_COMPARISON:
+    'In Pure, && and || bind as tightly as a comparison, so the comparison takes all that is before it. Put each comparison in parentheses.',
+  NOT_THEN_COMPARISON:
+    'In Pure, ! negates the value right after it, before the comparison. Put the comparison in parentheses to negate it.',
+});
+
+/** How Pure reads code with a precedence trap */
+export const getCubePrecedenceTrapTitle = (readAs: string): string =>
+  `Pure reads this as ${readAs}`;
+
+/** The button that puts in the parentheses: what the code becomes, for one trap */
+export const getCubePrecedenceFixLabel = (meants: readonly string[]): string =>
+  meants.length === 1 ? `Use ${meants[0]}` : 'Add the parentheses';
+
 /** The hint after an engine error on a column that can be empty, in arithmetic (PLAN §11.7) */
 export const EXTEND_TO_ONE_HINT =
   'An optional column needs ->toOne() first, such as $x.QTY->toOne() + 1.';
@@ -587,3 +635,23 @@ export const getJoinSuggestionReasonLabel = (
   suggestion: CubeJoinKeySuggestion,
 ): string =>
   JOIN_SUGGESTION_REASON_LABELS[suggestion.reason](suggestion.detail);
+
+/** What the functions panel says (EXPRESSION-EDITOR.md, round 2b) */
+export const CUBE_FUNCTIONS_PANEL_LABEL = Object.freeze({
+  TITLE: 'Functions',
+  SHOW: (target: string): string =>
+    `Show the functions you can write into ${target}`,
+  HIDE: 'Hide the functions',
+  SEARCH: 'Find a function',
+  CATEGORIES: 'Function categories',
+  ALL: 'All',
+  LIST: 'Functions found',
+  NONE: 'No function of that name',
+  DETAIL: (name: string): string => `About ${name}`,
+  ON_DATABASE: (database: string): string => `on ${database}`,
+  UNTESTED_DATABASE: (database: string): string =>
+    `This engine's catalogue has no tests on ${database}, so the functions' help says nothing of how they do there.`,
+  INSERT: 'Insert',
+  INSERT_TITLE: (target: string): string =>
+    `Write a call of it at the cursor of ${target}: after a value, as ->name(…)`,
+});

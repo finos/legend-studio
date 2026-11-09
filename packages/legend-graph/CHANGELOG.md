@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.9.3
+
+### Patch Changes
+
+- [#5848](https://github.com/finos/legend-studio/pull/5848) [`acacb2c`](https://github.com/finos/legend-studio/commit/acacb2c8a2cb09f83249e1f43dc32e16efa0520b) ([@TharunRajeev](https://github.com/TharunRajeev)) - Skip empty entries in the engine's service details list instead of failing to load all services.
+
 ## 32.9.2
 
 ### Patch Changes

@@ -24,10 +24,12 @@ import {
 import type { Schema } from '@finos/legend-cube';
 import { CompilationError, SourceInformation } from '@finos/legend-graph';
 import {
+  type CodeEditorTextEditor,
   type CodeEditorTextInserter,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { guaranteeType } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -56,7 +58,23 @@ import {
   getCubeFunctionHoverSource,
   getCubeFunctionSignatureHelpSource,
 } from './CubeExpressionCompletions.js';
-import type { CubeFunctionCatalogue } from '../../graph-manager/CubeFunctionCatalogue.js';
+import type {
+  CubeFunctionCatalogue,
+  CubeFunctionSignature,
+} from '../../graph-manager/CubeFunctionCatalogue.js';
+import {
+  type CubeCodeEdit,
+  type CubeCodeRange,
+  applyCubeCodeEdits,
+} from '../../graph-manager/CubeExpressionOutline.js';
+import {
+  CubeExpressionOutlineView,
+  CubePrecedenceWarning,
+  toCodeEditorEdits,
+  toCodeEditorRange,
+} from './CubeExpressionOutline.js';
+import { getCubeFunctionCallText } from './CubeFunctionHelp.js';
+import { CubeFunctionsPanel } from './CubeFunctionsPanel.js';
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
 
@@ -156,9 +174,20 @@ const CubeExtendRowEditor = observer(
       onCodeFocus,
     } = props;
     const [expanded, setExpanded] = useState(false);
+    const textEditor = useRef<CodeEditorTextEditor | undefined>(undefined);
+    // the part of the outline pointed at
+    const [pointed, setPointed] = useState<CubeCodeRange | undefined>();
     // typing goes on while the rows are checked
     const disabled = readOnly;
     const status = draft.getRowCheckStatus(row);
+    const outline = draft.getRowOutline(row);
+    /** Writes a fix into the expression, as one step Undo takes back */
+    const edit = (edits: readonly CubeCodeEdit[]): void => {
+      setPointed(undefined);
+      if (!textEditor.current?.(toCodeEditorEdits(edits))) {
+        draft.setCode(row.key, applyCubeCodeEdits(row.code, edits));
+      }
+    };
     return (
       <li className="flex flex-col gap-1 border-b border-[var(--color-border-subtle)] py-1">
         <div className="flex items-center gap-1">
@@ -230,10 +259,16 @@ const CubeExtendRowEditor = observer(
               columns,
               (text) => draft.getEngineCompletions(row.key, text),
               catalogue,
+              draft.databaseType,
             )}
-            hover={getCubeFunctionHoverSource(catalogue)}
-            signatureHelp={getCubeFunctionSignatureHelpSource(catalogue)}
+            hover={getCubeFunctionHoverSource(catalogue, draft.databaseType)}
+            signatureHelp={getCubeFunctionSignatureHelpSource(
+              catalogue,
+              draft.databaseType,
+            )}
             textInserterRef={textInserterRef}
+            textEditorRef={textEditor}
+            highlightedRange={pointed ? toCodeEditorRange(pointed) : undefined}
             extraEditorOptions={{
               lineNumbers: 'off',
               wordWrap: 'on',
@@ -244,6 +279,22 @@ const CubeExtendRowEditor = observer(
           />
         </div>
         <CubeExtendRowStatus draft={draft} row={row} />
+        <CubePrecedenceWarning
+          traps={draft.getRowPrecedenceTraps(row)}
+          disabled={disabled}
+          onEdit={edit}
+        />
+        {outline && (
+          <CubeExpressionOutlineView
+            outline={outline}
+            columns={columns}
+            catalogue={catalogue}
+            name={`expression ${position}`}
+            disabled={disabled}
+            onEdit={edit}
+            onPoint={setPointed}
+          />
+        )}
       </li>
     );
   },
@@ -253,8 +304,9 @@ const CubeExtendRowEditor = observer(
  * The Extend editor (spec §17.6, PLAN §11.7): a row per new column, its name
  * and its expression in a code editor, checked once typing pauses (F10 at
  * once), each border green when ready (user, 2026-10-16), with the engine's
- * functions' completions and help (EXPRESSION-EDITOR.md, round 1), and the
- * input's columns, which a click writes into the row last used: at its
+ * functions' completions and help (EXPRESSION-EDITOR.md, round 1), each
+ * row's outline with a warning where Pure's precedence reads it other than
+ * likely meant, and fixes (round 2), and the input's columns, which a click writes into the row last used: at its
  * cursor, or at its end before its code is clicked into.
  */
 export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
@@ -271,6 +323,10 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
   );
   const catalogue = editorState.functionCatalogue;
   useEffect(() => editorState.loadFunctionCatalogue(), [editorState]);
+  // the model's outline tells the database: how the engine's tests went there
+  useEffect(() => {
+    flowResult(editorState.loadModelOutline()).catch(() => undefined);
+  }, [editorState]);
   const inserterOf = (
     key: number,
   ): { current: CodeEditorTextInserter | undefined } => {
@@ -295,6 +351,27 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
     }
     const separator = /\s$/u.test(target.code) ? '' : ' ';
     draft.setCode(target.key, `${target.code}${separator}${text}`);
+  };
+  /** Writes a call of a function at the cursor of the expression last used, or at its end before it is clicked into */
+  const insertCall = (signatures: readonly CubeFunctionSignature[]): void => {
+    if (!target) {
+      return;
+    }
+    const inserter = inserters.current.get(target.key)?.current;
+    if (
+      cursorKeys.has(target.key) &&
+      inserter?.((before) => getCubeFunctionCallText(signatures, before), {
+        isSnippet: true,
+        isVerbatim: true,
+        opensSignatureHelp: true,
+      })
+    ) {
+      return;
+    }
+    draft.setCode(
+      target.key,
+      `${target.code}${getCubeFunctionCallText(signatures, target.code.slice(-1), true)}`,
+    );
   };
   return (
     <div className="flex flex-col gap-2 text-base">
@@ -365,6 +442,15 @@ export const CubeExtendEditor = observer((props: CubeNodeEditorProps) => {
         onInsert={write}
         onAddColumn={(name, code) => draft.addColumn(name, code)}
       />
+      {catalogue && (
+        <CubeFunctionsPanel
+          catalogue={catalogue}
+          databaseType={draft.databaseType}
+          target="the expression last used"
+          disabled={chipsDisabled}
+          onInsert={insertCall}
+        />
+      )}
       <ul className="flex list-disc flex-col gap-1 pl-4 text-sm text-[var(--color-text-secondary)]">
         {[...EXTEND_EDITOR_NOTES, COLUMN_NAME_RULES_HINT].map((note) => (
           <li key={note}>{note}</li>

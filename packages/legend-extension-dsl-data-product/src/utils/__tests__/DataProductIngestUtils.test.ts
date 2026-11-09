@@ -45,13 +45,20 @@ import {
   V1_PureModelContextPointer,
   V1_RelationStoreAccessor,
   V1_RelationType,
+  V1_SdlcDeploymentDataProductOrigin,
+  type V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import {
+  DepotServerClient,
   MASTER_SNAPSHOT_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  NetworkClientError,
+} from '@finos/legend-shared';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import {
@@ -60,6 +67,7 @@ import {
   buildCandidateIngestUrns,
   collectDatasetsFromArtifact,
   fetchAccessPointRelationTypes,
+  getDataProductFromDetails,
   isLegacyArtifact,
   selectAccessPointsMissingRelationType,
   walkAccessPointGraphForIngestPaths,
@@ -894,5 +902,89 @@ describe('filterUserIngestEnvs', () => {
     );
 
     expect(result).toEqual([]);
+  });
+});
+
+describe('getDataProductFromDetails', () => {
+  const buildSdlcDetails = (
+    fullPath: string | undefined,
+  ): V1_EntitlementsDataProductDetails => {
+    const origin = new V1_SdlcDeploymentDataProductOrigin();
+    origin.group = 'com.example';
+    origin.artifact = 'dp-project';
+    origin.version = '1.0.0';
+    const details = new V1_EntitlementsDataProductDetails();
+    details.id = 'MYDATAPRODUCT';
+    details.deploymentId = TEST_DEPLOYMENT_ID;
+    details.origin = origin;
+    details.fullPath = fullPath as string;
+    return details;
+  };
+  const dataProductContent = (name: string) => ({
+    _type: 'dataProduct',
+    name,
+    package: 'com::example',
+    accessPointGroups: [],
+  });
+  const graphManager = TEST__getTestGraphManagerState()
+    .graphManager as V1_PureGraphManager;
+
+  test('matches on name across the version when the full path is missing', async () => {
+    const depotServerClient = new DepotServerClient({ serverUrl: '' });
+    const getVersionEntity = jest.spyOn(depotServerClient, 'getVersionEntity');
+    jest
+      .spyOn(depotServerClient, 'getVersionEntities')
+      .mockResolvedValue([
+        { entity: { content: dataProductContent('Other') } },
+        { entity: { content: dataProductContent(TEST_DP_NAME) } },
+      ]);
+
+    const dataProduct = await getDataProductFromDetails(
+      buildSdlcDetails(undefined),
+      graphManager,
+      depotServerClient,
+    );
+
+    expect(dataProduct?.name).toBe(TEST_DP_NAME);
+    expect(getVersionEntity).not.toHaveBeenCalled();
+  });
+
+  test('reports a data product missing from an existing version on 404', async () => {
+    const depotServerClient = new DepotServerClient({ serverUrl: '' });
+    jest
+      .spyOn(depotServerClient, 'getVersionEntity')
+      .mockRejectedValue(
+        new NetworkClientError({ status: 404 } as Response, undefined),
+      );
+
+    await expect(
+      getDataProductFromDetails(
+        buildSdlcDetails('com::example::MyDataProduct'),
+        graphManager,
+        depotServerClient,
+      ),
+    ).rejects.toThrow(
+      "Data product 'com::example::MyDataProduct' is not present on version '1.0.0' of project 'com.example:dp-project'",
+    );
+  });
+
+  test("reports depot's reason when the version can't be loaded on 500", async () => {
+    const depotServerClient = new DepotServerClient({ serverUrl: '' });
+    jest.spyOn(depotServerClient, 'getVersionEntity').mockRejectedValue(
+      new NetworkClientError({ status: 500 } as Response, {
+        code: 500,
+        message: 'project version not found for com.example-dp-project-1.0.0',
+      }),
+    );
+
+    await expect(
+      getDataProductFromDetails(
+        buildSdlcDetails('com::example::MyDataProduct'),
+        graphManager,
+        depotServerClient,
+      ),
+    ).rejects.toThrow(
+      "Can't load version '1.0.0' of project 'com.example:dp-project' from depot: project version not found for com.example-dp-project-1.0.0",
+    );
   });
 });

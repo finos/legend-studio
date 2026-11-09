@@ -50,6 +50,11 @@ import {
   type CubeSourceLocation,
   type NodeId,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  type CubeExpressionOutline,
+  type CubePrecedenceTrap,
+  findCubePrecedenceTraps,
+} from '../../graph-manager/CubeExpressionOutline.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeJsonFieldsState } from '../variant/CubeJsonFieldsState.js';
 import {
@@ -157,8 +162,11 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
       touched: observable,
       isValidated: computed,
       isChecked: computed,
+      databaseType: computed,
       checkStatus: computed,
       applyDisabledReason: computed,
+      outline: computed,
+      precedenceTraps: computed,
       setCode: action,
       validate: flow,
       follow: action,
@@ -203,6 +211,24 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
     this.autoCheck.now();
   }
 
+  /**
+   * The database the query up to this node runs on, as the engine names it,
+   * once the model's outline tells it: how the engine's tests of a
+   * function went there (EXPRESSION-EDITOR.md, round 2b)
+   */
+  get databaseType(): string | undefined {
+    const { document } = this.editorState;
+    const runtime = document.context?.runtime;
+    return document.context && runtime !== undefined
+      ? this.editorState.getRunDatabaseType(
+          document.query,
+          this.original.id,
+          document.context.model,
+          runtime,
+        )
+      : undefined;
+  }
+
   /** The engine's completions of the condition typed so far, written as the input's filter */
   getEngineCompletions(
     textBeforeCursor: string,
@@ -225,6 +251,26 @@ export class CubeExpressionFilterDraft extends CubeNodeDraft<ExpressionFilter> {
     return inputId === undefined
       ? undefined
       : this.editorState.analysis.schemas.get(inputId);
+  }
+
+  /**
+   * The code in parts, as the engine last parsed it, while the code is that
+   * (EXPRESSION-EDITOR.md, round 2)
+   */
+  get outline(): CubeExpressionOutline | undefined {
+    const { checked } = this;
+    return checked?.code === this.code
+      ? this.editorState.host.engine.readExpressionOutline(
+          checked.located,
+          checked.code,
+        )
+      : undefined;
+  }
+
+  /** Where Pure's precedence reads the code other than it was likely meant */
+  get precedenceTraps(): readonly CubePrecedenceTrap[] {
+    const { outline } = this;
+    return outline ? findCubePrecedenceTraps(outline) : [];
   }
 
   /** The code is the one the engine last parsed */

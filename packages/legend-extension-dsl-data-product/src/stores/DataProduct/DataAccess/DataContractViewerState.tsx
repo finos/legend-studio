@@ -62,6 +62,7 @@ export class DataContractViewerState implements DataAccessRequestState {
   readonly userSearchService: UserSearchService | undefined;
   associatedTasks: V1_TaskMetadata[] | undefined;
   contractMembers: V1_ContractUserMembership[] = [];
+  private contractMembersForNextInit: V1_ContractUserMembership[] | undefined;
 
   readonly initializationState = ActionState.create();
   readonly fetchingMembersState = ActionState.create();
@@ -375,6 +376,12 @@ export class DataContractViewerState implements DataAccessRequestState {
     this.contractMembers = contractMembers ?? [];
   }
 
+  preloadContractMembersForNextInit(
+    contractMembers: V1_ContractUserMembership[],
+  ): void {
+    this.contractMembersForNextInit = contractMembers;
+  }
+
   async fetchTasks(token: string | undefined): Promise<void> {
     this.setAssociatedTasks(undefined);
     const pendingTasks =
@@ -420,9 +427,16 @@ export class DataContractViewerState implements DataAccessRequestState {
   *init(token: string | undefined): GeneratorFn<void> {
     try {
       this.initializationState.inProgress();
+      const preloadedContractMembers = this.contractMembersForNextInit;
+      this.contractMembersForNextInit = undefined;
+      if (preloadedContractMembers) {
+        this.setContractMembers(preloadedContractMembers);
+      }
       yield Promise.all([
         this.fetchTasks(token),
-        this.fetchContractWithMembers(token),
+        preloadedContractMembers
+          ? Promise.resolve()
+          : this.fetchContractWithMembers(token),
       ]);
     } catch (error) {
       assertErrorThrown(error);

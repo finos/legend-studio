@@ -26,9 +26,18 @@ import {
   V1_UserApprovalStatus,
   V1_PermitTaskAction,
   V1_Workflow,
+  V1_ResourceType,
   type V1_DataRequestWithWorkflow,
+  type V1_EntitlementsDataProductDetailsResponse,
+  type V1_PureGraphManager,
 } from '@finos/legend-graph';
+import type { PlainObject } from '@finos/legend-shared';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import {
+  TEST_FULL_PATH,
+  TEST_GAV,
+  mockDataProductDetailsResponse_sdlc,
+} from '../../../../components/__test-utils__/TEST_DATA__ContractErrors.js';
 import {
   EntitlementsDashboardState,
   ContractCreatedByUserDetails,
@@ -508,6 +517,66 @@ describe('EntitlementsDashboardState', () => {
       );
       expect(setBlockingAlertSpy).toHaveBeenLastCalledWith(undefined);
       expect(dashboardState.pendingTasks).not.toBe(tasks);
+    });
+  });
+
+  describe('getUnverifiedIngestDefinitions', () => {
+    test('uses the given contract, fetches only its data product entity and reuses one graph manager', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const baseStore =
+        dashboardState.lakehouseEntitlementsStore.marketplaceBaseStore;
+      const contract = createMockLiteDataContract(
+        'contract-1',
+        PROD_DEPLOYMENT_ID,
+        'dp-1',
+      );
+      contract.resourceType = V1_ResourceType.ACCESS_POINT_GROUP;
+      contract.accessPointGroup = 'GROUP';
+      const getDataContractSpy = createSpy(
+        baseStore.lakehouseContractServerClient,
+        'getDataContract',
+      );
+      const getDataProductByIdAndDIDSpy = createSpy(
+        baseStore.lakehouseContractServerClient,
+        'getDataProductByIdAndDID',
+      ).mockResolvedValue(
+        mockDataProductDetailsResponse_sdlc({
+          deploymentId: PROD_DEPLOYMENT_ID,
+          resourceId: 'dp-1',
+          envType: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+        }) as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>,
+      );
+      const getVersionEntitySpy = createSpy(
+        baseStore.depotServerClient,
+        'getVersionEntity',
+      ).mockResolvedValue({
+        path: TEST_FULL_PATH,
+        content: {
+          _type: 'dataProduct',
+          name: 'dp-1',
+          package: 'test',
+          accessPointGroups: [{ id: 'GROUP', accessPoints: [] }],
+        },
+      });
+      const createInitializedGraphManagerSpy = createSpy(
+        baseStore,
+        'createInitializedGraphManager',
+      ).mockResolvedValue({
+        pluginManager: baseStore.applicationStore.pluginManager,
+      } as unknown as V1_PureGraphManager);
+
+      await dashboardState.getUnverifiedIngestDefinitions(contract, 'token-1');
+      await dashboardState.getUnverifiedIngestDefinitions(contract, 'token-1');
+
+      expect(getDataContractSpy).not.toHaveBeenCalled();
+      expect(getDataProductByIdAndDIDSpy).toHaveBeenCalledTimes(1);
+      expect(createInitializedGraphManagerSpy).toHaveBeenCalledTimes(1);
+      expect(getVersionEntitySpy).toHaveBeenCalledWith(
+        TEST_GAV.groupId,
+        TEST_GAV.artifactId,
+        TEST_GAV.versionId,
+        TEST_FULL_PATH,
+      );
     });
   });
 });

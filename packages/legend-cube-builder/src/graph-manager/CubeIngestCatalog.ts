@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-import type { Schema } from '@finos/legend-cube';
+import type { ModelContext, Schema } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
-import type { CubeDataProductEnvironmentType } from './CubeDataProduct.js';
-import type { CubeIngestSettings } from './CubeIngest.js';
+import {
+  type CubeDataProductEnvironmentType,
+  type CubeDataProductProject,
+  getCubeDataProductProject,
+} from './CubeDataProduct.js';
+import {
+  type CubeIngestSettings,
+  getCubeIngestSettings,
+} from './CubeIngest.js';
 import type { CubeEngineError, NodeId } from './CubeEngine.js';
 
 // The deployed ingest definitions of a host's lakehouse (PLAN §6.7), as Data
@@ -68,6 +75,23 @@ export const getCubeIngestEnvironmentKey = (
   name: settings.environment,
 });
 
+/**
+ * The ingest environment a cube's model reads its data sets in: an ingest
+ * cube's own; for a data product cube, which reads ingest data sets too on a
+ * host that runs them together (PLAN §11.30), the viewer's own of its class.
+ * None for any other model, or one Cube can't use
+ */
+export const getCubeIngestEnvironmentKeyOfModel = (
+  model: ModelContext,
+): CubeIngestEnvironmentKey | undefined => {
+  const settings = getCubeIngestSettings(model);
+  if (settings) {
+    return getCubeIngestEnvironmentKey(settings);
+  }
+  const project = getCubeDataProductProject(model);
+  return project ? { environmentType: project.environmentType } : undefined;
+};
+
 /** An ingest environment of the platform, as the Ingest tab lists it; a cube saves its name and class */
 export class CubeIngestEnvironment implements CubeIngestEnvironmentKey {
   readonly environmentType: CubeDataProductEnvironmentType;
@@ -113,17 +137,24 @@ export class CubeIngestDefinitionCandidate {
   readonly definition: string;
   readonly groupId: string;
   readonly artifactId: string;
+  /**
+   * Why it can't be opened, e.g. the data product version a cube reads
+   * doesn't have it (PLAN §11.30); none when it can
+   */
+  readonly disabledReason: string | undefined;
 
   constructor(fields: {
     urn: string;
     definition: string;
     groupId: string;
     artifactId: string;
+    disabledReason?: string | undefined;
   }) {
     this.urn = fields.urn;
     this.definition = fields.definition;
     this.groupId = fields.groupId;
     this.artifactId = fields.artifactId;
+    this.disabledReason = fields.disabledReason;
   }
 
   /** The definition's element name: the last segment of its path */
@@ -131,13 +162,36 @@ export class CubeIngestDefinitionCandidate {
     const index = this.definition.lastIndexOf('::');
     return index < 0 ? this.definition : this.definition.slice(index + 2);
   }
+
+  get isPickable(): boolean {
+    return this.disabledReason === undefined;
+  }
 }
 
 /** A producer deployment's definitions: those Cube reads, and how many it left out */
 export interface CubeIngestDefinitionList {
   readonly candidates: readonly CubeIngestDefinitionCandidate[];
-  /** Definitions not deployed from SDLC, or deployed to another class */
+  /**
+   * Definitions not deployed from SDLC, or deployed to another class; for a
+   * data product's project, those of other projects too
+   */
   readonly droppedCount: number;
+}
+
+/**
+ * What a data product cube's ingest data sets are read as (PLAN §11.30):
+ * the cube's project at its version, which its runs compile against
+ */
+export interface CubeIngestReadOptions {
+  /** Reads the definitions again rather than what this page visit read */
+  readonly fresh?: boolean | undefined;
+  /**
+   * A data product cube's project: its data sets' columns are those of the
+   * project's definitions at its version, and one the version lacks can't
+   * be picked, saying so. A host whose project is the definitions it lists,
+   * e.g. Studio's workspace, reads them as it always does
+   */
+  readonly project?: CubeDataProductProject | undefined;
 }
 
 /** Where a saved ingest source's data set is */
@@ -187,23 +241,38 @@ export interface CubeIngestCatalog {
   ): Promise<CubeIngestDefinitionList>;
 
   /**
-   * A definition's data sets, typed from what it declares. `fresh` reads the
-   * definition again rather than what this page visit read
+   * The definitions a data product cube of the project can read alongside
+   * its access points (PLAN §11.30): the project's own, deployed from SDLC
+   * in the viewer's own environment of the project's class, as the project
+   * has them at its version; one the version lacks is listed, but can't be
+   * opened. The deployment is the cube's data products', which deploys
+   * their project's definitions; none when the cube has no access point
+   * left. A host without it keeps data products and ingest data sets apart
+   */
+  listProjectDefinitions?(
+    project: CubeDataProductProject,
+    deploymentId: string | undefined,
+  ): Promise<CubeIngestDefinitionList>;
+
+  /**
+   * A definition's data sets, typed from what it declares; a data product
+   * cube's as its project has them at its version
    */
   describe(
     urn: string,
     environment: CubeIngestEnvironmentKey,
-    options?: { readonly fresh?: boolean | undefined },
+    options?: CubeIngestReadOptions,
   ): Promise<readonly CubeIngestDataSet[]>;
 
   /**
-   * The schema of each saved source, from its definition as deployed: one
-   * entry per key, failures included. `fresh` reads the definitions again
+   * The schema of each saved source, from its definition as deployed, or a
+   * data product cube's as its project has it at its version: one entry per
+   * key, failures included
    */
   resolveSchemas(
     environment: CubeIngestEnvironmentKey,
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
-    options?: { readonly fresh?: boolean | undefined },
+    options?: CubeIngestReadOptions,
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
 }
 

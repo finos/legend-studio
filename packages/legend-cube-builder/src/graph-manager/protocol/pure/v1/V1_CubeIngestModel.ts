@@ -52,6 +52,8 @@ export const V1_CUBE_INGEST_MESSAGE = {
     `Ingest definition ${definition} is deployed to another environment than the cube's`,
   OTHER_PATH: (definition: string): string =>
     `The URN of ingest definition ${definition} names another definition`,
+  OTHER_PROJECT: (definition: string): string =>
+    `Ingest definition ${definition} is in another project than the cube's data products`,
 } as const;
 
 /** The ingest data sets a lambda reads, in tree order */
@@ -92,11 +94,17 @@ export const V1_hasCubeIngestAccessor = (ir: IR): boolean =>
 /**
  * Why a lambda's ingest data sets can't be read on the cube, if they can't:
  * each must say which SDLC-deployed definition it reads, deployed to the
- * cube's class, under the path the query reads
+ * cube's class, under the path the query reads. The cube is an ingest cube,
+ * or a data product cube, whose data sets are its project's too (PLAN
+ * §11.30)
  */
 export const V1_checkCubeIngestAccessors = (
   accessors: readonly V1_CubeIngestAccessor[],
-  settings: CubeIngestSettings,
+  settings: Pick<CubeIngestSettings, 'environmentType'> & {
+    /** A data product cube's project, whose definitions alone it reads */
+    readonly groupId?: string | undefined;
+    readonly artifactId?: string | undefined;
+  },
 ): string | undefined => {
   for (const accessor of accessors) {
     if (accessor.urn === undefined) {
@@ -111,6 +119,13 @@ export const V1_checkCubeIngestAccessors = (
     }
     if (urn.definition !== accessor.definition) {
       return V1_CUBE_INGEST_MESSAGE.OTHER_PATH(accessor.definition);
+    }
+    if (
+      (settings.groupId !== undefined && urn.groupId !== settings.groupId) ||
+      (settings.artifactId !== undefined &&
+        urn.artifactId !== settings.artifactId)
+    ) {
+      return V1_CUBE_INGEST_MESSAGE.OTHER_PROJECT(accessor.definition);
     }
   }
   return undefined;

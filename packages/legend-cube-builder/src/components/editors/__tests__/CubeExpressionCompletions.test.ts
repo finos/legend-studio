@@ -395,3 +395,57 @@ describe("The engine's function catalogue (EXPRESSION-EDITOR.md, round 1)", () =
     expect(help?.getSignatureHelp('x | $x.CITY')).toBeUndefined();
   });
 });
+
+describe("How the engine's tests went on the cube's database (EXPRESSION-EDITOR.md, round 2b)", () => {
+  const CATALOGUE = TEST__functionCatalogue();
+
+  test('Says it in the completions, the hover and the signature help, as information', () => {
+    const contains = getCubeExpressionCompletions(
+      'x | $x.CITY->con',
+      COLUMNS,
+      CATALOGUE,
+      'H2',
+    ).find((each) => each.label === 'contains');
+    expect(contains?.documentation).toBe(
+      "Whether `source` contains `val` anywhere within it.\n\n**On H2:** the engine's tests of it pass 2 of 2.",
+    );
+    expect(
+      getCubeFunctionHoverSource(CATALOGUE, 'H2')?.getHover(
+        'lpad',
+        'x | $x.CITY->',
+        '(3)',
+      ),
+    ).toContain(
+      "**On H2:** the engine's tests of it pass 4 of 5. A test that fails doesn't mean it can't run there.",
+    );
+    const help = getCubeFunctionSignatureHelpSource(
+      CATALOGUE,
+      'H2',
+    )?.getSignatureHelp('x | $x.CITY->contains(');
+    expect(help?.signatures[0]?.documentation).toContain(
+      "**On H2:** the engine's tests of it pass 2 of 2.",
+    );
+    // on a database the catalogue has no tests on, as Snowflake: nothing said
+    expect(
+      getCubeExpressionCompletions(
+        'x | $x.CITY->con',
+        COLUMNS,
+        CATALOGUE,
+        'Snowflake',
+      ).find((each) => each.label === 'contains')?.documentation,
+    ).toBe('Whether `source` contains `val` anywhere within it.');
+    // the list itself is the same: nothing hidden or sorted by a test
+    expect(
+      getCubeExpressionCompletions(
+        'x | $x.CITY->',
+        COLUMNS,
+        CATALOGUE,
+        'H2',
+      ).map((each) => each.label),
+    ).toEqual(
+      getCubeExpressionCompletions('x | $x.CITY->', COLUMNS, CATALOGUE).map(
+        (each) => each.label,
+      ),
+    );
+  });
+});

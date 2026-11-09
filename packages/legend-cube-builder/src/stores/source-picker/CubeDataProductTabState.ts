@@ -18,6 +18,7 @@ import {
   type CubeContext,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DataProductAccessPointSource,
+  IngestDatasetSource,
 } from '@finos/legend-cube';
 import {
   assertErrorThrown,
@@ -50,9 +51,24 @@ import {
   type CubeDataProductCatalog,
   type CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
-import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../graph-manager/CubeEngine.js';
+import {
+  type CubeIngestSettings,
+  getCubeIngestSettings,
+  isCubeIngestModel,
+  parseCubeIngestUrn,
+} from '../../graph-manager/CubeIngest.js';
+import type { CubeIngestEnvironment } from '../../graph-manager/CubeIngestCatalog.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
-import type { CubeHostProjectRuntime } from '../CubeHost.js';
+import {
+  type CubeHostProjectRuntime,
+  isCubeProjectHost,
+  mixesCubeLakehouseSources,
+} from '../CubeHost.js';
+import { recheckCubeIngestSources } from '../CubeIngestRecheck.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
@@ -85,7 +101,31 @@ export const CUBE_DATA_PRODUCT_TAB_MESSAGE = {
   OTHER_ENVIRONMENT: 'Deployed to another environment',
   NONE_IN_PROJECT:
     "No data product of the cube's project matches; Search all shows the others.",
+  /** Data products joining an ingest cube (PLAN §11.30) */
+  OTHER_DEPLOYMENT: (deploymentId: string) =>
+    `Deployed by deployment ${deploymentId}`,
+  NONE_OF_INGEST_PROJECT: (project: string, deploymentId: string) =>
+    `No data product listed is of ${project}, deployed by deployment ${deploymentId}; search for one by its name.`,
+  INGEST_NOT_SDLC: (definition: string) =>
+    `Ingest definition ${definition} wasn't deployed from a project, so no data product can join the cube`,
+  INGEST_PROJECTS: (projects: readonly string[]) =>
+    `The cube's ingest data sets come from several projects, ${projects.join(' and ')}: data products can join one project's only`,
+  NO_INGEST_DATA_SET:
+    'The cube has no ingest data set left, whose project its data products would come from: add one first',
+  OTHER_INGEST_ENVIRONMENT: (environment: string, viewerEnvironment: string) =>
+    `The cube's ingest data sets are read in ${environment}, and data products run in your own environment, ${viewerEnvironment}: no data product can join them`,
 } as const;
+
+/**
+ * The project and producer deployment of an ingest cube's data sets, which
+ * the data products joining it come from (PLAN §11.30, user, 2026-11-09):
+ * the deployment deploys its project's data products too
+ */
+export interface CubeIngestJoinScope {
+  readonly groupId: string;
+  readonly artifactId: string;
+  readonly deploymentId: string;
+}
 
 /** How long typing pauses before the text is searched on a server */
 const SEARCH_DELAY_MS = 300;
@@ -99,6 +139,15 @@ const isFromProject = (
   candidate.artifactId === project.artifactId &&
   candidate.versionId === project.versionId &&
   candidate.environmentType === project.environmentType;
+
+/** Whether a product is of an ingest cube's project, deployed by its producer deployment */
+const isInScope = (
+  candidate: CubeDataProductCandidate,
+  scope: CubeIngestJoinScope,
+): boolean =>
+  candidate.groupId === scope.groupId &&
+  candidate.artifactId === scope.artifactId &&
+  candidate.deploymentId === scope.deploymentId;
 
 /** Whether two candidates are the same deployed product, at the same version and class */
 const isSameProduct = (
@@ -163,6 +212,12 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   listError: CubeDataProductTabError | undefined;
   /** Why a product couldn't be read or its access point added */
   error: CubeDataProductTabError | undefined;
+  /**
+   * Why no data product can join the ingest cube: it reads data sets in
+   * another environment than the viewer's own, where data products run
+   * (PLAN §11.30); none until read, or when it can join
+   */
+  ingestEnvironmentRefusal: string | undefined;
   /** The lakehouse runtime a project host's runs use (`CubeHost.project`), once read */
   projectRuntime: CubeHostProjectRuntime | undefined;
   /** Why the project host's runtime couldn't be read */
@@ -178,6 +233,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   private describeRequest = 0;
   private accessRequest = 0;
   private confirmRequest = 0;
+  private ingestEnvironmentRequest = 0;
   /** Searches the typed text on the server once typing pauses */
   private readonly searchSoon = debounce((): void => {
     flowResult(this.listCandidates()).catch(
@@ -219,6 +275,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       isAvailable: computed,
       searchesOnServer: computed,
       fixedProject: computed,
+      joinedIngest: computed,
+      joinedIngestScope: computed,
+      joinRefusal: computed,
+      ingestEnvironmentRefusal: observable,
+      checkIngestEnvironment: flow,
       isSnapshot: computed,
       marketplaceLink: computed,
       visibleCandidates: computed,
@@ -261,10 +322,107 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     return isCubeDataProductModel(context.model);
   }
 
+  joinsContext(context: CubeContext): boolean {
+    return (
+      mixesCubeLakehouseSources(this.editorState.host) &&
+      isCubeIngestModel(context.model)
+    );
+  }
+
   /** The cube's project, once its first access point is added: every other comes from it */
   get fixedProject(): CubeDataProductProject | undefined {
     const model = this.editorState.document.context?.model;
     return model ? getCubeDataProductProject(model) : undefined;
+  }
+
+  /**
+   * The ingest cube the tab adds access points to, on a host that runs them
+   * together (PLAN §11.30): its class and warehouse, which its access points
+   * run with. The first one added makes it a data product cube of its class
+   */
+  get joinedIngest(): CubeIngestSettings | undefined {
+    const model = this.editorState.document.context?.model;
+    return model && mixesCubeLakehouseSources(this.editorState.host)
+      ? getCubeIngestSettings(model)
+      : undefined;
+  }
+
+  /**
+   * The project and deployment the access points joining the ingest cube
+   * come from, on a host whose data products are deployed (PLAN §11.30): its
+   * data sets' project, deployed by its producer deployment, which deploys
+   * the project's data products too. None on another cube, on one no data
+   * product can join, or on a host reading one project (Studio), whose data
+   * products all are its own
+   */
+  get joinedIngestScope(): CubeIngestJoinScope | undefined {
+    const joined = this.joinedIngest;
+    const projects = this.getJoinedIngestProjects();
+    const [project] = projects ?? [];
+    return joined && projects?.length === 1 && project
+      ? { ...project, deploymentId: joined.producerDeploymentId }
+      : undefined;
+  }
+
+  /**
+   * The projects of the joined ingest cube's data sets, each once; none on
+   * another cube or on a project host (Studio), or when a data set wasn't
+   * deployed from a project, which `joinRefusal` names
+   */
+  private getJoinedIngestProjects():
+    | readonly { readonly groupId: string; readonly artifactId: string }[]
+    | undefined {
+    if (!this.joinedIngest || isCubeProjectHost(this.editorState.host)) {
+      return undefined;
+    }
+    const projects = new Map<
+      string,
+      { readonly groupId: string; readonly artifactId: string }
+    >();
+    for (const node of this.editorState.document.query.nodes) {
+      if (node instanceof IngestDatasetSource) {
+        const urn = parseCubeIngestUrn(node.ingestDefinitionUrn);
+        if (!urn) {
+          return undefined;
+        }
+        projects.set(`${urn.groupId}:${urn.artifactId}`, {
+          groupId: urn.groupId,
+          artifactId: urn.artifactId,
+        });
+      }
+    }
+    return [...projects.values()];
+  }
+
+  /**
+   * Why no data product can join the ingest cube, on a host whose data
+   * products are deployed (PLAN §11.30): its data sets come from no project,
+   * or several, or are read in another environment than the viewer's own
+   */
+  get joinRefusal(): string | undefined {
+    if (!this.joinedIngest || isCubeProjectHost(this.editorState.host)) {
+      return undefined;
+    }
+    const projects = this.getJoinedIngestProjects();
+    if (!projects) {
+      const notSdlc = this.editorState.document.query.nodes.find(
+        (node): node is IngestDatasetSource =>
+          node instanceof IngestDatasetSource &&
+          !parseCubeIngestUrn(node.ingestDefinitionUrn),
+      );
+      return CUBE_DATA_PRODUCT_TAB_MESSAGE.INGEST_NOT_SDLC(
+        notSdlc?.ingestDefinition ?? '',
+      );
+    }
+    if (!projects.length) {
+      return CUBE_DATA_PRODUCT_TAB_MESSAGE.NO_INGEST_DATA_SET;
+    }
+    if (projects.length > 1) {
+      return CUBE_DATA_PRODUCT_TAB_MESSAGE.INGEST_PROJECTS(
+        projects.map((each) => `${each.groupId}:${each.artifactId}`),
+      );
+    }
+    return this.ingestEnvironmentRefusal;
   }
 
   /** Whether the cube's project, or else the picked product, is at a moving SNAPSHOT version */
@@ -308,9 +466,15 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     const search = this.search.trim().toLowerCase();
     const project = this.fixedProject;
     const { searchesOnServer } = this;
+    // an ingest cube's: of its data sets' project and deployment, when any can join it
+    if (this.joinRefusal !== undefined) {
+      return [];
+    }
+    const scope = this.joinedIngestScope;
     return (this.candidates ?? []).filter(
       (candidate) =>
         (!project || isFromProject(candidate, project)) &&
+        (!scope || isInScope(candidate, scope)) &&
         (searchesOnServer ||
           [candidate.title, candidate.id, candidate.description ?? '']
             .join('\n')
@@ -345,6 +509,18 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   getCandidateDisabledReason(
     candidate: CubeDataProductCandidate,
   ): string | undefined {
+    const scope = this.joinedIngestScope;
+    if (scope && !isInScope(candidate, scope)) {
+      return candidate.groupId !== scope.groupId ||
+        candidate.artifactId !== scope.artifactId
+        ? CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_PROJECT(
+            candidate.groupId,
+            candidate.artifactId,
+          )
+        : CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_DEPLOYMENT(
+            candidate.deploymentId,
+          );
+    }
     const project = this.fixedProject;
     if (!project || isFromProject(candidate, project)) {
       return undefined;
@@ -439,7 +615,10 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       // a search under way doesn't change the access point picked
       !this.isDescribing &&
       !this.isAdding &&
-      (context === undefined || this.fixedProject !== undefined) &&
+      (context === undefined ||
+        this.fixedProject !== undefined ||
+        this.joinedIngest !== undefined) &&
+      this.joinRefusal === undefined &&
       this.candidate !== undefined &&
       this.pickedAccessPoints.length > 0 &&
       this.pickedAccessPoints.every(
@@ -450,7 +629,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   }
 
   setEnvironmentType(environmentType: CubeDataProductEnvironmentType): void {
-    if (this.fixedProject || environmentType === this.environmentType) {
+    if (
+      this.fixedProject ||
+      this.joinedIngest ||
+      environmentType === this.environmentType
+    ) {
       return;
     }
     this.environmentTypeChosen = true;
@@ -517,7 +700,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   /** The warehouse of a cube without one yet; a saved cube's is kept */
   setWarehouse(warehouse: string): void {
-    if (!this.fixedProject) {
+    if (!this.fixedProject && !this.joinedIngest) {
       this.warehouse = warehouse;
     }
   }
@@ -529,11 +712,33 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
    */
   open(): void {
     const project = this.fixedProject;
+    const joined = this.joinedIngest;
     const runtime = this.editorState.dataProductRuntime;
     this.error = undefined;
     // a cube reopens on its own project's products
     this.showAllProjects = false;
-    if (project) {
+    this.ingestEnvironmentRequest++;
+    this.ingestEnvironmentRefusal = undefined;
+    if (joined) {
+      // an ingest cube's access points run in its class, on its warehouse
+      // (PLAN §11.30)
+      if (this.environmentType !== joined.environmentType) {
+        this.environmentType = joined.environmentType;
+        this.resetCandidate();
+        this.projectRuntime = undefined;
+      }
+      this.warehouse = getEffectiveCubeWarehouse(
+        joined,
+        runtime.rememberedWarehouse,
+      );
+      this.warehouseFromProject = true;
+      if (this.candidate && this.getCandidateDisabledReason(this.candidate)) {
+        this.resetCandidate();
+      }
+      flowResult(this.checkIngestEnvironment()).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      );
+    } else if (project) {
       if (this.environmentType !== project.environmentType) {
         this.environmentType = project.environmentType;
         this.resetCandidate();
@@ -596,6 +801,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     this.listAbort = undefined;
     this.listRequest++;
     this.confirmRequest++;
+    this.ingestEnvironmentRequest++;
     this.isListing = false;
     this.isAdding = false;
     // a product whose access points haven't arrived would show none
@@ -604,6 +810,42 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
     this.describeRequest++;
     this.isDescribing = false;
+  }
+
+  /**
+   * Whether the joined ingest cube reads its data sets in the viewer's own
+   * environment, where data products run (PLAN §11.30): a cube that saved
+   * another environment's name can't be joined, saying both. A cube that
+   * saved none reads the viewer's own; one that can't be resolved is left to
+   * the run to report
+   */
+  *checkIngestEnvironment(): GeneratorFn<void> {
+    const joined = this.joinedIngest;
+    const catalog = this.editorState.host.ingestCatalog;
+    if (
+      !joined?.environment ||
+      !catalog ||
+      isCubeProjectHost(this.editorState.host)
+    ) {
+      return;
+    }
+    const request = ++this.ingestEnvironmentRequest;
+    try {
+      const viewer = (yield catalog.resolveEnvironment({
+        environmentType: joined.environmentType,
+      })) as CubeIngestEnvironment;
+      if (request === this.ingestEnvironmentRequest) {
+        this.ingestEnvironmentRefusal =
+          viewer.name !== joined.environment
+            ? CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_INGEST_ENVIRONMENT(
+                joined.environment,
+                viewer.name,
+              )
+            : undefined;
+      }
+    } catch {
+      // the viewer's environment can't be read: the run says why
+    }
   }
 
   /**
@@ -856,29 +1098,102 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         }
         query = query.add(node);
       }
+      const joined = this.joinedIngest;
+      const refusal = this.joinRefusal;
+      if (refusal !== undefined) {
+        throw new Error(refusal);
+      }
+      const scope = this.joinedIngestScope;
       if (
         document.context !== undefined &&
-        (!project || !isFromProject(candidate, project))
+        (joined
+          ? candidate.environmentType !== joined.environmentType ||
+            (scope !== undefined && !isInScope(candidate, scope))
+          : !project || !isFromProject(candidate, project))
       ) {
         throw new Error(CUBE_DATA_PRODUCT_TAB_MESSAGE.CUBE_CHANGED);
       }
+      // the ingest cube becomes a data product cube of its class and
+      // warehouse, its data sets read in that class (PLAN §11.30)
+      const joinedModel = joined
+        ? createCubeDataProductModel({
+            groupId: candidate.groupId,
+            artifactId: candidate.artifactId,
+            versionId: candidate.versionId,
+            environmentType: joined.environmentType,
+            warehouse: joined.warehouse,
+          })
+        : undefined;
+      if (joinedModel) {
+        // its data sets, typed as the product's project has them at its
+        // version, which its runs compile against: one the version lacks
+        // fails, saying so. In the same undo step, so Undo brings back the
+        // ingest cube's own
+        const dataSets = document.query.nodes.filter(
+          (node): node is IngestDatasetSource =>
+            node instanceof IngestDatasetSource,
+        );
+        const answers = (yield recheckCubeIngestSources(
+          editorState.host.ingestCatalog,
+          joinedModel,
+          dataSets,
+        )) as Awaited<ReturnType<typeof recheckCubeIngestSources>>;
+        if (request !== this.confirmRequest) {
+          return false;
+        }
+        if (editorState.document !== document) {
+          throw new Error(CUBE_DATA_PRODUCT_TAB_MESSAGE.CUBE_CHANGED);
+        }
+        // a version that can't be read changes nothing
+        const unread = [...answers.values()].find(
+          (answer): answer is CubeEngineError =>
+            answer instanceof CubeEngineError &&
+            answer.kind === CubeEngineErrorKind.NETWORK,
+        );
+        if (unread) {
+          throw unread;
+        }
+        dataSets.forEach((node) => {
+          const answer = answers.get(node.id);
+          const saved =
+            node.resolution.kind === 'resolved'
+              ? node.resolution.schema
+              : undefined;
+          if (answer instanceof CubeEngineError) {
+            query = query.replace(
+              node.withResolution({ kind: 'failed', message: answer.detail }),
+            );
+          } else if (answer && !saved?.isIdenticalTo(answer)) {
+            query = query.replace(
+              node.withResolution({ kind: 'resolved', schema: answer }),
+            );
+          }
+        });
+      }
       editorState.applyDocument(
-        document.context
-          ? document.withQuery(query)
-          : document
+        joinedModel
+          ? document
               .withContext({
-                model: createCubeDataProductModel({
-                  groupId: candidate.groupId,
-                  artifactId: candidate.artifactId,
-                  versionId: candidate.versionId,
-                  environmentType: candidate.environmentType,
-                  warehouse,
-                }),
+                model: joinedModel,
                 runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
               })
-              .withQuery(query),
+              .withQuery(query)
+          : document.context
+            ? document.withQuery(query)
+            : document
+                .withContext({
+                  model: createCubeDataProductModel({
+                    groupId: candidate.groupId,
+                    artifactId: candidate.artifactId,
+                    versionId: candidate.versionId,
+                    environmentType: candidate.environmentType,
+                    warehouse,
+                  }),
+                  runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+                })
+                .withQuery(query),
       );
-      if (!project) {
+      if (!project && !joined) {
         editorState.dataProductRuntime.remember(warehouse);
       }
       // the product stays expanded, to add another of its access points

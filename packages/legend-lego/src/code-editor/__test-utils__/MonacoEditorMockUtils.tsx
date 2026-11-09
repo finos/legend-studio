@@ -81,6 +81,8 @@ export const MockedMonacoEditorInstance = {
   executeEdits: createMock(),
   getSelection: createMock(),
   pushUndoStop: createMock(),
+  getContribution: createMock(),
+  trigger: createMock(),
 };
 
 export const MockedMonacoEditorAPI = {

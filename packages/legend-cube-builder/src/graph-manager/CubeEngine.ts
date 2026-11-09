@@ -15,6 +15,7 @@
  */
 
 import type { IR, JsonObject, ModelContext, Schema } from '@finos/legend-cube';
+import type { CubeExpressionOutline } from './CubeExpressionOutline.js';
 import type { CubeFunctionCatalogue } from './CubeFunctionCatalogue.js';
 
 // The engine port (PLAN §8.7): what Cube asks of an engine, in Cube's own
@@ -308,4 +309,14 @@ export interface CubeEngine {
    * engine doesn't serve it, and from then on
    */
   getFunctionCatalogue(): Promise<CubeFunctionCatalogue | undefined>;
+  /**
+   * The outline of an expression of one row, `x | …`, from the engine's
+   * JSON of it (EXPRESSION-EDITOR.md, round 2): its parts placed in the code
+   * when the JSON was parsed with its source information; none for anything
+   * but a lambda of one expression
+   */
+  readExpressionOutline(
+    json: JsonObject,
+    code: string,
+  ): CubeExpressionOutline | undefined;
 }

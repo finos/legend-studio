@@ -15,11 +15,26 @@
  */
 
 import {
+  type CubeFunctionTestResults,
   CubeFunction,
   CubeFunctionCatalogue,
   CubeFunctionParameter,
   CubeFunctionSignature,
+  CubeFunctionTestResult,
 } from '../graph-manager/CubeFunctionCatalogue.js';
+
+/** Test results on H2: `passed` of `total`, the failing tests named */
+export const TEST__h2Results = (
+  passed: number,
+  total: number,
+  failures: readonly { test: string; message: string }[] = [],
+): CubeFunctionTestResults =>
+  new Map([['H2', new CubeFunctionTestResult('H2', passed, total, failures)]]);
+
+// a definition's signatures share its results
+const LPAD_H2 = TEST__h2Results(4, 5, [
+  { test: 'testLpadEmptyChar', message: 'Padding string must not be empty' },
+]);
 
 /** A parameter: `[type, multiplicity, name?, description?]` */
 type TestParameter = readonly [string, string, string?, string?];
@@ -31,7 +46,11 @@ export const TEST__functionSignature = (
   parameters: readonly TestParameter[],
   returned: readonly [string, string],
   documentation = '',
-  options?: { isOperator?: boolean; isPlatformOnly?: boolean },
+  options?: {
+    isOperator?: boolean;
+    isPlatformOnly?: boolean;
+    testResults?: CubeFunctionTestResults;
+  },
 ): CubeFunctionSignature =>
   new CubeFunctionSignature(
     `${packagePath}::${name}_${parameters.map(([type]) => type).join('_')}`,
@@ -50,6 +69,7 @@ export const TEST__functionSignature = (
     documentation,
     options?.isOperator ?? false,
     options?.isPlatformOnly ?? false,
+    options?.testResults,
   );
 
 const STRING = 'meta::pure::functions::string';
@@ -92,6 +112,7 @@ export const TEST__functionCatalogue = (): CubeFunctionCatalogue =>
         ],
         ['Boolean', '1'],
         'Whether `source` contains `val` anywhere within it.',
+        { testResults: TEST__h2Results(2, 2) },
       ),
       TEST__functionSignature(
         COLLECTION,
@@ -116,6 +137,7 @@ export const TEST__functionCatalogue = (): CubeFunctionCatalogue =>
         ],
         ['String', '1'],
         'Pads the beginning of a string.',
+        { testResults: LPAD_H2 },
       ),
       TEST__functionSignature(
         STRING,
@@ -126,6 +148,7 @@ export const TEST__functionCatalogue = (): CubeFunctionCatalogue =>
         ],
         ['String', '1'],
         'As `lpad`, padding with a space.',
+        { testResults: LPAD_H2 },
       ),
     ),
     fn(

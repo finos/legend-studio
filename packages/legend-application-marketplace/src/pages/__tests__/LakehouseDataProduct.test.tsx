@@ -20,7 +20,8 @@ import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { type PlainObject } from '@finos/legend-shared';
+import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
+import type { Entity } from '@finos/legend-storage';
 import { type V1_EntitlementsDataProductDetailsResponse } from '@finos/legend-graph';
 import {
   mockAdHocDataProductPMCD,
@@ -72,7 +73,7 @@ const setupLakehouseDataProductTest = async (
 
   createSpy(
     mockedStore.depotServerClient,
-    'getVersionEntities',
+    'getVersionEntity',
   ).mockImplementation(
     async (groupId: string, artifactId: string, version: string) => {
       if (
@@ -80,9 +81,10 @@ const setupLakehouseDataProductTest = async (
         artifactId === 'customer-analytics' &&
         version === '1.2.0'
       ) {
-        return mockSDLCDataProductEntitiesResponse;
+        return guaranteeNonNullable(mockSDLCDataProductEntitiesResponse[0])
+          .entity as unknown as PlainObject<Entity>;
       }
-      return [];
+      throw new Error('Entity not found');
     },
   );
 

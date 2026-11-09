@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.2.2
+
+### Patch Changes
+
+- [#5818](https://github.com/finos/legend-studio/pull/5818) [`9fc9a5b`](https://github.com/finos/legend-studio/commit/9fc9a5b926e7ed086a8660f7b95fdb3430d1e694) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix two bugs in the data space editor: the Mapping / Mapping Provider toggle now switches the execution context's source, asking before it removes the one already set; and a second click on a stale remove button no longer deletes the last element or executable in the list.
+
+- [#5818](https://github.com/finos/legend-studio/pull/5818) [`9cc0733`](https://github.com/finos/legend-studio/commit/9cc073398e20d13e8acc61459ba86e46ed0e3532) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Data space editor: a header with the data space's title, path and status (verified, in development, external, deprecated), and execution context and executable counts in the sidebar. Home is in sections, with diagrams and elements as tables (elements show their type and an Included/Excluded switch) and support info as contacts and links, now including the support URL and a way to clear it. Execution contexts and executables use cards, the default context is a toggle, and executable tabs say whether each is a service, a function or a query. The Info tab shows statuses, the deprecation notice with a preview, and related data spaces. Studio exports `EditorForm` and `EditorFormSection`, whose sections take header actions.
+
 ## 0.2.1
 
 ### Patch Changes
