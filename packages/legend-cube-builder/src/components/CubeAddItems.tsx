@@ -15,9 +15,7 @@
  */
 
 import {
-  BasePopper,
   CaretDownIcon,
-  CaretRightIcon,
   clsx,
   DropdownMenu,
   DropdownMenuItem,
@@ -34,7 +32,6 @@ import {
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
 import {
   getCubeNodeBadge,
   READ_ONLY_CUBE_TITLE,
@@ -49,9 +46,7 @@ import {
 import type { CubeEditorState } from '../stores/CubeEditorState.js';
 import { getCubeCanvasNodeLabel } from './canvas/CubeCanvasElements.js';
 import { CubeNodeIcon } from './CubeNodeIcon.js';
-
-/** The z-index of a menu opened from a menu: above MUI's menus, which are modals (1300) */
-const CUBE_SUBMENU_Z_INDEX = 1400;
+import { CubeSubmenu } from './CubeSubmenu.js';
 
 /**
  * Each node as a menu lists it: its canvas label and the muted second line;
@@ -115,90 +110,16 @@ const CubeJoinMenuItem = observer(
     children: React.ReactNode;
   }) => {
     const { editorState, nodeId, children } = props;
-    const anchorRef = useRef<HTMLDivElement>(null);
-    const submenuRef = useRef<HTMLDivElement>(null);
-    const [isOpen, setIsOpen] = useState(false);
-    const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
-      undefined,
-    );
     const afterId = getCubeAddAfterId(editorState, Join.TYPE, nodeId);
     const candidates =
       afterId === undefined ? [] : editorState.getJoinInputCandidates(afterId);
     const labels = getCubeNodeMenuLabels(editorState, candidates);
-    const open = (): void => {
-      clearTimeout(closeTimer.current);
-      setIsOpen(candidates.length > 0);
-    };
-    // leaving the item for its submenu crosses a gap: wait before closing
-    const closeSoon = (): void => {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = setTimeout(() => setIsOpen(false), 150);
-    };
-    const back = (): void => {
-      setIsOpen(false);
-      anchorRef.current?.querySelector('button')?.focus();
-    };
     return (
-      <div
-        ref={anchorRef}
-        className="relative"
-        onMouseEnter={open}
-        onMouseLeave={closeSoon}
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowRight' && candidates.length > 0) {
-            event.preventDefault();
-            event.stopPropagation();
-            setIsOpen(true);
-            setTimeout(
-              () => submenuRef.current?.querySelector('button')?.focus(),
-              0,
-            );
-          }
-        }}
-      >
-        {children}
-        {candidates.length > 0 && (
-          <span
-            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]"
-            aria-hidden={true}
-          >
-            <CaretRightIcon />
-          </span>
-        )}
-        <BasePopper
-          open={isOpen && anchorRef.current !== null}
-          anchorEl={anchorRef.current}
-          placement="right-start"
-          style={{ zIndex: CUBE_SUBMENU_Z_INDEX }}
-        >
-          <div
-            ref={submenuRef}
-            className="menu"
-            role="menu"
-            aria-label="Join with"
-            onMouseEnter={open}
-            onMouseLeave={closeSoon}
-            onKeyDown={(event) => {
-              if (event.key === 'ArrowLeft' || event.key === 'Escape') {
-                event.preventDefault();
-                event.stopPropagation();
-                back();
-              } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                event.preventDefault();
-                event.stopPropagation();
-                const items = Array.from(
-                  event.currentTarget.querySelectorAll('button'),
-                );
-                const index = items.indexOf(
-                  document.activeElement as HTMLButtonElement,
-                );
-                items[
-                  (index + (event.key === 'ArrowDown' ? 1 : items.length - 1)) %
-                    items.length
-                ]?.focus();
-              }
-            }}
-          >
+      <CubeSubmenu
+        label="Join with"
+        hasItems={candidates.length > 0}
+        items={
+          <>
             <div className="menu__item text-sm text-[var(--color-text-secondary)]">
               Join with
             </div>
@@ -226,9 +147,11 @@ const CubeJoinMenuItem = observer(
                 </MenuContentItemLabel>
               </MenuContentItem>
             ))}
-          </div>
-        </BasePopper>
-      </div>
+          </>
+        }
+      >
+        {children}
+      </CubeSubmenu>
     );
   },
 );

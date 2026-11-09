@@ -73,3 +73,36 @@ Where an editor lists columns, each shows its type as an icon: **#** a number, *
 and time, a clock a time, a toggle true or false, a list an enumeration, a tree JSON. Point at the icon for the type in
 words, such as _Whole number, optional_, and the exact type. An optional column can be empty. A source's column table
 names each type in words.
+
+## Containers
+
+A container frames a block of linked steps under a title, and folds to one box in their place, as Alteryx's Tool
+Container does. It only changes how the graph looks: the cube runs the same, and its rows stay as they are. The cube
+saves its containers, so export and import keep them.
+
+To make one, right-click a step:
+
+[![A step's menu, with Put in a Container's](./images/containers-menu.png)](./images/containers-menu.png)
+
+1. **Put in a Container**: opens its menu. A step in a container already can't go in another: take it out first.
+2. **This Step Alone** makes a container of the step. **With the Steps Before It** takes the step and each step before
+   it that is in no container yet: here the Join, the Rename and INSTRUMENTS.
+3. **Add to**: a container beside the step, one that holds a step feeding it or the step it feeds.
+
+[![Two containers: one open, one folded](./images/containers.png)](./images/containers.png)
+
+4. **The head**: ▾ folds the container, its title renames it on a double-click, and it says how many steps it holds.
+   Right-click the head for **Fold**, **Rename** and **Remove Container**.
+5. **×** takes the container away. Its steps stay.
+6. **A folded container**: one box in its steps' place. The lines into and out of its steps come to its sides, and it
+   shows their errors, and **Output** when the output step is in it. Point at it to list its steps. **›**, a
+   double-click, or Enter opens it.
+
+A container is one block of steps linked to one another, so all of one tree, and containers don't nest:
+
+- A step you add, paste or move between two steps of a container joins it. One added after its last step stays out.
+- **Take Out of Container**, in a step's menu, takes out a step at the container's edge: one that no other step of it
+  feeds, or its last step.
+- Removing a step takes it out. A container left with no step goes away.
+
+Each change to a container is one undo step.

@@ -18,6 +18,7 @@ import type { Drilldown } from '../drilldown/Drilldown.js';
 import type { ColumnHint } from '../presentation/ColumnFormat.js';
 import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
 import { Query } from './Query.js';
+import type { StepContainer } from './StepContainer.js';
 
 // Each plain-data part keeps the keys of its saved JSON that this version
 // does not know, in `rest`, so a re-save writes them back (PLAN §10.3)
@@ -68,6 +69,8 @@ export interface CubeMeta {
   readonly presentation: Presentation;
   /** The grid's drill-down (PLAN §11.10): none until a level is added */
   readonly drilldown?: Drilldown | undefined;
+  /** The canvas's containers of steps: none until one is made */
+  readonly containers?: readonly StepContainer[] | undefined;
   readonly rest?: JsonObject;
 }
 
