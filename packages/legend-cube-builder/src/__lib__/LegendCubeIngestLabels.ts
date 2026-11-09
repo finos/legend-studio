@@ -44,6 +44,9 @@ export const CUBE_INGEST_JOIN_MESSAGE = {
     `Ingest definition ${definition} is in another project than the cube's data products, ${project}`,
   OTHER_MODE: (definition: string, mode: string): string =>
     `Ingest definition ${definition} is deployed to another Mode than the cube's, ${mode}`,
+  /** The deployment that deploys the project's definitions is its data products' own: one */
+  SEVERAL_DEPLOYMENTS: (deploymentIds: readonly string[]): string =>
+    `The cube's data products come from several deployments, ${deploymentIds.join(', ')}, so Cube can't tell which one deploys their project's ingest definitions`,
 } as const;
 
 /** How many of a producer deployment's definitions the tab leaves out, or nothing when it lists them all */
@@ -69,6 +72,30 @@ export const getFixedProducerLabel = (
   name
     ? `producer ${name} (${deploymentId})`
     : `producer deployment ${deploymentId}`;
+
+/**
+ * The Ingest tab on a data product cube, on a host whose data products are
+ * deployed (PLAN §11.30): the cube's Mode, and the deployment its data sets
+ * come from, its data products' own
+ */
+export const getJoinedDataProductsLabel = (
+  mode: string,
+  deployment: string | undefined,
+  versionId: string,
+): string =>
+  `The cube's data products run in ${mode}${deployment ? `, deployed by ${deployment}` : ''}: its ingest data sets come from their deployment, in your own environment, as version ${versionId} has them.`;
+
+/**
+ * The Data Product tab on an ingest cube, on a host whose data products are
+ * deployed (PLAN §11.30): the project and deployment its data products
+ * must come from
+ */
+export const getJoinedIngestLabel = (
+  mode: string,
+  project: string,
+  deployment: string,
+): string =>
+  `The cube's ingest data sets come from ${project}, deployed by ${deployment}, in ${mode}: data products of that project and deployment can join them.`;
 
 /** Each class of ingest environment, as the Ingest tab names it */
 export const CUBE_INGEST_ENVIRONMENT_CLASS_LABELS: Readonly<

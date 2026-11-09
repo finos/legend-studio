@@ -45,6 +45,7 @@ import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
 import { CUBE_PROJECT_SOURCE_LABEL } from '../../__lib__/LegendCubeProjectSourceLabels.js';
+import { getJoinedIngestLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import { isCubeProjectHost } from '../../stores/CubeHost.js';
 
 const INPUT_CLASS =
@@ -353,13 +354,18 @@ const CubeProjectDataProductTab = observer(
 /**
  * The source dialog's Data Product tab (PLAN §6.8), as Data Cube's selection
  * goes: the mode, a deployed data product, one of its access points, and the
- * warehouse. The dialog's Add adds the access point.
+ * warehouse. The dialog's Add adds the access point. On an ingest cube
+ * (§11.30), the cube's Mode and warehouse, and only data products of its
+ * data sets' project and deployment.
  */
 export const CubeDataProductTab = observer(
   (props: { tab: CubeDataProductTabState }) => {
     const { tab } = props;
     const warehouseId = useId();
     const project = tab.fixedProject;
+    const joined = tab.joinedIngest;
+    const scope = tab.joinedIngestScope;
+    const { joinRefusal } = tab;
     // a host reading one project's data products, as Studio, lists them
     // alone: no class, search or warehouse to pick, its runtime named instead
     if (isCubeProjectHost(tab.editorState.host)) {
@@ -374,7 +380,7 @@ export const CubeDataProductTab = observer(
             value: type,
             label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
           }))}
-          disabled={project !== undefined}
+          disabled={project !== undefined || joined !== undefined}
           onChange={(value) => {
             if (value) {
               tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
@@ -385,6 +391,20 @@ export const CubeDataProductTab = observer(
           <span className="text-sm text-[var(--color-text-muted)]">
             {`All of the cube's data products come from ${project.groupId}:${project.artifactId}:${project.versionId}.`}
           </span>
+        )}
+        {joined && scope && (
+          <span className="text-sm text-[var(--color-text-muted)]">
+            {getJoinedIngestLabel(
+              CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[joined.environmentType],
+              `${scope.groupId}:${scope.artifactId}`,
+              tab.editorState.sourcePicker.ingestTab.getProducerLabel(
+                scope.deploymentId,
+              ),
+            )}
+          </span>
+        )}
+        {joinRefusal !== undefined && (
+          <CubeDataProductTabAlert error={{ message: joinRefusal }} />
         )}
         {tab.isSnapshot && (
           <span className="text-sm text-[var(--color-status-warn)]">
@@ -470,6 +490,19 @@ export const CubeDataProductTab = observer(
               {CUBE_DATA_PRODUCT_TAB_MESSAGE.NONE_IN_PROJECT}
             </span>
           )}
+        {scope !== undefined &&
+          joinRefusal === undefined &&
+          !tab.isListing &&
+          tab.listError === undefined &&
+          tab.candidates !== undefined &&
+          !tab.shownCandidates.length && (
+            <span className="text-sm text-[var(--color-text-muted)]">
+              {CUBE_DATA_PRODUCT_TAB_MESSAGE.NONE_OF_INGEST_PROJECT(
+                `${scope.groupId}:${scope.artifactId}`,
+                scope.deploymentId,
+              )}
+            </span>
+          )}
         {tab.isTruncated && (
           <span className="text-sm text-[var(--color-text-muted)]">
             {CUBE_DATA_PRODUCT_TAB_MESSAGE.TRUNCATED}
@@ -495,7 +528,11 @@ export const CubeDataProductTab = observer(
             id={warehouseId}
             className={clsx(INPUT_CLASS, 'min-w-0 flex-1')}
             spellCheck={false}
-            disabled={project !== undefined || tab.editorState.readOnly}
+            disabled={
+              project !== undefined ||
+              joined !== undefined ||
+              tab.editorState.readOnly
+            }
             title={tab.editorState.readOnly ? READ_ONLY_CUBE_TITLE : undefined}
             value={tab.warehouse}
             onChange={(event) => tab.setWarehouse(event.target.value)}
