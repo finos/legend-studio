@@ -186,8 +186,10 @@ export const CubeNodeEditorPopper = observer(
       >
         {/* a right-click in the editor is the editor's, never the canvas's menu */}
         <div
-          // portalled out of `.legend-cube`, so its styles name the layer too
-          className="legend-cube__node-editor-layer"
+          // portalled out of `.legend-cube`, so its styles name the layer too,
+          // and it sets the text color `.legend-cube` sets: inherited from the
+          // page, the editor's text was black on the dark theme's panel
+          className="legend-cube__node-editor-layer text-[var(--color-text-primary)]"
           ref={(element) => {
             editorRef.current = element;
             setEditorElement(element);
