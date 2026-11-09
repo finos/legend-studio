@@ -17,6 +17,7 @@
 import {
   CubeDocument,
   CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
   ExpressionFilter,
   Extend,
   findCubeLambdaExtends,
@@ -54,7 +55,7 @@ import {
 import {
   CUBE_EXPRESSION_CODEC,
   readCubeLambdaJson,
-} from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
+} from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import { bindCubeLambdaSources } from './CubeLambdaSources.js';
 import {
@@ -364,7 +365,7 @@ export class CubeLambdaImportState {
       )) as CubeLambdaReading;
       // the user may have started a cube while it was read
       if (!editorState.isEmptyCube) {
-        throw new CubeLambdaReadError(CUBE_LAMBDA_IMPORT_MESSAGE.NOT_NEW);
+        throw new Error(CUBE_LAMBDA_IMPORT_MESSAGE.NOT_NEW);
       }
       editorState.openDocument(reading.document);
       this.notes = reading.notes;
@@ -429,6 +430,7 @@ export class CubeLambdaImportState {
       } catch (error) {
         assertErrorThrown(error);
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           CUBE_LAMBDA_IMPORT_MESSAGE.NOT_JSON(error.message),
         );
       }

@@ -16,6 +16,7 @@
 
 import {
   CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DataProductAccessPointSource,
   INGEST_DATASET_SOURCE_DEFINITION,
@@ -115,7 +116,10 @@ const bindingOf = (
   bindSource: (source) => {
     const step = steps.get(keyOf(source));
     if (!step) {
-      throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NOT_YET);
+      throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
+        CUBE_LAMBDA_SOURCES_MESSAGE.NOT_YET,
+      );
     }
     return step;
   },
@@ -158,11 +162,13 @@ const bindIngestSteps = async (
     const candidate = candidates.find((each) => each.definition === definition);
     if (!candidate) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.NO_DEFINITION(definition),
       );
     }
     if (candidate.disabledReason !== undefined) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.DEFINITION_UNREADABLE(
           definition,
           candidate.disabledReason,
@@ -178,12 +184,14 @@ const bindIngestSteps = async (
     const dataSet = dataSets.find((each) => each.name === dataSetName);
     if (!dataSet) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.NO_DATA_SET(dataSetName, definition),
       );
     }
     const { schema } = dataSet;
     if (!dataSet.isPickable || !schema) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.DATA_SET_UNREADABLE(
           dataSetName,
           definition,
@@ -213,7 +221,10 @@ const bindIngestDataSets = async (
 ): Promise<CubeLambdaBinding> => {
   const catalog = editorState.host.ingestCatalog;
   if (!catalog) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NO_INGEST);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.NO_INGEST,
+    );
   }
   const { context } = editorState.document;
   const current = context ? getCubeIngestSettings(context.model) : undefined;
@@ -226,7 +237,10 @@ const bindIngestDataSets = async (
       ? catalog.environmentTypes[0]
       : undefined);
   if (environmentType === undefined) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS,
+    );
   }
   // the cube's ingest environment, else the viewer's own of the class
   const environment = {
@@ -240,7 +254,10 @@ const bindIngestDataSets = async (
       producers.length === 1 ? producers[0]?.deploymentId : undefined;
   }
   if (producerDeploymentId === undefined) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS,
+    );
   }
   const { candidates } = await catalog.listDefinitions(
     environment,
@@ -280,7 +297,10 @@ const bindDataProducts = async (
 > => {
   const catalog = editorState.host.dataProductCatalog;
   if (!catalog) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NO_DATA_PRODUCTS);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.NO_DATA_PRODUCTS,
+    );
   }
   const { context } = editorState.document;
   const current = context
@@ -318,12 +338,14 @@ const bindDataProducts = async (
       }
       if (found.length > 1) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           CUBE_LAMBDA_SOURCES_MESSAGE.DATA_PRODUCTS(dataProduct),
         );
       }
       candidate = found[0];
       if (!candidate) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           CUBE_LAMBDA_SOURCES_MESSAGE.NO_DATA_PRODUCT(dataProduct),
         );
       }
@@ -339,12 +361,14 @@ const bindDataProducts = async (
     );
     if (!group || !accessPoint) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.NO_ACCESS_POINT(accessPointId, dataProduct),
       );
     }
     const { schema } = accessPoint;
     if (accessPoint.disabledReason !== undefined || !schema) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.ACCESS_POINT_UNREADABLE(
           accessPointId,
           dataProduct,
@@ -369,7 +393,10 @@ const bindDataProducts = async (
   }
   const [first] = [...products.values()];
   if (!first) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NONE);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.NONE,
+    );
   }
   return {
     ...bindingOf(
@@ -401,7 +428,10 @@ const bindTables = async (
 ): Promise<CubeLambdaBinding> => {
   const { context } = editorState.document;
   if (!context) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.TABLE_MODEL);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.TABLE_MODEL,
+    );
   }
   const typed = await editorState.host.engine.resolveSchemas(
     context.model,
@@ -446,16 +476,23 @@ const bindLakehouseSources = async (
 ): Promise<CubeLambdaBinding> => {
   const catalog = editorState.host.ingestCatalog;
   if (!catalog?.listProjectDefinitions) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.MIXED,
+    );
   }
   const products = await bindDataProducts(editorState, accessPoints);
   const project = getCubeDataProductProject(products.context.model);
   if (!project) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.MIXED,
+    );
   }
   const { deploymentIds } = products;
   if (deploymentIds.length > 1) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
       CUBE_INGEST_JOIN_MESSAGE.SEVERAL_DEPLOYMENTS(deploymentIds),
     );
   }
@@ -493,7 +530,10 @@ export const bindCubeLambdaSources = async (
 ): Promise<CubeLambdaBinding> => {
   const kinds = new Set(sources.map((source) => source.k));
   if (!kinds.size) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NONE);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.NONE,
+    );
   }
   const accessPoints = sources.filter(
     (source): source is Extract<IR, { readonly k: 'dataProductAccessor' }> =>
@@ -512,7 +552,10 @@ export const bindCubeLambdaSources = async (
     return bindLakehouseSources(editorState, accessPoints, dataSets);
   }
   if (kinds.size > 1) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.MIXED,
+    );
   }
   if (sources.every((source) => source.k === 'ingestAccessor')) {
     return bindIngestDataSets(editorState, sources);
@@ -523,5 +566,8 @@ export const bindCubeLambdaSources = async (
   if (sources.every((source) => source.k === 'storeAccessor')) {
     return bindTables(editorState, sources);
   }
-  throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NOT_YET);
+  throw new CubeLambdaReadError(
+    CubeLambdaReadErrorKind.SOURCE,
+    CUBE_LAMBDA_SOURCES_MESSAGE.NOT_YET,
+  );
 };

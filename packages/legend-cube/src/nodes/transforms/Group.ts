@@ -36,6 +36,7 @@ import {
   type ColumnAggregation,
   freezeColumnAggregation,
   getAggregationResultType,
+  GROUP_AGGREGATION_USE,
   isAggregationFunction,
   isColumnAggregation,
   isAggregationNullable,
@@ -86,6 +87,14 @@ export class Group extends UnaryNode {
   /** The key columns, as listed; validation checks them against the input */
   readonly columns: readonly string[];
   readonly aggregations: readonly ColumnAggregation[];
+  /**
+   * Whether an aggregation may take the name of an input column that isn't
+   * a key, which the group doesn't keep, as Pure allows: `QUANTITY:
+   * x|$x.QUANTITY : y|$y->sum()`. Only a group read from a definition to be
+   * drawn does (`CubeQueryReadOptions.forDrawing`); the editor's refuse it
+   * (M1), so a new group doesn't.
+   */
+  readonly allowsInputNames: boolean;
 
   /** By default, no key and no aggregation yet */
   constructor(
@@ -93,8 +102,10 @@ export class Group extends UnaryNode {
     columns: readonly string[] = [],
     aggregations: readonly ColumnAggregation[] = [],
     rest?: JsonObject,
+    allowsInputNames = false,
   ) {
     super(id, rest);
+    this.allowsInputNames = allowsInputNames;
     if (!isStringList(columns)) {
       throw new Error(`A group's columns must be a list of column names`);
     }
@@ -119,20 +130,33 @@ export class Group extends UnaryNode {
 
   /** A new group with the same id, and these keys */
   withColumns(columns: readonly string[]): Group {
-    return new Group(this.id, columns, this.aggregations, this.rest);
+    return new Group(
+      this.id,
+      columns,
+      this.aggregations,
+      this.rest,
+      this.allowsInputNames,
+    );
   }
 
   /** A new group with the same id, and these aggregations */
   withAggregations(aggregations: readonly ColumnAggregation[]): Group {
-    return new Group(this.id, this.columns, aggregations, this.rest);
+    return new Group(
+      this.id,
+      this.columns,
+      aggregations,
+      this.rest,
+      this.allowsInputNames,
+    );
   }
 
   /**
    * The keys first: none twice, then each checked (`validateGroupColumn`),
    * every key reported; no key at all is a group of all the rows. Then some
    * aggregations, each checked (`validateColumnAggregation`), every one
-   * reported. The engine fails on a duplicate name with no location, so Cube
-   * refuses one first.
+   * reported: named like no input column, or, when it allows input names,
+   * like no key. The engine fails on a duplicate name with no location, so
+   * Cube refuses one first.
    */
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     // `ensureSchemas` has checked there is one schema per port
@@ -152,7 +176,15 @@ export class Group extends UnaryNode {
         errors,
       ) &&
       validateAllItems(this.aggregations, (_, index) =>
-        validateColumnAggregation(this.aggregations, index, schema, errors),
+        validateColumnAggregation(
+          this.aggregations,
+          index,
+          schema,
+          errors,
+          GROUP_AGGREGATION_USE,
+          // of the input's columns, the group keeps its keys only
+          this.allowsInputNames ? this.columns : schema.names(),
+        ),
       )
     );
   }

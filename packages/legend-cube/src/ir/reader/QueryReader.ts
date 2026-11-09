@@ -58,6 +58,7 @@ import {
   Sort,
   SortDirection,
 } from '../../nodes/transforms/Sort.js';
+import { foldColumnName } from '../../schema/ColumnName.js';
 import type { Schema } from '../../schema/Schema.js';
 import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import type { LiteralValue } from '../../values/LiteralValue.js';
@@ -66,7 +67,11 @@ import type { IR } from '../CubeIR.js';
 import { PIVOT_AGGREGATION_NAME } from '../emitters/PivotEmitter.js';
 import { getCubeFunctionName, isSameCubeIR } from './CubeIRComparison.js';
 import type { CubeLambdaParts } from './CubeLambdaParts.js';
-import { CubeLambdaReadError } from './CubeLambdaReadError.js';
+import {
+  CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
+  type CubeLambdaRefusal,
+} from './CubeLambdaReadError.js';
 import { readFilterCondition } from './FilterReader.js';
 import {
   isWindowExtend,
@@ -116,6 +121,8 @@ export const CUBE_QUERY_READER_MESSAGE = {
   EXPLODE:
     "Cube reads a lateral as its Explode Array writes one: x | $x.column->get('key')…->toMany(@Variant)->flatten(~name).",
   CONCAT: 'both inputs need the same columns, in the same order.',
+  SAME_NAME: (name: string): string =>
+    `its column ~${name} is named like a column of its input, which Cube's Group doesn't allow.`,
 };
 
 /** The step a source of the lambda reads as, which the host binds before reading */
@@ -148,6 +155,13 @@ export interface CubeQueryReadOptions {
    */
   readonly relationSchemas?: ReadonlyMap<IR, Schema> | undefined;
   readonly registry?: NodeRegistry | undefined;
+  /**
+   * Whether the steps are read to be drawn, not edited, e.g. an access
+   * point's definition in a viewer: they may then be what only Cube's editor
+   * refuses, such as a group's aggregation named like a column of its input
+   * (`Group.allowsInputNames`)
+   */
+  readonly forDrawing?: boolean | undefined;
 }
 
 export interface CubeQueryReading {
@@ -157,6 +171,11 @@ export interface CubeQueryReading {
   readonly unchecked: readonly string[];
   /** The steps Cube writes another way, reading the same rows */
   readonly rewritten: readonly string[];
+  /**
+   * The relation each step was read from, by its id: the Pure up to it and
+   * with it, reading the lambda's lets by name (`CubeLambdaParts.lets`)
+   */
+  readonly stepIRs: ReadonlyMap<string, IR>;
 }
 
 /** A step read, and the IR it was read from: what the steps after it read */
@@ -532,6 +551,16 @@ const readAggregation = (spec: IR): ColumnAggregation | undefined => {
   return column === undefined ? undefined : { name, column, function: fn };
 };
 
+/** A step's function Cube can't read in this form, and why */
+const unreadable = (name: string, why: string): CubeLambdaRefusal => ({
+  kind: CubeLambdaReadErrorKind.FORM,
+  message: CUBE_QUERY_READER_MESSAGE.UNREADABLE(name, why),
+  functionName: name,
+});
+
+const refusalError = (refusal: CubeLambdaRefusal): CubeLambdaReadError =>
+  new CubeLambdaReadError(refusal.kind, refusal.message, refusal.functionName);
+
 class CubeQueryReader {
   private readonly registry: NodeRegistry;
   private readonly nodes: QueryNode[] = [];
@@ -544,6 +573,7 @@ class CubeQueryReader {
   private readonly connections: Connection[] = [];
   private readonly unchecked: string[] = [];
   private readonly rewritten: string[] = [];
+  private readonly stepIRs = new Map<string, IR>();
   private readonly readLets = new Set<string>();
 
   constructor(
@@ -560,6 +590,7 @@ class CubeQueryReader {
     );
     if (unread !== undefined) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SHAPE,
         CUBE_QUERY_READER_MESSAGE.UNREAD_LET(unread),
       );
     }
@@ -567,6 +598,7 @@ class CubeQueryReader {
       query: new Query(this.nodes, this.connections, last.id),
       unchecked: this.unchecked,
       rewritten: this.rewritten,
+      stepIRs: this.stepIRs,
     };
   }
 
@@ -611,6 +643,7 @@ class CubeQueryReader {
     assumed?: QueryNode,
   ): ReadStep {
     this.nodes.push(node);
+    this.stepIRs.set(node.id, ir);
     if (assumed && assumed !== node) {
       this.assumed.set(node.id, assumed);
     }
@@ -714,7 +747,7 @@ class CubeQueryReader {
     candidates: readonly Candidate[],
     inputs: readonly ReadStep[],
     read: IR,
-    refusal: string,
+    refusal: CubeLambdaRefusal,
   ): ReadStep {
     for (const candidate of candidates) {
       const { result, assumed } = this.check(
@@ -735,7 +768,7 @@ class CubeQueryReader {
         return this.add(candidate.node, inputs, read, assumed);
       }
     }
-    throw new CubeLambdaReadError(refusal);
+    throw refusalError(refusal);
   }
 
   private readRelation(ir: IR, lets: ReadonlySet<string>): ReadStep {
@@ -743,6 +776,7 @@ class CubeQueryReader {
       const bound = this.parts.lets.get(ir.name);
       if (!bound || lets.has(ir.name)) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SHAPE,
           CUBE_QUERY_READER_MESSAGE.UNBOUND_LET(ir.name),
         );
       }
@@ -756,17 +790,22 @@ class CubeQueryReader {
       return this.add(source.create(this.nextId(source.type)), [], ir);
     }
     if (ir.k !== 'func') {
-      throw new CubeLambdaReadError(CUBE_QUERY_READER_MESSAGE.NOT_A_RELATION);
+      throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SHAPE,
+        CUBE_QUERY_READER_MESSAGE.NOT_A_RELATION,
+      );
     }
     const name = getCubeFunctionName(ir.name);
     const inputCount = RELATION_INPUTS.get(name);
     if (inputCount === undefined) {
-      throw new CubeLambdaReadError(CUBE_QUERY_READER_MESSAGE.NO_STEP(name));
+      throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.NO_STEP,
+        CUBE_QUERY_READER_MESSAGE.NO_STEP(name),
+        name,
+      );
     }
     const refuse = (why: string): never => {
-      throw new CubeLambdaReadError(
-        CUBE_QUERY_READER_MESSAGE.UNREADABLE(name, why),
-      );
+      throw refusalError(unreadable(name, why));
     };
     if (name === 'rename') {
       return this.readRenames(ir, lets, refuse);
@@ -818,7 +857,7 @@ class CubeQueryReader {
           return { id: input.id, ir, belowSort: input.ir };
         }
         const node = new Sort(this.nextId(Sort.TYPE), sorts);
-        this.add(node, inputs, input.ir);
+        this.add(node, inputs, ir);
         return { id: node.id, ir, belowSort: input.ir };
       }
       case 'limit':
@@ -835,10 +874,7 @@ class CubeQueryReader {
           [{ node, takenUnchecked: true, takenWhenDifferent: true }],
           inputs,
           ir,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            name,
-            CUBE_QUERY_READER_MESSAGE.SIZE,
-          ),
+          unreadable(name, CUBE_QUERY_READER_MESSAGE.SIZE),
         );
       }
       case 'slice': {
@@ -863,10 +899,7 @@ class CubeQueryReader {
           ],
           inputs,
           ir,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            name,
-            CUBE_QUERY_READER_MESSAGE.RANGE,
-          ),
+          unreadable(name, CUBE_QUERY_READER_MESSAGE.RANGE),
         );
       }
       case 'distinct':
@@ -884,7 +917,11 @@ class CubeQueryReader {
           ],
           inputs,
           ir,
-          CUBE_QUERY_READER_MESSAGE.NO_STEP(name),
+          {
+            kind: CubeLambdaReadErrorKind.NO_STEP,
+            message: CUBE_QUERY_READER_MESSAGE.NO_STEP(name),
+            functionName: name,
+          },
         );
       case 'lateral': {
         const explode = readExplodeFunction(settings[0]);
@@ -905,14 +942,15 @@ class CubeQueryReader {
           ],
           inputs,
           ir,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            name,
-            CUBE_QUERY_READER_MESSAGE.EXPLODE,
-          ),
+          unreadable(name, CUBE_QUERY_READER_MESSAGE.EXPLODE),
         );
       }
       default:
-        throw new CubeLambdaReadError(CUBE_QUERY_READER_MESSAGE.NOT_YET(name));
+        throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.NOT_YET,
+          CUBE_QUERY_READER_MESSAGE.NOT_YET(name),
+          name,
+        );
     }
   }
 
@@ -958,10 +996,7 @@ class CubeQueryReader {
       candidates,
       inputs,
       ir,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        'filter',
-        'Cube writes its condition another way.',
-      ),
+      unreadable('filter', 'Cube writes its condition another way.'),
     );
   }
 
@@ -998,21 +1033,75 @@ class CubeQueryReader {
     if (!aggregations.length) {
       return refuse(CUBE_QUERY_READER_MESSAGE.COLUMNS);
     }
-    return this.choose(
-      [
-        {
-          node: new Group(this.nextId(Group.TYPE), columns, aggregations),
-          takenUnchecked: true,
-          takenWhenDifferent: true,
-        },
-      ],
-      inputs,
-      ir,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        name,
-        'Cube writes its groups another way.',
-      ),
+    const group = new Group(
+      this.nextId(Group.TYPE),
+      columns,
+      aggregations,
+      undefined,
+      this.options.forDrawing === true,
     );
+    try {
+      return this.choose(
+        [{ node: group, takenUnchecked: true, takenWhenDifferent: true }],
+        inputs,
+        ir,
+        unreadable(name, 'Cube writes its groups another way.'),
+      );
+    } catch (error) {
+      // a group refused only for naming an aggregation like a column of its
+      // input, which Pure allows and Cube's Group doesn't, says so
+      const sameName =
+        error instanceof CubeLambdaReadError && !group.allowsInputNames
+          ? this.findInputNamedAggregation(group, inputs, ir)
+          : undefined;
+      if (sameName === undefined) {
+        throw error;
+      }
+      throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SAME_NAME_SUM,
+        CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+          name,
+          CUBE_QUERY_READER_MESSAGE.SAME_NAME(sameName),
+        ),
+        name,
+      );
+    }
+  }
+
+  /**
+   * The first aggregation named like a column of the group's input that it
+   * doesn't keep, when that is all that keeps Cube's Group from reading it:
+   * as a group drawn as written, it reads
+   */
+  private findInputNamedAggregation(
+    group: Group,
+    inputs: readonly ReadStep[],
+    read: IR,
+  ): string | undefined {
+    const relaxed = new Group(
+      group.id,
+      group.columns,
+      group.aggregations,
+      group.rest,
+      true,
+    );
+    if (this.check(relaxed, inputs, read).result === 'invalid') {
+      return undefined;
+    }
+    const [input] = inputs;
+    const inputNames = (
+      input === undefined
+        ? undefined
+        : buildSchemasAndValidity(
+            new Query(this.inferenceNodes, this.connections, input.id),
+            this.registry.queryRules,
+          ).schemas.get(input.id)
+    )
+      ?.names()
+      .map(foldColumnName);
+    return group.aggregations.find((aggregation) =>
+      inputNames?.includes(foldColumnName(aggregation.name)),
+    )?.name;
   }
 
   /**
@@ -1050,10 +1139,7 @@ class CubeQueryReader {
         ],
         inputs,
         ir,
-        CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-          'select',
-          'Cube writes this Difference another way.',
-        ),
+        unreadable('select', 'Cube writes this Difference another way.'),
       );
     }
     const join = readJoinCall(withoutJoinMerge(below));
@@ -1084,10 +1170,7 @@ class CubeQueryReader {
       ],
       [input],
       ir,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        'select',
-        CUBE_QUERY_READER_MESSAGE.RESTRICT,
-      ),
+      unreadable('select', CUBE_QUERY_READER_MESSAGE.RESTRICT),
     );
   }
 
@@ -1113,7 +1196,7 @@ class CubeQueryReader {
       [{ node, takenUnchecked: true, takenWhenDifferent: true }],
       inputs,
       withoutSelect,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+      unreadable(
         getCubeFunctionName(
           (withoutSelect as Extract<IR, { readonly k: 'func' }>).name,
         ),
@@ -1143,10 +1226,7 @@ class CubeQueryReader {
           [{ node, takenUnchecked: true, takenWhenDifferent: true }],
           inputs,
           joined,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            'join',
-            CUBE_QUERY_READER_MESSAGE.JOIN,
-          ),
+          unreadable('join', CUBE_QUERY_READER_MESSAGE.JOIN),
         );
   }
 
@@ -1198,10 +1278,7 @@ class CubeQueryReader {
           ],
           [input],
           windowed,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            'extend',
-            CUBE_QUERY_READER_MESSAGE.WINDOW,
-          ),
+          unreadable('extend', CUBE_QUERY_READER_MESSAGE.WINDOW),
         ),
         select.ir,
         select.columns,
@@ -1217,10 +1294,7 @@ class CubeQueryReader {
       ],
       [input],
       windowed,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        'extend',
-        CUBE_QUERY_READER_MESSAGE.WINDOW,
-      ),
+      unreadable('extend', CUBE_QUERY_READER_MESSAGE.WINDOW),
     );
   }
 
@@ -1256,10 +1330,7 @@ class CubeQueryReader {
           ],
       inputs,
       ir,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        'concatenate',
-        CUBE_QUERY_READER_MESSAGE.CONCAT,
-      ),
+      unreadable('concatenate', CUBE_QUERY_READER_MESSAGE.CONCAT),
     );
   }
 
@@ -1334,10 +1405,7 @@ class CubeQueryReader {
       ],
       [input],
       ir,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        'extend',
-        CUBE_QUERY_READER_MESSAGE.EXTEND,
-      ),
+      unreadable('extend', CUBE_QUERY_READER_MESSAGE.EXTEND),
     );
   }
 
@@ -1414,10 +1482,7 @@ class CubeQueryReader {
       ],
       [input],
       renames.at(-1) ?? cast,
-      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-        'pivot',
-        CUBE_QUERY_READER_MESSAGE.PIVOT,
-      ),
+      unreadable('pivot', CUBE_QUERY_READER_MESSAGE.PIVOT),
     );
   }
 
@@ -1480,10 +1545,7 @@ class CubeQueryReader {
           ],
           [step],
           last.call,
-          CUBE_QUERY_READER_MESSAGE.UNREADABLE(
-            'rename',
-            CUBE_QUERY_READER_MESSAGE.RENAME,
-          ),
+          unreadable('rename', CUBE_QUERY_READER_MESSAGE.RENAME),
         );
       }
       group = [];
