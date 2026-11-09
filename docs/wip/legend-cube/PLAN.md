@@ -5838,6 +5838,12 @@ without one, the two kinds stay apart.
 **Status:** Studio, PR 1. Legend Analytics, PR 2 (stacked on PR 1). The open-source engine reads neither `#I` nor
 `#P`; the first internal run checks the plan of a mixed lambda (the request is in the evidence).
 
+- **Open in Analytics, for that run:** a mixed cube runs as a data product cube, on one `LakehouseRuntime` whose
+  environment is the viewer's lakehouse environment (`resolveEnvironment(project)`, e.g. `env-a`). An ingest cube's
+  runtime names the ingest server's environment instead (`getRuntimeEnvironment`, e.g. `lakehouse-ingest-env-a`). In
+  Studio both kinds name one environment. Whether `#I` resolves under the data product runtime's environment is for
+  the first internal run of a mixed Analytics cube.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
