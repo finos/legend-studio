@@ -96,7 +96,10 @@ export { SnowflakeM2MUdf } from './graph/metamodel/pure/packageableElements/func
 export { SnowflakeM2MUdfDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 export {
+  V1_INGEST_DEFINITION_TYPE,
+  V1_EXTENDED_INGEST_DEFINITION_TYPE,
   V1_IngestDefinition,
+  V1_ExtendedIngestDefinition,
   V1_IngestDatasetSchema,
   V1_IngestDatasetSource,
   V1_IngestDataset,

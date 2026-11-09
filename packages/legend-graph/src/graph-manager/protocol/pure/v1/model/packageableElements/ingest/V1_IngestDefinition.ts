@@ -28,6 +28,8 @@ import { V1_TestSuite } from '../../test/V1_TestSuite.js';
 import type { V1_DataResolver } from '../../data/V1_DataResolver.js';
 
 export const V1_INGEST_DEFINITION_TYPE = 'ingestDefinition';
+// Subtype of `ingestDefinition` sharing its classifier path
+export const V1_EXTENDED_INGEST_DEFINITION_TYPE = 'extendedIngestDefinition';
 
 export class V1_IngestDefinition extends V1_INTERNAL__UnknownPackageableElement {
   appDirDeployment: V1_AppDirNode | undefined;
@@ -48,6 +50,9 @@ export class V1_IngestDefinition extends V1_INTERNAL__UnknownPackageableElement 
     return visitor.visit_IngestDefinition(this);
   }
 }
+// `_type` is kept in `content`, so the subtype roundtrips like any ingest definition
+export class V1_ExtendedIngestDefinition extends V1_IngestDefinition {}
+
 export class V1_IngestDatasetSchema {
   _type!: string;
   columns: V1_RelationTypeColumn[] = [];
