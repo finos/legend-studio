@@ -165,9 +165,11 @@
   }
 }
 
-// a read-only Pure editor, as tall as its lines
+// a read-only Pure editor, as tall as its code
 .data-product__viewer__code-box {
   flex: none;
+  // the height set is the code's: the border goes around it
+  box-sizing: content-box;
   overflow: hidden;
   border: 0.1rem solid var(--color-dark-theme-border-light);
   border-radius: 0.4rem;

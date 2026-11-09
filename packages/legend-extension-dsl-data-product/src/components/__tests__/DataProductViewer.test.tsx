@@ -4844,6 +4844,79 @@ describe('DataProductViewer', () => {
       ).toBeNull();
     });
 
+    test('the code boxes are as tall as their code, long lines wrapped, the definition up to 20 lines', async () => {
+      // NOTE: jsdom lays nothing out, so the editor's content height is given
+      // here: the height of its lines once long lines wrap, and its padding
+      type ContentSizeListener = (event: {
+        contentHeight: number;
+        contentHeightChanged: boolean;
+      }) => void;
+      let contentHeight = 100;
+      const contentSizeListeners = new Set<ContentSizeListener>();
+      jest.spyOn(MockedMonacoEditorAPI, 'create').mockReturnValue({
+        ...MockedMonacoEditorInstance,
+        getValue: jest.fn().mockReturnValue(''),
+        getContentHeight: jest.fn(() => contentHeight),
+        onDidContentSizeChange: jest.fn((listener: ContentSizeListener) => {
+          contentSizeListeners.add(listener);
+          return { dispose: () => contentSizeListeners.delete(listener) };
+        }),
+      });
+      // as the editor lays its code out again, e.g. in a narrower or wider panel
+      const resizeContent = async (height: number): Promise<void> => {
+        contentHeight = height;
+        await act(async () => {
+          contentSizeListeners.forEach((listener) =>
+            listener({ contentHeight: height, contentHeightChanged: true }),
+          );
+        });
+      };
+      const { dataProductViewerState } = await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+      createSpy(
+        dataProductViewerState.engineServerClient,
+        'JSONToGrammar_lambda',
+      ).mockResolvedValue(DEFINITION);
+
+      await act(async () => {
+        fireEvent.click(await screen.findByText('View definition'));
+      });
+      const definition = await screen.findByLabelText('Definition');
+      const definitionBox = guaranteeNonNullable(
+        definition.querySelector<HTMLElement>(
+          '.data-product__viewer__code-box',
+        ),
+      );
+      // 2 lines, the first wrapped into 3: as tall as 4 lines, not 2
+      await waitFor(() => expect(definitionBox.style.height).toBe('100px'));
+      // narrower, a long line wraps into more: the box grows
+      await resizeContent(160);
+      expect(definitionBox.style.height).toBe('160px');
+      // past 20 lines, the box stops growing and the code scrolls
+      await resizeContent(600);
+      expect(definitionBox.style.height).toBe('420px');
+      // wider, fewer wraps: the box shrinks
+      await resizeContent(60);
+      expect(definitionBox.style.height).toBe('60px');
+
+      // the accessor has no such limit
+      await act(async () => {
+        fireEvent.click(screen.getByText('Hide definition'));
+      });
+      contentHeight = 600;
+      await openPureQuery();
+      const accessorBox = guaranteeNonNullable(
+        (await screen.findByLabelText('Copy accessor'))
+          .closest('.data-product__viewer__pure-query__block')
+          ?.querySelector<HTMLElement>('.data-product__viewer__code-box'),
+      );
+      await waitFor(() => expect(accessorBox.style.height).toBe('600px'));
+    });
+
     test('Column Specifications shows the column count, and the definition only once opened', async () => {
       const { dataProductViewerState } = await setupLakehouseDataProductTest(
         mockSDLCDataProduct,

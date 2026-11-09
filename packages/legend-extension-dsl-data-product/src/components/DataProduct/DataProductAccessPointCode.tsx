@@ -41,10 +41,15 @@ import {
   PURE_QUERY_EXAMPLE_ROW_LIMIT,
 } from '../../utils/AccessPointPureQueryUtils.js';
 
-// the code boxes are as tall as their lines, so their line height is fixed (px)
+// the code boxes are as tall as their lines, wrapped lines included, so their
+// line height is fixed (px)
 const CODE_LINE_HEIGHT = 20;
 const CODE_PADDING = 10;
 const DEFINITION_MAX_LINES = 20;
+
+/** How tall code of so many lines is, its padding included (px) */
+const getCodeHeight = (lineCount: number): number =>
+  lineCount * CODE_LINE_HEIGHT + 2 * CODE_PADDING;
 
 type CopyOutcome = 'idle' | 'copied' | 'failed';
 
@@ -130,23 +135,26 @@ const CopyCodeButton: React.FC<{
   );
 };
 
-/** Pure code to read and copy: read-only, in the app's theme, as tall as its lines */
+/** Pure code to read and copy: read-only, in the app's theme, as tall as its code */
 const ReadOnlyPureCode: React.FC<{
   value: string;
-  /** Past this many lines, the code scrolls */
+  /** Past this many lines, a long line's wrapped parts included, the code scrolls */
   maxLines?: number;
 }> = (props) => {
   const { value, maxLines } = props;
-  const lineCount = value.split('\n').length;
-  const shownLineCount =
-    maxLines === undefined ? lineCount : Math.min(lineCount, maxLines);
+  // the code's height once the editor has laid it out, where a long line wraps
+  // into several in a narrow box; until then, its lines'
+  const [contentHeight, setContentHeight] = useState<number | undefined>();
+  const codeHeight = contentHeight ?? getCodeHeight(value.split('\n').length);
+  const height =
+    maxLines === undefined
+      ? codeHeight
+      : Math.min(codeHeight, getCodeHeight(maxLines));
 
   return (
     <div
       className="data-product__viewer__code-box"
-      style={{
-        height: `${shownLineCount * CODE_LINE_HEIGHT + 2 * CODE_PADDING}px`,
-      }}
+      style={{ height: `${height}px` }}
     >
       <CodeEditor
         inputValue={value}
@@ -168,6 +176,7 @@ const ReadOnlyPureCode: React.FC<{
           // the page scrolls past the code once the code can't scroll further
           scrollbar: { alwaysConsumeMouseWheel: false },
         }}
+        onContentHeightChange={setContentHeight}
       />
     </div>
   );

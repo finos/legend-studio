@@ -472,6 +472,12 @@ export const CodeEditor: React.FC<{
    * for an editor inside a CSS-transformed container, e.g. a popper
    */
   floatingWidgetsInBody?: boolean | undefined;
+  /**
+   * Called with the height of the editor's content, its padding included, once
+   * the editor has laid it out and whenever it changes, e.g. when a long line
+   * wraps in a narrower editor: for a container as tall as the content
+   */
+  onContentHeightChange?: ((height: number) => void) | undefined;
 }> = (props) => {
   const {
     inputValue,
@@ -494,6 +500,7 @@ export const CodeEditor: React.FC<{
     textEditorRef,
     highlightedRange,
     floatingWidgetsInBody,
+    onContentHeightChange,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
@@ -786,6 +793,37 @@ export const CodeEditor: React.FC<{
       editor.revealLineInCenter(lineToScroll);
     }
   }, [editor, lineToScroll]);
+
+  // the content's height, while it is asked for
+  // NOTE: it changes as this component renders, when the value and the options
+  // are set below, so it is kept here and reported after the render: a container
+  // sized to it updates its own state, which it can't while this one renders
+  const [contentHeight, setContentHeight] = useState<number | undefined>();
+  const onContentHeightChangeRef = useRef(onContentHeightChange);
+  onContentHeightChangeRef.current = onContentHeightChange;
+  const hasContentHeightListener = onContentHeightChange !== undefined;
+  useEffect(() => {
+    if (!editor || !hasContentHeightListener) {
+      return undefined;
+    }
+    // possibly none, as an editor mocked in tests gives
+    const subscription = editor.onDidContentSizeChange((event) => {
+      if (event.contentHeightChanged) {
+        setContentHeight(event.contentHeight);
+      }
+    }) as IDisposable | undefined;
+    setContentHeight(editor.getContentHeight() as number | undefined);
+    return () => {
+      subscription?.dispose();
+      // so the height is reported again if it is asked for again
+      setContentHeight(undefined);
+    };
+  }, [editor, hasContentHeightListener]);
+  useEffect(() => {
+    if (contentHeight !== undefined) {
+      onContentHeightChangeRef.current?.(contentHeight);
+    }
+  }, [contentHeight]);
 
   if (editor) {
     // dispose the old editor content setter in case the `updateInput` handler changes
