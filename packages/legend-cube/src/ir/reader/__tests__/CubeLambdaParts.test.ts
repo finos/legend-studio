@@ -31,7 +31,10 @@ import {
   CUBE_LAMBDA_PARTS_MESSAGE,
   splitCubeLambda,
 } from '../CubeLambdaParts.js';
-import { CubeLambdaReadError } from '../CubeLambdaReadError.js';
+import {
+  CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
+} from '../CubeLambdaReadError.js';
 
 const TABLE = storeAccessor(['db::Store', 'S', 'T']);
 const RUNTIME = elementPtr('db::Runtime');
@@ -109,6 +112,28 @@ describe("A lambda's parts", () => {
     ).toThrow(CUBE_LAMBDA_PARTS_MESSAGE.LET_TWICE('a'));
     expect(() => splitCubeLambda(lambda([], []))).toThrow(
       CUBE_LAMBDA_PARTS_MESSAGE.EMPTY,
+    );
+  });
+
+  test('Gives each refusal a kind a host can count: parameters, apart from the shape of the lambda', () => {
+    const kindOf = (read: IR): CubeLambdaReadErrorKind | undefined => {
+      try {
+        splitCubeLambda(read);
+      } catch (error) {
+        return error instanceof CubeLambdaReadError ? error.kind : undefined;
+      }
+      return undefined;
+    };
+    expect(kindOf(lambda(['x', 'y'], [TABLE]))).toBe(
+      CubeLambdaReadErrorKind.PARAMETERS,
+    );
+    [
+      TABLE,
+      lambda([], []),
+      lambda([], [TABLE, TABLE]),
+      lambda([], [letBinding('a', TABLE), letBinding('a', TABLE), TABLE]),
+    ].forEach((read) =>
+      expect(kindOf(read)).toBe(CubeLambdaReadErrorKind.SHAPE),
     );
   });
 });

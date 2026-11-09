@@ -42,7 +42,7 @@ import {
 import {
   CUBE_EXPRESSION_CODEC,
   readCubeLambdaJson,
-} from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
+} from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 import { V1_serializeCubeLambda } from '../graph-manager/protocol/pure/v1/V1_CubeLambdaSerializer.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import { CUBE_EXAMPLES } from '../stores/CubeExamples.js';

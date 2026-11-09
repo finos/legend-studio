@@ -15,27 +15,26 @@
  */
 
 import { clsx, ContextMenu, Tooltip, WarningIcon } from '@finos/legend-art';
-import { Handle, type NodeProps, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
-import {
-  RUNNING_NODE_LABEL,
-  RUNNING_NODE_TITLE,
-} from '../../__lib__/LegendCubeHelpText.js';
 import { useDrag, useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   CUBE_TOUR_ANCHOR,
   cubeTourAnchor,
 } from '../../__lib__/LegendCubeTour.js';
-import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import {
-  CUBE_OUTPUT_HANDLE_ID,
   type CubeCanvasStepNode,
   getCubeCanvasNodeLabel,
   getCubeCanvasNodeStatus,
-  getInputHandleOffset,
 } from './CubeCanvasElements.js';
+import {
+  CubeCanvasInputHandles,
+  CubeCanvasNodeLabel,
+  CubeCanvasOutputCaption,
+  CubeCanvasOutputHandle,
+} from './CubeCanvasNodeParts.js';
 import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
 import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
 import { CUBE_CANVAS_NODE_HEIGHT } from './CubeCanvasLayout.js';
@@ -108,16 +107,7 @@ export const CubeCanvasNode = observer(
         // a submenu opens outside the menu (Join with): focus may go there
         menuProps={{ elevation: 7, disableEnforceFocus: true }}
       >
-        {node.ports.map((port, index) => (
-          <Handle
-            key={port}
-            id={port}
-            type="target"
-            position={Position.Left}
-            isConnectable={connectable}
-            style={{ top: getInputHandleOffset(index, node.ports.length) }}
-          />
-        ))}
+        <CubeCanvasInputHandles node={node} connectable={connectable} />
         <Tooltip
           // after a moment, above the node, one message a line (U1(c))
           title={<div className="whitespace-pre-line">{status.tooltip}</div>}
@@ -167,25 +157,11 @@ export const CubeCanvasNode = observer(
               ? cubeTourAnchor(CUBE_TOUR_ANCHOR.RUNNING_STEP)
               : {})}
           >
-            <CubeNodeIcon
+            <CubeCanvasNodeLabel
               icon={editorState.registry.get(node.type)?.icon}
-              className="shrink-0 text-lg text-[var(--color-text-secondary)]"
+              title={label.title}
+              detail={label.detail}
             />
-            <span className="flex min-w-0 flex-col leading-tight">
-              <span
-                className={clsx(
-                  'break-words',
-                  label.detail === undefined ? 'line-clamp-2' : 'line-clamp-1',
-                )}
-              >
-                {label.title}
-              </span>
-              {label.detail !== undefined && (
-                <span className="truncate text-sm text-[var(--color-text-muted)]">
-                  {label.detail}
-                </span>
-              )}
-            </span>
             {status.hasWarnings && (
               // the warning's text is in the node's tooltip
               <WarningIcon
@@ -193,29 +169,11 @@ export const CubeCanvasNode = observer(
                 aria-hidden={true}
               />
             )}
-            {status.isCapture && (
-              // the output step's label, a caption above its corner: no fill,
-              // no ▶ and no pointer, so it reads as a label and only Run
-              // Query looks like a button (the manager's feedback, 2026-10-29)
-              <span
-                className="absolute bottom-full right-1 mb-0.5 cursor-default select-none text-xs font-semibold uppercase leading-4 tracking-wider text-[var(--color-text-secondary)]"
-                title={RUNNING_NODE_TITLE}
-                data-testid={LEGEND_CUBE_TEST_ID.RUNNING_NODE_BADGE}
-              >
-                {RUNNING_NODE_LABEL}
-              </span>
-            )}
+            {status.isCapture && <CubeCanvasOutputCaption />}
           </div>
         </Tooltip>
         {note !== undefined && <CubeCanvasStepNote text={note} />}
-        <Handle
-          id={CUBE_OUTPUT_HANDLE_ID}
-          type="source"
-          position={Position.Right}
-          isConnectable={!editorState.readOnly}
-          // in the middle of the step, not of the note under it
-          style={{ top: CUBE_CANVAS_NODE_HEIGHT / 2 }}
-        />
+        <CubeCanvasOutputHandle connectable={!editorState.readOnly} />
       </ContextMenu>
     );
   },

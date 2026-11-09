@@ -19,6 +19,7 @@ import {
   colSpec,
   columnAccess,
   CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
   dataProductAccessor,
   enumValue,
   func,
@@ -39,7 +40,10 @@ import {
   stringifyLosslessJSON,
   type PlainObject,
 } from '@finos/legend-shared';
-import { TEST__cubeLambdaSamples } from '../../../../../__test-utils__/CubeLambdaCorpus.js';
+import {
+  TEST__cubeIngestLambdaSamples,
+  TEST__cubeLambdaSamples,
+} from '../../../../../__test-utils__/CubeLambdaCorpus.js';
 import {
   V1_CUBE_LAMBDA_READER_MESSAGE,
   V1_readCubeLambda,
@@ -47,7 +51,10 @@ import {
 } from '../V1_CubeLambdaReader.js';
 import { V1_serializeCubeLambda } from '../V1_CubeLambdaSerializer.js';
 
-const SAMPLES = TEST__cubeLambdaSamples();
+const SAMPLES = [
+  ...TEST__cubeLambdaSamples(),
+  ...TEST__cubeIngestLambdaSamples(),
+];
 const COMPARISON = {
   readExpression: (json: object): IR => V1_readCubeValueSpecification(json),
 };
@@ -370,5 +377,52 @@ describe('Reading the JSON of a lambda', () => {
     expect(() =>
       V1_readCubeLambda(queryOf({ _type: 'integer', value: 2 ** 60 })),
     ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.NUMBER(2 ** 60));
+  });
+
+  test('Gives each refusal a kind a host can count: a value, a source, or the shape of the lambda', () => {
+    const kindOf = (json: unknown): CubeLambdaReadErrorKind | undefined => {
+      try {
+        V1_readCubeLambda(json);
+      } catch (error) {
+        return error instanceof CubeLambdaReadError ? error.kind : undefined;
+      }
+      return undefined;
+    };
+    [
+      { _type: 'latestDate' },
+      { _type: 'strictTime', value: '10:00:00' },
+      { _type: 'integer', value: 2 ** 60 },
+    ].forEach((value) =>
+      expect(kindOf(queryOf(call('greaterThan', TABLE_JSON, value)))).toBe(
+        CubeLambdaReadErrorKind.VALUE,
+      ),
+    );
+    [
+      { _type: 'classInstance', type: 'SQL', value: { code: 'select 1' } },
+      {
+        _type: 'classInstance',
+        type: 'I',
+        value: { path: ['demo::Ingest', 'TRADES'], metadata: true },
+      },
+      {
+        _type: 'classInstance',
+        type: 'P',
+        value: {
+          path: ['demo::Product', 'trades'],
+          parameters: [{ _type: 'integer', value: 1 }],
+        },
+      },
+      { _type: 'classInstance', type: 'I', value: { path: ['demo::Ingest'] } },
+    ].forEach((accessor) =>
+      expect(kindOf(queryOf(accessor))).toBe(CubeLambdaReadErrorKind.SOURCE),
+    );
+    expect(kindOf(TABLE_JSON)).toBe(CubeLambdaReadErrorKind.SHAPE);
+    expect(
+      kindOf(
+        queryOf(
+          call('letFunction', { _type: 'string', value: '' }, TABLE_JSON),
+        ),
+      ),
+    ).toBe(CubeLambdaReadErrorKind.SHAPE);
   });
 });
