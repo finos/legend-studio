@@ -142,3 +142,43 @@ test('Legend Cube: containers', async ({ page }) => {
     0,
   );
 });
+
+test('Legend Cube: selecting steps for a container', async ({ page }) => {
+  await openCubeExample(page, 'Notional by desk and asset class');
+
+  // the Join, picked with Shift and a click
+  const joinStep = step(page, 'DESK_ID');
+  await joinStep.click({ modifiers: ['Shift'] });
+  // then the trades and the desks, by a box drawn with Shift held: the
+  // image is taken while it is drawn, the steps inside it picked already
+  const sources = await Promise.all(
+    ['TRADES', 'DESKS'].map((name) =>
+      page
+        .getByTestId('legend-cube__canvas-node')
+        .filter({ has: page.getByText(name, { exact: true }) })
+        .boundingBox(),
+    ),
+  );
+  const boxes = sources.filter((box) => box !== null);
+  const left = Math.min(...boxes.map((box) => box.x)) - 14;
+  const top = Math.min(...boxes.map((box) => box.y)) - 14;
+  const right = Math.max(...boxes.map((box) => box.x + box.width)) + 14;
+  const bottom = Math.max(...boxes.map((box) => box.y + box.height)) + 14;
+  await page.mouse.move(left, top);
+  await page.keyboard.down('Shift');
+  await page.mouse.down();
+  await page.mouse.move(right, bottom, { steps: 10 });
+  await page.locator('.legend-cube__node--picked').nth(2).waitFor();
+  await markCallouts(page, [
+    { n: 7, targets: [page.locator('.react-flow__selection')], at: 'above' },
+    { n: 8, targets: [joinStep], at: 'above' },
+  ]);
+  await saveRegion(
+    page,
+    join(CUBE_GUIDE_IMAGES, 'containers-selection.png'),
+    [page.getByTestId('legend-cube__canvas')],
+    0,
+  );
+  await page.mouse.up();
+  await page.keyboard.up('Shift');
+});

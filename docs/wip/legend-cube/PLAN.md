@@ -5783,6 +5783,8 @@ PR into master. Evidence: `legend-cube-evidence/alteryx/canvas/containers/`.
    A container could switch that on for its steps later, but a container that holds a source can't be skipped.
 5. **The step's menu, not a shortcut, for now.** Ctrl+G waits for picking several steps. Ctrl/Cmd+click already sets
    the output step, Ctrl+click is a right-click on macOS, and Cmd+G is the browser's Find Next.
+   - **C.8 (2026-11-09):** steps are now picked with the mouse, with Shift, and Ctrl/Cmd+G puts them in a container while
+     the canvas has the focus. Find Next is kept from running only there.
 
 **Saved** in the spec's meta (§10.3): `meta.containers: [{ id, title, steps, folded? }]`, where `folded` is written
 only when true. It is kept as written, unknown keys included. Export and import carry it, and so will saved cubes
@@ -5835,6 +5837,8 @@ names that the query no longer has is left out where the canvas reads it (`getSh
 | C.5  | The user guide: a section and its images; this section; the changeset                                    | ✅     |
 | C.6  | Checks: every suite that reads the builder (core, builder, Query, Studio, Analytics), lint, the browser  | ✅     |
 | C.7  | Demo video                                                                                               | ✅     |
+| C.8  | Selecting steps with the mouse: Shift+drag and Shift+click, Put Selection in a Container, Ctrl/Cmd+G     | ✅     |
+| C.9  | Its tests (core, state, canvas), the guide's paragraph, checks, demo video                               | ✅     |
 
 **Checks:**
 
@@ -5844,7 +5848,35 @@ names that the query no longer has is left out where the canvas reads it (`getSh
 - The demo video (43, 1:22) records the menus, folding, steps following the flow, Undo and Export in Legend Analytics,
   with 12 checks.
 
-**Status:** draft finos/legend-studio#5850, into `cube-dev` (user, 2026-11-09).
+**Selecting steps with the mouse** (C.8, 2026-11-09, as Alteryx selects tools; the user asked on 2026-11-05):
+
+- **Shift and a drag** on the empty canvas draws a box, which adds the steps wholly inside it to the selection, as
+  React Flow's own box takes nodes. **Shift-click** picks a step or unpicks it, as Shift with Enter or Space does on a
+  focused step. **Escape**, or a plain click on the canvas, picks none. A plain drag still pans, a plain click still
+  opens a step's editor, and Ctrl/Cmd+click still sets the output step.
+- **The box adds** to the steps picked, as Shift-click does, rather than replacing them as React Flow's does. The user
+  can flip that.
+- **A step's note** (§11.31) is a line under its card, in its React Flow node. The box takes a step when its card is
+  wholly inside, so a box drawn tight round the cards picks them, notes cut or not.
+- A picked step is tinted, with a halo: apart from the output step's ring and the drop target's dashed outline.
+- **Put Selection in a Container**, on a picked step's menu, and **Ctrl/Cmd+G** while the canvas has the focus. A
+  container is one block, so it takes the steps picked and each step between them: each one's way down the flow, to
+  where all their ways meet (`getBlockLinkingSteps`). Refused, with the reason in the item's tooltip: steps of two
+  trees, and a step in a container already, picked or between two picked (containers don't nest). Ctrl/Cmd+G refused
+  does nothing, as the canvas's other keys do. With Shift, the key is left alone: Studio has Ctrl+Shift+G.
+- **The selection is the page's** (`CubeCanvasSelectionState`): never saved, and no undo step. A step the query no
+  longer has is unpicked, so a new step of its id isn't picked. Opening another cube picks none. A folded container's
+  steps aren't drawn, so they are left out. A read-only cube has no selection. Making the container is one undo step,
+  and picks none.
+- **Built on React Flow's box, with nothing selectable.** `elementsSelectable` is on and `selectionKeyCode` is Shift, so
+  React Flow draws the box. Every node and line is `selectable: false`: a click never selects in React Flow, and its box
+  takes nothing, so it draws no rectangle of its own over the steps. `CubeCanvasSelectionBox` reads the box from React
+  Flow's store and picks the steps inside it from the layout's places. The canvas takes the focus (`tabIndex` -1) so
+  Escape and Ctrl/Cmd+G reach it after a box. Its keys act only on the canvas or a node of it, never in a field, a menu
+  or the node editor, whose keys come to it from their layers.
+
+**Status:** finos/legend-studio#5850 merged into `cube-dev` (7bf550649, user, 2026-11-09). Selecting steps (C.8,
+C.9): draft finos/legend-studio#5856, into `cube-dev`.
 
 ### 11.30 Data products and ingest data sets in one cube (user, 2026-11-05/09)
 
@@ -6002,7 +6034,7 @@ frame takes in its steps' notes.
   `tsc --build`, `check:format`, `check:copyright` and `check:changeset` pass.
 - In Chromium, on Legend Analytics: the guide's screenshot scripts, and the demo video (44, 1:17) with 13 checks.
 
-**Status:** draft finos/legend-studio#5853, into `cube-dev` (user, 2026-11-09).
+**Status:** finos/legend-studio#5853 merged into `cube-dev` (29831a734, user, 2026-11-09).
 
 ## 12. G. Risks and open questions
 
