@@ -121,6 +121,165 @@
     color: var(--color-dark-theme-text-muted);
     font-size: 1.25rem;
   }
+
+  // Flow | Pure, and Copy
+  &__actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  // one line about the definition: why Cube can't draw it, or which columns
+  // it couldn't load
+  &__note {
+    padding: 0.6rem 1rem;
+    border-left: 0.3rem solid var(--color-dark-theme-blue-primary);
+    border-radius: 0.3rem;
+    background: rgb(127 127 127 / 10%);
+    color: var(--color-dark-theme-text-primary);
+    font-size: 1.25rem;
+
+    &--warning {
+      border-left-color: var(--color-yellow-200);
+    }
+  }
+
+  // Cube's own words, or an error's
+  &__note__details {
+    margin-top: 0.4rem;
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+
+    summary {
+      width: fit-content;
+      cursor: pointer;
+    }
+  }
+}
+
+// Flow | Pure: Flow can't be picked when Cube can't draw the definition
+.data-product__viewer__definition-switch {
+  display: inline-flex;
+  flex: none;
+  padding: 0.2rem;
+  border: 0.1rem solid var(--color-dark-theme-border-light);
+  border-radius: 0.4rem;
+
+  &__option {
+    padding: 0.2rem 1rem;
+    border: none;
+    border-radius: 0.3rem;
+    background: none;
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover,
+    &--active {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &--active {
+      background: rgb(127 127 127 / 22%);
+    }
+
+    &[aria-disabled='true'] {
+      color: var(--color-dark-theme-text-muted);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &:focus-visible {
+      outline: 0.1rem solid currentcolor;
+      outline-offset: 0.1rem;
+    }
+  }
+}
+
+// Legend Cube's canvas, read-only, and its placeholder while it loads
+.data-product__viewer__definition-flow {
+  flex: none;
+  height: 30rem;
+  overflow: hidden;
+  border: 0.1rem solid var(--color-dark-theme-border-light);
+  border-radius: 0.4rem;
+
+  &--loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    border-style: dashed;
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.25rem;
+  }
+
+  &__loading-icon {
+    position: relative;
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+}
+
+// the flow couldn't be loaded or drawn, or neither view can be shown
+.data-product__viewer__definition-flow__failure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.2rem 1.4rem;
+  border: 0.1rem solid var(--color-dark-theme-border-light);
+  border-left: 0.3rem solid var(--color-red-100);
+  border-radius: 0.4rem;
+  color: var(--color-dark-theme-text-primary);
+  font-size: 1.25rem;
+
+  &__title {
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+
+  &__text {
+    color: var(--color-dark-theme-text-muted);
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.2rem;
+  }
+
+  &__action {
+    padding: 0.35rem 1rem;
+    border: 0.1rem solid var(--color-dark-theme-border-light);
+    border-radius: 0.4rem;
+    background: var(--color-dark-theme-bg-elevated);
+    color: var(--color-dark-theme-text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-dark-theme-bg-tertiary);
+    }
+
+    &:focus-visible {
+      outline: 0.1rem solid currentcolor;
+      outline-offset: 0.1rem;
+    }
+
+    &--primary {
+      border-color: transparent;
+      background: var(--color-blue-200);
+      color: var(--color-white);
+
+      &:hover {
+        background: var(--color-blue-100);
+      }
+    }
+  }
 }
 
 // the Pure Query tab

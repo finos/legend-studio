@@ -26,9 +26,18 @@ import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { V1_LakehouseAccessPoint } from '@finos/legend-graph';
 import { Box, Link } from '@mui/material';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
+import {
+  type DataProductDefinitionView,
+  DataProductAccessPointDefinitionFlow,
+  DataProductDefinitionFlowRefusal,
+  DataProductDefinitionUnavailable,
+  DataProductDefinitionViewSwitch,
+  describeDefinitionFlowRefusal,
+} from './DataProductAccessPointDefinitionFlow.js';
 import { AccessPointGroupAccess } from '../../stores/DataProduct/DataProductAPGState.js';
 import type { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
@@ -295,27 +304,67 @@ export const DataProductPureQueryScreen = observer(
   },
 );
 
-/** How the producer defined the access point (its function as Pure), fetched when first shown */
+/** Fetches an access point's definition as Pure, telling of a failure */
+const fetchGrammar = (accessPointState: DataProductAccessPointState): void => {
+  accessPointState
+    .fetchGrammar()
+    .catch((error: Error) =>
+      accessPointState.apgState.applicationStore.notificationService.notifyError(
+        error,
+      ),
+    );
+};
+
+/** Reads an access point's definition into Legend Cube's flow, once */
+const readDefinitionFlow = (
+  accessPointState: DataProductAccessPointState,
+): void => {
+  flowResult(accessPointState.readDefinitionFlow()).catch(
+    accessPointState.apgState.applicationStore.alertUnhandledError,
+  );
+};
+
+/**
+ * How the producer defined the access point: as Legend Cube's flow, which it
+ * opens on, or as Pure, which it shows instead when Cube can't draw the
+ * definition. Both are fetched when first shown; Copy copies the Pure.
+ */
 const DataProductAccessPointDefinition = observer(
   (props: { accessPointState: DataProductAccessPointState }) => {
     const { accessPointState } = props;
+    const [view, setView] = useState<DataProductDefinitionView>('flow');
 
     useEffect(() => {
       if (accessPointState.fetchingGrammarState.isInInitialState) {
-        accessPointState
-          .fetchGrammar()
-          .catch((error: Error) =>
-            accessPointState.apgState.applicationStore.notificationService.notifyError(
-              error,
-            ),
-          );
+        fetchGrammar(accessPointState);
       }
+      // read once per access point
+      readDefinitionFlow(accessPointState);
     }, [accessPointState]);
+
+    const retryDefinitionFlow = (): void => {
+      accessPointState.resetDefinitionFlow();
+      readDefinitionFlow(accessPointState);
+    };
+    const retryDefinition = (): void => {
+      accessPointState.resetGrammar();
+      fetchGrammar(accessPointState);
+      retryDefinitionFlow();
+    };
 
     const definition = accessPointState.grammar;
     const isFetching =
       accessPointState.fetchingGrammarState.isInInitialState ||
       accessPointState.fetchingGrammarState.isInProgress;
+    const definitionFlow = accessPointState.definitionFlow;
+    const refusal =
+      definitionFlow?.kind === 'refused' ? definitionFlow.refusal : undefined;
+    // neither view can be shown
+    const isUnavailable =
+      definitionFlow?.kind === 'failed' &&
+      !isFetching &&
+      definition === undefined;
+    const shownView = refusal ? 'pure' : view;
 
     return (
       <section
@@ -332,21 +381,47 @@ const DataProductAccessPointDefinition = observer(
               <strong>Pure Query</strong>.
             </div>
           </div>
-          {definition !== undefined && (
-            <CopyCodeButton value={definition} label="definition" />
-          )}
+          <div className="data-product__viewer__definition__actions">
+            {!isUnavailable && (
+              <DataProductDefinitionViewSwitch
+                view={shownView}
+                onChange={setView}
+                flowUnavailableReason={
+                  refusal
+                    ? `Cube can't draw this definition: ${describeDefinitionFlowRefusal(refusal)}.`
+                    : undefined
+                }
+              />
+            )}
+            {definition !== undefined && (
+              <CopyCodeButton value={definition} label="definition" />
+            )}
+          </div>
         </div>
-        {isFetching ? (
-          <CodeLoadingIndicator />
-        ) : definition !== undefined ? (
-          <ReadOnlyPureCode
-            value={definition}
-            maxLines={DEFINITION_MAX_LINES}
+        {isUnavailable ? (
+          <DataProductDefinitionUnavailable onRetry={retryDefinition} />
+        ) : shownView === 'flow' ? (
+          <DataProductAccessPointDefinitionFlow
+            accessPointState={accessPointState}
+            onShowPure={() => setView('pure')}
+            onRetry={retryDefinitionFlow}
           />
         ) : (
-          <div className="data-product__viewer__definition__message">
-            Unable to fetch the definition
-          </div>
+          <>
+            {refusal && <DataProductDefinitionFlowRefusal refusal={refusal} />}
+            {isFetching ? (
+              <CodeLoadingIndicator />
+            ) : definition !== undefined ? (
+              <ReadOnlyPureCode
+                value={definition}
+                maxLines={DEFINITION_MAX_LINES}
+              />
+            ) : (
+              <div className="data-product__viewer__definition__message">
+                Unable to fetch the definition
+              </div>
+            )}
+          </>
         )}
       </section>
     );

@@ -27,6 +27,9 @@ export enum DATA_PRODUCT_EVENT {
   OPEN_SUBSCRIPTIONS_MODAL = 'marketplace.open.subscriptions-modal',
   OPEN_CREATE_SUBSCRIPTION_DIALOG = 'marketplace.open.create-subscription-dialog',
   CHANGE_CONTRACT_CONSUMER_TYPE = 'marketplace.change.contract-consumer-type',
+  SHOW_ACCESS_POINT_DEFINITION_FLOW = 'marketplace.show.access-point-definition-flow',
+  REFUSE_ACCESS_POINT_DEFINITION_FLOW = 'marketplace.refuse.access-point-definition-flow',
+  FAIL_ACCESS_POINT_DEFINITION_FLOW = 'marketplace.fail.access-point-definition-flow',
 }
 
 export enum PRODUCT_INTEGRATION_TYPE {
@@ -72,6 +75,21 @@ type MarketPlaceDataProductIntegration_TelemetryData =
     accessPointGroup?: string | undefined;
     accessPointPath?: string | undefined;
   };
+
+/** The access point whose definition's flow an event is about */
+export type AccessPointDefinitionFlow_TelemetryData = {
+  dataProduct: string;
+  accessPointGroup: string;
+  accessPoint: string;
+  /** The data product's version; none in Studio's preview, or for an ad-hoc deployment */
+  origin?:
+    | {
+        groupId: string;
+        artifactId: string;
+        versionId: string;
+      }
+    | undefined;
+};
 
 export type MarketplaceUserSession = {
   eventId: number;
@@ -293,6 +311,84 @@ export class DataProductTelemetryHelper {
         consumerType,
         dataProduct,
         accessPointGroup,
+        ...session,
+      },
+    );
+  }
+
+  /**
+   * An access point's definition, read by Legend Cube, opened as its flow:
+   * how many steps it has, the data sets whose columns couldn't be loaded,
+   * and how long it took from opening the definition
+   */
+  static logEvent_ShowAccessPointDefinitionFlow(
+    telemetryService: TelemetryService,
+    accessPoint: AccessPointDefinitionFlow_TelemetryData,
+    flow: {
+      steps: number;
+      unknownDataSets: string[];
+      durationMs: number;
+    },
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+      {
+        ...accessPoint,
+        ...flow,
+        ...session,
+      },
+    );
+  }
+
+  /**
+   * Legend Cube can't read an access point's definition, so it shows as Pure:
+   * why, as Cube counts it (e.g. `parameters`, `noStep`), and the function it
+   * can't read, if any
+   */
+  static logEvent_RefuseAccessPointDefinitionFlow(
+    telemetryService: TelemetryService,
+    accessPoint: AccessPointDefinitionFlow_TelemetryData,
+    refusal: {
+      reason: string;
+      functionName: string | undefined;
+    },
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.REFUSE_ACCESS_POINT_DEFINITION_FLOW,
+      {
+        ...accessPoint,
+        reason: refusal.reason,
+        functionName: refusal.functionName,
+        ...session,
+      },
+    );
+  }
+
+  /**
+   * An access point's definition's flow couldn't be shown, though Cube didn't
+   * refuse it: its kind (e.g. `load`, `draw`) and the error
+   */
+  static logEvent_FailAccessPointDefinitionFlow(
+    telemetryService: TelemetryService,
+    accessPoint: AccessPointDefinitionFlow_TelemetryData,
+    failure: {
+      kind: string;
+      error: string;
+    },
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.FAIL_ACCESS_POINT_DEFINITION_FLOW,
+      {
+        ...accessPoint,
+        failure: failure.kind,
+        error: failure.error,
+        status: TELEMETRY_EVENT_STATUS.FAILURE,
         ...session,
       },
     );

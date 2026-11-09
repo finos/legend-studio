@@ -42,6 +42,7 @@ export * from './stores/DataProduct/DataProductLegendAISchema.js';
 export * from './stores/DataProduct/DataProductSampleQueryTabState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
 export * from './stores/DataProduct/DataProductAccessPointState.js';
+export * from './stores/DataProduct/DataProductDefinitionFlow.js';
 export * from './stores/DataProduct/DataAccess/DataAccessRequestState.js';
 export * from './stores/DataProduct/DataAccess/DataContractViewerState.js';
 export * from './stores/DataProduct/DataAccess/WorkflowDataAccessRequestState.js';
