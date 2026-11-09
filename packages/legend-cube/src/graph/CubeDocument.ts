@@ -19,6 +19,7 @@ import type { ColumnHint } from '../presentation/ColumnFormat.js';
 import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
 import { Query } from './Query.js';
 import type { StepContainer } from './StepContainer.js';
+import type { StepNote } from './StepNote.js';
 
 // Each plain-data part keeps the keys of its saved JSON that this version
 // does not know, in `rest`, so a re-save writes them back (PLAN §10.3)
@@ -71,6 +72,8 @@ export interface CubeMeta {
   readonly drilldown?: Drilldown | undefined;
   /** The canvas's containers of steps: none until one is made */
   readonly containers?: readonly StepContainer[] | undefined;
+  /** The steps' notes (PLAN §11.31): none until one is written */
+  readonly notes?: readonly StepNote[] | undefined;
   readonly rest?: JsonObject;
 }
 
