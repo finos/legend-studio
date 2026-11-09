@@ -17,6 +17,7 @@
 import {
   EmitRole,
   type IR,
+  isSameCubeIR,
   type JsonObject,
   lambda,
   type ModelContext,
@@ -73,6 +74,7 @@ import {
 } from '../../../CubeDirectConnection.js';
 import {
   type AccessorPath,
+  type CubeCheckedPure,
   type CubeCodeCompletion,
   type CubeEngine,
   CubeEngineError,
@@ -83,7 +85,12 @@ import {
   type NodeId,
 } from '../../../CubeEngine.js';
 import type { CubeFunctionCatalogue } from '../../../CubeFunctionCatalogue.js';
-import type { CubeExpressionOutline } from '../../../CubeExpressionOutline.js';
+import {
+  type CubeExpressionOutline,
+  applyCubeCodeEdits,
+  findCubePrecedenceTraps,
+  getCubePrecedenceFixEdits,
+} from '../../../CubeExpressionOutline.js';
 import {
   V1_canonicalCubeDirectConnection,
   V1_checkCubeDirectConnection,
@@ -119,6 +126,19 @@ import {
 import { V1_readCubeExpression } from './V1_CubeExpression.js';
 import { V1_buildCubeFunctionCatalogue } from './V1_CubeFunctionCatalogue.js';
 import { V1_buildCubeExpressionOutline } from './V1_CubeExpressionOutline.js';
+import {
+  V1_readCubeLambda,
+  V1_readCubeValueSpecification,
+} from './V1_CubeLambdaReader.js';
+
+/** The IR of a lambda the engine parsed from Pure text: a query's, or else an expression's of a row */
+const V1_readCubePure = (json: unknown): IR => {
+  try {
+    return V1_readCubeLambda(json);
+  } catch {
+    return V1_readCubeValueSpecification(json);
+  }
+};
 import { V1_serializeCubeLambda } from './V1_CubeLambdaSerializer.js';
 import { V1_buildCubeModelOutline } from './V1_CubeModelOutlineBuilder.js';
 import { V1_buildCubeSchema } from './V1_CubeRelationTypeAdapter.js';
@@ -1468,6 +1488,44 @@ export class V1_LegendCubeEngine implements CubeEngine {
       });
     this.functionCatalogues.set(baseUrl, read);
     return read;
+  }
+
+  async checkPure(lambdaIR: IR, text: string): Promise<CubeCheckedPure> {
+    /** Whether the text, parsed, reads as the lambda; and its parse */
+    const readsAs = async (
+      candidate: string,
+    ): Promise<{ located: JsonObject; same: boolean }> => {
+      const parsed = await this.parseExpression(candidate, 'cube:pure');
+      return {
+        located: parsed.located,
+        same: isSameCubeIR(lambdaIR, V1_readCubePure(parsed.lambda), {
+          readExpression: V1_readCubeValueSpecification,
+        }),
+      };
+    };
+    try {
+      const first = await readsAs(text);
+      if (first.same) {
+        return { text, readsAsLambda: true, isRepaired: false };
+      }
+      // the parentheses of arithmetic compared, put back where the text dropped them
+      const outline = V1_buildCubeExpressionOutline(first.located, text);
+      const traps = outline ? findCubePrecedenceTraps(outline) : [];
+      if (!traps.length) {
+        // it reads otherwise, for no reason Cube knows: nothing to say of it
+        return { text, readsAsLambda: undefined, isRepaired: false };
+      }
+      const repaired = applyCubeCodeEdits(
+        text,
+        getCubePrecedenceFixEdits(traps),
+      );
+      return (await readsAs(repaired)).same
+        ? { text: repaired, readsAsLambda: true, isRepaired: true }
+        : { text, readsAsLambda: false, isRepaired: false };
+    } catch {
+      // the text can't be read back: given as it is
+      return { text, readsAsLambda: undefined, isRepaired: false };
+    }
   }
 
   async renderPure(lambdaIR: IR): Promise<string> {

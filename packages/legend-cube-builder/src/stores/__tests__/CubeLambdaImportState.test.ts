@@ -18,6 +18,8 @@ import { describe, expect, test } from '@jest/globals';
 import {
   CubeDocument,
   DataProductAccessPointSource,
+  ExpressionFilter,
+  type IR,
   dataProductAccessor,
   func,
   lambda,
@@ -38,6 +40,7 @@ import {
 import { serializeCubeLambdaForHost } from '../../graph-manager/protocol/pure/CubeEngineBuilder.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import {
+  CUBE_LAMBDA_IMPORT_MESSAGE,
   CubeLambdaFidelity,
   getCubeLambdaFidelity,
   readCubeLambdaDocument,
@@ -132,5 +135,91 @@ describe("Reading a lambda into the page's cube", () => {
         unchecked: ['join101'],
       }),
     ).toBe(CubeLambdaFidelity.UNCHECKED);
+  });
+});
+
+describe("An imported expression's code (EXPRESSION-EDITOR.md, §2.4)", () => {
+  /** `filter(x | ($x.ORDER_ID + 1) == 3)` on the orders */
+  const FILTERED = (): unknown =>
+    serializeCubeLambdaForHost(
+      lambda(
+        [],
+        [
+          func('filter', [
+            storeAccessor([NORTHWIND_DATABASE, 'NORTHWIND', 'ORDERS']),
+            lambda(
+              ['x'],
+              [
+                func('equal', [
+                  func('plus', [
+                    {
+                      k: 'collection',
+                      values: [
+                        {
+                          k: 'property',
+                          name: 'ORDER_ID',
+                          receiver: { k: 'var', name: 'x' },
+                        },
+                        literal({ kind: 'integer', value: '1' }),
+                      ],
+                    } as IR,
+                  ]),
+                  literal({ kind: 'integer', value: '3' }),
+                ]),
+              ],
+            ),
+          ]),
+        ],
+      ),
+    );
+
+  /** The page's cube, on the Northwind model, which the table's import reads */
+  const northwindState = (
+    host: ReturnType<typeof TEST__createCubeHost>['host'],
+  ): CubeEditorState =>
+    new CubeEditorState(
+      host,
+      new CubeDocument({
+        context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
+        query: sliceQuery(),
+      }),
+    );
+
+  test("Is the engine's text, checked: the parentheses it drops put back", async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.renderPure.mockResolvedValue('x|$x.ORDER_ID + 1 == 3');
+    fake.checkPure.mockResolvedValue({
+      text: 'x|($x.ORDER_ID + 1) == 3',
+      readsAsLambda: true,
+      isRepaired: true,
+    });
+    const reading = await readCubeLambdaDocument(
+      northwindState(host),
+      FILTERED(),
+    );
+    const filter = reading.document.query.nodes.find(
+      (node) => node instanceof ExpressionFilter,
+    ) as ExpressionFilter;
+    expect(filter.code).toBe('x|($x.ORDER_ID + 1) == 3');
+    // checked against its lambda, as the engine wrote it
+    expect(fake.checkPure.mock.calls[0]?.[1]).toBe('x|$x.ORDER_ID + 1 == 3');
+    expect(reading.notes).toEqual([]);
+  });
+
+  test('Says so where the code reads otherwise than the expression, the parentheses not put back', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.renderPure.mockResolvedValue('x|$x.ORDER_ID + 1 == 3');
+    fake.checkPure.mockResolvedValue({
+      text: 'x|$x.ORDER_ID + 1 == 3',
+      readsAsLambda: false,
+      isRepaired: false,
+    });
+    const reading = await readCubeLambdaDocument(
+      northwindState(host),
+      FILTERED(),
+    );
+    expect(reading.notes).toEqual([
+      CUBE_LAMBDA_IMPORT_MESSAGE.CODE_READS_DIFFERENTLY,
+    ]);
   });
 });

@@ -647,3 +647,11 @@ export const CUBE_FUNCTIONS_PANEL_LABEL = Object.freeze({
   INSERT_TITLE: (target: string): string =>
     `Write a call of it at the cursor of ${target}: after a value, as ->name(…)`,
 });
+
+/**
+ * Show Pure's warning where the engine's text reads otherwise than the query
+ * and Cube couldn't put back the parentheses it dropped (EXPRESSION-EDITOR.md,
+ * §2.4)
+ */
+export const CUBE_SHOW_PURE_READS_DIFFERENTLY =
+  "This text reads otherwise than the query in a place: the engine's text writer drops parentheses Pure needs, as in (a + 1) == 3. Check the comparisons before you copy it.";
