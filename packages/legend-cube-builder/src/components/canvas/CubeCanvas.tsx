@@ -49,14 +49,23 @@ import { canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { isCubeSampleDataOffered } from '../../stores/CubeHost.js';
 import {
+  buildCubeCanvasContainerNodes,
+  getCubeCanvasContainerNodeId,
   buildCubeCanvasEdges,
   buildCubeCanvasNodes,
+  CUBE_CANVAS_CONTAINER_TYPE,
   CUBE_CANVAS_EDGE_TYPE,
+  CUBE_CANVAS_FOLDED_CONTAINER_TYPE,
   CUBE_CANVAS_NODE_TYPE,
   CUBE_OUTPUT_HANDLE_ID,
   type CubeCanvasFlowEdge,
   type CubeCanvasFlowNode,
 } from './CubeCanvasElements.js';
+import {
+  CUBE_CANVAS_CONTAINER_MINIMAP_COLOR,
+  CubeCanvasContainerFrame,
+  CubeCanvasFoldedContainer,
+} from './CubeCanvasContainer.js';
 import { CubeCanvasContext } from './CubeCanvasContext.js';
 import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
 import {
@@ -65,12 +74,20 @@ import {
   dropOnCubeCanvas,
 } from './CubeCanvasDnd.js';
 import { CubeCanvasEdge } from './CubeCanvasEdge.js';
-import { layoutCubeQuery } from './CubeCanvasLayout.js';
+import {
+  type CubeCanvasPosition,
+  getCubeCanvasStepPlace,
+  layoutCubeCanvas,
+} from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
 import { CubeNodeEditorPopper } from '../editors/CubeNodeEditorPopper.js';
 
 // React Flow re-renders every node when these change identity
-const NODE_TYPES = { [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode };
+const NODE_TYPES = {
+  [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode,
+  [CUBE_CANVAS_CONTAINER_TYPE]: CubeCanvasContainerFrame,
+  [CUBE_CANVAS_FOLDED_CONTAINER_TYPE]: CubeCanvasFoldedContainer,
+};
 const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
 /** Small, so it covers little of a short canvas */
@@ -134,21 +151,56 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const { query } = editorState.document;
   const { readOnly } = editorState;
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
-  const { positions, lanes } = useMemo(() => layoutCubeQuery(query), [query]);
-  const nodes = useMemo(
-    () => buildCubeCanvasNodes(query, positions),
-    [query, positions],
+  const { containers } = editorState.document.meta;
+  const layout = useMemo(
+    () => layoutCubeCanvas(query, containers),
+    [query, containers],
   );
+  const { positions } = layout;
+  const nodes = useMemo(() => {
+    const containerNodes = buildCubeCanvasContainerNodes(layout.containers);
+    // the frames first, behind the steps
+    return [
+      ...containerNodes.filter(
+        (node) => node.type === CUBE_CANVAS_CONTAINER_TYPE,
+      ),
+      ...buildCubeCanvasNodes(query, positions),
+      ...containerNodes.filter(
+        (node) => node.type === CUBE_CANVAS_FOLDED_CONTAINER_TYPE,
+      ),
+    ];
+  }, [query, positions, layout]);
   const edges = useMemo(
-    () => buildCubeCanvasEdges(query, lanes),
-    [query, lanes],
+    () => buildCubeCanvasEdges(query, layout.lanes, layout.containers),
+    [query, layout],
+  );
+  // a step in a folded container has its editor on the container's box
+  const editorPositions = useMemo(
+    () =>
+      new Map(
+        query.nodes.flatMap((node): [string, CubeCanvasPosition][] => {
+          const place = getCubeCanvasStepPlace(layout, node.id);
+          return place ? [[node.id, { x: place.x, y: place.y }]] : [];
+        }),
+      ),
+    [query, layout],
   );
   // the view fits the graph again, to the left, whenever the layout moves a
-  // node, or the canvas changes size (e.g. the splitter above the grid
-  // moves), once React Flow has measured every node
+  // node or a container, or the canvas changes size (e.g. the splitter above
+  // the grid moves), once React Flow has measured every node
   const layoutSignature = useMemo(
-    () => JSON.stringify([...positions]),
-    [positions],
+    () =>
+      JSON.stringify([
+        [...positions],
+        layout.containers.map(({ container, x, y, width, height }) => [
+          container.id,
+          x,
+          y,
+          width,
+          height,
+        ]),
+      ]),
+    [positions, layout],
   );
   const nodesInitialized = useNodesInitialized();
   const canvasWidth = useStore((state) => state.width);
@@ -188,10 +240,12 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       selectionKeyCode={null}
       multiSelectionKeyCode={null}
       onNodeClick={(event, flowNode) => {
-        // a click on a handle starts or ends a connection, not a node click
+        // a click on a handle starts or ends a connection, not a node
+        // click; a container's buttons are its own
         if (
-          event.target instanceof Element &&
-          event.target.closest('.react-flow__handle')
+          flowNode.type !== CUBE_CANVAS_NODE_TYPE ||
+          (event.target instanceof Element &&
+            event.target.closest('.react-flow__handle'))
         ) {
           return;
         }
@@ -216,7 +270,20 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           target.classList.contains('react-flow__node')
             ? target.dataset.id
             : undefined;
-        if (nodeId === undefined) {
+        // a folded container's box opens on Enter or Space
+        const folded = editorState.shownContainers.find(
+          ({ container }) =>
+            container.folded &&
+            getCubeCanvasContainerNodeId(container.id, true) === nodeId,
+        );
+        if (folded && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          if (!readOnly && editorState.nodeEditor.finish()) {
+            editorState.setContainerFolded(folded.container.id, false);
+          }
+          return;
+        }
+        if (nodeId === undefined || !query.getNode(nodeId)) {
           return;
         }
         // the focused step's keys (the review of the demo, 2026-10-13): only
@@ -310,8 +377,21 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           <FitViewIcon />
         </ControlButton>
       </Controls>
-      <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
-      <CubeNodeEditorPopper editorState={editorState} positions={positions} />
+      <MiniMap
+        pannable={true}
+        zoomable={true}
+        style={MINI_MAP_STYLE}
+        // a container's plane is a tint, behind its steps
+        nodeColor={(node) =>
+          node.type === CUBE_CANVAS_CONTAINER_TYPE
+            ? CUBE_CANVAS_CONTAINER_MINIMAP_COLOR
+            : ''
+        }
+      />
+      <CubeNodeEditorPopper
+        editorState={editorState}
+        positions={editorPositions}
+      />
     </ReactFlow>
   );
 });

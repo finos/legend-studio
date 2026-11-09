@@ -5759,6 +5759,93 @@ type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and Duck
 **Supersessions** (kept here until folded): §11.5's aggregations table and `getAvailableAggregations`; §11.6's window
 functions; §11.12's Pivot aggregations; Appendix A, §10 (functions beyond the spec) and §16 (the setting messages).
 
+### 11.29 Containers: steps framed together, and folded to one box (2026-11-05)
+
+**Ask:** idea 7 of the Alteryx study (finos/legend-studio#5809, its §2.7): whether Alteryx groups steps "with a plane
+over them". It does, with the Tool Container. Neema's legend-lite flow mode has containers too: its `flow.ts` has
+`Frame` and `framedBy`, and its design note has a "Built, containers" section. Unlike Alteryx and legend-lite, Cube lays
+its canvas out on every edit and saves no position (§7.2), so a container can't be "the boxes inside a frame". It is
+saved: which steps, its title, and whether it is folded. A prototype with screenshots came first (2026-10-29). Built on
+the branch `cube-canvas-groups`, rebased on master `acacb2c8a` after #5811 (every source in the first column), in one
+PR into master. Evidence: `legend-cube-evidence/alteryx/canvas/containers/`.
+
+**Settled with the user** (2026-11-05, all on the recommendation):
+
+1. **One word, "container"**, Alteryx's. Cube already has a Group step.
+2. **No nesting.** Frames inside frames get tall on a canvas laid out for you, and folding a frame inside a folded one
+   needs rules of its own. A later version can add a parent to a container, and this one keeps unknown keys.
+3. **A container is one block of linked steps, so all of one tree.**
+   - Two containers that aren't blocks can feed each other once folded: a loop. Take `{a1, a2}` and `{b1, b2}` around a
+     Join fed by `a1 → b1` and `b2 → a2`.
+   - Blocks of a forest folded to boxes still make a forest, so folding any number of them makes no loop.
+   - A folded block has one output, as a step has, which saving steps as a function (idea 11) needs too.
+4. **Folding only hides.** It never changes what the cube runs or its rows. Skipping steps is idea 7's "skip a step".
+   A container could switch that on for its steps later, but a container that holds a source can't be skipped.
+5. **The step's menu, not a shortcut, for now.** Ctrl+G waits for picking several steps. Ctrl/Cmd+click already sets
+   the output step, Ctrl+click is a right-click on macOS, and Cmd+G is the browser's Find Next.
+
+**Saved** in the spec's meta (§10.3): `meta.containers: [{ id, title, steps, folded? }]`, where `folded` is written
+only when true. It is kept as written, unknown keys included. Export and import carry it, and so will saved cubes
+(M8). A container needs no new format version: an older Cube keeps it as an unknown key and writes it back. A step it
+names that the query no longer has is left out where the canvas reads it (`getShownContainers`).
+
+**Rules** (`StepContainer.ts`, `reconcileStepContainers`):
+
+- A step is in one container at most.
+- A container whose steps aren't one block isn't drawn: its steps show as any other. Every edit Cube makes keeps them
+  a block.
+- **Steps follow the flow.** A step added, pasted, duplicated or moved between two steps of a container joins it, by
+  its first input and its output. A step added after its last step stays outside. A step removed or moved away leaves
+  it. When an edit splits a container, such as removing a Join inside it, the container keeps its largest block. A
+  container left with no step goes away.
+- Each change to a container is one undo step. It changes only the meta, so the rows stay current.
+
+**On the canvas:**
+
+- **Open:** a see-through plane behind its steps, behind the lines too. Every press reaches the canvas except on its
+  head. The head has ▾ (fold), its title (double-click to rename), how many steps it holds, and × (takes the container
+  away, not its steps). Right-click the head for Fold, Rename and Remove Container.
+- **Folded:** one box, a step's size, in its steps' place. The lines into and out of its steps come to its sides. It
+  shows their errors and the Output caption, and its tooltip lists them. ▸, a double-click, or Enter on the focused box
+  opens it. A step of a folded container still opens its editor, on the box.
+- **Making one:** a step's menu has **Put in a Container ▸**. Its submenu has **This Step Alone**, **With the Steps
+  Before It** (the step and each step before it that is in no container), and each container beside the step. **Take
+  Out of Container** is enabled for a step at the container's edge, so a container never splits.
+
+**Layout** (`layoutCubeCanvas`, beside `layoutCubeQuery`):
+
+- A cube without containers is laid out exactly as before.
+- An open container's steps are a cluster of dagre's compound graph (`compound`, `setParent`), so no other step lands
+  inside its frame. The frame is its steps' box, with room for the head.
+- dagre's nesting graph puts three ranks between two columns where there was one, so `ranksep` is a third and the
+  columns keep their gap. `edgesep` is 40, which leaves room for the head above the steps. dagre ignores a cluster's
+  own padding.
+- A folded container's steps are one node of the graph laid out, the query with each folded container contracted, so
+  its box takes the column after the steps that feed it.
+- Columns and lanes are §7.2's, on that graph. A line that skips a column goes by a frame, not through it.
+
+**Steps:**
+
+| Step | What                                                                                                     | Status |
+| ---- | -------------------------------------------------------------------------------------------------------- | ------ |
+| C.1  | Prototype: the meta, the rules' core, the layout, frames and folded boxes, Put in a Container            | ✅     |
+| C.2  | Steps follow the flow: added, pasted, moved and removed steps; a split container keeps its largest block | ✅     |
+| C.3  | The menus: Put in a Container ▸, Take Out of Container, the head's menu; renaming from the menu          | ✅     |
+| C.4  | The folded box: the Output caption, Enter to open, the minimap; tests of the canvas                      | ✅     |
+| C.5  | The user guide: a section and its images; this section; the changeset                                    | ✅     |
+| C.6  | Checks: every suite that reads the builder (core, builder, Query, Studio, Analytics), lint, the browser  | ✅     |
+| C.7  | Demo video                                                                                               | ✅     |
+
+**Checks:**
+
+- 7,336 tests pass in legend-cube, legend-cube-builder, Query, Analytics and Studio. 4 fail, all engine-backed and
+  against the local engine, which predates legend-engine#5449 (BINARY typing, 2 tests) and #5108 (BigQuery, 2 tests).
+- `lint:js --max-warnings=0` is clean in legend-cube, legend-cube-builder and legend-application-analytics-e2e.
+- The demo video (43, 1:22) records the menus, folding, steps following the flow, Undo and Export in Legend Analytics,
+  with 12 checks.
+
+**Status:** draft finos/legend-studio#5850, into `cube-dev` (user, 2026-11-09).
+
 ### 11.30 Data products and ingest data sets in one cube (user, 2026-11-05/09)
 
 **Ask:** "data products and ingest within Studio can actually be mixed", yet Cube refused it. The user reviewed the
