@@ -15,6 +15,7 @@ Palette tokens (physical)   →   Semantic tokens (role-based)   →   Component
 - **Palette tokens** — `packages/legend-art/style/base/_variables.scss`. Raw colors. Components must not reference these directly.
 - **Semantic tokens** — `packages/legend-art/style/base/themes/_semantic-tokens.scss`. The vocabulary components use. `:root` defaults to the dark mapping for backward compatibility.
 - **Theme mappings** — `_theme-default-dark.scss`, `_theme-default-light.scss`, `_theme-legacy-light.scss`. Each maps every semantic token to a palette value, scoped to a class on `<body>` (e.g. `.theme__default-dark`). Legacy Light is the Legend Query app's default theme; its mapping uses the historical `legacylight-*` palette (cool blue-gray) so tokenized components resolve to the shade Query users already know.
+- **Legend Cube in Marketplace's themes** — `_theme-hc-light.scss` and `_theme-hc-dark.scss` map every semantic token for `.theme__hc-light` and `.theme__hc-dark`, Legend Marketplace's two themes, but only inside Legend Cube (`.legend-cube`, and the node editor and tour layers Cube portals out of it). Marketplace paints its own pages with per-selector rules and `--marketplace-*` variables, so its colors don't change. The values follow Marketplace's palettes: `hclight-*` (re-declared in the file, as Legacy Light does) and `dark-theme-*`.
 
 To add a new theme:
 

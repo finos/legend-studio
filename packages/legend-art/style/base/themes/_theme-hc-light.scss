@@ -1,0 +1,126 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ============================================================================
+ * High-Contrast Light theme — semantic token mapping, for Legend Cube only
+ * ----------------------------------------------------------------------------
+ * Maps the semantic token vocabulary (see `_semantic-tokens.scss`) under
+ * `.theme__hc-light`, Legend Marketplace's light theme (registered in
+ * `LegendApplicationColorTheme.ts`). Without it, Cube's canvas falls through
+ * to the dark `:root` defaults inside this light theme.
+ *
+ * Scoped to Legend Cube: `.legend-cube` and the two layers Cube portals out
+ * of it (its node editor and its tour). Marketplace paints its own pages with
+ * per-selector rules and `--marketplace-*` variables, so mapping the tokens
+ * for the whole theme would also repaint legend-art's components there;
+ * scoped to Cube, Marketplace's own colors don't change.
+ *
+ * Values follow Marketplace's `hclight-*` palette (cool blue-grey), declared
+ * at `:root` in Marketplace's `light-mode.scss`. The hexes used here are
+ * re-declared, unchanged, so the mapping holds in any app that offers the
+ * theme: keep them in sync. Text is darker than in default-light: each text
+ * token reaches 4.5:1 on the `bg-*`, status and accent surfaces Cube puts it
+ * on (disabled text 3:1, except on hover).
+ * ============================================================================ */
+
+.theme__hc-light {
+  .legend-cube,
+  .legend-cube__node-editor-layer,
+  .legend-cube__tour-layer {
+    /* ---- High-Contrast Light physical palette (the subset used below) ---- */
+    --color-hclight-grey-10: #f2f5f7;
+    --color-hclight-grey-15: #e1e7ea;
+    --color-hclight-grey-20: #dce3e8;
+    --color-hclight-grey-30: #c1ccd6;
+    --color-hclight-grey-50: #7a909e;
+    --color-hclight-grey-70: #3e5463;
+    --color-hclight-grey-80: #2a3f4d;
+    --color-hclight-grey-90: #1c2b36;
+    --color-hclight-blue-10: #f0f4fa;
+    --color-hclight-blue-20: #d4e4fa;
+    --color-hclight-blue-60: #186ade;
+    --color-hclight-blue-70: #0d4ea6;
+    --color-hclight-green-60: #077d55;
+    --color-hclight-yellow-5: #fff9e3;
+
+    /* ---- Surfaces --------------------------------------------------------- */
+    --color-bg-app: var(--color-hclight-grey-10);
+    --color-bg-panel: var(--color-white);
+    // as Marketplace sets it on `.theme__hc-light`
+    --color-bg-panel-header: var(--color-hclight-grey-10);
+    --color-bg-chrome: var(--color-hclight-grey-15);
+    --color-bg-elevated: var(--color-white);
+    --color-bg-input: var(--color-white);
+    // visible on white panels and on the grey shell alike
+    --color-bg-hover: var(--color-hclight-grey-15);
+    --color-bg-tag: var(--color-hclight-grey-20);
+    --color-bg-selected: var(--color-hclight-blue-20);
+    // backdrop stays dark in all themes
+    --color-bg-overlay: var(--color-dark-shade-300);
+
+    /* ---- Text ------------------------------------------------------------- */
+    --color-text-primary: var(--color-hclight-grey-90);
+    --color-text-secondary: var(--color-hclight-grey-80);
+    // grey-60 would be 3.9:1 on selected rows
+    --color-text-muted: var(--color-hclight-grey-70);
+    --color-text-disabled: var(--color-hclight-grey-50);
+    --color-text-inverted: var(--color-white);
+    --color-text-on-accent: var(--color-white);
+    --color-text-link: var(--color-hclight-blue-60);
+
+    /* ---- Borders ---------------------------------------------------------- */
+    --color-border-subtle: var(--color-hclight-grey-20);
+    --color-border-default: var(--color-hclight-grey-30);
+    --color-border-strong: var(--color-hclight-grey-50);
+    --color-border-focus: var(--color-hclight-blue-60);
+
+    /* ---- Accents ---------------------------------------------------------- */
+    // Marketplace's blue: 5:1 as text on white, and under white text
+    --color-accent: var(--color-hclight-blue-60);
+    --color-accent-hover: var(--color-hclight-blue-70); // darkens on light bg
+    --color-accent-subtle: var(--color-hclight-blue-10);
+
+    /* ---- Status ----------------------------------------------------------- */
+    // default-light's red: Marketplace's red-60 is 4.3:1 on the error background
+    --color-status-error: var(--color-red-300);
+    --color-status-error-bg: var(--color-red-0);
+    // dark amber: default-light's yellow-500 is 3.2:1 on white
+    --color-status-warn: var(--color-yellow-700);
+    --color-status-warn-bg: var(--color-hclight-yellow-5);
+    --color-status-success: var(--color-hclight-green-60);
+    --color-status-success-bg: var(--color-green-20);
+    --color-status-info: var(--color-hclight-blue-60);
+
+    /* ---- Interaction states on accent surfaces ---------------------------- */
+    --color-state-hover-on-accent: var(--color-dark-shade-50);
+    --color-state-disabled-on-accent: var(--color-dark-shade-300);
+
+    /* ---- Active indicator (tab underlines, focused rails) ---------------- */
+    --color-active-indicator: var(--color-hclight-blue-60);
+
+    /* ---- Category / brand colors ----------------------------------------- */
+    // brand colors stay stable across themes — they encode meaning, not style
+    --color-category-generation: var(--color-pink-300);
+    --color-category-experimental: var(--color-mauve-50);
+    --color-category-class: var(--color-purple-400);
+    --color-category-ai-suggestion: var(--color-purple-200);
+    --color-category-enumeration: var(--color-medium-green-450);
+    --color-category-primitive: var(--color-blue-200);
+
+    /* ---- Misc ------------------------------------------------------------- */
+    --color-shadow: var(--color-dark-shade-200); // softer in light themes
+  }
+}
