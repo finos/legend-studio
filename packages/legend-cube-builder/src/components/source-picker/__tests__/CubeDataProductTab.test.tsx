@@ -15,8 +15,15 @@
  */
 
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { CubeDocument } from '@finos/legend-cube';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { CubeDocument, IngestDatasetSource, Query } from '@finos/legend-cube';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProductLabels.js';
 import { UNSERVED_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
@@ -36,8 +43,21 @@ import {
   createCubeDataProductModel,
 } from '../../../graph-manager/CubeDataProduct.js';
 import type { CubeDataProductCandidate } from '../../../graph-manager/CubeDataProductCatalog.js';
+import {
+  createCubeIngestModel,
+  CUBE_INGEST_RUNTIME_PATH,
+} from '../../../graph-manager/CubeIngest.js';
+import {
+  createFakeCubeIngestCatalog,
+  FAKE_INGEST_ORDERS,
+  FAKE_INGEST_TRADES_SCHEMA,
+  fakeIngestUrnOf,
+} from '../../../__test-utils__/FakeCubeIngestCatalog.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
+import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import { CubeEditor } from '../../CubeEditor.js';
+import { CubeDataProductTab } from '../CubeDataProductTab.js';
 
 const renderPage = async (
   prepare?: (host: CubeHost) => CubeHost,
@@ -443,5 +463,61 @@ describe('Data product tab', () => {
     expect(
       await TEST__findCanvasNode('dataProductAccessPoint102'),
     ).toBeDefined();
+  });
+
+  test("On an ingest cube, Studio's keeps the cube's Mode, locked, saying why", async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const trades = new IngestDatasetSource(
+      'ingestDataset101',
+      {
+        ingestDefinitionUrn: fakeIngestUrnOf(
+          FAKE_INGEST_ORDERS,
+          CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+        ),
+        ingestDefinition: FAKE_INGEST_ORDERS,
+        dataSet: 'TRADES',
+      },
+      { kind: 'resolved', schema: FAKE_INGEST_TRADES_SCHEMA },
+    );
+    const state = new CubeEditorState(
+      {
+        ...host,
+        ingestCatalog: {
+          ...ingest.catalog,
+          listProjectDefinitions: async () => ({
+            candidates: [],
+            droppedCount: 0,
+          }),
+        },
+        project: {
+          resolveRuntime: async () => ({
+            label: 'demo-dev, from demo::Runtime',
+          }),
+        },
+      },
+      new CubeDocument()
+        .withContext({
+          model: createCubeIngestModel({
+            environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+            producerDeploymentId: '1234',
+            warehouse: 'TRADES_WH',
+          }),
+          runtime: CUBE_INGEST_RUNTIME_PATH,
+        })
+        .withQuery(new Query([trades], [], trades.id)),
+    );
+    act(() => {
+      state.sourcePicker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    });
+    render(<CubeDataProductTab tab={state.sourcePicker.dataProductTab} />);
+    const mode = await screen.findByLabelText<HTMLSelectElement>('Mode');
+    expect(mode.value).toBe(CubeDataProductEnvironmentType.PRODUCTION_PARALLEL);
+    expect(mode.disabled).toBe(true);
+    expect(
+      screen.getByText(
+        "The cube's ingest data sets run in Production (parallel): its data products run there too.",
+      ),
+    ).toBeTruthy();
   });
 });

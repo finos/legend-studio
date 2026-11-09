@@ -22,7 +22,12 @@ import {
   jest,
   test,
 } from '@jest/globals';
-import { IngestDatasetSource } from '@finos/legend-cube';
+import {
+  CubeDocument,
+  DataProductAccessPointSource,
+  IngestDatasetSource,
+  Query,
+} from '@finos/legend-cube';
 import {
   act,
   fireEvent,
@@ -35,16 +40,23 @@ import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
+import { FAKE_DAILY_ORDERS_SCHEMA } from '../../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
   createFakeCubeIngestCatalog,
   FAKE_INGEST_ORDERS_WITH_FILLS,
   type FakeCubeIngestCatalog,
 } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
-import { CubeDataProductEnvironmentType } from '../../../graph-manager/CubeDataProduct.js';
 import {
+  createCubeDataProductModel,
+  CUBE_DATA_PRODUCT_RUNTIME_PATH,
+  CubeDataProductEnvironmentType,
+} from '../../../graph-manager/CubeDataProduct.js';
+import {
+  type CubeIngestCatalog,
   CubeIngestEnvironment,
   CubeIngestProducer,
 } from '../../../graph-manager/CubeIngestCatalog.js';
+import { CubeSourcePickerTabKey } from '../../../stores/source-picker/CubeSourcePickerTab.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeEditor } from '../../CubeEditor.js';
@@ -323,5 +335,66 @@ describe('The Ingest tab', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(await TEST__findCanvasNode('ingestDataset101')).toBeDefined();
     expect(await TEST__findCanvasNode('ingestDataset102')).toBeDefined();
+  });
+
+  test("On a data product cube, Studio's lists the project's definitions in the cube's Mode, locked, saying why, with no producer to pick", async () => {
+    const { host, ingest } = createProjectHost();
+    const listProjectDefinitions = jest.fn<
+      NonNullable<CubeIngestCatalog['listProjectDefinitions']>
+    >(async (project) =>
+      ingest.catalog.listDefinitions(
+        { environmentType: project.environmentType },
+        '1234',
+      ),
+    );
+    const accessPoint = new DataProductAccessPointSource(
+      'dataProductAccessPoint101',
+      {
+        dataProduct: 'sales::products::OrdersProduct',
+        accessPointGroup: 'core',
+        accessPoint: 'daily_orders',
+        dataProductId: 'ORDERS_PRODUCT',
+        deploymentId: '0',
+      },
+      { kind: 'resolved', schema: FAKE_DAILY_ORDERS_SCHEMA },
+    );
+    const state = new CubeEditorState(
+      { ...host, ingestCatalog: { ...ingest.catalog, listProjectDefinitions } },
+      new CubeDocument()
+        .withContext({
+          model: createCubeDataProductModel({
+            groupId: 'com.example',
+            artifactId: 'sales',
+            versionId: 'workspace',
+            environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+          }),
+          runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+        })
+        .withQuery(new Query([accessPoint], [], accessPoint.id)),
+    );
+    act(() => {
+      state.sourcePicker.open(CubeSourcePickerTabKey.INGEST);
+    });
+    render(<CubeIngestTab tab={state.sourcePicker.ingestTab} />);
+    const mode = await screen.findByLabelText<HTMLSelectElement>('Mode');
+    expect(mode.value).toBe(CubeDataProductEnvironmentType.PRODUCTION_PARALLEL);
+    expect(mode.disabled).toBe(true);
+    expect(
+      screen.getByText(
+        "The cube's data products run in Production (parallel): its ingest data sets run there too.",
+      ),
+    ).toBeTruthy();
+    const definitions = await screen.findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    expect(within(definitions).getByText('OrdersIngest')).toBeTruthy();
+    expect(listProjectDefinitions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        groupId: 'com.example',
+        artifactId: 'sales',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+      }),
+    );
+    expect(ingest.listProducers).not.toHaveBeenCalled();
   });
 });

@@ -41,12 +41,15 @@ import {
   colSpec,
   colSpecArray,
   columnAccess,
+  DataProductAccessPointSource,
   dataProductAccessor,
   func,
+  IngestDatasetSource,
   ingestAccessor,
   lambda,
   literal,
   PrimitiveType,
+  Query,
   Schema,
   SchemaColumn,
   variable,
@@ -71,7 +74,10 @@ import {
   LEGEND_STUDIO_CUBE_DATA_PRODUCT_MESSAGE,
   LegendStudioCubeDataProductCatalog,
 } from '../../../../stores/editor/embedded-cube/LegendStudioCubeDataProductCatalog.js';
-import { LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE } from '../../../../stores/editor/embedded-cube/LegendStudioCubeMatViewRules.js';
+import {
+  buildLegendStudioCubeMatViewRule,
+  LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE,
+} from '../../../../stores/editor/embedded-cube/LegendStudioCubeMatViewRules.js';
 import {
   LEGEND_STUDIO_CUBE_WORKSPACE_MESSAGE,
   LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
@@ -1297,7 +1303,7 @@ describe('A data product and an ingest data set in one cube in Studio (PLAN §11
       const LOOPY_LAMBDA = serializeCubeLambdaForHost(
         lambda([], [dataProductAccessor([DATA_PRODUCT_PATH, 'loopy'])]),
       );
-      const { renderResult } = await setUp([
+      const { editorStore, renderResult } = await setUp([
         {
           ...TRADES_INGEST,
           content: {
@@ -1354,6 +1360,52 @@ describe('A data product and an ingest data set in one cube in Studio (PLAN §11
         ),
       );
       expect(save.disabled).toBe(true);
+      // the rule flags only an access point that reads the view: not one
+      // reading another data set, nor a step of another kind
+      const rule = buildLegendStudioCubeMatViewRule(
+        editorStore,
+        ingestOf(editorStore),
+        'LOOPY',
+      );
+      const point = (
+        id: string,
+        accessPointId: string,
+      ): DataProductAccessPointSource =>
+        new DataProductAccessPointSource(id, {
+          dataProduct: DATA_PRODUCT_PATH,
+          accessPointGroup: 'trading',
+          accessPoint: accessPointId,
+          dataProductId: DATA_PRODUCT_PATH,
+          deploymentId: '0',
+        });
+      const trades = new IngestDatasetSource('ingestDataset101', {
+        ingestDefinitionUrn: formatCubeIngestUrn({
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+          groupId: 'com.test',
+          artifactId: 'string',
+          definition: INGEST_PATH,
+        }),
+        ingestDefinition: INGEST_PATH,
+        dataSet: 'TRADES',
+      });
+      expect([
+        ...rule(
+          new Query(
+            [
+              point('dataProductAccessPoint101', 'trades'),
+              trades,
+              point('dataProductAccessPoint102', 'loopy'),
+            ],
+            [],
+            'dataProductAccessPoint101',
+          ),
+        ),
+      ]).toEqual([
+        [
+          'dataProductAccessPoint102',
+          [LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE.READS_VIEW('loopy', 'LOOPY')],
+        ],
+      ]);
     },
   );
 });
