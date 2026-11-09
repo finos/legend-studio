@@ -176,6 +176,61 @@ contributes `LEGEND_CUBE_COMMAND_CONFIG`. The floating step editor is placed in 
 dialog doesn't hide it. In a light theme, Cube's dialogs draw their primary button as an accent button
 (`CubeDialogTheme.ts`): legend-art's light variant draws it grey.
 
+## A definition flow
+
+`@finos/legend-cube-builder/definition-flow` draws a data product's access point definition read-only, for a host
+such as the data product viewer. Load it lazily (`import()`): it holds Cube's reader and canvas without the editor,
+so no step editor and no Monaco. `CubeDefinitionFlowEntry.test.ts` lists every module it reaches.
+
+```tsx
+const {
+  CubeDefinitionFlow,
+  findCubeDefinitionIngestDefinitions,
+  readCubeDefinition,
+} = await import('@finos/legend-cube-builder/definition-flow');
+// the ingest definitions it reads type its data sets' columns
+const contents = new Map(
+  await Promise.all(
+    findCubeDefinitionIngestDefinitions(lambda).map(
+      async (path) => [path, await loadContent(path)] as const,
+    ),
+  ),
+);
+const reading = readCubeDefinition(lambda, {
+  getIngestDefinition: (path) => contents.get(path),
+});
+// in the host's component
+return reading.kind === 'flow' ? (
+  <CubeDefinitionFlow
+    flow={reading}
+    selectedStepId={picked}
+    onSelectStep={pick}
+    colorMode="dark"
+  />
+) : (
+  // the host's own: the Pure, with `reading.message` in one line; it counts `reading.reason`
+  <DefinitionPure refusal={reading} />
+);
+```
+
+- **No engine:** the lambda is the access point's protocol JSON, which the host has. The ingest definitions' content
+  (their protocol JSON: Depot's entity, or a Studio workspace's element) types the data sets in the browser.
+- **All or nothing:** a refusal names the first problem Cube found. Its `reason` is a `CubeLambdaReadErrorKind` for
+  the host to count: `parameters`, `shape`, `value`, `source`, `noStep`, `notYet`, `form` or `sameNameSum`; its
+  `functionName`, the step function it names; its `message`, the words. Only an unexpected error throws.
+- **Drawn, not edited:** read to be drawn (`forDrawing` on `readCubeQuery`), a group may name a sum like the column
+  it adds up, as Pure allows: `QUANTITY: x|$x.QUANTITY : y|$y->sum()`. The editor refuses it, as a `sameNameSum`.
+- **Unknown columns:** a data set whose definition the host doesn't give, or Cube can't read, is drawn by its name,
+  as any other, and the steps after it aren't checked (`unknownDataSets`, `uncheckedStepIds`).
+- **Steps:** `steps`, each after the ones it reads, with its inputs and the relation it was read from (`ir`, which
+  reads the lambda's `lets` by name): the Pure up to it.
+- **The canvas:** it fills its container and pans. Its controls, bottom right, zoom, as pinching does; the wheel
+  scrolls the host's page. A click, Enter or Space on a step calls `onSelectStep`, and `selectedStepId` outlines one.
+  It has no step editor, menu, palette or minimap, and needs no `CubeEditorState`, application store or drag and
+  drop provider.
+- **Styles:** as for the page (below): the builder's `lib/index.css`, and the host's Tailwind build scanning the
+  builder's sources.
+
 ## Shortcuts
 
 A Legend application binds keys only through its plugins. The host returns the page's commands from one of its

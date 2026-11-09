@@ -26,6 +26,8 @@ import {
   columnAccess,
   Connection,
   CUBE_QUERY_READER_MESSAGE,
+  CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
   Explode,
   ExpressionFilter,
   Extend,
@@ -36,7 +38,7 @@ import {
   func,
   genericType,
   getExtendSignature,
-  type Group,
+  Group,
   isSameCubeIR,
   lambda,
   literal,
@@ -51,6 +53,7 @@ import {
   splitCubeLambda,
   storeAccessor,
   variable,
+  letBinding,
   type CubeDocument,
   type CubeSourceStep,
   type IR,
@@ -59,9 +62,10 @@ import {
 import {
   TEST__bindSampleSources,
   TEST__checkedAsTheEngineWould,
+  TEST__cubeIngestLambdaSamples,
   TEST__cubeLambdaSamples,
 } from '../__test-utils__/CubeLambdaCorpus.js';
-import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeEngineBuilder.js';
+import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 
 // Import Pure's steps (PLAN §11.18): what Cube writes for each node of the
 // core's samples reads back into steps that Cube writes the same way again
@@ -69,6 +73,7 @@ import { CUBE_EXPRESSION_CODEC } from '../graph-manager/protocol/pure/CubeEngine
 /** Every step the samples hold, which the reader reads */
 const READ_STEPS = new Set([
   'relational',
+  'ingestDataset',
   'extend',
   'explode',
   'pivot',
@@ -88,7 +93,10 @@ const READ_STEPS = new Set([
   'rename',
 ]);
 
-const SAMPLES = TEST__cubeLambdaSamples().map((sample) => {
+const SAMPLES = [
+  ...TEST__cubeLambdaSamples(),
+  ...TEST__cubeIngestLambdaSamples(),
+].map((sample) => {
   const upstream = new Set<string>();
   const visit = (id: string): void => {
     upstream.add(id);
@@ -474,5 +482,216 @@ describe('Reading the steps of a lambda', () => {
     [func('joinStrings', [y]), func('joinStrings', [y, float('1.0')])].forEach(
       (reduce) => expect(() => read('SHIP_CITY', reduce)).toThrow(refused),
     );
+  });
+});
+
+/** The ingest sample's lambda of a node: `#I{…}#` data sets, their columns known */
+const ingestSample = (nodeId: string): (typeof SAMPLES)[number] =>
+  SAMPLES.find(
+    (each) => each.key === `ingest/${nodeId}`,
+  ) as (typeof SAMPLES)[number];
+
+/** The relation of a sample's matview */
+const relationOf = (sample: (typeof SAMPLES)[number]): IR =>
+  (sample.relation as Extract<IR, { k: 'lambda' }>).body[0] as IR;
+
+/** What reading the relation, bound to the sample's sources, refuses: its kind and function */
+const refusalOf = (
+  sample: (typeof SAMPLES)[number],
+  relation: IR,
+  bindSource = TEST__bindSampleSources(sample.document),
+): [CubeLambdaReadErrorKind, string | undefined, string] | undefined => {
+  try {
+    readCubeQuery(splitCubeLambda(lambda([], [relation])), {
+      bindSource,
+      expressions: CUBE_EXPRESSION_CODEC,
+    });
+  } catch (error) {
+    if (error instanceof CubeLambdaReadError) {
+      return [error.kind, error.functionName, error.message];
+    }
+    throw error;
+  }
+  return undefined;
+};
+
+describe('Why Cube refuses a lambda', () => {
+  test('Gives each refusal a kind a host can count, with the function it names', () => {
+    const sample = ingestSample('filter101');
+    const filtered = relationOf(sample);
+    expect(refusalOf(sample, func('olapGroupBy', [filtered]))).toEqual([
+      CubeLambdaReadErrorKind.NO_STEP,
+      'olapGroupBy',
+      CUBE_QUERY_READER_MESSAGE.NO_STEP('olapGroupBy'),
+    ]);
+    // a pivot Cube reads only as it writes one: in a cast
+    expect(refusalOf(sample, func('pivot', [filtered]))?.slice(0, 2)).toEqual([
+      CubeLambdaReadErrorKind.NOT_YET,
+      'pivot',
+    ]);
+    // a select of a column its input doesn't have
+    expect(
+      refusalOf(
+        sample,
+        func('select', [filtered, colSpecArray([colSpec('BOOK_ID')])]),
+      ),
+    ).toEqual([
+      CubeLambdaReadErrorKind.FORM,
+      'select',
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'select',
+        CUBE_QUERY_READER_MESSAGE.RESTRICT,
+      ),
+    ]);
+    // a variable nothing binds, and a value that isn't a query of rows
+    expect(refusalOf(sample, variable('rows'))?.slice(0, 2)).toEqual([
+      CubeLambdaReadErrorKind.SHAPE,
+      undefined,
+    ]);
+    expect(
+      refusalOf(sample, literal({ kind: 'integer', value: '1' }))?.[0],
+    ).toBe(CubeLambdaReadErrorKind.SHAPE);
+    // a source the host can't bind, as the host says
+    expect(
+      refusalOf(sample, storeAccessor(['db::Store', 'S', 'T']))?.slice(0, 2),
+    ).toEqual([CubeLambdaReadErrorKind.SOURCE, undefined]);
+  });
+
+  test("Refuses, for the editor, a group's sum named like the column it adds up, saying so; reads it when drawing, checked, with the steps after it", () => {
+    const sample = ingestSample('filter101');
+    const grouped = func('groupBy', [
+      relationOf(sample),
+      colSpecArray([colSpec('BUSINESS_DATE')]),
+      colSpecArray([
+        aggregationColSpec(
+          'QUANTITY',
+          lambda(['p'], [columnAccess('p', 'QUANTITY')]),
+          lambda(['q'], [func('sum', [variable('q')])]),
+        ),
+      ]),
+    ]);
+    expect(refusalOf(sample, grouped)).toEqual([
+      CubeLambdaReadErrorKind.SAME_NAME_SUM,
+      'groupBy',
+      CUBE_QUERY_READER_MESSAGE.UNREADABLE(
+        'groupBy',
+        CUBE_QUERY_READER_MESSAGE.SAME_NAME('QUANTITY'),
+      ),
+    ]);
+    // a group Cube can't read for another reason still says that
+    expect(
+      refusalOf(
+        sample,
+        func('groupBy', [
+          relationOf(sample),
+          colSpecArray([colSpec('QUANTITY')]),
+          colSpecArray([
+            aggregationColSpec(
+              'QUANTITY',
+              lambda(['p'], [columnAccess('p', 'QUANTITY')]),
+              lambda(['q'], [func('sum', [variable('q')])]),
+            ),
+          ]),
+        ]),
+      )?.slice(0, 2),
+    ).toEqual([CubeLambdaReadErrorKind.FORM, 'groupBy']);
+
+    const { query, unchecked, rewritten } = readCubeQuery(
+      splitCubeLambda(
+        lambda(
+          [],
+          [
+            func('filter', [
+              grouped,
+              lambda(
+                ['x'],
+                [
+                  func('greaterThan', [
+                    columnAccess('x', 'QUANTITY'),
+                    literal({ kind: 'integer', value: '0' }),
+                  ]),
+                ],
+              ),
+            ]),
+          ],
+        ),
+      ),
+      {
+        bindSource: TEST__bindSampleSources(sample.document),
+        expressions: CUBE_EXPRESSION_CODEC,
+        forDrawing: true,
+      },
+    );
+    expect(unchecked).toEqual([]);
+    expect(rewritten).toEqual([]);
+    const group = query.nodes.find((node) => node instanceof Group) as Group;
+    expect(group.allowsInputNames).toBe(true);
+    const { schemas, validity } = buildSchemasAndValidity(query);
+    expect([...validity.values()].flat()).toEqual([]);
+    expect(schemas.get(group.id)?.names()).toEqual([
+      'BUSINESS_DATE',
+      'QUANTITY',
+    ]);
+    // the sum is a column the filter after it reads, as a rule of Cube's
+    expect(query.getNode(query.selected as string)).toBeInstanceOf(Filter);
+  });
+});
+
+describe('The relation each step is read from: the Pure up to it', () => {
+  test("Keeps each step's relation, which reads back to that step and the steps before it", () => {
+    const sample = ingestSample('limit101');
+    const parts = splitCubeLambda(sample.run);
+    const options = {
+      bindSource: TEST__bindSampleSources(sample.document),
+      expressions: CUBE_EXPRESSION_CODEC,
+    };
+    const { query, stepIRs } = readCubeQuery(parts, options);
+    expect([...stepIRs.keys()]).toEqual(query.nodes.map((node) => node.id));
+    query.nodes.forEach((node) => {
+      const upstream = new Set<string>();
+      const visit = (id: string): void => {
+        upstream.add(id);
+        query.getInputIds(id).forEach((input) => input && visit(input));
+      };
+      visit(node.id);
+      const again = readCubeQuery(
+        splitCubeLambda(lambda([], [stepIRs.get(node.id) as IR])),
+        options,
+      ).query;
+      expect(again.getNode(again.selected as string)?.type).toBe(node.type);
+      expect(again.nodes).toHaveLength(upstream.size);
+    });
+  });
+
+  test("Keeps a step's relation as read under a let, by the let's name", () => {
+    const sample = ingestSample('filter101');
+    const { query, stepIRs } = readCubeQuery(
+      splitCubeLambda(
+        lambda(
+          [],
+          [
+            letBinding('signedOff', relationOf(sample)),
+            func('limit', [
+              variable('signedOff'),
+              literal({ kind: 'integer', value: '5' }),
+            ]),
+          ],
+        ),
+      ),
+      {
+        bindSource: TEST__bindSampleSources(sample.document),
+        expressions: CUBE_EXPRESSION_CODEC,
+      },
+    );
+    const limit = query.getNode(query.selected as string);
+    expect(
+      isSameCubeIR(
+        stepIRs.get(limit?.id as string) as IR,
+        func('limit', [
+          variable('signedOff'),
+          literal({ kind: 'integer', value: '5' }),
+        ]),
+      ),
+    ).toBe(true);
   });
 });

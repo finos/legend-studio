@@ -20,6 +20,7 @@ import {
   colSpec,
   colSpecArray,
   CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
   dataProductAccessor,
   elementPtr,
   enumValue,
@@ -101,12 +102,16 @@ const numberText = (
   if (typeof value === 'number' && Number.isFinite(value)) {
     if (kind === 'integer' && !Number.isSafeInteger(value)) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.VALUE,
         V1_CUBE_LAMBDA_READER_MESSAGE.NUMBER(value),
       );
     }
     return String(value);
   }
-  throw new CubeLambdaReadError(V1_CUBE_LAMBDA_READER_MESSAGE.NUMBER(value));
+  throw new CubeLambdaReadError(
+    CubeLambdaReadErrorKind.VALUE,
+    V1_CUBE_LAMBDA_READER_MESSAGE.NUMBER(value),
+  );
 };
 
 /** The protocol's literal types, with the `c`-prefixed names older protocol versions used */
@@ -137,6 +142,7 @@ const readLiteral = (kind: LiteralValue['kind'], json: Json): IR => {
     case 'boolean':
       if (typeof value !== 'boolean') {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
             `the boolean ${String(value)}`,
           ),
@@ -146,6 +152,7 @@ const readLiteral = (kind: LiteralValue['kind'], json: Json): IR => {
     default:
       if (typeof value !== 'string') {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
             `the ${kind} ${String(value)}`,
           ),
@@ -181,6 +188,7 @@ const readGenericType = (
   const path = stringOf(rawType.fullPath) ?? stringOf(type.fullPath);
   if (!path) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.VALUE,
       V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE('a type without a name'),
     );
   }
@@ -189,6 +197,7 @@ const readGenericType = (
     const number = Number(text);
     if (!Number.isSafeInteger(number)) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.VALUE,
         V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(`the type ${path}(${text})`),
       );
     }
@@ -216,6 +225,7 @@ const readTypeInstance = (json: Json): IR => {
         const name = stringOf(value.name);
         if (name === undefined) {
           throw new CubeLambdaReadError(
+            CubeLambdaReadErrorKind.VALUE,
             V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
               'a relation type column without a name',
             ),
@@ -241,6 +251,7 @@ const readColSpec = (value: unknown): IR => {
   const name = stringOf(spec.name);
   if (name === undefined) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.VALUE,
       V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE('a column without a name'),
     );
   }
@@ -249,6 +260,7 @@ const readColSpec = (value: unknown): IR => {
   if (fn2 !== undefined) {
     if (fn1 === undefined) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.VALUE,
         V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
           `the column ~${name}'s reduce without its map`,
         ),
@@ -263,6 +275,7 @@ const accessorPath = (value: unknown, type: string): string[] => {
   const path = arrayOf(isObject(value) ? value.path : undefined);
   if (!path.length || path.some((part) => typeof part !== 'string' || !part)) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
       V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR_PATH(type),
     );
   }
@@ -288,6 +301,7 @@ const readClassInstance = (json: Json): IR => {
       }
       if (path.length !== 3) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR_PATH(type),
         );
       }
@@ -297,11 +311,13 @@ const readClassInstance = (json: Json): IR => {
       const path = accessorPath(value, type);
       if (path.length !== 2) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR_PATH(type),
         );
       }
       if (arrayOf(isObject(value) ? value.parameters : undefined).length) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           V1_CUBE_LAMBDA_READER_MESSAGE.DATA_PRODUCT_PARAMETERS,
         );
       }
@@ -311,11 +327,13 @@ const readClassInstance = (json: Json): IR => {
       const path = accessorPath(value, type);
       if (path.length !== 2) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR_PATH(type),
         );
       }
       if (isObject(value) && value.metadata === true) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
           V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_METADATA,
         );
       }
@@ -323,6 +341,7 @@ const readClassInstance = (json: Json): IR => {
     }
     default:
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SOURCE,
         V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR(type),
       );
   }
@@ -332,6 +351,7 @@ const readFunction = (json: Json): IR => {
   const name = stringOf(json.function);
   if (!name) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.VALUE,
       V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE('a function without a name'),
     );
   }
@@ -340,7 +360,10 @@ const readFunction = (json: Json): IR => {
     const [nameJson, value] = params;
     const letName = isObject(nameJson) ? stringOf(nameJson.value) : undefined;
     if (!letName) {
-      throw new CubeLambdaReadError(V1_CUBE_LAMBDA_READER_MESSAGE.LET_NAME);
+      throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SHAPE,
+        V1_CUBE_LAMBDA_READER_MESSAGE.LET_NAME,
+      );
     }
     return letBinding(letName, read(value));
   }
@@ -358,6 +381,7 @@ const readFunction = (json: Json): IR => {
 function read(json: unknown): IR {
   if (!isObject(json)) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.VALUE,
       V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
         Array.isArray(json) ? 'a list where a value is expected' : String(json),
       ),
@@ -377,6 +401,7 @@ function read(json: unknown): IR {
             : undefined;
           if (!name) {
             throw new CubeLambdaReadError(
+              CubeLambdaReadErrorKind.VALUE,
               V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
                 'a lambda parameter without a name',
               ),
@@ -393,6 +418,7 @@ function read(json: unknown): IR {
       const [receiver] = arrayOf(json.parameters);
       if (!name || receiver === undefined) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
             'a property without its owner',
           ),
@@ -412,6 +438,7 @@ function read(json: unknown): IR {
       const value = stringOf(json.value);
       if (!enumPath || !value) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
             'an enumeration value without its enumeration',
           ),
@@ -423,6 +450,7 @@ function read(json: unknown): IR {
       const name = stringOf(json.name);
       if (!name) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE('a variable without a name'),
         );
       }
@@ -436,6 +464,7 @@ function read(json: unknown): IR {
       const path = stringOf(json.fullPath);
       if (!path) {
         throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.VALUE,
           V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE('an element without a path'),
         );
       }
@@ -445,6 +474,7 @@ function read(json: unknown): IR {
       return readTypeInstance(json);
     default:
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.VALUE,
         V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE(
           type ? `a ${type}` : 'a value of no type',
         ),
@@ -461,6 +491,7 @@ export const V1_readCubeLambda = (json: unknown): IR => {
   const ir = read(json);
   if (ir.k !== 'lambda') {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SHAPE,
       V1_CUBE_LAMBDA_READER_MESSAGE.UNREADABLE('a value that is not a lambda'),
     );
   }

@@ -371,6 +371,69 @@ describe(unitTest('Group'), () => {
     },
   );
 
+  test("Refuses an aggregation named like an input column it doesn't keep, as the editor's groups have since M1", () => {
+    const group = new Group(
+      'group101',
+      ['SHIP_COUNTRY'],
+      [agg(SUM, 'FREIGHT', 'FREIGHT')],
+    );
+    expect(group.allowsInputNames).toBe(false);
+    expect(errorsOf(group)).toEqual([
+      'Aggregation output name "FREIGHT" cannot be the same as input column name.',
+    ]);
+  });
+
+  test("Allows an aggregation named like an input column it doesn't keep when drawn as Pure writes it, the column then the sum", () => {
+    const group = new Group(
+      'group101',
+      ['SHIP_COUNTRY'],
+      [agg(SUM, 'FREIGHT', 'FREIGHT'), agg(COUNT, 'ORDER_ID', 'order_id')],
+      undefined,
+      true,
+    );
+    expect(errorsOf(group)).toEqual([]);
+    expect(columnsOf(group.schematize([ORDERS]))).toEqual([
+      ['SHIP_COUNTRY', `${P}Varchar(15)`, true],
+      ['FREIGHT', 'Float', true],
+      ['order_id', 'Integer', false],
+    ]);
+    // and keeps allowing it once edited
+    expect(group.withColumns(['SHIP_REGION']).allowsInputNames).toBe(true);
+    expect(group.withAggregations([COUNT_ROWS_AGG]).allowsInputNames).toBe(
+      true,
+    );
+  });
+
+  test('Still refuses, when drawn, an aggregation named like a key or like another aggregation: either would name two columns the same', () => {
+    expect(
+      errorsOf(
+        new Group(
+          'group101',
+          ['SHIP_COUNTRY'],
+          [agg(COUNT, 'ORDER_ID', 'Ship_Country')],
+          undefined,
+          true,
+        ),
+      ),
+    ).toEqual([
+      'Aggregation output name "Ship_Country" cannot be the same as input column name.',
+    ]);
+    expect(
+      errorsOf(
+        new Group(
+          'group101',
+          ['SHIP_COUNTRY'],
+          [agg(SUM, 'FREIGHT', 'FREIGHT'), agg(MAX, 'FREIGHT', 'freight')],
+          undefined,
+          true,
+        ),
+      ),
+    ).toEqual([
+      'Aggregation output name "FREIGHT" is already present in the output schema.',
+      'Aggregation output name "freight" is already present in the output schema.',
+    ]);
+  });
+
   test('Checks one key at a time for an editor, stopping at its first problem', () => {
     const errors: string[] = [];
     expect(validateGroupColumn('SHIP_COUNTRY', ORDERS)).toBe(true);
