@@ -5985,10 +5985,10 @@ frame takes in its steps' notes.
 | Step | What                                                                                                   | Status |
 | ---- | ------------------------------------------------------------------------------------------------------ | ------ |
 | N.1  | This section; the changeset                                                                            | ✅     |
-| N.2  | Core: `meta.notes` in the spec and the rules (`StepNote.ts`), with tests                               |        |
-| N.3  | The editor: a note's undo step, pruning, copy, paste and duplicate, the Note field; tests              |        |
-| N.4  | The canvas: the line under the step, the layout's room, the frames, Add Note… in the menu; jsdom tests |        |
-| N.5  | The user guide: a section and its image                                                                |        |
+| N.2  | Core: `meta.notes` in the spec and the rules (`StepNote.ts`), with tests                               | ✅     |
+| N.3  | The editor: a note's undo step, pruning, copy, paste and duplicate, the Note field; tests              | ✅     |
+| N.4  | The canvas: the line under the step, the layout's room, the frames, Add Note… in the menu; jsdom tests | ✅     |
+| N.5  | The user guide: a section and its images; the step editor's image with its Note field                  | ✅     |
 | N.6  | Checks: every suite that reads the builder, lint, the browser                                          |        |
 | N.7  | Demo video                                                                                             |        |
 

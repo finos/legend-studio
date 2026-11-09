@@ -134,10 +134,15 @@ test('Legend Cube: the editor overview', async ({ page }) => {
       n: 6,
       targets: [editor.getByRole('list', { name: 'Group columns' })],
       at: 'inside-right',
-      cutAbove: editorButton('Cancel'),
+      cutAbove: editor.getByText('Note', { exact: true }),
     },
     {
       n: 7,
+      targets: [editor.getByTestId('legend-cube__step-note-field')],
+      at: 'left',
+    },
+    {
+      n: 8,
       targets: [editorButton('Cancel'), editorButton('Apply')],
       at: 'right',
     },
