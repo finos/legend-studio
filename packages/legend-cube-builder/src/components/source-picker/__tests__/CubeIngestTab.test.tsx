@@ -494,12 +494,14 @@ describe('The Ingest tab', () => {
       name: 'Ingest definitions',
     });
     expect(within(definitions).getByText('OrdersIngest')).toBeTruthy();
+    // the project, and the deployment of its data product, Studio's none yet
     expect(listProjectDefinitions).toHaveBeenCalledWith(
       expect.objectContaining({
         groupId: 'com.example',
         artifactId: 'sales',
         environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
       }),
+      '0',
     );
     expect(ingest.listProducers).not.toHaveBeenCalled();
   });
