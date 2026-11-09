@@ -359,6 +359,25 @@ describe('Cube keyboard shortcuts', () => {
     expect(await selected('limit101')).toBe('true');
   });
 
+  test("Leaves Ctrl+Z to the Note field of a step's editor, keeping the note typed (PLAN §11.31)", async () => {
+    const { editorState } = await renderPage(limitDocument(10));
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    const note = await screen.findByTestId<HTMLTextAreaElement>(
+      LEGEND_CUBE_TEST_ID.STEP_NOTE_FIELD,
+    );
+    note.focus();
+    fireEvent.change(note, { target: { value: 'Ten is enough' } });
+    const history = editorState.history.length;
+    pressUndo(note);
+    pressUndo(note, 'metaKey');
+    // the field's own undo: the editor stays open on the note typed, and the
+    // cube is as it was
+    expect(editorState.nodeEditor.nodeId).toBe('limit101');
+    expect(editorState.nodeEditor.noteText).toBe('Ten is enough');
+    expect(editorState.history).toHaveLength(history);
+    expect(editorState.getStepNote('limit101')).toBeUndefined();
+  });
+
   test('Applies the typed size of a Limit on F9 and runs it, as one undo step', async () => {
     const { fake } = await renderPage(limitDocument(10));
     const size = await typeSize('5', true);

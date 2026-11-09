@@ -49,6 +49,7 @@ import {
   CUBE_NODE_EDITORS,
   CUBE_WIDE_NODE_EDITORS,
 } from './CubeNodeEditorRegistry.js';
+import { CubeStepNoteField } from './CubeStepNoteField.js';
 
 /** The problems of the edited node against its inputs, as Apply would leave it */
 const validateEdited = (
@@ -108,11 +109,11 @@ const CubeJoinInputPicker = observer(
  * The node editor's frame (spec §17.5, PLAN §11.8): a title bar with the
  * node's label and id, its help and Select; a body of 80px to a third of
  * the window, which scrolls, with its type's editor, or for a wide editor
- * 60% of the window, which the editor fills (PLAN §11.25); then its problems and
- * Apply and Cancel, which stay in view. Edits stay in the editor until
- * Apply or closing it; Cancel drops them. While an input is missing or
- * invalid, the body shows why instead of the editor, since there would be
- * no columns to pick.
+ * 60% of the window, which the editor fills (PLAN §11.25); then its problems,
+ * the step's note (PLAN §11.31), and Apply and Cancel, which stay in view.
+ * Edits stay in the editor until Apply or closing it; Cancel drops them.
+ * While an input is missing or invalid, the body shows why instead of the
+ * editor, since there would be no columns to pick.
  */
 export const CubeNodeEditorPanel = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -180,6 +181,10 @@ export const CubeNodeEditorPanel = observer(
           ]
         : [];
     const warnings = editorState.getNodeWarnings(node);
+    // every step's note can be written, a source's included, which has no
+    // Apply: closing the editor stores it, as it does a warehouse typed; a
+    // read-only cube shows only one written
+    const showsNote = !readOnly || nodeEditor.noteText !== '';
     return (
       <div
         ref={rootRef}
@@ -317,6 +322,7 @@ export const CubeNodeEditorPanel = observer(
             ))}
           </div>
         )}
+        {showsNote && <CubeStepNoteField editorState={editorState} />}
         {isEditable && (
           <div className="flex h-10 shrink-0 items-center justify-end gap-2 border-t border-[var(--color-border-default)] px-2">
             <CubeButton

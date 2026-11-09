@@ -59,6 +59,9 @@ import {
   isConnectedStepSet,
   type ShownStepContainer,
   type StepContainer,
+  getStepNoteText,
+  reconcileStepNotes,
+  withStepNote,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -253,10 +256,15 @@ export class CubeEditorState implements CommandRegistrar {
   history: readonly CubeDocument[] = [];
   /**
    * The step copied last, as it was, with the cube's context then, which a
-   * pasted source needs; kept for the page, across cubes
+   * pasted source needs, and its note (PLAN §11.31); kept for the page,
+   * across cubes
    */
   copiedNode:
-    | { readonly node: QueryNode; readonly context: CubeContext | undefined }
+    | {
+        readonly node: QueryNode;
+        readonly context: CubeContext | undefined;
+        readonly note: string | undefined;
+      }
     | undefined;
   /**
    * The changes undone, the latest last, to redo; a new change clears them.
@@ -397,6 +405,7 @@ export class CubeEditorState implements CommandRegistrar {
       stopRenamingContainer: action,
       renameContainer: action,
       removeContainer: action,
+      setStepNote: action,
       setShowGraph: action,
       setPaletteCollapsed: action,
       setHostIssue: action,
@@ -1057,14 +1066,15 @@ export class CubeEditorState implements CommandRegistrar {
    * The one way to change the cube; the document before goes to the undo
    * history. Its containers follow a change to the query, in the same step
    * (PLAN §11.29): a step added between two steps of a container joins it,
-   * as does one `moved` there, and a step removed leaves it.
+   * as does one `moved` there, and a step removed leaves it. A step removed
+   * takes its note away too (PLAN §11.31).
    */
   applyDocument(next: CubeDocument, moved: readonly string[] = []): void {
     if (next === this.document) {
       return;
     }
     const before = this.document.query;
-    const { containers } = next.meta;
+    const { containers, notes } = next.meta;
     const followed =
       next.query === before
         ? containers
@@ -1074,11 +1084,17 @@ export class CubeEditorState implements CommandRegistrar {
               .map((node) => node.id),
             ...moved,
           ]);
+    const kept =
+      next.query === before ? notes : reconcileStepNotes(notes, next.query);
     this.pushHistory();
     this.replaceDocument(
-      followed === containers
+      followed === containers && kept === notes
         ? next
-        : next.withMeta({ ...next.meta, containers: followed }),
+        : next.withMeta({
+            ...next.meta,
+            ...(followed === containers ? {} : { containers: followed }),
+            ...(kept === notes ? {} : { notes: kept }),
+          }),
     );
   }
 
@@ -1923,11 +1939,15 @@ export class CubeEditorState implements CommandRegistrar {
     return node !== undefined && this.registry.get(node.type) !== undefined;
   }
 
-  /** Copies a step, as Cmd/Ctrl+C on it does, for Paste */
+  /** Copies a step, with its note, as Cmd/Ctrl+C on it does, for Paste */
   copyNode(nodeId: string): void {
     const node = this.document.query.getNode(nodeId);
     if (node && this.canCopyNode(nodeId)) {
-      this.copiedNode = { node, context: this.document.context };
+      this.copiedNode = {
+        node,
+        context: this.document.context,
+        note: this.getStepNote(nodeId),
+      };
     }
   }
 
@@ -1949,7 +1969,7 @@ export class CubeEditorState implements CommandRegistrar {
   pasteNode(afterId?: string): void {
     const copied = this.copiedNode;
     if (copied && this.canPaste) {
-      this.addCopy(copied.node, copied.context, afterId);
+      this.addCopy(copied.node, copied.context, afterId, copied.note);
     }
   }
 
@@ -1957,11 +1977,16 @@ export class CubeEditorState implements CommandRegistrar {
     return !this.readOnly && this.canCopyNode(nodeId);
   }
 
-  /** A copy of the step after it, as Cmd/Ctrl+D does, leaving the step copied for Paste as it was */
+  /** A copy of the step, with its note, after it, as Cmd/Ctrl+D does, leaving the step copied for Paste as it was */
   duplicateNode(nodeId: string): void {
     const node = this.document.query.getNode(nodeId);
     if (node && this.canDuplicateNode(nodeId)) {
-      this.addCopy(node, this.document.context, nodeId);
+      this.addCopy(
+        node,
+        this.document.context,
+        nodeId,
+        this.getStepNote(nodeId),
+      );
     }
   }
 
@@ -1982,7 +2007,8 @@ export class CubeEditorState implements CommandRegistrar {
   private addCopy(
     node: QueryNode,
     context: CubeContext | undefined,
-    afterId?: string,
+    afterId: string | undefined,
+    note: string | undefined,
   ): void {
     const { document } = this;
     const copy = copyQueryNode(
@@ -1999,10 +2025,13 @@ export class CubeEditorState implements CommandRegistrar {
         : undefined;
     const query = document.query.add(copy, after);
     // a source pasted into an empty cube brings its model and runtime
-    this.applyDocument(
+    const added =
       copy instanceof SourceNode && document.query.isEmpty && context
         ? document.withContext(context).withQuery(query)
-        : document.withQuery(query),
+        : document.withQuery(query);
+    // and the copy, its step's note, in the same undo step
+    this.applyDocument(
+      note === undefined ? added : withStepNote(added, copy.id, note),
     );
   }
 
@@ -2194,6 +2223,26 @@ export class CubeEditorState implements CommandRegistrar {
     const containers = this.document.meta.containers ?? [];
     if (!this.readOnly && containers.some(({ id }) => id === containerId)) {
       this.applyContainers(containers.filter(({ id }) => id !== containerId));
+    }
+  }
+
+  /** A step's note, shown under it on the canvas (PLAN §11.31) */
+  getStepNote(stepId: string): string | undefined {
+    return getStepNoteText(this.document.meta.notes, stepId);
+  }
+
+  /** Whether a step's note can be written: any step's, unless the cube is read-only */
+  canEditStepNote(stepId: string): boolean {
+    return !this.readOnly && this.document.query.getNode(stepId) !== undefined;
+  }
+
+  /**
+   * Writes a step's note, its ends trimmed; an empty one takes it away. One
+   * undo step, which leaves the query, and so the rows, as they are.
+   */
+  setStepNote(stepId: string, text: string): void {
+    if (this.canEditStepNote(stepId)) {
+      this.applyDocument(withStepNote(this.document, stepId, text));
     }
   }
 

@@ -25,6 +25,7 @@ import {
   renameConcatInput,
   restrictConcatInput,
   type Schema,
+  withStepNote,
 } from '@finos/legend-cube';
 import {
   action,
@@ -68,7 +69,8 @@ export const isSameNodeContent = (
 /**
  * The node editor (PLAN §7.4, §11.8, spec §17.5). Opening it never changes
  * which node Execute runs. Edits go to a draft, and only Apply, or closing
- * the editor, stores them, as one undo step; Cancel drops them. Every close
+ * the editor, stores them, as one undo step; Cancel drops them. The step's
+ * note is edited there too, as part of the draft (PLAN §11.31). Every close
  * that applies goes through `finish`, which first lets the editor's fields
  * commit text typed but not yet stored.
  *
@@ -85,6 +87,10 @@ export class CubeNodeEditorState {
   /** The key of the node the draft was made from */
   private nodeKey: number | undefined;
   draft: CubeNodeDraft | undefined;
+  /** The text in the Note field once it is edited, ends untrimmed; until then the step's note */
+  noteDraft: string | undefined;
+  /** The Note field takes the keyboard once it shows, as Add Note… asks */
+  isNoteFocusRequested = false;
   /** Why the panel closed by itself, until it opens again or is dismissed */
   notice: string | undefined;
   /** A node the keyboard goes back to, once its editor closed from the keyboard */
@@ -109,10 +115,18 @@ export class CubeNodeEditorState {
       finish: action,
       finishApplied: action,
       draft: observable.ref,
+      noteDraft: observable,
+      isNoteFocusRequested: observable,
       notice: observable,
       node: computed,
       edited: computed,
+      hasStepChanges: computed,
+      noteText: computed,
+      hasNoteChanges: computed,
       hasChanges: computed,
+      setNoteText: action,
+      openAtNote: action,
+      clearNoteFocusRequest: action,
       open: action,
       canSwapInputs: computed,
       canRenameDuplicateColumns: computed,
@@ -152,7 +166,7 @@ export class CubeNodeEditorState {
    * The draft saves differently from the node it was made from, or holds
    * edits it can't make a node of yet (`hasEditsNotBuilt`)
    */
-  get hasChanges(): boolean {
+  get hasStepChanges(): boolean {
     const { draft, edited } = this;
     return (
       draft !== undefined &&
@@ -164,6 +178,51 @@ export class CubeNodeEditorState {
             draft.original,
           )))
     );
+  }
+
+  /** The text the Note field shows: as edited, else the step's note */
+  get noteText(): string {
+    return (
+      this.noteDraft ??
+      (this.nodeId === undefined
+        ? undefined
+        : this.editorState.getStepNote(this.nodeId)) ??
+      ''
+    );
+  }
+
+  /** The Note field's text, trimmed, isn't the step's note */
+  get hasNoteChanges(): boolean {
+    return (
+      this.noteDraft !== undefined &&
+      this.nodeId !== undefined &&
+      this.noteDraft.trim() !==
+        (this.editorState.getStepNote(this.nodeId) ?? '')
+    );
+  }
+
+  /** The step's settings or its note are edited, and not stored yet */
+  get hasChanges(): boolean {
+    return this.hasStepChanges || this.hasNoteChanges;
+  }
+
+  setNoteText(text: string): void {
+    this.noteDraft = text;
+  }
+
+  /**
+   * Opens the editor on a step with its Note field taking the keyboard, as
+   * Add Note… and a click on the note do
+   */
+  openAtNote(nodeId: string): void {
+    this.open(nodeId);
+    if (this.nodeId === nodeId) {
+      this.isNoteFocusRequested = true;
+    }
+  }
+
+  clearNoteFocusRequest(): void {
+    this.isNoteFocusRequested = false;
   }
 
   /**
@@ -200,11 +259,12 @@ export class CubeNodeEditorState {
 
   /**
    * Stores the draft in place of the node, with the cube's context the
-   * draft changes, if any (PLAN §11.25), as one undo step; gives the node
-   * stored, if one was
+   * draft changes, if any (PLAN §11.25), and the step's note, as one undo
+   * step; gives the node stored, if one was. A note edited alone leaves the
+   * query, and so the rows, as they are (PLAN §11.31).
    */
   private store(): QueryNode | undefined {
-    const { node, edited, draft } = this;
+    const { node, edited, draft, noteDraft } = this;
     if (
       !node ||
       !edited ||
@@ -217,17 +277,24 @@ export class CubeNodeEditorState {
       return undefined;
     }
     const { document } = this.editorState;
-    if (!document.query.canReplace(edited)) {
+    const { hasStepChanges } = this;
+    if (hasStepChanges && !document.query.canReplace(edited)) {
       return undefined;
     }
-    const query = document.query.replace(edited);
+    const query = hasStepChanges
+      ? document.query.replace(edited)
+      : document.query;
     const context = draft.editedContext;
+    const stored = context
+      ? document.withContext(context).withQuery(query)
+      : document.withQuery(query);
     this.editorState.applyDocument(
-      context
-        ? document.withContext(context).withQuery(query)
-        : document.withQuery(query),
+      noteDraft === undefined
+        ? stored
+        : withStepNote(stored, node.id, noteDraft),
     );
-    return edited;
+    this.noteDraft = undefined;
+    return hasStepChanges ? edited : node;
   }
 
   get canSwapInputs(): boolean {
@@ -250,7 +317,7 @@ export class CubeNodeEditorState {
       return;
     }
     let { query } = this.editorState.document;
-    if (this.hasChanges && query.canReplace(edited)) {
+    if (this.hasStepChanges && query.canReplace(edited)) {
       query = query.replace(edited);
     }
     query = query.swapInputs(node.id);
@@ -269,7 +336,7 @@ export class CubeNodeEditorState {
   } {
     const { node, edited } = this;
     let { query } = this.editorState.document;
-    if (edited && this.hasChanges && query.canReplace(edited)) {
+    if (edited && this.hasStepChanges && query.canReplace(edited)) {
       query = query.replace(edited);
     }
     return {
@@ -516,7 +583,7 @@ export class CubeNodeEditorState {
     const { edited } = this;
     if (
       edited !== undefined &&
-      this.hasChanges &&
+      this.hasStepChanges &&
       !this.editorState.readOnly &&
       !this.editorState.document.query.canReplace(edited)
     ) {
@@ -586,8 +653,13 @@ export class CubeNodeEditorState {
     this.draft?.dispose();
   }
 
+  /** Edits the node; the note edited stays when it is the same step, e.g. once its inputs are swapped */
   private bind(node: QueryNode): void {
     this.draft?.dispose();
+    if (node.id !== this.nodeId) {
+      this.noteDraft = undefined;
+      this.isNoteFocusRequested = false;
+    }
     this.nodeId = node.id;
     this.nodeKey = node.key;
     this.draft = createCubeNodeDraft(node, this.editorState);
@@ -598,15 +670,20 @@ export class CubeNodeEditorState {
     this.nodeId = undefined;
     this.nodeKey = undefined;
     this.draft = undefined;
+    this.noteDraft = undefined;
+    this.isNoteFocusRequested = false;
   }
 
-  /** Runs whenever the node with the panel's id is another object, or gone */
+  /**
+   * Runs whenever the node with the panel's id is another object, or gone. A
+   * note edited alone follows its step, e.g. a source typed again.
+   */
   private sync(): void {
     const { node } = this;
     if (this.nodeId === undefined || node?.key === this.nodeKey) {
       return;
     }
-    if (this.hasChanges) {
+    if (this.hasStepChanges || (!node && this.hasNoteChanges)) {
       if (node && this.draft?.follow(node)) {
         this.nodeKey = node.key;
         return;

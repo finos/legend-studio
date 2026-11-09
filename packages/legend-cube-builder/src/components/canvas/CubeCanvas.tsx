@@ -15,7 +15,7 @@
  */
 
 import { ContextMenu } from '@finos/legend-art';
-import type { Query } from '@finos/legend-cube';
+import { getStepNoteText, type Query } from '@finos/legend-cube';
 import { noop } from '@finos/legend-shared';
 import {
   Background,
@@ -81,6 +81,7 @@ import {
 } from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
 import { CubeCanvasSelectionBox } from './CubeCanvasSelectionBox.js';
+import { CUBE_CANVAS_STEP_NOTE_CLASS } from './CubeCanvasStepNote.js';
 import { CubeNodeEditorPopper } from '../editors/CubeNodeEditorPopper.js';
 
 // React Flow re-renders every node when these change identity
@@ -153,10 +154,20 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const { readOnly } = editorState;
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const flowRef = useRef<HTMLDivElement>(null);
-  const { containers } = editorState.document.meta;
+  const { containers, notes } = editorState.document.meta;
+  // the steps with a note, which get room for it under them (PLAN §11.31)
+  const noted = useMemo(
+    () =>
+      new Set(
+        query.nodes
+          .filter((node) => getStepNoteText(notes, node.id) !== undefined)
+          .map((node) => node.id),
+      ),
+    [query, notes],
+  );
   const layout = useMemo(
-    () => layoutCubeCanvas(query, containers),
-    [query, containers],
+    () => layoutCubeCanvas(query, containers, noted),
+    [query, containers, noted],
   );
   const { positions } = layout;
   const nodes = useMemo(() => {
@@ -166,12 +177,14 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       ...containerNodes.filter(
         (node) => node.type === CUBE_CANVAS_CONTAINER_TYPE,
       ),
-      ...buildCubeCanvasNodes(query, positions),
+      ...buildCubeCanvasNodes(query, positions, (id) =>
+        getStepNoteText(notes, id),
+      ),
       ...containerNodes.filter(
         (node) => node.type === CUBE_CANVAS_FOLDED_CONTAINER_TYPE,
       ),
     ];
-  }, [query, positions, layout]);
+  }, [query, positions, layout, notes]);
   const edges = useMemo(
     () => buildCubeCanvasEdges(query, layout.lanes, layout.containers),
     [query, layout],
@@ -188,8 +201,9 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
     [query, layout],
   );
   // the view fits the graph again, to the left, whenever the layout moves a
-  // node or a container, or the canvas changes size (e.g. the splitter above
-  // the grid moves), once React Flow has measured every node
+  // node or a container, a note comes or goes, or the canvas changes size
+  // (e.g. the splitter above the grid moves), once React Flow has measured
+  // every node
   const layoutSignature = useMemo(
     () =>
       JSON.stringify([
@@ -201,8 +215,9 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           width,
           height,
         ]),
+        [...noted],
       ]),
-    [positions, layout],
+    [positions, layout, noted],
   );
   const nodesInitialized = useNodesInitialized();
   const canvasWidth = useStore((state) => state.width);
@@ -269,6 +284,12 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           if (editorState.nodeEditor.finish()) {
             editorState.select(flowNode.id);
           }
+        } else if (
+          event.target instanceof Element &&
+          event.target.closest(`.${CUBE_CANVAS_STEP_NOTE_CLASS}`)
+        ) {
+          // a click on the step's note opens its editor at the note
+          editorState.nodeEditor.openAtNote(flowNode.id);
         } else {
           editorState.nodeEditor.open(flowNode.id);
         }

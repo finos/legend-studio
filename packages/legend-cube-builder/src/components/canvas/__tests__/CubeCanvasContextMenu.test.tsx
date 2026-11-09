@@ -93,6 +93,7 @@ const ITEMS = [
   'Duplicate',
   'Put in a Container',
   'Take Out of Container',
+  'Add Note…',
   'Remove',
   'Swap Inputs',
 ];
@@ -159,6 +160,7 @@ describe('Canvas context menu', () => {
       'Copy',
       'Duplicate',
       'Put in a Container',
+      'Add Note…',
       'Remove',
       'Swap Inputs',
     ]);
@@ -177,6 +179,7 @@ describe('Canvas context menu', () => {
       'Copy',
       'Duplicate',
       'Put in a Container',
+      'Add Note…',
       'Remove',
     ]);
     await closeMenu();
@@ -190,6 +193,7 @@ describe('Canvas context menu', () => {
       'Copy',
       'Duplicate',
       'Put in a Container',
+      'Add Note…',
       'Remove',
     ]);
   });
