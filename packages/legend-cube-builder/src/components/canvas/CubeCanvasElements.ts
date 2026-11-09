@@ -34,6 +34,7 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_CANVAS_NODE_HEIGHT,
   CUBE_CANVAS_NODE_WIDTH,
+  CUBE_CANVAS_NOTE_HEIGHT,
   type CubeCanvasContainerPlace,
   type CubeCanvasLayout,
   type CubeCanvasPosition,
@@ -58,7 +59,11 @@ export const CUBE_FOLDED_INPUT_HANDLE_ID = 'input';
 export const MISSING_VALIDITY_TOOLTIP =
   'This node depends on some invalid inputs.';
 
-export type CubeCanvasNodeData = { readonly node: QueryNode };
+export type CubeCanvasNodeData = {
+  readonly node: QueryNode;
+  /** Its note, shown under it (PLAN §11.31) */
+  readonly note?: string | undefined;
+};
 export type CubeCanvasEdgeData = {
   readonly label: string | undefined;
   /** The lanes it crosses the columns it skips in, left to right (`layoutCubeQuery`) */
@@ -103,13 +108,18 @@ export const getCubeCanvasHandles = (node: QueryNode): CubeCanvasHandle[] => [
   },
 ];
 
-/** The steps shown: a folded container's steps have no place */
+/**
+ * The steps shown, a step with a note taller by its line, under it: a
+ * folded container's steps have no place
+ */
 export const buildCubeCanvasNodes = (
   query: Query,
   positions: ReadonlyMap<string, CubeCanvasPosition>,
+  getNote: (stepId: string) => string | undefined = () => undefined,
 ): CubeCanvasStepNode[] =>
   query.nodes.flatMap((node) => {
     const position = positions.get(node.id);
+    const note = getNote(node.id);
     return position
       ? [
           {
@@ -117,9 +127,11 @@ export const buildCubeCanvasNodes = (
             type: CUBE_CANVAS_NODE_TYPE,
             position: { ...position },
             width: CUBE_CANVAS_NODE_WIDTH,
-            height: CUBE_CANVAS_NODE_HEIGHT,
+            height:
+              CUBE_CANVAS_NODE_HEIGHT +
+              (note === undefined ? 0 : CUBE_CANVAS_NOTE_HEIGHT),
             handles: getCubeCanvasHandles(node),
-            data: { node },
+            data: note === undefined ? { node } : { node, note },
           },
         ]
       : [];

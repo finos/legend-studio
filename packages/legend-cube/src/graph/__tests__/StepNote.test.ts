@@ -31,6 +31,7 @@ import {
   reconcileStepNotes,
   setStepNote,
   type StepNote,
+  withStepNote,
 } from '../StepNote.js';
 
 /** s1 → testUnary101 → testUnary102 */
@@ -89,6 +90,20 @@ describe(unitTest('Step notes'), () => {
     );
     expect(setStepNote(NOTES, 'testUnary101', '  ')).toBe(NOTES);
     expect(setStepNote(undefined, 's1', '')).toBeUndefined();
+  });
+});
+
+describe(unitTest('Step notes: on a document'), () => {
+  test("Sets a step's note in the meta, leaving the query and the rest of the meta as they are", () => {
+    const document = new CubeDocument({ query: chain() });
+    const noted = withStepNote(document, 's1', ' Why ');
+    expect(noted.meta).toEqual({
+      ...DEFAULT_META,
+      notes: [{ step: 's1', text: 'Why' }],
+    });
+    expect(noted.query).toBe(document.query);
+    expect(withStepNote(noted, 's1', 'Why')).toBe(noted);
+    expect(withStepNote(noted, 's1', '').meta.notes).toEqual([]);
   });
 });
 

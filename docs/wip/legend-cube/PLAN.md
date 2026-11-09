@@ -5969,9 +5969,12 @@ the same gap.
 - Each change to a note is one undo step, and changes only the meta.
 
 **Editing:** every step's editor, sources' included, has a **Note** field under its settings. A note is an edit, as
-the step's settings are: Apply, or closing the editor, stores it, and Cancel drops it. A source's editor, which had no
-Apply or Cancel, gets them for its note. On the canvas, right-click a step for **Add Note…** or **Edit Note…**, which
-opens its editor at the Note field. A click on the note does the same.
+the step's settings are: Apply, or closing the editor, stores it, and Cancel drops it, in the same undo step as the
+settings. An editor with nothing else to set, such as a table's or a Distinct's, still has no Apply or Cancel: closing
+it stores the note, as it stores a warehouse typed. Apply and Cancel there would put a second Apply beside a data
+product's warehouse. A note edited alone follows its step when the step changes underneath, e.g. a source typed again.
+On the canvas, right-click a step for **Add Note…** or **Edit Note…**, which opens its editor at the Note field. A click
+on the note does the same.
 
 **Layout** (`layoutCubeQuery`, `layoutCubeCanvas`): a noted step's box is 44px taller for dagre, the step in its
 middle, and the note in the room below it. The view fits the graph again when a note comes or goes. A container's

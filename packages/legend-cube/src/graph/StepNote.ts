@@ -15,6 +15,7 @@
  */
 
 import type { JsonObject } from '../utils/Json.js';
+import type { CubeDocument } from './CubeDocument.js';
 import type { Query } from './Query.js';
 
 // A note beside a step: plain text the canvas shows under it, saying why the
@@ -61,6 +62,19 @@ export const setStepNote = (
   return note.text === trimmed
     ? notes
     : all.map((each) => (each === note ? { ...note, text: trimmed } : each));
+};
+
+/** The document with a step's note set (`setStepNote`); the same document when that changes nothing */
+export const withStepNote = (
+  document: CubeDocument,
+  stepId: string,
+  text: string,
+): CubeDocument => {
+  const { meta } = document;
+  const notes = setStepNote(meta.notes, stepId, text);
+  return notes === meta.notes
+    ? document
+    : document.withMeta({ ...meta, notes });
 };
 
 /**

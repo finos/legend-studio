@@ -25,6 +25,8 @@ import {
 /** Every node is drawn this size, so edges need no DOM measurement (PLAN §7.2) */
 export const CUBE_CANVAS_NODE_WIDTH = 200;
 export const CUBE_CANVAS_NODE_HEIGHT = 72;
+/** A step's note, a line under it (PLAN §11.31) */
+export const CUBE_CANVAS_NOTE_HEIGHT = 22;
 
 const RANK_SEPARATION = 56;
 const NODE_SEPARATION = 32;
@@ -80,6 +82,14 @@ const getColumns = (query: Query): ((id: string) => number) => {
   return getColumn;
 };
 
+/**
+ * A step's height for dagre: a noted step's has room for its note below it
+ * and as much above it, so its middle, where its lines go, is the middle
+ * dagre lines nodes up by, and its lines stay straight (PLAN §11.31)
+ */
+const getLaidOutHeight = (noted: boolean): number =>
+  CUBE_CANVAS_NODE_HEIGHT + (noted ? 2 * CUBE_CANVAS_NOTE_HEIGHT : 0);
+
 /** The height at `x` of the line through the points, which go left to right */
 const getHeightAt = (
   points: readonly CubeCanvasPosition[],
@@ -106,8 +116,13 @@ const getHeightAt = (
  * as long as its columns are apart, and dagre's ranking keeps it that long.
  * A connection that skips columns gets a lane through each: dagre routes it
  * there, clear of the nodes, so its edge can follow it (`CubeCanvasEdge`).
+ * A step with a note gets room for it (`getLaidOutHeight`).
  */
-export const layoutCubeQuery = (query: Query): CubeCanvasLayout => {
+export const layoutCubeQuery = (
+  query: Query,
+  /** The steps with a note */
+  noted: ReadonlySet<string> = new Set(),
+): CubeCanvasLayout => {
   const graph = new dagre.graphlib.Graph<{
     width: number;
     height: number;
@@ -123,7 +138,7 @@ export const layoutCubeQuery = (query: Query): CubeCanvasLayout => {
     .forEach((node) =>
       graph.setNode(node.id, {
         width: CUBE_CANVAS_NODE_WIDTH,
-        height: CUBE_CANVAS_NODE_HEIGHT,
+        height: getLaidOutHeight(noted.has(node.id)),
       }),
     );
   const getColumn = getColumns(query);
@@ -267,15 +282,18 @@ const getKeyColumns = (
  * or going from it: the graph laid out is the query with each folded
  * container's steps made one. Containers are one block of steps each
  * (`getShownContainers`), so that graph has no cycle. Columns and lanes are
- * `layoutCubeQuery`'s, on that graph.
+ * `layoutCubeQuery`'s, on that graph. A frame takes in its steps' notes; a
+ * folded container hides them.
  */
 export const layoutCubeCanvas = (
   query: Query,
   containers: readonly StepContainer[] | undefined,
+  /** The steps with a note */
+  noted: ReadonlySet<string> = new Set(),
 ): CubeCanvasContainerLayout => {
   const shown = getShownContainers(query, containers);
   if (!shown.length) {
-    return { ...layoutCubeQuery(query), containers: [] };
+    return { ...layoutCubeQuery(query, noted), containers: [] };
   }
   const boxOf = new Map<string, string>();
   shown.forEach(
@@ -311,10 +329,11 @@ export const layoutCubeCanvas = (
     ...(open.length ? { edgesep: CONTAINER_EDGE_SEPARATION } : {}),
   });
   graph.setDefaultEdgeLabel(() => ({}));
+  // a folded container's box shows no note
   keys.forEach((key) =>
     graph.setNode(key, {
       width: CUBE_CANVAS_NODE_WIDTH,
-      height: CUBE_CANVAS_NODE_HEIGHT,
+      height: getLaidOutHeight(noted.has(key)),
     }),
   );
   open.forEach(({ container, steps }) => {
@@ -393,8 +412,15 @@ export const layoutCubeCanvas = (
       const top = Math.min(...corners.map(({ y }) => y));
       const right =
         Math.max(...corners.map(({ x }) => x)) + CUBE_CANVAS_NODE_WIDTH;
-      const bottom =
-        Math.max(...corners.map(({ y }) => y)) + CUBE_CANVAS_NODE_HEIGHT;
+      // a step's note is under it, in the frame
+      const bottom = Math.max(
+        ...steps.map(
+          (id, index) =>
+            (corners[index]?.y ?? 0) +
+            CUBE_CANVAS_NODE_HEIGHT +
+            (noted.has(id) ? CUBE_CANVAS_NOTE_HEIGHT : 0),
+        ),
+      );
       return {
         container,
         steps,
