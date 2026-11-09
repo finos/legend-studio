@@ -47,6 +47,7 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-application-marketplace": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-cube-builder": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-lego": "workspace:*",
