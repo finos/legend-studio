@@ -308,19 +308,25 @@ export const CUBE_NODE_NOT_SET_LABEL = 'Not set';
 /**
  * What a node shows on the canvas: a source shows its name, with where it
  * comes from as a muted second line (`TRADES`, from `TRADES_SAMPLE`); every
- * other node, and a source not resolved yet, its description. The tooltip
- * keeps the full description (UX audit B9, 2026-10-11).
+ * other node, and a source not resolved yet, its description, but on a
+ * definition flow, which names a source whose columns aren't known. The
+ * tooltip keeps the full description (UX audit B9, 2026-10-11).
  */
 export const getCubeCanvasNodeLabel = (
   node: QueryNode,
   /** The node type's name, e.g. "Join Another Input", shown on a node not set yet */
   typeLabel?: string | undefined,
+  options: {
+    /** Whether a source not resolved shows its name, as on a definition flow */
+    readonly namesUnresolvedSources?: boolean | undefined;
+  } = {},
 ): { title: string; detail?: string | undefined } => {
   if (node.isUnset() && typeLabel !== undefined) {
     // "Join Another Input", then a muted "Not set", in place of "Join additional input"
     return { title: typeLabel, detail: CUBE_NODE_NOT_SET_LABEL };
   }
   if (
+    !options.namesUnresolvedSources &&
     (node instanceof RelationalTableSource ||
       node instanceof DataProductAccessPointSource ||
       node instanceof IngestDatasetSource ||

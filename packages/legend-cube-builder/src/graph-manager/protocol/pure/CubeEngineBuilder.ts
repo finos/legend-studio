@@ -25,9 +25,8 @@ import type {
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
 import type { MarketplaceServerClient } from '@finos/legend-server-marketplace';
-import type { CubeExpressionCodec, IR, JsonObject } from '@finos/legend-cube';
+import type { IR } from '@finos/legend-cube';
 import {
-  parseLosslessJSON,
   type PlainObject,
   stringifyLosslessJSON,
   type TracerService,
@@ -42,7 +41,6 @@ import type { CubeEngine } from '../../CubeEngine.js';
 import type { CubeEngineClientSettings } from '../../CubeEngineClientSettings.js';
 import type {
   CubeIngestCatalog,
-  CubeIngestDataSet,
   CubeIngestDefinitionSource,
 } from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
@@ -55,13 +53,7 @@ import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
 import { V1_CUBE_DEPLOYMENT_DIRECTORY_ENVIRONMENT } from './v1/V1_CubeDeploymentName.js';
 import { V1_LegendCubeProjectCatalog } from './v1/V1_LegendCubeProjectCatalog.js';
 import { V1_LegendCubeServiceCatalog } from './v1/V1_LegendCubeServiceCatalog.js';
-import { V1_readCubeIngestDataSets } from './v1/V1_CubeIngestDefinition.js';
 import { V1_serializeCubeLambda } from './v1/V1_CubeLambdaSerializer.js';
-import {
-  V1_readCubeLambda,
-  V1_readCubeValueSpecification,
-} from './v1/V1_CubeLambdaReader.js';
-import { V1_readCubeExpression } from './v1/V1_CubeExpression.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -283,34 +275,3 @@ export const serializeCubeLambdaForHost = (lambda: IR): PlainObject =>
   withoutSourceInformation(
     JSON.parse(stringifyLosslessJSON(V1_serializeCubeLambda(lambda))),
   ) as PlainObject;
-
-/**
- * The data sets of an ingest definition's content, its protocol JSON, in
- * order, typed from what it declares; for a host that lists definitions of
- * its own, e.g. Studio's workspace. Throws when the content can't be read.
- */
-export const readCubeIngestDataSets = (
-  content: PlainObject,
-): CubeIngestDataSet[] => V1_readCubeIngestDataSets(content);
-
-/**
- * The IR of a lambda's protocol JSON, Cube's or the engine's grammar's, for
- * Import Pure (PLAN §11.18): a host's matview, or a pasted lambda. Throws a
- * `CubeLambdaReadError` naming what Cube can't read.
- */
-export const readCubeLambdaJson = (json: unknown): IR =>
-  V1_readCubeLambda(json);
-
-/**
- * How Import Pure stores an expression it reads into a step, and reads one a
- * step stores (PLAN §11.18): as the Extend and Filter by Expression editors
- * store the engine's JSON, with no source information and number literals as
- * their digit strings
- */
-export const CUBE_EXPRESSION_CODEC: CubeExpressionCodec = {
-  write: (lambda: IR): JsonObject =>
-    V1_readCubeExpression(
-      parseLosslessJSON(stringifyLosslessJSON(V1_serializeCubeLambda(lambda))),
-    ).lambda,
-  read: (json: JsonObject): IR => V1_readCubeValueSpecification(json),
-};

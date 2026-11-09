@@ -15,7 +15,10 @@
  */
 
 import { func, type IR } from '../CubeIR.js';
-import { CubeLambdaReadError } from './CubeLambdaReadError.js';
+import {
+  CubeLambdaReadError,
+  CubeLambdaReadErrorKind,
+} from './CubeLambdaReadError.js';
 
 export const CUBE_LAMBDA_PARTS_MESSAGE = {
   NOT_A_LAMBDA:
@@ -75,14 +78,21 @@ const splitStatements = (
 ): IR => {
   const query = statements.at(-1);
   if (query === undefined) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_PARTS_MESSAGE.EMPTY);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SHAPE,
+      CUBE_LAMBDA_PARTS_MESSAGE.EMPTY,
+    );
   }
   statements.slice(0, -1).forEach((statement) => {
     if (statement.k !== 'let') {
-      throw new CubeLambdaReadError(CUBE_LAMBDA_PARTS_MESSAGE.NOT_A_LET);
+      throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SHAPE,
+        CUBE_LAMBDA_PARTS_MESSAGE.NOT_A_LET,
+      );
     }
     if (lets.has(statement.name)) {
       throw new CubeLambdaReadError(
+        CubeLambdaReadErrorKind.SHAPE,
         CUBE_LAMBDA_PARTS_MESSAGE.LET_TWICE(statement.name),
       );
     }
@@ -100,10 +110,14 @@ const splitStatements = (
  */
 export const splitCubeLambda = (lambda: IR): CubeLambdaParts => {
   if (lambda.k !== 'lambda') {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_PARTS_MESSAGE.NOT_A_LAMBDA);
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SHAPE,
+      CUBE_LAMBDA_PARTS_MESSAGE.NOT_A_LAMBDA,
+    );
   }
   if (lambda.params.length) {
     throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.PARAMETERS,
       CUBE_LAMBDA_PARTS_MESSAGE.PARAMETERS(lambda.params),
     );
   }

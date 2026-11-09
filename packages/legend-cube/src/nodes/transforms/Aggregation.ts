@@ -724,6 +724,12 @@ export const validateColumnAggregation = (
   schema: Schema,
   errors?: string[],
   use: AggregationUse = GROUP_AGGREGATION_USE,
+  /**
+   * The input's columns whose names it can't take: all of them, but for a
+   * group drawn as Pure allows it (`Group.allowsInputNames`), which keeps
+   * only its keys
+   */
+  takenNames: readonly string[] = schema.names(),
 ): boolean => {
   const aggregation = aggregations[index];
   if (!aggregation) {
@@ -739,9 +745,9 @@ export const validateColumnAggregation = (
       errors,
     ) &&
     validate(
-      !schema
-        .names()
-        .some((input) => foldColumnName(input) === foldColumnName(name)),
+      !takenNames.some(
+        (input) => foldColumnName(input) === foldColumnName(name),
+      ),
       MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN(name),
       errors,
     ) &&

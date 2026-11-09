@@ -19,7 +19,7 @@ import { getViewportForBounds } from '@xyflow/react';
 import {
   CUBE_CANVAS_LEFT_MARGIN,
   getCubeCanvasLeftAlignedViewport,
-} from '../CubeCanvas.js';
+} from '../CubeCanvasViewport.js';
 
 describe('The graph fitted to the left of the canvas', () => {
   test('Puts a small graph against the left edge, at full size, centred top to bottom', () => {
