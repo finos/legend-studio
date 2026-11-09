@@ -5931,6 +5931,66 @@ without one, the two kinds stay apart.
   Studio both kinds name one environment. Whether `#I` resolves under the data product runtime's environment is for
   the first internal run of a mixed Analytics cube.
 
+### 11.31 Notes beside the steps (2026-11-05)
+
+**Ask:** the user, on 2026-11-05: "should we have notes next to each node?" Alteryx shows an annotation under every tool
+and has free Comment boxes (finos/legend-studio#5809, its §2.7). In Cube, each step's label already says what the step
+does (`describe()`), so a note says why. Built on the branch `cube-step-notes`, stacked on #5850 (containers, §11.29).
+§11.30 is kept for mixing source kinds. Evidence: `legend-cube-evidence/alteryx/canvas/notes/`.
+
+**Settled with the user** (2026-11-05, all on the recommendation):
+
+1. **Built now**, before cubes are saved (M8, #5679). Undo, copy and paste, and the exported spec keep a note, so M8
+   will keep it too. Studio's Save MatView keeps only the view's lambda, so a note is lost there, as a container is.
+   #5809 had said notes are worth having only once cubes are saved.
+2. **One muted line under the step**, with the whole note on hover. dagre lines nodes up by their centres (§7.2), so a
+   noted step's box in the layout is 44px taller, half above the step and half below, and its lines stay straight.
+   With room below it only, the lines to and from a noted step bend by 11px (the probe
+   `legend-cube-evidence/alteryx/canvas/notes/probe-layout.mjs`).
+3. **Saved in the spec's meta**, `meta.notes`, beside `meta.containers`. A note then changes only the meta, so the rows
+   stay current and the engine's errors stay. A key on each step would make a note's edit a query edit.
+4. **Steps only.** A container's title already says what it holds. A folded container hides its steps' notes until it
+   is opened.
+5. **No free-floating comment boxes.** Cube saves no positions (§7.2), so a loose note would have nowhere to stay.
+6. **Not in Show Pure**, which is the engine's rendering of the lambda: it has no comments. The plain-English
+   description (#5809, its §2.8) can list notes once it is built.
+
+**Saved** (§10.3): `meta.notes: [{ step, text }]`, in the order written. A note keeps its unknown keys. Two notes for
+one step are refused when a spec is read, as two containers with one id are. A note needs no new format version: an
+older Cube keeps `meta.notes` as an unknown key and writes it back. It doesn't prune it, though: a step it removes
+keeps its note, and a new step that takes the same id (ids are the highest number plus one) shows it. Containers have
+the same gap.
+
+**Rules** (`StepNote.ts`):
+
+- One note per step: plain text, at most 500 characters, its ends trimmed. An empty note is no note.
+- **A note follows its step.** Copy, paste and duplicate copy it with the step. Removing a step removes its note in
+  the same undo step, so a step that later takes its id starts without one.
+- Each change to a note is one undo step, and changes only the meta.
+
+**Editing:** every step's editor, sources' included, has a **Note** field under its settings. A note is an edit, as
+the step's settings are: Apply, or closing the editor, stores it, and Cancel drops it. A source's editor, which had no
+Apply or Cancel, gets them for its note. On the canvas, right-click a step for **Add Note…** or **Edit Note…**, which
+opens its editor at the Note field. A click on the note does the same.
+
+**Layout** (`layoutCubeQuery`, `layoutCubeCanvas`): a noted step's box is 44px taller for dagre, the step in its
+middle, and the note in the room below it. The view fits the graph again when a note comes or goes. A container's
+frame takes in its steps' notes.
+
+**Steps:**
+
+| Step | What                                                                                                   | Status |
+| ---- | ------------------------------------------------------------------------------------------------------ | ------ |
+| N.1  | This section; the changeset                                                                            | ✅     |
+| N.2  | Core: `meta.notes` in the spec and the rules (`StepNote.ts`), with tests                               |        |
+| N.3  | The editor: a note's undo step, pruning, copy, paste and duplicate, the Note field; tests              |        |
+| N.4  | The canvas: the line under the step, the layout's room, the frames, Add Note… in the menu; jsdom tests |        |
+| N.5  | The user guide: a section and its image                                                                |        |
+| N.6  | Checks: every suite that reads the builder, lint, the browser                                          |        |
+| N.7  | Demo video                                                                                             |        |
+
+**Status:** draft PR, stacked on #5850.
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks
