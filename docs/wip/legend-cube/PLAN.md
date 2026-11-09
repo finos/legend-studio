@@ -5989,10 +5989,19 @@ frame takes in its steps' notes.
 | N.3  | The editor: a note's undo step, pruning, copy, paste and duplicate, the Note field; tests              | ✅     |
 | N.4  | The canvas: the line under the step, the layout's room, the frames, Add Note… in the menu; jsdom tests | ✅     |
 | N.5  | The user guide: a section and its images; the step editor's image with its Note field                  | ✅     |
-| N.6  | Checks: every suite that reads the builder, lint, the browser                                          |        |
-| N.7  | Demo video                                                                                             |        |
+| N.6  | Checks: every suite that reads the builder, lint, the browser                                          | ✅     |
+| N.7  | Demo video                                                                                             | ✅     |
 
-**Status:** draft PR, stacked on #5850.
+**Checks:**
+
+- 7,383 tests pass in legend-cube (3,148), legend-cube-builder (3,401), Query (240), Analytics (35) and Studio (559).
+  4 fail, all engine-backed and against the local engine, which predates legend-engine#5449 (BINARY typing, 2 tests)
+  and #5108 (BigQuery, 2 tests), as on #5850.
+- `lint:js --max-warnings=0` is clean in legend-cube, legend-cube-builder and legend-application-analytics-e2e. Root
+  `tsc --build`, `check:format`, `check:copyright` and `check:changeset` pass.
+- In Chromium, on Legend Analytics: the guide's screenshot scripts, and the demo video (44, 1:15) with 13 checks.
+
+**Status:** draft finos/legend-studio#5853, stacked on #5850.
 
 ## 12. G. Risks and open questions
 

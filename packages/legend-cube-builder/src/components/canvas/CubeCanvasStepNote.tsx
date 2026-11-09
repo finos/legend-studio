@@ -37,8 +37,9 @@ export const CUBE_CANVAS_STEP_NOTE_CLASS = 'legend-cube__node-note';
 /** The note under a step: its lines run together on one line, cut short */
 export const CubeCanvasStepNote: React.FC<{ text: string }> = (props) => (
   <Tooltip
-    // the whole note, as written, after a moment, below the step
-    title={<div className="whitespace-pre-line">{props.text}</div>}
+    // the whole note, as written, after a moment, below the step; a word
+    // longer than the tooltip is broken
+    title={<div className="whitespace-pre-line break-words">{props.text}</div>}
     placement="bottom"
     enterDelay={500}
     enterNextDelay={500}
