@@ -38,6 +38,8 @@ import {
 } from './CubeCanvasElements.js';
 import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
 import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
+import { CUBE_CANVAS_NODE_HEIGHT } from './CubeCanvasLayout.js';
+import { CubeCanvasStepNote } from './CubeCanvasStepNote.js';
 import {
   canDropOnCubeNode,
   CUBE_DND_TYPE,
@@ -52,11 +54,12 @@ import {
  * It can be dragged onto another node, and takes palette items and other
  * nodes, lighting up only for a drop that would do something. Its handles
  * sit beside its draggable body, not in it, so dragging from a handle
- * connects rather than drags the node.
+ * connects rather than drags the node. Its note, if any, is a line under its
+ * body (PLAN §11.31).
  */
 export const CubeCanvasNode = observer(
   (props: NodeProps<CubeCanvasStepNode>) => {
-    const { node } = props.data;
+    const { node, note } = props.data;
     const editorState = useCubeCanvasEditorState();
     const status = getCubeCanvasNodeStatus(editorState, node);
     const label = getCubeCanvasNodeLabel(
@@ -128,7 +131,7 @@ export const CubeCanvasNode = observer(
             className={clsx(
               // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
               // it from moving the node, 'nopan' from panning the canvas
-              'legend-cube__node nodrag nopan relative flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
+              'legend-cube__node nodrag nopan relative flex w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
               status.isInvalid
                 ? 'border-[var(--color-status-error)]'
                 : status.isIncomplete
@@ -148,6 +151,8 @@ export const CubeCanvasNode = observer(
                   isDropTarget,
               },
             )}
+            // the step's own height: a note goes under it
+            style={{ height: CUBE_CANVAS_NODE_HEIGHT }}
             // the tooltip's text, for assistive technology and tests
             aria-description={status.tooltip}
             aria-current={status.isCapture}
@@ -196,11 +201,14 @@ export const CubeCanvasNode = observer(
             )}
           </div>
         </Tooltip>
+        {note !== undefined && <CubeCanvasStepNote text={note} />}
         <Handle
           id={CUBE_OUTPUT_HANDLE_ID}
           type="source"
           position={Position.Right}
           isConnectable={!editorState.readOnly}
+          // in the middle of the step, not of the note under it
+          style={{ top: CUBE_CANVAS_NODE_HEIGHT / 2 }}
         />
       </ContextMenu>
     );

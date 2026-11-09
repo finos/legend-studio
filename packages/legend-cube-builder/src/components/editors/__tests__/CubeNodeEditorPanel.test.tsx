@@ -666,29 +666,35 @@ describe("Node editor's frame", () => {
     expect(problems.classList).toContain('overflow-y-auto');
     // the floating layer is no tooltip around the dialog
     expect(editor.closest('[role="tooltip"]')).toBeNull();
-    // the title bar, the body, the problems, then Apply and Cancel
+    // the title bar, the body, the problems, the step's note (PLAN §11.31),
+    // then Apply and Cancel
     const parts = Array.from(editor.children);
-    expect(parts).toHaveLength(4);
+    expect(parts).toHaveLength(5);
     expect(
       within(parts[0] as HTMLElement).getByText('Join Another Input'),
     ).toBeDefined();
     expect(parts[1]).toBe(body());
     expect(parts[2]).toBe(problems);
     expect(
-      within(parts[3] as HTMLElement).getByRole('button', { name: 'Apply' }),
+      within(parts[3] as HTMLElement).getByTestId(
+        LEGEND_CUBE_TEST_ID.STEP_NOTE_FIELD,
+      ),
     ).toBeDefined();
     expect(
-      within(parts[3] as HTMLElement).getByRole('button', { name: 'Cancel' }),
+      within(parts[4] as HTMLElement).getByRole('button', { name: 'Apply' }),
+    ).toBeDefined();
+    expect(
+      within(parts[4] as HTMLElement).getByRole('button', { name: 'Cancel' }),
     ).toBeDefined();
     editJoinKeys();
     expect(
       within(panel()).queryByRole('alert', { name: 'Problems' }),
     ).toBeNull();
     const after = Array.from(panel().children);
-    expect(after).toHaveLength(3);
+    expect(after).toHaveLength(4);
     expect(after[1]).toBe(body());
     expect(
-      within(after[2] as HTMLElement).getByRole('button', { name: 'Apply' }),
+      within(after[3] as HTMLElement).getByRole('button', { name: 'Apply' }),
     ).toBeDefined();
   });
 
