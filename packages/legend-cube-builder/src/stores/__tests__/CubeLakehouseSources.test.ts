@@ -56,7 +56,7 @@ import { CUBE_LAMBDA_SOURCES_MESSAGE } from '../CubeLambdaSources.js';
 import { buildCubeRunningStepLambda } from '../CubeRunningStepLambda.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
-// Data products and ingest data sets in one cube (PLAN §11.29): they mix when
+// Data products and ingest data sets in one cube (PLAN §11.30): they mix when
 // they are one project's, in one Mode, on a host whose ingest catalog lists a
 // data product's project's definitions. Each tab adds to the other's cube,
 // and a lambda reading both reads back into one cube; elsewhere they stay

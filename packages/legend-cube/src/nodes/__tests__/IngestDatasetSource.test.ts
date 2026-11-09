@@ -250,7 +250,7 @@ describe(
       ]);
     });
 
-    test('Lets a query read ingest data sets and access points together, in either order (PLAN §11.29)', () => {
+    test('Lets a query read ingest data sets and access points together, in either order (PLAN §11.30)', () => {
       expect(
         errorsOf(
           queryOf([

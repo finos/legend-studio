@@ -142,7 +142,7 @@ export class CubeSourcePickerState {
     return getSourceKindName(dedicated?.[0] ?? RelationalTableSource.TYPE);
   }
 
-  /** Why a source of a type can't be added to the cube, naming both kinds (PLAN §11.29) */
+  /** Why a source of a type can't be added to the cube, naming both kinds (PLAN §11.30) */
   getOtherKindTitle(type: string): string {
     return getOtherSourceKindTitle(this.cubeKindName, getSourceKindName(type));
   }
@@ -240,7 +240,7 @@ export class CubeSourcePickerState {
    * none when the host doesn't serve that tab; a project cube from both of
    * its tabs, Project Database and Project Function (PLAN §6.5); a data
    * product or ingest cube from both lakehouse tabs, on a host that runs
-   * them together (§11.29)
+   * them together (§11.30)
    */
   isTabEnabled(tab: CubeSourcePickerTab): boolean {
     const { fixedTab } = this;
@@ -281,7 +281,7 @@ export class CubeSourcePickerState {
   /**
    * Opens the dialog on the cube's own tab, else the tab asked for, else the
    * one open last; on the tab asked for when it joins the cube, e.g. the
-   * Ingest tab for a data product cube (PLAN §11.29). Does nothing while it
+   * Ingest tab for a data product cube (PLAN §11.30). Does nothing while it
    * can't open (`disabledReason`).
    */
   open(tabKey?: CubeSourcePickerTabKey): void {

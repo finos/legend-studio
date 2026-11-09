@@ -1356,7 +1356,7 @@ source for now; the user plans to improve it later.
 - **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
   saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
   data products or ingest data sets) and one producer deployment. _(2026-11-09: data products and ingest data sets of
-  one project may share a cube, §11.29.)_
+  one project may share a cube, §11.30.)_
 - **Config:** Legend Query's optional `lakehouse.platformUrl` (the key Data Cube and Marketplace use); the ingest
   servers are found through it.
 - **After Add:** a data set's Source panel shows its definition (the URN on hover), the class, the producer deployment
@@ -1419,7 +1419,7 @@ internals (user, 2026-10-08): questions for the original app's team are about it
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
-  _(2026-11-09: still so. Data products and ingest data sets of one project may share a cube, §11.29.)_
+  _(2026-11-09: still so. Data products and ingest data sets of one project may share a cube, §11.30.)_
 - **Data product list:** the marketplace's search when Query names its server (`marketplace.serverUrl`, the same
   server Legend Marketplace's own `marketplace.url` names; user, 2026-10-09), else the lakehouse contract server's lite
   list, which Cube pages itself with guards. A failed search shows its error with Retry and never falls back to the
@@ -5032,7 +5032,7 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
    shows for the last two.
 6. **Binding rules:** one kind of source per cube, so a lambda mixing `#I`, `#P` and `#>` is refused; a matview that
    reads another matview is refused with a message of its own, as matview data sets are never sources. _(2026-11-09:
-   `#P` with `#I` of the data product's project binds as one data product cube, §11.29.)_
+   `#P` with `#I` of the data product's project binds as one data product cube, §11.30.)_
 7. **Expressions:** an Extend column's and a Filter by Expression's lambda is stored as the editor stores one (no
    source information, number literals as digit strings), its code the engine's grammar of it; an Extend is typed
    during the read, through the host's engine, so the steps after it can be checked.
@@ -5759,7 +5759,7 @@ type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and Duck
 **Supersessions** (kept here until folded): §11.5's aggregations table and `getAvailableAggregations`; §11.6's window
 functions; §11.12's Pivot aggregations; Appendix A, §10 (functions beyond the spec) and §16 (the setting messages).
 
-### 11.29 Data products and ingest data sets in one cube (user, 2026-11-05/09)
+### 11.30 Data products and ingest data sets in one cube (user, 2026-11-05/09)
 
 **Ask:** "data products and ingest within Studio can actually be mixed", yet Cube refused it. The user reviewed the
 rules one by one (local evidence `mixed-sources/FINDINGS.md`, §0):

@@ -219,7 +219,7 @@ const familyOf = (model: ModelContext): CubeSourceFamily =>
 /**
  * Why a lambda reads a source its cube's kind can't, if it does: a data
  * product cube reads ingest data sets too, its project's alone, which
- * `V1_checkCubeIngestAccessors` checks (PLAN §11.29)
+ * `V1_checkCubeIngestAccessors` checks (PLAN §11.30)
  */
 const foreignSourceProblemOf = (
   family: CubeSourceFamily,
@@ -704,7 +704,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
   /**
    * Types lambdas on a data product cube: on its project at its saved
    * version, with no runtime; a lambda reading ingest data sets too (PLAN
-   * §11.29) only when they are its project's, of the cube's class. The
+   * §11.30) only when they are its project's, of the cube's class. The
    * open-source engine reads no data product, so there every lambda fails
    * as the engine says
    */
@@ -1128,7 +1128,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
         captureId,
       );
     }
-    // ingest data sets it reads too (PLAN §11.29) are its project's, of its class
+    // ingest data sets it reads too (PLAN §11.30) are its project's, of its class
     const ingestProblem = V1_checkCubeIngestAccessors(
       V1_collectCubeIngestAccessors(executionLambda),
       project,

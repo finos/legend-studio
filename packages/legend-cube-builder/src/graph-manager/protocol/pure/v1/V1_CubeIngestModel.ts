@@ -96,7 +96,7 @@ export const V1_hasCubeIngestAccessor = (ir: IR): boolean =>
  * each must say which SDLC-deployed definition it reads, deployed to the
  * cube's class, under the path the query reads. The cube is an ingest cube,
  * or a data product cube, whose data sets are its project's too (PLAN
- * §11.29)
+ * §11.30)
  */
 export const V1_checkCubeIngestAccessors = (
   accessors: readonly V1_CubeIngestAccessor[],

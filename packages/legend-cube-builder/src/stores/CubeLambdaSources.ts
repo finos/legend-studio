@@ -55,7 +55,7 @@ import type { CubeEditorState } from './CubeEditorState.js';
 // it; another binds within the cube's own model or source, and asks for a
 // source first when the lambda alone doesn't say where its sources are. A
 // host that runs data products and ingest data sets together (Studio) binds
-// a lambda reading both as one data product cube (§11.29).
+// a lambda reading both as one data product cube (§11.30).
 
 export const CUBE_LAMBDA_SOURCES_MESSAGE = {
   NONE: 'The query reads no source Cube knows: #>{…}#, #P{…}# or #I{…}#.',
@@ -265,7 +265,7 @@ const bindDataProducts = async (
   const current = context
     ? getCubeDataProductProject(context.model)
     : undefined;
-  // an ingest cube they join keeps its class and warehouse (PLAN §11.29)
+  // an ingest cube they join keeps its class and warehouse (PLAN §11.30)
   const joined =
     context && mixesCubeLakehouseSources(editorState.host)
       ? getCubeIngestSettings(context.model)
@@ -408,7 +408,7 @@ const bindTables = async (
 
 /**
  * A lambda's access points and ingest data sets, on a host that lists a
- * data product's project's definitions (PLAN §11.29): the access points
+ * data product's project's definitions (PLAN §11.30): the access points
  * bind as a data product cube's, and the data sets among its project's
  * definitions, read in its class
  */
@@ -446,7 +446,7 @@ const bindLakehouseSources = async (
 /**
  * The cube's model and runtime and the step of each source, for a lambda's
  * sources, all of one kind (PLAN §11.18), or data products with ingest data
- * sets on a host that runs them together (§11.29). Throws a
+ * sets on a host that runs them together (§11.30). Throws a
  * `CubeLambdaReadError` that names a source Cube can't bind, or what to add
  * first.
  */

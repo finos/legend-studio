@@ -24,7 +24,7 @@ import { CUBE_INGEST_JOIN_MESSAGE } from '../__lib__/LegendCubeIngestLabels.js';
 import { getCubeDataProductProject } from '../graph-manager/CubeDataProduct.js';
 import { parseCubeIngestUrn } from '../graph-manager/CubeIngest.js';
 
-// Data products and ingest data sets in one cube (PLAN §11.29): they mix
+// Data products and ingest data sets in one cube (PLAN §11.30): they mix
 // when they are one project's, in one Mode. A cube that reads both is a data
 // product cube; its ingest data sets must be its project's, deployed to its
 // Mode, which the engine adapter checks again before any call

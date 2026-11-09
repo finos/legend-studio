@@ -33,7 +33,7 @@ import {
 
 /**
  * Reads an ingest cube's data sets again (PLAN §6.7), or a data product
- * cube's, read in its class (§11.29): their columns as their deployed
+ * cube's, read in its class (§11.30): their columns as their deployed
  * definitions declare them, through the catalog, with no engine call;
  * `fresh` reads the definitions again rather than what this page visit
  * read. One answer per source, failures included; never rejects.

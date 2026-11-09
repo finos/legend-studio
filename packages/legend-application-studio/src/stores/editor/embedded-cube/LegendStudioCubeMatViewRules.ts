@@ -24,7 +24,7 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 
-// Edit MatView's rule over the cube (PLAN §11.29, user, 2026-11-09): a view
+// Edit MatView's rule over the cube (PLAN §11.30, user, 2026-11-09): a view
 // may read a data product built on its own definition, which the platform
 // deploys data set by data set, but not an access point that reads the view
 // itself, which would make the view read itself

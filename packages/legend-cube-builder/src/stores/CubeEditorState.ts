@@ -469,7 +469,7 @@ export class CubeEditorState implements CommandRegistrar {
   get analysis(): SchemaInferenceResult {
     // data products and ingest data sets join each other's cubes only on a
     // host that lists a data product's project's definitions, and only that
-    // project's, in the cube's Mode (PLAN §11.29)
+    // project's, in the cube's Mode (PLAN §11.30)
     const lakehouseRules = mixesCubeLakehouseSources(this.host)
       ? [buildCubeIngestJoinRule(this.document.context?.model)].filter(
           (rule): rule is QueryRule => rule !== undefined,
@@ -1141,7 +1141,7 @@ export class CubeEditorState implements CommandRegistrar {
             node instanceof DataProductAccessPointSource,
         )
       : [];
-    // on a host that runs them together, a data product cube's too (PLAN §11.29)
+    // on a host that runs them together, a data product cube's too (PLAN §11.30)
     const dataSets =
       isCubeIngestModel(context.model) ||
       (isCubeDataProductModel(context.model) &&

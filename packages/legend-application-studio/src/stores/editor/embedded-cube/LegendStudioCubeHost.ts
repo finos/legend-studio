@@ -33,7 +33,7 @@ import { LegendStudioCubeWorkspace } from './LegendStudioCubeWorkspace.js';
  * Studio as the host of Legend Cube: Studio's engine and application store,
  * and the project's own ingest definitions and data products as the only
  * sources, typed and run on the workspace and the project's lakehouse
- * runtime. They are one project's, so one cube may read both (PLAN §11.29).
+ * runtime. They are one project's, so one cube may read both (PLAN §11.30).
  * No sample data, examples, databases or services. One per opening of the
  * cube.
  */

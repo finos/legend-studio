@@ -346,7 +346,7 @@ describe('Legend Cube engine: ingest cubes', () => {
     const cases: [ModelContext, IR, string][] = [
       [MODEL, table, 'An ingest cube reads ingest data sets only'],
       [MODEL, accessPoint, 'An ingest cube reads ingest data sets only'],
-      // a data product cube reads its own project's data sets alone (PLAN §11.29)
+      // a data product cube reads its own project's data sets alone (PLAN §11.30)
       [
         createCubeDataProductModel({
           groupId: 'g',

@@ -285,7 +285,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   /**
    * The ingest cube the tab adds access points to, on a host that runs them
-   * together (PLAN §11.29): its class and warehouse, which its access points
+   * together (PLAN §11.30): its class and warehouse, which its access points
    * run with. The first one added makes it a data product cube of its class
    */
   get joinedIngest(): CubeIngestSettings | undefined {
@@ -570,7 +570,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     this.showAllProjects = false;
     if (joined) {
       // an ingest cube's access points run in its class, on its warehouse
-      // (PLAN §11.29)
+      // (PLAN §11.30)
       if (this.environmentType !== joined.environmentType) {
         this.environmentType = joined.environmentType;
         this.resetCandidate();
@@ -916,7 +916,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       editorState.applyDocument(
         joined
           ? // the ingest cube becomes a data product cube of its class and
-            // warehouse, its data sets read in that class (PLAN §11.29)
+            // warehouse, its data sets read in that class (PLAN §11.30)
             document
               .withContext({
                 model: createCubeDataProductModel({

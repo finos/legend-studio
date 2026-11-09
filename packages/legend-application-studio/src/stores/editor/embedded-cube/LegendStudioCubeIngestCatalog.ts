@@ -203,7 +203,7 @@ export class LegendStudioCubeIngestCatalog
 
   /**
    * The definitions a cube of the project's data products reads alongside
-   * them (PLAN §11.29): every definition of the workspace, which are all the
+   * them (PLAN §11.30): every definition of the workspace, which are all the
    * project's, in the cube's class
    */
   async listProjectDefinitions(

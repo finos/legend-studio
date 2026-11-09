@@ -49,7 +49,7 @@ export enum LEGEND_CUBE_USER_DATA_KEY {
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
 /**
  * Why a source is disabled on a cube: the cube reads another kind of source
- * (PLAN §6.8), both named when known (§11.29)
+ * (PLAN §6.8), both named when known (§11.30)
  */
 export const getOtherSourceKindTitle = (
   cubeKind: string | undefined,

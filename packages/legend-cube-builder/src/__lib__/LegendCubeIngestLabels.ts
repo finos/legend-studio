@@ -34,7 +34,7 @@ export const CUBE_INGEST_RECHECK_MESSAGE = {
 
 /**
  * Why an ingest data set can't be read by a data product cube (PLAN
- * §11.29): a data product cube reads its own project's data sets, in its
+ * §11.30): a data product cube reads its own project's data sets, in its
  * Mode
  */
 export const CUBE_INGEST_JOIN_MESSAGE = {

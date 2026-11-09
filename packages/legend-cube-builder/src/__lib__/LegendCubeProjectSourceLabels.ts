@@ -23,10 +23,10 @@ export const CUBE_PROJECT_SOURCE_LABEL = {
   READING_RUNTIME: "reading the project's lakehouse runtime",
   NO_INGEST_DEFINITIONS: 'The project has no ingest definitions.',
   NO_DATA_PRODUCTS: 'The project has no data products.',
-  /** The Ingest tab on a data product cube, whose mode it keeps (PLAN §11.29) */
+  /** The Ingest tab on a data product cube, whose mode it keeps (PLAN §11.30) */
   JOINS_DATA_PRODUCTS: (mode: string): string =>
     `The cube's data products run in ${mode}: its ingest data sets run there too.`,
-  /** The Data Product tab on an ingest cube, whose mode it keeps (PLAN §11.29) */
+  /** The Data Product tab on an ingest cube, whose mode it keeps (PLAN §11.30) */
   JOINS_INGEST: (mode: string): string =>
     `The cube's ingest data sets run in ${mode}: its data products run there too.`,
 } as const;

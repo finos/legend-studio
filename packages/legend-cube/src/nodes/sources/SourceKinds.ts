@@ -61,7 +61,7 @@ export const getSourceKindName = (type: string): string | undefined =>
 
 /**
  * Data products and ingest data sets, the two kinds one query may read
- * together (PLAN §11.29): both run on one lakehouse runtime, and a data
+ * together (PLAN §11.30): both run on one lakehouse runtime, and a data
  * product's access points read ingest data sets. Studio types and runs both
  * on its workspace; a host that can't run them together keeps them apart
  * with `lakehouseSourcesAreApart`
@@ -89,7 +89,7 @@ const mixedKindsMessage = (kind: number, firstKind: number): string =>
 
 /**
  * A query reads one kind of source (PLAN §6.8), or data products with ingest
- * data sets (§11.29): its first source of a kind fixes the kind, and each
+ * data sets (§11.30): its first source of a kind fixes the kind, and each
  * source of a kind that can't join it is invalid, with a message naming both
  * kinds. Nodes of no kind, such as Unknown ones, are ignored. Registered
  * once, on the data product source.
@@ -114,7 +114,7 @@ export const sourcesAreOneKind: QueryRule = (query: Query) => {
 
 /**
  * Data products and ingest data sets kept apart, for a host that can't run
- * them together, as a query read them before §11.29: in a query whose first
+ * them together, as a query read them before §11.30: in a query whose first
  * source is of one of the two kinds, each source of the other is invalid,
  * with the message `sourcesAreOneKind` gave it. Sources of other kinds are
  * left to that rule

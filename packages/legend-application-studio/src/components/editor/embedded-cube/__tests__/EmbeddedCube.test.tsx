@@ -1078,7 +1078,7 @@ describe("Legend Cube's lakehouse environment in Studio", () => {
           ingest,
         ).environmentTypes,
       ).toEqual([PRODUCTION_PARALLEL, PRODUCTION]);
-      // data products start on the same Mode, whichever kind comes first (PLAN §11.29)
+      // data products start on the same Mode, whichever kind comes first (PLAN §11.30)
       const dataProductClasses = (opened?: IngestDefinition): unknown =>
         new LegendStudioCubeDataProductCatalog(
           editorStore,
@@ -1158,7 +1158,7 @@ describe("Legend Cube's lakehouse environment in Studio", () => {
   );
 });
 
-describe('A data product and an ingest data set in one cube in Studio (PLAN §11.29)', () => {
+describe('A data product and an ingest data set in one cube in Studio (PLAN §11.30)', () => {
   /** The desks, the data set's and the data product's: one view reading both, as Cube writes it */
   const ALL_DESKS_LAMBDA = serializeCubeLambdaForHost(
     lambda(

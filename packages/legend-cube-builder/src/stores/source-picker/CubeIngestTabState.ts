@@ -225,7 +225,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   /**
    * The data product cube the tab adds data sets to, on a host that lists a
-   * data product's project's definitions (PLAN §11.29): its project, whose
+   * data product's project's definitions (PLAN §11.30): its project, whose
    * definitions alone are listed, read and run in its class, on its warehouse
    */
   get joinedProject(): CubeDataProductProject | undefined {
@@ -534,7 +534,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     this.error = undefined;
     if (joined) {
       // a data product cube's data sets are read in its class, in the
-      // viewer's own environment of it, on its warehouse (PLAN §11.29)
+      // viewer's own environment of it, on its warehouse (PLAN §11.30)
       if (
         this.environmentType !== joined.environmentType ||
         this.environmentName !== undefined
@@ -710,7 +710,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   /**
    * Lists the producer deployment's definitions; on a data product cube,
-   * its project's (PLAN §11.29)
+   * its project's (PLAN §11.30)
    */
   *listDefinitions(): GeneratorFn<void> {
     const { catalog, producerDeploymentId, joinedProject } = this;

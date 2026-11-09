@@ -100,7 +100,7 @@ export interface CubeHost {
   /**
    * Rules over the whole query the host adds to the editor's own, e.g.
    * Studio's refusal of an access point that reads the materialized view
-   * being edited (PLAN §11.29). A step they flag can't run, nor anything
+   * being edited (PLAN §11.30). A step they flag can't run, nor anything
    * after it
    */
   readonly queryRules?: readonly QueryRule[] | undefined;
@@ -131,7 +131,7 @@ export const isCubeProjectHost = (host: CubeHost): boolean =>
 
 /**
  * Whether a cube on the host may read data products and ingest data sets of
- * one project together (PLAN §11.29): it serves both, and its ingest catalog
+ * one project together (PLAN §11.30): it serves both, and its ingest catalog
  * lists a data product's project's definitions
  */
 export const mixesCubeLakehouseSources = (host: CubeHost): boolean =>

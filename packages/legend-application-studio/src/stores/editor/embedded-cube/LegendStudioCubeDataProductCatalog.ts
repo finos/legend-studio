@@ -83,7 +83,7 @@ export class LegendStudioCubeDataProductCatalog
   /**
    * The classes its runs read, the default first, as the Ingest tab's: the
    * Mode the definition Cube was opened from points to, so a cube starts on
-   * one Mode whichever kind of source comes first (PLAN §11.29, user,
+   * one Mode whichever kind of source comes first (PLAN §11.30, user,
    * 2026-11-09)
    */
   readonly environmentTypes: readonly CubeDataProductEnvironmentType[];

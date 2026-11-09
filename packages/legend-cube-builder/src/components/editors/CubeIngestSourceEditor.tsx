@@ -33,7 +33,7 @@ import { CubeWarehouseControl } from './CubeWarehouseControl.js';
  * An ingest data set (PLAN §6.7): where it reads from, the cube's class,
  * producer deployment and warehouse, which can be edited, its columns as
  * its deployed definition declares them, and Refresh, which reads the
- * definition again. In a data product cube (§11.29), the cube's class and
+ * definition again. In a data product cube (§11.30), the cube's class and
  * warehouse, and no producer deployment
  */
 export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {

@@ -349,7 +349,7 @@ describe('Legend Cube engine: data product cubes', () => {
   });
 });
 
-describe('Legend Cube engine: a data product cube that reads ingest data sets too (PLAN §11.29)', () => {
+describe('Legend Cube engine: a data product cube that reads ingest data sets too (PLAN §11.30)', () => {
   const INGEST = 'sales::ingest::OrdersIngest';
   /** A data set of an ingest definition, by default the project's, deployed to a class */
   const dataSet = (

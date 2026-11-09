@@ -47,7 +47,7 @@ export interface CubeSourcePickerTab {
   /**
    * Whether the tab adds sources to a cube whose context another tab owns:
    * the data product and ingest tabs join each other's cubes on a host that
-   * runs them together (PLAN §11.29). None when left out
+   * runs them together (PLAN §11.30). None when left out
    */
   joinsContext?(context: CubeContext): boolean;
   /** When the dialog opens on the tab, or the user switches to it */
