@@ -125,10 +125,7 @@ import { V1_getCubeDroppedParenthesesEdits } from './V1_CubeDroppedParentheses.j
 import { V1_readCubeExpression } from './V1_CubeExpression.js';
 import { V1_buildCubeFunctionCatalogue } from './V1_CubeFunctionCatalogue.js';
 import { V1_buildCubeExpressionOutline } from './V1_CubeExpressionOutline.js';
-import {
-  V1_readCubeLambda,
-  V1_readCubeValueSpecification,
-} from './V1_CubeLambdaReader.js';
+import { V1_readCubeValueSpecification } from './V1_CubeLambdaReader.js';
 import { V1_serializeCubeLambda } from './V1_CubeLambdaSerializer.js';
 import { V1_buildCubeModelOutline } from './V1_CubeModelOutlineBuilder.js';
 import { V1_buildCubeSchema } from './V1_CubeRelationTypeAdapter.js';
@@ -139,15 +136,6 @@ import {
   V1_toCubeExplorationError,
   V1_unquoteCubeName,
 } from './V1_CubeSchemaExploration.js';
-
-/** The IR of a lambda the engine parsed from Pure text: a query's, or else an expression's of a row */
-const V1_readCubePure = (json: unknown): IR => {
-  try {
-    return V1_readCubeLambda(json);
-  } catch {
-    return V1_readCubeValueSpecification(json);
-  }
-};
 
 /** The engine client's configuration, as the host gives it (legend-graph doesn't export its type) */
 export type V1_CubeEngineConfig = ConstructorParameters<
@@ -1497,9 +1485,12 @@ export class V1_LegendCubeEngine implements CubeEngine {
       const parsed = await this.parseExpression(candidate, 'cube:pure');
       return {
         located: parsed.located,
-        same: isSameCubeIR(lambdaIR, V1_readCubePure(parsed.lambda), {
-          readExpression: V1_readCubeValueSpecification,
-        }),
+        // a query's lambda or an expression's: the engine parses either to a lambda
+        same: isSameCubeIR(
+          lambdaIR,
+          V1_readCubeValueSpecification(parsed.lambda),
+          { readExpression: V1_readCubeValueSpecification },
+        ),
       };
     };
     let first: { located: JsonObject; same: boolean };

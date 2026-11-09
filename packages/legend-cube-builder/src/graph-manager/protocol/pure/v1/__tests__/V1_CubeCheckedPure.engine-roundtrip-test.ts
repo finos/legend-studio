@@ -72,6 +72,20 @@ describe("The engine's Pure text of a query, checked", () => {
     );
   });
 
+  test('Leaves the parentheses the text has where they are, putting back only those dropped', async () => {
+    const engine = newEngine();
+    // the writer keeps them around an `==` under `&&`
+    const kept =
+      '|#>{test::Db.S.T}#->filter(x|$x.F && ($x.A == 1))->extend(~B:x|($x.A + 1) == 3)';
+    const query = await queryOf(kept);
+    expect(
+      await engine.checkPure(
+        query,
+        '|#>{test::Db.S.T}#->filter(x|$x.F && ($x.A == 1))->extend(~B:x|$x.A + 1 == 3)',
+      ),
+    ).toEqual({ text: kept, readsAsLambda: true, isRepaired: true });
+  });
+
   test("Gives the engine's own text of a query, its parentheses dropped or not, as a text that reads as the query", async () => {
     const engine = newEngine();
     const query = await queryOf(QUERY);
