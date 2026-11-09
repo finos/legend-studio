@@ -125,3 +125,6 @@ export class IngestDefinition
     return visitor.visit_IngestDefinition(this);
   }
 }
+
+// subtype of `ingestDefinition` sharing its classifier path
+export class ExtendedIngestDefinition extends IngestDefinition {}

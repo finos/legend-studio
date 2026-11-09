@@ -26,6 +26,8 @@ import {
   V1_IngestDatasetSchema,
   V1_IngestDatasetSource,
   V1_IngestDefinition,
+  V1_ExtendedIngestDefinition,
+  V1_EXTENDED_INGEST_DEFINITION_TYPE,
   V1_IngestDefinitionContent,
   V1_IngestMatViewTest,
   V1_IngestTestSuite,
@@ -317,7 +319,10 @@ export const V1_createIngestDef = (
   packagePath: string,
   json: PlainObject<V1_PackageableElement>,
 ): V1_IngestDefinition => {
-  const ingestDef = new V1_IngestDefinition();
+  const ingestDef =
+    json._type === V1_EXTENDED_INGEST_DEFINITION_TYPE
+      ? new V1_ExtendedIngestDefinition()
+      : new V1_IngestDefinition();
   const jsonType = json as IngestDefinitionInterface;
   const appDir =
     jsonType.appDirDeployment ??

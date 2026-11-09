@@ -63,8 +63,14 @@ import { V1_checkDuplicatedElement } from './V1_ElementBuilder.js';
 import type { Package } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
-import { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
-import type { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
+import {
+  Availability,
+  ExtendedAvailability,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import {
+  V1_ExtendedAvailability,
+  type V1_Availability,
+} from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
@@ -91,8 +97,12 @@ import type { V1_DataProduct } from '../../../model/packageableElements/dataProd
 import { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { V1_Compute } from '../../../model/packageableElements/compute/V1_Compute.js';
 import { Compute } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
-import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import {
+  V1_ExtendedIngestDefinition,
+  type V1_IngestDefinition,
+} from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import {
+  ExtendedIngestDefinition,
   IngestDefinition,
   type MatViewDataSet,
   type TEMPORARY_IngestContent,
@@ -139,7 +149,10 @@ export class V1_ElementFirstPassBuilder
       element.name,
       `Element 'name' field is missing or empty`,
     );
-    const metamodel = new Availability(element.name);
+    const metamodel =
+      element instanceof V1_ExtendedAvailability
+        ? new ExtendedAvailability(element.name)
+        : new Availability(element.name);
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
@@ -222,7 +235,10 @@ export class V1_ElementFirstPassBuilder
       element.name,
       `Element 'name' field is missing or empty`,
     );
-    const metamodel = new IngestDefinition(element.name);
+    const metamodel =
+      element instanceof V1_ExtendedIngestDefinition
+        ? new ExtendedIngestDefinition(element.name)
+        : new IngestDefinition(element.name);
     const path = V1_buildFullPath(element.package, element.name);
     const appDir = element.appDirDeployment;
     if (appDir) {
