@@ -1,0 +1,110 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ============================================================================
+ * High-Contrast Dark theme — semantic token mapping, for Legend Cube only
+ * ----------------------------------------------------------------------------
+ * Maps the semantic token vocabulary (see `_semantic-tokens.scss`) under
+ * `.theme__hc-dark`, Legend Marketplace's dark theme (registered in
+ * `LegendApplicationColorTheme.ts`). Without it, Cube's canvas takes the
+ * default-dark `:root` values, which don't match Marketplace's darker pages.
+ *
+ * Scoped to Legend Cube, as `_theme-hc-light.scss` explains: `.legend-cube`
+ * and the two layers Cube portals out of it, so Marketplace's own colors
+ * don't change.
+ *
+ * Values follow Marketplace's dark palette (`--color-dark-theme-*` in
+ * `_variables.scss`): a darker shell than default-dark, white text, and
+ * Marketplace's blue for links, focus and selection. Each text token reaches
+ * 4.5:1 on the `bg-*` and status surfaces Cube puts it on (disabled text
+ * 3:1, except on hover); white on the accent doesn't, see the note below.
+ *
+ * NOTE: the accent is Marketplace's link blue, which reads as text on these
+ * surfaces (5.5:1 on panels); default-dark's blue-200 is 2.1:1 there. White
+ * `text-on-accent` on it is 3.0:1, the pairing of Marketplace's own primary
+ * buttons in this theme: enough for large text, short of 4.5:1. Cube fills
+ * the accent only for its primary buttons and two small badges.
+ * ============================================================================ */
+
+.theme__hc-dark {
+  .legend-cube,
+  .legend-cube__node-editor-layer,
+  .legend-cube__tour-layer {
+    /* ---- Surfaces --------------------------------------------------------- */
+    // also React Flow's dark canvas
+    --color-bg-app: var(--color-dark-theme-bg-primary);
+    --color-bg-panel: var(--color-dark-theme-bg-tertiary);
+    --color-bg-panel-header: var(--color-dark-theme-bg-elevated);
+    --color-bg-chrome: var(--color-dark-theme-bg-elevated);
+    --color-bg-elevated: var(--color-dark-theme-bg-elevated);
+    --color-bg-input: var(--color-dark-theme-bg-secondary);
+    --color-bg-hover: var(--color-dark-theme-border);
+    --color-bg-selected: var(--color-light-blue-450);
+    --color-bg-tag: var(--color-dark-theme-border-light);
+    --color-bg-overlay: var(--color-dark-shade-300);
+
+    /* ---- Text ------------------------------------------------------------- */
+    --color-text-primary: var(--color-dark-theme-text-primary);
+    --color-text-secondary: var(--color-dark-theme-text-secondary);
+    // Marketplace's muted grey would be 3.3:1 on selected rows
+    --color-text-muted: var(--color-dark-theme-text-light-grey);
+    --color-text-disabled: var(--color-dark-grey-400);
+    --color-text-inverted: var(--color-dark-theme-bg-primary);
+    // stable: light text on saturated fills in all themes
+    --color-text-on-accent: var(--color-white);
+    --color-text-link: var(--color-dark-theme-blue-primary);
+
+    /* ---- Borders ---------------------------------------------------------- */
+    --color-border-subtle: var(--color-dark-theme-border);
+    --color-border-default: var(--color-dark-theme-border-light);
+    --color-border-strong: var(--color-dark-grey-300);
+    --color-border-focus: var(--color-dark-theme-blue-primary);
+
+    /* ---- Accents ---------------------------------------------------------- */
+    --color-accent: var(--color-dark-theme-blue-primary);
+    // as Marketplace's buttons: darkens on hover, white text 5.2:1
+    --color-accent-hover: var(--color-dark-theme-blue-accent);
+    --color-accent-subtle: var(--color-dark-blue-shade-100);
+
+    /* ---- Status ----------------------------------------------------------- */
+    --color-status-error: var(--color-dark-red-50);
+    --color-status-error-bg: var(--color-dark-red-shade-100);
+    --color-status-warn: var(--color-yellow-200);
+    --color-status-warn-bg: var(--color-dark-yellow-500);
+    --color-status-success: var(--color-dark-green-50);
+    --color-status-success-bg: var(--color-green-200);
+    --color-status-info: var(--color-dark-theme-blue-primary);
+
+    /* ---- Interaction states on accent surfaces ---------------------------- */
+    --color-state-hover-on-accent: var(--color-light-shade-50);
+    --color-state-disabled-on-accent: var(--color-dark-shade-300);
+
+    /* ---- Active indicator (tab underlines, focused rails) ---------------- */
+    // Marketplace marks its selected tabs in its blue
+    --color-active-indicator: var(--color-dark-theme-blue-primary);
+
+    /* ---- Category / brand colors ----------------------------------------- */
+    --color-category-generation: var(--color-pink-300);
+    --color-category-experimental: var(--color-mauve-50);
+    --color-category-class: var(--color-purple-400);
+    --color-category-ai-suggestion: var(--color-purple-0);
+    --color-category-enumeration: var(--color-medium-green-450);
+    --color-category-primitive: var(--color-blue-200);
+
+    /* ---- Misc ------------------------------------------------------------- */
+    --color-shadow: var(--color-dark-shade-280);
+  }
+}
