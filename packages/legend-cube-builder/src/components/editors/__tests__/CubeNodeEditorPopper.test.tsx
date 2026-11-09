@@ -149,6 +149,16 @@ describe('Floating node editor', () => {
     expect(opened.closest('.legend-cube__node-editor-layer')).not.toBeNull();
   });
 
+  test("Sets its layer's text color, as `.legend-cube` sets the page's: the page's own is black, unreadable on the dark theme's panel", async () => {
+    await render();
+    const opened = await openEditor('join101');
+    expect(
+      opened
+        .closest('.legend-cube__node-editor-layer')
+        ?.classList.contains('text-[var(--color-text-primary)]'),
+    ).toBe(true);
+  });
+
   test('Lays the editor out to float: its own size, its body scrolling between 80px and a third of the window', async () => {
     await render();
     const opened = await openEditor('join101');
