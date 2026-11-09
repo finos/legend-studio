@@ -15,7 +15,7 @@
  */
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import type { ModelContext } from '@finos/legend-cube';
+import type { ModelContext, QueryRule } from '@finos/legend-cube';
 import type { CubeConnectionExplorer } from '../graph-manager/CubeConnectionExplorer.js';
 import type { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
 import type { CubeDataProductCatalog } from '../graph-manager/CubeDataProductCatalog.js';
@@ -97,6 +97,13 @@ export interface CubeHost {
    * platform, and says which lakehouse runtime its runs use
    */
   readonly project?: CubeHostProject | undefined;
+  /**
+   * Rules over the whole query the host adds to the editor's own, e.g.
+   * Studio's refusal of an access point that reads the materialized view
+   * being edited (PLAN §11.30). A step they flag can't run, nor anything
+   * after it
+   */
+  readonly queryRules?: readonly QueryRule[] | undefined;
 }
 
 /** The lakehouse runtime a project's runs use, as the source dialog shows it */
@@ -121,6 +128,15 @@ export interface CubeHostProject {
 /** Whether the host's page reads one project's own sources, as Studio's does */
 export const isCubeProjectHost = (host: CubeHost): boolean =>
   host.project !== undefined;
+
+/**
+ * Whether a cube on the host may read data products and ingest data sets of
+ * one project together (PLAN §11.30): it serves both, and its ingest catalog
+ * lists a data product's project's definitions
+ */
+export const mixesCubeLakehouseSources = (host: CubeHost): boolean =>
+  host.dataProductCatalog !== undefined &&
+  host.ingestCatalog?.listProjectDefinitions !== undefined;
 
 /** Whether the host offers Cube's sample data and examples */
 export const isCubeSampleDataOffered = (host: CubeHost): boolean =>

@@ -162,13 +162,22 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
             value: type,
             label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
           }))}
-          disabled={tab.fixedSettings !== undefined}
+          disabled={tab.isClassFixed}
           onChange={(value) => {
             if (value) {
               tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
             }
           }}
         />
+      )}
+      {tab.joinedProject && (
+        <span className="text-sm text-[var(--color-text-muted)]">
+          {CUBE_PROJECT_SOURCE_LABEL.JOINS_DATA_PRODUCTS(
+            CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[
+              tab.joinedProject.environmentType
+            ],
+          )}
+        </span>
       )}
       <span
         className="text-sm text-[var(--color-text-muted)]"

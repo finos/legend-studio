@@ -40,15 +40,22 @@ import {
   CUBE_INGEST_RUNTIME_PATH,
   getCubeIngestSettings,
 } from '../graph-manager/CubeIngest.js';
-import type { CubeIngestDataSet } from '../graph-manager/CubeIngestCatalog.js';
-import { isCubeProjectHost } from './CubeHost.js';
+import type {
+  CubeIngestCatalog,
+  CubeIngestDataSet,
+  CubeIngestDefinitionCandidate,
+  CubeIngestEnvironmentKey,
+} from '../graph-manager/CubeIngestCatalog.js';
+import { isCubeProjectHost, mixesCubeLakehouseSources } from './CubeHost.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 
 // Import Pure's sources (PLAN §11.18): each accessor of a lambda bound to the
 // source step the source dialog would add for it, typed as the dialog types
 // one, before the steps are read. A host with a project (Studio) binds within
 // it; another binds within the cube's own model or source, and asks for a
-// source first when the lambda alone doesn't say where its sources are.
+// source first when the lambda alone doesn't say where its sources are. A
+// host that runs data products and ingest data sets together (Studio) binds
+// a lambda reading both as one data product cube (§11.30).
 
 export const CUBE_LAMBDA_SOURCES_MESSAGE = {
   NONE: 'The query reads no source Cube knows: #>{…}#, #P{…}# or #I{…}#.',
@@ -128,45 +135,16 @@ const newCubeWarehouse = async (
   );
 };
 
-const bindIngestDataSets = async (
-  editorState: CubeEditorState,
+/**
+ * The step of each of a lambda's ingest data sets, bound to the listed
+ * definition of its path, as the definition declares its columns
+ */
+const bindIngestSteps = async (
+  catalog: CubeIngestCatalog,
+  environment: CubeIngestEnvironmentKey,
+  candidates: readonly CubeIngestDefinitionCandidate[],
   sources: readonly Extract<IR, { readonly k: 'ingestAccessor' }>[],
-): Promise<CubeLambdaBinding> => {
-  const catalog = editorState.host.ingestCatalog;
-  if (!catalog) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NO_INGEST);
-  }
-  const { context } = editorState.document;
-  const current = context ? getCubeIngestSettings(context.model) : undefined;
-  // a host with one class, or reading one project (Studio), whose one
-  // producer is the project, reads it as the catalog's default class
-  const environmentType =
-    current?.environmentType ??
-    (catalog.environmentTypes.length === 1 ||
-    isCubeProjectHost(editorState.host)
-      ? catalog.environmentTypes[0]
-      : undefined);
-  if (environmentType === undefined) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
-  }
-  // the cube's ingest environment, else the viewer's own of the class
-  const environment = {
-    environmentType,
-    name: current?.environment,
-  };
-  let producerDeploymentId = current?.producerDeploymentId;
-  if (producerDeploymentId === undefined) {
-    const producers = await catalog.listProducers(environment);
-    producerDeploymentId =
-      producers.length === 1 ? producers[0]?.deploymentId : undefined;
-  }
-  if (producerDeploymentId === undefined) {
-    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
-  }
-  const { candidates } = await catalog.listDefinitions(
-    environment,
-    producerDeploymentId,
-  );
+): Promise<Map<string, CubeSourceStep>> => {
   const steps = new Map<string, CubeSourceStep>();
   const described = new Map<string, readonly CubeIngestDataSet[]>();
   for (const source of sources) {
@@ -210,6 +188,54 @@ const bindIngestDataSets = async (
         ),
     });
   }
+  return steps;
+};
+
+const bindIngestDataSets = async (
+  editorState: CubeEditorState,
+  sources: readonly Extract<IR, { readonly k: 'ingestAccessor' }>[],
+): Promise<CubeLambdaBinding> => {
+  const catalog = editorState.host.ingestCatalog;
+  if (!catalog) {
+    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NO_INGEST);
+  }
+  const { context } = editorState.document;
+  const current = context ? getCubeIngestSettings(context.model) : undefined;
+  // a host with one class, or reading one project (Studio), whose one
+  // producer is the project, reads it as the catalog's default class
+  const environmentType =
+    current?.environmentType ??
+    (catalog.environmentTypes.length === 1 ||
+    isCubeProjectHost(editorState.host)
+      ? catalog.environmentTypes[0]
+      : undefined);
+  if (environmentType === undefined) {
+    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
+  }
+  // the cube's ingest environment, else the viewer's own of the class
+  const environment = {
+    environmentType,
+    name: current?.environment,
+  };
+  let producerDeploymentId = current?.producerDeploymentId;
+  if (producerDeploymentId === undefined) {
+    const producers = await catalog.listProducers(environment);
+    producerDeploymentId =
+      producers.length === 1 ? producers[0]?.deploymentId : undefined;
+  }
+  if (producerDeploymentId === undefined) {
+    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.INGEST_SETTINGS);
+  }
+  const { candidates } = await catalog.listDefinitions(
+    environment,
+    producerDeploymentId,
+  );
+  const steps = await bindIngestSteps(
+    catalog,
+    environment,
+    candidates,
+    sources,
+  );
   const warehouse =
     current?.warehouse ??
     (await catalog.resolveEnvironment(environment)).warehouse;
@@ -239,7 +265,13 @@ const bindDataProducts = async (
   const current = context
     ? getCubeDataProductProject(context.model)
     : undefined;
+  // an ingest cube they join keeps its class and warehouse (PLAN §11.30)
+  const joined =
+    context && mixesCubeLakehouseSources(editorState.host)
+      ? getCubeIngestSettings(context.model)
+      : undefined;
   const environmentType = (current?.environmentType ??
+    joined?.environmentType ??
     catalog.environmentTypes[0]) as CubeDataProductEnvironmentType;
   const products = new Map<string, CubeDataProductCandidate>();
   const steps = new Map<string, CubeSourceStep>();
@@ -325,7 +357,10 @@ const bindDataProducts = async (
         artifactId: first.artifactId,
         versionId: first.versionId,
         environmentType: first.environmentType,
-        warehouse: await newCubeWarehouse(editorState, current?.warehouse),
+        warehouse: await newCubeWarehouse(
+          editorState,
+          current?.warehouse ?? joined?.warehouse,
+        ),
       }),
       runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
     },
@@ -372,9 +407,48 @@ const bindTables = async (
 };
 
 /**
+ * A lambda's access points and ingest data sets, on a host that lists a
+ * data product's project's definitions (PLAN §11.30): the access points
+ * bind as a data product cube's, and the data sets among its project's
+ * definitions, read in its class
+ */
+const bindLakehouseSources = async (
+  editorState: CubeEditorState,
+  accessPoints: readonly Extract<IR, { readonly k: 'dataProductAccessor' }>[],
+  dataSets: readonly Extract<IR, { readonly k: 'ingestAccessor' }>[],
+): Promise<CubeLambdaBinding> => {
+  const catalog = editorState.host.ingestCatalog;
+  if (!catalog?.listProjectDefinitions) {
+    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
+  }
+  const products = await bindDataProducts(editorState, accessPoints);
+  const project = getCubeDataProductProject(products.context.model);
+  if (!project) {
+    throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);
+  }
+  const { candidates } = await catalog.listProjectDefinitions(project);
+  const steps = await bindIngestSteps(
+    catalog,
+    { environmentType: project.environmentType },
+    candidates,
+    dataSets,
+  );
+  return {
+    context: products.context,
+    bindSource: (source) => {
+      const step =
+        source.k === 'ingestAccessor' ? steps.get(keyOf(source)) : undefined;
+      return step ?? products.bindSource(source);
+    },
+  };
+};
+
+/**
  * The cube's model and runtime and the step of each source, for a lambda's
- * sources, all of one kind (PLAN §11.18). Throws a `CubeLambdaReadError` that
- * names a source Cube can't bind, or what to add first.
+ * sources, all of one kind (PLAN §11.18), or data products with ingest data
+ * sets on a host that runs them together (§11.30). Throws a
+ * `CubeLambdaReadError` that names a source Cube can't bind, or what to add
+ * first.
  */
 export const bindCubeLambdaSources = async (
   editorState: CubeEditorState,
@@ -383,6 +457,22 @@ export const bindCubeLambdaSources = async (
   const kinds = new Set(sources.map((source) => source.k));
   if (!kinds.size) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.NONE);
+  }
+  const accessPoints = sources.filter(
+    (source): source is Extract<IR, { readonly k: 'dataProductAccessor' }> =>
+      source.k === 'dataProductAccessor',
+  );
+  const dataSets = sources.filter(
+    (source): source is Extract<IR, { readonly k: 'ingestAccessor' }> =>
+      source.k === 'ingestAccessor',
+  );
+  if (
+    kinds.size === 2 &&
+    accessPoints.length &&
+    dataSets.length &&
+    mixesCubeLakehouseSources(editorState.host)
+  ) {
+    return bindLakehouseSources(editorState, accessPoints, dataSets);
   }
   if (kinds.size > 1) {
     throw new CubeLambdaReadError(CUBE_LAMBDA_SOURCES_MESSAGE.MIXED);

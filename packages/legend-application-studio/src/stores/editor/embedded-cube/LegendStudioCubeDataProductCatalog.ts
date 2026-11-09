@@ -27,7 +27,7 @@ import {
   CubeAccessPointGroup,
   CubeDataProductCandidate,
   CubeDataProductDescription,
-  CubeDataProductEnvironmentType,
+  type CubeDataProductEnvironmentType,
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeAccessPointLocation,
@@ -36,8 +36,13 @@ import {
   type CubeEngine,
   type NodeId,
 } from '@finos/legend-cube-builder';
-import { LakehouseAccessPoint, type DataProduct } from '@finos/legend-graph';
+import {
+  LakehouseAccessPoint,
+  type DataProduct,
+  type IngestDefinition,
+} from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
+import { getLegendStudioCubeIngestClasses } from './LegendStudioCubeIngestCatalog.js';
 import {
   LEGEND_STUDIO_CUBE_WORKSPACE_VERSION,
   type LegendStudioCubeWorkspace,
@@ -48,15 +53,6 @@ import {
 // Their lakehouse access points are typed by Cube's engine on the workspace,
 // as Studio types them for its own queries, and run in the lakehouse
 // environment of the class the viewer picks (`LegendStudioCubeWorkspace`).
-
-/**
- * The classes a Studio cube's data product runs read, the default first:
- * production parallel, as the workspace isn't released (user, 2026-10-16)
- */
-const STUDIO_CUBE_DATA_PRODUCT_CLASSES = [
-  CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
-  CubeDataProductEnvironmentType.PRODUCTION,
-];
 
 /** The deployment a workspace data product is picked from: none yet */
 const NO_DEPLOYMENT_ID = '0';
@@ -84,7 +80,13 @@ const typingLambdaOf = (dataProduct: string, accessPoint: string): IR =>
 export class LegendStudioCubeDataProductCatalog
   implements CubeDataProductCatalog
 {
-  readonly environmentTypes = STUDIO_CUBE_DATA_PRODUCT_CLASSES;
+  /**
+   * The classes its runs read, the default first, as the Ingest tab's: the
+   * Mode the definition Cube was opened from points to, so a cube starts on
+   * one Mode whichever kind of source comes first (PLAN §11.30, user,
+   * 2026-11-09)
+   */
+  readonly environmentTypes: readonly CubeDataProductEnvironmentType[];
   readonly editorStore: EditorStore;
   readonly workspace: LegendStudioCubeWorkspace;
   private readonly engine: CubeEngine;
@@ -93,10 +95,13 @@ export class LegendStudioCubeDataProductCatalog
     editorStore: EditorStore,
     workspace: LegendStudioCubeWorkspace,
     engine: CubeEngine,
+    /** The ingest definition Cube was opened from, whose owner sets the default class */
+    opened?: IngestDefinition,
   ) {
     this.editorStore = editorStore;
     this.workspace = workspace;
     this.engine = engine;
+    this.environmentTypes = getLegendStudioCubeIngestClasses(opened);
   }
 
   /** The project's own data products, not its dependencies' */

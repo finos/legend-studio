@@ -37,7 +37,6 @@ import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import {
   getCubeNodeBadge,
-  OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../__lib__/LegendCubeLabels.js';
 import { CUBE_TOUR_ANCHOR, cubeTourAnchor } from '../__lib__/LegendCubeTour.js';
@@ -266,7 +265,8 @@ const getCubeAddItems = (
       title: !disabled
         ? undefined
         : definition.kind === 'source'
-          ? (editorState.sourcePicker.disabledReason ?? OTHER_SOURCE_KIND_TITLE)
+          ? (editorState.sourcePicker.disabledReason ??
+            editorState.sourcePicker.getOtherKindTitle(definition.type))
           : getCubeAddDatabaseProblem(editorState, definition.type, nodeId),
       add: () => addCubeNode(editorState, definition.type, nodeId),
     };
