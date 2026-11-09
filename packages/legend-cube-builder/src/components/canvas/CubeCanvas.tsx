@@ -80,6 +80,7 @@ import {
   layoutCubeCanvas,
 } from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
+import { CubeCanvasSelectionBox } from './CubeCanvasSelectionBox.js';
 import { CubeNodeEditorPopper } from '../editors/CubeNodeEditorPopper.js';
 
 // React Flow re-renders every node when these change identity
@@ -151,6 +152,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const { query } = editorState.document;
   const { readOnly } = editorState;
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
+  const flowRef = useRef<HTMLDivElement>(null);
   const { containers } = editorState.document.meta;
   const layout = useMemo(
     () => layoutCubeCanvas(query, containers),
@@ -232,13 +234,23 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       edges={edges}
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
-      // the layout places the nodes; nothing is selected or deleted in React Flow
+      // the layout places the nodes; nothing is selected or deleted in React
+      // Flow. Steps are picked in Cube (PLAN §11.29): React Flow draws the
+      // box Shift and a drag makes, and selects nothing, as no node is
+      // selectable; `CubeCanvasSelectionBox` picks the steps inside it.
       nodesDraggable={false}
       nodesConnectable={!readOnly}
-      elementsSelectable={false}
+      elementsSelectable={!readOnly}
       deleteKeyCode={null}
-      selectionKeyCode={null}
+      selectionKeyCode={readOnly ? null : 'Shift'}
       multiSelectionKeyCode={null}
+      onSelectionStart={() => editorState.canvasSelection.startBox()}
+      onSelectionEnd={() => editorState.canvasSelection.endBox()}
+      // a press on the canvas gives it the focus, so Escape and Ctrl/Cmd+G
+      // reach it after a box
+      ref={flowRef}
+      tabIndex={-1}
+      className="outline-none"
       onNodeClick={(event, flowNode) => {
         // a click on a handle starts or ends a connection, not a node
         // click; a container's buttons are its own
@@ -249,7 +261,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
         ) {
           return;
         }
-        if (event.ctrlKey || event.metaKey) {
+        if (event.shiftKey) {
+          // picks the step, or unpicks it, opening no editor
+          editorState.canvasSelection.toggle(flowNode.id);
+        } else if (event.ctrlKey || event.metaKey) {
           // applies and closes the open editor first, opening none (spec §17.5)
           if (editorState.nodeEditor.finish()) {
             editorState.select(flowNode.id);
@@ -270,6 +285,38 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           target.classList.contains('react-flow__node')
             ? target.dataset.id
             : undefined;
+        // the canvas's keys for the steps picked (PLAN §11.29), on it or a
+        // node of it: never in a field, or a menu or the node editor, whose
+        // keys come here from their layers
+        const wrapper = flowRef.current;
+        const { canvasSelection } = editorState;
+        if (
+          target === wrapper ||
+          (nodeId !== undefined &&
+            target instanceof HTMLElement &&
+            wrapper?.contains(target))
+        ) {
+          if (event.key === 'Escape' && canvasSelection.stepIds.length) {
+            canvasSelection.clear();
+            return;
+          }
+          if (
+            (event.ctrlKey || event.metaKey) &&
+            !event.shiftKey &&
+            !event.altKey &&
+            event.key.toLowerCase() === 'g'
+          ) {
+            // the browser's Find Next would run
+            event.preventDefault();
+            if (
+              canvasSelection.container.kind === 'steps' &&
+              editorState.nodeEditor.finish()
+            ) {
+              canvasSelection.putInContainer();
+            }
+            return;
+          }
+        }
         // a folded container's box opens on Enter or Space
         const folded = editorState.shownContainers.find(
           ({ container }) =>
@@ -320,7 +367,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           return;
         }
         event.preventDefault();
-        if (event.ctrlKey || event.metaKey) {
+        if (event.shiftKey) {
+          // as a Shift+click: picks the step, or unpicks it
+          canvasSelection.toggle(nodeId);
+        } else if (event.ctrlKey || event.metaKey) {
           if (editorState.nodeEditor.finish()) {
             editorState.select(nodeId);
           }
@@ -342,9 +392,15 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       // a connection changes the query, so the open editor applies first,
       // whether the handles are dragged or clicked
       onConnectStart={() => editorState.nodeEditor.finish()}
-      // a click on the canvas's background closes the floating editor; a
-      // press there that pans leaves it open
-      onPaneClick={() => editorState.nodeEditor.finish()}
+      // a click on the canvas's background closes the floating editor, and
+      // picks no step; a press there that pans leaves both, as does one with
+      // Shift, a box not drawn
+      onPaneClick={(event) => {
+        editorState.nodeEditor.finish();
+        if (!event.shiftKey) {
+          editorState.canvasSelection.clear();
+        }
+      }}
       onClickConnectStart={() => editorState.nodeEditor.finish()}
       onConnect={(connection) => {
         if (connection.targetHandle) {
@@ -388,6 +444,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
             : ''
         }
       />
+      <CubeCanvasSelectionBox editorState={editorState} positions={positions} />
       <CubeNodeEditorPopper
         editorState={editorState}
         positions={editorPositions}
@@ -399,7 +456,9 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
 /**
  * The query as a graph, laid out left to right (spec §17.3). Click a node to
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
- * output to another node's input to connect them. A transform dropped
+ * output to another node's input to connect them. Shift-click nodes, or
+ * Shift and a drag around them, to pick them for a container (PLAN §11.29).
+ * A transform dropped
  * around the nodes goes after the selected node; a source, dropped anywhere,
  * opens the source dialog on its tab (PLAN §11.8). Right-click it, or a
  * node, for the context menu.

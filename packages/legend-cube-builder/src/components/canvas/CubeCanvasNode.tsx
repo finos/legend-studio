@@ -64,6 +64,9 @@ export const CubeCanvasNode = observer(
       editorState.registry.get(node.type)?.label,
     );
     const connectable = !editorState.readOnly && node.acceptsNewInputs;
+    // picked with Shift, for a container (PLAN §11.29): a tint and a halo,
+    // apart from the output step's ring
+    const isPicked = editorState.canvasSelection.isPicked(node.id);
     const ref = useRef<HTMLDivElement>(null);
     const [, dragConnector] = useDrag<CubeNodeDragItem>(
       () => ({
@@ -128,7 +131,10 @@ export const CubeCanvasNode = observer(
             className={clsx(
               // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
               // it from moving the node, 'nopan' from panning the canvas
-              'legend-cube__node nodrag nopan relative flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
+              'legend-cube__node nodrag nopan relative flex h-full w-full items-center gap-2 rounded border px-2 text-base text-[var(--color-text-primary)]',
+              isPicked
+                ? 'legend-cube__node--picked bg-[var(--color-bg-selected)] outline outline-2 outline-offset-2 outline-[color-mix(in_srgb,var(--color-accent)_60%,transparent)]'
+                : 'bg-[var(--color-bg-panel)]',
               status.isInvalid
                 ? 'border-[var(--color-status-error)]'
                 : status.isIncomplete

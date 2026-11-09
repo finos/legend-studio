@@ -61,6 +61,21 @@
       var(--xy-minimap-background-color-default)
     );
   }
+
+  // the box Shift and a drag draws to pick steps (PLAN §11.29): a crosshair
+  // while Shift is held, and the theme's accent, as a picked step has
+  .react-flow {
+    --xy-selection-background-color: color-mix(
+      in srgb,
+      var(--color-accent) 10%,
+      transparent
+    );
+    --xy-selection-border: 1px dashed var(--color-accent);
+  }
+
+  .react-flow__pane.selection {
+    cursor: crosshair;
+  }
 }
 
 // Legend Query's legacy themes give every input its border color with a rule
