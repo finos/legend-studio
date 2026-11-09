@@ -298,9 +298,11 @@ describe('Putting the steps picked in a container', () => {
     await shiftClick('relational101');
     await shiftClick('filter101');
     fireEvent.contextMenu(await TEST__findCanvasNode('filter101'));
-    const item = within(await screen.findByRole('menu')).getByRole('button', {
+    const item = within(
+      await screen.findByRole('menu'),
+    ).getByRole<HTMLButtonElement>('button', {
       name: CUBE_CONTAINER_LABEL.PUT_SELECTION_IN,
-    }) as HTMLButtonElement;
+    });
     expect(item.disabled).toBe(true);
     expect(item.getAttribute('title')).toMatch(
       /^“.+”, between the steps selected, is in “The join”: containers don't nest$/u,
@@ -328,9 +330,11 @@ describe('Putting the steps picked in a container', () => {
     await shiftClick('filter101');
     await shiftClick('relational102');
     fireEvent.contextMenu(await TEST__findCanvasNode('relational102'));
-    const item = within(await screen.findByRole('menu')).getByRole('button', {
+    const item = within(
+      await screen.findByRole('menu'),
+    ).getByRole<HTMLButtonElement>('button', {
       name: CUBE_CONTAINER_LABEL.PUT_SELECTION_IN,
-    }) as HTMLButtonElement;
+    });
     expect(item.disabled).toBe(true);
     expect(item.getAttribute('title')).toBe(
       "The steps selected aren't all of one tree: a container's steps are linked to one another",
