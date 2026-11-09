@@ -26,7 +26,6 @@ import {
   Query,
 } from '@finos/legend-cube';
 import { act, fireEvent, screen, within } from '@testing-library/react';
-import { OTHER_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -226,7 +225,9 @@ describe('Cube palette', () => {
     );
     const dataProduct = paletteItem('Data Product (BETA)');
     expect(dataProduct.getAttribute('aria-disabled')).toBe('true');
-    expect(dataProduct.title).toBe(OTHER_SOURCE_KIND_TITLE);
+    expect(dataProduct.title).toBe(
+      "This cube reads database tables: it can't also read data products",
+    );
     fireEvent.click(dataProduct);
     expect(editorState.sourcePicker.isOpen).toBe(false);
     expect(paletteItem(TABLE).getAttribute('aria-disabled')).toBe('false');

@@ -27,7 +27,6 @@ import { useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import {
   getCubeNodeBadge,
-  OTHER_SOURCE_KIND_TITLE,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
@@ -128,7 +127,7 @@ const CubePaletteItem = observer(
           readOnly
             ? READ_ONLY_CUBE_TITLE
             : otherKind
-              ? OTHER_SOURCE_KIND_TITLE
+              ? editorState.sourcePicker.getOtherKindTitle(definition.type)
               : databaseProblem !== undefined
                 ? databaseProblem
                 : collapsed

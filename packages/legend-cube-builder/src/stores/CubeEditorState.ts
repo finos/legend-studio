@@ -26,6 +26,7 @@ import {
   getDatabaseProblemOfType,
   getDatabaseProblems,
   isTypingError,
+  lakehouseSourcesAreApart,
   MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
   MESSAGE_SORT_ORDER_LOST,
@@ -137,7 +138,12 @@ import {
   isCubeEngineCheckedNode,
 } from './CubeEngineChecks.js';
 import { getCubeExtendUpstream } from './CubeExtendTyping.js';
-import { type CubeHost, loadCubeModelOutline } from './CubeHost.js';
+import {
+  type CubeHost,
+  loadCubeModelOutline,
+  mixesCubeLakehouseSources,
+} from './CubeHost.js';
+import { buildCubeIngestJoinRule } from './CubeLakehouseSources.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeJsonViewerState } from './variant/CubeJsonViewerState.js';
@@ -461,8 +467,18 @@ export class CubeEditorState implements CommandRegistrar {
    * misread refused, which only the editor can tell
    */
   get analysis(): SchemaInferenceResult {
+    // data products and ingest data sets join each other's cubes only on a
+    // host that lists a data product's project's definitions, and only that
+    // project's, in the cube's Mode (PLAN §11.30)
+    const lakehouseRules = mixesCubeLakehouseSources(this.host)
+      ? [buildCubeIngestJoinRule(this.document.context?.model)].filter(
+          (rule): rule is QueryRule => rule !== undefined,
+        )
+      : [lakehouseSourcesAreApart];
     return buildSchemasAndValidity(this.document.query, [
       ...this.registry.queryRules,
+      ...lakehouseRules,
+      ...(this.host.queryRules ?? []),
       this.staleEngineChecks,
       this.databaseRefusals,
     ]);
@@ -1125,12 +1141,16 @@ export class CubeEditorState implements CommandRegistrar {
             node instanceof DataProductAccessPointSource,
         )
       : [];
-    const dataSets = isCubeIngestModel(context.model)
-      ? kept.filter(
-          (node): node is IngestDatasetSource =>
-            node instanceof IngestDatasetSource,
-        )
-      : [];
+    // on a host that runs them together, a data product cube's too (PLAN §11.30)
+    const dataSets =
+      isCubeIngestModel(context.model) ||
+      (isCubeDataProductModel(context.model) &&
+        mixesCubeLakehouseSources(this.host))
+        ? kept.filter(
+            (node): node is IngestDatasetSource =>
+              node instanceof IngestDatasetSource,
+          )
+        : [];
     // a function on another kind of cube is the no-mix rule's to flag
     const functions =
       isCubeDataProductModel(context.model) ||

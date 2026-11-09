@@ -41,10 +41,7 @@ import {
   within,
 } from '@testing-library/react';
 import { runInAction } from 'mobx';
-import {
-  OTHER_SOURCE_KIND_TITLE,
-  READ_ONLY_CUBE_TITLE,
-} from '../../__lib__/LegendCubeLabels.js';
+import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   CUSTOMERS_COLUMNS,
@@ -958,7 +955,7 @@ describe("The header's Add Items", () => {
     ]);
     expect(
       items.find((item) => item.textContent === 'Data Product (BETA)')?.title,
-    ).toBe(OTHER_SOURCE_KIND_TITLE);
+    ).toBe("This cube reads database tables: it can't also read data products");
     // the cube is on H2, which can't pivot, and says so (PLAN §11.12)
     expect(
       items.find((item) => item.textContent === 'Pivot by Column')?.title,
@@ -1030,7 +1027,7 @@ describe("The header's Add Items", () => {
     }
     expect(document.activeElement?.textContent).toBe('Data Product (BETA)');
     expect(document.activeElement?.getAttribute('title')).toBe(
-      OTHER_SOURCE_KIND_TITLE,
+      "This cube reads database tables: it can't also read data products",
     );
     await TEST__closeAddItems();
   });
@@ -1047,7 +1044,9 @@ describe("The header's Add Items", () => {
     // not MUI's disabled, which takes the pointer, and so the tooltip, away
     expect(dataProduct.classList.contains('Mui-disabled')).toBe(false);
     expect(dataProduct.getAttribute('aria-disabled')).toBe('true');
-    expect(dataProduct.title).toBe(OTHER_SOURCE_KIND_TITLE);
+    expect(dataProduct.title).toBe(
+      "This cube reads database tables: it can't also read data products",
+    );
     fireEvent.click(dataProduct);
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(editorState.document.query).toBe(query);

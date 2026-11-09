@@ -31,7 +31,10 @@ import {
 import {
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
   CubeDataProductEnvironmentType,
+  type CubeDataProductProject,
+  getCubeDataProductProject,
   getEffectiveCubeWarehouse,
+  isCubeDataProductModel,
 } from '../../graph-manager/CubeDataProduct.js';
 import { getProducerLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
@@ -52,6 +55,7 @@ import type {
   CubeIngestProducer,
 } from '../../graph-manager/CubeIngestCatalog.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { mixesCubeLakehouseSources } from '../CubeHost.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
@@ -175,6 +179,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         loadedEnvironmentId: observable,
         describing: observable.ref,
         fixedSettings: computed,
+        joinedProject: computed,
+        isClassFixed: computed,
         isAvailable: computed,
         isBusy: computed,
         shownDefinitions: computed,
@@ -217,6 +223,23 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     return model ? getCubeIngestSettings(model) : undefined;
   }
 
+  /**
+   * The data product cube the tab adds data sets to, on a host that lists a
+   * data product's project's definitions (PLAN §11.30): its project, whose
+   * definitions alone are listed, read and run in its class, on its warehouse
+   */
+  get joinedProject(): CubeDataProductProject | undefined {
+    const model = this.editorState.document.context?.model;
+    return model && mixesCubeLakehouseSources(this.editorState.host)
+      ? getCubeDataProductProject(model)
+      : undefined;
+  }
+
+  /** The class and the warehouse are the cube's: its own, or the data product cube's it joins */
+  get isClassFixed(): boolean {
+    return this.fixedSettings !== undefined || this.joinedProject !== undefined;
+  }
+
   /** Whether data sets of an opened definition are being read */
   get isDescribing(): boolean {
     return this.describing.size > 0;
@@ -233,6 +256,13 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   ownsContext(context: CubeContext): boolean {
     return isCubeIngestModel(context.model);
+  }
+
+  joinsContext(context: CubeContext): boolean {
+    return (
+      mixesCubeLakehouseSources(this.editorState.host) &&
+      isCubeDataProductModel(context.model)
+    );
   }
 
   /** The deployment's definitions whose path or project holds the search text */
@@ -325,7 +355,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       !this.editorState.readOnly &&
       !this.isDescribing &&
       !this.isAdding &&
-      this.producerDeploymentId !== undefined &&
+      (this.joinedProject !== undefined ||
+        this.producerDeploymentId !== undefined) &&
       this.pickedDataSets.length > 0 &&
       this.pickedDataSets.every((each) => each?.isPickable === true) &&
       this.warehouse.trim() !== ''
@@ -347,7 +378,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   /** The class of a cube without one yet, on the viewer's own environment of it: its producers are read again */
   setEnvironmentType(environmentType: CubeDataProductEnvironmentType): void {
-    if (this.fixedSettings || environmentType === this.environmentType) {
+    if (this.isClassFixed || environmentType === this.environmentType) {
       return;
     }
     this.environmentChosen = true;
@@ -362,7 +393,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   /** The environment of a cube without one yet: its producers are read again */
   setEnvironment(environment: CubeIngestEnvironmentKey): void {
     if (
-      this.fixedSettings ||
+      this.isClassFixed ||
       (this.environment !== undefined &&
         getCubeIngestEnvironmentId(environment) ===
           getCubeIngestEnvironmentId(this.environment))
@@ -461,7 +492,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   /** The warehouse of a cube without one yet; a saved cube's is kept */
   setWarehouse(warehouse: string): void {
-    if (!this.fixedSettings) {
+    if (!this.isClassFixed) {
       this.warehouse = warehouse;
     }
   }
@@ -473,7 +504,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     if (!this.environment || !this.producers) {
       flowResult(this.loadEnvironment()).catch(alertUnhandledError);
     } else if (
-      this.producerDeploymentId !== undefined &&
+      (this.joinedProject !== undefined ||
+        this.producerDeploymentId !== undefined) &&
       !this.definitionList
     ) {
       flowResult(this.listDefinitions()).catch(alertUnhandledError);
@@ -497,9 +529,22 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
    */
   open(): void {
     const settings = this.fixedSettings;
+    const joined = this.joinedProject;
     const remembered = this.editorState.dataProductRuntime.rememberedWarehouse;
     this.error = undefined;
-    if (settings) {
+    if (joined) {
+      // a data product cube's data sets are read in its class, in the
+      // viewer's own environment of it, on its warehouse (PLAN §11.30)
+      if (
+        this.environmentType !== joined.environmentType ||
+        this.environmentName !== undefined
+      ) {
+        this.environmentType = joined.environmentType;
+        this.environmentName = undefined;
+        this.resetEnvironment();
+      }
+      this.warehouse = getEffectiveCubeWarehouse(joined, remembered);
+    } else if (settings) {
       if (
         this.environmentType !== settings.environmentType ||
         this.environmentName !== settings.environment
@@ -586,9 +631,10 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       this.environments = environments;
     }
     try {
+      // a data product cube's data sets are its project's: no producer to pick
       const [environment, producers] = (yield Promise.all([
         catalog.resolveEnvironment(key),
-        catalog.listProducers(key),
+        this.joinedProject ? [] : catalog.listProducers(key),
       ])) as [CubeIngestEnvironment, readonly CubeIngestProducer[]];
       if (request !== this.environmentRequest) {
         return;
@@ -608,7 +654,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         this.loadProducerNames(producers.map((each) => each.deploymentId)),
       ).catch(this.editorState.host.applicationStore.alertUnhandledError);
       // a new cube starts on the environment's own warehouse, when it has one
-      if (!this.fixedSettings && environment.warehouse) {
+      if (!this.isClassFixed && environment.warehouse) {
         this.warehouse = environment.warehouse;
       }
       // the only producer deployment is the one to read
@@ -632,7 +678,11 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         this.isLoadingEnvironment = false;
       }
     }
-    if (this.producerDeploymentId !== undefined && !this.definitionList) {
+    if (
+      (this.joinedProject !== undefined ||
+        this.producerDeploymentId !== undefined) &&
+      !this.definitionList
+    ) {
       yield flowResult(this.listDefinitions());
     }
   }
@@ -658,20 +708,30 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     }
   }
 
-  /** Lists the producer deployment's definitions */
+  /**
+   * Lists the producer deployment's definitions; on a data product cube,
+   * its project's (PLAN §11.30)
+   */
   *listDefinitions(): GeneratorFn<void> {
-    const { catalog, producerDeploymentId } = this;
-    if (!catalog || producerDeploymentId === undefined) {
+    const { catalog, producerDeploymentId, joinedProject } = this;
+    if (
+      !catalog ||
+      (joinedProject
+        ? !catalog.listProjectDefinitions
+        : producerDeploymentId === undefined)
+    ) {
       return;
     }
     const request = ++this.definitionsRequest;
     this.isListingDefinitions = true;
     this.error = undefined;
     try {
-      const list = (yield catalog.listDefinitions(
-        this.environmentKey,
-        producerDeploymentId,
-      )) as CubeIngestDefinitionList;
+      const list = (yield joinedProject && catalog.listProjectDefinitions
+        ? catalog.listProjectDefinitions(joinedProject)
+        : catalog.listDefinitions(
+            this.environmentKey,
+            producerDeploymentId as string,
+          )) as CubeIngestDefinitionList;
       if (request === this.definitionsRequest) {
         this.definitionList = list;
       }
@@ -790,12 +850,16 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         ),
       );
       const settings = this.fixedSettings;
+      const joined = this.joinedProject;
       if (
         document.context !== undefined &&
-        (!settings ||
-          settings.environmentType !== this.environmentType ||
-          settings.environment !== this.environmentName ||
-          settings.producerDeploymentId !== producerDeploymentId)
+        (joined
+          ? joined.environmentType !== this.environmentType ||
+            this.environmentName !== undefined
+          : !settings ||
+            settings.environmentType !== this.environmentType ||
+            settings.environment !== this.environmentName ||
+            settings.producerDeploymentId !== producerDeploymentId)
       ) {
         throw new Error(CUBE_INGEST_TAB_MESSAGE.CUBE_CHANGED);
       }
@@ -825,7 +889,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
               })
               .withQuery(query),
       );
-      if (!settings) {
+      if (!settings && !joined) {
         editorState.dataProductRuntime.remember(warehouse);
       }
       // the definitions stay open, to add others of their data sets
