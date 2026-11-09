@@ -5787,8 +5787,9 @@ Mode and warehouse, so the saved format doesn't change.
 - **Core:** `sourcesAreOneKind` lets data products and ingest data sets share a query. `lakehouseSourcesAreApart`
   keeps them apart, with the message `sourcesAreOneKind` gave before, on a host whose ingest catalog can't list a
   data product's project's definitions. `getSourceKindName` names a source type's kind for the tooltip.
-- **The capability:** `CubeIngestCatalog.listProjectDefinitions(project)`. Studio's lists every definition of the
-  workspace. Legend Analytics gets it in a second PR, with the Depot read above.
+- **The capability:** `CubeIngestCatalog.listProjectDefinitions(project, deploymentId)`. Studio's lists every
+  definition of the workspace. Legend Analytics' is below. `describe` and `resolveSchemas` take the cube's `project`,
+  so a data product cube's data sets are read as its project has them at its version.
 - **Editor:** `buildCubeIngestJoinRule` flags a data product cube's data set of another project, another Mode, or not
   deployed from SDLC. `CubeHost.queryRules` adds a host's own rules; Studio's refuses the true loop.
 - **Picker:** a tab can join a cube another tab owns (`joinsContext`). The Ingest tab joins a data product cube with no
@@ -5801,8 +5802,47 @@ Mode and warehouse, so the saved format doesn't change.
   refused on its node before any call.
 - **Not changed:** emission (each source writes its accessor, one `from(runtime)`), the spec codec, Save/Add MatView.
 
-**Status:** Studio, PR 1. Legend Analytics' Ingest tab on a data product cube, PR 2. The open-source engine reads
-neither `#I` nor `#P`; the first internal run checks the plan of a mixed lambda (the request is in the evidence).
+**Legend Analytics (PR 2):** `V1_LegendCubeIngestCatalog` lists a project's definitions only with the host's depot;
+without one, the two kinds stay apart.
+
+- **Which definitions:** the deployment of the cube's access points (`DataProductAccessPointSource.deploymentId`)
+  deploys their project's definitions. Its definitions in the viewer's own ingest environment of the cube's Mode are
+  kept when they are deployed from SDLC (`alloy-git:`), of the project's group and artifact, and of the cube's class.
+  Each is checked against Depot, `getVersionEntities(group, artifact, version, IngestDefinition)`, which answers with
+  each entity wrapped with its project.
+- **Greyed out:** a definition the version lacks is listed but can't be opened. A data set its deployed definition has
+  and the version lacks can't be picked. Both say "Added after this data product's version 1.4.0".
+- **Columns:** each data set's are those of the version's definition, which the run compiles against. Re-check and
+  Import Pure read them so too. `fresh` reads the version again, once per call, as a SNAPSHOT moves.
+- **Not listed:** a data set the version has but its deployed definition no longer has; a saved one re-checks as "no
+  data set" and keeps its columns, with the warning.
+- **Errors, never everything greyed:**
+  - **Depot:** a failed read fails the list, with Retry.
+  - **Deployment:** a cube with no access point left is asked to add one first; access points of several deployments
+    are refused, as Cube can't tell which deploys the definitions.
+  - **Environment:** a deployment that isn't a producer of the viewer's environment of the Mode names the environment
+    it deploys to beside the viewer's (`findProducerServer`, as Marketplace finds it). When that is the viewer's own,
+    the message says the other Mode has it; when the platform can't say, it names the viewer's alone.
+- **Ingest tab:** no Environment or Producer pickers; a line names the Mode, the deployment and the version. The search
+  box stays, and the warehouse is the cube's. The list is read again for another project, version, Mode or
+  deployment.
+- **Data Product tab on an ingest cube:**
+  - It lists only the products of its data sets' project that its producer deployment deployed, in its Mode, on its
+    warehouse. A note says to search by name when a server's page holds none of them.
+  - It refuses data sets of several projects, or not deployed from SDLC, and an ingest cube that saved another
+    environment than the viewer's own, naming both: data products run in the viewer's own.
+  - Add reads the cube's data sets again at the product's version, in the same undo step, so Undo brings the ingest
+    cube back as it was. A data set the version lacks fails on its step, saying so; a Depot that can't be read changes
+    nothing.
+
+**Status:** Studio, PR 1. Legend Analytics, PR 2 (stacked on PR 1). The open-source engine reads neither `#I` nor
+`#P`; the first internal run checks the plan of a mixed lambda (the request is in the evidence).
+
+- **Open in Analytics, for that run:** a mixed cube runs as a data product cube, on one `LakehouseRuntime` whose
+  environment is the viewer's lakehouse environment (`resolveEnvironment(project)`, e.g. `env-a`). An ingest cube's
+  runtime names the ingest server's environment instead (`getRuntimeEnvironment`, e.g. `lakehouse-ingest-env-a`). In
+  Studio both kinds name one environment. Whether `#I` resolves under the data product runtime's environment is for
+  the first internal run of a mixed Analytics cube.
 
 ## 12. G. Risks and open questions
 

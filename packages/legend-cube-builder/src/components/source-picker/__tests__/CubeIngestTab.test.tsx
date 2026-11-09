@@ -43,9 +43,17 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import { FAKE_DAILY_ORDERS_SCHEMA } from '../../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
   createFakeCubeIngestCatalog,
+  FAKE_INGEST_DESKS,
+  FAKE_INGEST_ORDERS,
   FAKE_INGEST_ORDERS_WITH_FILLS,
   type FakeCubeIngestCatalog,
+  fakeIngestUrnOf,
 } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
+import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../../__lib__/LegendCubeDataProductLabels.js';
+import {
+  getDroppedDefinitionsLabel,
+  getJoinedDataProductsLabel,
+} from '../../../__lib__/LegendCubeIngestLabels.js';
 import {
   createCubeDataProductModel,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
@@ -53,6 +61,7 @@ import {
 } from '../../../graph-manager/CubeDataProduct.js';
 import {
   type CubeIngestCatalog,
+  CubeIngestDefinitionCandidate,
   CubeIngestEnvironment,
   CubeIngestProducer,
 } from '../../../graph-manager/CubeIngestCatalog.js';
@@ -121,6 +130,103 @@ const createProjectHost = (): {
 };
 
 describe('The Ingest tab', () => {
+  test("On a data product cube, as Legend Analytics joins one, lists the definitions of its data products' deployment with no environment or producer to pick, saying so, one their version lacks greyed", async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const addedAfter = "Added after this data product's version 1.4.0";
+    const listProjectDefinitions = jest.fn<
+      NonNullable<CubeIngestCatalog['listProjectDefinitions']>
+    >(async () => ({
+      candidates: [
+        new CubeIngestDefinitionCandidate({
+          urn: fakeIngestUrnOf(FAKE_INGEST_ORDERS),
+          definition: FAKE_INGEST_ORDERS,
+          groupId: 'com.example',
+          artifactId: 'sales',
+        }),
+        new CubeIngestDefinitionCandidate({
+          urn: fakeIngestUrnOf(FAKE_INGEST_DESKS),
+          definition: FAKE_INGEST_DESKS,
+          groupId: 'com.example',
+          artifactId: 'sales',
+          disabledReason: addedAfter,
+        }),
+      ],
+      droppedCount: 2,
+    }));
+    const state = new CubeEditorState({
+      ...host,
+      ingestCatalog: { ...ingest.catalog, listProjectDefinitions },
+    });
+    act(() => {
+      state.applyDocument(
+        state.document
+          .withContext({
+            model: createCubeDataProductModel({
+              groupId: 'com.example',
+              artifactId: 'sales',
+              versionId: '1.4.0',
+              environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+              warehouse: 'SALES_WH',
+            }),
+            runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+          })
+          .withQuery(
+            state.document.query.add(
+              new DataProductAccessPointSource(
+                'dataProductAccessPoint101',
+                {
+                  dataProduct: 'sales::products::OrdersProduct',
+                  accessPointGroup: 'core',
+                  accessPoint: 'daily_orders',
+                  dataProductId: 'ORDERS_PRODUCT',
+                  deploymentId: '1234',
+                },
+                { kind: 'resolved', schema: FAKE_DAILY_ORDERS_SCHEMA },
+              ),
+            ),
+          ),
+      );
+      state.addNode(IngestDatasetSource.TYPE);
+    });
+    render(<CubeIngestTab tab={state.sourcePicker.ingestTab} />);
+    const definitions = await screen.findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    expect(listProjectDefinitions).toHaveBeenCalledWith(
+      expect.objectContaining({ versionId: '1.4.0' }),
+      '1234',
+    );
+    expect(screen.queryByLabelText('Environment')).toBeNull();
+    expect(screen.queryByLabelText('Producer')).toBeNull();
+    await screen.findByText(
+      getJoinedDataProductsLabel(
+        CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[
+          CubeDataProductEnvironmentType.PRODUCTION
+        ],
+        'Sales Feed (1234)',
+        '1.4.0',
+      ),
+    );
+    const desks = within(definitions)
+      .getByText('DesksIngest')
+      .closest('button');
+    expect(desks?.disabled).toBe(true);
+    expect(desks?.title).toBe(addedAfter);
+    expect(within(definitions).getByText(addedAfter)).toBeDefined();
+    // other projects' definitions are left out too
+    expect(getDroppedDefinitionsLabel(2, true)).toBe(
+      '2 definitions of other projects, not deployed from a project, or deployed to another environment, not shown',
+    );
+    expect(
+      screen.getByText(getDroppedDefinitionsLabel(2, true) as string),
+    ).toBeDefined();
+    expect(screen.getByLabelText('Search ingest definitions')).toBeDefined();
+    const warehouse = screen.getByLabelText<HTMLInputElement>('Warehouse');
+    expect(warehouse.disabled).toBe(true);
+    expect(warehouse.value).toBe('SALES_WH');
+  });
+
   test('Walks environment, producer, definition and data set, then shows its columns', async () => {
     const state = renderTab();
     // every environment of both classes, the viewer's own production one picked
@@ -388,12 +494,14 @@ describe('The Ingest tab', () => {
       name: 'Ingest definitions',
     });
     expect(within(definitions).getByText('OrdersIngest')).toBeTruthy();
+    // the project, and the deployment of its data product, Studio's none yet
     expect(listProjectDefinitions).toHaveBeenCalledWith(
       expect.objectContaining({
         groupId: 'com.example',
         artifactId: 'sales',
         environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
       }),
+      '0',
     );
     expect(ingest.listProducers).not.toHaveBeenCalled();
   });

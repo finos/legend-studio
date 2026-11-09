@@ -21,7 +21,8 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
-import { V1_EngineServerClient } from '@finos/legend-graph';
+import { CORE_PURE_PATH, V1_EngineServerClient } from '@finos/legend-graph';
+import { DepotServerClient } from '@finos/legend-server-depot';
 import {
   NetworkClientError,
   type PlainObject,
@@ -132,8 +133,10 @@ const notFound = (): NetworkClientError =>
 
 const setUp = (
   baseEnvironment = 'env-a',
+  options?: { depotServerClient?: DepotServerClient },
 ): {
   catalog: V1_LegendCubeIngestCatalog;
+  platform: LakehousePlatformServerClient;
   summaries: jest.Mock;
   producers: jest.Mock;
   definitions: jest.Mock;
@@ -164,7 +167,9 @@ const setUp = (
       async () => baseEnvironment,
       parse as unknown as (code: string) => Promise<PlainObject>,
       () => 'token',
+      options,
     ),
+    platform,
     summaries: summaries as unknown as jest.Mock,
     producers: producers as unknown as jest.Mock,
     definitions: definitions as unknown as jest.Mock,
@@ -548,5 +553,356 @@ describe('The deployed ingest definitions of a lakehouse', () => {
         ingestServerClient: new LakehouseIngestServerClient(undefined),
       }),
     ).toBeInstanceOf(V1_LegendCubeIngestCatalog);
+  });
+});
+
+// A data product cube's project's definitions (PLAN §11.30): the data
+// products of com.example:sales 1.4.0 come from deployment 1234, which
+// deploys the project's definitions. At 1.4.0 the project has OrdersIngest,
+// whose TRADES has a DESK column there and no DAILY; DesksIngest was added
+// after it
+
+const SALES_PROJECT = {
+  groupId: 'com.example',
+  artifactId: 'sales',
+  versionId: '1.4.0',
+  environmentType: PRODUCTION,
+};
+
+const DESKS = 'sales::ingest::DesksIngest';
+const DESKS_URN = DEFINITIONS[1] as string;
+
+const columnOf = (name: string, type: string): PlainObject => ({
+  name,
+  genericType: {
+    rawType: { _type: 'packageableType', fullPath: type },
+    typeArguments: [],
+    multiplicityArguments: [],
+    typeVariableValues: [],
+  },
+  multiplicity: { lowerBound: 1, upperBound: 1 },
+});
+
+/** The orders definition as the project has it at 1.4.0 */
+const ORDERS_AT_VERSION: PlainObject = {
+  ...ELEMENT,
+  datasets: [
+    {
+      name: 'TRADES',
+      primaryKey: ['ID'],
+      source: {
+        _type: 'serializedSource',
+        schema: {
+          _type: 'relationType',
+          columns: [columnOf('ID', 'Integer'), columnOf('DESK', 'String')],
+        },
+      },
+    },
+  ],
+};
+
+/** The depot's answer: each entity wrapped with its project and version */
+const DEPOT_ROWS = [
+  {
+    groupId: 'com.example',
+    artifactId: 'sales',
+    versionId: '1.4.0',
+    entity: {
+      path: ORDERS,
+      classifierPath: CORE_PURE_PATH.INGEST_DEFINITION,
+      content: ORDERS_AT_VERSION,
+    },
+  },
+  // an entity of another classifier is left out
+  {
+    groupId: 'com.example',
+    artifactId: 'sales',
+    versionId: '1.4.0',
+    entity: {
+      path: DESKS,
+      classifierPath: CORE_PURE_PATH.CLASS,
+      content: {},
+    },
+  },
+];
+
+const setUpProject = (
+  baseEnvironment = 'env-a',
+): ReturnType<typeof setUp> & { versionEntities: jest.Mock } => {
+  const depotServerClient = new DepotServerClient({
+    serverUrl: 'http://depot.test',
+  });
+  const versionEntities = jest
+    .spyOn(depotServerClient, 'getVersionEntities')
+    .mockImplementation((async () => DEPOT_ROWS) as never);
+  const set = setUp(baseEnvironment, { depotServerClient });
+  // each definition's grammar, as the engine parses it
+  set.grammar.mockImplementation(
+    (async (urn: unknown) => `Ingest ${String(urn)}`) as never,
+  );
+  set.parse.mockImplementation(async (code: unknown) => ({
+    _type: 'data',
+    elements: [
+      String(code).includes(DESKS)
+        ? { ...ELEMENT, name: 'DesksIngest' }
+        : ELEMENT,
+    ],
+  }));
+  // deployment 1234 deploys the project's definitions, another project's,
+  // an ad hoc one and one of the other class
+  set.definitions.mockImplementation((async () => [
+    ...DEFINITIONS,
+    'urn:lakehouse:prod:ingest:definition:alloy-git:com.other~elsewhere~other::ingest::OtherIngest',
+  ]) as never);
+  return {
+    ...set,
+    versionEntities: versionEntities as unknown as jest.Mock,
+  };
+};
+
+const listOf = (
+  catalog: V1_LegendCubeIngestCatalog,
+  deploymentId: string | undefined,
+): Promise<{
+  candidates: readonly {
+    definition: string;
+    disabledReason: string | undefined;
+  }[];
+  droppedCount: number;
+}> =>
+  (
+    catalog.listProjectDefinitions as NonNullable<
+      V1_LegendCubeIngestCatalog['listProjectDefinitions']
+    >
+  )(SALES_PROJECT, deploymentId);
+
+describe("A data product cube's project's ingest definitions", () => {
+  test("Lists those its data products' deployment deployed from SDLC, the project's, of the cube's class, in the viewer's own environment, greying one the version lacks", async () => {
+    const { catalog, definitions, versionEntities } = setUpProject();
+    const list = await listOf(catalog, '1234');
+    expect(
+      list.candidates.map((each) => [each.definition, each.disabledReason]),
+    ).toEqual([
+      [ORDERS, undefined],
+      [DESKS, V1_CUBE_INGEST_CATALOG_MESSAGE.ADDED_AFTER('1.4.0')],
+    ]);
+    expect(V1_CUBE_INGEST_CATALOG_MESSAGE.ADDED_AFTER('1.4.0')).toBe(
+      "Added after this data product's version 1.4.0",
+    );
+    // the ad hoc one, the other class's and the other project's
+    expect(list.droppedCount).toBe(3);
+    // the viewer's own production environment's server
+    expect(definitions.mock.calls).toEqual([
+      ['urn:lakehouse:prod:producer:deployment:1234', PROD_SERVER, 'token'],
+    ]);
+    expect(versionEntities.mock.calls).toEqual([
+      [
+        'com.example',
+        'sales',
+        '1.4.0',
+        'meta::external::ingest::specification::metamodel::IngestDefinition',
+      ],
+    ]);
+  });
+
+  test("Names the environment the data products' deployment deploys to beside the viewer's, or says the viewer's has it in the other class only, or names the viewer's alone when the platform can't say", async () => {
+    const { catalog, platform } = setUpProject();
+    const producerServer = jest.spyOn(platform, 'findProducerServer');
+    const summaryOf = (environmentName: string): PlainObject => ({
+      ingestEnvironmentUrn: `urn:${environmentName}`,
+      environmentName,
+      environmentClassification: 'prod',
+      ingestServerUrl: `https://lakehouse-ingest-${environmentName}-server.example.com`,
+    });
+    producerServer.mockImplementation((async () =>
+      summaryOf('env-b')) as never);
+    expect((await errorOf(() => listOf(catalog, '7777'))).detail).toBe(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.OTHER_ENVIRONMENT(
+        '7777',
+        'env-b',
+        'env-a',
+      ),
+    );
+    expect(producerServer).toHaveBeenCalledWith(7777, 'DEPLOYMENT', 'token');
+    expect(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.OTHER_ENVIRONMENT(
+        '7777',
+        'env-b',
+        'env-a',
+      ),
+    ).toBe(
+      "The cube's data products come from deployment 7777, which deploys its ingest definitions to env-b, not to your environment, env-a: a data product cube reads ingest data sets in your own environment only",
+    );
+    producerServer.mockImplementation((async () =>
+      summaryOf('env-a')) as never);
+    expect((await errorOf(() => listOf(catalog, '7777'))).detail).toBe(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_IN_CLASS('7777', 'env-a', PRODUCTION),
+    );
+    producerServer.mockImplementation((async () => {
+      throw new Error('No producer 7777');
+    }) as never);
+    expect((await errorOf(() => listOf(catalog, '7777'))).detail).toBe(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_IN_ENVIRONMENT('7777', 'env-a'),
+    );
+    // a deployment of the viewer's environment never asks
+    producerServer.mockClear();
+    await listOf(catalog, '1234');
+    expect(producerServer).not.toHaveBeenCalled();
+  });
+
+  test('Refuses a cube with no deployment, or one that is no deployment id, before any call', async () => {
+    const { catalog, producers, versionEntities } = setUpProject();
+    expect((await errorOf(() => listOf(catalog, undefined))).detail).toBe(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.NO_DEPLOYMENT,
+    );
+    expect((await errorOf(() => listOf(catalog, 'abc'))).detail).toBe(
+      V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_A_DEPLOYMENT('abc'),
+    );
+    expect(producers).not.toHaveBeenCalled();
+    expect(versionEntities).not.toHaveBeenCalled();
+  });
+
+  test("Reads a definition's data sets as the version has them: its columns there, a data set the version lacks greyed, and every one of a definition it lacks", async () => {
+    const { catalog } = setUpProject();
+    const read = (
+      dataSets: readonly {
+        name: string;
+        schema?: Schema | undefined;
+        disabledReason: string | undefined;
+      }[],
+    ): unknown =>
+      dataSets.map((each) => [
+        each.name,
+        each.schema?.columns.map((column) => column.name),
+        each.disabledReason,
+      ]);
+    // as deployed, TRADES has ID alone, and DAILY too
+    expect(read(await catalog.describe(ORDERS_URN, PROD))).toEqual([
+      ['TRADES', ['ID'], undefined],
+      [
+        'DAILY',
+        undefined,
+        'It is a materialized view, which Cube does not support yet',
+      ],
+    ]);
+    const added = V1_CUBE_INGEST_CATALOG_MESSAGE.ADDED_AFTER('1.4.0');
+    expect(
+      read(
+        await catalog.describe(ORDERS_URN, PROD, { project: SALES_PROJECT }),
+      ),
+    ).toEqual([
+      ['TRADES', ['ID', 'DESK'], undefined],
+      ['DAILY', undefined, added],
+    ]);
+    expect(
+      read(await catalog.describe(DESKS_URN, PROD, { project: SALES_PROJECT })),
+    ).toEqual([
+      ['TRADES', undefined, added],
+      ['DAILY', undefined, added],
+    ]);
+    const resolved = await catalog.resolveSchemas(
+      PROD,
+      new Map([
+        [
+          'ingestDataset101',
+          {
+            ingestDefinitionUrn: ORDERS_URN,
+            ingestDefinition: ORDERS,
+            dataSet: 'TRADES',
+          },
+        ],
+        [
+          'ingestDataset102',
+          {
+            ingestDefinitionUrn: DESKS_URN,
+            ingestDefinition: DESKS,
+            dataSet: 'TRADES',
+          },
+        ],
+      ]),
+      { project: SALES_PROJECT },
+    );
+    expect(
+      (resolved.get('ingestDataset101') as Schema).columns.map(
+        (each) => each.name,
+      ),
+    ).toEqual(['ID', 'DESK']);
+    expect((resolved.get('ingestDataset102') as CubeEngineError).detail).toBe(
+      added,
+    );
+  });
+
+  test('Fails, never greying every definition, when the depot can’t be read, and reads it again; a fresh read reads the version again once', async () => {
+    const { catalog, versionEntities } = setUpProject();
+    versionEntities.mockImplementationOnce((async () => {
+      throw new Error('Depot is down');
+    }) as never);
+    const failed = await errorOf(() => listOf(catalog, '1234'));
+    expect(failed.kind).toBe(CubeEngineErrorKind.NETWORK);
+    expect(failed.detail).toBe(
+      `${V1_CUBE_INGEST_CATALOG_MESSAGE.DEPOT_UNREADABLE(SALES_PROJECT)}\nDepot is down`,
+    );
+    expect((await listOf(catalog, '1234')).candidates).toHaveLength(2);
+    expect(versionEntities).toHaveBeenCalledTimes(2);
+    // read once per visit
+    await catalog.describe(ORDERS_URN, PROD, { project: SALES_PROJECT });
+    expect(versionEntities).toHaveBeenCalledTimes(2);
+    // a fresh read of two definitions reads the version once
+    await catalog.resolveSchemas(
+      PROD,
+      new Map([
+        [
+          'ingestDataset101',
+          {
+            ingestDefinitionUrn: ORDERS_URN,
+            ingestDefinition: ORDERS,
+            dataSet: 'TRADES',
+          },
+        ],
+        [
+          'ingestDataset102',
+          {
+            ingestDefinitionUrn: DESKS_URN,
+            ingestDefinition: DESKS,
+            dataSet: 'DESKS',
+          },
+        ],
+      ]),
+      { fresh: true, project: SALES_PROJECT },
+    );
+    expect(versionEntities).toHaveBeenCalledTimes(3);
+  });
+
+  test('Lists them only with a depot: without one, data products and ingest data sets stay apart', async () => {
+    const { catalog } = setUp();
+    expect(catalog.listProjectDefinitions).toBeUndefined();
+    expect(
+      (
+        await errorOf(() =>
+          catalog.describe(ORDERS_URN, PROD, { project: SALES_PROJECT }),
+        )
+      ).detail,
+    ).toBe(V1_CUBE_INGEST_CATALOG_MESSAGE.NO_DEPOT);
+    const withDepot = buildCubeIngestCatalog(
+      { baseUrl: 'http://engine.test/api' },
+      new TracerService(),
+      {
+        contractServerClient: new LakehouseContractServerClient({
+          baseUrl: 'http://lakehouse.test',
+        }),
+        depotServerClient: new DepotServerClient({
+          serverUrl: 'http://depot.test',
+        }),
+        getAccessToken: () => 'token',
+        getCurrentUser: () => 'viewer',
+        platformServerClient: new LakehousePlatformServerClient(
+          'http://platform.test',
+        ),
+        ingestServerClient: new LakehouseIngestServerClient(undefined),
+      },
+    );
+    expect(
+      (withDepot as V1_LegendCubeIngestCatalog).listProjectDefinitions,
+    ).toBeDefined();
   });
 });

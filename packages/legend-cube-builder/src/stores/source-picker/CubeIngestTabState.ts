@@ -16,6 +16,7 @@
 
 import {
   type CubeContext,
+  DataProductAccessPointSource,
   INGEST_DATASET_SOURCE_DEFINITION,
   IngestDatasetSource,
 } from '@finos/legend-cube';
@@ -36,7 +37,10 @@ import {
   getEffectiveCubeWarehouse,
   isCubeDataProductModel,
 } from '../../graph-manager/CubeDataProduct.js';
-import { getProducerLabel } from '../../__lib__/LegendCubeIngestLabels.js';
+import {
+  CUBE_INGEST_JOIN_MESSAGE,
+  getProducerLabel,
+} from '../../__lib__/LegendCubeIngestLabels.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
 import {
   createCubeIngestModel,
@@ -139,6 +143,12 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   /** The environment the producers were read for, as `getCubeIngestEnvironmentId` names it */
   private loadedEnvironmentId: string | undefined;
+  /**
+   * What a joined data product cube's definitions were listed for: its
+   * project, version, class and deployments; none for a producer's list.
+   * Only compared when the dialog opens, so not observed
+   */
+  private definitionsKey: string | undefined;
   /** The definitions whose data sets are being read, by URN, each with its request */
   private describing: ReadonlyMap<string, number> = new Map();
   /** Each counts its calls: a later call, or closing the dialog, drops an earlier answer */
@@ -180,6 +190,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         describing: observable.ref,
         fixedSettings: computed,
         joinedProject: computed,
+        joinedDeploymentIds: computed,
         isClassFixed: computed,
         isAvailable: computed,
         isBusy: computed,
@@ -232,6 +243,41 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     const model = this.editorState.document.context?.model;
     return model && mixesCubeLakehouseSources(this.editorState.host)
       ? getCubeDataProductProject(model)
+      : undefined;
+  }
+
+  /**
+   * The deployments of the joined data product cube's access points, each
+   * once, in the cube's order: their deployment deploys their project's
+   * ingest definitions (PLAN §11.30, user, 2026-11-09). None when the cube
+   * has no access point left, or joins none
+   */
+  get joinedDeploymentIds(): readonly string[] {
+    return this.joinedProject
+      ? [
+          ...new Set(
+            this.editorState.document.query.nodes
+              .filter(
+                (node): node is DataProductAccessPointSource =>
+                  node instanceof DataProductAccessPointSource,
+              )
+              .map((node) => node.deploymentId),
+          ),
+        ]
+      : [];
+  }
+
+  /** What the joined cube's definitions are listed for, or none on another cube */
+  private getDefinitionsKey(): string | undefined {
+    const joined = this.joinedProject;
+    return joined
+      ? JSON.stringify([
+          joined.groupId,
+          joined.artifactId,
+          joined.versionId,
+          joined.environmentType,
+          this.joinedDeploymentIds,
+        ])
       : undefined;
   }
 
@@ -433,8 +479,10 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
    */
   selectDefinition(candidate: CubeIngestDefinitionCandidate | undefined): void {
     if (
-      this.definitions.length <= 1 &&
-      candidate?.urn === this.definition?.urn
+      (this.definitions.length <= 1 &&
+        candidate?.urn === this.definition?.urn) ||
+      // one a data product's version lacks can't be opened (PLAN §11.30)
+      candidate?.isPickable === false
     ) {
       return;
     }
@@ -455,7 +503,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   toggleDefinition(candidate: CubeIngestDefinitionCandidate): void {
     if (this.isDefinitionOpened(candidate)) {
       this.closeDefinitions((each) => each.urn === candidate.urn);
-    } else {
+    } else if (candidate.isPickable) {
       this.openDefinition(candidate);
     }
   }
@@ -532,6 +580,13 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     const joined = this.joinedProject;
     const remembered = this.editorState.dataProductRuntime.rememberedWarehouse;
     this.error = undefined;
+    // definitions listed for a data product cube are listed again for
+    // another project, version, class or deployment, or for another cube
+    const definitionsKey = this.getDefinitionsKey();
+    if (this.definitionsKey !== definitionsKey) {
+      this.definitionsKey = definitionsKey;
+      this.resetDefinitions();
+    }
     if (joined) {
       // a data product cube's data sets are read in its class, in the
       // viewer's own environment of it, on its warehouse (PLAN §11.30)
@@ -580,7 +635,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         this.editorState.host.applicationStore.alertUnhandledError,
       );
     } else if (
-      this.producerDeploymentId !== undefined &&
+      (joined !== undefined || this.producerDeploymentId !== undefined) &&
       this.definitionList === undefined &&
       !this.isListingDefinitions
     ) {
@@ -650,8 +705,13 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         this.environments = [...(this.environments ?? []), environment];
       }
       this.producers = producers;
+      // a data product cube's deployment is named as a producer would be
       flowResult(
-        this.loadProducerNames(producers.map((each) => each.deploymentId)),
+        this.loadProducerNames(
+          this.joinedProject
+            ? this.joinedDeploymentIds
+            : producers.map((each) => each.deploymentId),
+        ),
       ).catch(this.editorState.host.applicationStore.alertUnhandledError);
       // a new cube starts on the environment's own warehouse, when it has one
       if (!this.isClassFixed && environment.warehouse) {
@@ -710,7 +770,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
 
   /**
    * Lists the producer deployment's definitions; on a data product cube,
-   * its project's (PLAN §11.30)
+   * its project's, which its data products' deployment deployed (PLAN
+   * §11.30)
    */
   *listDefinitions(): GeneratorFn<void> {
     const { catalog, producerDeploymentId, joinedProject } = this;
@@ -722,12 +783,19 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     ) {
       return;
     }
+    const deploymentIds = this.joinedDeploymentIds;
+    if (deploymentIds.length > 1) {
+      this.error = {
+        message: CUBE_INGEST_JOIN_MESSAGE.SEVERAL_DEPLOYMENTS(deploymentIds),
+      };
+      return;
+    }
     const request = ++this.definitionsRequest;
     this.isListingDefinitions = true;
     this.error = undefined;
     try {
       const list = (yield joinedProject && catalog.listProjectDefinitions
-        ? catalog.listProjectDefinitions(joinedProject)
+        ? catalog.listProjectDefinitions(joinedProject, deploymentIds[0])
         : catalog.listDefinitions(
             this.environmentKey,
             producerDeploymentId as string,
@@ -760,11 +828,15 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     // an answer counts while the definition is open and this is its last read
     const isCurrent = (): boolean =>
       this.describing.get(candidate.urn) === request;
+    const project = this.joinedProject;
     try {
-      const dataSets = (yield catalog.describe(
-        candidate.urn,
-        this.environmentKey,
-      )) as readonly CubeIngestDataSet[];
+      // a data product cube's, as its project has them at its version
+      const dataSets = (yield project
+        ? catalog.describe(candidate.urn, this.environmentKey, { project })
+        : catalog.describe(
+            candidate.urn,
+            this.environmentKey,
+          )) as readonly CubeIngestDataSet[];
       if (isCurrent()) {
         this.dataSetsByDefinition = new Map([
           ...this.dataSetsByDefinition,
