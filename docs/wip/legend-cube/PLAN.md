@@ -5935,8 +5935,9 @@ without one, the two kinds stay apart.
 
 **Ask:** the user, on 2026-11-05: "should we have notes next to each node?" Alteryx shows an annotation under every tool
 and has free Comment boxes (finos/legend-studio#5809, its §2.7). In Cube, each step's label already says what the step
-does (`describe()`), so a note says why. Built on the branch `cube-step-notes`, stacked on #5850 (containers, §11.29).
-§11.30 is kept for mixing source kinds. Evidence: `legend-cube-evidence/alteryx/canvas/notes/`.
+does (`describe()`), so a note says why. Built on the branch `cube-step-notes`, first stacked on #5850 (containers,
+§11.29), then moved into `cube-dev` once #5850 merged there (user, 2026-11-09). Evidence:
+`legend-cube-evidence/alteryx/canvas/notes/`.
 
 **Settled with the user** (2026-11-05, all on the recommendation):
 
@@ -5994,14 +5995,14 @@ frame takes in its steps' notes.
 
 **Checks:**
 
-- 7,383 tests pass in legend-cube (3,148), legend-cube-builder (3,401), Query (240), Analytics (35) and Studio (559).
-  4 fail, all engine-backed and against the local engine, which predates legend-engine#5449 (BINARY typing, 2 tests)
-  and #5108 (BigQuery, 2 tests), as on #5850.
+- On `cube-dev` (7bf550649, after #5850, #5855 and #5857), 7,450 tests pass: legend-cube 3,152, legend-cube-builder
+  3,462, Query 240, Analytics 35 and Studio 561. 4 fail, all engine-backed and against the local engine, which
+  predates legend-engine#5449 (BINARY typing, 2 tests) and #5108 (BigQuery, 2 tests), as on #5850.
 - `lint:js --max-warnings=0` is clean in legend-cube, legend-cube-builder and legend-application-analytics-e2e. Root
   `tsc --build`, `check:format`, `check:copyright` and `check:changeset` pass.
-- In Chromium, on Legend Analytics: the guide's screenshot scripts, and the demo video (44, 1:15) with 13 checks.
+- In Chromium, on Legend Analytics: the guide's screenshot scripts, and the demo video (44, 1:17) with 13 checks.
 
-**Status:** draft finos/legend-studio#5853, stacked on #5850.
+**Status:** draft finos/legend-studio#5853, into `cube-dev` (user, 2026-11-09).
 
 ## 12. G. Risks and open questions
 
