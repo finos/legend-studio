@@ -193,8 +193,8 @@ export interface CubeCheckedPure {
   readonly text: string;
   /**
    * Parsed back, the text reads as the lambda; `false` where it reads
-   * otherwise because of the precedence the parentheses would fix, even put
-   * back; `undefined` when it couldn't be told
+   * otherwise and the parentheses, put back, don't put it right;
+   * `undefined` when it couldn't be read back
    */
   readonly readsAsLambda: boolean | undefined;
   /** Parentheses the engine's text dropped were put back */
@@ -288,8 +288,8 @@ export interface CubeEngine {
   renderPure(lambda: IR): Promise<string>;
   /**
    * The engine's Pure text of a lambda, checked by parsing it back
-   * (EXPRESSION-EDITOR.md, §2.4): the engine's text writer drops the
-   * parentheses of arithmetic compared, writing `equal(plus(a, 1), 3)` as
+   * (EXPRESSION-EDITOR.md, §2.4): the engine's text writer writes a
+   * comparison's operands without parentheses, `equal(plus(a, 1), 3)` as
    * `a + 1 == 3`, which reads as `a + (1 == 3)`; where it does, they are put
    * back. Never rejects: a text that can't be checked is given back as it is.
    */

@@ -17,6 +17,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { isSameCubeIR } from '@finos/legend-cube';
 import { CUBE_ENGINE_TEST__grammarToJson_lambda } from '../../../../../__test-utils__/CubeEngineTestSupport.js';
+import type { CubeCheckedPure } from '../../../../CubeEngine.js';
 import { V1_createEngineBackedCubeEngine } from '../__test-utils__/V1_CubeEngineTestUtils.js';
 import {
   V1_readCubeLambda,
@@ -26,8 +27,8 @@ import type { V1_LegendCubeEngine } from '../V1_LegendCubeEngine.js';
 
 // The engine's Pure text of what Show Pure shows and Import Pure writes as
 // an expression's code, checked against the engine itself
-// (EXPRESSION-EDITOR.md, §2.4): its text writer drops the parentheses of
-// arithmetic compared, which Cube puts back
+// (EXPRESSION-EDITOR.md, §2.4): its text writer writes a comparison's
+// operands without parentheses, which Cube puts back
 
 /** An engine whose calls go to the test engine */
 const newEngine = (): V1_LegendCubeEngine =>
@@ -64,11 +65,15 @@ describe("The engine's Pure text of a query, checked", () => {
     ).toBe(true);
   });
 
-  test("Leaves a query's text the engine writes right as it is", async () => {
+  test("Leaves a query's text the engine writes right as it is, its values of each kind included", async () => {
     const engine = newEngine();
     const query = V1_readCubeLambda(
       await CUBE_ENGINE_TEST__grammarToJson_lambda(
-        "|#>{test::Db.S.T}#->filter(x|($x.A > 0) && ($x.B == 'b'))->extend(~C:x|$x.A + 1)",
+        [
+          "|#>{test::Db.S.T}#->filter(x|($x.A > 0) && ($x.B == 'b'))",
+          "->filter(x|($x.S == 'it\\'s') && ($x.D >= %2024-01-31) && ($x.T < %2024-01-31T10:30:00))",
+          '->extend(~C:x|$x.A + 1)->extend(~E:x|($x.N * 1.5D) - 2.25)->extend(~F:x|$x.A == -1)',
+        ].join(''),
       ),
     );
     const text = await engine.renderPure(query);
@@ -91,5 +96,70 @@ describe("The engine's Pure text of a query, checked", () => {
     const checked = await engine.checkPure(expression, text);
     expect([checked.isRepaired, checked.readsAsLambda]).toEqual([true, true]);
     expect(checked.text.trim()).toBe('x|($x.A + 1) == 3');
+  });
+});
+
+/** Code on one line: the engine's writer breaks a long one */
+const oneLine = (code: string): string => code.replace(/\s+/gu, ' ').trim();
+
+/** An expression's code as the engine writes it, then as Cube checks it, each on one line */
+const checkExpression = async (
+  code: string,
+): Promise<{ written: string; checked: CubeCheckedPure }> => {
+  const engine = newEngine();
+  const { lambda } = await engine.parseExpression(code, 'cube:test');
+  const expression = V1_readCubeValueSpecification(lambda);
+  const written = await engine.renderPure(expression);
+  const checked = await engine.checkPure(expression, written);
+  return {
+    written: oneLine(written),
+    checked: { ...checked, text: oneLine(checked.text) },
+  };
+};
+
+describe('Each shape the engine writes without the parentheses it needs, put right', () => {
+  test.each([
+    // an operator before `==`
+    ['x|($x.A > 1) == true', 'x|$x.A > 1 == true'],
+    ['x|($x.A == 1) == true', 'x|$x.A == 1 == true'],
+    ['x|($x.A && $x.B) == false', 'x|$x.A && $x.B == false'],
+    ['x|($x.A || $x.B) == false', 'x|$x.A || $x.B == false'],
+    ['x|(!$x.A) == true', 'x|!$x.A == true'],
+    ['x|(-$x.A) == 3', 'x|-$x.A == 3'],
+    ['x|($x.A + $x.B + 1) == 3', 'x|$x.A + $x.B + 1 == 3'],
+    [
+      'x|(($x.A > 1) && ($x.B > 2)) == true',
+      'x|($x.A > 1) && ($x.B > 2) == true',
+    ],
+    // after `==`, only `&&` and `||` need them
+    ['x|($x.A - 1) == $x.B + 1', 'x|$x.A - 1 == $x.B + 1'],
+    ['x|($x.A > 1) == $x.B > 2', 'x|$x.A > 1 == $x.B > 2'],
+    ['x|$x.F == ($x.A && $x.B)', 'x|$x.F == $x.A && $x.B'],
+    [
+      'x|$x.F == (($x.A > 1) && ($x.B < 2))',
+      'x|$x.F == ($x.A > 1) && ($x.B < 2)',
+    ],
+    // a comparison after another
+    ['x|$x.A >= ($x.B > 1)', 'x|$x.A >= $x.B > 1'],
+  ])('%s, written %s', async (code, engineText) => {
+    const { written, checked } = await checkExpression(code);
+    expect(written).toBe(engineText);
+    expect(checked).toEqual({
+      text: code,
+      readsAsLambda: true,
+      isRepaired: true,
+    });
+  });
+
+  test("Says a chain of them reads otherwise, as it doesn't put one right", async () => {
+    const { written, checked } = await checkExpression(
+      'x|(($x.A == 1) == true) == false',
+    );
+    expect(written).toBe('x|$x.A == 1 == true == false');
+    expect(checked).toEqual({
+      text: written,
+      readsAsLambda: false,
+      isRepaired: false,
+    });
   });
 });

@@ -88,8 +88,6 @@ import type { CubeFunctionCatalogue } from '../../../CubeFunctionCatalogue.js';
 import {
   type CubeExpressionOutline,
   applyCubeCodeEdits,
-  findCubePrecedenceTraps,
-  getCubePrecedenceFixEdits,
 } from '../../../CubeExpressionOutline.js';
 import {
   V1_canonicalCubeDirectConnection,
@@ -123,6 +121,7 @@ import {
   V1_CubeUnreadableResultError,
   V1_readCubeExecutionResult,
 } from './V1_CubeExecutionResultReader.js';
+import { V1_getCubeDroppedParenthesesEdits } from './V1_CubeDroppedParentheses.js';
 import { V1_readCubeExpression } from './V1_CubeExpression.js';
 import { V1_buildCubeFunctionCatalogue } from './V1_CubeFunctionCatalogue.js';
 import { V1_buildCubeExpressionOutline } from './V1_CubeExpressionOutline.js';
@@ -130,15 +129,6 @@ import {
   V1_readCubeLambda,
   V1_readCubeValueSpecification,
 } from './V1_CubeLambdaReader.js';
-
-/** The IR of a lambda the engine parsed from Pure text: a query's, or else an expression's of a row */
-const V1_readCubePure = (json: unknown): IR => {
-  try {
-    return V1_readCubeLambda(json);
-  } catch {
-    return V1_readCubeValueSpecification(json);
-  }
-};
 import { V1_serializeCubeLambda } from './V1_CubeLambdaSerializer.js';
 import { V1_buildCubeModelOutline } from './V1_CubeModelOutlineBuilder.js';
 import { V1_buildCubeSchema } from './V1_CubeRelationTypeAdapter.js';
@@ -149,6 +139,15 @@ import {
   V1_toCubeExplorationError,
   V1_unquoteCubeName,
 } from './V1_CubeSchemaExploration.js';
+
+/** The IR of a lambda the engine parsed from Pure text: a query's, or else an expression's of a row */
+const V1_readCubePure = (json: unknown): IR => {
+  try {
+    return V1_readCubeLambda(json);
+  } catch {
+    return V1_readCubeValueSpecification(json);
+  }
+};
 
 /** The engine client's configuration, as the host gives it (legend-graph doesn't export its type) */
 export type V1_CubeEngineConfig = ConstructorParameters<
@@ -1503,29 +1502,31 @@ export class V1_LegendCubeEngine implements CubeEngine {
         }),
       };
     };
+    let first: { located: JsonObject; same: boolean };
     try {
-      const first = await readsAs(text);
-      if (first.same) {
-        return { text, readsAsLambda: true, isRepaired: false };
-      }
-      // the parentheses of arithmetic compared, put back where the text dropped them
-      const outline = V1_buildCubeExpressionOutline(first.located, text);
-      const traps = outline ? findCubePrecedenceTraps(outline) : [];
-      if (!traps.length) {
-        // it reads otherwise, for no reason Cube knows: nothing to say of it
-        return { text, readsAsLambda: undefined, isRepaired: false };
-      }
-      const repaired = applyCubeCodeEdits(
-        text,
-        getCubePrecedenceFixEdits(traps),
-      );
-      return (await readsAs(repaired)).same
-        ? { text: repaired, readsAsLambda: true, isRepaired: true }
-        : { text, readsAsLambda: false, isRepaired: false };
+      first = await readsAs(text);
     } catch {
       // the text can't be read back: given as it is
       return { text, readsAsLambda: undefined, isRepaired: false };
     }
+    if (first.same) {
+      return { text, readsAsLambda: true, isRepaired: false };
+    }
+    try {
+      // the parentheses the engine's text writer dropped, put back
+      const outline = V1_buildCubeExpressionOutline(first.located, text);
+      const edits = outline ? V1_getCubeDroppedParenthesesEdits(outline) : [];
+      if (edits.length) {
+        const repaired = applyCubeCodeEdits(text, edits);
+        if ((await readsAs(repaired)).same) {
+          return { text: repaired, readsAsLambda: true, isRepaired: true };
+        }
+      }
+    } catch {
+      // put back, they make a text that can't be read: as if none were found
+    }
+    // it reads otherwise, and Cube can't put it right
+    return { text, readsAsLambda: false, isRepaired: false };
   }
 
   async renderPure(lambdaIR: IR): Promise<string> {

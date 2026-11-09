@@ -90,8 +90,8 @@ describe("The engine's Pure text, checked by parsing it back", () => {
     });
   });
 
-  test("Says nothing of a text that reads otherwise for no reason it knows, or that it can't read back", async () => {
-    // no precedence trap: another expression altogether
+  test("Says a text reads otherwise for a reason it doesn't know, and nothing of one it can't read back", async () => {
+    // another expression altogether: no parentheses make it the lambda
     expect(
       await newEngine().checkPure(
         lambdaOf('x | $x.A != 3'),
@@ -99,7 +99,7 @@ describe("The engine's Pure text, checked by parsing it back", () => {
       ),
     ).toEqual({
       text: 'x | $x.A == 1 && $x.B == 2',
-      readsAsLambda: undefined,
+      readsAsLambda: false,
       isRepaired: false,
     });
     const engine = newEngine();
