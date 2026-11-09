@@ -130,6 +130,8 @@ export const buildCubeCanvasNodes = (
             height:
               CUBE_CANVAS_NODE_HEIGHT +
               (note === undefined ? 0 : CUBE_CANVAS_NOTE_HEIGHT),
+            // picked in Cube, not selected in React Flow (`CubeCanvas`)
+            selectable: false,
             handles: getCubeCanvasHandles(node),
             data: note === undefined ? { node } : { node, note },
           },
@@ -165,6 +167,7 @@ export const buildCubeCanvasContainerNodes = (
     position: { x: place.x, y: place.y },
     width: place.width,
     height: place.height,
+    selectable: false,
     // behind the lines and the steps, and the canvas's to press, but its head
     ...(place.container.folded
       ? {}
@@ -235,6 +238,8 @@ export const buildCubeCanvasEdges = (
           targetBox === undefined
             ? connection.port
             : CUBE_FOLDED_INPUT_HANDLE_ID,
+        // the canvas lets a box be drawn, which selects no line
+        selectable: false,
         markerEnd: { type: MarkerType.ArrowClosed },
         data: { label, lanes: lanes.get(connection.toString()) ?? [] },
       },

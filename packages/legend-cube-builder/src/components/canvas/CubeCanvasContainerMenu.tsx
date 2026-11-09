@@ -19,9 +19,11 @@ import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeSubmenu } from '../CubeSubmenu.js';
+import { getCubeCanvasNodeLabel } from './CubeCanvasElements.js';
 
 /** What the menus call what they do to containers (PLAN §11.29) */
 export enum CUBE_CONTAINER_LABEL {
+  PUT_SELECTION_IN = 'Put Selection in a Container',
   PUT_IN = 'Put in a Container',
   ALONE = 'This Step Alone',
   WITH_STEPS_BEFORE = 'With the Steps Before It',
@@ -39,8 +41,53 @@ export const getCubeContainerMenuTitle = (title: string): string =>
 const SUBMENU_HEAD_CLASS_NAME =
   'menu__item text-sm text-[var(--color-text-secondary)]';
 
+/** How the menus name a step: its title on the canvas, in quotes */
+const getCubeStepMenuTitle = (
+  editorState: CubeEditorState,
+  stepId: string,
+): string => {
+  const node = editorState.document.query.getNode(stepId);
+  return node
+    ? `“${getCubeCanvasNodeLabel(node, editorState.registry.get(node.type)?.label).title}”`
+    : stepId;
+};
+
 /**
- * A step's container items, in its menu: Put in a Container ▸, whose menu
+ * What Put Selection in a Container makes of the steps picked on the canvas
+ * (PLAN §11.29), or why it can't, for its tooltip
+ */
+export const getCubePickedStepsContainerTooltip = (
+  editorState: CubeEditorState,
+): string => {
+  const made = editorState.canvasSelection.container;
+  if (made.kind === 'steps') {
+    const picked = made.steps.length - made.between.length;
+    const between = made.between.length;
+    return `A new container of ${
+      picked === 1 ? 'the step selected' : `the ${picked} steps selected`
+    }${
+      between === 0
+        ? ''
+        : between === 1
+          ? ' and the step between them'
+          : ` and the ${between} steps between them`
+    } (Ctrl/Cmd+G)`;
+  } else if (made.kind === 'apart') {
+    return "The steps selected aren't all of one tree: a container's steps are linked to one another";
+  } else if (made.kind === 'contained') {
+    const container = getCubeContainerMenuTitle(made.container.container.title);
+    const step = getCubeStepMenuTitle(editorState, made.stepId);
+    return made.isPicked
+      ? `${step} is in ${container}: take it out first`
+      : `${step}, between the steps selected, is in ${container}: containers don't nest`;
+  }
+  return 'No step is selected: Shift-click steps, or hold Shift and drag around them';
+};
+
+/**
+ * A step's container items, in its menu: on a step picked on the canvas,
+ * Put Selection in a Container, as Ctrl/Cmd+G (PLAN §11.29); Put in a
+ * Container ▸, whose menu
  * makes a container of the step alone or with the steps before it in none,
  * or puts it in a container beside it; and Take Out of Container, for a step
  * at its container's edge, so a container stays one block. Each applies the
@@ -67,8 +114,19 @@ export const CubeStepContainerMenuItems = observer(
       nodeId === undefined ? [] : editorState.getContainersBesideStep(nodeId);
     const canTakeOut =
       nodeId !== undefined && editorState.canTakeOutOfContainer(nodeId);
+    const { canvasSelection } = editorState;
     return (
       <>
+        {nodeId !== undefined && canvasSelection.isPicked(nodeId) && (
+          // on a step picked: the steps picked, and those between them
+          <MenuContentItem
+            title={getCubePickedStepsContainerTooltip(editorState)}
+            disabled={canvasSelection.container.kind !== 'steps'}
+            onClick={finishing(() => canvasSelection.putInContainer())}
+          >
+            {CUBE_CONTAINER_LABEL.PUT_SELECTION_IN}
+          </MenuContentItem>
+        )}
         <CubeSubmenu
           label={CUBE_CONTAINER_LABEL.PUT_IN}
           hasItems={canAdd}

@@ -99,6 +99,20 @@ To make one, right-click a step:
    shows their errors, and **Output** when the output step is in it. Point at it to list its steps. **›**, a
    double-click, or Enter opens it.
 
+You can also select the steps first, with the mouse, as in Alteryx. A selected step is tinted:
+
+[![A box drawn around two steps, and a third step selected](./images/containers-selection.png)](./images/containers-selection.png)
+
+7. **Shift and a drag** on the canvas draws a box. The steps wholly inside it are added to the selection.
+8. **Shift-click** a step to select it, or to deselect it. On a step that has the focus, Shift+Enter or Shift+Space does
+   the same.
+
+**Escape**, or a click on the canvas, clears the selection. Right-click a selected step for **Put Selection in a
+Container**, or press Ctrl+G (Cmd+G on macOS) while the canvas has the focus. The new container takes the steps selected
+and each step between them, so it is one block. The item is disabled, with the reason in its tooltip, when the steps are
+of different trees, or when one of them, or a step between them, is in a container already. The selection isn't saved
+with the cube.
+
 A container is one block of steps linked to one another, so all of one tree, and containers don't nest:
 
 - A step you add, paste or move between two steps of a container joins it. One added after its last step stays out.
