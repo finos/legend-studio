@@ -194,6 +194,41 @@ describe('Picking steps on the canvas', () => {
     expect(await isPicked('join101')).toBe(false);
   });
 
+  test('The box takes a step by its card: its note, a line under it (PLAN §11.31), may be left out', async () => {
+    const editorState = await render(
+      new CubeDocument({
+        context: CONTEXT,
+        query: sliceQuery(),
+        meta: {
+          ...DEFAULT_META,
+          notes: [{ step: 'relational101', text: 'The orders since 1997' }],
+        },
+      }),
+    );
+    expect(
+      screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS_STEP_NOTE).textContent,
+    ).toBe('The orders since 1997');
+    const { positions } = layoutCubeCanvas(
+      editorState.document.query,
+      undefined,
+      new Set(['relational101']),
+    );
+    const card = positions.get('relational101') as { x: number; y: number };
+    fireEvent.keyDown(window, { key: 'Shift' });
+    const pane = getPane();
+    // round the card alone, its note under the box
+    point(pane, 'pointerdown', card.x - 2, card.y - 2);
+    point(
+      pane,
+      'pointermove',
+      card.x + CUBE_CANVAS_NODE_WIDTH + 2,
+      card.y + CUBE_CANVAS_NODE_HEIGHT + 2,
+    );
+    point(pane, 'pointerup', card.x, card.y);
+    fireEvent.keyUp(window, { key: 'Shift' });
+    expect(editorState.canvasSelection.stepIds).toEqual(['relational101']);
+  });
+
   test('Escape on the canvas picks none, and Shift with Enter or Space picks the focused step', async () => {
     const editorState = await render(slice());
     fireEvent.keyDown(stepWrapper('join101'), { key: ' ', shiftKey: true });
