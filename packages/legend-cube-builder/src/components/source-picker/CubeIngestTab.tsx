@@ -18,6 +18,7 @@ import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useId } from 'react';
 import {
+  getDeploymentLabel,
   getDroppedDefinitionsLabel,
   getFixedProducerLabel,
   getIngestEnvironmentLabel,
@@ -313,6 +314,7 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const [joinedDeploymentId] = tab.joinedDeploymentIds;
   const dropped = getDroppedDefinitionsLabel(
     tab.definitionList?.droppedCount ?? 0,
+    joined !== undefined,
   );
   // a host reading one project's definitions, as Studio, lists them alone:
   // no class, deployment or warehouse to pick, its runtime named instead
@@ -327,7 +329,10 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
           {getJoinedDataProductsLabel(
             CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[joined.environmentType],
             joinedDeploymentId !== undefined
-              ? tab.getProducerLabel(joinedDeploymentId)
+              ? getDeploymentLabel(
+                  joinedDeploymentId,
+                  tab.producerNames.get(joinedDeploymentId),
+                )
               : undefined,
             joined.versionId,
           )}

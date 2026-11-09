@@ -161,7 +161,7 @@ describe('Data product tab', () => {
       getJoinedIngestLabel(
         CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[PRODUCTION_PARALLEL],
         `${orders.groupId}:${orders.artifactId}`,
-        'Deployment 1234',
+        'deployment 1234',
       ),
     );
     const mode = screen.getByLabelText<HTMLSelectElement>('Mode');

@@ -50,7 +50,10 @@ import {
   fakeIngestUrnOf,
 } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
 import { CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS } from '../../../__lib__/LegendCubeDataProductLabels.js';
-import { getJoinedDataProductsLabel } from '../../../__lib__/LegendCubeIngestLabels.js';
+import {
+  getDroppedDefinitionsLabel,
+  getJoinedDataProductsLabel,
+} from '../../../__lib__/LegendCubeIngestLabels.js';
 import {
   createCubeDataProductModel,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
@@ -149,7 +152,7 @@ describe('The Ingest tab', () => {
           disabledReason: addedAfter,
         }),
       ],
-      droppedCount: 0,
+      droppedCount: 2,
     }));
     const state = new CubeEditorState({
       ...host,
@@ -211,6 +214,13 @@ describe('The Ingest tab', () => {
     expect(desks?.disabled).toBe(true);
     expect(desks?.title).toBe(addedAfter);
     expect(within(definitions).getByText(addedAfter)).toBeDefined();
+    // other projects' definitions are left out too
+    expect(getDroppedDefinitionsLabel(2, true)).toBe(
+      '2 definitions of other projects, not deployed from a project, or deployed to another environment, not shown',
+    );
+    expect(
+      screen.getByText(getDroppedDefinitionsLabel(2, true) as string),
+    ).toBeDefined();
     expect(screen.getByLabelText('Search ingest definitions')).toBeDefined();
     const warehouse = screen.getByLabelText<HTMLInputElement>('Warehouse');
     expect(warehouse.disabled).toBe(true);

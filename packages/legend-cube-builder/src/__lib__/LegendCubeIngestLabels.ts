@@ -49,13 +49,18 @@ export const CUBE_INGEST_JOIN_MESSAGE = {
     `The cube's data products come from several deployments, ${deploymentIds.join(', ')}, so Cube can't tell which one deploys their project's ingest definitions`,
 } as const;
 
-/** How many of a producer deployment's definitions the tab leaves out, or nothing when it lists them all */
+/**
+ * How many of a producer deployment's definitions the tab leaves out, or
+ * nothing when it lists them all; for a data product cube, those of other
+ * projects too (PLAN §11.30)
+ */
 export const getDroppedDefinitionsLabel = (
   count: number,
+  ofProject = false,
 ): string | undefined =>
   count === 0
     ? undefined
-    : `${count} ${count === 1 ? 'definition' : 'definitions'} not deployed from a project, or deployed to another environment, not shown`;
+    : `${count} ${count === 1 ? 'definition' : 'definitions'} ${ofProject ? 'of other projects, ' : ''}not deployed from a project, or deployed to another environment, not shown`;
 
 /** A producer deployment as the Ingest tab shows it: its name and id, else its id alone */
 export const getProducerLabel = (
@@ -63,6 +68,13 @@ export const getProducerLabel = (
   name: string | undefined,
 ): string =>
   name ? `${name} (${deploymentId})` : `Deployment ${deploymentId}`;
+
+/** A deployment in a sentence: its name and id, else the word and its id */
+export const getDeploymentLabel = (
+  deploymentId: string,
+  name: string | undefined,
+): string =>
+  name ? `${name} (${deploymentId})` : `deployment ${deploymentId}`;
 
 /** The producer deployment a cube's data sets come from, named as the producer list names it */
 export const getFixedProducerLabel = (

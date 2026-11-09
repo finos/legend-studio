@@ -45,7 +45,10 @@ import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
 import { CUBE_PROJECT_SOURCE_LABEL } from '../../__lib__/LegendCubeProjectSourceLabels.js';
-import { getJoinedIngestLabel } from '../../__lib__/LegendCubeIngestLabels.js';
+import {
+  getDeploymentLabel,
+  getJoinedIngestLabel,
+} from '../../__lib__/LegendCubeIngestLabels.js';
 import { isCubeProjectHost } from '../../stores/CubeHost.js';
 
 const INPUT_CLASS =
@@ -397,8 +400,11 @@ export const CubeDataProductTab = observer(
             {getJoinedIngestLabel(
               CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[joined.environmentType],
               `${scope.groupId}:${scope.artifactId}`,
-              tab.editorState.sourcePicker.ingestTab.getProducerLabel(
+              getDeploymentLabel(
                 scope.deploymentId,
+                tab.editorState.sourcePicker.ingestTab.producerNames.get(
+                  scope.deploymentId,
+                ),
               ),
             )}
           </span>
