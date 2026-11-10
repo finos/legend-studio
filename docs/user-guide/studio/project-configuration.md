@@ -17,14 +17,15 @@ The configuration first opens on **Project Structure**.
 
 [![The Project Structure tab, its parts numbered](./images/project-configuration.png)](./images/project-configuration.png)
 
-1. **Update configuration** saves your changes (see [Save your changes](#save-your-changes)).
+1. **Update configuration** saves your changes (see [Save your changes](#save-your-changes)). It works once you've
+   changed something.
 2. **The tabs**: **Project Structure**, **Project Dependencies**, **Platform Configurations** and **Advanced**. An
    embedded project has no **Platform Configurations** (see [Advanced](#advanced)).
 3. **Coordinates**: the **Group ID** and the **Artifact ID** the project's versions are published under, which
    **Published as** shows together: `org.finos.legend.guide:firm-model`. Other projects depend on the project by them.
    Changing either one starts a new artifact: the earlier versions stay under the old coordinates, and the projects
    that depend on this one must be updated. The section warns you as soon as you change them.
-4. **Project structure**: the version of the layout of the project's build, here **13.1**. It shows **Up to date**, or
+4. **Project structure**: the version of the project's build layout, here **13.1**. It shows **Up to date**, or
    the SDLC server's latest version, such as **13.2 available**. Newer versions bring build fixes and support for newer
    features. **Update to 13.2** updates the project to it at once, without **Update configuration**.
 
@@ -32,8 +33,8 @@ The configuration first opens on **Project Structure**.
 
 A project uses other projects' elements by depending on a version of each. The projects it depends on bring their own
 dependencies with them, so the project depends on those too: they make its dependency tree. Their elements show in the
-explorer, under **dependencies**, and you can't change them. Legend Studio gets the projects' versions and the tree from
-the depot, where the projects' versions are published.
+explorer, under **dependencies**, and you can't change them. Legend Studio gets their versions and the tree from the
+depot, the server that holds the projects' released versions.
 
 [![The Project Dependencies tab, its parts numbered](./images/project-dependencies.png)](./images/project-dependencies.png)
 
@@ -43,8 +44,8 @@ the depot, where the projects' versions are published.
    its conflicts.
 2. **Dependency Explorer** opens the whole tree (see [The dependency explorer](#the-dependency-explorer)).
 3. **+** adds a dependency. Pick its project and its version in the row it adds.
-4. **Project**: the project depended on, by its coordinates, after its ID in the SDLC server. Pick another one to
-   depend on it instead.
+4. **Project**: the project depended on: its ID in the SDLC server, then its coordinates. Pick another one to depend
+   on it instead.
 5. **Version**: the version of the project depended on. **1.1.0 available** shows when the project has released a
    newer version: click it to use that one. The list has every version, newest first. **HEAD**, when the list has it,
    is the latest state of the project, not a release.
@@ -107,8 +108,8 @@ the conflicts.
 ## Platform configurations
 
 A managed project's builds use the Legend platform: the engine, the SDLC, and so on. The SDLC server lists the
-platform's parts and their latest versions. Here, the project's versions were frozen a while ago, and the SDLC server
-now has a newer legend-engine.
+platforms, such as legend-engine, and their latest versions. Here, the project's versions were frozen a while ago, and
+the SDLC server now has a newer legend-engine.
 
 [![The Platform Configurations tab, its parts numbered](./images/project-platform-versions.png)](./images/project-platform-versions.png)
 
