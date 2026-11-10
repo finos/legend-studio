@@ -121,20 +121,59 @@ const GUIDE_COMMITTED_REVIEWS = [
 ];
 
 /**
+ * The Legend platform's latest releases, which the SDLC server lists for
+ * projects to build with
+ */
+const GUIDE_PLATFORMS = [
+  {
+    name: 'legend-engine',
+    groupId: 'org.finos.legend.engine',
+    platformVersion: '4.95.1',
+  },
+  {
+    name: 'legend-sdlc',
+    groupId: 'org.finos.legend.sdlc',
+    platformVersion: '0.201.0',
+  },
+];
+
+/** The SDLC server's latest project structure, newer than the guide project's */
+const GUIDE_LATEST_PROJECT_STRUCTURE_VERSION = {
+  version: 13,
+  extensionVersion: 2,
+};
+
+/** A project's configuration, at the workspace or at a revision */
+const CONFIGURATION_PATH = new RegExp(
+  `^projects/${GUIDE_PROJECT_ID}/(?:workspaces/[^/]+/)?(?:revisions/[^/]+/)?configuration$`,
+  'u',
+);
+
+/**
  * What the guide's screens ask the SDLC server that the tests' in-memory SDLC
  * (see `SDLCMock.ts`) doesn't answer, or answers with nothing to show: the
  * start screen's project search, and what it checks of the project it picks
  * (its patches, its workspaces in conflict resolution and its
  * configuration); the project's release and the reviews committed since;
- * and reviews the guide creates, which stay open
+ * reviews the guide creates, which stay open; the platform's latest versions
+ * and project structure; and the project's configuration, when a page needs
+ * another one than the guide project's (`configuration`)
  */
 const getGuideSDLCAnswer = (
   request: Request,
   openReviews: Record<string, unknown>[],
+  configuration: Record<string, unknown> | undefined,
 ): unknown => {
   const projectId = GUIDE_PROJECT_ID;
   const path = getApiPath(request);
   const url = new URL(request.url());
+  if (
+    configuration &&
+    request.method() === 'GET' &&
+    CONFIGURATION_PATH.test(path)
+  ) {
+    return configuration;
+  }
   if (request.method() === 'POST') {
     if (path !== `projects/${projectId}/reviews`) {
       return undefined;
@@ -157,6 +196,10 @@ const getGuideSDLCAnswer = (
     return undefined;
   }
   switch (path) {
+    case 'server/platforms':
+      return GUIDE_PLATFORMS;
+    case 'configuration/latestProjectStructureVersion':
+      return GUIDE_LATEST_PROJECT_STRUCTURE_VERSION;
     case 'projects': {
       // the search comes quoted, e.g. "firm"
       const search = (url.searchParams.get('search') ?? '')
@@ -213,16 +256,274 @@ const OTHER_DATA_SPACES = [
   },
 ];
 
+const GUIDE_GROUP_ID = 'org.finos.legend.guide';
+
+/**
+ * The projects in the depot: the guide's own, and the other projects of the
+ * guide's group, with their released versions, oldest first, and the
+ * versions of other projects each one depends on (as
+ * `groupId:artifactId:versionId`). The guide project's own versions are the
+ * tests' stub's.
+ */
+const DEPOT_PROJECTS: {
+  projectId: string;
+  artifactId: string;
+  versions?: Record<string, string[]>;
+}[] = [
+  { projectId: GUIDE_PROJECT_ID, artifactId: 'firm-model' },
+  {
+    projectId: '1043',
+    artifactId: 'trade-model',
+    versions: {
+      '2.2.0': [`${GUIDE_GROUP_ID}:reference-data:1.3.0`],
+      '2.3.0': [`${GUIDE_GROUP_ID}:reference-data:1.4.0`],
+    },
+  },
+  {
+    projectId: '1044',
+    artifactId: 'reference-data',
+    versions: { '1.2.0': [], '1.3.0': [], '1.4.0': [] },
+  },
+  {
+    projectId: '1045',
+    artifactId: 'address-model',
+    versions: {
+      '1.0.0': [`${GUIDE_GROUP_ID}:reference-data:1.3.0`],
+      '1.1.0': [`${GUIDE_GROUP_ID}:reference-data:1.4.0`],
+    },
+  },
+];
+
+const getDepotProject = (
+  groupId: string,
+  artifactId: string,
+): (typeof DEPOT_PROJECTS)[number] | undefined =>
+  groupId === GUIDE_GROUP_ID
+    ? DEPOT_PROJECTS.find((project) => project.artifactId === artifactId)
+    : undefined;
+
+/** A project's version, as the depot's dependency endpoints take it */
+interface DependencyCoordinates {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  exclusions?: { groupId: string; artifactId: string }[];
+}
+
+interface DependencyNode {
+  projectId: string;
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  id: string;
+  forwardEdges: string[];
+  backEdges: string[];
+}
+
+/**
+ * The depot's dependency tree of the direct dependencies: one node per
+ * version (`groupId:artifactId:versionId`), the direct dependencies' as its
+ * roots, without what each one excludes; and a conflict for each project the
+ * tree holds at more than one version
+ */
+const getDependencyTree = (
+  dependencies: DependencyCoordinates[],
+): {
+  graph: { nodes: Record<string, DependencyNode>; rootNodes: string[] };
+  conflicts: { groupId: string; artifactId: string; versions: string[] }[];
+} => {
+  const nodes: Record<string, DependencyNode> = {};
+  const visit = (
+    id: string,
+    parent: DependencyNode | undefined,
+    excluded: Set<string>,
+  ): void => {
+    const [groupId = '', artifactId = '', versionId = ''] = id.split(':');
+    if (excluded.has(`${groupId}:${artifactId}`)) {
+      return;
+    }
+    const known = nodes[id];
+    const node = known ?? {
+      projectId: getDepotProject(groupId, artifactId)?.projectId ?? '',
+      groupId,
+      artifactId,
+      versionId,
+      id,
+      forwardEdges: [],
+      backEdges: [],
+    };
+    nodes[id] = node;
+    if (parent) {
+      parent.forwardEdges.push(id);
+      node.backEdges.push(parent.id);
+    }
+    if (!known) {
+      const project = getDepotProject(groupId, artifactId);
+      for (const dependency of project?.versions?.[versionId] ?? []) {
+        visit(dependency, node, excluded);
+      }
+    }
+  };
+  const rootNodes = dependencies.map((dependency) => {
+    const id = `${dependency.groupId}:${dependency.artifactId}:${dependency.versionId}`;
+    visit(
+      id,
+      undefined,
+      new Set(
+        (dependency.exclusions ?? []).map(
+          (exclusion) => `${exclusion.groupId}:${exclusion.artifactId}`,
+        ),
+      ),
+    );
+    return id;
+  });
+  const versionsByProject = new Map<string, DependencyNode[]>();
+  for (const node of Object.values(nodes)) {
+    const project = `${node.groupId}:${node.artifactId}`;
+    versionsByProject.set(project, [
+      ...(versionsByProject.get(project) ?? []),
+      node,
+    ]);
+  }
+  return {
+    graph: { nodes, rootNodes },
+    conflicts: [...versionsByProject.values()]
+      .filter((versions) => versions.length > 1)
+      .map((versions) => ({
+        groupId: versions[0]?.groupId ?? '',
+        artifactId: versions[0]?.artifactId ?? '',
+        versions: versions.map((node) => node.id),
+      })),
+  };
+};
+
+/**
+ * The newest versions of the direct dependencies, among the latest
+ * `backtrackVersions` of each, whose tree has no conflict: every combination,
+ * newest first, until one has none
+ */
+const resolveCompatibleDependencies = (
+  dependencies: DependencyCoordinates[],
+  backtrackVersions: number,
+): Record<string, unknown> => {
+  const candidates = dependencies.map((dependency) => {
+    const versions = Object.keys(
+      getDepotProject(dependency.groupId, dependency.artifactId)?.versions ??
+        {},
+    )
+      .reverse()
+      .slice(0, backtrackVersions);
+    return versions.length ? versions : [dependency.versionId];
+  });
+  const combinations = candidates.reduce<string[][]>(
+    (result, versions) =>
+      result.flatMap((combination) =>
+        versions.map((version) => [...combination, version]),
+      ),
+    [[]],
+  );
+  const withVersions = (versions: string[]): DependencyCoordinates[] =>
+    dependencies.map((dependency, index) => ({
+      ...dependency,
+      versionId: versions[index] ?? dependency.versionId,
+    }));
+  const compatible = combinations.find(
+    (versions) => !getDependencyTree(withVersions(versions)).conflicts.length,
+  );
+  if (compatible) {
+    return {
+      success: true,
+      resolvedVersions: withVersions(compatible).map(
+        ({ groupId, artifactId, versionId }) => ({
+          groupId,
+          artifactId,
+          versionId,
+        }),
+      ),
+      conflicts: [],
+      failureReason: null,
+    };
+  }
+  const { graph, conflicts } = getDependencyTree(dependencies);
+  return {
+    success: false,
+    resolvedVersions: [],
+    conflicts: conflicts.map((conflict) => ({
+      groupId: conflict.groupId,
+      artifactId: conflict.artifactId,
+      conflictingVersions: conflict.versions.map((id) => ({
+        version: graph.nodes[id]?.versionId,
+        requiredBy: (graph.nodes[id]?.backEdges ?? []).map((parentId) => {
+          const [groupId, artifactId, versionId] = parentId.split(':');
+          return { groupId, artifactId, versionId };
+        }),
+      })),
+    })),
+    failureReason: 'No compatible versions found',
+  };
+};
+
 /**
  * What the guide's screens ask the depot that the tests' stub doesn't
- * answer: the data spaces released in other projects
+ * answer: the data spaces released in other projects; the projects in the
+ * depot and the versions of the other projects; and, for the projects the
+ * guide project depends on, their dependency tree, their elements (none: the
+ * guide's pages show none of them) and versions of them that don't conflict
  */
-const getGuideDepotAnswer = (request: Request): unknown =>
-  request.method() === 'GET' &&
-  decodeURIComponent(getApiPath(request)) ===
-    'classifiers/meta::pure::metamodel::dataSpace::DataSpace'
-    ? OTHER_DATA_SPACES
-    : undefined;
+const getGuideDepotAnswer = (request: Request): unknown => {
+  const path = decodeURIComponent(getApiPath(request));
+  if (request.method() === 'POST') {
+    const dependencies = request.postDataJSON() as DependencyCoordinates[];
+    const parameters = new URL(request.url()).searchParams;
+    switch (path) {
+      case 'projects/analyzeDependencyTreeFromArtifactDependencies':
+        return getDependencyTree(dependencies);
+      case 'projects/dependenciesFromArtifactDependencies': {
+        const { graph } = getDependencyTree(dependencies);
+        return Object.values(graph.nodes)
+          .filter(
+            (node) =>
+              (parameters.get('transitive') !== 'false' ||
+                graph.rootNodes.includes(node.id)) &&
+              (parameters.get('includeOrigin') !== 'false' ||
+                !graph.rootNodes.includes(node.id)),
+          )
+          .map(({ groupId, artifactId, versionId }) => ({
+            groupId,
+            artifactId,
+            versionId,
+            versionedEntity: false,
+            entities: [],
+          }));
+      }
+      case 'projects/resolveCompatibleDependencies':
+        return resolveCompatibleDependencies(
+          dependencies,
+          Number(parameters.get('backtrackVersions') ?? 5),
+        );
+      default:
+        return undefined;
+    }
+  }
+  if (request.method() !== 'GET') {
+    return undefined;
+  }
+  if (path === 'classifiers/meta::pure::metamodel::dataSpace::DataSpace') {
+    return OTHER_DATA_SPACES;
+  }
+  if (path === 'project-configurations') {
+    return DEPOT_PROJECTS.map(({ projectId, artifactId }) => ({
+      projectId,
+      groupId: GUIDE_GROUP_ID,
+      artifactId,
+    }));
+  }
+  const { groupId = '', artifactId = '' } =
+    /^projects\/(?<groupId>[^/]+)\/(?<artifactId>[^/]+)\/versions$/u.exec(path)
+      ?.groups ?? {};
+  const versions = getDepotProject(groupId, artifactId)?.versions;
+  return versions ? Object.keys(versions) : undefined;
+};
 
 /** How the Legend language marks an accessor to an ingest's data set: `#I{…}#` */
 const INGEST_ACCESSOR = 'I';
@@ -354,6 +655,21 @@ const getGuideEngineAnswer = async (request: Request): Promise<unknown> => {
   );
 };
 
+/** What one page of the guide changes of the guide's project */
+export interface GuideProjectOptions {
+  /**
+   * Elements the project has on top of its model, e.g. ones the engine this
+   * runs against can't parse
+   */
+  extraEntities?: Entity[];
+  /**
+   * The project's configuration, instead of the guide project's (see
+   * `GUIDE_PROJECT`), e.g. with dependencies, which the other pages'
+   * explorer would show
+   */
+  configuration?: Record<string, unknown>;
+}
+
 /**
  * Wires Legend Studio's backends up for the guide's screenshots, as the tests
  * do (see `setupStudio()`), on the guide's project, with the SDLC, depot and
@@ -362,13 +678,7 @@ const getGuideEngineAnswer = async (request: Request): Promise<unknown> => {
  */
 export const setupGuideStudio = async (
   page: Page,
-  options: {
-    /**
-     * Elements the project has on top of its model, e.g. ones the engine
-     * this runs against can't parse
-     */
-    extraEntities?: Entity[];
-  } = {},
+  options: GuideProjectOptions = {},
 ): Promise<StudioBackends> => {
   const backends = await setupStudio(page, {
     entities: [
@@ -382,7 +692,11 @@ export const setupGuideStudio = async (
   // falls through to it
   await page.context().route(`${MOCK_SDLC_URL}/**`, async (route) => {
     const request = route.request();
-    const answer = getGuideSDLCAnswer(request, openReviews);
+    const answer = getGuideSDLCAnswer(
+      request,
+      openReviews,
+      options.configuration,
+    );
     if (answer === undefined) {
       await route.fallback();
       return;
@@ -443,7 +757,7 @@ export const hideAssistant = async (page: Page): Promise<void> => {
  */
 export const openGuideWorkspace = async (
   page: Page,
-  options: { extraEntities?: Entity[] } = {},
+  options: GuideProjectOptions = {},
 ): Promise<void> => {
   await setupGuideStudio(page, options);
   await page.goto(GUIDE_WORKSPACE_URL);
