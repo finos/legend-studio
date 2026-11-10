@@ -27,7 +27,9 @@ test('counts execution contexts, executables and diagrams', () => {
     executionContexts: [
       { name: 'prod', mapping: { path: 'test::Mapping' } },
       { name: 'uat', mapping: { path: 'test::Mapping' } },
+      { name: 'legacy', mapping: { path: 'test::LegacyMapping' } },
     ],
+    elements: [{ path: 'test::Trade' }, { path: 'test::Desk' }],
     executables: [
       {
         _type: 'dataSpaceTemplateExecutable',
@@ -47,7 +49,13 @@ test('counts execution contexts, executables and diagrams', () => {
 
   expect(dataSpace.title).toBe('Trades');
   expect(dataSpace.defaultExecutionContext).toBe('prod');
-  expect(dataSpace.executionContextNames).toEqual(['prod', 'uat']);
+  expect(dataSpace.executionContextNames).toEqual(['prod', 'uat', 'legacy']);
+  // each mapping once, however many contexts use it
+  expect(dataSpace.mappingPaths).toEqual([
+    'test::Mapping',
+    'test::LegacyMapping',
+  ]);
+  expect(dataSpace.elementCount).toBe(2);
   expect(dataSpace.executableCount).toBe(2);
   expect(dataSpace.templateQueryCount).toBe(1);
   expect(dataSpace.executableTitles).toEqual([
@@ -76,6 +84,8 @@ test('counts nothing when the lists are missing', () => {
 
   expect(dataSpace.title).toBeUndefined();
   expect(dataSpace.executionContextNames).toEqual([]);
+  expect(dataSpace.mappingPaths).toEqual([]);
+  expect(dataSpace.elementCount).toBe(0);
   expect(dataSpace.executableCount).toBe(0);
   expect(dataSpace.diagramPaths).toEqual([]);
   expect(dataSpace.supportLabel).toBe('None');

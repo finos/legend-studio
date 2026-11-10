@@ -58,6 +58,10 @@ export class DepotDataSpace {
   elementExecutableCount = 0;
   executableTitles: string[] = [];
   diagramPaths: string[] = [];
+  // the elements it lists for its users to see
+  elementCount = 0;
+  // the mappings its execution contexts use, each once
+  mappingPaths: string[] = [];
   supportLabel = DEPOT_DATA_SPACE_NO_SUPPORT_INFO;
 
   static readonly serialization = new SerializationFactory(
@@ -70,9 +74,18 @@ export class DepotDataSpace {
 
   static fromContent(content: PlainObject): DepotDataSpace {
     const dataSpace = DepotDataSpace.serialization.fromJson(content);
-    dataSpace.executionContextNames = readList(content.executionContexts)
+    const executionContexts = readList(content.executionContexts);
+    dataSpace.executionContextNames = executionContexts
       .map((context) => context.name)
       .filter(isString);
+    dataSpace.mappingPaths = Array.from(
+      new Set(
+        executionContexts
+          .map((context) => readPointerPath(context.mapping))
+          .filter(isString),
+      ),
+    );
+    dataSpace.elementCount = readList(content.elements).length;
     readList(content.executables).forEach((executable) => {
       if (executable._type === DEPOT_DATA_SPACE_TEMPLATE_EXECUTABLE_TYPE) {
         dataSpace.templateQueryCount += 1;

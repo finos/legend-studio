@@ -113,7 +113,15 @@ const CONTENT = new Map<string, PlainObject>([
       _type: 'dataSpace',
       title: 'Trades and desks',
       defaultExecutionContext: 'prod',
-      executionContexts: [{ name: 'prod' }, { name: 'uat' }],
+      executionContexts: [
+        { name: 'prod', mapping: { path: 'test::trades::TradeMapping' } },
+        { name: 'uat', mapping: { path: 'test::trades::TradeMapping' } },
+      ],
+      elements: [
+        { path: 'test::trades::Trade' },
+        { path: 'test::trades::Desk' },
+        { path: 'test::trades::Book' },
+      ],
       executables: [
         {
           _type: 'dataSpaceTemplateExecutable',
@@ -221,10 +229,14 @@ test('display data spaces with their execution contexts, executables and diagram
   // execution contexts, executables, diagrams (featured ones included)
   expect(trades('Execution Contexts')).toBe('2');
   expect(trades('Executables')).toBe('2');
+  expect(trades('Template Queries')).toBe('1');
   expect(trades('Diagrams')).toBe('3');
+  expect(trades('Elements')).toBe('3');
+  expect(trades('GroupId:ArtifactId')).toBe('test.group:trades');
   expect(trades('Title')).toBe('Trades and desks');
   expect(trades('Default Execution Context')).toBe('prod');
   expect(trades('Support Info')).toBe('Email');
+  expect(trades('Mappings')).toBe('test::trades::TradeMapping');
   // the names behind the counts
   expect(trades('Execution Context Names')).toBe('prod, uat');
   expect(trades('Executable Titles')).toBe('Trades by desk, Trade service');
@@ -237,6 +249,8 @@ test('display data spaces with their execution contexts, executables and diagram
     cellText('EmptyDataSpace', header);
   expect(empty('Execution Contexts')).toBe('0');
   expect(empty('Executables')).toBe('0');
+  expect(empty('Template Queries')).toBe('0');
   expect(empty('Diagrams')).toBe('0');
+  expect(empty('Elements')).toBe('0');
   expect(empty('Support Info')).toBe('None');
 });

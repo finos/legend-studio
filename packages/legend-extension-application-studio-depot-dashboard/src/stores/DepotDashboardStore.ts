@@ -195,16 +195,19 @@ export enum DATA_SPACE_DASHBOARD_HEADER {
   TITLE = 'Title',
   EXECUTION_CONTEXT_COUNT = 'Execution Contexts',
   EXECUTABLE_COUNT = 'Executables',
+  TEMPLATE_QUERY_COUNT = 'Template Queries',
   DIAGRAM_COUNT = 'Diagrams',
+  ELEMENT_COUNT = 'Elements',
   DEFAULT_EXECUTION_CONTEXT = 'Default Execution Context',
   SUPPORT_INFO = 'Support Info',
+  MAPPINGS = 'Mappings',
   EXECUTION_CONTEXTS = 'Execution Context Names',
   EXECUTABLES = 'Executable Titles',
   DIAGRAMS = 'Diagram Paths',
 }
 
 export enum DATA_PRODUCT_DASHBOARD_HEADER {
-  PROJECT_GAV = 'GroupdId:ArtifactId',
+  PROJECT_GAV = 'GroupId:ArtifactId',
   PROJECT_VERSION = 'Project Version',
   PROJECT_ID = 'Project ID',
   DATA_PRODUCT_NAME = 'Name',
@@ -212,7 +215,7 @@ export enum DATA_PRODUCT_DASHBOARD_HEADER {
   // title/description checks
   DATA_PRODUCT_HAS_TITLE_DESCRIPTION = 'Has Title/Description',
   DATA_PRODUCT_HAS_ACESS_POINT_GROUP_TITLE_DESCRIPTION = 'APG Has Title/Description',
-  DATA_PRODUCT_HAS_ACCESS_POINT_TITLE_DESCRIPTION = 'Acess Point Has Title/Description',
+  DATA_PRODUCT_HAS_ACCESS_POINT_TITLE_DESCRIPTION = 'Access Point Has Title/Description',
   // title/description
   DATA_PRODUCT_TITLE = 'Title',
   DATA_PRODUCT_DESCRIPTION = 'Description',
@@ -220,7 +223,7 @@ export enum DATA_PRODUCT_DASHBOARD_HEADER {
   DATA_PRODUCT_APG_NUMBER = 'Access Point Group Number',
   DATA_PRODUCT_APG_IDS = 'Access Point Group Ids',
   DATA_PRODUCT_APG_TITLE = 'Access Point Group Titles',
-  DATA_PRODUCT_APG_DESCRIPTION = 'Access Point Group Descriptionss',
+  DATA_PRODUCT_APG_DESCRIPTION = 'Access Point Group Descriptions',
   DATA_PRODUCT_APG_NUMBER_OF_APS = 'Access Point Group AP Number',
   DATA_PRODUCT_HAS_MODEL_APG = 'Has Model Access Point Group',
   DATA_PRODUCT_HAS_MODEL_APG_FEATURED_ELEMENTS = 'Model APG Has Featured Elements',

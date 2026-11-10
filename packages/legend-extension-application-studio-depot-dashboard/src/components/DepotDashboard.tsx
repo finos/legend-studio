@@ -723,6 +723,8 @@ const buildGenerationSpecificationColumnDefs =
     },
   ];
 
+// The columns all element types share, from Project ID to Package, come in the
+// same order: first what this type counts, after them what it describes
 const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
   {
     headerName: '#',
@@ -753,9 +755,23 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
     minWidth: 140,
   },
   {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.TEMPLATE_QUERY_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.templateQueryCount,
+    filter: 'agNumberColumnFilter',
+    minWidth: 160,
+  },
+  {
     headerName: DATA_SPACE_DASHBOARD_HEADER.DIAGRAM_COUNT,
     valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
       params.data?.dataSpace?.diagramPaths.length,
+    filter: 'agNumberColumnFilter',
+    minWidth: 130,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.ELEMENT_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.elementCount,
     filter: 'agNumberColumnFilter',
     minWidth: 130,
   },
@@ -765,6 +781,24 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
     minWidth: 250,
   },
   ...buildProjectAccessColumnDefs<DataSpaceEntityState>(),
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.gaProject,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_VERSION,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.summary.versionId,
+    minWidth: 150,
+  },
+  {
+    headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.package,
+    minWidth: 250,
+  },
   {
     headerName: DATA_SPACE_DASHBOARD_HEADER.TITLE,
     valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
@@ -784,22 +818,10 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
     minWidth: 140,
   },
   {
-    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
+    headerName: DATA_SPACE_DASHBOARD_HEADER.MAPPINGS,
     valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
-      params.data?.gaProject,
-    minWidth: 250,
-  },
-  {
-    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_VERSION,
-    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
-      params.data?.summary.versionId,
-    minWidth: 150,
-  },
-  {
-    headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
-    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
-      params.data?.package,
-    minWidth: 250,
+      params.data?.dataSpace?.mappingPaths.join(', '),
+    minWidth: 300,
   },
   {
     headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTION_CONTEXTS,
