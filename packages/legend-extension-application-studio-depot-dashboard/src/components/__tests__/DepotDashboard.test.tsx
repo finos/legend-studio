@@ -30,6 +30,7 @@ import {
 import { createSpy } from '@finos/legend-shared/test';
 import {
   DATA_PRODUCT_DASHBOARD_HEADER,
+  DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
   DepotDashboardStore,
   getDataProductGridValue,
 } from '../../stores/DepotDashboardStore.js';
@@ -41,7 +42,7 @@ import {
   ApplicationStore,
   ApplicationStoreProvider,
 } from '@finos/legend-application';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import {
   TEST__BrowserEnvironmentProvider,
   TEST__getApplicationVersionData,
@@ -391,4 +392,75 @@ test('verifying data product access point groups', async () => {
     depotDashboardStore.applicationStore,
   );
   expect(apgTitles).toBe('First Access Point Group,Second Access Point Group');
+});
+
+test('fetch data products a few at a time and each project once', async () => {
+  const pluginManager = LegendStudioPluginManager.create();
+  const applicationStore = new ApplicationStore(
+    new LegendStudioApplicationConfig({
+      configData: TEST_DATA__studioConfig,
+      versionData: TEST__getApplicationVersionData(),
+      baseAddress: '/studio/',
+    }),
+    pluginManager,
+  );
+  const depotServerClient = new DepotServerClient({
+    serverUrl: 'http://test-depot-server',
+  });
+  // 40 data products in 4 projects
+  const summaries = Array.from({ length: 40 }, (_, index) =>
+    createMockEntitySummary(
+      'test.group',
+      `project${index % 4}`,
+      '1.0.0',
+      `test::DataProduct${index}`,
+    ),
+  );
+  createSpy(
+    depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockImplementation(async () =>
+    summaries.map((summary) =>
+      StoredSummaryEntity.serialization.toJson(summary),
+    ),
+  );
+  let inFlight = 0;
+  let maxInFlight = 0;
+  createSpy(depotServerClient, 'getVersionEntity').mockImplementation(
+    async (groupId, artifactId, versionId, path) => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      inFlight -= 1;
+      return {
+        path,
+        classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+        content: serialize(
+          V1_dataProductModelSchema(
+            pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+          createMockDataProduct('DataProduct'),
+        ),
+      };
+    },
+  );
+  const projectSpy = createSpy(
+    depotServerClient,
+    'getProject',
+  ).mockImplementation(async (groupId, artifactId) => ({
+    projectId: `PROJECT-${artifactId}`,
+    groupId,
+    artifactId,
+  }));
+
+  const state = new DepotDashboardStore(
+    applicationStore as unknown as LegendStudioApplicationStore,
+    depotServerClient,
+  ).dataProductDepotState;
+  await flowResult(state.init());
+  await waitFor(() => expect(state.fetchedCount).toBe(40));
+
+  expect(maxInFlight).toBeGreaterThan(1);
+  expect(maxInFlight).toBeLessThanOrEqual(DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS);
+  expect(projectSpy).toHaveBeenCalledTimes(4);
 });

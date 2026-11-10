@@ -200,6 +200,29 @@ export const getDataProductGridValue = (
   return getDataProductValue(header, dataProduct, applicationStore);
 };
 
+// Requests in flight at once. Starting them all together makes the browser
+// fail them with net::ERR_INSUFFICIENT_RESOURCES.
+export const DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS = 8;
+
+/** Fetches the elements, at most `limit` at a time */
+const fetchAtMost = async <T>(
+  elements: T[],
+  limit: number,
+  fetchElement: (element: T) => Promise<void>,
+): Promise<void> => {
+  let next = 0;
+  const fetchNext = async (): Promise<void> => {
+    while (next < elements.length) {
+      const element = elements[next] as T;
+      next += 1;
+      await fetchElement(element);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(limit, elements.length) }, fetchNext),
+  );
+};
+
 export class DataProductEntityState {
   readonly store: DepotDashboardStore;
   summary: StoredSummaryEntity;
@@ -260,11 +283,10 @@ export class DataProductEntityState {
         ),
         entity.content,
       );
-      const projectData = (yield this.store.depotServerClient.getProject(
+      this.projectId = (yield this.store.getProjectId(
         this.summary.groupId,
         this.summary.artifactId,
-      )) as StoreProjectData;
-      this.projectId = projectData.projectId;
+      )) as string;
       this.dataProduct = product;
       this.store.dataProductDepotState.updateRow(this);
       this.fetchingElementState.complete();
@@ -361,6 +383,8 @@ export class DataProductDepotDashboardState {
 
   setGridApi(gridApi: GridApi): void {
     this.gridApi = gridApi;
+    // rows that finished loading before the grid was ready were not refreshed
+    gridApi.refreshCells({ force: true });
   }
 
   *handleScopeChange(scope: DepotScope): GeneratorFn<void> {
@@ -421,12 +445,12 @@ export class DataProductDepotDashboardState {
         this.dataProductEntitiesStates,
         `Entities summaries have not been fetched`,
       );
-      productProductstates.slice(0, this.MAX_CALLS).forEach((state) => {
-        flowResult(state.fetchElement()).catch((error) => {
-          assertErrorThrown(error);
-          this.store.applicationStore.notificationService.notifyError(error);
-        });
-      });
+      // fetchElement() records its own failure on the row
+      yield fetchAtMost(
+        productProductstates.slice(0, this.MAX_CALLS),
+        DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
+        (state) => flowResult(state.fetchElement()),
+      );
     } catch (error) {
       assertErrorThrown(error);
     }
@@ -486,11 +510,10 @@ export class GenerationSpecificationEntityState {
       )) as Entity;
       const generationSpecification =
         DepotGenerationSpecification.serialization.fromJson(entity.content);
-      const projectData = (yield this.store.depotServerClient.getProject(
+      this.projectId = (yield this.store.getProjectId(
         this.summary.groupId,
         this.summary.artifactId,
-      )) as StoreProjectData;
-      this.projectId = projectData.projectId;
+      )) as string;
       this.generationSpecification = generationSpecification;
       this.store.generationSpecificationDepotState.updateRow(this);
       this.fetchingElementState.complete();
@@ -629,17 +652,15 @@ export class GenerationSpecificationDepotDashboardState {
   }
 
   *fetchEntities(): GeneratorFn<void> {
-    guaranteeNonNullable(
-      this.entityStates,
-      `Entities summaries have not been fetched`,
-    )
-      .slice(0, this.MAX_CALLS)
-      .forEach((state) => {
-        flowResult(state.fetchElement()).catch((error) => {
-          assertErrorThrown(error);
-          this.store.applicationStore.notificationService.notifyError(error);
-        });
-      });
+    // fetchElement() records its own failure on the row
+    yield fetchAtMost(
+      guaranteeNonNullable(
+        this.entityStates,
+        `Entities summaries have not been fetched`,
+      ).slice(0, this.MAX_CALLS),
+      DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
+      (state) => flowResult(state.fetchElement()),
+    );
   }
 }
 
@@ -650,6 +671,8 @@ export class DepotDashboardStore {
   dataProductDepotState: DataProductDepotDashboardState;
   generationSpecificationDepotState: GenerationSpecificationDepotDashboardState;
   elementType = DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
+  // One project lookup per project, shared by its elements of every type
+  private readonly projectIds = new Map<string, Promise<string>>();
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -680,5 +703,19 @@ export class DepotDashboardStore {
 
   setElementType(elementType: DEPOT_DASHBOARD_ELEMENT_TYPE): void {
     this.elementType = elementType;
+  }
+
+  getProjectId(groupId: string, artifactId: string): Promise<string> {
+    const key = generateGAVCoordinates(groupId, artifactId, undefined);
+    let projectId = this.projectIds.get(key);
+    if (!projectId) {
+      projectId = this.depotServerClient
+        .getProject(groupId, artifactId)
+        .then((project) => (project as unknown as StoreProjectData).projectId);
+      // a failed lookup is retried by the next element of that project
+      projectId.catch(() => this.projectIds.delete(key));
+      this.projectIds.set(key, projectId);
+    }
+    return projectId;
   }
 }
