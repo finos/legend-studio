@@ -96,6 +96,7 @@ import {
 import {
   DataProductDataAccessState,
   DataProductViewerState,
+  createDepotIngestDefinitionLoader,
   TerminalProductDataAccessState,
   TerminalProductLayoutState,
   TerminalProductViewerState,
@@ -452,6 +453,14 @@ export class LegendMarketplaceProductViewerStore {
                 );
               }
             : undefined,
+          // an ad-hoc deployment has no version: its flows draw their data
+          // sets by name
+          loadIngestDefinition: projectGAV
+            ? createDepotIngestDefinitionLoader(
+                this.marketplaceBaseStore.depotServerClient,
+                projectGAV,
+              )
+            : undefined,
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -708,6 +717,10 @@ export class LegendMarketplaceProductViewerStore {
                     ),
                   );
                 },
+                loadIngestDefinition: createDepotIngestDefinitionLoader(
+                  this.marketplaceBaseStore.depotServerClient,
+                  projectGAV,
+                ),
               },
               this.marketplaceBaseStore.registryServerClient,
             );

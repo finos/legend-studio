@@ -11,6 +11,7 @@
     { "path": "../legend-application-marketplace" },
     { "path": "../legend-application" },
     { "path": "../legend-art" },
+    { "path": "../legend-cube-builder" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-lego" },

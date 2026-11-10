@@ -660,6 +660,83 @@
       border-color: var(--color-hclight-grey-20);
     }
 
+    &__definition-switch {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__definition-switch__option {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__definition-switch__option:hover,
+    &__definition-switch__option--active {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__definition-switch__option--active {
+      background: var(--color-hclight-white);
+      box-shadow: 0 0 0 0.1rem var(--color-hclight-grey-20);
+    }
+
+    &__definition-switch__option[aria-disabled='true'] {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__definition__note {
+      background: var(--color-hclight-white);
+      border-left-color: var(--color-hclight-blue-60);
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__definition__note--warning {
+      background: var(--color-hclight-yellow-5);
+      border-left-color: var(--color-hclight-yellow-30);
+    }
+
+    &__definition__note__details {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__definition-flow {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__definition-flow--loading {
+      color: var(--color-hclight-grey-60);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__definition-flow__failure {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-grey-20);
+      border-left-color: var(--color-hclight-red-60);
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__definition-flow__failure__text {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__definition-flow__failure__action {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-grey-30);
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__definition-flow__failure__action:hover {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__definition-flow__failure__action--primary {
+      background: var(--color-hclight-blue-60);
+      border-color: transparent;
+      color: var(--color-hclight-white);
+    }
+
+    &__definition-flow__failure__action--primary:hover {
+      background: var(--color-hclight-blue-70);
+    }
+
     &__pure-query__inline-code {
       background: var(--color-hclight-grey-10);
       color: var(--color-hclight-grey-80);

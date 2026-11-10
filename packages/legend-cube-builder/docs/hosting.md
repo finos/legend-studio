@@ -227,7 +227,8 @@ return reading.kind === 'flow' ? (
 - **The canvas:** it fills its container and pans. Its controls, bottom right, zoom, as pinching does; the wheel
   scrolls the host's page. A click, Enter or Space on a step calls `onSelectStep`, and `selectedStepId` outlines one.
   It has no step editor, menu, palette or minimap, and needs no `CubeEditorState`, application store or drag and
-  drop provider.
+  drop provider. Its colours, React Flow's included, come from Cube's theme tokens, so they follow the theme class
+  around it; `colorMode` sets only React Flow's own defaults.
 - **Styles:** as for the page (below): the builder's `lib/index.css`, and the host's Tailwind build scanning the
   builder's sources.
 
