@@ -1009,3 +1009,59 @@ test('open a snapshot at the head of its project', async () => {
     ),
   );
 });
+
+test('show the review in place of Flatten once flattened, through Refresh', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  const spies = spyFlattenSdlc(sdlcServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await openFlatten(ALPHA_PATH);
+  await screen.findByText(
+    'Master matches 1.0.0. 4 stages, 5 generation elements.',
+  );
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+  });
+  await waitFor(() => expect(spies.createReviewSpy).toHaveBeenCalled());
+  await act(async () => {
+    spies.resolveReview();
+  });
+  await screen.findByRole('link', { name: /Open the review in Studio/ });
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+  });
+
+  const expectReviewLinks = async (): Promise<void> => {
+    const flatten = await screen.findByTitle('Flattened in review 42');
+    expect(flatten.hasAttribute('disabled')).toBe(true);
+    expect(
+      screen
+        .getByRole('link', {
+          name: `Open the merge request for ${ALPHA_PATH} in GitLab`,
+        })
+        .getAttribute('href'),
+    ).toBe('https://gitlab.example.com/alpha/-/merge_requests/42');
+    expect(
+      screen
+        .getByRole('link', {
+          name: `Open the review for ${ALPHA_PATH} in Studio`,
+        })
+        .getAttribute('href'),
+    ).toContain('/review/PROJECT-alpha/42');
+  };
+  await expectReviewLinks();
+  // the other rows keep their Flatten
+  expect(
+    screen.getAllByTitle('One stage or none: nothing to flatten'),
+  ).toHaveLength(1);
+
+  // Refresh makes new rows, which still show the review
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+  });
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  await expectReviewLinks();
+});

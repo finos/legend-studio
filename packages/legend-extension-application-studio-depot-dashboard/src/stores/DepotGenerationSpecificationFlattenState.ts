@@ -517,6 +517,9 @@ export class DepotGenerationSpecificationFlattenState {
       }),
     );
     this.setReview(review);
+    // the row shows the review instead of Flatten from now on
+    this.store.recordFlattenReview(this.projectId, this.path, review);
+    this.entityState.updateRow();
     return { message: review.title };
   }
 

@@ -56,6 +56,7 @@ import {
 } from './DepotDataSpace.js';
 import { DepotGenerationSpecificationFlattenState } from './DepotGenerationSpecificationFlattenState.js';
 import {
+  type Review,
   AuthorizableProjectAction,
   ProjectAccessRole,
   type SDLCServerClient,
@@ -781,6 +782,11 @@ export class GenerationSpecificationEntityState extends DepotDashboardEntityStat
     );
   }
 
+  /** The review Flatten opened for this specification in this page, if any */
+  get flattenReview(): Review | undefined {
+    return this.store.getFlattenReview(this.projectId, this.summary.path);
+  }
+
   /** Only a specification with more than one stage has stages to flatten */
   get hasStagesToFlatten(): boolean {
     return (this.generationSpecification?.stageCount ?? 0) > 1;
@@ -880,6 +886,9 @@ export class DepotDashboardStore {
   dataSpaceDepotState: DataSpaceDepotDashboardState;
   generationSpecificationDepotState: GenerationSpecificationDepotDashboardState;
   elementType = DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
+  // The reviews Flatten opened in this page, by project and element path: kept
+  // through Refresh and switching tabs, until the page reloads
+  private readonly flattenReviews = new Map<string, Review>();
   // One project lookup per project, shared by its elements of every type
   private readonly projectIds = new Map<string, Promise<string>>();
   // One SDLC access lookup per project
@@ -926,11 +935,25 @@ export class DepotDashboardStore {
       generationSpecificationDepotState: observable,
       elementType: observable,
       setElementType: action,
+      recordFlattenReview: action,
     });
   }
 
   setElementType(elementType: DEPOT_DASHBOARD_ELEMENT_TYPE): void {
     this.elementType = elementType;
+  }
+
+  recordFlattenReview(projectId: string, path: string, review: Review): void {
+    this.flattenReviews.set(`${projectId}/${path}`, review);
+  }
+
+  getFlattenReview(
+    projectId: string | undefined,
+    path: string,
+  ): Review | undefined {
+    return projectId === undefined
+      ? undefined
+      : this.flattenReviews.get(`${projectId}/${path}`);
   }
 
   getDepotState(

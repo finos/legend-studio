@@ -21,6 +21,7 @@ import {
 } from './DepotDashboardProvider.js';
 import {
   ActivityBarMenu,
+  generateReviewRoute,
   generateViewEntityRoute,
   generateViewVersionRoute,
 } from '@finos/legend-application-studio';
@@ -30,6 +31,8 @@ import {
   CircleNotchIcon,
   clsx,
   CopyIcon,
+  GitPullRequestIcon,
+  GitlabIcon,
   CustomSelectorInput,
   InfoCircleIcon,
   LinkIcon,
@@ -593,6 +596,9 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
 
 // Whoever can create a workspace in the project can flatten a specification
 // that has more than one stage
+// Whoever can create a workspace in the project can flatten a specification
+// that has more than one stage. Once flattened in this page, the row links to
+// the review, in GitLab and in Studio, instead.
 const FlattenCellRenderer = (
   params: DataGridCellRendererParams<GenerationSpecificationEntityState>,
 ) => {
@@ -600,30 +606,67 @@ const FlattenCellRenderer = (
   if (!entityState?.canFlatten) {
     return null;
   }
+  const review = entityState.flattenReview;
+  const canFlatten = entityState.hasStagesToFlatten && !review;
+  const linkStyle: React.CSSProperties = {
+    display: 'flex',
+    color: 'inherit',
+    opacity: 0.8,
+  };
   return (
-    <button
-      type="button"
-      className="scope-toggle-btn"
-      style={{
-        padding: '0 0.8em',
-        lineHeight: '2.2rem',
-        opacity: entityState.hasStagesToFlatten ? 1 : 0.4,
-        cursor: entityState.hasStagesToFlatten ? 'pointer' : 'not-allowed',
-      }}
-      disabled={!entityState.hasStagesToFlatten}
-      title={
-        entityState.hasStagesToFlatten
-          ? `Flatten the stages of ${entityState.summary.path} in a review`
-          : 'One stage or none: nothing to flatten'
-      }
-      onClick={() =>
-        entityState.store.generationSpecificationDepotState.openFlatten(
-          entityState,
-        )
-      }
-    >
-      Flatten
-    </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button
+        type="button"
+        className="scope-toggle-btn"
+        style={{
+          padding: '0 0.8em',
+          lineHeight: '2.2rem',
+          opacity: canFlatten ? 1 : 0.4,
+          cursor: canFlatten ? 'pointer' : 'not-allowed',
+        }}
+        disabled={!canFlatten}
+        title={
+          review
+            ? `Flattened in review ${review.id}`
+            : entityState.hasStagesToFlatten
+              ? `Flatten the stages of ${entityState.summary.path} in a review`
+              : 'One stage or none: nothing to flatten'
+        }
+        onClick={() =>
+          entityState.store.generationSpecificationDepotState.openFlatten(
+            entityState,
+          )
+        }
+      >
+        Flatten
+      </button>
+      {review?.webURL && (
+        <a
+          href={review.webURL}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the merge request in GitLab"
+          aria-label={`Open the merge request for ${entityState.summary.path} in GitLab`}
+          style={linkStyle}
+        >
+          <GitlabIcon />
+        </a>
+      )}
+      {review && (
+        <a
+          href={entityState.store.applicationStore.navigationService.navigator.generateAddress(
+            generateReviewRoute(review.projectId, review.id),
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the review in Studio"
+          aria-label={`Open the review for ${entityState.summary.path} in Studio`}
+          style={linkStyle}
+        >
+          <GitPullRequestIcon />
+        </a>
+      )}
+    </div>
   );
 };
 
@@ -686,7 +729,7 @@ const buildGenerationSpecificationColumnDefs =
       suppressHeaderMenuButton: true,
       // an action: always in view, however far the grid is scrolled
       pinned: 'right',
-      width: 120,
+      width: 170,
     },
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
