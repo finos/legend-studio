@@ -22,6 +22,7 @@ export * from './__lib__/LegendStudioEvent.js';
 export {
   generateEditorRoute,
   generateReviewRoute,
+  generateViewEntityRoute,
   generateViewProjectRoute,
   generateViewVersionRoute,
   EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataSpaceViewUrl,

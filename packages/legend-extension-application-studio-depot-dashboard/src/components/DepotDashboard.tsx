@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   useDepotSetupStore,
   withDepotSetupStore,
 } from './DepotDashboardProvider.js';
 import {
   ActivityBarMenu,
+  generateViewEntityRoute,
   generateViewVersionRoute,
 } from '@finos/legend-application-studio';
 import {
@@ -70,7 +71,7 @@ import {
   V1_dataProductAcessPointGroupsHasTitleAndDescription,
   V1_dataProductHasTitleAndDescription,
 } from '@finos/legend-graph';
-import { DepotScope } from '@finos/legend-server-depot';
+import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
 import { DepotGenerationSpecificationFlattenModal } from './DepotGenerationSpecificationFlattenModal.js';
 
 const EmptyCellRenderer = (col: string, message: string) => (
@@ -120,6 +121,16 @@ type DepotDashboardProjectRow = {
   store: DepotDashboardStore;
 };
 
+// The element in Studio's project viewer: at its version, or for a snapshot,
+// at the project's head, since Studio has no view of a snapshot version
+const generateElementViewRoute = (
+  projectId: string,
+  summary: { versionId: string; path: string },
+): string =>
+  isSnapshotVersion(summary.versionId)
+    ? generateViewEntityRoute(projectId, summary.path)
+    : generateViewVersionRoute(projectId, summary.versionId, summary.path);
+
 // The element's name opens it in Studio's project viewer (in a new tab, as the
 // project link does); the button next to it copies the element's full path.
 const ElementNameCellRenderer = (
@@ -132,11 +143,7 @@ const ElementNameCellRenderer = (
   const applicationStore = row.store.applicationStore;
   const url = row.projectId
     ? applicationStore.navigationService.navigator.generateAddress(
-        generateViewVersionRoute(
-          row.projectId,
-          row.summary.versionId,
-          row.summary.path,
-        ),
+        generateElementViewRoute(row.projectId, row.summary),
       )
     : undefined;
   const copyPath = (): void => {
@@ -219,11 +226,7 @@ const ProjectIdCellRenderer = (
     _projectId: string,
   ): string => {
     return _entityState.store.applicationStore.navigationService.navigator.generateAddress(
-      generateViewVersionRoute(
-        _projectId,
-        _entityState.summary.versionId,
-        _entityState.summary.path,
-      ),
+      generateElementViewRoute(_projectId, _entityState.summary),
     );
   };
 
@@ -843,6 +846,13 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
   },
 ];
 
+const DEPOT_DASHBOARD_DEFAULT_COL_DEF: ColDef = {
+  filter: true, // Enable filters for all columns
+  sortable: true, // Enable sorting for all columns
+  resizable: true, // Allow column resizing
+  floatingFilter: true, // Show floating filter row below headers
+};
+
 const PROGRESS_LABEL: Record<DEPOT_DASHBOARD_ELEMENT_TYPE, string> = {
   [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT]: 'Data Products',
   [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE]: 'Data Spaces',
@@ -1109,6 +1119,16 @@ export const DepotDashboard = withDepotSetupStore(
       }
     }, [scopedState, depotSetupStore.applicationStore.alertUnhandledError]);
 
+    // Built once: the grids get new column definitions on every render
+    // otherwise, e.g. when the flatten modal opens, and ag-grid then drops
+    // their sort and filters
+    const dataProductColumnDefs = useMemo(() => buildColumnDefs(), []);
+    const dataSpaceColumnDefs = useMemo(() => buildDataSpaceColumnDefs(), []);
+    const generationSpecificationColumnDefs = useMemo(
+      () => buildGenerationSpecificationColumnDefs(),
+      [],
+    );
+
     const renderGrid = (): React.ReactNode => {
       switch (depotSetupStore.elementType) {
         case DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE:
@@ -1129,13 +1149,8 @@ export const DepotDashboard = withDepotSetupStore(
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
-              defaultColDef={{
-                filter: true,
-                sortable: true,
-                resizable: true,
-                floatingFilter: true,
-              }}
-              columnDefs={buildDataSpaceColumnDefs()}
+              defaultColDef={DEPOT_DASHBOARD_DEFAULT_COL_DEF}
+              columnDefs={dataSpaceColumnDefs}
             />
           );
         case DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION:
@@ -1156,13 +1171,8 @@ export const DepotDashboard = withDepotSetupStore(
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
-              defaultColDef={{
-                filter: true,
-                sortable: true,
-                resizable: true,
-                floatingFilter: true,
-              }}
-              columnDefs={buildGenerationSpecificationColumnDefs()}
+              defaultColDef={DEPOT_DASHBOARD_DEFAULT_COL_DEF}
+              columnDefs={generationSpecificationColumnDefs}
             />
           );
         default:
@@ -1189,13 +1199,8 @@ export const DepotDashboard = withDepotSetupStore(
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
-              defaultColDef={{
-                filter: true, // Enable filters for all columns
-                sortable: true, // Enable sorting for all columns
-                resizable: true, // Allow column resizing
-                floatingFilter: true, // Show floating filter row below headers
-              }}
-              columnDefs={buildColumnDefs()}
+              defaultColDef={DEPOT_DASHBOARD_DEFAULT_COL_DEF}
+              columnDefs={dataProductColumnDefs}
             />
           );
       }
