@@ -218,3 +218,28 @@ The engine tests in `src/__tests__/` import `V1_*` classes there, as an exceptio
 - **Export:** `src/__tests__/CubeExport.engine-roundtrip-test.ts` reads the engine's CSV. The engine test client sends
   the serialization format the client asks for (Studio's CSV is the engine's `CSV_TRANSFORMED`). jsdom has no
   `URL.createObjectURL`, so a test that saves a file stubs it (`CubeExportState.test.ts`).
+
+### Saved cubes
+
+- **In memory.** `new InMemoryCubeStore(user)` (`src/__test-utils__/InMemoryCubeStore.ts`) is a host's `store` for
+  state and page tests: the engine store's refusals and messages, ids `cube-1`, `cube-2`…, `asUser(user)` for another
+  caller on the same cubes, `failNext(kind, message)`, `hold()` and `releaseHeld()` for pending states, and `calls`.
+  Set the viewer with `host.applicationStore.identityService.setCurrentUser(user)`. The test host has no store, as
+  Studio, so the other page tests see no Save or Load and no question about unsaved changes.
+- **The contract.** `runCubeStoreContract(label, makeSubject)` (`src/__test-utils__/CubeStoreContract.ts`) is what any
+  store does; `InMemoryCubeStore.test.ts` runs it in the core group, so the in-memory store keeps behaving as the
+  engine's. `V1_LegendCubeStore.test.ts` checks the adapter's URLs, bodies and error kinds against a mocked client.
+- **The engine's store, by hand (`cube-local`):** `src/__tests__/CubeStore.cube-local-test.ts` runs the contract
+  against an engine with the Cube store on `localhost:6301`, e.g. one built from legend-engine's Cube store with a
+  Mongo (PLAN §11.13, M8.3): `TEST_GROUP=cube-local yarn workspace @finos/legend-cube-builder test CubeStore`. Locally
+  every caller is `anonymous`, so the owners case runs on the in-memory store only. CI's engine image has neither the
+  store nor a Mongo.
+- **Legend Analytics' address.** `LegendAnalyticsWebApplication.test.tsx` opens `/analytics/cube/<id>` and
+  `?queryId=<id>` on the real store, which the test environment can't reach: the page shows "Error loading query!" and
+  keeps the address.
+- **The clipboard.** jsdom has no clipboard to read, so Paste opens the Import dialog; a test that pastes defines
+  `navigator.clipboard` (`CubePersistenceState.test.ts`).
+- **Waiting on state.** A MobX `when` predicate must read an observable first: one that reads a plain array first (the
+  in-memory store's `calls`) short-circuits and is never run again.
+- **The question.** While Cube's question dialog closes, MUI hides the dialog under it from role queries: wait with
+  `findByRole`.

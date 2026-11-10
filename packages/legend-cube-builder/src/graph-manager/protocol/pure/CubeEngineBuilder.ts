@@ -47,6 +47,7 @@ import type {
 } from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
 import type { CubeProjectCatalog } from '../../CubeProjectCatalog.js';
+import type { CubeStore } from '../../CubeStore.js';
 import type { CubeServiceCatalog } from '../../CubeServiceCatalog.js';
 import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnvironmentResolver.js';
 import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
@@ -54,6 +55,7 @@ import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCa
 import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
 import { V1_CUBE_DEPLOYMENT_DIRECTORY_ENVIRONMENT } from './v1/V1_CubeDeploymentName.js';
 import { V1_LegendCubeProjectCatalog } from './v1/V1_LegendCubeProjectCatalog.js';
+import { V1_LegendCubeStore } from './v1/V1_LegendCubeStore.js';
 import { V1_LegendCubeServiceCatalog } from './v1/V1_LegendCubeServiceCatalog.js';
 import { V1_readCubeIngestDataSets } from './v1/V1_CubeIngestDefinition.js';
 import { V1_serializeCubeLambda } from './v1/V1_CubeLambdaSerializer.js';
@@ -198,6 +200,16 @@ export const buildCubeServiceCatalog = (
   clientSettings?.register(engineClient);
   return new V1_LegendCubeServiceCatalog(() => engineClient.getServicesInfo());
 };
+
+/**
+ * The saved cubes of a host (PLAN §11.13): the engine's Cube store, on the
+ * server the host keeps its queries on (`queryBaseUrl`, else `baseUrl`)
+ */
+export const buildCubeStore = (
+  config: CubeEngineConfig,
+  tracerService: TracerService,
+  clientSettings?: CubeEngineClientSettings,
+): CubeStore => new V1_LegendCubeStore(config, tracerService, clientSettings);
 
 /** The viewer's lakehouse environment, which the engine needs to run data product cubes */
 export const buildCubeLakehouseEnvironment = (

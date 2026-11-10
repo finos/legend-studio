@@ -60,7 +60,10 @@ export class DefaultNavigator implements ApplicationNavigator {
     );
   }
 
-  updateCurrentLocation(location: NavigationLocation): void {
+  updateCurrentLocation(
+    location: NavigationLocation,
+    options?: { replace?: boolean | undefined },
+  ): void {
     throw new UnsupportedOperationError(
       `Navigator does not support this operation`,
     );
