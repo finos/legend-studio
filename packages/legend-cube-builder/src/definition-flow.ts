@@ -29,6 +29,7 @@ export {
   readCubeDefinition,
   type CubeDefinitionDataSet,
   type CubeDefinitionFlowReading,
+  type CubeDefinitionParameter,
   type CubeDefinitionReading,
   type CubeDefinitionReadOptions,
   type CubeDefinitionRefusal,

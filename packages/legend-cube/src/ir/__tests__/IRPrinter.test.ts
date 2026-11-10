@@ -38,7 +38,7 @@ import {
   storeAccessor,
   variable,
 } from '../CubeIR.js';
-import { printIR } from '../IRPrinter.js';
+import { printIR, printIRLambdaText } from '../IRPrinter.js';
 
 const integer = (value: string): IR => literal({ kind: 'integer', value });
 const text = (value: string): IR => literal({ kind: 'string', value });
@@ -405,6 +405,30 @@ describe(unitTest('IR printer'), () => {
     expect(printIR({ k: 'raw', json: { _type: 'integer', value: 1 } })).toBe(
       '<raw {"_type":"integer","value":1}>',
     );
+  });
+
+  test("Prints a lambda as a step shows its expression, without braces, as printIR prints the lambda's", () => {
+    const condition = lambda(
+      ['p'],
+      [
+        func('and', [
+          func('equal', [columnAccess('p', 'DATE'), variable('asOf')]),
+          func('in', [columnAccess('p', 'BOOK'), variable('books')]),
+        ]),
+      ],
+    ) as Extract<IR, { k: 'lambda' }>;
+    expect(printIRLambdaText(condition)).toBe(
+      'p | ($p.DATE == $asOf) && $p.BOOK->in($books)',
+    );
+    expect(`{${printIRLambdaText(condition)}}`).toBe(printIR(condition));
+    expect(
+      printIRLambdaText(
+        lambda(
+          ['x'],
+          [letBinding('y', integer('1')), variable('y')],
+        ) as Extract<IR, { k: 'lambda' }>,
+      ),
+    ).toBe('x | let y = 1; $y;');
   });
 
   test('Prints lets as statements of a lambda, which reads them by name', () => {

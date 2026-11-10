@@ -45,7 +45,7 @@ import {
 } from '../../stores/editors/CubeExtendDraft.js';
 import { columnAccessOf } from '../../stores/CubePureText.js';
 import { CubeButton } from '../CubeButton.js';
-import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { CubeColumnTypeIcon } from '../CubeColumnTypeIcon.js';
 import {
   CubeJsonFieldsToggle,
   CubeJsonFieldsTree,

@@ -17,12 +17,15 @@
 import { describe, expect, test } from '@jest/globals';
 import {
   buildSchemasAndValidity,
-  CUBE_LAMBDA_PARTS_MESSAGE,
   CUBE_QUERY_READER_MESSAGE,
   CubeLambdaReadErrorKind,
+  ExpressionFilter,
+  Extend,
+  Filter,
   Group,
   IngestDatasetSource,
   isSameCubeIR,
+  TypeFamily,
   type IR,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
@@ -72,6 +75,67 @@ const queryOf = (body: unknown): unknown => ({
 /** The relation of an access point's definition, as JSON */
 const relationOf = (key: keyof typeof accessPoints): unknown =>
   (accessPoints[key] as { body: unknown[] }).body[0];
+
+/** A parameter as the engine's grammar declares one: its name, type and multiplicity */
+const parameterOf = (
+  name: string,
+  type?: string,
+  multiplicity: [number, number | undefined] = [1, 1],
+): unknown => ({
+  _type: 'var',
+  name,
+  ...(type === undefined
+    ? {}
+    : {
+        genericType: {
+          rawType: { _type: 'packageableType', fullPath: type },
+          typeArguments: [],
+          multiplicityArguments: [],
+          typeVariableValues: [],
+        },
+      }),
+  multiplicity: {
+    lowerBound: multiplicity[0],
+    ...(multiplicity[1] === undefined ? {} : { upperBound: multiplicity[1] }),
+  },
+});
+
+/** A lambda of one query that takes parameters, as the engine's grammar gives one */
+const queryWith = (parameters: unknown[], body: unknown): unknown => ({
+  _type: 'lambda',
+  parameters,
+  body: [body],
+});
+
+const variableOf = (name: string): unknown => ({ _type: 'var', name });
+
+/** `<relation>->filter(p|<predicate>)` */
+const filterOf = (relation: unknown, predicate: unknown): unknown => ({
+  _type: 'func',
+  function: 'filter',
+  parameters: [
+    relation,
+    {
+      _type: 'lambda',
+      parameters: [variableOf('p')],
+      body: [predicate],
+    },
+  ],
+});
+
+/** `$p.<column>` */
+const columnOf = (column: string): unknown => ({
+  _type: 'property',
+  property: column,
+  parameters: [variableOf('p')],
+});
+
+/** The data set the access points read, `#I{…EOD_POSITIONS}#` */
+const EOD_POSITIONS = {
+  _type: 'classInstance',
+  type: 'I',
+  value: { metadata: false, path: [INGEST_DEFINITION, 'EOD_POSITIONS'] },
+};
 
 describe("Reading an access point's definition to draw it", () => {
   test('Reads it with no engine, its data sets typed from their ingest definition, every step checked', () => {
@@ -213,26 +277,306 @@ describe("Reading an access point's definition to draw it", () => {
         accessPoints.POSITIONS_BY_LEGAL_ENTITY,
       ),
     ).toEqual([INGEST_DEFINITION]);
-    // a definition Cube can't read reads none it can say
+    // one with parameters too
     expect(
       findCubeDefinitionIngestDefinitions(accessPoints.CLIENT_POSITIONS),
+    ).toEqual([INGEST_DEFINITION]);
+    // a definition Cube can't read reads none it can say
+    expect(
+      findCubeDefinitionIngestDefinitions({
+        _type: 'lambda',
+        parameters: [],
+        body: [EOD_POSITIONS, EOD_POSITIONS],
+      }),
     ).toEqual([]);
     expect(findCubeDefinitionIngestDefinitions({})).toEqual([]);
+  });
+
+  test("Shows a filter's condition Cube's Filter doesn't write as it is, checked like the steps after it", () => {
+    const flow = asFlow(
+      readCubeDefinition(
+        queryOf(
+          filterOf(EOD_POSITIONS, {
+            _type: 'func',
+            function: 'equal',
+            parameters: [columnOf('BOOK_ID'), columnOf('DESK')],
+          }),
+        ),
+        withIngestDefinition,
+      ),
+    );
+    const filter = flow.query.getNode(flow.outputStepId) as ExpressionFilter;
+    expect(filter).toBeInstanceOf(ExpressionFilter);
+    // no engine gives its text: Cube prints it
+    expect(filter.code).toBe('p | $p.BOOK_ID == $p.DESK');
+    expect(filter.isUnset()).toBe(false);
+    expect(flow.uncheckedStepIds).toEqual([]);
+    expect([...buildSchemasAndValidity(flow.query).validity.values()]).toEqual([
+      [],
+      [],
+    ]);
+    expect(flow.parameters).toEqual([]);
+  });
+});
+
+describe("Reading a definition's parameters", () => {
+  test('Reads a filter on parameters as a filter by expression, and lists each parameter with its type and the steps that read it', () => {
+    const flow = asFlow(
+      readCubeDefinition(accessPoints.CLIENT_POSITIONS, withIngestDefinition),
+    );
+    expect(stepTypes(flow)).toEqual([
+      IngestDatasetSource.TYPE,
+      ExpressionFilter.TYPE,
+      'restrict',
+    ]);
+    const [source, filter, restrict] = flow.steps;
+    expect(flow.outputStepId).toBe(restrict?.id);
+    const node = flow.query.getNode(filter?.id ?? '') as ExpressionFilter;
+    expect(node.code).toBe(
+      'p | ($p.BUSINESS_DATE == $businessDate) && ($p.CLIENT_ACCOUNT_ID == $clientAccountId)',
+    );
+    expect(
+      (flow.query.getNode(source?.id ?? '') as IngestDatasetSource).resolution
+        .kind,
+    ).toBe('resolved');
+    expect(flow.uncheckedStepIds).toEqual([]);
+    expect(flow.unknownDataSets).toEqual([]);
+    const { schemas, validity } = buildSchemasAndValidity(flow.query);
+    expect([...validity.values()].flat()).toEqual([]);
+    expect(schemas.get(flow.outputStepId)?.names()).toEqual([
+      'BUSINESS_DATE',
+      'CLIENT_ACCOUNT_ID',
+      'INSTRUMENT_ID',
+      'QUANTITY',
+    ]);
+    expect(
+      flow.parameters.map((parameter) => [
+        parameter.name,
+        parameter.type?.fullName,
+        parameter.type?.family,
+        parameter.multiplicity,
+        parameter.stepIds,
+      ]),
+    ).toEqual([
+      [
+        'businessDate',
+        'StrictDate',
+        TypeFamily.STRICT_DATE,
+        '[1]',
+        [filter?.id],
+      ],
+      ['clientAccountId', 'String', TypeFamily.STRING, '[1]', [filter?.id]],
+    ]);
+  });
+
+  test("Lists a parameter no step reads, one of a type Cube doesn't know, and one with no type", () => {
+    const flow = asFlow(
+      readCubeDefinition(
+        queryWith(
+          [
+            parameterOf('desk', 'meta::pure::precisePrimitives::Varchar'),
+            parameterOf('status', 'markets::PositionStatus', [0, 1]),
+            parameterOf('asOf'),
+          ],
+          filterOf(EOD_POSITIONS, {
+            _type: 'func',
+            function: 'equal',
+            parameters: [columnOf('DESK'), variableOf('desk')],
+          }),
+        ),
+        withIngestDefinition,
+      ),
+    );
+    const filter = flow.steps[1];
+    expect(
+      flow.parameters.map((parameter) => [
+        parameter.name,
+        parameter.type?.displayName,
+        parameter.type?.family,
+        parameter.multiplicity,
+        parameter.stepIds,
+      ]),
+    ).toEqual([
+      ['desk', 'Varchar', TypeFamily.OPAQUE, '[1]', [filter?.id]],
+      ['status', 'PositionStatus', TypeFamily.OPAQUE, '[0..1]', []],
+      ['asOf', undefined, undefined, '[1]', []],
+    ]);
+  });
+
+  test('Reads a parameter of many values, and one in a new column, where the steps keep the Pure as it is', () => {
+    const flow = asFlow(
+      readCubeDefinition(
+        queryWith(
+          [
+            parameterOf('books', 'String', [0, undefined]),
+            parameterOf('asOf', 'StrictDate'),
+          ],
+          {
+            _type: 'func',
+            function: 'extend',
+            parameters: [
+              filterOf(EOD_POSITIONS, {
+                _type: 'func',
+                function: 'in',
+                parameters: [columnOf('BOOK_ID'), variableOf('books')],
+              }),
+              {
+                _type: 'classInstance',
+                type: 'colSpec',
+                value: {
+                  name: 'AS_OF',
+                  function1: {
+                    _type: 'lambda',
+                    parameters: [variableOf('p')],
+                    body: [variableOf('asOf')],
+                  },
+                },
+              },
+            ],
+          },
+        ),
+        withIngestDefinition,
+      ),
+    );
+    expect(stepTypes(flow)).toEqual([
+      IngestDatasetSource.TYPE,
+      ExpressionFilter.TYPE,
+      Extend.TYPE,
+    ]);
+    const [, filter, extend] = flow.steps;
+    expect(
+      flow.parameters.map((parameter) => [
+        parameter.name,
+        parameter.multiplicity,
+        parameter.stepIds,
+      ]),
+    ).toEqual([
+      ['books', '[*]', [filter?.id]],
+      ['asOf', '[1]', [extend?.id]],
+    ]);
+  });
+
+  test("Reads a lambda's own parameter named like the definition's as the lambda's", () => {
+    const flow = asFlow(
+      readCubeDefinition(
+        queryWith(
+          [parameterOf('p', 'String')],
+          filterOf(EOD_POSITIONS, {
+            _type: 'func',
+            function: 'equal',
+            parameters: [
+              columnOf('STATUS'),
+              { _type: 'string', value: 'SIGNED_OFF' },
+            ],
+          }),
+        ),
+        withIngestDefinition,
+      ),
+    );
+    expect(flow.query.getNode(flow.outputStepId)).toBeInstanceOf(Filter);
+    expect(flow.parameters.map((parameter) => parameter.stepIds)).toEqual([[]]);
   });
 });
 
 describe("Refusing a definition Cube can't draw", () => {
-  test('Refuses a definition with parameters, with a kind a host can count', () => {
+  test("Refuses a parameter where Cube can't show one, naming the function, with a kind a host can count", () => {
+    const n = parameterOf('n', 'Integer');
+    const limit = (relation: unknown, size: unknown): unknown => ({
+      _type: 'func',
+      function: 'limit',
+      parameters: [relation, size],
+    });
+    // a size, below a filter on another parameter Cube does show
     expect(
-      readCubeDefinition(accessPoints.CLIENT_POSITIONS, withIngestDefinition),
+      readCubeDefinition(
+        queryWith(
+          [parameterOf('desk', 'String'), n],
+          limit(
+            filterOf(EOD_POSITIONS, {
+              _type: 'func',
+              function: 'equal',
+              parameters: [columnOf('DESK'), variableOf('desk')],
+            }),
+            variableOf('n'),
+          ),
+        ),
+        withIngestDefinition,
+      ),
     ).toEqual({
       kind: 'refused',
       reason: CubeLambdaReadErrorKind.PARAMETERS,
-      message: CUBE_LAMBDA_PARTS_MESSAGE.PARAMETERS([
-        'businessDate',
-        'clientAccountId',
-      ]),
+      functionName: 'limit',
+      message: CUBE_QUERY_READER_MESSAGE.PARAMETER('limit', ['n']),
     });
+    // a join's condition
+    const join = readCubeDefinition(
+      queryWith([parameterOf('lei', 'String')], {
+        _type: 'func',
+        function: 'join',
+        parameters: [
+          EOD_POSITIONS,
+          {
+            _type: 'classInstance',
+            type: 'I',
+            value: {
+              metadata: false,
+              path: [INGEST_DEFINITION, 'LEGAL_ENTITIES'],
+            },
+          },
+          {
+            _type: 'property',
+            property: 'INNER',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'meta::pure::functions::relation::JoinKind',
+              },
+            ],
+          },
+          {
+            _type: 'lambda',
+            parameters: [variableOf('p'), variableOf('e')],
+            body: [
+              {
+                _type: 'func',
+                function: 'equal',
+                parameters: [columnOf('LEGAL_ENTITY_ID'), variableOf('lei')],
+              },
+            ],
+          },
+        ],
+      }),
+      withIngestDefinition,
+    );
+    expect(join.kind === 'refused' && [join.reason, join.functionName]).toEqual(
+      [CubeLambdaReadErrorKind.PARAMETERS, 'join'],
+    );
+    // the rows themselves
+    expect(
+      readCubeDefinition(
+        queryWith(
+          [parameterOf('rows', 'meta::pure::metamodel::relation::Relation')],
+          limit(variableOf('rows'), { _type: 'integer', value: 10 }),
+        ),
+        withIngestDefinition,
+      ),
+    ).toEqual({
+      kind: 'refused',
+      reason: CubeLambdaReadErrorKind.PARAMETERS,
+      message: CUBE_QUERY_READER_MESSAGE.PARAMETER_ROWS('rows'),
+    });
+    // what Cube can't read whatever its values gets its own kind
+    const olap = readCubeDefinition(
+      queryWith([n], {
+        _type: 'func',
+        function: 'olapGroupBy',
+        parameters: [EOD_POSITIONS, variableOf('n')],
+      }),
+      withIngestDefinition,
+    );
+    expect(olap.kind === 'refused' && olap.reason).toBe(
+      CubeLambdaReadErrorKind.NO_STEP,
+    );
   });
 
   test('Refuses a function Cube has no step for, naming it', () => {

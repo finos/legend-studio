@@ -27,6 +27,7 @@ export enum LEGEND_CUBE_TEST_ID {
   CANVAS_STEP_NOTE = 'legend-cube__canvas-step-note',
   STEP_NOTE_FIELD = 'legend-cube__step-note-field',
   DEFINITION_FLOW = 'legend-cube__definition-flow',
+  DEFINITION_FLOW_PARAMETER = 'legend-cube__definition-flow-parameter',
   PALETTE = 'legend-cube__palette',
   PALETTE_ITEM = 'legend-cube__palette-item',
   NODE_EDITOR = 'legend-cube__node-editor',

@@ -25,6 +25,7 @@ import { V1_readCubeIngestDataSets } from './v1/V1_CubeIngestDefinition.js';
 import { V1_serializeCubeLambda } from './v1/V1_CubeLambdaSerializer.js';
 import {
   V1_readCubeLambda,
+  V1_readCubeLambdaParameters,
   V1_readCubeValueSpecification,
 } from './v1/V1_CubeLambdaReader.js';
 import { V1_readCubeExpression } from './v1/V1_CubeExpression.js';
@@ -50,6 +51,25 @@ export const readCubeIngestDataSets = (
  */
 export const readCubeLambdaJson = (json: unknown): IR =>
   V1_readCubeLambda(json);
+
+/** A lambda's parameter, as its protocol JSON declares it */
+export interface CubeLambdaParameterDeclaration {
+  readonly name: string;
+  /** Its type, `undefined` when the JSON declares none Cube can read */
+  readonly type: Extract<IR, { readonly k: 'genericType' }> | undefined;
+  /** How many values it takes, its upper bound `undefined` for any number; `undefined` when the JSON doesn't say */
+  readonly multiplicity:
+    | { readonly lowerBound: number; readonly upperBound: number | undefined }
+    | undefined;
+}
+
+/**
+ * The parameters a lambda's protocol JSON declares, in order, with the types
+ * and multiplicities its IR doesn't keep (`readCubeLambdaJson`); never throws
+ */
+export const readCubeLambdaParameters = (
+  json: unknown,
+): CubeLambdaParameterDeclaration[] => V1_readCubeLambdaParameters(json);
 
 /**
  * How Import Pure stores an expression it reads into a step, and reads one a

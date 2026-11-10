@@ -5093,15 +5093,72 @@ describe('DataProductViewer', () => {
       );
     });
 
-    test("shows the Pure when Legend Cube can't draw the definition, with why, and Flow can't be picked", async () => {
+    test('draws a definition that takes parameters, each wired into the step that reads it', async () => {
       const { logEvent } = await setupDefinition(
         DEFINITIONS.accessPoints.CLIENT_POSITIONS,
         loadTradePositionsIngest,
       );
 
       const definition = await openDefinition();
+      // the data set, a filter on the two parameters, the columns kept
+      await findFlowNodes(definition, 3);
+      expect(
+        within(definition).getByText('Flow').getAttribute('aria-pressed'),
+      ).toBe('true');
+      expect(
+        within(definition)
+          .getAllByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW_PARAMETER)
+          .map((parameter) => parameter.textContent),
+      ).toEqual(['$businessDateStrictDate', '$clientAccountIdString']);
+      expect(
+        within(definition).queryByText(/^No flow for this definition/),
+      ).toBeNull();
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({ steps: 3, unknownDataSets: [] }),
+      );
+    });
+
+    test("shows the Pure when Legend Cube can't draw the definition, with why, and Flow can't be picked", async () => {
+      // a parameter where Cube's flow doesn't show one: a limit's size
+      const clientPositions = DEFINITIONS.accessPoints.CLIENT_POSITIONS as {
+        parameters: unknown[];
+        body: unknown[];
+      };
+      const { logEvent } = await setupDefinition(
+        {
+          ...clientPositions,
+          parameters: [
+            ...clientPositions.parameters,
+            {
+              _type: 'var',
+              name: 'rows',
+              genericType: {
+                rawType: { _type: 'packageableType', fullPath: 'Integer' },
+                typeArguments: [],
+                multiplicityArguments: [],
+                typeVariableValues: [],
+              },
+              multiplicity: { lowerBound: 1, upperBound: 1 },
+            },
+          ],
+          body: [
+            {
+              _type: 'func',
+              function: 'limit',
+              parameters: [
+                clientPositions.body[0],
+                { _type: 'var', name: 'rows' },
+              ],
+            },
+          ],
+        },
+        loadTradePositionsIngest,
+      );
+
+      const definition = await openDefinition();
       await within(definition).findByText(
-        "No flow for this definition: it takes parameters, which Cube's flow doesn't show yet.",
+        "No flow for this definition: it uses a parameter in its limit(), which Cube's flow doesn't show yet.",
       );
       // Cube's own words
       within(definition).getByText('Details');
@@ -5123,6 +5180,7 @@ describe('DataProductViewer', () => {
         expect.objectContaining({
           accessPoint: 'customer_demographics',
           reason: 'parameters',
+          functionName: 'limit',
         }),
       );
     });

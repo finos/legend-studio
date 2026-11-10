@@ -19,7 +19,7 @@ import {
   getColumnTypeLabel,
   getExactColumnTypeLabel,
 } from '../__lib__/LegendCubeLabels.js';
-import { CubeColumnTypeIcon } from './editors/CubeColumnPicker.js';
+import { CubeColumnTypeIcon } from './CubeColumnTypeIcon.js';
 
 /** A source's columns, with their precise types and whether they can be empty */
 export const CubeSchemaColumnsTable: React.FC<{ schema: Schema }> = ({

@@ -23,6 +23,7 @@ import {
 import {
   Background,
   Controls,
+  type Edge,
   type Node,
   type NodeProps,
   ReactFlow,
@@ -42,6 +43,15 @@ import {
   getCubeCanvasNodeLabel,
 } from './CubeCanvasElements.js';
 import { CubeCanvasEdge } from './CubeCanvasEdge.js';
+import {
+  buildCubeDefinitionParameterEdges,
+  buildCubeDefinitionParameterNodes,
+  CUBE_DEFINITION_PARAMETER_TYPE,
+  CUBE_DEFINITION_STEP_PARAMETERS_HANDLE,
+  CubeDefinitionParameterBox,
+  type CubeDefinitionParameterNode,
+  CubeDefinitionStepParametersHandle,
+} from './CubeDefinitionFlowParameters.js';
 import { layoutCubeQuery } from './CubeCanvasLayout.js';
 import {
   CubeCanvasInputHandles,
@@ -58,7 +68,8 @@ import {
 
 // A definition's steps drawn read-only, for a host to embed, e.g. a data
 // product viewer's access point: Cube's canvas as the editor lays it out,
-// with nothing that edits, so none of the editor loads with it
+// with nothing that edits, so none of the editor loads with it; and the
+// definition's parameters, each wired into the steps that read it
 
 const CUBE_DEFINITION_STEP_TYPE = 'cubeDefinitionStep';
 
@@ -72,6 +83,8 @@ type CubeDefinitionStepData = {
   readonly isOutput: boolean;
   readonly isSelected: boolean;
   readonly isSelectable: boolean;
+  /** Whether it reads any of the definition's parameters, whose wires come in at its top */
+  readonly readsParameters: boolean;
 };
 type CubeDefinitionStepNode = Node<
   CubeDefinitionStepData,
@@ -87,10 +100,11 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
   props,
 ) => {
   const { node, icon, title, detail, tooltip, isOutput } = props.data;
-  const { isSelected, isSelectable } = props.data;
+  const { isSelected, isSelectable, readsParameters } = props.data;
   return (
     <>
       <CubeCanvasInputHandles node={node} connectable={false} />
+      {readsParameters && <CubeDefinitionStepParametersHandle />}
       <Tooltip
         title={<div className="whitespace-pre-line">{tooltip}</div>}
         placement="top"
@@ -127,7 +141,10 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
 };
 
 // React Flow re-renders every node when these change identity
-const NODE_TYPES = { [CUBE_DEFINITION_STEP_TYPE]: CubeDefinitionStep };
+const NODE_TYPES = {
+  [CUBE_DEFINITION_STEP_TYPE]: CubeDefinitionStep,
+  [CUBE_DEFINITION_PARAMETER_TYPE]: CubeDefinitionParameterBox,
+};
 const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
 
@@ -157,7 +174,7 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
   const registry = useMemo(() => createNodeRegistry(), []);
   const { positions, lanes } = useMemo(() => layoutCubeQuery(query), [query]);
   const isSelectable = onSelectStep !== undefined;
-  const nodes = useMemo(
+  const steps = useMemo(
     (): CubeDefinitionStepNode[] =>
       buildCubeCanvasNodes(query, positions).map((flowNode) => {
         const { node } = flowNode.data;
@@ -168,8 +185,17 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
         const isUnknown =
           node instanceof IngestDatasetSource &&
           node.resolution.kind !== 'resolved';
+        const parameters = flow.parameters
+          .filter((parameter) => parameter.stepIds.includes(node.id))
+          .map((parameter) => parameter.name);
         return {
           ...flowNode,
+          handles: [
+            ...(flowNode.handles ?? []),
+            ...(parameters.length
+              ? [CUBE_DEFINITION_STEP_PARAMETERS_HANDLE]
+              : []),
+          ],
           type: CUBE_DEFINITION_STEP_TYPE,
           data: {
             node,
@@ -181,18 +207,32 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
               ...(isUnknown
                 ? [CUBE_DEFINITION_FLOW_LABEL.UNKNOWN_COLUMNS]
                 : []),
+              ...(parameters.length
+                ? [CUBE_DEFINITION_FLOW_LABEL.READS_PARAMETERS(parameters)]
+                : []),
             ].join('\n'),
             isOutput: node.id === flow.outputStepId,
             isSelected: node.id === selectedStepId,
             isSelectable,
+            readsParameters: parameters.length > 0,
           },
         };
       }),
     [query, positions, registry, flow, selectedStepId, isSelectable],
   );
+  const nodes = useMemo(
+    (): (CubeDefinitionStepNode | CubeDefinitionParameterNode)[] => [
+      ...steps,
+      ...buildCubeDefinitionParameterNodes(flow, positions),
+    ],
+    [steps, flow, positions],
+  );
   const edges = useMemo(
-    () => buildCubeCanvasEdges(query, lanes),
-    [query, lanes],
+    (): (CubeCanvasFlowEdge | Edge)[] => [
+      ...buildCubeCanvasEdges(query, lanes),
+      ...buildCubeDefinitionParameterEdges(flow),
+    ],
+    [query, lanes, flow],
   );
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
@@ -201,7 +241,10 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
   const fitToLeft = useCubeCanvasFitToLeft(layoutSignature);
 
   return (
-    <ReactFlow<CubeDefinitionStepNode, CubeCanvasFlowEdge>
+    <ReactFlow<
+      CubeDefinitionStepNode | CubeDefinitionParameterNode,
+      CubeCanvasFlowEdge | Edge
+    >
       nodes={nodes}
       edges={edges}
       nodeTypes={NODE_TYPES}
@@ -216,7 +259,12 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
       // the host's page scrolls past it: the controls zoom, as pinching does
       zoomOnScroll={false}
       preventScrolling={false}
-      onNodeClick={(_event, flowNode) => onSelectStep?.(flowNode.id)}
+      onNodeClick={(_event, flowNode) => {
+        // a parameter is no step
+        if (flowNode.type === CUBE_DEFINITION_STEP_TYPE) {
+          onSelectStep?.(flowNode.id);
+        }
+      }}
       // React Flow's own keyboard help speaks of moving nodes, which the flow
       // doesn't do; Enter and Space pick the focused step instead
       disableKeyboardA11y={true}
@@ -230,6 +278,7 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
             : undefined;
         if (
           stepId !== undefined &&
+          query.getNode(stepId) !== undefined &&
           onSelectStep &&
           (event.key === 'Enter' || event.key === ' ')
         ) {
@@ -259,7 +308,8 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
 /**
  * A definition's steps, read by `readCubeDefinition`, drawn read-only as
  * Cube's canvas lays them out: its sources on the left, its output on the
- * right. It pans and zooms, and a click on a step tells the host; nothing
+ * right; its parameters in a row above, each wired into the steps that read
+ * it. It pans and zooms, and a click on a step tells the host; nothing
  * edits, so it has no step editor, menu, palette or minimap. It fills its
  * container, which the host sizes, inside the host's Legend application, with
  * Cube's stylesheet loaded; as the editor's root, its root is `legend-cube`,
