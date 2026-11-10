@@ -486,11 +486,11 @@ export class GenerationSpecificationEntityState {
       )) as Entity;
       const generationSpecification =
         DepotGenerationSpecification.serialization.fromJson(entity.content);
-      const projectData = (yield this.store.depotServerClient.getProject(
-        this.summary.groupId,
-        this.summary.artifactId,
-      )) as StoreProjectData;
-      this.projectId = projectData.projectId;
+      this.projectId =
+        (yield this.store.generationSpecificationDepotState.getProjectId(
+          this.summary.groupId,
+          this.summary.artifactId,
+        )) as string;
       this.generationSpecification = generationSpecification;
       this.store.generationSpecificationDepotState.updateRow(this);
       this.fetchingElementState.complete();
@@ -507,6 +507,11 @@ export class GenerationSpecificationDepotDashboardState {
   gridApi: GridApi | undefined;
 
   MAX_CALLS = 3000;
+  // Requests in flight at once. Starting them all at once makes the browser
+  // fail them with net::ERR_INSUFFICIENT_RESOURCES.
+  MAX_CONCURRENT_CALLS = 8;
+  // One project lookup per project, shared by its generation specifications
+  private readonly projectIds = new Map<string, Promise<string>>();
   fetchingSummaryState = ActionState.create();
   scope = DepotScope.RELEASES;
   includeWorkspaceSnapshot = false;
@@ -628,18 +633,40 @@ export class GenerationSpecificationDepotDashboardState {
     }
   }
 
+  getProjectId(groupId: string, artifactId: string): Promise<string> {
+    const key = generateGAVCoordinates(groupId, artifactId, undefined);
+    let projectId = this.projectIds.get(key);
+    if (!projectId) {
+      projectId = this.depotServerClient
+        .getProject(groupId, artifactId)
+        .then((project) => (project as unknown as StoreProjectData).projectId);
+      // a failed lookup is retried by the next generation specification
+      projectId.catch(() => this.projectIds.delete(key));
+      this.projectIds.set(key, projectId);
+    }
+    return projectId;
+  }
+
   *fetchEntities(): GeneratorFn<void> {
-    guaranteeNonNullable(
+    const states = guaranteeNonNullable(
       this.entityStates,
       `Entities summaries have not been fetched`,
-    )
-      .slice(0, this.MAX_CALLS)
-      .forEach((state) => {
-        flowResult(state.fetchElement()).catch((error) => {
-          assertErrorThrown(error);
-          this.store.applicationStore.notificationService.notifyError(error);
-        });
-      });
+    ).slice(0, this.MAX_CALLS);
+    let next = 0;
+    const fetchNext = async (): Promise<void> => {
+      while (next < states.length) {
+        const state = states[next] as GenerationSpecificationEntityState;
+        next += 1;
+        // fetchElement() records its own failure on the row
+        await flowResult(state.fetchElement());
+      }
+    };
+    yield Promise.all(
+      Array.from(
+        { length: Math.min(this.MAX_CONCURRENT_CALLS, states.length) },
+        fetchNext,
+      ),
+    );
   }
 }
 

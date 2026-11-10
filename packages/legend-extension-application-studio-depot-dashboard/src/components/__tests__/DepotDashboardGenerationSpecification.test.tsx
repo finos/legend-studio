@@ -32,13 +32,22 @@ import {
   TEST__getApplicationVersionData,
 } from '@finos/legend-application/test';
 import {
+  type LegendStudioApplicationStore,
   LegendStudioApplicationConfig,
   LegendStudioPluginManager,
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  act,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
+import { flowResult } from 'mobx';
 import { DepotDashboard } from '../DepotDashboard.js';
+import { DepotDashboardStore } from '../../stores/DepotDashboardStore.js';
 
 jest.mock('@finos/legend-application-studio', () => {
   const actual = jest.requireActual('@finos/legend-application-studio');
@@ -48,6 +57,39 @@ jest.mock('@finos/legend-application-studio', () => {
     useLegendStudioBaseStore: jest.fn(),
   };
 });
+
+const setup = (): {
+  applicationStore: ApplicationStore<
+    LegendStudioApplicationConfig,
+    LegendStudioPluginManager
+  >;
+  depotServerClient: DepotServerClient;
+} => {
+  const applicationStore = new ApplicationStore(
+    new LegendStudioApplicationConfig({
+      configData: {
+        appName: 'studio',
+        env: 'test',
+        sdlc: { url: 'https://testSdlcUrl' },
+        depot: { url: 'https://testDepotUrl' },
+        engine: { url: 'https://testEngineUrl' },
+      },
+      versionData: TEST__getApplicationVersionData(),
+      baseAddress: '/studio/',
+    }),
+    LegendStudioPluginManager.create(),
+  );
+  const depotServerClient = new DepotServerClient({
+    serverUrl: 'http://test-depot-server',
+  });
+  (useLegendStudioApplicationStore as jest.Mock).mockReturnValue(
+    applicationStore,
+  );
+  (useLegendStudioBaseStore as jest.Mock).mockReturnValue({
+    depotServerClient,
+  });
+  return { applicationStore, depotServerClient };
+};
 
 const summary = (
   artifactId: string,
@@ -96,31 +138,7 @@ const CONTENT = new Map<string, PlainObject>([
 ]);
 
 test('display generation specifications with their generation element and file generation counts', async () => {
-  const pluginManager = LegendStudioPluginManager.create();
-  const applicationStore = new ApplicationStore(
-    new LegendStudioApplicationConfig({
-      configData: {
-        appName: 'studio',
-        env: 'test',
-        sdlc: { url: 'https://testSdlcUrl' },
-        depot: { url: 'https://testDepotUrl' },
-        engine: { url: 'https://testEngineUrl' },
-      },
-      versionData: TEST__getApplicationVersionData(),
-      baseAddress: '/studio/',
-    }),
-    pluginManager,
-  );
-  const depotServerClient = new DepotServerClient({
-    serverUrl: 'http://test-depot-server',
-  });
-  (useLegendStudioApplicationStore as jest.Mock).mockReturnValue(
-    applicationStore,
-  );
-  (useLegendStudioBaseStore as jest.Mock).mockReturnValue({
-    depotServerClient,
-  });
-
+  const { applicationStore, depotServerClient } = setup();
   const summaries = [
     summary('alpha', '1.0.0', 'test::alpha::AlphaGenerations'),
     summary('beta', '2.1.0', 'test::beta::BetaGenerations'),
@@ -197,4 +215,58 @@ test('display generation specifications with their generation element and file g
       .map((i) => `test::beta::File${i}`)
       .join(', '),
   );
+});
+
+test('fetch generation specifications a few at a time and each project once', async () => {
+  const { applicationStore, depotServerClient } = setup();
+  // 40 generation specifications in 4 projects
+  const summaries = range(40).map((i) =>
+    summary(`project${i % 4}`, '1.0.0', `test::p${i}::Generations`),
+  );
+  createSpy(
+    depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockImplementation(async () =>
+    summaries.map((s) => StoredSummaryEntity.serialization.toJson(s)),
+  );
+  let inFlight = 0;
+  let maxInFlight = 0;
+  createSpy(depotServerClient, 'getVersionEntity').mockImplementation(
+    async (groupId, artifactId, versionId, path) => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      inFlight -= 1;
+      return {
+        path,
+        classifierPath: CORE_PURE_PATH.GENERATION_SPECIFICATION,
+        content: { _type: 'generationSpecification' },
+      };
+    },
+  );
+  const projectSpy = createSpy(
+    depotServerClient,
+    'getProject',
+  ).mockImplementation(async (groupId, artifactId) => ({
+    projectId: `PROJECT-${artifactId}`,
+    groupId,
+    artifactId,
+  }));
+
+  const state = new DepotDashboardStore(
+    applicationStore as unknown as LegendStudioApplicationStore,
+    depotServerClient,
+  ).generationSpecificationDepotState;
+  await flowResult(state.init());
+  await waitFor(() => expect(state.fetchedCount).toBe(40));
+
+  expect(maxInFlight).toBeGreaterThan(1);
+  expect(maxInFlight).toBeLessThanOrEqual(state.MAX_CONCURRENT_CALLS);
+  expect(projectSpy).toHaveBeenCalledTimes(4);
+  expect(
+    state.entityStates?.every(
+      (entityState) =>
+        entityState.projectId === `PROJECT-${entityState.summary.artifactId}`,
+    ),
+  ).toBe(true);
 });
