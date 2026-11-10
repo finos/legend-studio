@@ -16,7 +16,8 @@
 
 import packageJson from '../../package.json' with { type: 'json' };
 import {
-  type DSL_LegendStudioApplicationPlugin_Extension,
+  type DragElementClassifier,
+  type DSL_Generation_LegendStudioApplicationPlugin_Extension,
   type EditorStore,
   type ElementClassifier,
   type ElementEditorRenderer,
@@ -63,9 +64,16 @@ const DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE =
 const DATA_QUALITY_RELATION_COMPARISON_ELEMENT_TYPE_LABEL =
   'Data Quality Relation Comparison';
 
+// the model generations get their own drag types so a class validation, which shares the element
+// type of a relation validation, can't be dropped into a generation specification
+const DATA_QUALITY_RELATION_VALIDATION_PROJECT_EXPLORER_DND_TYPE =
+  'PROJECT_EXPLORER_DATA_QUALITY_RELATION_VALIDATION';
+const DATA_QUALITY_RELATION_COMPARISON_PROJECT_EXPLORER_DND_TYPE =
+  'PROJECT_EXPLORER_DATA_QUALITY_RELATION_COMPARISON';
+
 export class DSL_DataQuality_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
-  implements DSL_LegendStudioApplicationPlugin_Extension
+  implements DSL_Generation_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
@@ -90,7 +98,10 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
   getExtraElementClassifiers(): ElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
-        if (element instanceof DataQualityValidationConfiguration) {
+        if (
+          element instanceof DataQualityValidationConfiguration ||
+          element instanceof DataQualityRelationValidationConfiguration
+        ) {
           return DATA_QUALITY_VALIDATION_ELEMENT_TYPE;
         }
         if (element instanceof DataQualityRelationComparisonConfiguration) {
@@ -98,6 +109,27 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
         }
         return undefined;
       },
+    ];
+  }
+
+  getExtraDragElementClassifiers(): DragElementClassifier[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof DataQualityRelationValidationConfiguration) {
+          return DATA_QUALITY_RELATION_VALIDATION_PROJECT_EXPLORER_DND_TYPE;
+        }
+        if (element instanceof DataQualityRelationComparisonConfiguration) {
+          return DATA_QUALITY_RELATION_COMPARISON_PROJECT_EXPLORER_DND_TYPE;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraModelGenerationSpecificationElementDnDTypes(): string[] {
+    return [
+      DATA_QUALITY_RELATION_VALIDATION_PROJECT_EXPLORER_DND_TYPE,
+      DATA_QUALITY_RELATION_COMPARISON_PROJECT_EXPLORER_DND_TYPE,
     ];
   }
 

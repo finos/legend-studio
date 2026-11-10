@@ -69,7 +69,13 @@ export enum DQ_VALIDATION_ELEMENT_TYPE {
   RELATION_VALIDATION = 'RelationValidation',
 }
 
-export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValidationConfiguration> {
+// a relation validation is a model generation rather than a validation configuration, but it is
+// still created from the data quality validation dialog
+type DataQualityValidationElement =
+  | DataQualityValidationConfiguration
+  | DataQualityRelationValidationConfiguration;
+
+export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValidationElement> {
   dqValidationElementType: DQ_VALIDATION_ELEMENT_TYPE;
   dqClassElementCreationBasis: CLASS_ELEMENT_CREATION_BASIS;
   dataSpaceSelected: PackageableElementOption<DataSpace> | undefined;
@@ -177,7 +183,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
 
   createRelationValidationElement(
     name: string,
-  ): DataQualityValidationConfiguration {
+  ): DataQualityRelationValidationConfiguration {
     const relationValidationConfiguration =
       new DataQualityRelationValidationConfiguration(name);
     relationValidationConfiguration.query =
@@ -259,7 +265,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     return dataQualityClassConstraintsConfiguration;
   }
 
-  createElement(name: string): DataQualityValidationConfiguration {
+  createElement(name: string): DataQualityValidationElement {
     switch (this.dqValidationElementType) {
       case DQ_VALIDATION_ELEMENT_TYPE.RELATION_VALIDATION:
         return this.createRelationValidationElement(name);
