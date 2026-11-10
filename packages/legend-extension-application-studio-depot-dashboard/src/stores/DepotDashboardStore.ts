@@ -512,6 +512,7 @@ abstract class DepotDashboardElementTypeState<
   readonly results = new Map<DepotScope, DepotDashboardScopeResults<T>>();
   // stands for a scope not fetched yet
   private readonly notFetchedState = ActionState.create();
+  private sortAndFilterTimer: ReturnType<typeof setTimeout> | undefined;
 
   abstract get classifierPath(): string;
   // e.g. 'data products', for the maximum calls warning
@@ -623,7 +624,25 @@ abstract class DepotDashboardElementTypeState<
     const rowNode = this.gridApi?.getRowNode(updatedEntity.id);
     if (this.gridApi && rowNode) {
       this.gridApi.refreshCells({ rowNodes: [rowNode], force: true });
+      this.reapplySortAndFilters();
     }
+  }
+
+  /**
+   * The grid sorts and filters rows by the values they have when they arrive,
+   * before they are fetched, e.g. after Refresh: as rows fill in, run the sort
+   * and filters again, at most every quarter second.
+   */
+  private reapplySortAndFilters(): void {
+    if (this.sortAndFilterTimer !== undefined) {
+      return;
+    }
+    this.sortAndFilterTimer = setTimeout(() => {
+      this.sortAndFilterTimer = undefined;
+      if (this.gridApi && !this.gridApi.isDestroyed()) {
+        this.gridApi.refreshClientSideRowModel('filter');
+      }
+    }, 250);
   }
 
   *handleScopeChange(scope: DepotScope): GeneratorFn<void> {

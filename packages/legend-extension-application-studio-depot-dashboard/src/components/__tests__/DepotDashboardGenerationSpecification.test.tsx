@@ -1065,3 +1065,42 @@ test('show the review in place of Flatten once flattened, through Refresh', asyn
   await screen.findByText('Generation Specifications: 3 / 3 fetched');
   await expectReviewLinks();
 });
+
+test('sort rows again as they fill in after Refresh', async () => {
+  const { applicationStore, depotServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  const rowOrder = (): (string | null | undefined)[] =>
+    Array.from(document.querySelectorAll('.ag-center-cols-container .ag-row'))
+      .sort(
+        (a, b) =>
+          Number(a.getAttribute('row-index')) -
+          Number(b.getAttribute('row-index')),
+      )
+      .map((row) => row.querySelector('a')?.textContent);
+
+  // Stages ascending: alpha, with 4 stages, last
+  const stagesLabel = Array.from(document.querySelectorAll('.ag-header-cell'))
+    .find(
+      (cell) =>
+        cell.querySelector('.ag-header-cell-text')?.textContent?.trim() ===
+        'Stages',
+    )
+    ?.querySelector('.ag-header-cell-label') as HTMLElement;
+  await act(async () => {
+    fireEvent.click(stagesLabel);
+  });
+  await waitFor(() => expect(rowOrder()[2]).toBe('AlphaGenerations'));
+
+  // Refresh makes new rows, sorted before their stages are known
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+  });
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  expect(stagesSort()).toBe('ascending');
+  await waitFor(() => expect(rowOrder()[2]).toBe('AlphaGenerations'));
+});
