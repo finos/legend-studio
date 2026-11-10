@@ -59,12 +59,13 @@ const buildEditorStore = async (): Promise<ExistingQueryEditorStore> => {
   });
   depotServerClient.setTracerService(applicationStore.tracerService);
 
-  return new ExistingQueryEditorStore(
+  const editorStore = new ExistingQueryEditorStore(
     applicationStore as unknown as LegendQueryApplicationStore,
     depotServerClient,
     'test-query-id',
     undefined,
   );
+  return editorStore;
 };
 
 const makeQueryInfo = (
@@ -154,6 +155,7 @@ describe(
         exec.accessPointId = 'lhAP1';
         exec.accessGroupId = 'lhGroup1';
         const queryInfo = makeQueryInfo(exec);
+        editorStore.setQueryInfo(queryInfo);
 
         // Stub artifact fetching so no depot calls are made
         editorStore.fetchDataProductArtifact = async () =>
@@ -203,6 +205,7 @@ describe(
         exec.dataProductPath = 'model::ModelDP';
         exec.accessPointGroupId = 'grp1';
         const queryInfo = makeQueryInfo(exec);
+        editorStore.setQueryInfo(queryInfo);
 
         editorStore.fetchDataProductArtifact = async () =>
           new V1_DataProductArtifact();

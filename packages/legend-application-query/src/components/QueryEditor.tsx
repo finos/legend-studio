@@ -420,6 +420,7 @@ const SaveQueryDialog = observer(
     const { existingEditorStore } = props;
     const updateState = existingEditorStore.updateState;
     const applicationStore = existingEditorStore.applicationStore;
+    const projectVersionOverride = existingEditorStore.projectVersionId;
 
     const saveQuery = applicationStore.guardUnhandledError(
       async (): Promise<void> => {
@@ -462,6 +463,18 @@ const SaveQueryDialog = observer(
             <PanelLoadingIndicator
               isLoading={updateState.updateQueryState.isInProgress}
             />
+            {projectVersionOverride &&
+              projectVersionOverride !==
+                existingEditorStore.lightQuery.versionId && (
+                <div className="query-preview__field__warning">
+                  <div className="query-preview__field__warning__icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                  <div className="query-preview__field__warning__label">
+                    {`Saving will change the query version from "${existingEditorStore.lightQuery.versionId}" to "${projectVersionOverride}"`}
+                  </div>
+                </div>
+              )}
             {updateState.updateDiffState && (
               <QueryBuilderDiffViewPanel
                 diffViewState={updateState.updateDiffState}
@@ -490,6 +503,7 @@ const RenameQueryDialog = observer(
     const applicationStore = existingEditorStore.applicationStore;
     const handleClose = (): void =>
       updateState.setIsQueryRenameDialogOpen(false);
+    const projectVersionOverride = existingEditorStore.projectVersionId;
 
     const [queryRenameName, setQueryRenameName] = useState<string>(
       existingEditorStore.lightQuery.name,
@@ -648,6 +662,18 @@ const RenameQueryDialog = observer(
             <PanelLoadingIndicator
               isLoading={updateState.updateQueryState.isInProgress}
             />
+            {projectVersionOverride &&
+              projectVersionOverride !==
+                existingEditorStore.lightQuery.versionId && (
+                <div className="query-preview__field__warning">
+                  <div className="query-preview__field__warning__icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                  <div className="query-preview__field__warning__label">
+                    {`Saving will change the query version from "${existingEditorStore.lightQuery.versionId}" to "${projectVersionOverride}"`}
+                  </div>
+                </div>
+              )}
             <div className="input-section">
               <div className="input-label">
                 Update Query Name
@@ -1387,21 +1413,28 @@ export const ExistingQueryEditor = observer(() => {
     applicationStore.navigationService.navigator.getCurrentLocationParameters<ExistingQueryEditorQueryParams>();
   const processed = extractQueryParams(queryParams);
   const revisionId = queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID];
+  const trimmedProjectVersionId =
+    queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.PROJECT_VERSION_ID]?.trim();
+  const projectVersionId = trimmedProjectVersionId?.length
+    ? trimmedProjectVersionId
+    : undefined;
   useEffect(() => {
     // clear the query-parameter values from the URL while preserving the
-    // revisionId so the loaded revision remains reflected in a shareable link
+    // revisionId/projectVersionId so the loaded revision and project version
+    // override remain reflected in a shareable link
     if (processed && Object.keys(processed).length) {
       applicationStore.navigationService.navigator.updateCurrentLocation(
-        generateExistingQueryEditorRoute(queryId, revisionId),
+        generateExistingQueryEditorRoute(queryId, revisionId, projectVersionId),
       );
     }
-  }, [applicationStore, queryId, processed, revisionId]);
+  }, [applicationStore, queryId, processed, revisionId, projectVersionId]);
 
   return (
     <ExistingQueryEditorStoreProvider
       queryId={queryId}
       params={processed}
       revisionId={revisionId}
+      projectVersionId={projectVersionId}
     >
       <QueryEditor />
     </ExistingQueryEditorStoreProvider>
