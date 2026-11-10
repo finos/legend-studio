@@ -47,7 +47,10 @@ import {
 } from '@testing-library/react';
 import { flowResult } from 'mobx';
 import { DepotDashboard } from '../DepotDashboard.js';
-import { DepotDashboardStore } from '../../stores/DepotDashboardStore.js';
+import {
+  DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
+  DepotDashboardStore,
+} from '../../stores/DepotDashboardStore.js';
 
 jest.mock('@finos/legend-application-studio', () => {
   const actual = jest.requireActual('@finos/legend-application-studio');
@@ -261,7 +264,7 @@ test('fetch generation specifications a few at a time and each project once', as
   await waitFor(() => expect(state.fetchedCount).toBe(40));
 
   expect(maxInFlight).toBeGreaterThan(1);
-  expect(maxInFlight).toBeLessThanOrEqual(state.MAX_CONCURRENT_CALLS);
+  expect(maxInFlight).toBeLessThanOrEqual(DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS);
   expect(projectSpy).toHaveBeenCalledTimes(4);
   expect(
     state.entityStates?.every(
