@@ -20,18 +20,12 @@ import {
   CubesLoadingIndicatorIcon,
   Tooltip,
 } from '@finos/legend-art';
-import type {
-  CubeDefinitionFlowReading,
-  CubeDefinitionRefusal,
-} from '@finos/legend-cube-builder/definition-flow';
+import type { CubeDefinitionRefusal } from '@finos/legend-cube-builder/definition-flow';
 import { uniq } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { Component, type ReactNode, useLayoutEffect, useState } from 'react';
+import { Component, type ReactNode } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
-import {
-  type DataProductDefinitionFlowEntry,
-  DataProductDefinitionFlowFailureKind,
-} from '../../stores/DataProduct/DataProductDefinitionFlow.js';
+import { DataProductDefinitionFlowFailureKind } from '../../stores/DataProduct/DataProductDefinitionFlow.js';
 
 // An access point's definition as Legend Cube's flow, in the Definition
 // panel: an extra view of the Pure. Whatever goes wrong, the panel says so in
@@ -223,54 +217,6 @@ const DefinitionFlowFailure: React.FC<{
   </div>
 );
 
-type ColorMode = 'light' | 'dark';
-
-/** The color theme class nearest an element, e.g. `theme__hc-light` */
-const findColorThemeClass = (element: Element | null): string | undefined => {
-  for (let current = element; current; current = current.parentElement) {
-    const theme = Array.from(current.classList).find((name) =>
-      name.startsWith('theme__'),
-    );
-    if (theme !== undefined) {
-      return theme;
-    }
-  }
-  return undefined;
-};
-
-/**
- * Cube's canvas, light or dark as the colors around it are: Cube's colors
- * follow the nearest color theme class, so the canvas does too, e.g. light in
- * Studio's preview of the viewer, whatever Studio's own theme
- */
-const DefinitionFlowCanvas: React.FC<{
-  reading: CubeDefinitionFlowReading;
-  entry: DataProductDefinitionFlowEntry;
-  /** The application's theme, for when no theme class is found */
-  appColorMode: ColorMode;
-}> = (props) => {
-  const { reading, entry, appColorMode } = props;
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const [colorMode, setColorMode] = useState<ColorMode>(appColorMode);
-  // NOTE: the application changes its theme class before its observers
-  // render again, so this reads the new one
-  useLayoutEffect(() => {
-    const theme = findColorThemeClass(container);
-    setColorMode(
-      theme === undefined
-        ? appColorMode
-        : theme.endsWith('-dark')
-          ? 'dark'
-          : 'light',
-    );
-  }, [container, appColorMode]);
-  return (
-    <div ref={setContainer} className="data-product__viewer__definition-flow">
-      <entry.CubeDefinitionFlow flow={reading} colorMode={colorMode} />
-    </div>
-  );
-};
-
 /** Keeps a canvas that fails while drawing inside the panel */
 class DefinitionFlowErrorBoundary extends Component<
   {
@@ -379,15 +325,16 @@ export const DataProductAccessPointDefinitionFlow = observer(
             />
           )}
         >
-          <DefinitionFlowCanvas
-            reading={reading}
-            entry={entry}
-            appColorMode={
-              layoutService.TEMPORARY__isLightColorThemeEnabled
-                ? 'light'
-                : 'dark'
-            }
-          />
+          <div className="data-product__viewer__definition-flow">
+            <entry.CubeDefinitionFlow
+              flow={reading}
+              colorMode={
+                layoutService.TEMPORARY__isLightColorThemeEnabled
+                  ? 'light'
+                  : 'dark'
+              }
+            />
+          </div>
         </DefinitionFlowErrorBoundary>
       </>
     );

@@ -5167,33 +5167,6 @@ describe('DataProductViewer', () => {
       expect(load).toHaveBeenCalledTimes(2);
     });
 
-    // e.g. Studio's preview of the viewer is light, whatever Studio's theme
-    test.each([
-      ['light', 'theme__hc-light'],
-      ['dark', 'theme__hc-dark'],
-    ])(
-      'draws the flow %s inside %s, as the colors around it are',
-      async (colorMode, themeClass) => {
-        await setupDefinition(
-          DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
-          loadTradePositionsIngest,
-        );
-        guaranteeNonNullable(
-          screen
-            .getByText('Customer Demographics')
-            .closest<HTMLElement>('.MuiAccordion-root'),
-        ).classList.add(themeClass);
-
-        const definition = await openDefinition();
-        await findFlowNodes(definition, 5);
-        expect(
-          definition
-            .querySelector('.react-flow')
-            ?.classList.contains(colorMode),
-        ).toBe(true);
-      },
-    );
-
     test('says when neither the flow nor the Pure can be shown, and tries both again', async () => {
       const load = createSpy(
         DATA_PRODUCT_DEFINITION_FLOW_LOADER,
