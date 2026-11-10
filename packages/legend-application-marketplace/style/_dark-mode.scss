@@ -2967,6 +2967,33 @@
     &__label {
       color: var(--color-dark-theme-text-secondary);
     }
+
+    &__value {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__cost-segment {
+      .MuiToggleButton-root {
+        color: var(--color-dark-theme-text-secondary);
+        border-color: var(--color-dark-theme-border);
+        background: var(--color-dark-theme-bg-elevated);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &.Mui-selected {
+          background: rgb(115 153 198 / 22%);
+          color: var(--color-dark-theme-blue-primary);
+          border-color: var(--color-dark-theme-blue-primary);
+
+          &:hover {
+            background: rgb(115 153 198 / 30%);
+          }
+        }
+      }
+    }
   }
 
   .legend-marketplace-subscriptions-content {
@@ -2980,6 +3007,64 @@
 
     &__subtitle {
       color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__toolbar {
+      .MuiInputBase-root {
+        background: var(--color-dark-theme-bg-secondary);
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-secondary);
+
+        &.Mui-focused {
+          color: var(--color-dark-theme-blue-primary);
+        }
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border-light);
+      }
+
+      .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      .MuiSelect-select,
+      .MuiSelect-icon,
+      .MuiInputBase-input {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .legend-marketplace-subscriptions-content__search-clear-btn {
+        color: var(--color-dark-theme-text-secondary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+    }
+
+    &__cancel-button {
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        background: rgb(115 153 198 / 12%);
+        border-color: var(--color-dark-theme-blue-accent);
+      }
+
+      &.Mui-disabled {
+        color: var(--color-dark-theme-text-secondary);
+        border-color: var(--color-dark-theme-border-light);
+        opacity: 0.85;
+      }
     }
 
     &__user-search {
@@ -3022,6 +3107,39 @@
 
       .legend-marketplace-subscriptions-content__cost-value {
         color: var(--color-dark-theme-text-primary);
+      }
+
+      .legend-marketplace-subscriptions-content__cancel-checkbox-cell {
+        .MuiCheckbox-root {
+          color: var(--color-dark-theme-text-secondary);
+          background: var(--color-dark-theme-bg-elevated);
+          border: 1px solid var(--color-dark-theme-border-light);
+          border-radius: 4px;
+          padding: 2px;
+
+          &:hover {
+            background: var(--color-dark-theme-bg-tertiary);
+          }
+
+          &.Mui-checked {
+            color: var(--color-dark-theme-blue-primary);
+            border-color: var(--color-dark-theme-blue-primary);
+          }
+        }
+      }
+
+      .legend-marketplace-subscriptions-content__mandatory-flag {
+        &--yes {
+          background: transparent;
+          color: var(--color-dark-theme-text-primary);
+          border: 1px solid var(--color-dark-theme-blue-primary);
+        }
+
+        &--no {
+          background: var(--color-dark-theme-bg-elevated);
+          color: var(--color-dark-theme-text-secondary);
+          border: 1px solid var(--color-dark-theme-border-light);
+        }
       }
     }
   }
@@ -4962,6 +5080,20 @@
     }
 
     &__description {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__section {
+      border-color: var(--color-dark-theme-border);
+      background: rgb(255 255 255 / 2%);
+    }
+
+    &__section-title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__section-subtitle,
+    &__bundled-title {
       color: var(--color-dark-theme-text-secondary);
     }
 

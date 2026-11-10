@@ -25,10 +25,16 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
+  IconButton,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import type { TerminalResult } from '@finos/legend-server-marketplace';
-import { CheckCircleIcon, ShoppingCartIcon } from '@finos/legend-art';
+import {
+  CheckCircleIcon,
+  InfoCircleIcon,
+  ShoppingCartIcon,
+} from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -40,12 +46,19 @@ import {
   LegendMarketplaceTelemetryHelper,
   TERMINAL_SEARCH_LOCATION,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import {
+  calculateMandatoryAddonsTotalPrice,
+  formatCardPrice,
+} from './orderProfileUtils.js';
+import { MandatoryAddOnsDetailModal } from './MandatoryAddOnsDetailModal.js';
 
 export const LegendMarketplaceTerminalCard = observer(
   (props: { terminalResult: TerminalResult }): JSX.Element => {
     const { terminalResult } = props;
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [showRecommendationsModal, setShowRecommendationsModal] =
+      useState(false);
+    const [showMandatoryAddonsModal, setShowMandatoryAddonsModal] =
       useState(false);
     const [recommendedItems, setRecommendedItems] = useState<TerminalResult[]>(
       [],
@@ -122,6 +135,11 @@ export const LegendMarketplaceTerminalCard = observer(
     const isInCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
       terminalResult.id,
     );
+    const hasMandatoryAddons =
+      (terminalResult.mandatoryAddons?.length ?? 0) > 0;
+    const displayPrice = hasMandatoryAddons
+      ? calculateMandatoryAddonsTotalPrice(terminalResult)
+      : terminalResult.price;
 
     const handleViewCart = () => {
       legendMarketplaceBaseStore.cartStore.setOpen(true);
@@ -187,13 +205,31 @@ export const LegendMarketplaceTerminalCard = observer(
             >
               {terminalResult.providerName}
             </Typography>
-            <Typography
-              variant="h6"
-              className="legend-marketplace-terminal-card__title"
-              title={terminalResult.productName}
-            >
-              {terminalResult.productName}
-            </Typography>
+            <Box className="legend-marketplace-order-profile-card__title-row">
+              <Typography
+                variant="h6"
+                className="legend-marketplace-terminal-card__title"
+                title={terminalResult.productName}
+              >
+                {terminalResult.productName}
+              </Typography>
+              {hasMandatoryAddons && (
+                <Tooltip title="View mandatory add-ons included with this terminal">
+                  <IconButton
+                    component="span"
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMandatoryAddonsModal(true);
+                    }}
+                    className="legend-marketplace-order-profile-card__info-button"
+                    aria-label="View mandatory add-ons details"
+                  >
+                    <InfoCircleIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           </CardContent>
         </CardActionArea>
         <CardActions className="legend-marketplace-terminal-card__action-buttons">
@@ -233,17 +269,13 @@ export const LegendMarketplaceTerminalCard = observer(
                   </>
                 )}
               </Button>
-              {typeof terminalResult.price === 'number' && (
-                <Chip
-                  label={`${new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(terminalResult.price)}/month`}
-                  className="legend-marketplace-terminal-card__price"
-                />
-              )}
+              {typeof displayPrice === 'number' &&
+                Number.isFinite(displayPrice) && (
+                  <Chip
+                    label={formatCardPrice(displayPrice)}
+                    className="legend-marketplace-terminal-card__price"
+                  />
+                )}
             </>
           )}
         </CardActions>
@@ -257,6 +289,12 @@ export const LegendMarketplaceTerminalCard = observer(
           onViewCart={handleViewCart}
           onTerminalSelected={handleTerminalSelected}
           totalCount={modalTotalCount}
+        />
+
+        <MandatoryAddOnsDetailModal
+          terminal={terminalResult}
+          open={showMandatoryAddonsModal}
+          onClose={() => setShowMandatoryAddonsModal(false)}
         />
       </Card>
     );

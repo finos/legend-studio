@@ -203,6 +203,10 @@
 
 // Multiselect modal
 .order-profile-multiselect-modal {
+  .MuiDialogContent-root {
+    max-height: 65vh;
+  }
+
   .MuiListItem-root {
     cursor: pointer;
   }
@@ -210,6 +214,43 @@
   &__description {
     margin-bottom: 0.8rem;
     font-size: 1.4rem;
+  }
+
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  &__section {
+    border: 1px solid var(--color-light-grey-300);
+    border-radius: 4px;
+    padding: 1.2rem;
+  }
+
+  &__section-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.4rem;
+  }
+
+  &__section-subtitle {
+    margin-bottom: 0.8rem;
+    color: var(--marketplace-text-secondary);
+    font-size: 1.3rem;
+  }
+
+  &__bundled-title {
+    display: block;
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+    color: var(--marketplace-text-secondary);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  &__included-item {
+    margin-bottom: 0.4rem;
   }
 
   &__list-item {

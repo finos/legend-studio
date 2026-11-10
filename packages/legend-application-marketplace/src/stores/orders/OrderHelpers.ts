@@ -15,7 +15,6 @@
  */
 
 import {
-  OrderStatus,
   OrderSearchStatus,
   type TerminalProductOrder,
   type WorkflowDetails,
@@ -84,6 +83,9 @@ type ApprovalStage =
   | WorkflowStage.BUSINESS_ANALYST_APPROVAL;
 
 const APPROVED_ACTION = 'APPROVED';
+const COMPLETED_RPM_ACTION = 'COMPLETED';
+const REJECTED_RPM_ACTIONS = new Set(['CANCELLED', 'DENIED']);
+const CLOSED_WORKFLOW_STATUSES = new Set(['COMPLETED', 'CLOSED']);
 // Terminal, non-approved outcomes an individual approval stage (or the
 // overall order) can end up in.
 const REJECTED_STATUSES = new Set(['REJECTED', 'CANCELLED', 'AUTO TERMINATED']);
@@ -126,6 +128,9 @@ const APPROVAL_STAGE_DETAIL_FIELDS: Record<
 const normalizeStatus = (value: string | null | undefined): string =>
   (value ?? '').trim().toUpperCase();
 
+const isWorkflowClosed = (value: string | null | undefined): boolean =>
+  CLOSED_WORKFLOW_STATUSES.has(normalizeStatus(value));
+
 const toTitleCase = (value: string): string =>
   value
     .toLowerCase()
@@ -150,6 +155,22 @@ const getApprovalActionStatus = (
   return 'pending';
 };
 
+const getFulfillmentOutcomeStatus = (
+  order: TerminalProductOrder,
+  details: WorkflowDetails | undefined,
+): OrderProgressStatus => {
+  const rpmActionStatus = normalizeStatus(details?.rpm_action);
+  if (rpmActionStatus === COMPLETED_RPM_ACTION) {
+    return OrderProgressStatus.COMPLETED;
+  }
+  if (REJECTED_RPM_ACTIONS.has(rpmActionStatus)) {
+    return OrderProgressStatus.REJECTED;
+  }
+  return normalizeStatus(order.status) === APPROVED_ACTION
+    ? OrderProgressStatus.COMPLETED
+    : OrderProgressStatus.REJECTED;
+};
+
 const getProvisionProgressSteps = (
   order: TerminalProductOrder,
 ): OrderProgressStep[] => {
@@ -163,7 +184,7 @@ const getProvisionProgressSteps = (
       ]
     : [WorkflowStage.MANAGER_APPROVAL, WorkflowStage.FIRST_APPROVER];
 
-  const isClosed = details?.workflow_status === OrderStatus.COMPLETED;
+  const isClosed = isWorkflowClosed(details?.workflow_status);
   const steps: OrderProgressStep[] = [
     {
       label: WorkflowStage.ORDER_PLACED,
@@ -213,18 +234,11 @@ const getProvisionProgressSteps = (
     return steps;
   }
 
-  const orderStatus = normalizeStatus(order.status);
-  if (REJECTED_STATUSES.has(orderStatus)) {
-    steps.push({
-      label: `Order ${toTitleCase(order.status)}`,
-      status: OrderProgressStatus.REJECTED,
-    });
-  } else {
-    steps.push({
-      label: WorkflowStage.ORDER_FULFILLED,
-      status: OrderProgressStatus.COMPLETED,
-    });
-  }
+  const fulfillmentLabel = details?.rpm_action ?? order.status;
+  steps.push({
+    label: fulfillmentLabel,
+    status: getFulfillmentOutcomeStatus(order, details),
+  });
   return steps;
 };
 
@@ -319,7 +333,7 @@ export const getClosureInfo = (
   order: TerminalProductOrder,
 ): ClosureInfo | undefined => {
   const details = order.workflow_details;
-  if (details?.workflow_status !== OrderStatus.COMPLETED) {
+  if (!details || !isWorkflowClosed(details.workflow_status)) {
     return undefined;
   }
 
@@ -342,10 +356,10 @@ export const getClosureInfo = (
       ]
     : [WorkflowStage.MANAGER_APPROVAL, WorkflowStage.FIRST_APPROVER];
 
-  // Walk the approval stages in order, tracking the last one that was
-  // actually actioned; stop early at the first rejection since that's what
-  // closed the order.
+  // Walk the approval stages in order and stop at the first rejection,
+  // since that stage is what closed the order.
   let lastActionedStage: ApprovalStage | undefined;
+  let closedAtApprovalStage = false;
   for (const stage of approvalStages) {
     const status = getApprovalActionStatus(details, stage);
     if (status === 'pending') {
@@ -353,11 +367,12 @@ export const getClosureInfo = (
     }
     lastActionedStage = stage;
     if (status === 'rejected') {
+      closedAtApprovalStage = true;
       break;
     }
   }
 
-  if (lastActionedStage) {
+  if (closedAtApprovalStage && lastActionedStage) {
     const stageDetails = getStageActionDetails(order, lastActionedStage);
     if (stageDetails) {
       return {

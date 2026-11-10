@@ -53,6 +53,7 @@ const makeTerminal = (
   id: number,
   price = 200,
   model: string | null = null,
+  multiselect = false,
   isOwned = false,
 ): TraderProfileItem => {
   const item = new TraderProfileItem();
@@ -62,6 +63,7 @@ const makeTerminal = (
   item.productName = `Terminal ${id}`;
   item.price = price;
   item.model = model;
+  item.multiselect = multiselect;
   item.isOwned = isOwned;
   return item;
 };
@@ -258,9 +260,43 @@ describe('LegendMarketplaceOrderProfileCard - info button', () => {
 });
 
 describe('LegendMarketplaceOrderProfileCard - add to cart', () => {
+  test('opens multiselect modal when profile.multiselect=false but item-level model has multiple selectable terminals', async () => {
+    const terminal1 = makeTerminal(1, 383, 'Factset Workstation', true);
+    const terminal2 = makeTerminal(2, 0, 'Factset Workstation', true);
+    const profile = makeProfile([terminal1, terminal2], 383, false);
+
+    render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
+
+    fireEvent.click(screen.getByText('Add to cart'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Select Terminal')).toBeDefined();
+    });
+  });
+
+  test('does not open multiselect modal when no model has multiple selectable terminals', async () => {
+    const terminal = makeTerminal(1, 200, 'Model A', true);
+    const addOn = makeAddOn(2, 100, 'Model A');
+    const profile = makeProfile([terminal, addOn], 300, true);
+
+    const mockAddItems = jest.fn().mockReturnValue(Promise.resolve());
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addOrderProfileItemsToCart = mockAddItems;
+
+    render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Add to cart'));
+    });
+
+    expect(screen.queryByText('Select Terminal')).toBeNull();
+    expect(mockAddItems).toHaveBeenCalled();
+  });
+
   test('for multiselect profile, clicking Add to Cart opens multiselect modal', async () => {
-    const terminal1 = makeTerminal(1, 200, 'Model A');
-    const terminal2 = makeTerminal(2, 300, 'Model B');
+    const terminal1 = makeTerminal(1, 200, 'Model A', true);
+    const terminal2 = makeTerminal(2, 300, 'Model A', true);
     const profile = makeProfile([terminal1, terminal2], 300, true);
     render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
 
@@ -272,8 +308,9 @@ describe('LegendMarketplaceOrderProfileCard - add to cart', () => {
   });
 
   test('clicking Cancel in multiselect modal closes it', async () => {
-    const terminal1 = makeTerminal(1, 200, 'Model A');
-    const profile = makeProfile([terminal1], 200, true);
+    const terminal1 = makeTerminal(1, 200, 'Model A', true);
+    const terminal2 = makeTerminal(2, 240, 'Model A', true);
+    const profile = makeProfile([terminal1, terminal2], 200, true);
     render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
 
     fireEvent.click(screen.getByText('Add to cart'));
@@ -318,10 +355,11 @@ describe('LegendMarketplaceOrderProfileCard - add to cart', () => {
     expect(mockAddItems).toHaveBeenCalled();
   });
 
-  test('multiselect confirm adds selected terminal and its add-ons', async () => {
-    const terminal = makeTerminal(1, 200, 'Model A');
-    const addOn = makeAddOn(2, 100, 'Model A');
-    const profile = makeProfile([terminal, addOn], 300, true);
+  test('multiselect confirm adds selected items assembled by modal', async () => {
+    const terminal1 = makeTerminal(1, 200, 'Model A', true);
+    const terminal2 = makeTerminal(2, 220, 'Model A', true);
+    const addOn = makeAddOn(3, 100, 'Model A');
+    const profile = makeProfile([terminal1, terminal2, addOn], 300, true);
 
     const mockAddItems = jest.fn().mockReturnValue(Promise.resolve());
     (
@@ -337,8 +375,7 @@ describe('LegendMarketplaceOrderProfileCard - add to cart', () => {
       expect(screen.getByText('Terminal 1')).toBeDefined();
     });
 
-    // Select Terminal 1
-    fireEvent.click(screen.getByText('Terminal 1'));
+    fireEvent.click(screen.getByText('Terminal 2'));
 
     // Click Add to cart in the modal (scope within dialog to avoid card's button)
     const dialog = screen.getByRole('dialog');
@@ -352,6 +389,9 @@ describe('LegendMarketplaceOrderProfileCard - add to cart', () => {
     await waitFor(() => {
       expect(mockAddItems).toHaveBeenCalled();
     });
+
+    const payload = mockAddItems.mock.calls[0]?.[0] as TraderProfileItem[];
+    expect(payload.map((item) => item.id)).toEqual([2, 3]);
   });
 });
 

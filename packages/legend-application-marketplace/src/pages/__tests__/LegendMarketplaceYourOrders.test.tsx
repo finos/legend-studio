@@ -229,6 +229,27 @@ const makeReutersOrder = (
   ...overrides,
 });
 
+const makeClosedRpmOrder = (rpmComment: string | null): TerminalProductOrder =>
+  makeBloombergOrder({
+    status: 'Cancelled',
+    workflow_details: {
+      ...(mockOrderWithUrl.workflow_details as WorkflowDetails),
+      workflow_status: OrderStatus.COMPLETED,
+      rpm_action: 'Cancelled',
+      rpm_ticket_id: 'RPM-12345',
+      rpm_comment: rpmComment,
+      manager_action: 'Approved',
+      manager_actioned_by: 'manager-user',
+      manager_actioned_by_name: 'Manager User',
+      manager_actioned_timestamp: '2026-01-15T10:30:00Z',
+      fa_approval_action: 'Approved',
+      fa_approval_actioned_by: 'fa-user',
+      fa_approval_actioned_by_name: 'First Approver',
+      fa_approval_actioned_timestamp: '2026-01-15T11:00:00Z',
+      current_stage: WorkflowCurrentStage.RPM,
+    },
+  });
+
 const renderYourOrdersPage = async (
   openOrders: TerminalProductOrder[] = [],
 ) => {
@@ -344,6 +365,48 @@ describe('LegendMarketplaceYourOrders - Track Order Button', () => {
     expect(mockVisitAddress).toHaveBeenCalledWith(
       'https://workflow.example.com/order/123',
     );
+  });
+});
+
+describe('LegendMarketplaceYourOrders - progress tracker RPM details', () => {
+  test('shows rpm_comment under RPM Ticket when rpm_comment is present', async () => {
+    await renderYourOrdersPage([makeClosedRpmOrder('Incorrect Order - Test')]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    expect(screen.getByText('RPM-12345')).toBeDefined();
+    expect(
+      screen.getByText((_, element) => {
+        const candidate = element as Element;
+        const textContent = candidate.textContent ?? '';
+        return (
+          candidate.classList.contains(
+            'legend-marketplace-progress-tracker__step-detail',
+          ) === true &&
+          textContent.includes('Comments:') === true &&
+          textContent.includes('Incorrect Order - Test') === true
+        );
+      }),
+    ).toBeDefined();
+  });
+
+  test('does not show rpm_comment when rpm_comment is null', async () => {
+    await renderYourOrdersPage([makeClosedRpmOrder(null)]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    expect(screen.getByText('RPM-12345')).toBeDefined();
+    expect(
+      screen.queryByText((_, element) => {
+        const candidate = element as Element;
+        const textContent = candidate.textContent ?? '';
+        return (
+          candidate.classList.contains(
+            'legend-marketplace-progress-tracker__step-detail',
+          ) === true &&
+          textContent.includes('Comments:') === true &&
+          textContent.includes('Incorrect Order - Test') === true
+        );
+      }),
+    ).toBeNull();
   });
 });
 

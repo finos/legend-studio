@@ -85,6 +85,12 @@ type SubscriptionGridRow = Subscription & {
 type SubscriptionGridNode =
   DataGridCellRendererParams<SubscriptionGridRow>['node'];
 
+type MandatoryCancelGroup = {
+  carrierVendor: string;
+  permId: number;
+  subscriptions: Subscription[];
+};
+
 // --------------------------------------------------------------------------
 // Confirmation dialog shown before executing a batch cancellation
 // --------------------------------------------------------------------------
@@ -135,6 +141,41 @@ const CancellationConfirmationDialog = (props: {
           }
         >
           {isLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const MandatoryGroupSelectionDialog = (props: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}): React.ReactNode => {
+  const { open, onClose, onConfirm } = props;
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
+      <DialogTitle className="legend-marketplace-subscriptions-content__cancel-confirmation-dialog-title">
+        Cancel Mandatory Add-On
+      </DialogTitle>
+      <DialogContent>
+        <Typography
+          variant="body1"
+          gutterBottom={true}
+          className="legend-marketplace-subscriptions-content__cancel-confirmation-text"
+        >
+          This is a mandatory add-on. Cancelling it will initiate a cancellation
+          request for the entire Permission ID and all its associated add-ons.
+          Do you want to proceed?
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} variant="outlined">
+          No
+        </Button>
+        <Button onClick={onConfirm} variant="contained" color="error">
+          Yes, cancel group
         </Button>
       </DialogActions>
     </Dialog>
@@ -240,6 +281,8 @@ export const LegendMarketplaceSubscriptions =
 
       const [userSearchEnabled, setUserSearchEnabled] = useState(false);
       const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+      const [mandatoryCancelGroup, setMandatoryCancelGroup] =
+        useState<MandatoryCancelGroup | null>(null);
       // Raw value reflects what the user typed; activeSearchText is the debounced value
       // used for filtering so we don't re-filter on every keystroke.
       const [rawSearchText, setRawSearchText] = useState('');
@@ -622,18 +665,75 @@ export const LegendMarketplaceSubscriptions =
         [renderGroupLabel],
       );
 
+      const getPermissionGroupForSubscription = useCallback(
+        (subscription: Subscription): Subscription[] =>
+          subscriptionStore.subscriptionFeeds.filter(
+            (sub) =>
+              sub.carrierVendor === subscription.carrierVendor &&
+              sub.permId === subscription.permId,
+          ),
+        [subscriptionStore.subscriptionFeeds],
+      );
+
+      const handleConfirmMandatoryGroupSelection = useCallback((): void => {
+        if (!mandatoryCancelGroup) {
+          return;
+        }
+        mandatoryCancelGroup.subscriptions.forEach((sub) => {
+          subscriptionStore.addSelectedSubscriptions(sub);
+        });
+        setMandatoryCancelGroup(null);
+      }, [mandatoryCancelGroup, subscriptionStore]);
+
       const handleSubscriptionCheckboxChange = useCallback(
         (subscription: Subscription | null | undefined, checked: boolean) => {
           if (!subscription) {
             return;
           }
 
+          const permissionGroup =
+            getPermissionGroupForSubscription(subscription);
+          const isMandatoryAddonRow =
+            subscription.isMandatory === true &&
+            subscription.itemName !== PERMISSION_ID_LABEL;
+
+          if (isMandatoryAddonRow) {
+            if (checked) {
+              setMandatoryCancelGroup({
+                carrierVendor: subscription.carrierVendor,
+                permId: subscription.permId,
+                subscriptions: permissionGroup,
+              });
+            } else {
+              permissionGroup.forEach((sub) => {
+                subscriptionStore.removeSelectedSubscription(sub);
+              });
+              setMandatoryCancelGroup(null);
+            }
+            return;
+          }
+
+          const groupHasSelectedMandatoryAddon = permissionGroup.some(
+            (sub) =>
+              sub.isMandatory === true &&
+              sub.itemName !== PERMISSION_ID_LABEL &&
+              subscriptionStore.selectedSubscriptions.some(
+                (selectedSub) => selectedSub.id === sub.id,
+              ),
+          );
+
+          if (!checked && groupHasSelectedMandatoryAddon) {
+            permissionGroup.forEach((sub) => {
+              subscriptionStore.removeSelectedSubscription(sub);
+            });
+            setMandatoryCancelGroup(null);
+            return;
+          }
+
           const associatedAddons =
             subscription.itemName === PERMISSION_ID_LABEL
-              ? filteredSubscriptions.filter(
-                  (sub) =>
-                    sub.permId === subscription.permId &&
-                    sub.itemName !== PERMISSION_ID_LABEL,
+              ? permissionGroup.filter(
+                  (sub) => sub.itemName !== PERMISSION_ID_LABEL,
                 )
               : [];
 
@@ -649,7 +749,7 @@ export const LegendMarketplaceSubscriptions =
             });
           }
         },
-        [subscriptionStore, filteredSubscriptions],
+        [getPermissionGroupForSubscription, subscriptionStore],
       );
 
       const columnDefs: DataGridColumnDefinition<SubscriptionGridRow>[] =
@@ -668,6 +768,27 @@ export const LegendMarketplaceSubscriptions =
               rowGroup: true,
               hide: true,
               suppressHeaderMenuButton: true,
+            },
+            {
+              minWidth: 130,
+              headerName: 'Permission ID',
+              field: 'permId',
+              sortable: true,
+              suppressHeaderMenuButton: true,
+              flex: 1,
+              tooltipField: 'permId',
+              cellRenderer: (
+                params: DataGridCellRendererParams<SubscriptionGridRow>,
+              ) => {
+                if (params.node.group) {
+                  return null;
+                }
+                const isPermissionIdRow =
+                  params.data?.itemName === PERMISSION_ID_LABEL;
+                return (
+                  <span>{isPermissionIdRow ? params.data?.permId : ''}</span>
+                );
+              },
             },
             {
               minWidth: 150,
@@ -749,6 +870,66 @@ export const LegendMarketplaceSubscriptions =
               suppressHeaderMenuButton: true,
               flex: 1,
               tooltipField: 'serviceName',
+              cellRenderer: (
+                params: DataGridCellRendererParams<SubscriptionGridRow>,
+              ) => {
+                if (params.node.group) {
+                  return null;
+                }
+                return (
+                  <div className="legend-marketplace-subscriptions-content__service-cell">
+                    <span>{params.data?.serviceName}</span>
+                  </div>
+                );
+              },
+            },
+            {
+              minWidth: 140,
+              headerName: 'Mandatory Add-On',
+              field: 'isMandatory',
+              sortable: true,
+              suppressHeaderMenuButton: true,
+              flex: 1,
+              valueGetter: (params) => {
+                const node = params.node;
+                if (!node || node.group || !params.data) {
+                  return '';
+                }
+                return params.data.isMandatory === true &&
+                  params.data.itemName !== PERMISSION_ID_LABEL
+                  ? 'Yes'
+                  : 'No';
+              },
+              cellRenderer: (
+                params: DataGridCellRendererParams<SubscriptionGridRow>,
+              ) => {
+                if (params.node.group || !params.data) {
+                  return null;
+                }
+                const isMandatoryAddon =
+                  params.data.isMandatory === true &&
+                  params.data.itemName !== PERMISSION_ID_LABEL;
+                return (
+                  <span
+                    className={clsx(
+                      'legend-marketplace-subscriptions-content__mandatory-flag',
+                      {
+                        'legend-marketplace-subscriptions-content__mandatory-flag--yes':
+                          isMandatoryAddon,
+                        'legend-marketplace-subscriptions-content__mandatory-flag--no':
+                          !isMandatoryAddon,
+                      },
+                    )}
+                    aria-label={
+                      isMandatoryAddon
+                        ? 'Mandatory add-on: Yes'
+                        : 'Mandatory add-on: No'
+                    }
+                  >
+                    {isMandatoryAddon ? 'Yes' : 'No'}
+                  </span>
+                );
+              },
             },
             {
               minWidth: 130,
@@ -1133,6 +1314,12 @@ export const LegendMarketplaceSubscriptions =
             isLoading={isCancelInProgress}
             onClose={() => setIsConfirmDialogOpen(false)}
             onConfirm={handleConfirmCancellation}
+          />
+
+          <MandatoryGroupSelectionDialog
+            open={mandatoryCancelGroup !== null}
+            onClose={() => setMandatoryCancelGroup(null)}
+            onConfirm={handleConfirmMandatoryGroupSelection}
           />
         </LegendMarketplacePage>
       );

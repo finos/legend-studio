@@ -49,6 +49,7 @@ class LegendMarketplaceApplicationCoreOptions {
   newsletterUrl: string | undefined;
   historicalNewsletterUrl: string | undefined;
   documentationUrl: string | undefined;
+  supportUrl: string | undefined;
 
   generalInquiriesUrl: string | undefined;
   requestInternalAppUrl: string | undefined;
@@ -85,6 +86,7 @@ class LegendMarketplaceApplicationCoreOptions {
       ),
       historicalNewsletterUrl: optional(primitive()),
       documentationUrl: optional(primitive()),
+      supportUrl: optional(primitive()),
       generalInquiriesUrl: optional(primitive()),
       requestInternalAppUrl: optional(primitive()),
       defaultSearchSuggestions: optional(list(primitive())),
