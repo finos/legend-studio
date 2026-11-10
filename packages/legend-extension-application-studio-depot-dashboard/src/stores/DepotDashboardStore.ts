@@ -48,6 +48,21 @@ import {
   observable,
 } from 'mobx';
 import type { GridApi } from 'ag-grid-community';
+import { DepotGenerationSpecification } from './DepotGenerationSpecification.js';
+
+export enum DEPOT_DASHBOARD_ELEMENT_TYPE {
+  DATA_PRODUCT = 'Data Product',
+  GENERATION_SPECIFICATION = 'Generation Specification',
+}
+
+export enum GENERATION_SPECIFICATION_DASHBOARD_HEADER {
+  NAME = 'Name',
+  PACKAGE = 'Package',
+  GENERATION_ELEMENT_COUNT = 'Generation Elements',
+  FILE_GENERATION_COUNT = 'File Generations',
+  GENERATION_ELEMENTS = 'Generation Element Paths',
+  FILE_GENERATIONS = 'File Generation Paths',
+}
 
 export enum DATA_PRODUCT_DASHBOARD_HEADER {
   PROJECT_GAV = 'GroupdId:ArtifactId',
@@ -418,11 +433,223 @@ export class DataProductDepotDashboardState {
   }
 }
 
+export class GenerationSpecificationEntityState {
+  readonly store: DepotDashboardStore;
+  readonly summary: StoredSummaryEntity;
+  fetchingElementState = ActionState.create();
+  generationSpecification: DepotGenerationSpecification | undefined;
+  projectId: string | undefined;
+
+  constructor(summary: StoredSummaryEntity, store: DepotDashboardStore) {
+    this.summary = summary;
+    this.store = store;
+
+    makeObservable(this, {
+      generationSpecification: observable,
+      projectId: observable,
+      fetchingElementState: observable,
+      fetchElement: flow,
+      infoFetched: computed,
+    });
+  }
+
+  get infoFetched(): boolean {
+    return (
+      this.generationSpecification !== undefined && this.projectId !== undefined
+    );
+  }
+
+  get id(): string {
+    return `${generateGAVCoordinates(this.summary.groupId, this.summary.artifactId, this.summary.versionId)}:${this.summary.path}`;
+  }
+
+  get gaProject(): string {
+    return `${generateGAVCoordinates(this.summary.groupId, this.summary.artifactId, undefined)}`;
+  }
+
+  get name(): string {
+    return resolvePackagePathAndElementName(this.summary.path)[1];
+  }
+
+  get package(): string {
+    return resolvePackagePathAndElementName(this.summary.path)[0];
+  }
+
+  *fetchElement(): GeneratorFn<void> {
+    try {
+      this.fetchingElementState.inProgress();
+      const entity = (yield this.store.depotServerClient.getVersionEntity(
+        this.summary.groupId,
+        this.summary.artifactId,
+        this.summary.versionId,
+        this.summary.path,
+      )) as Entity;
+      const generationSpecification =
+        DepotGenerationSpecification.serialization.fromJson(entity.content);
+      const projectData = (yield this.store.depotServerClient.getProject(
+        this.summary.groupId,
+        this.summary.artifactId,
+      )) as StoreProjectData;
+      this.projectId = projectData.projectId;
+      this.generationSpecification = generationSpecification;
+      this.store.generationSpecificationDepotState.updateRow(this);
+      this.fetchingElementState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fetchingElementState.fail();
+    }
+  }
+}
+
+export class GenerationSpecificationDepotDashboardState {
+  readonly depotServerClient: DepotServerClient;
+  readonly store: DepotDashboardStore;
+  gridApi: GridApi | undefined;
+
+  MAX_CALLS = 3000;
+  fetchingSummaryState = ActionState.create();
+  scope = DepotScope.RELEASES;
+  includeWorkspaceSnapshot = false;
+  entitiesSummary: StoredSummaryEntity[] | undefined;
+  entityStates: GenerationSpecificationEntityState[] | undefined;
+
+  constructor(
+    depotServerClient: DepotServerClient,
+    store: DepotDashboardStore,
+  ) {
+    this.depotServerClient = depotServerClient;
+    this.store = store;
+    makeObservable(this, {
+      scope: observable,
+      includeWorkspaceSnapshot: observable,
+      entitiesSummary: observable,
+      entityStates: observable,
+      gridApi: observable,
+      setGridApi: action,
+      setIncludeWorkspaceSnapshot: action,
+      fetchedCount: computed,
+      totalCount: computed,
+      fetchProgress: computed,
+      hasMaxCallsWarning: computed,
+      maxCallsWarningMessage: computed,
+      updateRow: action,
+      handleScopeChange: flow,
+      init: flow,
+      fetchEntities: flow,
+    });
+  }
+
+  get totalCount(): number {
+    return this.entitiesSummary?.length ?? 0;
+  }
+
+  get fetchedCount(): number {
+    return this.entityStates?.filter((state) => state.infoFetched).length ?? 0;
+  }
+
+  get fetchProgress(): { fetched: number; total: number; percentage: number } {
+    const total = this.totalCount;
+    const fetched = this.fetchedCount;
+    const percentage = total > 0 ? Math.round((fetched / total) * 100) : 0;
+    return { fetched, total, percentage };
+  }
+
+  get hasMaxCallsWarning(): boolean {
+    return this.totalCount > this.MAX_CALLS;
+  }
+
+  get maxCallsWarningMessage(): string {
+    return `Maximum of ${this.MAX_CALLS} generation specifications fetched out of ${this.totalCount} available. This is to prevent hit on depot server.`;
+  }
+
+  setIncludeWorkspaceSnapshot(val: boolean): void {
+    this.includeWorkspaceSnapshot = val;
+  }
+
+  setGridApi(gridApi: GridApi): void {
+    this.gridApi = gridApi;
+    // rows that finished loading before the grid was ready were not refreshed
+    gridApi.refreshCells({ force: true });
+  }
+
+  updateRow(updatedEntity: GenerationSpecificationEntityState): void {
+    const rowNode = this.gridApi?.getRowNode(updatedEntity.id);
+    if (this.gridApi && rowNode) {
+      this.gridApi.refreshCells({ rowNodes: [rowNode], force: true });
+    }
+  }
+
+  *handleScopeChange(scope: DepotScope): GeneratorFn<void> {
+    if (this.scope !== scope) {
+      this.scope = scope;
+      yield flowResult(this.init()).catch((error) => {
+        assertErrorThrown(error);
+        this.store.applicationStore.notificationService.notifyError(error);
+      });
+    }
+  }
+
+  *init(): GeneratorFn<void> {
+    try {
+      this.fetchingSummaryState.inProgress();
+      this.entityStates = undefined;
+      this.entitiesSummary = undefined;
+      const summary = (
+        (yield this.depotServerClient.getEntitiesSummaryByClassifier(
+          CORE_PURE_PATH.GENERATION_SPECIFICATION,
+          {
+            summary: true,
+            scope: this.scope,
+          },
+        )) as unknown as PlainObject<StoredSummaryEntity>[]
+      )
+        .map((storeEntity) =>
+          StoredSummaryEntity.serialization.fromJson(storeEntity),
+        )
+        .filter(
+          (info) =>
+            this.scope !== DepotScope.SNAPSHOT ||
+            this.includeWorkspaceSnapshot ||
+            info.versionId === MASTER_SNAPSHOT_ALIAS,
+        );
+      this.entitiesSummary = summary;
+      this.entityStates = summary
+        .map((s) => new GenerationSpecificationEntityState(s, this.store))
+        .sort((a, b) => a.gaProject.localeCompare(b.gaProject));
+      flowResult(this.fetchEntities()).catch((error) => {
+        assertErrorThrown(error);
+        this.store.applicationStore.notificationService.notifyError(error);
+      });
+      this.fetchingSummaryState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fetchingSummaryState.fail();
+      this.store.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  *fetchEntities(): GeneratorFn<void> {
+    guaranteeNonNullable(
+      this.entityStates,
+      `Entities summaries have not been fetched`,
+    )
+      .slice(0, this.MAX_CALLS)
+      .forEach((state) => {
+        flowResult(state.fetchElement()).catch((error) => {
+          assertErrorThrown(error);
+          this.store.applicationStore.notificationService.notifyError(error);
+        });
+      });
+  }
+}
+
 export class DepotDashboardStore {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: BasicGraphManagerState;
   dataProductDepotState: DataProductDepotDashboardState;
+  generationSpecificationDepotState: GenerationSpecificationDepotDashboardState;
+  elementType = DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -438,8 +665,20 @@ export class DepotDashboardStore {
       this.depotServerClient,
       this,
     );
+    this.generationSpecificationDepotState =
+      new GenerationSpecificationDepotDashboardState(
+        this.depotServerClient,
+        this,
+      );
     makeObservable(this, {
       dataProductDepotState: observable,
+      generationSpecificationDepotState: observable,
+      elementType: observable,
+      setElementType: action,
     });
+  }
+
+  setElementType(elementType: DEPOT_DASHBOARD_ELEMENT_TYPE): void {
+    this.elementType = elementType;
   }
 }
