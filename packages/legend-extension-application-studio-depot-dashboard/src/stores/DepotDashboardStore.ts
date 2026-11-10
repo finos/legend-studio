@@ -50,6 +50,7 @@ import {
 } from 'mobx';
 import type { GridApi } from 'ag-grid-community';
 import { DepotGenerationSpecification } from './DepotGenerationSpecification.js';
+import { DepotGenerationSpecificationFlattenState } from './DepotGenerationSpecificationFlattenState.js';
 import {
   AuthorizableProjectAction,
   ProjectAccessRole,
@@ -181,6 +182,7 @@ export enum GENERATION_SPECIFICATION_DASHBOARD_HEADER {
   FILE_GENERATION_COUNT = 'File Generations',
   GENERATION_ELEMENTS = 'Generation Element Paths',
   FILE_GENERATIONS = 'File Generation Paths',
+  FLATTEN = 'Flatten',
 }
 
 export enum DATA_PRODUCT_DASHBOARD_HEADER {
@@ -758,6 +760,20 @@ export class GenerationSpecificationEntityState {
     );
   }
 
+  /** Whoever can create a workspace in the project sees Flatten */
+  get canFlatten(): boolean {
+    return Boolean(
+      this.projectAccess?.actions.includes(
+        AuthorizableProjectAction.CREATE_WORKSPACE,
+      ),
+    );
+  }
+
+  /** Only a specification with more than one stage has stages to flatten */
+  get hasStagesToFlatten(): boolean {
+    return (this.generationSpecification?.stageCount ?? 0) > 1;
+  }
+
   get id(): string {
     return `${generateGAVCoordinates(this.summary.groupId, this.summary.artifactId, this.summary.versionId)}:${this.summary.path}`;
   }
@@ -808,6 +824,38 @@ export class GenerationSpecificationEntityState {
 }
 
 export class GenerationSpecificationDepotDashboardState extends DepotDashboardElementTypeState<GenerationSpecificationEntityState> {
+  // the flatten modal on show
+  flattenState: DepotGenerationSpecificationFlattenState | undefined;
+
+  constructor(
+    depotServerClient: DepotServerClient,
+    store: DepotDashboardStore,
+    scope?: DepotScope,
+  ) {
+    super(depotServerClient, store, scope);
+    makeObservable(this, {
+      flattenState: observable,
+      openFlatten: action,
+      closeFlatten: action,
+    });
+  }
+
+  openFlatten(entityState: GenerationSpecificationEntityState): void {
+    this.flattenState = new DepotGenerationSpecificationFlattenState(
+      this.store,
+      entityState,
+    );
+    flowResult(this.flattenState.prepare()).catch(
+      this.store.applicationStore.alertUnhandledError,
+    );
+  }
+
+  closeFlatten(): void {
+    if (this.flattenState?.canClose) {
+      this.flattenState = undefined;
+    }
+  }
+
   get classifierPath(): string {
     return CORE_PURE_PATH.GENERATION_SPECIFICATION;
   }
