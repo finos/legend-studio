@@ -47,12 +47,14 @@ import {
 import type { ColDef, ValueGetterParams } from 'ag-grid-community';
 import {
   DATA_PRODUCT_DASHBOARD_HEADER,
+  DATA_SPACE_DASHBOARD_HEADER,
   DEPOT_DASHBOARD_ELEMENT_TYPE,
   DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER,
   DEPOT_DASHBOARD_SCOPE_QUERY_PARAM,
   GENERATION_SPECIFICATION_DASHBOARD_HEADER,
   type DataProductDepotDashboardState,
   type DataProductEntityState,
+  type DataSpaceEntityState,
   type DepotDashboardStore,
   type DepotProjectAccess,
   type GenerationSpecificationEntityState,
@@ -721,6 +723,111 @@ const buildGenerationSpecificationColumnDefs =
     },
   ];
 
+const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
+  {
+    headerName: '#',
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.node?.rowIndex !== null ? (params.node?.rowIndex ?? 0) + 1 : '',
+    width: 70,
+    pinned: 'left',
+  },
+  {
+    headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.NAME,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.name,
+    cellRenderer: ElementNameCellRenderer,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTION_CONTEXT_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executionContextNames.length,
+    filter: 'agNumberColumnFilter',
+    minWidth: 170,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTABLE_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executableCount,
+    filter: 'agNumberColumnFilter',
+    minWidth: 140,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.DIAGRAM_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.diagramPaths.length,
+    filter: 'agNumberColumnFilter',
+    minWidth: 130,
+  },
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_ID,
+    cellRenderer: ProjectIdCellRenderer,
+    minWidth: 250,
+  },
+  ...buildProjectAccessColumnDefs<DataSpaceEntityState>(),
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.TITLE,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.title,
+    minWidth: 220,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.DEFAULT_EXECUTION_CONTEXT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.defaultExecutionContext,
+    minWidth: 220,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.SUPPORT_INFO,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.supportLabel,
+    minWidth: 140,
+  },
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.gaProject,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_VERSION,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.summary.versionId,
+    minWidth: 150,
+  },
+  {
+    headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.package,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTION_CONTEXTS,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executionContextNames.join(', '),
+    minWidth: 300,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTABLES,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executableTitles.join(', '),
+    minWidth: 300,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.DIAGRAMS,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.diagramPaths.join(', '),
+    minWidth: 300,
+  },
+];
+
+const PROGRESS_LABEL: Record<DEPOT_DASHBOARD_ELEMENT_TYPE, string> = {
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT]: 'Data Products',
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE]: 'Data Spaces',
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION]:
+    'Generation Specifications',
+};
+
 // Enhanced progress header component with warning
 const ProgressHeader = observer(
   (props: {
@@ -869,11 +976,9 @@ export const DepotDashboard = withDepotSetupStore(
   observer(() => {
     const depotSetupStore = useDepotSetupStore();
     const dataProductDepotState = depotSetupStore.dataProductDepotState;
+    const dataSpaceDepotState = depotSetupStore.dataSpaceDepotState;
     const generationSpecificationDepotState =
       depotSetupStore.generationSpecificationDepotState;
-    const isGenerationSpecification =
-      depotSetupStore.elementType ===
-      DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION;
     // the scope controls act on the element type on display
     const scopedState = depotSetupStore.getDepotState(
       depotSetupStore.elementType,
@@ -975,34 +1080,104 @@ export const DepotDashboard = withDepotSetupStore(
 
     // each element type is fetched the first time it is shown
     useEffect(() => {
-      if (
-        !isGenerationSpecification &&
-        dataProductDepotState.fetchingProductsState.isInInitialState
-      ) {
-        flowResult(dataProductDepotState.init()).catch(
+      if (scopedState.fetchingSummaryState.isInInitialState) {
+        flowResult(scopedState.init()).catch(
           depotSetupStore.applicationStore.alertUnhandledError,
         );
       }
-    }, [
-      isGenerationSpecification,
-      dataProductDepotState,
-      depotSetupStore.applicationStore.alertUnhandledError,
-    ]);
+    }, [scopedState, depotSetupStore.applicationStore.alertUnhandledError]);
 
-    useEffect(() => {
-      if (
-        isGenerationSpecification &&
-        generationSpecificationDepotState.fetchingSummaryState.isInInitialState
-      ) {
-        flowResult(generationSpecificationDepotState.init()).catch(
-          depotSetupStore.applicationStore.alertUnhandledError,
-        );
+    const renderGrid = (): React.ReactNode => {
+      switch (depotSetupStore.elementType) {
+        case DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE:
+          return (
+            <DataGrid
+              key="data-spaces"
+              rowData={dataSpaceDepotState.entityStates ?? null}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => `${data.data.id}`,
+                suppressHorizontalScroll: false,
+                alwaysShowHorizontalScroll: true,
+                rowBuffer: 10,
+                onFirstDataRendered: (params) => {
+                  dataSpaceDepotState.setGridApi(params.api);
+                },
+              }}
+              suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={false}
+              defaultColDef={{
+                filter: true,
+                sortable: true,
+                resizable: true,
+                floatingFilter: true,
+              }}
+              columnDefs={buildDataSpaceColumnDefs()}
+            />
+          );
+        case DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION:
+          return (
+            <DataGrid
+              key="generation-specifications"
+              rowData={generationSpecificationDepotState.entityStates ?? null}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => `${data.data.id}`,
+                suppressHorizontalScroll: false,
+                alwaysShowHorizontalScroll: true,
+                rowBuffer: 10,
+                onFirstDataRendered: (params) => {
+                  generationSpecificationDepotState.setGridApi(params.api);
+                },
+              }}
+              suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={false}
+              defaultColDef={{
+                filter: true,
+                sortable: true,
+                resizable: true,
+                floatingFilter: true,
+              }}
+              columnDefs={buildGenerationSpecificationColumnDefs()}
+            />
+          );
+        default:
+          return (
+            <DataGrid
+              key="data-products"
+              rowData={dataProductDepotState.dataProductEntitiesStates ?? null}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => `${data.data.id}`,
+                rowSelection: {
+                  mode: 'multiRow',
+                  checkboxes: false,
+                  headerCheckbox: false,
+                },
+                suppressHorizontalScroll: false,
+                alwaysShowHorizontalScroll: true,
+                animateRows: true, // Smooth animations when rows update
+                rowBuffer: 10, // Keep extra rows rendered for smooth scrolling
+                onFirstDataRendered: (params) => {
+                  dataProductDepotState.setGridApi(params.api);
+                },
+              }}
+              suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={false}
+              defaultColDef={{
+                filter: true, // Enable filters for all columns
+                sortable: true, // Enable sorting for all columns
+                resizable: true, // Allow column resizing
+                floatingFilter: true, // Show floating filter row below headers
+              }}
+              columnDefs={buildColumnDefs()}
+            />
+          );
       }
-    }, [
-      isGenerationSpecification,
-      generationSpecificationDepotState,
-      depotSetupStore.applicationStore.alertUnhandledError,
-    ]);
+    };
 
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
@@ -1024,24 +1199,11 @@ export const DepotDashboard = withDepotSetupStore(
                 Depot Dashboard
               </h1>
               <div className="depot-dashboard__options__panel">
-                {isGenerationSpecification ? (
-                  <ProgressHeader
-                    label="Generation Specifications"
-                    isLoading={
-                      generationSpecificationDepotState.fetchingSummaryState
-                        .isInProgress
-                    }
-                    source={generationSpecificationDepotState}
-                  />
-                ) : (
-                  <ProgressHeader
-                    label="Data Products"
-                    isLoading={
-                      dataProductDepotState.fetchingProductsState.isInProgress
-                    }
-                    source={dataProductDepotState}
-                  />
-                )}
+                <ProgressHeader
+                  label={PROGRESS_LABEL[depotSetupStore.elementType]}
+                  isLoading={scopedState.fetchingSummaryState.isInProgress}
+                  source={scopedState}
+                />
                 <div
                   style={{
                     marginBottom: '1rem',
@@ -1162,69 +1324,7 @@ export const DepotDashboard = withDepotSetupStore(
                     'ag-theme-balham-dark': darkMode,
                   })}
                 >
-                  {isGenerationSpecification ? (
-                    <DataGrid
-                      key="generation-specifications"
-                      rowData={
-                        generationSpecificationDepotState.entityStates ?? null
-                      }
-                      gridOptions={{
-                        suppressScrollOnNewData: true,
-                        getRowId: (data) => `${data.data.id}`,
-                        suppressHorizontalScroll: false,
-                        alwaysShowHorizontalScroll: true,
-                        rowBuffer: 10,
-                        onFirstDataRendered: (params) => {
-                          generationSpecificationDepotState.setGridApi(
-                            params.api,
-                          );
-                        },
-                      }}
-                      suppressFieldDotNotation={true}
-                      suppressClipboardPaste={false}
-                      suppressContextMenu={false}
-                      defaultColDef={{
-                        filter: true,
-                        sortable: true,
-                        resizable: true,
-                        floatingFilter: true,
-                      }}
-                      columnDefs={buildGenerationSpecificationColumnDefs()}
-                    />
-                  ) : (
-                    <DataGrid
-                      key="data-products"
-                      rowData={
-                        dataProductDepotState.dataProductEntitiesStates ?? null
-                      }
-                      gridOptions={{
-                        suppressScrollOnNewData: true,
-                        getRowId: (data) => `${data.data.id}`,
-                        rowSelection: {
-                          mode: 'multiRow',
-                          checkboxes: false,
-                          headerCheckbox: false,
-                        },
-                        suppressHorizontalScroll: false,
-                        alwaysShowHorizontalScroll: true,
-                        animateRows: true, // Smooth animations when rows update
-                        rowBuffer: 10, // Keep extra rows rendered for smooth scrolling
-                        onFirstDataRendered: (params) => {
-                          dataProductDepotState.setGridApi(params.api);
-                        },
-                      }}
-                      suppressFieldDotNotation={true}
-                      suppressClipboardPaste={false}
-                      suppressContextMenu={false}
-                      defaultColDef={{
-                        filter: true, // Enable filters for all columns
-                        sortable: true, // Enable sorting for all columns
-                        resizable: true, // Allow column resizing
-                        floatingFilter: true, // Show floating filter row below headers
-                      }}
-                      columnDefs={buildColumnDefs()}
-                    />
-                  )}
+                  {renderGrid()}
                 </div>
               </div>
             </div>
