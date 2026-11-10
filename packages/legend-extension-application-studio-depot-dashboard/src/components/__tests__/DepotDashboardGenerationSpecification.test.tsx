@@ -25,7 +25,10 @@ import {
 import {
   AuthorizableProjectAction,
   SDLCServerClient,
+  Workspace,
+  WorkspaceType,
 } from '@finos/legend-server-sdlc';
+import { DEPOT_DASHBOARD_FLATTEN_WORKSPACE_ID } from '../../stores/DepotGenerationSpecificationFlattenState.js';
 import { Route, Routes } from '@finos/legend-application/browser';
 import { createSpy } from '@finos/legend-shared/test';
 import type { PlainObject } from '@finos/legend-shared';
@@ -563,4 +566,361 @@ test('fetch generation specifications a few at a time and each project once', as
         entityState.projectId === `PROJECT-${entityState.summary.artifactId}`,
     ),
   ).toBe(true);
+});
+
+const ALPHA_PATH = 'test::alpha::AlphaGenerations';
+
+// A mock SDLC for flattening: alpha and beta can create workspaces and submit
+// reviews, gamma can do neither. The workspace's configuration changes as it
+// is updated, as on a real server.
+const spyFlattenSdlc = (
+  sdlcServerClient: SDLCServerClient,
+  options?: {
+    masterContent?: PlainObject;
+    configuration?: PlainObject;
+    failEntityChanges?: boolean;
+  },
+) => {
+  createSpy(sdlcServerClient, 'getAccessRole').mockResolvedValue({
+    accessRole: 'DEVELOPER',
+  });
+  createSpy(sdlcServerClient, 'getAutorizedActions').mockImplementation(
+    async (projectId) =>
+      projectId === 'PROJECT-gamma'
+        ? [AuthorizableProjectAction.SUBMIT_REVIEW]
+        : [
+            AuthorizableProjectAction.CREATE_WORKSPACE,
+            AuthorizableProjectAction.SUBMIT_REVIEW,
+          ],
+  );
+  const getEntitySpy = createSpy(
+    sdlcServerClient,
+    'getEntity',
+  ).mockImplementation(async (projectId, workspace, path) => ({
+    path,
+    classifierPath: CORE_PURE_PATH.GENERATION_SPECIFICATION,
+    content: options?.masterContent ?? CONTENT.get(path),
+  }));
+  // the usual name is taken
+  createSpy(sdlcServerClient, 'getGroupWorkspaces').mockResolvedValue([
+    {
+      projectId: 'PROJECT-alpha',
+      workspaceId: DEPOT_DASHBOARD_FLATTEN_WORKSPACE_ID,
+    },
+  ]);
+  const createWorkspaceSpy = createSpy(
+    sdlcServerClient,
+    'createWorkspace',
+  ).mockImplementation(async (projectId, patch, workspaceId) => ({
+    projectId,
+    workspaceId,
+  }));
+  let configuration: PlainObject = options?.configuration ?? {
+    projectId: 'PROJECT-alpha',
+    groupId: 'test.group',
+    artifactId: 'alpha',
+    projectType: 'MANAGED',
+    projectStructureVersion: { version: 11, extensionVersion: 1 },
+    platformConfigurations: [{ name: 'legend-engine', version: '4.1.0' }],
+    projectDependencies: [],
+  };
+  createSpy(sdlcServerClient, 'getConfiguration').mockImplementation(
+    async () => configuration,
+  );
+  createSpy(
+    sdlcServerClient,
+    'getLatestProjectStructureVersion',
+  ).mockResolvedValue({ version: 12, extensionVersion: 2 });
+  const updateConfigurationSpy = createSpy(
+    sdlcServerClient,
+    'updateConfiguration',
+  ).mockImplementation(async (projectId, workspace, command) => {
+    configuration = {
+      ...configuration,
+      projectStructureVersion: command.projectStructureVersion,
+      ...(command.platformConfigurations
+        ? { platformConfigurations: undefined }
+        : {}),
+    };
+    return {};
+  });
+  const entityChangesSpy = createSpy(
+    sdlcServerClient,
+    'performEntityChanges',
+  ).mockImplementation(async () => {
+    if (options?.failEntityChanges) {
+      throw new Error('Entity changes refused');
+    }
+    return undefined;
+  });
+  let resolveReview: (() => void) | undefined;
+  const createReviewSpy = createSpy(
+    sdlcServerClient,
+    'createReview',
+  ).mockImplementation(
+    (projectId, patch, command) =>
+      new Promise((resolve) => {
+        resolveReview = () =>
+          resolve({
+            id: '42',
+            projectId,
+            workspaceId: command.workspaceId,
+            workspaceType: command.workspaceType,
+            title: command.title,
+            description: command.description,
+            webURL: 'https://gitlab.example.com/alpha/-/merge_requests/42',
+            state: 'open',
+            author: { name: 'Test User', userId: 'test' },
+            createdAt: '2026-11-10T00:00:00.000Z',
+          });
+      }),
+  );
+  return {
+    getEntitySpy,
+    createWorkspaceSpy,
+    updateConfigurationSpy,
+    entityChangesSpy,
+    createReviewSpy,
+    resolveReview: () => resolveReview?.(),
+  };
+};
+
+const openFlatten = async (path: string): Promise<void> => {
+  const button = await screen.findByTitle(
+    `Flatten the stages of ${path} in a review`,
+  );
+  await act(async () => {
+    fireEvent.click(button);
+  });
+};
+
+const stepStatuses = (): (string | null)[] =>
+  screen
+    .getAllByTestId('depot-flatten-step')
+    .map((step) => step.getAttribute('data-status'));
+
+test('show Flatten to whoever can create a workspace, enabled with more than one stage', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  spyFlattenSdlc(sdlcServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+
+  // alpha: 4 stages
+  const alpha = await screen.findByTitle(
+    `Flatten the stages of ${ALPHA_PATH} in a review`,
+  );
+  expect(alpha.hasAttribute('disabled')).toBe(false);
+  // beta: no stages
+  const [beta] = screen.getAllByTitle('One stage or none: nothing to flatten');
+  expect(beta?.hasAttribute('disabled')).toBe(true);
+  // gamma: cannot create a workspace
+  expect(screen.getAllByRole('button', { name: 'Flatten' })).toHaveLength(2);
+});
+
+test('flatten a generation specification in a new workspace and open a review', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  const spies = spyFlattenSdlc(sdlcServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await openFlatten(ALPHA_PATH);
+
+  await screen.findByText('Same as 1.0.0. 4 stages, 5 generation elements.');
+  expect(spies.getEntitySpy).toHaveBeenCalledWith(
+    'PROJECT-alpha',
+    undefined,
+    ALPHA_PATH,
+  );
+  expect(spies.createWorkspaceSpy).not.toHaveBeenCalled();
+
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+  });
+  await waitFor(() => expect(spies.createReviewSpy).toHaveBeenCalled());
+  // the modal stays open until the review is created
+  expect(
+    screen.getByRole('button', { name: 'Close' }).hasAttribute('disabled'),
+  ).toBe(true);
+  await act(async () => {
+    spies.resolveReview();
+  });
+
+  const studioLink = await screen.findByRole('link', {
+    name: /Open the review in Studio/,
+  });
+  expect(studioLink.getAttribute('href')).toContain('/review/PROJECT-alpha/42');
+  expect(
+    screen
+      .getByRole('link', { name: /Open the merge request in GitLab/ })
+      .getAttribute('href'),
+  ).toBe('https://gitlab.example.com/alpha/-/merge_requests/42');
+  expect(stepStatuses()).toEqual(Array(6).fill('DONE'));
+
+  // a group workspace with a new name, since the usual one is taken
+  const [projectId, patch, workspaceId, workspaceType] = spies
+    .createWorkspaceSpy.mock.calls[0] as unknown[];
+  expect([projectId, patch, workspaceType]).toEqual([
+    'PROJECT-alpha',
+    undefined,
+    WorkspaceType.GROUP,
+  ]);
+  expect(workspaceId).toMatch(
+    new RegExp(`^${DEPOT_DASHBOARD_FLATTEN_WORKSPACE_ID}-.+`),
+  );
+  // later calls go to that group workspace
+  const workspace = spies.updateConfigurationSpy.mock.calls[0]?.[1];
+  expect(workspace).toBeInstanceOf(Workspace);
+  expect(workspace?.workspaceType).toBe(WorkspaceType.GROUP);
+
+  // one commit for the structure, one for the overrides, one for the flatten
+  const [structureCommand, overridesCommand] =
+    spies.updateConfigurationSpy.mock.calls.map((call) => call[2]);
+  expect(structureCommand?.projectStructureVersion).toEqual({
+    version: 12,
+    extensionVersion: 2,
+  });
+  expect(structureCommand).not.toHaveProperty('platformConfigurations');
+  expect(overridesCommand?.projectStructureVersion).toEqual({
+    version: 12,
+    extensionVersion: 2,
+  });
+  // as Studio's "use latest versions": an update without a list, which SDLC
+  // reads as no overrides
+  expect(overridesCommand?.platformConfigurations).toEqual({});
+  const entityChange = (
+    spies.entityChangesSpy.mock.calls[0]?.[2] as {
+      entityChanges: {
+        type: string;
+        entityPath: string;
+        content: PlainObject;
+      }[];
+    }
+  ).entityChanges[0];
+  expect(entityChange?.type).toBe('MODIFY');
+  expect(entityChange?.entityPath).toBe(ALPHA_PATH);
+  expect(entityChange?.content.generationNodes).toEqual([
+    {
+      id: 'n1',
+      generationElements: range(5).map((i) => `test::alpha::Model${i}`),
+    },
+  ]);
+
+  // the review says what to check, and what else changed
+  const reviewCommand = spies.createReviewSpy.mock.calls[0]?.[2];
+  expect(reviewCommand?.workspaceType).toBe(WorkspaceType.GROUP);
+  expect(reviewCommand?.description).toContain('[!WARNING]');
+  expect(reviewCommand?.description).toContain(
+    'Project structure updated from 11.1 to 12.2',
+  );
+  expect(reviewCommand?.description).toContain('legend-engine 4.1.0');
+});
+
+test('skip the configuration steps when there is nothing to change', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  const spies = spyFlattenSdlc(sdlcServerClient, {
+    configuration: {
+      projectId: 'PROJECT-alpha',
+      groupId: 'test.group',
+      artifactId: 'alpha',
+      projectType: 'MANAGED',
+      projectStructureVersion: { version: 12, extensionVersion: 2 },
+      projectDependencies: [],
+    },
+  });
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await openFlatten(ALPHA_PATH);
+  await screen.findByText('Same as 1.0.0. 4 stages, 5 generation elements.');
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+  });
+  await waitFor(() => expect(spies.createReviewSpy).toHaveBeenCalled());
+  await act(async () => {
+    spies.resolveReview();
+  });
+  await screen.findByRole('link', { name: /Open the review in Studio/ });
+
+  expect(spies.updateConfigurationSpy).not.toHaveBeenCalled();
+  expect(stepStatuses()).toEqual([
+    'DONE',
+    'DONE',
+    'SKIPPED',
+    'SKIPPED',
+    'DONE',
+    'DONE',
+  ]);
+  await screen.findByText('Already on the latest, 12.2');
+  await screen.findByText('None to remove');
+});
+
+test('stop before creating anything when master has nothing to flatten', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  const spies = spyFlattenSdlc(sdlcServerClient, {
+    masterContent: {
+      _type: 'generationSpecification',
+      generationNodes: [
+        {
+          id: 'all',
+          generationElements: range(5).map((i) => `test::alpha::Model${i}`),
+        },
+      ],
+    },
+  });
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await openFlatten(ALPHA_PATH);
+
+  await screen.findByText(
+    'Differs from 1.0.0: master is flattened. Master has one stage: nothing to flatten.',
+  );
+  expect(
+    screen.getByRole('button', { name: 'Start' }).hasAttribute('disabled'),
+  ).toBe(true);
+  expect(spies.createWorkspaceSpy).not.toHaveBeenCalled();
+});
+
+test('stop at a failed step and point to the workspace', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  const spies = spyFlattenSdlc(sdlcServerClient, { failEntityChanges: true });
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await openFlatten(ALPHA_PATH);
+  await screen.findByText('Same as 1.0.0. 4 stages, 5 generation elements.');
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+  });
+
+  await screen.findByText('Entity changes refused');
+  expect(stepStatuses()).toEqual([
+    'DONE',
+    'DONE',
+    'DONE',
+    'DONE',
+    'FAILED',
+    'PENDING',
+  ]);
+  expect(spies.createReviewSpy).not.toHaveBeenCalled();
+  const workspaceLink = screen.getByRole('link', {
+    name: /Open the workspace in Studio/,
+  });
+  expect(workspaceLink.getAttribute('href')).toContain(
+    `/edit/PROJECT-alpha/groupWorkspace/${DEPOT_DASHBOARD_FLATTEN_WORKSPACE_ID}-`,
+  );
+  expect(
+    screen.getByRole('button', { name: 'Close' }).hasAttribute('disabled'),
+  ).toBe(false);
 });

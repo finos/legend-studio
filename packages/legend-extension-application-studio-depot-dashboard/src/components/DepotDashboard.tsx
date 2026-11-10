@@ -69,6 +69,7 @@ import {
   V1_dataProductHasTitleAndDescription,
 } from '@finos/legend-graph';
 import { DepotScope } from '@finos/legend-server-depot';
+import { DepotGenerationSpecificationFlattenModal } from './DepotGenerationSpecificationFlattenModal.js';
 
 const EmptyCellRenderer = (col: string, message: string) => (
   <div
@@ -585,6 +586,37 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
   ];
 };
 
+// Whoever can create a workspace in the project can flatten a specification
+// that has more than one stage
+const FlattenCellRenderer = (
+  params: DataGridCellRendererParams<GenerationSpecificationEntityState>,
+) => {
+  const entityState = params.data;
+  if (!entityState?.canFlatten) {
+    return null;
+  }
+  return (
+    <button
+      type="button"
+      className="scope-toggle-btn"
+      style={{ padding: '0 0.8em', lineHeight: '2.2rem' }}
+      disabled={!entityState.hasStagesToFlatten}
+      title={
+        entityState.hasStagesToFlatten
+          ? `Flatten the stages of ${entityState.summary.path} in a review`
+          : 'One stage or none: nothing to flatten'
+      }
+      onClick={() =>
+        entityState.store.generationSpecificationDepotState.openFlatten(
+          entityState,
+        )
+      }
+    >
+      Flatten
+    </button>
+  );
+};
+
 const buildGenerationSpecificationColumnDefs =
   (): ColDef<GenerationSpecificationEntityState>[] => [
     {
@@ -636,6 +668,13 @@ const buildGenerationSpecificationColumnDefs =
       minWidth: 250,
     },
     ...buildProjectAccessColumnDefs<GenerationSpecificationEntityState>(),
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.FLATTEN,
+      cellRenderer: FlattenCellRenderer,
+      filter: false,
+      sortable: false,
+      minWidth: 120,
+    },
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
       valueGetter: (
@@ -961,6 +1000,12 @@ export const DepotDashboard = withDepotSetupStore(
       applicationStore.assistantService.toggleAssistant();
     return (
       <div className="app__page">
+        {generationSpecificationDepotState.flattenState && (
+          <DepotGenerationSpecificationFlattenModal
+            flattenState={generationSpecificationDepotState.flattenState}
+            onClose={() => generationSpecificationDepotState.closeFlatten()}
+          />
+        )}
         <div className="depot-dashboard">
           <div className="depot-dashboard__body">
             <div className="activity-bar">
