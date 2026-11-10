@@ -39,8 +39,12 @@ import {
 import type { ColDef, ValueGetterParams } from 'ag-grid-community';
 import {
   DATA_PRODUCT_DASHBOARD_HEADER,
+  DEPOT_DASHBOARD_ELEMENT_TYPE,
+  GENERATION_SPECIFICATION_DASHBOARD_HEADER,
   type DataProductDepotDashboardState,
   type DataProductEntityState,
+  type DepotDashboardStore,
+  type GenerationSpecificationEntityState,
   getDataProductGridValue,
 } from '../stores/DepotDashboardStore.js';
 import { observer } from 'mobx-react-lite';
@@ -91,14 +95,20 @@ const DataProductCellRenderer = (
   );
 };
 
+type DepotDashboardProjectRow = {
+  projectId: string | undefined;
+  summary: { versionId: string; path: string };
+  store: DepotDashboardStore;
+};
+
 const ProjectIdCellRenderer = (
-  params: DataGridCellRendererParams<DataProductEntityState>,
+  params: DataGridCellRendererParams<DepotDashboardProjectRow>,
 ) => {
   const entityState = params.data;
   const projectId = entityState?.projectId;
 
   const getProjectUrl = (
-    _entityState: DataProductEntityState,
+    _entityState: DepotDashboardProjectRow,
     _projectId: string,
   ): string => {
     return _entityState.store.applicationStore.navigationService.navigator.generateAddress(
@@ -469,16 +479,103 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
   ];
 };
 
+const buildGenerationSpecificationColumnDefs =
+  (): ColDef<GenerationSpecificationEntityState>[] => [
+    {
+      headerName: '#',
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) =>
+        params.node?.rowIndex !== null ? (params.node?.rowIndex ?? 0) + 1 : '',
+      width: 70,
+      pinned: 'left',
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.NAME,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.name,
+      minWidth: 250,
+    },
+    {
+      headerName:
+        GENERATION_SPECIFICATION_DASHBOARD_HEADER.GENERATION_ELEMENT_COUNT,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.generationNodes.length,
+      filter: 'agNumberColumnFilter',
+      minWidth: 180,
+    },
+    {
+      headerName:
+        GENERATION_SPECIFICATION_DASHBOARD_HEADER.FILE_GENERATION_COUNT,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.fileGenerations.length,
+      filter: 'agNumberColumnFilter',
+      minWidth: 180,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_ID,
+      cellRenderer: ProjectIdCellRenderer,
+      minWidth: 250,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.gaProject,
+      minWidth: 250,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_VERSION,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.summary.versionId,
+      minWidth: 150,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.package,
+      minWidth: 250,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.GENERATION_ELEMENTS,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) =>
+        params.data?.generationSpecification?.generationNodes
+          .map((node) => node.generationElement)
+          .join(', '),
+      minWidth: 400,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.FILE_GENERATIONS,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.fileGenerations.join(', '),
+      minWidth: 400,
+    },
+  ];
+
 // Enhanced progress header component with warning
 const ProgressHeader = observer(
-  (props: { dataProductDepotState: DataProductDepotDashboardState }) => {
-    const { dataProductDepotState } = props;
-    const progress = dataProductDepotState.fetchProgress;
-    const isLoading = dataProductDepotState.fetchingProductsState.isInProgress;
+  (props: {
+    label: string;
+    isLoading: boolean;
+    source: Pick<
+      DataProductDepotDashboardState,
+      'fetchProgress' | 'hasMaxCallsWarning' | 'maxCallsWarningMessage'
+    >;
+  }) => {
+    const { label, isLoading, source } = props;
+    const progress = source.fetchProgress;
     const isComplete =
       progress.fetched === progress.total && progress.total > 0;
-    const hasWarning = dataProductDepotState.hasMaxCallsWarning;
-    const warningMessage = dataProductDepotState.maxCallsWarningMessage;
+    const hasWarning = source.hasMaxCallsWarning;
+    const warningMessage = source.maxCallsWarningMessage;
 
     return (
       <div>
@@ -515,7 +612,7 @@ const ProgressHeader = observer(
               />
             )}
             <span style={{ fontWeight: '500', color: '#f7fafc' }}>
-              Data Products: {progress.fetched} / {progress.total} fetched
+              {label}: {progress.fetched} / {progress.total} fetched
             </span>
             {progress.total > 0 && (
               <span style={{ color: '#a0aec0' }}>({progress.percentage}%)</span>
@@ -611,30 +708,41 @@ export const DepotDashboard = withDepotSetupStore(
   observer(() => {
     const depotSetupStore = useDepotSetupStore();
     const dataProductDepotState = depotSetupStore.dataProductDepotState;
+    const generationSpecificationDepotState =
+      depotSetupStore.generationSpecificationDepotState;
+    const isGenerationSpecification =
+      depotSetupStore.elementType ===
+      DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION;
+    // the scope controls act on the element type on display
+    const scopedState = isGenerationSpecification
+      ? generationSpecificationDepotState
+      : dataProductDepotState;
     const applicationStore = depotSetupStore.applicationStore;
     // Track the active color theme so the AG-Grid skin and the selector follow
     // the rest of the app instead of being locked to dark. Computed reads on
     // `layoutService` stay reactive because this component is an `observer`.
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const dataProductOption = {
-      value: 'Data Product',
-      label: 'Data Product',
+    const options = Object.values(DEPOT_DASHBOARD_ELEMENT_TYPE).map(
+      (elementType) => ({ value: elementType, label: elementType }),
+    );
+    const selectedOption = {
+      value: depotSetupStore.elementType,
+      label: depotSetupStore.elementType,
     };
-    const options = [dataProductOption];
 
     // Toggle handler
     const handleScopeToggle = (scope: DepotScope) => {
-      flowResult(dataProductDepotState.handleScopeChange(scope)).catch(
+      flowResult(scopedState.handleScopeChange(scope)).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
     };
 
     const handleWorkspaceSnapshotToggle = () => {
-      dataProductDepotState.setIncludeWorkspaceSnapshot(
-        !dataProductDepotState.includeWorkspaceSnapshot,
+      scopedState.setIncludeWorkspaceSnapshot(
+        !scopedState.includeWorkspaceSnapshot,
       );
-      flowResult(dataProductDepotState.init()).catch(
+      flowResult(scopedState.init()).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
     };
@@ -645,6 +753,22 @@ export const DepotDashboard = withDepotSetupStore(
       );
     }, [
       dataProductDepotState,
+      depotSetupStore.applicationStore.alertUnhandledError,
+    ]);
+
+    // generation specifications are fetched the first time they are shown
+    useEffect(() => {
+      if (
+        isGenerationSpecification &&
+        generationSpecificationDepotState.fetchingSummaryState.isInInitialState
+      ) {
+        flowResult(generationSpecificationDepotState.init()).catch(
+          depotSetupStore.applicationStore.alertUnhandledError,
+        );
+      }
+    }, [
+      isGenerationSpecification,
+      generationSpecificationDepotState,
       depotSetupStore.applicationStore.alertUnhandledError,
     ]);
 
@@ -662,7 +786,24 @@ export const DepotDashboard = withDepotSetupStore(
                 Depot Dashboard
               </h1>
               <div className="depot-dashboard__options__panel">
-                <ProgressHeader dataProductDepotState={dataProductDepotState} />
+                {isGenerationSpecification ? (
+                  <ProgressHeader
+                    label="Generation Specifications"
+                    isLoading={
+                      generationSpecificationDepotState.fetchingSummaryState
+                        .isInProgress
+                    }
+                    source={generationSpecificationDepotState}
+                  />
+                ) : (
+                  <ProgressHeader
+                    label="Data Products"
+                    isLoading={
+                      dataProductDepotState.fetchingProductsState.isInProgress
+                    }
+                    source={dataProductDepotState}
+                  />
+                )}
                 <div
                   style={{
                     marginBottom: '1rem',
@@ -676,7 +817,7 @@ export const DepotDashboard = withDepotSetupStore(
                     type="button"
                     className={clsx('scope-toggle-btn', {
                       'scope-toggle-btn--active':
-                        dataProductDepotState.scope === DepotScope.RELEASES,
+                        scopedState.scope === DepotScope.RELEASES,
                     })}
                     onClick={() => handleScopeToggle(DepotScope.RELEASES)}
                   >
@@ -686,13 +827,13 @@ export const DepotDashboard = withDepotSetupStore(
                     type="button"
                     className={clsx('scope-toggle-btn', {
                       'scope-toggle-btn--active':
-                        dataProductDepotState.scope === DepotScope.SNAPSHOT,
+                        scopedState.scope === DepotScope.SNAPSHOT,
                     })}
                     onClick={() => handleScopeToggle(DepotScope.SNAPSHOT)}
                   >
                     Snapshots
                   </button>
-                  {dataProductDepotState.scope === DepotScope.SNAPSHOT && (
+                  {scopedState.scope === DepotScope.SNAPSHOT && (
                     <label
                       style={{
                         marginLeft: '2rem',
@@ -704,7 +845,7 @@ export const DepotDashboard = withDepotSetupStore(
                     >
                       <input
                         type="checkbox"
-                        checked={dataProductDepotState.includeWorkspaceSnapshot}
+                        checked={scopedState.includeWorkspaceSnapshot}
                         onChange={handleWorkspaceSnapshotToggle}
                         style={{ accentColor: '#2563eb' }}
                       />
@@ -716,15 +857,20 @@ export const DepotDashboard = withDepotSetupStore(
                   Element Type
                 </div>
                 <CustomSelectorInput
+                  inputId="depot-dashboard-element-type"
                   options={options}
-                  disabled={true}
                   isLoading={false}
                   onChange={(
-                    option: { label: string; value: string } | null,
+                    option: {
+                      label: string;
+                      value: DEPOT_DASHBOARD_ELEMENT_TYPE;
+                    } | null,
                   ) => {
-                    //
+                    if (option) {
+                      depotSetupStore.setElementType(option.value);
+                    }
                   }}
-                  value={dataProductOption}
+                  value={selectedOption}
                   placeholder={'Choose an Element'}
                   className="depot-dashboard__selector"
                   darkMode={darkMode}
@@ -737,37 +883,69 @@ export const DepotDashboard = withDepotSetupStore(
                     'ag-theme-balham-dark': darkMode,
                   })}
                 >
-                  <DataGrid
-                    rowData={
-                      dataProductDepotState.dataProductEntitiesStates ?? null
-                    }
-                    gridOptions={{
-                      suppressScrollOnNewData: true,
-                      getRowId: (data) => `${data.data.id}`,
-                      rowSelection: {
-                        mode: 'multiRow',
-                        checkboxes: false,
-                        headerCheckbox: false,
-                      },
-                      suppressHorizontalScroll: false,
-                      alwaysShowHorizontalScroll: true,
-                      animateRows: true, // Smooth animations when rows update
-                      rowBuffer: 10, // Keep extra rows rendered for smooth scrolling
-                      onFirstDataRendered: (params) => {
-                        dataProductDepotState.setGridApi(params.api);
-                      },
-                    }}
-                    suppressFieldDotNotation={true}
-                    suppressClipboardPaste={false}
-                    suppressContextMenu={false}
-                    defaultColDef={{
-                      filter: true, // Enable filters for all columns
-                      sortable: true, // Enable sorting for all columns
-                      resizable: true, // Allow column resizing
-                      floatingFilter: true, // Show floating filter row below headers
-                    }}
-                    columnDefs={buildColumnDefs()}
-                  />
+                  {isGenerationSpecification ? (
+                    <DataGrid
+                      key="generation-specifications"
+                      rowData={
+                        generationSpecificationDepotState.entityStates ?? null
+                      }
+                      gridOptions={{
+                        suppressScrollOnNewData: true,
+                        getRowId: (data) => `${data.data.id}`,
+                        suppressHorizontalScroll: false,
+                        alwaysShowHorizontalScroll: true,
+                        rowBuffer: 10,
+                        onFirstDataRendered: (params) => {
+                          generationSpecificationDepotState.setGridApi(
+                            params.api,
+                          );
+                        },
+                      }}
+                      suppressFieldDotNotation={true}
+                      suppressClipboardPaste={false}
+                      suppressContextMenu={false}
+                      defaultColDef={{
+                        filter: true,
+                        sortable: true,
+                        resizable: true,
+                        floatingFilter: true,
+                      }}
+                      columnDefs={buildGenerationSpecificationColumnDefs()}
+                    />
+                  ) : (
+                    <DataGrid
+                      key="data-products"
+                      rowData={
+                        dataProductDepotState.dataProductEntitiesStates ?? null
+                      }
+                      gridOptions={{
+                        suppressScrollOnNewData: true,
+                        getRowId: (data) => `${data.data.id}`,
+                        rowSelection: {
+                          mode: 'multiRow',
+                          checkboxes: false,
+                          headerCheckbox: false,
+                        },
+                        suppressHorizontalScroll: false,
+                        alwaysShowHorizontalScroll: true,
+                        animateRows: true, // Smooth animations when rows update
+                        rowBuffer: 10, // Keep extra rows rendered for smooth scrolling
+                        onFirstDataRendered: (params) => {
+                          dataProductDepotState.setGridApi(params.api);
+                        },
+                      }}
+                      suppressFieldDotNotation={true}
+                      suppressClipboardPaste={false}
+                      suppressContextMenu={false}
+                      defaultColDef={{
+                        filter: true, // Enable filters for all columns
+                        sortable: true, // Enable sorting for all columns
+                        resizable: true, // Allow column resizing
+                        floatingFilter: true, // Show floating filter row below headers
+                      }}
+                      columnDefs={buildColumnDefs()}
+                    />
+                  )}
                 </div>
               </div>
             </div>
