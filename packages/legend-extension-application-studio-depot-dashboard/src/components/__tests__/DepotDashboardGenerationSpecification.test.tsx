@@ -19,6 +19,7 @@ import { CORE_PURE_PATH } from '@finos/legend-graph';
 import {
   DepotScope,
   DepotServerClient,
+  MASTER_SNAPSHOT_ALIAS,
   StoredSummaryEntity,
 } from '@finos/legend-server-depot';
 import {
@@ -217,7 +218,7 @@ const renderDashboard = async (
   });
 };
 
-const switchToGenerationSpecifications = async (): Promise<void> => {
+const switchElementType = async (elementType: string): Promise<void> => {
   await act(async () => {
     fireEvent.keyDown(
       document.getElementById('depot-dashboard-element-type') as HTMLElement,
@@ -225,10 +226,13 @@ const switchToGenerationSpecifications = async (): Promise<void> => {
     );
   });
   await act(async () => {
-    fireEvent.click(await screen.findByText('Generation Specification'));
+    fireEvent.click(await screen.findByText(elementType));
     await new Promise((resolve) => setTimeout(resolve, 100));
   });
 };
+
+const switchToGenerationSpecifications = (): Promise<void> =>
+  switchElementType('Generation Specification');
 
 test('display generation specifications with their stages, generation elements and file generations', async () => {
   const { applicationStore, depotServerClient } = setup();
@@ -328,18 +332,104 @@ test('open the scope named in the address and keep the address in step with it',
     '/extensions/depot/generation-specifications',
   );
   // data products opened with the address's scope too
-  await act(async () => {
-    fireEvent.keyDown(
-      document.getElementById('depot-dashboard-element-type') as HTMLElement,
-      { key: 'ArrowDown' },
-    );
-  });
-  await act(async () => {
-    fireEvent.click(await screen.findByText('Data Product'));
-  });
+  await switchElementType('Data Product');
   expect(locationSpy).toHaveBeenLastCalledWith(
     '/extensions/depot/data-products?scope=snapshots',
   );
+});
+
+test('keep what each element type and scope fetched until refreshed', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  const summarySpy = spyGenerationSpecifications(depotServerClient);
+  const entitySpy = jest.mocked(depotServerClient.getVersionEntity);
+  const roleSpy = createSpy(
+    sdlcServerClient,
+    'getAccessRole',
+  ).mockResolvedValue({ accessRole: 'DEVELOPER' });
+  createSpy(sdlcServerClient, 'getAutorizedActions').mockResolvedValue([]);
+  const summaryCalls = (classifierPath: string): number =>
+    summarySpy.mock.calls.filter(
+      ([classifier]) => classifier === classifierPath,
+    ).length;
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  await waitFor(() => expect(roleSpy).toHaveBeenCalledTimes(3));
+
+  // to snapshots and back
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Snapshots' }));
+  });
+  await screen.findByText('Generation Specifications: 0 / 0 fetched');
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Releases' }));
+  });
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  // to data products and back
+  await switchElementType('Data Product');
+  await screen.findByText('Data Products: 0 / 0 fetched');
+  await switchElementType('Generation Specification');
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+
+  // releases and snapshots once each, the rows once
+  expect(summaryCalls(CORE_PURE_PATH.GENERATION_SPECIFICATION)).toBe(2);
+  expect(summaryCalls(CORE_PURE_PATH.DATA_PRODUCT)).toBe(1);
+  expect(entitySpy).toHaveBeenCalledTimes(3);
+  expect(roleSpy).toHaveBeenCalledTimes(3);
+
+  // Refresh fetches the releases again, access included
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+  });
+  await waitFor(() =>
+    expect(summaryCalls(CORE_PURE_PATH.GENERATION_SPECIFICATION)).toBe(3),
+  );
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  await waitFor(() => expect(entitySpy).toHaveBeenCalledTimes(6));
+  await waitFor(() => expect(roleSpy).toHaveBeenCalledTimes(6));
+  expect(summaryCalls(CORE_PURE_PATH.DATA_PRODUCT)).toBe(1);
+});
+
+test('show and hide workspace snapshots without fetching again', async () => {
+  const { applicationStore, depotServerClient } = setup();
+  const summarySpy = spyGenerationSpecifications(
+    depotServerClient,
+  ).mockImplementation(async (classifier) =>
+    classifier === CORE_PURE_PATH.GENERATION_SPECIFICATION
+      ? [
+          summary(
+            'alpha',
+            MASTER_SNAPSHOT_ALIAS,
+            'test::alpha::AlphaGenerations',
+          ),
+          summary('alpha', 'feature-SNAPSHOT', 'test::alpha::AlphaGenerations'),
+        ].map((s) => StoredSummaryEntity.serialization.toJson(s))
+      : [],
+  );
+  const entitySpy = jest.mocked(depotServerClient.getVersionEntity);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications?scope=snapshots',
+  );
+  await screen.findByText('Generation Specifications: 1 / 1 fetched');
+
+  const checkbox = screen.getByRole('checkbox', {
+    name: 'Include workspace snapshots',
+  });
+  await act(async () => {
+    fireEvent.click(checkbox);
+  });
+  await screen.findByText('Generation Specifications: 2 / 2 fetched');
+  await act(async () => {
+    fireEvent.click(checkbox);
+  });
+  await screen.findByText('Generation Specifications: 1 / 1 fetched');
+
+  expect(summarySpy).toHaveBeenCalledTimes(1);
+  // the master snapshot once, the workspace snapshot once
+  expect(entitySpy).toHaveBeenCalledTimes(2);
 });
 
 test("show the user's access to each project", async () => {

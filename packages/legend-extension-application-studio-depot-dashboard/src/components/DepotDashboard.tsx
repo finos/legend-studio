@@ -32,6 +32,7 @@ import {
   CustomSelectorInput,
   InfoCircleIcon,
   LinkIcon,
+  RefreshIcon,
   WarningIcon,
 } from '@finos/legend-art';
 import {
@@ -908,11 +909,19 @@ export const DepotDashboard = withDepotSetupStore(
       );
     };
 
+    // re-filters what the scope fetched, fetching only rows not fetched yet
     const handleWorkspaceSnapshotToggle = () => {
       scopedState.setIncludeWorkspaceSnapshot(
         !scopedState.includeWorkspaceSnapshot,
       );
       flowResult(scopedState.init()).catch(
+        depotSetupStore.applicationStore.alertUnhandledError,
+      );
+    };
+
+    // what each element type and scope fetched is kept until refreshed
+    const handleRefresh = () => {
+      flowResult(scopedState.refresh()).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
     };
@@ -1028,6 +1037,25 @@ export const DepotDashboard = withDepotSetupStore(
                       Include workspace snapshots
                     </label>
                   )}
+                  <button
+                    type="button"
+                    className="scope-toggle-btn"
+                    style={{
+                      marginLeft: 'auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      opacity: scopedState.isFetching ? 0.6 : 1,
+                    }}
+                    disabled={scopedState.isFetching}
+                    onClick={handleRefresh}
+                    title="Fetch this element type and scope again"
+                  >
+                    <RefreshIcon
+                      className={clsx({ spinning: scopedState.isFetching })}
+                    />
+                    Refresh
+                  </button>
                 </div>
                 <div
                   className="panel__content__form__section__header__label"
