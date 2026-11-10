@@ -67,6 +67,10 @@ const CLASSIFIER_PATHS: Record<string, string> = {
   text: 'meta::pure::metamodel::text::Text',
   dataElement: 'meta::pure::data::DataElement',
   dataSpace: 'meta::pure::metamodel::dataSpace::DataSpace',
+  dataqualityRelationValidation:
+    'meta::external::dataquality::DataQualityRelationValidation',
+  generationSpecification:
+    'meta::pure::generation::metamodel::GenerationSpecification',
 };
 
 /**
