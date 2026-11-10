@@ -63,3 +63,20 @@ test('counts nothing when the lists are missing', () => {
   expect(generationSpecification.generationNodes).toEqual([]);
   expect(generationSpecification.fileGenerations).toEqual([]);
 });
+
+test('counts stages, and the generation elements of every stage including parallel ones', () => {
+  const generationSpecification =
+    DepotGenerationSpecification.serialization.fromJson({
+      generationNodes: [
+        { id: 'first', generationElements: ['test::A', 'test::B'] },
+        { id: 'second', generationElement: 'test::C' },
+      ],
+    });
+
+  expect(generationSpecification.stageCount).toBe(2);
+  expect(generationSpecification.generationElementPaths).toEqual([
+    'test::A',
+    'test::B',
+    'test::C',
+  ]);
+});

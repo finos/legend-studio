@@ -34,6 +34,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  isObject,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -49,15 +50,133 @@ import {
 } from 'mobx';
 import type { GridApi } from 'ag-grid-community';
 import { DepotGenerationSpecification } from './DepotGenerationSpecification.js';
+import {
+  AuthorizableProjectAction,
+  ProjectAccessRole,
+  type SDLCServerClient,
+} from '@finos/legend-server-sdlc';
 
 export enum DEPOT_DASHBOARD_ELEMENT_TYPE {
   DATA_PRODUCT = 'Data Product',
   GENERATION_SPECIFICATION = 'Generation Specification',
 }
 
+export const LEGEND_DEPOT_ROUTE_PATTERN = `/depot`;
+export const LEGEND_DEPOT_ELEMENT_TYPE_ROUTE_PATTERN = `/depot/:elementType`;
+
+// The element type's segment in the dashboard's address, so a view can be
+// shared, e.g. /extensions/depot/generation-specifications
+const DEPOT_DASHBOARD_ELEMENT_TYPE_SLUG: Record<
+  DEPOT_DASHBOARD_ELEMENT_TYPE,
+  string
+> = {
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT]: 'data-products',
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION]:
+    'generation-specifications',
+};
+
+// The scope's query parameter, e.g. ?scope=snapshots. Releases, the default,
+// needs none.
+export const DEPOT_DASHBOARD_SCOPE_QUERY_PARAM = 'scope';
+const DEPOT_DASHBOARD_SCOPE_VALUE: Record<DepotScope, string> = {
+  [DepotScope.RELEASES]: 'releases',
+  [DepotScope.SNAPSHOT]: 'snapshots',
+};
+
+export const generateDepotDashboardRoute = (
+  elementType: DEPOT_DASHBOARD_ELEMENT_TYPE,
+  scope?: DepotScope,
+): string => {
+  const route = `${LEGEND_DEPOT_ROUTE_PATTERN}/${DEPOT_DASHBOARD_ELEMENT_TYPE_SLUG[elementType]}`;
+  return scope === DepotScope.SNAPSHOT
+    ? `${route}?${DEPOT_DASHBOARD_SCOPE_QUERY_PARAM}=${DEPOT_DASHBOARD_SCOPE_VALUE[scope]}`
+    : route;
+};
+
+export const getDepotDashboardElementType = (
+  slug: string | undefined,
+): DEPOT_DASHBOARD_ELEMENT_TYPE | undefined =>
+  Object.values(DEPOT_DASHBOARD_ELEMENT_TYPE).find(
+    (elementType) => DEPOT_DASHBOARD_ELEMENT_TYPE_SLUG[elementType] === slug,
+  );
+
+export const getDepotDashboardScope = (
+  value: string | null | undefined,
+): DepotScope | undefined =>
+  Object.values(DepotScope).find(
+    (scope) => DEPOT_DASHBOARD_SCOPE_VALUE[scope] === value?.toLowerCase(),
+  );
+
+export enum DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER {
+  ROLE = 'Your Access',
+  ACTIONS = 'Your Actions',
+}
+
+const AUTHORIZABLE_PROJECT_ACTION_LABEL: Record<
+  AuthorizableProjectAction,
+  string
+> = {
+  [AuthorizableProjectAction.CREATE_WORKSPACE]: 'Create workspace',
+  [AuthorizableProjectAction.SUBMIT_REVIEW]: 'Submit review',
+  [AuthorizableProjectAction.COMMIT_REVIEW]: 'Commit review',
+  [AuthorizableProjectAction.CREATE_VERSION]: 'Create version',
+};
+
+/**
+ * What the signed-in user may do on a project, from SDLC.
+ */
+export class DepotProjectAccess {
+  /**
+   * The user's GitLab access level (e.g. DEVELOPER); undefined when they can
+   * see the project without being a member
+   */
+  readonly role: string | undefined;
+  readonly actions: AuthorizableProjectAction[];
+  /**
+   * SDLC could not tell: the user cannot see the project, or SDLC failed
+   */
+  readonly unavailable: boolean;
+
+  constructor(
+    role: string | undefined,
+    actions: AuthorizableProjectAction[],
+    unavailable: boolean,
+  ) {
+    this.role = role;
+    this.actions = actions;
+    this.unavailable = unavailable;
+  }
+
+  get roleLabel(): string {
+    if (this.unavailable) {
+      return 'No access';
+    }
+    if (!this.role) {
+      return 'Not a member';
+    }
+    // DEVELOPER -> Developer, MINIMAL_ACCESS -> Minimal access
+    const words = this.role.toLowerCase().replaceAll('_', ' ');
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  }
+
+  get actionsLabel(): string {
+    if (this.unavailable) {
+      return '';
+    }
+    return this.actions.length
+      ? this.actions
+          .map(
+            (projectAction) => AUTHORIZABLE_PROJECT_ACTION_LABEL[projectAction],
+          )
+          .join(', ')
+      : 'None';
+  }
+}
+
 export enum GENERATION_SPECIFICATION_DASHBOARD_HEADER {
   NAME = 'Name',
   PACKAGE = 'Package',
+  STAGE_COUNT = 'Stages',
   GENERATION_ELEMENT_COUNT = 'Generation Elements',
   FILE_GENERATION_COUNT = 'File Generations',
   GENERATION_ELEMENTS = 'Generation Element Paths',
@@ -223,12 +342,291 @@ const fetchAtMost = async <T>(
   );
 };
 
+type DepotDashboardEntityState = {
+  readonly id: string;
+  readonly gaProject: string;
+  readonly summary: StoredSummaryEntity;
+  readonly infoFetched: boolean;
+  readonly fetchingElementState: ActionState;
+  fetchElement(): GeneratorFn<void>;
+};
+
+// What one scope fetched, kept so that going back to the scope shows it
+// without fetching it again
+export class DepotDashboardScopeResults<T extends DepotDashboardEntityState> {
+  readonly scope: DepotScope;
+  readonly fetchingSummaryState = ActionState.create();
+  summary: StoredSummaryEntity[] | undefined;
+  // the rows on show: the summary less any workspace snapshots left out
+  entityStates: T[] | undefined;
+  private readonly entityStatesBySummary = new Map<StoredSummaryEntity, T>();
+
+  constructor(scope: DepotScope) {
+    this.scope = scope;
+    makeObservable(this, {
+      summary: observable,
+      entityStates: observable,
+      setSummary: action,
+      showSummary: action,
+    });
+  }
+
+  setSummary(summary: StoredSummaryEntity[]): void {
+    this.summary = summary;
+  }
+
+  /** Rows shown again keep what they fetched */
+  showSummary(
+    include: (summary: StoredSummaryEntity) => boolean,
+    createEntityState: (summary: StoredSummaryEntity) => T,
+  ): void {
+    this.entityStates = (this.summary ?? [])
+      .filter(include)
+      .map((summary) => {
+        let entityState = this.entityStatesBySummary.get(summary);
+        if (!entityState) {
+          entityState = createEntityState(summary);
+          this.entityStatesBySummary.set(summary, entityState);
+        }
+        return entityState;
+      })
+      .sort((a, b) => a.gaProject.localeCompare(b.gaProject));
+  }
+}
+
+// One element type's rows. Each scope is fetched the first time it is shown;
+// refresh() fetches the scope on show again.
+abstract class DepotDashboardElementTypeState<
+  T extends DepotDashboardEntityState,
+> {
+  readonly depotServerClient: DepotServerClient;
+  readonly store: DepotDashboardStore;
+  gridApi: GridApi | undefined;
+
+  MAX_CALLS = 3000;
+  scope: DepotScope;
+  includeWorkspaceSnapshot = false;
+  readonly results = new Map<DepotScope, DepotDashboardScopeResults<T>>();
+  // stands for a scope not fetched yet
+  private readonly notFetchedState = ActionState.create();
+
+  abstract get classifierPath(): string;
+  // e.g. 'data products', for the maximum calls warning
+  abstract get elementTypeLabel(): string;
+  abstract createEntityState(summary: StoredSummaryEntity): T;
+
+  constructor(
+    depotServerClient: DepotServerClient,
+    store: DepotDashboardStore,
+    scope?: DepotScope,
+  ) {
+    this.depotServerClient = depotServerClient;
+    this.store = store;
+    this.scope = scope ?? DepotScope.RELEASES;
+    makeObservable(this, {
+      scope: observable,
+      includeWorkspaceSnapshot: observable,
+      results: observable.shallow,
+      gridApi: observable,
+      currentResults: computed,
+      fetchingSummaryState: computed,
+      entitiesSummary: computed,
+      entityStates: computed,
+      isFetching: computed,
+      fetchedCount: computed,
+      totalCount: computed,
+      fetchProgress: computed,
+      hasMaxCallsWarning: computed,
+      maxCallsWarningMessage: computed,
+      setGridApi: action,
+      setIncludeWorkspaceSnapshot: action,
+      updateRow: action,
+      handleScopeChange: flow,
+      init: flow,
+      refresh: flow,
+      fetchEntities: flow,
+    });
+  }
+
+  get currentResults(): DepotDashboardScopeResults<T> | undefined {
+    return this.results.get(this.scope);
+  }
+
+  get fetchingSummaryState(): ActionState {
+    return this.currentResults?.fetchingSummaryState ?? this.notFetchedState;
+  }
+
+  get entityStates(): T[] | undefined {
+    return this.currentResults?.entityStates;
+  }
+
+  get entitiesSummary(): StoredSummaryEntity[] | undefined {
+    return this.entityStates?.map((entityState) => entityState.summary);
+  }
+
+  /** While the scope on show is still being fetched */
+  get isFetching(): boolean {
+    return (
+      this.fetchingSummaryState.isInProgress ||
+      Boolean(
+        this.entityStates
+          ?.slice(0, this.MAX_CALLS)
+          .some(
+            (entityState) =>
+              entityState.fetchingElementState.isInInitialState ||
+              entityState.fetchingElementState.isInProgress,
+          ),
+      )
+    );
+  }
+
+  get totalCount(): number {
+    return this.entityStates?.length ?? 0;
+  }
+
+  get fetchedCount(): number {
+    return (
+      this.entityStates?.filter((entityState) => entityState.infoFetched)
+        .length ?? 0
+    );
+  }
+
+  get fetchProgress(): { fetched: number; total: number; percentage: number } {
+    const total = this.totalCount;
+    const fetched = this.fetchedCount;
+    const percentage = total > 0 ? Math.round((fetched / total) * 100) : 0;
+    return { fetched, total, percentage };
+  }
+
+  get hasMaxCallsWarning(): boolean {
+    return this.totalCount > this.MAX_CALLS;
+  }
+
+  get maxCallsWarningMessage(): string {
+    return `Maximum of ${this.MAX_CALLS} ${this.elementTypeLabel} fetched out of ${this.totalCount} available. This is to prevent hit on depot server.`;
+  }
+
+  setIncludeWorkspaceSnapshot(val: boolean): void {
+    this.includeWorkspaceSnapshot = val;
+  }
+
+  setGridApi(gridApi: GridApi): void {
+    this.gridApi = gridApi;
+    // rows that finished loading before the grid was ready were not refreshed
+    gridApi.refreshCells({ force: true });
+  }
+
+  updateRow(updatedEntity: T): void {
+    const rowNode = this.gridApi?.getRowNode(updatedEntity.id);
+    if (this.gridApi && rowNode) {
+      this.gridApi.refreshCells({ rowNodes: [rowNode], force: true });
+    }
+  }
+
+  *handleScopeChange(scope: DepotScope): GeneratorFn<void> {
+    if (this.scope !== scope) {
+      this.scope = scope;
+      yield flowResult(this.init()).catch((error) => {
+        assertErrorThrown(error);
+        this.store.applicationStore.notificationService.notifyError(error);
+      });
+    }
+  }
+
+  /** Shows the scope, fetching what has not been fetched for it yet */
+  *init(): GeneratorFn<void> {
+    const cached = this.currentResults;
+    if (cached) {
+      // still fetching its summary, or failed to: Refresh fetches it again
+      if (cached.summary) {
+        this.showSummary(cached);
+        this.fetchEntitiesInBackground();
+      }
+      return;
+    }
+    // kept before the summary arrives, so switching back while it is being
+    // fetched does not fetch it twice
+    const results = new DepotDashboardScopeResults<T>(this.scope);
+    this.results.set(results.scope, results);
+    try {
+      results.fetchingSummaryState.inProgress();
+      const summary = (
+        (yield this.depotServerClient.getEntitiesSummaryByClassifier(
+          this.classifierPath,
+          {
+            summary: true,
+            scope: results.scope,
+          },
+        )) as unknown as PlainObject<StoredSummaryEntity>[]
+      ).map((storeEntity) =>
+        StoredSummaryEntity.serialization.fromJson(storeEntity),
+      );
+      results.setSummary(summary);
+      this.showSummary(results);
+      results.fetchingSummaryState.complete();
+      // a scope left before its summary arrived fetches its rows when shown
+      if (results === this.results.get(this.scope)) {
+        this.fetchEntitiesInBackground();
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      results.fetchingSummaryState.fail();
+      this.store.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  /** Fetches the scope on show again */
+  *refresh(): GeneratorFn<void> {
+    this.results.delete(this.scope);
+    // access may have changed too
+    this.store.clearProjectAccesses();
+    yield flowResult(this.init());
+  }
+
+  // TODO FIX for pagination flow, if needed
+  *fetchEntities(): GeneratorFn<void> {
+    const entityStates = guaranteeNonNullable(
+      this.entityStates,
+      `Entities summaries have not been fetched`,
+    );
+    // fetchElement() records its own failure on the row; rows fetched when
+    // the scope was shown before are not fetched again
+    yield fetchAtMost(
+      entityStates
+        .slice(0, this.MAX_CALLS)
+        .filter(
+          (entityState) => entityState.fetchingElementState.isInInitialState,
+        ),
+      DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
+      (entityState) => flowResult(entityState.fetchElement()),
+    );
+  }
+
+  private fetchEntitiesInBackground(): void {
+    flowResult(this.fetchEntities()).catch((error) => {
+      assertErrorThrown(error);
+      this.store.applicationStore.notificationService.notifyError(error);
+    });
+  }
+
+  private showSummary(results: DepotDashboardScopeResults<T>): void {
+    results.showSummary(
+      (summary) =>
+        results.scope !== DepotScope.SNAPSHOT ||
+        this.includeWorkspaceSnapshot ||
+        summary.versionId === MASTER_SNAPSHOT_ALIAS,
+      (summary) => this.createEntityState(summary),
+    );
+  }
+}
+
 export class DataProductEntityState {
   readonly store: DepotDashboardStore;
   summary: StoredSummaryEntity;
   fetchingElementState = ActionState.create();
   dataProduct: V1_DataProduct | undefined;
   projectId: string | undefined;
+  projectAccess: DepotProjectAccess | undefined;
 
   constructor(summary: StoredSummaryEntity, store: DepotDashboardStore) {
     this.summary = summary;
@@ -236,6 +634,7 @@ export class DataProductEntityState {
 
     makeObservable(this, {
       dataProduct: observable,
+      projectAccess: observable,
       fetchingElementState: observable,
       fetchElement: flow,
       infoFetched: computed,
@@ -267,6 +666,10 @@ export class DataProductEntityState {
   }
 
   *fetchElement(): GeneratorFn<void> {
+    // a row is fetched once; Refresh makes new rows
+    if (!this.fetchingElementState.isInInitialState) {
+      return;
+    }
     try {
       this.fetchingElementState.inProgress();
 
@@ -289,6 +692,10 @@ export class DataProductEntityState {
       )) as string;
       this.dataProduct = product;
       this.store.dataProductDepotState.updateRow(this);
+      this.projectAccess = (yield this.store.getProjectAccess(
+        this.projectId,
+      )) as DepotProjectAccess | undefined;
+      this.store.dataProductDepotState.updateRow(this);
       this.fetchingElementState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -297,163 +704,29 @@ export class DataProductEntityState {
   }
 }
 
-export class DataProductDepotDashboardState {
-  readonly depotServerClient: DepotServerClient;
-  readonly store: DepotDashboardStore;
-  gridApi: GridApi | undefined;
+export class DataProductDepotDashboardState extends DepotDashboardElementTypeState<DataProductEntityState> {
+  get classifierPath(): string {
+    return CORE_PURE_PATH.DATA_PRODUCT;
+  }
 
-  MAX_CALLS = 3000;
-  fetchingProductsState = ActionState.create();
-  scope = DepotScope.RELEASES;
-  includeWorkspaceSnapshot = false;
-  entitiesSummary: StoredSummaryEntity[] | undefined;
+  get elementTypeLabel(): string {
+    return 'data products';
+  }
 
-  dataProductEntitiesStates: DataProductEntityState[] | undefined;
+  get fetchingProductsState(): ActionState {
+    return this.fetchingSummaryState;
+  }
 
-  constructor(depotStore: DepotServerClient, store: DepotDashboardStore) {
-    this.depotServerClient = depotStore;
-    this.store = store;
-    makeObservable(this, {
-      scope: observable,
-      entitiesSummary: observable,
-      gridApi: observable,
-      dataProductEntitiesStates: observable,
-      setGridApi: action,
-      includeWorkspaceSnapshot: observable,
-      setIncludeWorkspaceSnapshot: action,
-      entitiySummarryCount: computed,
-      init: flow,
-      fetchedCount: computed,
-      totalCount: computed,
-      fetchProgress: computed,
-      hasMaxCallsWarning: computed,
-      maxCallsWarningMessage: computed,
-      updateRow: action,
-      handleScopeChange: flow,
-      fetchEntities: flow,
-    });
+  get dataProductEntitiesStates(): DataProductEntityState[] | undefined {
+    return this.entityStates;
   }
 
   get entitiySummarryCount(): number | undefined {
     return this.entitiesSummary?.length;
   }
 
-  get totalCount(): number {
-    return this.entitiesSummary?.length ?? 0;
-  }
-
-  get fetchedCount(): number {
-    return (
-      this.dataProductEntitiesStates?.filter((state) => state.infoFetched)
-        .length ?? 0
-    );
-  }
-
-  get fetchProgress(): { fetched: number; total: number; percentage: number } {
-    const total = this.totalCount;
-    const fetched = this.fetchedCount;
-    const percentage = total > 0 ? Math.round((fetched / total) * 100) : 0;
-    return { fetched, total, percentage };
-  }
-
-  get hasMaxCallsWarning(): boolean {
-    const total = this.totalCount;
-    return total > this.MAX_CALLS;
-  }
-
-  get maxCallsWarningMessage(): string {
-    return `Maximum of ${this.MAX_CALLS} data products fetched out of ${this.totalCount} available. This is to prevent hit on depot server.`;
-  }
-
-  setIncludeWorkspaceSnapshot(val: boolean): void {
-    this.includeWorkspaceSnapshot = val;
-  }
-
-  updateRow(updatedEntity: DataProductEntityState) {
-    if (this.gridApi) {
-      const rowNode = this.gridApi.getRowNode(updatedEntity.id);
-      if (rowNode) {
-        this.gridApi.refreshCells({
-          rowNodes: [rowNode],
-          force: true,
-        });
-      }
-    }
-  }
-
-  setGridApi(gridApi: GridApi): void {
-    this.gridApi = gridApi;
-    // rows that finished loading before the grid was ready were not refreshed
-    gridApi.refreshCells({ force: true });
-  }
-
-  *handleScopeChange(scope: DepotScope): GeneratorFn<void> {
-    if (this.scope !== scope) {
-      this.scope = scope;
-      yield flowResult(this.init()).catch((error) => {
-        assertErrorThrown(error);
-        this.store.applicationStore.notificationService.notifyError(error);
-      });
-    }
-  }
-
-  *init(): GeneratorFn<void> {
-    try {
-      this.fetchingProductsState.inProgress();
-      this.dataProductEntitiesStates = undefined;
-      this.entitiesSummary = undefined;
-      const summary = (
-        (yield this.depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.DATA_PRODUCT,
-          {
-            summary: true,
-            scope: this.scope,
-          },
-        )) as unknown as PlainObject<StoredSummaryEntity>[]
-      )
-        .map((storeEntity) =>
-          StoredSummaryEntity.serialization.fromJson(storeEntity),
-        )
-        .filter((info) => {
-          if (
-            this.scope === DepotScope.SNAPSHOT &&
-            !this.includeWorkspaceSnapshot
-          ) {
-            return info.versionId === MASTER_SNAPSHOT_ALIAS;
-          }
-          return true;
-        });
-      this.entitiesSummary = summary;
-      this.dataProductEntitiesStates = summary
-        .map((s) => new DataProductEntityState(s, this.store))
-        .sort((a, b) => a.gaProject.localeCompare(b.gaProject));
-      flowResult(this.fetchEntities()).catch((error) => {
-        assertErrorThrown(error);
-        this.store.applicationStore.notificationService.notifyError(error);
-      });
-      this.fetchingProductsState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.store.applicationStore.notificationService.notifyError(error);
-    }
-  }
-
-  // TODO FIX for pagination flow, if needed
-  *fetchEntities(): GeneratorFn<void> {
-    try {
-      const productProductstates = guaranteeNonNullable(
-        this.dataProductEntitiesStates,
-        `Entities summaries have not been fetched`,
-      );
-      // fetchElement() records its own failure on the row
-      yield fetchAtMost(
-        productProductstates.slice(0, this.MAX_CALLS),
-        DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
-        (state) => flowResult(state.fetchElement()),
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-    }
+  createEntityState(summary: StoredSummaryEntity): DataProductEntityState {
+    return new DataProductEntityState(summary, this.store);
   }
 }
 
@@ -463,6 +736,7 @@ export class GenerationSpecificationEntityState {
   fetchingElementState = ActionState.create();
   generationSpecification: DepotGenerationSpecification | undefined;
   projectId: string | undefined;
+  projectAccess: DepotProjectAccess | undefined;
 
   constructor(summary: StoredSummaryEntity, store: DepotDashboardStore) {
     this.summary = summary;
@@ -471,6 +745,7 @@ export class GenerationSpecificationEntityState {
     makeObservable(this, {
       generationSpecification: observable,
       projectId: observable,
+      projectAccess: observable,
       fetchingElementState: observable,
       fetchElement: flow,
       infoFetched: computed,
@@ -500,6 +775,10 @@ export class GenerationSpecificationEntityState {
   }
 
   *fetchElement(): GeneratorFn<void> {
+    // a row is fetched once; Refresh makes new rows
+    if (!this.fetchingElementState.isInInitialState) {
+      return;
+    }
     try {
       this.fetchingElementState.inProgress();
       const entity = (yield this.store.depotServerClient.getVersionEntity(
@@ -516,6 +795,10 @@ export class GenerationSpecificationEntityState {
       )) as string;
       this.generationSpecification = generationSpecification;
       this.store.generationSpecificationDepotState.updateRow(this);
+      this.projectAccess = (yield this.store.getProjectAccess(
+        this.projectId,
+      )) as DepotProjectAccess | undefined;
+      this.store.generationSpecificationDepotState.updateRow(this);
       this.fetchingElementState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -524,162 +807,50 @@ export class GenerationSpecificationEntityState {
   }
 }
 
-export class GenerationSpecificationDepotDashboardState {
-  readonly depotServerClient: DepotServerClient;
-  readonly store: DepotDashboardStore;
-  gridApi: GridApi | undefined;
-
-  MAX_CALLS = 3000;
-  fetchingSummaryState = ActionState.create();
-  scope = DepotScope.RELEASES;
-  includeWorkspaceSnapshot = false;
-  entitiesSummary: StoredSummaryEntity[] | undefined;
-  entityStates: GenerationSpecificationEntityState[] | undefined;
-
-  constructor(
-    depotServerClient: DepotServerClient,
-    store: DepotDashboardStore,
-  ) {
-    this.depotServerClient = depotServerClient;
-    this.store = store;
-    makeObservable(this, {
-      scope: observable,
-      includeWorkspaceSnapshot: observable,
-      entitiesSummary: observable,
-      entityStates: observable,
-      gridApi: observable,
-      setGridApi: action,
-      setIncludeWorkspaceSnapshot: action,
-      fetchedCount: computed,
-      totalCount: computed,
-      fetchProgress: computed,
-      hasMaxCallsWarning: computed,
-      maxCallsWarningMessage: computed,
-      updateRow: action,
-      handleScopeChange: flow,
-      init: flow,
-      fetchEntities: flow,
-    });
+export class GenerationSpecificationDepotDashboardState extends DepotDashboardElementTypeState<GenerationSpecificationEntityState> {
+  get classifierPath(): string {
+    return CORE_PURE_PATH.GENERATION_SPECIFICATION;
   }
 
-  get totalCount(): number {
-    return this.entitiesSummary?.length ?? 0;
+  get elementTypeLabel(): string {
+    return 'generation specifications';
   }
 
-  get fetchedCount(): number {
-    return this.entityStates?.filter((state) => state.infoFetched).length ?? 0;
-  }
-
-  get fetchProgress(): { fetched: number; total: number; percentage: number } {
-    const total = this.totalCount;
-    const fetched = this.fetchedCount;
-    const percentage = total > 0 ? Math.round((fetched / total) * 100) : 0;
-    return { fetched, total, percentage };
-  }
-
-  get hasMaxCallsWarning(): boolean {
-    return this.totalCount > this.MAX_CALLS;
-  }
-
-  get maxCallsWarningMessage(): string {
-    return `Maximum of ${this.MAX_CALLS} generation specifications fetched out of ${this.totalCount} available. This is to prevent hit on depot server.`;
-  }
-
-  setIncludeWorkspaceSnapshot(val: boolean): void {
-    this.includeWorkspaceSnapshot = val;
-  }
-
-  setGridApi(gridApi: GridApi): void {
-    this.gridApi = gridApi;
-    // rows that finished loading before the grid was ready were not refreshed
-    gridApi.refreshCells({ force: true });
-  }
-
-  updateRow(updatedEntity: GenerationSpecificationEntityState): void {
-    const rowNode = this.gridApi?.getRowNode(updatedEntity.id);
-    if (this.gridApi && rowNode) {
-      this.gridApi.refreshCells({ rowNodes: [rowNode], force: true });
-    }
-  }
-
-  *handleScopeChange(scope: DepotScope): GeneratorFn<void> {
-    if (this.scope !== scope) {
-      this.scope = scope;
-      yield flowResult(this.init()).catch((error) => {
-        assertErrorThrown(error);
-        this.store.applicationStore.notificationService.notifyError(error);
-      });
-    }
-  }
-
-  *init(): GeneratorFn<void> {
-    try {
-      this.fetchingSummaryState.inProgress();
-      this.entityStates = undefined;
-      this.entitiesSummary = undefined;
-      const summary = (
-        (yield this.depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.GENERATION_SPECIFICATION,
-          {
-            summary: true,
-            scope: this.scope,
-          },
-        )) as unknown as PlainObject<StoredSummaryEntity>[]
-      )
-        .map((storeEntity) =>
-          StoredSummaryEntity.serialization.fromJson(storeEntity),
-        )
-        .filter(
-          (info) =>
-            this.scope !== DepotScope.SNAPSHOT ||
-            this.includeWorkspaceSnapshot ||
-            info.versionId === MASTER_SNAPSHOT_ALIAS,
-        );
-      this.entitiesSummary = summary;
-      this.entityStates = summary
-        .map((s) => new GenerationSpecificationEntityState(s, this.store))
-        .sort((a, b) => a.gaProject.localeCompare(b.gaProject));
-      flowResult(this.fetchEntities()).catch((error) => {
-        assertErrorThrown(error);
-        this.store.applicationStore.notificationService.notifyError(error);
-      });
-      this.fetchingSummaryState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.fetchingSummaryState.fail();
-      this.store.applicationStore.notificationService.notifyError(error);
-    }
-  }
-
-  *fetchEntities(): GeneratorFn<void> {
-    // fetchElement() records its own failure on the row
-    yield fetchAtMost(
-      guaranteeNonNullable(
-        this.entityStates,
-        `Entities summaries have not been fetched`,
-      ).slice(0, this.MAX_CALLS),
-      DEPOT_DASHBOARD_MAX_CONCURRENT_CALLS,
-      (state) => flowResult(state.fetchElement()),
-    );
+  createEntityState(
+    summary: StoredSummaryEntity,
+  ): GenerationSpecificationEntityState {
+    return new GenerationSpecificationEntityState(summary, this.store);
   }
 }
 
 export class DepotDashboardStore {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly depotServerClient: DepotServerClient;
+  readonly sdlcServerClient: SDLCServerClient | undefined;
   readonly graphManagerState: BasicGraphManagerState;
   dataProductDepotState: DataProductDepotDashboardState;
   generationSpecificationDepotState: GenerationSpecificationDepotDashboardState;
   elementType = DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
   // One project lookup per project, shared by its elements of every type
   private readonly projectIds = new Map<string, Promise<string>>();
+  // One SDLC access lookup per project
+  private readonly projectAccesses = new Map<
+    string,
+    Promise<DepotProjectAccess | undefined>
+  >();
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient?: SDLCServerClient,
+    elementType?: DEPOT_DASHBOARD_ELEMENT_TYPE,
+    // the scope a shared address opens with, for every element type
+    scope?: DepotScope,
   ) {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
+    this.sdlcServerClient = sdlcServerClient;
+    this.elementType = elementType ?? DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
     this.graphManagerState = new BasicGraphManagerState(
       applicationStore.pluginManager,
       applicationStore.logService,
@@ -687,11 +858,13 @@ export class DepotDashboardStore {
     this.dataProductDepotState = new DataProductDepotDashboardState(
       this.depotServerClient,
       this,
+      scope,
     );
     this.generationSpecificationDepotState =
       new GenerationSpecificationDepotDashboardState(
         this.depotServerClient,
         this,
+        scope,
       );
     makeObservable(this, {
       dataProductDepotState: observable,
@@ -703,6 +876,20 @@ export class DepotDashboardStore {
 
   setElementType(elementType: DEPOT_DASHBOARD_ELEMENT_TYPE): void {
     this.elementType = elementType;
+  }
+
+  getDepotState(
+    elementType: DEPOT_DASHBOARD_ELEMENT_TYPE,
+  ):
+    | DataProductDepotDashboardState
+    | GenerationSpecificationDepotDashboardState {
+    return elementType === DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION
+      ? this.generationSpecificationDepotState
+      : this.dataProductDepotState;
+  }
+
+  clearProjectAccesses(): void {
+    this.projectAccesses.clear();
   }
 
   getProjectId(groupId: string, artifactId: string): Promise<string> {
@@ -717,5 +904,41 @@ export class DepotDashboardStore {
       this.projectIds.set(key, projectId);
     }
     return projectId;
+  }
+
+  /**
+   * The signed-in user's role and allowed actions on the project. Never
+   * rejects: a project SDLC can't answer for comes back as unavailable.
+   */
+  getProjectAccess(
+    projectId: string | undefined,
+  ): Promise<DepotProjectAccess | undefined> {
+    const sdlcServerClient = this.sdlcServerClient;
+    if (!sdlcServerClient || !projectId) {
+      return Promise.resolve(undefined);
+    }
+    let access = this.projectAccesses.get(projectId);
+    if (!access) {
+      access = Promise.allSettled([
+        sdlcServerClient.getAccessRole(projectId),
+        sdlcServerClient.getAutorizedActions(projectId),
+      ]).then(([role, actions]) => {
+        if (role.status === 'rejected' && actions.status === 'rejected') {
+          return new DepotProjectAccess(undefined, [], true);
+        }
+        return new DepotProjectAccess(
+          // no role (an empty answer) when the user isn't a member
+          role.status === 'fulfilled' && isObject(role.value)
+            ? ProjectAccessRole.serialization.fromJson(role.value).accessRole
+            : undefined,
+          actions.status === 'fulfilled' && Array.isArray(actions.value)
+            ? actions.value
+            : [],
+          false,
+        );
+      });
+      this.projectAccesses.set(projectId, access);
+    }
+    return access;
   }
 }

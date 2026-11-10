@@ -20,8 +20,10 @@ import {
 } from '@finos/legend-application-studio';
 import packageJson from '../../package.json' with { type: 'json' };
 import { DepotDashboard } from './DepotDashboard.js';
-
-export const LEGEND_DEPOT_ROUTE_PATTERN = `/depot`;
+import {
+  LEGEND_DEPOT_ELEMENT_TYPE_ROUTE_PATTERN,
+  LEGEND_DEPOT_ROUTE_PATTERN,
+} from '../stores/DepotDashboardStore.js';
 
 export class DepotDashboard_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   constructor() {
@@ -36,7 +38,11 @@ export class DepotDashboard_LegendStudioApplicationPlugin extends LegendStudioAp
     return [
       {
         key: 'depot-dashboard-application-page',
-        addressPatterns: [LEGEND_DEPOT_ROUTE_PATTERN],
+        addressPatterns: [
+          LEGEND_DEPOT_ROUTE_PATTERN,
+          // opens one element type, e.g. /depot/generation-specifications
+          LEGEND_DEPOT_ELEMENT_TYPE_ROUTE_PATTERN,
+        ],
         renderer: () => <DepotDashboard />,
         nonSDLCApp: true,
       },
