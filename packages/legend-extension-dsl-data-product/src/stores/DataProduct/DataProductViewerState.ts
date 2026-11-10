@@ -95,7 +95,10 @@ import type { ViewerModelsDocumentationState } from '@finos/legend-lego/model-do
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
 import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
-import type { DataProductIngestDefinitionLoader } from './DataProductDefinitionFlow.js';
+import type {
+  DataProductDefinitionFlowEntry,
+  DataProductIngestDefinitionLoader,
+} from './DataProductDefinitionFlow.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
   type LegendAIConfig,
@@ -271,6 +274,18 @@ export class DataProductViewerState extends BaseViewerState<
     this.openSampleQuery = actions.openSampleQuery;
     this.openIngestQuery = actions.openIngestQuery;
     this.loadIngestDefinition = actions.loadIngestDefinition;
+  }
+
+  /**
+   * Loads Legend Cube's definition flow, the first time an access point's
+   * definition opens, in a chunk of its own: the viewer's own load doesn't pay
+   * for it, and a host's bundler can keep the chunk's libraries apart by its
+   * name
+   */
+  loadDefinitionFlowEntry(): Promise<DataProductDefinitionFlowEntry> {
+    return import(
+      /* webpackChunkName: "cube-flow" */ '@finos/legend-cube-builder/definition-flow'
+    );
   }
 
   setDataProductDataAccessState(

@@ -117,7 +117,6 @@ import {
   getMockPendingManagerApprovalTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
 import DEFINITIONS from '../__test-utils__/TEST_DATA__AccessPointDefinitionFlow.json' with { type: 'json' };
-import { DATA_PRODUCT_DEFINITION_FLOW_LOADER } from '../../stores/DataProduct/DataProductDefinitionFlow.js';
 import { DATA_PRODUCT_EVENT } from '../../__lib__/DataProductTelemetryHelper.js';
 
 jest.mock('react-oidc-context', () => {
@@ -5129,14 +5128,14 @@ describe('DataProductViewer', () => {
     });
 
     test("says when Legend Cube's code didn't load, shows the Pure on demand, and tries again", async () => {
-      const load = createSpy(
-        DATA_PRODUCT_DEFINITION_FLOW_LOADER,
-        'load',
-      ).mockRejectedValueOnce(new Error('Loading chunk cube-flow failed.'));
-      const { logEvent } = await setupDefinition(
+      const { dataProductViewerState, logEvent } = await setupDefinition(
         DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
         loadTradePositionsIngest,
       );
+      const load = createSpy(
+        dataProductViewerState,
+        'loadDefinitionFlowEntry',
+      ).mockRejectedValueOnce(new Error('Loading chunk cube-flow failed.'));
 
       const definition = await openDefinition();
       await within(definition).findByText("Couldn't load the flow");
@@ -5168,14 +5167,14 @@ describe('DataProductViewer', () => {
     });
 
     test('says when neither the flow nor the Pure can be shown, and tries both again', async () => {
-      const load = createSpy(
-        DATA_PRODUCT_DEFINITION_FLOW_LOADER,
-        'load',
-      ).mockRejectedValueOnce(new Error('Loading chunk cube-flow failed.'));
-      const { jsonToGrammar } = await setupDefinition(
+      const { dataProductViewerState, jsonToGrammar } = await setupDefinition(
         DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
         loadTradePositionsIngest,
       );
+      const load = createSpy(
+        dataProductViewerState,
+        'loadDefinitionFlowEntry',
+      ).mockRejectedValueOnce(new Error('Loading chunk cube-flow failed.'));
       jsonToGrammar.mockRejectedValueOnce(new Error('The engine is down'));
 
       const definition = await openDefinition();
@@ -5196,8 +5195,15 @@ describe('DataProductViewer', () => {
     });
 
     test('keeps a flow that fails while drawing inside the panel', async () => {
-      const entry = await DATA_PRODUCT_DEFINITION_FLOW_LOADER.load();
-      createSpy(DATA_PRODUCT_DEFINITION_FLOW_LOADER, 'load').mockResolvedValue({
+      const { dataProductViewerState, logEvent } = await setupDefinition(
+        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
+        loadTradePositionsIngest,
+      );
+      const entry = await dataProductViewerState.loadDefinitionFlowEntry();
+      createSpy(
+        dataProductViewerState,
+        'loadDefinitionFlowEntry',
+      ).mockResolvedValue({
         ...entry,
         CubeDefinitionFlow: () => {
           throw new Error('The canvas failed');
@@ -5205,10 +5211,6 @@ describe('DataProductViewer', () => {
       });
       // React reports the error the boundary catches
       jest.spyOn(console, 'error').mockImplementation(() => undefined);
-      const { logEvent } = await setupDefinition(
-        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
-        loadTradePositionsIngest,
-      );
 
       const definition = await openDefinition();
       await within(definition).findByText("Couldn't draw the flow");

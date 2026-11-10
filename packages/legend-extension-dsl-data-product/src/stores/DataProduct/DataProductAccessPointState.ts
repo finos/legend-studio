@@ -57,7 +57,6 @@ import {
 import {
   type DataProductDefinitionFlow,
   type DataProductDefinitionFlowEntry,
-  DATA_PRODUCT_DEFINITION_FLOW_LOADER,
   DataProductDefinitionFlowFailureKind,
 } from './DataProductDefinitionFlow.js';
 
@@ -375,7 +374,7 @@ export class DataProductAccessPointState {
       let entry: DataProductDefinitionFlowEntry;
       try {
         entry =
-          (yield DATA_PRODUCT_DEFINITION_FLOW_LOADER.load()) as DataProductDefinitionFlowEntry;
+          (yield this.apgState.dataProductViewerState.loadDefinitionFlowEntry()) as DataProductDefinitionFlowEntry;
       } catch (error) {
         assertErrorThrown(error);
         this.failDefinitionFlow(

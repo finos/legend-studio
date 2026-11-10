@@ -34,17 +34,6 @@ import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 /** Legend Cube's definition flow: `@finos/legend-cube-builder/definition-flow` */
 export type DataProductDefinitionFlowEntry = typeof CubeDefinitionFlowEntry;
 
-export const DATA_PRODUCT_DEFINITION_FLOW_LOADER = {
-  /**
-   * Loads Cube's definition flow, in a chunk of its own: a host's bundler
-   * can keep the chunk's libraries out of its other chunks by its name
-   */
-  load: (): Promise<DataProductDefinitionFlowEntry> =>
-    import(
-      /* webpackChunkName: "cube-flow" */ '@finos/legend-cube-builder/definition-flow'
-    ),
-};
-
 /**
  * The content (protocol JSON) of an ingest definition an access point reads,
  * by its path, which types the columns of its data sets in the flow;
