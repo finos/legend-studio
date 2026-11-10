@@ -57,6 +57,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  document.body.classList.remove('theme__hc-dark');
 });
 
 const renderPage = async () => {
@@ -67,6 +68,20 @@ const renderPage = async () => {
       </ApplicationStoreProvider>,
     );
   });
+};
+
+const getCancellationCheckboxForRow = (rowId: string): HTMLInputElement => {
+  const row = document.querySelector(`[row-id="${rowId}"]`);
+  if (!row) {
+    throw new TypeError(`Expected grid row with row-id "${rowId}" to exist`);
+  }
+  const checkbox = row.querySelector('input[type="checkbox"]');
+  if (!(checkbox instanceof HTMLInputElement)) {
+    throw new TypeError(
+      `Expected cancellation checkbox to be rendered for row-id "${rowId}"`,
+    );
+  }
+  return checkbox;
 };
 
 // ─── Regression coverage for blank `kerberos` on cancel subscription ─────────
@@ -170,6 +185,7 @@ const makeSubscriptionFeed = (overrides: Record<string, unknown> = {}) => ({
   servicepriceId: 55,
   permId: 999,
   id: 'sub-1',
+  isMandatory: false,
   ...overrides,
 });
 
@@ -370,7 +386,7 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
     ).toBeDefined();
   });
 
-  test('cancelling a Permission ID row only includes addons that are currently visible/selected, not ones hidden by an active search', async () => {
+  test('cancelling a Permission ID row includes the full permission group even when some add-ons are hidden by search', async () => {
     createSpy(
       MOCK__baseStore.marketplaceServerClient,
       'getSubscriptions',
@@ -444,8 +460,8 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
       );
     });
 
-    // Only the visible/selected Permission ID row is cancelled — the hidden
-    // add-on (never shown, never checked) must not be silently included.
+    // Permission-group cancellation now derives from the full unfiltered data,
+    // so hidden add-ons in the same group are included.
     expect(cancelSubscriptionsSpy).toHaveBeenCalledWith({
       ordered_by: MOCK__baseStore.applicationStore.identityService.currentUser,
       kerberos: MOCK__baseStore.applicationStore.identityService.currentUser,
@@ -455,6 +471,14 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
             providerName: 'Bloomberg',
             productName: 'Level 1',
             category: 'Permission ID',
+            price: 100,
+            servicepriceId: 55,
+            model: 'B-PIPE',
+          },
+          {
+            providerName: 'Bloomberg',
+            productName: 'Real-Time News Add-On',
+            category: 'Add-On',
             price: 100,
             servicepriceId: 55,
             model: 'B-PIPE',
@@ -529,5 +553,628 @@ describe('LegendMarketplaceSubscriptions - search filtering', () => {
     // without waiting out the debounce interval.
     expect((searchInput as HTMLInputElement).value).toBe('');
     expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+  });
+});
+
+describe('LegendMarketplaceSubscriptions - dark mode hooks', () => {
+  test('renders the expected dark-mode target controls for KPI values, cost toggle, filters, cancel action, and cancel checkboxes', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    document.body.classList.add('theme__hc-dark');
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const kpiValues = document.querySelectorAll(
+      '.legend-marketplace-subscriptions-kpi-bar__value',
+    );
+    expect(kpiValues.length).toBeGreaterThanOrEqual(2);
+
+    const costSegment = document.querySelector(
+      '.legend-marketplace-subscriptions-kpi-bar__cost-segment',
+    );
+    expect(costSegment).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Monthly' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Annual' })).toBeDefined();
+
+    const filterSelects = document.querySelectorAll(
+      '.legend-marketplace-subscriptions-content__filter-select',
+    );
+    expect(filterSelects).toHaveLength(2);
+
+    const cancelButton = screen.getByRole('button', {
+      name: 'Cancel Subscription',
+    });
+    expect(cancelButton.className).toContain(
+      'legend-marketplace-subscriptions-content__cancel-button',
+    );
+    expect(cancelButton.hasAttribute('disabled')).toBe(true);
+
+    const checkboxCell = await waitFor(() => {
+      const cell = document.querySelector(
+        '.legend-marketplace-subscriptions-content__cancel-checkbox-cell',
+      );
+      if (!cell) {
+        throw new Error(
+          'Expected cancel checkbox cell to be rendered for a subscription row',
+        );
+      }
+      return cell;
+    });
+    expect(checkboxCell.querySelector('input[type="checkbox"]')).not.toBeNull();
+  });
+});
+
+describe('LegendMarketplaceSubscriptions - mandatory add-on group selection', () => {
+  test('shows permId only for Permission ID rows in the Permission ID column', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          Model: 'Terminal Product',
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          Model: 'News Add-On Product',
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const permissionIdValueCell = document.querySelector(
+      '[row-id="sub-1"] .ag-cell[col-id="permId"]',
+    );
+    const addonPermissionIdValueCell = document.querySelector(
+      '[row-id="sub-2"] .ag-cell[col-id="permId"]',
+    );
+    const permissionIdProductCell = document.querySelector(
+      '[row-id="sub-1"] .ag-cell[col-id="model"]',
+    );
+    expect(permissionIdValueCell?.textContent?.trim()).toBe('999');
+    expect(addonPermissionIdValueCell?.textContent?.trim()).toBe('');
+    expect(permissionIdProductCell?.textContent).toContain('Terminal Product');
+  });
+
+  test('renders mandatory add-on Yes/No values per row', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          Model: 'Terminal Product',
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+          isMandatory: true,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          Model: 'News Add-On Product',
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-3',
+          permId: 999,
+          Model: 'Research Add-On Product',
+          ServiceName: 'Research Add-On',
+          ItemName: 'Add-On',
+          isMandatory: false,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    expect(screen.queryByLabelText('Mandatory add-on indicator')).toBeNull();
+
+    const permissionIdMandatoryCell = document.querySelector(
+      '[row-id="sub-1"] .ag-cell[col-id="isMandatory"]',
+    );
+    const mandatoryAddonCell = document.querySelector(
+      '[row-id="sub-2"] .ag-cell[col-id="isMandatory"]',
+    );
+    const optionalAddonCell = document.querySelector(
+      '[row-id="sub-3"] .ag-cell[col-id="isMandatory"]',
+    );
+
+    expect(permissionIdMandatoryCell?.textContent?.trim()).toBe('No');
+    expect(mandatoryAddonCell?.textContent?.trim()).toBe('Yes');
+    expect(optionalAddonCell?.textContent?.trim()).toBe('No');
+  });
+
+  test('checking a mandatory add-on row opens confirmation and does not select until confirmed', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const mandatoryAddonCheckbox = getCancellationCheckboxForRow('sub-2');
+
+    await act(async () => {
+      fireEvent.click(mandatoryAddonCheckbox);
+    });
+
+    expect(screen.getByText('Cancel Mandatory Add-On')).toBeDefined();
+    expect(mandatoryAddonCheckbox.checked).toBe(false);
+    const cancelButton = document.querySelector<HTMLButtonElement>(
+      '.legend-marketplace-subscriptions-content__cancel-button',
+    );
+    if (cancelButton === null) {
+      throw new Error('Expected cancel button to exist');
+    }
+    expect(cancelButton.hasAttribute('disabled')).toBe(true);
+  });
+
+  test('checking an optional add-on in a mixed mandatory group keeps existing non-modal behavior', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-3',
+          permId: 999,
+          ServiceName: 'Optional Research Add-On',
+          ItemName: 'Add-On',
+          isMandatory: false,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-3'));
+    });
+
+    expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-3').checked).toBe(true);
+  });
+
+  test('confirming mandatory-group selection selects the entire permission group', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-3',
+          permId: 999,
+          ServiceName: 'Analytics Add-On',
+          ItemName: 'Add-On',
+          isMandatory: false,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-4',
+          permId: 888,
+          ServiceName: 'Other Group Permission',
+          ItemName: 'Permission ID',
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Yes, cancel group' }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    });
+
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-3').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-4').checked).toBe(false);
+    expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+  });
+
+  test('confirming mandatory-group selection with search filters still selects hidden rows in the full permission group', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Visible Mandatory Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-3',
+          permId: 999,
+          ServiceName: 'Hidden Optional Add-On',
+          ItemName: 'Add-On',
+          isMandatory: false,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const searchInput = screen.getByRole('textbox', {
+      name: 'Search subscriptions',
+    });
+    await act(async () => {
+      fireEvent.change(searchInput, {
+        target: { value: 'Visible Mandatory Add-On' },
+      });
+    });
+    await waitFor(
+      () => {
+        expect(document.querySelector('[row-id="sub-2"]')).not.toBeNull();
+      },
+      { timeout: 10_000 },
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Yes, cancel group' }),
+      );
+    });
+
+    await act(async () => {
+      fireEvent.change(searchInput, {
+        target: { value: '' },
+      });
+    });
+
+    await waitFor(() => {
+      expect(document.querySelector('[row-id="sub-1"]')).not.toBeNull();
+      expect(document.querySelector('[row-id="sub-3"]')).not.toBeNull();
+    });
+
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-3').checked).toBe(true);
+  });
+
+  test('declining mandatory-group selection leaves selection unchanged', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'No' }));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    });
+
+    expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Cancel Subscription' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  });
+
+  test('unchecking a selected mandatory add-on row clears the whole group without opening modal', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Yes, cancel group' }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    });
+
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(true);
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    });
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Cancel Subscription' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  });
+
+  test('unchecking a selected optional add-on row also clears the whole group when a mandatory add-on is selected', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: true,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-3',
+          permId: 999,
+          ServiceName: 'Optional Research Add-On',
+          ItemName: 'Add-On',
+          isMandatory: false,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Yes, cancel group' }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    });
+
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-3').checked).toBe(true);
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-3'));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    });
+
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-3').checked).toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Cancel Subscription' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  });
+
+  test('non-mandatory groups keep existing selection behavior', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+          isMandatory: false,
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'News Add-On',
+          ItemName: 'Add-On',
+          isMandatory: false,
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+
+    expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(false);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(true);
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-2'));
+    });
+
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(false);
+
+    await act(async () => {
+      fireEvent.click(getCancellationCheckboxForRow('sub-1'));
+    });
+
+    expect(getCancellationCheckboxForRow('sub-1').checked).toBe(true);
+    expect(getCancellationCheckboxForRow('sub-2').checked).toBe(true);
+    expect(screen.queryByText('Cancel Mandatory Add-On')).toBeNull();
   });
 });

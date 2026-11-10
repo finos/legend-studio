@@ -69,6 +69,7 @@ export class TerminalResult {
   id!: number;
   category!: string;
   providerName!: string;
+  sourceName?: string;
   productName!: string;
   description?: string;
   price!: number;
@@ -81,6 +82,7 @@ export class TerminalResult {
   permissionId?: number;
   source?: RecommendationSource;
   items?: TerminalResult[];
+  mandatoryAddons?: TerminalResult[];
 
   static readonly serialization: SerializationFactory<TerminalResult> =
     new SerializationFactory(
@@ -88,6 +90,7 @@ export class TerminalResult {
         id: primitive(),
         category: primitive(),
         providerName: primitive(),
+        sourceName: optional(primitive()),
         productName: primitive(),
         description: optional(primitive()),
         price: primitive(),
@@ -100,6 +103,12 @@ export class TerminalResult {
         permissionId: optional(primitive()),
         source: optional(primitive()),
         items: optionalCustomList(
+          (v: TerminalResult): PlainObject<TerminalResult> =>
+            TerminalResult.serialization.toJson(v),
+          (v: PlainObject<TerminalResult>): TerminalResult =>
+            TerminalResult.serialization.fromJson(v),
+        ),
+        mandatoryAddons: optionalCustomList(
           (v: TerminalResult): PlainObject<TerminalResult> =>
             TerminalResult.serialization.toJson(v),
           (v: PlainObject<TerminalResult>): TerminalResult =>
@@ -126,6 +135,7 @@ export class TraderProfileItem {
   providerName!: string;
   productName!: string;
   price!: number;
+  multiselect?: boolean;
   isOwned?: boolean;
   vendorProfileId?: number;
   description?: string;
@@ -142,6 +152,7 @@ export class TraderProfileItem {
       providerName: primitive(),
       productName: primitive(),
       price: primitive(),
+      multiselect: optional(primitive()),
       isOwned: optional(primitive()),
       vendorProfileId: optional(primitive()),
       description: optional(primitive()),

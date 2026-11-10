@@ -25,6 +25,7 @@ import {
   formatCardPrice,
   formatItemPrice,
   formatProfileSummaryLine,
+  hasModelLevelMultiselect,
   getItemSummary,
   getRandomImageUrl,
   groupOrderProfileItems,
@@ -85,6 +86,7 @@ describe('OrderProfileLabel', () => {
     expect(OrderProfileLabel.OWNED_SUFFIX).toBe('(Owned)');
     expect(OrderProfileLabel.IN_CART_SUFFIX).toBe('(In Cart)');
     expect(OrderProfileLabel.MODEL_PREFIX).toBe('Model: ');
+    expect(OrderProfileLabel.UNSPECIFIED_MODEL).toBe('Unspecified Model');
     expect(OrderProfileLabel.VIEW_DETAILS).toBe('View details');
   });
 });
@@ -261,6 +263,34 @@ describe('formatProfileSummaryLine', () => {
 
   test('works with large numbers', () => {
     expect(formatProfileSummaryLine(5, 10)).toBe('5 Terminals · 10 Add-Ons');
+  });
+});
+
+describe('hasModelLevelMultiselect', () => {
+  test('returns true when a model has multiple multiselect terminals', () => {
+    const items = [
+      makeTerminal(1, 100, 'Model A'),
+      makeTerminal(2, 120, 'Model A'),
+    ];
+    const [firstTerminal, secondTerminal] = items;
+    if (firstTerminal === undefined || secondTerminal === undefined) {
+      throw new Error('Expected two terminal items for this test');
+    }
+    firstTerminal.multiselect = true;
+    secondTerminal.multiselect = true;
+    expect(hasModelLevelMultiselect(items)).toBe(true);
+  });
+
+  test('returns false when only one multiselect terminal exists per model', () => {
+    const terminal = makeTerminal(1, 100, 'Model A');
+    terminal.multiselect = true;
+    expect(hasModelLevelMultiselect([terminal])).toBe(false);
+  });
+
+  test('returns false when only add-ons are marked multiselect', () => {
+    const addOn = makeAddOn(1, 50, 'Model A');
+    addOn.multiselect = true;
+    expect(hasModelLevelMultiselect([addOn])).toBe(false);
   });
 });
 

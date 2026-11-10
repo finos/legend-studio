@@ -131,6 +131,49 @@ describe('TerminalResult', () => {
       const result = TerminalResult.serialization.fromJson(json);
       expect(result.model).toBeNull();
     });
+
+    test('round-trips sourceName and mandatoryAddons', () => {
+      const json = {
+        id: 1,
+        category: 'Vendor Profile',
+        providerName: 'Bloomberg',
+        sourceName: 'Bloomberg Source',
+        productName: 'Bloomberg Terminal',
+        price: 500,
+        model: 'Model A',
+        mandatoryAddons: [
+          {
+            id: 2,
+            category: 'Basic Service',
+            providerName: 'Bloomberg',
+            sourceName: 'Exchange Feed Source',
+            productName: 'Exchange Feed',
+            description: 'Mandatory market data feed',
+            price: 50,
+            model: null,
+            isMandatory: true,
+            skipWorkflow: true,
+          },
+        ],
+      };
+
+      const result = TerminalResult.serialization.fromJson(json);
+      expect(result.sourceName).toBe('Bloomberg Source');
+      expect(result.mandatoryAddons).toHaveLength(1);
+      expect(result.mandatoryAddons?.[0]).toBeInstanceOf(TerminalResult);
+      expect(result.mandatoryAddons?.[0]?.sourceName).toBe(
+        'Exchange Feed Source',
+      );
+
+      const serialized = TerminalResult.serialization.toJson(result) as {
+        sourceName?: string;
+        mandatoryAddons?: { sourceName?: string }[];
+      };
+      expect(serialized.sourceName).toBe('Bloomberg Source');
+      expect(serialized.mandatoryAddons?.[0]?.sourceName).toBe(
+        'Exchange Feed Source',
+      );
+    });
   });
 });
 
@@ -225,6 +268,7 @@ describe('TraderProfileItem', () => {
         providerName: 'Reuters',
         productName: 'Reuters Feed',
         price: 500,
+        multiselect: true,
         isOwned: true,
         vendorProfileId: 11,
         description: 'A data feed',
@@ -235,6 +279,7 @@ describe('TraderProfileItem', () => {
         permissionId: 22,
       };
       const result = TraderProfileItem.serialization.fromJson(json);
+      expect(result.multiselect).toBe(true);
       expect(result.isOwned).toBe(true);
       expect(result.vendorProfileId).toBe(11);
       expect(result.description).toBe('A data feed');

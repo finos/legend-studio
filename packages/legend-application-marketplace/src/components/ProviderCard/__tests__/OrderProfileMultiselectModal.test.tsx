@@ -35,17 +35,39 @@ const makeTerminalItem = (
   id: number,
   productName: string,
   price: number,
-  model: string | null = null,
+  model: string,
+  multiselect: boolean,
+  providerName = 'Test Provider',
   isOwned = false,
 ): TraderProfileItem => {
   const item = new TraderProfileItem();
   item.id = id;
   item.category = 'Vendor Profile';
-  item.providerName = 'Test Provider';
+  item.providerName = providerName;
   item.productName = productName;
   item.price = price;
   item.model = model;
+  item.multiselect = multiselect;
   item.isOwned = isOwned;
+  return item;
+};
+
+const makeAddOnItem = (
+  id: number,
+  productName: string,
+  price: number,
+  model: string,
+  providerName = 'Test Provider',
+  multiselect = false,
+): TraderProfileItem => {
+  const item = new TraderProfileItem();
+  item.id = id;
+  item.category = 'Market Data';
+  item.providerName = providerName;
+  item.productName = productName;
+  item.price = price;
+  item.model = model;
+  item.multiselect = multiselect;
   return item;
 };
 
@@ -64,7 +86,9 @@ const makeProfile = (items: TraderProfileItem[]): TraderProfile => {
 
 describe('OrderProfileMultiselectModal', () => {
   test('renders nothing meaningful when open=false', () => {
-    const profile = makeProfile([makeTerminalItem(1, 'Terminal A', 100)]);
+    const profile = makeProfile([
+      makeTerminalItem(1, 'Terminal A', 100, 'Model A', true),
+    ]);
     render(
       <OrderProfileMultiselectModal
         profile={profile}
@@ -77,8 +101,22 @@ describe('OrderProfileMultiselectModal', () => {
     expect(screen.queryByText('Select Terminal')).toBeNull();
   });
 
-  test('renders title when open=true', () => {
-    const profile = makeProfile([makeTerminalItem(1, 'Terminal A', 100)]);
+  test('renders one section per model and selectable prompt per selectable model', () => {
+    const profile = makeProfile([
+      makeTerminalItem(1, 'A Vendor 1', 100, 'Model A', true, 'Vendor A'),
+      makeTerminalItem(2, 'A Vendor 2', 120, 'Model A', true, 'Vendor B'),
+      makeAddOnItem(3, 'A Basic Service', 25, 'Model A', 'Service A'),
+      makeTerminalItem(4, 'B Vendor 1', 200, 'Model B', true, 'Vendor C'),
+      makeTerminalItem(5, 'B Vendor 2', 220, 'Model B', true, 'Vendor D'),
+      makeTerminalItem(
+        6,
+        'C Bundled Terminal',
+        80,
+        'Model C',
+        false,
+        'Vendor E',
+      ),
+    ]);
     render(
       <OrderProfileMultiselectModal
         profile={profile}
@@ -88,102 +126,25 @@ describe('OrderProfileMultiselectModal', () => {
       />,
     );
     expect(screen.getByText('Select Terminal')).toBeDefined();
-  });
-
-  test('renders description with profile product name', () => {
-    const profile = makeProfile([makeTerminalItem(1, 'Terminal A', 100)]);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
     expect(screen.getByText('Test Profile')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Model A' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Model B' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Model C' })).toBeDefined();
+    expect(
+      screen.getAllByText('Select one preferred vendor profile.'),
+    ).toHaveLength(2);
+    expect(
+      screen.getAllByText('Included with this model').length,
+    ).toBeGreaterThan(0);
   });
 
-  test('renders all non-owned terminal items', () => {
-    const terminals = [
-      makeTerminalItem(1, 'Terminal A', 100),
-      makeTerminalItem(2, 'Terminal B', 200),
-    ];
-    const profile = makeProfile(terminals);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
-    expect(screen.getByText('Terminal A')).toBeDefined();
-    expect(screen.getByText('Terminal B')).toBeDefined();
-  });
-
-  test('does not render owned terminal items', () => {
-    const terminals = [
-      makeTerminalItem(1, 'Terminal A', 100, null, false),
-      makeTerminalItem(2, 'Owned Terminal', 200, null, true),
-    ];
-    const profile = makeProfile(terminals);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
-    expect(screen.getByText('Terminal A')).toBeDefined();
-    expect(screen.queryByText('Owned Terminal')).toBeNull();
-  });
-
-  test('shows model info when item has a model', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 100, 'Model X')];
-    const profile = makeProfile(terminals);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
-    expect(screen.getByText('Model: Model X')).toBeDefined();
-  });
-
-  test('does not show model section when model is null', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 100, null)];
-    const profile = makeProfile(terminals);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
-    expect(screen.queryByText(/Model:/)).toBeNull();
-  });
-
-  test('shows formatted price for each terminal', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 1500)];
-    const profile = makeProfile(terminals);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
-    expect(screen.getByText('$1,500.00')).toBeDefined();
-  });
-
-  test('confirm button is disabled when no terminal is selected', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 100)];
-    const profile = makeProfile(terminals);
+  test('confirm button stays disabled until every selectable model has a selection', () => {
+    const profile = makeProfile([
+      makeTerminalItem(1, 'A Vendor 1', 100, 'Model A', true),
+      makeTerminalItem(2, 'A Vendor 2', 120, 'Model A', true),
+      makeTerminalItem(3, 'B Vendor 1', 200, 'Model B', true),
+      makeTerminalItem(4, 'B Vendor 2', 220, 'Model B', true),
+    ]);
     render(
       <OrderProfileMultiselectModal
         profile={profile}
@@ -195,31 +156,64 @@ describe('OrderProfileMultiselectModal', () => {
     const confirmBtn = screen.getByText('Add to cart').closest('button');
     expect(confirmBtn).toBeDefined();
     expect(confirmBtn?.disabled).toBe(true);
-  });
 
-  test('confirm button is enabled after selecting a terminal', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 100)];
-    const profile = makeProfile(terminals);
-    render(
-      <OrderProfileMultiselectModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />,
-    );
-    // Click on the terminal item
-    fireEvent.click(screen.getByText('Terminal A'));
-    const confirmBtn = screen.getByText('Add to cart').closest('button');
+    fireEvent.click(screen.getByText('A Vendor 1'));
+    expect(confirmBtn?.disabled).toBe(true);
+
+    fireEvent.click(screen.getByText('B Vendor 2'));
     expect(confirmBtn?.disabled).toBe(false);
   });
 
-  test('calls onConfirm with selected terminal when confirm is clicked', () => {
-    const terminals = [
-      makeTerminalItem(1, 'Terminal A', 100),
-      makeTerminalItem(2, 'Terminal B', 200),
-    ];
-    const profile = makeProfile(terminals);
+  test('calls onConfirm with selected multiselect items and bundled non-selectable items', () => {
+    const selectableA1 = makeTerminalItem(
+      1,
+      'A Vendor 1',
+      100,
+      'Model A',
+      true,
+    );
+    const selectableA2 = makeTerminalItem(
+      2,
+      'A Vendor 2',
+      120,
+      'Model A',
+      true,
+    );
+    const bundledA = makeAddOnItem(3, 'A Basic Service', 25, 'Model A');
+
+    const selectableB1 = makeTerminalItem(
+      4,
+      'B Vendor 1',
+      200,
+      'Model B',
+      true,
+    );
+    const selectableB2 = makeTerminalItem(
+      5,
+      'B Vendor 2',
+      220,
+      'Model B',
+      true,
+    );
+    const bundledB = makeAddOnItem(6, 'B Basic Service', 35, 'Model B');
+
+    const nonSelectableC = makeTerminalItem(
+      7,
+      'C Bundled Terminal',
+      80,
+      'Model C',
+      false,
+    );
+
+    const profile = makeProfile([
+      selectableA1,
+      selectableA2,
+      bundledA,
+      selectableB1,
+      selectableB2,
+      bundledB,
+      nonSelectableC,
+    ]);
     const onConfirm = jest.fn();
     render(
       <OrderProfileMultiselectModal
@@ -229,16 +223,21 @@ describe('OrderProfileMultiselectModal', () => {
         onConfirm={onConfirm}
       />,
     );
-    // Select Terminal A
-    fireEvent.click(screen.getByText('Terminal A'));
-    // Click confirm
+    fireEvent.click(screen.getByText('A Vendor 2'));
+    fireEvent.click(screen.getByText('B Vendor 1'));
     fireEvent.click(screen.getByText('Add to cart'));
-    expect(onConfirm).toHaveBeenCalledWith([terminals[0]]);
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    const payload = onConfirm.mock.calls[0]?.[0] as TraderProfileItem[];
+    expect(payload.map((item) => item.id)).toEqual([2, 3, 4, 6, 7]);
   });
 
-  test('calls onConfirm with empty array when no selection and confirm is somehow invoked', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 100)];
-    const profile = makeProfile(terminals);
+  test('auto-includes single multiselect=true model and only requires choices for selectable models', () => {
+    const profile = makeProfile([
+      makeTerminalItem(1, 'A Solo Vendor', 100, 'Model A', true),
+      makeTerminalItem(2, 'B Vendor 1', 200, 'Model B', true),
+      makeTerminalItem(3, 'B Vendor 2', 220, 'Model B', true),
+    ]);
     const onConfirm = jest.fn();
     render(
       <OrderProfileMultiselectModal
@@ -248,17 +247,25 @@ describe('OrderProfileMultiselectModal', () => {
         onConfirm={onConfirm}
       />,
     );
-    // Don't select anything, but the button should be disabled anyway
-    // We test that handleConfirm returns empty array when selectedId === null
+
     const confirmBtn = screen
       .getByText('Add to cart')
       .closest('button') as HTMLButtonElement;
     expect(confirmBtn.disabled).toBe(true);
+
+    fireEvent.click(screen.getByText('B Vendor 2'));
+    expect(confirmBtn.disabled).toBe(false);
+
+    fireEvent.click(confirmBtn);
+    const payload = onConfirm.mock.calls[0]?.[0] as TraderProfileItem[];
+    expect(payload.map((item) => item.id)).toEqual([1, 3]);
   });
 
   test('calls onClose when cancel button is clicked', () => {
-    const terminals = [makeTerminalItem(1, 'Terminal A', 100)];
-    const profile = makeProfile(terminals);
+    const profile = makeProfile([
+      makeTerminalItem(1, 'A Vendor 1', 100, 'Model A', true),
+      makeTerminalItem(2, 'A Vendor 2', 120, 'Model A', true),
+    ]);
     const onClose = jest.fn();
     render(
       <OrderProfileMultiselectModal
@@ -272,13 +279,14 @@ describe('OrderProfileMultiselectModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  test('selecting a different terminal updates selection', () => {
-    const terminals = [
-      makeTerminalItem(1, 'Terminal A', 100),
-      makeTerminalItem(2, 'Terminal B', 200),
-    ];
-    const profile = makeProfile(terminals);
+  test('does not render owned items for selection or bundled inclusion', () => {
     const onConfirm = jest.fn();
+    const profile = makeProfile([
+      makeTerminalItem(1, 'Available Vendor 1', 100, 'Model A', true),
+      makeTerminalItem(2, 'Available Vendor 2', 120, 'Model A', true),
+      makeTerminalItem(3, 'Owned Vendor', 90, 'Model A', true, 'Owned', true),
+    ]);
+
     render(
       <OrderProfileMultiselectModal
         profile={profile}
@@ -287,27 +295,79 @@ describe('OrderProfileMultiselectModal', () => {
         onConfirm={onConfirm}
       />,
     );
-    // Select Terminal A first
-    fireEvent.click(screen.getByText('Terminal A'));
-    // Then select Terminal B
-    fireEvent.click(screen.getByText('Terminal B'));
-    // Confirm should give Terminal B
+
+    expect(screen.queryByText('Owned Vendor')).toBeNull();
+    fireEvent.click(screen.getByText('Available Vendor 2'));
     fireEvent.click(screen.getByText('Add to cart'));
-    expect(onConfirm).toHaveBeenCalledWith([terminals[1]]);
+    const payload = onConfirm.mock.calls[0]?.[0] as TraderProfileItem[];
+    expect(payload.map((item) => item.id)).toEqual([2]);
   });
 
-  test('renders description about automatic add-ons', () => {
-    const profile = makeProfile([makeTerminalItem(1, 'Terminal A', 100)]);
+  test('keeps non-terminal multiselect=true items bundled and not selectable', () => {
+    const onConfirm = jest.fn();
+    const profile = makeProfile([
+      makeTerminalItem(1, 'Vendor Option 1', 100, 'Model A', true),
+      makeTerminalItem(2, 'Vendor Option 2', 120, 'Model A', true),
+      makeAddOnItem(3, 'Bundled Exchange Feed', 5, 'Model A', 'Feed', true),
+    ]);
+
     render(
       <OrderProfileMultiselectModal
         profile={profile}
         open={true}
         onClose={jest.fn()}
-        onConfirm={jest.fn()}
+        onConfirm={onConfirm}
       />,
     );
+
     expect(
-      screen.getByText(/All Add-Ons will be added automatically/),
-    ).toBeDefined();
+      screen.queryByRole('radio', { name: /Bundled Exchange Feed/i }),
+    ).toBeNull();
+    fireEvent.click(screen.getByText('Vendor Option 2'));
+    fireEvent.click(screen.getByText('Add to cart'));
+
+    const payload = onConfirm.mock.calls[0]?.[0] as TraderProfileItem[];
+    expect(payload.map((item) => item.id)).toEqual([2, 3]);
+  });
+
+  test('does not include bundled items when selected terminal cannot be resolved after profile data changes', () => {
+    const onConfirm = jest.fn();
+    const initialProfile = makeProfile([
+      makeTerminalItem(1, 'Vendor Option 1', 100, 'Model A', true),
+      makeTerminalItem(2, 'Vendor Option 2', 120, 'Model A', true),
+      makeAddOnItem(3, 'Bundled Exchange Feed', 5, 'Model A'),
+    ]);
+
+    const { rerender } = render(
+      <OrderProfileMultiselectModal
+        profile={initialProfile}
+        open={true}
+        onClose={jest.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('Vendor Option 1'));
+
+    const updatedProfile = makeProfile([
+      makeTerminalItem(11, 'Vendor Option 11', 100, 'Model A', true),
+      makeTerminalItem(12, 'Vendor Option 12', 120, 'Model A', true),
+      makeAddOnItem(13, 'Bundled Exchange Feed', 5, 'Model A'),
+    ]);
+
+    rerender(
+      <OrderProfileMultiselectModal
+        profile={updatedProfile}
+        open={true}
+        onClose={jest.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('Add to cart'));
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    const payload = onConfirm.mock.calls[0]?.[0] as TraderProfileItem[];
+    expect(payload.map((item) => item.id)).toEqual([]);
   });
 });

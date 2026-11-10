@@ -316,6 +316,19 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       setAnchorEl(null);
     };
 
+    const handleSupportClick = (): void => {
+      const supportUrl = applicationStore.config.options.supportUrl;
+      if (supportUrl) {
+        applicationStore.navigationService.navigator.visitAddress(supportUrl);
+        LegendMarketplaceTelemetryHelper.logEvent_ClickToolbarMenu(
+          applicationStore.telemetryService,
+          ICON_TOOLBAR_TYPE.HELP,
+          'Support',
+        );
+      }
+      setAnchorEl(null);
+    };
+
     return (
       <>
         <IconButton
@@ -381,6 +394,9 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             >
               {`${adjacentEnvState.label} Env`}
             </MenuItem>
+          )}
+          {applicationStore.config.options.supportUrl && (
+            <MenuItem onClick={handleSupportClick}>Support</MenuItem>
           )}
           {adjacentEnvState && adjacentUrl && <MenuContentDivider />}
           <MenuItem

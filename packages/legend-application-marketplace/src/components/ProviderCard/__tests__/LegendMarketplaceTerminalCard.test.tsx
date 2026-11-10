@@ -63,7 +63,27 @@ const makeTerminalResult = (
   if (overrides.permissionId !== undefined) {
     item.permissionId = overrides.permissionId;
   }
+  if (overrides.mandatoryAddons !== undefined) {
+    item.mandatoryAddons = overrides.mandatoryAddons;
+  }
   return item;
+};
+
+const makeMandatoryAddon = (
+  id: number,
+  productName: string,
+  price: number,
+): TerminalResult => {
+  const addon = new TerminalResult();
+  addon.id = id;
+  addon.category = 'Basic Service';
+  addon.providerName = 'Bloomberg';
+  addon.productName = productName;
+  addon.price = price;
+  addon.model = null;
+  addon.isMandatory = true;
+  addon.skipWorkflow = true;
+  return addon;
 };
 
 const makeCartItem = (id: number): CartItem => ({
@@ -201,6 +221,115 @@ describe('LegendMarketplaceTerminalCard - rendering', () => {
     const item = makeTerminalResult();
     render(<LegendMarketplaceTerminalCard terminalResult={item} />);
     expect(screen.getByText(/Add to cart/)).toBeDefined();
+  });
+
+  test('shows info icon only when mandatory add-ons are present', () => {
+    const itemWithMandatoryAddons = makeTerminalResult({
+      mandatoryAddons: [makeMandatoryAddon(2, 'Exchange Feed', 50)],
+    });
+    const { rerender } = render(
+      <LegendMarketplaceTerminalCard
+        terminalResult={itemWithMandatoryAddons}
+      />,
+    );
+    expect(
+      screen.getByLabelText('View mandatory add-ons details'),
+    ).toBeDefined();
+
+    const itemWithoutMandatoryAddons = makeTerminalResult({
+      mandatoryAddons: [],
+    });
+    rerender(
+      <LegendMarketplaceTerminalCard
+        terminalResult={itemWithoutMandatoryAddons}
+      />,
+    );
+    expect(
+      screen.queryByLabelText('View mandatory add-ons details'),
+    ).toBeNull();
+
+    const itemMissingMandatoryAddons = makeTerminalResult();
+    rerender(
+      <LegendMarketplaceTerminalCard
+        terminalResult={itemMissingMandatoryAddons}
+      />,
+    );
+    expect(
+      screen.queryByLabelText('View mandatory add-ons details'),
+    ).toBeNull();
+  });
+
+  test('clicking info icon opens mandatory add-ons modal with add-on names', () => {
+    const item = makeTerminalResult({
+      mandatoryAddons: [
+        makeMandatoryAddon(2, 'Exchange Feed', 50),
+        makeMandatoryAddon(3, 'News Feed', 25),
+      ],
+    });
+    render(<LegendMarketplaceTerminalCard terminalResult={item} />);
+
+    fireEvent.click(screen.getByLabelText('View mandatory add-ons details'));
+
+    expect(screen.getByText('Exchange Feed')).toBeDefined();
+    expect(screen.getByText('News Feed')).toBeDefined();
+  });
+
+  test('hovering info icon shows informative tooltip text', async () => {
+    const item = makeTerminalResult({
+      mandatoryAddons: [makeMandatoryAddon(2, 'Exchange Feed', 50)],
+    });
+    render(<LegendMarketplaceTerminalCard terminalResult={item} />);
+
+    fireEvent.mouseOver(
+      screen.getByLabelText('View mandatory add-ons details'),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('View mandatory add-ons included with this terminal'),
+      ).toBeDefined();
+    });
+  });
+
+  test('renders combined price when mandatory add-ons exist and base price otherwise', () => {
+    const withMandatoryAddons = makeTerminalResult({
+      price: 500,
+      mandatoryAddons: [
+        makeMandatoryAddon(2, 'Exchange Feed', 50),
+        makeMandatoryAddon(3, 'News Feed', 75),
+      ],
+    });
+    const { rerender } = render(
+      <LegendMarketplaceTerminalCard terminalResult={withMandatoryAddons} />,
+    );
+    expect(screen.getByText('$625.00/month')).toBeDefined();
+
+    const withoutMandatoryAddons = makeTerminalResult({
+      price: 500,
+      mandatoryAddons: [],
+    });
+    rerender(
+      <LegendMarketplaceTerminalCard terminalResult={withoutMandatoryAddons} />,
+    );
+    expect(screen.getByText('$500.00/month')).toBeDefined();
+  });
+
+  test('does not render price chip when displayed total is not a finite number', () => {
+    const terminalWithInvalidPrice = makeTerminalResult({
+      price: Number.NaN,
+      mandatoryAddons: [makeMandatoryAddon(2, 'Exchange Feed', 50)],
+    });
+    const { container } = render(
+      <LegendMarketplaceTerminalCard
+        terminalResult={terminalWithInvalidPrice}
+      />,
+    );
+
+    const priceChips = container.querySelectorAll(
+      '.legend-marketplace-terminal-card__price',
+    );
+    expect(priceChips.length).toBe(0);
+    expect(screen.queryByText('$NaN/month')).toBeNull();
   });
 });
 

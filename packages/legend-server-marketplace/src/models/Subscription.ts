@@ -15,7 +15,14 @@
  */
 
 import { SerializationFactory } from '@finos/legend-shared';
-import { alias, createModelSchema, list, object, primitive } from 'serializr';
+import {
+  alias,
+  createModelSchema,
+  list,
+  object,
+  optional,
+  primitive,
+} from 'serializr';
 
 export class Subscription {
   carrierVendor!: string;
@@ -30,6 +37,7 @@ export class Subscription {
   servicepriceId?: number;
   permId!: number;
   id!: string;
+  isMandatory?: boolean;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Subscription, {
@@ -45,6 +53,7 @@ export class Subscription {
       servicepriceId: primitive(),
       permId: primitive(),
       id: primitive(),
+      isMandatory: optional(primitive()),
     }),
   );
 }
