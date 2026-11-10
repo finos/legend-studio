@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.117
+
+### Patch Changes
+
+- [#5870](https://github.com/finos/legend-studio/pull/5870) [`c4ddb59`](https://github.com/finos/legend-studio/commit/c4ddb5984cc4ec681b9efcc0ae65f9ef91f13a36) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: list generation specifications from the Element Type picker, with their generation elements and file generations (counts and paths) and a link to each project.
+
 ## 0.1.116
 
 ## 0.1.115
