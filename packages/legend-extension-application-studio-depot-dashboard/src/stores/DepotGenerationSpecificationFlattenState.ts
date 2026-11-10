@@ -256,8 +256,8 @@ export class DepotGenerationSpecificationFlattenState {
           hashGenerationSpecification(masterSpecification);
       const version = this.entityState.summary.versionId;
       const comparison = this.matchesDepotVersion
-        ? `Same as ${version}`
-        : `Differs from ${version}: master is flattened`;
+        ? `Master matches ${version}`
+        : `Master differs from ${version}; the flatten uses master's copy`;
       const stageCount = masterSpecification.stageCount;
       step.setStatus(
         DEPOT_FLATTEN_STEP_STATUS.DONE,

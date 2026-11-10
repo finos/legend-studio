@@ -730,7 +730,9 @@ test('flatten a generation specification in a new workspace and open a review', 
   );
   await openFlatten(ALPHA_PATH);
 
-  await screen.findByText('Same as 1.0.0. 4 stages, 5 generation elements.');
+  await screen.findByText(
+    'Master matches 1.0.0. 4 stages, 5 generation elements.',
+  );
   expect(spies.getEntitySpy).toHaveBeenCalledWith(
     'PROJECT-alpha',
     undefined,
@@ -838,7 +840,9 @@ test('skip the configuration steps when there is nothing to change', async () =>
     '/extensions/depot/generation-specifications',
   );
   await openFlatten(ALPHA_PATH);
-  await screen.findByText('Same as 1.0.0. 4 stages, 5 generation elements.');
+  await screen.findByText(
+    'Master matches 1.0.0. 4 stages, 5 generation elements.',
+  );
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
   });
@@ -882,7 +886,7 @@ test('stop before creating anything when master has nothing to flatten', async (
   await openFlatten(ALPHA_PATH);
 
   await screen.findByText(
-    'Differs from 1.0.0: master is flattened. Master has one stage: nothing to flatten.',
+    "Master differs from 1.0.0; the flatten uses master's copy. Master has one stage: nothing to flatten.",
   );
   expect(
     screen.getByRole('button', { name: 'Start' }).hasAttribute('disabled'),
@@ -899,7 +903,9 @@ test('stop at a failed step and point to the workspace', async () => {
     '/extensions/depot/generation-specifications',
   );
   await openFlatten(ALPHA_PATH);
-  await screen.findByText('Same as 1.0.0. 4 stages, 5 generation elements.');
+  await screen.findByText(
+    'Master matches 1.0.0. 4 stages, 5 generation elements.',
+  );
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
   });
