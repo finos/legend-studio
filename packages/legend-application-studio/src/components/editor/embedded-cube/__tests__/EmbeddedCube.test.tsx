@@ -62,6 +62,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
+  TEST_DATA__DefaultSDLCInfo,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
@@ -1406,6 +1407,174 @@ describe('A data product and an ingest data set in one cube in Studio (PLAN §11
           [LEGEND_STUDIO_CUBE_MATVIEW_MESSAGE.READS_VIEW('loopy', 'LOOPY')],
         ],
       ]);
+    },
+  );
+
+  test(
+    integrationTest(
+      "Edit MatView reads a view of a dependency's data product and the project's ingest data set back into one cube",
+    ),
+    async () => {
+      typeAccessPoints();
+      const DEPENDENCY_INGEST_PATH = 'dep::ingest::DeskIngest';
+      const DEPENDENCY_DATA_PRODUCT_PATH = 'dep::dataProduct::DeskProduct';
+      const DEP_DESKS_LAMBDA = serializeCubeLambdaForHost(
+        lambda(
+          [],
+          [
+            func('concatenate', [
+              ingestAccessor([INGEST_PATH, 'DESKS']),
+              dataProductAccessor([DEPENDENCY_DATA_PRODUCT_PATH, 'desks']),
+            ]),
+          ],
+        ),
+      );
+      const editorStore = TEST__provideMockedEditorStore();
+      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+        editorStore,
+        {
+          entities: [
+            {
+              ...TRADES_INGEST,
+              content: {
+                ...(TRADES_INGEST.content as PlainObject),
+                datasets: [
+                  ...((TRADES_INGEST.content as PlainObject)
+                    .datasets as object[]),
+                  {
+                    name: 'DEP_DESKS',
+                    primaryKey: ['ID'],
+                    privacyClassification: { sensitivity: 'DP10' },
+                    source: {
+                      _type: 'FunctionSource',
+                      function: DEP_DESKS_LAMBDA,
+                    },
+                  },
+                ],
+              },
+            },
+            LAKEHOUSE_RUNTIME,
+          ],
+          projectConfiguration: {
+            ...TEST_DATA__DefaultSDLCInfo.projectConfig,
+            projectDependencies: [
+              {
+                projectId: 'org.finos.legend:desk-products',
+                versionId: '1.0.0',
+              },
+            ],
+          },
+          projects: [
+            {
+              id: 'DESK-1',
+              projectId: 'DESK-1',
+              groupId: 'org.finos.legend',
+              artifactId: 'desk-products',
+              versions: ['1.0.0'],
+              latestVersion: '1.0.0',
+            },
+          ],
+          // the dependency: an ingest definition of desks and a data product over it
+          projectDependency: [
+            {
+              groupId: 'org.finos.legend',
+              artifactId: 'desk-products',
+              versionId: '1.0.0',
+              versionedEntity: false,
+              entities: [
+                {
+                  path: DEPENDENCY_INGEST_PATH,
+                  classifierPath:
+                    'meta::external::ingest::specification::metamodel::IngestDefinition',
+                  content: {
+                    _type: 'ingestDefinition',
+                    name: 'DeskIngest',
+                    package: 'dep::ingest',
+                    appDirDeployment: { appDirId: 54321, level: 'DEPLOYMENT' },
+                    datasets: [
+                      {
+                        name: 'DESKS',
+                        primaryKey: ['ID'],
+                        source: {
+                          _type: 'serializedSource',
+                          schema: {
+                            _type: 'relationType',
+                            columns: [
+                              column('ID', 'Integer'),
+                              column('DESK', 'String'),
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  path: DEPENDENCY_DATA_PRODUCT_PATH,
+                  classifierPath:
+                    'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+                  content: {
+                    _type: 'dataProduct',
+                    name: 'DeskProduct',
+                    package: 'dep::dataProduct',
+                    title: 'Desks',
+                    accessPointGroups: [
+                      {
+                        id: 'desking',
+                        title: 'Desking',
+                        accessPoints: [
+                          {
+                            _type: 'lakehouseAccessPoint',
+                            id: 'desks',
+                            title: 'Desks',
+                            targetEnvironment: 'Snowflake',
+                            func: {
+                              _type: 'lambda',
+                              body: [
+                                {
+                                  _type: 'classInstance',
+                                  type: 'I',
+                                  value: {
+                                    metadata: false,
+                                    path: [DEPENDENCY_INGEST_PATH, 'DESKS'],
+                                  },
+                                },
+                              ],
+                              parameters: [],
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      fireEvent.click(
+        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
+      );
+      fireEvent.click(await renderResult.findByText('Edit MatView DEP_DESKS'));
+      // the project's data set, the dependency's access point and the
+      // Concatenate, with nothing to say: Cube writes them back the same
+      await waitFor(() =>
+        expect(
+          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
+        ).toHaveLength(3),
+      );
+      expect(
+        renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
+      ).toBeNull();
+      const save = (await renderResult.findByRole('button', {
+        name: 'Save MatView',
+      })) as HTMLButtonElement;
+      await waitFor(() => expect(save.disabled).toBe(false));
     },
   );
 });

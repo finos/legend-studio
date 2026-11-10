@@ -42,10 +42,10 @@ import type { EditorStore } from '../EditorStore.js';
 
 // The project Studio edits, as Legend Cube reads it: its coordinates, the
 // lakehouse environment its runs use, and the model its typing and runs
-// read, the workspace as it is now. A cube in Studio reads only the
-// project's own ingest definitions and data products, which aren't
-// deployed: they are typed and run on the workspace, as Studio's own
-// queries of them are. Runs use the viewer's lakehouse environment, read
+// read, the workspace as it is now, its dependencies' elements included. A
+// cube in Studio reads the project's own ingest definitions, and its own data
+// products and its dependencies': they are typed and run on the workspace,
+// as Studio's own queries of them are. Runs use the viewer's lakehouse environment, read
 // from their entitlements when Studio has the lakehouse contract server
 // (`lakehouse.url`), as Legend Query reads it; else the environment of the
 // project's lakehouse runtime. Production parallel adds its realm (`-pp`).
