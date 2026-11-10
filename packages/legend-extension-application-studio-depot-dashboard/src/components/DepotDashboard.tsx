@@ -599,7 +599,12 @@ const FlattenCellRenderer = (
     <button
       type="button"
       className="scope-toggle-btn"
-      style={{ padding: '0 0.8em', lineHeight: '2.2rem' }}
+      style={{
+        padding: '0 0.8em',
+        lineHeight: '2.2rem',
+        opacity: entityState.hasStagesToFlatten ? 1 : 0.4,
+        cursor: entityState.hasStagesToFlatten ? 'pointer' : 'not-allowed',
+      }}
       disabled={!entityState.hasStagesToFlatten}
       title={
         entityState.hasStagesToFlatten
@@ -673,7 +678,10 @@ const buildGenerationSpecificationColumnDefs =
       cellRenderer: FlattenCellRenderer,
       filter: false,
       sortable: false,
-      minWidth: 120,
+      suppressHeaderMenuButton: true,
+      // an action: always in view, however far the grid is scrolled
+      pinned: 'right',
+      width: 120,
     },
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,

@@ -165,6 +165,9 @@ export const DepotGenerationSpecificationFlattenModal = observer(
         open={true}
         onClose={close}
         disableEscapeKeyDown={!flattenState.canClose}
+        slotProps={{
+          paper: { style: { width: '72rem', maxWidth: '90vw' } },
+        }}
       >
         <Modal darkMode={darkMode} className="modal--scrollable">
           <ModalHeader>
