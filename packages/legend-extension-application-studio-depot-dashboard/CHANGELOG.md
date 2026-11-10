@@ -1,5 +1,17 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.118
+
+### Patch Changes
+
+- [#5881](https://github.com/finos/legend-studio/pull/5881) [`1bd5a03`](https://github.com/finos/legend-studio/commit/1bd5a0332e889beed08a4815ec54ae14eab0fe67) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: show the user's access and actions on each project, link each element name to the element and copy its path, give each element type and scope its own shareable address, count a generation specification's stages and every generation element in a parallel stage, and keep what each element type and scope fetched until Refresh.
+
+- [#5881](https://github.com/finos/legend-studio/pull/5881) [`25d2928`](https://github.com/finos/legend-studio/commit/25d292889eb28b6d7185183f1d34926f321c9cc9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: list data spaces, with their execution contexts, executables, template queries, diagrams and elements counted, the user's access to each project, and their title, default execution context, support info and mappings. Fix the GroupId:ArtifactId and two data product column headers' spelling.
+
+- [#5881](https://github.com/finos/legend-studio/pull/5881) [`5136e42`](https://github.com/finos/legend-studio/commit/5136e42eaf94225633401ec61d32d5c0d6dfd93e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: a Flatten button on generation specifications with more than one stage, for users who can create workspaces. It flattens the specification on master in a new group workspace, after updating to the latest project structure and removing platform version overrides, and opens a review.
+
+- [#5881](https://github.com/finos/legend-studio/pull/5881) [`ac9b901`](https://github.com/finos/legend-studio/commit/ac9b901443ed9668606a9ab910f727bbc382cbd1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: fetch data products and generation specifications at most 8 at a time and look each project up once. Starting every request at once made the browser fail them with `net::ERR_INSUFFICIENT_RESOURCES`.
+
 ## 0.1.117
 
 ### Patch Changes
