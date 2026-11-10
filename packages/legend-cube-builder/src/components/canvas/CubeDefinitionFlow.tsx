@@ -144,7 +144,10 @@ export interface CubeDefinitionFlowProps {
   readonly selectedStepId?: string | undefined;
   /** Gets a step's id when it is clicked, or Enter or Space is pressed on it */
   readonly onSelectStep?: ((stepId: string) => void) | undefined;
-  /** The host's theme, which the background and the zoom controls follow */
+  /**
+   * The host's theme, for React Flow's own defaults; the canvas takes its
+   * colours from Cube's theme tokens, as its steps do
+   */
   readonly colorMode?: 'light' | 'dark' | undefined;
 }
 
@@ -235,6 +238,8 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
         }
       }}
       colorMode={colorMode ?? 'light'}
+      // its arrowheads in its edges' colour (`--xy-edge-stroke`, Cube's stylesheet)
+      defaultMarkerColor="var(--color-border-strong)"
       proOptions={PRO_OPTIONS}
       minZoom={CUBE_CANVAS_MIN_ZOOM}
       maxZoom={CUBE_CANVAS_MAX_ZOOM}
@@ -264,7 +269,7 @@ export const CubeDefinitionFlow: React.FC<CubeDefinitionFlowProps> = (
   props,
 ) => (
   <div
-    className="legend-cube relative h-full w-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
+    className="legend-cube legend-cube__definition-flow relative h-full w-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
     data-testid={LEGEND_CUBE_TEST_ID.DEFINITION_FLOW}
   >
     <ReactFlowProvider>

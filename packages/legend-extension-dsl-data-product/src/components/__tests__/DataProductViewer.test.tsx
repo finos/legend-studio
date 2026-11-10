@@ -60,7 +60,10 @@ import {
   V1_ResourceType,
   V1_UnknownOrganizationalScopeType,
   V1_UserType,
+  V1_dataProductModelSchema,
 } from '@finos/legend-graph';
+import { LEGEND_CUBE_TEST_ID } from '@finos/legend-cube-builder/definition-flow';
+import { deserialize } from 'serializr';
 import {
   getMockDataProductGenerationFilesByType,
   mockEnterpriseDataProduct,
@@ -113,6 +116,8 @@ import {
   getMockCompletedTasksResponse,
   getMockPendingManagerApprovalTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
+import DEFINITIONS from '../__test-utils__/TEST_DATA__AccessPointDefinitionFlow.json' with { type: 'json' };
+import { DATA_PRODUCT_EVENT } from '../../__lib__/DataProductTelemetryHelper.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -4961,6 +4966,337 @@ describe('DataProductViewer', () => {
       expect(screen.queryByLabelText('Definition')).toBeNull();
       // the column grid stays
       screen.getByText('Column Name');
+    });
+  });
+
+  describe('Access point definition as a Legend Cube flow', () => {
+    // the made-up definitions Legend Cube's own tests read
+    const PURE =
+      "|#I{markets::ingest::TradePositionsIngest.EOD_POSITIONS}#\n  ->filter(p|$p.STATUS == 'SIGNED_OFF')";
+    const DATA_PRODUCT = 'test::Mock_SDLC_DataProduct';
+    let writeText: jest.Mock<(text: string) => Promise<void>>;
+
+    beforeEach(() => {
+      jest.spyOn(MockedMonacoEditorAPI, 'create').mockReturnValue({
+        ...MockedMonacoEditorInstance,
+        getValue: jest.fn().mockReturnValue(''),
+      });
+      jest
+        .spyOn(MockedMonacoEditorAPI, 'createModel')
+        .mockReturnValue(MockedMonacoEditorModel);
+      // jsdom has no clipboard
+      writeText = jest
+        .fn<(text: string) => Promise<void>>()
+        .mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    });
+
+    /** A data product whose access point is defined by the function */
+    const dataProductDefinedBy = (func: PlainObject): V1_DataProduct =>
+      deserialize(V1_dataProductModelSchema([]), {
+        _type: 'dataProduct',
+        package: 'test',
+        name: 'Mock_SDLC_DataProduct',
+        title: 'Mock SDLC Data Product',
+        accessPointGroups: [
+          {
+            _type: 'defaultAccessPointGroup',
+            id: 'GROUP1',
+            title: 'Main Group Test',
+            accessPoints: [
+              {
+                _type: 'lakehouseAccessPoint',
+                id: 'customer_demographics',
+                title: 'Customer Demographics',
+                targetEnvironment: 'Snowflake',
+                func,
+              },
+            ],
+          },
+        ],
+      });
+
+    /** The ingest definition the definitions read, as Depot's entity holds it */
+    const loadTradePositionsIngest = async (
+      path: string,
+    ): Promise<PlainObject | undefined> =>
+      path === DEFINITIONS.ingestDefinition
+        ? (DEFINITIONS.ingestDefinitionContent as PlainObject)
+        : undefined;
+
+    const setupDefinition = async (
+      func: PlainObject,
+      loadIngestDefinition?: (path: string) => Promise<PlainObject | undefined>,
+    ) => {
+      const result = await setupLakehouseDataProductTest(
+        dataProductDefinedBy(func),
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { loadIngestDefinition },
+      );
+      const jsonToGrammar = createSpy(
+        result.dataProductViewerState.engineServerClient,
+        'JSONToGrammar_lambda',
+      ).mockResolvedValue(PURE);
+      const logEvent = jest.spyOn(
+        result.dataProductViewerState.applicationStore.telemetryService,
+        'logEvent',
+      );
+      return { ...result, jsonToGrammar, logEvent };
+    };
+
+    // NOTE: these tests find elements by text or by label: a query by role reads
+    // every element of the page, which takes seconds on a slow machine
+    const openDefinition = async (): Promise<HTMLElement> => {
+      await screen.findByText('Customer Demographics');
+      const toggle = await screen.findByText('View definition');
+      await act(async () => {
+        fireEvent.click(toggle);
+      });
+      return screen.findByLabelText('Definition');
+    };
+
+    const findFlowNodes = async (
+      definition: HTMLElement,
+      count: number,
+    ): Promise<HTMLElement[]> => {
+      const flow = await within(definition).findByTestId(
+        LEGEND_CUBE_TEST_ID.DEFINITION_FLOW,
+      );
+      await waitFor(() =>
+        expect(
+          within(flow).getAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
+        ).toHaveLength(count),
+      );
+      return within(flow).getAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE);
+    };
+
+    const showsPure = (definition: HTMLElement): boolean =>
+      definition.querySelector('.data-product__viewer__code-box') !== null;
+
+    test('opens on the flow Legend Cube draws, typed by the ingest definition the host gives, and Copy copies the Pure', async () => {
+      const loadIngestDefinition = jest.fn(loadTradePositionsIngest);
+      const { logEvent } = await setupDefinition(
+        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
+        loadIngestDefinition,
+      );
+
+      const definition = await openDefinition();
+      // two data sets, a filter, a join and a group
+      await findFlowNodes(definition, 5);
+      expect(
+        within(definition).getByText('Flow').getAttribute('aria-pressed'),
+      ).toBe('true');
+      expect(showsPure(definition)).toBe(false);
+      expect(loadIngestDefinition.mock.calls).toEqual([
+        [DEFINITIONS.ingestDefinition],
+      ]);
+      expect(
+        within(definition).queryByText(/^Couldn't load the columns/),
+      ).toBeNull();
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({
+          dataProduct: DATA_PRODUCT,
+          accessPointGroup: 'GROUP1',
+          accessPoint: 'customer_demographics',
+          steps: 5,
+          unknownDataSets: [],
+        }),
+      );
+
+      // Copy copies the Pure, whichever view shows
+      const copy = await within(definition).findByLabelText('Copy definition');
+      await act(async () => {
+        fireEvent.click(copy);
+      });
+      expect(writeText.mock.lastCall?.[0]).toBe(PURE);
+
+      await act(async () => {
+        fireEvent.click(within(definition).getByText('Pure'));
+      });
+      expect(
+        within(definition).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
+      ).toBeNull();
+      expect(showsPure(definition)).toBe(true);
+
+      // the definition is read once: shown again, it opens on the flow
+      await act(async () => {
+        fireEvent.click(screen.getByText('Hide definition'));
+      });
+      await findFlowNodes(await openDefinition(), 5);
+      expect(loadIngestDefinition).toHaveBeenCalledTimes(1);
+      expect(
+        logEvent.mock.calls.filter(
+          ([event]) =>
+            event === DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+        ),
+      ).toHaveLength(1);
+    });
+
+    test("draws the data sets by name when their columns can't be loaded, and says so", async () => {
+      const { logEvent } = await setupDefinition(
+        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
+        () => Promise.reject(new Error('Depot is unavailable')),
+      );
+
+      const definition = await openDefinition();
+      await findFlowNodes(definition, 5);
+      within(definition).getByText(
+        "Couldn't load the columns of EOD_POSITIONS and LEGAL_ENTITIES, so the steps after them aren't checked.",
+      );
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({
+          unknownDataSets: [
+            `${DEFINITIONS.ingestDefinition}.EOD_POSITIONS`,
+            `${DEFINITIONS.ingestDefinition}.LEGAL_ENTITIES`,
+          ],
+        }),
+      );
+    });
+
+    test("shows the Pure when Legend Cube can't draw the definition, with why, and Flow can't be picked", async () => {
+      const { logEvent } = await setupDefinition(
+        DEFINITIONS.accessPoints.CLIENT_POSITIONS,
+        loadTradePositionsIngest,
+      );
+
+      const definition = await openDefinition();
+      await within(definition).findByText(
+        "No flow for this definition: it takes parameters, which Cube's flow doesn't show yet.",
+      );
+      // Cube's own words
+      within(definition).getByText('Details');
+      await waitFor(() => expect(showsPure(definition)).toBe(true));
+      const flowOption = within(definition).getByText('Flow');
+      expect(flowOption.getAttribute('aria-disabled')).toBe('true');
+      expect(
+        within(definition).getByText('Pure').getAttribute('aria-pressed'),
+      ).toBe('true');
+      await act(async () => {
+        fireEvent.click(flowOption);
+      });
+      expect(
+        within(definition).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
+      ).toBeNull();
+      expect(showsPure(definition)).toBe(true);
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.REFUSE_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({
+          accessPoint: 'customer_demographics',
+          reason: 'parameters',
+        }),
+      );
+    });
+
+    test("says when Legend Cube's code didn't load, shows the Pure on demand, and tries again", async () => {
+      const { dataProductViewerState, logEvent } = await setupDefinition(
+        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
+        loadTradePositionsIngest,
+      );
+      const load = createSpy(
+        dataProductViewerState,
+        'loadDefinitionFlowEntry',
+      ).mockRejectedValueOnce(new Error('Loading chunk cube-flow failed.'));
+
+      const definition = await openDefinition();
+      await within(definition).findByText("Couldn't load the flow");
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.FAIL_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({
+          accessPoint: 'customer_demographics',
+          failure: 'load',
+          error: 'Loading chunk cube-flow failed.',
+        }),
+      );
+
+      await act(async () => {
+        fireEvent.click(within(definition).getByText('Show the Pure'));
+      });
+      await waitFor(() => expect(showsPure(definition)).toBe(true));
+      expect(
+        within(definition).getByText('Pure').getAttribute('aria-pressed'),
+      ).toBe('true');
+
+      await act(async () => {
+        fireEvent.click(within(definition).getByText('Flow'));
+      });
+      await act(async () => {
+        fireEvent.click(within(definition).getByText('Try again'));
+      });
+      await findFlowNodes(definition, 5);
+      expect(load).toHaveBeenCalledTimes(2);
+    });
+
+    test('says when neither the flow nor the Pure can be shown, and tries both again', async () => {
+      const { dataProductViewerState, jsonToGrammar } = await setupDefinition(
+        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
+        loadTradePositionsIngest,
+      );
+      const load = createSpy(
+        dataProductViewerState,
+        'loadDefinitionFlowEntry',
+      ).mockRejectedValueOnce(new Error('Loading chunk cube-flow failed.'));
+      jsonToGrammar.mockRejectedValueOnce(new Error('The engine is down'));
+
+      const definition = await openDefinition();
+      await within(definition).findByText(
+        "Couldn't load this access point's definition",
+      );
+      // neither view to switch to, and no Pure to copy
+      expect(within(definition).queryByText('Flow')).toBeNull();
+      expect(within(definition).queryByLabelText('Copy definition')).toBeNull();
+
+      await act(async () => {
+        fireEvent.click(within(definition).getByText('Try again'));
+      });
+      await findFlowNodes(definition, 5);
+      await within(definition).findByLabelText('Copy definition');
+      expect(load).toHaveBeenCalledTimes(2);
+      expect(jsonToGrammar).toHaveBeenCalledTimes(2);
+    });
+
+    test('keeps a flow that fails while drawing inside the panel', async () => {
+      const { dataProductViewerState, logEvent } = await setupDefinition(
+        DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY,
+        loadTradePositionsIngest,
+      );
+      const entry = await dataProductViewerState.loadDefinitionFlowEntry();
+      createSpy(
+        dataProductViewerState,
+        'loadDefinitionFlowEntry',
+      ).mockResolvedValue({
+        ...entry,
+        CubeDefinitionFlow: () => {
+          throw new Error('The canvas failed');
+        },
+      });
+      // React reports the error the boundary catches
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      const definition = await openDefinition();
+      await within(definition).findByText("Couldn't draw the flow");
+      within(definition).getByText('Show the Pure');
+      // the rest of the viewer stays
+      screen.getByText('Column Name');
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.FAIL_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({
+          failure: 'draw',
+          error: 'The canvas failed',
+        }),
+      );
     });
   });
 

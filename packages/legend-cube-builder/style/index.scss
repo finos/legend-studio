@@ -124,3 +124,21 @@
     margin: 0.6rem 0;
   }
 }
+
+// A definition flow (`CubeDefinitionFlow`) takes React Flow's colours from Cube's
+// theme tokens, as its steps do, so the whole canvas follows the theme class
+// around it whatever its `colorMode`: e.g. light inside Legend Studio's light
+// preview of a data product, while Studio itself is dark. React Flow's own
+// defaults (`--xy-*-default`) follow `colorMode`; these take precedence.
+.legend-cube__definition-flow .react-flow {
+  --xy-background-color: var(--color-bg-app);
+  --xy-background-pattern-color: var(--color-border-default);
+  --xy-edge-stroke: var(--color-border-strong);
+  --xy-handle-background-color: var(--color-text-muted);
+  --xy-handle-border-color: var(--color-bg-panel);
+  --xy-controls-button-background-color: var(--color-bg-panel);
+  --xy-controls-button-background-color-hover: var(--color-bg-hover);
+  --xy-controls-button-color: var(--color-text-primary);
+  --xy-controls-button-color-hover: var(--color-text-primary);
+  --xy-controls-button-border-color: var(--color-border-default);
+}

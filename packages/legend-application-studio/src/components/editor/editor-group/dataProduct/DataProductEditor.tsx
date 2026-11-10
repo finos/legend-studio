@@ -122,6 +122,7 @@ import {
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
+  IngestDefinition,
   LakehouseTargetEnv,
   StereotypeExplicitReference,
   V1_DataProduct,
@@ -3082,7 +3083,19 @@ const getDataProductViewerState = (
     applicationStore.config.options.dataProductConfig,
     userSearchService,
     undefined,
-    {},
+    {
+      // the preview has no project version: an access point's flow types its
+      // data sets with the ingest definitions of the graph, as the workspace
+      // holds them
+      loadIngestDefinition: async (path) => {
+        const element = graphManagerState.graph.getNullableElement(path);
+        return element instanceof IngestDefinition
+          ? graphManager.elementToEntity(element, {
+              pruneSourceInformation: true,
+            }).content
+          : undefined;
+      },
+    },
   );
   dataProductViewerState.init();
   return dataProductViewerState;

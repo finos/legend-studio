@@ -52,6 +52,17 @@ export default (env, arg) => {
         maxInitialRequests: 25,
         maxAsyncRequests: 25,
         cacheGroups: {
+          // Legend Cube's definition flow (React Flow, dagre): loaded when someone
+          // opens an access point's definition, so its libraries get a chunk of
+          // their own instead of riding in `async-vendor`, which every lazy page
+          // loads. A module another chunk needs stays where it was.
+          cubeFlowVendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'cube-flow-vendor',
+            chunks: (chunk) => chunk.name === 'cube-flow',
+            priority: 50,
+            enforce: true,
+          },
           // Monaco editor - large dependency, separate chunk for better caching
           monaco: {
             test: /[\\/]node_modules[\\/]monaco-editor[\\/]/,
