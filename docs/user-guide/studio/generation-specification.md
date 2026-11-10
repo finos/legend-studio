@@ -16,7 +16,7 @@ of the guide's database in two stages.
 
 1. **The count**: how many stages the specification has, and how many times the build compiles the project to run
    them, one per stage.
-2. **Flatten into one stage** moves every generation into stage 1 (see [One stage](#one-stage)).
+2. **Flatten into one stage** moves every generation into stage 1 (see [Speed up the build](#speed-up-the-build)).
 3. **Elements**: the project's elements that generate models, each marked **in use** once a stage runs it. Drag one
    onto a stage to add it there. They come from extensions to Legend Studio, such as data quality, so a Legend Studio
    without them lists none.
@@ -30,12 +30,18 @@ of the guide's database in two stages.
 
 File generations, below **Model generation complete**, run after all the stages, together, and add no compile.
 
-## One stage
+## Speed up the build
 
-**Flatten into one stage** puts every generation in stage 1, so the build compiles the project once for them all, and
-the count reads **1 stage, 1 recompile**.
+Fewer stages build faster. Drag a card onto another stage to run it with that stage's generations, or put every
+generation in one stage:
+
+[![Flattening a generation specification](./images/generation-specification-flatten.png)](./images/generation-specification-flatten.png)
+
+1. **Flatten into one stage**, in the header, moves every generation into stage 1.
 
 [![The generation specification in one stage](./images/generation-specification-one-stage.png)](./images/generation-specification-one-stage.png)
+
+2. **The count** then reads **1 stage, 1 recompile**: the build compiles the project once for all four generations.
 
 Flatten only when no generation needs another one's output. One that does then fails, and its card offers to move it
 back into a stage of its own. Legend Studio doesn't offer **Flatten into one stage** when two stages run the same

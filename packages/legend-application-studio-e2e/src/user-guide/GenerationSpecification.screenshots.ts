@@ -172,12 +172,39 @@ test('a generation specification', async ({ page }) => {
   );
 });
 
+test('flattening a generation specification', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const editor = await openSpecification(page);
+  await page.mouse.move(1400, 880);
+  await markCallouts(page, [
+    {
+      n: 1,
+      targets: [editor.locator('.generation-spec-editor__flatten')],
+      at: 'below',
+    },
+  ]);
+  await saveRegionDownTo(
+    page,
+    `${STUDIO_GUIDE_IMAGES}generation-specification-flatten.png`,
+    editor,
+    editor.locator('.generation-spec-editor__file-generations'),
+    24,
+  );
+});
+
 test('a generation specification in one stage', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const editor = await openSpecification(page);
   await editor.locator('.generation-spec-editor__flatten').click();
   await editor.getByText('1 stage, 1 recompile', { exact: true }).waitFor();
   await page.mouse.move(1400, 880);
+  await markCallouts(page, [
+    {
+      n: 2,
+      targets: [editor.locator('.generation-spec-editor__stat')],
+      at: 'below',
+    },
+  ]);
   await saveRegionDownTo(
     page,
     `${STUDIO_GUIDE_IMAGES}generation-specification-one-stage.png`,
