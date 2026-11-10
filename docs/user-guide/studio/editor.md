@@ -26,7 +26,8 @@ Click the image to see it full size.
    - **Dev Mode**, **Register Service** and **End to End Workflows**, which are in beta.
 2. **The explorer's actions**:
    - **Open Model Importer** (F2): adds elements to the workspace from Legend language text or JSON.
-   - **Project Configuration Panel**: the project's configuration, such as the projects it depends on.
+   - **Project Configuration Panel**: the project's configuration, such as the projects it depends on (see
+     [Project configuration](./project-configuration.md)).
    - **New Element...** (Ctrl+Shift+N): creates an element, such as a class or a mapping.
    - **Collapse All** folds the tree.
    - **Open Element...** (Ctrl+P): finds an element by name.
