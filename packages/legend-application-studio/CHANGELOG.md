@@ -1,5 +1,24 @@
 # @finos/legend-application-studio
 
+## 28.22.3
+
+### Patch Changes
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`c41170f`](https://github.com/finos/legend-studio/commit/c41170f9a752c953772ec447dcc7b9ca1caa98b7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: one cube can read data products and ingest data sets together when they come from the same project, in one Mode.
+
+  - In Studio's Create/Edit MatView, the Ingest tab adds a project's data sets to a data product cube, with Mode and warehouse locked to the cube's. The Data Product tab turns an ingest cube into a data product cube of the same Mode and warehouse, in one undo step.
+  - Edit MatView reopens a view that reads both.
+  - Hosts whose ingest catalog can't list a data product's project's definitions keep the two apart, with the same message as before.
+  - Studio's tabs start on the Mode of the ingest definition Cube was opened from.
+  - Edit MatView refuses an access point that reads the view being edited.
+  - A disabled source's tooltip names the cube's kind of source.
+  - New in `@finos/legend-cube`: `lakehouseSourcesAreApart` and `getSourceKindName`.
+  - New in `@finos/legend-cube-builder`: `CubeIngestCatalog.listProjectDefinitions` and `CubeHost.queryRules`.
+
+- [#5862](https://github.com/finos/legend-studio/pull/5862) [`3c55f44`](https://github.com/finos/legend-studio/commit/3c55f4492a547897bbb69e79d7faf42e56da1c1e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `extendedIngestDefinition` and `ExtendedAvailability` elements: they are now built as `ExtendedIngestDefinition` / `ExtendedAvailability` (subtypes of `IngestDefinition` / `Availability`, so Studio opens the existing editors for them) and their `_type` is preserved on roundtrip.
+
+- [#5868](https://github.com/finos/legend-studio/pull/5868) [`949b40d`](https://github.com/finos/legend-studio/commit/949b40dbac1fa2633e603cdff44c72f38dd99a44) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The editor's landing page (no tab open) fills the editor area instead of a centered column at most 960px wide, and the sections under the action tiles line up with the tiles' columns: 6, 3, 2 or 1 of them, by the width of the editor area. In the status bar, the rings that show a compile or generate running keep turning, slower, when the system asks for reduced motion, as Windows does when its animation effects are off; only the sliding line stops.
+
 ## 28.22.2
 
 ### Patch Changes
