@@ -26,7 +26,7 @@ import {
 import {
   DepotScope,
   StoredSummaryEntity,
-  type StoreProjectData,
+  StoreProjectData,
   type DepotServerClient,
   MASTER_SNAPSHOT_ALIAS,
 } from '@finos/legend-server-depot';
@@ -57,6 +57,7 @@ import {
 import { DepotGenerationSpecificationFlattenState } from './DepotGenerationSpecificationFlattenState.js';
 import {
   AuthorizableProjectAction,
+  Project,
   ProjectAccessRole,
   type SDLCServerClient,
 } from '@finos/legend-server-sdlc';
@@ -113,6 +114,8 @@ export const getDepotDashboardScope = (
   Object.values(DepotScope).find(
     (scope) => DEPOT_DASHBOARD_SCOPE_VALUE[scope] === value?.toLowerCase(),
   );
+
+export const DEPOT_DASHBOARD_UNRELEASED_LABEL = '(unreleased)';
 
 export enum DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER {
   ROLE = 'Your Access',
@@ -209,6 +212,7 @@ export enum DATA_SPACE_DASHBOARD_HEADER {
 export enum DATA_PRODUCT_DASHBOARD_HEADER {
   PROJECT_GAV = 'GroupId:ArtifactId',
   PROJECT_VERSION = 'Project Version',
+  LATEST_VERSION = 'Latest Version',
   PROJECT_ID = 'Project ID',
   DATA_PRODUCT_NAME = 'Name',
   DATA_PRODUCT_PACKAGE = 'Package',
@@ -375,7 +379,11 @@ export abstract class DepotDashboardEntityState<C = unknown> {
   fetchingElementState = ActionState.create();
   content: C | undefined;
   projectId: string | undefined;
+  // the project's latest release, undefined while unreleased
+  latestVersion: string | undefined;
   projectAccess: DepotProjectAccess | undefined;
+  // the project in GitLab, when SDLC says
+  projectWebUrl: string | undefined;
 
   constructor(summary: StoredSummaryEntity, store: DepotDashboardStore) {
     this.summary = summary;
@@ -384,7 +392,9 @@ export abstract class DepotDashboardEntityState<C = unknown> {
     makeObservable(this, {
       content: observable,
       projectId: observable,
+      latestVersion: observable,
       projectAccess: observable,
+      projectWebUrl: observable,
       fetchingElementState: observable,
       fetchElement: flow,
       infoFetched: computed,
@@ -399,6 +409,14 @@ export abstract class DepotDashboardEntityState<C = unknown> {
 
   get infoFetched(): boolean {
     return this.content !== undefined && this.projectId !== undefined;
+  }
+
+  /** Once the project is known: its latest release, or that it has none */
+  get latestVersionLabel(): string | undefined {
+    if (this.projectId === undefined) {
+      return undefined;
+    }
+    return this.latestVersion ?? DEPOT_DASHBOARD_UNRELEASED_LABEL;
   }
 
   get id(): string {
@@ -435,15 +453,20 @@ export abstract class DepotDashboardEntityState<C = unknown> {
         this.summary.path,
       )) as Entity;
       const content = this.readContent(entity.content);
-      this.projectId = (yield this.store.getProjectId(
+      const project = (yield this.store.getProject(
         this.summary.groupId,
         this.summary.artifactId,
-      )) as string;
+      )) as StoreProjectData;
+      this.projectId = project.projectId;
+      this.latestVersion = project.latestVersion;
       this.content = content;
       this.updateRow();
-      this.projectAccess = (yield this.store.getProjectAccess(
-        this.projectId,
-      )) as DepotProjectAccess | undefined;
+      const [projectAccess, projectWebUrl] = (yield Promise.all([
+        this.store.getProjectAccess(this.projectId),
+        this.store.getProjectWebUrl(this.projectId),
+      ])) as [DepotProjectAccess | undefined, string | undefined];
+      this.projectAccess = projectAccess;
+      this.projectWebUrl = projectWebUrl;
       this.updateRow();
       this.fetchingElementState.complete();
     } catch (error) {
@@ -680,8 +703,8 @@ abstract class DepotDashboardElementTypeState<
   /** Fetches the scope on show again */
   *refresh(): GeneratorFn<void> {
     this.results.delete(this.scope);
-    // access may have changed too
-    this.store.clearProjectAccesses();
+    // the projects' latest versions and the user's access may have changed too
+    this.store.clearProjectLookups();
     yield flowResult(this.init());
   }
 
@@ -881,7 +904,12 @@ export class DepotDashboardStore {
   generationSpecificationDepotState: GenerationSpecificationDepotDashboardState;
   elementType = DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
   // One project lookup per project, shared by its elements of every type
-  private readonly projectIds = new Map<string, Promise<string>>();
+  private readonly projects = new Map<string, Promise<StoreProjectData>>();
+  // One SDLC lookup per project for its GitLab address
+  private readonly projectWebUrls = new Map<
+    string,
+    Promise<string | undefined>
+  >();
   // One SDLC access lookup per project
   private readonly projectAccesses = new Map<
     string,
@@ -949,22 +977,48 @@ export class DepotDashboardStore {
     }
   }
 
-  clearProjectAccesses(): void {
+  /** For Refresh: a project may have released, or the user's access changed */
+  clearProjectLookups(): void {
+    this.projects.clear();
+    this.projectWebUrls.clear();
     this.projectAccesses.clear();
   }
 
-  getProjectId(groupId: string, artifactId: string): Promise<string> {
-    const key = generateGAVCoordinates(groupId, artifactId, undefined);
-    let projectId = this.projectIds.get(key);
-    if (!projectId) {
-      projectId = this.depotServerClient
-        .getProject(groupId, artifactId)
-        .then((project) => (project as unknown as StoreProjectData).projectId);
-      // a failed lookup is retried by the next element of that project
-      projectId.catch(() => this.projectIds.delete(key));
-      this.projectIds.set(key, projectId);
+  /**
+   * The project's address in GitLab, from SDLC. Never rejects: undefined when
+   * SDLC can't say, e.g. for a project the user can't see.
+   */
+  getProjectWebUrl(projectId: string | undefined): Promise<string | undefined> {
+    const sdlcServerClient = this.sdlcServerClient;
+    if (!sdlcServerClient || !projectId) {
+      return Promise.resolve(undefined);
     }
-    return projectId;
+    let webUrl = this.projectWebUrls.get(projectId);
+    if (!webUrl) {
+      webUrl = sdlcServerClient
+        .getProject(projectId)
+        .then(
+          (json) => Project.serialization.fromJson(json).webUrl || undefined,
+        )
+        .catch(() => undefined);
+      this.projectWebUrls.set(projectId, webUrl);
+    }
+    return webUrl;
+  }
+
+  /** The project's id and latest released version, from Depot */
+  getProject(groupId: string, artifactId: string): Promise<StoreProjectData> {
+    const key = generateGAVCoordinates(groupId, artifactId, undefined);
+    let project = this.projects.get(key);
+    if (!project) {
+      project = this.depotServerClient
+        .getProject(groupId, artifactId)
+        .then((json) => StoreProjectData.serialization.fromJson(json));
+      // a failed lookup is retried by the next element of that project
+      project.catch(() => this.projects.delete(key));
+      this.projects.set(key, project);
+    }
+    return project;
   }
 
   /**

@@ -29,6 +29,7 @@ import {
   CircleNotchIcon,
   clsx,
   CopyIcon,
+  GitlabIcon,
   CustomSelectorInput,
   InfoCircleIcon,
   LinkIcon,
@@ -115,6 +116,8 @@ const DataProductCellRenderer = (
 type DepotDashboardProjectRow = {
   name: string;
   projectId: string | undefined;
+  latestVersionLabel: string | undefined;
+  projectWebUrl: string | undefined;
   projectAccess: DepotProjectAccess | undefined;
   summary: { versionId: string; path: string };
   store: DepotDashboardStore;
@@ -191,6 +194,16 @@ const ElementNameCellRenderer = (
 };
 
 // The signed-in user's role and allowed actions on the element's project, from SDLC
+// The project's latest release, next to the version on show, or (unreleased)
+const buildLatestVersionColumnDef = <
+  T extends DepotDashboardProjectRow,
+>(): ColDef<T> => ({
+  headerName: DATA_PRODUCT_DASHBOARD_HEADER.LATEST_VERSION,
+  valueGetter: (params: ValueGetterParams<T>) =>
+    params.data?.latestVersionLabel,
+  minWidth: 150,
+});
+
 const buildProjectAccessColumnDefs = <
   T extends DepotDashboardProjectRow,
 >(): ColDef<T>[] => [
@@ -239,7 +252,10 @@ const ProjectIdCellRenderer = (
   };
 
   return (
-    <div className="project-id-cell">
+    <div
+      className="project-id-cell"
+      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+    >
       {projectId ? (
         <a
           href="#"
@@ -256,6 +272,18 @@ const ProjectIdCellRenderer = (
         </a>
       ) : (
         <span style={{ color: '#6b7280' }}>-</span>
+      )}
+      {projectId && entityState.projectWebUrl && (
+        <a
+          href={entityState.projectWebUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the project in GitLab"
+          aria-label={`Open ${projectId} in GitLab`}
+          style={{ display: 'flex', color: 'inherit', opacity: 0.8 }}
+        >
+          <GitlabIcon />
+        </a>
       )}
     </div>
   );
@@ -296,6 +324,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
         params.data?.summary.versionId,
       minWidth: 250,
     },
+    buildLatestVersionColumnDef<DataProductEntityState>(),
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_PACKAGE,
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
@@ -699,6 +728,7 @@ const buildGenerationSpecificationColumnDefs =
       ) => params.data?.summary.versionId,
       minWidth: 150,
     },
+    buildLatestVersionColumnDef<GenerationSpecificationEntityState>(),
     {
       headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
       valueGetter: (
@@ -793,6 +823,7 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
       params.data?.summary.versionId,
     minWidth: 150,
   },
+  buildLatestVersionColumnDef<DataSpaceEntityState>(),
   {
     headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
     valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>

@@ -382,7 +382,10 @@ test('keep what each element type and scope fetched until refreshed', async () =
   expect(entitySpy).toHaveBeenCalledTimes(3);
   expect(roleSpy).toHaveBeenCalledTimes(3);
 
-  // Refresh fetches the releases again, access included
+  // Refresh fetches the releases again, with the projects (a project may
+  // have released since) and access
+  const projectSpy = jest.mocked(depotServerClient.getProject);
+  expect(projectSpy).toHaveBeenCalledTimes(3);
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
   });
@@ -392,6 +395,7 @@ test('keep what each element type and scope fetched until refreshed', async () =
   await screen.findByText('Generation Specifications: 3 / 3 fetched');
   await waitFor(() => expect(entitySpy).toHaveBeenCalledTimes(6));
   await waitFor(() => expect(roleSpy).toHaveBeenCalledTimes(6));
+  expect(projectSpy).toHaveBeenCalledTimes(6);
   expect(summaryCalls(CORE_PURE_PATH.DATA_PRODUCT)).toBe(1);
 });
 
