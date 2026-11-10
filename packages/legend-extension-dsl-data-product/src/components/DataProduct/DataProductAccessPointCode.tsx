@@ -30,11 +30,12 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
+import { DataProductDefinitionFlowKind } from '../../stores/DataProduct/DataProductDefinitionFlow.js';
 import {
-  type DataProductDefinitionView,
   DataProductAccessPointDefinitionFlow,
   DataProductDefinitionFlowRefusal,
   DataProductDefinitionUnavailable,
+  DataProductDefinitionView,
   DataProductDefinitionViewSwitch,
   describeDefinitionFlowRefusal,
 } from './DataProductAccessPointDefinitionFlow.js';
@@ -332,7 +333,7 @@ const readDefinitionFlow = (
 const DataProductAccessPointDefinition = observer(
   (props: { accessPointState: DataProductAccessPointState }) => {
     const { accessPointState } = props;
-    const [view, setView] = useState<DataProductDefinitionView>('flow');
+    const [view, setView] = useState(DataProductDefinitionView.FLOW);
 
     useEffect(() => {
       if (accessPointState.fetchingGrammarState.isInInitialState) {
@@ -358,13 +359,15 @@ const DataProductAccessPointDefinition = observer(
       accessPointState.fetchingGrammarState.isInProgress;
     const definitionFlow = accessPointState.definitionFlow;
     const refusal =
-      definitionFlow?.kind === 'refused' ? definitionFlow.refusal : undefined;
+      definitionFlow?.kind === DataProductDefinitionFlowKind.REFUSED
+        ? definitionFlow.refusal
+        : undefined;
     // neither view can be shown
     const isUnavailable =
-      definitionFlow?.kind === 'failed' &&
+      definitionFlow?.kind === DataProductDefinitionFlowKind.FAILED &&
       !isFetching &&
       definition === undefined;
-    const shownView = refusal ? 'pure' : view;
+    const shownView = refusal ? DataProductDefinitionView.PURE : view;
 
     return (
       <section
@@ -400,10 +403,10 @@ const DataProductAccessPointDefinition = observer(
         </div>
         {isUnavailable ? (
           <DataProductDefinitionUnavailable onRetry={retryDefinition} />
-        ) : shownView === 'flow' ? (
+        ) : shownView === DataProductDefinitionView.FLOW ? (
           <DataProductAccessPointDefinitionFlow
             accessPointState={accessPointState}
-            onShowPure={() => setView('pure')}
+            onShowPure={() => setView(DataProductDefinitionView.PURE)}
             onRetry={retryDefinitionFlow}
           />
         ) : (

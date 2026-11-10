@@ -25,13 +25,20 @@ import { uniq } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { Component, type ReactNode } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
-import { DataProductDefinitionFlowFailureKind } from '../../stores/DataProduct/DataProductDefinitionFlow.js';
+import {
+  DataProductDefinitionFlowFailureKind,
+  DataProductDefinitionFlowKind,
+} from '../../stores/DataProduct/DataProductDefinitionFlow.js';
 
 // An access point's definition as Legend Cube's flow, in the Definition
 // panel: an extra view of the Pure. Whatever goes wrong, the panel says so in
 // a line and offers the Pure; nothing else in the viewer is affected.
 
-export type DataProductDefinitionView = 'flow' | 'pure';
+/** How the Definition panel shows the definition */
+export enum DataProductDefinitionView {
+  FLOW = 'flow',
+  PURE = 'pure',
+}
 
 /**
  * Why Cube can't draw a definition, in a few words, from the kind of its
@@ -134,8 +141,12 @@ export const DataProductDefinitionViewSwitch: React.FC<{
       role="group"
       aria-label="Show the definition as"
     >
-      {renderOption('flow', 'Flow', flowUnavailableReason)}
-      {renderOption('pure', 'Pure')}
+      {renderOption(
+        DataProductDefinitionView.FLOW,
+        'Flow',
+        flowUnavailableReason,
+      )}
+      {renderOption(DataProductDefinitionView.PURE, 'Pure')}
     </div>
   );
 };
@@ -272,7 +283,7 @@ export const DataProductAccessPointDefinitionFlow = observer(
         </div>
       );
     }
-    if (definitionFlow.kind === 'failed') {
+    if (definitionFlow.kind === DataProductDefinitionFlowKind.FAILED) {
       return (
         <DefinitionFlowFailure
           title={
@@ -286,7 +297,7 @@ export const DataProductAccessPointDefinitionFlow = observer(
         />
       );
     }
-    if (definitionFlow.kind === 'refused') {
+    if (definitionFlow.kind === DataProductDefinitionFlowKind.REFUSED) {
       // the panel shows the Pure, and why
       return null;
     }

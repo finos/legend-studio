@@ -75,18 +75,29 @@ export enum DataProductDefinitionFlowFailureKind {
   MISSING = 'missing',
 }
 
+/** What an access point's definition is, as its flow shows it, once read */
+export enum DataProductDefinitionFlowKind {
+  /** Cube reads it: the entry draws it */
+  FLOW = 'flow',
+  /** Cube can't read it yet: the viewer shows its Pure, and says why */
+  REFUSED = 'refused',
+  /** The flow can't be shown, though Cube didn't refuse the definition */
+  FAILED = 'failed',
+}
+
 /** An access point's definition, as its flow shows it, once read */
 export type DataProductDefinitionFlow =
-  /** Cube reads it: the entry draws it */
   | {
-      readonly kind: 'flow';
+      readonly kind: DataProductDefinitionFlowKind.FLOW;
       readonly reading: CubeDefinitionFlowReading;
       readonly entry: DataProductDefinitionFlowEntry;
     }
-  /** Cube can't read it yet: the viewer shows its Pure, and says why */
-  | { readonly kind: 'refused'; readonly refusal: CubeDefinitionRefusal }
   | {
-      readonly kind: 'failed';
+      readonly kind: DataProductDefinitionFlowKind.REFUSED;
+      readonly refusal: CubeDefinitionRefusal;
+    }
+  | {
+      readonly kind: DataProductDefinitionFlowKind.FAILED;
       readonly failure: DataProductDefinitionFlowFailureKind;
       readonly error: Error;
     };

@@ -58,6 +58,7 @@ import {
   type DataProductDefinitionFlow,
   type DataProductDefinitionFlowEntry,
   DataProductDefinitionFlowFailureKind,
+  DataProductDefinitionFlowKind,
 } from './DataProductDefinitionFlow.js';
 
 const getUnsupportedLakehouseTargetEnvs = (): LakehouseTargetEnv[] =>
@@ -391,7 +392,11 @@ export class DataProductAccessPointState {
       });
       const telemetryService = this.apgState.applicationStore.telemetryService;
       if (reading.kind === 'flow') {
-        this.definitionFlow = { kind: 'flow', reading, entry };
+        this.definitionFlow = {
+          kind: DataProductDefinitionFlowKind.FLOW,
+          reading,
+          entry,
+        };
         DataProductTelemetryHelper.logEvent_ShowAccessPointDefinitionFlow(
           telemetryService,
           this.definitionFlowTelemetryData,
@@ -404,7 +409,10 @@ export class DataProductAccessPointState {
           },
         );
       } else {
-        this.definitionFlow = { kind: 'refused', refusal: reading };
+        this.definitionFlow = {
+          kind: DataProductDefinitionFlowKind.REFUSED,
+          refusal: reading,
+        };
         DataProductTelemetryHelper.logEvent_RefuseAccessPointDefinitionFlow(
           telemetryService,
           this.definitionFlowTelemetryData,
@@ -455,7 +463,11 @@ export class DataProductAccessPointState {
     failure: DataProductDefinitionFlowFailureKind,
     error: Error,
   ): void {
-    this.definitionFlow = { kind: 'failed', failure, error };
+    this.definitionFlow = {
+      kind: DataProductDefinitionFlowKind.FAILED,
+      failure,
+      error,
+    };
     this.logDefinitionFlowFailure(failure, error);
   }
 
