@@ -46,9 +46,9 @@ depot, the server that holds the projects' released versions.
 3. **+** adds a dependency. Pick its project and its version in the row it adds.
 4. **Project**: the project depended on: its ID in the SDLC server, then its coordinates. Pick another one to depend
    on it instead.
-5. **Version**: the version of the project depended on. **1.1.0 available** shows when the project has released a
-   newer version: click it to use that one. The list has every version, newest first. **HEAD**, when the list has it,
-   is the latest state of the project, not a release.
+5. **Version**: the version of the project depended on. The list has every version, newest first. **HEAD**, when the
+   list has it, is the latest state of the project, not a release. **1.1.0 available** shows when a released version is
+   in use and the project has released a newer one: click it to use that one.
 6. **Exclusions**: projects to leave out of what the dependency brings in. **Add exclusion...** lists the projects it
    depends on in turn. Each exclusion shows under the dependency's row, where **×** removes it. **Validate
    Dependencies** then updates the tree.
@@ -147,4 +147,5 @@ the workspace again. It asks first when you have local changes you haven't pushe
 changed the **Group ID** or the **Artifact ID**.
 
 **Update to** a newer project structure, and **Change to** another project type, don't wait for **Update
-configuration**: they save their change at once.
+configuration**: they save their change at once. Legend Studio then loads the workspace again, so save your other
+changes to the configuration first.
