@@ -31,16 +31,29 @@ import {
   SKIP,
 } from 'serializr';
 
+/**
+ * One stage of a generation specification: a single generation element, or
+ * several generated in parallel against the same graph.
+ */
 export class DepotGenerationNode {
   id!: string;
-  generationElement!: string;
+  generationElement?: string | undefined;
+  generationElements: string[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DepotGenerationNode, {
       id: primitive(),
-      generationElement: primitive(),
+      generationElement: optional(primitive()),
+      generationElements: optional(list(primitive())),
     }),
   );
+
+  get elementPaths(): string[] {
+    if (this.generationElements.length) {
+      return this.generationElements;
+    }
+    return this.generationElement ? [this.generationElement] : [];
+  }
 }
 
 // A file generation is referenced as a pointer (`{ type, path }`) or, in older
@@ -63,6 +76,14 @@ const toFileGenerationPath = (value: unknown): string | undefined => {
 export class DepotGenerationSpecification {
   generationNodes: DepotGenerationNode[] = [];
   fileGenerations: string[] = [];
+
+  get stageCount(): number {
+    return this.generationNodes.length;
+  }
+
+  get generationElementPaths(): string[] {
+    return this.generationNodes.flatMap((node) => node.elementPaths);
+  }
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DepotGenerationSpecification, {

@@ -15,13 +15,19 @@
  */
 
 import { createContext, useContext } from 'react';
-import { DepotDashboardStore } from '../stores/DepotDashboardStore.js';
+import {
+  DEPOT_DASHBOARD_SCOPE_QUERY_PARAM,
+  DepotDashboardStore,
+  getDepotDashboardElementType,
+  getDepotDashboardScope,
+} from '../stores/DepotDashboardStore.js';
 import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from '@finos/legend-application-studio';
 import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { useParams, useSearchParams } from '@finos/legend-application/browser';
 
 const DepotSetupStoreContext = createContext<DepotDashboardStore | undefined>(
   undefined,
@@ -31,10 +37,20 @@ const DepotSetupStoreProvider: React.FC<{
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
   const baseStore = useLegendStudioBaseStore();
+  const { elementType } = useParams<{ elementType?: string }>();
+  const [searchParams] = useSearchParams();
 
   const store = useLocalObservable(
     () =>
-      new DepotDashboardStore(applicationStore, baseStore.depotServerClient),
+      new DepotDashboardStore(
+        applicationStore,
+        baseStore.depotServerClient,
+        baseStore.sdlcServerClient,
+        getDepotDashboardElementType(elementType),
+        getDepotDashboardScope(
+          searchParams.get(DEPOT_DASHBOARD_SCOPE_QUERY_PARAM),
+        ),
+      ),
   );
 
   return (

@@ -34,6 +34,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  isObject,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -49,15 +50,133 @@ import {
 } from 'mobx';
 import type { GridApi } from 'ag-grid-community';
 import { DepotGenerationSpecification } from './DepotGenerationSpecification.js';
+import {
+  AuthorizableProjectAction,
+  ProjectAccessRole,
+  type SDLCServerClient,
+} from '@finos/legend-server-sdlc';
 
 export enum DEPOT_DASHBOARD_ELEMENT_TYPE {
   DATA_PRODUCT = 'Data Product',
   GENERATION_SPECIFICATION = 'Generation Specification',
 }
 
+export const LEGEND_DEPOT_ROUTE_PATTERN = `/depot`;
+export const LEGEND_DEPOT_ELEMENT_TYPE_ROUTE_PATTERN = `/depot/:elementType`;
+
+// The element type's segment in the dashboard's address, so a view can be
+// shared, e.g. /extensions/depot/generation-specifications
+const DEPOT_DASHBOARD_ELEMENT_TYPE_SLUG: Record<
+  DEPOT_DASHBOARD_ELEMENT_TYPE,
+  string
+> = {
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT]: 'data-products',
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION]:
+    'generation-specifications',
+};
+
+// The scope's query parameter, e.g. ?scope=snapshots. Releases, the default,
+// needs none.
+export const DEPOT_DASHBOARD_SCOPE_QUERY_PARAM = 'scope';
+const DEPOT_DASHBOARD_SCOPE_VALUE: Record<DepotScope, string> = {
+  [DepotScope.RELEASES]: 'releases',
+  [DepotScope.SNAPSHOT]: 'snapshots',
+};
+
+export const generateDepotDashboardRoute = (
+  elementType: DEPOT_DASHBOARD_ELEMENT_TYPE,
+  scope?: DepotScope,
+): string => {
+  const route = `${LEGEND_DEPOT_ROUTE_PATTERN}/${DEPOT_DASHBOARD_ELEMENT_TYPE_SLUG[elementType]}`;
+  return scope === DepotScope.SNAPSHOT
+    ? `${route}?${DEPOT_DASHBOARD_SCOPE_QUERY_PARAM}=${DEPOT_DASHBOARD_SCOPE_VALUE[scope]}`
+    : route;
+};
+
+export const getDepotDashboardElementType = (
+  slug: string | undefined,
+): DEPOT_DASHBOARD_ELEMENT_TYPE | undefined =>
+  Object.values(DEPOT_DASHBOARD_ELEMENT_TYPE).find(
+    (elementType) => DEPOT_DASHBOARD_ELEMENT_TYPE_SLUG[elementType] === slug,
+  );
+
+export const getDepotDashboardScope = (
+  value: string | null | undefined,
+): DepotScope | undefined =>
+  Object.values(DepotScope).find(
+    (scope) => DEPOT_DASHBOARD_SCOPE_VALUE[scope] === value?.toLowerCase(),
+  );
+
+export enum DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER {
+  ROLE = 'Your Access',
+  ACTIONS = 'Your Actions',
+}
+
+const AUTHORIZABLE_PROJECT_ACTION_LABEL: Record<
+  AuthorizableProjectAction,
+  string
+> = {
+  [AuthorizableProjectAction.CREATE_WORKSPACE]: 'Create workspace',
+  [AuthorizableProjectAction.SUBMIT_REVIEW]: 'Submit review',
+  [AuthorizableProjectAction.COMMIT_REVIEW]: 'Commit review',
+  [AuthorizableProjectAction.CREATE_VERSION]: 'Create version',
+};
+
+/**
+ * What the signed-in user may do on a project, from SDLC.
+ */
+export class DepotProjectAccess {
+  /**
+   * The user's GitLab access level (e.g. DEVELOPER); undefined when they can
+   * see the project without being a member
+   */
+  readonly role: string | undefined;
+  readonly actions: AuthorizableProjectAction[];
+  /**
+   * SDLC could not tell: the user cannot see the project, or SDLC failed
+   */
+  readonly unavailable: boolean;
+
+  constructor(
+    role: string | undefined,
+    actions: AuthorizableProjectAction[],
+    unavailable: boolean,
+  ) {
+    this.role = role;
+    this.actions = actions;
+    this.unavailable = unavailable;
+  }
+
+  get roleLabel(): string {
+    if (this.unavailable) {
+      return 'No access';
+    }
+    if (!this.role) {
+      return 'Not a member';
+    }
+    // DEVELOPER -> Developer, MINIMAL_ACCESS -> Minimal access
+    const words = this.role.toLowerCase().replaceAll('_', ' ');
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  }
+
+  get actionsLabel(): string {
+    if (this.unavailable) {
+      return '';
+    }
+    return this.actions.length
+      ? this.actions
+          .map(
+            (projectAction) => AUTHORIZABLE_PROJECT_ACTION_LABEL[projectAction],
+          )
+          .join(', ')
+      : 'None';
+  }
+}
+
 export enum GENERATION_SPECIFICATION_DASHBOARD_HEADER {
   NAME = 'Name',
   PACKAGE = 'Package',
+  STAGE_COUNT = 'Stages',
   GENERATION_ELEMENT_COUNT = 'Generation Elements',
   FILE_GENERATION_COUNT = 'File Generations',
   GENERATION_ELEMENTS = 'Generation Element Paths',
@@ -229,6 +348,7 @@ export class DataProductEntityState {
   fetchingElementState = ActionState.create();
   dataProduct: V1_DataProduct | undefined;
   projectId: string | undefined;
+  projectAccess: DepotProjectAccess | undefined;
 
   constructor(summary: StoredSummaryEntity, store: DepotDashboardStore) {
     this.summary = summary;
@@ -236,6 +356,7 @@ export class DataProductEntityState {
 
     makeObservable(this, {
       dataProduct: observable,
+      projectAccess: observable,
       fetchingElementState: observable,
       fetchElement: flow,
       infoFetched: computed,
@@ -289,6 +410,10 @@ export class DataProductEntityState {
       )) as string;
       this.dataProduct = product;
       this.store.dataProductDepotState.updateRow(this);
+      this.projectAccess = (yield this.store.getProjectAccess(
+        this.projectId,
+      )) as DepotProjectAccess | undefined;
+      this.store.dataProductDepotState.updateRow(this);
       this.fetchingElementState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -304,15 +429,20 @@ export class DataProductDepotDashboardState {
 
   MAX_CALLS = 3000;
   fetchingProductsState = ActionState.create();
-  scope = DepotScope.RELEASES;
+  scope: DepotScope;
   includeWorkspaceSnapshot = false;
   entitiesSummary: StoredSummaryEntity[] | undefined;
 
   dataProductEntitiesStates: DataProductEntityState[] | undefined;
 
-  constructor(depotStore: DepotServerClient, store: DepotDashboardStore) {
+  constructor(
+    depotStore: DepotServerClient,
+    store: DepotDashboardStore,
+    scope?: DepotScope,
+  ) {
     this.depotServerClient = depotStore;
     this.store = store;
+    this.scope = scope ?? DepotScope.RELEASES;
     makeObservable(this, {
       scope: observable,
       entitiesSummary: observable,
@@ -463,6 +593,7 @@ export class GenerationSpecificationEntityState {
   fetchingElementState = ActionState.create();
   generationSpecification: DepotGenerationSpecification | undefined;
   projectId: string | undefined;
+  projectAccess: DepotProjectAccess | undefined;
 
   constructor(summary: StoredSummaryEntity, store: DepotDashboardStore) {
     this.summary = summary;
@@ -471,6 +602,7 @@ export class GenerationSpecificationEntityState {
     makeObservable(this, {
       generationSpecification: observable,
       projectId: observable,
+      projectAccess: observable,
       fetchingElementState: observable,
       fetchElement: flow,
       infoFetched: computed,
@@ -516,6 +648,10 @@ export class GenerationSpecificationEntityState {
       )) as string;
       this.generationSpecification = generationSpecification;
       this.store.generationSpecificationDepotState.updateRow(this);
+      this.projectAccess = (yield this.store.getProjectAccess(
+        this.projectId,
+      )) as DepotProjectAccess | undefined;
+      this.store.generationSpecificationDepotState.updateRow(this);
       this.fetchingElementState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -531,7 +667,7 @@ export class GenerationSpecificationDepotDashboardState {
 
   MAX_CALLS = 3000;
   fetchingSummaryState = ActionState.create();
-  scope = DepotScope.RELEASES;
+  scope: DepotScope;
   includeWorkspaceSnapshot = false;
   entitiesSummary: StoredSummaryEntity[] | undefined;
   entityStates: GenerationSpecificationEntityState[] | undefined;
@@ -539,9 +675,11 @@ export class GenerationSpecificationDepotDashboardState {
   constructor(
     depotServerClient: DepotServerClient,
     store: DepotDashboardStore,
+    scope?: DepotScope,
   ) {
     this.depotServerClient = depotServerClient;
     this.store = store;
+    this.scope = scope ?? DepotScope.RELEASES;
     makeObservable(this, {
       scope: observable,
       includeWorkspaceSnapshot: observable,
@@ -667,19 +805,31 @@ export class GenerationSpecificationDepotDashboardState {
 export class DepotDashboardStore {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly depotServerClient: DepotServerClient;
+  readonly sdlcServerClient: SDLCServerClient | undefined;
   readonly graphManagerState: BasicGraphManagerState;
   dataProductDepotState: DataProductDepotDashboardState;
   generationSpecificationDepotState: GenerationSpecificationDepotDashboardState;
   elementType = DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
   // One project lookup per project, shared by its elements of every type
   private readonly projectIds = new Map<string, Promise<string>>();
+  // One SDLC access lookup per project
+  private readonly projectAccesses = new Map<
+    string,
+    Promise<DepotProjectAccess | undefined>
+  >();
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient?: SDLCServerClient,
+    elementType?: DEPOT_DASHBOARD_ELEMENT_TYPE,
+    // the scope a shared address opens with, for every element type
+    scope?: DepotScope,
   ) {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
+    this.sdlcServerClient = sdlcServerClient;
+    this.elementType = elementType ?? DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT;
     this.graphManagerState = new BasicGraphManagerState(
       applicationStore.pluginManager,
       applicationStore.logService,
@@ -687,11 +837,13 @@ export class DepotDashboardStore {
     this.dataProductDepotState = new DataProductDepotDashboardState(
       this.depotServerClient,
       this,
+      scope,
     );
     this.generationSpecificationDepotState =
       new GenerationSpecificationDepotDashboardState(
         this.depotServerClient,
         this,
+        scope,
       );
     makeObservable(this, {
       dataProductDepotState: observable,
@@ -703,6 +855,16 @@ export class DepotDashboardStore {
 
   setElementType(elementType: DEPOT_DASHBOARD_ELEMENT_TYPE): void {
     this.elementType = elementType;
+  }
+
+  getDepotState(
+    elementType: DEPOT_DASHBOARD_ELEMENT_TYPE,
+  ):
+    | DataProductDepotDashboardState
+    | GenerationSpecificationDepotDashboardState {
+    return elementType === DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION
+      ? this.generationSpecificationDepotState
+      : this.dataProductDepotState;
   }
 
   getProjectId(groupId: string, artifactId: string): Promise<string> {
@@ -717,5 +879,41 @@ export class DepotDashboardStore {
       this.projectIds.set(key, projectId);
     }
     return projectId;
+  }
+
+  /**
+   * The signed-in user's role and allowed actions on the project. Never
+   * rejects: a project SDLC can't answer for comes back as unavailable.
+   */
+  getProjectAccess(
+    projectId: string | undefined,
+  ): Promise<DepotProjectAccess | undefined> {
+    const sdlcServerClient = this.sdlcServerClient;
+    if (!sdlcServerClient || !projectId) {
+      return Promise.resolve(undefined);
+    }
+    let access = this.projectAccesses.get(projectId);
+    if (!access) {
+      access = Promise.allSettled([
+        sdlcServerClient.getAccessRole(projectId),
+        sdlcServerClient.getAutorizedActions(projectId),
+      ]).then(([role, actions]) => {
+        if (role.status === 'rejected' && actions.status === 'rejected') {
+          return new DepotProjectAccess(undefined, [], true);
+        }
+        return new DepotProjectAccess(
+          // no role (an empty answer) when the user isn't a member
+          role.status === 'fulfilled' && isObject(role.value)
+            ? ProjectAccessRole.serialization.fromJson(role.value).accessRole
+            : undefined,
+          actions.status === 'fulfilled' && Array.isArray(actions.value)
+            ? actions.value
+            : [],
+          false,
+        );
+      });
+      this.projectAccesses.set(projectId, access);
+    }
+    return access;
   }
 }
