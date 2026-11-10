@@ -1,5 +1,26 @@
 # @finos/legend-cube
 
+## 0.0.9
+
+### Patch Changes
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`51e0e7f`](https://github.com/finos/legend-studio/commit/51e0e7f210568c09b7b7ad9744fb3620357faa7b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Containers on Legend Cube's canvas, as Alteryx's Tool Container: a block of linked steps framed together under a title, which can be folded to one box in their place. A step's menu puts it in a container, alone or with the steps before it, or in a container beside it, and takes a step at a container's edge out of it. Steps added, pasted or moved between two steps of a container join it. Containers are saved in the spec's `meta.containers`, and only change how the canvas shows the cube, never what it runs.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`f81415c`](https://github.com/finos/legend-studio/commit/f81415cfd77318abdf8aebfe1b424b83a218c041) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Select steps with the mouse on Legend Cube's canvas and put them in a container, as in Alteryx: Shift and a drag draws a box that adds the steps inside it, Shift and a click selects a step or deselects it, and Escape or a click on the canvas clears the selection. A selected step's menu has Put Selection in a Container, as Ctrl/Cmd+G does: the container takes the steps selected and each step between them, so it stays one block of linked steps. The selection is the page's, never saved in the cube.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`c41170f`](https://github.com/finos/legend-studio/commit/c41170f9a752c953772ec447dcc7b9ca1caa98b7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: one cube can read data products and ingest data sets together when they come from the same project, in one Mode.
+
+  - In Studio's Create/Edit MatView, the Ingest tab adds a project's data sets to a data product cube, with Mode and warehouse locked to the cube's. The Data Product tab turns an ingest cube into a data product cube of the same Mode and warehouse, in one undo step.
+  - Edit MatView reopens a view that reads both.
+  - Hosts whose ingest catalog can't list a data product's project's definitions keep the two apart, with the same message as before.
+  - Studio's tabs start on the Mode of the ingest definition Cube was opened from.
+  - Edit MatView refuses an access point that reads the view being edited.
+  - A disabled source's tooltip names the cube's kind of source.
+  - New in `@finos/legend-cube`: `lakehouseSourcesAreApart` and `getSourceKindName`.
+  - New in `@finos/legend-cube-builder`: `CubeIngestCatalog.listProjectDefinitions` and `CubeHost.queryRules`.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`957fcfc`](https://github.com/finos/legend-studio/commit/957fcfcdc82d6424a806b5a27171e86a16c33181) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Notes beside the steps on Legend Cube's canvas: one plain-text note per step, written in the Note field of its editor or from its menu (Add Note…), and shown as a muted line under it, with the whole note on hover. Notes are saved in the spec's `meta.notes`. They follow their step when it is copied, pasted, duplicated or removed, and only change how the canvas shows the cube, never what it runs.
+
 ## 0.0.8
 
 ### Patch Changes

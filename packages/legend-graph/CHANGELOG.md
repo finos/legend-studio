@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.9.4
+
+### Patch Changes
+
+- [#5862](https://github.com/finos/legend-studio/pull/5862) [`3c55f44`](https://github.com/finos/legend-studio/commit/3c55f4492a547897bbb69e79d7faf42e56da1c1e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `extendedIngestDefinition` and `ExtendedAvailability` elements: they are now built as `ExtendedIngestDefinition` / `ExtendedAvailability` (subtypes of `IngestDefinition` / `Availability`, so Studio opens the existing editors for them) and their `_type` is preserved on roundtrip.
+
 ## 32.9.3
 
 ### Patch Changes

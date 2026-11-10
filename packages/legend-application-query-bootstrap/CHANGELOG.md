@@ -1,5 +1,7 @@
 # @finos/legend-application-query-bootstrap
 
+## 13.277.0
+
 ## 13.276.0
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @finos/legend-extension-store-service-store
 
+## 2.0.517
+
 ## 2.0.516
 
 ## 2.0.515
