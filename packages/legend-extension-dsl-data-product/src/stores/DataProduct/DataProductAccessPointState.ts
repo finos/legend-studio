@@ -31,9 +31,11 @@ import {
   V1_deserializeValueSpecification,
   V1_Variable,
   type V1_ExecutionResult,
+  type V1_RawLambda,
   type TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
+  type GeneratorFn,
   type PlainObject,
   ActionState,
   assertErrorThrown,
@@ -42,12 +44,22 @@ import {
   isEmpty,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, computed } from 'mobx';
+import { makeAutoObservable, observable, computed, flow } from 'mobx';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { generateAnchorForAccessPoint } from '../ProductViewerNavigation.js';
+import {
+  type AccessPointDefinitionFlow_TelemetryData,
+  DataProductTelemetryHelper,
+} from '../../__lib__/DataProductTelemetryHelper.js';
+import {
+  type DataProductDefinitionFlow,
+  type DataProductDefinitionFlowEntry,
+  DataProductDefinitionFlowFailureKind,
+  DataProductDefinitionFlowKind,
+} from './DataProductDefinitionFlow.js';
 
 const getUnsupportedLakehouseTargetEnvs = (): LakehouseTargetEnv[] =>
   Object.values(LakehouseTargetEnv).filter(
@@ -65,9 +77,12 @@ export class DataProductAccessPointState {
   relationType: V1_RelationType | undefined;
   relationElement: V1_RelationElement | undefined;
   grammar: string | undefined;
+  /** Its definition, as Legend Cube's flow shows it, once read (`readDefinitionFlow`) */
+  definitionFlow: DataProductDefinitionFlow | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
+  readonly readingDefinitionFlowState = ActionState.create();
   readonly fetchingSampleDataState = ActionState.create();
   readonly fetchingRegistryMetadataState = ActionState.create();
 
@@ -78,6 +93,9 @@ export class DataProductAccessPointState {
       relationType: observable,
       grammar: observable,
       relationElement: observable,
+      // the reading's steps and Cube's code, as Cube made them
+      definitionFlow: observable.ref,
+      readDefinitionFlow: flow,
       isCollapsed: computed,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
@@ -295,6 +313,193 @@ export class DataProductAccessPointState {
     } finally {
       this.fetchingGrammarState.complete();
     }
+  }
+
+  /**
+   * A Lakehouse access point's function, as the engine renders it to Pure
+   * (protocol JSON); `undefined` when it has none
+   */
+  get definitionLambda(): PlainObject | undefined {
+    if (!(this.accessPoint instanceof V1_LakehouseAccessPoint)) {
+      return undefined;
+    }
+    // NOTE: the function may be missing from a data product's JSON
+    const func = this.accessPoint.func as V1_RawLambda | undefined;
+    return func?.body === undefined
+      ? undefined
+      : V1_serializeRawValueSpecification(func);
+  }
+
+  private get definitionFlowTelemetryData(): AccessPointDefinitionFlow_TelemetryData {
+    const viewerState = this.apgState.dataProductViewerState;
+    const projectGAV = viewerState.projectGAV;
+    return {
+      dataProduct: viewerState.product.path,
+      accessPointGroup: this.apgState.apg.id,
+      accessPoint: this.accessPoint.id,
+      origin: projectGAV
+        ? {
+            groupId: projectGAV.groupId,
+            artifactId: projectGAV.artifactId,
+            versionId: projectGAV.versionId,
+          }
+        : undefined,
+    };
+  }
+
+  /**
+   * Reads a Lakehouse access point's definition, once, into the steps of
+   * Legend Cube's flow, in the browser: it loads Cube's code, then the ingest
+   * definitions the function reads, which type the columns of its data sets.
+   * Cube reads all of a definition or none of it: what it can't read yet is
+   * refused, and shows as Pure.
+   */
+  *readDefinitionFlow(): GeneratorFn<void> {
+    if (
+      !(this.accessPoint instanceof V1_LakehouseAccessPoint) ||
+      !this.readingDefinitionFlowState.isInInitialState
+    ) {
+      return;
+    }
+    this.readingDefinitionFlowState.inProgress();
+    const startedAt = Date.now();
+    try {
+      const lambda = this.definitionLambda;
+      if (lambda === undefined) {
+        this.failDefinitionFlow(
+          DataProductDefinitionFlowFailureKind.MISSING,
+          new Error(`Access point '${this.accessPoint.id}' has no function`),
+        );
+        return;
+      }
+      let entry: DataProductDefinitionFlowEntry;
+      try {
+        entry =
+          (yield this.apgState.dataProductViewerState.loadDefinitionFlowEntry()) as DataProductDefinitionFlowEntry;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.failDefinitionFlow(
+          DataProductDefinitionFlowFailureKind.LOAD,
+          error,
+        );
+        return;
+      }
+      const ingestDefinitions = (yield this.loadIngestDefinitions(
+        entry.findCubeDefinitionIngestDefinitions(lambda),
+      )) as Map<string, PlainObject>;
+      const reading = entry.readCubeDefinition(lambda, {
+        getIngestDefinition: (path) => ingestDefinitions.get(path),
+      });
+      const telemetryService = this.apgState.applicationStore.telemetryService;
+      if (reading.kind === 'flow') {
+        this.definitionFlow = {
+          kind: DataProductDefinitionFlowKind.FLOW,
+          reading,
+          entry,
+        };
+        DataProductTelemetryHelper.logEvent_ShowAccessPointDefinitionFlow(
+          telemetryService,
+          this.definitionFlowTelemetryData,
+          {
+            steps: reading.steps.length,
+            unknownDataSets: reading.unknownDataSets.map(
+              (each) => `${each.ingestDefinition}.${each.dataSet}`,
+            ),
+            durationMs: Date.now() - startedAt,
+          },
+        );
+      } else {
+        this.definitionFlow = {
+          kind: DataProductDefinitionFlowKind.REFUSED,
+          refusal: reading,
+        };
+        DataProductTelemetryHelper.logEvent_RefuseAccessPointDefinitionFlow(
+          telemetryService,
+          this.definitionFlowTelemetryData,
+          { reason: reading.reason, functionName: reading.functionName },
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.failDefinitionFlow(DataProductDefinitionFlowFailureKind.READ, error);
+    } finally {
+      this.readingDefinitionFlowState.complete();
+    }
+  }
+
+  /**
+   * The content of the ingest definitions the host gives, by path: one it
+   * doesn't have, or fails to load, is left out, and its data sets are drawn
+   * by name
+   */
+  private async loadIngestDefinitions(
+    paths: string[],
+  ): Promise<Map<string, PlainObject>> {
+    const contents = new Map<string, PlainObject>();
+    const load = this.apgState.dataProductViewerState.loadIngestDefinition;
+    if (!load) {
+      return contents;
+    }
+    const loaded = await Promise.allSettled(paths.map((path) => load(path)));
+    loaded.forEach((result, index) => {
+      const path = guaranteeNonNullable(paths[index]);
+      if (result.status === 'rejected') {
+        this.apgState.applicationStore.logService.warn(
+          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+          `Unable to load ingest definition '${path}' for the flow of access point '${this.accessPoint.id}': ${
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason)
+          }`,
+        );
+      } else if (result.value) {
+        contents.set(path, result.value);
+      }
+    });
+    return contents;
+  }
+
+  private failDefinitionFlow(
+    failure: DataProductDefinitionFlowFailureKind,
+    error: Error,
+  ): void {
+    this.definitionFlow = {
+      kind: DataProductDefinitionFlowKind.FAILED,
+      failure,
+      error,
+    };
+    this.logDefinitionFlowFailure(failure, error);
+  }
+
+  /**
+   * Logs a flow that couldn't be shown, though Cube didn't refuse the
+   * definition: e.g. its canvas failed while drawing it
+   */
+  logDefinitionFlowFailure(
+    failure: DataProductDefinitionFlowFailureKind,
+    error: Error,
+  ): void {
+    this.apgState.applicationStore.logService.error(
+      LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+      `Unable to show the flow of access point '${this.accessPoint.id}' (${failure}): ${error.message}`,
+    );
+    DataProductTelemetryHelper.logEvent_FailAccessPointDefinitionFlow(
+      this.apgState.applicationStore.telemetryService,
+      this.definitionFlowTelemetryData,
+      { kind: failure, error: error.message },
+    );
+  }
+
+  /** Forgets its definition's flow, to read it again */
+  resetDefinitionFlow(): void {
+    this.definitionFlow = undefined;
+    this.readingDefinitionFlowState.reset();
+  }
+
+  /** Forgets its definition's Pure, to fetch it again */
+  resetGrammar(): void {
+    this.grammar = undefined;
+    this.fetchingGrammarState.reset();
   }
 
   async fetchSampleDataFromArtifact(
