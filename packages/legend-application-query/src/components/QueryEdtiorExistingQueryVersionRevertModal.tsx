@@ -73,7 +73,20 @@ export const QueryEditorExistingQueryVersionRevertModal = observer(
         }
       },
     );
+    const projectVersionOverride = existingEditorStore.projectVersionId;
+    const openWithSavedVersion = (): void =>
+      applicationStore.navigationService.navigator.goToLocation(
+        generateExistingQueryEditorRoute(
+          existingEditorStore.lightQuery.id,
+          existingEditorStore.revisionId,
+        ),
+      );
     useEffect(() => {
+      // the version dropdown is not shown when the `projectVersionId` override
+      // is what failed, so there is no need to fetch the project versions
+      if (projectVersionOverride) {
+        return;
+      }
       flowResult(
         updateState.fetchProjectVersions(
           existingEditorStore.lightQuery.groupId,
@@ -84,8 +97,39 @@ export const QueryEditorExistingQueryVersionRevertModal = observer(
       applicationStore,
       existingEditorStore.lightQuery.artifactId,
       existingEditorStore.lightQuery.groupId,
+      projectVersionOverride,
       updateState,
     ]);
+
+    // the `projectVersionId` override is what failed to load: don't force the
+    // user to overwrite the stored version, just let them open the query with
+    // the version it was saved with
+    if (projectVersionOverride) {
+      return (
+        <BlankPanelContent>
+          <Modal
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            className="query-editor__blocking-alert"
+          >
+            <ModalBody>
+              <div className="query-editor__blocking-alert__summary-text">
+                Query is incompatible with version `{projectVersionOverride}`
+                (from the `projectVersionId` URL parameter).
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <ModalFooterButton
+                onClick={openWithSavedVersion}
+                text={`Open with saved version ${existingEditorStore.lightQuery.versionId}`}
+              />
+            </ModalFooter>
+          </Modal>
+        </BlankPanelContent>
+      );
+    }
 
     return (
       <BlankPanelContent>

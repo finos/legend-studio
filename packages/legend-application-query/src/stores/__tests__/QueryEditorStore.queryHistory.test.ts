@@ -34,6 +34,7 @@ const TEST_QUERY_ID = 'test-query-id';
 
 const buildEditorStore = (
   revisionId?: string | undefined,
+  projectVersionId?: string | undefined,
 ): ExistingQueryEditorStore => {
   const pluginManager = LegendQueryPluginManager.create();
   pluginManager
@@ -60,6 +61,7 @@ const buildEditorStore = (
     TEST_QUERY_ID,
     undefined,
     revisionId,
+    projectVersionId,
   );
 };
 
@@ -131,6 +133,57 @@ describe(unitTest('ExistingQueryEditorStore query revision (history)'), () => {
 
       expect(editorStore.revisionId).toBeUndefined();
       expect(getQueryInfo).toHaveBeenCalledWith(TEST_QUERY_ID, undefined);
+    },
+  );
+});
+
+describe(unitTest('ExistingQueryEditorStore project version override'), () => {
+  test(
+    unitTest(
+      'getProjectInfo falls back to the saved query version when no override is provided',
+    ),
+    async () => {
+      const editorStore = buildEditorStore();
+      const graphManager = editorStore.graphManagerState.graphManager;
+      graphManager.getQueryInfo = (async () =>
+        makeQueryInfo()) as typeof graphManager.getQueryInfo;
+      graphManager.getLightQuery = (async () =>
+        makeLightQuery()) as typeof graphManager.getLightQuery;
+
+      await (
+        editorStore as unknown as { setUpEditorState: () => Promise<void> }
+      ).setUpEditorState();
+
+      expect(editorStore.getProjectInfo()).toEqual({
+        groupId: 'org.finos.test',
+        artifactId: 'test-artifact',
+        versionId: '1.0.0',
+      });
+    },
+  );
+
+  test(
+    unitTest(
+      'getProjectInfo uses the projectVersionId override instead of the saved query version',
+    ),
+    async () => {
+      const editorStore = buildEditorStore(undefined, 'HEAD');
+      const graphManager = editorStore.graphManagerState.graphManager;
+      graphManager.getQueryInfo = (async () =>
+        makeQueryInfo()) as typeof graphManager.getQueryInfo;
+      graphManager.getLightQuery = (async () =>
+        makeLightQuery()) as typeof graphManager.getLightQuery;
+
+      await (
+        editorStore as unknown as { setUpEditorState: () => Promise<void> }
+      ).setUpEditorState();
+
+      expect(editorStore.projectVersionId).toBe('HEAD');
+      expect(editorStore.getProjectInfo()).toEqual({
+        groupId: 'org.finos.test',
+        artifactId: 'test-artifact',
+        versionId: 'HEAD',
+      });
     },
   );
 });

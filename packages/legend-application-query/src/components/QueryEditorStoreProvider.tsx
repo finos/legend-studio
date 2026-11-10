@@ -38,7 +38,8 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
   queryId: string;
   params: Record<string, string> | undefined;
   revisionId?: string | undefined;
-}> = ({ children, queryId, params, revisionId }) => {
+  projectVersionId?: string | undefined;
+}> = ({ children, queryId, params, revisionId, projectVersionId }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
@@ -49,6 +50,7 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
         queryId,
         params,
         revisionId,
+        projectVersionId,
       ),
   );
   return (

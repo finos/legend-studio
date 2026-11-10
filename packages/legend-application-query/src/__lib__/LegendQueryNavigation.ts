@@ -171,6 +171,10 @@ export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
   // Identifies a specific revision from a query's version history
   // (the revision's `version` identifier).
   REVISION_ID = 'revisionId',
+  // Overrides the project version the saved query's graph is built from
+  // (e.g. a dev/snapshot version), without changing the version stored on
+  // the saved query itself.
+  PROJECT_VERSION_ID = 'projectVersionId',
 }
 
 export type QuerySetupQueryParams = {
@@ -287,6 +291,7 @@ export type ServiceQueryCreatorQueryParams = {
 export const generateExistingQueryEditorRoute = (
   queryId: string,
   revisionId?: string | undefined,
+  projectVersionId?: string | undefined,
   // fully-formed extra query parameters (e.g. `p:`-prefixed parameter-value
   // overrides) to carry across the navigation
   extraQueryParams?: Record<string, string> | undefined,
@@ -298,6 +303,10 @@ export const generateExistingQueryEditorRoute = (
   if (revisionId !== undefined) {
     queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID] =
       encodeURIComponent(revisionId);
+  }
+  if (projectVersionId) {
+    queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.PROJECT_VERSION_ID] =
+      encodeURIComponent(projectVersionId);
   }
   if (extraQueryParams) {
     Object.entries(extraQueryParams).forEach(([key, value]) => {
@@ -315,6 +324,7 @@ export type ExistingQueryEditorPathParams = {
 
 export type ExistingQueryEditorQueryParams = {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID]?: string | undefined;
+  [LEGEND_QUERY_QUERY_PARAM_TOKEN.PROJECT_VERSION_ID]?: string | undefined;
 };
 
 /**

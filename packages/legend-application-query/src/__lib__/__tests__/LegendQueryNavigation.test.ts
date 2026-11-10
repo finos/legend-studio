@@ -41,4 +41,43 @@ describe(unitTest('generateExistingQueryEditorRoute'), () => {
       );
     },
   );
+
+  test(
+    unitTest(
+      'appends the projectVersionId query parameter when a project version override is provided',
+    ),
+    () => {
+      expect(
+        generateExistingQueryEditorRoute(
+          'test-query-id',
+          undefined,
+          'my-dev-version',
+        ),
+      ).toBe(
+        `/edit/test-query-id?${LEGEND_QUERY_QUERY_PARAM_TOKEN.PROJECT_VERSION_ID}=my-dev-version`,
+      );
+    },
+  );
+
+  test(
+    unitTest(
+      'appends both revisionId and projectVersionId query parameters when both are provided',
+    ),
+    () => {
+      const route = generateExistingQueryEditorRoute(
+        'test-query-id',
+        'rev-42',
+        'my-dev-version',
+      );
+      const [path, queryString] = route.split('?');
+      expect(path).toBe('/edit/test-query-id');
+      const params = new URLSearchParams(queryString);
+      expect(params.get(LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID)).toBe(
+        'rev-42',
+      );
+      expect(
+        params.get(LEGEND_QUERY_QUERY_PARAM_TOKEN.PROJECT_VERSION_ID),
+      ).toBe('my-dev-version');
+    },
+  );
 });
