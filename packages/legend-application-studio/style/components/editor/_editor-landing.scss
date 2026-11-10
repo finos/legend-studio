@@ -18,17 +18,51 @@
 
 // the editor with no tab open (see `EditorLandingPage`)
 .editor-landing {
+  // the layout follows the width of the editor area, not of the window
+  container-type: inline-size;
   height: 100%;
   overflow-y: auto;
   background: var(--color-bg-app);
 
+  // the tiles and the two sections under them share one column grid, so their edges line up:
+  // changes take two columns' width and Learn one (four and two when there are six columns)
   &__content {
+    --editor-landing-columns: 3;
+    --editor-landing-changes-span: 2;
+    --editor-landing-learn-span: 1;
+
     display: flex;
     flex-direction: column;
     gap: 2.8rem;
-    max-width: 96rem;
+    max-width: 240rem;
     margin: 0 auto;
-    padding: 3.2rem 3.2rem 4rem;
+    padding: 3.2rem 4rem 4rem;
+  }
+
+  @container (width >= 180rem) {
+    &__content {
+      --editor-landing-columns: 6;
+      --editor-landing-changes-span: 4;
+      --editor-landing-learn-span: 2;
+    }
+  }
+
+  @container (width < 90rem) {
+    &__content {
+      --editor-landing-columns: 2;
+      --editor-landing-changes-span: 2;
+      --editor-landing-learn-span: 2;
+    }
+  }
+
+  @container (width < 56rem) {
+    &__content {
+      --editor-landing-columns: 1;
+      --editor-landing-changes-span: 1;
+      --editor-landing-learn-span: 1;
+
+      padding: 2.4rem 1.6rem 3.2rem;
+    }
   }
 
   &__header {
@@ -104,8 +138,11 @@
 
   &__actions {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(
+      var(--editor-landing-columns),
+      minmax(0, 1fr)
+    );
+    gap: 1.2rem;
   }
 
   &__action,
@@ -216,8 +253,20 @@
 
   &__columns {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
-    gap: 2.4rem;
+    grid-template-columns: repeat(
+      var(--editor-landing-columns),
+      minmax(0, 1fr)
+    );
+    align-items: start;
+    gap: 2.4rem 1.2rem;
+  }
+
+  &__section--changes {
+    grid-column: span var(--editor-landing-changes-span);
+  }
+
+  &__section--learn {
+    grid-column: span var(--editor-landing-learn-span);
   }
 
   &__changes {

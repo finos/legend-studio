@@ -299,7 +299,7 @@ export const EditorLandingPage = observer(() => {
         </section>
 
         <div className="editor-landing__columns">
-          <section className="editor-landing__section">
+          <section className="editor-landing__section editor-landing__section--changes">
             <h2 className="editor-landing__section__title">
               Changed in this workspace
             </h2>
@@ -359,7 +359,7 @@ export const EditorLandingPage = observer(() => {
             )}
           </section>
 
-          <section className="editor-landing__section">
+          <section className="editor-landing__section editor-landing__section--learn">
             <h2 className="editor-landing__section__title">Learn</h2>
             <div className="editor-landing__links">
               {learnLinks.map((link) => (
