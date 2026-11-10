@@ -15,6 +15,7 @@
     { "path": "../legend-graph" },
     { "path": "../legend-lego" },
     { "path": "../legend-server-depot" },
+    { "path": "../legend-server-sdlc" },
     { "path": "../legend-shared" },
     { "path": "../legend-storage" }
   ]

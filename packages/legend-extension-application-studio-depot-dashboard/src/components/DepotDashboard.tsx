@@ -28,10 +28,18 @@ import {
   CheckCircleIcon,
   CircleNotchIcon,
   clsx,
+  CopyIcon,
   CustomSelectorInput,
   InfoCircleIcon,
+  LinkIcon,
+  RefreshIcon,
   WarningIcon,
 } from '@finos/legend-art';
+import {
+  generateExtensionUrlPattern,
+  useParams,
+  useSearchParams,
+} from '@finos/legend-application/browser';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -40,12 +48,18 @@ import type { ColDef, ValueGetterParams } from 'ag-grid-community';
 import {
   DATA_PRODUCT_DASHBOARD_HEADER,
   DEPOT_DASHBOARD_ELEMENT_TYPE,
+  DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER,
+  DEPOT_DASHBOARD_SCOPE_QUERY_PARAM,
   GENERATION_SPECIFICATION_DASHBOARD_HEADER,
   type DataProductDepotDashboardState,
   type DataProductEntityState,
   type DepotDashboardStore,
+  type DepotProjectAccess,
   type GenerationSpecificationEntityState,
+  generateDepotDashboardRoute,
   getDataProductGridValue,
+  getDepotDashboardElementType,
+  getDepotDashboardScope,
 } from '../stores/DepotDashboardStore.js';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -96,10 +110,100 @@ const DataProductCellRenderer = (
 };
 
 type DepotDashboardProjectRow = {
+  name: string;
   projectId: string | undefined;
+  projectAccess: DepotProjectAccess | undefined;
   summary: { versionId: string; path: string };
   store: DepotDashboardStore;
 };
+
+// The element's name opens it in Studio's project viewer (in a new tab, as the
+// project link does); the button next to it copies the element's full path.
+const ElementNameCellRenderer = (
+  params: DataGridCellRendererParams<DepotDashboardProjectRow>,
+) => {
+  const row = params.data;
+  if (!row) {
+    return null;
+  }
+  const applicationStore = row.store.applicationStore;
+  const url = row.projectId
+    ? applicationStore.navigationService.navigator.generateAddress(
+        generateViewVersionRoute(
+          row.projectId,
+          row.summary.versionId,
+          row.summary.path,
+        ),
+      )
+    : undefined;
+  const copyPath = (): void => {
+    applicationStore.clipboardService
+      .copyTextToClipboard(row.summary.path)
+      .then(() =>
+        applicationStore.notificationService.notifySuccess(
+          'Copied element path to clipboard',
+        ),
+      )
+      .catch(applicationStore.alertUnhandledError);
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Open ${row.summary.path}`}
+          style={{
+            color: '#3b82f6', // blue color, as the project link
+            textDecoration: 'underline',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {row.name}
+        </a>
+      ) : (
+        <span>{row.name}</span>
+      )}
+      <button
+        type="button"
+        title="Copy element path"
+        aria-label={`Copy ${row.summary.path}`}
+        onClick={copyPath}
+        style={{
+          display: 'flex',
+          padding: 0,
+          border: 'none',
+          background: 'none',
+          color: 'inherit',
+          opacity: 0.7,
+          cursor: 'pointer',
+        }}
+      >
+        <CopyIcon />
+      </button>
+    </div>
+  );
+};
+
+// The signed-in user's role and allowed actions on the element's project, from SDLC
+const buildProjectAccessColumnDefs = <
+  T extends DepotDashboardProjectRow,
+>(): ColDef<T>[] => [
+  {
+    headerName: DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER.ROLE,
+    valueGetter: (params: ValueGetterParams<T>) =>
+      params.data?.projectAccess?.roleLabel,
+    minWidth: 150,
+  },
+  {
+    headerName: DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER.ACTIONS,
+    valueGetter: (params: ValueGetterParams<T>) =>
+      params.data?.projectAccess?.actionsLabel,
+    minWidth: 300,
+  },
+];
 
 const ProjectIdCellRenderer = (
   params: DataGridCellRendererParams<DepotDashboardProjectRow>,
@@ -168,6 +272,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) => {
         return params.data?.name;
       },
+      cellRenderer: ElementNameCellRenderer,
       minWidth: 250,
     },
     {
@@ -175,6 +280,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
       cellRenderer: ProjectIdCellRenderer,
       minWidth: 250,
     },
+    ...buildProjectAccessColumnDefs<DataProductEntityState>(),
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
@@ -495,14 +601,23 @@ const buildGenerationSpecificationColumnDefs =
       valueGetter: (
         params: ValueGetterParams<GenerationSpecificationEntityState>,
       ) => params.data?.name,
+      cellRenderer: ElementNameCellRenderer,
       minWidth: 250,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.STAGE_COUNT,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.stageCount,
+      filter: 'agNumberColumnFilter',
+      minWidth: 120,
     },
     {
       headerName:
         GENERATION_SPECIFICATION_DASHBOARD_HEADER.GENERATION_ELEMENT_COUNT,
       valueGetter: (
         params: ValueGetterParams<GenerationSpecificationEntityState>,
-      ) => params.data?.generationSpecification?.generationNodes.length,
+      ) => params.data?.generationSpecification?.generationElementPaths.length,
       filter: 'agNumberColumnFilter',
       minWidth: 180,
     },
@@ -520,6 +635,7 @@ const buildGenerationSpecificationColumnDefs =
       cellRenderer: ProjectIdCellRenderer,
       minWidth: 250,
     },
+    ...buildProjectAccessColumnDefs<GenerationSpecificationEntityState>(),
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
       valueGetter: (
@@ -546,9 +662,7 @@ const buildGenerationSpecificationColumnDefs =
       valueGetter: (
         params: ValueGetterParams<GenerationSpecificationEntityState>,
       ) =>
-        params.data?.generationSpecification?.generationNodes
-          .map((node) => node.generationElement)
-          .join(', '),
+        params.data?.generationSpecification?.generationElementPaths.join(', '),
       minWidth: 400,
     },
     {
@@ -714,9 +828,9 @@ export const DepotDashboard = withDepotSetupStore(
       depotSetupStore.elementType ===
       DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION;
     // the scope controls act on the element type on display
-    const scopedState = isGenerationSpecification
-      ? generationSpecificationDepotState
-      : dataProductDepotState;
+    const scopedState = depotSetupStore.getDepotState(
+      depotSetupStore.elementType,
+    );
     const applicationStore = depotSetupStore.applicationStore;
     // Track the active color theme so the AG-Grid skin and the selector follow
     // the rest of the app instead of being locked to dark. Computed reads on
@@ -730,14 +844,72 @@ export const DepotDashboard = withDepotSetupStore(
       value: depotSetupStore.elementType,
       label: depotSetupStore.elementType,
     };
+    const navigator = applicationStore.navigationService.navigator;
+    const elementTypeRoute = generateExtensionUrlPattern(
+      generateDepotDashboardRoute(
+        depotSetupStore.elementType,
+        scopedState.scope,
+      ),
+    );
+    const changeElementType = (
+      elementType: DEPOT_DASHBOARD_ELEMENT_TYPE,
+    ): void => {
+      depotSetupStore.setElementType(elementType);
+      // the address names the element type on display and its scope, so it
+      // can be shared
+      navigator.updateCurrentLocation(
+        generateExtensionUrlPattern(
+          generateDepotDashboardRoute(
+            elementType,
+            depotSetupStore.getDepotState(elementType).scope,
+          ),
+        ),
+      );
+    };
+    const copyLink = (): void => {
+      applicationStore.clipboardService
+        .copyTextToClipboard(navigator.generateAddress(elementTypeRoute))
+        .then(() =>
+          applicationStore.notificationService.notifySuccess(
+            'Copied link to clipboard',
+          ),
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
+
+    // back and forward between element types and scopes
+    const { elementType: elementTypeSlug } = useParams<{
+      elementType?: string;
+    }>();
+    const [searchParams] = useSearchParams();
+    const scopeValue = searchParams.get(DEPOT_DASHBOARD_SCOPE_QUERY_PARAM);
+    useEffect(() => {
+      const elementType = getDepotDashboardElementType(elementTypeSlug);
+      if (elementType && elementType !== depotSetupStore.elementType) {
+        depotSetupStore.setElementType(elementType);
+      }
+      const state = depotSetupStore.getDepotState(depotSetupStore.elementType);
+      const scope = getDepotDashboardScope(scopeValue) ?? DepotScope.RELEASES;
+      if (scope !== state.scope) {
+        flowResult(state.handleScopeChange(scope)).catch(
+          depotSetupStore.applicationStore.alertUnhandledError,
+        );
+      }
+    }, [elementTypeSlug, scopeValue, depotSetupStore]);
 
     // Toggle handler
     const handleScopeToggle = (scope: DepotScope) => {
       flowResult(scopedState.handleScopeChange(scope)).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
+      navigator.updateCurrentLocation(
+        generateExtensionUrlPattern(
+          generateDepotDashboardRoute(depotSetupStore.elementType, scope),
+        ),
+      );
     };
 
+    // re-filters what the scope fetched, fetching only rows not fetched yet
     const handleWorkspaceSnapshotToggle = () => {
       scopedState.setIncludeWorkspaceSnapshot(
         !scopedState.includeWorkspaceSnapshot,
@@ -747,16 +919,29 @@ export const DepotDashboard = withDepotSetupStore(
       );
     };
 
-    useEffect(() => {
-      flowResult(dataProductDepotState.init()).catch(
+    // what each element type and scope fetched is kept until refreshed
+    const handleRefresh = () => {
+      flowResult(scopedState.refresh()).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
+    };
+
+    // each element type is fetched the first time it is shown
+    useEffect(() => {
+      if (
+        !isGenerationSpecification &&
+        dataProductDepotState.fetchingProductsState.isInInitialState
+      ) {
+        flowResult(dataProductDepotState.init()).catch(
+          depotSetupStore.applicationStore.alertUnhandledError,
+        );
+      }
     }, [
+      isGenerationSpecification,
       dataProductDepotState,
       depotSetupStore.applicationStore.alertUnhandledError,
     ]);
 
-    // generation specifications are fetched the first time they are shown
     useEffect(() => {
       if (
         isGenerationSpecification &&
@@ -852,9 +1037,50 @@ export const DepotDashboard = withDepotSetupStore(
                       Include workspace snapshots
                     </label>
                   )}
+                  <button
+                    type="button"
+                    className="scope-toggle-btn"
+                    style={{
+                      marginLeft: 'auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      opacity: scopedState.isFetching ? 0.6 : 1,
+                    }}
+                    disabled={scopedState.isFetching}
+                    onClick={handleRefresh}
+                    title="Fetch this element type and scope again"
+                  >
+                    <RefreshIcon
+                      className={clsx({ spinning: scopedState.isFetching })}
+                    />
+                    Refresh
+                  </button>
                 </div>
-                <div className="panel__content__form__section__header__label">
+                <div
+                  className="panel__content__form__section__header__label"
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
                   Element Type
+                  <button
+                    type="button"
+                    title="Copy a link that opens this element type"
+                    onClick={copyLink}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: 0,
+                      border: 'none',
+                      background: 'none',
+                      color: '#3b82f6',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <LinkIcon />
+                    Copy link
+                  </button>
                 </div>
                 <CustomSelectorInput
                   inputId="depot-dashboard-element-type"
@@ -867,7 +1093,7 @@ export const DepotDashboard = withDepotSetupStore(
                     } | null,
                   ) => {
                     if (option) {
-                      depotSetupStore.setElementType(option.value);
+                      changeElementType(option.value);
                     }
                   }}
                   value={selectedOption}
