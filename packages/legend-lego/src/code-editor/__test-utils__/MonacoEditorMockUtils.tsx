@@ -78,6 +78,8 @@ export const MockedMonacoEditorInstance = {
   onDidFocusEditorText: createMock(),
   onDidBlurEditorText: createMock(),
   onDidFocusEditorWidget: createMock(),
+  onDidContentSizeChange: createMock(),
+  getContentHeight: createMock(),
   executeEdits: createMock(),
   getSelection: createMock(),
   pushUndoStop: createMock(),
