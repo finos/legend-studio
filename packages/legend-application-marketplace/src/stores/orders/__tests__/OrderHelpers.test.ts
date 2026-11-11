@@ -146,13 +146,14 @@ describe('getOrderProgressSteps', () => {
       ]);
     });
 
-    test('both stages approved, closed, order.status not rejected -> Order Fulfilled', () => {
+    test('both stages approved, closed, order.status Approved -> fulfillment label becomes rpm_action and step is completed', () => {
       const order = makeOrder({
         bbg_terminal_flag: false,
-        status: 'Completed',
+        status: 'Approved',
         workflow_details: makeWorkflowDetails({
           manager_action: 'Approved',
           fa_approval_action: 'Approved',
+          rpm_action: 'Closed',
           workflow_status: OrderStatus.COMPLETED,
         }),
       });
@@ -170,19 +171,20 @@ describe('getOrderProgressSteps', () => {
           status: OrderProgressStatus.COMPLETED,
         },
         {
-          label: WorkflowStage.ORDER_FULFILLED,
+          label: 'Closed',
           status: OrderProgressStatus.COMPLETED,
         },
       ]);
     });
 
-    test('both stages approved, closed, order.status is a rejected-family status -> dynamic "Order <Status>" label', () => {
+    test('both stages approved, closed, order.status not Approved -> fulfillment label becomes rpm_action and step is rejected', () => {
       const order = makeOrder({
         bbg_terminal_flag: false,
         status: 'Auto Terminated',
         workflow_details: makeWorkflowDetails({
           manager_action: 'Approved',
           fa_approval_action: 'Approved',
+          rpm_action: 'Closed - Auto Terminated',
           workflow_status: OrderStatus.COMPLETED,
         }),
       });
@@ -200,7 +202,103 @@ describe('getOrderProgressSteps', () => {
           status: OrderProgressStatus.COMPLETED,
         },
         {
-          label: 'Order Auto Terminated',
+          label: 'Closed - Auto Terminated',
+          status: OrderProgressStatus.REJECTED,
+        },
+      ]);
+    });
+
+    test('workflow_status CLOSED with rpm_action Cancelled -> final fulfillment step is rejected and labeled Cancelled', () => {
+      const order = makeOrder({
+        bbg_terminal_flag: false,
+        status: 'CANCELLED',
+        workflow_details: makeWorkflowDetails({
+          manager_action: 'Approved',
+          fa_approval_action: 'Approved',
+          rpm_action: 'Cancelled',
+          workflow_status: 'CLOSED' as OrderStatus,
+        }),
+      });
+
+      expect(getOrderProgressSteps(order)).toEqual([
+        {
+          label: WorkflowStage.ORDER_PLACED,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: WorkflowStage.MANAGER_APPROVAL,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: WorkflowStage.FIRST_APPROVER,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: 'Cancelled',
+          status: OrderProgressStatus.REJECTED,
+        },
+      ]);
+    });
+
+    test('workflow_status CLOSED with rpm_action Completed -> final fulfillment step is completed', () => {
+      const order = makeOrder({
+        bbg_terminal_flag: false,
+        status: 'CANCELLED',
+        workflow_details: makeWorkflowDetails({
+          manager_action: 'Approved',
+          fa_approval_action: 'Approved',
+          rpm_action: 'Completed',
+          workflow_status: 'CLOSED' as OrderStatus,
+        }),
+      });
+
+      expect(getOrderProgressSteps(order)).toEqual([
+        {
+          label: WorkflowStage.ORDER_PLACED,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: WorkflowStage.MANAGER_APPROVAL,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: WorkflowStage.FIRST_APPROVER,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: 'Completed',
+          status: OrderProgressStatus.COMPLETED,
+        },
+      ]);
+    });
+
+    test('workflow_status CLOSED with rpm_action Denied -> final fulfillment step is rejected', () => {
+      const order = makeOrder({
+        bbg_terminal_flag: false,
+        status: 'IN PROGRESS',
+        workflow_details: makeWorkflowDetails({
+          manager_action: 'Approved',
+          fa_approval_action: 'Approved',
+          rpm_action: 'Denied',
+          workflow_status: 'CLOSED' as OrderStatus,
+        }),
+      });
+
+      expect(getOrderProgressSteps(order)).toEqual([
+        {
+          label: WorkflowStage.ORDER_PLACED,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: WorkflowStage.MANAGER_APPROVAL,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: WorkflowStage.FIRST_APPROVER,
+          status: OrderProgressStatus.COMPLETED,
+        },
+        {
+          label: 'Denied',
           status: OrderProgressStatus.REJECTED,
         },
       ]);
@@ -581,6 +679,28 @@ describe('getClosureInfo', () => {
     });
     expect(getClosureInfo(order)?.reason).toBe('Completed');
   });
+
+  test('treats workflow_status CLOSED as closed for closure info resolution', () => {
+    const order = makeOrder({
+      bbg_terminal_flag: false,
+      updated_at: '2026-11-06T06:18:57',
+      workflow_details: makeWorkflowDetails({
+        manager_action: 'Approved',
+        fa_approval_action: 'Approved',
+        rpm_action: 'Cancelled',
+        rpm_comment: 'Incorrect Order - Test',
+        workflow_status: 'CLOSED' as OrderStatus,
+      }),
+    });
+
+    expect(getClosureInfo(order)).toEqual({
+      stageLabel: WorkflowStage.PENDING_FULFILLMENT,
+      reason: 'Cancelled',
+      actionedBy: null,
+      actionedTimestamp: '2026-11-06T06:18:57',
+      comment: 'Incorrect Order - Test',
+    });
+  });
 });
 
 // ─── getCurrentStageTrackingUrl ──────────────────────────────────────────────────
@@ -729,7 +849,7 @@ describe('canCancelOrder', () => {
 
 describe('formatOrderDate', () => {
   test('returns undefined when given undefined', () => {
-    expect(formatOrderDate(undefined)).toBeUndefined();
+    expect(formatOrderDate()).toBeUndefined();
   });
 
   test('formats a date string using en-US short month/day/year', () => {

@@ -28,10 +28,18 @@ import {
   CheckCircleIcon,
   CircleNotchIcon,
   clsx,
+  CopyIcon,
   CustomSelectorInput,
   InfoCircleIcon,
+  LinkIcon,
+  RefreshIcon,
   WarningIcon,
 } from '@finos/legend-art';
+import {
+  generateExtensionUrlPattern,
+  useParams,
+  useSearchParams,
+} from '@finos/legend-application/browser';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -39,9 +47,21 @@ import {
 import type { ColDef, ValueGetterParams } from 'ag-grid-community';
 import {
   DATA_PRODUCT_DASHBOARD_HEADER,
+  DATA_SPACE_DASHBOARD_HEADER,
+  DEPOT_DASHBOARD_ELEMENT_TYPE,
+  DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER,
+  DEPOT_DASHBOARD_SCOPE_QUERY_PARAM,
+  GENERATION_SPECIFICATION_DASHBOARD_HEADER,
   type DataProductDepotDashboardState,
   type DataProductEntityState,
+  type DataSpaceEntityState,
+  type DepotDashboardStore,
+  type DepotProjectAccess,
+  type GenerationSpecificationEntityState,
+  generateDepotDashboardRoute,
   getDataProductGridValue,
+  getDepotDashboardElementType,
+  getDepotDashboardScope,
 } from '../stores/DepotDashboardStore.js';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -51,6 +71,7 @@ import {
   V1_dataProductHasTitleAndDescription,
 } from '@finos/legend-graph';
 import { DepotScope } from '@finos/legend-server-depot';
+import { DepotGenerationSpecificationFlattenModal } from './DepotGenerationSpecificationFlattenModal.js';
 
 const EmptyCellRenderer = (col: string, message: string) => (
   <div
@@ -91,14 +112,110 @@ const DataProductCellRenderer = (
   );
 };
 
+type DepotDashboardProjectRow = {
+  name: string;
+  projectId: string | undefined;
+  projectAccess: DepotProjectAccess | undefined;
+  summary: { versionId: string; path: string };
+  store: DepotDashboardStore;
+};
+
+// The element's name opens it in Studio's project viewer (in a new tab, as the
+// project link does); the button next to it copies the element's full path.
+const ElementNameCellRenderer = (
+  params: DataGridCellRendererParams<DepotDashboardProjectRow>,
+) => {
+  const row = params.data;
+  if (!row) {
+    return null;
+  }
+  const applicationStore = row.store.applicationStore;
+  const url = row.projectId
+    ? applicationStore.navigationService.navigator.generateAddress(
+        generateViewVersionRoute(
+          row.projectId,
+          row.summary.versionId,
+          row.summary.path,
+        ),
+      )
+    : undefined;
+  const copyPath = (): void => {
+    applicationStore.clipboardService
+      .copyTextToClipboard(row.summary.path)
+      .then(() =>
+        applicationStore.notificationService.notifySuccess(
+          'Copied element path to clipboard',
+        ),
+      )
+      .catch(applicationStore.alertUnhandledError);
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Open ${row.summary.path}`}
+          style={{
+            color: '#3b82f6', // blue color, as the project link
+            textDecoration: 'underline',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {row.name}
+        </a>
+      ) : (
+        <span>{row.name}</span>
+      )}
+      <button
+        type="button"
+        title="Copy element path"
+        aria-label={`Copy ${row.summary.path}`}
+        onClick={copyPath}
+        style={{
+          display: 'flex',
+          padding: 0,
+          border: 'none',
+          background: 'none',
+          color: 'inherit',
+          opacity: 0.7,
+          cursor: 'pointer',
+        }}
+      >
+        <CopyIcon />
+      </button>
+    </div>
+  );
+};
+
+// The signed-in user's role and allowed actions on the element's project, from SDLC
+const buildProjectAccessColumnDefs = <
+  T extends DepotDashboardProjectRow,
+>(): ColDef<T>[] => [
+  {
+    headerName: DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER.ROLE,
+    valueGetter: (params: ValueGetterParams<T>) =>
+      params.data?.projectAccess?.roleLabel,
+    minWidth: 150,
+  },
+  {
+    headerName: DEPOT_DASHBOARD_PROJECT_ACCESS_HEADER.ACTIONS,
+    valueGetter: (params: ValueGetterParams<T>) =>
+      params.data?.projectAccess?.actionsLabel,
+    minWidth: 300,
+  },
+];
+
 const ProjectIdCellRenderer = (
-  params: DataGridCellRendererParams<DataProductEntityState>,
+  params: DataGridCellRendererParams<DepotDashboardProjectRow>,
 ) => {
   const entityState = params.data;
   const projectId = entityState?.projectId;
 
   const getProjectUrl = (
-    _entityState: DataProductEntityState,
+    _entityState: DepotDashboardProjectRow,
     _projectId: string,
   ): string => {
     return _entityState.store.applicationStore.navigationService.navigator.generateAddress(
@@ -158,6 +275,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) => {
         return params.data?.name;
       },
+      cellRenderer: ElementNameCellRenderer,
       minWidth: 250,
     },
     {
@@ -165,6 +283,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
       cellRenderer: ProjectIdCellRenderer,
       minWidth: 250,
     },
+    ...buildProjectAccessColumnDefs<DataProductEntityState>(),
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
@@ -469,16 +588,284 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
   ];
 };
 
+// Whoever can create a workspace in the project can flatten a specification
+// that has more than one stage
+const FlattenCellRenderer = (
+  params: DataGridCellRendererParams<GenerationSpecificationEntityState>,
+) => {
+  const entityState = params.data;
+  if (!entityState?.canFlatten) {
+    return null;
+  }
+  return (
+    <button
+      type="button"
+      className="scope-toggle-btn"
+      style={{
+        padding: '0 0.8em',
+        lineHeight: '2.2rem',
+        opacity: entityState.hasStagesToFlatten ? 1 : 0.4,
+        cursor: entityState.hasStagesToFlatten ? 'pointer' : 'not-allowed',
+      }}
+      disabled={!entityState.hasStagesToFlatten}
+      title={
+        entityState.hasStagesToFlatten
+          ? `Flatten the stages of ${entityState.summary.path} in a review`
+          : 'One stage or none: nothing to flatten'
+      }
+      onClick={() =>
+        entityState.store.generationSpecificationDepotState.openFlatten(
+          entityState,
+        )
+      }
+    >
+      Flatten
+    </button>
+  );
+};
+
+const buildGenerationSpecificationColumnDefs =
+  (): ColDef<GenerationSpecificationEntityState>[] => [
+    {
+      headerName: '#',
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) =>
+        params.node?.rowIndex !== null ? (params.node?.rowIndex ?? 0) + 1 : '',
+      width: 70,
+      pinned: 'left',
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.NAME,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.name,
+      cellRenderer: ElementNameCellRenderer,
+      minWidth: 250,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.STAGE_COUNT,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.stageCount,
+      filter: 'agNumberColumnFilter',
+      minWidth: 120,
+    },
+    {
+      headerName:
+        GENERATION_SPECIFICATION_DASHBOARD_HEADER.GENERATION_ELEMENT_COUNT,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.generationElementPaths.length,
+      filter: 'agNumberColumnFilter',
+      minWidth: 180,
+    },
+    {
+      headerName:
+        GENERATION_SPECIFICATION_DASHBOARD_HEADER.FILE_GENERATION_COUNT,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.fileGenerations.length,
+      filter: 'agNumberColumnFilter',
+      minWidth: 180,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_ID,
+      cellRenderer: ProjectIdCellRenderer,
+      minWidth: 250,
+    },
+    ...buildProjectAccessColumnDefs<GenerationSpecificationEntityState>(),
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.FLATTEN,
+      cellRenderer: FlattenCellRenderer,
+      filter: false,
+      sortable: false,
+      suppressHeaderMenuButton: true,
+      // an action: always in view, however far the grid is scrolled
+      pinned: 'right',
+      width: 120,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.gaProject,
+      minWidth: 250,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_VERSION,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.summary.versionId,
+      minWidth: 150,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.package,
+      minWidth: 250,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.GENERATION_ELEMENTS,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) =>
+        params.data?.generationSpecification?.generationElementPaths.join(', '),
+      minWidth: 400,
+    },
+    {
+      headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.FILE_GENERATIONS,
+      valueGetter: (
+        params: ValueGetterParams<GenerationSpecificationEntityState>,
+      ) => params.data?.generationSpecification?.fileGenerations.join(', '),
+      minWidth: 400,
+    },
+  ];
+
+// The columns all element types share, from Project ID to Package, come in the
+// same order: first what this type counts, after them what it describes
+const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
+  {
+    headerName: '#',
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.node?.rowIndex !== null ? (params.node?.rowIndex ?? 0) + 1 : '',
+    width: 70,
+    pinned: 'left',
+  },
+  {
+    headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.NAME,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.name,
+    cellRenderer: ElementNameCellRenderer,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTION_CONTEXT_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executionContextNames.length,
+    filter: 'agNumberColumnFilter',
+    minWidth: 170,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTABLE_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executableCount,
+    filter: 'agNumberColumnFilter',
+    minWidth: 140,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.TEMPLATE_QUERY_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.templateQueryCount,
+    filter: 'agNumberColumnFilter',
+    minWidth: 160,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.DIAGRAM_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.diagramPaths.length,
+    filter: 'agNumberColumnFilter',
+    minWidth: 130,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.ELEMENT_COUNT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.elementCount,
+    filter: 'agNumberColumnFilter',
+    minWidth: 130,
+  },
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_ID,
+    cellRenderer: ProjectIdCellRenderer,
+    minWidth: 250,
+  },
+  ...buildProjectAccessColumnDefs<DataSpaceEntityState>(),
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.gaProject,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_VERSION,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.summary.versionId,
+    minWidth: 150,
+  },
+  {
+    headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.package,
+    minWidth: 250,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.TITLE,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.title,
+    minWidth: 220,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.DEFAULT_EXECUTION_CONTEXT,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.defaultExecutionContext,
+    minWidth: 220,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.SUPPORT_INFO,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.supportLabel,
+    minWidth: 140,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.MAPPINGS,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.mappingPaths.join(', '),
+    minWidth: 300,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTION_CONTEXTS,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executionContextNames.join(', '),
+    minWidth: 300,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.EXECUTABLES,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.executableTitles.join(', '),
+    minWidth: 300,
+  },
+  {
+    headerName: DATA_SPACE_DASHBOARD_HEADER.DIAGRAMS,
+    valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
+      params.data?.dataSpace?.diagramPaths.join(', '),
+    minWidth: 300,
+  },
+];
+
+const PROGRESS_LABEL: Record<DEPOT_DASHBOARD_ELEMENT_TYPE, string> = {
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT]: 'Data Products',
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE]: 'Data Spaces',
+  [DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION]:
+    'Generation Specifications',
+};
+
 // Enhanced progress header component with warning
 const ProgressHeader = observer(
-  (props: { dataProductDepotState: DataProductDepotDashboardState }) => {
-    const { dataProductDepotState } = props;
-    const progress = dataProductDepotState.fetchProgress;
-    const isLoading = dataProductDepotState.fetchingProductsState.isInProgress;
+  (props: {
+    label: string;
+    isLoading: boolean;
+    source: Pick<
+      DataProductDepotDashboardState,
+      'fetchProgress' | 'hasMaxCallsWarning' | 'maxCallsWarningMessage'
+    >;
+  }) => {
+    const { label, isLoading, source } = props;
+    const progress = source.fetchProgress;
     const isComplete =
       progress.fetched === progress.total && progress.total > 0;
-    const hasWarning = dataProductDepotState.hasMaxCallsWarning;
-    const warningMessage = dataProductDepotState.maxCallsWarningMessage;
+    const hasWarning = source.hasMaxCallsWarning;
+    const warningMessage = source.maxCallsWarningMessage;
 
     return (
       <div>
@@ -515,7 +902,7 @@ const ProgressHeader = observer(
               />
             )}
             <span style={{ fontWeight: '500', color: '#f7fafc' }}>
-              Data Products: {progress.fetched} / {progress.total} fetched
+              {label}: {progress.fetched} / {progress.total} fetched
             </span>
             {progress.total > 0 && (
               <span style={{ color: '#a0aec0' }}>({progress.percentage}%)</span>
@@ -611,47 +998,219 @@ export const DepotDashboard = withDepotSetupStore(
   observer(() => {
     const depotSetupStore = useDepotSetupStore();
     const dataProductDepotState = depotSetupStore.dataProductDepotState;
+    const dataSpaceDepotState = depotSetupStore.dataSpaceDepotState;
+    const generationSpecificationDepotState =
+      depotSetupStore.generationSpecificationDepotState;
+    // the scope controls act on the element type on display
+    const scopedState = depotSetupStore.getDepotState(
+      depotSetupStore.elementType,
+    );
     const applicationStore = depotSetupStore.applicationStore;
     // Track the active color theme so the AG-Grid skin and the selector follow
     // the rest of the app instead of being locked to dark. Computed reads on
     // `layoutService` stay reactive because this component is an `observer`.
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const dataProductOption = {
-      value: 'Data Product',
-      label: 'Data Product',
+    const options = Object.values(DEPOT_DASHBOARD_ELEMENT_TYPE).map(
+      (elementType) => ({ value: elementType, label: elementType }),
+    );
+    const selectedOption = {
+      value: depotSetupStore.elementType,
+      label: depotSetupStore.elementType,
     };
-    const options = [dataProductOption];
+    const navigator = applicationStore.navigationService.navigator;
+    const elementTypeRoute = generateExtensionUrlPattern(
+      generateDepotDashboardRoute(
+        depotSetupStore.elementType,
+        scopedState.scope,
+      ),
+    );
+    const changeElementType = (
+      elementType: DEPOT_DASHBOARD_ELEMENT_TYPE,
+    ): void => {
+      depotSetupStore.setElementType(elementType);
+      // the address names the element type on display and its scope, so it
+      // can be shared
+      navigator.updateCurrentLocation(
+        generateExtensionUrlPattern(
+          generateDepotDashboardRoute(
+            elementType,
+            depotSetupStore.getDepotState(elementType).scope,
+          ),
+        ),
+      );
+    };
+    const copyLink = (): void => {
+      applicationStore.clipboardService
+        .copyTextToClipboard(navigator.generateAddress(elementTypeRoute))
+        .then(() =>
+          applicationStore.notificationService.notifySuccess(
+            'Copied link to clipboard',
+          ),
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
+
+    // back and forward between element types and scopes
+    const { elementType: elementTypeSlug } = useParams<{
+      elementType?: string;
+    }>();
+    const [searchParams] = useSearchParams();
+    const scopeValue = searchParams.get(DEPOT_DASHBOARD_SCOPE_QUERY_PARAM);
+    useEffect(() => {
+      const elementType = getDepotDashboardElementType(elementTypeSlug);
+      if (elementType && elementType !== depotSetupStore.elementType) {
+        depotSetupStore.setElementType(elementType);
+      }
+      const state = depotSetupStore.getDepotState(depotSetupStore.elementType);
+      const scope = getDepotDashboardScope(scopeValue) ?? DepotScope.RELEASES;
+      if (scope !== state.scope) {
+        flowResult(state.handleScopeChange(scope)).catch(
+          depotSetupStore.applicationStore.alertUnhandledError,
+        );
+      }
+    }, [elementTypeSlug, scopeValue, depotSetupStore]);
 
     // Toggle handler
     const handleScopeToggle = (scope: DepotScope) => {
-      flowResult(dataProductDepotState.handleScopeChange(scope)).catch(
+      flowResult(scopedState.handleScopeChange(scope)).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
+      );
+      navigator.updateCurrentLocation(
+        generateExtensionUrlPattern(
+          generateDepotDashboardRoute(depotSetupStore.elementType, scope),
+        ),
       );
     };
 
+    // re-filters what the scope fetched, fetching only rows not fetched yet
     const handleWorkspaceSnapshotToggle = () => {
-      dataProductDepotState.setIncludeWorkspaceSnapshot(
-        !dataProductDepotState.includeWorkspaceSnapshot,
+      scopedState.setIncludeWorkspaceSnapshot(
+        !scopedState.includeWorkspaceSnapshot,
       );
-      flowResult(dataProductDepotState.init()).catch(
+      flowResult(scopedState.init()).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
     };
 
-    useEffect(() => {
-      flowResult(dataProductDepotState.init()).catch(
+    // what each element type and scope fetched is kept until refreshed
+    const handleRefresh = () => {
+      flowResult(scopedState.refresh()).catch(
         depotSetupStore.applicationStore.alertUnhandledError,
       );
-    }, [
-      dataProductDepotState,
-      depotSetupStore.applicationStore.alertUnhandledError,
-    ]);
+    };
+
+    // each element type is fetched the first time it is shown
+    useEffect(() => {
+      if (scopedState.fetchingSummaryState.isInInitialState) {
+        flowResult(scopedState.init()).catch(
+          depotSetupStore.applicationStore.alertUnhandledError,
+        );
+      }
+    }, [scopedState, depotSetupStore.applicationStore.alertUnhandledError]);
+
+    const renderGrid = (): React.ReactNode => {
+      switch (depotSetupStore.elementType) {
+        case DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE:
+          return (
+            <DataGrid
+              key="data-spaces"
+              rowData={dataSpaceDepotState.entityStates ?? null}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => `${data.data.id}`,
+                suppressHorizontalScroll: false,
+                alwaysShowHorizontalScroll: true,
+                rowBuffer: 10,
+                onFirstDataRendered: (params) => {
+                  dataSpaceDepotState.setGridApi(params.api);
+                },
+              }}
+              suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={false}
+              defaultColDef={{
+                filter: true,
+                sortable: true,
+                resizable: true,
+                floatingFilter: true,
+              }}
+              columnDefs={buildDataSpaceColumnDefs()}
+            />
+          );
+        case DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION:
+          return (
+            <DataGrid
+              key="generation-specifications"
+              rowData={generationSpecificationDepotState.entityStates ?? null}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => `${data.data.id}`,
+                suppressHorizontalScroll: false,
+                alwaysShowHorizontalScroll: true,
+                rowBuffer: 10,
+                onFirstDataRendered: (params) => {
+                  generationSpecificationDepotState.setGridApi(params.api);
+                },
+              }}
+              suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={false}
+              defaultColDef={{
+                filter: true,
+                sortable: true,
+                resizable: true,
+                floatingFilter: true,
+              }}
+              columnDefs={buildGenerationSpecificationColumnDefs()}
+            />
+          );
+        default:
+          return (
+            <DataGrid
+              key="data-products"
+              rowData={dataProductDepotState.dataProductEntitiesStates ?? null}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => `${data.data.id}`,
+                rowSelection: {
+                  mode: 'multiRow',
+                  checkboxes: false,
+                  headerCheckbox: false,
+                },
+                suppressHorizontalScroll: false,
+                alwaysShowHorizontalScroll: true,
+                animateRows: true, // Smooth animations when rows update
+                rowBuffer: 10, // Keep extra rows rendered for smooth scrolling
+                onFirstDataRendered: (params) => {
+                  dataProductDepotState.setGridApi(params.api);
+                },
+              }}
+              suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={false}
+              defaultColDef={{
+                filter: true, // Enable filters for all columns
+                sortable: true, // Enable sorting for all columns
+                resizable: true, // Allow column resizing
+                floatingFilter: true, // Show floating filter row below headers
+              }}
+              columnDefs={buildColumnDefs()}
+            />
+          );
+      }
+    };
 
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
     return (
       <div className="app__page">
+        {generationSpecificationDepotState.flattenState && (
+          <DepotGenerationSpecificationFlattenModal
+            flattenState={generationSpecificationDepotState.flattenState}
+            onClose={() => generationSpecificationDepotState.closeFlatten()}
+          />
+        )}
         <div className="depot-dashboard">
           <div className="depot-dashboard__body">
             <div className="activity-bar">
@@ -662,7 +1221,11 @@ export const DepotDashboard = withDepotSetupStore(
                 Depot Dashboard
               </h1>
               <div className="depot-dashboard__options__panel">
-                <ProgressHeader dataProductDepotState={dataProductDepotState} />
+                <ProgressHeader
+                  label={PROGRESS_LABEL[depotSetupStore.elementType]}
+                  isLoading={scopedState.fetchingSummaryState.isInProgress}
+                  source={scopedState}
+                />
                 <div
                   style={{
                     marginBottom: '1rem',
@@ -676,7 +1239,7 @@ export const DepotDashboard = withDepotSetupStore(
                     type="button"
                     className={clsx('scope-toggle-btn', {
                       'scope-toggle-btn--active':
-                        dataProductDepotState.scope === DepotScope.RELEASES,
+                        scopedState.scope === DepotScope.RELEASES,
                     })}
                     onClick={() => handleScopeToggle(DepotScope.RELEASES)}
                   >
@@ -686,13 +1249,13 @@ export const DepotDashboard = withDepotSetupStore(
                     type="button"
                     className={clsx('scope-toggle-btn', {
                       'scope-toggle-btn--active':
-                        dataProductDepotState.scope === DepotScope.SNAPSHOT,
+                        scopedState.scope === DepotScope.SNAPSHOT,
                     })}
                     onClick={() => handleScopeToggle(DepotScope.SNAPSHOT)}
                   >
                     Snapshots
                   </button>
-                  {dataProductDepotState.scope === DepotScope.SNAPSHOT && (
+                  {scopedState.scope === DepotScope.SNAPSHOT && (
                     <label
                       style={{
                         marginLeft: '2rem',
@@ -704,27 +1267,73 @@ export const DepotDashboard = withDepotSetupStore(
                     >
                       <input
                         type="checkbox"
-                        checked={dataProductDepotState.includeWorkspaceSnapshot}
+                        checked={scopedState.includeWorkspaceSnapshot}
                         onChange={handleWorkspaceSnapshotToggle}
                         style={{ accentColor: '#2563eb' }}
                       />
                       Include workspace snapshots
                     </label>
                   )}
+                  <button
+                    type="button"
+                    className="scope-toggle-btn"
+                    style={{
+                      marginLeft: 'auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      opacity: scopedState.isFetching ? 0.6 : 1,
+                    }}
+                    disabled={scopedState.isFetching}
+                    onClick={handleRefresh}
+                    title="Fetch this element type and scope again"
+                  >
+                    <RefreshIcon
+                      className={clsx({ spinning: scopedState.isFetching })}
+                    />
+                    Refresh
+                  </button>
                 </div>
-                <div className="panel__content__form__section__header__label">
+                <div
+                  className="panel__content__form__section__header__label"
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
                   Element Type
+                  <button
+                    type="button"
+                    title="Copy a link that opens this element type"
+                    onClick={copyLink}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: 0,
+                      border: 'none',
+                      background: 'none',
+                      color: '#3b82f6',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <LinkIcon />
+                    Copy link
+                  </button>
                 </div>
                 <CustomSelectorInput
+                  inputId="depot-dashboard-element-type"
                   options={options}
-                  disabled={true}
                   isLoading={false}
                   onChange={(
-                    option: { label: string; value: string } | null,
+                    option: {
+                      label: string;
+                      value: DEPOT_DASHBOARD_ELEMENT_TYPE;
+                    } | null,
                   ) => {
-                    //
+                    if (option) {
+                      changeElementType(option.value);
+                    }
                   }}
-                  value={dataProductOption}
+                  value={selectedOption}
                   placeholder={'Choose an Element'}
                   className="depot-dashboard__selector"
                   darkMode={darkMode}
@@ -737,37 +1346,7 @@ export const DepotDashboard = withDepotSetupStore(
                     'ag-theme-balham-dark': darkMode,
                   })}
                 >
-                  <DataGrid
-                    rowData={
-                      dataProductDepotState.dataProductEntitiesStates ?? null
-                    }
-                    gridOptions={{
-                      suppressScrollOnNewData: true,
-                      getRowId: (data) => `${data.data.id}`,
-                      rowSelection: {
-                        mode: 'multiRow',
-                        checkboxes: false,
-                        headerCheckbox: false,
-                      },
-                      suppressHorizontalScroll: false,
-                      alwaysShowHorizontalScroll: true,
-                      animateRows: true, // Smooth animations when rows update
-                      rowBuffer: 10, // Keep extra rows rendered for smooth scrolling
-                      onFirstDataRendered: (params) => {
-                        dataProductDepotState.setGridApi(params.api);
-                      },
-                    }}
-                    suppressFieldDotNotation={true}
-                    suppressClipboardPaste={false}
-                    suppressContextMenu={false}
-                    defaultColDef={{
-                      filter: true, // Enable filters for all columns
-                      sortable: true, // Enable sorting for all columns
-                      resizable: true, // Allow column resizing
-                      floatingFilter: true, // Show floating filter row below headers
-                    }}
-                    columnDefs={buildColumnDefs()}
-                  />
+                  {renderGrid()}
                 </div>
               </div>
             </div>

@@ -23,7 +23,7 @@ import { useEffect } from 'react';
 import { getIngestEnvironmentLabel } from '../../__lib__/LegendCubeIngestLabels.js';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { getCubeIngestSettings } from '../../graph-manager/CubeIngest.js';
-import { getCubeIngestEnvironmentKey } from '../../graph-manager/CubeIngestCatalog.js';
+import { getCubeIngestEnvironmentKeyOfModel } from '../../graph-manager/CubeIngestCatalog.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -33,7 +33,8 @@ import { CubeWarehouseControl } from './CubeWarehouseControl.js';
  * An ingest data set (PLAN §6.7): where it reads from, the cube's class,
  * producer deployment and warehouse, which can be edited, its columns as
  * its deployed definition declares them, and Refresh, which reads the
- * definition again
+ * definition again. In a data product cube (§11.30), the cube's class and
+ * warehouse, and no producer deployment
  */
 export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
   const { editorState, readOnly } = props;
@@ -42,6 +43,9 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
   const refreshing = editorState.isPendingSource(source);
   const model = editorState.document.context?.model;
   const settings = model ? getCubeIngestSettings(model) : undefined;
+  const environment = model
+    ? getCubeIngestEnvironmentKeyOfModel(model)
+    : undefined;
   const { ingestTab } = editorState.sourcePicker;
   const producerDeploymentId = settings?.producerDeploymentId;
   // the producer's name, when the host's deployment directory knows it
@@ -61,16 +65,20 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
         </dd>
         <dt className="text-[var(--color-text-secondary)]">Data set</dt>
         <dd className="min-w-0 break-all">{source.dataSet}</dd>
-        {settings && (
+        {environment && (
           <>
             <dt className="text-[var(--color-text-secondary)]">Environment</dt>
             <dd className="min-w-0 break-all">
-              {getIngestEnvironmentLabel(getCubeIngestEnvironmentKey(settings))}
+              {getIngestEnvironmentLabel(environment)}
             </dd>
-            <dt className="text-[var(--color-text-secondary)]">Producer</dt>
-            <dd className="min-w-0 break-all">
-              {ingestTab.getProducerLabel(settings.producerDeploymentId)}
-            </dd>
+            {settings && (
+              <>
+                <dt className="text-[var(--color-text-secondary)]">Producer</dt>
+                <dd className="min-w-0 break-all">
+                  {ingestTab.getProducerLabel(settings.producerDeploymentId)}
+                </dd>
+              </>
+            )}
             <dt className="self-center text-[var(--color-text-secondary)]">
               Warehouse
             </dt>

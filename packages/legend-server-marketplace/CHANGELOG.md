@@ -1,5 +1,15 @@
 # @finos/legend-server-marketplace
 
+## 0.2.25
+
+### Patch Changes
+
+- [#5873](https://github.com/finos/legend-studio/pull/5873) [`ca138c9`](https://github.com/finos/legend-studio/commit/ca138c983a806e71714ddc65c4e323b567b0967a) ([@eradityash](https://github.com/eradityash)) - Introduces mandatory add-on enhancements across catalog tiles and the subscriptions experience, plus supporting model and config updates.
+
+## 0.2.24
+
+## 0.2.23
+
 ## 0.2.22
 
 ## 0.2.21

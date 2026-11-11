@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.9.4
+
+### Patch Changes
+
+- [#5862](https://github.com/finos/legend-studio/pull/5862) [`3c55f44`](https://github.com/finos/legend-studio/commit/3c55f4492a547897bbb69e79d7faf42e56da1c1e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `extendedIngestDefinition` and `ExtendedAvailability` elements: they are now built as `ExtendedIngestDefinition` / `ExtendedAvailability` (subtypes of `IngestDefinition` / `Availability`, so Studio opens the existing editors for them) and their `_type` is preserved on roundtrip.
+
+## 32.9.3
+
+### Patch Changes
+
+- [#5848](https://github.com/finos/legend-studio/pull/5848) [`acacb2c`](https://github.com/finos/legend-studio/commit/acacb2c8a2cb09f83249e1f43dc32e16efa0520b) ([@TharunRajeev](https://github.com/TharunRajeev)) - Skip empty entries in the engine's service details list instead of failing to load all services.
+
 ## 32.9.2
 
 ### Patch Changes

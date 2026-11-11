@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-import type { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import {
+  ExtendedAvailability,
+  type Availability,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import type { AvailabilityTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import type { AvailabilityBarrierTest } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
 import type { RelationElement } from '../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
-import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
+import {
+  V1_Availability,
+  V1_ExtendedAvailability,
+} from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
 import {
@@ -73,7 +79,10 @@ export const V1_transformAvailability = (
   element: Availability,
   _context: V1_GraphTransformerContext,
 ): V1_Availability => {
-  const availability = new V1_Availability();
+  const availability =
+    element instanceof ExtendedAvailability
+      ? new V1_ExtendedAvailability()
+      : new V1_Availability();
   V1_initPackageableElement(availability, element);
   // like `V1_IngestDefinition`, preserve the engine's raw JSON payload on
   // `.content` so that fields we don't model in the studio are roundtripped

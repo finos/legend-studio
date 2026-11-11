@@ -15,7 +15,7 @@
  */
 
 import { ContextMenu } from '@finos/legend-art';
-import type { Query } from '@finos/legend-cube';
+import { getStepNoteText, type Query } from '@finos/legend-cube';
 import { noop } from '@finos/legend-shared';
 import {
   Background,
@@ -49,14 +49,23 @@ import { canAddCubeNode } from '../../stores/CubeAddPlacement.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { isCubeSampleDataOffered } from '../../stores/CubeHost.js';
 import {
+  buildCubeCanvasContainerNodes,
+  getCubeCanvasContainerNodeId,
   buildCubeCanvasEdges,
   buildCubeCanvasNodes,
+  CUBE_CANVAS_CONTAINER_TYPE,
   CUBE_CANVAS_EDGE_TYPE,
+  CUBE_CANVAS_FOLDED_CONTAINER_TYPE,
   CUBE_CANVAS_NODE_TYPE,
   CUBE_OUTPUT_HANDLE_ID,
   type CubeCanvasFlowEdge,
   type CubeCanvasFlowNode,
 } from './CubeCanvasElements.js';
+import {
+  CUBE_CANVAS_CONTAINER_MINIMAP_COLOR,
+  CubeCanvasContainerFrame,
+  CubeCanvasFoldedContainer,
+} from './CubeCanvasContainer.js';
 import { CubeCanvasContext } from './CubeCanvasContext.js';
 import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
 import {
@@ -65,12 +74,22 @@ import {
   dropOnCubeCanvas,
 } from './CubeCanvasDnd.js';
 import { CubeCanvasEdge } from './CubeCanvasEdge.js';
-import { layoutCubeQuery } from './CubeCanvasLayout.js';
+import {
+  type CubeCanvasPosition,
+  getCubeCanvasStepPlace,
+  layoutCubeCanvas,
+} from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
+import { CubeCanvasSelectionBox } from './CubeCanvasSelectionBox.js';
+import { CUBE_CANVAS_STEP_NOTE_CLASS } from './CubeCanvasStepNote.js';
 import { CubeNodeEditorPopper } from '../editors/CubeNodeEditorPopper.js';
 
 // React Flow re-renders every node when these change identity
-const NODE_TYPES = { [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode };
+const NODE_TYPES = {
+  [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode,
+  [CUBE_CANVAS_CONTAINER_TYPE]: CubeCanvasContainerFrame,
+  [CUBE_CANVAS_FOLDED_CONTAINER_TYPE]: CubeCanvasFoldedContainer,
+};
 const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
 /** Small, so it covers little of a short canvas */
@@ -134,21 +153,71 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   const { query } = editorState.document;
   const { readOnly } = editorState;
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
-  const { positions, lanes } = useMemo(() => layoutCubeQuery(query), [query]);
-  const nodes = useMemo(
-    () => buildCubeCanvasNodes(query, positions),
-    [query, positions],
+  const flowRef = useRef<HTMLDivElement>(null);
+  const { containers, notes } = editorState.document.meta;
+  // the steps with a note, which get room for it under them (PLAN §11.31)
+  const noted = useMemo(
+    () =>
+      new Set(
+        query.nodes
+          .filter((node) => getStepNoteText(notes, node.id) !== undefined)
+          .map((node) => node.id),
+      ),
+    [query, notes],
   );
+  const layout = useMemo(
+    () => layoutCubeCanvas(query, containers, noted),
+    [query, containers, noted],
+  );
+  const { positions } = layout;
+  const nodes = useMemo(() => {
+    const containerNodes = buildCubeCanvasContainerNodes(layout.containers);
+    // the frames first, behind the steps
+    return [
+      ...containerNodes.filter(
+        (node) => node.type === CUBE_CANVAS_CONTAINER_TYPE,
+      ),
+      ...buildCubeCanvasNodes(query, positions, (id) =>
+        getStepNoteText(notes, id),
+      ),
+      ...containerNodes.filter(
+        (node) => node.type === CUBE_CANVAS_FOLDED_CONTAINER_TYPE,
+      ),
+    ];
+  }, [query, positions, layout, notes]);
   const edges = useMemo(
-    () => buildCubeCanvasEdges(query, lanes),
-    [query, lanes],
+    () => buildCubeCanvasEdges(query, layout.lanes, layout.containers),
+    [query, layout],
+  );
+  // a step in a folded container has its editor on the container's box
+  const editorPositions = useMemo(
+    () =>
+      new Map(
+        query.nodes.flatMap((node): [string, CubeCanvasPosition][] => {
+          const place = getCubeCanvasStepPlace(layout, node.id);
+          return place ? [[node.id, { x: place.x, y: place.y }]] : [];
+        }),
+      ),
+    [query, layout],
   );
   // the view fits the graph again, to the left, whenever the layout moves a
-  // node, or the canvas changes size (e.g. the splitter above the grid
-  // moves), once React Flow has measured every node
+  // node or a container, a note comes or goes, or the canvas changes size
+  // (e.g. the splitter above the grid moves), once React Flow has measured
+  // every node
   const layoutSignature = useMemo(
-    () => JSON.stringify([...positions]),
-    [positions],
+    () =>
+      JSON.stringify([
+        [...positions],
+        layout.containers.map(({ container, x, y, width, height }) => [
+          container.id,
+          x,
+          y,
+          width,
+          height,
+        ]),
+        [...noted],
+      ]),
+    [positions, layout, noted],
   );
   const nodesInitialized = useNodesInitialized();
   const canvasWidth = useStore((state) => state.width);
@@ -180,26 +249,47 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       edges={edges}
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
-      // the layout places the nodes; nothing is selected or deleted in React Flow
+      // the layout places the nodes; nothing is selected or deleted in React
+      // Flow. Steps are picked in Cube (PLAN §11.29): React Flow draws the
+      // box Shift and a drag makes, and selects nothing, as no node is
+      // selectable; `CubeCanvasSelectionBox` picks the steps inside it.
       nodesDraggable={false}
       nodesConnectable={!readOnly}
-      elementsSelectable={false}
+      elementsSelectable={!readOnly}
       deleteKeyCode={null}
-      selectionKeyCode={null}
+      selectionKeyCode={readOnly ? null : 'Shift'}
       multiSelectionKeyCode={null}
+      onSelectionStart={() => editorState.canvasSelection.startBox()}
+      onSelectionEnd={() => editorState.canvasSelection.endBox()}
+      // a press on the canvas gives it the focus, so Escape and Ctrl/Cmd+G
+      // reach it after a box
+      ref={flowRef}
+      tabIndex={-1}
+      className="outline-none"
       onNodeClick={(event, flowNode) => {
-        // a click on a handle starts or ends a connection, not a node click
+        // a click on a handle starts or ends a connection, not a node
+        // click; a container's buttons are its own
         if (
-          event.target instanceof Element &&
-          event.target.closest('.react-flow__handle')
+          flowNode.type !== CUBE_CANVAS_NODE_TYPE ||
+          (event.target instanceof Element &&
+            event.target.closest('.react-flow__handle'))
         ) {
           return;
         }
-        if (event.ctrlKey || event.metaKey) {
+        if (event.shiftKey) {
+          // picks the step, or unpicks it, opening no editor
+          editorState.canvasSelection.toggle(flowNode.id);
+        } else if (event.ctrlKey || event.metaKey) {
           // applies and closes the open editor first, opening none (spec §17.5)
           if (editorState.nodeEditor.finish()) {
             editorState.select(flowNode.id);
           }
+        } else if (
+          event.target instanceof Element &&
+          event.target.closest(`.${CUBE_CANVAS_STEP_NOTE_CLASS}`)
+        ) {
+          // a click on the step's note opens its editor at the note
+          editorState.nodeEditor.openAtNote(flowNode.id);
         } else {
           editorState.nodeEditor.open(flowNode.id);
         }
@@ -216,7 +306,52 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           target.classList.contains('react-flow__node')
             ? target.dataset.id
             : undefined;
-        if (nodeId === undefined) {
+        // the canvas's keys for the steps picked (PLAN §11.29), on it or a
+        // node of it: never in a field, or a menu or the node editor, whose
+        // keys come here from their layers
+        const wrapper = flowRef.current;
+        const { canvasSelection } = editorState;
+        if (
+          target === wrapper ||
+          (nodeId !== undefined &&
+            target instanceof HTMLElement &&
+            wrapper?.contains(target))
+        ) {
+          if (event.key === 'Escape' && canvasSelection.stepIds.length) {
+            canvasSelection.clear();
+            return;
+          }
+          if (
+            (event.ctrlKey || event.metaKey) &&
+            !event.shiftKey &&
+            !event.altKey &&
+            event.key.toLowerCase() === 'g'
+          ) {
+            // the browser's Find Next would run
+            event.preventDefault();
+            if (
+              canvasSelection.container.kind === 'steps' &&
+              editorState.nodeEditor.finish()
+            ) {
+              canvasSelection.putInContainer();
+            }
+            return;
+          }
+        }
+        // a folded container's box opens on Enter or Space
+        const folded = editorState.shownContainers.find(
+          ({ container }) =>
+            container.folded &&
+            getCubeCanvasContainerNodeId(container.id, true) === nodeId,
+        );
+        if (folded && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          if (!readOnly && editorState.nodeEditor.finish()) {
+            editorState.setContainerFolded(folded.container.id, false);
+          }
+          return;
+        }
+        if (nodeId === undefined || !query.getNode(nodeId)) {
           return;
         }
         // the focused step's keys (the review of the demo, 2026-10-13): only
@@ -253,7 +388,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           return;
         }
         event.preventDefault();
-        if (event.ctrlKey || event.metaKey) {
+        if (event.shiftKey) {
+          // as a Shift+click: picks the step, or unpicks it
+          canvasSelection.toggle(nodeId);
+        } else if (event.ctrlKey || event.metaKey) {
           if (editorState.nodeEditor.finish()) {
             editorState.select(nodeId);
           }
@@ -275,9 +413,15 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       // a connection changes the query, so the open editor applies first,
       // whether the handles are dragged or clicked
       onConnectStart={() => editorState.nodeEditor.finish()}
-      // a click on the canvas's background closes the floating editor; a
-      // press there that pans leaves it open
-      onPaneClick={() => editorState.nodeEditor.finish()}
+      // a click on the canvas's background closes the floating editor, and
+      // picks no step; a press there that pans leaves both, as does one with
+      // Shift, a box not drawn
+      onPaneClick={(event) => {
+        editorState.nodeEditor.finish();
+        if (!event.shiftKey) {
+          editorState.canvasSelection.clear();
+        }
+      }}
       onClickConnectStart={() => editorState.nodeEditor.finish()}
       onConnect={(connection) => {
         if (connection.targetHandle) {
@@ -310,8 +454,22 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           <FitViewIcon />
         </ControlButton>
       </Controls>
-      <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
-      <CubeNodeEditorPopper editorState={editorState} positions={positions} />
+      <MiniMap
+        pannable={true}
+        zoomable={true}
+        style={MINI_MAP_STYLE}
+        // a container's plane is a tint, behind its steps
+        nodeColor={(node) =>
+          node.type === CUBE_CANVAS_CONTAINER_TYPE
+            ? CUBE_CANVAS_CONTAINER_MINIMAP_COLOR
+            : ''
+        }
+      />
+      <CubeCanvasSelectionBox editorState={editorState} positions={positions} />
+      <CubeNodeEditorPopper
+        editorState={editorState}
+        positions={editorPositions}
+      />
     </ReactFlow>
   );
 });
@@ -319,7 +477,9 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
 /**
  * The query as a graph, laid out left to right (spec §17.3). Click a node to
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
- * output to another node's input to connect them. A transform dropped
+ * output to another node's input to connect them. Shift-click nodes, or
+ * Shift and a drag around them, to pick them for a container (PLAN §11.29).
+ * A transform dropped
  * around the nodes goes after the selected node; a source, dropped anywhere,
  * opens the source dialog on its tab (PLAN §11.8). Right-click it, or a
  * node, for the context menu.

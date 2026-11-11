@@ -416,6 +416,7 @@ export abstract class QueryEditorStore {
                 generateExistingQueryEditorRoute(
                   query.id,
                   revisionId,
+                  this.getProjectVersionIdOverride(query),
                   extraQueryParams,
                 ),
                 { ignoreBlocking: true },
@@ -478,6 +479,18 @@ export abstract class QueryEditorStore {
    * these; other editor kinds return `undefined`.
    */
   getPreservedParameterOverrides(): Record<string, string> | undefined {
+    return undefined;
+  }
+
+  /**
+   * The project version override (e.g. a dev/snapshot version) the graph is
+   * currently being built from, if any, so it can be carried across a
+   * revert/load-revision navigation to `targetQuery`. It only applies to the
+   * query being edited: a different query may belong to another project, where
+   * the override version would not exist. Only existing-query editors have
+   * this; other editor kinds return `undefined`.
+   */
+  getProjectVersionIdOverride(targetQuery: LightQuery): string | undefined {
     return undefined;
   }
 
@@ -1993,6 +2006,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   // A specific revision from the query's version history to load, keyed by the
   // revision's `version` identifier. When undefined, the latest is loaded.
   readonly revisionId: string | undefined;
+  // Overrides the project version the graph is built from (e.g. a dev/snapshot
+  // version).
+  readonly projectVersionId: string | undefined;
   private _lightQuery?: LightQuery | undefined;
   query: Query | undefined;
   queryInfo: QueryInfo | undefined;
@@ -2005,6 +2021,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     queryId: string,
     urlQueryParamValues: Record<string, string> | undefined,
     revisionId?: string | undefined,
+    projectVersionId?: string | undefined,
   ) {
     super(applicationStore, depotServerClient);
 
@@ -2022,6 +2039,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
     this.queryId = queryId;
     this.revisionId = revisionId;
+    this.projectVersionId = projectVersionId;
     this.urlQueryParamValues = urlQueryParamValues;
     this.updateState = new ExistingQueryUpdateState(this);
   }
@@ -2056,6 +2074,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     | Record<string, string>
     | undefined {
     return this.urlQueryParamValues;
+  }
+
+  override getProjectVersionIdOverride(
+    targetQuery: LightQuery,
+  ): string | undefined {
+    return targetQuery.id === this.queryId ? this.projectVersionId : undefined;
   }
 
   override get isPerformingBlockingAction(): boolean {
@@ -2128,8 +2152,16 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     return {
       groupId: this.lightQuery.groupId,
       artifactId: this.lightQuery.artifactId,
-      versionId: this.lightQuery.versionId,
+      versionId: this.projectVersionId ?? this.lightQuery.versionId,
     };
+  }
+
+  /**
+   * The project version a query revision is built from: the `projectVersionId`
+   * override if there is one, otherwise the version the revision was saved with.
+   */
+  private getEffectiveVersionId(queryInfo: QueryInfo): string {
+    return this.projectVersionId ?? queryInfo.versionId;
   }
 
   override *buildGraph(): GeneratorFn<void> {
@@ -2161,10 +2193,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       // skipped, but we still list every ingest in the project so the source
       // dropdown can show them and `swapIngestDefinition` can build a
       // different one on demand.
+      const versionId = this.getEffectiveVersionId(queryInfo);
       yield* this.buildIngestGraph(
         queryInfo.groupId,
         queryInfo.artifactId,
-        queryInfo.versionId,
+        versionId,
         queryInfo.executionContext.ingestDefinitionPath,
       );
     }
@@ -2228,11 +2261,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   ): Promise<QueryBuilderState> {
     const exec = queryInfo.executionContext;
     if (exec instanceof QueryDataSpaceExecutionContextInfo) {
+      const versionId = this.getEffectiveVersionId(queryInfo);
       const { dataSpaceAnalysisResult, isLightGraphEnabled } =
         await this.buildGraphAndDataspaceAnalyticsResult(
           queryInfo.groupId,
           queryInfo.artifactId,
-          queryInfo.versionId,
+          versionId,
           exec.executionKey,
           exec.dataSpacePath,
         );
@@ -2243,8 +2277,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       await this.attachDataSpaceFallbackRuntimes(
         dataSpace,
         dataSpaceAnalysisResult,
-        isSnapshotVersion(queryInfo.versionId) ||
-          queryInfo.versionId === SNAPSHOT_VERSION_ALIAS,
+        isSnapshotVersion(versionId) || versionId === SNAPSHOT_VERSION_ALIAS,
       );
       const mapping = queryInfo.mapping
         ? this.graphManagerState.graph.getMapping(queryInfo.mapping)
@@ -2263,7 +2296,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           sourceType: LegendQuerySourceType.DATA_SPACE,
           groupId: queryInfo.groupId,
           artifactId: queryInfo.artifactId,
-          versionId: queryInfo.versionId,
+          versionId,
           queryId: queryInfo.id,
           dataSpace: dataSpace.path,
           executionContext: exec.executionKey,
@@ -2285,7 +2318,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             {
               groupId: queryInfo.groupId,
               artifactId: queryInfo.artifactId,
-              versionId: queryInfo.versionId,
+              versionId,
             },
             (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) =>
               hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
@@ -2458,6 +2491,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       exec instanceof QueryDataProductModelAccessExecutionContextInfo ||
       exec instanceof QueryDataProductLakehouseExecutionContextInfo
     ) {
+      const versionId = this.getEffectiveVersionId(queryInfo);
       let executionContextId: string;
       let accessType: DataProductAccessType;
       if (exec instanceof QueryDataProductModelAccessExecutionContextInfo) {
@@ -2470,13 +2504,13 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       const artifact = await this.fetchDataProductArtifact(
         queryInfo.groupId,
         queryInfo.artifactId,
-        queryInfo.versionId,
+        versionId,
         exec.dataProductPath,
       );
       const queryBuilderState = await this.buildDataProductQueryBuilderState(
         queryInfo.groupId,
         queryInfo.artifactId,
-        queryInfo.versionId,
+        versionId,
         exec.dataProductPath,
         artifact,
         executionContextId,
@@ -2492,7 +2526,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           sourceType: LegendQuerySourceType.DATA_PRODUCT,
           groupId: queryInfo.groupId,
           artifactId: queryInfo.artifactId,
-          versionId: queryInfo.versionId,
+          versionId,
           queryId: queryInfo.id,
           dataProduct: exec.dataProductPath,
           accessType,
@@ -2693,7 +2727,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         query.id = this.lightQuery.id;
         query.groupId = this.lightQuery.groupId;
         query.artifactId = this.lightQuery.artifactId;
-        query.versionId = this.lightQuery.versionId;
+        query.versionId = this.getProjectInfo().versionId;
       },
       onQueryUpdate: (query: Query): void => {
         this.setLightQuery(toLightQuery(query));

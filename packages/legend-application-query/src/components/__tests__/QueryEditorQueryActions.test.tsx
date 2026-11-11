@@ -229,14 +229,18 @@ test(
       target: { value: '' },
     });
     expect(
-      getByText(renameQueryModal, 'Update Query').hasAttribute('disabled'),
+      getByRole(renameQueryModal, 'button', {
+        name: 'Update Query',
+      }).hasAttribute('disabled'),
     ).toBe(true);
 
     fireEvent.change(cancelRenamedQueryTitle, {
       target: { value: 'MyTestQueryRenamed' },
     });
     expect(
-      getByText(renameQueryModal, 'Update Query').hasAttribute('disabled'),
+      getByRole(renameQueryModal, 'button', {
+        name: 'Update Query',
+      }).hasAttribute('disabled'),
     ).toBe(false);
 
     const cancelButton = getByText(renameQueryModal, 'Cancel');

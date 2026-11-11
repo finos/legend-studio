@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.5.4
+
+### Patch Changes
+
+- [#5843](https://github.com/finos/legend-studio/pull/5843) [`e4791e5`](https://github.com/finos/legend-studio/commit/e4791e5e5627a5b40ec0ad5bb6831fdcf66cda74) ([@yash0024](https://github.com/yash0024)) - Add `getEntity` to fetch a single entity by path from a project or workspace, and `SDLCServerClientHelper` with helpers to check workspace entitlement, create group workspaces, read and modify entities, and create or read reviews.
+
 ## 5.5.3
 
 ## 5.5.2

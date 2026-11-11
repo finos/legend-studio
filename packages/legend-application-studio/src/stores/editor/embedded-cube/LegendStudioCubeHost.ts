@@ -20,19 +20,22 @@ import {
   type CubeEngine,
   type CubeHost,
 } from '@finos/legend-cube-builder';
+import type { QueryRule } from '@finos/legend-cube';
 import type { LegendStudioApplicationStore } from '../../LegendStudioBaseStore.js';
 import type { IngestDefinition } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import { LegendStudioCubeDataProductCatalog } from './LegendStudioCubeDataProductCatalog.js';
 import { LegendStudioCubeIngestCatalog } from './LegendStudioCubeIngestCatalog.js';
+import { buildLegendStudioCubeMatViewRule } from './LegendStudioCubeMatViewRules.js';
 import { LegendStudioCubeWorkspace } from './LegendStudioCubeWorkspace.js';
 
 /**
  * Studio as the host of Legend Cube: Studio's engine and application store,
  * and the project's own ingest definitions and data products as the only
  * sources, typed and run on the workspace and the project's lakehouse
- * runtime. No sample data, examples, databases or services. One per opening
- * of the cube.
+ * runtime. They are one project's, so one cube may read both (PLAN §11.30).
+ * No sample data, examples, databases or services. One per opening of the
+ * cube.
  */
 export class LegendStudioCubeHost implements CubeHost {
   readonly applicationStore: LegendStudioApplicationStore;
@@ -42,11 +45,15 @@ export class LegendStudioCubeHost implements CubeHost {
   readonly ingestCatalog: LegendStudioCubeIngestCatalog;
   readonly dataProductCatalog: LegendStudioCubeDataProductCatalog;
   readonly offersSampleData = false;
+  /** Edit MatView's refusal of an access point that reads the view being edited */
+  readonly queryRules: readonly QueryRule[] | undefined;
 
   constructor(
     editorStore: EditorStore,
     /** The ingest definition Cube was opened from (Create MatView), whose owner sets the default class */
     opened?: IngestDefinition,
+    /** The materialized view of it opened to edit (Edit MatView), by name */
+    matView?: string,
   ) {
     const { applicationStore } = editorStore;
     const { config } = applicationStore;
@@ -82,7 +89,12 @@ export class LegendStudioCubeHost implements CubeHost {
       editorStore,
       this.project,
       this.engine,
+      opened,
     );
     this.modelCatalog = new LocalModelCatalog(this.engine);
+    this.queryRules =
+      opened && matView !== undefined
+        ? [buildLegendStudioCubeMatViewRule(editorStore, opened, matView)]
+        : undefined;
   }
 }

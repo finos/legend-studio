@@ -35,7 +35,9 @@ import {
 } from './V1_TestSerializationHelper.js';
 import {
   V1_Availability,
+  V1_ExtendedAvailability,
   V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
+  V1_EXTENDED_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
 } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
@@ -94,7 +96,10 @@ export const V1_createAvailability = (
   packagePath: string,
   json: PlainObject<V1_PackageableElement>,
 ): V1_Availability => {
-  const availability = new V1_Availability();
+  const availability =
+    json._type === V1_EXTENDED_AVAILABILITY_ELEMENT_PROTOCOL_TYPE
+      ? new V1_ExtendedAvailability()
+      : new V1_Availability();
   availability.name = name;
   availability.package = packagePath;
   const rawTestSuites = (json as { testSuites?: PlainObject[] }).testSuites;
@@ -111,7 +116,10 @@ export const V1_serializeAvailability = (
 ): PlainObject<V1_Availability> => {
   const raw: PlainObject<V1_Availability> = {
     ...protocol.content,
-    _type: V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
+    _type:
+      protocol instanceof V1_ExtendedAvailability
+        ? V1_EXTENDED_AVAILABILITY_ELEMENT_PROTOCOL_TYPE
+        : V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
     name: protocol.name,
     package: protocol.package,
     ...(protocol.testSuites.length

@@ -18,6 +18,7 @@ import {
   DataProductAccessPointSource,
   DataSpaceSource,
   FunctionSource,
+  getSourceKindName,
   IngestDatasetSource,
   RelationalTableSource,
   ServiceSource,
@@ -32,6 +33,7 @@ import {
   observable,
 } from 'mobx';
 import {
+  getOtherSourceKindTitle,
   READ_ONLY_CUBE_TITLE,
   UNSERVED_SOURCE_KIND_TITLE,
 } from '../__lib__/LegendCubeLabels.js';
@@ -117,6 +119,32 @@ export class CubeSourcePickerState {
       [ServiceSource.TYPE, this.serviceTab],
       [DataSpaceSource.TYPE, this.dataSpaceTab],
     ]);
+  }
+
+  /**
+   * The kind of source the cube reads, as messages name it: its first
+   * source's, else its fixed context's tab's; none on a cube with neither
+   */
+  get cubeKindName(): string | undefined {
+    for (const node of this.editorState.document.query.nodes) {
+      const name = getSourceKindName(node.type);
+      if (name) {
+        return name;
+      }
+    }
+    const { fixedTab } = this;
+    if (!fixedTab) {
+      return undefined;
+    }
+    const dedicated = [...this.dedicatedTabs].find(
+      ([, tab]) => tab === fixedTab,
+    );
+    return getSourceKindName(dedicated?.[0] ?? RelationalTableSource.TYPE);
+  }
+
+  /** Why a source of a type can't be added to the cube, naming both kinds (PLAN §11.30) */
+  getOtherKindTitle(type: string): string {
+    return getOtherSourceKindTitle(this.cubeKindName, getSourceKindName(type));
   }
 
   /** The tabs the host serves, in order */
@@ -210,7 +238,9 @@ export class CubeSourcePickerState {
   /**
    * A cube with a fixed context takes sources from its own tab only, and
    * none when the host doesn't serve that tab; a project cube from both of
-   * its tabs, Project Database and Project Function (PLAN §6.5)
+   * its tabs, Project Database and Project Function (PLAN §6.5); a data
+   * product or ingest cube from both lakehouse tabs, on a host that runs
+   * them together (§11.30)
    */
   isTabEnabled(tab: CubeSourcePickerTab): boolean {
     const { fixedTab } = this;
@@ -222,7 +252,7 @@ export class CubeSourcePickerState {
         // a project cube's tables and functions, each from its tab
         (context !== undefined &&
           tab !== this.modelTab &&
-          tab.ownsContext(context)))
+          (tab.ownsContext(context) || tab.joinsContext?.(context) === true)))
     );
   }
 
@@ -250,7 +280,9 @@ export class CubeSourcePickerState {
 
   /**
    * Opens the dialog on the cube's own tab, else the tab asked for, else the
-   * one open last. Does nothing while it can't open (`disabledReason`).
+   * one open last; on the tab asked for when it joins the cube, e.g. the
+   * Ingest tab for a data product cube (PLAN §11.30). Does nothing while it
+   * can't open (`disabledReason`).
    */
   open(tabKey?: CubeSourcePickerTabKey): void {
     if (this.disabledReason !== undefined) {
@@ -260,9 +292,14 @@ export class CubeSourcePickerState {
     this.isOpen = true;
     this.isChoosingTab = false;
     this.isFromExamples = false;
+    const asked = this.tabs.find((candidate) => candidate.key === tabKey);
+    const { context } = this.editorState.document;
     const tab =
+      (asked && context && asked.joinsContext?.(context) === true
+        ? asked
+        : undefined) ??
       fixedTab ??
-      this.tabs.find((candidate) => candidate.key === tabKey) ??
+      asked ??
       this.activeTab;
     this.activeTabKey = tab.key;
     tab.open();

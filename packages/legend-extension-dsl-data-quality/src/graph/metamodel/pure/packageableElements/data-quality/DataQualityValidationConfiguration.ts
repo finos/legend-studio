@@ -24,6 +24,7 @@ import {
   type ParameterValue,
   type RawVariableExpression,
   type EXECUTION_SERIALIZATION_FORMAT,
+  ModelGenerationSpecification,
   PackageableElement,
   hashRawLambda,
 } from '@finos/legend-graph';
@@ -186,8 +187,14 @@ export class DataQualityRelationValidation implements Hashable {
   }
 }
 
+/**
+ * Engine's protocol makes this a model generation specification, so it can sit in a generation
+ * specification. It extends that directly rather than {@link DataQualityValidationConfiguration},
+ * since Studio adds every new model generation element to the generation specification and the
+ * class and service validations are not model generations.
+ */
 export class DataQualityRelationValidationConfiguration
-  extends DataQualityValidationConfiguration
+  extends ModelGenerationSpecification
   implements Hashable
 {
   query!: DataQualityRelationQueryLambda;
@@ -234,8 +241,12 @@ export class MD5HashStrategy extends ReconStrategy {
   }
 }
 
+/**
+ * Engine's protocol makes this a model generation specification, so it can sit in a generation
+ * specification.
+ */
 export class DataQualityRelationComparisonConfiguration
-  extends PackageableElement
+  extends ModelGenerationSpecification
   implements Hashable
 {
   source!: DataQualityRelationQueryLambda;

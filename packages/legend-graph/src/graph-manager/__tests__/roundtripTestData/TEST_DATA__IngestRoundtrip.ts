@@ -182,3 +182,51 @@ export const TEST_DATA__INGEST_DEFINITION__TEST_SUITES = [
       'meta::external::ingest::specification::metamodel::IngestDefinition',
   },
 ];
+
+/**
+ * An `extendedIngestDefinition` (subtype of `ingestDefinition` sharing its
+ * classifier path), whose `_type` must round-trip unchanged.
+ */
+export const TEST_DATA__EXTENDED_INGEST_DEFINITION = [
+  {
+    path: 'model::PersonIngest',
+    content: {
+      _type: 'extendedIngestDefinition',
+      batchAttributesGenerator: {
+        _type: 'packageableElementPointer',
+        path: 'model::batchAttributes__Any_1_',
+      },
+      datasets: [
+        {
+          name: 'Person',
+          primaryKey: ['id'],
+          source: {
+            _type: 'serializedSource',
+            schema: {
+              _type: 'relationType',
+              columns: [
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Integer',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                  name: 'id',
+                },
+              ],
+            },
+          },
+        },
+      ],
+      name: 'PersonIngest',
+      package: 'model',
+    },
+    classifierPath:
+      'meta::external::ingest::specification::metamodel::IngestDefinition',
+  },
+];

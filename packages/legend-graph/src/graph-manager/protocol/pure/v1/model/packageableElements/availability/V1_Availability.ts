@@ -30,6 +30,9 @@ import type { V1_AvailabilityTestSuite } from './V1_AvailabilityTestSuite.js';
 // falls through to the unknown-element branch and the studio renders the
 // availability with the "?" icon.
 export const V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE = 'Availability';
+// Subtype of `Availability` sharing its classifier path (PascalCase like its parent)
+export const V1_EXTENDED_AVAILABILITY_ELEMENT_PROTOCOL_TYPE =
+  'ExtendedAvailability';
 
 // NOTE: mirrors `V1_IngestDefinition` — the element extends
 // `V1_INTERNAL__UnknownPackageableElement` so the engine's raw JSON payload is
@@ -56,3 +59,5 @@ export class V1_Availability
     return visitor.visit_Availability(this);
   }
 }
+
+export class V1_ExtendedAvailability extends V1_Availability {}

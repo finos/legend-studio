@@ -32,6 +32,8 @@ import {
 } from '../graph/CubeDocument.js';
 import { Query } from '../graph/Query.js';
 import type { QueryNode } from '../graph/QueryNode.js';
+import type { StepContainer } from '../graph/StepContainer.js';
+import type { StepNote } from '../graph/StepNote.js';
 import {
   createNodeRegistry,
   type NodeRegistry,
@@ -96,7 +98,9 @@ const TOP_LEVEL_KEYS = ['formatVersion', 'name', 'context', 'query', 'meta'];
 const CONTEXT_KEYS = ['model', 'runtime', 'mapping'];
 const QUERY_KEYS = ['selected', 'nodes'];
 const NODE_KEYS = ['kind', 'id', 'inputs'];
-const META_KEYS = ['presentation', 'drilldown'];
+const META_KEYS = ['presentation', 'drilldown', 'containers', 'notes'];
+const CONTAINER_KEYS = ['id', 'title', 'steps', 'folded'];
+const NOTE_KEYS = ['step', 'text'];
 const DRILLDOWN_KEYS = ['columns', 'aggregations'];
 const DRILLDOWN_AGGREGATION_KEYS = ['column', 'function'];
 const PRESENTATION_KEYS = ['showGraph', 'columnWidths', 'columnHints'];
@@ -251,12 +255,31 @@ const encodeDrilldown = (
         ...restOf(drilldown.rest, DRILLDOWN_KEYS),
       };
 
+/** A container of steps, folded written only when it is */
+const encodeContainer = (container: StepContainer): JsonObject => ({
+  id: container.id,
+  title: container.title,
+  steps: [...container.steps],
+  ...(container.folded ? { folded: true } : {}),
+  ...restOf(container.rest, CONTAINER_KEYS),
+});
+
+const encodeNote = (note: StepNote): JsonObject => ({
+  step: note.step,
+  text: note.text,
+  ...restOf(note.rest, NOTE_KEYS),
+});
+
 const encodeMeta = (meta: CubeMeta): JsonObject | undefined => {
   const presentation = encodePresentation(meta.presentation);
   const drilldown = encodeDrilldown(meta.drilldown);
   const json: JsonObject = {
     ...(presentation ? { presentation } : {}),
     ...(drilldown ? { drilldown } : {}),
+    ...(meta.containers?.length
+      ? { containers: meta.containers.map(encodeContainer) }
+      : {}),
+    ...(meta.notes?.length ? { notes: meta.notes.map(encodeNote) } : {}),
     ...restOf(meta.rest, META_KEYS),
   };
   return Object.keys(json).length ? json : undefined;
@@ -594,6 +617,57 @@ const decodeDrilldown = (value: unknown, path: string): Drilldown => {
   };
 };
 
+const decodeContainer = (value: unknown, path: string): StepContainer => {
+  const json = readObject(value, path);
+  return {
+    id: readString(json, 'id', path),
+    title: readString(json, 'title', path, true),
+    // kept as saved, a step the query no longer has included: the canvas
+    // leaves it out
+    steps: readStringList(json, 'steps', path),
+    folded: readOptionalFlag(json, 'folded', path),
+    ...readRest(json, CONTAINER_KEYS),
+  };
+};
+
+const decodeContainers = (value: unknown, path: string): StepContainer[] => {
+  const ids = new Set<string>();
+  return readArray(value, path).map((item, index) => {
+    const at = pathTo(path, index);
+    const container = decodeContainer(item, at);
+    if (ids.has(container.id)) {
+      fail(pathTo(at, 'id'), `repeats the id "${container.id}"`);
+    }
+    ids.add(container.id);
+    return container;
+  });
+};
+
+const decodeNote = (value: unknown, path: string): StepNote => {
+  const json = readObject(value, path);
+  return {
+    // kept as saved, a step the query no longer has included: the canvas
+    // leaves it out
+    step: readString(json, 'step', path),
+    text: readString(json, 'text', path, true),
+    ...readRest(json, NOTE_KEYS),
+  };
+};
+
+const decodeNotes = (value: unknown, path: string): StepNote[] => {
+  const steps = new Set<string>();
+  return readArray(value, path).map((item, index) => {
+    const at = pathTo(path, index);
+    const note = decodeNote(item, at);
+    // one note a step
+    if (steps.has(note.step)) {
+      fail(pathTo(at, 'step'), `repeats the step "${note.step}"`);
+    }
+    steps.add(note.step);
+    return note;
+  });
+};
+
 const decodeMeta = (value: unknown, path: string): CubeMeta => {
   const json = readObject(value, path);
   return {
@@ -606,6 +680,17 @@ const decodeMeta = (value: unknown, path: string): CubeMeta => {
       : {
           drilldown: decodeDrilldown(json.drilldown, pathTo(path, 'drilldown')),
         }),
+    ...(json.containers === undefined
+      ? {}
+      : {
+          containers: decodeContainers(
+            json.containers,
+            pathTo(path, 'containers'),
+          ),
+        }),
+    ...(json.notes === undefined
+      ? {}
+      : { notes: decodeNotes(json.notes, pathTo(path, 'notes')) }),
     ...readRest(json, META_KEYS),
   };
 };

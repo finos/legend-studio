@@ -213,7 +213,9 @@ export const buildCubeLakehouseEnvironment = (
 /**
  * The deployed ingest definitions of a host with a lakehouse platform (PLAN
  * §6.7), or none without one. It parses definitions with the engine Cube
- * uses; pass it to `buildCubeEngine` too, so ingest cubes run
+ * uses; pass it to `buildCubeEngine` too, so ingest cubes run. With the
+ * host's depot, a data product cube reads its project's data sets too, as
+ * the project has them at the cube's version (§11.30)
  */
 export const buildCubeIngestCatalog = (
   config: CubeEngineConfig,
@@ -255,6 +257,7 @@ export const buildCubeIngestCatalog = (
               EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT,
             )
         : undefined,
+      depotServerClient: services.depotServerClient,
     },
   );
 };

@@ -1355,7 +1355,8 @@ source for now; the user plans to improve it later.
   definition; the warehouse follows the data product rule (§6.8).
 - **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
   saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
-  data products or ingest data sets) and one producer deployment.
+  data products or ingest data sets) and one producer deployment. _(2026-11-09: data products and ingest data sets of
+  one project may share a cube, §11.30.)_
 - **Config:** Legend Query's optional `lakehouse.platformUrl` (the key Data Cube and Marketplace use); the ingest
   servers are found through it.
 - **After Add:** a data set's Source panel shows its definition (the URN on hover), the class, the producer deployment
@@ -1418,6 +1419,7 @@ internals (user, 2026-10-08): questions for the original app's team are about it
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
+  _(2026-11-09: still so. Data products and ingest data sets of one project may share a cube, §11.30.)_
 - **Data product list:** the marketplace's search when Query names its server (`marketplace.serverUrl`, the same
   server Legend Marketplace's own `marketplace.url` names; user, 2026-10-09), else the lakehouse contract server's lite
   list, which Cube pages itself with guards. A failed search shows its error with Retry and never falls back to the
@@ -5029,7 +5031,8 @@ matView)`). Cube's header button is **Add MatView** for a new view and **Save Ma
    protocol JSON without source information, number literals by value. Exact, rewritten, or unchecked; Studio's note
    shows for the last two.
 6. **Binding rules:** one kind of source per cube, so a lambda mixing `#I`, `#P` and `#>` is refused; a matview that
-   reads another matview is refused with a message of its own, as matview data sets are never sources.
+   reads another matview is refused with a message of its own, as matview data sets are never sources. _(2026-11-09:
+   `#P` with `#I` of the data product's project binds as one data product cube, §11.30.)_
 7. **Expressions:** an Extend column's and a Filter by Expression's lambda is stored as the editor stores one (no
    source information, number literals as digit strings), its code the engine's grammar of it; an Extend is typed
    during the read, through the host's engine, so the steps after it can be checked.
@@ -5755,6 +5758,283 @@ type in `LegendCubeDialects.engine-roundtrip-test.ts`; values run on H2 and Duck
 
 **Supersessions** (kept here until folded): §11.5's aggregations table and `getAvailableAggregations`; §11.6's window
 functions; §11.12's Pivot aggregations; Appendix A, §10 (functions beyond the spec) and §16 (the setting messages).
+
+### 11.29 Containers: steps framed together, and folded to one box (2026-11-05)
+
+**Ask:** idea 7 of the Alteryx study (finos/legend-studio#5809, its §2.7): whether Alteryx groups steps "with a plane
+over them". It does, with the Tool Container. Neema's legend-lite flow mode has containers too: its `flow.ts` has
+`Frame` and `framedBy`, and its design note has a "Built, containers" section. Unlike Alteryx and legend-lite, Cube lays
+its canvas out on every edit and saves no position (§7.2), so a container can't be "the boxes inside a frame". It is
+saved: which steps, its title, and whether it is folded. A prototype with screenshots came first (2026-10-29). Built on
+the branch `cube-canvas-groups`, rebased on master `acacb2c8a` after #5811 (every source in the first column), in one
+PR into master. Evidence: `legend-cube-evidence/alteryx/canvas/containers/`.
+
+**Settled with the user** (2026-11-05, all on the recommendation):
+
+1. **One word, "container"**, Alteryx's. Cube already has a Group step.
+2. **No nesting.** Frames inside frames get tall on a canvas laid out for you, and folding a frame inside a folded one
+   needs rules of its own. A later version can add a parent to a container, and this one keeps unknown keys.
+3. **A container is one block of linked steps, so all of one tree.**
+   - Two containers that aren't blocks can feed each other once folded: a loop. Take `{a1, a2}` and `{b1, b2}` around a
+     Join fed by `a1 → b1` and `b2 → a2`.
+   - Blocks of a forest folded to boxes still make a forest, so folding any number of them makes no loop.
+   - A folded block has one output, as a step has, which saving steps as a function (idea 11) needs too.
+4. **Folding only hides.** It never changes what the cube runs or its rows. Skipping steps is idea 7's "skip a step".
+   A container could switch that on for its steps later, but a container that holds a source can't be skipped.
+5. **The step's menu, not a shortcut, for now.** Ctrl+G waits for picking several steps. Ctrl/Cmd+click already sets
+   the output step, Ctrl+click is a right-click on macOS, and Cmd+G is the browser's Find Next.
+   - **C.8 (2026-11-09):** steps are now picked with the mouse, with Shift, and Ctrl/Cmd+G puts them in a container while
+     the canvas has the focus. Find Next is kept from running only there.
+
+**Saved** in the spec's meta (§10.3): `meta.containers: [{ id, title, steps, folded? }]`, where `folded` is written
+only when true. It is kept as written, unknown keys included. Export and import carry it, and so will saved cubes
+(M8). A container needs no new format version: an older Cube keeps it as an unknown key and writes it back. A step it
+names that the query no longer has is left out where the canvas reads it (`getShownContainers`).
+
+**Rules** (`StepContainer.ts`, `reconcileStepContainers`):
+
+- A step is in one container at most.
+- A container whose steps aren't one block isn't drawn: its steps show as any other. Every edit Cube makes keeps them
+  a block.
+- **Steps follow the flow.** A step added, pasted, duplicated or moved between two steps of a container joins it, by
+  its first input and its output. A step added after its last step stays outside. A step removed or moved away leaves
+  it. When an edit splits a container, such as removing a Join inside it, the container keeps its largest block. A
+  container left with no step goes away.
+- Each change to a container is one undo step. It changes only the meta, so the rows stay current.
+
+**On the canvas:**
+
+- **Open:** a see-through plane behind its steps, behind the lines too. Every press reaches the canvas except on its
+  head. The head has ▾ (fold), its title (double-click to rename), how many steps it holds, and × (takes the container
+  away, not its steps). Right-click the head for Fold, Rename and Remove Container.
+- **Folded:** one box, a step's size, in its steps' place. The lines into and out of its steps come to its sides. It
+  shows their errors and the Output caption, and its tooltip lists them. ▸, a double-click, or Enter on the focused box
+  opens it. A step of a folded container still opens its editor, on the box.
+- **Making one:** a step's menu has **Put in a Container ▸**. Its submenu has **This Step Alone**, **With the Steps
+  Before It** (the step and each step before it that is in no container), and each container beside the step. **Take
+  Out of Container** is enabled for a step at the container's edge, so a container never splits.
+
+**Layout** (`layoutCubeCanvas`, beside `layoutCubeQuery`):
+
+- A cube without containers is laid out exactly as before.
+- An open container's steps are a cluster of dagre's compound graph (`compound`, `setParent`), so no other step lands
+  inside its frame. The frame is its steps' box, with room for the head.
+- dagre's nesting graph puts three ranks between two columns where there was one, so `ranksep` is a third and the
+  columns keep their gap. `edgesep` is 40, which leaves room for the head above the steps. dagre ignores a cluster's
+  own padding.
+- A folded container's steps are one node of the graph laid out, the query with each folded container contracted, so
+  its box takes the column after the steps that feed it.
+- Columns and lanes are §7.2's, on that graph. A line that skips a column goes by a frame, not through it.
+
+**Steps:**
+
+| Step | What                                                                                                     | Status |
+| ---- | -------------------------------------------------------------------------------------------------------- | ------ |
+| C.1  | Prototype: the meta, the rules' core, the layout, frames and folded boxes, Put in a Container            | ✅     |
+| C.2  | Steps follow the flow: added, pasted, moved and removed steps; a split container keeps its largest block | ✅     |
+| C.3  | The menus: Put in a Container ▸, Take Out of Container, the head's menu; renaming from the menu          | ✅     |
+| C.4  | The folded box: the Output caption, Enter to open, the minimap; tests of the canvas                      | ✅     |
+| C.5  | The user guide: a section and its images; this section; the changeset                                    | ✅     |
+| C.6  | Checks: every suite that reads the builder (core, builder, Query, Studio, Analytics), lint, the browser  | ✅     |
+| C.7  | Demo video                                                                                               | ✅     |
+| C.8  | Selecting steps with the mouse: Shift+drag and Shift+click, Put Selection in a Container, Ctrl/Cmd+G     | ✅     |
+| C.9  | Its tests (core, state, canvas), the guide's paragraph, checks, demo video                               | ✅     |
+
+**Checks:**
+
+- 7,336 tests pass in legend-cube, legend-cube-builder, Query, Analytics and Studio. 4 fail, all engine-backed and
+  against the local engine, which predates legend-engine#5449 (BINARY typing, 2 tests) and #5108 (BigQuery, 2 tests).
+- `lint:js --max-warnings=0` is clean in legend-cube, legend-cube-builder and legend-application-analytics-e2e.
+- The demo video (43, 1:22) records the menus, folding, steps following the flow, Undo and Export in Legend Analytics,
+  with 12 checks.
+
+**Selecting steps with the mouse** (C.8, 2026-11-09, as Alteryx selects tools; the user asked on 2026-11-05):
+
+- **Shift and a drag** on the empty canvas draws a box, which adds the steps wholly inside it to the selection, as
+  React Flow's own box takes nodes. **Shift-click** picks a step or unpicks it, as Shift with Enter or Space does on a
+  focused step. **Escape**, or a plain click on the canvas, picks none. A plain drag still pans, a plain click still
+  opens a step's editor, and Ctrl/Cmd+click still sets the output step.
+- **The box adds** to the steps picked, as Shift-click does, rather than replacing them as React Flow's does. The user
+  can flip that.
+- **A step's note** (§11.31) is a line under its card, in its React Flow node. The box takes a step when its card is
+  wholly inside, so a box drawn tight round the cards picks them, notes cut or not.
+- A picked step is tinted, with a halo: apart from the output step's ring and the drop target's dashed outline.
+- **Put Selection in a Container**, on a picked step's menu, and **Ctrl/Cmd+G** while the canvas has the focus. A
+  container is one block, so it takes the steps picked and each step between them: each one's way down the flow, to
+  where all their ways meet (`getBlockLinkingSteps`). Refused, with the reason in the item's tooltip: steps of two
+  trees, and a step in a container already, picked or between two picked (containers don't nest). Ctrl/Cmd+G refused
+  does nothing, as the canvas's other keys do. With Shift, the key is left alone: Studio has Ctrl+Shift+G.
+- **The selection is the page's** (`CubeCanvasSelectionState`): never saved, and no undo step. A step the query no
+  longer has is unpicked, so a new step of its id isn't picked. Opening another cube picks none. A folded container's
+  steps aren't drawn, so they are left out. A read-only cube has no selection. Making the container is one undo step,
+  and picks none.
+- **Built on React Flow's box, with nothing selectable.** `elementsSelectable` is on and `selectionKeyCode` is Shift, so
+  React Flow draws the box. Every node and line is `selectable: false`: a click never selects in React Flow, and its box
+  takes nothing, so it draws no rectangle of its own over the steps. `CubeCanvasSelectionBox` reads the box from React
+  Flow's store and picks the steps inside it from the layout's places. The canvas takes the focus (`tabIndex` -1) so
+  Escape and Ctrl/Cmd+G reach it after a box. Its keys act only on the canvas or a node of it, never in a field, a menu
+  or the node editor, whose keys come to it from their layers.
+
+**Status:** finos/legend-studio#5850 merged into `cube-dev` (7bf550649, user, 2026-11-09). Selecting steps (C.8,
+C.9): draft finos/legend-studio#5856, into `cube-dev`.
+
+### 11.30 Data products and ingest data sets in one cube (user, 2026-11-05/09)
+
+**Ask:** "data products and ingest within Studio can actually be mixed", yet Cube refused it. The user reviewed the
+rules one by one (local evidence `mixed-sources/FINDINGS.md`, §0):
+
+- **R1, the rule.** Data products and ingest data sets can share a cube when they come from the same project. Studio's
+  are always one project's.
+  - **Legend Analytics:** the Ingest tab opens on the data product's own deployment id, which is the producer's, in the
+    viewer's own environment and the cube's Mode. It lists the project's definitions that are both deployed and in
+    Depot at the data product's version. A definition or data set that the version lacks is greyed out, saying so.
+    Columns are those of that version.
+- **R2, one Mode per cube.** The first source fixes it, and the other tab is locked to it. In Studio both tabs, and
+  Edit MatView, start on the Mode the definition Cube was opened from points to.
+- **R3, today's limits stay.** Data products come from one project at one version, ingest data sets from one producer
+  deployment.
+- **R4, MatViews.** The platform deploys data set by data set, so a view that reads a data product built on its own
+  definition is fine. Edit MatView refuses a true loop: an access point that reads the view being edited.
+- **R5, still refused.** Tables or functions with either lakehouse kind; data spaces with any other kind; services.
+- **R6, enforcement.** The core lets the pair share a query (`sourcesAreOneKind`). The editor checks the rest, so Run
+  and Add MatView are disabled with the reason; the engine adapter checks again before any call. The disabled-source
+  tooltip names the cube's kind.
+
+**Design:** a cube that reads both is a data product cube on every host. Its model already names the project, version,
+Mode and warehouse, so the saved format doesn't change.
+
+- **Core:** `sourcesAreOneKind` lets data products and ingest data sets share a query. `lakehouseSourcesAreApart`
+  keeps them apart, with the message `sourcesAreOneKind` gave before, on a host whose ingest catalog can't list a
+  data product's project's definitions. `getSourceKindName` names a source type's kind for the tooltip.
+- **The capability:** `CubeIngestCatalog.listProjectDefinitions(project, deploymentId)`. Studio's lists every
+  definition of the workspace. Legend Analytics' is below. `describe` and `resolveSchemas` take the cube's `project`,
+  so a data product cube's data sets are read as its project has them at its version.
+- **Editor:** `buildCubeIngestJoinRule` flags a data product cube's data set of another project, another Mode, or not
+  deployed from SDLC. `CubeHost.queryRules` adds a host's own rules; Studio's refuses the true loop.
+- **Picker:** a tab can join a cube another tab owns (`joinsContext`). The Ingest tab joins a data product cube with no
+  producer step, its Mode and warehouse locked. The Data Product tab joins an ingest cube and makes it a data product
+  cube of its Mode and warehouse, in one undo step.
+- **Re-check and Import Pure:** a data product cube's data sets are read again in its class. A lambda reading both
+  binds its access points first, then its data sets among the project's definitions.
+- **Adapter:** a data product cube's lambda may read ingest data sets of its project and Mode. It runs on the cube's
+  one `LakehouseRuntime`, on the project's model at its version (Studio: the workspace). Another project or Mode is
+  refused on its node before any call.
+- **Not changed:** emission (each source writes its accessor, one `from(runtime)`), the spec codec, Save/Add MatView.
+
+**Legend Analytics (PR 2):** `V1_LegendCubeIngestCatalog` lists a project's definitions only with the host's depot;
+without one, the two kinds stay apart.
+
+- **Which definitions:** the deployment of the cube's access points (`DataProductAccessPointSource.deploymentId`)
+  deploys their project's definitions. Its definitions in the viewer's own ingest environment of the cube's Mode are
+  kept when they are deployed from SDLC (`alloy-git:`), of the project's group and artifact, and of the cube's class.
+  Each is checked against Depot, `getVersionEntities(group, artifact, version, IngestDefinition)`, which answers with
+  each entity wrapped with its project.
+- **Greyed out:** a definition the version lacks is listed but can't be opened. A data set its deployed definition has
+  and the version lacks can't be picked. Both say "Added after this data product's version 1.4.0".
+- **Columns:** each data set's are those of the version's definition, which the run compiles against. Re-check and
+  Import Pure read them so too. `fresh` reads the version again, once per call, as a SNAPSHOT moves.
+- **Not listed:** a data set the version has but its deployed definition no longer has; a saved one re-checks as "no
+  data set" and keeps its columns, with the warning.
+- **Errors, never everything greyed:**
+  - **Depot:** a failed read fails the list, with Retry.
+  - **Deployment:** a cube with no access point left is asked to add one first; access points of several deployments
+    are refused, as Cube can't tell which deploys the definitions.
+  - **Environment:** a deployment that isn't a producer of the viewer's environment of the Mode names the environment
+    it deploys to beside the viewer's (`findProducerServer`, as Marketplace finds it). When that is the viewer's own,
+    the message says the other Mode has it; when the platform can't say, it names the viewer's alone.
+- **Ingest tab:** no Environment or Producer pickers; a line names the Mode, the deployment and the version. The search
+  box stays, and the warehouse is the cube's. The list is read again for another project, version, Mode or
+  deployment.
+- **Data Product tab on an ingest cube:**
+  - It lists only the products of its data sets' project that its producer deployment deployed, in its Mode, on its
+    warehouse. A note says to search by name when a server's page holds none of them.
+  - It refuses data sets of several projects, or not deployed from SDLC, and an ingest cube that saved another
+    environment than the viewer's own, naming both: data products run in the viewer's own.
+  - Add reads the cube's data sets again at the product's version, in the same undo step, so Undo brings the ingest
+    cube back as it was. A data set the version lacks fails on its step, saying so; a Depot that can't be read changes
+    nothing.
+
+**Status:** Studio, PR 1. Legend Analytics, PR 2 (stacked on PR 1). The open-source engine reads neither `#I` nor
+`#P`; the first internal run checks the plan of a mixed lambda (the request is in the evidence).
+
+- **Open in Analytics, for that run:** a mixed cube runs as a data product cube, on one `LakehouseRuntime` whose
+  environment is the viewer's lakehouse environment (`resolveEnvironment(project)`, e.g. `env-a`). An ingest cube's
+  runtime names the ingest server's environment instead (`getRuntimeEnvironment`, e.g. `lakehouse-ingest-env-a`). In
+  Studio both kinds name one environment. Whether `#I` resolves under the data product runtime's environment is for
+  the first internal run of a mixed Analytics cube.
+
+### 11.31 Notes beside the steps (2026-11-05)
+
+**Ask:** the user, on 2026-11-05: "should we have notes next to each node?" Alteryx shows an annotation under every tool
+and has free Comment boxes (finos/legend-studio#5809, its §2.7). In Cube, each step's label already says what the step
+does (`describe()`), so a note says why. Built on the branch `cube-step-notes`, first stacked on #5850 (containers,
+§11.29), then moved into `cube-dev` once #5850 merged there (user, 2026-11-09). Evidence:
+`legend-cube-evidence/alteryx/canvas/notes/`.
+
+**Settled with the user** (2026-11-05, all on the recommendation):
+
+1. **Built now**, before cubes are saved (M8, #5679). Undo, copy and paste, and the exported spec keep a note, so M8
+   will keep it too. Studio's Save MatView keeps only the view's lambda, so a note is lost there, as a container is.
+   #5809 had said notes are worth having only once cubes are saved.
+2. **One muted line under the step**, with the whole note on hover. dagre lines nodes up by their centres (§7.2), so a
+   noted step's box in the layout is 44px taller, half above the step and half below, and its lines stay straight.
+   With room below it only, the lines to and from a noted step bend by 11px (the probe
+   `legend-cube-evidence/alteryx/canvas/notes/probe-layout.mjs`).
+3. **Saved in the spec's meta**, `meta.notes`, beside `meta.containers`. A note then changes only the meta, so the rows
+   stay current and the engine's errors stay. A key on each step would make a note's edit a query edit.
+4. **Steps only.** A container's title already says what it holds. A folded container hides its steps' notes until it
+   is opened.
+5. **No free-floating comment boxes.** Cube saves no positions (§7.2), so a loose note would have nowhere to stay.
+6. **Not in Show Pure**, which is the engine's rendering of the lambda: it has no comments. The plain-English
+   description (#5809, its §2.8) can list notes once it is built.
+
+**Saved** (§10.3): `meta.notes: [{ step, text }]`, in the order written. A note keeps its unknown keys. Two notes for
+one step are refused when a spec is read, as two containers with one id are. A note needs no new format version: an
+older Cube keeps `meta.notes` as an unknown key and writes it back. It doesn't prune it, though: a step it removes
+keeps its note, and a new step that takes the same id (ids are the highest number plus one) shows it. Containers have
+the same gap.
+
+**Rules** (`StepNote.ts`):
+
+- One note per step: plain text, at most 500 characters, its ends trimmed. An empty note is no note.
+- **A note follows its step.** Copy, paste and duplicate copy it with the step. Removing a step removes its note in
+  the same undo step, so a step that later takes its id starts without one.
+- Each change to a note is one undo step, and changes only the meta.
+
+**Editing:** every step's editor, sources' included, has a **Note** field under its settings. A note is an edit, as
+the step's settings are: Apply, or closing the editor, stores it, and Cancel drops it, in the same undo step as the
+settings. An editor with nothing else to set, such as a table's or a Distinct's, still has no Apply or Cancel: closing
+it stores the note, as it stores a warehouse typed. Apply and Cancel there would put a second Apply beside a data
+product's warehouse. A note edited alone follows its step when the step changes underneath, e.g. a source typed again.
+On the canvas, right-click a step for **Add Note…** or **Edit Note…**, which opens its editor at the Note field. A click
+on the note does the same.
+
+**Layout** (`layoutCubeQuery`, `layoutCubeCanvas`): a noted step's box is 44px taller for dagre, the step in its
+middle, and the note in the room below it. The view fits the graph again when a note comes or goes. A container's
+frame takes in its steps' notes.
+
+**Steps:**
+
+| Step | What                                                                                                   | Status |
+| ---- | ------------------------------------------------------------------------------------------------------ | ------ |
+| N.1  | This section; the changeset                                                                            | ✅     |
+| N.2  | Core: `meta.notes` in the spec and the rules (`StepNote.ts`), with tests                               | ✅     |
+| N.3  | The editor: a note's undo step, pruning, copy, paste and duplicate, the Note field; tests              | ✅     |
+| N.4  | The canvas: the line under the step, the layout's room, the frames, Add Note… in the menu; jsdom tests | ✅     |
+| N.5  | The user guide: a section and its images; the step editor's image with its Note field                  | ✅     |
+| N.6  | Checks: every suite that reads the builder, lint, the browser                                          | ✅     |
+| N.7  | Demo video                                                                                             | ✅     |
+
+**Checks:**
+
+- On `cube-dev` (7bf550649, after #5850, #5855 and #5857), 7,450 tests pass: legend-cube 3,152, legend-cube-builder
+  3,462, Query 240, Analytics 35 and Studio 561. 4 fail, all engine-backed and against the local engine, which
+  predates legend-engine#5449 (BINARY typing, 2 tests) and #5108 (BigQuery, 2 tests), as on #5850.
+- `lint:js --max-warnings=0` is clean in legend-cube, legend-cube-builder and legend-application-analytics-e2e. Root
+  `tsc --build`, `check:format`, `check:copyright` and `check:changeset` pass.
+- In Chromium, on Legend Analytics: the guide's screenshot scripts, and the demo video (44, 1:17) with 13 checks.
+
+**Status:** finos/legend-studio#5853 merged into `cube-dev` (29831a734, user, 2026-11-09).
 
 ## 12. G. Risks and open questions
 

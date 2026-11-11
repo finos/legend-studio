@@ -1,5 +1,29 @@
 # @finos/legend-application-marketplace
 
+## 0.5.15
+
+### Patch Changes
+
+- [#5873](https://github.com/finos/legend-studio/pull/5873) [`ca138c9`](https://github.com/finos/legend-studio/commit/ca138c983a806e71714ddc65c4e323b567b0967a) ([@eradityash](https://github.com/eradityash)) - Introduces mandatory add-on enhancements across catalog tiles and the subscriptions experience, plus supporting model and config updates.
+
+## 0.5.14
+
+## 0.5.13
+
+### Patch Changes
+
+- [#5848](https://github.com/finos/legend-studio/pull/5848) [`acacb2c`](https://github.com/finos/legend-studio/commit/acacb2c8a2cb09f83249e1f43dc32e16efa0520b) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add a Tree tab to the Data APIs page that groups services by URL pattern and remembers only the groups the user toggled.
+
+- [#5837](https://github.com/finos/legend-studio/pull/5837) [`4d7a17d`](https://github.com/finos/legend-studio/commit/4d7a17d679e82212a707757eecfea6bcfc719084) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The data product viewer's access point tabs: **Grammar** becomes **Pure Query**, which shows the `#P{<data product>.<access point>}#` accessor that queries the access point (a parameterized access point names its parameters in parentheses, with their types in a caption) and an example, for every compute target; **Query** becomes **Legend Query**. The access point's definition moves into **Column Specifications**, behind a quiet "View definition", and is fetched when first opened. Each code block copies with one click, with the outcome in its tooltip, and follows the app's light or dark theme.
+
+  In **Column Specifications**, a column without a description or sample values shows a quiet "—". The data product's owners, and the producer in Studio's preview, read when no column has a description, or there are no sample values, with links to how to add them: the documentation entries `dsl-dataproduct.column-descriptions` and `dsl-dataproduct.sample-values`, when configured. Anyone else without access reads that sample values show once they have it.
+
+- [#5852](https://github.com/finos/legend-studio/pull/5852) [`42b9c93`](https://github.com/finos/legend-studio/commit/42b9c93f0edcf3c4f238574f08b309e0acf36bf3) ([@yash0024](https://github.com/yash0024)) - Checking a contract for missing ingest definitions now reuses the contract already loaded on the entitlements dashboard, reuses a single graph manager, and fetches only the data product entity it needs from depot. The contract task page now fetches the contract once, with its members, instead of fetching it again when the contract viewer initializes. The entitlements dashboard now shares the cached pending tasks response with the header badge instead of fetching it a second time. The dashboard also caches data product details across contracts, ignores contract errors that finish loading after the selection has changed, and uses the data product lookup from the data product extension instead of its own copy.
+
+- [#5843](https://github.com/finos/legend-studio/pull/5843) [`e4791e5`](https://github.com/finos/legend-studio/commit/e4791e5e5627a5b40ec0ad5bb6831fdcf66cda74) ([@yash0024](https://github.com/yash0024)) - Add an optional `sdlc` section to the marketplace config, create an SDLC server client from it, and add a data space SDLC service that updates data spaces on a merge request to master on behalf of the user.
+
+- [#5834](https://github.com/finos/legend-studio/pull/5834) [`3900632`](https://github.com/finos/legend-studio/commit/39006327756c8d7e90774a6fcaa5435cbe5390c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Lakehouse Access search results show each data product's ID and deployment ID (DID) on a quiet line under the title (`TRADE_POSITIONS_EOD · DID 30455`), in tiles and list rows. A click (or Enter or Space) copies the value without opening the product; the tooltip says "Copied". An untitled product, whose title already is its ID, shows only its DID, and its title wraps after underscores. When the query is a result's data product ID (ignoring case) or its DID, that value is highlighted, the tile is outlined (the list row gets a bar on its left), and an "Exact ID match" or "Exact DID match" badge shows. An all-digit query offers "Filter on DID <n>", which adds that DID to the Deployment ID filter (never on its own). The DataSpaces tab is unchanged. With two tiles per row, a tile's chips now wrap instead of clipping the last one. New telemetry events: `marketplace.copy.data-product.id` (which ID was copied, from which page, with the same description of the data product as a card click; a failed copy is logged with its error) and `marketplace.click.filter-on.deployment-id`.
+
 ## 0.5.12
 
 ### Patch Changes

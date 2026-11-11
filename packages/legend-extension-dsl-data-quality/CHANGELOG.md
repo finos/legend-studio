@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.100
+
+## 2.1.99
+
+### Patch Changes
+
+- [#5869](https://github.com/finos/legend-studio/pull/5869) [`5f7c276`](https://github.com/finos/legend-studio/commit/5f7c276e126dcfdbc3e944abd02279be6404b6b8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Data quality relation validations and relation comparisons are model generations, as they are in engine's protocol: they extend `ModelGenerationSpecification`, show up in the generation specification editor and can be dragged into it from the project explorer. A relation validation no longer extends `DataQualityValidationConfiguration`.
+
+## 2.1.98
+
+## 2.1.97
+
 ## 2.1.96
 
 ## 2.1.95

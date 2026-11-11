@@ -139,6 +139,7 @@ import {
 import { V1_computeModelSchema } from './serializationHelpers/V1_ComputeSerializationHelper.js';
 import {
   V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
+  V1_EXTENDED_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
   type V1_Availability,
 } from '../../model/packageableElements/availability/V1_Availability.js';
 import {
@@ -147,6 +148,7 @@ import {
 } from './serializationHelpers/V1_AvailabilitySerializationHelper.js';
 import {
   V1_INGEST_DEFINITION_TYPE,
+  V1_EXTENDED_INGEST_DEFINITION_TYPE,
   type V1_IngestTestSuite,
   type V1_IngestDefinition,
 } from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
@@ -440,8 +442,10 @@ export const V1_deserializePackageableElement = (
       case V1_COMPUTE_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_computeModelSchema, json);
       case V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE:
+      case V1_EXTENDED_AVAILABILITY_ELEMENT_PROTOCOL_TYPE:
         return V1_createAvailability(name, packagePath, json);
       case V1_INGEST_DEFINITION_TYPE:
+      case V1_EXTENDED_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {

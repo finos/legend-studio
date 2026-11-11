@@ -15,7 +15,15 @@
  */
 
 import type { Schema } from '@finos/legend-cube';
-import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
+import {
+  CORE_PURE_PATH,
+  V1_AppDirLevel,
+  V1_IngestEnvironmentClassification,
+} from '@finos/legend-graph';
+import {
+  type DepotServerClient,
+  resolveVersion,
+} from '@finos/legend-server-depot';
 import {
   getIngestDeploymentServerConfigName,
   IngestDeploymentServerConfig,
@@ -27,7 +35,10 @@ import {
   NetworkClientError,
   type PlainObject,
 } from '@finos/legend-shared';
-import { CubeDataProductEnvironmentType } from '../../../CubeDataProduct.js';
+import {
+  type CubeDataProductProject,
+  CubeDataProductEnvironmentType,
+} from '../../../CubeDataProduct.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -36,13 +47,14 @@ import {
 import { parseCubeIngestUrn } from '../../../CubeIngest.js';
 import {
   type CubeIngestCatalog,
-  type CubeIngestDataSet,
+  CubeIngestDataSet,
   type CubeIngestDataSetLocation,
   CubeIngestDefinitionCandidate,
   type CubeIngestDefinitionList,
   CubeIngestEnvironment,
   type CubeIngestEnvironmentKey,
   CubeIngestProducer,
+  type CubeIngestReadOptions,
 } from '../../../CubeIngestCatalog.js';
 import { V1_readCubeDeploymentNames } from './V1_CubeDeploymentName.js';
 import { V1_readCubeIngestDataSets } from './V1_CubeIngestDefinition.js';
@@ -54,6 +66,9 @@ import type { V1_CubeIngestDefinitionSource } from './V1_CubeIngestModel.js';
 // ingest server's producer
 // deployments, a deployment's definitions, and a definition's grammar, which
 // the engine parses; and, with a deployment directory, the producers' names.
+// With the depot, a data product cube's project's definitions too (§11.30):
+// those its data products' deployment deployed, as the project has them at
+// the cube's version.
 // Everything is read once per page visit; `fresh` reads a definition again
 
 /** The section the ingest server's grammar is in, which the engine needs before it */
@@ -105,10 +120,41 @@ export const V1_CUBE_INGEST_CATALOG_MESSAGE = {
     `Ingest definition ${definition} has no data set ${dataSet}`,
   UNREADABLE: (definition: string): string =>
     `Cube couldn't read ingest definition ${definition}`,
+  /** A data product cube's definitions (PLAN §11.30) */
+  ADDED_AFTER: (versionId: string): string =>
+    `Added after this data product's version ${versionId}`,
+  NO_DEPLOYMENT:
+    "The cube has no access point left, whose deployment says where its project's ingest definitions are: add one first",
+  NOT_A_DEPLOYMENT: (deploymentId: string): string =>
+    `The cube's data products name deployment "${deploymentId}", which isn't a deployment id`,
+  OTHER_ENVIRONMENT: (
+    deploymentId: string,
+    producerEnvironment: string,
+    viewerEnvironment: string,
+  ): string =>
+    `The cube's data products come from deployment ${deploymentId}, which deploys its ingest definitions to ${producerEnvironment}, not to your environment, ${viewerEnvironment}: a data product cube reads ingest data sets in your own environment only`,
+  NOT_IN_CLASS: (
+    deploymentId: string,
+    environment: string,
+    environmentType: CubeDataProductEnvironmentType,
+  ): string =>
+    `The cube's data products come from deployment ${deploymentId}, which deploys no ingest definitions to the ${CLASS_LABELS[environmentType]} ingest environment of ${environment}`,
+  NOT_IN_ENVIRONMENT: (
+    deploymentId: string,
+    viewerEnvironment: string,
+  ): string =>
+    `The cube's data products come from deployment ${deploymentId}, which deploys no ingest definitions to your environment, ${viewerEnvironment}: a data product cube reads ingest data sets in your own environment only`,
+  NO_DEPOT:
+    'Cube reads a data product version only with a depot, which this Legend deployment lacks',
+  DEPOT_UNREADABLE: (project: CubeDataProductProject): string =>
+    `Cube couldn't read the ingest definitions of ${project.groupId}:${project.artifactId} at version ${project.versionId}`,
 } as const;
 
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
+
+const isPlainObject = (value: unknown): value is PlainObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const firstLineOf = (text: string): string => text.split('\n')[0] ?? text;
 
@@ -161,6 +207,23 @@ export class V1_LegendCubeIngestCatalog
     string,
     Promise<string | undefined>
   >();
+  private readonly depotServerClient: DepotServerClient | undefined;
+  /** Each project's definitions at a version, by path, as the depot has them */
+  private readonly versionDefinitions = new Map<
+    string,
+    Promise<ReadonlyMap<string, PlainObject>>
+  >();
+
+  /**
+   * The definitions a data product cube reads alongside its access points
+   * (PLAN §11.30): only with a depot, which says which ones its project has
+   * at its version; without one, data products and ingest data sets stay
+   * apart
+   */
+  readonly listProjectDefinitions?: (
+    project: CubeDataProductProject,
+    deploymentId: string | undefined,
+  ) => Promise<CubeIngestDefinitionList>;
 
   constructor(
     platformServerClient: LakehousePlatformServerClient,
@@ -173,6 +236,8 @@ export class V1_LegendCubeIngestCatalog
       readonly readDeploymentNames?:
         | ((deploymentIds: readonly string[]) => Promise<unknown>)
         | undefined;
+      /** The published projects, whose versions a data product cube's data sets are read at (PLAN §11.30) */
+      readonly depotServerClient?: DepotServerClient | undefined;
     },
   ) {
     this.platformServerClient = platformServerClient;
@@ -181,6 +246,12 @@ export class V1_LegendCubeIngestCatalog
     this.parseGrammar = parseGrammar;
     this.getAccessToken = getAccessToken;
     this.readDeploymentNames = options?.readDeploymentNames;
+    const depotServerClient = options?.depotServerClient;
+    this.depotServerClient = depotServerClient;
+    if (depotServerClient) {
+      this.listProjectDefinitions = (project, deploymentId) =>
+        this.listVersionDefinitions(depotServerClient, project, deploymentId);
+    }
   }
 
   /** Reads a promise once per page visit, again after a failure */
@@ -423,6 +494,187 @@ export class V1_LegendCubeIngestCatalog
     );
   }
 
+  /**
+   * The definitions a data product cube of the project reads alongside its
+   * access points (PLAN §11.30, user, 2026-11-09): those its data products'
+   * deployment deployed from SDLC, which deploys their project's, kept when
+   * they are the project's, deployed to the cube's class, in the viewer's
+   * own ingest environment of it; one the project lacks at the cube's
+   * version is listed, but can't be opened
+   */
+  private async listVersionDefinitions(
+    depotServerClient: DepotServerClient,
+    project: CubeDataProductProject,
+    deploymentId: string | undefined,
+  ): Promise<CubeIngestDefinitionList> {
+    if (deploymentId === undefined) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        V1_CUBE_INGEST_CATALOG_MESSAGE.NO_DEPLOYMENT,
+      );
+    }
+    if (!/^\d+$/u.test(deploymentId)) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_A_DEPLOYMENT(deploymentId),
+      );
+    }
+    const environment = { environmentType: project.environmentType };
+    const [deployed, atVersion] = await Promise.all([
+      (async (): Promise<CubeIngestDefinitionList> => {
+        const producers = await this.listProducers(environment);
+        if (!producers.some((each) => each.deploymentId === deploymentId)) {
+          throw await this.explainMissingProducer(environment, deploymentId);
+        }
+        return this.listDefinitions(environment, deploymentId);
+      })(),
+      this.readVersionDefinitions(depotServerClient, project),
+    ]);
+    const candidates = deployed.candidates.filter(
+      (candidate) =>
+        candidate.groupId === project.groupId &&
+        candidate.artifactId === project.artifactId,
+    );
+    return {
+      candidates: candidates.map((candidate) =>
+        atVersion.has(candidate.definition)
+          ? candidate
+          : new CubeIngestDefinitionCandidate({
+              urn: candidate.urn,
+              definition: candidate.definition,
+              groupId: candidate.groupId,
+              artifactId: candidate.artifactId,
+              disabledReason: V1_CUBE_INGEST_CATALOG_MESSAGE.ADDED_AFTER(
+                project.versionId,
+              ),
+            }),
+      ),
+      droppedCount:
+        deployed.droppedCount + deployed.candidates.length - candidates.length,
+    };
+  }
+
+  /**
+   * Why a deployment isn't a producer of the viewer's own ingest
+   * environment of a class: the environment it deploys to, beside the
+   * viewer's; the viewer's alone when the platform can't say
+   */
+  private async explainMissingProducer(
+    environment: CubeIngestEnvironmentKey,
+    deploymentId: string,
+  ): Promise<CubeEngineError> {
+    const viewer = (await this.summaryOf(environment)).environmentName;
+    let producer: string | undefined;
+    try {
+      producer = IngestDeploymentServerConfig.serialization.fromJson(
+        await this.platformServerClient.findProducerServer(
+          Number(deploymentId),
+          V1_AppDirLevel.DEPLOYMENT,
+          this.getAccessToken(),
+        ),
+      ).environmentName;
+    } catch {
+      // the message names the viewer's environment alone
+    }
+    return new CubeEngineError(
+      CubeEngineErrorKind.EXECUTION,
+      !producer
+        ? V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_IN_ENVIRONMENT(
+            deploymentId,
+            viewer,
+          )
+        : producer === viewer
+          ? // the environment is the viewer's: its other class has the deployment
+            V1_CUBE_INGEST_CATALOG_MESSAGE.NOT_IN_CLASS(
+              deploymentId,
+              viewer,
+              environment.environmentType,
+            )
+          : V1_CUBE_INGEST_CATALOG_MESSAGE.OTHER_ENVIRONMENT(
+              deploymentId,
+              producer,
+              viewer,
+            ),
+    );
+  }
+
+  /** What the depot's answers are known by: the project and its version */
+  private static versionKeyOf(project: CubeDataProductProject): string {
+    return JSON.stringify([
+      project.groupId,
+      project.artifactId,
+      project.versionId,
+    ]);
+  }
+
+  /**
+   * A project's ingest definitions at a version, by path, as the depot has
+   * them: once per page visit, again after a failure, or once forgotten, as
+   * a `fresh` read forgets them, since a SNAPSHOT version moves
+   */
+  private readVersionDefinitions(
+    depotServerClient: DepotServerClient,
+    project: CubeDataProductProject,
+  ): Promise<ReadonlyMap<string, PlainObject>> {
+    return V1_LegendCubeIngestCatalog.once(
+      this.versionDefinitions,
+      V1_LegendCubeIngestCatalog.versionKeyOf(project),
+      async () => {
+        let rows: unknown;
+        try {
+          rows = await depotServerClient.getVersionEntities(
+            project.groupId,
+            project.artifactId,
+            resolveVersion(project.versionId),
+            CORE_PURE_PATH.INGEST_DEFINITION,
+          );
+        } catch (error) {
+          throw new CubeEngineError(
+            CubeEngineErrorKind.NETWORK,
+            `${V1_CUBE_INGEST_CATALOG_MESSAGE.DEPOT_UNREADABLE(project)}\n${messageOf(error)}`,
+          );
+        }
+        if (!Array.isArray(rows)) {
+          throw new CubeEngineError(
+            CubeEngineErrorKind.NETWORK,
+            V1_CUBE_INGEST_CATALOG_MESSAGE.DEPOT_UNREADABLE(project),
+          );
+        }
+        // the depot wraps each entity with its project and version; an
+        // entity of another classifier is left out
+        return new Map(
+          rows.flatMap((row: unknown): [string, PlainObject][] => {
+            const wrapped: unknown = isPlainObject(row)
+              ? row.entity
+              : undefined;
+            const entity = isPlainObject(wrapped) ? wrapped : row;
+            return isPlainObject(entity) &&
+              entity.classifierPath === CORE_PURE_PATH.INGEST_DEFINITION &&
+              typeof entity.path === 'string' &&
+              isPlainObject(entity.content)
+              ? [[entity.path, entity.content]]
+              : [];
+          }),
+        );
+      },
+    );
+  }
+
+  /** A definition's data sets, read from its element: a failure if it can't be read */
+  private static readDataSets(
+    element: PlainObject,
+    definition: string,
+  ): CubeIngestDataSet[] {
+    try {
+      return V1_readCubeIngestDataSets(element);
+    } catch {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        V1_CUBE_INGEST_CATALOG_MESSAGE.UNREADABLE(definition),
+      );
+    }
+  }
+
   /** A definition's element, from the ingest server's grammar, which the engine parses */
   private async readElement(
     urn: string,
@@ -498,24 +750,78 @@ export class V1_LegendCubeIngestCatalog
   async describe(
     urn: string,
     environment: CubeIngestEnvironmentKey,
-    options?: { readonly fresh?: boolean | undefined },
+    options?: CubeIngestReadOptions,
   ): Promise<readonly CubeIngestDataSet[]> {
-    const element = await this.getDefinitionElement(urn, environment, options);
-    try {
-      return V1_readCubeIngestDataSets(element);
-    } catch {
-      throw new CubeEngineError(
-        CubeEngineErrorKind.COMPILE,
-        V1_CUBE_INGEST_CATALOG_MESSAGE.UNREADABLE(pathOf(element)),
+    this.forgetVersion(options);
+    return this.describeDataSets(urn, environment, options);
+  }
+
+  /** A `fresh` read of a data product cube's data sets reads its version again too */
+  private forgetVersion(options: CubeIngestReadOptions | undefined): void {
+    if (options?.fresh && options.project) {
+      this.versionDefinitions.delete(
+        V1_LegendCubeIngestCatalog.versionKeyOf(options.project),
       );
     }
+  }
+
+  /** A definition's data sets; a data product cube's at its version, which `forgetVersion` reads again */
+  private async describeDataSets(
+    urn: string,
+    environment: CubeIngestEnvironmentKey,
+    options: CubeIngestReadOptions | undefined,
+  ): Promise<readonly CubeIngestDataSet[]> {
+    const project = options?.project;
+    const [element, atVersion] = await Promise.all([
+      this.getDefinitionElement(urn, environment, options),
+      project
+        ? this.readVersionDefinitions(this.requireDepot(), project)
+        : undefined,
+    ]);
+    const definition = pathOf(element);
+    const deployed = V1_LegendCubeIngestCatalog.readDataSets(
+      element,
+      definition,
+    );
+    if (!project || !atVersion) {
+      return deployed;
+    }
+    // a data product cube's: its deployed data sets, typed as the project
+    // has them at its version, which its runs compile against (PLAN §11.30)
+    const content = atVersion.get(definition);
+    const versioned = content
+      ? V1_LegendCubeIngestCatalog.readDataSets(content, definition)
+      : [];
+    return deployed.map(
+      (dataSet) =>
+        versioned.find((each) => each.name === dataSet.name) ??
+        new CubeIngestDataSet({
+          name: dataSet.name,
+          primaryKey: dataSet.primaryKey,
+          disabledReason: V1_CUBE_INGEST_CATALOG_MESSAGE.ADDED_AFTER(
+            project.versionId,
+          ),
+        }),
+    );
+  }
+
+  private requireDepot(): DepotServerClient {
+    if (!this.depotServerClient) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        V1_CUBE_INGEST_CATALOG_MESSAGE.NO_DEPOT,
+      );
+    }
+    return this.depotServerClient;
   }
 
   async resolveSchemas(
     environment: CubeIngestEnvironmentKey,
     sources: ReadonlyMap<NodeId, CubeIngestDataSetLocation>,
-    options?: { readonly fresh?: boolean | undefined },
+    options?: CubeIngestReadOptions,
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
+    // a data product cube's version is read again once, not per definition
+    this.forgetVersion(options);
     const urns = [
       ...new Set([...sources.values()].map((each) => each.ingestDefinitionUrn)),
     ];
@@ -528,7 +834,10 @@ export class V1_LegendCubeIngestCatalog
             [string, readonly CubeIngestDataSet[] | CubeEngineError]
           > => {
             try {
-              return [urn, await this.describe(urn, environment, options)];
+              return [
+                urn,
+                await this.describeDataSets(urn, environment, options),
+              ];
             } catch (error) {
               return [urn, toNetworkError(error)];
             }

@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.272
+
+## 10.4.271
+
+## 10.4.270
+
+### Patch Changes
+
+- [#5836](https://github.com/finos/legend-studio/pull/5836) [`14f268d`](https://github.com/finos/legend-studio/commit/14f268d18ddff682f3fde23562d6685806623854) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the data space viewer in Legend Query's data space search: diagrams show again (the Legend Query bootstrap imports the diagram extension's stylesheet again, which it lost in #3132), `Run Query` creates a query on the data space in the chosen execution context instead of doing nothing, and the diagram's description card keeps its text light on its dark overlay in light themes and no longer pads the description out of view.
+
+- [#5839](https://github.com/finos/legend-studio/pull/5839) [`c7aa966`](https://github.com/finos/legend-studio/commit/c7aa9666da3b4661437897174b28bb231097cadf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix `Open in Query` on a service executable in Legend Query's data space search: it opens the service query under Legend Query's base URL (e.g. `/query/create-from-service/...`) instead of a blank page at `/create-from-service/...`.
+
 ## 10.4.269
 
 ### Patch Changes

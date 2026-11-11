@@ -78,7 +78,9 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   guaranteeType,
+  HttpStatus,
   isNonNullable,
+  NetworkClientError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
@@ -515,39 +517,60 @@ export async function getDataProductFromDetails(
   depotServerClient: DepotServerClient,
 ): Promise<V1_DataProduct | undefined> {
   if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
-    const rawEntities = (await depotServerClient.getVersionEntities(
-      details.origin.group,
-      details.origin.artifact,
-      resolveVersion(details.origin.version),
-      CORE_PURE_PATH.DATA_PRODUCT,
-    )) as {
-      artifactId: string;
-      entity: Entity;
-      groupId: string;
-      versionId: string;
-      versionedEntity: boolean;
-    }[];
-    const entities = rawEntities.map((entity) =>
-      deserialize(
-        V1_dataProductModelSchema(
-          graphManager.pluginManager.getPureProtocolProcessorPlugins(),
-        ),
-        entity.entity.content,
-      ),
+    const { group, artifact, version } = details.origin;
+    const dataProductModelSchema = V1_dataProductModelSchema(
+      graphManager.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    const matchingEntities = entities.filter(
-      (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
-    );
-    if (matchingEntities.length === 0) {
-      throw new Error(
+    if (!details.fullPath) {
+      const rawEntities = (await depotServerClient.getVersionEntities(
+        group,
+        artifact,
+        resolveVersion(version),
+        CORE_PURE_PATH.DATA_PRODUCT,
+      )) as { entity: Entity }[];
+      const matchingEntities = rawEntities
+        .map((rawEntity) =>
+          deserialize(dataProductModelSchema, rawEntity.entity.content),
+        )
+        .filter(
+          (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
+        );
+      if (matchingEntities.length > 1) {
+        throw new Error(
+          `Multiple data products found with name ${details.id} in project`,
+        );
+      }
+      return guaranteeNonNullable(
+        matchingEntities[0],
         `No data product found with name ${details.id} in project`,
       );
-    } else if (matchingEntities.length > 1) {
-      throw new Error(
-        `Multiple data products found with name ${details.id} in project`,
-      );
     }
-    return matchingEntities[0];
+    let content: PlainObject<V1_DataProduct>;
+    try {
+      content = (
+        await depotServerClient.getVersionEntity(
+          group,
+          artifact,
+          resolveVersion(version),
+          details.fullPath,
+        )
+      ).content as PlainObject<V1_DataProduct>;
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        if (error.response.status === HttpStatus.NOT_FOUND) {
+          throw new Error(
+            `Data product '${details.fullPath}' is not present on version '${version}' of project '${group}:${artifact}'`,
+          );
+        } else if (error.response.status === HttpStatus.INTERNAL_SERVER_ERROR) {
+          throw new Error(
+            `Can't load version '${version}' of project '${group}:${artifact}' from depot: ${error.message}`,
+          );
+        }
+      }
+      throw error;
+    }
+    return deserialize(dataProductModelSchema, content);
   } else if (details.origin instanceof V1_AdHocDeploymentDataProductOrigin) {
     const entities: Entity[] = await graphManager.pureCodeToEntities(
       details.origin.definition,

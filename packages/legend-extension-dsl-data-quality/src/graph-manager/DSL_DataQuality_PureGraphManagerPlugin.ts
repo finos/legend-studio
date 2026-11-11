@@ -15,10 +15,14 @@
  */
 import packageJson from '../../package.json' with { type: 'json' };
 import {
+  type DSL_Generation_PureGraphManagerPlugin_Extension,
   type ElementObserver,
+  type ModelGenerationElementGetter,
+  type ModelGenerationSpecification,
   type PureGraphManagerExtensionBuilder,
   type ObserverContext,
   type PackageableElement,
+  type PureModel,
   PureGraphManagerPlugin,
 } from '@finos/legend-graph';
 import {
@@ -35,7 +39,10 @@ import {
 } from './action/changeDetection/DSL_DataQuality_ObserverHelper.js';
 import { DSL_DataQuality_buildGraphManagerExtension } from './protocol/pure/DSL_DataQuality_buildGraphManagerExtension.js';
 
-export class DSL_DataQuality_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSL_DataQuality_PureGraphManagerPlugin
+  extends PureGraphManagerPlugin
+  implements DSL_Generation_PureGraphManagerPlugin_Extension
+{
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
@@ -66,6 +73,19 @@ export class DSL_DataQuality_PureGraphManagerPlugin extends PureGraphManagerPlug
         }
         return undefined;
       },
+    ];
+  }
+
+  getExtraModelGenerationElementGetters(): ModelGenerationElementGetter[] {
+    return [
+      (graph: PureModel): ModelGenerationSpecification[] => [
+        ...graph.getExtensionElements(
+          DataQualityRelationValidationConfiguration,
+        ),
+        ...graph.getExtensionElements(
+          DataQualityRelationComparisonConfiguration,
+        ),
+      ],
     ];
   }
 

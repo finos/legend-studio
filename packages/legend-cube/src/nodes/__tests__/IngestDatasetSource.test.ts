@@ -32,7 +32,11 @@ import {
   IngestDatasetSource,
 } from '../sources/IngestDatasetSource.js';
 import { isResolvableSource } from '../sources/ResolvableSource.js';
-import { sourcesAreOneKind } from '../sources/SourceKinds.js';
+import {
+  getSourceKindName,
+  lakehouseSourcesAreApart,
+  sourcesAreOneKind,
+} from '../sources/SourceKinds.js';
 import { UnknownNode } from '../UnknownNode.js';
 
 const COORDINATES: IngestDatasetCoordinates = {
@@ -223,7 +227,7 @@ describe(
       ).toEqual([]);
     });
 
-    test('Flags the other kinds after a first ingest data set, naming both kinds in a fixed order', () => {
+    test('Flags the other kinds after a first ingest data set, naming both kinds in a fixed order, but data products, which join it', () => {
       expect(
         errorsOf(
           queryOf([
@@ -243,34 +247,30 @@ describe(
             ),
           ],
         ],
-        [
-          'dataProductAccessPoint101',
-          [
-            MESSAGE_SOURCE_KINDS_MIXED(
-              ['data products', 'ingest data sets'],
-              'ingest data sets',
-            ),
-          ],
-        ],
       ]);
     });
 
-    test('Flags an ingest data set after a first table or access point', () => {
+    test('Lets a query read ingest data sets and access points together, in either order (PLAN §11.30)', () => {
       expect(
         errorsOf(
           queryOf([
             accessPoint('dataProductAccessPoint101'),
             resolvedDataSet('ingestDataset101'),
+            accessPoint('dataProductAccessPoint102'),
           ]),
         ),
-      ).toEqual([
-        [
-          'ingestDataset101',
-          [
-            'Data products and ingest data sets cannot be mixed in one query; this query reads from data products.',
-          ],
-        ],
-      ]);
+      ).toEqual([]);
+      expect(
+        errorsOf(
+          queryOf([
+            resolvedDataSet('ingestDataset101'),
+            accessPoint('dataProductAccessPoint101'),
+          ]),
+        ),
+      ).toEqual([]);
+    });
+
+    test('Flags an ingest data set after a first table, and a table after a data product and an ingest data set', () => {
       expect(
         errorsOf(
           queryOf([
@@ -286,6 +286,121 @@ describe(
           ],
         ],
       ]);
+      expect(
+        errorsOf(
+          queryOf([
+            accessPoint('dataProductAccessPoint101'),
+            resolvedDataSet('ingestDataset101'),
+            resolvedTable('relational101', 'ORDERS', [column('ORDER_ID')]),
+          ]),
+        ),
+      ).toEqual([
+        [
+          'relational101',
+          [
+            'Database tables and data products cannot be mixed in one query; this query reads from data products.',
+          ],
+        ],
+      ]);
+    });
+  },
+);
+
+describe(
+  unitTest(
+    'Data products and ingest data sets kept apart, for a host that cannot run them together',
+  ),
+  () => {
+    const queryOf = (nodes: QueryNode[]): Query =>
+      new Query(nodes, [], nodes[0]?.id);
+    const errorsOf = (query: Query): [string, readonly string[]][] => [
+      ...lakehouseSourcesAreApart(query),
+    ];
+    const accessPoint = (id: string): DataProductAccessPointSource =>
+      new DataProductAccessPointSource(
+        id,
+        {
+          dataProduct: 'sales::products::OrdersProduct',
+          accessPointGroup: 'core',
+          accessPoint: 'daily_orders',
+          dataProductId: 'ORDERS_PRODUCT',
+          deploymentId: '1234',
+        },
+        { kind: 'resolved', schema: SCHEMA },
+      );
+
+    test('Flags each source of the other kind, with the message one kind per query gave it', () => {
+      expect(
+        errorsOf(
+          queryOf([
+            accessPoint('dataProductAccessPoint101'),
+            resolvedDataSet('ingestDataset101'),
+            resolvedDataSet('ingestDataset102', 'DESKS'),
+          ]),
+        ),
+      ).toEqual([
+        [
+          'ingestDataset101',
+          [
+            'Data products and ingest data sets cannot be mixed in one query; this query reads from data products.',
+          ],
+        ],
+        [
+          'ingestDataset102',
+          [
+            'Data products and ingest data sets cannot be mixed in one query; this query reads from data products.',
+          ],
+        ],
+      ]);
+      expect(
+        errorsOf(
+          queryOf([
+            new UnknownNode('futureSource101', 0),
+            resolvedDataSet('ingestDataset101'),
+            accessPoint('dataProductAccessPoint101'),
+          ]),
+        ),
+      ).toEqual([
+        [
+          'dataProductAccessPoint101',
+          [
+            MESSAGE_SOURCE_KINDS_MIXED(
+              ['data products', 'ingest data sets'],
+              'ingest data sets',
+            ),
+          ],
+        ],
+      ]);
+    });
+
+    test("Names a source type's kind as messages give it, and none for a type of no kind", () => {
+      expect(getSourceKindName(IngestDatasetSource.TYPE)).toBe(
+        'ingest data sets',
+      );
+      expect(getSourceKindName(DataProductAccessPointSource.TYPE)).toBe(
+        'data products',
+      );
+      expect(getSourceKindName('futureSource')).toBeUndefined();
+    });
+
+    test('Leaves one kind alone, and every source after a first of another kind to one kind per query', () => {
+      expect(
+        errorsOf(
+          queryOf([
+            resolvedDataSet('ingestDataset101'),
+            resolvedDataSet('ingestDataset102', 'DESKS'),
+          ]),
+        ),
+      ).toEqual([]);
+      expect(
+        errorsOf(
+          queryOf([
+            resolvedTable('relational101', 'ORDERS', [column('ORDER_ID')]),
+            accessPoint('dataProductAccessPoint101'),
+            resolvedDataSet('ingestDataset101'),
+          ]),
+        ),
+      ).toEqual([]);
     });
   },
 );

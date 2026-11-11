@@ -34,6 +34,8 @@ import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
   CUBE_CANVAS_NODE_HEIGHT,
   CUBE_CANVAS_NODE_WIDTH,
+  CUBE_CANVAS_NOTE_HEIGHT,
+  type CubeCanvasContainerPlace,
   type CubeCanvasLayout,
   type CubeCanvasPosition,
 } from './CubeCanvasLayout.js';
@@ -44,20 +46,38 @@ import {
 
 export const CUBE_CANVAS_NODE_TYPE = 'cube';
 export const CUBE_CANVAS_EDGE_TYPE = 'cube';
+/** An open container's frame, drawn behind its steps (PLAN §11.28) */
+export const CUBE_CANVAS_CONTAINER_TYPE = 'cubeContainer';
+/** A folded container's box, in its steps' place */
+export const CUBE_CANVAS_FOLDED_CONTAINER_TYPE = 'cubeFoldedContainer';
 /** The one output of every node; its inputs are named by its ports */
 export const CUBE_OUTPUT_HANDLE_ID = 'output';
+/** A folded container's one input, which every line into its steps comes to */
+export const CUBE_FOLDED_INPUT_HANDLE_ID = 'input';
 
 /** Shown when a node has no validity entry at all, which inference never leaves out */
 export const MISSING_VALIDITY_TOOLTIP =
   'This node depends on some invalid inputs.';
 
-export type CubeCanvasNodeData = { readonly node: QueryNode };
+export type CubeCanvasNodeData = {
+  readonly node: QueryNode;
+  /** Its note, shown under it (PLAN §11.31) */
+  readonly note?: string | undefined;
+};
 export type CubeCanvasEdgeData = {
   readonly label: string | undefined;
   /** The lanes it crosses the columns it skips in, left to right (`layoutCubeQuery`) */
   readonly lanes: readonly CubeCanvasPosition[];
 };
-export type CubeCanvasFlowNode = Node<CubeCanvasNodeData, 'cube'>;
+export type CubeCanvasContainerData = {
+  readonly place: CubeCanvasContainerPlace;
+};
+export type CubeCanvasStepNode = Node<CubeCanvasNodeData, 'cube'>;
+export type CubeCanvasContainerNode = Node<
+  CubeCanvasContainerData,
+  'cubeContainer' | 'cubeFoldedContainer'
+>;
+export type CubeCanvasFlowNode = CubeCanvasStepNode | CubeCanvasContainerNode;
 export type CubeCanvasFlowEdge = Edge<CubeCanvasEdgeData, 'cube'>;
 type CubeCanvasHandle = NonNullable<Node['handles']>[number];
 
@@ -88,42 +108,144 @@ export const getCubeCanvasHandles = (node: QueryNode): CubeCanvasHandle[] => [
   },
 ];
 
+/**
+ * The steps shown, a step with a note taller by its line, under it: a
+ * folded container's steps have no place
+ */
 export const buildCubeCanvasNodes = (
   query: Query,
   positions: ReadonlyMap<string, CubeCanvasPosition>,
-): CubeCanvasFlowNode[] =>
-  query.nodes.map((node) => ({
-    id: node.id,
-    type: CUBE_CANVAS_NODE_TYPE,
-    position: { ...(positions.get(node.id) ?? { x: 0, y: 0 }) },
-    width: CUBE_CANVAS_NODE_WIDTH,
-    height: CUBE_CANVAS_NODE_HEIGHT,
-    handles: getCubeCanvasHandles(node),
-    data: { node },
+  getNote: (stepId: string) => string | undefined = () => undefined,
+): CubeCanvasStepNode[] =>
+  query.nodes.flatMap((node) => {
+    const position = positions.get(node.id);
+    const note = getNote(node.id);
+    return position
+      ? [
+          {
+            id: node.id,
+            type: CUBE_CANVAS_NODE_TYPE,
+            position: { ...position },
+            width: CUBE_CANVAS_NODE_WIDTH,
+            height:
+              CUBE_CANVAS_NODE_HEIGHT +
+              (note === undefined ? 0 : CUBE_CANVAS_NOTE_HEIGHT),
+            // picked in Cube, not selected in React Flow (`CubeCanvas`)
+            selectable: false,
+            handles: getCubeCanvasHandles(node),
+            data: note === undefined ? { node } : { node, note },
+          },
+        ]
+      : [];
+  });
+
+/**
+ * A container's node on the canvas, under an id no step's is (steps are
+ * named by their type, e.g. `group101` for a Group): its frame's, or its
+ * folded box's, another node, so folding it changes no node's type
+ */
+export const getCubeCanvasContainerNodeId = (
+  containerId: string,
+  folded: boolean,
+): string => `${folded ? 'folded-container' : 'container'}:${containerId}`;
+
+/**
+ * The containers' frames, to go first, behind the steps, and the folded
+ * containers' boxes; none of them selectable, as no node is
+ */
+export const buildCubeCanvasContainerNodes = (
+  places: readonly CubeCanvasContainerPlace[],
+): CubeCanvasContainerNode[] =>
+  places.map((place) => ({
+    id: getCubeCanvasContainerNodeId(
+      place.container.id,
+      place.container.folded,
+    ),
+    type: place.container.folded
+      ? CUBE_CANVAS_FOLDED_CONTAINER_TYPE
+      : CUBE_CANVAS_CONTAINER_TYPE,
+    position: { x: place.x, y: place.y },
+    width: place.width,
+    height: place.height,
+    selectable: false,
+    // behind the lines and the steps, and the canvas's to press, but its head
+    ...(place.container.folded
+      ? {}
+      : { zIndex: -1, style: { pointerEvents: 'none' as const } }),
+    // a folded box opens on Enter, as a step's editor does (`CubeCanvas`)
+    focusable: place.container.folded,
+    handles: place.container.folded
+      ? [
+          {
+            id: CUBE_FOLDED_INPUT_HANDLE_ID,
+            type: 'target' as const,
+            position: Position.Left,
+            x: 0,
+            y: place.height / 2,
+          },
+          {
+            id: CUBE_OUTPUT_HANDLE_ID,
+            type: 'source' as const,
+            position: Position.Right,
+            x: place.width,
+            y: place.height / 2,
+          },
+        ]
+      : [],
+    data: { place },
   }));
 
 /**
  * Each connection, labelled with its port's label when the target has one,
- * e.g. Left and Right on a Join, with the lanes the layout gives it
+ * e.g. Left and Right on a Join, with the lanes the layout gives it. A line
+ * into or out of a folded container's steps comes to or goes from its box;
+ * one inside it isn't drawn.
  */
 export const buildCubeCanvasEdges = (
   query: Query,
   lanes: CubeCanvasLayout['lanes'] = new Map(),
-): CubeCanvasFlowEdge[] =>
-  query.connections.map((connection) => {
+  containers: readonly CubeCanvasContainerPlace[] = [],
+): CubeCanvasFlowEdge[] => {
+  const boxOf = new Map(
+    containers
+      .filter((place) => place.container.folded)
+      .flatMap((place) =>
+        place.steps.map((id) => [
+          id,
+          getCubeCanvasContainerNodeId(place.container.id, true),
+        ]),
+      ),
+  );
+  return query.connections.flatMap((connection) => {
+    const sourceBox = boxOf.get(connection.source);
+    const targetBox = boxOf.get(connection.target);
+    if (sourceBox !== undefined && sourceBox === targetBox) {
+      return [];
+    }
     const target = query.getNode(connection.target);
-    const label = target?.portLabels[target.ports.indexOf(connection.port)];
-    return {
-      id: connection.toString(),
-      type: CUBE_CANVAS_EDGE_TYPE,
-      source: connection.source,
-      target: connection.target,
-      sourceHandle: CUBE_OUTPUT_HANDLE_ID,
-      targetHandle: connection.port,
-      markerEnd: { type: MarkerType.ArrowClosed },
-      data: { label, lanes: lanes.get(connection.toString()) ?? [] },
-    };
+    const label =
+      targetBox === undefined
+        ? target?.portLabels[target.ports.indexOf(connection.port)]
+        : undefined;
+    return [
+      {
+        id: connection.toString(),
+        type: CUBE_CANVAS_EDGE_TYPE,
+        source: sourceBox ?? connection.source,
+        target: targetBox ?? connection.target,
+        sourceHandle: CUBE_OUTPUT_HANDLE_ID,
+        targetHandle:
+          targetBox === undefined
+            ? connection.port
+            : CUBE_FOLDED_INPUT_HANDLE_ID,
+        // the canvas lets a box be drawn, which selects no line
+        selectable: false,
+        markerEnd: { type: MarkerType.ArrowClosed },
+        data: { label, lanes: lanes.get(connection.toString()) ?? [] },
+      },
+    ];
   });
+};
 
 /** How a node looks on the canvas (spec §17.3): each state is its own class modifier */
 export interface CubeCanvasNodeStatus {

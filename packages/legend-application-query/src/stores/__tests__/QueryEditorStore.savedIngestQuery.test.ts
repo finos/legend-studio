@@ -51,12 +51,13 @@ const buildEditorStore = async (): Promise<ExistingQueryEditorStore> => {
   });
   depotServerClient.setTracerService(applicationStore.tracerService);
 
-  return new ExistingQueryEditorStore(
+  const editorStore = new ExistingQueryEditorStore(
     applicationStore as unknown as LegendQueryApplicationStore,
     depotServerClient,
     'test-query-id',
     undefined,
   );
+  return editorStore;
 };
 
 const makeQueryInfo = (

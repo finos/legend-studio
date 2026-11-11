@@ -184,6 +184,22 @@ afterEach(() => {
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
 
+const getMockUserAccessStatus = (
+  contractId: string,
+): V1_EnrichedUserApprovalStatus => {
+  switch (contractId) {
+    case 'test-pending-consumer-privilege-manager-approval-contract-id':
+      return V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL;
+    case 'test-pending-data-owner-approval-contract-id':
+      return V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL;
+    case 'test-approved-contract-id':
+    case 'test-partially-approved-contract-id':
+      return V1_EnrichedUserApprovalStatus.APPROVED;
+    default:
+      return V1_EnrichedUserApprovalStatus.DENIED;
+  }
+};
+
 const setupLakehouseDataProductTest = async (
   dataProduct: V1_DataProduct,
   entitlementsDataProductDetails: V1_EntitlementsDataProductDetails | undefined,
@@ -270,7 +286,7 @@ const setupLakehouseDataProductTest = async (
         })
         .map((contract) => ({
           contractResultLite: contract,
-          status: V1_EnrichedUserApprovalStatus.APPROVED,
+          status: getMockUserAccessStatus(contract.guid),
           user: 'test-consumer-user-id',
         })),
     );
@@ -328,26 +344,9 @@ const setupLakehouseDataProductTest = async (
     createSpy(
       dataProductDataAccessState.lakehouseContractServerClient,
       'getContractUserStatus',
-    ).mockImplementation(async (contractId: string) => {
-      switch (contractId) {
-        case 'test-pending-consumer-privilege-manager-approval-contract-id':
-          return {
-            status:
-              V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-          };
-        case 'test-pending-data-owner-approval-contract-id':
-          return {
-            status: V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
-          };
-        case 'test-approved-contract-id':
-        case 'test-partially-approved-contract-id':
-          return { status: V1_EnrichedUserApprovalStatus.APPROVED };
-        case 'test-denied-contract-id':
-          return { status: V1_EnrichedUserApprovalStatus.DENIED };
-        default:
-          return { status: V1_EnrichedUserApprovalStatus.DENIED };
-      }
-    });
+    ).mockImplementation(async (contractId: string) => ({
+      status: getMockUserAccessStatus(contractId),
+    }));
 
     createSpy(
       dataProductDataAccessState.lakehouseContractServerClient,

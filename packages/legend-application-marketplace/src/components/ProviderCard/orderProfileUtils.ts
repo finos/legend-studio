@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { TraderProfileItem } from '@finos/legend-server-marketplace';
+import type {
+  TerminalResult,
+  TraderProfileItem,
+} from '@finos/legend-server-marketplace';
 import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 
 // ─── String labels ───────────────────────────────────────────────────────────
@@ -35,6 +38,7 @@ export enum OrderProfileLabel {
   OWNED_SUFFIX = '(Owned)',
   IN_CART_SUFFIX = '(In Cart)',
   MODEL_PREFIX = 'Model: ',
+  UNSPECIFIED_MODEL = 'Unspecified Model',
   PRICE_TOTAL_SEPARATOR = ' · Total: ',
   VIEW_DETAILS = 'View details',
 }
@@ -75,6 +79,12 @@ export const formatItemPrice = (price: number): string =>
 export const formatCardPrice = (price: number): string =>
   `${USD_FORMATTER.format(price)}/month`;
 
+export const calculateMandatoryAddonsTotalPrice = (
+  terminal: TerminalResult,
+): number =>
+  terminal.price +
+  (terminal.mandatoryAddons ?? []).reduce((sum, addon) => sum + addon.price, 0);
+
 // ─── Toast message formatters ────────────────────────────────────────────────
 
 export const formatAddToCartSuccessMessage = (productName: string): string =>
@@ -102,6 +112,24 @@ export const formatProfileSummaryLine = (
     terminalCount === 1 ? '1 Terminal' : `${terminalCount} Terminals`;
   const addOnLabel = addOnCount === 1 ? '1 Add-On' : `${addOnCount} Add-Ons`;
   return `${terminalLabel} · ${addOnLabel}`;
+};
+
+export const hasModelLevelMultiselect = (
+  items: TraderProfileItem[],
+): boolean => {
+  const selectableCountByModel = new Map<string, number>();
+
+  for (const item of items) {
+    if (!item.isOwned && item.isTerminal && item.multiselect === true) {
+      const modelKey = item.model ?? OrderProfileLabel.UNSPECIFIED_MODEL;
+      selectableCountByModel.set(
+        modelKey,
+        (selectableCountByModel.get(modelKey) ?? 0) + 1,
+      );
+    }
+  }
+
+  return Array.from(selectableCountByModel.values()).some((count) => count > 1);
 };
 
 // ─── Multiselect price calculation ──────────────────────────────────────────

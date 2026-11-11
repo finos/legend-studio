@@ -91,6 +91,9 @@ const ITEMS = [
   'Copy',
   'Paste',
   'Duplicate',
+  'Put in a Container',
+  'Take Out of Container',
+  'Add Note…',
   'Remove',
   'Swap Inputs',
 ];
@@ -156,6 +159,8 @@ describe('Canvas context menu', () => {
       'Set as output',
       'Copy',
       'Duplicate',
+      'Put in a Container',
+      'Add Note…',
       'Remove',
       'Swap Inputs',
     ]);
@@ -173,6 +178,8 @@ describe('Canvas context menu', () => {
       ...H2_TRANSFORMS,
       'Copy',
       'Duplicate',
+      'Put in a Container',
+      'Add Note…',
       'Remove',
     ]);
     await closeMenu();
@@ -185,6 +192,8 @@ describe('Canvas context menu', () => {
       'Set as output',
       'Copy',
       'Duplicate',
+      'Put in a Container',
+      'Add Note…',
       'Remove',
     ]);
   });

@@ -67,9 +67,83 @@ Click a step on the graph to open its editor. This is the Group step's:
 4. **Close** the editor.
 5. **None**: untick every group column (one row for all the rows).
 6. The columns to group by.
-7. **Cancel** the changes, or **Apply** them to the cube.
+7. **Note**: why the step is there. It shows under the step on the graph (see [Notes](#notes)).
+8. **Cancel** the changes, or **Apply** them to the cube.
 
 Where an editor lists columns, each shows its type as an icon: **#** a number, **Tт** text, a calendar a date or a date
 and time, a clock a time, a toggle true or false, a list an enumeration, a tree JSON. Point at the icon for the type in
 words, such as _Whole number, optional_, and the exact type. An optional column can be empty. A source's column table
 names each type in words.
+
+## Containers
+
+A container frames a block of linked steps under a title, and folds to one box in their place, as Alteryx's Tool
+Container does. It only changes how the graph looks: the cube runs the same, and its rows stay as they are. The cube
+saves its containers, so export and import keep them.
+
+To make one, right-click a step:
+
+[![A step's menu, with Put in a Container's](./images/containers-menu.png)](./images/containers-menu.png)
+
+1. **Put in a Container**: opens its menu. A step in a container already can't go in another: take it out first.
+2. **This Step Alone** makes a container of the step. **With the Steps Before It** takes the step and each step before
+   it that is in no container yet: here the Join, the Rename and INSTRUMENTS.
+3. **Add to**: a container beside the step, one that holds a step feeding it or the step it feeds.
+
+[![Two containers: one open, one folded](./images/containers.png)](./images/containers.png)
+
+4. **The head**: ▾ folds the container, its title renames it on a double-click, and it says how many steps it holds.
+   Right-click the head for **Fold**, **Rename** and **Remove Container**.
+5. **×** takes the container away. Its steps stay.
+6. **A folded container**: one box in its steps' place. The lines into and out of its steps come to its sides, and it
+   shows their errors, and **Output** when the output step is in it. Point at it to list its steps. **›**, a
+   double-click, or Enter opens it.
+
+You can also select the steps first, with the mouse, as in Alteryx. A selected step is tinted:
+
+[![A box drawn around two steps, and a third step selected](./images/containers-selection.png)](./images/containers-selection.png)
+
+7. **Shift and a drag** on the canvas draws a box. The steps wholly inside it are added to the selection.
+8. **Shift-click** a step to select it, or to deselect it. On a step that has the focus, Shift+Enter or Shift+Space does
+   the same.
+
+**Escape**, or a click on the canvas, clears the selection. Right-click a selected step for **Put Selection in a
+Container**, or press Ctrl+G (Cmd+G on macOS) while the canvas has the focus. The new container takes the steps selected
+and each step between them, so it is one block. The item is disabled, with the reason in its tooltip, when the steps are
+of different trees, or when one of them, or a step between them, is in a container already. The selection isn't saved
+with the cube.
+
+A container is one block of steps linked to one another, so all of one tree, and containers don't nest:
+
+- A step you add, paste or move between two steps of a container joins it. One added after its last step stays out.
+- **Take Out of Container**, in a step's menu, takes out a step at the container's edge: one that no other step of it
+  feeds, or its last step.
+- Removing a step takes it out. A container left with no step goes away.
+
+Each change to a container is one undo step.
+
+## Notes
+
+A note says why a step is there: its label already says what it does. A note only changes how the graph looks: the
+cube runs the same, and its rows stay as they are. The cube saves its notes, so export and import keep them.
+
+To write one, right-click a step:
+
+[![A step's menu, with Add Note…](./images/notes-menu.png)](./images/notes-menu.png)
+
+1. **Add Note…** opens the step's editor at its **Note** field (7 in [A step's editor](#a-steps-editor)). Write the
+   note, then **Apply**, or close the editor. An editor with nothing else to set, such as a table's, has no Apply:
+   closing it stores the note. A step with a note has **Edit Note…** instead.
+
+[![Two notes on the graph, one shown whole](./images/notes.png)](./images/notes.png)
+
+2. **A note**: one line under its step, in italics.
+3. **Point at a note** to read all of it. Click it to edit it.
+
+A note is plain text, up to 500 characters. To take one away, clear it in the step's editor. A note follows its step:
+
+- **Copy** and **Paste**, and **Duplicate**, copy a step's note with it.
+- Removing a step removes its note.
+- A folded container hides its steps' notes until it is opened.
+
+Each change to a note is one undo step. Show Pure leaves notes out: they aren't part of the query.

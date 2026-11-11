@@ -25,20 +25,20 @@ import {
   CubeEngineErrorKind,
   type NodeId,
 } from '../graph-manager/CubeEngine.js';
-import {
-  checkCubeIngestModel,
-  getCubeIngestSettings,
-} from '../graph-manager/CubeIngest.js';
+import { getCubeDataProductProject } from '../graph-manager/CubeDataProduct.js';
+import { checkCubeIngestModel } from '../graph-manager/CubeIngest.js';
 import {
   type CubeIngestCatalog,
-  getCubeIngestEnvironmentKey,
+  getCubeIngestEnvironmentKeyOfModel,
 } from '../graph-manager/CubeIngestCatalog.js';
 
 /**
- * Reads an ingest cube's data sets again (PLAN §6.7): their columns as their
- * deployed definitions declare them, through the catalog, with no engine
- * call; `fresh` reads the definitions again rather than what this page visit
- * read. One answer per source, failures included; never rejects.
+ * Reads an ingest cube's data sets again (PLAN §6.7), or a data product
+ * cube's, read in its class (§11.30): their columns as their deployed
+ * definitions declare them, a data product cube's as its project has them
+ * at its version, through the catalog, with no engine call; `fresh` reads
+ * the definitions again rather than what this page visit read. One answer
+ * per source, failures included; never rejects.
  */
 export const recheckCubeIngestSources = async (
   catalog: CubeIngestCatalog | undefined,
@@ -62,8 +62,8 @@ export const recheckCubeIngestSources = async (
       CUBE_INGEST_RECHECK_MESSAGE.NO_CATALOG,
     );
   }
-  const settings = getCubeIngestSettings(model);
-  if (!settings) {
+  const environment = getCubeIngestEnvironmentKeyOfModel(model);
+  if (!environment) {
     return failAll(
       CubeEngineErrorKind.UNSUPPORTED_MODEL,
       checkCubeIngestModel(model).join('\n'),
@@ -71,7 +71,7 @@ export const recheckCubeIngestSources = async (
   }
   try {
     return await catalog.resolveSchemas(
-      getCubeIngestEnvironmentKey(settings),
+      environment,
       new Map(
         sources.map((source) => [
           source.id,
@@ -82,7 +82,7 @@ export const recheckCubeIngestSources = async (
           },
         ]),
       ),
-      { fresh },
+      { fresh, project: getCubeDataProductProject(model) },
     );
   } catch (error) {
     return error instanceof CubeEngineError

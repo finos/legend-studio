@@ -143,7 +143,7 @@ export const convertEntitlementsDataProductDetailsToSearchResult = (
     origin.groupId = entitlementsDataProductDetails.origin.group;
     origin.artifactId = entitlementsDataProductDetails.origin.artifact;
     origin.versionId = entitlementsDataProductDetails.origin.version;
-    origin.path = entitlementsDataProductDetails.dataProduct.name;
+    origin.path = entitlementsDataProductDetails.fullPath;
     details.origin = origin;
   } else {
     const origin = new LakehouseAdHocDataProductSearchResultOrigin();

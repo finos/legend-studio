@@ -52,6 +52,7 @@ import {
   formatProfileSummaryLine,
   getItemSummary,
   getRandomImageUrl,
+  hasModelLevelMultiselect,
   OrderProfileLabel,
 } from './orderProfileUtils.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
@@ -73,6 +74,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
 
     const items = traderProfile.items;
     const { terminalCount, addOnCount } = getItemSummary(items);
+    const usesModelLevelMultiselect = hasModelLevelMultiselect(items);
 
     const multiselectTotalPrice = traderProfile.multiselect
       ? calculateMultiselectTotalPrice(items)
@@ -107,7 +109,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
       if (traderProfile.isOwned) {
         return;
       }
-      if (traderProfile.multiselect) {
+      if (usesModelLevelMultiselect) {
         setShowMultiselectModal(true);
         return;
       }
@@ -150,22 +152,12 @@ export const LegendMarketplaceOrderProfileCard = observer(
     };
 
     const handleMultiselectConfirm = (
-      selectedTerminals: TraderProfileItem[],
+      selectedItems: TraderProfileItem[],
     ): void => {
       setShowMultiselectModal(false);
-      const selectedModel = selectedTerminals[0]?.model ?? null;
-      const addOnItems = items.filter(
-        (item) =>
-          !item.isTerminal &&
-          !item.isOwned &&
-          (selectedModel === null || item.model === selectedModel),
-      );
       executeCartAction(async () => {
         await flowResult(
-          cartStore.addOrderProfileItemsToCart(
-            [...selectedTerminals, ...addOnItems],
-            true,
-          ),
+          cartStore.addOrderProfileItemsToCart(selectedItems, true),
         );
         LegendMarketplaceTelemetryHelper.logEvent_AddOrderProfileToCart(
           applicationStore.telemetryService,
@@ -208,6 +200,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
                   {traderProfile.productName.toUpperCase()}
                 </Typography>
                 <IconButton
+                  component="span"
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation();

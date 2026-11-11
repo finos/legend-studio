@@ -25,6 +25,7 @@ import {
   formatCubeIngestUrn,
   parseCubeIngestUrn,
   readCubeIngestDataSets,
+  type CubeDataProductProject,
   type CubeIngestCatalog,
   type CubeIngestDataSet,
   type CubeIngestDataSetLocation,
@@ -198,6 +199,17 @@ export class LegendStudioCubeIngestCatalog
       ),
       droppedCount: 0,
     };
+  }
+
+  /**
+   * The definitions a cube of the project's data products reads alongside
+   * them (PLAN §11.30): every definition of the workspace, which are all the
+   * project's, in the cube's class
+   */
+  async listProjectDefinitions(
+    project: CubeDataProductProject,
+  ): Promise<CubeIngestDefinitionList> {
+    return this.listDefinitions({ environmentType: project.environmentType });
   }
 
   /** The workspace's elements, which a typing's or a run's model holds */

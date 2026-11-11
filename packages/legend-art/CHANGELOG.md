@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.173
+
+### Patch Changes
+
+- [#5834](https://github.com/finos/legend-studio/pull/5834) [`3900632`](https://github.com/finos/legend-studio/commit/39006327756c8d7e90774a6fcaa5435cbe5390c6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `CopyableId`: an ID shown in monospace that copies itself to the clipboard when clicked, or when Enter or Space is pressed on it. The tooltip says "Copy {label}" with the full value, then "Copied" (or "Copy failed"); long values end in an ellipsis. The click, the key press and the mousedown stop at the button, so it can sit inside a clickable card, list row or accordion header without opening it. Optional callbacks, e.g. for telemetry: `onCopy` runs once the value is on the clipboard, and `onCopyError` when it couldn't be copied (with the browser's error). `iconVisibility` (`CopyableIdIconVisibility`) shows the copy icon on hover (default), always or never.
+
+- [#5848](https://github.com/finos/legend-studio/pull/5848) [`acacb2c`](https://github.com/finos/legend-studio/commit/acacb2c8a2cb09f83249e1f43dc32e16efa0520b) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `ArrowRightCircleOutlineIcon` and `RocketTakeoffOutlineIcon`.
+
 ## 7.1.172
 
 ### Patch Changes

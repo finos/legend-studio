@@ -18,9 +18,11 @@ import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useId } from 'react';
 import {
+  getDeploymentLabel,
   getDroppedDefinitionsLabel,
   getFixedProducerLabel,
   getIngestEnvironmentLabel,
+  getJoinedDataProductsLabel,
 } from '../../__lib__/LegendCubeIngestLabels.js';
 import {
   CUBE_PENDING_LABEL,
@@ -162,13 +164,22 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
             value: type,
             label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
           }))}
-          disabled={tab.fixedSettings !== undefined}
+          disabled={tab.isClassFixed}
           onChange={(value) => {
             if (value) {
               tab.setEnvironmentType(value as CubeDataProductEnvironmentType);
             }
           }}
         />
+      )}
+      {tab.joinedProject && (
+        <span className="text-sm text-[var(--color-text-muted)]">
+          {CUBE_PROJECT_SOURCE_LABEL.JOINS_DATA_PRODUCTS(
+            CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[
+              tab.joinedProject.environmentType
+            ],
+          )}
+        </span>
       )}
       <span
         className="text-sm text-[var(--color-text-muted)]"
@@ -194,14 +205,15 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
             <CubePickerListItem
               key={candidate.urn}
               picked={tab.isDefinitionOpened(candidate)}
-              title={candidate.definition}
+              disabled={!candidate.isPickable}
+              title={candidate.disabledReason ?? candidate.definition}
               onPick={() => tab.selectDefinition(candidate)}
               onToggle={() => tab.toggleDefinition(candidate)}
               toggleLabel={candidate.name}
             >
               <span className="shrink-0">{candidate.name}</span>
               <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-muted)]">
-                {candidate.definition}
+                {candidate.disabledReason ?? candidate.definition}
               </span>
             </CubePickerListItem>
           ))}
@@ -230,18 +242,79 @@ const CubeProjectIngestTab = observer((props: { tab: CubeIngestTabState }) => {
 });
 
 /**
+ * The environment and producer deployment of an ingest cube, picked on a
+ * new one, then fixed with a line naming the producer
+ */
+const CubeIngestEnvironmentSteps = observer(
+  (props: { tab: CubeIngestTabState }) => {
+    const { tab } = props;
+    const settings = tab.fixedSettings;
+    return (
+      <>
+        <CubePickerStep
+          label="Environment"
+          value={
+            tab.environment
+              ? getCubeIngestEnvironmentId(tab.environment)
+              : undefined
+          }
+          options={(tab.environments ?? []).map((environment) => ({
+            value: getCubeIngestEnvironmentId(environment),
+            label: getIngestEnvironmentLabel(environment),
+          }))}
+          disabled={settings !== undefined}
+          onChange={(value) => {
+            const picked = tab.environments?.find(
+              (environment) =>
+                getCubeIngestEnvironmentId(environment) === value,
+            );
+            if (picked) {
+              tab.setEnvironment(picked);
+            }
+          }}
+        />
+        {tab.isLoadingEnvironment && !tab.environment && (
+          <span className="text-sm text-[var(--color-text-muted)]">
+            reading the ingest environments
+          </span>
+        )}
+        <CubePickerStep
+          label="Producer"
+          value={tab.producerDeploymentId}
+          options={(tab.producers ?? []).map((producer) => ({
+            value: producer.deploymentId,
+            label: tab.getProducerLabel(producer.deploymentId),
+          }))}
+          disabled={settings !== undefined}
+          onChange={(value) => tab.selectProducer(value)}
+        />
+        {settings && (
+          <span className="text-sm text-[var(--color-text-muted)]">
+            {`All of the cube's data sets come from ${getFixedProducerLabel(settings.producerDeploymentId, tab.producerNames.get(settings.producerDeploymentId))}.`}
+          </span>
+        )}
+      </>
+    );
+  },
+);
+
+/**
  * The source dialog's Ingest tab (PLAN §6.7): an ingest environment of any
  * class, the viewer's own production one first picked, a producer
  * deployment, one of its definitions, or several ticked, then data sets
  * with their columns. The cube's first data set fixes the environment, the
- * producer deployment and the warehouse.
+ * producer deployment and the warehouse. On a data product cube (§11.30),
+ * no environment or producer to pick: its project's definitions, of its
+ * data products' deployment, in the viewer's own environment of its Mode.
  */
 export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
   const warehouseId = useId();
-  const settings = tab.fixedSettings;
+  const joined = tab.joinedProject;
+  const [joinedDeploymentId] = tab.joinedDeploymentIds;
   const dropped = getDroppedDefinitionsLabel(
     tab.definitionList?.droppedCount ?? 0,
+    joined !== undefined,
   );
   // a host reading one project's definitions, as Studio, lists them alone:
   // no class, deployment or warehouse to pick, its runtime named instead
@@ -251,48 +324,23 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
   }
   return (
     <div className="flex flex-col gap-2">
-      <CubePickerStep
-        label="Environment"
-        value={
-          tab.environment
-            ? getCubeIngestEnvironmentId(tab.environment)
-            : undefined
-        }
-        options={(tab.environments ?? []).map((environment) => ({
-          value: getCubeIngestEnvironmentId(environment),
-          label: getIngestEnvironmentLabel(environment),
-        }))}
-        disabled={settings !== undefined}
-        onChange={(value) => {
-          const picked = tab.environments?.find(
-            (environment) => getCubeIngestEnvironmentId(environment) === value,
-          );
-          if (picked) {
-            tab.setEnvironment(picked);
-          }
-        }}
-      />
-      {tab.isLoadingEnvironment && !tab.environment && (
+      {joined ? (
         <span className="text-sm text-[var(--color-text-muted)]">
-          reading the ingest environments
+          {getJoinedDataProductsLabel(
+            CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[joined.environmentType],
+            joinedDeploymentId !== undefined
+              ? getDeploymentLabel(
+                  joinedDeploymentId,
+                  tab.producerNames.get(joinedDeploymentId),
+                )
+              : undefined,
+            joined.versionId,
+          )}
         </span>
+      ) : (
+        <CubeIngestEnvironmentSteps tab={tab} />
       )}
-      <CubePickerStep
-        label="Producer"
-        value={tab.producerDeploymentId}
-        options={(tab.producers ?? []).map((producer) => ({
-          value: producer.deploymentId,
-          label: tab.getProducerLabel(producer.deploymentId),
-        }))}
-        disabled={settings !== undefined}
-        onChange={(value) => tab.selectProducer(value)}
-      />
-      {settings && (
-        <span className="text-sm text-[var(--color-text-muted)]">
-          {`All of the cube's data sets come from ${getFixedProducerLabel(settings.producerDeploymentId, tab.producerNames.get(settings.producerDeploymentId))}.`}
-        </span>
-      )}
-      {tab.producerDeploymentId !== undefined && (
+      {(joined !== undefined || tab.producerDeploymentId !== undefined) && (
         <input
           className={INPUT_CLASS}
           placeholder="Search ingest definitions"
@@ -317,7 +365,8 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
               <CubePickerListItem
                 key={candidate.urn}
                 picked={isPicked}
-                title={candidate.definition}
+                disabled={!candidate.isPickable}
+                title={candidate.disabledReason ?? candidate.definition}
                 onPick={() => tab.selectDefinition(candidate)}
                 onToggle={() => tab.toggleDefinition(candidate)}
                 toggleLabel={candidate.name}
@@ -326,7 +375,8 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
                   {candidate.name}
                 </span>
                 <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                  {`${candidate.groupId}:${candidate.artifactId}`}
+                  {candidate.disabledReason ??
+                    `${candidate.groupId}:${candidate.artifactId}`}
                 </span>
               </CubePickerListItem>
             );
@@ -347,7 +397,7 @@ export const CubeIngestTab = observer((props: { tab: CubeIngestTabState }) => {
           id={warehouseId}
           className={clsx(INPUT_CLASS, 'min-w-0 flex-1')}
           spellCheck={false}
-          disabled={settings !== undefined || tab.editorState.readOnly}
+          disabled={tab.isClassFixed || tab.editorState.readOnly}
           title={tab.editorState.readOnly ? READ_ONLY_CUBE_TITLE : undefined}
           value={tab.warehouse}
           onChange={(event) => tab.setWarehouse(event.target.value)}

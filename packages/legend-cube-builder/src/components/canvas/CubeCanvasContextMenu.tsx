@@ -27,6 +27,8 @@ import {
 } from '../../__lib__/LegendCubeHelpText.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeAddMenuItems } from '../CubeAddItems.js';
+import { CubeStepContainerMenuItems } from './CubeCanvasContainerMenu.js';
+import { CubeStepNoteMenuItem } from './CubeCanvasStepNote.js';
 
 /**
  * The canvas's context menu (spec §17.4): the palette, then what can be done
@@ -93,6 +95,8 @@ export const CubeCanvasContextMenu = observer(
         >
           Duplicate
         </MenuContentItem>
+        <CubeStepContainerMenuItems editorState={editorState} nodeId={nodeId} />
+        <CubeStepNoteMenuItem editorState={editorState} nodeId={nodeId} />
         <MenuContentItem
           disabled={nodeId === undefined || !editorState.canRemoveNode(nodeId)}
           onClick={finishing(

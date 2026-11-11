@@ -97,6 +97,10 @@ const StepIconComponent = (props: {
 export const ProgressTracker: React.FC<ProgressTrackerProps> = observer(
   ({ order }) => {
     const steps = getOrderProgressSteps(order);
+    const workflowDetails = order.workflow_details;
+    const rpmFulfillmentLabel = workflowDetails?.rpm_action ?? order.status;
+    const rpmTicketId = workflowDetails?.rpm_ticket_id;
+    const rpmComment = workflowDetails?.rpm_comment;
     const activeIndex = steps.findIndex(
       (step) =>
         step.status === OrderProgressStatus.ACTIVE ||
@@ -166,13 +170,18 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = observer(
                   )}
 
                   {(step.label === WorkflowStage.PENDING_FULFILLMENT ||
-                    step.label === WorkflowStage.ORDER_FULFILLED) &&
-                    order.workflow_details?.rpm_ticket_id && (
+                    step.label === WorkflowStage.ORDER_FULFILLED ||
+                    step.label === rpmFulfillmentLabel) &&
+                    rpmTicketId && (
                       <Box className="legend-marketplace-progress-tracker__step-details">
                         <Typography className="legend-marketplace-progress-tracker__step-detail">
-                          <strong>RPM Ticket:</strong>{' '}
-                          {order.workflow_details.rpm_ticket_id}
+                          <strong>RPM Ticket:</strong> {rpmTicketId}
                         </Typography>
+                        {rpmComment !== null && rpmComment !== undefined && (
+                          <Typography className="legend-marketplace-progress-tracker__step-detail">
+                            <strong>Comments:</strong> {rpmComment}
+                          </Typography>
+                        )}
                       </Box>
                     )}
                 </StepLabel>

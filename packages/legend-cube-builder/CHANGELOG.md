@@ -1,5 +1,42 @@
 # @finos/legend-cube-builder
 
+## 0.0.13
+
+## 0.0.12
+
+### Patch Changes
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`51e0e7f`](https://github.com/finos/legend-studio/commit/51e0e7f210568c09b7b7ad9744fb3620357faa7b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Containers on Legend Cube's canvas, as Alteryx's Tool Container: a block of linked steps framed together under a title, which can be folded to one box in their place. A step's menu puts it in a container, alone or with the steps before it, or in a container beside it, and takes a step at a container's edge out of it. Steps added, pasted or moved between two steps of a container join it. Containers are saved in the spec's `meta.containers`, and only change how the canvas shows the cube, never what it runs.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`f81415c`](https://github.com/finos/legend-studio/commit/f81415cfd77318abdf8aebfe1b424b83a218c041) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Select steps with the mouse on Legend Cube's canvas and put them in a container, as in Alteryx: Shift and a drag draws a box that adds the steps inside it, Shift and a click selects a step or deselects it, and Escape or a click on the canvas clears the selection. A selected step's menu has Put Selection in a Container, as Ctrl/Cmd+G does: the container takes the steps selected and each step between them, so it stays one block of linked steps. The selection is the page's, never saved in the cube.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`c41170f`](https://github.com/finos/legend-studio/commit/c41170f9a752c953772ec447dcc7b9ca1caa98b7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube: one cube can read data products and ingest data sets together when they come from the same project, in one Mode.
+
+  - In Studio's Create/Edit MatView, the Ingest tab adds a project's data sets to a data product cube, with Mode and warehouse locked to the cube's. The Data Product tab turns an ingest cube into a data product cube of the same Mode and warehouse, in one undo step.
+  - Edit MatView reopens a view that reads both.
+  - Hosts whose ingest catalog can't list a data product's project's definitions keep the two apart, with the same message as before.
+  - Studio's tabs start on the Mode of the ingest definition Cube was opened from.
+  - Edit MatView refuses an access point that reads the view being edited.
+  - A disabled source's tooltip names the cube's kind of source.
+  - New in `@finos/legend-cube`: `lakehouseSourcesAreApart` and `getSourceKindName`.
+  - New in `@finos/legend-cube-builder`: `CubeIngestCatalog.listProjectDefinitions` and `CubeHost.queryRules`.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`9f2ef2f`](https://github.com/finos/legend-studio/commit/9f2ef2fbcc6920589035821549f98707dcc258d3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Legend Analytics: a data product cube can read its project's ingest data sets, and an ingest cube its project's data products.
+
+  - The Ingest tab on a data product cube lists the definitions its data products' deployment deployed from their project, in the viewer's own environment of the cube's Mode, with no environment or producer to pick. A definition or data set the data product's version lacks is greyed out, saying so; columns are those of that version.
+  - The Data Product tab on an ingest cube lists only its data sets' project's products of its producer deployment. Adding one reads the data sets again at the product's version, in the same undo step.
+  - `CubeIngestCatalog.listProjectDefinitions` takes the deployment of the cube's data products, `describe` and `resolveSchemas` take the cube's `project`, and `CubeIngestDefinitionCandidate` has a `disabledReason`.
+
+- [#5861](https://github.com/finos/legend-studio/pull/5861) [`957fcfc`](https://github.com/finos/legend-studio/commit/957fcfcdc82d6424a806b5a27171e86a16c33181) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Notes beside the steps on Legend Cube's canvas: one plain-text note per step, written in the Note field of its editor or from its menu (Add Note…), and shown as a muted line under it, with the whole note on hover. Notes are saved in the spec's `meta.notes`. They follow their step when it is copied, pasted, duplicated or removed, and only change how the canvas shows the cube, never what it runs.
+
+## 0.0.11
+
+### Patch Changes
+
+- [#5783](https://github.com/finos/legend-studio/pull/5783) [`5e0b281`](https://github.com/finos/legend-studio/commit/5e0b2815c5a1ad7449b492812c0783275f6ef870) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Filter by Expression and Extend Columns show an expression's outline: how Pure reads the code, part by part, each part with its role and the kind of value it gives. A warning appears where Pure's precedence reads the code other than it was likely meant (`$x.A + 1 == 3`, `$x.A > 0 && $x.A < 30`, `!$x.A > 3`), with a one-click fix that puts in the parentheses. A value that can be empty where one is needed is flagged, with `->toOne()` and `->coalesce(…)` fixes.
+
+- [#5849](https://github.com/finos/legend-studio/pull/5849) [`fe59254`](https://github.com/finos/legend-studio/commit/fe59254a9d4002d29aa92c1d2fb0fa9a1297b808) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Filter by Expression and Extend Columns get a functions panel: the engine's functions of values and Cube's own, by category, found by name, each with its signatures, documentation and how the engine's tests of it went on the cube's database. Insert writes a call of it at the cursor, as `->name(…)` after a value. The completions, hover and signature help say how those tests went on the cube's database too, as information: a failing test doesn't hide a function. Cube's own `substring` and `indexOf` are documented, with how their results differ by database.
+
 ## 0.0.10
 
 ### Patch Changes

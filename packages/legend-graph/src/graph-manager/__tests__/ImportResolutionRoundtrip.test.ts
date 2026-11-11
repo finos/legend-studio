@@ -15,6 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
+import { guaranteeType } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST_DATA__AutoImportsWithSystemProfiles,
@@ -121,6 +122,7 @@ import {
 } from './roundtripTestData/TEST_DATA__ComputeRoundtrip.js';
 import {
   TEST_DATA__AVAILABILITY_NO_TESTS,
+  TEST_DATA__EXTENDED_AVAILABILITY,
   TEST_DATA__AVAILABILITY_DEFAULT_FORMAT,
   TEST_DATA__AVAILABILITY_LITE_FORMAT,
   TEST_DATA__AVAILABILITY_ALLOY_QUERY_FORMAT,
@@ -131,7 +133,17 @@ import { TEST_DATA__PrecisePrimitiveRoundtrip } from './roundtripTestData/TEST_D
 import {
   TEST_DATA__INGEST_DEFINITION,
   TEST_DATA__INGEST_DEFINITION__TEST_SUITES,
+  TEST_DATA__EXTENDED_INGEST_DEFINITION,
 } from './roundtripTestData/TEST_DATA__IngestRoundtrip.js';
+import {
+  Availability,
+  ExtendedAvailability,
+} from '../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import { AvailabilityTestSuite } from '../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
+import {
+  ExtendedIngestDefinition,
+  IngestDefinition,
+} from '../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   TEST_DATA__FunctionTestDataRoundtrip,
   TEST_DATA__FunctionTestDataWithDataResolverProtocol,
@@ -446,6 +458,7 @@ describe(unitTest('DSL Availability'), () => {
 
   test.each([
     ['Availability with no tests', TEST_DATA__AVAILABILITY_NO_TESTS],
+    ['Extended availability', TEST_DATA__EXTENDED_AVAILABILITY],
     [
       'Availability with DEFAULT format test',
       TEST_DATA__AVAILABILITY_DEFAULT_FORMAT,
@@ -461,6 +474,61 @@ describe(unitTest('DSL Availability'), () => {
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkAvailabilityRoundtrip(entities as Entity[]);
+  });
+
+  test('Extended availability is built as an extended availability', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__EXTENDED_AVAILABILITY as Entity[],
+      { TEMPORARY__preserveSectionIndex: true },
+    );
+    const element = graphManagerState.graph.allOwnElements.find(
+      (e) => e.path === 'availability::A',
+    );
+    expect(element).toBeInstanceOf(ExtendedAvailability);
+    expect(element).toBeInstanceOf(Availability);
+  });
+
+  test('Extended availability keeps its _type when its test suites are edited', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__EXTENDED_AVAILABILITY as Entity[],
+      { TEMPORARY__preserveSectionIndex: true },
+    );
+    const availability = guaranteeType(
+      graphManagerState.graph.allOwnElements.find(
+        (e) => e.path === 'availability::A',
+      ),
+      Availability,
+    );
+    const toContent = () =>
+      graphManagerState.graphManager.elementToEntity(availability).content;
+
+    const suite = new AvailabilityTestSuite();
+    suite.id = 'suite_added';
+    availability.tests.push(suite);
+    expect(toContent()._type).toBe('ExtendedAvailability');
+    expect(toContent().testSuites).toHaveLength(1);
+
+    availability.tests.splice(0);
+    expect(toContent()._type).toBe('ExtendedAvailability');
+    expect(toContent().barrierGenerator).toBeDefined();
+  });
+
+  test('Plain availability is not built as an extended availability', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__AVAILABILITY_NO_TESTS as Entity[],
+      { TEMPORARY__preserveSectionIndex: true },
+    );
+    expect(
+      graphManagerState.graph.allOwnElements.find(
+        (e) => e.path === 'availability::A',
+      ),
+    ).not.toBeInstanceOf(ExtendedAvailability);
   });
 });
 
@@ -503,8 +571,34 @@ describe(unitTest('Ingest definition'), () => {
       'Database with transitive ingest include (parent DB references schema from child DB ingest include)',
       TEST_DATA__IngestIncludeTransitiveRoundtrip,
     ],
+    ['Extended ingest definition', TEST_DATA__EXTENDED_INGEST_DEFINITION],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
+  });
+
+  test('Extended ingest definition is built as an extended ingest definition', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__EXTENDED_INGEST_DEFINITION,
+    );
+    const element = graphManagerState.graph.getElement('model::PersonIngest');
+    expect(element).toBeInstanceOf(ExtendedIngestDefinition);
+    expect(element).toBeInstanceOf(IngestDefinition);
+    expect(
+      graphManagerState.graphManager.elementToEntity(element).content._type,
+    ).toBe('extendedIngestDefinition');
+  });
+
+  test('Plain ingest definition is not built as an extended ingest definition', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__INGEST_DEFINITION,
+    );
+    expect(
+      graphManagerState.graph.getElement('model::PersonIngest'),
+    ).not.toBeInstanceOf(ExtendedIngestDefinition);
   });
 });
 

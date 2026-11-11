@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type JSX, useCallback, useState } from 'react';
+import { type JSX, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -35,23 +35,99 @@ import type {
 import { observer } from 'mobx-react-lite';
 import { formatItemPrice, OrderProfileLabel } from './orderProfileUtils.js';
 
+type TraderProfileItemWithOptionalMultiselect = TraderProfileItem & {
+  multiselect?: boolean;
+};
+
+const getItemMultiselect = (item: TraderProfileItem): boolean | undefined =>
+  (item as TraderProfileItemWithOptionalMultiselect).multiselect;
+
 export const OrderProfileMultiselectModal = observer(
   (props: {
     profile: TraderProfile;
     open: boolean;
     onClose: () => void;
-    onConfirm: (selectedTerminals: TraderProfileItem[]) => void;
+    onConfirm: (selectedItems: TraderProfileItem[]) => void;
   }): JSX.Element => {
     const { profile, open, onClose, onConfirm } = props;
-    const terminalItems = profile.items.filter(
-      (item) => item.isTerminal && !item.isOwned,
+    const sanitizeModelKey = (key: string): string =>
+      key
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9_-]/g, '')
+        .toLowerCase();
+    const isSelectableCandidate = (item: TraderProfileItem): boolean =>
+      item.isTerminal && getItemMultiselect(item) === true;
+
+    const [selectedByModel, setSelectedByModel] = useState<
+      Record<string, number>
+    >({});
+
+    const groupedItems = useMemo(() => {
+      const availableItems = profile.items.filter((item) => !item.isOwned);
+      const groupedMap = new Map<string, TraderProfileItem[]>();
+      for (const item of availableItems) {
+        const modelKey = item.model ?? OrderProfileLabel.UNSPECIFIED_MODEL;
+        const existingItems = groupedMap.get(modelKey);
+        if (existingItems) {
+          existingItems.push(item);
+        } else {
+          groupedMap.set(modelKey, [item]);
+        }
+      }
+
+      return Array.from(groupedMap.entries()).map(([modelKey, items]) => {
+        const selectableItems = items.filter(isSelectableCandidate);
+        const isSelectable = selectableItems.length > 1;
+        const selectableIds = new Set(selectableItems.map((item) => item.id));
+
+        return {
+          modelKey,
+          items,
+          selectableItems,
+          bundledItems: isSelectable
+            ? items.filter((item) => !selectableIds.has(item.id))
+            : items,
+          isSelectable,
+        };
+      });
+    }, [profile.items]);
+
+    const selectableGroups = groupedItems.filter((group) => group.isSelectable);
+
+    useEffect(() => {
+      if (open) {
+        setSelectedByModel({});
+      }
+    }, [open, profile.id]);
+
+    const allSelectableGroupsChosen = selectableGroups.every(
+      (group) => selectedByModel[group.modelKey] !== undefined,
     );
-    const [selectedId, setSelectedId] = useState<number | null>(null);
+
+    const handleModelSelection = useCallback((modelKey: string, id: number) => {
+      setSelectedByModel((prev) => ({ ...prev, [modelKey]: id }));
+    }, []);
 
     const handleConfirm = useCallback((): void => {
-      const selectedItem = terminalItems.find((item) => item.id === selectedId);
-      onConfirm(selectedItem ? [selectedItem] : []);
-    }, [terminalItems, selectedId, onConfirm]);
+      const selectedItems: TraderProfileItem[] = [];
+      for (const group of groupedItems) {
+        if (group.isSelectable) {
+          const selectedId = selectedByModel[group.modelKey];
+          if (selectedId !== undefined) {
+            const selectedItem = group.selectableItems.find(
+              (item) => item.id === selectedId,
+            );
+            if (selectedItem) {
+              selectedItems.push(selectedItem);
+              selectedItems.push(...group.bundledItems);
+            }
+          }
+        } else {
+          selectedItems.push(...group.items);
+        }
+      }
+      onConfirm(selectedItems);
+    }, [groupedItems, selectedByModel, onConfirm]);
 
     return (
       <Dialog
@@ -70,59 +146,138 @@ export const OrderProfileMultiselectModal = observer(
             variant="body2"
             className="order-profile-multiselect-modal__description"
           >
-            Choose one terminal to include from{' '}
+            Choose your preferred vendor profile for each model in{' '}
             <strong>{profile.productName}</strong>.{' '}
             {OrderProfileLabel.SELECT_TERMINAL_DESCRIPTION}
           </Typography>
-          <List dense={false}>
-            {terminalItems.map((item) => (
-              <ListItemButton
-                key={item.id}
-                onClick={() => setSelectedId(item.id)}
-                selected={selectedId === item.id}
-                className={`order-profile-multiselect-modal__list-item ${selectedId === item.id ? 'order-profile-multiselect-modal__list-item--selected' : ''}`}
+          <Box className="order-profile-multiselect-modal__sections">
+            {groupedItems.map((group) => (
+              <Box
+                key={group.modelKey}
+                className="order-profile-multiselect-modal__section"
               >
-                <Radio
-                  checked={selectedId === item.id}
-                  onChange={() => setSelectedId(item.id)}
-                  size="small"
-                  className="order-profile-multiselect-modal__radio"
-                  inputProps={{ 'aria-labelledby': `terminal-item-${item.id}` }}
-                />
-                <ListItemText
-                  id={`terminal-item-${item.id}`}
-                  disableTypography={true}
-                  primary={
-                    <Box className="order-profile-multiselect-modal__item-primary">
-                      <Typography
-                        variant="body1"
-                        className="order-profile-multiselect-modal__item-name"
-                      >
-                        {item.productName}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        className="order-profile-multiselect-modal__item-price"
-                      >
-                        {formatItemPrice(item.price)}
-                      </Typography>
-                    </Box>
-                  }
-                  secondary={
-                    item.model !== null && item.model !== undefined ? (
-                      <Typography
-                        variant="caption"
-                        className="order-profile-multiselect-modal__item-model"
-                      >
-                        {OrderProfileLabel.MODEL_PREFIX}
-                        {item.model}
-                      </Typography>
-                    ) : undefined
-                  }
-                />
-              </ListItemButton>
+                <Typography
+                  variant="h6"
+                  className="order-profile-multiselect-modal__section-title"
+                >
+                  {group.modelKey}
+                </Typography>
+                {group.isSelectable && (
+                  <Typography
+                    variant="body2"
+                    className="order-profile-multiselect-modal__section-subtitle"
+                  >
+                    Select one preferred vendor profile.
+                  </Typography>
+                )}
+
+                {group.isSelectable ? (
+                  <List dense={false}>
+                    {group.selectableItems.map((item) => {
+                      const optionId = `terminal-item-${sanitizeModelKey(group.modelKey)}-${item.id}`;
+                      return (
+                        <ListItemButton
+                          key={item.id}
+                          onClick={() =>
+                            handleModelSelection(group.modelKey, item.id)
+                          }
+                          selected={selectedByModel[group.modelKey] === item.id}
+                          className={`order-profile-multiselect-modal__list-item ${selectedByModel[group.modelKey] === item.id ? 'order-profile-multiselect-modal__list-item--selected' : ''}`}
+                        >
+                          <Radio
+                            checked={
+                              selectedByModel[group.modelKey] === item.id
+                            }
+                            onChange={() =>
+                              handleModelSelection(group.modelKey, item.id)
+                            }
+                            size="small"
+                            className="order-profile-multiselect-modal__radio"
+                            slotProps={{
+                              input: {
+                                'aria-labelledby': optionId,
+                              },
+                            }}
+                          />
+                          <ListItemText
+                            id={optionId}
+                            disableTypography={true}
+                            primary={
+                              <Box className="order-profile-multiselect-modal__item-primary">
+                                <Typography
+                                  variant="body1"
+                                  className="order-profile-multiselect-modal__item-name"
+                                >
+                                  {item.productName}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  className="order-profile-multiselect-modal__item-price"
+                                >
+                                  {formatItemPrice(item.price)}
+                                </Typography>
+                              </Box>
+                            }
+                            secondary={
+                              <Typography
+                                variant="caption"
+                                className="order-profile-multiselect-modal__item-model"
+                              >
+                                {item.providerName}
+                              </Typography>
+                            }
+                          />
+                        </ListItemButton>
+                      );
+                    })}
+                  </List>
+                ) : undefined}
+
+                {group.bundledItems.length > 0 && (
+                  <>
+                    <Typography
+                      variant="caption"
+                      className="order-profile-multiselect-modal__bundled-title"
+                    >
+                      Included with this model
+                    </Typography>
+                    <List dense={true}>
+                      {group.bundledItems.map((item) => (
+                        <ListItemText
+                          key={`bundled-${group.modelKey}-${item.id}`}
+                          className="order-profile-multiselect-modal__included-item"
+                          primary={
+                            <Box className="order-profile-multiselect-modal__item-primary">
+                              <Typography
+                                variant="body2"
+                                className="order-profile-multiselect-modal__item-name"
+                              >
+                                {item.productName}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                className="order-profile-multiselect-modal__item-price"
+                              >
+                                {formatItemPrice(item.price)}
+                              </Typography>
+                            </Box>
+                          }
+                          secondary={
+                            <Typography
+                              variant="caption"
+                              className="order-profile-multiselect-modal__item-model"
+                            >
+                              {item.providerName}
+                            </Typography>
+                          }
+                        />
+                      ))}
+                    </List>
+                  </>
+                )}
+              </Box>
             ))}
-          </List>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} variant="outlined">
@@ -131,7 +286,7 @@ export const OrderProfileMultiselectModal = observer(
           <Button
             onClick={handleConfirm}
             variant="contained"
-            disabled={selectedId === null}
+            disabled={!allSelectableGroupsChosen}
           >
             {OrderProfileLabel.ADD_TO_CART}
           </Button>

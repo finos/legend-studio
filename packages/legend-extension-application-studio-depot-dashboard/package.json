@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-application-studio-depot-dashboard",
-  "version": "0.1.114",
+  "version": "0.1.118",
   "description": "Legend extension for Depot",
   "keywords": [
     "legend",
@@ -48,6 +48,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
+    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "19.0.10",

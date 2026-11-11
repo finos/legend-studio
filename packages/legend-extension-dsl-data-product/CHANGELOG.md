@@ -1,5 +1,21 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.8
+
+## 0.2.7
+
+## 0.2.6
+
+### Patch Changes
+
+- [#5837](https://github.com/finos/legend-studio/pull/5837) [`4d7a17d`](https://github.com/finos/legend-studio/commit/4d7a17d679e82212a707757eecfea6bcfc719084) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The data product viewer's access point tabs: **Grammar** becomes **Pure Query**, which shows the `#P{<data product>.<access point>}#` accessor that queries the access point (a parameterized access point names its parameters in parentheses, with their types in a caption) and an example, for every compute target; **Query** becomes **Legend Query**. The access point's definition moves into **Column Specifications**, behind a quiet "View definition", and is fetched when first opened. Each code block copies with one click, with the outcome in its tooltip, and follows the app's light or dark theme.
+
+  In **Column Specifications**, a column without a description or sample values shows a quiet "—". The data product's owners, and the producer in Studio's preview, read when no column has a description, or there are no sample values, with links to how to add them: the documentation entries `dsl-dataproduct.column-descriptions` and `dsl-dataproduct.sample-values`, when configured. Anyone else without access reads that sample values show once they have it.
+
+- [#5852](https://github.com/finos/legend-studio/pull/5852) [`42b9c93`](https://github.com/finos/legend-studio/commit/42b9c93f0edcf3c4f238574f08b309e0acf36bf3) ([@yash0024](https://github.com/yash0024)) - The data product viewer now fetches the data product's data requests once and shares them across access point groups, and fetches only the data product entity it needs from depot. It also fetches approved users for system account contracts and completed data requests once per data product instead of once per access point group, and no longer fetches the user's access status separately when it is already known from the user's contracts. When the data product is not present on the project version, or the version can't be loaded from depot, the error now says so.
+
+- [#5835](https://github.com/finos/legend-studio/pull/5835) [`5964290`](https://github.com/finos/legend-studio/commit/5964290ae09881468276d635c4bdb887c676bbbd) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The data product viewer shows IDs next to the titles, and one click copies an ID: beside the title, the deployed data product ID and the deployment ID (DID), which move under it when a long title leaves no room; after each access point group and access point title, its ID. An ID that the title already shows is not repeated, and the header shows no IDs without a deployment (as in Studio's preview). A description that only repeats its title (ignoring case and spacing) is no longer shown, for the data product, its access point groups and its access points. Access point groups no longer show the LAKEHOUSE badge: it was the same on every group.
+
 ## 0.2.5
 
 ## 0.2.4

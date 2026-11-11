@@ -1,5 +1,15 @@
 # @finos/legend-lego
 
+## 2.0.237
+
+## 2.0.236
+
+### Patch Changes
+
+- [#5849](https://github.com/finos/legend-studio/pull/5849) [`fe59254`](https://github.com/finos/legend-studio/commit/fe59254a9d4002d29aa92c1d2fb0fa9a1297b808) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - `CodeEditor`'s text inserter takes options: the text as a snippet whose placeholders are filled in turn, written verbatim, or opening the signature help. Its text can also be made from the character before the cursor.
+
+- [#5783](https://github.com/finos/legend-studio/pull/5783) [`5e0b281`](https://github.com/finos/legend-studio/commit/5e0b2815c5a1ad7449b492812c0783275f6ef870) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - `CodeEditor` takes a `textEditorRef`, set to a function that writes edits into its text as one step Undo takes back, and a `highlightedRange` to highlight a range of its text.
+
 ## 2.0.235
 
 ## 2.0.234

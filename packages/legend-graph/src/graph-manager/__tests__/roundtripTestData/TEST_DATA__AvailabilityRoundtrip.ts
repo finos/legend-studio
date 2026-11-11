@@ -71,6 +71,25 @@ export const TEST_DATA__AVAILABILITY_NO_TESTS = [
   sectionIndexForSingleAvailability,
 ];
 
+export const TEST_DATA__EXTENDED_AVAILABILITY = [
+  {
+    ...baseAvailabilityEntity,
+    content: {
+      ...baseAvailabilityEntity.content,
+      _type: 'ExtendedAvailability',
+      barrierGenerator: {
+        _type: 'packageableElementPointer',
+        path: 'model::barrier__Any_1_',
+      },
+      batchAttributesGenerator: {
+        _type: 'packageableElementPointer',
+        path: 'model::batchAttributes__Any_1_',
+      },
+    },
+  },
+  sectionIndexForSingleAvailability,
+];
+
 export const TEST_DATA__AVAILABILITY_DEFAULT_FORMAT = [
   {
     ...baseAvailabilityEntity,

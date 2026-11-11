@@ -50,3 +50,6 @@ export class Availability
     ]);
   }
 }
+
+// subtype of `Availability` sharing its classifier path
+export class ExtendedAvailability extends Availability {}

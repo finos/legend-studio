@@ -287,11 +287,17 @@
   }
 }
 
+// with reduced motion (which Windows reports when its animation effects are off, as on many virtual
+// desktops), the sliding line stops, but the rings keep turning, slower: they are what says that
+// an action is running
 @media (prefers-reduced-motion: reduce) {
-  .editor__status-bar--busy::before,
+  .editor__status-bar--busy::before {
+    animation: none;
+  }
+
   .editor__status-bar__action--running::after,
   .editor__status-bar__activity__spinner {
-    animation: none;
+    animation-duration: 2s;
   }
 }
 
