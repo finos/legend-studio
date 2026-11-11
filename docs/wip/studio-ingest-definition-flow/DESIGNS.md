@@ -7,10 +7,11 @@ views (a "Data sets" group in the list, with each one's columns) come in a separ
 
 This page keeps the designs we considered, and why we chose this one.
 
-> **Every screenshot below is a design mock on made-up data:** an ingest definition,
-> `markets::ingest::TradePositionsIngest`, with three views, and a version of it with ten views and twenty-three plain
-> data sets. The mocks ran in Studio with Cube's real canvas, but their details, such as the captions under the flows,
-> differ from what was built. Screenshots of the implementation are in the pull request.
+> **Every screenshot below is on made-up data, and all but the first are design mocks.** The data is an ingest
+> definition, `markets::ingest::TradePositionsIngest`, with three views, and a version of it with ten views and
+> twenty-three plain data sets. The first screenshot is today's editor. The mocks ran in Studio with Cube's real canvas,
+> but their details, such as the captions under the flows, differ from what was built. Screenshots of the
+> implementation are in the pull request.
 
 - [Today](#today)
 - [What stays as it is](#what-stays-as-it-is)
