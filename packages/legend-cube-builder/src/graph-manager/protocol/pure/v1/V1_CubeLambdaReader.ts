@@ -500,3 +500,58 @@ export const V1_readCubeLambda = (json: unknown): IR => {
 
 /** The IR of any value specification's JSON, e.g. an expression's lambda a step stores */
 export const V1_readCubeValueSpecification = (json: unknown): IR => read(json);
+
+/** A lambda's parameter, as its protocol JSON declares it */
+export interface V1_CubeLambdaParameter {
+  readonly name: string;
+  /** Its type, `undefined` when the JSON declares none Cube can read */
+  readonly type: Extract<IR, { readonly k: 'genericType' }> | undefined;
+  /** How many values it takes, its upper bound `undefined` for any number; `undefined` when the JSON doesn't say */
+  readonly multiplicity:
+    | { readonly lowerBound: number; readonly upperBound: number | undefined }
+    | undefined;
+}
+
+/**
+ * The parameters a lambda's protocol JSON declares, in order, with the types
+ * and multiplicities Cube's IR doesn't keep (`V1_readCubeLambda`): its type's
+ * `genericType`, or its `class` as older protocol versions name it
+ */
+export const V1_readCubeLambdaParameters = (
+  json: unknown,
+): V1_CubeLambdaParameter[] =>
+  arrayOf(isObject(json) ? json.parameters : undefined).flatMap(
+    (parameter): V1_CubeLambdaParameter[] => {
+      const value = isObject(parameter) ? parameter : {};
+      const name = stringOf(value.name);
+      if (!name) {
+        // a lambda with one isn't read
+        return [];
+      }
+      let type: V1_CubeLambdaParameter['type'];
+      try {
+        const className = stringOf(value.class);
+        type = isObject(value.genericType)
+          ? readGenericType(value.genericType)
+          : className
+            ? genericType(className)
+            : undefined;
+      } catch {
+        // its type isn't one Cube can read
+      }
+      const multiplicity = isObject(value.multiplicity)
+        ? value.multiplicity
+        : {};
+      const lowerBound = numberOf(multiplicity.lowerBound);
+      return [
+        {
+          name,
+          type,
+          multiplicity:
+            lowerBound === undefined
+              ? undefined
+              : { lowerBound, upperBound: numberOf(multiplicity.upperBound) },
+        },
+      ];
+    },
+  );

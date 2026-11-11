@@ -20,7 +20,11 @@
  * what to teach Cube next
  */
 export enum CubeLambdaReadErrorKind {
-  /** The lambda takes parameters, which Cube doesn't read yet */
+  /**
+   * The lambda takes parameters, which Cube's editor doesn't read; read to be
+   * drawn, it reads one where Cube can't show it yet: Cube shows a parameter
+   * in a filter's condition or a new column's expression only
+   */
   PARAMETERS = 'parameters',
   /**
    * It isn't a lambda of one query of rows, after lets that bind steps of it:

@@ -219,13 +219,24 @@ return reading.kind === 'flow' ? (
   the host to count: `parameters`, `shape`, `value`, `source`, `noStep`, `notYet`, `form` or `sameNameSum`; its
   `functionName`, the step function it names; its `message`, the words. Only an unexpected error throws.
 - **Drawn, not edited:** read to be drawn (`forDrawing` on `readCubeQuery`), a group may name a sum like the column
-  it adds up, as Pure allows: `QUANTITY: x|$x.QUANTITY : y|$y->sum()`. The editor refuses it, as a `sameNameSum`.
+  it adds up, as Pure allows: `QUANTITY: x|$x.QUANTITY : y|$y->sum()`. The editor refuses it, as a `sameNameSum`. A
+  filter by expression shows its condition as Cube prints it (no engine gives its text), and counts as checked.
+- **Parameters:** a definition may take parameters, the values a consumer queries it with. A step reads one where it
+  keeps the Pure as it is: a filter's condition, which makes it a filter by expression
+  (`$p.BUSINESS_DATE == $businessDate`), or a new column's expression. A parameter anywhere else, e.g. a limit's
+  size, a join's condition or the rows themselves, is refused as `parameters`, naming the function. `parameters`
+  lists each with its type (a `CubeType`, for its icon and words), its multiplicity as Pure writes it (`[1]`,
+  `[0..1]`, `[*]`) and the steps that read it. The editor still refuses any lambda with parameters
+  (`splitCubeLambda` reads them only with `readsParameters`).
 - **Unknown columns:** a data set whose definition the host doesn't give, or Cube can't read, is drawn by its name,
   as any other, and the steps after it aren't checked (`unknownDataSets`, `uncheckedStepIds`).
 - **Steps:** `steps`, each after the ones it reads, with its inputs and the relation it was read from (`ir`, which
   reads the lambda's `lets` by name): the Pure up to it.
 - **The canvas:** it fills its container and pans. Its controls, bottom right, zoom, as pinching does; the wheel
   scrolls the host's page. A click, Enter or Space on a step calls `onSelectStep`, and `selectedStepId` outlines one.
+  The parameters are dashed boxes in a row above the steps (`$name` and the type), each centred over the steps that
+  read it, with a dashed wire into the top of each; one no step reads sits at the row's start. A parameter is no
+  step: a click on it picks nothing. Its tooltip says its type in words and the steps that read it.
   It has no step editor, menu, palette or minimap, and needs no `CubeEditorState`, application store or drag and
   drop provider. Its colours, React Flow's included, come from Cube's theme tokens, so they follow the theme class
   around it; `colorMode` sets only React Flow's own defaults.

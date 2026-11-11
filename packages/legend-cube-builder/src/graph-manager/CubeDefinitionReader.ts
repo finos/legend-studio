@@ -20,9 +20,12 @@ import {
   findCubeLambdaSources,
   IngestDatasetSource,
   readCubeQuery,
+  resolveCubeType,
   splitCubeLambda,
+  TypeFamily,
   UNRESOLVED,
   type CubeSourceStep,
+  type CubeType,
   type IR,
   type Query,
   type Schema,
@@ -34,6 +37,8 @@ import {
   CUBE_EXPRESSION_CODEC,
   readCubeIngestDataSets,
   readCubeLambdaJson,
+  readCubeLambdaParameters,
+  type CubeLambdaParameterDeclaration,
 } from './protocol/pure/CubeProtocolJson.js';
 
 // A data product's access point definition, its lambda, read into steps to
@@ -41,7 +46,9 @@ import {
 // as the host has the lambda's protocol JSON already, and the columns of its
 // ingest data sets typed from their definitions' JSON. Cube reads all of a
 // lambda or none of it, so what it can't read comes back as a refusal, of a
-// kind a host can count, and the host shows the Pure instead.
+// kind a host can count, and the host shows the Pure instead. A definition
+// may take parameters, which its steps read where they keep the Pure as it
+// is: a filter's condition, a new column's expression.
 
 /** An ingest data set a definition reads */
 export interface CubeDefinitionDataSet {
@@ -64,6 +71,20 @@ export interface CubeDefinitionStep {
   readonly ir: IR;
 }
 
+/** A value a definition takes when it is queried: one of its lambda's parameters */
+export interface CubeDefinitionParameter {
+  readonly name: string;
+  /**
+   * Its type, e.g. `StrictDate`; opaque for one Cube doesn't know, e.g. an
+   * enumeration; `undefined` when the lambda declares none
+   */
+  readonly type: CubeType | undefined;
+  /** How many values it takes, as Pure writes it: `[1]`, `[0..1]`, `[*]`…; `undefined` when the lambda doesn't say */
+  readonly multiplicity: string | undefined;
+  /** The steps that read it, in the flow's order: none when no step does */
+  readonly stepIds: readonly string[];
+}
+
 /** A definition Cube can draw */
 export interface CubeDefinitionFlowReading {
   readonly kind: 'flow';
@@ -77,6 +98,8 @@ export interface CubeDefinitionFlowReading {
   readonly uncheckedStepIds: readonly string[];
   /** The ingest data sets it reads whose columns the host didn't give: drawn by name */
   readonly unknownDataSets: readonly CubeDefinitionDataSet[];
+  /** The values it takes when it is queried, in order: none for most */
+  readonly parameters: readonly CubeDefinitionParameter[];
   /** The steps as Cube holds them, for `CubeDefinitionFlow` to draw */
   readonly query: Query;
 }
@@ -128,6 +151,37 @@ const describeSource = (source: IR): string =>
         : CUBE_DEFINITION_FLOW_MESSAGE.OTHER;
 
 /**
+ * A parameter's type as Cube knows it: by its path or, for a primitive whose
+ * path has a package, e.g. `meta::pure::precisePrimitives::Varchar`, its
+ * name, as an ingest data set's columns are typed
+ */
+const typeOf = (
+  type: NonNullable<CubeLambdaParameterDeclaration['type']>,
+): CubeType => {
+  const name = type.path.slice(type.path.lastIndexOf(':') + 1);
+  const params = type.params ?? [];
+  return (
+    [type.path, name]
+      .map((path) => resolveCubeType(path, params))
+      .find((candidate) => candidate.family !== TypeFamily.OPAQUE) ??
+    resolveCubeType(type.path, params)
+  );
+};
+
+/** A multiplicity as Pure writes it: `[1]`, `[0..1]`, `[*]`, `[1..*]` */
+const printMultiplicity = ({
+  lowerBound,
+  upperBound,
+}: NonNullable<CubeLambdaParameterDeclaration['multiplicity']>): string =>
+  upperBound === undefined
+    ? lowerBound === 0
+      ? '[*]'
+      : `[${lowerBound}..*]`
+    : lowerBound === upperBound
+      ? `[${lowerBound}]`
+      : `[${lowerBound}..${upperBound}]`;
+
+/**
  * The ingest definitions a definition reads, by path, in the order it reads
  * them: what a host loads before reading it (`getIngestDefinition`); none when
  * Cube can't read it
@@ -137,7 +191,7 @@ export const findCubeDefinitionIngestDefinitions = (
 ): string[] => {
   try {
     const sources = findCubeLambdaSources(
-      splitCubeLambda(readCubeLambdaJson(lambda)),
+      splitCubeLambda(readCubeLambdaJson(lambda), { readsParameters: true }),
     );
     return [
       ...new Set(
@@ -157,15 +211,19 @@ export const findCubeDefinitionIngestDefinitions = (
 /**
  * A definition, its lambda's protocol JSON, read into steps to be drawn, with
  * no engine. Read to be drawn, it may be what only Cube's editor refuses,
- * e.g. a group's sum named like the column it adds up. What Cube can't read
- * comes back as a refusal; it throws only on an unexpected error.
+ * e.g. a group's sum named like the column it adds up, or take parameters,
+ * which its steps read in a filter's condition or a new column's expression.
+ * What Cube can't read comes back as a refusal; it throws only on an
+ * unexpected error.
  */
 export const readCubeDefinition = (
   lambda: unknown,
   options: CubeDefinitionReadOptions = {},
 ): CubeDefinitionReading => {
   try {
-    const parts = splitCubeLambda(readCubeLambdaJson(lambda));
+    const parts = splitCubeLambda(readCubeLambdaJson(lambda), {
+      readsParameters: true,
+    });
     // each ingest definition's data sets, typed once; none for one the host
     // doesn't have or Cube can't read, whose data sets are drawn by name
     const dataSets = new Map<string, readonly CubeIngestDataSet[]>();
@@ -223,7 +281,7 @@ export const readCubeDefinition = (
           ),
       };
     };
-    const { query, unchecked, stepIRs } = readCubeQuery(parts, {
+    const { query, unchecked, stepIRs, parameterReads } = readCubeQuery(parts, {
       bindSource,
       expressions: CUBE_EXPRESSION_CODEC,
       forDrawing: true,
@@ -242,6 +300,18 @@ export const readCubeDefinition = (
       lets: parts.lets,
       uncheckedStepIds: unchecked,
       unknownDataSets,
+      parameters: readCubeLambdaParameters(lambda).map((parameter) => ({
+        name: parameter.name,
+        type: parameter.type ? typeOf(parameter.type) : undefined,
+        multiplicity: parameter.multiplicity
+          ? printMultiplicity(parameter.multiplicity)
+          : undefined,
+        stepIds: query.nodes
+          .filter((node) =>
+            parameterReads.get(node.id)?.includes(parameter.name),
+          )
+          .map((node) => node.id),
+      })),
       query,
     };
   } catch (error) {

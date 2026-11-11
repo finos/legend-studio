@@ -14,54 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  CalendarIcon,
-  clsx,
-  EmptyClockIcon,
-  HashtagIcon,
-  ListIcon,
-  QuestionIcon,
-  SitemapIcon,
-  StringTypeIcon,
-  ToggleIcon,
-} from '@finos/legend-art';
-import {
-  type CubeType,
-  type Schema,
-  type SchemaColumn,
-  TypeFamily,
-} from '@finos/legend-cube';
+import { clsx } from '@finos/legend-art';
+import type { Schema, SchemaColumn } from '@finos/legend-cube';
 import {
   getColumnTypeLabel,
   getColumnTypeTitle,
 } from '../../__lib__/LegendCubeLabels.js';
-
-const FAMILY_ICONS: Readonly<
-  Partial<Record<TypeFamily, React.FC<{ className?: string }>>>
-> = {
-  [TypeFamily.STRING]: StringTypeIcon,
-  [TypeFamily.BOOLEAN]: ToggleIcon,
-  [TypeFamily.INTEGER]: HashtagIcon,
-  [TypeFamily.FLOAT]: HashtagIcon,
-  [TypeFamily.DECIMAL]: HashtagIcon,
-  [TypeFamily.NUMBER]: HashtagIcon,
-  [TypeFamily.STRICT_DATE]: CalendarIcon,
-  [TypeFamily.DATETIME]: CalendarIcon,
-  [TypeFamily.DATE]: CalendarIcon,
-  [TypeFamily.STRICT_TIME]: EmptyClockIcon,
-  [TypeFamily.ENUM]: ListIcon,
-  // a JSON document: its fields as a tree (PLAN §11.20)
-  [TypeFamily.VARIANT]: SitemapIcon,
-};
-
-/** The icon of a column type's family: text, number, date, ...; a question mark for the rest */
-export const CubeColumnTypeIcon: React.FC<{
-  type: CubeType;
-  className?: string;
-}> = (props) => {
-  const Icon = FAMILY_ICONS[props.type.family] ?? QuestionIcon;
-  return <Icon className={clsx('shrink-0', props.className)} />;
-};
+import { CubeColumnTypeIcon } from '../CubeColumnTypeIcon.js';
 
 /**
  * A column's type as its family's icon alone, beside its name: the type in

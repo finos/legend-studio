@@ -55,8 +55,12 @@ export const describeDefinitionFlowRefusal = (
   // Cube's code loads only when a definition opens
   const reason: string = refusal.reason;
   switch (reason) {
+    // Cube shows a parameter only in a filter's condition or a new column's
+    // expression
     case 'parameters':
-      return "it takes parameters, which Cube's flow doesn't show yet";
+      return functionName
+        ? `it uses a parameter in its ${functionName}, which Cube's flow doesn't show yet`
+        : "it uses a parameter where Cube's flow doesn't show one yet";
     case 'noStep':
       return functionName
         ? `it uses ${functionName}, which Cube has no step for yet`

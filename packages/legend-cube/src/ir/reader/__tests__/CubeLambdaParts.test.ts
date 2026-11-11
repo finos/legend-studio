@@ -94,6 +94,24 @@ describe("A lambda's parts", () => {
     ).toBe(true);
   });
 
+  test('Splits a lambda with parameters when it is read to be drawn, keeping their names in order', () => {
+    const parts = splitCubeLambda(lambda(['asOf', 'desk'], [sorted(TABLE)]), {
+      readsParameters: true,
+    });
+    expect(parts.parameters).toEqual(['asOf', 'desk']);
+    expect(isSameCubeIR(parts.relation, sorted(TABLE))).toBe(true);
+    // a run's shape too
+    expect(
+      splitCubeLambda(lambda(['x'], [from(limited(sorted(TABLE)))]), {
+        readsParameters: true,
+      }).parameters,
+    ).toEqual(['x']);
+    expect(
+      splitCubeLambda(lambda([], [TABLE]), { readsParameters: true })
+        .parameters,
+    ).toBeUndefined();
+  });
+
   test('Refuses a lambda with parameters, other statements, or a let bound twice', () => {
     expect(() => splitCubeLambda(TABLE)).toThrow(CubeLambdaReadError);
     expect(() => splitCubeLambda(lambda(['x'], [TABLE]))).toThrow(

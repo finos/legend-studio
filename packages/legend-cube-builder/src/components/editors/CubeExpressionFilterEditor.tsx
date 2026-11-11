@@ -42,7 +42,7 @@ import {
 } from '../../stores/editors/CubeExpressionFilterDraft.js';
 import { CubeCodeCheckStatus } from '../../stores/editors/CubeExpressionAutoCheck.js';
 import { CUBE_CODE_CHECK_LABEL, getCubeCodeBoxClass } from './CubeCodeCheck.js';
-import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { CubeColumnTypeIcon } from '../CubeColumnTypeIcon.js';
 import {
   CubeExpressionOutlineView,
   CubePrecedenceWarning,
