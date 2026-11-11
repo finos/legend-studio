@@ -24,6 +24,8 @@ review them, and release a version that other projects and applications can use.
 - [Generation specifications](./generation-specification.md): the stages of a project's model generations, and
   running them in fewer.
 - [Function activators](./function-activator.md): a function deployed as a REST service, or into a database.
+- [Project configuration](./project-configuration.md): the project's coordinates and structure, the projects it
+  depends on, the platform versions it builds with, and its project type.
 - [Review and release](./review.md): local changes, pushing, reviews, updating a workspace and releasing a version.
 
 The screenshots show one project, **firm-model**: firms, the people they employ, and the database that holds them.
