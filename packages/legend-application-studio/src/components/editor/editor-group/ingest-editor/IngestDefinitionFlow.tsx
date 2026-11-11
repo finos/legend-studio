@@ -184,6 +184,12 @@ const MaterializedViewReads = (props: {
   ) : null;
 };
 
+/** A view's own Pure is short and read-only: its lines wrap, and it ends at its last line */
+const VIEW_PURE_EDITOR_OPTIONS = {
+  wordWrap: 'on',
+  scrollBeyondLastLine: false,
+} as const;
+
 /** The view's own function as Pure, as the engine writes it: shown when Cube can't draw the view */
 const MaterializedViewPure = observer(
   (props: {
@@ -223,6 +229,7 @@ const MaterializedViewPure = observer(
           language={CODE_EDITOR_LANGUAGE.PURE}
           hideMinimap={true}
           hideActionBar={true}
+          extraEditorOptions={VIEW_PURE_EDITOR_OPTIONS}
         />
       </div>
     );
