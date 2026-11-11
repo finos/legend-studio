@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   useDepotSetupStore,
   withDepotSetupStore,
 } from './DepotDashboardProvider.js';
 import {
   ActivityBarMenu,
+  generateReviewRoute,
+  generateViewEntityRoute,
   generateViewVersionRoute,
 } from '@finos/legend-application-studio';
 import {
@@ -29,6 +31,8 @@ import {
   CircleNotchIcon,
   clsx,
   CopyIcon,
+  GitPullRequestIcon,
+  GitlabIcon,
   CustomSelectorInput,
   InfoCircleIcon,
   LinkIcon,
@@ -70,7 +74,7 @@ import {
   V1_dataProductAcessPointGroupsHasTitleAndDescription,
   V1_dataProductHasTitleAndDescription,
 } from '@finos/legend-graph';
-import { DepotScope } from '@finos/legend-server-depot';
+import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
 import { DepotGenerationSpecificationFlattenModal } from './DepotGenerationSpecificationFlattenModal.js';
 
 const EmptyCellRenderer = (col: string, message: string) => (
@@ -115,10 +119,22 @@ const DataProductCellRenderer = (
 type DepotDashboardProjectRow = {
   name: string;
   projectId: string | undefined;
+  latestVersionLabel: string | undefined;
+  projectWebUrl: string | undefined;
   projectAccess: DepotProjectAccess | undefined;
   summary: { versionId: string; path: string };
   store: DepotDashboardStore;
 };
+
+// The element in Studio's project viewer: at its version, or for a snapshot,
+// at the project's head, since Studio has no view of a snapshot version
+const generateElementViewRoute = (
+  projectId: string,
+  summary: { versionId: string; path: string },
+): string =>
+  isSnapshotVersion(summary.versionId)
+    ? generateViewEntityRoute(projectId, summary.path)
+    : generateViewVersionRoute(projectId, summary.versionId, summary.path);
 
 // The element's name opens it in Studio's project viewer (in a new tab, as the
 // project link does); the button next to it copies the element's full path.
@@ -132,11 +148,7 @@ const ElementNameCellRenderer = (
   const applicationStore = row.store.applicationStore;
   const url = row.projectId
     ? applicationStore.navigationService.navigator.generateAddress(
-        generateViewVersionRoute(
-          row.projectId,
-          row.summary.versionId,
-          row.summary.path,
-        ),
+        generateElementViewRoute(row.projectId, row.summary),
       )
     : undefined;
   const copyPath = (): void => {
@@ -191,6 +203,16 @@ const ElementNameCellRenderer = (
 };
 
 // The signed-in user's role and allowed actions on the element's project, from SDLC
+// The project's latest release, next to the version on show, or (unreleased)
+const buildLatestVersionColumnDef = <
+  T extends DepotDashboardProjectRow,
+>(): ColDef<T> => ({
+  headerName: DATA_PRODUCT_DASHBOARD_HEADER.LATEST_VERSION,
+  valueGetter: (params: ValueGetterParams<T>) =>
+    params.data?.latestVersionLabel,
+  minWidth: 150,
+});
+
 const buildProjectAccessColumnDefs = <
   T extends DepotDashboardProjectRow,
 >(): ColDef<T>[] => [
@@ -219,11 +241,7 @@ const ProjectIdCellRenderer = (
     _projectId: string,
   ): string => {
     return _entityState.store.applicationStore.navigationService.navigator.generateAddress(
-      generateViewVersionRoute(
-        _projectId,
-        _entityState.summary.versionId,
-        _entityState.summary.path,
-      ),
+      generateElementViewRoute(_projectId, _entityState.summary),
     );
   };
 
@@ -239,7 +257,10 @@ const ProjectIdCellRenderer = (
   };
 
   return (
-    <div className="project-id-cell">
+    <div
+      className="project-id-cell"
+      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+    >
       {projectId ? (
         <a
           href="#"
@@ -256,6 +277,18 @@ const ProjectIdCellRenderer = (
         </a>
       ) : (
         <span style={{ color: '#6b7280' }}>-</span>
+      )}
+      {projectId && entityState.projectWebUrl && (
+        <a
+          href={entityState.projectWebUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the project in GitLab"
+          aria-label={`Open ${projectId} in GitLab`}
+          style={{ display: 'flex', color: 'inherit', opacity: 0.8 }}
+        >
+          <GitlabIcon />
+        </a>
       )}
     </div>
   );
@@ -296,6 +329,7 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
         params.data?.summary.versionId,
       minWidth: 250,
     },
+    buildLatestVersionColumnDef<DataProductEntityState>(),
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_PACKAGE,
       valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
@@ -590,6 +624,9 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
 
 // Whoever can create a workspace in the project can flatten a specification
 // that has more than one stage
+// Whoever can create a workspace in the project can flatten a specification
+// that has more than one stage. Once flattened in this page, the row links to
+// the review, in GitLab and in Studio, instead.
 const FlattenCellRenderer = (
   params: DataGridCellRendererParams<GenerationSpecificationEntityState>,
 ) => {
@@ -597,30 +634,67 @@ const FlattenCellRenderer = (
   if (!entityState?.canFlatten) {
     return null;
   }
+  const review = entityState.flattenReview;
+  const canFlatten = entityState.hasStagesToFlatten && !review;
+  const linkStyle: React.CSSProperties = {
+    display: 'flex',
+    color: 'inherit',
+    opacity: 0.8,
+  };
   return (
-    <button
-      type="button"
-      className="scope-toggle-btn"
-      style={{
-        padding: '0 0.8em',
-        lineHeight: '2.2rem',
-        opacity: entityState.hasStagesToFlatten ? 1 : 0.4,
-        cursor: entityState.hasStagesToFlatten ? 'pointer' : 'not-allowed',
-      }}
-      disabled={!entityState.hasStagesToFlatten}
-      title={
-        entityState.hasStagesToFlatten
-          ? `Flatten the stages of ${entityState.summary.path} in a review`
-          : 'One stage or none: nothing to flatten'
-      }
-      onClick={() =>
-        entityState.store.generationSpecificationDepotState.openFlatten(
-          entityState,
-        )
-      }
-    >
-      Flatten
-    </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button
+        type="button"
+        className="scope-toggle-btn"
+        style={{
+          padding: '0 0.8em',
+          lineHeight: '2.2rem',
+          opacity: canFlatten ? 1 : 0.4,
+          cursor: canFlatten ? 'pointer' : 'not-allowed',
+        }}
+        disabled={!canFlatten}
+        title={
+          review
+            ? `Flattened in review ${review.id}`
+            : entityState.hasStagesToFlatten
+              ? `Flatten the stages of ${entityState.summary.path} in a review`
+              : 'One stage or none: nothing to flatten'
+        }
+        onClick={() =>
+          entityState.store.generationSpecificationDepotState.openFlatten(
+            entityState,
+          )
+        }
+      >
+        Flatten
+      </button>
+      {review?.webURL && (
+        <a
+          href={review.webURL}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the merge request in GitLab"
+          aria-label={`Open the merge request for ${entityState.summary.path} in GitLab`}
+          style={linkStyle}
+        >
+          <GitlabIcon />
+        </a>
+      )}
+      {review && (
+        <a
+          href={entityState.store.applicationStore.navigationService.navigator.generateAddress(
+            generateReviewRoute(review.projectId, review.id),
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the review in Studio"
+          aria-label={`Open the review for ${entityState.summary.path} in Studio`}
+          style={linkStyle}
+        >
+          <GitPullRequestIcon />
+        </a>
+      )}
+    </div>
   );
 };
 
@@ -683,7 +757,7 @@ const buildGenerationSpecificationColumnDefs =
       suppressHeaderMenuButton: true,
       // an action: always in view, however far the grid is scrolled
       pinned: 'right',
-      width: 120,
+      width: 170,
     },
     {
       headerName: DATA_PRODUCT_DASHBOARD_HEADER.PROJECT_GAV,
@@ -699,6 +773,7 @@ const buildGenerationSpecificationColumnDefs =
       ) => params.data?.summary.versionId,
       minWidth: 150,
     },
+    buildLatestVersionColumnDef<GenerationSpecificationEntityState>(),
     {
       headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
       valueGetter: (
@@ -793,6 +868,7 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
       params.data?.summary.versionId,
     minWidth: 150,
   },
+  buildLatestVersionColumnDef<DataSpaceEntityState>(),
   {
     headerName: GENERATION_SPECIFICATION_DASHBOARD_HEADER.PACKAGE,
     valueGetter: (params: ValueGetterParams<DataSpaceEntityState>) =>
@@ -842,6 +918,13 @@ const buildDataSpaceColumnDefs = (): ColDef<DataSpaceEntityState>[] => [
     minWidth: 300,
   },
 ];
+
+const DEPOT_DASHBOARD_DEFAULT_COL_DEF: ColDef = {
+  filter: true, // Enable filters for all columns
+  sortable: true, // Enable sorting for all columns
+  resizable: true, // Allow column resizing
+  floatingFilter: true, // Show floating filter row below headers
+};
 
 const PROGRESS_LABEL: Record<DEPOT_DASHBOARD_ELEMENT_TYPE, string> = {
   [DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_PRODUCT]: 'Data Products',
@@ -1109,6 +1192,16 @@ export const DepotDashboard = withDepotSetupStore(
       }
     }, [scopedState, depotSetupStore.applicationStore.alertUnhandledError]);
 
+    // Built once: the grids get new column definitions on every render
+    // otherwise, e.g. when the flatten modal opens, and ag-grid then drops
+    // their sort and filters
+    const dataProductColumnDefs = useMemo(() => buildColumnDefs(), []);
+    const dataSpaceColumnDefs = useMemo(() => buildDataSpaceColumnDefs(), []);
+    const generationSpecificationColumnDefs = useMemo(
+      () => buildGenerationSpecificationColumnDefs(),
+      [],
+    );
+
     const renderGrid = (): React.ReactNode => {
       switch (depotSetupStore.elementType) {
         case DEPOT_DASHBOARD_ELEMENT_TYPE.DATA_SPACE:
@@ -1129,13 +1222,8 @@ export const DepotDashboard = withDepotSetupStore(
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
-              defaultColDef={{
-                filter: true,
-                sortable: true,
-                resizable: true,
-                floatingFilter: true,
-              }}
-              columnDefs={buildDataSpaceColumnDefs()}
+              defaultColDef={DEPOT_DASHBOARD_DEFAULT_COL_DEF}
+              columnDefs={dataSpaceColumnDefs}
             />
           );
         case DEPOT_DASHBOARD_ELEMENT_TYPE.GENERATION_SPECIFICATION:
@@ -1156,13 +1244,8 @@ export const DepotDashboard = withDepotSetupStore(
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
-              defaultColDef={{
-                filter: true,
-                sortable: true,
-                resizable: true,
-                floatingFilter: true,
-              }}
-              columnDefs={buildGenerationSpecificationColumnDefs()}
+              defaultColDef={DEPOT_DASHBOARD_DEFAULT_COL_DEF}
+              columnDefs={generationSpecificationColumnDefs}
             />
           );
         default:
@@ -1189,13 +1272,8 @@ export const DepotDashboard = withDepotSetupStore(
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
               suppressContextMenu={false}
-              defaultColDef={{
-                filter: true, // Enable filters for all columns
-                sortable: true, // Enable sorting for all columns
-                resizable: true, // Allow column resizing
-                floatingFilter: true, // Show floating filter row below headers
-              }}
-              columnDefs={buildColumnDefs()}
+              defaultColDef={DEPOT_DASHBOARD_DEFAULT_COL_DEF}
+              columnDefs={dataProductColumnDefs}
             />
           );
       }

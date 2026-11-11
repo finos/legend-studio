@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
@@ -22,6 +22,8 @@ export class StoreProjectData {
   projectId!: string;
   groupId!: string;
   artifactId!: string;
+  // the project's latest released version; none until it releases
+  latestVersion?: string | undefined;
 
   get coordinates(): string {
     return generateGAVCoordinates(this.groupId, this.artifactId, undefined);
@@ -31,6 +33,7 @@ export class StoreProjectData {
     createModelSchema(StoreProjectData, {
       artifactId: primitive(),
       groupId: primitive(),
+      latestVersion: optional(primitive()),
       projectId: primitive(),
     }),
   );

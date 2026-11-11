@@ -382,7 +382,10 @@ test('keep what each element type and scope fetched until refreshed', async () =
   expect(entitySpy).toHaveBeenCalledTimes(3);
   expect(roleSpy).toHaveBeenCalledTimes(3);
 
-  // Refresh fetches the releases again, access included
+  // Refresh fetches the releases again, with the projects (a project may
+  // have released since) and access
+  const projectSpy = jest.mocked(depotServerClient.getProject);
+  expect(projectSpy).toHaveBeenCalledTimes(3);
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
   });
@@ -392,6 +395,7 @@ test('keep what each element type and scope fetched until refreshed', async () =
   await screen.findByText('Generation Specifications: 3 / 3 fetched');
   await waitFor(() => expect(entitySpy).toHaveBeenCalledTimes(6));
   await waitFor(() => expect(roleSpy).toHaveBeenCalledTimes(6));
+  expect(projectSpy).toHaveBeenCalledTimes(6);
   expect(summaryCalls(CORE_PURE_PATH.DATA_PRODUCT)).toBe(1);
 });
 
@@ -929,4 +933,178 @@ test('stop at a failed step and point to the workspace', async () => {
   expect(
     screen.getByRole('button', { name: 'Close' }).hasAttribute('disabled'),
   ).toBe(false);
+});
+
+const stagesSort = (): string | null | undefined =>
+  Array.from(document.querySelectorAll('.ag-header-cell'))
+    .find(
+      (cell) =>
+        cell.querySelector('.ag-header-cell-text')?.textContent?.trim() ===
+        'Stages',
+    )
+    ?.getAttribute('aria-sort');
+
+test('keep the sort when the flatten modal opens', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  spyFlattenSdlc(sdlcServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await screen.findByTitle(`Flatten the stages of ${ALPHA_PATH} in a review`);
+
+  // Stages, descending
+  const stagesLabel = Array.from(document.querySelectorAll('.ag-header-cell'))
+    .find(
+      (cell) =>
+        cell.querySelector('.ag-header-cell-text')?.textContent?.trim() ===
+        'Stages',
+    )
+    ?.querySelector('.ag-header-cell-label') as HTMLElement;
+  await act(async () => {
+    fireEvent.click(stagesLabel);
+  });
+  await act(async () => {
+    fireEvent.click(stagesLabel);
+  });
+  await waitFor(() => expect(stagesSort()).toBe('descending'));
+
+  await openFlatten(ALPHA_PATH);
+  await screen.findByText(
+    'Master matches 1.0.0. 4 stages, 5 generation elements.',
+  );
+  expect(stagesSort()).toBe('descending');
+});
+
+test('open a snapshot at the head of its project', async () => {
+  const { applicationStore, depotServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient).mockImplementation(
+    async (classifier) =>
+      classifier === CORE_PURE_PATH.GENERATION_SPECIFICATION
+        ? [
+            StoredSummaryEntity.serialization.toJson(
+              summary('alpha', MASTER_SNAPSHOT_ALIAS, ALPHA_PATH),
+            ),
+          ]
+        : [],
+  );
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications?scope=snapshots',
+  );
+
+  // the element's name: the project's head, not a snapshot version
+  const link = await screen.findByRole('link', { name: 'AlphaGenerations' });
+  expect(link.getAttribute('href')).toMatch(
+    new RegExp(`/view/PROJECT-alpha/entity/${ALPHA_PATH}$`),
+  );
+  // and the project id
+  const visitSpy = createSpy(
+    applicationStore.navigationService.navigator,
+    'visitAddress',
+  ).mockImplementation(() => undefined);
+  await act(async () => {
+    fireEvent.click(screen.getByText('PROJECT-alpha'));
+  });
+  expect(visitSpy).toHaveBeenCalledWith(
+    expect.stringMatching(
+      new RegExp(`/view/PROJECT-alpha/entity/${ALPHA_PATH}$`),
+    ),
+  );
+});
+
+test('show the review in place of Flatten once flattened, through Refresh', async () => {
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  const spies = spyFlattenSdlc(sdlcServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await openFlatten(ALPHA_PATH);
+  await screen.findByText(
+    'Master matches 1.0.0. 4 stages, 5 generation elements.',
+  );
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+  });
+  await waitFor(() => expect(spies.createReviewSpy).toHaveBeenCalled());
+  await act(async () => {
+    spies.resolveReview();
+  });
+  await screen.findByRole('link', { name: /Open the review in Studio/ });
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+  });
+
+  const expectReviewLinks = async (): Promise<void> => {
+    const flatten = await screen.findByTitle('Flattened in review 42');
+    expect(flatten.hasAttribute('disabled')).toBe(true);
+    expect(
+      screen
+        .getByRole('link', {
+          name: `Open the merge request for ${ALPHA_PATH} in GitLab`,
+        })
+        .getAttribute('href'),
+    ).toBe('https://gitlab.example.com/alpha/-/merge_requests/42');
+    expect(
+      screen
+        .getByRole('link', {
+          name: `Open the review for ${ALPHA_PATH} in Studio`,
+        })
+        .getAttribute('href'),
+    ).toContain('/review/PROJECT-alpha/42');
+  };
+  await expectReviewLinks();
+  // the other rows keep their Flatten
+  expect(
+    screen.getAllByTitle('One stage or none: nothing to flatten'),
+  ).toHaveLength(1);
+
+  // Refresh makes new rows, which still show the review
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+  });
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  await expectReviewLinks();
+});
+
+test('sort rows again as they fill in after Refresh', async () => {
+  const { applicationStore, depotServerClient } = setup();
+  spyGenerationSpecifications(depotServerClient);
+  await renderDashboard(
+    applicationStore,
+    '/extensions/depot/generation-specifications',
+  );
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  const rowOrder = (): (string | null | undefined)[] =>
+    Array.from(document.querySelectorAll('.ag-center-cols-container .ag-row'))
+      .sort(
+        (a, b) =>
+          Number(a.getAttribute('row-index')) -
+          Number(b.getAttribute('row-index')),
+      )
+      .map((row) => row.querySelector('a')?.textContent);
+
+  // Stages ascending: alpha, with 4 stages, last
+  const stagesLabel = Array.from(document.querySelectorAll('.ag-header-cell'))
+    .find(
+      (cell) =>
+        cell.querySelector('.ag-header-cell-text')?.textContent?.trim() ===
+        'Stages',
+    )
+    ?.querySelector('.ag-header-cell-label') as HTMLElement;
+  await act(async () => {
+    fireEvent.click(stagesLabel);
+  });
+  await waitFor(() => expect(rowOrder()[2]).toBe('AlphaGenerations'));
+
+  // Refresh makes new rows, sorted before their stages are known
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+  });
+  await screen.findByText('Generation Specifications: 3 / 3 fetched');
+  expect(stagesSort()).toBe('ascending');
+  await waitFor(() => expect(rowOrder()[2]).toBe('AlphaGenerations'));
 });

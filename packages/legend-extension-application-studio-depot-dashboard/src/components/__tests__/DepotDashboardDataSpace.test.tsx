@@ -90,7 +90,7 @@ const setup = () => {
   createSpy(sdlcServerClient, 'getAutorizedActions').mockResolvedValue([
     AuthorizableProjectAction.CREATE_WORKSPACE,
   ]);
-  return { applicationStore, depotServerClient };
+  return { applicationStore, depotServerClient, sdlcServerClient };
 };
 
 const summary = (artifactId: string, path: string): StoredSummaryEntity => {
@@ -167,7 +167,7 @@ const cellText = (name: string, header: string): string | undefined => {
 };
 
 test('display data spaces with their execution contexts, executables and diagrams', async () => {
-  const { applicationStore, depotServerClient } = setup();
+  const { applicationStore, depotServerClient, sdlcServerClient } = setup();
   const summarySpy = createSpy(
     depotServerClient,
     'getEntitiesSummaryByClassifier',
@@ -186,12 +186,28 @@ test('display data spaces with their execution contexts, executables and diagram
       content: CONTENT.get(path),
     }),
   );
+  // trades has released, empty has not; SDLC knows trades in GitLab only
   createSpy(depotServerClient, 'getProject').mockImplementation(
     async (groupId, artifactId) => ({
       projectId: `PROJECT-${artifactId}`,
       groupId,
       artifactId,
+      ...(artifactId === 'trades' ? { latestVersion: '1.2.0' } : {}),
     }),
+  );
+  createSpy(sdlcServerClient, 'getProject').mockImplementation(
+    async (projectId) => {
+      if (projectId !== 'PROJECT-trades') {
+        throw new Error('Not found');
+      }
+      return {
+        projectId,
+        name: 'trades',
+        description: '',
+        tags: [],
+        webUrl: 'https://gitlab.example.com/legend/trades',
+      };
+    },
   );
   await act(async () => {
     render(
@@ -233,6 +249,15 @@ test('display data spaces with their execution contexts, executables and diagram
   expect(trades('Diagrams')).toBe('3');
   expect(trades('Elements')).toBe('3');
   expect(trades('GroupId:ArtifactId')).toBe('test.group:trades');
+  // the project's latest release next to the version on show
+  expect(trades('Project Version')).toBe('1.0.0');
+  expect(trades('Latest Version')).toBe('1.2.0');
+  // and the project in GitLab, next to its id
+  expect(
+    screen
+      .getByRole('link', { name: 'Open PROJECT-trades in GitLab' })
+      .getAttribute('href'),
+  ).toBe('https://gitlab.example.com/legend/trades');
   expect(trades('Title')).toBe('Trades and desks');
   expect(trades('Default Execution Context')).toBe('prod');
   expect(trades('Support Info')).toBe('Email');
@@ -253,4 +278,9 @@ test('display data spaces with their execution contexts, executables and diagram
   expect(empty('Diagrams')).toBe('0');
   expect(empty('Elements')).toBe('0');
   expect(empty('Support Info')).toBe('None');
+  // never released, and no GitLab address
+  expect(empty('Latest Version')).toBe('(unreleased)');
+  expect(
+    screen.queryByRole('link', { name: 'Open PROJECT-empty in GitLab' }),
+  ).toBeNull();
 });
