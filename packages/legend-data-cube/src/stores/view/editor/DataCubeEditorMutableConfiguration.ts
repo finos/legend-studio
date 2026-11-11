@@ -53,7 +53,7 @@ import { type DataCubeQueryAggregateOperation } from '../../core/aggregation/Dat
 
 export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
-  aggregateOperation!: DataCubeQueryAggregateOperation;
+  private _aggregateOperations!: DataCubeQueryAggregateOperation[];
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
@@ -67,10 +67,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     (
       configuration as Writable<DataCubeEditorMutableColumnConfiguration>
     ).dataType = getDataType(configuration.type);
-    configuration.aggregateOperation = getAggregateOperation(
-      configuration.aggregateOperator,
-      aggregateOperations,
-    );
+    configuration._aggregateOperations = aggregateOperations;
 
     makeObservable(configuration, {
       kind: observable,
@@ -176,7 +173,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
       useDefaultStyling: action,
 
       aggregateOperator: observable,
-      aggregateOperation: observable,
+      aggregateOperation: computed,
       setAggregateOperation: action,
 
       aggregationParameters: observable,
@@ -365,8 +362,14 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     this.linkLabelParameter = value;
   }
 
+  get aggregateOperation(): DataCubeQueryAggregateOperation {
+    return getAggregateOperation(
+      this.aggregateOperator,
+      this._aggregateOperations,
+    );
+  }
+
   setAggregateOperation(value: DataCubeQueryAggregateOperation) {
-    this.aggregateOperation = value;
     this.aggregateOperator = value.operator;
   }
 

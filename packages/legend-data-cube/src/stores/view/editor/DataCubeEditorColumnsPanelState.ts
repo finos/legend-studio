@@ -141,6 +141,7 @@ export class DataCubeEditorColumnsPanelState
    */
   propagateChanges(): void {
     this._editor.sorts.adaptPropagatedChanges();
+    this._editor.columnProperties.adaptPropagatedChanges();
   }
 
   applySnaphot(

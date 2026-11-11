@@ -115,6 +115,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
     this._editor.verticalPivots.adaptPropagatedChanges();
     this._editor.dimensions.adaptPropagatedChanges();
     this._editor.sorts.adaptPropagatedChanges();
+    this._editor.columnProperties.adaptPropagatedChanges();
   }
 
   applySnaphot(

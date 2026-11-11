@@ -30,9 +30,57 @@ export abstract class DataCubeQueryAggregateOperation {
   abstract isCompatibleWithParameterValues(
     values: DataCubeOperationValue[],
   ): boolean;
+  /**
+   * NOTE: for aggregations which reference another column, e.g. the weights of a
+   * weighted average, the default parameter values are picked among the available
+   * columns; if none is compatible, the result would not be compatible with this
+   * aggregation, i.e. `isCompatibleWithParameterValues()` returns false.
+   */
   abstract generateDefaultParameterValues(
     column: DataCubeColumn,
+    availableColumns?: DataCubeColumn[] | undefined,
   ): DataCubeOperationValue[];
+
+  /**
+   * The label of the parameter at the specified index, shown when editing it
+   */
+  getParameterLabel(index: number): string | undefined {
+    return undefined;
+  }
+
+  /**
+   * Whether the specified column can be used as the column referenced by the
+   * aggregation, e.g. the weights of a weighted average
+   */
+  isCompatibleWithParameterColumn(column: DataCubeColumn): boolean {
+    return false;
+  }
+
+  /**
+   * Whether the aggregated values can be fractional even when the values of the
+   * aggregated column are not, e.g. the average of integers
+   */
+  get hasFractionalResult(): boolean {
+    return false;
+  }
+
+  /**
+   * Whether aggregating the aggregated values of groups of rows gives the same result as
+   * aggregating all of their rows, e.g. the sum of sums is the sum, but the median of
+   * medians is not the median. After horizontal pivot, group rows are aggregated from the
+   * aggregated values of pivot() rows, so aggregations which do not support this are
+   * aggregated with `uniqueValueOnly()` instead, i.e. group rows only show a value when
+   * all rows below them agree on it.
+   *
+   * NOTE: some long-standing aggregations, e.g. average, do not support this either, but
+   * are kept as is to not change the values of existing data cubes.
+   */
+  supportsReaggregation(
+    parameterValues: DataCubeOperationValue[],
+    getAggregateOperator: (columnName: string) => string | undefined,
+  ): boolean {
+    return true;
+  }
 
   abstract buildAggregateColumnSnapshot(
     colSpec: V1_ColSpec,
@@ -43,24 +91,24 @@ export abstract class DataCubeQueryAggregateOperation {
     data:
       | {
           column: DataCubeColumn;
-          paramterValues: DataCubeOperationValue[];
+          parameterValues: DataCubeOperationValue[];
         }
       | undefined,
   ): DataCubeSnapshotAggregateColumn | undefined {
     if (!data) {
       return undefined;
     }
-    const { column, paramterValues } = data;
+    const { column, parameterValues } = data;
     if (
       !this.isCompatibleWithColumn(column) ||
-      !this.isCompatibleWithParameterValues(paramterValues)
+      !this.isCompatibleWithParameterValues(parameterValues)
     ) {
       return undefined;
     }
     return {
       ...column,
       operator: this.operator,
-      parameterValues: paramterValues,
+      parameterValues,
     };
   }
 

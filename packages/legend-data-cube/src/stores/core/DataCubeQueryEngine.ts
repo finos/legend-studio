@@ -79,21 +79,33 @@ export enum DataCubeFunction {
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
 
   // aggregate
+  ALL = 'meta::pure::functions::collection::and',
+  ANY = 'meta::pure::functions::collection::or',
   AVERAGE = 'meta::pure::functions::math::average',
+  CORRELATION = 'meta::pure::functions::math::corr',
   COUNT = 'meta::pure::functions::collection::count',
+  COVARIANCE_POPULATION = 'meta::pure::functions::math::covarPopulation',
+  COVARIANCE_SAMPLE = 'meta::pure::functions::math::covarSample',
   DISTINCT = 'meta::pure::functions::collection::distinct',
   FIRST = 'meta::pure::functions::collection::first',
   JOIN_STRINGS = 'meta::pure::functions::string::joinStrings',
   LAST = 'meta::pure::functions::collection::last',
   MAX = 'meta::pure::functions::collection::max',
+  MAX_BY = 'meta::pure::functions::math::maxBy',
+  MEDIAN = 'meta::pure::functions::math::median',
   MIN = 'meta::pure::functions::collection::min',
+  MIN_BY = 'meta::pure::functions::math::minBy',
+  MODE = 'meta::pure::functions::math::mode',
+  PERCENTILE = 'meta::pure::functions::math::percentile',
   SUM = 'meta::pure::functions::math::sum',
   STANDARD_DEVIATION_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
   STANDARD_DEVIATION_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
   VARIANCE_POPULATION = 'meta::pure::functions::math::variancePopulation',
   VARIANCE_SAMPLE = 'meta::pure::functions::math::varianceSample',
-  // PERCENTILE = 'meta::pure::functions::math::percentile',
+  WEIGHTED_AVERAGE = 'meta::pure::functions::math::wavg',
+  // pairs up the values of two columns for two-column aggregators, e.g. wavg()
+  ROW_MAPPER = 'meta::pure::functions::math::mathUtility::rowMapper',
 }
 
 export type DataCubeQueryFunctionMap = {
@@ -185,11 +197,21 @@ export enum DataCubeQueryAggregateOperator {
   UNIQUE = 'uniq',
   FIRST = 'first',
   LAST = 'last',
-  // MEDIAN = 'median',
+  MEDIAN = 'median',
+  MODE = 'mode',
+  PERCENTILE = 'percentile',
   VARIANCE_POPULATION = 'var',
   VARIANCE_SAMPLE = 'var_sample',
   STANDARD_DEVIATION_POPULATION = 'std',
   STANDARD_DEVIATION_SAMPLE = 'std_sample',
+  WEIGHTED_AVERAGE = 'wavg',
+  CORRELATION = 'corr',
+  COVARIANCE_POPULATION = 'covar',
+  COVARIANCE_SAMPLE = 'covar_sample',
+  MAX_BY = 'max_by',
+  MIN_BY = 'min_by',
+  ALL = 'all',
+  ANY = 'any',
   // STANDARD_ERROR = 'stderr',
   // NULL = 'null',
   // ssq
@@ -204,7 +226,6 @@ export enum DataCubeQueryAggregateOperator {
   // strjoinuniq
   // splitjoin
   // daterange
-  // wavg
   // wstderr
   // wsum
   // custom
@@ -489,5 +510,16 @@ export function getPivotResultColumnBaseColumnName(columnName: string) {
   return columnName.substring(
     columnName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
       PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
+  );
+}
+/**
+ * Returns the part of the name of a pivot result column made of the pivot values, i.e. up to
+ * and including the last separator, e.g. `2024__|__` for `2024__|__price`. This is used to name
+ * other pivot result columns matching the same pivot values, e.g. `2024__|__weight`
+ */
+export function getPivotResultColumnNamePrefix(columnName: string) {
+  return columnName.substring(
+    0,
+    columnName.length - getPivotResultColumnBaseColumnName(columnName).length,
   );
 }

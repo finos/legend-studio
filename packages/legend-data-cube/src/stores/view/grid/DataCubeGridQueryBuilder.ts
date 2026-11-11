@@ -31,7 +31,7 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
   isPivotResultColumnName,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  getPivotResultColumnNamePrefix,
   DataCubeQuerySortDirection,
   DataCubeOperationAdvancedValueType,
 } from '../../core/DataCubeQueryEngine.js';
@@ -127,18 +127,11 @@ function _addCountAggColumnToPivot(
     uniq(
       castColumns
         .filter((col) => isPivotResultColumnName(col.name))
-        .map((col) =>
-          col.name.substring(
-            0,
-            col.name.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
-          ),
-        ),
+        .map((col) => getPivotResultColumnNamePrefix(col.name)),
     )
       .map(
-        (col) =>
-          col +
-          PIVOT_COLUMN_NAME_VALUE_SEPARATOR +
-          INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+        (prefix) =>
+          prefix + INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
       )
       .forEach((col) => {
         // Here we directly modify the list of cast columns in the relation type

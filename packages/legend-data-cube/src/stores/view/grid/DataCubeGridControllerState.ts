@@ -61,6 +61,7 @@ import {
   type DataCubeFilterEditorTreeNode,
 } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { _pruneExpandedPaths } from '../../core/DataCubeSnapshotBuilderUtils.js';
+import { fallBackUnavailableAggregations } from '../../core/DataCubeConfigurationBuilder.js';
 
 /**
  * This query editor state is responsible for capturing updates to the data cube query
@@ -454,6 +455,12 @@ export class DataCubeGridControllerState extends DataCubeSnapshotController {
         ? (col.pivotSortDirection ?? DataCubeQuerySortDirection.ASCENDING)
         : undefined;
     });
+    fallBackUnavailableAggregations(
+      this.configuration.columns,
+      this.horizontalPivotColumns,
+      this.groupExtendedColumns,
+      this.view.engine.aggregateOperations,
+    );
 
     this.selectColumns = uniqBy(
       [

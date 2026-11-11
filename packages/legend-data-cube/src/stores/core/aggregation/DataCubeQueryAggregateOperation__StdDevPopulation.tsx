@@ -45,6 +45,10 @@ export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQ
     return DataCubeQueryAggregateOperator.STANDARD_DEVIATION_POPULATION;
   }
 
+  override get hasFractionalResult() {
+    return true;
+  }
+
   override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [DataCubeColumnDataType.NUMBER]);
   }

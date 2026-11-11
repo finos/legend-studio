@@ -56,6 +56,10 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     ]);
   }
 
+  override getParameterLabel(index: number) {
+    return index === 0 ? 'separator' : undefined;
+  }
+
   override isCompatibleWithParameterValues(values: DataCubeOperationValue[]) {
     return (
       values.length === 1 &&

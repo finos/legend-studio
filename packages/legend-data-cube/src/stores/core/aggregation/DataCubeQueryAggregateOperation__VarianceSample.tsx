@@ -45,6 +45,10 @@ export class DataCubeQueryAggregateOperation__VarianceSample extends DataCubeQue
     return DataCubeQueryAggregateOperator.VARIANCE_SAMPLE;
   }
 
+  override get hasFractionalResult() {
+    return true;
+  }
+
   override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [DataCubeColumnDataType.NUMBER]);
   }
