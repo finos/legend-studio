@@ -634,7 +634,10 @@ const DataSetColumnName = (
     <span className="ingest-definition-flow__data-set__column-name">
       {column.name}
       {column.addedBy !== undefined && (
-        <span className="ingest-definition-flow__data-set__added-by">
+        <span
+          className="ingest-definition-flow__data-set__added-by"
+          title={`Its write mode, ${describeIngestWriteMode(column.addedBy)}, adds this column`}
+        >
           {`added by ${describeIngestWriteMode(column.addedBy)}`}
         </span>
       )}
@@ -656,7 +659,11 @@ const DATA_SET_COLUMN_DEFINITIONS: DataGridColumnDefinition<IngestDataSetColumn>
     {
       headerName: 'Column Name',
       field: 'name',
-      flex: 1,
+      // a column its write mode adds says which, beside its name, or under
+      // it when it doesn't fit
+      flex: 2,
+      wrapText: true,
+      autoHeight: true,
       cellRenderer: DataSetColumnName,
     },
     {

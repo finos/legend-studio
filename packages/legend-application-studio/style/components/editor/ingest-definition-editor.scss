@@ -434,9 +434,11 @@
     &__grid {
       flex-shrink: 0;
 
-      // past ten columns, it scrolls instead of growing
+      // past ten columns, it fills the panel's height and scrolls past it
+      // instead of growing
       &--scrolls {
-        height: 33rem;
+        flex: 1;
+        min-height: 33rem;
       }
 
       // a column its write mode adds, not one it declares
@@ -446,9 +448,11 @@
     }
 
     &__column-name {
-      display: inline-flex;
+      display: flex;
+      flex-wrap: wrap;
       align-items: baseline;
-      gap: 0.8rem;
+      column-gap: 0.8rem;
+      white-space: normal;
     }
 
     &__added-by {
