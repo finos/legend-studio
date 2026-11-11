@@ -49,10 +49,14 @@ import {
 } from './LegendStudioCubeWorkspace.js';
 
 // Legend Cube in Studio: a cube reads the data products of the project being
-// edited, as the workspace holds them, never the platform's deployed ones.
-// Their lakehouse access points are typed by Cube's engine on the workspace,
+// edited and of its dependencies, as the workspace holds them, never the
+// platform's deployed ones. Their lakehouse access points are typed by Cube's
+// engine on the workspace, whose model holds the dependencies' elements too,
 // as Studio types them for its own queries, and run in the lakehouse
 // environment of the class the viewer picks (`LegendStudioCubeWorkspace`).
+// The workspace with its dependencies is the one project a cube of them names
+// (PLAN §11.30), so the project's ingest data sets join a dependency's data
+// product as they join its own.
 
 /** The deployment a workspace data product is picked from: none yet */
 const NO_DEPLOYMENT_ID = '0';
@@ -104,9 +108,10 @@ export class LegendStudioCubeDataProductCatalog
     this.environmentTypes = getLegendStudioCubeIngestClasses(opened);
   }
 
-  /** The project's own data products, not its dependencies' */
+  /** The project's own data products, then its dependencies' */
   private get dataProducts(): DataProduct[] {
-    return this.editorStore.graphManagerState.graph.ownDataProducts;
+    const { graph } = this.editorStore.graphManagerState;
+    return [...graph.ownDataProducts, ...graph.dependencyManager.dataProducts];
   }
 
   /** The model a cube of the workspace's data products of a class names */

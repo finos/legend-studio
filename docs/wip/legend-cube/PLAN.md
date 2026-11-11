@@ -5884,7 +5884,9 @@ C.9): draft finos/legend-studio#5856, into `cube-dev`.
 rules one by one (local evidence `mixed-sources/FINDINGS.md`, §0):
 
 - **R1, the rule.** Data products and ingest data sets can share a cube when they come from the same project. Studio's
-  are always one project's.
+  are always one project's. In Studio the project is the workspace with its dependencies, so a dependency's data
+  product joins the project's ingest data sets too; it is typed and run on the workspace's model, which holds the
+  dependencies' elements (user, 2026-11-10: a MatView joining one couldn't be opened, "Cube finds no data product").
   - **Legend Analytics:** the Ingest tab opens on the data product's own deployment id, which is the producer's, in the
     viewer's own environment and the cube's Mode. It lists the project's definitions that are both deployed and in
     Depot at the data product's version. A definition or data set that the version lacks is greyed out, saying so.
