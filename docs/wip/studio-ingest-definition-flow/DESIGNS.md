@@ -1,9 +1,10 @@
 # Studio's ingest definition editor: materialized views, flow first
 
-**Decision: design 1b, a list of the views down the left.** When an ingest definition has materialized views, its
-Definition tab opens on what they do: a Flow | Pure switch, the list of the views, and the picked view drawn read-only
-by Legend Cube. The pull request that adds this page builds it, **without the data sets**. The data sets that aren't
-views (a "Data sets" group in the list, with each one's columns) come in a separate pull request.
+**Decision: design 1b, a list of the views down the left, with the data sets group.** When an ingest definition has
+materialized views, its Definition tab opens on what they do: a Flow | Pure switch, the list of the views, then of the
+definition's other data sets, and the picked one on the right: a view drawn read-only by Legend Cube, or a data set's
+columns. The pull request that adds this page builds design 1b with the data sets group. A view's own columns are
+[future work](#future-work).
 
 This page keeps the designs we considered, and why we chose this one.
 
@@ -18,8 +19,9 @@ This page keeps the designs we considered, and why we chose this one.
 - [The designs](#the-designs): [1](#design-1-flow--pure-one-view-at-a-time-chosen),
   [2](#design-2-a-card-per-view-over-the-data-sets), [3](#design-3-a-map-of-the-ingest-then-a-views-flow)
 - [Why design 1b](#why-design-1b)
-- [The data sets that aren't views: a separate pull request](#the-data-sets-that-arent-views-a-separate-pull-request)
+- [The data sets that aren't views](#the-data-sets-that-arent-views)
 - [How a view is drawn](#how-a-view-is-drawn)
+- [Future work](#future-work)
 
 ## Today
 
@@ -136,19 +138,19 @@ would appear three times. The map would need its own drawing, each view collapse
   and leaves the flow most of the width.
 - Design 3's overview needs a drawing of its own, beside Cube's.
 
-## The data sets that aren't views: a separate pull request
+## The data sets that aren't views
 
-Two ways to show the plain data sets were mocked with design 1. Neither is built yet.
+Two ways to show the plain data sets were mocked with design 1. The first is built.
 
-**In design 1b's list.** The list gets a second group, Data sets, under the views. Picking one shows its columns where
-a view's flow would be: name, type, whether it is required and whether it is in the key, read-only. A view says which
-data sets it reads, and a data set which views read it, each name a link to the other.
+**In design 1b's list (built).** The list gets a second group, Data sets, under the views. Picking one shows its
+columns where a view's flow would be: name, type, how many values it holds and whether it is in the key, read-only. A
+view says which data sets it reads, and a data set which views read it, each name a link to the other.
 
 ![Design 1b with the data sets: a Data sets group under the views, the picked data set's columns on the right](images/data-sets-in-the-list.jpg)
 
 _Design mock, made-up data: EOD_POSITIONS picked in the list's Data sets group._
 
-**With design 1a's chips.** The data sets can't be chips too: twenty-three more would add four or five rows above the
+**With design 1a's chips (not built).** The data sets can't be chips too: twenty-three more would add four or five rows above the
 flow. So the chips stay the views, and the data sets sit behind one menu at the top right, which filters as you type
 and carries the icon Cube's flow draws on a data set's step.
 
@@ -156,15 +158,19 @@ and carries the icon Cube's flow draws on a data set's step.
 
 _Design mock, made-up data: the views as chips, the twenty-three data sets behind one menu._
 
-What was decided for them:
+How they are built:
 
-- They come in a pull request of their own: a small reader of the data sets' JSON, beside the one Studio has for the
-  views, and a table of each data set's columns. They need no Cube and no engine, so they can come to every ingest
-  definition, e.g. as a Data Sets tab, and design 1b's list can open the same table later.
-- Studio's own reader, not Cube's. Cube's would bring Cube into Studio's main bundle, and one column it can't read
-  would hide a data set's whole table.
+- A small reader of the data sets' JSON, beside the one Studio has for the views: it reads each data set's name, key,
+  write mode and columns, and nothing else of the definition. It needs no Cube and no engine.
+- Studio's own reader, not Cube's. Cube's would bring Cube into Studio's main bundle, it fails on a write mode it
+  doesn't know, and one column it can't read hides a data set's whole table.
+- The table has View SQL's headers (Column Name, Column Type, Multiplicity) and Key, so a data set's columns and a
+  view's schema look alike in one editor. Each type shows its full path in a tooltip.
 - The columns a write mode adds are listed greyed out after the declared ones, in the engine's order: batch
-  milestoning adds LAKE_DIGEST, LAKE_IN_ID and LAKE_OUT_ID; business temporal also adds LAKE_FROM and LAKE_THRU.
+  milestoning adds LAKE_DIGEST, LAKE_IN_ID and LAKE_OUT_ID; business temporal also adds LAKE_FROM and LAKE_THRU. A
+  write mode Studio doesn't know adds none, and the data set says so. One that declares no columns says so.
+- What a view reads, and which views read a data set, come from the views' functions as the definition holds them,
+  so a view Cube can't draw is listed too.
 
 ## How a view is drawn
 
@@ -180,3 +186,23 @@ What was decided for them:
   name, and a line above the flow says the steps after it aren't checked.
 - Cube's flow doesn't draw a view that reads a data product yet: drawing one needs a binder for data product sources,
   the same work access points need for theirs. Such a view shows why, and its Pure.
+
+## Future work
+
+**A view's columns, from the artifact generation.** Not built. A view's panel could list the columns the view returns,
+with their types, in the same table a data set uses.
+
+![A view's panel with a "Columns this view returns" section under its flow, open on the view's three columns](images/future-view-columns.jpg)
+
+_Design mock, made-up data: under the flow, "Columns this view returns" asks the engine when it is opened, and lists
+the view's columns with its key. The engine's answer in it is made up._
+
+- **Where the columns come from:** Studio already runs this generation for View SQL.
+  `IngestDefinitionEditorState.generateArtifact()` calls `graphManager.generateArtifacts`, and caches the result by the
+  definition's hash code.
+- **What it returns:** an `IngestionDefinitionArtifact` (legend-graph,
+  `graph-manager/action/generation/IngestionDefinitionArtifact.ts`). For each view, its
+  `IngestionArtifactMatViewImplementation` carries its `schema` (a `RelationType` with the columns' names, types with
+  their parameters, and multiplicities), its `primaryKey`, and its `dependentDatasets` and `dependentAccessPoints`.
+- **The cost:** it needs the engine and a definition that compiles, so the columns would load only when asked for, and
+  reuse View SQL's cache.
