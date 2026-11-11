@@ -1,0 +1,917 @@
+{
+  "ingestDefinition": "markets::ingest::TradePositionsIngest",
+  "entities": [
+    {
+      "path": "markets::ingest::TradePositionsIngest",
+      "classifierPath": "meta::external::ingest::specification::metamodel::IngestDefinition",
+      "content": {
+        "_type": "ingestDefinition",
+        "name": "TradePositionsIngest",
+        "package": "markets::ingest",
+        "datasets": [
+          {
+            "name": "EOD_POSITIONS",
+            "primaryKey": ["BUSINESS_DATE", "POSITION_ID"],
+            "source": {
+              "_type": "ingestSource",
+              "schema": {
+                "_type": "schema",
+                "columns": [
+                  {
+                    "name": "BUSINESS_DATE",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "StrictDate"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "POSITION_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 32
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "BOOK_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 32
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "DESK",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 64
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "LEGAL_ENTITY_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 16
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "INSTRUMENT_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 32
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "STATUS",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 16
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "QUANTITY",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "Decimal"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "MARKET_VALUE_USD",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "Decimal"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "LEGAL_ENTITIES",
+            "primaryKey": ["LEI"],
+            "source": {
+              "_type": "ingestSource",
+              "schema": {
+                "_type": "schema",
+                "columns": [
+                  {
+                    "name": "LEI",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 16
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "LEGAL_ENTITY_NAME",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 128
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "COUNTRY",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 2
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "CLIENT_POSITIONS",
+            "primaryKey": [
+              "BUSINESS_DATE",
+              "CLIENT_ACCOUNT_ID",
+              "INSTRUMENT_ID"
+            ],
+            "source": {
+              "_type": "ingestSource",
+              "schema": {
+                "_type": "schema",
+                "columns": [
+                  {
+                    "name": "BUSINESS_DATE",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "StrictDate"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "CLIENT_ACCOUNT_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 32
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "INSTRUMENT_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 32
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "QUANTITY",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "Decimal"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "POSITIONS_BY_LEGAL_ENTITY",
+            "primaryKey": ["BUSINESS_DATE", "LEGAL_ENTITY_ID", "INSTRUMENT_ID"],
+            "privacyClassification": {
+              "sensitivity": "DP10"
+            },
+            "source": {
+              "_type": "FunctionSource",
+              "function": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "groupBy",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "join",
+                        "parameters": [
+                          {
+                            "_type": "func",
+                            "function": "filter",
+                            "parameters": [
+                              {
+                                "_type": "classInstance",
+                                "type": "I",
+                                "value": {
+                                  "metadata": false,
+                                  "path": [
+                                    "markets::ingest::TradePositionsIngest",
+                                    "EOD_POSITIONS"
+                                  ]
+                                }
+                              },
+                              {
+                                "_type": "lambda",
+                                "body": [
+                                  {
+                                    "_type": "func",
+                                    "function": "equal",
+                                    "parameters": [
+                                      {
+                                        "_type": "property",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "p"
+                                          }
+                                        ],
+                                        "property": "STATUS"
+                                      },
+                                      {
+                                        "_type": "string",
+                                        "value": "SIGNED_OFF"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "p"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "classInstance",
+                            "type": "I",
+                            "value": {
+                              "metadata": false,
+                              "path": [
+                                "markets::ingest::TradePositionsIngest",
+                                "LEGAL_ENTITIES"
+                              ]
+                            }
+                          },
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "packageableElementPtr",
+                                "fullPath": "JoinKind"
+                              }
+                            ],
+                            "property": "INNER"
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "_type": "func",
+                                "function": "equal",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "p"
+                                      }
+                                    ],
+                                    "property": "LEGAL_ENTITY_ID"
+                                  },
+                                  {
+                                    "_type": "property",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "e"
+                                      }
+                                    ],
+                                    "property": "LEI"
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "p"
+                              },
+                              {
+                                "_type": "var",
+                                "name": "e"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "classInstance",
+                        "type": "colSpecArray",
+                        "value": {
+                          "colSpecs": [
+                            {
+                              "name": "BUSINESS_DATE"
+                            },
+                            {
+                              "name": "LEGAL_ENTITY_ID"
+                            },
+                            {
+                              "name": "LEGAL_ENTITY_NAME"
+                            },
+                            {
+                              "name": "INSTRUMENT_ID"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "_type": "classInstance",
+                        "type": "colSpecArray",
+                        "value": {
+                          "colSpecs": [
+                            {
+                              "function1": {
+                                "_type": "lambda",
+                                "body": [
+                                  {
+                                    "_type": "property",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "p"
+                                      }
+                                    ],
+                                    "property": "QUANTITY"
+                                  }
+                                ],
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "p"
+                                  }
+                                ]
+                              },
+                              "function2": {
+                                "_type": "lambda",
+                                "body": [
+                                  {
+                                    "_type": "func",
+                                    "function": "sum",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "q"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "q"
+                                  }
+                                ]
+                              },
+                              "name": "TOTAL_QUANTITY"
+                            },
+                            {
+                              "function1": {
+                                "_type": "lambda",
+                                "body": [
+                                  {
+                                    "_type": "property",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "p"
+                                      }
+                                    ],
+                                    "property": "MARKET_VALUE_USD"
+                                  }
+                                ],
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "p"
+                                  }
+                                ]
+                              },
+                              "function2": {
+                                "_type": "lambda",
+                                "body": [
+                                  {
+                                    "_type": "func",
+                                    "function": "sum",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "v"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "v"
+                                  }
+                                ]
+                              },
+                              "name": "TOTAL_MARKET_VALUE_USD"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            "ingestPartitionColumns": [],
+            "preprocessors": [],
+            "storageLayoutClusterColumns": [],
+            "storageLayoutPartitionColumns": []
+          },
+          {
+            "name": "OPEN_CLIENT_POSITIONS",
+            "primaryKey": [
+              "BUSINESS_DATE",
+              "CLIENT_ACCOUNT_ID",
+              "INSTRUMENT_ID"
+            ],
+            "privacyClassification": {
+              "sensitivity": "DP20"
+            },
+            "source": {
+              "_type": "FunctionSource",
+              "function": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "select",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "filter",
+                        "parameters": [
+                          {
+                            "_type": "classInstance",
+                            "type": "I",
+                            "value": {
+                              "metadata": false,
+                              "path": [
+                                "markets::ingest::TradePositionsIngest",
+                                "CLIENT_POSITIONS"
+                              ]
+                            }
+                          },
+                          {
+                            "_type": "lambda",
+                            "body": [
+                              {
+                                "_type": "func",
+                                "function": "and",
+                                "parameters": [
+                                  {
+                                    "_type": "func",
+                                    "function": "equal",
+                                    "parameters": [
+                                      {
+                                        "_type": "property",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "p"
+                                          }
+                                        ],
+                                        "property": "BUSINESS_DATE"
+                                      },
+                                      {
+                                        "_type": "var",
+                                        "name": "businessDate"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "_type": "func",
+                                    "function": "equal",
+                                    "parameters": [
+                                      {
+                                        "_type": "property",
+                                        "parameters": [
+                                          {
+                                            "_type": "var",
+                                            "name": "p"
+                                          }
+                                        ],
+                                        "property": "CLIENT_ACCOUNT_ID"
+                                      },
+                                      {
+                                        "_type": "var",
+                                        "name": "clientAccountId"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "p"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "classInstance",
+                        "type": "colSpecArray",
+                        "value": {
+                          "colSpecs": [
+                            {
+                              "name": "BUSINESS_DATE"
+                            },
+                            {
+                              "name": "CLIENT_ACCOUNT_ID"
+                            },
+                            {
+                              "name": "INSTRUMENT_ID"
+                            },
+                            {
+                              "name": "QUANTITY"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "StrictDate"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "name": "businessDate"
+                  },
+                  {
+                    "_type": "var",
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "String"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "name": "clientAccountId"
+                  }
+                ]
+              }
+            },
+            "ingestPartitionColumns": [],
+            "preprocessors": [],
+            "storageLayoutClusterColumns": [],
+            "storageLayoutPartitionColumns": []
+          },
+          {
+            "name": "RANKED_POSITIONS",
+            "primaryKey": [],
+            "privacyClassification": {
+              "sensitivity": "DP10"
+            },
+            "source": {
+              "_type": "FunctionSource",
+              "function": {
+                "_type": "lambda",
+                "parameters": [],
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "olapGroupBy",
+                    "parameters": [
+                      {
+                        "_type": "classInstance",
+                        "type": "I",
+                        "value": {
+                          "metadata": false,
+                          "path": [
+                            "markets::ingest::TradePositionsIngest",
+                            "EOD_POSITIONS"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "ingestPartitionColumns": [],
+            "preprocessors": [],
+            "storageLayoutClusterColumns": [],
+            "storageLayoutPartitionColumns": []
+          }
+        ],
+        "appDirDeployment": {
+          "appDirId": 12345,
+          "level": "DEPLOYMENT"
+        }
+      }
+    },
+    {
+      "path": "markets::ingest::ReferenceDataIngest",
+      "classifierPath": "meta::external::ingest::specification::metamodel::IngestDefinition",
+      "content": {
+        "_type": "ingestDefinition",
+        "name": "ReferenceDataIngest",
+        "package": "markets::ingest",
+        "appDirDeployment": {
+          "appDirId": 12345,
+          "level": "DEPLOYMENT"
+        },
+        "datasets": [
+          {
+            "name": "LEGAL_ENTITIES",
+            "primaryKey": ["LEI"],
+            "source": {
+              "_type": "ingestSource",
+              "schema": {
+                "_type": "schema",
+                "columns": [
+                  {
+                    "name": "LEI",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 16
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "LEGAL_ENTITY_NAME",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 128
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "COUNTRY",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 2
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

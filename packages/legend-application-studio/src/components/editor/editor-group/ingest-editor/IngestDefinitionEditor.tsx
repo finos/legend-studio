@@ -45,7 +45,7 @@ import {
   IngestDefinitionEditorState,
 } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { flowResult } from 'mobx';
 
@@ -58,7 +58,11 @@ import {
 } from '@finos/legend-query-builder';
 import type { MatViewDataSet } from '@finos/legend-graph';
 import { IngestTestableEditor } from './testable/IngestTestableEditor.js';
-import { getIngestMaterializedViews } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
+import { INGEST_DEFINITION_VIEW } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionFlowState.js';
+import {
+  IngestDefinitionFlow,
+  IngestDefinitionViewSwitch,
+} from './IngestDefinitionFlow.js';
 
 export const IngestLineageModal = observer(
   (props: { ingestDefinitionEditorState: IngestDefinitionEditorState }) => {
@@ -70,15 +74,11 @@ export const IngestLineageModal = observer(
       ingestDefinitionEditorState.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map(
         (dataset) => dataset.name,
       ) ?? [];
-    const [selectedMatview, setSelectedMatview] = useState<
-      MatViewDataSet | undefined
-    >(undefined);
-
-    useEffect(() => {
-      if (!selectedMatview && matviewFunctions && matviewFunctions.length > 0) {
-        setSelectedMatview(matviewFunctions[0]);
-      }
-    }, [matviewFunctions, selectedMatview]);
+    // the view whose lineage shows, wherever its lineage was asked for
+    const selectedMatview = matviewFunctions?.find(
+      (dataset) =>
+        dataset.name === ingestDefinitionEditorState.lineageMatViewName,
+    );
 
     useEffect(() => {
       ingestDefinitionEditorState.lineageState.setSelectedTab(
@@ -122,7 +122,6 @@ export const IngestLineageModal = observer(
 
     const handleDatasetChange = (option: DatasetOption | null): void => {
       if (option?.value) {
-        setSelectedMatview(option.value);
         flowResult(
           ingestDefinitionEditorState.generateLineage(option.value),
         ).catch(
@@ -185,8 +184,14 @@ export const IngestDefinitionEditor = observer(() => {
       IngestDefinitionEditorState,
     );
   const ingestDef = ingestDefinitionEditorState.ingest;
+  const flowState = ingestDefinitionEditorState.definitionFlowState;
   // the views Cube can open to edit (Edit MatView, PLAN §11.18)
-  const materializedViews = getIngestMaterializedViews(ingestDef);
+  const materializedViews = flowState.materializedViews;
+  // with materialized views, the tab opens on their flows, each view's head
+  // holding its Lineage and Edit in Cube; without, it is the definition's Pure
+  const showsFlow =
+    materializedViews.length > 0 &&
+    flowState.view === INGEST_DEFINITION_VIEW.FLOW;
   const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
   const selectedTab = ingestDefinitionEditorState.selectedTab;
 
@@ -279,19 +284,21 @@ export const IngestDefinitionEditor = observer(() => {
                 <PanelHeader title="deployment" darkMode={true}>
                   <PanelHeaderActions>
                     <div className="panel__header__actions">
-                      <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-                        <button
-                          className="btn__dropdown-combo__label"
-                          onClick={viewLineage}
-                          tabIndex={-1}
-                          disabled={!isValidForLineage}
-                        >
-                          <EyeIcon className="btn__dropdown-combo__label__icon" />
-                          <div className="btn__dropdown-combo__label__title">
-                            Lineage
-                          </div>
-                        </button>
-                      </div>
+                      {!showsFlow && (
+                        <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                          <button
+                            className="btn__dropdown-combo__label"
+                            onClick={viewLineage}
+                            tabIndex={-1}
+                            disabled={!isValidForLineage}
+                          >
+                            <EyeIcon className="btn__dropdown-combo__label__icon" />
+                            <div className="btn__dropdown-combo__label__title">
+                              Lineage
+                            </div>
+                          </button>
+                        </div>
+                      )}
                       {isValidForLineage && (
                         <div className="btn__dropdown-combo btn__dropdown-combo--primary">
                           <button
@@ -329,7 +336,7 @@ export const IngestDefinitionEditor = observer(() => {
                             Create MatView
                           </div>
                         </button>
-                        {materializedViews.length > 0 && (
+                        {!showsFlow && materializedViews.length > 0 && (
                           <ControlledDropdownMenu
                             className="btn__dropdown-combo__dropdown-btn"
                             title="Edit a materialized view with Cube"
@@ -378,13 +385,24 @@ export const IngestDefinitionEditor = observer(() => {
                       .isInProgress
                   }
                 />
-                <PanelContent>
-                  <CodeEditor
-                    inputValue={ingestDefinitionEditorState.textContent}
-                    isReadOnly={true}
-                    language={CODE_EDITOR_LANGUAGE.PURE}
+                {materializedViews.length > 0 && (
+                  <div className="ingest-definition-editor__view-bar">
+                    <IngestDefinitionViewSwitch flowState={flowState} />
+                  </div>
+                )}
+                {showsFlow ? (
+                  <IngestDefinitionFlow
+                    editorState={ingestDefinitionEditorState}
                   />
-                </PanelContent>
+                ) : (
+                  <PanelContent>
+                    <CodeEditor
+                      inputValue={ingestDefinitionEditorState.textContent}
+                      isReadOnly={true}
+                      language={CODE_EDITOR_LANGUAGE.PURE}
+                    />
+                  </PanelContent>
+                )}
                 <IngestLineageModal
                   ingestDefinitionEditorState={ingestDefinitionEditorState}
                 />

@@ -43,6 +43,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '..
 import { LineageState } from '@finos/legend-query-builder';
 import { IngestTestableState } from './IngestTestableState.js';
 import { getIngestSpecificationLambdas } from './IngestDefinitionSpecificationHelper.js';
+import { IngestDefinitionFlowState } from './IngestDefinitionFlowState.js';
 
 export enum INGEST_DEFINITION_TAB {
   DEFINITION = 'Definition',
@@ -86,12 +87,16 @@ export class IngestDefinitionEditorState extends ElementEditorState {
   cachedArtfact: CachedIngestArtifact | undefined;
   deployOnOpen = false;
   lineageState: LineageState;
+  /** The materialized view whose lineage the lineage viewer shows */
+  lineageMatViewName: string | undefined;
   ingestTestableState: IngestTestableState;
   /** The specification's lambdas as Pure, for viewing */
   lambdaGrammars = new Map<RawLambda, string>();
   private lambdaGrammarsSpecification:
     | IngestDefinitionSpecification
     | undefined;
+  /** The materialized views, each as Legend Cube draws it, in the Definition tab */
+  readonly definitionFlowState: IngestDefinitionFlowState;
 
   constructor(
     editorStore: EditorStore,
@@ -107,6 +112,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       cachedArtfact: observable,
       ingestionArtifact: observable,
       lambdaGrammars: observable.ref,
+      lineageMatViewName: observable,
       setSelectedTab: action,
       buildSpecification: action,
       convertSpecificationLambdas: flow,
@@ -126,6 +132,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     this.ingestTestableState = new IngestTestableState(this);
     this.ingestTestableState.init();
     this.buildSpecification();
+    this.definitionFlowState = new IngestDefinitionFlowState(this);
   }
 
   setSelectedTab(val: INGEST_DEFINITION_TAB): void {
@@ -238,6 +245,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
           lineageRawData,
         );
       this.lineageState.setLineageData(lineageData);
+      this.lineageMatViewName = matviewDataset.name;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
