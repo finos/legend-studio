@@ -413,6 +413,11 @@ test(
             },
           },
         },
+        {
+          name: 'BROKEN_VIEW',
+          primaryKey: [],
+          source: { _type: 'FunctionSource', function: 'not a lambda' },
+        },
       ],
     });
     // a write mode that isn't an object is none; a column with no name is left
@@ -427,7 +432,17 @@ test(
         ],
         notes: ["One of its columns has no name, and isn't shown."],
       },
+      // a view, which says it can't be read: the views' list leaves it out
+      BROKEN_VIEW: {
+        isMaterializedView: true,
+        writeMode: undefined,
+        columns: [],
+        notes: ["It is a materialized view whose function can't be read."],
+      },
     });
+    expect(
+      getIngestMaterializedViews(withOdds).map((view) => view.name),
+    ).toEqual([]);
   },
 );
 

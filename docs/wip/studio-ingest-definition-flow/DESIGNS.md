@@ -38,8 +38,9 @@ _Today's Definition tab on the made-up ingest: its header. Below it, the panel i
 Studio doesn't build a model of an ingest definition: it keeps the definition's raw JSON and parses only the parts it
 edits. Every design keeps it that way.
 
-- **Nothing new is parsed.** The views' flows need what Studio already reads: each view's name, function, primary key
-  and classification. The data sets' designs also read, for display only, each data set's name, columns and key.
+- **No model of the definition.** The views' flows need what Studio already reads: each view's name, function,
+  primary key and classification. The data sets' designs also read, for display only, each data set's name, columns,
+  key and write mode.
 - **Editing doesn't move.** Views are still created and edited in Cube, through Studio's existing add and update
   helpers. Everything else is edited in text mode: no form fields for data sets, write modes or owners.
 - **The drawings are read-only.** Clicking a step opens nothing. The flow is a view of the function, never an editor.

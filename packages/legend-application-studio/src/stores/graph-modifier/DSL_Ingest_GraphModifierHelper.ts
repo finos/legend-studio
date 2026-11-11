@@ -247,7 +247,16 @@ export const getIngestDataSets = (
       const writeMode = readWriteMode(dataSet.writeMode) ?? definitionWriteMode;
       if (source?._type === MATERIALIZED_VIEW_SOURCE_TYPE) {
         return [
-          new IngestDataSet(dataSet.name, true, primaryKey, writeMode, [], []),
+          new IngestDataSet(
+            dataSet.name,
+            true,
+            primaryKey,
+            writeMode,
+            [],
+            isObject(source.function)
+              ? []
+              : ["It is a materialized view whose function can't be read."],
+          ),
         ];
       }
       const schema = isObject(source?.schema)

@@ -138,8 +138,11 @@ export class IngestDefinitionFlowState {
 
   /** The definition's data sets that aren't views, with their columns, as its content holds them */
   get dataSets(): IngestDataSet[] {
+    const views = new Set(this.materializedViews.map((view) => view.name));
+    // a view whose function can't be read isn't among the views: it is
+    // listed here, and says so
     return getIngestDataSets(this.editorState.ingest).filter(
-      (dataSet) => !dataSet.isMaterializedView,
+      (dataSet) => !dataSet.isMaterializedView || !views.has(dataSet.name),
     );
   }
 
