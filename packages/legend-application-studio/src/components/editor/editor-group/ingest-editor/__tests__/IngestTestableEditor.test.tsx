@@ -16,6 +16,7 @@
 
 import { afterEach, test, expect, jest } from '@jest/globals';
 import {
+  act,
   findByPlaceholderText,
   findByRole,
   findByText,
@@ -69,10 +70,14 @@ const setUpIngestTestingTab = async (): Promise<{
     entities: TEST_DATA__IngestTestable,
   });
 
-  await TEST__openElementFromExplorerTree(
-    'ingest::MatViewIngest',
-    renderResult,
-  );
+  // in act: the Definition tab draws the definition's materialized views
+  // with Legend Cube's flow, which loads as the tab opens
+  await act(async () => {
+    await TEST__openElementFromExplorerTree(
+      'ingest::MatViewIngest',
+      renderResult,
+    );
+  });
 
   const editorGroup = await waitFor(() =>
     renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
