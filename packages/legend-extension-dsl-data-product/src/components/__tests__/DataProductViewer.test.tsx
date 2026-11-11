@@ -4891,6 +4891,10 @@ describe('DataProductViewer', () => {
         fireEvent.click(await screen.findByText('View definition'));
       });
       const definition = await screen.findByLabelText('Definition');
+      // the definition opens on its flow: its Pure is one click away
+      await act(async () => {
+        fireEvent.click(within(definition).getByText('Pure'));
+      });
       const definitionBox = guaranteeNonNullable(
         definition.querySelector<HTMLElement>(
           '.data-product__viewer__code-box',
