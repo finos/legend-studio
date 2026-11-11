@@ -332,24 +332,34 @@ export function hasCompleteColumnType(column: {
   );
 }
 
+const DEFAULT_DECIMALS = 2;
+
 /**
  * Returns the default number of decimals to display for a numeric column:
  * none for integers, the scale for `Numeric(precision, scale)`, 2 otherwise.
+ *
+ * NOTE: when the displayed values are aggregated values which can be fractional,
+ * e.g. the average of integers, at least 2 decimals are displayed.
  */
-export function getDefaultDecimals(column: {
-  type: string;
-  typeVariableValues?: readonly number[] | undefined;
-}): number {
+export function getDefaultDecimals(
+  column: {
+    type: string;
+    typeVariableValues?: readonly number[] | undefined;
+  },
+  options?: { hasFractionalValues?: boolean | undefined },
+): number {
+  let decimals = DEFAULT_DECIMALS;
   if (isIntegerType(column.type)) {
-    return 0;
-  }
-  if (column.type === PRECISE_PRIMITIVE_TYPE.NUMERIC) {
+    decimals = 0;
+  } else if (column.type === PRECISE_PRIMITIVE_TYPE.NUMERIC) {
     const [, scale] = column.typeVariableValues ?? [];
     if (scale !== undefined) {
-      return scale;
+      decimals = scale;
     }
   }
-  return 2;
+  return options?.hasFractionalValues
+    ? Math.max(decimals, DEFAULT_DECIMALS)
+    : decimals;
 }
 
 /**

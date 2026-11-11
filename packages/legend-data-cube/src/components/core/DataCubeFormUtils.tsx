@@ -160,6 +160,22 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
   const [inputValue, setInputValue] = useState<string | number>(value ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
   const handleRef = useForkRef(inputRef, ref);
+  const isValidValue = (val: number) =>
+    isValid !== undefined
+      ? isValid(val)
+      : !((min !== undefined && val < min) || (max !== undefined && val > max));
+  const stepValue = (delta: number) => {
+    if (value === undefined) {
+      return;
+    }
+    // round off floating-point errors, e.g. 0.55 + 0.05 = 0.6000000000000001
+    const newValue = Number((value + delta).toPrecision(15));
+    if (!isValidValue(newValue)) {
+      return;
+    }
+    setInputValue(newValue.toString());
+    setValue(newValue);
+  };
 
   useEffect(() => {
     setInputValue(value ?? '');
@@ -185,29 +201,13 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
           inputRef.current?.select();
         } else if (event.code === 'ArrowUp') {
           event.preventDefault();
-          if (value !== undefined && step !== undefined) {
-            const newValue = value + step;
-            if (
-              (min !== undefined && newValue < min) ||
-              (max !== undefined && newValue > max)
-            ) {
-              return;
-            }
-            setInputValue(newValue.toString());
-            setValue(newValue);
+          if (step !== undefined) {
+            stepValue(step);
           }
         } else if (event.code === 'ArrowDown') {
           event.preventDefault();
-          if (value !== undefined && step !== undefined) {
-            const newValue = value - step;
-            if (
-              (min !== undefined && newValue < min) ||
-              (max !== undefined && newValue > max)
-            ) {
-              return;
-            }
-            setInputValue(newValue.toString());
-            setValue(newValue);
+          if (step !== undefined) {
+            stepValue(-step);
           }
         }
       }}
@@ -220,10 +220,7 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
         if (
           isNaN(numericValue) ||
           (isString(newInputValue) && !newInputValue) || // Explicitly check this case since `Number()` parses empty string as `0`
-          (isValid !== undefined
-            ? !isValid(numericValue)
-            : (min !== undefined && numericValue < min) ||
-              (max !== undefined && numericValue > max))
+          !isValidValue(numericValue)
         ) {
           return;
         }
@@ -236,10 +233,7 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
         if (
           isNaN(numericValue) ||
           (isString(inputValue) && !inputValue) || // Explicitly check this case since `Number()` parses empty string as `0`
-          (isValid !== undefined
-            ? !isValid(numericValue)
-            : (min !== undefined && numericValue < min) ||
-              (max !== undefined && numericValue > max))
+          !isValidValue(numericValue)
         ) {
           setValue(defaultValue);
           setInputValue(defaultValue ?? '');

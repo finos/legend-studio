@@ -554,6 +554,7 @@ export async function validateAndBuildSnapshot(
       data.pivot,
       pivotAggColumns,
       Array.from(colsMap.values()),
+      engine.aggregateOperations,
     );
   }
 
@@ -667,7 +668,7 @@ function validateAndBuildConfiguration(
   const config = specification.configuration;
   // generate a default configuration anyway to be used to compare with the
   // provided configuration for validation purpose
-  const _config = newConfiguration(context);
+  const _config = newConfiguration(context, engine.aggregateOperations);
 
   if (!config) {
     return _config;

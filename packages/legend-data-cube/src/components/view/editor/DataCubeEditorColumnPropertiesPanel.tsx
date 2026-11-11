@@ -44,6 +44,9 @@ import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   EMPTY_VALUE_PLACEHOLDER,
+  DataCubeOperationAdvancedValueType,
+  ofDataType,
+  type DataCubeOperationValue,
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import { formatColumnType } from '../../../stores/core/DataCubeColumnTypes.js';
@@ -52,6 +55,116 @@ import {
   _findCol,
   _sortByColName,
 } from '../../../stores/core/model/DataCubeColumn.js';
+import type { DataCubeEditorMutableColumnConfiguration } from '../../../stores/view/editor/DataCubeEditorMutableConfiguration.js';
+import { guaranteeNonNullable, isNumber, isString } from '@finos/legend-shared';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+
+const DataCubeEditorAggregationParameterEditor = observer(
+  (props: {
+    column: DataCubeEditorMutableColumnConfiguration;
+    parameterColumns: DataCubeEditorMutableColumnConfiguration[];
+    index: number;
+  }) => {
+    const { column, parameterColumns, index } = props;
+    const operation = column.aggregateOperation;
+    const value = guaranteeNonNullable(column.aggregationParameters[index]);
+    const [
+      openColumnDropdown,
+      closeColumnDropdown,
+      columnDropdownProps,
+      columnDropdownPropsOpen,
+    ] = useDropdownMenu();
+    const withValue = (newValue: DataCubeOperationValue) =>
+      column.aggregationParameters.map((val, idx) =>
+        idx === index ? newValue : val,
+      );
+
+    let editor: React.ReactNode = null;
+    if (value.type === DataCubeOperationAdvancedValueType.COLUMN) {
+      editor = (
+        <>
+          <FormDropdownMenuTrigger
+            className="w-48"
+            onClick={openColumnDropdown}
+            open={columnDropdownPropsOpen}
+          >
+            <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
+              {isString(value.value) ? value.value : EMPTY_VALUE_PLACEHOLDER}
+            </div>
+          </FormDropdownMenuTrigger>
+          <FormDropdownMenu className="w-48" {...columnDropdownProps}>
+            {parameterColumns
+              .filter((col) => operation.isCompatibleWithParameterColumn(col))
+              .toSorted(_sortByColName)
+              .map((col) => (
+                <FormDropdownMenuItem
+                  key={col.name}
+                  onClick={() => {
+                    column.setAggregationParameters(
+                      withValue({ ...value, value: col.name }),
+                    );
+                    closeColumnDropdown();
+                  }}
+                  autoFocus={col.name === value.value}
+                >
+                  {col.name}
+                </FormDropdownMenuItem>
+              ))}
+          </FormDropdownMenu>
+        </>
+      );
+    } else if (ofDataType(value.type, [DataCubeColumnDataType.NUMBER])) {
+      const isDecimal = value.type !== PRIMITIVE_TYPE.INTEGER;
+      editor = (
+        <FormNumberInput
+          className="w-16 text-sm"
+          isDecimal={isDecimal}
+          step={isDecimal ? 0.05 : 1}
+          value={isNumber(value.value) ? value.value : undefined}
+          // revert invalid input to the current value
+          defaultValue={isNumber(value.value) ? value.value : undefined}
+          isValid={(val) =>
+            val !== undefined &&
+            operation.isCompatibleWithParameterValues(
+              withValue({ ...value, value: val }),
+            )
+          }
+          setValue={(val) => {
+            if (val !== undefined) {
+              column.setAggregationParameters(
+                withValue({ ...value, value: val }),
+              );
+            }
+          }}
+        />
+      );
+    } else if (ofDataType(value.type, [DataCubeColumnDataType.TEXT])) {
+      editor = (
+        <FormTextInput
+          className="w-16"
+          value={isString(value.value) ? value.value : ''}
+          onChange={(event) =>
+            column.setAggregationParameters(
+              withValue({ ...value, value: event.target.value }),
+            )
+          }
+        />
+      );
+    }
+
+    if (!editor) {
+      return null;
+    }
+    return (
+      <div className="mr-3 flex h-full items-center">
+        <div className="mr-1.5 flex-shrink-0 text-sm">
+          {`${operation.getParameterLabel(index) ?? `parameter ${index + 1}`}:`}
+        </div>
+        {editor}
+      </div>
+    );
+  },
+);
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
@@ -320,6 +433,12 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                 <div className="mt-2 flex h-5 w-full items-center">
                   <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                     Aggregation:
+                    <FormDocumentation
+                      className="ml-1"
+                      documentationKey={
+                        DataCubeDocumentationKey.COLUMN_CONFIGURATION_AGGREGATION
+                      }
+                    />
                   </div>
                   <FormDropdownMenuTrigger
                     className="w-32"
@@ -335,30 +454,22 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-32"
                     {...aggregationOperationDropdownProps}
                   >
-                    {view.engine.aggregateOperations
-                      .filter((op) => op.isCompatibleWithColumn(selectedColumn))
-                      .map((op) => (
+                    {panel.selectedColumnCompatibleAggregateOperations.map(
+                      (op) => (
                         <FormDropdownMenuItem
                           key={op.operator}
+                          title={op.description}
                           onClick={() => {
-                            if (op !== selectedColumn.aggregateOperation) {
-                              selectedColumn.setAggregateOperation(op);
-                              selectedColumn.setAggregationParameters(
-                                op.generateDefaultParameterValues(
-                                  selectedColumn,
-                                ),
-                              );
-                            }
+                            panel.setAggregateOperation(selectedColumn, op);
                             closeAggregationOperationDropdown();
                           }}
                           autoFocus={op === selectedColumn.aggregateOperation}
                         >
                           {op.label}
                         </FormDropdownMenuItem>
-                      ))}
+                      ),
+                    )}
                   </FormDropdownMenu>
-
-                  {/* TODO: Support editing aggregation parameter values */}
 
                   <FormCheckbox
                     className="ml-3"
@@ -374,6 +485,26 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     }
                   />
                 </div>
+
+                {selectedColumn.kind === DataCubeColumnKind.MEASURE &&
+                  selectedColumn.aggregationParameters.length !== 0 && (
+                    <div className="mt-2 flex h-5 w-full items-center">
+                      <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
+                      {selectedColumn.aggregationParameters.map(
+                        (value, idx) => (
+                          <DataCubeEditorAggregationParameterEditor
+                            // eslint-disable-next-line react/no-array-index-key
+                            key={idx}
+                            column={selectedColumn}
+                            parameterColumns={
+                              panel.selectedColumnAggregationParameterColumns
+                            }
+                            index={idx}
+                          />
+                        ),
+                      )}
+                    </div>
+                  )}
 
                 {selectedColumn.dataType === DataCubeColumnDataType.NUMBER && (
                   <>

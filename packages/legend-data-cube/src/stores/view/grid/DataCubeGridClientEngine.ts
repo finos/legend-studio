@@ -30,6 +30,7 @@ import {
   guaranteeType,
   hashObject,
   isBoolean,
+  isNumber,
   isNonNullable,
   isObject,
   pruneObject,
@@ -297,31 +298,37 @@ function _cellValue(value: unknown): DataCubeGridClientCellValue {
   return isObject(value) ? JSON.stringify(value) : (value as string | number);
 }
 
-function buildRowData(
+export function buildRowData(
   result: TabularDataSet,
   snapshot: DataCubeSnapshot,
 ): DataCubeGridClientRowData[] {
+  const cols = result.columns;
+  const countCols =
+    snapshot.data.pivot && snapshot.data.groupBy
+      ? cols.filter(
+          (col) =>
+            isPivotResultColumnName(col) &&
+            col.endsWith(
+              INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+            ),
+        )
+      : undefined;
   return result.rows.map((_row, rowIdx) => {
     const row: DataCubeGridClientRowData = {};
-    const cols = result.columns;
     _row.values.forEach((value, colIdx) => {
       row[cols[colIdx] as string] = _cellValue(value);
-      if (snapshot.data.pivot && snapshot.data.groupBy) {
-        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = Number(
-          sum(
-            result.columns
-              .filter(
-                (col) =>
-                  isPivotResultColumnName(col) &&
-                  col.endsWith(
-                    INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
-                  ),
-              )
-              .map((col) => (row[col] as number | undefined) ?? 0),
-          ).toString(),
-        );
-      }
     });
+    if (countCols) {
+      // NOTE: the count for a pivot value is missing when the row has no data for it,
+      // e.g. a group with no rows for a year, so count it as 0; any other non-numeric
+      // value is also counted as 0 on purpose since a count cannot be anything else
+      row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = sum(
+        countCols.map((col) => {
+          const count = row[col];
+          return isNumber(count) ? count : 0;
+        }),
+      );
+    }
     return row;
   });
 }
