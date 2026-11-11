@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.22.5
+
+### Patch Changes
+
+- [#5882](https://github.com/finos/legend-studio/pull/5882) [`6d5aa23`](https://github.com/finos/legend-studio/commit/6d5aa23d60d24cae7225f63f2851e88ac3d7c25e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube in Studio reads the data products of the project's dependencies as well as its own. Create MatView lists them, and Edit MatView reopens a view that reads one, e.g. joined with the project's ingest data set. Before, it said "Cube finds no data product …". The workspace with its dependencies counts as one project, so a dependency's data product joins the project's ingest data sets as the project's own does.
+
+- [#5867](https://github.com/finos/legend-studio/pull/5867) [`0603105`](https://github.com/finos/legend-studio/commit/06031056f9fbe1fb0378e337647a857c81d9cc32) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Hosts of an access point's definition flow: Legend Marketplace loads Legend Cube's stylesheet and gives the viewer the ingest definitions from Depot, at the data product's version (an ad-hoc deployment has none, and its flows draw their data sets by name); Legend Studio's data product preview gives them from its graph, as the workspace holds them. Marketplace's build keeps the flow's libraries (React Flow, dagre) in a `cube-flow-vendor` chunk loaded only with the flow, instead of the `async-vendor` chunk every lazy page loads.
+
+- [#5886](https://github.com/finos/legend-studio/pull/5886) [`6ea84a0`](https://github.com/finos/legend-studio/commit/6ea84a070de3b3f01c773ba59921cb069005e1be) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: the grids keep their sort when the flatten modal opens, and sort and filter rows again as they fill in after Refresh; a snapshot opens at the head of its project instead of at a `master-SNAPSHOT` version; once Flatten has opened a review, the row links to it in GitLab and in Studio in place of Flatten, through Refresh. `generateViewEntityRoute` is exported.
+
 ## 28.22.4
 
 ## 28.22.3

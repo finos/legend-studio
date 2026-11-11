@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.71
+
+### Patch Changes
+
+- [#5883](https://github.com/finos/legend-studio/pull/5883) [`ac7551b`](https://github.com/finos/legend-studio/commit/ac7551ba27dbcd8a1f40255b77a68815cb37ee45) ([@kelly-thai](https://github.com/kelly-thai)) - Added a `projectVersionId` URL query parameter to the existing-query editor route (`/edit/:queryId`) that lets a saved query's graph be built against a different project version (e.g. a dev/snapshot version) without changing the version stored on the saved query while viewing. Saving the query (Save, Update, Save-As, or rename) while the override is active stores the override version on the query, so it matches the graph the query was built against.
+
 ## 13.8.70
 
 ## 13.8.69
