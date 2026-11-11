@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  type SchemaColumn,
-  type SchemaDiff,
-  TypeFamily,
-} from '@finos/legend-cube';
+import type { SchemaColumn, SchemaDiff } from '@finos/legend-cube';
 import { CubeTableFlag } from '../graph-manager/CubeEngine.js';
 import {
   type CubeJoinKeySuggestion,
   CubeJoinSuggestionReason,
 } from '../stores/editors/CubeJoinSuggestions.js';
+import { getTypeFamilyLabel } from './LegendCubeTypeLabels.js';
 
 // The page's own text and settings; validation messages live in the core's
 // CubeMessages (PLAN §4.11)
@@ -142,25 +139,6 @@ export const CUBE_TABLE_FLAG_LABELS: Readonly<
 export const getExactColumnTypeLabel = (column: SchemaColumn): string =>
   `${column.type.displayName}${column.nullable ? '?' : ''}`;
 
-/** The kind of value a type family holds, as the editors name it (the review of the demo, 2026-10-13) */
-const TYPE_FAMILY_LABELS: Partial<Record<TypeFamily, string>> = {
-  [TypeFamily.BOOLEAN]: 'True or false',
-  [TypeFamily.STRING]: 'Text',
-  [TypeFamily.INTEGER]: 'Whole number',
-  [TypeFamily.FLOAT]: 'Number',
-  [TypeFamily.DECIMAL]: 'Decimal',
-  [TypeFamily.NUMBER]: 'Number',
-  [TypeFamily.STRICT_DATE]: 'Date',
-  [TypeFamily.DATETIME]: 'Date and time',
-  [TypeFamily.DATE]: 'Date',
-  [TypeFamily.STRICT_TIME]: 'Time',
-  [TypeFamily.VARIANT]: 'Variant',
-};
-
-/** The kind of value a type family holds, as the editors name it; none for an enumeration or a type Cube doesn't know */
-export const getTypeFamilyLabel = (family: TypeFamily): string | undefined =>
-  TYPE_FAMILY_LABELS[family];
-
 /**
  * A column's type as the editors show it: the kind of value, and whether it
  * is optional (can be empty), e.g. `Text, optional`; an enumeration, or a
@@ -168,7 +146,7 @@ export const getTypeFamilyLabel = (family: TypeFamily): string | undefined =>
  * (`getExactColumnTypeLabel`) is on hover.
  */
 export const getColumnTypeLabel = (column: SchemaColumn): string =>
-  `${TYPE_FAMILY_LABELS[column.type.family] ?? column.type.displayName}${
+  `${getTypeFamilyLabel(column.type.family) ?? column.type.displayName}${
     column.nullable ? ', optional' : ''
   }`;
 
@@ -179,7 +157,7 @@ export const getColumnTypeLabel = (column: SchemaColumn): string =>
  */
 export const getColumnTypeTitle = (column: SchemaColumn): string =>
   `${getColumnTypeLabel(column)} (${
-    TYPE_FAMILY_LABELS[column.type.family]
+    getTypeFamilyLabel(column.type.family)
       ? getExactColumnTypeLabel(column)
       : column.type.fullName
   })`;

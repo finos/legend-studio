@@ -141,21 +141,28 @@ const isNegativeNumber = (ir: IR): boolean =>
     ir.value.kind === 'decimal') &&
   ir.value.value.startsWith('-');
 
+/** A lambda's statements: Pure ends every one with `;` when there is more than one */
+const printStatements = (
+  nodes: readonly IR[],
+  print: (node: IR) => string,
+): string =>
+  nodes.length > 1
+    ? nodes.map((node) => `${print(node)};`).join(' ')
+    : nodes.map(print).join('');
+
 /**
- * Renders IR as Pure-like text, for golden tests and debugging; it is never
- * sent to the engine. Operators are infix with every operand that is itself
- * an operator in parentheses, `!` always takes parentheses, and everything
- * else is an arrow call on its first parameter, so the text has no precedence
+ * Renders IR as Pure-like text, for golden tests and debugging, and for a
+ * drawn definition's expressions (`printIRLambdaText`); it is never sent to
+ * the engine. Operators are infix with every operand that is itself an
+ * operator in parentheses, `!` always takes parentheses, and everything else
+ * is an arrow call on its first parameter, so the text has no precedence
  * traps. Store accessor segments are printed as stored: a quoted dotted name
  * (`"a.b"`) does not read back as one segment, which is why Cube sends JSON.
  */
 export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
   const print = (node: IR): string => printIR(node, options);
-  // Pure ends every statement with `;` when there is more than one
   const statements = (nodes: readonly IR[]): string =>
-    nodes.length > 1
-      ? nodes.map((node) => `${print(node)};`).join(' ')
-      : nodes.map(print).join('');
+    printStatements(nodes, print);
   // an operand of an operator, or the receiver of an arrow call
   const operand = (node: IR): string =>
     isInfix(node) || isNot(node) || isNegativeNumber(node)
@@ -238,3 +245,16 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return assertUnreachable(ir);
   }
 };
+
+/**
+ * A lambda as a step shows its expression, without braces, `x | $x.PRICE >
+ * 10`, as `printIR` prints it: for a definition drawn with no engine to give
+ * the text, e.g. a Filter by Expression's condition
+ */
+export const printIRLambdaText = (
+  lambda: Extract<IR, { readonly k: 'lambda' }>,
+  options: IRPrintOptions = {},
+): string =>
+  `${lambda.params.join(', ')} | ${printStatements(lambda.body, (node) =>
+    printIR(node, options),
+  )}`;

@@ -65,6 +65,7 @@ import type { LiteralValue } from '../../values/LiteralValue.js';
 import type { JsonObject } from '../../utils/Json.js';
 import type { IR } from '../CubeIR.js';
 import { PIVOT_AGGREGATION_NAME } from '../emitters/PivotEmitter.js';
+import { printIRLambdaText } from '../IRPrinter.js';
 import { getCubeFunctionName, isSameCubeIR } from './CubeIRComparison.js';
 import type { CubeLambdaParts } from './CubeLambdaParts.js';
 import {
@@ -89,7 +90,9 @@ import {
 // when its columns are known, written again by Cube's own emitter and kept
 // only when it gives the same Pure, so a lambda Cube wrote reads back to the
 // steps that wrote it. A condition Cube's Filter doesn't write the same
-// becomes a Filter by Expression, which keeps it as it is.
+// becomes a Filter by Expression, which keeps it as it is. A lambda read to
+// be drawn may take parameters, which its steps read where they keep the
+// Pure as it is: a Filter by Expression's condition, an Extend's expressions.
 
 export const CUBE_QUERY_READER_MESSAGE = {
   NO_STEP: (name: string): string =>
@@ -123,6 +126,10 @@ export const CUBE_QUERY_READER_MESSAGE = {
   CONCAT: 'both inputs need the same columns, in the same order.',
   SAME_NAME: (name: string): string =>
     `its column ~${name} is named like a column of its input, which Cube's Group doesn't allow.`,
+  PARAMETER: (name: string, parameters: readonly string[]): string =>
+    `Cube shows a parameter only in a filter's condition or a new column's expression, but ->${name}() reads ${parameters.map((parameter) => `$${parameter}`).join(', ')}.`,
+  PARAMETER_ROWS: (parameter: string): string =>
+    `Cube reads a query's rows from a source, but this one reads them from the parameter $${parameter}.`,
 };
 
 /** The step a source of the lambda reads as, which the host binds before reading */
@@ -159,13 +166,18 @@ export interface CubeQueryReadOptions {
    * Whether the steps are read to be drawn, not edited, e.g. an access
    * point's definition in a viewer: they may then be what only Cube's editor
    * refuses, such as a group's aggregation named like a column of its input
-   * (`Group.allowsInputNames`)
+   * (`Group.allowsInputNames`). As no engine gives a drawn step's text or
+   * checks it, a Filter by Expression shows its condition as Cube prints it,
+   * checked as the reader assumed (`CubeQueryReading.query`).
    */
   readonly forDrawing?: boolean | undefined;
 }
 
 export interface CubeQueryReading {
-  /** The steps read, the last one selected */
+  /**
+   * The steps read, the last one selected; read to be drawn, as inference
+   * reads them, a Filter by Expression checked as the reader assumed
+   */
   readonly query: Query;
   /** The steps read without being written again, as the columns before them weren't known */
   readonly unchecked: readonly string[];
@@ -176,6 +188,13 @@ export interface CubeQueryReading {
    * with it, reading the lambda's lets by name (`CubeLambdaParts.lets`)
    */
   readonly stepIRs: ReadonlyMap<string, IR>;
+  /**
+   * The lambda's parameters each step reads, by the step's id, in the order
+   * the lambda takes them: a Filter by Expression's condition, an Extend's
+   * expressions (`CubeLambdaParts.parameters`); no entry for a step that
+   * reads none
+   */
+  readonly parameterReads: ReadonlyMap<string, readonly string[]>;
 }
 
 /** A step read, and the IR it was read from: what the steps after it read */
@@ -272,6 +291,64 @@ const isPlainExtend = (ir: IR): boolean =>
   ir.k === 'func' &&
   getCubeFunctionName(ir.name) === 'extend' &&
   ir.params.length === 2;
+
+/**
+ * The variables the IR reads that nothing in it binds, in the order it first
+ * reads them: a lambda binds its parameters, and a let the name the
+ * statements after it read
+ */
+const findFreeVariables = (
+  ir: IR,
+  readExpression: (json: JsonObject) => IR,
+): string[] => {
+  const found: string[] = [];
+  const visit = (node: IR, bound: ReadonlySet<string>): void => {
+    switch (node.k) {
+      case 'var':
+        if (!bound.has(node.name) && !found.includes(node.name)) {
+          found.push(node.name);
+        }
+        return;
+      case 'lambda': {
+        let inner: ReadonlySet<string> = new Set([...bound, ...node.params]);
+        node.body.forEach((statement) => {
+          visit(statement, inner);
+          if (statement.k === 'let') {
+            inner = new Set(inner).add(statement.name);
+          }
+        });
+        return;
+      }
+      case 'func':
+        node.params.forEach((param) => visit(param, bound));
+        return;
+      case 'property':
+        visit(node.receiver, bound);
+        return;
+      case 'collection':
+        node.values.forEach((value) => visit(value, bound));
+        return;
+      case 'colSpec':
+        [node.fn1, node.fn2].forEach((fn) => fn && visit(fn, bound));
+        return;
+      case 'colSpecArray':
+        node.specs.forEach((spec) => visit(spec, bound));
+        return;
+      case 'let':
+        visit(node.value, bound);
+        return;
+      case 'lambdaJson':
+        visit(readExpression(node.json), bound);
+        return;
+      default:
+        // values, accessors, elements and types read no variable; nor does
+        // a source's relation passed through as JSON
+        return;
+    }
+  };
+  visit(ir, new Set());
+  return found;
+};
 
 /**
  * The relations of a lambda's chains of `extend`s that aren't windows, each
@@ -575,6 +652,7 @@ class CubeQueryReader {
   private readonly rewritten: string[] = [];
   private readonly stepIRs = new Map<string, IR>();
   private readonly readLets = new Set<string>();
+  private readonly parameterReads = new Map<string, readonly string[]>();
 
   constructor(
     private readonly parts: CubeLambdaParts,
@@ -584,6 +662,7 @@ class CubeQueryReader {
   }
 
   read(): CubeQueryReading {
+    this.refuseParameterReads();
     const last = this.readRelation(this.parts.relation, new Set());
     const unread = [...this.parts.lets.keys()].find(
       (name) => !this.readLets.has(name),
@@ -595,11 +674,90 @@ class CubeQueryReader {
       );
     }
     return {
-      query: new Query(this.nodes, this.connections, last.id),
+      // drawn, nothing checks a Filter by Expression later, so it is held
+      // checked, as the steps after it were read
+      query: new Query(
+        this.options.forDrawing ? this.inferenceNodes : this.nodes,
+        this.connections,
+        last.id,
+      ),
       unchecked: this.unchecked,
       rewritten: this.rewritten,
       stepIRs: this.stepIRs,
+      parameterReads: this.parameterReads,
     };
+  }
+
+  /** The lambda's parameters the IR reads, in the order the lambda takes them */
+  private readParameters(irs: readonly IR[]): string[] {
+    const { parameters = [] } = this.parts;
+    if (!parameters.length) {
+      return [];
+    }
+    const read = irs.flatMap((ir) =>
+      findFreeVariables(ir, this.options.expressions.read),
+    );
+    return parameters.filter((parameter) => read.includes(parameter));
+  }
+
+  /**
+   * Refuses a parameter of the lambda read where Cube can't show it, before
+   * any step is read: Cube shows one only where a step keeps the Pure as it
+   * is, a Filter by Expression's condition and an Extend's expressions. A
+   * source's own values, and a function Cube has no step for, are refused as
+   * such when read.
+   */
+  private refuseParameterReads(): void {
+    const { parameters = [] } = this.parts;
+    if (!parameters.length) {
+      return;
+    }
+    const visitedLets = new Set<string>();
+    const visit = (ir: IR): void => {
+      if (ir.k === 'var') {
+        const bound = this.parts.lets.get(ir.name);
+        if (bound && !visitedLets.has(ir.name)) {
+          visitedLets.add(ir.name);
+          visit(bound);
+        } else if (!bound && parameters.includes(ir.name)) {
+          throw new CubeLambdaReadError(
+            CubeLambdaReadErrorKind.PARAMETERS,
+            CUBE_QUERY_READER_MESSAGE.PARAMETER_ROWS(ir.name),
+          );
+        }
+        return;
+      }
+      if (ir.k !== 'func' || isCubeLambdaSource(ir)) {
+        return;
+      }
+      const name = getCubeFunctionName(ir.name);
+      const inputCount = RELATION_INPUTS.get(name);
+      if (inputCount === undefined) {
+        ir.params.slice(0, 1).forEach(visit);
+        return;
+      }
+      if (name !== 'filter' && !isPlainExtend(ir)) {
+        const read = this.readParameters(ir.params.slice(inputCount));
+        if (read.length) {
+          throw new CubeLambdaReadError(
+            CubeLambdaReadErrorKind.PARAMETERS,
+            CUBE_QUERY_READER_MESSAGE.PARAMETER(name, read),
+            name,
+          );
+        }
+      }
+      ir.params.slice(0, inputCount).forEach(visit);
+    };
+    visit(this.parts.relation);
+  }
+
+  /** Notes the parameters the step reads, if it reads any */
+  private noteParameterReads(step: ReadStep, irs: readonly IR[]): ReadStep {
+    const read = this.readParameters(irs);
+    if (read.length) {
+      this.parameterReads.set(step.id, read);
+    }
+    return step;
   }
 
   private nextId(type: string): string {
@@ -986,17 +1144,22 @@ class CubeQueryReader {
     candidates.push({
       node: new ExpressionFilter(
         this.nextId(ExpressionFilter.TYPE),
-        '',
+        // the editor gets the condition's text from the engine; drawn, it
+        // shows the condition as Cube prints it
+        this.options.forDrawing ? printIRLambdaText(condition) : '',
         this.options.expressions.write(condition),
       ),
       takenUnchecked: true,
       takenWhenDifferent: true,
     });
-    return this.choose(
-      candidates,
-      inputs,
-      ir,
-      unreadable('filter', 'Cube writes its condition another way.'),
+    return this.noteParameterReads(
+      this.choose(
+        candidates,
+        inputs,
+        ir,
+        unreadable('filter', 'Cube writes its condition another way.'),
+      ),
+      [condition],
     );
   }
 
@@ -1346,6 +1509,7 @@ class CubeQueryReader {
     refuse: (why: string) => never,
   ): ReadStep {
     const columns: ExtendColumn[] = [];
+    const expressions: IR[] = [];
     let current: IR = ir;
     while (isPlainExtend(current)) {
       const [rows, specs] = (current as Extract<IR, { readonly k: 'func' }>)
@@ -1370,6 +1534,7 @@ class CubeQueryReader {
         ) {
           return refuse(CUBE_QUERY_READER_MESSAGE.EXTEND);
         }
+        expressions.push(expression);
         return {
           name: spec.name,
           code: '',
@@ -1385,7 +1550,7 @@ class CubeQueryReader {
     const input = this.readRelation(current, lets);
     const node = new Extend(this.nextId(Extend.TYPE), columns);
     const typed = this.options.relationSchemas?.get(ir);
-    return this.choose(
+    const step = this.choose(
       [
         {
           node,
@@ -1407,6 +1572,7 @@ class CubeQueryReader {
       ir,
       unreadable('extend', CUBE_QUERY_READER_MESSAGE.EXTEND),
     );
+    return this.noteParameterReads(step, expressions);
   }
 
   /**

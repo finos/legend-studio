@@ -25,8 +25,8 @@ import {
   CUBE_PRECEDENCE_TRAP_EXPLANATIONS,
   getCubePrecedenceFixLabel,
   getCubePrecedenceTrapTitle,
-  getTypeFamilyLabel,
 } from '../../__lib__/LegendCubeLabels.js';
+import { getTypeFamilyLabel } from '../../__lib__/LegendCubeTypeLabels.js';
 import {
   type CubeCodeEdit,
   type CubeCodeRange,

@@ -34,7 +34,8 @@ export const CUBE_LAMBDA_PARTS_MESSAGE = {
 /**
  * The parts of a lambda Cube reads into a cube (PLAN §11.18): the relation
  * whose steps are read, the lets it reads, and, for a run's lambda, the run's
- * own parts. A matview's lambda is its relation alone.
+ * own parts. A matview's lambda is its relation alone. A lambda split to be
+ * drawn may take parameters, e.g. an access point's definition.
  */
 export interface CubeLambdaParts {
   /** The relation the steps are read from, with a run's sort and limit as they were applied */
@@ -49,6 +50,23 @@ export interface CubeLambdaParts {
    * apart, so it is read as a Limit step
    */
   readonly limitBesideFrom: boolean;
+  /**
+   * The lambda's parameters, by name, in order, when it was split to be
+   * drawn (`CubeLambdaSplitOptions.readsParameters`): what its steps read as
+   * `$<name>`, which Cube reads in a filter's condition or a new column's
+   * expression only
+   */
+  readonly parameters?: readonly string[] | undefined;
+}
+
+export interface CubeLambdaSplitOptions {
+  /**
+   * Whether the lambda may take parameters, as one read to be drawn may
+   * (`CubeQueryReadOptions.forDrawing`), e.g. an access point's definition.
+   * Cube's editor can't run a lambda with parameters, so by default one is
+   * refused.
+   */
+  readonly readsParameters?: boolean | undefined;
 }
 
 const isCall = (
@@ -106,21 +124,26 @@ const splitStatements = (
  * `{| <relation>->sort(…)->limit(n)->from(<runtime>)}`, or with lets
  * `{| {| <lets>; <relation>}->from(<runtime>)->sort(…)->limit(n)}`, the sort
  * and the limit each there or not. `from()` comes off; the sort and the limit
- * stay on the relation, as the steps they read as.
+ * stay on the relation, as the steps they read as. A lambda with parameters
+ * is refused, unless it is split to be drawn.
  */
-export const splitCubeLambda = (lambda: IR): CubeLambdaParts => {
+export const splitCubeLambda = (
+  lambda: IR,
+  options: CubeLambdaSplitOptions = {},
+): CubeLambdaParts => {
   if (lambda.k !== 'lambda') {
     throw new CubeLambdaReadError(
       CubeLambdaReadErrorKind.SHAPE,
       CUBE_LAMBDA_PARTS_MESSAGE.NOT_A_LAMBDA,
     );
   }
-  if (lambda.params.length) {
+  if (lambda.params.length && !options.readsParameters) {
     throw new CubeLambdaReadError(
       CubeLambdaReadErrorKind.PARAMETERS,
       CUBE_LAMBDA_PARTS_MESSAGE.PARAMETERS(lambda.params),
     );
   }
+  const parameters = lambda.params.length ? { parameters: lambda.params } : {};
   const lets = new Map<string, IR>();
   const query = splitStatements(lambda.body, lets);
 
@@ -132,6 +155,7 @@ export const splitCubeLambda = (lambda: IR): CubeLambdaParts => {
       lets,
       runtime: from.runtime,
       limitBesideFrom: isCall(from.rows, 'limit', 2),
+      ...parameters,
     };
   }
 
@@ -154,7 +178,8 @@ export const splitCubeLambda = (lambda: IR): CubeLambdaParts => {
       lets,
       runtime: inner.runtime,
       limitBesideFrom: limit !== undefined,
+      ...parameters,
     };
   }
-  return { relation: query, lets, limitBesideFrom: false };
+  return { relation: query, lets, limitBesideFrom: false, ...parameters };
 };

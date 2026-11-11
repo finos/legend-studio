@@ -82,6 +82,35 @@ const renderFlow = async (
 /** A step's name and its muted detail, as drawn */
 const textOf = (node: HTMLElement): string => node.textContent ?? '';
 
+/** The parameters' boxes, as drawn */
+const getParameterBoxes = (): HTMLElement[] =>
+  screen.queryAllByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW_PARAMETER);
+
+/** Where React Flow put a node, its top left corner */
+const positionOf = (box: HTMLElement): { x: number; y: number } => {
+  const match = /translate\((?<x>-?[\d.]+)px,\s*(?<y>-?[\d.]+)px\)/u.exec(
+    box.closest<HTMLElement>('.react-flow__node')?.style.transform ?? '',
+  );
+  return { x: Number(match?.groups?.x), y: Number(match?.groups?.y) };
+};
+
+/** A parameter as the engine's grammar declares one */
+const parameterOf = (
+  name: string,
+  type: string,
+  multiplicity: { lowerBound: number; upperBound?: number },
+): unknown => ({
+  _type: 'var',
+  name,
+  genericType: {
+    rawType: { _type: 'packageableType', fullPath: type },
+    typeArguments: [],
+    multiplicityArguments: [],
+    typeVariableValues: [],
+  },
+  multiplicity,
+});
+
 describe("An access point's definition drawn read-only", () => {
   test("Draws each step as Cube lays it out, the output marked and the join's inputs labelled", async () => {
     const flow = flowOf(DEFINITIONS.accessPoints.POSITIONS_BY_LEGAL_ENTITY);
@@ -210,5 +239,150 @@ describe("An access point's definition drawn read-only", () => {
     expect(
       within(controls).getByRole('button', { name: 'zoom in' }),
     ).toBeTruthy();
+  });
+
+  test("Draws the definition's parameters as boxes above its steps, each wired into the steps that read it", async () => {
+    const flow = flowOf(DEFINITIONS.accessPoints.CLIENT_POSITIONS);
+    const onSelectStep = jest.fn<(stepId: string) => void>();
+    const container = await renderFlow(flow, { onSelectStep });
+    expect(TEST__getCanvasNodes()).toHaveLength(3);
+    const [source, filter] = flow.steps;
+    // a filter on parameters is a filter by expression, its condition shown
+    const filterNode = await TEST__findCanvasNode(filter?.id ?? '');
+    const condition =
+      'Filter by p | ($p.BUSINESS_DATE == $businessDate) && ($p.CLIENT_ACCOUNT_ID == $clientAccountId)';
+    expect(textOf(filterNode)).toBe(condition);
+    expect(TEST__getCanvasNodeTooltip(filterNode)).toEqual([
+      condition,
+      CUBE_DEFINITION_FLOW_LABEL.READS_PARAMETERS([
+        'businessDate',
+        'clientAccountId',
+      ]),
+    ]);
+
+    const boxes = await waitFor(() => {
+      const found = getParameterBoxes();
+      expect(found).toHaveLength(2);
+      return found;
+    });
+    const [businessDate, clientAccountId] = boxes as [HTMLElement, HTMLElement];
+    expect(boxes.map(textOf)).toEqual([
+      '$businessDateStrictDate',
+      '$clientAccountIdString',
+    ]);
+    expect(TEST__getCanvasNodeTooltip(businessDate)).toEqual([
+      'businessDate: StrictDate[1]',
+      'Date',
+      CUBE_DEFINITION_FLOW_LABEL.PARAMETER_READ_BY,
+      condition,
+    ]);
+    expect(TEST__getCanvasNodeTooltip(clientAccountId).slice(0, 2)).toEqual([
+      'clientAccountId: String[1]',
+      'Text',
+    ]);
+    // a row above the steps, side by side over the step that reads them
+    const sourceAt = positionOf(await TEST__findCanvasNode(source?.id ?? ''));
+    const filterAt = positionOf(filterNode);
+    const [dateAt, accountAt] = boxes.map(positionOf) as [
+      { x: number; y: number },
+      { x: number; y: number },
+    ];
+    expect(dateAt.y).toBeLessThan(sourceAt.y);
+    expect(accountAt.y).toBe(dateAt.y);
+    expect(dateAt.x).toBeLessThan(accountAt.x);
+    expect(dateAt.x).toBeLessThan(filterAt.x + 100);
+    expect(accountAt.x).toBeGreaterThan(filterAt.x);
+    // each wired into the filter
+    await waitFor(() =>
+      ['businessDate', 'clientAccountId'].forEach((name) =>
+        expect(
+          container.querySelector(
+            `[data-testid="rf__edge-parameter:${name}->${filter?.id}"]`,
+          ),
+        ).not.toBeNull(),
+      ),
+    );
+
+    // a parameter is no step: a click or Enter on it picks nothing
+    fireEvent.click(businessDate);
+    fireEvent.keyDown(
+      businessDate.closest<HTMLElement>('.react-flow__node') as HTMLElement,
+      { key: 'Enter' },
+    );
+    expect(onSelectStep).not.toHaveBeenCalled();
+    fireEvent.click(filterNode);
+    expect(onSelectStep).toHaveBeenLastCalledWith(filter?.id);
+  });
+
+  test('Puts a parameter no step reads at the start of the row, unwired, and says how many values each takes', async () => {
+    const flow = flowOf({
+      _type: 'lambda',
+      parameters: [
+        parameterOf('books', 'String', { lowerBound: 0 }),
+        parameterOf('asOf', 'StrictDate', { lowerBound: 0, upperBound: 1 }),
+      ],
+      body: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            (
+              DEFINITIONS.accessPoints.POSITIONS_BY_DESK as {
+                body: { parameters: unknown[] }[];
+              }
+            ).body[0]?.parameters[0],
+            {
+              _type: 'lambda',
+              parameters: [{ _type: 'var', name: 'p' }],
+              body: [
+                {
+                  _type: 'func',
+                  function: 'in',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      property: 'BOOK_ID',
+                      parameters: [{ _type: 'var', name: 'p' }],
+                    },
+                    { _type: 'var', name: 'books' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const container = await renderFlow(flow);
+    const boxes = await waitFor(() => {
+      const found = getParameterBoxes();
+      expect(found).toHaveLength(2);
+      return found;
+    });
+    const [books, asOf] = boxes as [HTMLElement, HTMLElement];
+    expect(boxes.map(textOf)).toEqual([
+      '$booksString[*]',
+      '$asOfStrictDate[0..1]',
+    ]);
+    expect(TEST__getCanvasNodeTooltip(books).slice(0, 2)).toEqual([
+      'books: String[*]',
+      `Text, ${CUBE_DEFINITION_FLOW_LABEL.PARAMETER_LIST}`,
+    ]);
+    expect(TEST__getCanvasNodeTooltip(asOf)).toEqual([
+      'asOf: StrictDate[0..1]',
+      `Date, ${CUBE_DEFINITION_FLOW_LABEL.PARAMETER_OPTIONAL}`,
+      CUBE_DEFINITION_FLOW_LABEL.PARAMETER_UNREAD,
+    ]);
+    expect(positionOf(asOf).x).toBeLessThan(positionOf(books).x);
+    await waitFor(() =>
+      expect(
+        container.querySelector(
+          `[data-testid="rf__edge-parameter:books->${flow.outputStepId}"]`,
+        ),
+      ).not.toBeNull(),
+    );
+    expect(
+      container.querySelector('[data-testid^="rf__edge-parameter:asOf"]'),
+    ).toBeNull();
   });
 });

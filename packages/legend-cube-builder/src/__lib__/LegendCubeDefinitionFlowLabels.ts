@@ -27,9 +27,28 @@ export const CUBE_DEFINITION_FLOW_MESSAGE = {
   OTHER: 'another source',
 };
 
+/** `$a`, `$a and $b`, `$a, $b and $c` */
+const listParameters = (names: readonly string[]): string => {
+  const variables = names.map((name) => `$${name}`);
+  return variables.length <= 1
+    ? (variables[0] ?? '')
+    : `${variables.slice(0, -1).join(', ')} and ${variables.at(-1)}`;
+};
+
 export const CUBE_DEFINITION_FLOW_LABEL = {
   /** In the tooltip of a data set whose columns the host didn't give */
   UNKNOWN_COLUMNS: "Its columns aren't known.",
   /** What the output step's label says on hover: nothing runs in a flow */
   OUTPUT_TITLE: 'The output step: the definition gives its rows',
+  /** In the tooltip of a step that reads the definition's parameters */
+  READS_PARAMETERS: (names: readonly string[]): string =>
+    `Reads ${listParameters(names)}.`,
+  /** In a parameter's tooltip, before the steps that read it, one a line */
+  PARAMETER_READ_BY: 'Read by:',
+  /** In the tooltip of a parameter no step reads */
+  PARAMETER_UNREAD: 'No step reads it.',
+  /** After a parameter's type in words, when it may be left out */
+  PARAMETER_OPTIONAL: 'optional',
+  /** After a parameter's type in words, when it takes any number of values */
+  PARAMETER_LIST: 'a list',
 };
