@@ -374,7 +374,10 @@ const editMatViewInCube = async (
   editorGroup: HTMLElement,
   name: string,
 ): Promise<void> => {
-  const views = await findByLabelText(editorGroup, 'Materialized views');
+  const views = await findByLabelText(
+    editorGroup,
+    'Materialized views and data sets',
+  );
   fireEvent.click(getByTitle(views, name));
   fireEvent.click(
     await findByText(await findByLabelText(editorGroup, name), 'Edit in Cube'),

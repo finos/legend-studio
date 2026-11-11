@@ -24,13 +24,22 @@ import {
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { describeDefinitionFlowRefusal } from '@finos/legend-extension-dsl-data-product';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
+} from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Component, useEffect, type ReactNode } from 'react';
-import type { IngestMaterializedView } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
+import { Component, Fragment, useEffect, type ReactNode } from 'react';
+import {
+  describeIngestWriteMode,
+  type IngestDataSet,
+  type IngestDataSetColumn,
+  type IngestMaterializedView,
+} from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { IngestDefinitionEditorState } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import {
-  getMaterializedViewDataSets,
   INGEST_DEFINITION_FLOW_FAILURE,
   INGEST_DEFINITION_VIEW,
   type IngestDefinitionFlowEntry,
@@ -39,9 +48,10 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionFlowState.js';
 
 // An ingest definition's materialized views, one at a time, each as Legend
-// Cube draws it, read-only: a list of the views down the left, the picked
-// view on the right. Nothing here loads Cube: its flow comes with the entry
-// the state loads (`IngestDefinitionFlowState.loadEntry()`).
+// Cube draws it, read-only: a list of the views down the left, then of its
+// other data sets, and the picked one on the right, a view's flow or a data
+// set's columns. Nothing here loads Cube: its flow comes with the entry the
+// state loads (`IngestDefinitionFlowState.loadEntry()`).
 
 /** "A", "A and B", "A, B and C" */
 const listNames = (names: string[]): string =>
@@ -99,17 +109,51 @@ export const IngestDefinitionViewSwitch = observer(
   },
 );
 
-/** The materialized views down the left, each with its number of steps */
-const MaterializedViewList = observer(
+/** "1 column", "9 columns" */
+const describeColumnCount = (count: number): string =>
+  `${count} ${count === 1 ? 'column' : 'columns'}`;
+
+/**
+ * Down the left: the materialized views, each with its number of steps, then
+ * the definition's other data sets, each with its number of columns
+ */
+const IngestDefinitionList = observer(
   (props: { flowState: IngestDefinitionFlowState }) => {
     const { flowState } = props;
-    const { materializedViews, selectedView, readings } = flowState;
+    const {
+      materializedViews,
+      selectedView,
+      dataSets,
+      selectedDataSet,
+      readings,
+    } = flowState;
+    const renderItem = (
+      name: string,
+      meta: string,
+      isSelected: boolean,
+      onSelect: () => void,
+    ): ReactNode => (
+      <button
+        key={name}
+        type="button"
+        role="tab"
+        aria-selected={isSelected}
+        className={clsx('ingest-definition-flow__list__item', {
+          'ingest-definition-flow__list__item--active': isSelected,
+        })}
+        title={name}
+        onClick={onSelect}
+      >
+        <span className="ingest-definition-flow__list__item__name">{name}</span>
+        <span className="ingest-definition-flow__list__item__meta">{meta}</span>
+      </button>
+    );
     return (
       <div
         className="ingest-definition-flow__list"
         role="tablist"
         aria-orientation="vertical"
-        aria-label="Materialized views"
+        aria-label="Materialized views and data sets"
       >
         <div className="ingest-definition-flow__list__title">
           Materialized views
@@ -117,36 +161,37 @@ const MaterializedViewList = observer(
             {materializedViews.length}
           </span>
         </div>
-        {materializedViews.map((view) => {
-          const isSelected = view === selectedView;
-          return (
-            <button
-              key={view.name}
-              type="button"
-              role="tab"
-              aria-selected={isSelected}
-              className={clsx('ingest-definition-flow__list__item', {
-                'ingest-definition-flow__list__item--active': isSelected,
-              })}
-              title={view.name}
-              onClick={() => flowState.selectView(view.name)}
-            >
-              <span className="ingest-definition-flow__list__item__name">
-                {view.name}
-              </span>
-              <span className="ingest-definition-flow__list__item__meta">
-                {describeReading(readings?.get(view.name))}
-              </span>
-            </button>
-          );
-        })}
+        {materializedViews.map((view) =>
+          renderItem(
+            view.name,
+            describeReading(readings?.get(view.name)),
+            !selectedDataSet && view === selectedView,
+            () => flowState.selectView(view.name),
+          ),
+        )}
+        {dataSets.length > 0 && (
+          <div className="ingest-definition-flow__list__title ingest-definition-flow__list__title--group">
+            Data sets
+            <span className="ingest-definition-flow__list__count">
+              {dataSets.length}
+            </span>
+          </div>
+        )}
+        {dataSets.map((dataSet) =>
+          renderItem(
+            dataSet.name,
+            describeColumnCount(dataSet.columns.length),
+            dataSet === selectedDataSet,
+            () => flowState.selectDataSet(dataSet.name),
+          ),
+        )}
       </div>
     );
   },
 );
 
-/** The view's primary key, as chips */
-const MaterializedViewKey = (props: { primaryKey: readonly string[] }) =>
+/** A view's or a data set's primary key, as chips */
+const PrimaryKeyChips = (props: { primaryKey: readonly string[] }) =>
   props.primaryKey.length ? (
     <span className="ingest-definition-flow__view__chips" title="Primary key">
       <span className="ingest-definition-flow__view__chips__label">Key</span>
@@ -162,27 +207,83 @@ const MaterializedViewKey = (props: { primaryKey: readonly string[] }) =>
     </span>
   );
 
-/** The data sets the view reads, by name; one of another ingest definition after that definition's name */
-const MaterializedViewReads = (props: {
-  ingestPath: string;
-  reading: IngestMaterializedViewReading;
-}) => {
-  const { ingestPath, reading } = props;
-  const names = getMaterializedViewDataSets(reading).map(
-    ({ ingestDefinition, dataSet }) =>
-      ingestDefinition === ingestPath
-        ? dataSet
-        : `${ingestDefinition.slice(ingestDefinition.lastIndexOf(':') + 1)}.${dataSet}`,
-  );
-  return names.length ? (
-    <span
-      className="ingest-definition-flow__view__reads"
-      title="The data sets this view reads"
-    >
-      {`Reads ${names.join(', ')}`}
-    </span>
-  ) : null;
-};
+/** A name in a "Reads" or "Read by" line: one that picks something in the list, or plain text */
+interface IngestDefinitionNameLink {
+  readonly label: string;
+  readonly title: string;
+  readonly onPick?: (() => void) | undefined;
+}
+
+/** Names separated by commas, each one that picks something a link */
+const NameLinks = (props: { links: IngestDefinitionNameLink[] }) => (
+  <>
+    {props.links.map((link, index) => (
+      <Fragment key={link.label}>
+        {index > 0 && ', '}
+        {link.onPick ? (
+          <button
+            type="button"
+            className="ingest-definition-flow__link"
+            title={link.title}
+            onClick={link.onPick}
+          >
+            {link.label}
+          </button>
+        ) : (
+          <span title={link.title}>{link.label}</span>
+        )}
+      </Fragment>
+    ))}
+  </>
+);
+
+/**
+ * The data sets the view's function reads: each of this definition a link
+ * that picks it in the list, one of another definition after that
+ * definition's name
+ */
+const MaterializedViewReads = observer(
+  (props: {
+    flowState: IngestDefinitionFlowState;
+    view: IngestMaterializedView;
+  }) => {
+    const { flowState, view } = props;
+    const ingestPath = flowState.editorState.ingest.path;
+    const links = (flowState.viewReads.get(view.name) ?? []).map(
+      ({ ingestDefinition, dataSet }): IngestDefinitionNameLink => {
+        if (ingestDefinition !== ingestPath) {
+          return {
+            label: `${ingestDefinition.split('::').pop() ?? ingestDefinition}.${dataSet}`,
+            title: `Data set ${dataSet} of ingest definition ${ingestDefinition}`,
+          };
+        }
+        if (flowState.dataSets.some((each) => each.name === dataSet)) {
+          return {
+            label: dataSet,
+            title: `Show the data set ${dataSet}`,
+            onPick: () => flowState.selectDataSet(dataSet),
+          };
+        }
+        if (flowState.materializedViews.some((each) => each.name === dataSet)) {
+          return {
+            label: dataSet,
+            title: `Show the materialized view ${dataSet}`,
+            onPick: () => flowState.selectView(dataSet),
+          };
+        }
+        return { label: dataSet, title: `Data set ${dataSet}` };
+      },
+    );
+    return links.length ? (
+      <span
+        className="ingest-definition-flow__view__reads"
+        title="The data sets this view reads"
+      >
+        Reads <NameLinks links={links} />
+      </span>
+    ) : null;
+  },
+);
 
 /** A view's own Pure is short and read-only: its lines wrap, and it ends at its last line */
 const VIEW_PURE_EDITOR_OPTIONS = {
@@ -449,7 +550,6 @@ const MaterializedViewPanel = observer(
     const { editorState, view } = props;
     const flowState = editorState.definitionFlowState;
     const { editorStore } = editorState;
-    const reading = flowState.readings?.get(view.name);
     const matViewDataSet = flowState.getMatViewDataSet(view);
     const viewLineage = (): void => {
       if (matViewDataSet) {
@@ -469,7 +569,7 @@ const MaterializedViewPanel = observer(
             <span className="ingest-definition-flow__view__name">
               {view.name}
             </span>
-            <MaterializedViewKey primaryKey={view.primaryKey} />
+            <PrimaryKeyChips primaryKey={view.primaryKey} />
             {view.sensitivity !== undefined && (
               <span
                 className="ingest-definition-flow__view__chip ingest-definition-flow__view__chip--classification"
@@ -480,12 +580,7 @@ const MaterializedViewPanel = observer(
             )}
           </div>
           <div className="ingest-definition-flow__view__head__row">
-            {reading && (
-              <MaterializedViewReads
-                ingestPath={editorState.ingest.path}
-                reading={reading}
-              />
-            )}
+            <MaterializedViewReads flowState={flowState} view={view} />
             <div className="ingest-definition-flow__view__actions">
               <button
                 type="button"
@@ -524,15 +619,174 @@ const MaterializedViewPanel = observer(
   },
 );
 
+/** Past this many columns, a data set's table scrolls instead of growing */
+const MAX_AUTO_HEIGHT_COLUMNS = 10;
+
+/** A column's name; one its write mode adds says which */
+const DataSetColumnName = (
+  props: DataGridCellRendererParams<IngestDataSetColumn>,
+) => {
+  const column = props.data;
+  if (!column) {
+    return null;
+  }
+  return (
+    <span className="ingest-definition-flow__data-set__column-name">
+      {column.name}
+      {column.addedBy !== undefined && (
+        <span className="ingest-definition-flow__data-set__added-by">
+          {`added by ${describeIngestWriteMode(column.addedBy)}`}
+        </span>
+      )}
+    </span>
+  );
+};
+
+/** A column's type, its full path in a tooltip */
+const DataSetColumnType = (
+  props: DataGridCellRendererParams<IngestDataSetColumn>,
+) =>
+  props.data ? (
+    <span title={props.data.typePath}>{props.data.type}</span>
+  ) : null;
+
+/** View SQL's schema headers, so a data set and a view's schema look alike, and whether a column is in the key */
+const DATA_SET_COLUMN_DEFINITIONS: DataGridColumnDefinition<IngestDataSetColumn>[] =
+  [
+    {
+      headerName: 'Column Name',
+      field: 'name',
+      flex: 1,
+      cellRenderer: DataSetColumnName,
+    },
+    {
+      headerName: 'Column Type',
+      field: 'type',
+      flex: 1,
+      cellRenderer: DataSetColumnType,
+    },
+    { headerName: 'Multiplicity', field: 'multiplicity', flex: 1 },
+    {
+      headerName: 'Key',
+      width: 80,
+      valueGetter: (params) => (params.data?.isPrimaryKey ? 'Yes' : ''),
+    },
+  ];
+
+const DATA_SET_ROW_CLASS_RULES = {
+  // a column its write mode adds, not one it declares
+  'ingest-definition-flow__data-set__added-column': (params: {
+    data?: IngestDataSetColumn | undefined;
+  }): boolean => params.data?.addedBy !== undefined,
+};
+
+/** A data set's columns, read-only: those it declares, then, muted, those its write mode adds */
+const IngestDataSetColumns = observer(
+  (props: { flowState: IngestDefinitionFlowState; dataSet: IngestDataSet }) => {
+    const { flowState, dataSet } = props;
+    const { layoutService } =
+      flowState.editorState.editorStore.applicationStore;
+    const scrolls = dataSet.columns.length > MAX_AUTO_HEIGHT_COLUMNS;
+    const darkMode = !layoutService.TEMPORARY__isLightColorThemeEnabled;
+    return (
+      <div
+        className={clsx('ingest-definition-flow__data-set__grid', {
+          'ingest-definition-flow__data-set__grid--scrolls': scrolls,
+          'ag-theme-balham': !darkMode,
+          'ag-theme-balham-dark': darkMode,
+        })}
+        aria-label={`Columns of ${dataSet.name}`}
+      >
+        <DataGrid
+          rowData={[...dataSet.columns]}
+          columnDefs={DATA_SET_COLUMN_DEFINITIONS}
+          rowClassRules={DATA_SET_ROW_CLASS_RULES}
+          domLayout={scrolls ? 'normal' : 'autoHeight'}
+          suppressCellFocus={true}
+        />
+      </div>
+    );
+  },
+);
+
 /**
- * The Definition tab's Flow: the materialized views down the left, the
- * picked one's flow on the right. Cube's code loads the first time it shows.
+ * The picked data set: its name, key and the views that read it, each a
+ * link to the view, and its columns, read-only
+ */
+const IngestDataSetPanel = observer(
+  (props: { flowState: IngestDefinitionFlowState; dataSet: IngestDataSet }) => {
+    const { flowState, dataSet } = props;
+    const readBy = flowState.getReadBy(dataSet.name);
+    const added = dataSet.columns.length - dataSet.declaredColumnCount;
+    return (
+      <div
+        className="ingest-definition-flow__view"
+        role="tabpanel"
+        aria-label={dataSet.name}
+      >
+        <div className="ingest-definition-flow__view__head">
+          <div className="ingest-definition-flow__view__head__row">
+            <span className="ingest-definition-flow__view__name">
+              {dataSet.name}
+            </span>
+            <PrimaryKeyChips primaryKey={dataSet.primaryKey} />
+            <span className="ingest-definition-flow__view__hint">
+              Read-only here: edit data sets in text mode.
+            </span>
+          </div>
+          <div className="ingest-definition-flow__view__head__row">
+            <span className="ingest-definition-flow__view__reads">
+              {readBy.length ? (
+                <>
+                  {`Read by ${readBy.length} ${readBy.length === 1 ? 'view' : 'views'}: `}
+                  <NameLinks
+                    links={readBy.map((view) => ({
+                      label: view.name,
+                      title: `Show the materialized view ${view.name}`,
+                      onPick: () => flowState.selectView(view.name),
+                    }))}
+                  />
+                </>
+              ) : (
+                'Read by no view'
+              )}
+            </span>
+          </div>
+        </div>
+        {dataSet.notes.map((note) => (
+          <div
+            key={note}
+            className="ingest-definition-flow__view__note"
+            role="note"
+          >
+            {note}
+          </div>
+        ))}
+        {dataSet.columns.length > 0 && (
+          <>
+            <IngestDataSetColumns flowState={flowState} dataSet={dataSet} />
+            <div className="ingest-definition-flow__view__message">
+              {added > 0 && dataSet.writeMode !== undefined
+                ? `${describeColumnCount(dataSet.declaredColumnCount)} as the definition declares them, then ${added} its write mode, ${describeIngestWriteMode(dataSet.writeMode)}, adds.`
+                : `${describeColumnCount(dataSet.declaredColumnCount)}, as the definition declares them.`}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  },
+);
+
+/**
+ * The Definition tab's Flow: the materialized views down the left, then the
+ * definition's other data sets; on the right, the picked view's flow, or the
+ * picked data set's columns. Cube's code loads the first time it shows.
  */
 export const IngestDefinitionFlow = observer(
   (props: { editorState: IngestDefinitionEditorState }) => {
     const { editorState } = props;
     const flowState = editorState.definitionFlowState;
-    const { selectedView } = flowState;
+    const { selectedView, selectedDataSet } = flowState;
     const { applicationStore } = editorState.editorStore;
     useEffect(() => {
       flowResult(flowState.loadEntry()).catch(
@@ -541,13 +795,21 @@ export const IngestDefinitionFlow = observer(
     }, [flowState, applicationStore]);
     return (
       <div className="ingest-definition-flow">
-        <MaterializedViewList flowState={flowState} />
-        {selectedView && (
-          <MaterializedViewPanel
-            key={selectedView.name}
-            editorState={editorState}
-            view={selectedView}
+        <IngestDefinitionList flowState={flowState} />
+        {selectedDataSet ? (
+          <IngestDataSetPanel
+            key={selectedDataSet.name}
+            flowState={flowState}
+            dataSet={selectedDataSet}
           />
+        ) : (
+          selectedView && (
+            <MaterializedViewPanel
+              key={selectedView.name}
+              editorState={editorState}
+              view={selectedView}
+            />
+          )
         )}
       </div>
     );

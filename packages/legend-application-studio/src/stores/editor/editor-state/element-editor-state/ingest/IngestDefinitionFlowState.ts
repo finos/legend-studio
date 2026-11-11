@@ -31,7 +31,11 @@ import {
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import {
+  getIngestDataSets,
+  getIngestMaterializedViewReads,
   getIngestMaterializedViews,
+  type IngestDataSet,
+  type IngestDataSetReference,
   type IngestMaterializedView,
 } from '../../../../graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
@@ -41,8 +45,9 @@ import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.
 // browser, with no engine call, its data sets typed by the ingest
 // definitions of the graph. Cube's code loads the first time the flow shows,
 // so neither Studio's own load nor an ingest definition without views pays
-// for it. Only the views are read, as Studio reads them to edit them in Cube:
-// the rest of the definition stays its raw JSON.
+// for it. Beside the views, the list has the definition's other data sets,
+// each one's columns read from the definition's JSON for display. Studio
+// builds no model of the definition: the rest stays its raw JSON.
 
 /** Legend Cube's definition flow: `@finos/legend-cube-builder/definition-flow` */
 export type IngestDefinitionFlowEntry = typeof CubeDefinitionFlowEntry;
@@ -78,50 +83,14 @@ export type IngestMaterializedViewGrammar =
   | { readonly text: string }
   | { readonly error: Error };
 
-/** An ingest data set a materialized view reads */
-export interface IngestMaterializedViewDataSet {
-  /** The path of the ingest definition that holds it */
-  readonly ingestDefinition: string;
-  readonly dataSet: string;
-}
-
-/**
- * The ingest data sets a view's flow reads, in the order it reads them, for
- * display only: a flow reads no other source, Cube refuses one that does
- */
-export const getMaterializedViewDataSets = (
-  reading: IngestMaterializedViewReading,
-): IngestMaterializedViewDataSet[] => {
-  if (reading.kind !== 'flow') {
-    return [];
-  }
-  const dataSets: IngestMaterializedViewDataSet[] = [];
-  reading.steps.forEach(({ ir }) => {
-    // a data set step reads its accessor, or a let that binds it
-    const source = ir.k === 'var' ? reading.lets.get(ir.name) : ir;
-    if (source?.k !== 'ingestAccessor') {
-      return;
-    }
-    const [ingestDefinition, dataSet] = source.path;
-    if (
-      !dataSets.some(
-        (each) =>
-          each.ingestDefinition === ingestDefinition &&
-          each.dataSet === dataSet,
-      )
-    ) {
-      dataSets.push({ ingestDefinition, dataSet });
-    }
-  });
-  return dataSets;
-};
-
 export class IngestDefinitionFlowState {
   readonly editorState: IngestDefinitionEditorState;
   /** Flow until the user picks Pure */
   view = INGEST_DEFINITION_VIEW.FLOW;
   /** The view picked in the list; the first view until one is picked */
   selectedViewName: string | undefined;
+  /** The data set picked in the list, which shows instead of a view; none until one is picked */
+  selectedDataSetName: string | undefined;
   /** Cube's definition flow, once loaded */
   entry: IngestDefinitionFlowEntry | undefined;
   /** Why Cube's definition flow didn't load, if it didn't */
@@ -134,14 +103,19 @@ export class IngestDefinitionFlowState {
     makeObservable<IngestDefinitionFlowState, 'viewGrammars'>(this, {
       view: observable,
       selectedViewName: observable,
+      selectedDataSetName: observable,
       entry: observable.ref,
       entryError: observable.ref,
       viewGrammars: observable.shallow,
       materializedViews: computed,
       selectedView: computed,
+      dataSets: computed,
+      selectedDataSet: computed,
+      viewReads: computed,
       readings: computed,
       setView: action,
       selectView: action,
+      selectDataSet: action,
       resetEntry: action,
       loadEntry: flow,
       fetchViewGrammar: flow,
@@ -159,6 +133,46 @@ export class IngestDefinitionFlowState {
     const views = this.materializedViews;
     return (
       views.find((view) => view.name === this.selectedViewName) ?? views[0]
+    );
+  }
+
+  /** The definition's data sets that aren't views, with their columns, as its content holds them */
+  get dataSets(): IngestDataSet[] {
+    return getIngestDataSets(this.editorState.ingest).filter(
+      (dataSet) => !dataSet.isMaterializedView,
+    );
+  }
+
+  /** The data set picked in the list, if one is: it shows instead of a view */
+  get selectedDataSet(): IngestDataSet | undefined {
+    const name = this.selectedDataSetName;
+    return name === undefined
+      ? undefined
+      : this.dataSets.find((dataSet) => dataSet.name === name);
+  }
+
+  /**
+   * The ingest data sets each view's function reads, by the view's name,
+   * read from its JSON, for display: whether or not Cube can draw the view
+   */
+  get viewReads(): ReadonlyMap<string, IngestDataSetReference[]> {
+    return new Map(
+      this.materializedViews.map((view) => [
+        view.name,
+        getIngestMaterializedViewReads(view),
+      ]),
+    );
+  }
+
+  /** The views whose functions read the definition's data set of that name */
+  getReadBy(dataSet: string): IngestMaterializedView[] {
+    const path = this.editorState.ingest.path;
+    return this.materializedViews.filter((view) =>
+      this.viewReads
+        .get(view.name)
+        ?.some(
+          (read) => read.ingestDefinition === path && read.dataSet === dataSet,
+        ),
     );
   }
 
@@ -213,6 +227,11 @@ export class IngestDefinitionFlowState {
 
   selectView(name: string): void {
     this.selectedViewName = name;
+    this.selectedDataSetName = undefined;
+  }
+
+  selectDataSet(name: string): void {
+    this.selectedDataSetName = name;
   }
 
   /** Legend Cube's definition flow, in a chunk of its own, shared with the data product viewer's */

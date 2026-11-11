@@ -187,6 +187,10 @@
       text-transform: uppercase;
     }
 
+    &__title--group {
+      margin-top: 0.8rem;
+    }
+
     &__count {
       font-weight: 400;
     }
@@ -295,12 +299,17 @@
     }
 
     &__reads {
-      overflow: hidden;
+      flex: 1;
+      min-width: 0;
       color: var(--color-text-muted);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.15rem;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    }
+
+    &__hint {
+      margin-left: auto;
+      color: var(--color-text-muted);
+      font-size: 1.15rem;
     }
 
     &__actions {
@@ -406,6 +415,46 @@
       overflow: hidden;
       border: 0.1rem solid var(--color-border-subtle);
       border-radius: 0.4rem;
+    }
+  }
+
+  // a name that picks a view or a data set in the list
+  &__link {
+    color: var(--color-text-link);
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__data-set {
+    &__grid {
+      flex-shrink: 0;
+
+      // past ten columns, it scrolls instead of growing
+      &--scrolls {
+        height: 33rem;
+      }
+
+      // a column its write mode adds, not one it declares
+      .ag-row.ingest-definition-flow__data-set__added-column {
+        color: var(--color-text-muted);
+      }
+    }
+
+    &__column-name {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.8rem;
+    }
+
+    &__added-by {
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      font-style: italic;
     }
   }
 }

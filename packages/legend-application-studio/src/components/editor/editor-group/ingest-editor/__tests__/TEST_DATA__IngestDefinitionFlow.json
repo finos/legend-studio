@@ -361,6 +361,67 @@
             }
           },
           {
+            "name": "INSTRUMENTS",
+            "primaryKey": ["INSTRUMENT_ID"],
+            "source": {
+              "_type": "ingestSource",
+              "schema": {
+                "_type": "schema",
+                "columns": [
+                  {
+                    "name": "INSTRUMENT_ID",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 32
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    }
+                  },
+                  {
+                    "name": "INSTRUMENT_NAME",
+                    "genericType": {
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "meta::pure::precisePrimitives::Varchar"
+                      },
+                      "typeArguments": [],
+                      "multiplicityArguments": [],
+                      "typeVariableValues": [
+                        {
+                          "_type": "integer",
+                          "value": 200
+                        }
+                      ]
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    }
+                  }
+                ]
+              }
+            },
+            "writeMode": {
+              "_type": "batch_milestoned"
+            }
+          },
+          {
+            "name": "PENDING_FEED",
+            "primaryKey": []
+          },
+          {
             "name": "POSITIONS_BY_LEGAL_ENTITY",
             "primaryKey": ["BUSINESS_DATE", "LEGAL_ENTITY_ID", "INSTRUMENT_ID"],
             "privacyClassification": {

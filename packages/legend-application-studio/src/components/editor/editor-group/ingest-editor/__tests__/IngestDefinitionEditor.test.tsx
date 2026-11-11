@@ -120,11 +120,11 @@ const getEditorState = (
 const getViewSwitch = (editorGroup: HTMLElement): HTMLElement =>
   within(editorGroup).getByLabelText('Show the definition as');
 
-/** The materialized views down the left */
+/** The materialized views, then the other data sets, down the left */
 const getViewList = (editorGroup: HTMLElement): HTMLElement =>
-  within(editorGroup).getByLabelText('Materialized views');
+  within(editorGroup).getByLabelText('Materialized views and data sets');
 
-/** Each row of the list: the view's name, then its number of steps */
+/** Each row of the list: a view's name and its number of steps, or a data set's and its number of columns */
 const getViewRows = (editorGroup: HTMLElement): string[] =>
   Array.from(
     getViewList(editorGroup).querySelectorAll(
@@ -167,6 +167,35 @@ const getHeaderActions = (editorGroup: HTMLElement): string[] =>
     return text.length ? text : (button.getAttribute('title') ?? '');
   });
 
+/** What the picked view reads, or which views read the picked data set */
+const getReads = (panel: HTMLElement): string | null | undefined =>
+  panel.querySelector('.ingest-definition-flow__view__reads')?.textContent;
+
+/** A name in a "Reads" or "Read by" line that picks it in the list */
+const followLink = async (panel: HTMLElement, name: string): Promise<void> => {
+  const link = Array.from(
+    panel.querySelectorAll<HTMLElement>('.ingest-definition-flow__link'),
+  ).find((each) => each.textContent === name);
+  expect(link).toBeDefined();
+  await act(async () => {
+    fireEvent.click(link as HTMLElement);
+  });
+};
+
+/** The rows of a data set's columns table, each cell's text, in order */
+const getColumnRows = (panel: HTMLElement): string[][] =>
+  Array.from(panel.querySelectorAll('.ag-center-cols-container .ag-row'))
+    .sort(
+      (a, b) =>
+        Number(a.getAttribute('row-index')) -
+        Number(b.getAttribute('row-index')),
+    )
+    .map((row) =>
+      Array.from(row.querySelectorAll('.ag-cell')).map(
+        (cell) => cell.textContent ?? '',
+      ),
+    );
+
 const pick = async (editorGroup: HTMLElement, name: string): Promise<void> => {
   await act(async () => {
     fireEvent.click(within(getViewList(editorGroup)).getByTitle(name));
@@ -203,13 +232,21 @@ describe('The Definition tab of an ingest definition with materialized views', (
           'POSITIONS_BY_LEGAL_ENTITY | 5 steps',
           'OPEN_CLIENT_POSITIONS | 3 steps',
           'RANKED_POSITIONS | No flow yet',
+          // the other data sets, with their columns, those their write mode adds too
+          'EOD_POSITIONS | 9 columns',
+          'LEGAL_ENTITIES | 3 columns',
+          'CLIENT_POSITIONS | 4 columns',
+          'INSTRUMENTS | 5 columns',
+          'PENDING_FEED | 0 columns',
         ]),
       );
       expect(
-        getViewList(editorGroup).querySelector(
-          '.ingest-definition-flow__list__title',
-        )?.textContent,
-      ).toBe('Materialized views3');
+        Array.from(
+          getViewList(editorGroup).querySelectorAll(
+            '.ingest-definition-flow__list__title',
+          ),
+        ).map((title) => title.textContent),
+      ).toEqual(['Materialized views3', 'Data sets5']);
       expect(
         within(getViewList(editorGroup))
           .getByTitle('POSITIONS_BY_LEGAL_ENTITY')
@@ -223,7 +260,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
           panel.querySelectorAll('.ingest-definition-flow__view__chip'),
         ).map((chip) => chip.textContent),
       ).toEqual(['BUSINESS_DATE', 'LEGAL_ENTITY_ID', 'INSTRUMENT_ID', 'DP10']);
-      within(panel).getByText('Reads EOD_POSITIONS, LEGAL_ENTITIES');
+      expect(getReads(panel)).toBe('Reads EOD_POSITIONS, LEGAL_ENTITIES');
       // every data set's columns are known: nothing to warn of
       expect(within(panel).queryByText(/aren't known/u)).toBeNull();
     },
@@ -254,7 +291,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
           .getByTitle('POSITIONS_BY_LEGAL_ENTITY')
           .getAttribute('aria-selected'),
       ).toBe('false');
-      within(panel).getByText('Reads CLIENT_POSITIONS');
+      expect(getReads(panel)).toBe('Reads CLIENT_POSITIONS');
       within(panel).getByText('DP20');
       expect(
         within(editorGroup).queryByLabelText('POSITIONS_BY_LEGAL_ENTITY'),
@@ -303,8 +340,8 @@ describe('The Definition tab of an ingest definition with materialized views', (
       expect(
         within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
       ).toBeNull();
-      // what it reads comes from its flow, which it hasn't
-      expect(within(panel).queryByText(/^Reads/u)).toBeNull();
+      // what it reads comes from its function, flow or none
+      expect(getReads(panel)).toBe('Reads EOD_POSITIONS');
       // the engine writes the view's own function, by the view's name
       expect(lambdasToPureCode).toHaveBeenCalledTimes(1);
       const [lambdas, pretty] = lambdasToPureCode.mock.calls[0] ?? [];
@@ -348,7 +385,9 @@ describe('The Definition tab of an ingest definition with materialized views', (
       ).toBe('true');
       await within(editorGroup).findByText(DEFINITION_PURE);
       expect(
-        within(editorGroup).queryByLabelText('Materialized views'),
+        within(editorGroup).queryByLabelText(
+          'Materialized views and data sets',
+        ),
       ).toBeNull();
       // today's header: Lineage, View SQL, and Create MatView with its views
       // to edit
@@ -503,6 +542,193 @@ describe('The Definition tab of an ingest definition with materialized views', (
   );
 });
 
+describe("The Definition tab's data sets, beside the materialized views", () => {
+  test(
+    integrationTest(
+      'Picking a data set shows its key, the views that read it, and its columns, read-only, while no view is picked',
+    ),
+    async () => {
+      const { editorGroup } = await setUp();
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      await pick(editorGroup, 'EOD_POSITIONS');
+      const panel = getViewPanel(editorGroup, 'EOD_POSITIONS');
+      const list = getViewList(editorGroup);
+      expect(
+        within(list).getByTitle('EOD_POSITIONS').getAttribute('aria-selected'),
+      ).toBe('true');
+      expect(
+        within(list)
+          .getByTitle('POSITIONS_BY_LEGAL_ENTITY')
+          .getAttribute('aria-selected'),
+      ).toBe('false');
+      expect(
+        within(editorGroup).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
+      ).toBeNull();
+
+      expect(
+        Array.from(
+          panel.querySelectorAll('.ingest-definition-flow__view__chip'),
+        ).map((chip) => chip.textContent),
+      ).toEqual(['BUSINESS_DATE', 'POSITION_ID']);
+      within(panel).getByText('Read-only here: edit data sets in text mode.');
+      expect(getReads(panel)).toBe(
+        'Read by 2 views: POSITIONS_BY_LEGAL_ENTITY, RANKED_POSITIONS',
+      );
+
+      // View SQL's headers, and Key
+      const grid = within(panel).getByLabelText('Columns of EOD_POSITIONS');
+      await waitFor(() => expect(getColumnRows(grid)).toHaveLength(9));
+      expect(
+        Array.from(grid.querySelectorAll('.ag-header-cell-text')).map(
+          (header) => header.textContent,
+        ),
+      ).toEqual(['Column Name', 'Column Type', 'Multiplicity', 'Key']);
+      expect(getColumnRows(grid).slice(0, 2)).toEqual([
+        ['BUSINESS_DATE', 'StrictDate', '[1] - Required', 'Yes'],
+        ['POSITION_ID', 'Varchar(32)', '[1] - Required', 'Yes'],
+      ]);
+      expect(getColumnRows(grid).at(-1)).toEqual([
+        'MARKET_VALUE_USD',
+        'Decimal',
+        '[0..1] - Optional',
+        '',
+      ]);
+      // its type's full path, in a tooltip
+      expect(
+        within(grid).getAllByTitle('meta::pure::precisePrimitives::Varchar')
+          .length,
+      ).toBeGreaterThan(0);
+      within(panel).getByText('9 columns, as the definition declares them.');
+    },
+  );
+
+  test(
+    integrationTest(
+      "A view's Reads picks a data set, and a data set's Read by picks a view",
+    ),
+    async () => {
+      const { editorGroup } = await setUp();
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      await followLink(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        'LEGAL_ENTITIES',
+      );
+      const dataSet = getViewPanel(editorGroup, 'LEGAL_ENTITIES');
+      expect(getReads(dataSet)).toBe(
+        'Read by 1 view: POSITIONS_BY_LEGAL_ENTITY',
+      );
+      expect(
+        within(getViewList(editorGroup))
+          .getByTitle('LEGAL_ENTITIES')
+          .getAttribute('aria-selected'),
+      ).toBe('true');
+
+      await followLink(dataSet, 'POSITIONS_BY_LEGAL_ENTITY');
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+      expect(
+        within(getViewList(editorGroup))
+          .getByTitle('POSITIONS_BY_LEGAL_ENTITY')
+          .getAttribute('aria-selected'),
+      ).toBe('true');
+      expect(
+        within(getViewList(editorGroup))
+          .getByTitle('LEGAL_ENTITIES')
+          .getAttribute('aria-selected'),
+      ).toBe('false');
+
+      // a view Cube can't draw reads its data sets too
+      await pick(editorGroup, 'RANKED_POSITIONS');
+      await followLink(
+        getViewPanel(editorGroup, 'RANKED_POSITIONS'),
+        'EOD_POSITIONS',
+      );
+      getViewPanel(editorGroup, 'EOD_POSITIONS');
+    },
+  );
+
+  test(
+    integrationTest(
+      'A data set no view reads says so, and lists the columns its write mode adds after its own, muted',
+    ),
+    async () => {
+      const { editorGroup } = await setUp();
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      await pick(editorGroup, 'INSTRUMENTS');
+      const panel = getViewPanel(editorGroup, 'INSTRUMENTS');
+      expect(getReads(panel)).toBe('Read by no view');
+      const grid = within(panel).getByLabelText('Columns of INSTRUMENTS');
+      await waitFor(() => expect(getColumnRows(grid)).toHaveLength(5));
+      expect(getColumnRows(grid)).toEqual([
+        ['INSTRUMENT_ID', 'Varchar(32)', '[1] - Required', 'Yes'],
+        ['INSTRUMENT_NAME', 'Varchar(200)', '[0..1] - Optional', ''],
+        [
+          'LAKE_DIGESTadded by batch milestoned',
+          'String',
+          '[1] - Required',
+          '',
+        ],
+        [
+          'LAKE_IN_IDadded by batch milestoned',
+          'Integer',
+          '[1] - Required',
+          '',
+        ],
+        [
+          'LAKE_OUT_IDadded by batch milestoned',
+          'Integer',
+          '[1] - Required',
+          '',
+        ],
+      ]);
+      expect(
+        grid.querySelectorAll(
+          '.ag-center-cols-container .ingest-definition-flow__data-set__added-column',
+        ),
+      ).toHaveLength(3);
+      within(panel).getByText(
+        '2 columns as the definition declares them, then 3 its write mode, batch milestoned, adds.',
+      );
+    },
+  );
+
+  test(
+    integrationTest(
+      'A data set that declares no columns says so, with no table',
+    ),
+    async () => {
+      const { editorGroup } = await setUp();
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      await pick(editorGroup, 'PENDING_FEED');
+      const panel = getViewPanel(editorGroup, 'PENDING_FEED');
+      within(panel).getByText('No columns declared.');
+      within(panel).getByText('No key');
+      expect(getReads(panel)).toBe('Read by no view');
+      expect(
+        within(panel).queryByLabelText('Columns of PENDING_FEED'),
+      ).toBeNull();
+    },
+  );
+});
+
 describe('The Definition tab of an ingest definition without materialized views', () => {
   test(
     integrationTest(
@@ -519,7 +745,9 @@ describe('The Definition tab of an ingest definition without materialized views'
         within(editorGroup).queryByLabelText('Show the definition as'),
       ).toBeNull();
       expect(
-        within(editorGroup).queryByLabelText('Materialized views'),
+        within(editorGroup).queryByLabelText(
+          'Materialized views and data sets',
+        ),
       ).toBeNull();
       // Lineage is there, disabled, as no view has any; Create MatView has no
       // view to edit
