@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-import { isEmpty } from '@finos/legend-shared';
+import { isEmpty, isNonNullable } from '@finos/legend-shared';
 import type { RelationColumn } from '../metamodel/pure/packageableElements/relation/RelationType.js';
+import { InstanceValue } from '../metamodel/pure/valueSpecification/InstanceValue.js';
 
 export const isStubbed_RelationColumn = (column: RelationColumn): boolean =>
   isEmpty(column);
+
+/**
+ * A relation column's type, as its name with the values of its type
+ * variables, if any: `Varchar(32)`, `Decimal(18, 4)`, `String`
+ */
+export const getRelationColumnTypeLabel = (column: RelationColumn): string => {
+  const typeName = column.genericType.value.rawType.name;
+  const args = (column.genericType.value.typeVariableValues ?? [])
+    .map((value) =>
+      value instanceof InstanceValue ? value.values[0] : undefined,
+    )
+    .filter(isNonNullable);
+  return args.length > 0 ? `${typeName}(${args.join(', ')})` : typeName;
+};

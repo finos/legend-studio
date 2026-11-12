@@ -444,6 +444,7 @@ import {
 import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { IngestDefinitionSpecification } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
 import { V1_getOrBuildIngestDefinitionSpecification } from './transformation/pureGraph/to/helpers/V1_IngestDefinitionSpecificationBuilder.js';
+import { IngestDatasetReference } from '../../../../graph/helpers/IngestDefinitionHelper.js';
 import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import {
   V1_createAccessorFromPackageableElement,
@@ -4788,6 +4789,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.logService,
       ).build(),
     );
+  }
+
+  getIngestDatasetsReadByRawLambda(
+    rawLambda: RawLambda,
+    graph: PureModel,
+  ): IngestDatasetReference[] {
+    const references: IngestDatasetReference[] = [];
+    (
+      V1_resolveAccessorsFromRawLambda(
+        rawLambda,
+        this,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+        graph,
+      ) ?? []
+    )
+      .filter(filterByType(V1_IngestDefinitionAccessor))
+      .forEach((accessor) => {
+        const [ingestDefinitionPath, datasetName] = accessor.path;
+        if (
+          ingestDefinitionPath &&
+          datasetName &&
+          !references.some(
+            (reference) =>
+              reference.ingestDefinitionPath === ingestDefinitionPath &&
+              reference.datasetName === datasetName,
+          )
+        ) {
+          references.push(
+            new IngestDatasetReference(ingestDefinitionPath, datasetName),
+          );
+        }
+      });
+    return references;
   }
 
   // --------------------------------------------- Relational ---------------------------------------------

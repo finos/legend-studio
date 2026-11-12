@@ -17,6 +17,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { getExplorer } from '../support/StudioHelpers.js';
 import type { Entity } from '../support/TEST_DATA__SDLC.js';
+import { FIRM_INGEST_PATH, getFirmIngest } from './GuideIngest.js';
 import { openGuideWorkspace } from './GuideSetup.js';
 import {
   markCallouts,
@@ -24,73 +25,6 @@ import {
   saveRegionDownTo,
   STUDIO_GUIDE_IMAGES,
 } from './UserGuideCallouts.js';
-
-/** A column of an ingest's data set, e.g. `LEGAL_NAME: Varchar(200)[0..1]` */
-const column = (
-  name: string,
-  type: string,
-  options: { size?: number; required?: boolean } = {},
-): Record<string, unknown> => ({
-  name,
-  genericType: {
-    multiplicityArguments: [],
-    rawType: { _type: 'packageableType', fullPath: type },
-    typeArguments: [],
-    typeVariableValues:
-      options.size === undefined
-        ? []
-        : [{ _type: 'integer', value: options.size }],
-  },
-  multiplicity: { lowerBound: options.required ? 1 : 0, upperBound: 1 },
-});
-
-/** A data set of an ingest, sent as CSV files */
-const dataset = (
-  name: string,
-  columns: Record<string, unknown>[],
-): Record<string, unknown> => ({
-  name,
-  primaryKey: ['ID'],
-  source: {
-    _type: 'serializedSource',
-    format: {
-      _type: 'CSV',
-      fieldDelimiter: ',',
-      headerRowsToSkipCount: 1,
-      recordDelimiter: '\n',
-    },
-    schema: { _type: 'relationType', columns },
-  },
-});
-
-/**
- * The ingest that brings the firm database's tables into the Lakehouse, one
- * data set each, which the data product's access points read
- */
-const FIRM_INGEST: Entity = {
-  path: 'guide::ingest::FirmIngest',
-  classifierPath:
-    'meta::external::ingest::specification::metamodel::IngestDefinition',
-  content: {
-    _type: 'ingestDefinition',
-    name: 'FirmIngest',
-    package: 'guide::ingest',
-    datasets: [
-      dataset('FIRM', [
-        column('ID', 'Int', { required: true }),
-        column('LEGAL_NAME', 'Varchar', { size: 200 }),
-        column('INC_TYPE', 'Varchar', { size: 10 }),
-      ]),
-      dataset('PERSON', [
-        column('ID', 'Int', { required: true }),
-        column('FIRST_NAME', 'Varchar', { size: 200 }),
-        column('LAST_NAME', 'Varchar', { size: 200 }),
-        column('AGE', 'Int'),
-        column('FIRM_ID', 'Int'),
-      ]),
-    ],
-  },
-};
 
 /**
  * An access point that gives some columns of one of the ingest's data sets:
@@ -121,7 +55,7 @@ const accessPoint = (
             type: 'I',
             value: {
               metadata: false,
-              path: [FIRM_INGEST.path, source.dataset],
+              path: [FIRM_INGEST_PATH, source.dataset],
             },
           },
           {
@@ -253,7 +187,7 @@ const openDataProductPage = async (
   name: string,
 ): Promise<Locator> => {
   await openGuideWorkspace(page, {
-    extraEntities: [FIRM_INGEST, FIRM_DATA_PRODUCT],
+    extraEntities: [await getFirmIngest(), FIRM_DATA_PRODUCT],
   });
   for (const node of FIRM_DATA_PRODUCT.path.split('::')) {
     await getExplorer(page).getByText(node, { exact: true }).first().click();

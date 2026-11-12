@@ -560,9 +560,9 @@ describe(
       expect(cols.map((c) => c.name)).toEqual([
         'country',
         'color',
+        'LAKE_DIGEST',
         'LAKE_IN_ID',
         'LAKE_OUT_ID',
-        'LAKE_DIGEST',
         'LAKE_FROM',
         'LAKE_THRU',
       ]);

@@ -21,6 +21,8 @@ review them, and release a version that other projects and applications can use.
 - [Services](./services.md): a service's settings, its query, its tests and its post validations.
 - [Data spaces](./data-space.md): what people who use a model's data see of it, and its preview.
 - [Data products](./data-product.md): data published for Legend Marketplace, in access point groups and access points.
+- [Ingest definitions](./ingest-definition.md): the data sets producers send to the Lakehouse, and the materialized
+  views computed from them.
 - [Generation specifications](./generation-specification.md): the stages of a project's model generations, and
   running them in fewer.
 - [Function activators](./function-activator.md): a function deployed as a REST service, or into a database.

@@ -24,6 +24,10 @@ import {
   getRequestBody,
 } from '../support/MockUtils.js';
 import { ENGINE_URL } from '../support/EngineSpy.js';
+import {
+  INGEST_ACCESSOR,
+  RELATION_STORE_ACCESSOR,
+} from '../support/IngestEntities.js';
 import { MOCK_SDLC_URL } from '../support/SDLCMock.js';
 import type { Entity } from '../support/TEST_DATA__SDLC.js';
 import {
@@ -37,6 +41,7 @@ import {
   GUIDE_PROJECT,
   GUIDE_WORKSPACE_URL,
 } from './GuideProject.js';
+import { FIRM_INGEST_PATH } from './GuideIngest.js';
 
 /** Legend Studio's icon, which the start screen shows as its logo */
 const STUDIO_ICON = fileURLToPath(
@@ -525,17 +530,12 @@ const getGuideDepotAnswer = (request: Request): unknown => {
   return versions ? Object.keys(versions) : undefined;
 };
 
-/** How the Legend language marks an accessor to an ingest's data set: `#I{…}#` */
-const INGEST_ACCESSOR = 'I';
-/** How it marks an accessor to a relational store's table: `#>{…}#` */
-const RELATION_STORE_ACCESSOR = '>';
-
 /**
  * The guide's database that each of the guide's ingests copies: an ingest's
  * data sets are the database's tables, with the same names and columns
  */
 const INGEST_DATABASES: Record<string, string> = {
-  'guide::ingest::FirmIngest': 'guide::store::FirmDatabase',
+  [FIRM_INGEST_PATH]: 'guide::store::FirmDatabase',
 };
 
 /** The kinds of element the open-source engine can't read */

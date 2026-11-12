@@ -17,9 +17,11 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import {
   act,
+  findByLabelText,
   findByText,
   findByTitle,
   fireEvent,
+  getByTitle,
   waitFor,
   within,
 } from '@testing-library/react';
@@ -56,7 +58,11 @@ import {
   type IR,
   type ModelContext,
 } from '@finos/legend-cube';
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  DocumentationEntry,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
@@ -64,6 +70,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST_DATA__DefaultSDLCInfo,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
   getLegendStudioCubeIngestClasses,
@@ -348,6 +355,53 @@ const ingestOf = (editorStore: EditorStore): IngestDefinition =>
     INGEST_PATH,
   ) as IngestDefinition;
 
+/**
+ * Opens the ingest definition's editor, in act: its Definition tab loads
+ * Legend Cube's flow of its materialized views as it opens, which answers at
+ * once once loaded
+ */
+const openIngestDefinition = async (
+  renderResult: Awaited<
+    ReturnType<typeof TEST__setUpEditorWithDefaultSDLCData>
+  >,
+): Promise<void> => {
+  await act(async () => {
+    await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+  });
+};
+
+/**
+ * Opens Cube on a materialized view of the definition to edit, as its
+ * Definition tab offers it: the view picked in the list of views, then its
+ * Edit in Cube
+ */
+const editMatViewInCube = async (
+  editorGroup: HTMLElement,
+  name: string,
+): Promise<void> => {
+  const views = await findByLabelText(
+    editorGroup,
+    'Materialized views and data sets',
+  );
+  fireEvent.click(getByTitle(views, name));
+  fireEvent.click(
+    await findByText(await findByLabelText(editorGroup, name), 'Edit in Cube'),
+  );
+};
+
+/** The steps on Cube's canvas, not those of the Definition tab's flow under it */
+const getCubeCanvasNodes = (
+  renderResult: Awaited<
+    ReturnType<typeof TEST__setUpEditorWithDefaultSDLCData>
+  >,
+): HTMLElement[] =>
+  renderResult
+    .queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE)
+    .filter(
+      (node) =>
+        !node.closest(`[data-testid="${LEGEND_CUBE_TEST_ID.DEFINITION_FLOW}"]`),
+    );
+
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -472,6 +526,57 @@ describe('Legend Cube in Studio', () => {
 
   test(
     integrationTest(
+      "Cube's header links to the guide's page on building a materialized view, once the documentation registry has it",
+    ),
+    async () => {
+      const { editorStore, renderResult } = await setUp([TRADES_INGEST]);
+      const { documentationService, assistantService } =
+        editorStore.applicationStore;
+      const key =
+        LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_MATERIALIZED_VIEW;
+      const help =
+        'Building a materialized view in Legend Cube, in the Legend Studio guide';
+      const getDocEntry =
+        documentationService.getDocEntry.bind(documentationService);
+      let hasEntry = false;
+      jest
+        .spyOn(documentationService, 'getDocEntry')
+        .mockImplementation((each) =>
+          each === key && hasEntry
+            ? DocumentationEntry.create(
+                {
+                  title: 'A page of the guide',
+                  url: 'https://legend.example/guide',
+                },
+                key,
+              )
+            : getDocEntry(each),
+        );
+      const openLink = jest
+        .spyOn(assistantService, 'openDocumentationEntryLink')
+        .mockImplementation(() => undefined);
+      await openIngestDefinition(renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+
+      // none while the registry has no entry for it
+      fireEvent.click(await findByText(editorGroup, 'Create MatView'));
+      await renderResult.findByText(
+        `Create MatView for ${INGEST_PATH} with Cube`,
+      );
+      expect(renderResult.queryByTitle(help)).toBeNull();
+      fireEvent.click(renderResult.getByTitle('Close Cube, adding nothing'));
+
+      hasEntry = true;
+      fireEvent.click(await findByText(editorGroup, 'Create MatView'));
+      fireEvent.click(await renderResult.findByTitle(help));
+      expect(openLink).toHaveBeenCalledWith(key);
+    },
+  );
+
+  test(
+    integrationTest(
       'Asks for a lakehouse runtime when the project has none to run on',
     ),
     async () => {
@@ -500,7 +605,7 @@ describe('Legend Cube in Studio', () => {
         TRADES_INGEST,
         LAKEHOUSE_RUNTIME,
       ]);
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
@@ -576,6 +681,10 @@ describe('Legend Cube in Studio', () => {
       await renderResult.findByText(
         'Added materialized view TRADES_VIEW to TradesIngest',
       );
+      // the Definition tab now opens on the new view's flow
+      await within(
+        await within(editorGroup).findByLabelText('TRADES_VIEW'),
+      ).findByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW);
     },
   );
 
@@ -610,7 +719,7 @@ describe('Legend Cube in Studio', () => {
       dataProductConfig.classifications = ['DP00', 'DP10', 'DP20'];
       editorStore.applicationStore.config.options.dataProductConfig =
         dataProductConfig;
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
@@ -690,6 +799,10 @@ describe('Legend Cube in Studio', () => {
           function: { _type: 'lambda', parameters: [] },
         },
       });
+      // the Definition tab now opens on the new view's flow
+      await within(
+        await within(editorGroup).findByLabelText('TRADES_VIEW'),
+      ).findByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW);
     },
   );
 
@@ -702,14 +815,11 @@ describe('Legend Cube in Studio', () => {
         TRADES_INGEST_WITH_VIEW,
         LAKEHOUSE_RUNTIME,
       ]);
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-      fireEvent.click(
-        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
-      );
-      fireEvent.click(await renderResult.findByText('Edit MatView BIG_TRADES'));
+      await editMatViewInCube(editorGroup, 'BIG_TRADES');
       const { embeddedCubeState } = editorStore;
       expect(embeddedCubeState.matView).toBe('BIG_TRADES');
       await renderResult.findByText(
@@ -718,9 +828,7 @@ describe('Legend Cube in Studio', () => {
       // the view's three steps, on Cube's canvas, and nothing to say: Cube
       // writes them back the same
       await waitFor(() =>
-        expect(
-          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
-        ).toHaveLength(3),
+        expect(getCubeCanvasNodes(renderResult)).toHaveLength(3),
       );
       expect(
         renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
@@ -782,9 +890,17 @@ describe('Legend Cube in Studio', () => {
         tradesIngestWithView({ primaryKey: ['TRADE_ID', 'LAKE_IN_ID'] }),
         LAKEHOUSE_RUNTIME,
       ]);
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      // on Pure, the header offers each view to edit, as it did before the
+      // flow showed them
+      fireEvent.click(
+        await findByText(
+          await findByLabelText(editorGroup, 'Show the definition as'),
+          'Pure',
+        ),
       );
       fireEvent.click(
         await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
@@ -1243,20 +1359,15 @@ describe('A data product and an ingest data set in one cube in Studio (PLAN §11
         TRADES_DATA_PRODUCT,
         LAKEHOUSE_RUNTIME,
       ]);
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-      fireEvent.click(
-        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
-      );
-      fireEvent.click(await renderResult.findByText('Edit MatView ALL_DESKS'));
+      await editMatViewInCube(editorGroup, 'ALL_DESKS');
       // the data set, the access point and the Concatenate, on Cube's
       // canvas, with nothing to say: Cube writes them back the same
       await waitFor(() =>
-        expect(
-          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
-        ).toHaveLength(3),
+        expect(getCubeCanvasNodes(renderResult)).toHaveLength(3),
       );
       expect(
         renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
@@ -1339,18 +1450,13 @@ describe('A data product and an ingest data set in one cube in Studio (PLAN §11
         },
         LAKEHOUSE_RUNTIME,
       ]);
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-      fireEvent.click(
-        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
-      );
-      fireEvent.click(await renderResult.findByText('Edit MatView LOOPY'));
+      await editMatViewInCube(editorGroup, 'LOOPY');
       await waitFor(() =>
-        expect(
-          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
-        ).toHaveLength(1),
+        expect(getCubeCanvasNodes(renderResult)).toHaveLength(1),
       );
       const save = (await renderResult.findByRole('button', {
         name: 'Save MatView',
@@ -1553,20 +1659,15 @@ describe('A data product and an ingest data set in one cube in Studio (PLAN §11
           ],
         },
       );
-      await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      await openIngestDefinition(renderResult);
       const editorGroup = await waitFor(() =>
         renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
       );
-      fireEvent.click(
-        await findByTitle(editorGroup, 'Edit a materialized view with Cube'),
-      );
-      fireEvent.click(await renderResult.findByText('Edit MatView DEP_DESKS'));
+      await editMatViewInCube(editorGroup, 'DEP_DESKS');
       // the project's data set, the dependency's access point and the
       // Concatenate, with nothing to say: Cube writes them back the same
       await waitFor(() =>
-        expect(
-          renderResult.queryAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
-        ).toHaveLength(3),
+        expect(getCubeCanvasNodes(renderResult)).toHaveLength(3),
       );
       expect(
         renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
