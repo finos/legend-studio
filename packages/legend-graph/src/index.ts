@@ -120,6 +120,7 @@ export {
   DEFAULT_HOSTED_SERVICE_PATTERN,
 } from './graph/metamodel/pure/packageableElements/function/HostedService.js';
 export * from './graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+export * from './graph/metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
 export { HostedServiceDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 export { PostDeploymentAction } from './graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 export * from './graph/metamodel/pure/packageableElements/availability/Availability.js';
@@ -443,6 +444,12 @@ export {
   V1_deserializeWriteMode,
   V1_serializeWriteMode,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinitionSpecification.js';
+export {
+  V1_normalizeLegacyIngestDefinitionJson,
+  V1_deserializeIngestDefinitionSpecification,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestDefinitionSpecificationSerializationHelper.js';
+export { V1_buildIngestDefinitionSpecification } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_IngestDefinitionSpecificationBuilder.js';
 export * from './graph-manager/protocol/pure/v1/model/lineage/V1_Lineage.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------

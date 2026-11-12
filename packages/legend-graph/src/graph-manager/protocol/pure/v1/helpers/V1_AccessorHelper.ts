@@ -326,6 +326,7 @@ const buildRelationColumnFromV1RelationTypeColumn = (
     col.multiplicity.lowerBound,
     col.multiplicity.upperBound,
   );
+  relationColumn.description = col.description;
   relationColumn.stereotypes = (col.stereotypes ?? [])
     .map((stereotypePtr) =>
       returnUndefOnError(() =>

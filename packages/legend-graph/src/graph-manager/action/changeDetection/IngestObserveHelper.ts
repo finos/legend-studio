@@ -51,6 +51,8 @@ export const observe_IngestDefinition = skipObservedWithContext(
       // replaced when a materialized view is added, e.g. by Legend Cube in
       // Studio, so the editor's Lineage and View SQL follow it
       TEMPORARY_MATVIEW_FUNCTION_DATA_SETS: observable.ref,
+      // replaced whole when rebuilt from the content
+      specification: observable.ref,
       _elementHashCode: override,
     });
     metamodel.tests.forEach((suite) => observe_IngestTestSuite(suite, context));
