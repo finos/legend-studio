@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.530
+
+### Patch Changes
+
+- [#5890](https://github.com/finos/legend-studio/pull/5890) [`c23fe91`](https://github.com/finos/legend-studio/commit/c23fe91e4612eaaf750be637b20506142faf99e2) ([@gs-gunjan](https://github.com/gs-gunjan)) - Query productionizer in Studio now honors `engine.useCookieAuthOnly`, authenticating Engine calls via the session cookie instead of an `Authorization: Bearer` header.
+
 ## 1.0.529
 
 ## 1.0.528

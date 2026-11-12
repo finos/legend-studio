@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.1.26
+
+### Patch Changes
+
+- [#5886](https://github.com/finos/legend-studio/pull/5886) [`6ea84a0`](https://github.com/finos/legend-studio/commit/6ea84a070de3b3f01c773ba59921cb069005e1be) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Depot dashboard: a Latest Version column, the project's latest release or "(unreleased)", and a link to the project in GitLab next to its id. `StoreProjectData` now reads the `latestVersion` Depot returns with a project.
+
 ## 6.1.25
 
 ## 6.1.24

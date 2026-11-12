@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.280.0
+
+### Patch Changes
+
+- [#5867](https://github.com/finos/legend-studio/pull/5867) [`0603105`](https://github.com/finos/legend-studio/commit/06031056f9fbe1fb0378e337647a857c81d9cc32) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Hosts of an access point's definition flow: Legend Marketplace loads Legend Cube's stylesheet and gives the viewer the ingest definitions from Depot, at the data product's version (an ad-hoc deployment has none, and its flows draw their data sets by name); Legend Studio's data product preview gives them from its graph, as the workspace holds them. Marketplace's build keeps the flow's libraries (React Flow, dagre) in a `cube-flow-vendor` chunk loaded only with the flow, instead of the `async-vendor` chunk every lazy page loads.
+
 ## 13.279.0
 
 ## 13.278.0

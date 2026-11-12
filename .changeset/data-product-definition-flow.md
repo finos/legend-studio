@@ -1,6 +1,0 @@
----
-'@finos/legend-cube-builder': patch
-'@finos/legend-extension-dsl-data-product': patch
----
-
-An access point's definition opens as Legend Cube's flow, read-only, with a Flow | Pure switch; Copy still copies the Pure. Cube's code loads the first time a definition opens (`import()` in a chunk named `cube-flow`), and reading the definition calls no engine. When Cube can't draw a definition, the panel shows its Pure and says why in one line, with Cube's own words under Details. Every failure stays inside the panel, with the Pure one click away: Cube's code not loading, the canvas failing while drawing, the Pure or the function missing. A host gives the ingest definitions that type the data sets' columns through the viewer state's `loadIngestDefinition` action (`createDepotIngestDefinitionLoader` reads them from Depot, at the data product's version); without them, the data sets show by name, with a line saying their columns couldn't be loaded. Telemetry counts the flows shown, the definitions Cube refuses, by reason, and the flows that fail, by kind. A definition flow's canvas takes React Flow's colours from Cube's theme tokens, as its steps do, so it follows the theme class around it whatever `colorMode` says.

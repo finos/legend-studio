@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.174
+
+### Patch Changes
+
+- [#5867](https://github.com/finos/legend-studio/pull/5867) [`e2fbe7a`](https://github.com/finos/legend-studio/commit/e2fbe7a4f80f1d32ed8b98bbb66bed92c3c0a9f8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube now follows Legend Marketplace's two themes, High-Contrast Light and High-Contrast Dark, instead of falling back to the dark defaults. legend-art maps its semantic color tokens for `theme__hc-light` and `theme__hc-dark`, scoped to Cube (`.legend-cube`, and the node editor and tour layers it opens outside it), so the rest of Marketplace keeps its colors.
+
 ## 7.1.173
 
 ### Patch Changes
