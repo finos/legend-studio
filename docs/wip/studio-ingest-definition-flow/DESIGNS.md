@@ -164,6 +164,8 @@ became an Overview of two labelled sections, built in the pull request after the
 - **The switch at the top reads Overview | Pure,** as it shows more than flows. A definition with no views opens on
   the Overview too.
 
+The Studio guide's [Ingest definitions](../../user-guide/studio/ingest-definition.md) page shows the Overview.
+
 ## Future work
 
 **A view's columns, from the artifact generation.** Not built. A view's panel could list the columns the view returns,
