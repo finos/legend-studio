@@ -41,12 +41,11 @@ import {
 import { useDrag } from 'react-dnd';
 import {
   type Accessor,
-  type RelationColumn,
   DataProductAccessor,
   IngestionAccessor,
-  InstanceValue,
   RelationalStoreAccessor,
   getMultiplicityDescription,
+  getRelationColumnTypeLabel,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderExplorerTreeRelationColumnDragSource,
@@ -83,20 +82,6 @@ const getAccessorPath = (accessor: Accessor): string =>
   [accessor.accessorOwner, accessor.schema, accessor.accessor]
     .filter(isNonNullable)
     .join('.');
-
-const getColumnTypeLabel = (column: RelationColumn): string => {
-  const typeName = column.genericType.value.rawType.name;
-  const typeVariableValues = column.genericType.value.typeVariableValues;
-  if (typeVariableValues && typeVariableValues.length > 0) {
-    const args = typeVariableValues
-      .map((v) => (v instanceof InstanceValue ? v.values[0] : undefined))
-      .filter(isNonNullable);
-    if (args.length > 0) {
-      return `${typeName}(${args.join(', ')})`;
-    }
-  }
-  return typeName;
-};
 
 const buildRelationTreeData = (
   accessor: Accessor,
@@ -341,7 +326,7 @@ const QueryBuilderRelationNodeContainer = observer(
       ? renderPropertyTypeIcon(node.type)
       : undefined;
     const columnTypeLabel = columnNode
-      ? getColumnTypeLabel(columnNode.column)
+      ? getRelationColumnTypeLabel(columnNode.column)
       : node.type.path;
     const columnMultiplicity = columnNode?.column.multiplicity;
     const isMultiple =

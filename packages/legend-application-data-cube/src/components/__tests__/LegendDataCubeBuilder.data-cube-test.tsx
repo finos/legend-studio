@@ -2257,9 +2257,9 @@ test(
     expect(source.columns).toEqual([
       { name: 'id', type: 'Integer' },
       { name: 'name', type: 'String' },
+      { name: 'LAKE_DIGEST', type: 'String' },
       { name: 'LAKE_IN_ID', type: 'Integer' },
       { name: 'LAKE_OUT_ID', type: 'Integer' },
-      { name: 'LAKE_DIGEST', type: 'String' },
       {
         name: 'LAKE_FROM',
         type: 'meta::pure::precisePrimitives::Timestamp',
@@ -2299,9 +2299,9 @@ test(
     expect(source.columns).toEqual([
       { name: 'id', type: 'Integer' },
       { name: 'name', type: 'String' },
+      { name: 'LAKE_DIGEST', type: 'String' },
       { name: 'LAKE_IN_ID', type: 'Integer' },
       { name: 'LAKE_OUT_ID', type: 'Integer' },
-      { name: 'LAKE_DIGEST', type: 'String' },
     ]);
   },
 );
@@ -2334,9 +2334,9 @@ test(
     expect(source.columns).toEqual([
       { name: 'id', type: 'Integer' },
       { name: 'name', type: 'String' },
+      { name: 'LAKE_DIGEST', type: 'String' },
       { name: 'LAKE_IN_ID', type: 'Integer' },
       { name: 'LAKE_OUT_ID', type: 'Integer' },
-      { name: 'LAKE_DIGEST', type: 'String' },
     ]);
   },
 );

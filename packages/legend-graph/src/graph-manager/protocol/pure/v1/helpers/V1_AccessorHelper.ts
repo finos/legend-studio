@@ -59,10 +59,12 @@ import {
   CORE_PURE_PATH,
   DEFAULT_DATABASE_SCHEMA_NAME,
   ELEMENT_PATH_DELIMITER,
-  MILESTONE_INGEST_COLUMNS,
-  PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../../graph/MetaModelConst.js';
+import {
+  BATCH_MILESTONED_INGEST_COLUMNS,
+  BUSINESS_TEMPORAL_INGEST_COLUMNS,
+} from '../../../../../graph/helpers/IngestDefinitionHelper.js';
 import { extractElementNameFromPath } from '../../../../../graph/MetaModelUtils.js';
 import { GRAPH_MANAGER_EVENT } from '../../../../../__lib__/GraphManagerEvent.js';
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
@@ -126,43 +128,25 @@ export interface V1_MilestoningColumnSpec {
   type: string;
 }
 
-// Milestoning system columns injected for a write mode, as plain context-free data so callers without a built graph can replicate them.
+// Milestoning system columns injected for a write mode, as plain context-free data so callers without a built graph can replicate them,
+// in the order the engine returns them (`getIngestWriteModeColumns` gives them for a write mode of the metamodel)
 export const V1_getMilestoningColumnsForWriteMode = (
   writeMode: V1_WriteMode | undefined,
 ): V1_MilestoningColumnSpec[] => {
-  if (
-    writeMode?._type !== V1_WriteModeType.BATCH_MILESTONED &&
-    writeMode?._type !== V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL
-  ) {
-    return [];
+  switch (writeMode?._type) {
+    case V1_WriteModeType.BATCH_MILESTONED:
+      return BATCH_MILESTONED_INGEST_COLUMNS.map(({ name, type }) => ({
+        name,
+        type,
+      }));
+    case V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL:
+      return [
+        ...BATCH_MILESTONED_INGEST_COLUMNS,
+        ...BUSINESS_TEMPORAL_INGEST_COLUMNS,
+      ].map(({ name, type }) => ({ name, type }));
+    default:
+      return [];
   }
-  const columns: V1_MilestoningColumnSpec[] = [
-    {
-      name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_IN_ID,
-      type: PRIMITIVE_TYPE.INTEGER,
-    },
-    {
-      name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_OUT_ID,
-      type: PRIMITIVE_TYPE.INTEGER,
-    },
-    {
-      name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_DIGEST,
-      type: PRIMITIVE_TYPE.STRING,
-    },
-  ];
-  if (writeMode._type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL) {
-    columns.push(
-      {
-        name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_FROM,
-        type: PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
-      },
-      {
-        name: MILESTONE_INGEST_COLUMNS.INGEST_LAKE_THRU,
-        type: PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
-      },
-    );
-  }
-  return columns;
 };
 
 const addMilestonedColumnsForWriteMode = (
