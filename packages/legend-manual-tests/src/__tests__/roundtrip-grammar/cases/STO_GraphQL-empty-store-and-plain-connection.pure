@@ -1,0 +1,12 @@
+###GraphQL
+GraphQLStore demo::graphql::EmptyStore
+{
+}
+
+
+###Connection
+GraphQLConnection demo::graphql::PlainConnection
+{
+  store: demo::graphql::EmptyStore;
+  url: 'https://api.example.com/graphql';
+}

@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {
+      "_type": "profile",
+      "package": "meta::external::store::graphQL::generation",
+      "name": "GeneratedProxyProfile",
+      "tags": ["generatedProxyForQualifiedProperty"]
+    },
+    {
+      "_type": "profile",
+      "package": "meta::external::store::graphQL::generation",
+      "name": "RequiredArgumentsProfile",
+      "tags": ["requiredArguments"]
+    }
+  ]
+}

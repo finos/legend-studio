@@ -341,6 +341,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
         storeSubtypes: [
           'MongoDatabase',
           'serviceStore',
+          'graphQLStore',
           'relational',
           'binding',
         ],

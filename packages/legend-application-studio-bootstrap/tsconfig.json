@@ -23,6 +23,7 @@
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-application-studio-depot-dashboard" },
     { "path": "../legend-extension-store-service-store" },
+    { "path": "../legend-extension-store-graphql" },
     { "path": "../legend-graph" },
     { "path": "../legend-lego" },
     { "path": "../legend-shared" }

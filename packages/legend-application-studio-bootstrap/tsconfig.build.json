@@ -23,6 +23,7 @@
     { "path": "../legend-extension-dsl-service/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     { "path": "../legend-extension-store-service-store/tsconfig.build.json" },
+    { "path": "../legend-extension-store-graphql/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-lego/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" }
