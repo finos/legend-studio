@@ -624,7 +624,8 @@ const MaterializedViewPanel = observer(
             flowState={flowState}
             dataset={view}
             lineage={{
-              label: 'Reads',
+              title: 'Reads',
+              label: 'Data sets',
               value: readLinks.length ? (
                 <NameLinks links={readLinks} />
               ) : (
@@ -786,7 +787,8 @@ const IngestDataSetPanel = observer(
             flowState={flowState}
             dataset={dataSet}
             lineage={{
-              label: 'Read by',
+              title: 'Read by',
+              label: 'Views',
               value: readBy.length ? (
                 <NameLinks
                   links={readBy.map((view) => ({

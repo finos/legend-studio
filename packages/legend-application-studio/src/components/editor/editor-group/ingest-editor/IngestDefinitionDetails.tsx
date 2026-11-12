@@ -473,15 +473,16 @@ export const IngestDefinitionSection = observer(
 
 /**
  * Everything a data set or a view says besides its columns or its flow, in
- * groups: its key and governance, what reads it or what it reads, how it's
- * written, stored and read. A setting it takes from the definition says so
+ * groups: its key and governance, the views that read it or the data sets it
+ * reads, how it's written, stored and read. A setting it takes from the
+ * definition says so
  */
 export const IngestDataSetMetadata = observer(
   (props: {
     flowState: IngestDefinitionFlowState;
     dataset: IngestDataset;
-    /** What reads the data set, or what the view reads */
-    lineage: IngestPropertyRow;
+    /** What reads the data set, or what the view reads: its group's title, and the names */
+    lineage: { title: string } & IngestPropertyRow;
   }) => {
     const { flowState, dataset, lineage } = props;
     const { specification } = flowState;
@@ -536,7 +537,7 @@ export const IngestDataSetMetadata = observer(
               },
             ],
           ],
-          ['Lineage', [lineage]],
+          [lineage.title, [{ label: lineage.label, value: lineage.value }]],
           [
             'Writing',
             [

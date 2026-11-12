@@ -428,7 +428,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
 
   test(
     integrationTest(
-      "A view's Metadata: its key, classification, what it reads, how it's written; the tab stays as another view is picked",
+      "A view's Metadata: its key, classification, the data sets it reads, how it's written; the tab stays as another view is picked",
     ),
     async () => {
       const { editorGroup } = await setUp();
@@ -439,7 +439,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
         'Primary key': 'BUSINESS_DATE, LEGAL_ENTITY_ID, INSTRUMENT_ID',
         Classification: 'DP10',
         Residency: 'None',
-        Reads: 'EOD_POSITIONS, LEGAL_ENTITIES',
+        'Data sets': 'EOD_POSITIONS, LEGAL_ENTITIES',
         'Write mode': "append only the definition's",
       });
       expect(isTabShown(panel, 'Metadata')).toBe(true);
@@ -458,7 +458,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
       ).toMatchObject({
         'Primary key': 'BUSINESS_DATE, CLIENT_ACCOUNT_ID, INSTRUMENT_ID',
         Classification: 'DP20',
-        Reads: 'CLIENT_POSITIONS',
+        'Data sets': 'CLIENT_POSITIONS',
       });
 
       await showTab(other, 'Flow');
@@ -544,7 +544,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
         within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
       ).toBeNull();
       // what it reads comes from its function, flow or none
-      expect((await getMetadata(panel)).Reads).toBe('EOD_POSITIONS');
+      expect((await getMetadata(panel))['Data sets']).toBe('EOD_POSITIONS');
       await showTab(panel, 'Flow');
       // the engine writes the view's own function, with the definition's
       // other lambdas, as the editor opens
@@ -810,7 +810,7 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
         'Primary key': 'BUSINESS_DATE, POSITION_ID',
         Classification: 'DP20',
         Residency: 'US',
-        'Read by': 'POSITIONS_BY_LEGAL_ENTITY, RANKED_POSITIONS',
+        Views: 'POSITIONS_BY_LEGAL_ENTITY, RANKED_POSITIONS',
         'Write mode': "append only the definition's",
         Deletes: 'A row whose STATUS is DELETED',
         'Lookup indexes': 'Equality on POSITION_ID',
@@ -834,7 +834,7 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
 
   test(
     integrationTest(
-      "A view's Reads picks a data set, and a data set's Read by picks a view",
+      'On Metadata, a data set a view reads picks it, and a view that reads a data set picks it',
     ),
     async () => {
       const { editorGroup } = await setUp();
@@ -844,12 +844,12 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
       );
 
       const view = getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY');
-      expect((await getMetadata(view)).Reads).toBe(
+      expect((await getMetadata(view))['Data sets']).toBe(
         'EOD_POSITIONS, LEGAL_ENTITIES',
       );
       await followLink(view, 'LEGAL_ENTITIES');
       const dataSet = getViewPanel(editorGroup, 'LEGAL_ENTITIES');
-      expect((await getMetadata(dataSet))['Read by']).toBe(
+      expect((await getMetadata(dataSet)).Views).toBe(
         'POSITIONS_BY_LEGAL_ENTITY',
       );
       expect(
@@ -930,7 +930,7 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
         '2 columns as the definition declares them, then 3 its write mode, batch milestoned, adds.',
       );
       expect(await getMetadata(panel)).toMatchObject({
-        'Read by': 'No view',
+        Views: 'No view',
         'Write mode': 'batch milestoned its own',
       });
     },
@@ -955,7 +955,7 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
       ).toBeNull();
       expect(await getMetadata(panel)).toMatchObject({
         'Primary key': 'None',
-        'Read by': 'No view',
+        Views: 'No view',
       });
     },
   );
