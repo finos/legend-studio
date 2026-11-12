@@ -24,7 +24,11 @@ import {
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '@finos/legend-cube-builder/definition-flow';
 import { LineageModel, type IngestDefinition } from '@finos/legend-graph';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  DocumentationEntry,
+  guaranteeNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { runInAction } from 'mobx';
@@ -33,6 +37,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
 import { IngestDefinitionEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
@@ -148,6 +153,30 @@ const getEditorState = (
   editorStore.tabManagerState.getCurrentEditorState(
     IngestDefinitionEditorState,
   );
+
+/** The help icon beside Overview | Pure, by its title */
+const INGEST_DEFINITION_HELP = 'Ingest definitions, in the Legend Studio guide';
+
+/**
+ * Gives the documentation registry an entry for the key, as a deployment's
+ * registry would once the guide's page is live; the others as they are
+ */
+const provideDocEntry = (editorStore: EditorStore, key: string): void => {
+  const { documentationService } = editorStore.applicationStore;
+  const getDocEntry =
+    documentationService.getDocEntry.bind(documentationService);
+  jest.spyOn(documentationService, 'getDocEntry').mockImplementation((each) =>
+    each === key
+      ? DocumentationEntry.create(
+          {
+            title: 'A page of the guide',
+            url: 'https://legend.example/guide',
+          },
+          key,
+        )
+      : getDocEntry(each),
+  );
+};
 
 /** Overview | Pure */
 const getViewSwitch = (editorGroup: HTMLElement): HTMLElement =>
@@ -325,6 +354,10 @@ describe('The Definition tab of an ingest definition with materialized views', (
       ).toBe('false');
       // the whole definition's Pure waits behind Pure
       expect(within(editorGroup).queryByText(DEFINITION_PURE)).toBeNull();
+      // no help icon while the documentation registry has no entry for it
+      expect(
+        within(editorGroup).queryByTitle(INGEST_DEFINITION_HELP),
+      ).toBeNull();
 
       // the definition's own section: its name and doc, then the settings
       // every data set follows unless it sets its own
@@ -463,6 +496,35 @@ describe('The Definition tab of an ingest definition with materialized views', (
 
       await showTab(other, 'Flow');
       await findFlowNodes(other, 3);
+    },
+  );
+
+  test(
+    integrationTest(
+      "Once the documentation registry has the guide's page on ingest definitions, a help icon beside Overview | Pure opens it",
+    ),
+    async () => {
+      const { editorStore, editorGroup } = await setUp(INGEST_PATH, (store) =>
+        provideDocEntry(
+          store,
+          LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_DEFINITION,
+        ),
+      );
+      const openLink = jest
+        .spyOn(
+          editorStore.applicationStore.assistantService,
+          'openDocumentationEntryLink',
+        )
+        .mockImplementation(() => undefined);
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      fireEvent.click(within(editorGroup).getByTitle(INGEST_DEFINITION_HELP));
+      expect(openLink).toHaveBeenCalledWith(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_DEFINITION,
+      );
     },
   );
 

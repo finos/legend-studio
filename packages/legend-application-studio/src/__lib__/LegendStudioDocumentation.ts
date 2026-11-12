@@ -53,6 +53,8 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   CONCEPT_ELEMENT_GENERATION_SPECIFICATION = 'dsl-generation-specification.concept.element.generation-specification',
   CONCEPT_ELEMENT_FILE_GENERATION_SPECIFICATION = 'dsl-file-generation.concept.element.file-generation-specification',
   GRAMMAR_DATA_ELEMENT = 'dsl-data.concept.element.data',
+  CONCEPT_ELEMENT_INGEST_DEFINITION = 'dsl-ingest.concept.element.ingest-definition',
+  CONCEPT_ELEMENT_INGEST_MATERIALIZED_VIEW = 'dsl-ingest.concept.element.materialized-view',
   // grammar connection elements
   GRAMMAR_CONNECTION_JSON_MODEL_CONNECTION = 'dsl-mapping.grammar.connection.json-model-connection',
   GRAMMAR_CONNECTION_XML_MODEL_CONNECTION = 'dsl-mapping.grammar.connection.xml-model-connection',
@@ -114,4 +116,6 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_CONFIG: ContextualDocumentationConfig
       LEGEND_STUDIO_DOCUMENTATION_KEY.CONTEXT_MAPPING_TEST_EDITOR,
     [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_ELEMENT_EDITOR]:
       LEGEND_STUDIO_DOCUMENTATION_KEY.CONTEXT_DATA_ELEMENT_EDITOR,
+    [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.INGEST_DEFINITION_EDITOR]:
+      LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_DEFINITION,
   };

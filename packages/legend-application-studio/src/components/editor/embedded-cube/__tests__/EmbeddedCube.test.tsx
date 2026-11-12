@@ -58,7 +58,11 @@ import {
   type IR,
   type ModelContext,
 } from '@finos/legend-cube';
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  DocumentationEntry,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
@@ -66,6 +70,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST_DATA__DefaultSDLCInfo,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
   getLegendStudioCubeIngestClasses,
@@ -516,6 +521,57 @@ describe('Legend Cube in Studio', () => {
       expect(schemas.get('ingest102')).toMatchObject({
         detail: LEGEND_STUDIO_CUBE_MESSAGE.NO_DATA_SET('GONE', INGEST_PATH),
       });
+    },
+  );
+
+  test(
+    integrationTest(
+      "Cube's header links to the guide's page on building a materialized view, once the documentation registry has it",
+    ),
+    async () => {
+      const { editorStore, renderResult } = await setUp([TRADES_INGEST]);
+      const { documentationService, assistantService } =
+        editorStore.applicationStore;
+      const key =
+        LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_MATERIALIZED_VIEW;
+      const help =
+        'Building a materialized view in Legend Cube, in the Legend Studio guide';
+      const getDocEntry =
+        documentationService.getDocEntry.bind(documentationService);
+      let hasEntry = false;
+      jest
+        .spyOn(documentationService, 'getDocEntry')
+        .mockImplementation((each) =>
+          each === key && hasEntry
+            ? DocumentationEntry.create(
+                {
+                  title: 'A page of the guide',
+                  url: 'https://legend.example/guide',
+                },
+                key,
+              )
+            : getDocEntry(each),
+        );
+      const openLink = jest
+        .spyOn(assistantService, 'openDocumentationEntryLink')
+        .mockImplementation(() => undefined);
+      await openIngestDefinition(renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+
+      // none while the registry has no entry for it
+      fireEvent.click(await findByText(editorGroup, 'Create MatView'));
+      await renderResult.findByText(
+        `Create MatView for ${INGEST_PATH} with Cube`,
+      );
+      expect(renderResult.queryByTitle(help)).toBeNull();
+      fireEvent.click(renderResult.getByTitle('Close Cube, adding nothing'));
+
+      hasEntry = true;
+      fireEvent.click(await findByText(editorGroup, 'Create MatView'));
+      fireEvent.click(await renderResult.findByTitle(help));
+      expect(openLink).toHaveBeenCalledWith(key);
     },
   );
 

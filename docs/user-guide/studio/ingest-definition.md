@@ -35,7 +35,8 @@ The editor opens on the definition's **Overview**: the definition first, then it
    reads (under **Reads**), and how it is written and stored. A view Legend Cube can't draw yet says why, and shows its
    function in the Legend language instead.
 
-Above the Overview, **Create MatView** builds a new view in Legend Cube, from the project's data sets. **View SQL** shows
+Above the Overview, **Create MatView** builds a new view in Legend Cube, from the project's data sets (see
+[Building a view in Legend Cube](#building-a-view-in-legend-cube)). **View SQL** shows
 what the engine generates for the views: each view's columns and its SQL. On **Pure**, the header also has **Lineage**,
 for the first view, and the arrow beside **Create MatView** opens any view in Legend Cube.
 
@@ -71,3 +72,16 @@ you click another data set, so you can compare them.
 
 A definition with no materialized views opens on its Overview too, on its first data set. **Create MatView** builds its
 first view.
+
+## Building a view in Legend Cube
+
+**Create MatView** opens Legend Cube on the project's data sets, to build a new view, and a view's **Edit in Cube** opens
+its function, to change it. The step that runs becomes the view:
+
+- **Add MatView** asks for the new view's name, the classification of its data and its primary key, among the step's
+  columns, then adds it to the definition.
+- **Save MatView** puts the step in place of the view's function. It asks again only for what the view can't be saved
+  with as it was: the classification of its data, or a primary key whose column is gone.
+- **×** closes Legend Cube, adding or saving nothing.
+
+The [Legend Cube guide](https://legend.finos.org/guides/cube) explains Legend Cube's steps.

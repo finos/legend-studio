@@ -44,6 +44,7 @@ import {
   INGEST_DEFINITION_TAB,
   IngestDefinitionEditorState,
 } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import React, { useEffect } from 'react';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
@@ -51,6 +52,7 @@ import { flowResult } from 'mobx';
 
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import {
   LINEAGE_VIEW_MODE,
   LineageViewerContent,
@@ -394,20 +396,27 @@ export const IngestDefinitionEditor = observer(() => {
                       .isInProgress
                   }
                 />
-                {hasOverview && (
-                  <div className="ingest-definition-editor__view-bar">
+                <div className="ingest-definition-editor__view-bar">
+                  {hasOverview ? (
                     <IngestDefinitionViewSwitch flowState={flowState} />
-                  </div>
-                )}
-                {!flowState.specification && (
-                  <div
-                    className="ingest-definition-editor__view-bar ingest-definition-editor__view-bar--note"
-                    role="note"
-                  >
-                    Studio can&apos;t read this definition&apos;s content, so it
-                    shows only its Pure.
-                  </div>
-                )}
+                  ) : (
+                    <div
+                      className="ingest-definition-editor__view-bar__note"
+                      role="note"
+                    >
+                      Studio can&apos;t read this definition&apos;s content, so
+                      it shows only its Pure.
+                    </div>
+                  )}
+                  {/* shown once the documentation registry has the entry */}
+                  <DocumentationLink
+                    className="ingest-definition-editor__view-bar__documentation"
+                    documentationKey={
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_DEFINITION
+                    }
+                    title="Ingest definitions, in the Legend Studio guide"
+                  />
+                </div>
                 {showsOverview ? (
                   <IngestDefinitionFlow
                     editorState={ingestDefinitionEditorState}
