@@ -36,6 +36,7 @@ import {
   V1_AppendOnly,
   V1_BatchMilestoned,
   V1_BatchMilestonedBusinessTemporal,
+  V1_TemporalPassThrough,
 } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
@@ -47,6 +48,7 @@ import {
   list,
   optional,
   primitive,
+  raw,
   serialize,
 } from 'serializr';
 import { V1_relationTypeColumnModelSchema } from './V1_TypeSerializationHelper.js';
@@ -202,12 +204,28 @@ const V1_BatchMilestonedModelSchema = createModelSchema(V1_BatchMilestoned, {
   _type: usingConstantValueSchema(V1_WriteModeType.BATCH_MILESTONED),
 });
 
+const V1_TemporalPassThroughModelSchema = createModelSchema(
+  V1_TemporalPassThrough,
+  {
+    lakeFrom: primitive(),
+    lakeThru: primitive(),
+    disableBusinessTimelineValidation: primitive(),
+    infinityDate: optional(raw()),
+    lakeThruInfinityCutoff: optional(primitive()),
+  },
+);
+
 const V1_BatchMilestonedBusinessTemporalModelSchema = createModelSchema(
   V1_BatchMilestonedBusinessTemporal,
   {
     _type: usingConstantValueSchema(
       V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL,
     ),
+    businessTemporalField: optional(primitive()),
+    temporalPassThrough: optional(
+      usingModelSchema(V1_TemporalPassThroughModelSchema),
+    ),
+    coalesceTimelineMode: optional(primitive()),
   },
 );
 

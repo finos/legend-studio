@@ -25,6 +25,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 export class RelationColumn extends Function implements Hashable {
   genericType: GenericTypeReference;
   multiplicity: Multiplicity = Multiplicity.ONE;
+  description?: string | undefined;
 
   constructor(name: string, type: GenericTypeReference) {
     super(name);
@@ -63,3 +64,15 @@ export class RelationType extends Type implements Hashable {
     ]);
   }
 }
+
+/**
+ * A relation column whose type isn't in the graph, for example an enum that
+ * isn't loaded. The relation type still has the column, typed `Any`.
+ */
+export type UnresolvedRelationColumn = {
+  name: string;
+  /**
+   * The column's type path as the engine sent it, for example `my::Color`.
+   */
+  typePath: string;
+};

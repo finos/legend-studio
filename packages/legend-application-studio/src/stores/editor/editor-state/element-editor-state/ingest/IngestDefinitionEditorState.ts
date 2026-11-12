@@ -20,6 +20,8 @@ import {
   type V1_RawLineageModel,
   type ArtifactGenerationExtensionResult,
   type IngestionDefinitionArtifact,
+  type IngestDefinitionSpecification,
+  type RawLambda,
   GRAPH_MANAGER_EVENT,
   IngestDefinition,
 } from '@finos/legend-graph';
@@ -32,7 +34,7 @@ import {
   LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   EditorInitialConfiguration,
   IngestElementEditorInitialConfiguration,
@@ -40,6 +42,7 @@ import {
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
 import { LineageState } from '@finos/legend-query-builder';
 import { IngestTestableState } from './IngestTestableState.js';
+import { getIngestSpecificationLambdas } from './IngestDefinitionSpecificationHelper.js';
 
 export enum INGEST_DEFINITION_TAB {
   DEFINITION = 'Definition',
@@ -84,6 +87,11 @@ export class IngestDefinitionEditorState extends ElementEditorState {
   deployOnOpen = false;
   lineageState: LineageState;
   ingestTestableState: IngestTestableState;
+  /** The specification's lambdas as Pure, for viewing */
+  lambdaGrammars = new Map<RawLambda, string>();
+  private lambdaGrammarsSpecification:
+    | IngestDefinitionSpecification
+    | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -98,7 +106,10 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       setDeployOnOpen: observable,
       cachedArtfact: observable,
       ingestionArtifact: observable,
+      lambdaGrammars: observable.ref,
       setSelectedTab: action,
+      buildSpecification: action,
+      convertSpecificationLambdas: flow,
       setIngestCachedArtifact: action,
       setIngestionArtifact: action,
       generateLineage: flow,
@@ -114,10 +125,72 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     this.lineageState = new LineageState(this.editorStore.applicationStore);
     this.ingestTestableState = new IngestTestableState(this);
     this.ingestTestableState.init();
+    this.buildSpecification();
   }
 
   setSelectedTab(val: INGEST_DEFINITION_TAB): void {
     this.selectedTab = val;
+  }
+
+  /** The ingest definition fully modelled, when its content could be read */
+  get specification(): IngestDefinitionSpecification | undefined {
+    return this.ingest.specification;
+  }
+
+  /**
+   * Builds the specification from the content, when the content changed
+   * since it was last built, and its lambdas as Pure
+   */
+  buildSpecification(): void {
+    const specification =
+      this.editorStore.graphManagerState.graphManager.getOrBuildIngestDefinitionSpecification(
+        this.ingest,
+        this.editorStore.graphManagerState.graph,
+      );
+    if (specification && specification !== this.lambdaGrammarsSpecification) {
+      this.lambdaGrammarsSpecification = specification;
+      flowResult(this.convertSpecificationLambdas(specification)).catch(
+        this.editorStore.applicationStore.alertUnhandledError,
+      );
+    }
+  }
+
+  *convertSpecificationLambdas(
+    specification: IngestDefinitionSpecification,
+  ): GeneratorFn<void> {
+    const lambdas = getIngestSpecificationLambdas(specification);
+    if (!lambdas.length) {
+      this.lambdaGrammars = new Map();
+      return;
+    }
+    const lambdasById = new Map(
+      lambdas.map((lambda, index) => [`lambda_${index}`, lambda]),
+    );
+    try {
+      const grammars =
+        (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+          lambdasById,
+          true,
+        )) as Map<string, string>;
+      // a newer specification may have been built meanwhile
+      if (specification === this.lambdaGrammarsSpecification) {
+        const result = new Map<RawLambda, string>();
+        lambdasById.forEach((lambda, id) => {
+          const grammar = grammars.get(id);
+          if (grammar !== undefined) {
+            result.set(lambda, grammar);
+          }
+        });
+        this.lambdaGrammars = result;
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.warn(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+        `Can't show the lambdas of ingest definition '${this.ingest.path}' as Pure`,
+        error,
+      );
+    }
   }
 
   setDeployOnOpen(value: boolean): void {

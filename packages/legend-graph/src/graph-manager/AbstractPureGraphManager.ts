@@ -122,7 +122,10 @@ import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageab
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
-import type { RelationType } from '../graph/metamodel/pure/packageableElements/relation/RelationType.js';
+import type {
+  RelationType,
+  UnresolvedRelationColumn,
+} from '../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import type { CodeCompletionResult } from './action/compilation/Completion.js';
 import type { DeploymentResult } from './action/DeploymentResult.js';
 import type {
@@ -145,6 +148,7 @@ import type {
   DataProductAccessor,
 } from '../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import type { IngestDefinition } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { IngestDefinitionSpecification } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -228,17 +232,8 @@ export type BatchLambdasRelationTypeResult = {
   errors: Map<string, EngineError>;
 };
 
-/**
- * A relation column whose type isn't in the graph, for example an enum that
- * isn't loaded. The relation type still has the column, typed `Any`.
- */
-export type UnresolvedRelationColumn = {
-  name: string;
-  /**
-   * The column's type path as the engine sent it, for example `my::Color`.
-   */
-  typePath: string;
-};
+// kept exported from here, where it was first defined
+export type { UnresolvedRelationColumn };
 
 export type ResolvedRelationTypeResult = {
   relationType: RelationType;
@@ -977,6 +972,16 @@ export abstract class AbstractPureGraphManager {
   abstract getIngestDefinitionDatasetNames(
     ingestDefinition: IngestDefinition,
   ): string[];
+
+  /**
+   * The ingest definition's content, fully modelled for viewing, built when
+   * the content changed since last built; undefined (with a warning logged)
+   * when the content can't be read
+   */
+  abstract getOrBuildIngestDefinitionSpecification(
+    ingestDefinition: IngestDefinition,
+    graph: PureModel,
+  ): IngestDefinitionSpecification | undefined;
 
   // --------------------------------------------- Relational ---------------------------------------------
 
