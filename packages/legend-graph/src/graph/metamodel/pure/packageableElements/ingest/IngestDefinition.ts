@@ -25,6 +25,7 @@ import {
   hashObjectWithoutSourceInformation,
 } from '../../../../Core_HashUtils.js';
 import type { Testable } from '../../test/Testable.js';
+import type { IngestDefinitionSpecification } from './IngestDefinitionSpecification.js';
 
 export enum AppDirLevel {
   BUSINESS_UNIT = 'BUSINESS_UNIT',
@@ -109,6 +110,14 @@ export class IngestDefinition
   appDirDeployment?: AppDirNode;
   tests: IngestTestSuite[] = [];
   TEMPORARY_MATVIEW_FUNCTION_DATA_SETS: MatViewDataSet[] | undefined;
+  /**
+   * The content, fully modelled, for viewing only. Built on demand by
+   * `buildIngestDefinitionSpecification`; undefined when not built yet or
+   * when the content couldn't be read
+   */
+  specification?: IngestDefinitionSpecification | undefined;
+  /** The hash of the content `specification` was last built from */
+  INTERNAL__specificationSourceHash?: string | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([

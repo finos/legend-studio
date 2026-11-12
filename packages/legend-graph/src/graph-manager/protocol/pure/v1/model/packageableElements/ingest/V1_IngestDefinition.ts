@@ -15,7 +15,11 @@
  */
 
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  type Hashable,
+  type PlainObject,
+} from '@finos/legend-shared';
 import type { V1_RelationTypeColumn } from '../type/V1_RelationType.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
@@ -81,8 +85,20 @@ export class V1_BatchMilestoned extends V1_WriteMode {
   override _type = V1_WriteModeType.BATCH_MILESTONED;
 }
 
+export class V1_TemporalPassThrough {
+  lakeFrom!: string;
+  lakeThru!: string;
+  disableBusinessTimelineValidation!: boolean;
+  // a value specification (e.g. a `CDateTime`), kept as its protocol JSON
+  infinityDate?: PlainObject | undefined;
+  lakeThruInfinityCutoff?: string | undefined;
+}
+
 export class V1_BatchMilestonedBusinessTemporal extends V1_WriteMode {
   override _type = V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL;
+  businessTemporalField?: string | undefined;
+  temporalPassThrough?: V1_TemporalPassThrough | undefined;
+  coalesceTimelineMode?: string | undefined;
 }
 
 export class V1_IngestDataset {

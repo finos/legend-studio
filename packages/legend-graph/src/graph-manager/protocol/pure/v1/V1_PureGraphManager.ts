@@ -442,6 +442,8 @@ import {
   RelationalStoreAccessor,
 } from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { IngestDefinitionSpecification } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
+import { V1_getOrBuildIngestDefinitionSpecification } from './transformation/pureGraph/to/helpers/V1_IngestDefinitionSpecificationBuilder.js';
 import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import {
   V1_createAccessorFromPackageableElement,
@@ -4771,6 +4773,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return [];
     }
     return content.datasets.map((ds) => ds.name);
+  }
+
+  getOrBuildIngestDefinitionSpecification(
+    ingestDefinition: IngestDefinition,
+    graph: PureModel,
+  ): IngestDefinitionSpecification | undefined {
+    return V1_getOrBuildIngestDefinitionSpecification(
+      ingestDefinition,
+      new V1_GraphBuilderContextBuilder(
+        graph,
+        graph,
+        this.graphBuilderExtensions,
+        this.logService,
+      ).build(),
+    );
   }
 
   // --------------------------------------------- Relational ---------------------------------------------
