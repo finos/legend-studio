@@ -149,6 +149,7 @@ import type {
 } from '../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import type { IngestDefinition } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { IngestDefinitionSpecification } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
+import type { IngestDatasetReference } from '../graph/helpers/IngestDefinitionHelper.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -982,6 +983,17 @@ export abstract class AbstractPureGraphManager {
     ingestDefinition: IngestDefinition,
     graph: PureModel,
   ): IngestDefinitionSpecification | undefined;
+
+  /**
+   * The ingest data sets the lambda reads, `#I{definition.dataSet}#`, its own
+   * and those of the functions of the graph it calls, in the order it reads
+   * them, each once. Read without the engine and without building their
+   * relation types: none when the lambda can't be read
+   */
+  abstract getIngestDatasetsReadByRawLambda(
+    rawLambda: RawLambda,
+    graph: PureModel,
+  ): IngestDatasetReference[];
 
   // --------------------------------------------- Relational ---------------------------------------------
 

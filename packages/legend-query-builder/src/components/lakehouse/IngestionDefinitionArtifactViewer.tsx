@@ -40,13 +40,12 @@ import {
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
 import {
-  InstanceValue,
   type IngestionArtifactMatViewImplementation,
   type IngestionDefinitionArtifact,
   type RelationColumn,
   getMultiplicityPrettyDescription,
+  getRelationColumnTypeLabel,
 } from '@finos/legend-graph';
-import { isNonNullable } from '@finos/legend-shared';
 import { tryToFormatSql } from '../result/tds/QueryBuilderTDSResultShared.js';
 
 enum INGEST_ARTIFACT_VIEW_MODE {
@@ -60,20 +59,6 @@ enum INGEST_ARTIFACT_SQL_TAB {
   SELECT = 'Select',
 }
 
-const getColumnTypeLabel = (column: RelationColumn): string => {
-  const typeName = column.genericType.value.rawType.name;
-  const typeVariableValues = column.genericType.value.typeVariableValues;
-  if (typeVariableValues && typeVariableValues.length > 0) {
-    const args = typeVariableValues
-      .map((v) => (v instanceof InstanceValue ? v.values[0] : undefined))
-      .filter(isNonNullable);
-    if (args.length > 0) {
-      return `${typeName}(${args.join(', ')})`;
-    }
-  }
-  return typeName;
-};
-
 const schemaColumnDefs: DataGridColumnDefinition<RelationColumn>[] = [
   {
     headerName: 'Column Name',
@@ -84,7 +69,7 @@ const schemaColumnDefs: DataGridColumnDefinition<RelationColumn>[] = [
     headerName: 'Column Type',
     flex: 1,
     valueGetter: (params) =>
-      params.data ? getColumnTypeLabel(params.data) : '',
+      params.data ? getRelationColumnTypeLabel(params.data) : '',
   },
   {
     headerName: 'Multiplicity',

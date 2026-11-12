@@ -45,7 +45,7 @@ Below them, **Ownership** takes the IDs of the deployments that own the data pro
 4. **The access point**: its name, its title and its description. Click one to change it. The handle at its left
    drags it, to reorder it or onto another group's tab, and **×**, at its right, removes it.
 5. **Its function**, in the Legend language, which returns the access point's rows. Here, it reads the **FIRM** data
-   set of the project's ingest definition, **FirmIngest**, and keeps two of its columns. **Query Builder** opens it in
+   set of the project's [ingest definition](./ingest-definition.md), **FirmIngest**, and keeps two of its columns. **Query Builder** opens it in
    the query builder, on the project's ingest definition, and **Save Lambda** puts it back. The buttons at its right
    expand the text and open it in a larger editor.
 6. **Reproducible** lets people get the data as it was at any Lakehouse batch. **Sample Values** adds example rows of

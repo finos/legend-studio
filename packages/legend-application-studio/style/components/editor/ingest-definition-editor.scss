@@ -114,6 +114,610 @@
   &__main-panel {
     flex: 1;
   }
+
+  &__view-bar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1rem 0;
+
+    // why the tab shows only the definition's Pure
+    &__note {
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+    }
+
+    // the guide's page on ingest definitions
+    &__documentation {
+      font-size: 1.6rem;
+    }
+  }
+
+  &__view-switch {
+    display: inline-flex;
+    padding: 0.2rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.6rem;
+
+    &__option {
+      padding: 0.3rem 1.2rem;
+      border-radius: 0.4rem;
+      color: var(--color-text-muted);
+      font-size: 1.3rem;
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--color-text-primary);
+      }
+
+      &--active {
+        background: var(--color-bg-selected);
+        color: var(--color-text-primary);
+      }
+    }
+  }
+}
+
+// an ingest definition's materialized views and data sets, one at a time: a
+// list of them down the left, the picked one on the right, a view's flow or a
+// data set's columns, both filling the rest of the Overview
+.ingest-definition-flow {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 28rem minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 1rem;
+  min-height: 0;
+  padding: 1rem;
+
+  // as long as its views, up to the tab's height, past which it scrolls
+  &__list {
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    gap: 0.2rem;
+    min-height: 0;
+    max-height: 100%;
+    padding: 0.4rem;
+    overflow-y: auto;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.6rem;
+    background: var(--color-bg-panel);
+
+    &__title {
+      display: flex;
+      flex-shrink: 0;
+      align-items: baseline;
+      gap: 0.6rem;
+      padding: 0.6rem 0.8rem;
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    &__title--group {
+      margin-top: 0.8rem;
+    }
+
+    &__count {
+      font-weight: 400;
+    }
+
+    &__item {
+      display: flex;
+      flex-shrink: 0;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.4rem;
+      color: var(--color-text-primary);
+      text-align: left;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-bg-hover);
+      }
+
+      &--active,
+      &--active:hover {
+        background: var(--color-bg-selected);
+      }
+
+      &__name {
+        overflow: hidden;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1.2rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      &__meta {
+        flex-shrink: 0;
+        color: var(--color-text-muted);
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  &__view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem 1.2rem 1.2rem;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.6rem;
+    background: var(--color-bg-panel);
+
+    &__head {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      gap: 0.6rem;
+
+      &__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.8rem;
+      }
+    }
+
+    &__name {
+      color: var(--color-text-primary);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    &__hint {
+      margin-left: auto;
+      color: var(--color-text-muted);
+      font-size: 1.15rem;
+    }
+
+    &__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-left: auto;
+    }
+
+    &__action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      height: 2.6rem;
+      padding: 0 1rem;
+      border: 0.1rem solid var(--color-border-strong);
+      border-radius: 0.4rem;
+      color: var(--color-text-primary);
+      font-size: 1.2rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--color-bg-hover);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+
+    &__canvas {
+      flex: 1;
+      min-height: 20rem;
+      overflow: hidden;
+      border: 0.1rem solid var(--color-border-subtle);
+      border-radius: 0.4rem;
+    }
+
+    &__loading {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      min-height: 20rem;
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+    }
+
+    &__note {
+      display: flex;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      border-left: 0.3rem solid var(--color-status-warn);
+      border-radius: 0.4rem;
+      background: var(--color-status-warn-bg);
+      color: var(--color-text-primary);
+      font-size: 1.2rem;
+
+      &--failure {
+        border-left-color: var(--color-status-error);
+        background: var(--color-status-error-bg);
+      }
+
+      &__text {
+        flex: 1;
+      }
+
+      &__action {
+        padding: 0.2rem 0.8rem;
+        border: 0.1rem solid var(--color-border-strong);
+        border-radius: 0.4rem;
+        color: var(--color-text-primary);
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+
+      &__details {
+        flex-basis: 100%;
+        color: var(--color-text-muted);
+        white-space: pre-wrap;
+
+        summary {
+          cursor: pointer;
+        }
+      }
+    }
+
+    &__message {
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+    }
+
+    &__pure {
+      flex: 1;
+      min-height: 20rem;
+      overflow: hidden;
+      border: 0.1rem solid var(--color-border-subtle);
+      border-radius: 0.4rem;
+    }
+  }
+
+  // a name that picks a view or a data set in the list
+  &__link {
+    color: var(--color-text-link);
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__data-set {
+    &__grid {
+      flex-shrink: 0;
+
+      // past ten columns, it fills the panel's height and scrolls past it
+      // instead of growing
+      &--scrolls {
+        flex: 1;
+        min-height: 33rem;
+      }
+
+      // a column its write mode adds, not one it declares
+      .ag-row.ingest-definition-flow__data-set__added-column {
+        color: var(--color-text-muted);
+      }
+    }
+
+    &__column-name {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 0.8rem;
+      white-space: normal;
+    }
+
+    &__added-by {
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    // what the definition says a column holds, under its name
+    &__description {
+      flex-basis: 100%;
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+  }
+
+  // a panel's tabs: a data set's Schema | Metadata, a view's Flow | Metadata
+  &__tabs {
+    display: flex;
+    flex-shrink: 0;
+    gap: 1.8rem;
+    border-bottom: 0.1rem solid var(--color-border-default);
+
+    &__tab {
+      margin-bottom: -0.1rem;
+      padding: 0.3rem 0.2rem 0.6rem;
+      border-bottom: 0.2rem solid transparent;
+      color: var(--color-text-muted);
+      font-size: 1.25rem;
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--color-text-primary);
+      }
+
+      &--active,
+      &--active:hover {
+        border-bottom-color: var(--color-text-link);
+        color: var(--color-text-primary);
+      }
+    }
+  }
+}
+
+// the Definition tab's Overview: the definition's own section, then its
+// materialized views and data sets, which take the rest of the tab
+.ingest-definition-overview {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1.2rem;
+  min-height: 0;
+  padding: 1rem;
+
+  &__title {
+    margin: 0 0 0.6rem;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  &__data-sets {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    .ingest-definition-flow {
+      padding: 0;
+    }
+  }
+
+  &__empty {
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+  }
+}
+
+// the definition's own section: its name and doc, its main settings, the
+// rest below them when opened
+.ingest-definition-section {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+
+  &__box {
+    display: flex;
+    flex-direction: column;
+    border: 0.1rem solid var(--color-border-default);
+    border-radius: 0.6rem;
+    background: var(--color-bg-panel);
+  }
+
+  &__head {
+    display: flex;
+    align-items: baseline;
+    gap: 1.2rem;
+    padding: 0.9rem 1.2rem 0.3rem;
+  }
+
+  &__name {
+    flex-shrink: 0;
+    color: var(--color-text-primary);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  &__doc {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: auto;
+    color: var(--color-text-link);
+    font-size: 1.2rem;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 2.4rem;
+    margin: 0;
+    padding: 0.3rem 1.2rem 0.9rem;
+  }
+
+  &__setting {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-size: 1.25rem;
+
+    &__label {
+      color: var(--color-text-muted);
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    &__value {
+      margin: 0;
+      color: var(--color-text-primary);
+    }
+  }
+
+  // scrolls past a third of the window, so the materialized views and data
+  // sets stay in view
+  &__more {
+    max-height: 32vh;
+    padding: 1rem 1.2rem 1.2rem;
+    overflow-y: auto;
+    border-top: 0.1rem solid var(--color-border-default);
+  }
+
+  &__hint {
+    padding-top: 0.6rem;
+    color: var(--color-text-muted);
+    font-size: 1.15rem;
+  }
+}
+
+// groups of properties, side by side in as many columns as fit: the
+// definition's other settings, a data set's or a view's metadata
+.ingest-definition-properties {
+  column-gap: 3.2rem;
+  column-width: 32rem;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.4rem;
+    break-inside: avoid;
+
+    &__title {
+      margin: 0;
+      padding-bottom: 0.4rem;
+      border-bottom: 0.1rem solid var(--color-border-default);
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+
+  &__sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: minmax(12rem, 40%) minmax(0, 1fr);
+    gap: 1.2rem;
+    align-items: baseline;
+  }
+
+  &__label {
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+  }
+
+  &__value {
+    min-width: 0;
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
+  }
+
+  // where a value comes from: the data set's own, or the definition's
+  &__origin {
+    color: var(--color-text-muted);
+    font-size: 1.15rem;
+    font-style: italic;
+  }
+
+  &__pure,
+  &__literal {
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.3rem;
+    background: var(--color-bg-tag);
+    color: var(--color-text-primary);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.15rem;
+    white-space: pre-wrap;
+  }
+
+  &__lambdas {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    // steps that run in order are numbered
+    &--ordered {
+      padding-left: 1.8rem;
+      list-style: decimal;
+    }
+  }
+
+  &__chips,
+  &__references {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.8rem;
+  }
+
+  &__chip {
+    padding: 0.1rem 0.6rem;
+    border-radius: 0.4rem;
+    background: var(--color-bg-tag);
+    color: var(--color-text-primary);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1rem;
+
+    // a data set's classification and residency, beside its name
+    &--muted {
+      background: var(--color-status-warn-bg);
+      color: var(--color-status-warn);
+    }
+  }
 }
 
 .ingestion-modal {

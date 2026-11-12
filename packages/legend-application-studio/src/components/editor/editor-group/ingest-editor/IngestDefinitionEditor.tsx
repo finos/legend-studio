@@ -44,13 +44,15 @@ import {
   INGEST_DEFINITION_TAB,
   IngestDefinitionEditorState,
 } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { flowResult } from 'mobx';
 
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import {
   LINEAGE_VIEW_MODE,
   LineageViewerContent,
@@ -58,7 +60,12 @@ import {
 } from '@finos/legend-query-builder';
 import type { MatViewDataSet } from '@finos/legend-graph';
 import { IngestTestableEditor } from './testable/IngestTestableEditor.js';
+import { INGEST_DEFINITION_VIEW } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionFlowState.js';
 import { getIngestMaterializedViews } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
+import {
+  IngestDefinitionFlow,
+  IngestDefinitionViewSwitch,
+} from './IngestDefinitionFlow.js';
 
 export const IngestLineageModal = observer(
   (props: { ingestDefinitionEditorState: IngestDefinitionEditorState }) => {
@@ -70,15 +77,11 @@ export const IngestLineageModal = observer(
       ingestDefinitionEditorState.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.map(
         (dataset) => dataset.name,
       ) ?? [];
-    const [selectedMatview, setSelectedMatview] = useState<
-      MatViewDataSet | undefined
-    >(undefined);
-
-    useEffect(() => {
-      if (!selectedMatview && matviewFunctions && matviewFunctions.length > 0) {
-        setSelectedMatview(matviewFunctions[0]);
-      }
-    }, [matviewFunctions, selectedMatview]);
+    // the view whose lineage shows, wherever its lineage was asked for
+    const selectedMatview = matviewFunctions?.find(
+      (dataset) =>
+        dataset.name === ingestDefinitionEditorState.lineageMatViewName,
+    );
 
     useEffect(() => {
       ingestDefinitionEditorState.lineageState.setSelectedTab(
@@ -122,7 +125,6 @@ export const IngestLineageModal = observer(
 
     const handleDatasetChange = (option: DatasetOption | null): void => {
       if (option?.value) {
-        setSelectedMatview(option.value);
         flowResult(
           ingestDefinitionEditorState.generateLineage(option.value),
         ).catch(
@@ -185,8 +187,15 @@ export const IngestDefinitionEditor = observer(() => {
       IngestDefinitionEditorState,
     );
   const ingestDef = ingestDefinitionEditorState.ingest;
-  // the views Cube can open to edit (Edit MatView, PLAN §11.18)
-  const materializedViews = getIngestMaterializedViews(ingestDef);
+  const flowState = ingestDefinitionEditorState.definitionFlowState;
+  // the views Cube can open to edit (Edit MatView, PLAN §11.18), read as
+  // Edit MatView reads them: also when the specification can't be built
+  const editableViews = getIngestMaterializedViews(ingestDef);
+  // a definition Studio can read opens on its Overview, each view's head
+  // holding its Lineage and Edit in Cube; one it can't is its Pure
+  const hasOverview = Boolean(flowState.specification);
+  const showsOverview =
+    hasOverview && flowState.view === INGEST_DEFINITION_VIEW.OVERVIEW;
   const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
   const selectedTab = ingestDefinitionEditorState.selectedTab;
 
@@ -204,6 +213,13 @@ export const IngestDefinitionEditor = observer(() => {
   useEffect(() => {
     ingestDefinitionEditorState.generateElementGrammar();
   }, [ingestDefinitionEditorState]);
+
+  // the specification follows the content, e.g. once Create MatView or Edit
+  // in Cube saves a view
+  const content = ingestDef.content;
+  useEffect(() => {
+    ingestDefinitionEditorState.buildSpecification();
+  }, [ingestDefinitionEditorState, content]);
 
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.INGEST_DEFINITION_EDITOR,
@@ -279,19 +295,21 @@ export const IngestDefinitionEditor = observer(() => {
                 <PanelHeader title="deployment" darkMode={true}>
                   <PanelHeaderActions>
                     <div className="panel__header__actions">
-                      <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-                        <button
-                          className="btn__dropdown-combo__label"
-                          onClick={viewLineage}
-                          tabIndex={-1}
-                          disabled={!isValidForLineage}
-                        >
-                          <EyeIcon className="btn__dropdown-combo__label__icon" />
-                          <div className="btn__dropdown-combo__label__title">
-                            Lineage
-                          </div>
-                        </button>
-                      </div>
+                      {!showsOverview && (
+                        <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                          <button
+                            className="btn__dropdown-combo__label"
+                            onClick={viewLineage}
+                            tabIndex={-1}
+                            disabled={!isValidForLineage}
+                          >
+                            <EyeIcon className="btn__dropdown-combo__label__icon" />
+                            <div className="btn__dropdown-combo__label__title">
+                              Lineage
+                            </div>
+                          </button>
+                        </div>
+                      )}
                       {isValidForLineage && (
                         <div className="btn__dropdown-combo btn__dropdown-combo--primary">
                           <button
@@ -329,14 +347,14 @@ export const IngestDefinitionEditor = observer(() => {
                             Create MatView
                           </div>
                         </button>
-                        {materializedViews.length > 0 && (
+                        {!showsOverview && editableViews.length > 0 && (
                           <ControlledDropdownMenu
                             className="btn__dropdown-combo__dropdown-btn"
                             title="Edit a materialized view with Cube"
                             disabled={ingestDefinitionEditorState.isReadOnly}
                             content={
                               <MenuContent>
-                                {materializedViews.map(({ name }) => (
+                                {editableViews.map(({ name }) => (
                                   <MenuContentItem
                                     key={name}
                                     className="btn__dropdown-combo__option"
@@ -378,13 +396,40 @@ export const IngestDefinitionEditor = observer(() => {
                       .isInProgress
                   }
                 />
-                <PanelContent>
-                  <CodeEditor
-                    inputValue={ingestDefinitionEditorState.textContent}
-                    isReadOnly={true}
-                    language={CODE_EDITOR_LANGUAGE.PURE}
+                <div className="ingest-definition-editor__view-bar">
+                  {hasOverview ? (
+                    <IngestDefinitionViewSwitch flowState={flowState} />
+                  ) : (
+                    <div
+                      className="ingest-definition-editor__view-bar__note"
+                      role="note"
+                    >
+                      Studio can&apos;t read this definition&apos;s content, so
+                      it shows only its Pure.
+                    </div>
+                  )}
+                  {/* shown once the documentation registry has the entry */}
+                  <DocumentationLink
+                    className="ingest-definition-editor__view-bar__documentation"
+                    documentationKey={
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_DEFINITION
+                    }
+                    title="Ingest definitions, in the Legend Studio guide"
                   />
-                </PanelContent>
+                </div>
+                {showsOverview ? (
+                  <IngestDefinitionFlow
+                    editorState={ingestDefinitionEditorState}
+                  />
+                ) : (
+                  <PanelContent>
+                    <CodeEditor
+                      inputValue={ingestDefinitionEditorState.textContent}
+                      isReadOnly={true}
+                      language={CODE_EDITOR_LANGUAGE.PURE}
+                    />
+                  </PanelContent>
+                )}
                 <IngestLineageModal
                   ingestDefinitionEditorState={ingestDefinitionEditorState}
                 />

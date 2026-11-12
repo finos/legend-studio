@@ -31,9 +31,11 @@ import {
   type CubeEditorState,
 } from '@finos/legend-cube-builder';
 import type { IngestDefinition } from '@finos/legend-graph';
+import { DocumentationLink } from '@finos/legend-lego/application';
 import { noop, type PlainObject } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../__lib__/LegendStudioDocumentation.js';
 import type { EmbeddedCubeState } from '../../../stores/editor/embedded-cube/EmbeddedCubeState.js';
 import { LegendStudioCubeHost } from '../../../stores/editor/embedded-cube/LegendStudioCubeHost.js';
 
@@ -421,6 +423,15 @@ export const EmbeddedCubeEditor = observer(
                 : `Edit MatView ${matView} of ${ingest.path} with Cube`}
             </div>
             <div className="query-builder__dialog__header__actions">
+              {/* shown once the documentation registry has the entry */}
+              <DocumentationLink
+                className="query-builder__dialog__header__action"
+                inline={false}
+                documentationKey={
+                  LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_INGEST_MATERIALIZED_VIEW
+                }
+                title="Building a materialized view in Legend Cube, in the Legend Studio guide"
+              />
               <button
                 className="query-builder__dialog__header__action"
                 tabIndex={-1}
