@@ -3,15 +3,15 @@
 **Decision: design 1b, a list of the views down the left, with the data sets group.** When an ingest definition has
 materialized views, its Definition tab opens on what they do: a Flow | Pure switch, the list of the views, then of the
 definition's other data sets, and the picked one on the right: a view drawn read-only by Legend Cube, or a data set's
-columns. The pull request that adds this page builds design 1b with the data sets group. A view's own columns are
-[future work](#future-work).
+columns. A view's own columns are [future work](#future-work).
 
 This page keeps the designs we considered, and why we chose this one. After review, the tab became an Overview of the
-definition's settings, then its views and data sets: see [after review](#after-review-the-overview).
+definition's settings, then its views and data sets, which the pull request that adds this page builds: see
+[after review](#after-review-the-overview).
 
 > **This page is text only.** The designs were mocked in Studio, with Cube's real canvas, on a made-up ingest
 > definition with three views, and a version of it with ten views and twenty-three plain data sets. Screenshots of
-> what was built are in the pull requests' descriptions.
+> what was built are in the pull request's description, and in the Studio guide.
 
 - [Today](#today)
 - [What stays as it is](#what-stays-as-it-is)
@@ -151,7 +151,7 @@ How they are built:
 ## After review: the Overview
 
 In review, an item at the top of the list named after the definition didn't say it was the definition. So the tab
-became an Overview of two labelled sections, built in the pull request after the one that adds this page:
+became an Overview of two labelled sections:
 
 - **Definition, on top.** Its name and doc, then the settings every data set follows unless it sets its own: owner,
   read mode, write mode, data set group and compute. All settings opens the rest below them (the CSV options, deletes,
