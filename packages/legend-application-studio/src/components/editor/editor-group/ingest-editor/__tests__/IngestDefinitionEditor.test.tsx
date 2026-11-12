@@ -840,6 +840,14 @@ describe('The Definition tab of an ingest definition whose content Studio cannot
         ),
       ).toBeNull();
       expect(loadEntry).not.toHaveBeenCalled();
+      // its views can still be edited in Cube, from Create MatView's dropdown
+      expect(getHeaderActions(editorGroup)).toContain(
+        'Edit a materialized view with Cube',
+      );
+      fireEvent.click(
+        within(editorGroup).getByTitle('Edit a materialized view with Cube'),
+      );
+      await renderResult.findByText('Edit MatView POSITIONS_BY_LEGAL_ENTITY');
     },
   );
 });

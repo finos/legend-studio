@@ -59,6 +59,7 @@ import {
 import type { MatViewDataSet } from '@finos/legend-graph';
 import { IngestTestableEditor } from './testable/IngestTestableEditor.js';
 import { INGEST_DEFINITION_VIEW } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionFlowState.js';
+import { getIngestMaterializedViews } from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import {
   IngestDefinitionFlow,
   IngestDefinitionViewSwitch,
@@ -185,13 +186,13 @@ export const IngestDefinitionEditor = observer(() => {
     );
   const ingestDef = ingestDefinitionEditorState.ingest;
   const flowState = ingestDefinitionEditorState.definitionFlowState;
-  // the views Cube can open to edit (Edit MatView, PLAN §11.18)
-  const materializedViews = flowState.materializedViews;
+  // the views Cube can open to edit (Edit MatView, PLAN §11.18), read as
+  // Edit MatView reads them: also when the specification can't be built
+  const editableViews = getIngestMaterializedViews(ingestDef);
   // with materialized views, the tab opens on their flows, each view's head
   // holding its Lineage and Edit in Cube; without, it is the definition's Pure
-  const showsFlow =
-    materializedViews.length > 0 &&
-    flowState.view === INGEST_DEFINITION_VIEW.FLOW;
+  const hasFlow = flowState.materializedViews.length > 0;
+  const showsFlow = hasFlow && flowState.view === INGEST_DEFINITION_VIEW.FLOW;
   const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
   const selectedTab = ingestDefinitionEditorState.selectedTab;
 
@@ -343,14 +344,14 @@ export const IngestDefinitionEditor = observer(() => {
                             Create MatView
                           </div>
                         </button>
-                        {!showsFlow && materializedViews.length > 0 && (
+                        {!showsFlow && editableViews.length > 0 && (
                           <ControlledDropdownMenu
                             className="btn__dropdown-combo__dropdown-btn"
                             title="Edit a materialized view with Cube"
                             disabled={ingestDefinitionEditorState.isReadOnly}
                             content={
                               <MenuContent>
-                                {materializedViews.map(({ name }) => (
+                                {editableViews.map(({ name }) => (
                                   <MenuContentItem
                                     key={name}
                                     className="btn__dropdown-combo__option"
@@ -392,7 +393,7 @@ export const IngestDefinitionEditor = observer(() => {
                       .isInProgress
                   }
                 />
-                {materializedViews.length > 0 && (
+                {hasFlow && (
                   <div className="ingest-definition-editor__view-bar">
                     <IngestDefinitionViewSwitch flowState={flowState} />
                   </div>
