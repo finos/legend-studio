@@ -8,11 +8,9 @@ columns. The pull request that adds this page builds design 1b with the data set
 
 This page keeps the designs we considered, and why we chose this one.
 
-> **Every screenshot below is on made-up data, and all but the first are design mocks.** The data is an ingest
-> definition, `markets::ingest::TradePositionsIngest`, with three views, and a version of it with ten views and
-> twenty-three plain data sets. The first screenshot is today's editor. The mocks ran in Studio with Cube's real canvas,
-> but their details, such as the captions under the flows, differ from what was built. Screenshots of the
-> implementation are in the pull request.
+> **This page is text only.** The designs were mocked in Studio, with Cube's real canvas, on a made-up ingest
+> definition with three views, and a version of it with ten views and twenty-three plain data sets. Screenshots of
+> what was built are in the pull requests' descriptions.
 
 - [Today](#today)
 - [What stays as it is](#what-stays-as-it-is)
@@ -24,10 +22,6 @@ This page keeps the designs we considered, and why we chose this one.
 - [Future work](#future-work)
 
 ## Today
-
-![Today's Definition tab: its header, with Lineage, View SQL and Create MatView](images/today-header.png)
-
-_Today's Definition tab on the made-up ingest: its header. Below it, the panel is the whole definition as Pure._
 
 - The materialized views are only visible as Pure, inside the whole definition.
 - Lineage always opens on the first view; its dialog then needs its own picker.
@@ -66,31 +60,15 @@ also says which data sets it reads.
 
 **1a. Names above the flow.** Every name in sight, as chips; at ten views they take two rows.
 
-![Design 1a: the views as chips above the flow, in two rows](images/design-1a-chips.jpg)
-
-_Design mock, made-up data: design 1a on the ten-view ingest._
-
 - **For:** one click to any view; the flow keeps the full width.
 - **Against:** busy past six or so views, and the rows push the flow down.
 
 **1b. A list down the left (chosen).** Every view in a list with its number of steps; the picked one's flow beside it.
 
-![Design 1b: the views in a list down the left, each with its number of steps, the picked view's flow beside it](images/design-1b-list.jpg)
-
-_Design mock, made-up data: design 1b on the ten-view ingest._
-
-![Design 1b on the three-view ingest](images/design-1b-list-three-views.jpg)
-
-_Design mock, made-up data: design 1b on the three-view ingest._
-
 - **For:** calm at any count, as the list scrolls; an overview of every view and its size, without opening any.
 - **Against:** the flow loses the list's width.
 
 **1c. A dropdown.** One dropdown, with where you are: 6 of 10.
-
-![Design 1c: a dropdown of the views above the flow, saying 6 of 10](images/design-1c-dropdown.jpg)
-
-_Design mock, made-up data: design 1c on the ten-view ingest._
 
 - **For:** the least on screen; the flow gets everything.
 - **Against:** the other views are hidden until it opens.
@@ -100,18 +78,9 @@ _Design mock, made-up data: design 1c on the ten-view ingest._
 Every view as a card with its flow, under Create MatView. Below the cards, the plain data sets, read-only, with the
 views that read each. A card's Pure is that view's own function, not the whole definition.
 
-![Design 2: a card per view, each with its flow, over a table of the data sets](images/design-2-cards.jpg)
-
-_Design mock, made-up data: design 2 on the three-view ingest. The third view uses a window function, which Cube draws
-too._
-
 At ten views and twenty-three data sets, it doesn't switch layouts; only how much is open by default changes. Past four
 views, the first three cards open and the rest show as one line each; a row of the views' names opens a card and
 scrolls to it; past twelve data sets, the table gets a filter.
-
-![Design 2 with ten views: three cards open, seven as one line each, then the data sets](images/design-2-ten-views.jpg)
-
-_Design mock, made-up data: design 2 on the ten-view ingest, as it opens._
 
 - **For:** every view visible up front; it shows which data sets each view reads, and which ones no view reads; each
   view carries its own actions.
@@ -121,10 +90,6 @@ _Design mock, made-up data: design 2 on the ten-view ingest, as it opens._
 
 Drawn, not built. The whole ingest in one picture: data sets on the left, views on the right, a line wherever a view
 reads a data set. Picking a view opens its flow below the map, as in design 1.
-
-![Design 3: data sets on the left, views on the right, a line wherever a view reads a data set](images/design-3-map.png)
-
-_Design mock, made-up data: design 3's map of the three-view ingest, drawn by hand._
 
 Cube's own canvas can't draw this map. In Cube, a step feeds only one next step, so a data set read by three views
 would appear three times. The map would need its own drawing, each view collapsed to one box.
@@ -148,17 +113,9 @@ Two ways to show the plain data sets were mocked with design 1. The first is bui
 columns where a view's flow would be: name, type, how many values it holds and whether it is in the key, read-only. A
 view says which data sets it reads, and a data set which views read it, each name a link to the other.
 
-![Design 1b with the data sets: a Data sets group under the views, the picked data set's columns on the right](images/data-sets-in-the-list.jpg)
-
-_Design mock, made-up data: EOD_POSITIONS picked in the list's Data sets group._
-
 **With design 1a's chips (not built).** The data sets can't be chips too: twenty-three more would add four or five rows above the
 flow. So the chips stay the views, and the data sets sit behind one menu at the top right, which filters as you type
 and carries the icon Cube's flow draws on a data set's step.
-
-![Design 1a with the data sets behind one menu at the top right](images/data-sets-behind-a-menu.jpg)
-
-_Design mock, made-up data: the views as chips, the twenty-three data sets behind one menu._
 
 How they are built:
 
@@ -193,11 +150,6 @@ How they are built:
 
 **A view's columns, from the artifact generation.** Not built. A view's panel could list the columns the view returns,
 with their types, in the same table a data set uses.
-
-![A view's panel with a "Columns this view returns" section under its flow, open on the view's three columns](images/future-view-columns.jpg)
-
-_Design mock, made-up data: under the flow, "Columns this view returns" asks the engine when it is opened, and lists
-the view's columns with its key. The engine's answer in it is made up._
 
 - **Where the columns come from:** Studio already runs this generation for View SQL.
   `IngestDefinitionEditorState.generateArtifact()` calls `graphManager.generateArtifacts`, and caches the result by the
