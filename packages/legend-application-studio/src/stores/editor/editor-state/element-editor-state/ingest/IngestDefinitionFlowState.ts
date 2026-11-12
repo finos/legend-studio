@@ -17,27 +17,36 @@
 import type * as CubeDefinitionFlowEntry from '@finos/legend-cube-builder/definition-flow';
 import type { CubeDefinitionReading } from '@finos/legend-cube-builder/definition-flow';
 import {
+  getIngestDatasetWriteMode,
+  getIngestWriteModeColumns,
+  getMultiplicityPrettyDescription,
+  getRelationColumnTypeLabel,
+  IngestAppendOnlyWriteMode,
+  IngestBatchMilestonedBusinessTemporalWriteMode,
+  IngestBatchMilestonedWriteMode,
   IngestDefinition,
-  RawLambda,
+  IngestFunctionSource,
+  IngestSerializedSource,
+  INTERNAL__UnknownIngestWriteMode,
+  Multiplicity,
+  type IngestDataset,
+  type IngestDatasetReference,
+  type IngestDefinitionSpecification,
+  type IngestWriteMode,
   type MatViewDataSet,
+  type RawLambda,
 } from '@finos/legend-graph';
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeType,
+  isString,
   LogEvent,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
-import {
-  getIngestDataSets,
-  getIngestMaterializedViewReads,
-  getIngestMaterializedViews,
-  type IngestDataSet,
-  type IngestDataSetReference,
-  type IngestMaterializedView,
-} from '../../../../graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
 
 // An ingest definition's materialized views, one at a time, as Legend Cube
@@ -46,8 +55,10 @@ import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.
 // definitions of the graph. Cube's code loads the first time the flow shows,
 // so neither Studio's own load nor an ingest definition without views pays
 // for it. Beside the views, the list has the definition's other data sets,
-// each one's columns read from the definition's JSON for display. Studio
-// builds no model of the definition: the rest stays its raw JSON.
+// with their columns. Everything shown is read from the definition's
+// specification (`IngestDefinitionEditorState.specification`), built from
+// its content by legend-graph: a definition whose content can't be read has
+// no flow, only its Pure.
 
 /** Legend Cube's definition flow: `@finos/legend-cube-builder/definition-flow` */
 export type IngestDefinitionFlowEntry = typeof CubeDefinitionFlowEntry;
@@ -78,10 +89,133 @@ export type IngestMaterializedViewReading =
   | CubeDefinitionReading
   | { readonly kind: 'failed'; readonly error: Error };
 
-/** A materialized view's own Pure, as the engine writes its function, or why it couldn't */
-export type IngestMaterializedViewGrammar =
-  | { readonly text: string }
-  | { readonly error: Error };
+/** The function of a materialized view: a data set whose rows its function computes */
+export const getMaterializedViewFunction = (view: IngestDataset): RawLambda =>
+  guaranteeType(view.source, IngestFunctionSource).function;
+
+/** A write mode, in words: `batch milestoned`; one this doesn't know, by its name */
+export const getIngestWriteModeLabel = (writeMode: IngestWriteMode): string => {
+  if (writeMode instanceof IngestAppendOnlyWriteMode) {
+    return 'append only';
+  } else if (writeMode instanceof IngestBatchMilestonedWriteMode) {
+    return 'batch milestoned';
+  } else if (
+    writeMode instanceof IngestBatchMilestonedBusinessTemporalWriteMode
+  ) {
+    return 'batch milestoned business temporal';
+  }
+  const type =
+    writeMode instanceof INTERNAL__UnknownIngestWriteMode
+      ? writeMode.content._type
+      : undefined;
+  return isString(type) ? type.replaceAll('_', ' ') : 'unknown';
+};
+
+/** A column of a data set's table: one it declares, or one its write mode adds */
+export interface IngestDataSetColumnRow {
+  readonly name: string;
+  /** Its type's name, with its parameters: `Varchar(32)`, `Numeric(18, 4)` */
+  readonly type: string;
+  /** Its type's full path, e.g. `meta::pure::precisePrimitives::Varchar` */
+  readonly typePath: string;
+  /** How many values it holds, as View SQL's schema says it: `[1] - Required` */
+  readonly multiplicity: string;
+  readonly isPrimaryKey: boolean;
+  /** The write mode that adds it, for a column the definition doesn't declare */
+  readonly addedBy: IngestWriteMode | undefined;
+}
+
+/** A data set's columns, as its table shows them */
+export interface IngestDataSetColumns {
+  /** The write mode it is written with: its own, else its definition's */
+  readonly writeMode: IngestWriteMode | undefined;
+  /** The columns it declares, then those its write mode adds */
+  readonly rows: readonly IngestDataSetColumnRow[];
+  /** How many of its columns it declares, before those its write mode adds */
+  readonly declaredCount: number;
+  /** What its columns leave out, or why it has none */
+  readonly notes: readonly string[];
+}
+
+/**
+ * The data set's columns, as its table shows them: those it declares, then
+ * those its write mode adds, in the order the engine returns them
+ */
+export const getIngestDataSetColumns = (
+  dataset: IngestDataset,
+  specification: IngestDefinitionSpecification,
+): IngestDataSetColumns => {
+  const writeMode = getIngestDatasetWriteMode(dataset, specification);
+  const { source } = dataset;
+  if (!(source instanceof IngestSerializedSource)) {
+    return {
+      writeMode,
+      rows: [],
+      declaredCount: 0,
+      notes: ["Its source isn't one Studio knows: its columns aren't shown."],
+    };
+  }
+  // a column whose type the graph doesn't have is typed `Any`: it shows the
+  // type its definition names
+  const unresolvedTypes = new Map(
+    source.unresolvedColumns.map((column) => [column.name, column.typePath]),
+  );
+  const rows: IngestDataSetColumnRow[] = (source.schema?.columns ?? []).map(
+    (column) => {
+      const unresolvedType = unresolvedTypes.get(column.name);
+      return {
+        name: column.name,
+        type:
+          unresolvedType === undefined
+            ? getRelationColumnTypeLabel(column)
+            : (unresolvedType.split('::').pop() ?? unresolvedType),
+        typePath: unresolvedType ?? column.genericType.value.rawType.path,
+        multiplicity: getMultiplicityPrettyDescription(column.multiplicity),
+        isPrimaryKey: dataset.primaryKey.includes(column.name),
+        addedBy: undefined,
+      };
+    },
+  );
+  const declaredCount = rows.length;
+  // a data set with no columns of its own gets none from its write mode
+  if (!declaredCount) {
+    return { writeMode, rows, declaredCount, notes: ['No columns declared.'] };
+  }
+  const notes = [...unresolvedTypes].map(
+    ([name, typePath]) =>
+      `The type of ${name}, ${typePath}, isn't in the project.`,
+  );
+  const added = getIngestWriteModeColumns(writeMode);
+  if (writeMode && added === undefined) {
+    notes.push(
+      `Its write mode, ${getIngestWriteModeLabel(writeMode)}, may add columns, which aren't shown.`,
+    );
+  } else if (writeMode && added?.length) {
+    const clashes: string[] = [];
+    added.forEach(({ name, type }) => {
+      if (rows.some((row) => row.name === name)) {
+        clashes.push(name);
+        return;
+      }
+      rows.push({
+        name,
+        type: type.split('::').pop() ?? type,
+        typePath: type,
+        multiplicity: getMultiplicityPrettyDescription(Multiplicity.ONE),
+        isPrimaryKey: false,
+        addedBy: writeMode,
+      });
+    });
+    if (clashes.length) {
+      notes.push(
+        `It declares ${clashes.join(', ')}, which its write mode, ${getIngestWriteModeLabel(
+          writeMode,
+        )}, adds too: ${clashes.length === 1 ? 'it is' : 'they are'} listed once.`,
+      );
+    }
+  }
+  return { writeMode, rows, declaredCount, notes };
+};
 
 export class IngestDefinitionFlowState {
   readonly editorState: IngestDefinitionEditorState;
@@ -96,21 +230,20 @@ export class IngestDefinitionFlowState {
   /** Why Cube's definition flow didn't load, if it didn't */
   entryError: Error | undefined;
   readonly loadEntryState = ActionState.create();
-  /** Each view's own Pure, by its function, fetched when Cube can't draw the view */
-  readonly viewGrammars = new Map<PlainObject, IngestMaterializedViewGrammar>();
 
   constructor(editorState: IngestDefinitionEditorState) {
-    makeObservable<IngestDefinitionFlowState, 'viewGrammars'>(this, {
+    makeObservable(this, {
       view: observable,
       selectedViewName: observable,
       selectedDataSetName: observable,
       entry: observable.ref,
       entryError: observable.ref,
-      viewGrammars: observable.shallow,
+      specification: computed,
       materializedViews: computed,
       selectedView: computed,
       dataSets: computed,
       selectedDataSet: computed,
+      dataSetColumns: computed,
       viewReads: computed,
       readings: computed,
       setView: action,
@@ -118,63 +251,90 @@ export class IngestDefinitionFlowState {
       selectDataSet: action,
       resetEntry: action,
       loadEntry: flow,
-      fetchViewGrammar: flow,
     });
     this.editorState = editorState;
   }
 
-  /** The definition's materialized views, as its content holds them */
-  get materializedViews(): IngestMaterializedView[] {
-    return getIngestMaterializedViews(this.editorState.ingest);
+  /** The definition, fully modelled; none when its content can't be read */
+  get specification(): IngestDefinitionSpecification | undefined {
+    return this.editorState.specification;
+  }
+
+  /** The definition's materialized views: its data sets whose rows a function computes */
+  get materializedViews(): IngestDataset[] {
+    return (
+      this.specification?.datasets.filter(
+        (dataset) => dataset.source instanceof IngestFunctionSource,
+      ) ?? []
+    );
   }
 
   /** The view the flow shows: the one picked, else the first */
-  get selectedView(): IngestMaterializedView | undefined {
+  get selectedView(): IngestDataset | undefined {
     const views = this.materializedViews;
     return (
       views.find((view) => view.name === this.selectedViewName) ?? views[0]
     );
   }
 
-  /** The definition's data sets that aren't views, with their columns, as its content holds them */
-  get dataSets(): IngestDataSet[] {
-    const views = new Set(this.materializedViews.map((view) => view.name));
-    // a view whose function can't be read isn't among the views: it is
-    // listed here, and says so
-    return getIngestDataSets(this.editorState.ingest).filter(
-      (dataSet) => !dataSet.isMaterializedView || !views.has(dataSet.name),
+  /** The definition's data sets that aren't views */
+  get dataSets(): IngestDataset[] {
+    return (
+      this.specification?.datasets.filter(
+        (dataset) => !(dataset.source instanceof IngestFunctionSource),
+      ) ?? []
     );
   }
 
   /** The data set picked in the list, if one is: it shows instead of a view */
-  get selectedDataSet(): IngestDataSet | undefined {
+  get selectedDataSet(): IngestDataset | undefined {
     const name = this.selectedDataSetName;
     return name === undefined
       ? undefined
       : this.dataSets.find((dataSet) => dataSet.name === name);
   }
 
+  /** Each data set's columns, as its table shows them, by the data set's name */
+  get dataSetColumns(): ReadonlyMap<string, IngestDataSetColumns> {
+    const specification = this.specification;
+    return new Map(
+      specification
+        ? this.dataSets.map((dataSet) => [
+            dataSet.name,
+            getIngestDataSetColumns(dataSet, specification),
+          ])
+        : [],
+    );
+  }
+
   /**
-   * The ingest data sets each view's function reads, by the view's name,
-   * read from its JSON, for display: whether or not Cube can draw the view
+   * The ingest data sets each view's function reads, by the view's name, as
+   * legend-graph finds them, with no engine call: whether or not Cube can
+   * draw the view
    */
-  get viewReads(): ReadonlyMap<string, IngestDataSetReference[]> {
+  get viewReads(): ReadonlyMap<string, IngestDatasetReference[]> {
+    const { graphManager, graph } =
+      this.editorState.editorStore.graphManagerState;
     return new Map(
       this.materializedViews.map((view) => [
         view.name,
-        getIngestMaterializedViewReads(view),
+        graphManager.getIngestDatasetsReadByRawLambda(
+          getMaterializedViewFunction(view),
+          graph,
+        ),
       ]),
     );
   }
 
   /** The views whose functions read the definition's data set of that name */
-  getReadBy(dataSet: string): IngestMaterializedView[] {
+  getReadBy(dataSet: string): IngestDataset[] {
     const path = this.editorState.ingest.path;
     return this.materializedViews.filter((view) =>
       this.viewReads
         .get(view.name)
         ?.some(
-          (read) => read.ingestDefinition === path && read.dataSet === dataSet,
+          (read) =>
+            read.ingestDefinitionPath === path && read.datasetName === dataSet,
         ),
     );
   }
@@ -192,7 +352,8 @@ export class IngestDefinitionFlowState {
     if (!entry) {
       return undefined;
     }
-    const graph = this.editorState.editorStore.graphManagerState.graph;
+    const { graphManager, graph } =
+      this.editorState.editorStore.graphManagerState;
     const getIngestDefinition = (path: string): PlainObject | undefined => {
       const element = graph.getNullableElement(path);
       return element instanceof IngestDefinition ? element.content : undefined;
@@ -203,7 +364,12 @@ export class IngestDefinitionFlowState {
           try {
             return [
               view.name,
-              entry.readCubeDefinition(view.lambda, { getIngestDefinition }),
+              entry.readCubeDefinition(
+                graphManager.serializeRawValueSpecification(
+                  getMaterializedViewFunction(view),
+                ),
+                { getIngestDefinition },
+              ),
             ];
           } catch (error) {
             assertErrorThrown(error);
@@ -218,7 +384,7 @@ export class IngestDefinitionFlowState {
    * The view's data set as the graph builder listed it for Lineage and View
    * SQL; none when it didn't, e.g. for a function that isn't a lambda
    */
-  getMatViewDataSet(view: IngestMaterializedView): MatViewDataSet | undefined {
+  getMatViewDataSet(view: IngestDataset): MatViewDataSet | undefined {
     return this.editorState.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.find(
       (dataSet) => dataSet.name === view.name,
     );
@@ -266,36 +432,6 @@ export class IngestDefinitionFlowState {
   resetEntry(): void {
     this.entryError = undefined;
     this.loadEntryState.reset();
-  }
-
-  /**
-   * Fetches the view's own Pure, as the engine writes its function, once per
-   * function: shown when Cube can't draw the view
-   */
-  *fetchViewGrammar(view: IngestMaterializedView): GeneratorFn<void> {
-    const { lambda } = view;
-    if (this.viewGrammars.has(lambda)) {
-      return;
-    }
-    try {
-      const texts =
-        (yield this.editorState.editorStore.graphManagerState.graphManager.lambdasToPureCode(
-          new Map([
-            [
-              view.name,
-              new RawLambda(
-                Array.isArray(lambda.parameters) ? lambda.parameters : [],
-                lambda.body as object | undefined,
-              ),
-            ],
-          ]),
-          true,
-        )) as Map<string, string>;
-      this.viewGrammars.set(lambda, { text: texts.get(view.name) ?? '' });
-    } catch (error) {
-      assertErrorThrown(error);
-      this.viewGrammars.set(lambda, { error });
-    }
   }
 
   /** Logs a flow that couldn't be shown, though Cube didn't refuse the view */

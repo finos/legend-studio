@@ -210,6 +210,13 @@ export const IngestDefinitionEditor = observer(() => {
     ingestDefinitionEditorState.generateElementGrammar();
   }, [ingestDefinitionEditorState]);
 
+  // the specification follows the content, e.g. once Create MatView or Edit
+  // in Cube saves a view
+  const content = ingestDef.content;
+  useEffect(() => {
+    ingestDefinitionEditorState.buildSpecification();
+  }, [ingestDefinitionEditorState, content]);
+
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.INGEST_DEFINITION_EDITOR,
   );
@@ -388,6 +395,15 @@ export const IngestDefinitionEditor = observer(() => {
                 {materializedViews.length > 0 && (
                   <div className="ingest-definition-editor__view-bar">
                     <IngestDefinitionViewSwitch flowState={flowState} />
+                  </div>
+                )}
+                {!flowState.specification && (
+                  <div
+                    className="ingest-definition-editor__view-bar ingest-definition-editor__view-bar--note"
+                    role="note"
+                  >
+                    Studio can&apos;t read this definition&apos;s content, so it
+                    shows only its Pure.
                   </div>
                 )}
                 {showsFlow ? (

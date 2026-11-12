@@ -92,6 +92,8 @@ export class IngestDefinitionEditorState extends ElementEditorState {
   ingestTestableState: IngestTestableState;
   /** The specification's lambdas as Pure, for viewing */
   lambdaGrammars = new Map<RawLambda, string>();
+  /** Whether the latest specification's lambdas are still being converted to Pure, or failed to */
+  readonly lambdaGrammarsState = ActionState.create();
   private lambdaGrammarsSpecification:
     | IngestDefinitionSpecification
     | undefined;
@@ -165,9 +167,11 @@ export class IngestDefinitionEditorState extends ElementEditorState {
   *convertSpecificationLambdas(
     specification: IngestDefinitionSpecification,
   ): GeneratorFn<void> {
+    this.lambdaGrammarsState.inProgress();
     const lambdas = getIngestSpecificationLambdas(specification);
     if (!lambdas.length) {
       this.lambdaGrammars = new Map();
+      this.lambdaGrammarsState.pass();
       return;
     }
     const lambdasById = new Map(
@@ -189,6 +193,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
           }
         });
         this.lambdaGrammars = result;
+        this.lambdaGrammarsState.pass();
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -197,6 +202,9 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         `Can't show the lambdas of ingest definition '${this.ingest.path}' as Pure`,
         error,
       );
+      if (specification === this.lambdaGrammarsSpecification) {
+        this.lambdaGrammarsState.fail();
+      }
     }
   }
 

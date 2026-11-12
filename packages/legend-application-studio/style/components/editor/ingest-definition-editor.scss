@@ -120,6 +120,12 @@
     flex-shrink: 0;
     align-items: center;
     padding: 1rem 1rem 0;
+
+    // why the tab shows only the definition's Pure
+    &--note {
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+    }
   }
 
   &__view-switch {

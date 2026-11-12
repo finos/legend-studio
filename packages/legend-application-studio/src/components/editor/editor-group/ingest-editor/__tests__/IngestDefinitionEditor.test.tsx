@@ -23,11 +23,7 @@ import {
   type RenderResult,
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '@finos/legend-cube-builder/definition-flow';
-import {
-  LineageModel,
-  type IngestDefinition,
-  type RawLambda,
-} from '@finos/legend-graph';
+import { LineageModel, type IngestDefinition } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
@@ -85,8 +81,44 @@ const DEFINITION_PURE = `###Ingest IngestDefinition ${INGEST_PATH} {}`;
 const RANKED_POSITIONS_PURE =
   '|#I{markets::ingest::TradePositionsIngest.EOD_POSITIONS}#->olapGroupBy()';
 
+/** A view's function, as the definition's content holds it, as JSON */
+const getViewBody = (name: string): string =>
+  JSON.stringify(
+    (
+      (TEST_DATA.entities[0]?.content.datasets as PlainObject[]).find(
+        (dataSet) => dataSet.name === name,
+      )?.source as { function: { body: unknown } } | undefined
+    )?.function.body,
+  );
+
+/**
+ * The engine writes the Pure of the definition's lambdas, which the editor
+ * gets as it opens: these views', by the view's name
+ */
+const mockViewPure = (
+  editorStore: EditorStore,
+  pureByView: Record<string, string>,
+): void => {
+  const pureByBody = new Map(
+    Object.entries(pureByView).map(([name, pure]) => [getViewBody(name), pure]),
+  );
+  jest
+    .spyOn(editorStore.graphManagerState.graphManager, 'lambdasToPureCode')
+    .mockImplementation((lambdas) =>
+      Promise.resolve(
+        new Map(
+          Array.from(lambdas.entries()).flatMap(([id, lambda]) => {
+            const pure = pureByBody.get(JSON.stringify(lambda.body));
+            return pure === undefined ? [] : [[id, pure]];
+          }),
+        ),
+      ),
+    );
+};
+
 const setUp = async (
   path = INGEST_PATH,
+  beforeOpen?: (editorStore: EditorStore) => void,
 ): Promise<{
   editorStore: EditorStore;
   renderResult: RenderResult;
@@ -99,6 +131,7 @@ const setUp = async (
   jest
     .spyOn(editorStore.graphManagerState.graphManager, 'entitiesToPureCode')
     .mockResolvedValue(DEFINITION_PURE);
+  beforeOpen?.(editorStore);
   // the definition's Pure answers at once: in act, as the tab opens
   await act(async () => {
     await TEST__openElementFromExplorerTree(path, renderResult);
@@ -315,12 +348,16 @@ describe('The Definition tab of an ingest definition with materialized views', (
       "A view Legend Cube can't draw says why, and shows its own Pure, as the engine writes its function",
     ),
     async () => {
-      const { editorStore, editorGroup } = await setUp();
-      const lambdasToPureCode = jest
-        .spyOn(editorStore.graphManagerState.graphManager, 'lambdasToPureCode')
-        .mockResolvedValue(
-          new Map([['RANKED_POSITIONS', RANKED_POSITIONS_PURE]]),
-        );
+      // the editor gets the Pure of the definition's lambdas as it opens,
+      // once: the engine writes this view's
+      const { editorStore, editorGroup } = await setUp(INGEST_PATH, (store) =>
+        mockViewPure(store, { RANKED_POSITIONS: RANKED_POSITIONS_PURE }),
+      );
+      // the spy set before the editor opened
+      const lambdasToPureCode = jest.spyOn(
+        editorStore.graphManagerState.graphManager,
+        'lambdasToPureCode',
+      );
       await findFlowNodes(
         getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
         5,
@@ -342,18 +379,19 @@ describe('The Definition tab of an ingest definition with materialized views', (
       ).toBeNull();
       // what it reads comes from its function, flow or none
       expect(getReads(panel)).toBe('Reads EOD_POSITIONS');
-      // the engine writes the view's own function, by the view's name
+      // the engine writes the view's own function, with the definition's
+      // other lambdas, as the editor opens
       expect(lambdasToPureCode).toHaveBeenCalledTimes(1);
       const [lambdas, pretty] = lambdasToPureCode.mock.calls[0] ?? [];
       expect(pretty).toBe(true);
-      const view = (
-        TEST_DATA.entities[0]?.content.datasets as PlainObject[]
-      ).find((dataSet) => dataSet.name === 'RANKED_POSITIONS');
-      expect((lambdas?.get('RANKED_POSITIONS') as RawLambda).body).toEqual(
-        (view?.source as { function: { body: unknown } }).function.body,
-      );
+      expect(
+        Array.from(lambdas?.values() ?? []).some(
+          (lambda) =>
+            JSON.stringify(lambda.body) === getViewBody('RANKED_POSITIONS'),
+        ),
+      ).toBe(true);
 
-      // fetched once: back on it, its Pure shows again
+      // got once: back on it, its Pure shows again
       await pick(editorGroup, 'OPEN_CLIENT_POSITIONS');
       await pick(editorGroup, 'RANKED_POSITIONS');
       await within(getViewPanel(editorGroup, 'RANKED_POSITIONS')).findByText(
@@ -502,14 +540,9 @@ describe('The Definition tab of an ingest definition with materialized views', (
         editorStore,
         { entities: TEST_DATA.entities as PlainObject<Entity>[] },
       );
-      const { graphManager } = editorStore.graphManagerState;
-      jest
-        .spyOn(graphManager, 'lambdasToPureCode')
-        .mockResolvedValue(
-          new Map([
-            ['POSITIONS_BY_LEGAL_ENTITY', '|positions by legal entity'],
-          ]),
-        );
+      mockViewPure(editorStore, {
+        POSITIONS_BY_LEGAL_ENTITY: '|positions by legal entity',
+      });
       // the failed load answers at once: in act, as the tab opens
       await act(async () => {
         await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
@@ -597,11 +630,8 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
         '[0..1] - Optional',
         '',
       ]);
-      // its type's full path, in a tooltip
-      expect(
-        within(grid).getAllByTitle('meta::pure::precisePrimitives::Varchar')
-          .length,
-      ).toBeGreaterThan(0);
+      // its type's path, in a tooltip: a precise primitive's is its name
+      expect(within(grid).getAllByTitle('Varchar').length).toBeGreaterThan(0);
       within(panel).getByText('9 columns, as the definition declares them.');
     },
   );
@@ -758,6 +788,57 @@ describe('The Definition tab of an ingest definition without materialized views'
       expect(
         within(editorGroup).getByText('Lineage').closest('button')?.disabled,
       ).toBe(true);
+      expect(loadEntry).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('The Definition tab of an ingest definition whose content Studio cannot read', () => {
+  test(
+    integrationTest(
+      "Is the definition's Pure, saying why, with no Flow | Pure and nothing of Cube loaded",
+    ),
+    async () => {
+      const loadEntry = jest.spyOn(
+        IngestDefinitionFlowState.prototype,
+        'loadDefinitionFlowEntry',
+      );
+      const editorStore = TEST__provideMockedEditorStore();
+      const [ingest, ...others] = TEST_DATA.entities as PlainObject<Entity>[];
+      // a write mode no version of the protocol has
+      const unreadable = {
+        ...ingest,
+        content: {
+          ...(ingest?.content as PlainObject),
+          writeMode: 'upsert',
+        },
+      } as PlainObject<Entity>;
+      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+        editorStore,
+        { entities: [unreadable, ...others] },
+      );
+      jest
+        .spyOn(editorStore.graphManagerState.graphManager, 'entitiesToPureCode')
+        .mockResolvedValue(DEFINITION_PURE);
+      await act(async () => {
+        await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      });
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+
+      await within(editorGroup).findByText(DEFINITION_PURE);
+      within(editorGroup).getByText(
+        "Studio can't read this definition's content, so it shows only its Pure.",
+      );
+      expect(
+        within(editorGroup).queryByLabelText('Show the definition as'),
+      ).toBeNull();
+      expect(
+        within(editorGroup).queryByLabelText(
+          'Materialized views and data sets',
+        ),
+      ).toBeNull();
       expect(loadEntry).not.toHaveBeenCalled();
     },
   );

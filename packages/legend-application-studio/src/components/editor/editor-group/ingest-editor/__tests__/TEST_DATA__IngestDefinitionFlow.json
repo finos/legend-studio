@@ -13,9 +13,9 @@
             "name": "EOD_POSITIONS",
             "primaryKey": ["BUSINESS_DATE", "POSITION_ID"],
             "source": {
-              "_type": "ingestSource",
+              "_type": "serializedSource",
               "schema": {
-                "_type": "schema",
+                "_type": "relationType",
                 "columns": [
                   {
                     "name": "BUSINESS_DATE",
@@ -199,9 +199,9 @@
             "name": "LEGAL_ENTITIES",
             "primaryKey": ["LEI"],
             "source": {
-              "_type": "ingestSource",
+              "_type": "serializedSource",
               "schema": {
-                "_type": "schema",
+                "_type": "relationType",
                 "columns": [
                   {
                     "name": "LEI",
@@ -278,9 +278,9 @@
               "INSTRUMENT_ID"
             ],
             "source": {
-              "_type": "ingestSource",
+              "_type": "serializedSource",
               "schema": {
-                "_type": "schema",
+                "_type": "relationType",
                 "columns": [
                   {
                     "name": "BUSINESS_DATE",
@@ -364,9 +364,9 @@
             "name": "INSTRUMENTS",
             "primaryKey": ["INSTRUMENT_ID"],
             "source": {
-              "_type": "ingestSource",
+              "_type": "serializedSource",
               "schema": {
-                "_type": "schema",
+                "_type": "relationType",
                 "columns": [
                   {
                     "name": "INSTRUMENT_ID",
@@ -900,9 +900,9 @@
             "name": "LEGAL_ENTITIES",
             "primaryKey": ["LEI"],
             "source": {
-              "_type": "ingestSource",
+              "_type": "serializedSource",
               "schema": {
-                "_type": "schema",
+                "_type": "relationType",
                 "columns": [
                   {
                     "name": "LEI",

@@ -35,12 +35,13 @@ _Today's Definition tab on the made-up ingest: its header. Below it, the panel i
 
 ## What stays as it is
 
-Studio doesn't build a model of an ingest definition: it keeps the definition's raw JSON and parses only the parts it
-edits. Every design keeps it that way.
+Studio keeps an ingest definition's content as it is saved, and edits that content. For viewing, legend-graph reads the
+content into a read-only model of the whole definition, its specification (`IngestDefinitionSpecification`), rebuilt
+when the content changes. Every design reads from it and edits as before.
 
-- **No model of the definition.** The views' flows need what Studio already reads: each view's name, function,
-  primary key and classification. The data sets' designs also read, for display only, each data set's name, columns,
-  key and write mode.
+- **A read-only model of the definition.** The views' flows and the data sets' panels read the specification: each
+  view's name, function, primary key and classification; each data set's name, columns, key and write mode. A
+  definition whose content can't be read shows only its Pure, and says so.
 - **Editing doesn't move.** Views are still created and edited in Cube, through Studio's existing add and update
   helpers. Everything else is edited in text mode: no form fields for data sets, write modes or owners.
 - **The drawings are read-only.** Clicking a step opens nothing. The flow is a view of the function, never an editor.
@@ -161,17 +162,17 @@ _Design mock, made-up data: the views as chips, the twenty-three data sets behin
 
 How they are built:
 
-- A small reader of the data sets' JSON, beside the one Studio has for the views: it reads each data set's name, key,
-  write mode and columns, and nothing else of the definition. It needs no Cube and no engine.
-- Studio's own reader, not Cube's. Cube's would bring Cube into Studio's main bundle, it fails on a write mode it
-  doesn't know, and one column it can't read hides a data set's whole table.
+- The data sets come from the definition's specification, their columns typed by Studio's graph. It needs no Cube and
+  no engine. A column whose type the project doesn't have shows the type its definition names, and says so.
+- Not Cube's reader. Cube's would bring Cube into Studio's main bundle, and it fails on a write mode it doesn't know.
 - The table has View SQL's headers (Column Name, Column Type, Multiplicity) and Key, so a data set's columns and a
-  view's schema look alike in one editor. Each type shows its full path in a tooltip.
-- The columns a write mode adds are listed greyed out after the declared ones, in the engine's order: batch
-  milestoning adds LAKE_DIGEST, LAKE_IN_ID and LAKE_OUT_ID; business temporal also adds LAKE_FROM and LAKE_THRU. A
-  write mode Studio doesn't know adds none, and the data set says so. One that declares no columns says so.
-- What a view reads, and which views read a data set, come from the views' functions as the definition holds them,
-  so a view Cube can't draw is listed too.
+  view's schema look alike in one editor. Each type shows its path in a tooltip.
+- The columns a write mode adds are listed greyed out after the declared ones, in the engine's order, as legend-graph
+  gives them: batch milestoning adds LAKE_DIGEST, LAKE_IN_ID and LAKE_OUT_ID; business temporal also adds LAKE_FROM
+  and LAKE_THRU. A write mode Studio doesn't know may add some, and the data set says so. One that declares no columns
+  says so.
+- What a view reads, and which views read a data set, come from the views' functions, as legend-graph finds the ingest
+  data sets a lambda reads with no engine call, so a view Cube can't draw is listed too.
 
 ## How a view is drawn
 

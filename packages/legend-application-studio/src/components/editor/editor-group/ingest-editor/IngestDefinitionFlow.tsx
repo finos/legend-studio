@@ -29,19 +29,18 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
+import type { IngestDataset } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Component, Fragment, useEffect, type ReactNode } from 'react';
-import {
-  describeIngestWriteMode,
-  type IngestDataSet,
-  type IngestDataSetColumn,
-  type IngestMaterializedView,
-} from '../../../../stores/graph-modifier/DSL_Ingest_GraphModifierHelper.js';
 import type { IngestDefinitionEditorState } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import {
+  getIngestWriteModeLabel,
+  getMaterializedViewFunction,
   INGEST_DEFINITION_FLOW_FAILURE,
   INGEST_DEFINITION_VIEW,
+  type IngestDataSetColumnRow,
+  type IngestDataSetColumns,
   type IngestDefinitionFlowEntry,
   type IngestDefinitionFlowState,
   type IngestMaterializedViewReading,
@@ -180,7 +179,9 @@ const IngestDefinitionList = observer(
         {dataSets.map((dataSet) =>
           renderItem(
             dataSet.name,
-            describeColumnCount(dataSet.columns.length),
+            describeColumnCount(
+              flowState.dataSetColumns.get(dataSet.name)?.rows.length ?? 0,
+            ),
             dataSet === selectedDataSet,
             () => flowState.selectDataSet(dataSet.name),
           ),
@@ -243,14 +244,14 @@ const NameLinks = (props: { links: IngestDefinitionNameLink[] }) => (
  * definition's name
  */
 const MaterializedViewReads = observer(
-  (props: {
-    flowState: IngestDefinitionFlowState;
-    view: IngestMaterializedView;
-  }) => {
+  (props: { flowState: IngestDefinitionFlowState; view: IngestDataset }) => {
     const { flowState, view } = props;
     const ingestPath = flowState.editorState.ingest.path;
     const links = (flowState.viewReads.get(view.name) ?? []).map(
-      ({ ingestDefinition, dataSet }): IngestDefinitionNameLink => {
+      ({
+        ingestDefinitionPath: ingestDefinition,
+        datasetName: dataSet,
+      }): IngestDefinitionNameLink => {
         if (ingestDefinition !== ingestPath) {
           return {
             label: `${ingestDefinition.split('::').pop() ?? ingestDefinition}.${dataSet}`,
@@ -291,31 +292,24 @@ const VIEW_PURE_EDITOR_OPTIONS = {
   scrollBeyondLastLine: false,
 } as const;
 
-/** The view's own function as Pure, as the engine writes it: shown when Cube can't draw the view */
+/**
+ * The view's own function as Pure, as the engine writes it, with the
+ * definition's other lambdas when its editor opens: shown when Cube can't
+ * draw the view
+ */
 const MaterializedViewPure = observer(
-  (props: {
-    flowState: IngestDefinitionFlowState;
-    view: IngestMaterializedView;
-  }) => {
+  (props: { flowState: IngestDefinitionFlowState; view: IngestDataset }) => {
     const { flowState, view } = props;
-    const { applicationStore } = flowState.editorState.editorStore;
-    useEffect(() => {
-      flowResult(flowState.fetchViewGrammar(view)).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }, [flowState, view, applicationStore]);
-    const grammar = flowState.viewGrammars.get(view.lambda);
+    const { lambdaGrammars, lambdaGrammarsState } = flowState.editorState;
+    const grammar = lambdaGrammars.get(getMaterializedViewFunction(view));
     if (grammar === undefined) {
-      return (
+      return lambdaGrammarsState.isInProgress ? (
         <div className="ingest-definition-flow__view__message">
           Getting its Pure…
         </div>
-      );
-    }
-    if ('error' in grammar) {
-      return (
+      ) : (
         <div className="ingest-definition-flow__view__message" role="alert">
-          {`Couldn't get its Pure: ${grammar.error.message}`}
+          Couldn&apos;t get its Pure.
         </div>
       );
     }
@@ -325,7 +319,7 @@ const MaterializedViewPure = observer(
         aria-label={`${view.name} as Pure`}
       >
         <CodeEditor
-          inputValue={grammar.text}
+          inputValue={grammar}
           isReadOnly={true}
           language={CODE_EDITOR_LANGUAGE.PURE}
           hideMinimap={true}
@@ -343,7 +337,7 @@ const MaterializedViewPure = observer(
  */
 const MaterializedViewFallback = (props: {
   flowState: IngestDefinitionFlowState;
-  view: IngestMaterializedView;
+  view: IngestDataset;
   message: string;
   details: string;
   isFailure?: boolean | undefined;
@@ -412,7 +406,7 @@ class MaterializedViewFlowErrorBoundary extends Component<
 const MaterializedViewFlow = observer(
   (props: {
     flowState: IngestDefinitionFlowState;
-    view: IngestMaterializedView;
+    view: IngestDataset;
     entry: IngestDefinitionFlowEntry;
     reading: Extract<IngestMaterializedViewReading, { kind: 'flow' }>;
   }) => {
@@ -464,10 +458,7 @@ const MaterializedViewFlow = observer(
 
 /** Below the view's head: its flow, or why there's none and its Pure */
 const MaterializedViewBody = observer(
-  (props: {
-    flowState: IngestDefinitionFlowState;
-    view: IngestMaterializedView;
-  }) => {
+  (props: { flowState: IngestDefinitionFlowState; view: IngestDataset }) => {
     const { flowState, view } = props;
     const { entry, entryError } = flowState;
     const reading = flowState.readings?.get(view.name);
@@ -545,7 +536,7 @@ const MaterializedViewBody = observer(
 const MaterializedViewPanel = observer(
   (props: {
     editorState: IngestDefinitionEditorState;
-    view: IngestMaterializedView;
+    view: IngestDataset;
   }) => {
     const { editorState, view } = props;
     const flowState = editorState.definitionFlowState;
@@ -570,12 +561,12 @@ const MaterializedViewPanel = observer(
               {view.name}
             </span>
             <PrimaryKeyChips primaryKey={view.primaryKey} />
-            {view.sensitivity !== undefined && (
+            {view.privacyClassification && (
               <span
                 className="ingest-definition-flow__view__chip ingest-definition-flow__view__chip--classification"
                 title="Classification of its data"
               >
-                {view.sensitivity}
+                {view.privacyClassification.sensitivity}
               </span>
             )}
           </div>
@@ -624,7 +615,7 @@ const MAX_AUTO_HEIGHT_COLUMNS = 10;
 
 /** A column's name; one its write mode adds says which */
 const DataSetColumnName = (
-  props: DataGridCellRendererParams<IngestDataSetColumn>,
+  props: DataGridCellRendererParams<IngestDataSetColumnRow>,
 ) => {
   const column = props.data;
   if (!column) {
@@ -636,9 +627,9 @@ const DataSetColumnName = (
       {column.addedBy !== undefined && (
         <span
           className="ingest-definition-flow__data-set__added-by"
-          title={`Its write mode, ${describeIngestWriteMode(column.addedBy)}, adds this column`}
+          title={`Its write mode, ${getIngestWriteModeLabel(column.addedBy)}, adds this column`}
         >
-          {`added by ${describeIngestWriteMode(column.addedBy)}`}
+          {`added by ${getIngestWriteModeLabel(column.addedBy)}`}
         </span>
       )}
     </span>
@@ -647,14 +638,14 @@ const DataSetColumnName = (
 
 /** A column's type, its full path in a tooltip */
 const DataSetColumnType = (
-  props: DataGridCellRendererParams<IngestDataSetColumn>,
+  props: DataGridCellRendererParams<IngestDataSetColumnRow>,
 ) =>
   props.data ? (
     <span title={props.data.typePath}>{props.data.type}</span>
   ) : null;
 
 /** View SQL's schema headers, so a data set and a view's schema look alike, and whether a column is in the key */
-const DATA_SET_COLUMN_DEFINITIONS: DataGridColumnDefinition<IngestDataSetColumn>[] =
+const DATA_SET_COLUMN_DEFINITIONS: DataGridColumnDefinition<IngestDataSetColumnRow>[] =
   [
     {
       headerName: 'Column Name',
@@ -683,17 +674,21 @@ const DATA_SET_COLUMN_DEFINITIONS: DataGridColumnDefinition<IngestDataSetColumn>
 const DATA_SET_ROW_CLASS_RULES = {
   // a column its write mode adds, not one it declares
   'ingest-definition-flow__data-set__added-column': (params: {
-    data?: IngestDataSetColumn | undefined;
+    data?: IngestDataSetColumnRow | undefined;
   }): boolean => params.data?.addedBy !== undefined,
 };
 
 /** A data set's columns, read-only: those it declares, then, muted, those its write mode adds */
-const IngestDataSetColumns = observer(
-  (props: { flowState: IngestDefinitionFlowState; dataSet: IngestDataSet }) => {
-    const { flowState, dataSet } = props;
+const IngestDataSetColumnTable = observer(
+  (props: {
+    flowState: IngestDefinitionFlowState;
+    dataSet: IngestDataset;
+    columns: IngestDataSetColumns;
+  }) => {
+    const { flowState, dataSet, columns } = props;
     const { layoutService } =
       flowState.editorState.editorStore.applicationStore;
-    const scrolls = dataSet.columns.length > MAX_AUTO_HEIGHT_COLUMNS;
+    const scrolls = columns.rows.length > MAX_AUTO_HEIGHT_COLUMNS;
     const darkMode = !layoutService.TEMPORARY__isLightColorThemeEnabled;
     return (
       <div
@@ -705,7 +700,7 @@ const IngestDataSetColumns = observer(
         aria-label={`Columns of ${dataSet.name}`}
       >
         <DataGrid
-          rowData={[...dataSet.columns]}
+          rowData={[...columns.rows]}
           columnDefs={DATA_SET_COLUMN_DEFINITIONS}
           rowClassRules={DATA_SET_ROW_CLASS_RULES}
           domLayout={scrolls ? 'normal' : 'autoHeight'}
@@ -721,10 +716,13 @@ const IngestDataSetColumns = observer(
  * link to the view, and its columns, read-only
  */
 const IngestDataSetPanel = observer(
-  (props: { flowState: IngestDefinitionFlowState; dataSet: IngestDataSet }) => {
+  (props: { flowState: IngestDefinitionFlowState; dataSet: IngestDataset }) => {
     const { flowState, dataSet } = props;
     const readBy = flowState.getReadBy(dataSet.name);
-    const added = dataSet.columns.length - dataSet.declaredColumnCount;
+    const columns = flowState.dataSetColumns.get(dataSet.name);
+    const rows = columns?.rows ?? [];
+    const declaredCount = columns?.declaredCount ?? 0;
+    const added = rows.length - declaredCount;
     return (
       <div
         className="ingest-definition-flow__view"
@@ -760,7 +758,7 @@ const IngestDataSetPanel = observer(
             </span>
           </div>
         </div>
-        {dataSet.notes.map((note) => (
+        {(columns?.notes ?? []).map((note) => (
           <div
             key={note}
             className="ingest-definition-flow__view__note"
@@ -769,13 +767,17 @@ const IngestDataSetPanel = observer(
             {note}
           </div>
         ))}
-        {dataSet.columns.length > 0 && (
+        {columns && rows.length > 0 && (
           <>
-            <IngestDataSetColumns flowState={flowState} dataSet={dataSet} />
+            <IngestDataSetColumnTable
+              flowState={flowState}
+              dataSet={dataSet}
+              columns={columns}
+            />
             <div className="ingest-definition-flow__view__message">
-              {added > 0 && dataSet.writeMode !== undefined
-                ? `${describeColumnCount(dataSet.declaredColumnCount)} as the definition declares them, then ${added} its write mode, ${describeIngestWriteMode(dataSet.writeMode)}, adds.`
-                : `${describeColumnCount(dataSet.declaredColumnCount)}, as the definition declares them.`}
+              {added > 0 && columns.writeMode !== undefined
+                ? `${describeColumnCount(declaredCount)} as the definition declares them, then ${added} its write mode, ${getIngestWriteModeLabel(columns.writeMode)}, adds.`
+                : `${describeColumnCount(declaredCount)}, as the definition declares them.`}
             </div>
           </>
         )}
